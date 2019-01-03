@@ -12771,6 +12771,12 @@
             "      name = (variable_permissive",
             "        VARIABLE:'z2')",
             "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_zone",
+            "      ZONE:'zone'",
+            "      name = (variable_permissive",
+            "        VARIABLE:'t1')",
+            "      NEWLINE:'\\n'))",
             "  EOF:<EOF>)"
           ]
         },
@@ -23881,6 +23887,12 @@
             "          IP_ADDRESS:'1.0.0.1'",
             "          IP_ADDRESS:'2.0.0.1'",
             "          IP_ADDRESS:'3.0.0.1'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_zone_member",
+            "          ZONE_MEMBER:'zone-member'",
+            "          name = (variable_permissive",
+            "            VARIABLE:'t1')",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
             "        (if_zone_member",
@@ -61852,6 +61864,16 @@
             }
           ]
         },
+        "cisco-zone" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 10,
+              "Parser_Context" : "[s_zone stanza cisco_configuration]",
+              "Text" : "zone t1"
+            }
+          ]
+        },
         "cisco_acl" : {
           "Parse warnings" : [
             {
@@ -61977,6 +61999,12 @@
               "Line" : 279,
               "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
               "Text" : "mode gre multipoint"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 294,
+              "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
+              "Text" : "zone-member t1"
             }
           ]
         },
@@ -63907,25 +63935,25 @@
           "interface" : {
             "Async1" : {
               "definitionLines" : [
-                296
+                297
               ],
               "numReferrers" : 1
             },
             "Cable1/2/3:4" : {
               "definitionLines" : [
-                298
+                299
               ],
               "numReferrers" : 1
             },
             "Crypto-Engine1/2/3" : {
               "definitionLines" : [
-                300
+                301
               ],
               "numReferrers" : 1
             },
             "Dot11Radio0" : {
               "definitionLines" : [
-                302
+                303
               ],
               "numReferrers" : 1
             },
@@ -64218,123 +64246,124 @@
                 291,
                 292,
                 293,
-                294
+                294,
+                295
               ],
               "numReferrers" : 1
             },
             "Ethernet1/11" : {
               "definitionLines" : [
-                304
+                305
               ],
               "numReferrers" : 1
             },
             "Ethernet1/12" : {
               "definitionLines" : [
-                344,
-                345
+                345,
+                346
               ],
               "numReferrers" : 1
             },
             "GigabitEthernet0/0" : {
               "definitionLines" : [
-                306,
                 307,
                 308,
                 309,
-                310
+                310,
+                311
               ],
               "numReferrers" : 1
             },
             "Loopback0" : {
               "definitionLines" : [
-                312,
                 313,
                 314,
-                315
+                315,
+                316
               ],
               "numReferrers" : 1
             },
             "Modular-Cable1/2/3:4" : {
               "definitionLines" : [
-                317
+                318
               ],
               "numReferrers" : 1
             },
             "Null0" : {
               "definitionLines" : [
-                319
+                320
               ],
               "numReferrers" : 1
             },
             "Vlan1" : {
               "definitionLines" : [
-                328
+                329
               ],
               "numReferrers" : 1
             },
             "Vlan1005" : {
               "definitionLines" : [
-                334
+                335
               ],
               "numReferrers" : 1
             },
             "Vlan1006" : {
               "definitionLines" : [
-                336
+                337
               ],
               "numReferrers" : 1
             },
             "Vlan111" : {
               "definitionLines" : [
-                323
+                324
               ],
               "numReferrers" : 1
             },
             "Vlan1234" : {
               "definitionLines" : [
-                338
+                339
               ],
               "numReferrers" : 1
             },
             "Vlan2" : {
               "definitionLines" : [
-                330
+                331
               ],
               "numReferrers" : 1
             },
             "Vlan3" : {
               "definitionLines" : [
-                332
+                333
               ],
               "numReferrers" : 1
             },
             "Vlan4094" : {
               "definitionLines" : [
-                340
+                341
               ],
               "numReferrers" : 1
             },
             "Vxlan1" : {
               "definitionLines" : [
-                325
+                326
               ],
               "numReferrers" : 1
             },
             "Wideband-Cable1/2/3:4" : {
               "definitionLines" : [
-                342
+                343
               ],
               "numReferrers" : 1
             },
             "inside" : {
               "definitionLines" : [
-                307
+                308
               ],
               "numReferrers" : 1
             },
             "tunnel-ip6" : {
               "definitionLines" : [
-                321
+                322
               ],
               "numReferrers" : 1
             }
@@ -64995,6 +65024,14 @@
         "configs/cisco_webvpn" : { },
         "configs/cisco_wsma" : { },
         "configs/cisco_zone" : {
+          "zone" : {
+            "t1" : {
+              "definitionLines" : [
+                10
+              ],
+              "numReferrers" : 0
+            }
+          },
           "zone security" : {
             "z1" : {
               "definitionLines" : [
@@ -68290,12 +68327,12 @@
           "interface" : {
             "Async1" : {
               "interface" : [
-                296
+                297
               ]
             },
             "Cable1/2/3:4" : {
               "interface" : [
-                298
+                299
               ]
             },
             "Cellular0" : {
@@ -68305,12 +68342,12 @@
             },
             "Crypto-Engine1/2/3" : {
               "interface" : [
-                300
+                301
               ]
             },
             "Dot11Radio0" : {
               "interface" : [
-                302
+                303
               ]
             },
             "Ethernet0" : {
@@ -68323,82 +68360,82 @@
             },
             "Ethernet1/11" : {
               "interface" : [
-                304
+                305
               ]
             },
             "Ethernet1/12" : {
               "interface" : [
-                344
+                345
               ]
             },
             "GigabitEthernet0/0" : {
               "interface" : [
-                306
+                307
               ]
             },
             "Loopback0" : {
               "interface" : [
-                312
+                313
               ]
             },
             "Modular-Cable1/2/3:4" : {
               "interface" : [
-                317
+                318
               ]
             },
             "Null0" : {
               "interface" : [
-                319
+                320
               ]
             },
             "Vlan1" : {
               "interface" : [
-                328
+                329
               ]
             },
             "Vlan1005" : {
               "interface" : [
-                334
+                335
               ]
             },
             "Vlan1006" : {
               "interface" : [
-                336
+                337
               ]
             },
             "Vlan111" : {
               "interface" : [
-                323
+                324
               ]
             },
             "Vlan1234" : {
               "interface" : [
-                338
+                339
               ]
             },
             "Vlan2" : {
               "interface" : [
-                330
+                331
               ]
             },
             "Vlan3" : {
               "interface" : [
-                332
+                333
               ]
             },
             "Vlan4094" : {
               "interface" : [
-                340
+                341
               ]
             },
             "Vxlan1" : {
               "interface" : [
-                325
+                326
               ]
             },
             "Wideband-Cable1/2/3:4" : {
               "interface" : [
-                342
+                343
               ]
             },
             "dynamic" : {
@@ -68408,12 +68445,12 @@
             },
             "inside" : {
               "interface" : [
-                307
+                308
               ]
             },
             "tunnel-ip6" : {
               "interface" : [
-                321
+                322
               ]
             }
           },
@@ -68485,10 +68522,17 @@
               ]
             }
           },
+          "zone" : {
+            "t1" : {
+              "interface zone-member" : [
+                294
+              ]
+            }
+          },
           "zone security" : {
             "z1" : {
               "interface zone-member security" : [
-                294
+                295
               ]
             }
           }
@@ -71031,7 +71075,7 @@
           "zone security" : {
             "z1" : {
               "interface zone-member security" : [
-                294
+                295
               ]
             }
           }
