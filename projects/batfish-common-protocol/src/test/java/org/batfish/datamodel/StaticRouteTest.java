@@ -19,14 +19,14 @@ public class StaticRouteTest {
   public void checkAllAttrs() {
     StaticRoute sr =
         StaticRoute.builder()
-            .setNextHopIp(new Ip("192.168.1.1"))
+            .setNextHopIp(Ip.parse("192.168.1.1"))
             .setNetwork(Prefix.ZERO)
             .setNextHopInterface("192.168.1.2")
             .setAdministrativeCost(1)
             .setTag(0)
             .setMetric(123)
             .build();
-    assertThat(sr.getNextHopIp(), is(new Ip("192.168.1.1")));
+    assertThat(sr.getNextHopIp(), is(Ip.parse("192.168.1.1")));
     assertThat(sr.getNetwork(), is(Prefix.ZERO));
     assertThat(sr.getNextHopInterface(), is("192.168.1.2"));
     assertThat(sr.getAdministrativeCost(), is(1));
@@ -76,7 +76,7 @@ public class StaticRouteTest {
   public void checkSerialization() {
     StaticRoute sr =
         StaticRoute.builder()
-            .setNextHopIp(new Ip("192.168.1.1"))
+            .setNextHopIp(Ip.parse("192.168.1.1"))
             .setNetwork(Prefix.ZERO)
             .setNextHopInterface("192.168.1.2")
             .setAdministrativeCost(1)
@@ -85,7 +85,7 @@ public class StaticRouteTest {
             .build();
     try {
       StaticRoute parsedObj = BatfishObjectMapper.clone(sr, StaticRoute.class);
-      assertThat(parsedObj.getNextHopIp(), is(new Ip("192.168.1.1")));
+      assertThat(parsedObj.getNextHopIp(), is(Ip.parse("192.168.1.1")));
       assertThat(parsedObj.getNetwork(), is(Prefix.ZERO));
       assertThat(parsedObj.getNextHopInterface(), is("192.168.1.2"));
       assertThat(parsedObj.getAdministrativeCost(), is(1));

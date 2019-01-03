@@ -91,13 +91,13 @@ public class DefaultTransitionGeneratorTest {
 
   private static final String INTERFACE4 = "interface4";
 
-  private static final Ip IP1 = new Ip("1.1.1.1");
+  private static final Ip IP1 = Ip.parse("1.1.1.1");
 
-  private static final Ip IP2 = new Ip("2.2.2.2");
+  private static final Ip IP2 = Ip.parse("2.2.2.2");
 
-  private static final Ip IP3 = new Ip("3.3.3.3");
+  private static final Ip IP3 = Ip.parse("3.3.3.3");
 
-  private static final Ip IP4 = new Ip("4.4.4.4");
+  private static final Ip IP4 = Ip.parse("4.4.4.4");
 
   private static final String NAT_ACL1 = "natacl1";
 

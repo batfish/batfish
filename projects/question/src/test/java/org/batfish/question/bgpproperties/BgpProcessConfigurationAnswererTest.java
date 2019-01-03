@@ -25,7 +25,7 @@ public class BgpProcessConfigurationAnswererTest {
   public void getProperties() {
 
     BgpProcess bgp1 = new BgpProcess();
-    bgp1.setRouterId(new Ip("1.1.1.1"));
+    bgp1.setRouterId(Ip.parse("1.1.1.1"));
     bgp1.setMultipathEbgp(true);
     bgp1.setTieBreaker(BgpTieBreaker.ARRIVAL_ORDER);
 
@@ -56,7 +56,7 @@ public class BgpProcessConfigurationAnswererTest {
         Row.builder()
             .put(BgpProcessConfigurationAnswerer.COL_NODE, new Node("node1"))
             .put(BgpProcessConfigurationAnswerer.COL_VRF, "vrf1")
-            .put(BgpProcessConfigurationAnswerer.COL_ROUTER_ID, new Ip("1.1.1.1"))
+            .put(BgpProcessConfigurationAnswerer.COL_ROUTER_ID, Ip.parse("1.1.1.1"))
             .put(property2, BgpTieBreaker.ARRIVAL_ORDER.toString())
             .put(property1, true)
             .build();

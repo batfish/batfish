@@ -103,7 +103,7 @@ public class RoutesAnswererTest {
 
     Multiset<Row> actual =
         getMainRibRoutes(
-            ribs, ImmutableSet.of("n1"), new Prefix(new Ip("2.2.2.0"), 24), ".*", ".*", null);
+            ribs, ImmutableSet.of("n1"), Prefix.create(Ip.parse("2.2.2.0"), 24), ".*", ".*", null);
 
     assertThat(actual, hasSize(1));
     assertThat(

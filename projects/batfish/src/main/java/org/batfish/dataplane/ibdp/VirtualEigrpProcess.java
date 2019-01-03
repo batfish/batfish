@@ -120,7 +120,6 @@ class VirtualEigrpProcess {
                   .setNextHopInterface(iface.getName())
                   .setProcessAsn(_asn)
                   .build();
-          requireNonNull(route);
           _internalRib.mergeRoute(route);
         }
       }
@@ -143,7 +142,7 @@ class VirtualEigrpProcess {
    */
   @Nullable
   private EigrpExternalRoute computeEigrpExportRoute(AbstractRoute potentialExportRoute) {
-    EigrpExternalRoute.Builder outputRouteBuilder = new EigrpExternalRoute.Builder();
+    EigrpExternalRoute.Builder outputRouteBuilder = EigrpExternalRoute.builder();
     // Set the metric to match the route metric by default for EIGRP into EIGRP
     if (potentialExportRoute instanceof EigrpRoute) {
       outputRouteBuilder.setEigrpMetric(((EigrpRoute) potentialExportRoute).getEigrpMetric());
@@ -166,7 +165,7 @@ class VirtualEigrpProcess {
     outputRouteBuilder.setNetwork(potentialExportRoute.getNetwork());
     outputRouteBuilder.setProcessAsn(_asn);
     outputRouteBuilder.setNonRouting(true);
-    return requireNonNull(outputRouteBuilder.build());
+    return outputRouteBuilder.build();
   }
 
   /**
@@ -241,7 +240,7 @@ class VirtualEigrpProcess {
   RibDelta<EigrpExternalRoute> propagateExternalRoutes(NetworkConfigurations nc) {
 
     RibDelta.Builder<EigrpExternalRoute> deltaBuilder = new RibDelta.Builder<>(_externalStagingRib);
-    EigrpExternalRoute.Builder routeBuilder = new EigrpExternalRoute.Builder();
+    EigrpExternalRoute.Builder routeBuilder = EigrpExternalRoute.builder();
     routeBuilder.setAdmin(_defaultExternalAdminCost).setProcessAsn(_asn);
 
     _incomingRoutes.forEach(
@@ -270,9 +269,6 @@ class VirtualEigrpProcess {
                 .setEigrpMetric(metric)
                 .setNetwork(neighborRoute.getNetwork());
             EigrpExternalRoute newRoute = routeBuilder.build();
-            if (newRoute == null) {
-              continue;
-            }
 
             if (routeAdvert.isWithdrawn()) {
               deltaBuilder.remove(newRoute, Reason.WITHDRAW);
@@ -354,7 +350,6 @@ class VirtualEigrpProcess {
               .setNextHopIp(nextHopIp)
               .setProcessAsn(_asn)
               .build();
-      requireNonNull(newRoute);
       changed |= _internalStagingRib.mergeRoute(newRoute);
     }
     return changed;

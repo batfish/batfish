@@ -634,7 +634,7 @@ public class VirtualRouter implements Serializable {
 
       Ip srcIp = advert.getSrcIp();
       // TODO: support passive bgp connections
-      Prefix srcPrefix = new Prefix(srcIp, Prefix.MAX_PREFIX_LENGTH);
+      Prefix srcPrefix = Prefix.create(srcIp, Prefix.MAX_PREFIX_LENGTH);
       BgpPeerConfig neighbor = _vrf.getBgpProcess().getActiveNeighbors().get(srcPrefix);
       if (neighbor == null) {
         continue;
@@ -2073,15 +2073,14 @@ public class VirtualRouter implements Serializable {
     So to get session properties, we might need to flip the src/dst edge
      */
     Optional<BgpSessionProperties> session = bgpTopology.edgeValue(edge.src(), edge.dst());
-    if (session.isPresent()) {
-      return session.get();
-    }
-    return bgpTopology
-        .edgeValue(edge.dst(), edge.src())
-        .orElseThrow(
-            () ->
-                new IllegalArgumentException(
-                    String.format("No BGP edge %s in BGP topology", edge)));
+    return session.orElseGet(
+        () ->
+            bgpTopology
+                .edgeValue(edge.dst(), edge.src())
+                .orElseThrow(
+                    () ->
+                        new IllegalArgumentException(
+                            String.format("No BGP edge %s in BGP topology", edge))));
   }
 
   private void queueOutgoingIsisRoutes(

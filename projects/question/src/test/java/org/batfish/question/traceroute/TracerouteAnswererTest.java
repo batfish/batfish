@@ -104,7 +104,7 @@ public class TracerouteAnswererTest {
   public void testDiffFlowHistoryToRows() {
 
     Flow flow =
-        Flow.builder().setTag("tag").setIngressNode("node").setDstIp(new Ip("1.1.1.1")).build();
+        Flow.builder().setTag("tag").setIngressNode("node").setDstIp(Ip.parse("1.1.1.1")).build();
     Environment environment = new Environment(null, null, null, null, null, null, null);
 
     FlowHistory flowHistory = new FlowHistory();
@@ -150,7 +150,7 @@ public class TracerouteAnswererTest {
   @Test
   public void testDiffFlowTracesToRows() {
     Flow flow =
-        Flow.builder().setTag("tag").setIngressNode("node").setDstIp(new Ip("1.1.1.1")).build();
+        Flow.builder().setTag("tag").setIngressNode("node").setDstIp(Ip.parse("1.1.1.1")).build();
 
     Map<Flow, List<Trace>> baseFlowTraces =
         ImmutableMap.of(
@@ -165,7 +165,7 @@ public class TracerouteAnswererTest {
         allOf(
             hasColumn(
                 COL_FLOW,
-                allOf(hasDstIp(new Ip("1.1.1.1")), hasIngressNode("node"), hasTag("tag")),
+                allOf(hasDstIp(Ip.parse("1.1.1.1")), hasIngressNode("node"), hasTag("tag")),
                 Schema.FLOW),
             hasColumn(
                 TracerouteAnswerer.COL_BASE_TRACES,
@@ -184,7 +184,7 @@ public class TracerouteAnswererTest {
   @Test
   public void testFlowTracesToRowsMaxTraces() {
     Flow flow =
-        Flow.builder().setTag("tag").setIngressNode("node").setDstIp(new Ip("1.1.1.1")).build();
+        Flow.builder().setTag("tag").setIngressNode("node").setDstIp(Ip.parse("1.1.1.1")).build();
     SortedMap<Flow, List<Trace>> flowTraces =
         ImmutableSortedMap.of(
             flow,
@@ -198,7 +198,7 @@ public class TracerouteAnswererTest {
         allOf(
             hasColumn(
                 COL_FLOW,
-                allOf(hasDstIp(new Ip("1.1.1.1")), hasIngressNode("node"), hasTag("tag")),
+                allOf(hasDstIp(Ip.parse("1.1.1.1")), hasIngressNode("node"), hasTag("tag")),
                 Schema.FLOW),
             hasColumn(COL_TRACES, hasSize(1), Schema.set(Schema.TRACE)),
             hasColumn(TracerouteAnswerer.COL_TRACE_COUNT, equalTo(2), Schema.INTEGER)));
@@ -207,7 +207,7 @@ public class TracerouteAnswererTest {
   @Test
   public void testDiffFlowTracesToRowsMaxTraces() {
     Flow flow =
-        Flow.builder().setTag("tag").setIngressNode("node").setDstIp(new Ip("1.1.1.1")).build();
+        Flow.builder().setTag("tag").setIngressNode("node").setDstIp(Ip.parse("1.1.1.1")).build();
 
     SortedMap<Flow, List<Trace>> baseflowTraces =
         ImmutableSortedMap.of(
@@ -234,7 +234,7 @@ public class TracerouteAnswererTest {
         allOf(
             hasColumn(
                 COL_FLOW,
-                allOf(hasDstIp(new Ip("1.1.1.1")), hasIngressNode("node"), hasTag("tag")),
+                allOf(hasDstIp(Ip.parse("1.1.1.1")), hasIngressNode("node"), hasTag("tag")),
                 Schema.FLOW),
             hasColumn(COL_BASE_TRACES, hasSize(1), Schema.set(Schema.TRACE)),
             hasColumn(TracerouteAnswerer.COL_BASE_TRACE_COUNT, equalTo(2), Schema.INTEGER),
@@ -292,7 +292,7 @@ public class TracerouteAnswererTest {
             new FlowTrace(FlowDisposition.ACCEPTED, ImmutableList.of(), "notes1"),
             new FlowTrace(FlowDisposition.DENIED_OUT, ImmutableList.of(), "notes2"));
     Flow flow =
-        Flow.builder().setTag("tag").setIngressNode("node").setDstIp(new Ip("1.1.1.1")).build();
+        Flow.builder().setTag("tag").setIngressNode("node").setDstIp(Ip.parse("1.1.1.1")).build();
 
     FlowHistoryInfo historyInfo =
         new FlowHistoryInfo(

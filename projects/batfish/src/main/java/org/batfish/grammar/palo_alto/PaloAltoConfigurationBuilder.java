@@ -294,7 +294,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     if (ctx.ANY() != null) {
       return UniverseIpSpace.INSTANCE;
     } else if (ctx.IP_ADDRESS() != null) {
-      return new Ip(ctx.IP_ADDRESS().getText()).toIpSpace();
+      return Ip.parse(ctx.IP_ADDRESS().getText()).toIpSpace();
     } else if (ctx.IP_PREFIX() != null) {
       return Prefix.parse(ctx.IP_PREFIX().getText()).toIpSpace();
     }
@@ -418,7 +418,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSds_default_gateway(Sds_default_gatewayContext ctx) {
-    _configuration.setMgmtIfaceGateway(new Ip(ctx.IP_ADDRESS().getText()));
+    _configuration.setMgmtIfaceGateway(Ip.parse(ctx.IP_ADDRESS().getText()));
   }
 
   @Override
@@ -428,12 +428,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSds_ip_address(Sds_ip_addressContext ctx) {
-    _configuration.setMgmtIfaceAddress(new Ip(ctx.IP_ADDRESS().getText()));
+    _configuration.setMgmtIfaceAddress(Ip.parse(ctx.IP_ADDRESS().getText()));
   }
 
   @Override
   public void enterSds_netmask(Sds_netmaskContext ctx) {
-    _configuration.setMgmtIfaceNetmask(new Ip(ctx.IP_ADDRESS().getText()));
+    _configuration.setMgmtIfaceNetmask(Ip.parse(ctx.IP_ADDRESS().getText()));
   }
 
   @Override
@@ -611,7 +611,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSnvrrt_nexthop(Snvrrt_nexthopContext ctx) {
-    _currentStaticRoute.setNextHopIp(new Ip(ctx.address.getText()));
+    _currentStaticRoute.setNextHopIp(Ip.parse(ctx.address.getText()));
   }
 
   @Override

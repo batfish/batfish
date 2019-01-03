@@ -19,10 +19,11 @@ public class OspfNodeTest {
   public void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            new OspfNode("a", "i", new Ip("1.2.3.4")), new OspfNode("a", "i", new Ip("1.2.3.4")))
-        .addEqualityGroup(new OspfNode("a", "i", new Ip("1.2.3.5")))
-        .addEqualityGroup(new OspfNode("b", "i", new Ip("1.2.3.4")))
-        .addEqualityGroup(new OspfNode("a", "j", new Ip("1.2.3.4")))
+            new OspfNode("a", "i", Ip.parse("1.2.3.4")),
+            new OspfNode("a", "i", Ip.parse("1.2.3.4")))
+        .addEqualityGroup(new OspfNode("a", "i", Ip.parse("1.2.3.5")))
+        .addEqualityGroup(new OspfNode("b", "i", Ip.parse("1.2.3.4")))
+        .addEqualityGroup(new OspfNode("a", "j", Ip.parse("1.2.3.4")))
         .testEquals();
   }
 
@@ -30,19 +31,19 @@ public class OspfNodeTest {
   public void testComparison() {
     List<OspfNode> expected =
         ImmutableList.of(
-            new OspfNode("a", "i", new Ip("1.2.3.4")),
-            new OspfNode("a", "i", new Ip("1.2.3.5")),
-            new OspfNode("a", "j", new Ip("1.2.3.4")),
-            new OspfNode("a", "j", new Ip("1.2.3.5")),
-            new OspfNode("b", "i", new Ip("1.2.3.4")),
-            new OspfNode("b", "i", new Ip("1.2.3.5")));
+            new OspfNode("a", "i", Ip.parse("1.2.3.4")),
+            new OspfNode("a", "i", Ip.parse("1.2.3.5")),
+            new OspfNode("a", "j", Ip.parse("1.2.3.4")),
+            new OspfNode("a", "j", Ip.parse("1.2.3.5")),
+            new OspfNode("b", "i", Ip.parse("1.2.3.4")),
+            new OspfNode("b", "i", Ip.parse("1.2.3.5")));
     assertThat(Ordering.natural().sortedCopy(expected), equalTo(expected));
     assertThat(Ordering.natural().sortedCopy(Lists.reverse(expected)), equalTo(expected));
   }
 
   @Test
   public void testSerialization() throws IOException {
-    OspfNode node = new OspfNode("a", "i", new Ip("1.2.3.4"));
+    OspfNode node = new OspfNode("a", "i", Ip.parse("1.2.3.4"));
     assertThat(BatfishObjectMapper.clone(node, OspfNode.class), equalTo(node));
   }
 }

@@ -199,8 +199,10 @@ public class AbstractRibTest {
   /** Ensure that empty RIB doesn't have any prefix matches */
   @Test
   public void testLongestPrefixMatchWhenEmpty() {
-    assertThat(_rib.longestPrefixMatch(new Ip("1.1.1.1")), is(emptyIterableOf(StaticRoute.class)));
-    assertThat(_rib.longestPrefixMatch(new Ip("0.0.0.0")), is(emptyIterableOf(StaticRoute.class)));
+    assertThat(
+        _rib.longestPrefixMatch(Ip.parse("1.1.1.1")), is(emptyIterableOf(StaticRoute.class)));
+    assertThat(
+        _rib.longestPrefixMatch(Ip.parse("0.0.0.0")), is(emptyIterableOf(StaticRoute.class)));
   }
 
   /**
@@ -212,15 +214,15 @@ public class AbstractRibTest {
     List<StaticRoute> routes = setupOverlappingRoutes();
 
     // Assertions
-    Set<StaticRoute> match = _rib.longestPrefixMatch(new Ip("10.1.1.1"));
+    Set<StaticRoute> match = _rib.longestPrefixMatch(Ip.parse("10.1.1.1"));
     assertThat(match, hasSize(1));
     assertThat(match, contains(routes.get(3)));
 
-    match = _rib.longestPrefixMatch(new Ip("10.1.1.2"));
+    match = _rib.longestPrefixMatch(Ip.parse("10.1.1.2"));
     assertThat(match, hasSize(1));
     assertThat(match, contains(routes.get(1)));
 
-    match = _rib.longestPrefixMatch(new Ip("11.1.1.1"));
+    match = _rib.longestPrefixMatch(Ip.parse("11.1.1.1"));
     assertThat(match, is(emptyIterableOf(StaticRoute.class)));
   }
 
@@ -233,7 +235,7 @@ public class AbstractRibTest {
     List<StaticRoute> routes = setupOverlappingRoutes();
 
     // Only the first route matches with prefix len of <= 8
-    Set<StaticRoute> match = _rib.longestPrefixMatch(new Ip("10.1.1.1"), 8);
+    Set<StaticRoute> match = _rib.longestPrefixMatch(Ip.parse("10.1.1.1"), 8);
     assertThat(match, hasSize(1));
     assertThat(match, contains(routes.get(0)));
   }
@@ -373,7 +375,7 @@ public class AbstractRibTest {
   public void testAddRouteGetDelta() {
     AbstractRib<RipInternalRoute> rib = new RipInternalRib();
     int admin = RoutingProtocol.RIP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS);
-    Prefix prefix = new Prefix(new Ip("10.0.0.0"), 8);
+    Prefix prefix = Prefix.create(Ip.parse("10.0.0.0"), 8);
     // High metric
     RipInternalRoute oldRoute = new RipInternalRoute(prefix, Ip.ZERO, admin, 10);
     // New route, lower metric, will override oldRoute
@@ -404,7 +406,7 @@ public class AbstractRibTest {
   public void testRemoveRoute() {
     StaticRoute r =
         StaticRoute.builder()
-            .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
+            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
@@ -443,7 +445,7 @@ public class AbstractRibTest {
     // Two routes for same prefix,
     StaticRoute r1 =
         StaticRoute.builder()
-            .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
+            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
@@ -452,8 +454,8 @@ public class AbstractRibTest {
             .build();
     StaticRoute r2 =
         StaticRoute.builder()
-            .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
-            .setNextHopIp(new Ip("2.2.2.2"))
+            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
+            .setNextHopIp(Ip.parse("2.2.2.2"))
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
@@ -475,7 +477,7 @@ public class AbstractRibTest {
     // Two routes for same prefix,
     StaticRoute r1 =
         StaticRoute.builder()
-            .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
+            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
@@ -484,8 +486,8 @@ public class AbstractRibTest {
             .build();
     StaticRoute r2 =
         StaticRoute.builder()
-            .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
-            .setNextHopIp(new Ip("2.2.2.2"))
+            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
+            .setNextHopIp(Ip.parse("2.2.2.2"))
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
@@ -512,9 +514,9 @@ public class AbstractRibTest {
             .setMetric(0L)
             .setTag(1);
 
-    Ip ip = new Ip("1.1.1.1");
-    StaticRoute r32 = builder.setNetwork(new Prefix(ip, 32)).build();
-    StaticRoute r18 = builder.setNetwork(new Prefix(ip, 18)).build();
+    Ip ip = Ip.parse("1.1.1.1");
+    StaticRoute r32 = builder.setNetwork(Prefix.create(ip, 32)).build();
+    StaticRoute r18 = builder.setNetwork(Prefix.create(ip, 18)).build();
     _rib.mergeRoute(r32);
     _rib.mergeRoute(r18);
 
@@ -549,7 +551,7 @@ public class AbstractRibTest {
         b.setNetwork(Prefix.parse("1.2.3.4/8")).setNonForwarding(false).build());
 
     // Looking for 1.2.3.4, should skip the /32 and /31, and then find the single forwarding /30
-    Set<StaticRoute> routes = _rib.longestPrefixMatch(new Ip("1.2.3.4"));
+    Set<StaticRoute> routes = _rib.longestPrefixMatch(Ip.parse("1.2.3.4"));
     assertThat(routes, hasSize(1));
     assertThat(Iterables.getOnlyElement(routes), hasPrefix(Prefix.parse("1.2.3.4/30")));
   }

@@ -51,7 +51,7 @@ public final class IpPrefix extends PrefixExpr {
   public Prefix evaluate(Environment env) {
     Ip ip = _ip.evaluate(env);
     int prefixLength = _prefixLength.evaluate(env);
-    return new Prefix(ip, prefixLength);
+    return Prefix.create(ip, prefixLength);
   }
 
   @JsonProperty(PROP_IP)

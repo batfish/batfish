@@ -208,7 +208,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
 
   @Override
   public void enterBt_neighbor(Bt_neighborContext ctx) {
-    Ip neighborIp = new Ip(ctx.IP_ADDRESS().getText());
+    Ip neighborIp = Ip.parse(ctx.IP_ADDRESS().getText());
     _currentBgpNeighbor = _bgpProcess.getNeighbors().computeIfAbsent(neighborIp, BgpNeighbor::new);
   }
 
@@ -246,7 +246,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
 
   @Override
   public void enterIvt_site_to_site(Ivt_site_to_siteContext ctx) {
-    Ip peerAddress = new Ip(ctx.peer.getText());
+    Ip peerAddress = Ip.parse(ctx.peer.getText());
     _currentIpsecPeer = _configuration.getIpsecPeers().computeIfAbsent(peerAddress, IpsecPeer::new);
   }
 
@@ -644,7 +644,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
 
   @Override
   public void exitS2st_local_address(S2st_local_addressContext ctx) {
-    Ip localAddress = new Ip(ctx.ip.getText());
+    Ip localAddress = Ip.parse(ctx.ip.getText());
     _currentIpsecPeer.setLocalAddress(localAddress);
   }
 
@@ -662,7 +662,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
 
   @Override
   public void exitSrt_next_hop(Srt_next_hopContext ctx) {
-    Ip nextHopIp = new Ip(ctx.nexthop.getText());
+    Ip nextHopIp = Ip.parse(ctx.nexthop.getText());
     int distance = toInteger(ctx.distance);
     StaticNextHopRoute staticRoute =
         new StaticNextHopRoute(_currentStaticRoutePrefix, nextHopIp, distance);

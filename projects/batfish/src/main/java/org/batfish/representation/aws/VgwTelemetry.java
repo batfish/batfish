@@ -21,7 +21,7 @@ public class VgwTelemetry implements Serializable {
     _status = jObj.getString(AwsVpcEntity.JSON_KEY_STATUS);
     _statusMessage = jObj.getString(AwsVpcEntity.JSON_KEY_STATUS_MESSAGE);
     _acceptedRouteCount = jObj.getInt(AwsVpcEntity.JSON_KEY_ACCEPTED_ROUTE_COUNT);
-    _outsideIpAddress = new Ip(jObj.getString(AwsVpcEntity.JSON_KEY_OUTSIDE_IP_ADDRESS));
+    _outsideIpAddress = Ip.parse(jObj.getString(AwsVpcEntity.JSON_KEY_OUTSIDE_IP_ADDRESS));
   }
 
   public int getAcceptedRouteCount() {

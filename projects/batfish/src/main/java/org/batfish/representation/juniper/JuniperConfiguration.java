@@ -2229,6 +2229,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _c.getVrfs().put(riName, new Vrf(riName));
     }
 
+    // process interface ranges. this changes the _interfaces map
+    _masterLogicalSystem.expandInterfaceRanges();
+
     // convert prefix lists to route filter lists
     for (Entry<String, PrefixList> e : _masterLogicalSystem.getPrefixLists().entrySet()) {
       String name = e.getKey();

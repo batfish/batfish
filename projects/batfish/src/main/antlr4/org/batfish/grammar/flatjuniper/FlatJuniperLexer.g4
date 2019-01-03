@@ -3482,6 +3482,11 @@ MEMBER
    'member'
 ;
 
+MEMBER_RANGE
+:
+   'member-range'
+;
+
 MEMBERS
 :
    'members' -> pushMode ( M_Members )

@@ -42,7 +42,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -239,7 +238,6 @@ import org.batfish.z3.Synthesizer;
 import org.batfish.z3.SynthesizerInputImpl;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.OrExpr;
-import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.jgrapht.Graph;
@@ -2560,53 +2558,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     for (ExternalBgpAdvertisementPlugin plugin : _externalBgpAdvertisementPlugins) {
       Set<BgpAdvertisement> currentAdvertisements = plugin.loadExternalBgpAdvertisements();
       advertSet.addAll(currentAdvertisements);
-    }
-    return advertSet;
-  }
-
-  /**
-   * Reads the external bgp announcement specified in the environment, and populates the
-   * vendor-independent configurations with data about those announcements
-   *
-   * @param configurations The vendor-independent configurations to be modified
-   */
-  public Set<BgpAdvertisement> processExternalBgpAnnouncements(
-      Map<String, Configuration> configurations, SortedSet<Long> allCommunities) {
-    Set<BgpAdvertisement> advertSet = new LinkedHashSet<>();
-    Path externalBgpAnnouncementsPath = _testrigSettings.getExternalBgpAnnouncementsPath();
-    if (Files.exists(externalBgpAnnouncementsPath)) {
-      String externalBgpAnnouncementsFileContents =
-          CommonUtil.readFile(externalBgpAnnouncementsPath);
-      // Populate advertSet with BgpAdvertisements that
-      // gets passed to populatePrecomputedBgpAdvertisements.
-      // See populatePrecomputedBgpAdvertisements for the things that get
-      // extracted from these advertisements.
-
-      try {
-        JSONObject jsonObj = new JSONObject(externalBgpAnnouncementsFileContents);
-
-        JSONArray announcements = jsonObj.getJSONArray(BfConsts.PROP_BGP_ANNOUNCEMENTS);
-
-        for (int index = 0; index < announcements.length(); index++) {
-          JSONObject announcement = new JSONObject();
-          announcement.put("@id", index);
-          JSONObject announcementSrc = announcements.getJSONObject(index);
-          for (Iterator<?> i = announcementSrc.keys(); i.hasNext(); ) {
-            String key = (String) i.next();
-            if (!key.equals("@id")) {
-              announcement.put(key, announcementSrc.get(key));
-            }
-          }
-          BgpAdvertisement bgpAdvertisement =
-              BatfishObjectMapper.mapper()
-                  .readValue(announcement.toString(), BgpAdvertisement.class);
-          allCommunities.addAll(bgpAdvertisement.getCommunities());
-          advertSet.add(bgpAdvertisement);
-        }
-
-      } catch (JSONException | IOException e) {
-        throw new BatfishException("Problems parsing JSON in " + externalBgpAnnouncementsPath, e);
-      }
     }
     return advertSet;
   }

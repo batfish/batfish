@@ -746,14 +746,14 @@ public enum JunosApplication implements Application {
 
       case JUNOS_RADIUS:
         {
-          portRangeStart = NamedPort.RADIUS_JUNIPER.number();
+          portRangeStart = NamedPort.RADIUS_2_AUTH.number();
           ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_RIP:
         {
-          portRangeStart = NamedPort.RIP.number();
+          portRangeStart = NamedPort.EFStcp_OR_RIPudp.number();
           ipProtocol = IpProtocol.UDP;
           break;
         }

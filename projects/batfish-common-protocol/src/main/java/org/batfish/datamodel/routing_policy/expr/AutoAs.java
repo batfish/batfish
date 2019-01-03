@@ -39,7 +39,7 @@ public class AutoAs extends AsExpr {
     if (peerAddress == null) {
       throw new BatfishException("Expected a peer address");
     }
-    Prefix peerPrefix = new Prefix(peerAddress, Prefix.MAX_PREFIX_LENGTH);
+    Prefix peerPrefix = Prefix.create(peerAddress, Prefix.MAX_PREFIX_LENGTH);
     // TODO: what not sure what happens with dynamic neighbors here
     BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(peerPrefix);
     if (neighbor == null) {
