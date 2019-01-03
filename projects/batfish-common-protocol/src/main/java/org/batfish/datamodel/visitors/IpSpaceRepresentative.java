@@ -22,6 +22,6 @@ public final class IpSpaceRepresentative {
     return _ipSpaceToBDD
         .getBDDInteger()
         .getValueSatisfying(_ipSpaceToBDD.visit(ipSpace))
-        .map(Ip::new);
+        .map(Ip::create);
   }
 }

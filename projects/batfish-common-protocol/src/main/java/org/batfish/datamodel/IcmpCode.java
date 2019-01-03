@@ -27,6 +27,7 @@ public final class IcmpCode {
   // For IcmpType#PARAMETER_PROBLEM
   public static final int INVALID_IP_HEADER = 0;
   public static final int REQUIRED_OPTION_MISSING = 1;
+  public static final int BAD_LENGTH = 2;
 
   // For IcmpType#REDIRECT_MESSAGE
   public static final int NETWORK_ERROR = 0;

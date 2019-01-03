@@ -56,7 +56,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
       if (!_allocatedIps.contains(ipAsLong)) {
         _allocatedIps.add(ipAsLong);
         _lastGeneratedIp = ipAsLong;
-        return new Ip(ipAsLong);
+        return Ip.create(ipAsLong);
       }
     }
     // subnet's CIDR block out of IPs
@@ -67,7 +67,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
     Long generatedIp = _cidrBlock.getStartIp().asLong() + 1L;
     _allocatedIps.add(generatedIp);
     _lastGeneratedIp = generatedIp;
-    return new Ip(generatedIp);
+    return Ip.create(generatedIp);
   }
 
   private NetworkAcl findMyNetworkAcl(Map<String, NetworkAcl> networkAcls) {

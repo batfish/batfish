@@ -52,12 +52,12 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
   private static final InterfaceAddress NODE1_ADDR = new InterfaceAddress("1.2.3.1/24");
   private static final InterfaceAddress NODE2_ADDR = new InterfaceAddress("1.2.3.2/24");
   private static final String NODE2 = "node2";
-  private static final Ip DENIED_IN_SRC_IP = new Ip("1.1.1.1");
-  private static final Ip DENIED_OUT_SRC_IP = new Ip("1.1.1.2");
+  private static final Ip DENIED_IN_SRC_IP = Ip.parse("1.1.1.1");
+  private static final Ip DENIED_OUT_SRC_IP = Ip.parse("1.1.1.2");
   private static final IngressLocation INGRESS_LOCATION =
       IngressLocation.vrf(NODE1, Configuration.DEFAULT_VRF_NAME);
-  private static final Ip NAT_MATCH_IP = new Ip("2.2.2.2");
-  private static final Ip NAT_POOL_IP = new Ip("2.2.2.3");
+  private static final Ip NAT_MATCH_IP = Ip.parse("2.2.2.2");
+  private static final Ip NAT_POOL_IP = Ip.parse("2.2.2.3");
   private static final BDD ZERO = PKT.getFactory().zero();
 
   public static @ClassRule TemporaryFolder temp = new TemporaryFolder();

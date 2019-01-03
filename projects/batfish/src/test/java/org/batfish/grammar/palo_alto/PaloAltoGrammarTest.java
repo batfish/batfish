@@ -144,8 +144,8 @@ public class PaloAltoGrammarTest {
       int destinationPort) {
     Flow.Builder fb = new Flow.Builder();
     fb.setIngressNode("node");
-    fb.setSrcIp(new Ip(sourceAddress));
-    fb.setDstIp(new Ip(destinationAddress));
+    fb.setSrcIp(Ip.parse(sourceAddress));
+    fb.setDstIp(Ip.parse(destinationAddress));
     fb.setIpProtocol(protocol);
     fb.setDstPort(destinationPort);
     fb.setSrcPort(sourcePort);
@@ -362,9 +362,9 @@ public class PaloAltoGrammarTest {
   public void testMgmtIface() throws IOException {
     PaloAltoConfiguration c = parsePaloAltoConfig("mgmt-iface");
 
-    assertThat(c.getMgmtIfaceAddress(), equalTo(new Ip("12.25.51.103")));
-    assertThat(c.getMgmtIfaceGateway(), equalTo(new Ip("12.25.51.1")));
-    assertThat(c.getMgmtIfaceNetmask(), equalTo(new Ip("255.255.255.128")));
+    assertThat(c.getMgmtIfaceAddress(), equalTo(Ip.parse("12.25.51.103")));
+    assertThat(c.getMgmtIfaceGateway(), equalTo(Ip.parse("12.25.51.1")));
+    assertThat(c.getMgmtIfaceNetmask(), equalTo(Ip.parse("255.255.255.128")));
   }
 
   @Test
@@ -560,7 +560,7 @@ public class PaloAltoGrammarTest {
     assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasAdministrativeCost(equalTo(123))))));
     assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasMetric(equalTo(12L))))));
     assertThat(
-        c, hasVrf(vrName, hasStaticRoutes(hasItem(hasNextHopIp(equalTo(new Ip("1.1.1.1")))))));
+        c, hasVrf(vrName, hasStaticRoutes(hasItem(hasNextHopIp(equalTo(Ip.parse("1.1.1.1")))))));
     assertThat(
         c, hasVrf(vrName, hasStaticRoutes(hasItem(hasNextHopInterface(equalTo("ethernet1/1"))))));
     assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("0.0.0.0/0"))))));

@@ -1331,10 +1331,10 @@ class CiscoConversions {
     long minSubnet = dstIpWildcard.getIp().asLong();
     long maxSubnet = minSubnet | dstIpWildcard.getWildcard().asLong();
     int minPrefixLength = dstIpWildcard.getIp().numSubnetBits();
-    int maxPrefixLength = new Ip(maxSubnet).numSubnetBits();
+    int maxPrefixLength = Ip.create(maxSubnet).numSubnetBits();
     int statedPrefixLength = srcIpWildcard.getWildcard().inverted().numSubnetBits();
     int prefixLength = Math.min(statedPrefixLength, minPrefixLength);
-    Prefix prefix = new Prefix(ip, prefixLength);
+    Prefix prefix = Prefix.create(ip, prefixLength);
     return new RouteFilterLine(
         action, new IpWildcard(prefix), new SubRange(minPrefixLength, maxPrefixLength));
   }

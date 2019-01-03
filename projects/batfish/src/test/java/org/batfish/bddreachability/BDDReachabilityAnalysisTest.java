@@ -177,7 +177,7 @@ public final class BDDReachabilityAnalysisTest {
     return bddInteger
         .getValuesSatisfying(bdd, 10)
         .stream()
-        .map(Ip::new)
+        .map(Ip::create)
         .collect(Collectors.toList());
   }
 

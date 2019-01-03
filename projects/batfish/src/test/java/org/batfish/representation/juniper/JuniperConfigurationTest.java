@@ -76,7 +76,7 @@ public class JuniperConfigurationTest {
     // It should have a MatchHeaderSpace match condition, matching the ipAddrPrefix from above
     ImmutableList.of("1.2.3.0", "1.2.3.255")
         .stream()
-        .map(Ip::new)
+        .map(Ip::parse)
         .forEach(
             ip ->
                 assertThat(

@@ -73,14 +73,14 @@ public class IpsecTunnel implements Serializable {
         (Element) ipsecTunnel.getElementsByTagName(AwsVpcEntity.XML_KEY_CUSTOMER_GATEWAY).item(0);
 
     _cgwOutsideAddress =
-        new Ip(
+        Ip.parse(
             getText(
                 cgwElement,
                 AwsVpcEntity.XML_KEY_TUNNEL_OUTSIDE_ADDRESS,
                 AwsVpcEntity.XML_KEY_IP_ADDRESS));
 
     _cgwInsideAddress =
-        new Ip(
+        Ip.parse(
             getText(
                 cgwElement,
                 AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
@@ -103,14 +103,14 @@ public class IpsecTunnel implements Serializable {
         (Element) ipsecTunnel.getElementsByTagName(AwsVpcEntity.XML_KEY_VPN_GATEWAY).item(0);
 
     _vgwOutsideAddress =
-        new Ip(
+        Ip.parse(
             getText(
                 vgwElement,
                 AwsVpcEntity.XML_KEY_TUNNEL_OUTSIDE_ADDRESS,
                 AwsVpcEntity.XML_KEY_IP_ADDRESS));
 
     _vgwInsideAddress =
-        new Ip(
+        Ip.parse(
             getText(
                 vgwElement,
                 AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,

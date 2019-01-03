@@ -75,7 +75,7 @@ class CounterExample {
   }
 
   Ip ipVal(Expr e) {
-    return new Ip(Long.parseLong(evaluate(e)));
+    return Ip.create(Long.parseLong(evaluate(e)));
   }
 
   Flow buildFlow(SymbolicPacket pkt, String routerName) {
@@ -175,7 +175,7 @@ class CounterExample {
           // Create dummy information
           BgpActivePeerConfig n = slice.getGraph().getEbgpNeighbors().get(logicalEdge.getEdge());
           String srcNode = "as" + n.getRemoteAs();
-          Ip zeroIp = new Ip(0);
+          Ip zeroIp = Ip.create(0);
           Ip dstIp = n.getLocalIp();
 
           // Recover AS path
@@ -276,7 +276,7 @@ class CounterExample {
    */
   Prefix buildPrefix(SymbolicRoute symbolicRoute, Flow flow) {
     Integer pfxLen = intVal(symbolicRoute.getPrefixLength());
-    return new Prefix(flow.getDstIp(), pfxLen);
+    return Prefix.create(flow.getDstIp(), pfxLen);
   }
 
   /*

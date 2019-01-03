@@ -63,7 +63,7 @@ public class TestFiltersAnswerer extends Answerer {
   public static final String COL_ACTION = "Action";
   public static final String COL_LINE_CONTENT = "Line_Content";
   public static final String COL_TRACE = "Trace";
-  private static final Ip DEFAULT_IP_ADDRESS = new Ip("8.8.8.8");
+  private static final Ip DEFAULT_IP_ADDRESS = Ip.parse("8.8.8.8");
 
   private final IpSpaceRepresentative _ipSpaceRepresentative;
   private final IpSpaceAssignment _sourceIpAssignment;

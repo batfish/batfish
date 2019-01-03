@@ -80,7 +80,7 @@ public class BDDIpAccessListSpecializerTest {
         EMPTY_HEADERSPACE_SPECIALIZER.specialize(ipAccessListLine), equalTo(Optional.empty()));
 
     // specialize to a headerspace that whitelists part of the dstIp
-    BDD headerSpaceBDD = DST_IP_SPACE_TO_BDD.toBDD(new Ip("1.2.3.4"));
+    BDD headerSpaceBDD = DST_IP_SPACE_TO_BDD.toBDD(Ip.parse("1.2.3.4"));
     IpAccessListSpecializer specializer =
         new BDDIpAccessListSpecializer(PKT, headerSpaceBDD, ImmutableMap.of());
     assertThat(specializer.specialize(ipAccessListLine), equalTo(Optional.of(accepting(TRUE))));
@@ -92,7 +92,7 @@ public class BDDIpAccessListSpecializerTest {
 
   @Test
   public void notDstIpAlwaysTrue() {
-    BDD headerSpaceBDD = DST_IP_SPACE_TO_BDD.toBDD(new Ip("1.2.3.4"));
+    BDD headerSpaceBDD = DST_IP_SPACE_TO_BDD.toBDD(Ip.parse("1.2.3.4"));
     IpAccessListSpecializer specializer =
         new BDDIpAccessListSpecializer(PKT, headerSpaceBDD, ImmutableMap.of());
 
@@ -119,7 +119,7 @@ public class BDDIpAccessListSpecializerTest {
         EMPTY_HEADERSPACE_SPECIALIZER.specialize(ipAccessListLine), equalTo(Optional.empty()));
 
     // specialize to a headerspace that whitelists part of the srcIp
-    BDD headerSpaceBDD = SRC_IP_SPACE_TO_BDD.toBDD(new Ip("1.2.3.4"));
+    BDD headerSpaceBDD = SRC_IP_SPACE_TO_BDD.toBDD(Ip.parse("1.2.3.4"));
     IpAccessListSpecializer specializer =
         new BDDIpAccessListSpecializer(PKT, headerSpaceBDD, ImmutableMap.of());
     assertThat(specializer.specialize(ipAccessListLine), equalTo(Optional.of(accepting(TRUE))));
@@ -319,9 +319,9 @@ public class BDDIpAccessListSpecializerTest {
             .toBDD(Prefix.parse("1.1.1.0/24"))
             .and(SRC_IP_SPACE_TO_BDD.toBDD(Prefix.parse("2.2.2.0/24")));
 
-    Ip dstIp = new Ip("1.1.1.1");
-    Ip srcIp = new Ip("2.2.2.2");
-    Ip randomIp = new Ip("3.3.3.3");
+    Ip dstIp = Ip.parse("1.1.1.1");
+    Ip srcIp = Ip.parse("2.2.2.2");
+    Ip randomIp = Ip.parse("3.3.3.3");
     BDDIpAccessListSpecializer specializer =
         new BDDIpAccessListSpecializer(PKT, headerSpaceBDD, ImmutableMap.of());
     HeaderSpace original =
@@ -343,12 +343,12 @@ public class BDDIpAccessListSpecializerTest {
      */
     BDD headerSpaceBDD =
         DST_IP_SPACE_TO_BDD
-            .toBDD(new Ip("1.1.1.1"))
-            .and(SRC_IP_SPACE_TO_BDD.toBDD(new Ip("2.2.2.2")));
+            .toBDD(Ip.parse("1.1.1.1"))
+            .and(SRC_IP_SPACE_TO_BDD.toBDD(Ip.parse("2.2.2.2")));
 
     IpSpace dstIpSpace = Prefix.parse("1.1.1.0/24").toIpSpace();
     IpSpace srcIpSpace = Prefix.parse("2.2.2.0/24").toIpSpace();
-    Ip randomIp = new Ip("3.3.3.3");
+    Ip randomIp = Ip.parse("3.3.3.3");
     BDDIpAccessListSpecializer specializer =
         new BDDIpAccessListSpecializer(PKT, headerSpaceBDD, ImmutableMap.of());
     HeaderSpace original =
@@ -436,11 +436,11 @@ public class BDDIpAccessListSpecializerTest {
   public void testSpecializeDstIps_empty() {
     HeaderSpace headerSpace =
         HeaderSpace.builder()
-            .setDstIps(new Ip("1.2.3.4").toIpSpace())
+            .setDstIps(Ip.parse("1.2.3.4").toIpSpace())
             .setDstPorts(ImmutableList.of(new SubRange(100, 200)))
             .build();
     AclLineMatchExpr expr = new MatchHeaderSpace(headerSpace);
-    BDD headerSpaceBDD = DST_IP_SPACE_TO_BDD.visit(new Ip("0.0.0.1").toIpSpace());
+    BDD headerSpaceBDD = DST_IP_SPACE_TO_BDD.visit(Ip.parse("0.0.0.1").toIpSpace());
     BDDIpAccessListSpecializer specializer =
         new BDDIpAccessListSpecializer(PKT, headerSpaceBDD, ImmutableMap.of());
     AclLineMatchExpr specialized = expr.accept(specializer);
@@ -451,7 +451,7 @@ public class BDDIpAccessListSpecializerTest {
   public void testNegate() {
     IpAccessListToBDD ipAccessListToBDD =
         IpAccessListToBDD.create(PKT, ImmutableMap.of(), ImmutableMap.of());
-    IpSpace dstIpSpace = new Ip("1.2.3.4").toIpSpace();
+    IpSpace dstIpSpace = Ip.parse("1.2.3.4").toIpSpace();
     HeaderSpace headerSpace =
         HeaderSpace.builder()
             .setDstIps(dstIpSpace)
@@ -467,7 +467,7 @@ public class BDDIpAccessListSpecializerTest {
     BDD specializedBDD = specialized.accept(ipAccessListToBDD).and(headerSpaceBDD);
     assertThat(exprBDD, equalTo(specializedBDD));
 
-    headerSpaceBDD = DST_IP_SPACE_TO_BDD.visit(new Ip("0.0.0.1").toIpSpace());
+    headerSpaceBDD = DST_IP_SPACE_TO_BDD.visit(Ip.parse("0.0.0.1").toIpSpace());
     specializer = new BDDIpAccessListSpecializer(PKT, headerSpaceBDD, ImmutableMap.of());
     specialized = expr.accept(specializer);
     exprBDD = expr.accept(ipAccessListToBDD).and(headerSpaceBDD);
@@ -478,7 +478,7 @@ public class BDDIpAccessListSpecializerTest {
   @Test
   public void testSpecializeToUniverse() {
     IpSpace ipSpace = Prefix.parse("1.0.0.0/8").toIpSpace();
-    Ip ip = new Ip("1.1.1.1");
+    Ip ip = Ip.parse("1.1.1.1");
     String iface = "iface";
     BDDSourceManager mgr = BDDSourceManager.forInterfaces(PKT, ImmutableSet.of(iface));
 

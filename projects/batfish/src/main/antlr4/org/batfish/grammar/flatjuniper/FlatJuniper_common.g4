@@ -545,6 +545,7 @@ routing_protocol
   AGGREGATE
   | BGP
   | DIRECT
+  | EVPN
   | ISIS
   | LDP
   | LOCAL

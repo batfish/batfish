@@ -276,7 +276,7 @@ public class BatfishTest {
     String testrigResourcePrefix = "org/batfish/grammar/cisco/testrigs/vrrp_multiple_best";
     List<String> configurationNames = ImmutableList.of("r1", "r2");
 
-    Ip vrrpAddress = new Ip("1.0.0.10");
+    Ip vrrpAddress = Ip.parse("1.0.0.10");
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()

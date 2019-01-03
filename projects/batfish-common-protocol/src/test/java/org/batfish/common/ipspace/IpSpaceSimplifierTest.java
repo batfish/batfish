@@ -15,7 +15,7 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.junit.Test;
 
 public class IpSpaceSimplifierTest {
-  private static final Ip IP1234 = new Ip("1.2.3.4");
+  private static final Ip IP1234 = Ip.parse("1.2.3.4");
 
   private static final IpSpaceSimplifier SIMPLIFIER = new IpSpaceSimplifier(ImmutableMap.of());
 
@@ -115,7 +115,7 @@ public class IpSpaceSimplifierTest {
   public void testVisitIpWildcard() {
     assertThat(SIMPLIFIER.simplify(IpWildcard.ANY.toIpSpace()), equalTo(UniverseIpSpace.INSTANCE));
 
-    IpWildcard ipWildcard = new IpWildcard(new Ip("1.2.0.5"), new Ip(0xFFFF00FFL));
+    IpWildcard ipWildcard = new IpWildcard(Ip.parse("1.2.0.5"), Ip.create(0xFFFF00FFL));
     assertThat(SIMPLIFIER.simplify(ipWildcard.toIpSpace()), equalTo(ipWildcard.toIpSpace()));
   }
 

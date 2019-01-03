@@ -94,7 +94,7 @@ public final class NxosRoutingTableExtractorTest {
         hasItem(
             allOf(
                 hasPrefix(Prefix.parse("1.2.3.4/0")),
-                hasNextHopIp(equalTo(new Ip("1.2.3.4"))),
+                hasNextHopIp(equalTo(Ip.parse("1.2.3.4"))),
                 hasNextHop(equalTo(Route.UNSET_NEXT_HOP)))));
 
     // nhip 1.2.3.5 has a single owner
@@ -103,7 +103,7 @@ public final class NxosRoutingTableExtractorTest {
         hasItem(
             allOf(
                 hasPrefix(Prefix.parse("1.2.3.4/24")),
-                hasNextHopIp(equalTo(new Ip("1.2.3.5"))),
+                hasNextHopIp(equalTo(Ip.parse("1.2.3.5"))),
                 hasNextHop(equalTo(NODE1)))));
 
     // nhip 1.2.3.6 has two owners
@@ -112,7 +112,7 @@ public final class NxosRoutingTableExtractorTest {
         hasItem(
             allOf(
                 hasPrefix(Prefix.parse("1.2.3.4/32")),
-                hasNextHopIp(equalTo(new Ip("1.2.3.6"))),
+                hasNextHopIp(equalTo(Ip.parse("1.2.3.6"))),
                 hasNextHop(equalTo(Route.AMBIGUOUS_NEXT_HOP)))));
   }
 }

@@ -94,17 +94,17 @@ public class InterfaceWithConnectedIpsSpecifierTest {
             .build();
 
     assertThat(
-        new InterfaceWithConnectedIpsSpecifier(new Ip("1.2.3.4").toIpSpace())
+        new InterfaceWithConnectedIpsSpecifier(Ip.parse("1.2.3.4").toIpSpace())
             .resolve(ImmutableSet.of("node1", "node2"), ctxt),
         equalTo(ImmutableSet.of(iface11, iface2)));
 
     assertThat(
-        new InterfaceWithConnectedIpsSpecifier(new Ip("1.2.3.8").toIpSpace())
+        new InterfaceWithConnectedIpsSpecifier(Ip.parse("1.2.3.8").toIpSpace())
             .resolve(ImmutableSet.of("node1", "node2"), ctxt),
         equalTo(ImmutableSet.of(iface11)));
 
     assertThat(
-        new InterfaceWithConnectedIpsSpecifier(new Ip("2.3.4.5").toIpSpace())
+        new InterfaceWithConnectedIpsSpecifier(Ip.parse("2.3.4.5").toIpSpace())
             .resolve(ImmutableSet.of("node1", "node2"), ctxt),
         equalTo(ImmutableSet.of(iface12)));
 
@@ -118,9 +118,9 @@ public class InterfaceWithConnectedIpsSpecifierTest {
   public void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            new InterfaceWithConnectedIpsSpecifier(new Ip("1.2.3.4").toIpSpace()),
-            new InterfaceWithConnectedIpsSpecifier(new Ip("1.2.3.4").toIpSpace()))
-        .addEqualityGroup(new InterfaceWithConnectedIpsSpecifier(new Ip("1.2.3.5").toIpSpace()))
+            new InterfaceWithConnectedIpsSpecifier(Ip.parse("1.2.3.4").toIpSpace()),
+            new InterfaceWithConnectedIpsSpecifier(Ip.parse("1.2.3.4").toIpSpace()))
+        .addEqualityGroup(new InterfaceWithConnectedIpsSpecifier(Ip.parse("1.2.3.5").toIpSpace()))
         .testEquals();
   }
 }

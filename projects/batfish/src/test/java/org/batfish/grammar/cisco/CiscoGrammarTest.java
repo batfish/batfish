@@ -90,6 +90,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEigrp;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpVersion;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
@@ -118,6 +119,7 @@ import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedI
 import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasBindInterface;
 import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasIkeGatewaay;
 import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasPolicy;
+import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasLevel2;
 import static org.batfish.datamodel.matchers.LineMatchers.hasAuthenticationLoginList;
 import static org.batfish.datamodel.matchers.LineMatchers.requiresAuthentication;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
@@ -382,8 +384,8 @@ public class CiscoGrammarTest {
   private static Flow createFlow(String sourceAddress, String destinationAddress, FlowState state) {
     Flow.Builder fb = new Flow.Builder();
     fb.setIngressNode("node");
-    fb.setSrcIp(new Ip(sourceAddress));
-    fb.setDstIp(new Ip(destinationAddress));
+    fb.setSrcIp(Ip.parse(sourceAddress));
+    fb.setDstIp(Ip.parse(destinationAddress));
     fb.setState(state);
     fb.setTag("test");
     return fb.build();
@@ -872,11 +874,11 @@ public class CiscoGrammarTest {
   public void testAsaNestedNetworkObjectGroup() throws IOException {
     String hostname = "asa-nested-network-object-group";
     String filename = "configs/" + hostname;
-    Ip engHostIp = new Ip("10.1.1.5");
-    Ip hrHostIp = new Ip("10.1.2.8");
-    Ip financeHostIp = new Ip("10.1.4.89");
-    Ip itIp = new Ip("10.2.3.4");
-    Ip otherIp = new Ip("1.2.3.4");
+    Ip engHostIp = Ip.parse("10.1.1.5");
+    Ip hrHostIp = Ip.parse("10.1.2.8");
+    Ip financeHostIp = Ip.parse("10.1.4.89");
+    Ip itIp = Ip.parse("10.2.3.4");
+    Ip otherIp = Ip.parse("1.2.3.4");
 
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -1000,8 +1002,8 @@ public class CiscoGrammarTest {
             "10",
             accepts(
                 Flow.builder()
-                    .setSrcIp(new Ip("10.1.1.1"))
-                    .setDstIp(new Ip("11.1.1.1"))
+                    .setSrcIp(Ip.parse("10.1.1.1"))
+                    .setDstIp(Ip.parse("11.1.1.1"))
                     .setIngressNode(hostname)
                     .setTag("test")
                     .build(),
@@ -1013,8 +1015,8 @@ public class CiscoGrammarTest {
             "10",
             rejects(
                 Flow.builder()
-                    .setSrcIp(new Ip("11.1.1.1"))
-                    .setDstIp(new Ip("10.1.1.1"))
+                    .setSrcIp(Ip.parse("11.1.1.1"))
+                    .setDstIp(Ip.parse("10.1.1.1"))
                     .setIngressNode(hostname)
                     .setTag("test")
                     .build(),
@@ -1267,7 +1269,7 @@ public class CiscoGrammarTest {
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
     assertThat(routingPolicy, notNullValue());
 
-    EigrpExternalRoute.Builder outputRouteBuilder = new EigrpExternalRoute.Builder();
+    EigrpExternalRoute.Builder outputRouteBuilder = EigrpExternalRoute.builder();
     outputRouteBuilder
         .setDestinationAsn(1L)
         .setNetwork(Prefix.parse("1.0.0.0/32"))
@@ -1316,7 +1318,7 @@ public class CiscoGrammarTest {
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
     assertThat(routingPolicy, notNullValue());
 
-    EigrpExternalRoute.Builder outputRouteBuilder = new EigrpExternalRoute.Builder();
+    EigrpExternalRoute.Builder outputRouteBuilder = EigrpExternalRoute.builder();
     outputRouteBuilder
         .setDestinationAsn(asn)
         .setNetwork(Prefix.parse("1.0.0.0/32"))
@@ -1338,7 +1340,7 @@ public class CiscoGrammarTest {
     // Check if routingPolicy rejects RIP route
     assertFalse(
         routingPolicy.process(
-            new RipInternalRoute(Prefix.parse("2.2.2.2/32"), new Ip("3.3.3.3"), 1, 1),
+            new RipInternalRoute(Prefix.parse("2.2.2.2/32"), Ip.parse("3.3.3.3"), 1, 1),
             outputRouteBuilder,
             null,
             DEFAULT_VRF_NAME,
@@ -1400,8 +1402,8 @@ public class CiscoGrammarTest {
     /* Check that expected traffic is permitted/denied */
     Flow permittedByBoth =
         Flow.builder()
-            .setSrcIp(new Ip("1.1.1.1"))
-            .setDstIp(new Ip("2.2.2.2"))
+            .setSrcIp(Ip.parse("1.1.1.1"))
+            .setDstIp(Ip.parse("2.2.2.2"))
             .setIpProtocol(IpProtocol.TCP)
             .setDstPort(80)
             .setIngressNode("internet")
@@ -1414,8 +1416,8 @@ public class CiscoGrammarTest {
 
     Flow permittedThroughEth2Only =
         Flow.builder()
-            .setSrcIp(new Ip("1.1.1.2"))
-            .setDstIp(new Ip("2.2.2.2"))
+            .setSrcIp(Ip.parse("1.1.1.2"))
+            .setDstIp(Ip.parse("2.2.2.2"))
             .setIpProtocol(IpProtocol.TCP)
             .setDstPort(80)
             .setIngressNode("internet")
@@ -1436,8 +1438,8 @@ public class CiscoGrammarTest {
 
     Flow deniedByBoth =
         Flow.builder()
-            .setSrcIp(new Ip("1.1.1.1"))
-            .setDstIp(new Ip("2.2.2.2"))
+            .setSrcIp(Ip.parse("1.1.1.1"))
+            .setDstIp(Ip.parse("2.2.2.2"))
             .setIpProtocol(IpProtocol.TCP)
             .setDstPort(81)
             .setIngressNode("internet")
@@ -1496,7 +1498,7 @@ public class CiscoGrammarTest {
                 sha256Digest("012345678901234567890123456789012345678"))));
     assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasHelloTime(500)));
     assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasHoldTime(2000)));
-    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasIp(new Ip("10.0.0.1"))));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasIp(Ip.parse("10.0.0.1"))));
     assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasPriority(105)));
     assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasPreempt()));
     assertThat(
@@ -1539,8 +1541,17 @@ public class CiscoGrammarTest {
                             StaticRoute.builder()
                                 .setAdministrativeCost(1)
                                 .setNetwork(Prefix.ZERO)
-                                .setNextHopIp(new Ip("1.2.3.4"))
+                                .setNextHopIp(Ip.parse("1.2.3.4"))
                                 .build()))))));
+  }
+
+  @Test
+  public void testIosIsisConfigOnInterface() throws IOException {
+    String hostname = "ios-isis";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasInterface("Loopback0", hasIsis(hasLevel2(notNullValue()))));
+    assertThat(c, hasInterface("Loopback100", hasIsis(nullValue())));
   }
 
   @Test
@@ -1585,9 +1596,9 @@ public class CiscoGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
-    Ip ognWildcardIp = new Ip("1.128.0.0");
-    Ip ognHostIp = new Ip("2.0.0.1");
-    Ip ognUnmatchedIp = new Ip("2.0.0.0");
+    Ip ognWildcardIp = Ip.parse("1.128.0.0");
+    Ip ognHostIp = Ip.parse("2.0.0.1");
+    Ip ognUnmatchedIp = Ip.parse("2.0.0.0");
 
     String ognNameHost = "ogn_host";
     String ognNameIndirect = "ogn_indirect";
@@ -2126,10 +2137,10 @@ public class CiscoGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
-    Ip on1Ip = new Ip("1.2.3.4");
-    Ip on2IpStart = new Ip("2.2.2.0");
-    Ip on2IpEnd = new Ip("2.2.2.255");
-    Ip inlineIp = new Ip("3.3.3.3");
+    Ip on1Ip = Ip.parse("1.2.3.4");
+    Ip on2IpStart = Ip.parse("2.2.2.0");
+    Ip on2IpEnd = Ip.parse("2.2.2.255");
+    Ip inlineIp = Ip.parse("3.3.3.3");
 
     /* Confirm network object IpSpaces cover the correct Ip addresses */
     assertThat(c, hasIpSpace("ON1", containsIp(on1Ip)));
@@ -2731,24 +2742,24 @@ public class CiscoGrammarTest {
             "~IPSEC_PEER_CONFIG:mymap:20_TenGigabitEthernet0/0~",
             isIpsecStaticPeerConfigThat(
                 allOf(
-                    hasDestinationAddress(new Ip("3.4.5.6")),
+                    hasDestinationAddress(Ip.parse("3.4.5.6")),
                     IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE-MATCHED"),
                     IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:20~"),
                     hasPhysicalInterface("TenGigabitEthernet0/0"),
                     hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
-                    hasLocalAddress(new Ip("2.3.4.6"))))));
+                    hasLocalAddress(Ip.parse("2.3.4.6"))))));
     assertThat(
         c,
         hasIpsecPeerConfig(
             "~IPSEC_PEER_CONFIG:mymap:10_TenGigabitEthernet0/0~",
             isIpsecStaticPeerConfigThat(
                 allOf(
-                    hasDestinationAddress(new Ip("1.2.3.4")),
+                    hasDestinationAddress(Ip.parse("1.2.3.4")),
                     IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
                     IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:10~"),
                     hasPhysicalInterface("TenGigabitEthernet0/0"),
                     hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
-                    hasLocalAddress(new Ip("2.3.4.6"))))));
+                    hasLocalAddress(Ip.parse("2.3.4.6"))))));
 
     assertThat(
         c,
@@ -2761,7 +2772,7 @@ public class CiscoGrammarTest {
                     IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:30:15~"),
                     hasPhysicalInterface("TenGigabitEthernet0/0"),
                     hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
-                    hasLocalAddress(new Ip("2.3.4.6")),
+                    hasLocalAddress(Ip.parse("2.3.4.6")),
                     hasTunnelInterface(nullValue())))));
 
     assertThat(
@@ -2775,7 +2786,7 @@ public class CiscoGrammarTest {
                     IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:30:5~"),
                     hasPhysicalInterface("TenGigabitEthernet0/0"),
                     hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
-                    hasLocalAddress(new Ip("2.3.4.6")),
+                    hasLocalAddress(Ip.parse("2.3.4.6")),
                     hasTunnelInterface(nullValue())))));
 
     assertThat(
@@ -2784,11 +2795,11 @@ public class CiscoGrammarTest {
             "Tunnel1",
             isIpsecStaticPeerConfigThat(
                 allOf(
-                    hasDestinationAddress(new Ip("1.2.3.4")),
+                    hasDestinationAddress(Ip.parse("1.2.3.4")),
                     IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
                     IpsecPeerConfigMatchers.hasIpsecPolicy("IPSEC-PROFILE1"),
                     hasPhysicalInterface("TenGigabitEthernet0/0"),
-                    hasLocalAddress(new Ip("2.3.4.6")),
+                    hasLocalAddress(Ip.parse("2.3.4.6")),
                     hasTunnelInterface(equalTo("Tunnel1"))))));
   }
 
@@ -2947,9 +2958,9 @@ public class CiscoGrammarTest {
         hasIkeGateway(
             "ISAKMP-PROFILE-ADDRESS",
             allOf(
-                hasAddress(new Ip("1.2.3.4")),
+                hasAddress(Ip.parse("1.2.3.4")),
                 hasExternalInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
-                hasLocalIp(new Ip("2.3.4.6")),
+                hasLocalIp(Ip.parse("2.3.4.6")),
                 hasIkePolicy(
                     hasPresharedKeyHash(CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))))));
 
@@ -2959,9 +2970,9 @@ public class CiscoGrammarTest {
         hasIkeGateway(
             "ISAKMP-PROFILE-INTERFACE",
             allOf(
-                hasAddress(new Ip("1.2.3.4")),
+                hasAddress(Ip.parse("1.2.3.4")),
                 hasExternalInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
-                hasLocalIp(new Ip("2.3.4.6")),
+                hasLocalIp(Ip.parse("2.3.4.6")),
                 hasIkePolicy(
                     hasPresharedKeyHash(CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))))));
 
@@ -2974,8 +2985,8 @@ public class CiscoGrammarTest {
                 hasIkePhase1Key(
                     IkePhase1KeyMatchers.hasKeyHash(
                         CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
-                hasRemoteIdentity(containsIp(new Ip("1.2.3.4"))),
-                hasSelfIdentity(equalTo(new Ip("2.3.4.6"))),
+                hasRemoteIdentity(containsIp(Ip.parse("1.2.3.4"))),
+                hasSelfIdentity(equalTo(Ip.parse("2.3.4.6"))),
                 hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20"))))));
 
@@ -2987,8 +2998,8 @@ public class CiscoGrammarTest {
                 hasIkePhase1Key(
                     IkePhase1KeyMatchers.hasKeyHash(
                         CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
-                hasRemoteIdentity(containsIp(new Ip("1.2.3.4"))),
-                hasSelfIdentity(equalTo(new Ip("2.3.4.6"))),
+                hasRemoteIdentity(containsIp(Ip.parse("1.2.3.4"))),
+                hasSelfIdentity(equalTo(Ip.parse("2.3.4.6"))),
                 hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
                 hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20"))))));
   }
@@ -3101,7 +3112,7 @@ public class CiscoGrammarTest {
             "IPSEC-PROFILE1",
             allOf(
                 IpsecPolicyMatchers.hasIkeGateway(
-                    allOf(hasAddress(new Ip("1.2.3.4")), hasLocalIp(new Ip("2.3.4.6")))),
+                    allOf(hasAddress(Ip.parse("1.2.3.4")), hasLocalIp(Ip.parse("2.3.4.6")))),
                 hasIpsecProposals(
                     contains(
                         ImmutableList.of(
@@ -3851,13 +3862,13 @@ public class CiscoGrammarTest {
                 equalTo(
                     ImmutableSet.of(
                         StaticRoute.builder()
-                            .setNextHopIp(new Ip("3.0.0.1"))
+                            .setNextHopIp(Ip.parse("3.0.0.1"))
                             .setNetwork(Prefix.parse("0.0.0.0/0"))
                             .setNextHopInterface("ifname")
                             .setAdministrativeCost(2)
                             .build(),
                         StaticRoute.builder()
-                            .setNextHopIp(new Ip("3.0.0.2"))
+                            .setNextHopIp(Ip.parse("3.0.0.2"))
                             .setNetwork(Prefix.parse("1.0.0.0/8"))
                             .setNextHopInterface("ifname")
                             .setAdministrativeCost(3)

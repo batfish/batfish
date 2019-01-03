@@ -18,9 +18,9 @@ import org.junit.Test;
 public class OspfEdgeTest {
   @Test
   public void testEquals() {
-    OspfNode node1 = new OspfNode("a", "i", new Ip("1.2.3.4"));
-    OspfNode node2 = new OspfNode("b", "i", new Ip("1.2.3.5"));
-    OspfNode node3 = new OspfNode("c", "i", new Ip("1.2.3.6"));
+    OspfNode node1 = new OspfNode("a", "i", Ip.parse("1.2.3.4"));
+    OspfNode node2 = new OspfNode("b", "i", Ip.parse("1.2.3.5"));
+    OspfNode node3 = new OspfNode("c", "i", Ip.parse("1.2.3.6"));
     new EqualsTester()
         .addEqualityGroup(new OspfEdge(node1, node2), new OspfEdge(node1, node2))
         .addEqualityGroup(new OspfEdge(node1, node3))
@@ -33,9 +33,9 @@ public class OspfEdgeTest {
 
   @Test
   public void testComparison() {
-    OspfNode node1 = new OspfNode("a", "i", new Ip("1.2.3.4"));
-    OspfNode node2 = new OspfNode("b", "i", new Ip("1.2.3.5"));
-    OspfNode node3 = new OspfNode("c", "i", new Ip("1.2.3.6"));
+    OspfNode node1 = new OspfNode("a", "i", Ip.parse("1.2.3.4"));
+    OspfNode node2 = new OspfNode("b", "i", Ip.parse("1.2.3.5"));
+    OspfNode node3 = new OspfNode("c", "i", Ip.parse("1.2.3.6"));
     List<OspfEdge> expected =
         ImmutableList.of(
             new OspfEdge(node1, node1),
@@ -53,8 +53,8 @@ public class OspfEdgeTest {
 
   @Test
   public void testReverse() {
-    OspfNode node1 = new OspfNode("a", "i", new Ip("1.2.3.4"));
-    OspfNode node2 = new OspfNode("b", "i", new Ip("1.2.3.5"));
+    OspfNode node1 = new OspfNode("a", "i", Ip.parse("1.2.3.4"));
+    OspfNode node2 = new OspfNode("b", "i", Ip.parse("1.2.3.5"));
     OspfEdge rev = new OspfEdge(node1, node2).reverse();
     assertThat(rev.getNode1(), is(node2));
     assertThat(rev.getNode2(), is(node1));

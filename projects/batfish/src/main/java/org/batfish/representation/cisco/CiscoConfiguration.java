@@ -114,6 +114,7 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -126,6 +127,7 @@ import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
+import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
@@ -585,10 +587,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
       BooleanExpr expr, OriginType originType) {
     WithEnvironmentExpr we = new WithEnvironmentExpr();
     we.setExpr(expr);
-    we.getPreStatements().add(Statements.SetWriteIntermediateBgpAttributes.toStaticStatement());
-    we.getPostStatements().add(Statements.UnsetWriteIntermediateBgpAttributes.toStaticStatement());
-    we.getPostTrueStatements().add(Statements.SetReadIntermediateBgpAttributes.toStaticStatement());
-    we.getPostTrueStatements().add(new SetOrigin(new LiteralOrigin(originType, null)));
+    we.setPreStatements(
+        ImmutableList.of(Statements.SetWriteIntermediateBgpAttributes.toStaticStatement()));
+    we.setPostStatements(
+        ImmutableList.of(Statements.UnsetWriteIntermediateBgpAttributes.toStaticStatement()));
+    we.setPostTrueStatements(
+        ImmutableList.of(
+            Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
+            new SetOrigin(new LiteralOrigin(originType, null))));
     return we;
   }
 
@@ -2129,7 +2135,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     boolean level1 = false;
     boolean level2 = false;
     IsisProcess isisProcess = vrf.getIsisProcess();
-    if (isisProcess != null) {
+    if (isisProcess != null && iface.getIsisInterfaceMode() != IsisInterfaceMode.UNSET) {
       switch (isisProcess.getLevel()) {
         case LEVEL_1:
           level1 = true;
@@ -2169,7 +2175,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       encapsulation = SwitchportEncapsulationType.DOT1Q;
     }
     newIface.setSwitchportTrunkEncapsulation(encapsulation);
-    newIface.addAllowedRanges(iface.getAllowedVlans());
+    if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
+      newIface.setAllowedVlans(iface.getAllowedVlans());
+    }
 
     String incomingFilterName = iface.getIncomingFilter();
     if (incomingFilterName != null) {

@@ -126,7 +126,7 @@ public class VirtualRouterTest {
     StaticRoute dependentRoute =
         StaticRoute.builder()
             .setNetwork(Prefix.parse("2.2.2.2/32"))
-            .setNextHopIp(new Ip("1.1.1.1"))
+            .setNextHopIp(Ip.parse("1.1.1.1"))
             .setAdministrativeCost(1)
             .build();
 
@@ -212,7 +212,7 @@ public class VirtualRouterTest {
                 .build(),
             StaticRoute.builder()
                 .setNetwork(Prefix.parse("2.2.2.2/32"))
-                .setNextHopIp(new Ip("9.9.9.8"))
+                .setNextHopIp(Ip.parse("9.9.9.8"))
                 .setNextHopInterface(null)
                 .setAdministrativeCost(1)
                 .setMetric(0L)
@@ -220,7 +220,7 @@ public class VirtualRouterTest {
                 .build(),
             StaticRoute.builder()
                 .setNetwork(Prefix.parse("3.3.3.3/32"))
-                .setNextHopIp(new Ip("9.9.9.9"))
+                .setNextHopIp(Ip.parse("9.9.9.9"))
                 .setNextHopInterface("Ethernet1")
                 .setAdministrativeCost(1)
                 .setMetric(0L)
@@ -351,7 +351,7 @@ public class VirtualRouterTest {
             OspfInternalRoute.builder()
                 .setProtocol(RoutingProtocol.OSPF)
                 .setNetwork(prefix)
-                .setNextHopIp(new Ip("7.7.1.1"))
+                .setNextHopIp(Ip.parse("7.7.1.1"))
                 .setAdmin(adminCost)
                 .setMetric(20)
                 .setArea(1L)
@@ -458,14 +458,14 @@ public class VirtualRouterTest {
             OspfInternalRoute.builder()
                 .setProtocol(RoutingProtocol.OSPF_IA)
                 .setNetwork(prefix)
-                .setNextHopIp(new Ip("7.7.1.1"))
+                .setNextHopIp(Ip.parse("7.7.1.1"))
                 .setAdmin(admin)
                 .setMetric(metric)
                 .setArea(area)
                 .build();
 
     // Test
-    Ip newNextHop = new Ip("10.2.1.1");
+    Ip newNextHop = Ip.parse("10.2.1.1");
     vr.stageOspfInterAreaRoute(iaroute, null, newNextHop, 10, admin, area);
 
     // Check what's in the RIB is correct.
@@ -523,7 +523,7 @@ public class VirtualRouterTest {
     // Test queueing non-empty delta
     StaticRoute sr1 =
         StaticRoute.builder()
-            .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
+            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
@@ -532,7 +532,7 @@ public class VirtualRouterTest {
             .build();
     StaticRoute sr2 =
         StaticRoute.builder()
-            .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
+            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(100)
@@ -557,7 +557,7 @@ public class VirtualRouterTest {
     Queue<RouteAdvertisement<AbstractRoute>> q = new ConcurrentLinkedQueue<>();
     StaticRoute sr1 =
         StaticRoute.builder()
-            .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
+            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
@@ -566,7 +566,7 @@ public class VirtualRouterTest {
             .build();
     StaticRoute sr2 =
         StaticRoute.builder()
-            .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
+            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(100)
@@ -641,18 +641,18 @@ public class VirtualRouterTest {
             });
 
     // Set bgp processes and neighbors
-    BgpProcess proc1 = nf.bgpProcessBuilder().setVrf(vrf1).setRouterId(new Ip("1.1.1.1")).build();
-    BgpProcess proc2 = nf.bgpProcessBuilder().setVrf(vrf2).setRouterId(new Ip("1.1.1.2")).build();
+    BgpProcess proc1 = nf.bgpProcessBuilder().setVrf(vrf1).setRouterId(Ip.parse("1.1.1.1")).build();
+    BgpProcess proc2 = nf.bgpProcessBuilder().setVrf(vrf2).setRouterId(Ip.parse("1.1.1.2")).build();
     nf.bgpNeighborBuilder()
-        .setPeerAddress(new Ip("1.1.1.2"))
-        .setLocalIp(new Ip("1.1.1.1"))
+        .setPeerAddress(Ip.parse("1.1.1.2"))
+        .setLocalIp(Ip.parse("1.1.1.1"))
         .setBgpProcess(proc1)
         .setRemoteAs(2L)
         .setLocalAs(1L)
         .build();
     nf.bgpNeighborBuilder()
-        .setPeerAddress(new Ip("1.1.1.1"))
-        .setLocalIp(new Ip("1.1.1.2"))
+        .setPeerAddress(Ip.parse("1.1.1.1"))
+        .setLocalIp(Ip.parse("1.1.1.2"))
         .setBgpProcess(proc2)
         .setRemoteAs(1L)
         .setLocalAs(2L)

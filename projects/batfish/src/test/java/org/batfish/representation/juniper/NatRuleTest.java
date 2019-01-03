@@ -39,8 +39,8 @@ public class NatRuleTest {
 
     // pool is defined
     NatPool pool = new NatPool();
-    Ip startIp = new Ip("5.5.5.5");
-    Ip endIp = new Ip("6.6.6.6");
+    Ip startIp = Ip.parse("5.5.5.5");
+    Ip endIp = Ip.parse("6.6.6.6");
     pool.setFromAddress(startIp);
     pool.setToAddress(endIp);
 
