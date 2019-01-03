@@ -289,6 +289,11 @@ ADD_PATHS
    'add-paths'
 ;
 
+ADD_ROUTE
+:
+   'add-route'
+;
+
 ADD_VLAN
 :
    'add-vlan'
@@ -317,6 +322,16 @@ ADDRESS_FAMILY
 ADDRESS_HIDING
 :
    'address-hiding'
+;
+
+ADDRESS_MASK_REPLY
+:
+   'address-mask-reply'
+;
+
+ADDRESS_MASK_REQUEST
+:
+   'address-mask-request'
 ;
 
 ADDRESS_POOL
@@ -8462,6 +8477,11 @@ NOPASSWORD
 NO_ADVERTISE
 :
    'no-advertise'
+;
+
+NO_ALIAS
+:
+   'no-alias'
 ;
 
 NO_BANNER

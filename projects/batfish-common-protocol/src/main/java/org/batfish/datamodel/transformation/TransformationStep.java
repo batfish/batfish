@@ -33,11 +33,20 @@ public interface TransformationStep {
     return new AssignIpAddressFromPool(SOURCE_NAT, SOURCE, poolStart, poolEnd);
   }
 
-  static ShiftIpAddressIntoSubnet shiftDestinationIp(Prefix subnet) {
+  static TransformationStep shiftDestinationIp(Prefix subnet) {
+    if (subnet.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH) {
+      return new AssignIpAddressFromPool(
+          DEST_NAT, DESTINATION, subnet.getStartIp(), subnet.getStartIp());
+    }
+
     return new ShiftIpAddressIntoSubnet(DEST_NAT, DESTINATION, subnet);
   }
 
-  static ShiftIpAddressIntoSubnet shiftSourceIp(Prefix subnet) {
+  static TransformationStep shiftSourceIp(Prefix subnet) {
+    if (subnet.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH) {
+      return new AssignIpAddressFromPool(
+          SOURCE_NAT, SOURCE, subnet.getStartIp(), subnet.getStartIp());
+    }
     return new ShiftIpAddressIntoSubnet(SOURCE_NAT, SOURCE, subnet);
   }
 }

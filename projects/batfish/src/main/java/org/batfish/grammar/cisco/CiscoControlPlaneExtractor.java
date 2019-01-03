@@ -615,6 +615,8 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_helper_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_igmpContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_inband_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_nat_destinationContext;
+import org.batfish.grammar.cisco.CiscoParser.If_ip_nat_insideContext;
+import org.batfish.grammar.cisco.CiscoParser.If_ip_nat_outsideContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_nat_sourceContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_areaContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_costContext;
@@ -688,8 +690,10 @@ import org.batfish.grammar.cisco.CiscoParser.Ip_dhcp_relay_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_domain_lookupContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_domain_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_hostnameContext;
+import org.batfish.grammar.cisco.CiscoParser.Ip_nat_destinationContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_nat_poolContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_nat_pool_rangeContext;
+import org.batfish.grammar.cisco.CiscoParser.Ip_nat_sourceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_prefix_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_prefix_list_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_route_stanzaContext;
@@ -1111,8 +1115,12 @@ import org.batfish.representation.cisco.BgpNetwork6;
 import org.batfish.representation.cisco.BgpPeerGroup;
 import org.batfish.representation.cisco.BgpProcess;
 import org.batfish.representation.cisco.BgpRedistributionPolicy;
+import org.batfish.representation.cisco.CiscoAristaNat;
 import org.batfish.representation.cisco.CiscoConfiguration;
-import org.batfish.representation.cisco.CiscoSourceNat;
+import org.batfish.representation.cisco.CiscoIosDynamicNat;
+import org.batfish.representation.cisco.CiscoIosNat;
+import org.batfish.representation.cisco.CiscoIosNat.RuleAction;
+import org.batfish.representation.cisco.CiscoIosStaticNat;
 import org.batfish.representation.cisco.CiscoStructureType;
 import org.batfish.representation.cisco.CiscoStructureUsage;
 import org.batfish.representation.cisco.CommunitySetElem;
@@ -1499,8 +1507,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private MacAccessList _currentMacAccessList;
 
   private NamedBgpPeerGroup _currentNamedPeerGroup;
-
-  private NatPool _currentNatPool;
 
   private Long _currentOspfArea;
 
@@ -2514,15 +2520,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             .getStandardCommunityLists()
             .computeIfAbsent(name, StandardCommunityList::new);
     defineStructure(COMMUNITY_LIST_STANDARD, name, ctx);
-  }
-
-  @Override
-  public void enterIp_nat_pool(Ip_nat_poolContext ctx) {
-    String name = ctx.name.getText();
-    NatPool natPool = new NatPool();
-    _configuration.getNatPools().put(name, natPool);
-    _currentNatPool = natPool;
-    defineStructure(NAT_POOL, name, ctx);
   }
 
   @Override
@@ -5872,14 +5869,30 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_ip_nat_destination(If_ip_nat_destinationContext ctx) {
+    // Arista syntax
     String acl = ctx.acl.getText();
     int line = ctx.acl.getStart().getLine();
     _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_DESTINATION_ACCESS_LIST, line);
   }
 
   @Override
+  public void exitIf_ip_nat_inside(If_ip_nat_insideContext ctx) {
+    _configuration
+        .getNatInside()
+        .addAll(_currentInterfaces.stream().map(Interface::getName).collect(Collectors.toSet()));
+  }
+
+  @Override
+  public void exitIf_ip_nat_outside(If_ip_nat_outsideContext ctx) {
+    _configuration
+        .getNatOutside()
+        .addAll(_currentInterfaces.stream().map(Interface::getName).collect(Collectors.toSet()));
+  }
+
+  @Override
   public void exitIf_ip_nat_source(If_ip_nat_sourceContext ctx) {
-    CiscoSourceNat nat = new CiscoSourceNat();
+    // Arista syntax
+    CiscoAristaNat nat = new CiscoAristaNat();
     if (ctx.acl != null) {
       String acl = ctx.acl.getText();
       int aclLine = ctx.acl.getStart().getLine();
@@ -5896,10 +5909,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
 
     for (Interface iface : _currentInterfaces) {
-      if (iface.getSourceNats() == null) {
-        iface.setSourceNats(new ArrayList<>(1));
+      if (iface.getAristaNats() == null) {
+        iface.setAristaNats(new ArrayList<>(1));
       }
-      iface.getSourceNats().add(nat);
+      iface.getAristaNats().add(nat);
     }
   }
 
@@ -6602,15 +6615,94 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIp_nat_pool(Ip_nat_poolContext ctx) {
-    _currentNatPool = null;
+    String name = ctx.name.getText();
+    NatPool natPool = new NatPool();
+    _configuration.getNatPools().put(name, natPool);
+    // Just ignore ctx.prefix_length since it is only for sanity check
+    natPool.setFirst(toIp(ctx.first));
+    natPool.setLast(toIp(ctx.last));
+    defineStructure(NAT_POOL, name, ctx);
   }
 
   @Override
   public void exitIp_nat_pool_range(Ip_nat_pool_rangeContext ctx) {
+    String name = ctx.name.getText();
+    NatPool natPool = new NatPool();
+    _configuration.getNatPools().put(name, natPool);
     Ip first = toIp(ctx.first);
-    _currentNatPool.setFirst(first);
+    natPool.setFirst(first);
     Ip last = toIp(ctx.last);
-    _currentNatPool.setLast(last);
+    natPool.setLast(last);
+    defineStructure(NAT_POOL, name, ctx);
+  }
+
+  @Override
+  public void exitIp_nat_destination(Ip_nat_destinationContext ctx) {
+    CiscoIosDynamicNat nat = new CiscoIosDynamicNat();
+    String acl = ctx.acl.getText();
+    int aclLine = ctx.acl.getStart().getLine();
+    nat.setAclName(acl);
+    nat.setAclNameLine(aclLine);
+    _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_SOURCE_ACCESS_LIST, aclLine);
+    String pool = ctx.pool.getText();
+    int poolLine = ctx.pool.getStart().getLine();
+    nat.setNatPool(pool);
+    nat.setNatPoolLine(poolLine);
+    _configuration.referenceStructure(NAT_POOL, pool, IP_NAT_SOURCE_POOL, poolLine);
+    nat.setAction(RuleAction.DESTINATION_INSIDE);
+    _configuration.getNats().add(nat);
+  }
+
+  @Override
+  public void exitIp_nat_source(Ip_nat_sourceContext ctx) {
+    CiscoIosNat nat;
+    if (ctx.STATIC() != null) {
+      CiscoIosStaticNat staticNat = new CiscoIosStaticNat();
+      Ip local = toIp(ctx.local);
+      Ip global = toIp(ctx.global);
+      if (ctx.OUTSIDE() != null) {
+        // local and global reversed for outside
+        Ip tmp = local;
+        local = global;
+        global = tmp;
+      }
+      int prefixLength = 32;
+      if (ctx.NETWORK() != null) {
+        if (ctx.mask != null) {
+          Ip mask = toIp(ctx.mask);
+          prefixLength = mask.numSubnetBits();
+        } else {
+          prefixLength = toInteger(ctx.prefix);
+        }
+      }
+      staticNat.setLocalNetwork(Prefix.create(local, prefixLength));
+      staticNat.setGlobalNetwork(Prefix.create(global, prefixLength));
+      nat = staticNat;
+    } else {
+      CiscoIosDynamicNat dynamicNat = new CiscoIosDynamicNat();
+      String acl = ctx.acl.getText();
+      int aclLine = ctx.acl.getStart().getLine();
+      dynamicNat.setAclName(acl);
+      dynamicNat.setAclNameLine(aclLine);
+      _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_SOURCE_ACCESS_LIST, aclLine);
+      String pool = ctx.pool.getText();
+      int poolLine = ctx.pool.getStart().getLine();
+      dynamicNat.setNatPool(pool);
+      dynamicNat.setNatPoolLine(poolLine);
+      _configuration.referenceStructure(NAT_POOL, pool, IP_NAT_SOURCE_POOL, poolLine);
+      nat = dynamicNat;
+    }
+    if (ctx.INSIDE() != null) {
+      nat.setAction(RuleAction.SOURCE_INSIDE);
+    } else {
+      nat.setAction(RuleAction.SOURCE_OUTSIDE);
+    }
+    if (ctx.ADD_ROUTE() != null) {
+      // Adding a route via NAT is not currently supported
+      // https://www.cisco.com/c/en/us/support/docs/ip/network-address-translation-nat/13773-2.html
+      todo(ctx);
+    }
+    _configuration.getNats().add(nat);
   }
 
   @Override

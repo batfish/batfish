@@ -1105,43 +1105,61 @@ ip_domain_null
    ) null_rest_of_line
 ;
 
+ip_nat_destination
+:
+   IP NAT INSIDE DESTINATION LIST acl = variable POOL pool = variable NEWLINE
+;
+
 ip_nat_null
 :
-   (
-      INSIDE
-      | LOG
-      | OUTSIDE
+   IP NAT (
+      LOG
       | TRANSLATION
    ) null_rest_of_line
 ;
 
 ip_nat_pool
 :
+   IP NAT POOL name = variable first = IP_ADDRESS last = IP_ADDRESS
    (
-      POOL name = variable PREFIX_LENGTH prefix_length = DEC NEWLINE
-      ip_nat_pool_range*
-   )
-   |
-   (
-      POOL name = variable first = IP_ADDRESS last = IP_ADDRESS
       (
-      // intentional blank
-
-         |
-         (
-            NETMASK mask = IP_ADDRESS
-         )
-         |
-         (
-            PREFIX_LENGTH prefix_length = DEC
-         )
-      ) NEWLINE
-   )
+         NETMASK mask = IP_ADDRESS
+      )
+      |
+      (
+         PREFIX_LENGTH prefix_length = DEC
+      )
+   ) NEWLINE
 ;
 
 ip_nat_pool_range
 :
-   RANGE first = IP_ADDRESS last = IP_ADDRESS NEWLINE
+   IP NAT POOL name = variable PREFIX_LENGTH prefix_length = DEC NEWLINE
+   (
+      RANGE first = IP_ADDRESS last = IP_ADDRESS NEWLINE
+   )+
+;
+
+ip_nat_source
+:
+   IP NAT (INSIDE | OUTSIDE) SOURCE
+   (
+      (
+         LIST acl = variable POOL pool = variable ADD_ROUTE? NEWLINE
+      )
+      |
+      (
+         STATIC local = IP_ADDRESS global = IP_ADDRESS ADD_ROUTE? NO_ALIAS? NEWLINE
+      )
+      |
+      (
+         STATIC NETWORK local = IP_ADDRESS global = IP_ADDRESS
+         (
+            mask = IP_ADDRESS
+            | FORWARD_SLASH prefix = DEC
+         ) ADD_ROUTE? NO_ALIAS? NEWLINE
+      )
+   )
 ;
 
 ip_probe_null
@@ -2633,11 +2651,11 @@ s_ip_name_server
 
 s_ip_nat
 :
-   NO? IP NAT
-   (
-      ip_nat_null
-      | ip_nat_pool
-   )
+   ip_nat_destination
+   | ip_nat_null
+   | ip_nat_pool
+   | ip_nat_pool_range
+   | ip_nat_source
 ;
 
 s_ip_nbar

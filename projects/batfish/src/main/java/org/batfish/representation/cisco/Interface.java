@@ -124,6 +124,8 @@ public class Interface implements Serializable {
 
   @Nullable private IntegerSpace _allowedVlans;
 
+  private List<CiscoAristaNat> _aristaNats;
+
   private boolean _autoState;
 
   @Nullable private Double _bandwidth;
@@ -339,6 +341,10 @@ public class Interface implements Serializable {
     return allAddresses;
   }
 
+  public List<CiscoAristaNat> getAristaNats() {
+    return _aristaNats;
+  }
+
   public boolean getAutoState() {
     return _autoState;
   }
@@ -525,6 +531,10 @@ public class Interface implements Serializable {
 
   public void setAlias(String alias) {
     _alias = alias;
+  }
+
+  public void setAristaNats(List<CiscoAristaNat> aristaNats) {
+    _aristaNats = aristaNats;
   }
 
   public void setAutoState(boolean autoState) {
