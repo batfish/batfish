@@ -2,9 +2,11 @@ package org.batfish.datamodel.transformation;
 
 import java.io.Serializable;
 import java.util.Objects;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 
 /** A {@link TransformationStep} that transforms the destination IP */
+@ParametersAreNonnullByDefault
 public final class AssignIpAddressFromPool implements TransformationStep, Serializable {
   /** */
   private static final long serialVersionUID = 1L;

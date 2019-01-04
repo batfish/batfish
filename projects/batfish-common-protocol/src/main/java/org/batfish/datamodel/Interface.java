@@ -1,5 +1,8 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.transformation.TransformationUtil.fromDestinationNats;
+import static org.batfish.datamodel.transformation.TransformationUtil.fromSourceNats;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,6 +36,7 @@ import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.transformation.Transformation;
 
 public final class Interface extends ComparableStructure<String> {
 
@@ -1068,6 +1072,11 @@ public final class Interface extends ComparableStructure<String> {
     }
   }
 
+  @JsonIgnore
+  public Transformation getIncomingTransformation() {
+    return fromDestinationNats(_destinationNats);
+  }
+
   @JsonProperty(PROP_INTERFACE_TYPE)
   @JsonPropertyDescription("The type of this interface")
   public InterfaceType getInterfaceType() {
@@ -1185,6 +1194,11 @@ public final class Interface extends ComparableStructure<String> {
     } else {
       return _outgoingFilterName;
     }
+  }
+
+  @JsonIgnore
+  public Transformation getOutgoingTransformation() {
+    return fromSourceNats(_sourceNats);
   }
 
   @JsonIgnore
