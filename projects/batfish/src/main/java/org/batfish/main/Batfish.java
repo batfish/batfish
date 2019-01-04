@@ -98,6 +98,7 @@ import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.IpsecUtil;
 import org.batfish.config.Settings;
 import org.batfish.config.TestrigSettings;
 import org.batfish.datamodel.AbstractRoute;
@@ -122,7 +123,6 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.RipNeighbor;
 import org.batfish.datamodel.RipProcess;
@@ -830,6 +830,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.resetTimer();
     Topology topology = computeTestrigTopology(configurations);
     topology.prune(getEdgeBlacklist(), getNodeBlacklist(), getInterfaceBlacklist());
+    IpsecUtil.pruneFailedIpsecSessionEdges(
+        topology, IpsecUtil.initIpsecTopology(configurations), configurations);
     _logger.printElapsedTime();
     return topology;
   }
@@ -1075,39 +1077,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
               iface.setBlacklisted(true);
             }
           }
-        }
-      }
-    }
-  }
-
-  private void disableUnusableVpnInterfaces(Map<String, Configuration> configurations) {
-    CommonUtil.initRemoteIpsecVpns(configurations);
-    for (Configuration c : configurations.values()) {
-      for (IpsecVpn vpn : c.getIpsecVpns().values()) {
-        Interface bindInterface = vpn.getBindInterface();
-        if (bindInterface == null) {
-          // Nothing to disable.
-          continue;
-        }
-
-        if (bindInterface.getInterfaceType() == InterfaceType.PHYSICAL) {
-          // Skip tunnels bound to physical interfaces (aka, Cisco interface crypto-map).
-          continue;
-        }
-
-        IpsecVpn remoteVpn = vpn.getRemoteIpsecVpn();
-        if (remoteVpn == null
-            || !vpn.compatibleIkeProposals(remoteVpn)
-            || !vpn.compatibleIpsecProposals(remoteVpn)
-            || !vpn.compatiblePreSharedKey(remoteVpn)) {
-          String hostname = c.getHostname();
-          bindInterface.setActive(false);
-          bindInterface.setBlacklisted(true);
-          String bindInterfaceName = bindInterface.getName();
-          _logger.warnf(
-              "WARNING: Disabling unusable vpn interface because we cannot determine remote "
-                  + "endpoint: \"%s:%s\"\n",
-              hostname, bindInterfaceName);
         }
       }
     }
@@ -2966,7 +2935,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // TODO: take this out once dependencies are *the* definitive way to disable interfaces
     disableUnusableVlanInterfaces(configurations);
-    disableUnusableVpnInterfaces(configurations);
   }
 
   /**

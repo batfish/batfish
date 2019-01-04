@@ -1,6 +1,7 @@
 package org.batfish.common.util;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraph;
@@ -343,14 +344,15 @@ public class IpsecUtil {
 
   /**
    * Removes all edges between tunnel interfaces in the layer 3 topology which have either a failed
-   * IPsec session, or don't have an IPsec peer
+   * IPsec session, or don't have a neighboring IPsec peer. It does not affect the tunnel interfaces
+   * which are not not configured to use IPsec or interfaces which use crypto maps
    *
    * @param l3Topology {@link Topology} for layer 3
    * @param ipsecTopology {@link ValueGraph} between the {@link IpsecPeerConfigId}s showing the
    *     peering information
    * @param configurations {@link Map} of configuration names and {@link Configuration} objects
    */
-  public static void pruneInactiveIpsecEdges(
+  public static void pruneFailedIpsecSessionEdges(
       Topology l3Topology,
       ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology,
       Map<String, Configuration> configurations) {
@@ -401,9 +403,6 @@ public class IpsecUtil {
               });
     }
 
-    l3Topology
-        .getEdges()
-        .removeIf(
-            edge -> failedSessionsEdges.contains(edge) || disConnectedTunnels.contains(edge.getHead()));
+    l3Topology.prune(failedSessionsEdges, ImmutableSet.of(), disConnectedTunnels);
   }
 }
