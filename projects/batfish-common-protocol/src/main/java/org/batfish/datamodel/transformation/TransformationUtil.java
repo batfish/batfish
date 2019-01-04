@@ -61,6 +61,7 @@ public final class TransformationUtil {
         : ImmutableList.of(new AssignIpAddressFromPool(ipField, poolFirst, poolLast));
   }
 
+  @SuppressWarnings("PMD")
   private static Transformation illegalCombiner(Transformation t1, Transformation t2) {
     throw new BatfishException("Cannot convert NATs to Transformations in parallel");
   }
