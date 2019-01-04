@@ -943,7 +943,6 @@ maven_repository(
     ],
 )
 
-
 load("@jsonpath//:rules.bzl", "jsonpath_compile")
 
 jsonpath_compile()
