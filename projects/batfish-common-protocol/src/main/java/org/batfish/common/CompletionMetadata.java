@@ -10,9 +10,11 @@ import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** Grouping of various snapshot properties used for autocomplete */
+@ParametersAreNonnullByDefault
 public final class CompletionMetadata {
 
   private static final String PROP_ADDRESS_BOOKS = "addressBooks";
@@ -45,93 +47,111 @@ public final class CompletionMetadata {
 
   @JsonCreator
   private static @Nonnull CompletionMetadata create(
-      @JsonProperty(PROP_ADDRESS_BOOKS) Set<String> addressBooks,
-      @JsonProperty(PROP_ADDRESS_GROUPS) Set<String> addressGroups,
-      @JsonProperty(PROP_FILTER_NAMES) Set<String> filterNames,
-      @JsonProperty(PROP_INTERFACES) Set<NodeInterfacePair> interfaces,
-      @JsonProperty(PROP_IPS) Set<String> ips,
-      @JsonProperty(PROP_PREFIXES) Set<String> prefixes,
-      @JsonProperty(PROP_STRUCTURE_NAMES) Set<String> structureNames,
-      @JsonProperty(PROP_VRFS) Set<String> vrfs,
-      @JsonProperty(PROP_ZONES) Set<String> zones) {
+      @Nullable @JsonProperty(PROP_ADDRESS_BOOKS) Set<String> addressBooks,
+      @Nullable @JsonProperty(PROP_ADDRESS_GROUPS) Set<String> addressGroups,
+      @Nullable @JsonProperty(PROP_FILTER_NAMES) Set<String> filterNames,
+      @Nullable @JsonProperty(PROP_INTERFACES) Set<NodeInterfacePair> interfaces,
+      @Nullable @JsonProperty(PROP_IPS) Set<String> ips,
+      @Nullable @JsonProperty(PROP_PREFIXES) Set<String> prefixes,
+      @Nullable @JsonProperty(PROP_STRUCTURE_NAMES) Set<String> structureNames,
+      @Nullable @JsonProperty(PROP_VRFS) Set<String> vrfs,
+      @Nullable @JsonProperty(PROP_ZONES) Set<String> zones) {
     return new CompletionMetadata(
-        addressBooks,
-        addressGroups,
-        filterNames,
-        interfaces,
-        ips,
-        prefixes,
-        structureNames,
-        vrfs,
-        zones);
+        firstNonNull(addressBooks, ImmutableSet.of()),
+        firstNonNull(addressGroups, ImmutableSet.of()),
+        firstNonNull(filterNames, ImmutableSet.of()),
+        firstNonNull(interfaces, ImmutableSet.of()),
+        firstNonNull(ips, ImmutableSet.of()),
+        firstNonNull(prefixes, ImmutableSet.of()),
+        firstNonNull(structureNames, ImmutableSet.of()),
+        firstNonNull(vrfs, ImmutableSet.of()),
+        firstNonNull(zones, ImmutableSet.of()));
   }
 
   public CompletionMetadata(
-      @Nullable Set<String> addressBooks,
-      @Nullable Set<String> addressGroups,
-      @Nullable Set<String> filterNames,
-      @Nullable Set<NodeInterfacePair> interfaces,
-      @Nullable Set<String> ips,
-      @Nullable Set<String> prefixes,
-      @Nullable Set<String> structureNames,
-      @Nullable Set<String> vrfs,
-      @Nullable Set<String> zones) {
-    _addressBooks = firstNonNull(addressBooks, ImmutableSet.of());
-    _addressGroups = firstNonNull(addressGroups, ImmutableSet.of());
-    _filterNames = firstNonNull(filterNames, ImmutableSet.of());
-    _interfaces = firstNonNull(interfaces, ImmutableSet.of());
-    _ips = firstNonNull(ips, ImmutableSet.of());
-    _prefixes = firstNonNull(prefixes, ImmutableSet.of());
-    _structureNames = firstNonNull(structureNames, ImmutableSet.of());
-    _vrfs = firstNonNull(vrfs, ImmutableSet.of());
-    _zones = firstNonNull(zones, ImmutableSet.of());
+      Set<String> addressBooks,
+      Set<String> addressGroups,
+      Set<String> filterNames,
+      Set<NodeInterfacePair> interfaces,
+      Set<String> ips,
+      Set<String> prefixes,
+      Set<String> structureNames,
+      Set<String> vrfs,
+      Set<String> zones) {
+    _addressBooks = addressBooks;
+    _addressGroups = addressGroups;
+    _filterNames = filterNames;
+    _interfaces = interfaces;
+    _ips = ips;
+    _prefixes = prefixes;
+    _structureNames = structureNames;
+    _vrfs = vrfs;
+    _zones = zones;
   }
 
   public CompletionMetadata() {
-    this(null, null, null, null, null, null, null, null, null);
+    this(
+        ImmutableSet.of(),
+        ImmutableSet.of(),
+        ImmutableSet.of(),
+        ImmutableSet.of(),
+        ImmutableSet.of(),
+        ImmutableSet.of(),
+        ImmutableSet.of(),
+        ImmutableSet.of(),
+        ImmutableSet.of());
   }
 
   @JsonProperty(PROP_ADDRESS_BOOKS)
+  @Nonnull
   public Set<String> getAddressBooks() {
     return _addressBooks;
   }
 
   @JsonProperty(PROP_ADDRESS_GROUPS)
+  @Nonnull
   public Set<String> getAddressGroups() {
     return _addressGroups;
   }
 
   @JsonProperty(PROP_FILTER_NAMES)
+  @Nonnull
   public Set<String> getFilterNames() {
     return _filterNames;
   }
 
   @JsonProperty(PROP_INTERFACES)
+  @Nonnull
   public Set<NodeInterfacePair> getInterfaces() {
     return _interfaces;
   }
 
   @JsonProperty(PROP_IPS)
+  @Nonnull
   public Set<String> getIps() {
     return _ips;
   }
 
   @JsonProperty(PROP_PREFIXES)
+  @Nonnull
   public Set<String> getPrefixes() {
     return _prefixes;
   }
 
   @JsonProperty(PROP_STRUCTURE_NAMES)
+  @Nonnull
   public Set<String> getStructureNames() {
     return _structureNames;
   }
 
   @JsonProperty(PROP_VRFS)
+  @Nonnull
   public Set<String> getVrfs() {
     return _vrfs;
   }
 
   @JsonProperty(PROP_ZONES)
+  @Nonnull
   public Set<String> getZones() {
     return _zones;
   }

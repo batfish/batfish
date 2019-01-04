@@ -452,24 +452,24 @@ public interface StorageProvider {
       throws IOException;
 
   /**
-   * Loads the JSON-serialized CompletionMetadata for the provided network and snapshot
+   * Loads the JSON-serialized {@link CompletionMetadata} for the provided network and snapshot
    *
    * @param networkId The ID of the network
    * @param snapshotId The ID of the snapshot
-   * @return The CompletionMetadata found for the provided network and snapshot. If none is found a
-   *     CompletionMetadata will be returned with all fields empty
-   * @throws IOException if there is an error reading the CompletionMetadata
+   * @return The {@link CompletionMetadata} found for the provided network and snapshot. If none is
+   *     found a {@link CompletionMetadata} will be returned with all fields empty
+   * @throws IOException if there is an error reading the {@link CompletionMetadata}
    */
   CompletionMetadata loadCompletionMetadata(NetworkId networkId, SnapshotId snapshotId)
       throws IOException;
 
   /**
-   * Writes the CompletionMetadata produced for the given network and snapshot
+   * Writes the {@link CompletionMetadata} produced for the given network and snapshot
    *
-   * @param completionMetadata The CompletionMetadata to write
+   * @param completionMetadata The {@link CompletionMetadata} to write
    * @param networkId The ID of the network
    * @param snapshotId The ID of the snapshot
-   * @throws IOException if there is an error writing the CompletionMetadata
+   * @throws IOException if there is an error writing the {@link CompletionMetadata}
    */
   void storeCompletionMetadata(
       CompletionMetadata completionMetadata, NetworkId networkId, SnapshotId snapshotId)

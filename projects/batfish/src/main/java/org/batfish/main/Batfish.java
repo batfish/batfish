@@ -3069,14 +3069,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @VisibleForTesting
   static Set<String> getAddressBooks(ReferenceLibrary referenceLibrary) {
     ImmutableSet.Builder<String> addressBooks = ImmutableSet.builder();
-    return addressBooks
-        .addAll(
-            referenceLibrary
-                .getReferenceBooks()
-                .stream()
-                .map(ReferenceBook::getName)
-                .collect(Collectors.toSet()))
-        .build();
+    referenceLibrary
+        .getReferenceBooks()
+        .stream()
+        .map(ReferenceBook::getName)
+        .forEach(addressBooks::add);
+    return addressBooks.build();
   }
 
   @VisibleForTesting
@@ -3086,12 +3084,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .getReferenceBooks()
         .forEach(
             referenceBook ->
-                addressGroups.addAll(
-                    referenceBook
-                        .getAddressGroups()
-                        .stream()
-                        .map(AddressGroup::getName)
-                        .collect(Collectors.toSet())));
+                referenceBook
+                    .getAddressGroups()
+                    .stream()
+                    .map(AddressGroup::getName)
+                    .forEach(addressGroups::add));
     return addressGroups.build();
   }
 
@@ -3111,13 +3108,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .values()
         .forEach(
             configuration ->
-                interfaces.addAll(
-                    configuration
-                        .getAllInterfaces()
-                        .values()
-                        .stream()
-                        .map(NodeInterfacePair::new)
-                        .collect(Collectors.toSet())));
+                configuration
+                    .getAllInterfaces()
+                    .values()
+                    .stream()
+                    .map(NodeInterfacePair::new)
+                    .forEach(interfaces::add));
     return interfaces.build();
   }
 
@@ -3133,12 +3129,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     .values()
                     .forEach(
                         iface ->
-                            ips.addAll(
-                                iface
-                                    .getAllAddresses()
-                                    .stream()
-                                    .map(interfaceAddress -> interfaceAddress.getIp().toString())
-                                    .collect(Collectors.toSet()))));
+                            iface
+                                .getAllAddresses()
+                                .stream()
+                                .map(interfaceAddress -> interfaceAddress.getIp().toString())
+                                .forEach(ips::add)));
 
     return ips.build();
   }
@@ -3155,13 +3150,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     .values()
                     .forEach(
                         iface ->
-                            prefixes.addAll(
-                                iface
-                                    .getAllAddresses()
-                                    .stream()
-                                    .map(
-                                        interfaceAddress -> interfaceAddress.getPrefix().toString())
-                                    .collect(Collectors.toSet()))));
+                            iface
+                                .getAllAddresses()
+                                .stream()
+                                .map(interfaceAddress -> interfaceAddress.getPrefix().toString())
+                                .forEach(prefixes::add)));
     return prefixes.build();
   }
 
@@ -3200,13 +3193,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .values()
         .forEach(
             configuration ->
-                vrfs.addAll(
-                    configuration
-                        .getAllInterfaces()
-                        .values()
-                        .stream()
-                        .map(Interface::getVrfName)
-                        .collect(Collectors.toSet())));
+                configuration
+                    .getAllInterfaces()
+                    .values()
+                    .stream()
+                    .map(Interface::getVrfName)
+                    .forEach(vrfs::add));
     return vrfs.build();
   }
 
