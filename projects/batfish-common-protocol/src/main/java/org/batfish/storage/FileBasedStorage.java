@@ -76,7 +76,7 @@ import org.batfish.role.NodeRolesData;
 @ParametersAreNonnullByDefault
 public final class FileBasedStorage implements StorageProvider {
 
-  public static final String RELPATH_COMPLETION_METADATA_FILE = "completion_metadata.json";
+  private static final String RELPATH_COMPLETION_METADATA_FILE = "completion_metadata.json";
 
   private final BatfishLogger _logger;
   private final BiFunction<String, Integer, AtomicInteger> _newBatch;
