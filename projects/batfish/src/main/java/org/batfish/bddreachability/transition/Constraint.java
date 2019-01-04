@@ -8,8 +8,9 @@ import net.sf.javabdd.BDD;
 public class Constraint implements Transition {
   private final BDD _constraint;
 
-  public Constraint(BDD constraint) {
-    checkArgument(!constraint.isOne() && !constraint.isZero());
+  Constraint(BDD constraint) {
+    checkArgument(!constraint.isOne(), "Cannot build Constraint with BDD 1. Use Identity instead.");
+    checkArgument(!constraint.isZero(), "Cannot build Constraint with BDD 0. Use Zero instead.");
     _constraint = constraint;
   }
 

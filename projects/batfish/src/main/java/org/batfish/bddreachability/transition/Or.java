@@ -13,14 +13,16 @@ import net.sf.javabdd.BDD;
 public class Or implements Transition {
   private final List<Transition> _transitions;
 
-  public Or(List<Transition> transitions) {
-    checkArgument(transitions.size() > 1);
+  Or(List<Transition> transitions) {
+    checkArgument(!transitions.isEmpty(), "Cannot construct Or of 0 Transitions. Use Zero instead");
+    checkArgument(
+        transitions.size() != 1,
+        "Cannot construct Or of a single Transition. Use that transition directly instead.");
     _transitions = ImmutableList.copyOf(transitions);
   }
 
-  public Or(Transition... transitions) {
-    checkArgument(transitions.length > 1);
-    _transitions = ImmutableList.copyOf(transitions);
+  Or(Transition... transitions) {
+    this(ImmutableList.copyOf(transitions));
   }
 
   @Override

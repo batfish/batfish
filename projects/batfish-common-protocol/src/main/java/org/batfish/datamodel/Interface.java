@@ -1072,6 +1072,7 @@ public final class Interface extends ComparableStructure<String> {
     }
   }
 
+  @JsonIgnore
   public Transformation getIncomingTransformation() {
     return fromDestinationNats(_destinationNats);
   }
@@ -1195,6 +1196,7 @@ public final class Interface extends ComparableStructure<String> {
     }
   }
 
+  @JsonIgnore
   public Transformation getOutgoingTransformation() {
     return fromSourceNats(_sourceNats);
   }

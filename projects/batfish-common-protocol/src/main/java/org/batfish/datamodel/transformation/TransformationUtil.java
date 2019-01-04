@@ -18,6 +18,8 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 
 /** Utility methods related to {@link Transformation}. */
 public final class TransformationUtil {
+  private TransformationUtil() {}
+
   public static Transformation fromDestinationNats(List<DestinationNat> destinationNats) {
     return destinationNats == null
         ? null

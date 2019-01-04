@@ -1,11 +1,10 @@
 package org.batfish.bddreachability.transition;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
+import org.batfish.common.BatfishException;
 
 /** Smart constructors of {@link Transition}. */
 public final class Transitions {
@@ -38,8 +37,11 @@ public final class Transitions {
     return bdd.isOne() ? IDENTITY : bdd.isZero() ? ZERO : new Constraint(bdd);
   }
 
+  public static Transition or() {
+    throw new BatfishException("Don't call or() with no Transitions -- just use Zero instead.");
+  }
+
   public static Transition or(Transition... transitions) {
-    checkArgument(transitions.length > 0);
     List<Transition> nonZeroTransitions =
         Stream.of(transitions)
             .filter(transition -> transition != ZERO)

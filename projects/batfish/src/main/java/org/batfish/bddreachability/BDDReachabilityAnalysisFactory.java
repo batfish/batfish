@@ -32,9 +32,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
-import org.batfish.bddreachability.transition.Composite;
-import org.batfish.bddreachability.transition.Constraint;
-import org.batfish.bddreachability.transition.Identity;
 import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.bddreachability.transition.Transitions;
@@ -699,7 +696,7 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   /*
-   * Instrument an edge that exits the specied node to maintain the source interface
+   * Instrument an edge that exits the specified node to maintain the source interface
    * invariant (no source constraint not in a node-specific state, only valid source values
    * when in a node-specific state).
    */
@@ -711,12 +708,12 @@ public final class BDDReachabilityAnalysisFactory {
         edge.getPostState(),
         // entering the node; constrain source to be valid
         bdd -> edge.traverseBackward(bdd.and(validSrc)),
-        // existing the node; remove the source constraint
+        // exiting the node; remove the source constraint
         bdd -> sourceManager.existsSource(edge.traverseForward(bdd)));
   }
 
   /*
-   * Instrument an edge that exits the specied node to maintain the source interface
+   * Instrument an edge that exits the specified node to maintain the source interface
    * invariant (no source constraint not in a node-specific state, only valid source values
    * when in a node-specific state).
    */
@@ -729,7 +726,7 @@ public final class BDDReachabilityAnalysisFactory {
         postState,
         // entering the node; constrain source to be valid
         bdd -> transition.transitBackward(bdd.and(validSrc)),
-        // existing the node; remove the source constraint
+        // exiting the node; remove the source constraint
         bdd -> sourceManager.existsSource(transition.transitForward(bdd)));
   }
 
@@ -761,13 +758,11 @@ public final class BDDReachabilityAnalysisFactory {
 
               BDD inAclBDD = ignorableAclPermitBDD(nodeName, aclName);
 
-              Transition transition = _bddIncomingTransformations.get(nodeName).get(ifaceName);
-              if (transition == Identity.INSTANCE) {
-                return new Edge(preState, postState, inAclBDD);
-              }
-
-              return new Edge(
-                  preState, postState, new Composite(new Constraint(inAclBDD), transition));
+              Transition transition =
+                  compose(
+                      constraint(inAclBDD),
+                      _bddIncomingTransformations.get(nodeName).get(ifaceName));
+              return new Edge(preState, postState, transition);
             });
   }
 
@@ -1036,9 +1031,9 @@ public final class BDDReachabilityAnalysisFactory {
                                       dispositionNodeConstructor.apply(node, ifaceName);
 
                                   /* 1. forward out edge
-                                   * 2. pre-nat filter
-                                   * 3. source nat
-                                   * 4. post-nat filter
+                                   * 2. pre-transformation filter
+                                   * 3. outgoing transformation
+                                   * 4. post-transformation filter
                                    */
                                   Transition transition =
                                       compose(

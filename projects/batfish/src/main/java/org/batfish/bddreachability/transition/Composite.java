@@ -10,13 +10,15 @@ import net.sf.javabdd.BDD;
 public final class Composite implements Transition {
   private final List<Transition> _transitions;
 
-  public Composite(Transition... transitions) {
-    checkArgument(transitions.length > 1);
-    _transitions = ImmutableList.copyOf(transitions);
+  Composite(Transition... transitions) {
+    this(ImmutableList.copyOf(transitions));
   }
 
-  public Composite(List<Transition> transitions) {
-    checkArgument(transitions.size() > 1);
+  Composite(List<Transition> transitions) {
+    checkArgument(!transitions.isEmpty(), "Cannot compose 0 Transitions. Use Identity instead");
+    checkArgument(
+        transitions.size() != 1,
+        "Cannot compose 1 Transition. Use that transition directly instead.");
     _transitions = ImmutableList.copyOf(transitions);
   }
 
