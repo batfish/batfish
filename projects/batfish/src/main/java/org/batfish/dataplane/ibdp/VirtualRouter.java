@@ -1411,9 +1411,17 @@ public class VirtualRouter implements Serializable {
                     ? iface.getIsis().getLevel1()
                     : iface.getIsis().getLevel2();
 
-            // Do not propagate route if ISIS interface is passive at this level
-            if (isisLevelSettings.getMode() == IsisInterfaceMode.PASSIVE) {
-              continue;
+            // Do not propagate route if ISIS interface is not active at this level
+            switch (isisLevelSettings.getMode()) {
+              case PASSIVE:
+              case SUPPRESSED:
+              case UNSET:
+                continue;
+              case ACTIVE:
+                break;
+              default:
+                throw new BatfishException(
+                    String.format("Unrecognized IS-IS mode %s", isisLevelSettings.getMode()));
             }
             routeBuilder
                 .setNetwork(neighborRoute.getNetwork())
