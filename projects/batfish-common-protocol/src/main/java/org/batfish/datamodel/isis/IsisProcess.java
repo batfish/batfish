@@ -32,7 +32,7 @@ public class IsisProcess implements Serializable {
 
     private IsoAddress _netAddress;
 
-    private Integer _overloadTimeout;
+    private boolean _overload;
 
     private Double _referenceBandwidth;
 
@@ -50,7 +50,7 @@ public class IsisProcess implements Serializable {
               _level1,
               _level2,
               requireNonNull(_netAddress),
-              _overloadTimeout,
+              _overload,
               _referenceBandwidth);
       if (_vrf != null) {
         _vrf.setIsisProcess(proc);
@@ -83,8 +83,8 @@ public class IsisProcess implements Serializable {
       return this;
     }
 
-    public @Nonnull Builder setOverloadTimeout(@Nullable Integer overloadTimeout) {
-      _overloadTimeout = overloadTimeout;
+    public @Nonnull Builder setOverload(boolean overload) {
+      _overload = overload;
       return this;
     }
 
@@ -109,7 +109,7 @@ public class IsisProcess implements Serializable {
 
   private static final String PROP_NET_ADDRESS = "netAddress";
 
-  private static final String PROP_OVERLOAD_TIMEOUT = "overloadTimeout";
+  private static final String PROP_OVERLOAD = "overload";
 
   private static final String PROP_REFERENCE_BANDWIDTH = "referenceBandwidth";
 
@@ -126,7 +126,7 @@ public class IsisProcess implements Serializable {
       @JsonProperty(PROP_LEVEL1) IsisLevelSettings level1,
       @JsonProperty(PROP_LEVEL2) IsisLevelSettings level2,
       @JsonProperty(PROP_NET_ADDRESS) IsoAddress netAddress,
-      @JsonProperty(PROP_OVERLOAD_TIMEOUT) Integer overloadTimeout,
+      @JsonProperty(PROP_OVERLOAD) Boolean overload,
       @JsonProperty(PROP_REFERENCE_BANDWIDTH) Double referenceBandwidth) {
     return new IsisProcess(
         exportPolicy,
@@ -134,7 +134,7 @@ public class IsisProcess implements Serializable {
         level1,
         level2,
         requireNonNull(netAddress),
-        overloadTimeout,
+        firstNonNull(overload, false),
         referenceBandwidth);
   }
 
@@ -148,7 +148,7 @@ public class IsisProcess implements Serializable {
 
   @Nonnull private final IsoAddress _netAddress;
 
-  @Nullable private final Integer _overloadTimeout;
+  private final boolean _overload;
 
   @Nullable private final Double _referenceBandwidth;
 
@@ -158,14 +158,14 @@ public class IsisProcess implements Serializable {
       @Nullable IsisLevelSettings level1,
       @Nullable IsisLevelSettings level2,
       @Nonnull IsoAddress netAddress,
-      @Nullable Integer overloadTimeout,
+      boolean overload,
       @Nullable Double referenceBandwidth) {
     _exportPolicy = exportPolicy;
     _generatedRoutes = generatedRoutes;
     _level1 = level1;
     _level2 = level2;
     _netAddress = netAddress;
-    _overloadTimeout = overloadTimeout;
+    _overload = overload;
     _referenceBandwidth = referenceBandwidth;
   }
 
@@ -182,7 +182,7 @@ public class IsisProcess implements Serializable {
         && Objects.equals(_level1, rhs._level1)
         && Objects.equals(_level2, rhs._level2)
         && Objects.equals(_netAddress, rhs._netAddress)
-        && Objects.equals(_overloadTimeout, rhs._overloadTimeout)
+        && Objects.equals(_overload, rhs._overload)
         && Objects.equals(_referenceBandwidth, rhs._referenceBandwidth);
   }
 
@@ -220,10 +220,9 @@ public class IsisProcess implements Serializable {
     return _netAddress;
   }
 
-  @JsonProperty(PROP_OVERLOAD_TIMEOUT)
-  @Nullable
-  public Integer getOverloadTimeout() {
-    return _overloadTimeout;
+  @JsonProperty(PROP_OVERLOAD)
+  public boolean getOverload() {
+    return _overload;
   }
 
   @JsonProperty(PROP_REFERENCE_BANDWIDTH)
@@ -235,6 +234,6 @@ public class IsisProcess implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _generatedRoutes, _level1, _level2, _netAddress, _overloadTimeout, _referenceBandwidth);
+        _generatedRoutes, _level1, _level2, _netAddress, _overload, _referenceBandwidth);
   }
 }
