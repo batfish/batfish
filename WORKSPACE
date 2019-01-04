@@ -892,10 +892,13 @@ jline3_compile()
 # json_smart
 maven_repository(
     name = "json_smart",
+    force = [
+        "org.ow2.asm:asm:6.2.1",
+    ],
     transitive_deps = [
         "c592b500269bfde36096641b01238a8350f8aa31:net.minidev:accessors-smart:1.2",
         "007396407491352ce4fa30de92efb158adb76b5b:net.minidev:json-smart:2.3",
-        "0da08b8cce7bbf903602a25a3a163ae252435795:org.ow2.asm:asm:5.0.4",
+        "c01b6798f81b0fc2c5faa70cbe468c275d4b50c7:org.ow2.asm:asm:6.2.1",
     ],
     deps = [
         "net.minidev:json-smart:2.3",
@@ -925,17 +928,21 @@ jsonassert_compile()
 # jsonassert
 maven_repository(
     name = "jsonpath",
+    force = [
+        "org.ow2.asm:asm:6.2.1",
+    ],
     transitive_deps = [
         "765a4401ceb2dc8d40553c2075eb80a8fa35c2ae:com.jayway.jsonpath:json-path:2.4.0",
         "c592b500269bfde36096641b01238a8350f8aa31:net.minidev:accessors-smart:1.2",
         "007396407491352ce4fa30de92efb158adb76b5b:net.minidev:json-smart:2.3",
-        "0da08b8cce7bbf903602a25a3a163ae252435795:org.ow2.asm:asm:5.0.4",
+        "c01b6798f81b0fc2c5faa70cbe468c275d4b50c7:org.ow2.asm:asm:6.2.1",
         "da76ca59f6a57ee3102f8f9bd9cee742973efa8a:org.slf4j:slf4j-api:1.7.25",
     ],
     deps = [
         "com.jayway.jsonpath:json-path:2.4.0",
     ],
 )
+
 
 load("@jsonpath//:rules.bzl", "jsonpath_compile")
 
