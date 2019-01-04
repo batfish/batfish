@@ -3,6 +3,8 @@ package org.batfish.bddreachability.transition;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
@@ -18,6 +20,7 @@ import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.datamodel.transformation.TransformationStepVisitor;
 
 /** Convert a {@link Transformation} to a BDD reachability graph {@link Transition}. */
+@ParametersAreNonnullByDefault
 public class TransformationToTransition {
   private final BDDPacket _bddPacket;
   private final IdentityHashMap<Transformation, Transition> _cache;
@@ -70,8 +73,10 @@ public class TransformationToTransition {
     }
   }
 
-  public Transition toTransition(Transformation transformation) {
-    return _cache.computeIfAbsent(transformation, this::computeTransition);
+  public Transition toTransition(@Nullable Transformation transformation) {
+    return transformation == null
+        ? Identity.INSTANCE
+        : _cache.computeIfAbsent(transformation, this::computeTransition);
   }
 
   private Transition computeTransition(Transformation transformation) {

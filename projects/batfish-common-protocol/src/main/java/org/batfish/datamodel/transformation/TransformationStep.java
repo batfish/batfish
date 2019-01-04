@@ -1,9 +1,11 @@
 package org.batfish.datamodel.transformation;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 
 /** A representation of an atomic transformation step. */
+@ParametersAreNonnullByDefault
 public interface TransformationStep {
   <T> T accept(TransformationStepVisitor<T> visitor);
 
