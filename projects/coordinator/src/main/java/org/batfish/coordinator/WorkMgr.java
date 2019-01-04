@@ -95,8 +95,10 @@ import org.batfish.coordinator.config.Settings;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.coordinator.resources.ForkSnapshotBean;
 import org.batfish.datamodel.AnalysisMetadata;
+import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
+import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.SnapshotMetadataEntry;
 import org.batfish.datamodel.acl.AclTrace;
@@ -125,6 +127,7 @@ import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
+import org.batfish.datamodel.questions.IpsecSessionStatus;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
@@ -451,6 +454,17 @@ public class WorkMgr extends AbstractCoordinator {
                       .collect(Collectors.toSet()));
           break;
         }
+      case BGP_SESSION_TYPE:
+        {
+          suggestions =
+              PropertySpecifier.baseAutoComplete(
+                  query,
+                  Stream.of(SessionType.values())
+                      .map(SessionType::name)
+                      .collect(Collectors.toSet()));
+
+          break;
+        }
       case FILTER:
         {
           CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
@@ -480,6 +494,16 @@ public class WorkMgr extends AbstractCoordinator {
         {
           CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
           suggestions = PropertySpecifier.baseAutoComplete(query, completionMetadata.getIps());
+          break;
+        }
+      case IPSEC_SESSION_STATUS:
+        {
+          suggestions =
+              PropertySpecifier.baseAutoComplete(
+                  query,
+                  Stream.of(IpsecSessionStatus.values())
+                      .map(IpsecSessionStatus::name)
+                      .collect(Collectors.toSet()));
           break;
         }
       case NAMED_STRUCTURE_SPEC:
@@ -513,6 +537,14 @@ public class WorkMgr extends AbstractCoordinator {
           suggestions = PropertySpecifier.baseAutoComplete(query, completionMetadata.getPrefixes());
           break;
         }
+      case PROTOCOL:
+        {
+          suggestions =
+              PropertySpecifier.baseAutoComplete(
+                  query,
+                  Stream.of(Protocol.values()).map(Protocol::name).collect(Collectors.toSet()));
+          break;
+        }
       case STRUCTURE_NAME:
         {
           CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
@@ -535,7 +567,6 @@ public class WorkMgr extends AbstractCoordinator {
       default:
         throw new UnsupportedOperationException("Unsupported completion type: " + completionType);
     }
-
     return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
   }
 
