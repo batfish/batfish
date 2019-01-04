@@ -53,8 +53,7 @@ public class RibDelta<R extends AbstractRoute> {
           .flatMap(List::stream)
           .collect(ImmutableList.toImmutableList());
     }
-    List<RouteAdvertisement<R>> r = _actions.get(p);
-    return r == null ? ImmutableList.of() : r;
+    return _actions.getOrDefault(p, ImmutableList.of());
   }
 
   /**
