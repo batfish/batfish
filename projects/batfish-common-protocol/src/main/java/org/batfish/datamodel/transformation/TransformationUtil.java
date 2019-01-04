@@ -8,7 +8,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.List;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.DestinationNat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -17,58 +17,54 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 
 /** Utility methods related to {@link Transformation}. */
+@ParametersAreNonnullByDefault
 public final class TransformationUtil {
   private TransformationUtil() {}
 
-  public static Transformation fromDestinationNats(List<DestinationNat> destinationNats) {
-    return destinationNats == null
-        ? null
-        : Lists.reverse(destinationNats)
-            .stream()
-            .reduce(
-                null,
-                (orElse, nat) ->
-                    when(matchCondition(nat.getAcl()))
-                        .apply(
-                            assignFromPoolOrDoNothing(
-                                IpField.DESTINATION, nat.getPoolIpFirst(), nat.getPoolIpLast()))
-                        .setOrElse(orElse)
-                        .build(),
-                // combiner only used for parallel streams
-                TransformationUtil::illegalCombiner);
+  public static Transformation fromDestinationNats(@Nullable List<DestinationNat> destinationNats) {
+    if (destinationNats == null) {
+      return null;
+    }
+
+    Transformation transformation = null;
+    for (DestinationNat nat : Lists.reverse(destinationNats)) {
+      transformation =
+          when(matchCondition(nat.getAcl()))
+              .apply(
+                  assignFromPoolOrDoNothing(
+                      IpField.DESTINATION, nat.getPoolIpFirst(), nat.getPoolIpLast()))
+              .setOrElse(transformation)
+              .build();
+    }
+    return transformation;
   }
 
-  public static Transformation fromSourceNats(List<SourceNat> sourceNats) {
-    return sourceNats == null
-        ? null
-        : Lists.reverse(sourceNats)
-            .stream()
-            .reduce(
-                null,
-                (orElse, nat) ->
-                    when(matchCondition(nat.getAcl()))
-                        .apply(
-                            assignFromPoolOrDoNothing(
-                                IpField.SOURCE, nat.getPoolIpFirst(), nat.getPoolIpLast()))
-                        .setOrElse(orElse)
-                        .build(),
-                // combiner only used for parallel streams
-                TransformationUtil::illegalCombiner);
+  public static Transformation fromSourceNats(@Nullable List<SourceNat> sourceNats) {
+    if (sourceNats == null) {
+      return null;
+    }
+
+    Transformation transformation = null;
+    for (SourceNat nat : Lists.reverse(sourceNats)) {
+      transformation =
+          when(matchCondition(nat.getAcl()))
+              .apply(
+                  assignFromPoolOrDoNothing(
+                      IpField.SOURCE, nat.getPoolIpFirst(), nat.getPoolIpLast()))
+              .setOrElse(transformation)
+              .build();
+    }
+    return transformation;
   }
 
   private static List<TransformationStep> assignFromPoolOrDoNothing(
-      IpField ipField, Ip poolFirst, Ip poolLast) {
+      IpField ipField, @Nullable Ip poolFirst, @Nullable Ip poolLast) {
     return poolFirst == null || poolLast == null
         ? ImmutableList.of()
         : ImmutableList.of(new AssignIpAddressFromPool(ipField, poolFirst, poolLast));
   }
 
-  @SuppressWarnings("PMD")
-  private static Transformation illegalCombiner(Transformation t1, Transformation t2) {
-    throw new BatfishException("Cannot convert NATs to Transformations in parallel");
-  }
-
-  private static AclLineMatchExpr matchCondition(IpAccessList acl) {
+  private static AclLineMatchExpr matchCondition(@Nullable IpAccessList acl) {
     checkArgument(acl == null || acl.getName() != null, "NAT ACLs must be named");
     return acl == null ? TRUE : new PermittedByAcl(acl.getName());
   }
