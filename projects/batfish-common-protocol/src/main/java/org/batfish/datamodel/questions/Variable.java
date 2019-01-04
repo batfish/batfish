@@ -21,16 +21,21 @@ import org.batfish.common.BfConsts;
 public class Variable {
 
   public enum Type {
+    ADDRESS_BOOK("addressBook", true),
+    ADDRESS_GROUP("addressGroup", true),
     ANSWER_ELEMENT("answerElement", true),
     BGP_PEER_PROPERTY_SPEC("bgpPeerPropertySpec", true),
     BGP_PROCESS_PROPERTY_SPEC("bgpProcessPropertySpec", true),
+    BGP_SESSION_STATUS("bgpSessionStatus", true),
     BOOLEAN("boolean", false),
     COMPARATOR("comparator", true),
     DOUBLE("double", false),
     DISPOSITION_SPEC("dispositionSpec", true),
+    FILTER("filter", true),
     FLOAT("float", false),
     HEADER_CONSTRAINT("headerConstraint", false),
     INTEGER("integer", false),
+    INTERFACE("interface", true),
     INTERFACE_PROPERTY_SPEC("interfacePropertySpec", true),
     IP("ip", true),
     IP_PROTOCOL("ipProtocol", true),
@@ -49,7 +54,10 @@ public class Variable {
     PROTOCOL("protocol", true),
     QUESTION("question", true),
     STRING("string", true),
-    SUBRANGE("subrange", true);
+    STRUCTURE_NAME("structureName", true),
+    SUBRANGE("subrange", true),
+    VRF("vrf", true),
+    ZONE("zone", true);
 
     private static final Map<String, Variable.Type> MAP = initMap();
 
