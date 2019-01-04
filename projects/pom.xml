@@ -47,6 +47,7 @@
     <!-- The versions of Java libraries used. Please keep alphabetical. -->
     <antlr4.version>4.7.1-batfish-internal</antlr4.version>
     <antlr4-runtime.version>4.7.1</antlr4-runtime.version>
+    <asm.version>6.2.1</asm.version>
     <autoservice.version>1.0-rc4</autoservice.version>
     <azure.version>2.0.0</azure.version>
     <beanutils.version>1.9.3</beanutils.version>
@@ -830,24 +831,6 @@
       </dependency>
 
       <dependency>
-        <groupId>org.jgrapht</groupId>
-        <artifactId>jgrapht-core</artifactId>
-        <version>${jgrapht-core.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.jline</groupId>
-        <artifactId>jline</artifactId>
-        <version>${jline.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.lz4</groupId>
-        <artifactId>lz4-java</artifactId>
-        <version>${lz4.version}</version>
-      </dependency>
-
-      <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>${junit.version}</version>
@@ -992,6 +975,18 @@
       </dependency>
 
       <dependency>
+        <groupId>org.jgrapht</groupId>
+        <artifactId>jgrapht-core</artifactId>
+        <version>${jgrapht-core.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jline</groupId>
+        <artifactId>jline</artifactId>
+        <version>${jline.version}</version>
+      </dependency>
+
+      <dependency>
         <groupId>org.lastnpe.eea</groupId>
         <artifactId>guava-eea</artifactId>
         <version>${guava-eea.version}</version>
@@ -1001,6 +996,18 @@
         <groupId>org.lastnpe.eea</groupId>
         <artifactId>jdk-eea</artifactId>
         <version>${jdk-eea.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.lz4</groupId>
+        <artifactId>lz4-java</artifactId>
+        <version>${lz4.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>${asm.version}</version>
       </dependency>
 
       <dependency>
