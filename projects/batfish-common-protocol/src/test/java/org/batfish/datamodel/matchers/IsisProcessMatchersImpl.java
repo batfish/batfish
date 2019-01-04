@@ -53,14 +53,14 @@ final class IsisProcessMatchersImpl {
     }
   }
 
-  static final class HasOverloadTimeout extends FeatureMatcher<IsisProcess, Integer> {
-    HasOverloadTimeout(@Nonnull Matcher<? super Integer> subMatcher) {
-      super(subMatcher, "An IsisProcess with overloadTimeout:", "overloadTimeout");
+  static final class HasOverload extends FeatureMatcher<IsisProcess, Boolean> {
+    HasOverload(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "An IsisProcess with overload:", "overload");
     }
 
     @Override
-    protected Integer featureValueOf(IsisProcess actual) {
-      return actual.getOverloadTimeout();
+    protected Boolean featureValueOf(IsisProcess actual) {
+      return actual.getOverload();
     }
   }
 

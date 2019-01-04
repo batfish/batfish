@@ -268,6 +268,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_levelContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_no_ipv4_routingContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_overloadContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_reference_bandwidthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isi_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isi_levelContext;
@@ -286,7 +287,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_priorityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_te_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_wide_metrics_onlyContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Iso_timeoutContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_credibility_protocol_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_family_shortcutsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_applicationContext;
@@ -4077,8 +4077,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void exitIso_timeout(Iso_timeoutContext ctx) {
-    _currentRoutingInstance.getIsisSettings().setOverloadTimeout(toInt(ctx.DEC()));
+  public void exitIs_overload(Is_overloadContext ctx) {
+    _currentRoutingInstance.getIsisSettings().setOverload(true);
+    if (ctx.iso_timeout() != null) {
+      _currentRoutingInstance.getIsisSettings().setOverloadTimeout(toInt(ctx.iso_timeout().DEC()));
+    }
   }
 
   @Override

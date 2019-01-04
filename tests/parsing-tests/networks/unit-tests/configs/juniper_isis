@@ -8,5 +8,7 @@ set protocols isis interface ge-0/0/0.0 level 1 disable
 set protocols isis interface ge-0/0/0.0 level 2 priority 65
 set protocols isis interface ge-0/0/0.0 ldp-synchronization
 set protocols isis interface ge-0/0/0.0 node-link-protection
+set protocols isis overload timeout 30
+set protocols isis overload
 #
 
