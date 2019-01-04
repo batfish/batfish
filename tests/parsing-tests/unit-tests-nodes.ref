@@ -27793,7 +27793,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOOPBACK",
-            "vrf" : "fabric"
+            "vrf" : "default"
           },
           "lo0.1" : {
             "name" : "lo0.1",
@@ -29251,10 +29251,7 @@
             ]
           },
           "fabric" : {
-            "name" : "fabric",
-            "interfaces" : [
-              "lo0.0"
-            ]
+            "name" : "fabric"
           },
           "vr" : {
             "name" : "vr",

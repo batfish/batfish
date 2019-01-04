@@ -5691,7 +5691,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     Interface iface = interfaces.get(name);
     if (iface == null) {
       iface = new Interface(name);
-      iface.setRoutingInstance(currentRoutingInstance);
+      iface.setRoutingInstance(_currentLogicalSystem.getDefaultRoutingInstance().getName());
       interfaces.put(name, iface);
     }
     if (unit != null) {
@@ -5699,7 +5699,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       iface = units.get(unitFullName);
       if (iface == null) {
         iface = new Interface(unitFullName);
-        iface.setRoutingInstance(currentRoutingInstance);
+        iface.setRoutingInstance(_currentLogicalSystem.getDefaultRoutingInstance().getName());
         units.put(unitFullName, iface);
       }
     }
