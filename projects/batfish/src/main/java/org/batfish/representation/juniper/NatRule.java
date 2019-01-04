@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import static org.batfish.datamodel.transformation.Noop.noop;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.representation.juniper.NatRuleMatchToHeaderSpace.toHeaderSpace;
 
@@ -67,7 +68,7 @@ public final class NatRule implements Serializable {
       builder.apply(new AssignIpAddressFromPool(field, pool.getFromAddress(), pool.getToAddress()));
     } else if (_then instanceof NatRuleThenOff) {
       // don't transform
-      builder.apply();
+      builder.apply(noop(field));
     } else {
       throw new IllegalArgumentException("Unrecognized NatRuleThen type");
     }

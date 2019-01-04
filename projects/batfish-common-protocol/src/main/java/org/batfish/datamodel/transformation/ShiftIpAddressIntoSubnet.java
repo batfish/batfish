@@ -1,10 +1,12 @@
 package org.batfish.datamodel.transformation;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.flow.TransformationStep.inferTypeFromIpField;
 
 import java.io.Serializable;
 import java.util.Objects;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 
 /**
  * A {@link TransformationStep} that transforms the an IP by shifting it into a subnet. For example,
@@ -24,13 +26,19 @@ public final class ShiftIpAddressIntoSubnet implements TransformationStep, Seria
 
   private final IpField _ipField;
   private final Prefix _subnet;
+  private final TransformationType _type;
 
   public ShiftIpAddressIntoSubnet(IpField ipField, Prefix subnet) {
+    this(inferTypeFromIpField(ipField), ipField, subnet);
+  }
+
+  public ShiftIpAddressIntoSubnet(TransformationType type, IpField ipField, Prefix subnet) {
     checkArgument(
         subnet.getPrefixLength() < Prefix.MAX_PREFIX_LENGTH,
         "subnet prefix must be less than the maximum prefix length");
     _ipField = ipField;
     _subnet = subnet;
+    _type = type;
   }
 
   @Override
@@ -44,6 +52,11 @@ public final class ShiftIpAddressIntoSubnet implements TransformationStep, Seria
 
   public Prefix getSubnet() {
     return _subnet;
+  }
+
+  @Override
+  public TransformationType getType() {
+    return _type;
   }
 
   @Override

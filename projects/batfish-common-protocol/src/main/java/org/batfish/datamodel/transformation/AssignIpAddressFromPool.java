@@ -1,9 +1,12 @@
 package org.batfish.datamodel.transformation;
 
+import static org.batfish.datamodel.flow.TransformationStep.inferTypeFromIpField;
+
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 
 /** A {@link TransformationStep} that transforms the destination IP */
 @ParametersAreNonnullByDefault
@@ -11,11 +14,18 @@ public final class AssignIpAddressFromPool implements TransformationStep, Serial
   /** */
   private static final long serialVersionUID = 1L;
 
+  private final TransformationType _type;
   private final IpField _ipField;
   private final Ip _poolStart;
   private final Ip _poolEnd;
 
   public AssignIpAddressFromPool(IpField ipField, Ip poolStart, Ip poolEnd) {
+    this(inferTypeFromIpField(ipField), ipField, poolStart, poolEnd);
+  }
+
+  public AssignIpAddressFromPool(
+      TransformationType type, IpField ipField, Ip poolStart, Ip poolEnd) {
+    _type = type;
     _ipField = ipField;
     _poolStart = poolStart;
     _poolEnd = poolEnd;
@@ -36,6 +46,11 @@ public final class AssignIpAddressFromPool implements TransformationStep, Serial
 
   public Ip getPoolEnd() {
     return _poolEnd;
+  }
+
+  @Override
+  public TransformationType getType() {
+    return _type;
   }
 
   @Override

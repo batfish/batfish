@@ -2,6 +2,8 @@ package org.batfish.datamodel.flow;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,8 +12,10 @@ import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
+import org.batfish.datamodel.transformation.IpField;
 
 /** A {@link Step} for packet transformations. */
 public final class TransformationStep extends Step<TransformationStepDetail> {
@@ -20,6 +24,17 @@ public final class TransformationStep extends Step<TransformationStepDetail> {
     DEST_NAT,
     /** Source nat */
     SOURCE_NAT
+  }
+
+  public static TransformationType inferTypeFromIpField(IpField ipField) {
+    switch (ipField) {
+    case DESTINATION:
+      return DEST_NAT;
+    case SOURCE:
+      return SOURCE_NAT;
+    default:
+      throw new BatfishException("Unknown IpField: " + ipField);
+    }
   }
 
   /** Step detail for {@link TransformationStep} */

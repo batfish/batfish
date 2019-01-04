@@ -57,6 +57,7 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.TransformationStepVisitor;
 import org.batfish.specifier.InterfaceLinkLocation;
@@ -1278,6 +1279,11 @@ public final class BDDReachabilityAnalysisFactory {
                 var.geq(assignIpAddressFromPool.getPoolStart().asLong())
                     .and(var.leq(assignIpAddressFromPool.getPoolEnd().asLong()));
             ranges.merge(ipField, bdd, BDD::or);
+            return null;
+          }
+
+          @Override
+          public Void visitNoop(Noop noop) {
             return null;
           }
 

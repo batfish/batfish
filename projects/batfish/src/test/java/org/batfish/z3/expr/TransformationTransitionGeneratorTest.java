@@ -1,6 +1,9 @@
 package org.batfish.z3.expr;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
+import static org.batfish.datamodel.transformation.Transformation.always;
+import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftSourceIp;
@@ -19,6 +22,7 @@ import com.google.common.collect.Range;
 import java.util.List;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.z3.AclLineMatchExprToBooleanExpr;
 import org.batfish.z3.Field;
@@ -59,24 +63,26 @@ public class TransformationTransitionGeneratorTest {
 
   @Test
   public void testSimple() {
-    Transformation transformation = Transformation.always().build();
+    Transformation transformation = always().apply(new Noop(SOURCE_NAT)).build();
     List<BasicRuleStatement> stmts = generateTransitions(transformation);
     assertThat(
         stmts,
         containsInAnyOrder(
-            new BasicRuleStatement(TrueExpr.INSTANCE, stateExpr(0), OUT_STATE),
+            new BasicRuleStatement(TrueExpr.INSTANCE, stateExpr(0), stepStateExpr(0, 0)),
+            new BasicRuleStatement(stepStateExpr(0, 0), OUT_STATE),
             new BasicRuleStatement(FalseExpr.INSTANCE, stateExpr(0), OUT_STATE)));
   }
 
   @Test
   public void testGuard() {
     Ip ip = Ip.parse("1.2.3.4");
-    Transformation transformation = Transformation.when(matchDst(ip)).build();
+    Transformation transformation = when(matchDst(ip)).apply(new Noop(SOURCE_NAT)).build();
     List<BasicRuleStatement> stmts = generateTransitions(transformation);
     assertThat(
         stmts,
         containsInAnyOrder(
-            new BasicRuleStatement(matchIp(ip, Field.DST_IP), stateExpr(0), OUT_STATE),
+            new BasicRuleStatement(matchIp(ip, Field.DST_IP), stateExpr(0), stepStateExpr(0, 0)),
+            new BasicRuleStatement(stepStateExpr(0, 0), OUT_STATE),
             new BasicRuleStatement(
                 new NotExpr(matchIp(ip, Field.DST_IP)), stateExpr(0), OUT_STATE)));
   }
@@ -84,8 +90,7 @@ public class TransformationTransitionGeneratorTest {
   @Test
   public void testShiftDestIpStep() {
     Prefix prefix = Prefix.parse("1.1.0.0/16");
-    Transformation transformation =
-        Transformation.always().apply(shiftDestinationIp(prefix)).build();
+    Transformation transformation = always().apply(shiftDestinationIp(prefix)).build();
     List<BasicRuleStatement> stmts = generateTransitions(transformation);
     assertThat(
         stmts,
@@ -100,8 +105,7 @@ public class TransformationTransitionGeneratorTest {
   public void testAssignDestIpFromPoolStep() {
     Ip startIp = Ip.parse("1.1.1.0");
     Ip endIp = Ip.parse("1.1.1.10");
-    Transformation transformation =
-        Transformation.always().apply(assignDestinationIp(startIp, endIp)).build();
+    Transformation transformation = always().apply(assignDestinationIp(startIp, endIp)).build();
     List<BasicRuleStatement> stmts = generateTransitions(transformation);
     assertThat(
         stmts,
@@ -118,9 +122,7 @@ public class TransformationTransitionGeneratorTest {
     Ip startIp = Ip.parse("1.1.1.0");
     Ip endIp = Ip.parse("1.1.1.10");
     Transformation transformation =
-        Transformation.always()
-            .apply(shiftSourceIp(prefix), assignDestinationIp(startIp, endIp))
-            .build();
+        always().apply(shiftSourceIp(prefix), assignDestinationIp(startIp, endIp)).build();
     List<BasicRuleStatement> stmts = generateTransitions(transformation);
     assertThat(
         stmts,
@@ -140,25 +142,33 @@ public class TransformationTransitionGeneratorTest {
     Ip match1 = Ip.parse("1.1.1.1");
     Ip match2 = Ip.parse("1.1.1.2");
     Ip match3 = Ip.parse("1.1.1.3");
+    Noop noop = new Noop(SOURCE_NAT);
     Transformation transformation =
-        Transformation.when(matchDst(match1))
-            .setAndThen(Transformation.when(matchDst(match2)).build())
-            .setOrElse(Transformation.when(matchDst(match3)).build())
+        when(matchDst(match1))
+            .apply(noop)
+            .setAndThen(when(matchDst(match2)).apply(noop).build())
+            .setOrElse(when(matchDst(match3)).apply(noop).build())
             .build();
     List<BasicRuleStatement> stmts = generateTransitions(transformation);
     assertThat(
         stmts,
         containsInAnyOrder(
             // root
-            new BasicRuleStatement(matchIp(match1, Field.DST_IP), stateExpr(0), stateExpr(1)),
+            new BasicRuleStatement(
+                matchIp(match1, Field.DST_IP), stateExpr(0), stepStateExpr(0, 0)),
+            new BasicRuleStatement(stepStateExpr(0, 0), stateExpr(1)),
             new BasicRuleStatement(
                 new NotExpr(matchIp(match1, Field.DST_IP)), stateExpr(0), stateExpr(2)),
             // true branch
-            new BasicRuleStatement(matchIp(match2, Field.DST_IP), stateExpr(1), OUT_STATE),
+            new BasicRuleStatement(
+                matchIp(match2, Field.DST_IP), stateExpr(1), stepStateExpr(1, 0)),
+            new BasicRuleStatement(stepStateExpr(1, 0), OUT_STATE),
             new BasicRuleStatement(
                 new NotExpr(matchIp(match2, Field.DST_IP)), stateExpr(1), OUT_STATE),
             // else branch
-            new BasicRuleStatement(matchIp(match3, Field.DST_IP), stateExpr(2), OUT_STATE),
+            new BasicRuleStatement(
+                matchIp(match3, Field.DST_IP), stateExpr(2), stepStateExpr(2, 0)),
+            new BasicRuleStatement(stepStateExpr(2, 0), OUT_STATE),
             new BasicRuleStatement(
                 new NotExpr(matchIp(match3, Field.DST_IP)), stateExpr(2), OUT_STATE)));
   }

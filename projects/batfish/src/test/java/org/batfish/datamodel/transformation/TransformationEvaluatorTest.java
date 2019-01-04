@@ -2,6 +2,7 @@ package org.batfish.datamodel.transformation;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
@@ -29,7 +30,8 @@ public class TransformationEvaluatorTest {
 
   private static Flow eval(Transformation transformation, Flow flow) {
     return TransformationEvaluator.eval(
-        transformation, flow, "iface", ImmutableMap.of(), ImmutableMap.of());
+            transformation, flow, "iface", ImmutableMap.of(), ImmutableMap.of())
+        .getOutputFlow();
   }
 
   @Test
@@ -74,8 +76,8 @@ public class TransformationEvaluatorTest {
   }
 
   @Test
-  public void testNoSteps() {
-    Transformation transformation = always().apply().build();
+  public void testNoop() {
+    Transformation transformation = always().apply(new Noop(SOURCE_NAT)).build();
     Flow origFlow =
         _flowBuilder.setSrcIp(Ip.parse("1.1.1.1")).setDstIp(Ip.parse("2.2.2.2")).build();
     Flow transformedFlow = eval(transformation, origFlow);

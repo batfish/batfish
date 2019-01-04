@@ -48,6 +48,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.transformation.TransformationEvaluator;
 
 @ParametersAreNonnullByDefault
 class TracerouteEngineImplContext {
@@ -366,12 +367,13 @@ class TracerouteEngineImplContext {
 
                 // Apply any relevant source NAT rules.
                 Flow newTransformedFlow =
-                    applySourceNat(
-                        transformedFlow,
-                        srcInterfaceName,
-                        aclDefinitions,
-                        namedIpSpaces,
-                        outgoingInterface.getSourceNats());
+                    TransformationEvaluator.eval(
+                            outgoingInterface.getOutgoingTransformation(),
+                            transformedFlow,
+                            srcInterfaceName,
+                            aclDefinitions,
+                            namedIpSpaces)
+                        .getOutputFlow();
 
                 SortedSet<Edge> edges =
                     _dataPlane.getTopology().getInterfaceEdges().get(nextHopInterface);
@@ -494,8 +496,8 @@ class TracerouteEngineImplContext {
   }
 
   @Nullable
-  private static Flow hopFlow(@Nullable Flow originalFlow, @Nullable Flow transformedFlow) {
-    if (originalFlow == transformedFlow) {
+  private static Flow hopFlow(Flow originalFlow, @Nullable Flow transformedFlow) {
+    if (originalFlow.equals(transformedFlow)) {
       return null;
     } else {
       return transformedFlow;
