@@ -3038,20 +3038,25 @@ public class Batfish extends PluginConsumer implements IBatfish {
     updateBlacklistedAndInactiveConfigs(configurations);
     postProcessAggregatedInterfaces(configurations);
     postProcessOspfCosts(configurations);
+    computeAndStoreCompletionMetadata(configurations);
+  }
+
+  private void computeAndStoreCompletionMetadata(Map<String, Configuration> configurations) {
     try {
       _storage.storeCompletionMetadata(
           computeCompletionMetadata(configurations),
           _settings.getContainer(),
           _testrigSettings.getName());
     } catch (IOException e) {
-      throw new BatfishException("Error storing CompletionMetadata", e);
+      _logger.errorf("Error storing CompletionMetadata: %s", e);
     }
   }
 
   private CompletionMetadata computeCompletionMetadata(Map<String, Configuration> configurations) {
+    ReferenceLibrary referenceLibrary = getReferenceLibraryData();
     return new CompletionMetadata(
-        getAddressBooks(getReferenceLibraryData()),
-        getAddressGroups(getReferenceLibraryData()),
+        getAddressBooks(referenceLibrary),
+        getAddressGroups(referenceLibrary),
         getFilterNames(configurations),
         getInterfaces(configurations),
         getIps(configurations),
@@ -3171,14 +3176,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     .values()
                     .forEach(
                         type -> {
+                          // fetch names of all defined structures of given type and configuration
                           Object namedStructuresMap = type.getGetter().apply(configuration);
+                          // should be an instance of a Map
                           if (namedStructuresMap instanceof Map<?, ?>) {
-                            structureNames.addAll(
-                                ((Map<?, ?>) namedStructuresMap)
-                                    .keySet()
-                                    .stream()
-                                    .map(key -> (String) key)
-                                    .collect(Collectors.toSet()));
+                            ((Map<?, ?>) namedStructuresMap)
+                                .keySet()
+                                .forEach(
+                                    key -> {
+                                      if (key instanceof String) {
+                                        structureNames.add((String) key);
+                                      }
+                                    });
                           }
                         }));
     return structureNames.build();

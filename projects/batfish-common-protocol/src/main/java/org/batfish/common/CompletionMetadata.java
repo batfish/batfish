@@ -12,6 +12,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
+/** Grouping of various snapshot properties used for autocomplete */
 public final class CompletionMetadata {
 
   private static final String PROP_ADDRESS_BOOKS = "addressBooks";
