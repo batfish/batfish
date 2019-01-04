@@ -17,6 +17,87 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 @ParametersAreNonnullByDefault
 public final class CompletionMetadata {
 
+  public static final class Builder {
+
+    private Set<String> _addressBooks;
+
+    private Set<String> _addressGroups;
+
+    private Set<String> _filterNames;
+
+    private Set<NodeInterfacePair> _interfaces;
+
+    private Set<String> _ips;
+
+    private Set<String> _prefixes;
+
+    private Set<String> _structureNames;
+
+    private Set<String> _vrfs;
+
+    private Set<String> _zones;
+
+    private Builder() {}
+
+    public @Nonnull CompletionMetadata build() {
+      return create(
+          _addressBooks,
+          _addressGroups,
+          _filterNames,
+          _interfaces,
+          _ips,
+          _prefixes,
+          _structureNames,
+          _vrfs,
+          _zones);
+    }
+
+    public @Nonnull Builder setAddressBooks(Set<String> addressBooks) {
+      _addressBooks = ImmutableSet.copyOf(addressBooks);
+      return this;
+    }
+
+    public @Nonnull Builder setAddressGroups(Set<String> addressGroups) {
+      _addressGroups = ImmutableSet.copyOf(addressGroups);
+      return this;
+    }
+
+    public @Nonnull Builder setFilterNames(Set<String> filterNames) {
+      _filterNames = ImmutableSet.copyOf(filterNames);
+      return this;
+    }
+
+    public @Nonnull Builder setInterfaces(Set<NodeInterfacePair> interfaces) {
+      _interfaces = ImmutableSet.copyOf(interfaces);
+      return this;
+    }
+
+    public @Nonnull Builder setIps(Set<String> ips) {
+      _ips = ImmutableSet.copyOf(ips);
+      return this;
+    }
+
+    public @Nonnull Builder setPrefixes(Set<String> prefixes) {
+      _prefixes = ImmutableSet.copyOf(prefixes);
+      return this;
+    }
+
+    public @Nonnull Builder setStructureNames(Set<String> structureNames) {
+      _structureNames = ImmutableSet.copyOf(structureNames);
+      return this;
+    }
+
+    public @Nonnull Builder setVrfs(Set<String> vrfs) {
+      _vrfs = ImmutableSet.copyOf(vrfs);
+      return this;
+    }
+
+    public @Nonnull Builder setZones(Set<String> zones) {
+      _zones = ImmutableSet.copyOf(zones);
+      return this;
+    }
+  }
+
   private static final String PROP_ADDRESS_BOOKS = "addressBooks";
   private static final String PROP_ADDRESS_GROUPS = "addressGroups";
   private static final String PROP_FILTER_NAMES = "filterNames";
@@ -44,6 +125,10 @@ public final class CompletionMetadata {
   private final Set<String> _vrfs;
 
   private final Set<String> _zones;
+
+  public static @Nonnull Builder builder() {
+    return new Builder();
+  }
 
   @JsonCreator
   private static @Nonnull CompletionMetadata create(

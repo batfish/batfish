@@ -6,6 +6,15 @@ import static com.google.common.base.Verify.verify;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
+import static org.batfish.common.util.ConfigUtils.getAddressBooks;
+import static org.batfish.common.util.ConfigUtils.getAddressGroups;
+import static org.batfish.common.util.ConfigUtils.getFilterNames;
+import static org.batfish.common.util.ConfigUtils.getInterfaces;
+import static org.batfish.common.util.ConfigUtils.getIps;
+import static org.batfish.common.util.ConfigUtils.getPrefixes;
+import static org.batfish.common.util.ConfigUtils.getStructureNames;
+import static org.batfish.common.util.ConfigUtils.getVrfs;
+import static org.batfish.common.util.ConfigUtils.getZones;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
@@ -162,7 +171,6 @@ import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
-import org.batfish.datamodel.questions.NamedStructureSpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
@@ -201,8 +209,6 @@ import org.batfish.question.differentialreachability.DifferentialReachabilityRes
 import org.batfish.question.multipath.MultipathConsistencyParameters;
 import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
 import org.batfish.question.searchfilters.SearchFiltersResult;
-import org.batfish.referencelibrary.AddressGroup;
-import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.representation.aws.AwsConfiguration;
 import org.batfish.representation.host.HostConfiguration;
@@ -3064,151 +3070,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         getStructureNames(configurations),
         getVrfs(configurations),
         getZones(configurations));
-  }
-
-  @VisibleForTesting
-  static Set<String> getAddressBooks(ReferenceLibrary referenceLibrary) {
-    ImmutableSet.Builder<String> addressBooks = ImmutableSet.builder();
-    referenceLibrary
-        .getReferenceBooks()
-        .stream()
-        .map(ReferenceBook::getName)
-        .forEach(addressBooks::add);
-    return addressBooks.build();
-  }
-
-  @VisibleForTesting
-  static Set<String> getAddressGroups(ReferenceLibrary referenceLibrary) {
-    ImmutableSet.Builder<String> addressGroups = ImmutableSet.builder();
-    referenceLibrary
-        .getReferenceBooks()
-        .forEach(
-            referenceBook ->
-                referenceBook
-                    .getAddressGroups()
-                    .stream()
-                    .map(AddressGroup::getName)
-                    .forEach(addressGroups::add));
-    return addressGroups.build();
-  }
-
-  @VisibleForTesting
-  static Set<String> getFilterNames(Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<String> filterNames = ImmutableSet.builder();
-    configurations
-        .values()
-        .forEach(configuration -> filterNames.addAll(configuration.getIpAccessLists().keySet()));
-    return filterNames.build();
-  }
-
-  @VisibleForTesting
-  static Set<NodeInterfacePair> getInterfaces(Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<NodeInterfacePair> interfaces = ImmutableSet.builder();
-    configurations
-        .values()
-        .forEach(
-            configuration ->
-                configuration
-                    .getAllInterfaces()
-                    .values()
-                    .stream()
-                    .map(NodeInterfacePair::new)
-                    .forEach(interfaces::add));
-    return interfaces.build();
-  }
-
-  @VisibleForTesting
-  static Set<String> getIps(Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<String> ips = ImmutableSet.builder();
-    configurations
-        .values()
-        .forEach(
-            configuration ->
-                configuration
-                    .getAllInterfaces()
-                    .values()
-                    .forEach(
-                        iface ->
-                            iface
-                                .getAllAddresses()
-                                .stream()
-                                .map(interfaceAddress -> interfaceAddress.getIp().toString())
-                                .forEach(ips::add)));
-
-    return ips.build();
-  }
-
-  @VisibleForTesting
-  static Set<String> getPrefixes(Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<String> prefixes = ImmutableSet.builder();
-    configurations
-        .values()
-        .forEach(
-            configuration ->
-                configuration
-                    .getAllInterfaces()
-                    .values()
-                    .forEach(
-                        iface ->
-                            iface
-                                .getAllAddresses()
-                                .stream()
-                                .map(interfaceAddress -> interfaceAddress.getPrefix().toString())
-                                .forEach(prefixes::add)));
-    return prefixes.build();
-  }
-
-  @VisibleForTesting
-  static Set<String> getStructureNames(Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<String> structureNames = ImmutableSet.builder();
-    configurations
-        .values()
-        .forEach(
-            configuration ->
-                NamedStructureSpecifier.JAVA_MAP
-                    .values()
-                    .forEach(
-                        type -> {
-                          // fetch names of all defined structures of given type and configuration
-                          Object namedStructuresMap = type.getGetter().apply(configuration);
-                          // should be an instance of a Map
-                          if (namedStructuresMap instanceof Map<?, ?>) {
-                            ((Map<?, ?>) namedStructuresMap)
-                                .keySet()
-                                .forEach(
-                                    key -> {
-                                      if (key instanceof String) {
-                                        structureNames.add((String) key);
-                                      }
-                                    });
-                          }
-                        }));
-    return structureNames.build();
-  }
-
-  @VisibleForTesting
-  static Set<String> getVrfs(Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<String> vrfs = ImmutableSet.builder();
-    configurations
-        .values()
-        .forEach(
-            configuration ->
-                configuration
-                    .getAllInterfaces()
-                    .values()
-                    .stream()
-                    .map(Interface::getVrfName)
-                    .forEach(vrfs::add));
-    return vrfs.build();
-  }
-
-  @VisibleForTesting
-  static Set<String> getZones(Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<String> zones = ImmutableSet.builder();
-    configurations
-        .values()
-        .forEach(configuration -> zones.addAll(configuration.getZones().keySet()));
-    return zones.build();
   }
 
   private void repairEnvironmentBgpTables() {
