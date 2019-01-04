@@ -1,5 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.util.CommonUtil;
 import org.parboiled.BaseParser;
@@ -9,14 +11,15 @@ import org.parboiled.annotations.BuildParseTree;
 import org.parboiled.annotations.SkipNode;
 import org.parboiled.annotations.SuppressNode;
 import org.parboiled.annotations.SuppressSubnodes;
-import org.parboiled.parserunners.ReportingParseRunner;
+import org.parboiled.common.StringBuilderSink;
+import org.parboiled.parserunners.TracingParseRunner;
 import org.parboiled.support.ParsingResult;
 
 /** A class that converts a Juniper community regex to a Java regex. */
 @BuildParseTree
 public class BgpCommunityRegex extends BaseParser<String> {
 
-  static String wellKnownToRegex(String s) {
+  private static String wellKnownToRegex(String s) {
     long wellKnownValue;
     switch (s) {
       case "no-advertise":
@@ -110,7 +113,7 @@ public class BgpCommunityRegex extends BaseParser<String> {
   }
 
   Rule T_TopLevel() {
-    return OneOrMore(FirstOf(T_Group(), T_Or(), SetOfDigits(), Digits(), T_Dot()));
+    return FirstOf(T_Group(), T_Or(), SetOfDigits(), Digits(), T_Dot());
   }
 
   Rule T_Dot() {
@@ -174,29 +177,49 @@ public class BgpCommunityRegex extends BaseParser<String> {
         push(String.format("[%s%s]", pop(1), pop())));
   }
 
-  Rule TermEOI() {
-    return Sequence(Term(), EOI);
+  static void testParsingRegex(String regex, String output) {
+    String result = convertToJavaRegex(regex);
+    checkArgument(output.equals(result), "Expected %s, got %s", output, result);
   }
 
-  public static String convertToJavaRegex(String regex, String output) {
+  static String convertToJavaRegex(String regex) {
     BgpCommunityRegex parser = Parboiled.createParser(BgpCommunityRegex.class);
-    ParsingResult<String> result = new ReportingParseRunner<String>(parser.TopLevel()).run(regex);
-
-    if (!output.equals(result.resultValue)) {
-      return result.resultValue;
+    TracingParseRunner<String> runner =
+        new TracingParseRunner<String>(parser.TopLevel()).withLog(new StringBuilderSink());
+    ParsingResult<String> result = runner.run(regex);
+    if (!result.matched) {
+      throw new IllegalArgumentException("Unhandled input: " + regex + runner.getLog());
     }
     return result.resultValue;
   }
 
+  static void testMatches(String regex, String... inputs) {
+    String javaRegex = convertToJavaRegex(regex);
+    for (String input : inputs) {
+      checkArgument(
+          input.matches(javaRegex),
+          "%s doesn't match /%s/ (converted from /%s/)",
+          input,
+          javaRegex,
+          regex);
+    }
+  }
+
   public static void main(String[] args) {
-    convertToJavaRegex("no-advertise", "^65535:65282$");
-    convertToJavaRegex("no-export", "^65535:65281$");
-    convertToJavaRegex("no-export-subconfed", "^65535:65283$");
-    convertToJavaRegex("123+:123+", "123+:123+");
-    convertToJavaRegex("^(56):123$", "^(56):123$");
-    convertToJavaRegex("^((56) | (78)):(.*)$", "^((56)|(78)):(.*)$");
-    convertToJavaRegex("^(.*):(.*[579])$", "");
-    //    convertToJavaRegex("^((56) | (78)):(2.*[2–8])$");
-    //    convertToJavaRegex("no-advertise|foo");
+    // test that they parse.
+    testParsingRegex("no-advertise", "^65535:65282$");
+    testParsingRegex("no-export", "^65535:65281$");
+    testParsingRegex("no-export-subconfed", "^65535:65283$");
+    testParsingRegex("123+:123+", "123+:123+");
+    testParsingRegex("^(56):123$", "^(56):123$");
+    testParsingRegex("^((56) | (78)):(.*)$", "^((56)|(78)):(.*)$");
+    testParsingRegex("^(.*):(.*[579])$", "^(.*):(.*[579])$");
+    testParsingRegex("^((56) | (78)):(2.*[2-8])$", "^((56)|(78)):(2.*[2-8])$");
+
+    // test that the conversion matches
+    testMatches("^((56) | (78)):(.*)$", "56:1000", "78:64500");
+    testMatches("^56:(2.*)$", "56:2", "56:222", "56:234");
+    testMatches("^(.*):(.*[579])$", "1234:5", "78:2357", "34:64509");
+    testMatches("^((56) | (78)):(2.*[2-8])$", "56:22", "56:21197", "78:2678");
   }
 }
