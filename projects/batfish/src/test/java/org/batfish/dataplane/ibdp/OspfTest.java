@@ -875,9 +875,9 @@ public class OspfTest {
     IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);
-    assertRoute(routes, OSPF_E2, "a1", Prefix.ZERO, 1, new Ip("10.1.1.4"));
-    assertRoute(routes, OSPF_E2, "a2", Prefix.ZERO, 1, new Ip("10.1.1.4"));
-    assertRoute(routes, OSPF, "fwl", Prefix.parse("11.1.1.0/31"), 2, new Ip("10.1.1.1"));
-    assertRoute(routes, OSPF, "fwl", Prefix.parse("11.1.1.0/31"), 2, new Ip("10.1.1.2"));
+    assertRoute(routes, OSPF_E2, "a1", Prefix.ZERO, 1, Ip.parse("10.1.1.4"));
+    assertRoute(routes, OSPF_E2, "a2", Prefix.ZERO, 1, Ip.parse("10.1.1.4"));
+    assertRoute(routes, OSPF, "fwl", Prefix.parse("11.1.1.0/31"), 2, Ip.parse("10.1.1.1"));
+    assertRoute(routes, OSPF, "fwl", Prefix.parse("11.1.1.0/31"), 2, Ip.parse("10.1.1.2"));
   }
 }

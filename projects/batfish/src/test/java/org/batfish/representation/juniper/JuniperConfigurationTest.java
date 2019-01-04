@@ -9,6 +9,7 @@ import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
+import static org.batfish.representation.juniper.JuniperConfiguration.MAX_ISIS_COST_WITHOUT_WIDE_METRICS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -75,7 +76,7 @@ public class JuniperConfigurationTest {
     // It should have a MatchHeaderSpace match condition, matching the ipAddrPrefix from above
     ImmutableList.of("1.2.3.0", "1.2.3.255")
         .stream()
-        .map(Ip::new)
+        .map(Ip::parse)
         .forEach(
             ip ->
                 assertThat(
@@ -162,10 +163,10 @@ public class JuniperConfigurationTest {
     // used to produce IS-IS cost.
     JuniperConfiguration config = createConfig();
     org.batfish.datamodel.Interface viIface = createInterface(config._c);
-    RoutingInstance routingInstance = createRoutingInstance(100D, null, 10000D);
+    RoutingInstance routingInstance = createRoutingInstance(500D, null, 10000D);
 
     config.processIsisInterfaceSettings(routingInstance, true, false);
-    assertThat(viIface.getIsis().getLevel1().getCost(), equalTo(100L));
+    assertThat(viIface.getIsis().getLevel1().getCost(), equalTo(20L));
   }
 
   @Test
@@ -188,7 +189,7 @@ public class JuniperConfigurationTest {
     RoutingInstance routingInstance = createRoutingInstance(100D, null, null);
 
     config.processIsisInterfaceSettings(routingInstance, true, false);
-    assertThat(viIface.getIsis().getLevel1().getCost(), equalTo(DEFAULT_ISIS_COST));
+    assertThat(viIface.getIsis().getLevel1().getCost(), equalTo((long) DEFAULT_ISIS_COST));
   }
 
   @Test
@@ -201,12 +202,49 @@ public class JuniperConfigurationTest {
     config.setWarnings(new Warnings(true, false, false));
 
     config.processIsisInterfaceSettings(routingInstance, true, false);
-    assertThat(viIface.getIsis().getLevel1().getCost(), equalTo(DEFAULT_ISIS_COST));
+    assertThat(viIface.getIsis().getLevel1().getCost(), equalTo((long) DEFAULT_ISIS_COST));
     assertThat(
         config.getWarnings().getPedanticWarnings(),
         contains(
             new Warning(
                 "Cannot use IS-IS reference bandwidth for interface 'iface' because interface bandwidth is 0.",
                 TAG_PEDANTIC)));
+  }
+
+  @Test
+  public void testRefBandwidthBasedIsisCostClipped() {
+    // Reference bandwidth = 10000, bandwidth = 10. IS-IS cost would be 1000 if wide-metrics-only
+    // were set, but since it is not, cost should be clipped to 63.
+    JuniperConfiguration config = createConfig();
+    org.batfish.datamodel.Interface viIface = createInterface(config._c);
+    RoutingInstance routingInstance = createRoutingInstance(10D, null, 10000D);
+
+    config.processIsisInterfaceSettings(routingInstance, true, false);
+    assertThat(
+        viIface.getIsis().getLevel1().getCost(),
+        equalTo((long) MAX_ISIS_COST_WITHOUT_WIDE_METRICS));
+
+    // Now ensure that when wide-metrics-only is set, IS-IS cost doesn't get clipped.
+    routingInstance.getIsisSettings().getLevel1Settings().setWideMetricsOnly(true);
+    config.processIsisInterfaceSettings(routingInstance, true, false);
+    assertThat(viIface.getIsis().getLevel1().getCost(), equalTo(1000L));
+  }
+
+  @Test
+  public void testInterfaceSettingsBasedIsisCostClipped() {
+    // Interface IS-IS metric = 100, but wide-metrics-only is not set. Cost should be clipped to 63.
+    JuniperConfiguration config = createConfig();
+    org.batfish.datamodel.Interface viIface = createInterface(config._c);
+    RoutingInstance routingInstance = createRoutingInstance(10D, 100L, null);
+
+    config.processIsisInterfaceSettings(routingInstance, true, false);
+    assertThat(
+        viIface.getIsis().getLevel1().getCost(),
+        equalTo((long) MAX_ISIS_COST_WITHOUT_WIDE_METRICS));
+
+    // Now ensure that when wide-metrics-only is set, IS-IS cost doesn't get clipped.
+    routingInstance.getIsisSettings().getLevel1Settings().setWideMetricsOnly(true);
+    config.processIsisInterfaceSettings(routingInstance, true, false);
+    assertThat(viIface.getIsis().getLevel1().getCost(), equalTo(100L));
   }
 }

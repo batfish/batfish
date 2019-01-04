@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.hash;
 import static java.util.Objects.requireNonNull;
 
@@ -21,16 +22,16 @@ public class EigrpExternalRoute extends EigrpRoute {
    * AS number where the destination resides if the destination is EIGRP, or where it was learned if
    * the destination is another process
    */
-  @Nonnull private final Long _destinationAsn;
+  private final long _destinationAsn;
 
   private EigrpExternalRoute(
+      @Nullable Prefix network,
       int admin,
-      @Nonnull Long destinationAsn,
-      Prefix network,
+      long destinationAsn,
       @Nullable String nextHopInterface,
       @Nullable Ip nextHopIp,
       @Nonnull EigrpMetric metric,
-      long processAsn,
+      @Nonnull Long processAsn,
       boolean nonForwarding,
       boolean nonRouting) {
     super(
@@ -40,17 +41,21 @@ public class EigrpExternalRoute extends EigrpRoute {
 
   @JsonCreator
   private static EigrpExternalRoute create(
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
-      @Nonnull @JsonProperty(PROP_DESTINATION_ASN) Long destinationAsn,
-      @JsonProperty(PROP_NETWORK) Prefix network,
+      @Nullable @JsonProperty(PROP_ADMINISTRATIVE_COST) Integer admin,
+      @Nullable @JsonProperty(PROP_DESTINATION_ASN) Long destinationAsn,
+      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @JsonProperty(PROP_EIGRP_METRIC) EigrpMetric metric,
-      @JsonProperty(PROP_PROCESS_ASN) long processAsn) {
+      @Nullable @JsonProperty(PROP_EIGRP_METRIC) EigrpMetric metric,
+      @Nullable @JsonProperty(PROP_PROCESS_ASN) Long processAsn) {
+    checkArgument(admin != null, "EIGRP route: missing %s", PROP_ADMINISTRATIVE_COST);
+    checkArgument(destinationAsn != null, "EIGRP route: missing %s", PROP_DESTINATION_ASN);
+    checkArgument(metric != null, "EIGRP route: missing %s", PROP_EIGRP_METRIC);
+    checkArgument(processAsn != null, "EIGRP route: missing %s", PROP_PROCESS_ASN);
     return new EigrpExternalRoute(
+        network,
         admin,
         destinationAsn,
-        network,
         nextHopInterface,
         nextHopIp,
         metric,
@@ -84,6 +89,7 @@ public class EigrpExternalRoute extends EigrpRoute {
   }
 
   @Override
+  @Nonnull
   public RoutingProtocol getProtocol() {
     return RoutingProtocol.EIGRP_EX;
   }
@@ -94,26 +100,29 @@ public class EigrpExternalRoute extends EigrpRoute {
         _admin, _destinationAsn, _metric.hashCode(), _network, _nextHopIp, _nextHopInterface);
   }
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
   public static class Builder extends AbstractRouteBuilder<Builder, EigrpExternalRoute> {
 
     @Nullable private Long _destinationAsn;
-
     @Nullable private EigrpMetric _eigrpMetric;
-
     @Nullable String _nextHopInterface;
-
     @Nullable Long _processAsn;
 
-    @Nullable
+    private Builder() {}
+
     @Override
     public EigrpExternalRoute build() {
-      if (_destinationAsn == null || _eigrpMetric == null || _processAsn == null) {
-        return null;
-      }
+      checkArgument(getNetwork() != null, "EIGRP route: missing %s", PROP_NETWORK);
+      checkArgument(_destinationAsn != null, "EIGRP route: missing %s", PROP_DESTINATION_ASN);
+      checkArgument(_eigrpMetric != null, "EIGRP route: missing %s", PROP_EIGRP_METRIC);
+      checkArgument(_processAsn != null, "EIGRP route: missing %s", PROP_PROCESS_ASN);
       return new EigrpExternalRoute(
+          getNetwork(),
           getAdmin(),
           _destinationAsn,
-          getNetwork(),
           _nextHopInterface,
           getNextHopIp(),
           requireNonNull(_eigrpMetric),
@@ -127,22 +136,22 @@ public class EigrpExternalRoute extends EigrpRoute {
       return this;
     }
 
-    public Builder setDestinationAsn(@Nullable Long destinationAsn) {
+    public Builder setDestinationAsn(@Nonnull Long destinationAsn) {
       _destinationAsn = destinationAsn;
       return this;
     }
 
-    public Builder setEigrpMetric(EigrpMetric metric) {
+    public Builder setEigrpMetric(@Nonnull EigrpMetric metric) {
       _eigrpMetric = metric;
       return this;
     }
 
-    public Builder setNextHopInterface(String nextHopInterface) {
+    public Builder setNextHopInterface(@Nullable String nextHopInterface) {
       _nextHopInterface = nextHopInterface;
       return this;
     }
 
-    public Builder setProcessAsn(Long processAsn) {
+    public Builder setProcessAsn(@Nullable Long processAsn) {
       _processAsn = processAsn;
       return this;
     }

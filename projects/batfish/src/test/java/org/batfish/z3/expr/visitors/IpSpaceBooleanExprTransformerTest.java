@@ -39,8 +39,8 @@ public class IpSpaceBooleanExprTransformerTest {
   public void testVisitAclIpSpace() {
     AclIpSpace ipSpace =
         AclIpSpace.builder()
-            .thenRejecting(UniverseIpSpace.INSTANCE)
             .thenPermitting(EmptyIpSpace.INSTANCE)
+            .thenRejecting(UniverseIpSpace.INSTANCE)
             .build();
 
     BooleanExpr expr = ipSpace.accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
@@ -51,15 +51,15 @@ public class IpSpaceBooleanExprTransformerTest {
             new OrExpr(
                 ImmutableList.of(
                     new IfThenElse(
-                        // Matches UniverseIpSpace
-                        TrueExpr.INSTANCE,
-                        // Reject
+                        // Matches EmptyIpSpace
                         FalseExpr.INSTANCE,
+                        // Accept
+                        TrueExpr.INSTANCE,
                         new IfThenElse(
-                            // Matches EmptyIpSpace
-                            FalseExpr.INSTANCE,
-                            // Accept
+                            // Matches UniverseIpSpace
                             TrueExpr.INSTANCE,
+                            // Reject
+                            FalseExpr.INSTANCE,
                             // Matches nothing so reject
                             FalseExpr.INSTANCE))))));
   }
@@ -72,7 +72,7 @@ public class IpSpaceBooleanExprTransformerTest {
 
   @Test
   public void testVisitIp() {
-    Ip ip = new Ip("1.2.3.4");
+    Ip ip = Ip.parse("1.2.3.4");
 
     BooleanExpr matchSrcExpr = ip.toIpSpace().accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
     BooleanExpr eqSrcExpr =
@@ -91,7 +91,7 @@ public class IpSpaceBooleanExprTransformerTest {
 
   @Test
   public void testVisitIpWildcard() {
-    IpWildcard wildcard = new IpWildcard(new Ip("1.2.0.4"), new Ip(0x0000FF00L));
+    IpWildcard wildcard = new IpWildcard(Ip.parse("1.2.0.4"), Ip.create(0x0000FF00L));
     BooleanExpr matchExpr = wildcard.toIpSpace().accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
     assertThat(
         matchExpr,

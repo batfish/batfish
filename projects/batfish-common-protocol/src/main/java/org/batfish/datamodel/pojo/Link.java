@@ -85,6 +85,7 @@ public class Link extends BfObject {
         return LinkType.PHYSICAL;
 
       case AGGREGATED:
+      case AGGREGATE_CHILD:
       case REDUNDANT:
       case TUNNEL:
       case VLAN:

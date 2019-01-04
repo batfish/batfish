@@ -13,8 +13,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class MemoizedIpSpaceToBDDTest {
-  private static final IpSpace IP1_IP_SPACE = new Ip("1.1.1.1").toIpSpace();
-  private static final IpSpace IP2_IP_SPACE = new Ip("2.2.2.2").toIpSpace();
+  private static final IpSpace IP1_IP_SPACE = Ip.parse("1.1.1.1").toIpSpace();
+  private static final IpSpace IP2_IP_SPACE = Ip.parse("2.2.2.2").toIpSpace();
   private static final AclIpSpace ACL_IP_SPACE =
       AclIpSpace.builder().thenPermitting(IP1_IP_SPACE).thenPermitting(IP2_IP_SPACE).build();
 

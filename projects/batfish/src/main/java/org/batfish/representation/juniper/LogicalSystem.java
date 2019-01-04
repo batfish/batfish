@@ -19,6 +19,8 @@ public class LogicalSystem implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  private final Map<String, AddressBook> _addressBooks;
+
   private final Map<String, BaseApplication> _applications;
 
   private final Map<String, ApplicationSet> _applicationSets;
@@ -41,13 +43,13 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, FirewallFilter> _filters;
 
-  private final Map<String, AddressBook> _globalAddressBooks;
-
   private final Map<String, IkeGateway> _ikeGateways;
 
   private final Map<String, IkePolicy> _ikePolicies;
 
   private final Map<String, IkeProposal> _ikeProposals;
+
+  private final Map<String, InterfaceRange> _interfaceRanges;
 
   private final Map<String, Interface> _interfaces;
 
@@ -89,6 +91,7 @@ public class LogicalSystem implements Serializable {
 
   public LogicalSystem(String name) {
     _name = name;
+    _addressBooks = new TreeMap<>();
     _applications = new TreeMap<>();
     _applicationSets = new TreeMap<>();
     _asPathGroups = new TreeMap<>();
@@ -98,10 +101,10 @@ public class LogicalSystem implements Serializable {
     _defaultRoutingInstance = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
     _dnsServers = new TreeSet<>();
     _filters = new TreeMap<>();
-    _globalAddressBooks = new TreeMap<>();
     _ikeGateways = new TreeMap<>();
     _ikePolicies = new TreeMap<>();
     _ikeProposals = new TreeMap<>();
+    _interfaceRanges = new TreeMap<>();
     _interfaces = new TreeMap<>();
     _interfaceZones = new TreeMap<>();
     _ipsecPolicies = new TreeMap<>();
@@ -118,6 +121,28 @@ public class LogicalSystem implements Serializable {
     _tacplusServers = new TreeSet<>();
     _vlanNameToVlan = new TreeMap<>();
     _zones = new TreeMap<>();
+  }
+
+  private void expandInterfaceRange(InterfaceRange interfaceRange) {
+    interfaceRange
+        .getAllMembers()
+        .stream()
+        .forEach(
+            iname -> {
+              Interface iface = _interfaces.computeIfAbsent(iname, Interface::new);
+              iface.inheritUnsetPhysicalFields(interfaceRange);
+              iface.setRoutingInstance(interfaceRange.getRoutingInstance());
+              iface.setParent(interfaceRange.getParent());
+            });
+  }
+
+  /** Inserts members of interface ranges into the interfaces */
+  public void expandInterfaceRanges() {
+    _interfaceRanges.values().stream().forEach(this::expandInterfaceRange);
+  }
+
+  public Map<String, AddressBook> getAddressBooks() {
+    return _addressBooks;
   }
 
   public Map<String, BaseApplication> getApplications() {
@@ -164,10 +189,6 @@ public class LogicalSystem implements Serializable {
     return _filters;
   }
 
-  public Map<String, AddressBook> getGlobalAddressBooks() {
-    return _globalAddressBooks;
-  }
-
   public Interface getGlobalMasterInterface() {
     return _defaultRoutingInstance.getGlobalMasterInterface();
   }
@@ -186,6 +207,10 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, IkeProposal> getIkeProposals() {
     return _ikeProposals;
+  }
+
+  public Map<String, InterfaceRange> getInterfaceRanges() {
+    return _interfaceRanges;
   }
 
   public Map<String, Interface> getInterfaces() {

@@ -22,22 +22,22 @@ public class AclIpSpaceTest {
 
   @Test
   public void testContainsIp() {
-    assertThat(_aclIpSpace, not(containsIp(new Ip("1.1.1.0"))));
-    assertThat(_aclIpSpace, containsIp(new Ip("1.1.0.0")));
-    assertThat(_aclIpSpace, not(containsIp(new Ip("1.0.0.0"))));
+    assertThat(_aclIpSpace, not(containsIp(Ip.parse("1.1.1.0"))));
+    assertThat(_aclIpSpace, containsIp(Ip.parse("1.1.0.0")));
+    assertThat(_aclIpSpace, not(containsIp(Ip.parse("1.0.0.0"))));
   }
 
   @Test
   public void testComplement() {
     IpSpace notIpSpace = _aclIpSpace.complement();
-    assertThat(notIpSpace, containsIp(new Ip("1.1.1.0")));
-    assertThat(notIpSpace, not(containsIp(new Ip("1.1.0.0"))));
-    assertThat(notIpSpace, containsIp(new Ip("1.0.0.0")));
+    assertThat(notIpSpace, containsIp(Ip.parse("1.1.1.0")));
+    assertThat(notIpSpace, not(containsIp(Ip.parse("1.1.0.0"))));
+    assertThat(notIpSpace, containsIp(Ip.parse("1.0.0.0")));
   }
 
   @Test
   public void testIntersection() {
-    IpIpSpace ipSpace = new Ip("1.2.3.4").toIpSpace();
+    IpIpSpace ipSpace = Ip.parse("1.2.3.4").toIpSpace();
     assertThat(intersection(null, null), nullValue());
     assertThat(
         intersection(null, UniverseIpSpace.INSTANCE, null), equalTo(UniverseIpSpace.INSTANCE));
@@ -47,9 +47,26 @@ public class AclIpSpaceTest {
 
   @Test
   public void testUnion() {
-    IpIpSpace ipSpace = new Ip("1.2.3.4").toIpSpace();
+    IpIpSpace ipSpace = Ip.parse("1.2.3.4").toIpSpace();
     assertThat(union(null, null), nullValue());
     assertThat(union(EmptyIpSpace.INSTANCE), equalTo(EmptyIpSpace.INSTANCE));
     assertThat(union(EmptyIpSpace.INSTANCE, ipSpace), equalTo(ipSpace));
+  }
+
+  @Test
+  public void testStopWhenEmpty() {
+    AclIpSpace space =
+        AclIpSpace.builder()
+            .thenPermitting(Prefix.parse("1.2.3.4/32").toIpSpace())
+            .thenRejecting(UniverseIpSpace.INSTANCE)
+            .thenPermitting(Prefix.parse("2.0.0.0/8").toIpSpace())
+            .build();
+
+    AclIpSpace expected =
+        AclIpSpace.builder()
+            .thenPermitting(Prefix.parse("1.2.3.4/32").toIpSpace())
+            .thenRejecting(UniverseIpSpace.INSTANCE)
+            .build();
+    assertThat(space, equalTo(expected));
   }
 }

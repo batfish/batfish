@@ -64,6 +64,10 @@
   },
   {
     "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
+    "convertStatus" : {
+      "aws_configs" : "PASSED",
+      "lhr-border-02" : "PASSED"
+    },
     "definedStructures" : {
       "configs/lhr-border-02.cfg" : {
         "bgp peer-group" : {

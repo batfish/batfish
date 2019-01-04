@@ -53,7 +53,7 @@ public class ConfigurationTest {
     String generatedRouteGenerationPolicyName = "generatedRouteGenerationPolicy";
     String ospfExportPolicyName = "ospfExportPolicy";
     String ospfExportSubPolicyName = "ospfExportSubPolicy";
-    Prefix generatedRoutePrefix = new Prefix(Ip.ZERO, Prefix.MAX_PREFIX_LENGTH);
+    Prefix generatedRoutePrefix = Prefix.create(Ip.ZERO, Prefix.MAX_PREFIX_LENGTH);
 
     Configuration c = new Configuration("test", ConfigurationFormat.CISCO_IOS);
     Vrf vrf = c.getVrfs().computeIfAbsent(Configuration.DEFAULT_VRF_NAME, Vrf::new);
@@ -143,19 +143,19 @@ public class ConfigurationTest {
 
   @Test
   public void testInitRemoteIpsecVpns() {
-    Ip ip1to2Physical = new Ip("10.12.0.1");
-    Ip ip1to2Tunnel = new Ip("10.0.12.1");
-    Ip ip1to3Physical = new Ip("10.13.0.1");
-    Ip ip1to4Tunnel = new Ip("10.0.14.1");
+    Ip ip1to2Physical = Ip.parse("10.12.0.1");
+    Ip ip1to2Tunnel = Ip.parse("10.0.12.1");
+    Ip ip1to3Physical = Ip.parse("10.13.0.1");
+    Ip ip1to4Tunnel = Ip.parse("10.0.14.1");
 
-    Ip ip2to1Physical = new Ip("10.12.0.2");
-    Ip ip2to1Tunnel = new Ip("10.0.12.2");
+    Ip ip2to1Physical = Ip.parse("10.12.0.2");
+    Ip ip2to1Tunnel = Ip.parse("10.0.12.2");
 
-    Ip ip3to1Physical = new Ip("10.13.0.3");
-    Ip ip3to4Physical = new Ip("10.34.0.3");
+    Ip ip3to1Physical = Ip.parse("10.13.0.3");
+    Ip ip3to4Physical = Ip.parse("10.34.0.3");
 
-    Ip ip4to1Tunnel = new Ip("10.0.14.4");
-    Ip ip4to3Physical = new Ip("10.34.0.4");
+    Ip ip4to1Tunnel = Ip.parse("10.0.14.4");
+    Ip ip4to3Physical = Ip.parse("10.34.0.4");
 
     Configuration.Builder cb =
         _factory.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);

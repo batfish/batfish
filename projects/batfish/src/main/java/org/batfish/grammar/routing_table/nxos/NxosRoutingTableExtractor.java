@@ -108,7 +108,7 @@ public class NxosRoutingTableExtractor extends NxosRoutingTableParserBaseListene
     int cost = toInteger(ctx.cost);
     Ip nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
     if (protocol != RoutingProtocol.CONNECTED && ctx.nexthop != null) {
-      nextHopIp = new Ip(ctx.nexthop.getText());
+      nextHopIp = Ip.parse(ctx.nexthop.getText());
     }
 
     RouteBuilder rb = new RouteBuilder();

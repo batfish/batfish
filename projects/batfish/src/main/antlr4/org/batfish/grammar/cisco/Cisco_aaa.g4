@@ -906,11 +906,19 @@ aaa_group_server_private
    )
    (
       (
+         ACCT_PORT acct_port = DEC
+      )
+      |
+      (
+         AUTH_PORT auth_port = DEC
+      )
+      |
+      (
          KEY DEC variable_secret
       )
       |
       (
-         PORT DEC
+        PORT prt= DEC
       )
       |
       (

@@ -225,8 +225,18 @@ popsf_family
 :
    FAMILY
    (
-      INET
+      EVPN
+      | INET
+      | INET_MDT
+      | INET_MVPN
+      | INET_VPN
       | INET6
+      | INET6_MVPN
+      | INET6_VPN
+      | ISO
+      | ISO_VPN
+      | ROUTE_TARGET
+      | TRAFFIC_ENGINEERING
    )
 ;
 

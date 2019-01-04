@@ -21,7 +21,12 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
 import static org.batfish.question.routes.RoutesAnswerer.getDiffTableMetadata;
 import static org.batfish.question.routes.RoutesAnswerer.getTableMetadata;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
@@ -39,6 +44,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import org.batfish.common.BatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpRoute;
@@ -50,10 +56,50 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
-import org.batfish.question.routes.DiffRoutesOutput.PresenceStatus;
+import org.batfish.datamodel.table.TableDiff;
+import org.batfish.question.routes.DiffRoutesOutput.KeyPresenceStatus;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 
 public class RoutesAnswererUtil {
+
+  public enum RouteEntryPresenceStatus {
+    ONLY_IN_SNAPSHOT(TableDiff.COL_KEY_STATUS_ONLY_BASE),
+    ONLY_IN_REFERENCE(TableDiff.COL_KEY_STATUS_ONLY_DELTA),
+    CHANGED("Changed"),
+    UNCHANGED("Unchanged");
+
+    private static final Map<String, RouteEntryPresenceStatus> _map = buildMap();
+
+    private static Map<String, RouteEntryPresenceStatus> buildMap() {
+      ImmutableMap.Builder<String, RouteEntryPresenceStatus> map = ImmutableMap.builder();
+      for (RouteEntryPresenceStatus value : RouteEntryPresenceStatus.values()) {
+        map.put(value._name, value);
+      }
+      return map.build();
+    }
+
+    @JsonCreator
+    public static RouteEntryPresenceStatus fromName(String name) {
+      RouteEntryPresenceStatus instance = _map.get(name);
+      if (instance == null) {
+        throw new BatfishException(
+            String.format(
+                "No %s with name: '%s'", RouteEntryPresenceStatus.class.getSimpleName(), name));
+      }
+      return instance;
+    }
+
+    private final String _name;
+
+    RouteEntryPresenceStatus(String name) {
+      _name = name;
+    }
+
+    @JsonValue
+    public String routeEntryPresenceName() {
+      return _name;
+    }
+  }
 
   /** Compute the next hop node for a given next hop IP. */
   @Nullable
@@ -247,7 +293,10 @@ public class RoutesAnswererUtil {
       String hostName = routeRowKey.getHostName();
       String vrfName = routeRowKey.getVrfName();
       Prefix network = routeRowKey.getPrefix();
-      PresenceStatus networkPresenceStatus = diffRoutesOutput.getNetworkPresenceStatus();
+      KeyPresenceStatus networkKeyPresenceStatus = diffRoutesOutput.getNetworkKeyPresenceStatus();
+      RouteRowSecondaryKey routeRowSecondaryKey = diffRoutesOutput.getRouteRowSecondaryKey();
+      KeyPresenceStatus secondaryKeyPresenceStatus =
+          diffRoutesOutput.getRouteRowSecondaryKeyStatus();
 
       for (List<RouteRowAttribute> routeRowAttributeInBaseAndRef :
           diffRoutesOutput.getDiffInAttributes()) {
@@ -256,17 +305,17 @@ public class RoutesAnswererUtil {
             .put(COL_NODE, new Node(hostName))
             .put(COL_VRF_NAME, vrfName)
             .put(COL_NETWORK, network)
-            .put(COL_NETWORK_PRESENCE, networkPresenceStatus);
+            .put(COL_NETWORK_PRESENCE, networkKeyPresenceStatus);
 
         RouteRowAttribute routeRowAttributeBase = routeRowAttributeInBaseAndRef.get(0);
         RouteRowAttribute routeRowAttributeRef = routeRowAttributeInBaseAndRef.get(1);
-        PresenceStatus routePathPresenceStatus =
-            routeRowAttributeBase != null && routeRowAttributeRef != null
-                ? PresenceStatus.IN_BOTH
-                : routeRowAttributeBase != null
-                    ? PresenceStatus.ONLY_IN_SNAPSHOT
-                    : PresenceStatus.ONLY_IN_REFERENCE;
-        rowBuilder.put(COL_ROUTE_ENTRY_PRESENCE, routePathPresenceStatus);
+
+        rowBuilder.put(
+            COL_ROUTE_ENTRY_PRESENCE,
+            getRouteEntryPresence(
+                secondaryKeyPresenceStatus, routeRowAttributeBase, routeRowAttributeRef));
+
+        populateSecondaryKeyAttrs(routeRowSecondaryKey, secondaryKeyPresenceStatus, rowBuilder);
         populateBgpRouteAttributes(rowBuilder, routeRowAttributeBase, true);
         populateBgpRouteAttributes(rowBuilder, routeRowAttributeRef, false);
 
@@ -276,15 +325,73 @@ public class RoutesAnswererUtil {
     return rows;
   }
 
+  /**
+   * Populates the {@link RowBuilder} for differential answer of {@link RoutesAnswerer} with
+   * attributes of {@link RouteRowSecondaryKey} for base and reference snapshot
+   *
+   * @param routeRowSecondaryKey {@link RouteRowSecondaryKey} for the current {@link Row} of the
+   *     differential answer
+   * @param secondaryKeyPresence {@link KeyPresenceStatus} for the routeRowSecondaryKey
+   * @param rowBuilder {@link RowBuilder} for the current row
+   */
+  private static void populateSecondaryKeyAttrs(
+      RouteRowSecondaryKey routeRowSecondaryKey,
+      KeyPresenceStatus secondaryKeyPresence,
+      RowBuilder rowBuilder) {
+    Ip nextHopIp = routeRowSecondaryKey.getNextHopIp();
+    String protocol = routeRowSecondaryKey.getProtocol();
+    // populating base columns for secondary key if it is present in base snapshot or in both
+    // snapshots
+    if (secondaryKeyPresence == KeyPresenceStatus.IN_BOTH
+        || secondaryKeyPresence == KeyPresenceStatus.ONLY_IN_SNAPSHOT) {
+      rowBuilder
+          .put(COL_BASE_PREFIX + COL_NEXT_HOP_IP, nextHopIp)
+          .put(COL_BASE_PREFIX + COL_PROTOCOL, protocol);
+    }
+    // populating reference columns for secondary key if it is present in reference snapshot or in
+    // both snapshots
+    if (secondaryKeyPresence == KeyPresenceStatus.IN_BOTH
+        || secondaryKeyPresence == KeyPresenceStatus.ONLY_IN_REFERENCE) {
+      rowBuilder
+          .put(COL_DELTA_PREFIX + COL_NEXT_HOP_IP, nextHopIp)
+          .put(COL_DELTA_PREFIX + COL_PROTOCOL, protocol);
+    }
+  }
+
+  /**
+   * Computes RoutePresenceEntryStatus using secondary key status and pairs of routeRowAttributes in
+   * base and reference
+   */
+  private static RouteEntryPresenceStatus getRouteEntryPresence(
+      KeyPresenceStatus secondaryKeyStatus,
+      RouteRowAttribute routeRowAttributeBase,
+      RouteRowAttribute routeRowAttributeReference) {
+    RouteEntryPresenceStatus routeEntryPresenceStatus;
+    if (secondaryKeyStatus.equals(KeyPresenceStatus.IN_BOTH)) {
+      if (routeRowAttributeBase != null && routeRowAttributeReference != null) {
+        routeEntryPresenceStatus =
+            routeRowAttributeBase.equals(routeRowAttributeReference)
+                ? RouteEntryPresenceStatus.UNCHANGED
+                : RouteEntryPresenceStatus.CHANGED;
+
+      } else {
+        routeEntryPresenceStatus =
+            routeRowAttributeBase != null
+                ? RouteEntryPresenceStatus.ONLY_IN_SNAPSHOT
+                : RouteEntryPresenceStatus.ONLY_IN_REFERENCE;
+      }
+    } else {
+      routeEntryPresenceStatus =
+          secondaryKeyStatus == KeyPresenceStatus.ONLY_IN_REFERENCE
+              ? RouteEntryPresenceStatus.ONLY_IN_REFERENCE
+              : RouteEntryPresenceStatus.ONLY_IN_SNAPSHOT;
+    }
+    return routeEntryPresenceStatus;
+  }
+
   private static void populateBgpRouteAttributes(
       RowBuilder rowBuilder, @Nullable RouteRowAttribute routeRowAttribute, boolean base) {
     rowBuilder
-        .put(
-            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_NEXT_HOP_IP,
-            routeRowAttribute != null ? routeRowAttribute.getNextHopIp() : null)
-        .put(
-            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_PROTOCOL,
-            routeRowAttribute != null ? routeRowAttribute.getProtocol() : null)
         .put(
             (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_AS_PATH,
             routeRowAttribute != null && routeRowAttribute.getAsPath() != null
@@ -324,7 +431,11 @@ public class RoutesAnswererUtil {
       String vrfName = routeRowKey.getVrfName();
       Prefix network = routeRowKey.getPrefix();
 
-      PresenceStatus networkPresenceStatus = diffRoutesOutput.getNetworkPresenceStatus();
+      RouteRowSecondaryKey routeRowSecondaryKey = diffRoutesOutput.getRouteRowSecondaryKey();
+      KeyPresenceStatus secondaryKeyPresenceStatus =
+          diffRoutesOutput.getRouteRowSecondaryKeyStatus();
+
+      KeyPresenceStatus networkKeyPresenceStatus = diffRoutesOutput.getNetworkKeyPresenceStatus();
 
       for (List<RouteRowAttribute> routeRowAttributeInBaseAndRef :
           diffRoutesOutput.getDiffInAttributes()) {
@@ -333,18 +444,17 @@ public class RoutesAnswererUtil {
             .put(COL_NODE, new Node(hostName))
             .put(COL_VRF_NAME, vrfName)
             .put(COL_NETWORK, network)
-            .put(COL_NETWORK_PRESENCE, networkPresenceStatus);
+            .put(COL_NETWORK_PRESENCE, networkKeyPresenceStatus);
 
         RouteRowAttribute routeRowAttributeBase = routeRowAttributeInBaseAndRef.get(0);
         RouteRowAttribute routeRowAttributeRef = routeRowAttributeInBaseAndRef.get(1);
 
-        PresenceStatus routePathPresenceStatus =
-            routeRowAttributeBase != null && routeRowAttributeRef != null
-                ? PresenceStatus.IN_BOTH
-                : routeRowAttributeBase != null
-                    ? PresenceStatus.ONLY_IN_SNAPSHOT
-                    : PresenceStatus.ONLY_IN_REFERENCE;
-        rowBuilder.put(COL_ROUTE_ENTRY_PRESENCE, routePathPresenceStatus);
+        rowBuilder.put(
+            COL_ROUTE_ENTRY_PRESENCE,
+            getRouteEntryPresence(
+                secondaryKeyPresenceStatus, routeRowAttributeBase, routeRowAttributeRef));
+
+        populateSecondaryKeyAttrs(routeRowSecondaryKey, secondaryKeyPresenceStatus, rowBuilder);
         populateRouteAttributes(rowBuilder, routeRowAttributeBase, true);
         populateRouteAttributes(rowBuilder, routeRowAttributeRef, false);
         rows.add(rowBuilder.build());
@@ -360,12 +470,6 @@ public class RoutesAnswererUtil {
             (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_NEXT_HOP,
             routeRowAttribute != null ? routeRowAttribute.getNextHop() : null)
         .put(
-            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_NEXT_HOP_IP,
-            routeRowAttribute != null ? routeRowAttribute.getNextHopIp() : null)
-        .put(
-            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_PROTOCOL,
-            routeRowAttribute != null ? routeRowAttribute.getProtocol() : null)
-        .put(
             (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_METRIC,
             routeRowAttribute != null ? routeRowAttribute.getMetric() : null)
         .put(
@@ -377,9 +481,9 @@ public class RoutesAnswererUtil {
   }
 
   /**
-   * Given a {@link Set} of {@link AbstractRoute}s, groups the routes by the fields of {@link
-   * RouteRowKey} and for routes with the same key, sorts them according to {@link
-   * RouteRowAttribute}s
+   * Given a {@link Map} of all RIBs groups the routes in them by the fields of {@link RouteRowKey}
+   * and further sub-groups them by {@link RouteRowSecondaryKey} and for routes in the same
+   * sub-group, sorts them according to {@link RouteRowAttribute}s
    *
    * @param ribs {@link Map} of the RIBs
    * @param matchingNodes {@link Set} of nodes to be matched
@@ -387,17 +491,18 @@ public class RoutesAnswererUtil {
    * @param vrfRegex Regex to filter the VRF
    * @param protocolRegex Regex to filter the protocols of the routes
    * @param ipOwners {@link Map} of {@link Ip} to {@link Set} of owner nodes
-   * @return {@link Map} with {@link RouteRowKey}s and corresponding {@link SortedSet} of {@link
-   *     RouteRowAttribute}s
+   * @return {@link Map} of {@link RouteRowKey}s to corresponding sub{@link Map}s of {@link
+   *     RouteRowSecondaryKey} to {@link SortedSet} of {@link RouteRowAttribute}s
    */
-  static Map<RouteRowKey, SortedSet<RouteRowAttribute>> groupMatchingRoutesByPrefix(
+  static Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> groupRoutes(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
       Set<String> matchingNodes,
       @Nullable Prefix network,
       String vrfRegex,
       String protocolRegex,
       @Nullable Map<Ip, Set<String>> ipOwners) {
-    Map<RouteRowKey, SortedSet<RouteRowAttribute>> routesGroupedByPrefix = new HashMap<>();
+    Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> routesGroups =
+        new HashMap<>();
     Pattern compiledProtocolRegex = Pattern.compile(protocolRegex, Pattern.CASE_INSENSITIVE);
     Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
     ribs.forEach(
@@ -416,17 +521,17 @@ public class RoutesAnswererUtil {
                                         .matches())
                         .forEach(
                             route ->
-                                routesGroupedByPrefix
+                                routesGroups
                                     .computeIfAbsent(
                                         new RouteRowKey(node, vrfName, route.getNetwork()),
+                                        k -> new HashMap<>())
+                                    .computeIfAbsent(
+                                        new RouteRowSecondaryKey(
+                                            route.getNextHopIp(),
+                                            route.getProtocol().protocolName()),
                                         k -> new TreeSet<>())
                                     .add(
                                         RouteRowAttribute.builder()
-                                            .setProtocol(
-                                                route.getProtocol() != null
-                                                    ? route.getProtocol().protocolName()
-                                                    : null)
-                                            .setNextHopIp(route.getNextHopIp())
                                             .setNextHop(
                                                 computeNextHopNode(route.getNextHopIp(), ipOwners))
                                             .setAdminDistance(route.getAdministrativeCost())
@@ -437,25 +542,32 @@ public class RoutesAnswererUtil {
                 });
           }
         });
-    return routesGroupedByPrefix;
+    return routesGroups;
   }
 
   /**
    * Given a {@link Table} of {@link BgpRoute}s indexed by Node name and VRF name, applies given
-   * filters groups the routes by {@link RouteRowKey} and for the routes with the same key, sorts
-   * them according to {@link RouteRowAttribute}
+   * filters and groups the routes by {@link RouteRowKey} and sub-groups them further by {@link
+   * RouteRowSecondaryKey} and for the routes in same sub-groups, sorts them according to {@link
+   * RouteRowAttribute}
    *
-   * @param bgpRoutes {@link Table} of BGP routes with rows per node and columns per VRF
-   * @return {@link Map} with {@link RouteRowKey}s and corresponding {@link SortedSet} of {@link
-   *     RouteRowAttribute}s
+   * @param bgpRoutes {@link Table} of BGP routes with rows per node and columns per VRF * @param
+   *     ribs {@link Map} of the RIBs
+   * @param matchingNodes {@link Set} of nodes to be matched
+   * @param vrfRegex Regex to filter the VRF
+   * @param network {@link Prefix}
+   * @param protocolRegex Regex to filter the protocols of the routes
+   * @return {@link Map} of {@link RouteRowKey}s to corresponding sub{@link Map}s of {@link
+   *     RouteRowSecondaryKey} to {@link SortedSet} of {@link RouteRowAttribute}s
    */
-  static Map<RouteRowKey, SortedSet<RouteRowAttribute>> groupMatchingBgpRoutesByPrefix(
+  static Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> groupBgpRoutes(
       Table<String, String, Set<BgpRoute>> bgpRoutes,
       Set<String> matchingNodes,
       String vrfRegex,
       @Nullable Prefix network,
       String protocolRegex) {
-    Map<RouteRowKey, SortedSet<RouteRowAttribute>> bgpRoutesGroupedByPrefix = new HashMap<>();
+    Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> routesGroups =
+        new HashMap<>();
     Pattern compiledProtocolRegex = Pattern.compile(protocolRegex, Pattern.CASE_INSENSITIVE);
     Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
     matchingNodes.forEach(
@@ -475,14 +587,21 @@ public class RoutesAnswererUtil {
                                             .matches())
                             .forEach(
                                 route ->
-                                    bgpRoutesGroupedByPrefix
+                                    routesGroups
                                         .computeIfAbsent(
                                             new RouteRowKey(hostname, vrfName, route.getNetwork()),
+                                            k -> new HashMap<>())
+                                        .computeIfAbsent(
+                                            new RouteRowSecondaryKey(
+                                                route.getNextHopIp(),
+                                                route.getProtocol().protocolName()),
                                             k -> new TreeSet<>())
                                         .add(
                                             RouteRowAttribute.builder()
-                                                .setNextHopIp(route.getNextHopIp())
-                                                .setProtocol(route.getProtocol().protocolName())
+                                                .setOriginProtocol(
+                                                    route.getSrcProtocol() != null
+                                                        ? route.getSrcProtocol().protocolName()
+                                                        : null)
                                                 .setAdminDistance(route.getAdministrativeCost())
                                                 .setMetric(route.getMetric())
                                                 .setAsPath(route.getAsPath())
@@ -501,7 +620,7 @@ public class RoutesAnswererUtil {
                       }
                     }));
 
-    return bgpRoutesGroupedByPrefix;
+    return routesGroups;
   }
 
   /**
@@ -558,58 +677,154 @@ public class RoutesAnswererUtil {
   }
 
   /**
-   * Given two {@link Map}s containing mapping from {@link RouteRowKey} to {@link SortedSet} of
-   * {@link RouteRowAttribute}s produces diff in the form of a {@link List} of {@link
-   * DiffRoutesOutput}
+   * Given two {@link Map}s containing mapping from {@link RouteRowKey} to {@link Map}s of {@link
+   * RouteRowSecondaryKey} to {@link SortedSet} of {@link RouteRowAttribute}s, produces diff in the
+   * form of a {@link List} of {@link DiffRoutesOutput}
    *
-   * @param routesInBase {@link Map} containing mapping from {@link RouteRowKey} to {@link
-   *     SortedSet} of {@link RouteRowAttribute}s in the base snapshot
-   * @param routesInRef {@link Map} containing mapping from {@link RouteRowKey} to {@link SortedSet}
-   *     of {@link RouteRowAttribute}s in the reference snapshot
+   * @param routesInBase {@link Map} from {@link RouteRowKey} to {@link Map} of {@link
+   *     RouteRowSecondaryKey} to {@link SortedSet} of {@link RouteRowAttribute}s in the base
+   *     snapshot
+   * @param routesInRef {@link Map} from {@link RouteRowKey} to {@link Map} of {@link
+   *     RouteRowSecondaryKey} to {@link SortedSet} of {@link RouteRowAttribute}s in the ref
+   *     snapshot
    * @return {@link List} of {@link DiffRoutesOutput}
    */
   static List<DiffRoutesOutput> getRoutesDiff(
-      Map<RouteRowKey, SortedSet<RouteRowAttribute>> routesInBase,
-      Map<RouteRowKey, SortedSet<RouteRowAttribute>> routesInRef) {
+      Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> routesInBase,
+      Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> routesInRef) {
     Set<RouteRowKey> allRouteKeys = new HashSet<>(routesInBase.keySet());
     allRouteKeys.addAll(routesInRef.keySet());
 
-    List<DiffRoutesOutput> listOfDiffPerKeys = new ArrayList<>();
+    List<DiffRoutesOutput> listDiffs = new ArrayList<>();
     for (RouteRowKey routeRowKey : allRouteKeys) {
-      if (routesInBase.containsKey(routeRowKey) && routesInRef.containsKey(routeRowKey)) {
-        SortedSet<RouteRowAttribute> routeRowAttributesInBase = routesInBase.get(routeRowKey);
-        SortedSet<RouteRowAttribute> routeRowAttributesInRef = routesInRef.get(routeRowKey);
-        if (!routeRowAttributesInBase.equals(routeRowAttributesInRef)) {
-          listOfDiffPerKeys.add(
-              new DiffRoutesOutput(
-                  routeRowKey,
-                  alignRouteRowAttributes(
-                      new ArrayList<>(routeRowAttributesInBase),
-                      new ArrayList<>(routeRowAttributesInRef)),
-                  PresenceStatus.IN_BOTH));
+      Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> baseAttrsForRowKey =
+          routesInBase.get(routeRowKey);
+      Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> refAttrsForRowKey =
+          routesInRef.get(routeRowKey);
+
+      if (baseAttrsForRowKey != null && refAttrsForRowKey != null) {
+        // this network is present in routesInBase and routesInRef and respective values are
+        // different
+        if (!baseAttrsForRowKey.equals(refAttrsForRowKey)) {
+          listDiffs.addAll(getDiffPerKey(routeRowKey, baseAttrsForRowKey, refAttrsForRowKey));
         }
-      } else if (routesInBase.containsKey(routeRowKey)) {
-        SortedSet<RouteRowAttribute> routeRowAttributesInBase = routesInBase.get(routeRowKey);
-        // reference route attribute in the 2 column diff Matrix will be unset for elements
-        List<List<RouteRowAttribute>> diffMatrix =
-            routeRowAttributesInBase
+      } else if (baseAttrsForRowKey != null) {
+        baseAttrsForRowKey.forEach(
+            (key, value) -> {
+              // the nested list contains list of pairs of RouteRowAttributes with fist element and
+              // second element of the pair from base and reference snapshots respectively, second
+              // element is null to account for absence of this network in the reference snapshot
+              List<List<RouteRowAttribute>> diffMatrix =
+                  value
+                      .stream()
+                      .map(routeRowAttribute -> Lists.newArrayList(routeRowAttribute, null))
+                      .collect(Collectors.toList());
+              listDiffs.add(
+                  new DiffRoutesOutput(
+                      routeRowKey,
+                      key,
+                      KeyPresenceStatus.ONLY_IN_SNAPSHOT,
+                      diffMatrix,
+                      KeyPresenceStatus.ONLY_IN_SNAPSHOT));
+            });
+      } else {
+        refAttrsForRowKey.forEach(
+            (key, value) -> {
+              // the nested list contains list of pairs of RouteRowAttributes with fist element and
+              // second element of the pair from base and reference snapshots respectively, first
+              // element is null to account for absence of this network in the base snapshot
+              List<List<RouteRowAttribute>> diffMatrix =
+                  value
+                      .stream()
+                      .map(routeRowAttribute -> Lists.newArrayList(null, routeRowAttribute))
+                      .collect(Collectors.toList());
+              listDiffs.add(
+                  new DiffRoutesOutput(
+                      routeRowKey,
+                      key,
+                      KeyPresenceStatus.ONLY_IN_REFERENCE,
+                      diffMatrix,
+                      KeyPresenceStatus.ONLY_IN_REFERENCE));
+            });
+      }
+    }
+    return listDiffs;
+  }
+
+  /**
+   * Gets the diff in the form of {@link List} of {@link DiffRoutesOutput} for {@link
+   * RouteRowAttribute}s for a given {@link RouteRowKey}
+   *
+   * @param routeRowKey {@link RouteRowKey} for the {@link RouteRowAttribute}s in innerGroup1 and
+   *     innerGroup2
+   * @param innerGroup1 {@link Map} from {@link RouteRowSecondaryKey} to {@link SortedSet} of {@link
+   *     RouteRowAttribute}s for a given {@link RouteRowKey} in base snapshot
+   * @param innerGroup2 {@link Map} from {@link RouteRowSecondaryKey} to {@link SortedSet} of {@link
+   *     RouteRowAttribute}s for a given {@link RouteRowKey} in ref snapshot
+   * @return {@link List} of {@link DiffRoutesOutput}
+   */
+  @VisibleForTesting
+  static List<DiffRoutesOutput> getDiffPerKey(
+      RouteRowKey routeRowKey,
+      Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> innerGroup1,
+      Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> innerGroup2) {
+    Set<RouteRowSecondaryKey> allRouteKeys = new HashSet<>(innerGroup1.keySet());
+    allRouteKeys.addAll(innerGroup2.keySet());
+    List<DiffRoutesOutput> diffForThisKey = new ArrayList<>();
+    for (RouteRowSecondaryKey secondaryKey : allRouteKeys) {
+      // a nested list that contains list of pairs of RouteRowAttributes with fist element and
+      // second element from innerGroup1 and innerGroup2 respectively
+      List<List<RouteRowAttribute>> diffMatrix;
+      KeyPresenceStatus routeRowSecondaryKeyStatus;
+
+      if (innerGroup1.containsKey(secondaryKey) && innerGroup2.containsKey(secondaryKey)) {
+        routeRowSecondaryKeyStatus = KeyPresenceStatus.IN_BOTH;
+        // both groups have route for this next hop ip and protocol
+        SortedSet<RouteRowAttribute> routeRowAttributes1 = innerGroup1.get(secondaryKey);
+        SortedSet<RouteRowAttribute> routeRowAttributes2 = innerGroup2.get(secondaryKey);
+        if (routeRowAttributes1.size() == 1 && routeRowAttributes2.size() == 1) {
+          // no need to align since  only one RouteRowAttribute exists for this secondary key in
+          // innerGroup1 and innerGroup2
+          diffMatrix =
+              ImmutableList.of(
+                  ImmutableList.of(routeRowAttributes1.first(), routeRowAttributes2.first()));
+
+        } else {
+          // need to align since  number of RowRowAttributes for this secondary key is different in
+          // innerGroup1 and innerGroup2
+          diffMatrix =
+              alignRouteRowAttributes(
+                  new ArrayList<>(routeRowAttributes1), new ArrayList<>(routeRowAttributes2));
+        }
+      } else if (innerGroup1.containsKey(secondaryKey)) {
+        routeRowSecondaryKeyStatus = KeyPresenceStatus.ONLY_IN_SNAPSHOT;
+        // second element of RouteRowAttribute pairs will be null to account for absence of
+        // secondary key in innerGroup2
+        diffMatrix =
+            innerGroup1
+                .get(secondaryKey)
                 .stream()
                 .map(routeRowAttribute -> Lists.newArrayList(routeRowAttribute, null))
                 .collect(Collectors.toList());
-        listOfDiffPerKeys.add(
-            new DiffRoutesOutput(routeRowKey, diffMatrix, PresenceStatus.ONLY_IN_SNAPSHOT));
       } else {
-        SortedSet<RouteRowAttribute> routeRowAttributesInRef = routesInRef.get(routeRowKey);
-        // base route attribute in the 2 column diff Matrix will be unset for elements
-        List<List<RouteRowAttribute>> diffMatrix =
-            routeRowAttributesInRef
+        routeRowSecondaryKeyStatus = KeyPresenceStatus.ONLY_IN_REFERENCE;
+        // first element of RouteRowAttribute pairs will be null to account for absence of secondary
+        // key in innerGroup1
+        diffMatrix =
+            innerGroup2
+                .get(secondaryKey)
                 .stream()
                 .map(routeRowAttribute -> Lists.newArrayList(null, routeRowAttribute))
                 .collect(Collectors.toList());
-        listOfDiffPerKeys.add(
-            new DiffRoutesOutput(routeRowKey, diffMatrix, PresenceStatus.ONLY_IN_REFERENCE));
       }
+      diffForThisKey.add(
+          new DiffRoutesOutput(
+              routeRowKey,
+              secondaryKey,
+              routeRowSecondaryKeyStatus,
+              diffMatrix,
+              KeyPresenceStatus.IN_BOTH));
     }
-    return listOfDiffPerKeys;
+    return diffForThisKey;
   }
 }

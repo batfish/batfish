@@ -105,7 +105,7 @@ public class IosRoutingTableExtractor extends IosRoutingTableParserBaseListener
     List<Ip> nextHopIps =
         ctx.nexthops
             .stream()
-            .map(nextHopIpCtx -> new Ip(nextHopIpCtx.getText()))
+            .map(nextHopIpCtx -> Ip.parse(nextHopIpCtx.getText()))
             .collect(Collectors.toList());
     int numIterations = Math.max(nextHopIps.size(), nextHopInterfaces.size());
     for (int i = 0; i < numIterations; i++) {

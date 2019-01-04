@@ -129,7 +129,7 @@ public class DifferentialReachabilityTest {
             PathConstraintsInput.unconstrained());
     Batfish batfish = initBatfish();
     TableAnswerElement answer = new DifferentialReachabilityAnswerer(question, batfish).answer();
-    Ip dstIp = new Ip("2.2.2.2");
+    Ip dstIp = Ip.parse("2.2.2.2");
     assertThat(
         answer,
         hasRows(
@@ -169,7 +169,7 @@ public class DifferentialReachabilityTest {
 
     Batfish batfish = initBatfish();
     TableAnswerElement answer = new DifferentialReachabilityAnswerer(question, batfish).answer();
-    Ip dstIp = new Ip("2.2.2.2");
+    Ip dstIp = Ip.parse("2.2.2.2");
     assertThat(
         answer,
         hasRows(

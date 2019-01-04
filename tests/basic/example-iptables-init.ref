@@ -108,6 +108,18 @@
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
+      "convertStatus" : {
+        "internet-host" : "PASSED",
+        "r1" : "PASSED",
+        "r2" : "PASSED",
+        "r3" : "PASSED",
+        "z1-firewall" : "PASSED",
+        "z1-host1" : "PASSED",
+        "z1-host2" : "PASSED",
+        "z2-firewall" : "PASSED",
+        "z2-host1" : "PASSED",
+        "z2-host2" : "PASSED"
+      },
       "definedStructures" : {
         "configs/r1.cfg" : {
           "interface" : {

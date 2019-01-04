@@ -21,7 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class DisjunctsBuilderTest {
-  private static final AclLineMatchExpr DST_IP = matchDst(new Ip("1.2.3.4"));
+  private static final AclLineMatchExpr DST_IP = matchDst(Ip.parse("1.2.3.4"));
   private static final AclLineMatchExpr DST_PREFIX = matchDst(Prefix.parse("1.2.3.0/24"));
   private static final AclLineMatchExpr SRC_IP = matchSrcIp("2.3.4.5");
 

@@ -42,7 +42,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -140,6 +139,7 @@ import org.batfish.datamodel.answers.AnswerMetadataUtil;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ConvertStatus;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
@@ -238,7 +238,6 @@ import org.batfish.z3.Synthesizer;
 import org.batfish.z3.SynthesizerInputImpl;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.OrExpr;
-import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.jgrapht.Graph;
@@ -661,18 +660,28 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answer;
   }
 
-  private void computeAggregatedInterfaceBandwidth(
+  private static void computeAggregatedInterfaceBandwidth(
       Interface iface, Map<String, Interface> interfaces) {
-    if (iface.getInterfaceType() != InterfaceType.AGGREGATED) {
-      return;
+    if (iface.getInterfaceType() == InterfaceType.AGGREGATED) {
+      /* Bandwidth should be sum of bandwidth of channel-group members. */
+      iface.setBandwidth(
+          iface
+              .getChannelGroupMembers()
+              .stream()
+              .mapToDouble(ifaceName -> interfaces.get(ifaceName).getBandwidth())
+              .sum());
+    } else if (iface.getInterfaceType() == InterfaceType.AGGREGATE_CHILD) {
+      /* Bandwidth for aggregate child interfaces (e.g. units) should be inherited from the parent. */
+      iface
+          .getDependencies()
+          .stream()
+          .filter(d -> d.getType() == DependencyType.BIND)
+          .findFirst()
+          .map(Dependency::getInterfaceName)
+          .map(interfaces::get)
+          .map(Interface::getBandwidth)
+          .ifPresent(iface::setBandwidth);
     }
-    /* Bandwidth should be sum of bandwidth of channel-group members. */
-    iface.setBandwidth(
-        iface
-            .getChannelGroupMembers()
-            .stream()
-            .mapToDouble(ifaceName -> interfaces.get(ifaceName).getBandwidth())
-            .sum());
   }
 
   public static Warnings buildWarnings(Settings settings) {
@@ -1917,9 +1926,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     ConvertConfigurationAnswerElement convertAnswer =
         loadConvertConfigurationAnswerElementOrReparse();
     mergeInitStepAnswer(answerElement, convertAnswer, summary, verboseError);
-    for (String failed : convertAnswer.getFailed()) {
-      answerElement.getParseStatus().put(failed, ParseStatus.FAILED);
-    }
+    convertAnswer
+        .getConvertStatus()
+        .entrySet()
+        .stream()
+        .filter(s -> s.getValue() == ConvertStatus.FAILED)
+        .forEach(s -> answerElement.getParseStatus().put(s.getKey(), ParseStatus.FAILED));
   }
 
   private void mergeInitStepAnswer(
@@ -2406,19 +2418,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     interfaces.forEach(
         (ifaceName, iface) -> populateChannelGroupMembers(interfaces, ifaceName, iface));
 
-    /* Disable aggregated interfaces with no members. */
-    interfaces
-        .values()
-        .stream()
-        .filter(
-            i ->
-                i.getInterfaceType() == InterfaceType.AGGREGATED
-                    && i.getChannelGroupMembers().isEmpty()
-                    // TODO: Temporary hack to avoid disabling juniper AE unit interfaces
-                    && !i.getName().startsWith("ae")
-                    && !i.getName().contains("."))
-        .forEach(i -> i.setActive(false));
-
     /* Compute bandwidth for aggregated interfaces. */
     interfaces.values().forEach(iface -> computeAggregatedInterfaceBandwidth(iface, interfaces));
 
@@ -2524,7 +2523,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .stream()
             .filter(d -> d.getType() == DependencyType.AGGREGATE)
             .collect(ImmutableSet.toImmutableSet());
-    if (!aggregateDependencies.isEmpty()
+    if (iface.getInterfaceType() == InterfaceType.AGGREGATED
         && aggregateDependencies
             .stream()
             // Extract existing and active interfaces
@@ -2559,53 +2558,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     for (ExternalBgpAdvertisementPlugin plugin : _externalBgpAdvertisementPlugins) {
       Set<BgpAdvertisement> currentAdvertisements = plugin.loadExternalBgpAdvertisements();
       advertSet.addAll(currentAdvertisements);
-    }
-    return advertSet;
-  }
-
-  /**
-   * Reads the external bgp announcement specified in the environment, and populates the
-   * vendor-independent configurations with data about those announcements
-   *
-   * @param configurations The vendor-independent configurations to be modified
-   */
-  public Set<BgpAdvertisement> processExternalBgpAnnouncements(
-      Map<String, Configuration> configurations, SortedSet<Long> allCommunities) {
-    Set<BgpAdvertisement> advertSet = new LinkedHashSet<>();
-    Path externalBgpAnnouncementsPath = _testrigSettings.getExternalBgpAnnouncementsPath();
-    if (Files.exists(externalBgpAnnouncementsPath)) {
-      String externalBgpAnnouncementsFileContents =
-          CommonUtil.readFile(externalBgpAnnouncementsPath);
-      // Populate advertSet with BgpAdvertisements that
-      // gets passed to populatePrecomputedBgpAdvertisements.
-      // See populatePrecomputedBgpAdvertisements for the things that get
-      // extracted from these advertisements.
-
-      try {
-        JSONObject jsonObj = new JSONObject(externalBgpAnnouncementsFileContents);
-
-        JSONArray announcements = jsonObj.getJSONArray(BfConsts.PROP_BGP_ANNOUNCEMENTS);
-
-        for (int index = 0; index < announcements.length(); index++) {
-          JSONObject announcement = new JSONObject();
-          announcement.put("@id", index);
-          JSONObject announcementSrc = announcements.getJSONObject(index);
-          for (Iterator<?> i = announcementSrc.keys(); i.hasNext(); ) {
-            String key = (String) i.next();
-            if (!key.equals("@id")) {
-              announcement.put(key, announcementSrc.get(key));
-            }
-          }
-          BgpAdvertisement bgpAdvertisement =
-              BatfishObjectMapper.mapper()
-                  .readValue(announcement.toString(), BgpAdvertisement.class);
-          allCommunities.addAll(bgpAdvertisement.getCommunities());
-          advertSet.add(bgpAdvertisement);
-        }
-
-      } catch (JSONException | IOException e) {
-        throw new BatfishException("Problems parsing JSON in " + externalBgpAnnouncementsPath, e);
-      }
     }
     return advertSet;
   }

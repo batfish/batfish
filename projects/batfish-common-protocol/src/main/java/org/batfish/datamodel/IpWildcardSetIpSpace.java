@@ -95,24 +95,6 @@ public final class IpWildcardSetIpSpace extends IpSpace {
   }
 
   @Override
-  public IpSpace complement() {
-    /*
-     * the current is first reject everything in blacklist.
-     * then of what's left over accept everything in whitelist.
-     * and then reject everything else
-     *
-     * the complement then is to accept everything in the blacklist
-     * then reject everything in the whitelist
-     * then accept everything else.
-     */
-    AclIpSpace.Builder builder = AclIpSpace.builder();
-    _blacklist.stream().map(IpWildcard::toIpSpace).forEach(builder::thenPermitting);
-    _whitelist.stream().map(IpWildcard::toIpSpace).forEach(builder::thenRejecting);
-    builder.thenPermitting(UniverseIpSpace.INSTANCE);
-    return builder.build();
-  }
-
-  @Override
   public boolean containsIp(Ip ip, Map<String, IpSpace> namedIpSpaces) {
     return _blacklist.stream().noneMatch(w -> w.containsIp(ip))
         && _whitelist.stream().anyMatch(w -> w.containsIp(ip));

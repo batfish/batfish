@@ -152,12 +152,19 @@
                     "type" : "EnterInputInterface",
                     "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "OUTSIDE_TO_INSIDE",
                       "inputInterface" : {
                         "hostname" : "as2border1",
                         "interface" : "GigabitEthernet0/0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "OUTSIDE_TO_INSIDE",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -329,14 +336,21 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "DENIED",
+                    "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "filter::INPUT",
                       "inputInterface" : {
                         "hostname" : "host1",
                         "interface" : "eth0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "DENIED",
+                    "detail" : {
+                      "filter" : "filter::INPUT",
+                      "type" : "INGRESS_FILTER"
                     }
                   }
                 ]
@@ -440,12 +454,19 @@
                     "type" : "EnterInputInterface",
                     "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "OUTSIDE_TO_INSIDE",
                       "inputInterface" : {
                         "hostname" : "as2border1",
                         "interface" : "GigabitEthernet0/0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "OUTSIDE_TO_INSIDE",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -617,14 +638,21 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "DENIED",
+                    "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "filter::INPUT",
                       "inputInterface" : {
                         "hostname" : "host1",
                         "interface" : "eth0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "DENIED",
+                    "detail" : {
+                      "filter" : "filter::INPUT",
+                      "type" : "INGRESS_FILTER"
                     }
                   }
                 ]
@@ -728,12 +756,19 @@
                     "type" : "EnterInputInterface",
                     "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "OUTSIDE_TO_INSIDE",
                       "inputInterface" : {
                         "hostname" : "as2border1",
                         "interface" : "GigabitEthernet0/0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "OUTSIDE_TO_INSIDE",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -905,14 +940,21 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "DENIED",
+                    "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "filter::INPUT",
                       "inputInterface" : {
                         "hostname" : "host1",
                         "interface" : "eth0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "DENIED",
+                    "detail" : {
+                      "filter" : "filter::INPUT",
+                      "type" : "INGRESS_FILTER"
                     }
                   }
                 ]
@@ -1016,12 +1058,19 @@
                     "type" : "EnterInputInterface",
                     "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "OUTSIDE_TO_INSIDE",
                       "inputInterface" : {
                         "hostname" : "as2border1",
                         "interface" : "GigabitEthernet0/0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "OUTSIDE_TO_INSIDE",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -1193,14 +1242,21 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "DENIED",
+                    "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "filter::INPUT",
                       "inputInterface" : {
                         "hostname" : "host1",
                         "interface" : "eth0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "DENIED",
+                    "detail" : {
+                      "filter" : "filter::INPUT",
+                      "type" : "INGRESS_FILTER"
                     }
                   }
                 ]
@@ -1334,12 +1390,19 @@
                     "type" : "EnterInputInterface",
                     "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "OUTSIDE_TO_INSIDE",
                       "inputInterface" : {
                         "hostname" : "as2border1",
                         "interface" : "GigabitEthernet0/0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "OUTSIDE_TO_INSIDE",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -1511,14 +1574,21 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "DENIED",
+                    "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "filter::INPUT",
                       "inputInterface" : {
                         "hostname" : "host1",
                         "interface" : "eth0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "DENIED",
+                    "detail" : {
+                      "filter" : "filter::INPUT",
+                      "type" : "INGRESS_FILTER"
                     }
                   }
                 ]
@@ -1622,12 +1692,19 @@
                     "type" : "EnterInputInterface",
                     "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "OUTSIDE_TO_INSIDE",
                       "inputInterface" : {
                         "hostname" : "as2border1",
                         "interface" : "GigabitEthernet0/0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "OUTSIDE_TO_INSIDE",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -1799,14 +1876,21 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "DENIED",
+                    "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "filter::INPUT",
                       "inputInterface" : {
                         "hostname" : "host1",
                         "interface" : "eth0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "DENIED",
+                    "detail" : {
+                      "filter" : "filter::INPUT",
+                      "type" : "INGRESS_FILTER"
                     }
                   }
                 ]
@@ -1910,12 +1994,19 @@
                     "type" : "EnterInputInterface",
                     "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "OUTSIDE_TO_INSIDE",
                       "inputInterface" : {
                         "hostname" : "as2border1",
                         "interface" : "GigabitEthernet0/0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "OUTSIDE_TO_INSIDE",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -2087,14 +2178,21 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "DENIED",
+                    "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "filter::INPUT",
                       "inputInterface" : {
                         "hostname" : "host1",
                         "interface" : "eth0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "DENIED",
+                    "detail" : {
+                      "filter" : "filter::INPUT",
+                      "type" : "INGRESS_FILTER"
                     }
                   }
                 ]
@@ -2198,12 +2296,19 @@
                     "type" : "EnterInputInterface",
                     "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "OUTSIDE_TO_INSIDE",
                       "inputInterface" : {
                         "hostname" : "as2border1",
                         "interface" : "GigabitEthernet0/0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "PERMITTED",
+                    "detail" : {
+                      "filter" : "OUTSIDE_TO_INSIDE",
+                      "type" : "INGRESS_FILTER"
                     }
                   },
                   {
@@ -2375,14 +2480,21 @@
                 "steps" : [
                   {
                     "type" : "EnterInputInterface",
-                    "action" : "DENIED",
+                    "action" : "RECEIVED",
                     "detail" : {
-                      "inputFilter" : "filter::INPUT",
                       "inputInterface" : {
                         "hostname" : "host1",
                         "interface" : "eth0"
                       },
                       "inputVrf" : "default"
+                    }
+                  },
+                  {
+                    "type" : "Filter",
+                    "action" : "DENIED",
+                    "detail" : {
+                      "filter" : "filter::INPUT",
+                      "type" : "INGRESS_FILTER"
                     }
                   }
                 ]

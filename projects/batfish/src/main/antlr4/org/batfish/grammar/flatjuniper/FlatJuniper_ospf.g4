@@ -201,11 +201,26 @@ oai_interface_type
 oai_ldp_synchronization
 :
    LDP_SYNCHRONIZATION
+   (
+       apply
+       | oai_ls_disable
+       | oai_ls_hold_time
+   )
 ;
 
 oai_link_protection
 :
    LINK_PROTECTION
+;
+
+oai_ls_disable
+:
+   DISABLE
+;
+
+oai_ls_hold_time
+:
+   HOLD_TIME time = DEC
 ;
 
 oai_metric

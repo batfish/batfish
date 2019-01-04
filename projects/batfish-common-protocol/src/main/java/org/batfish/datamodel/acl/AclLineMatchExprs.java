@@ -71,7 +71,7 @@ public final class AclLineMatchExprs {
   }
 
   public static MatchHeaderSpace matchDstIp(String ip) {
-    return matchDst(new Ip(ip).toIpSpace());
+    return matchDst(Ip.parse(ip).toIpSpace());
   }
 
   public static AclLineMatchExpr matchDstPrefix(String prefix) {
@@ -91,7 +91,7 @@ public final class AclLineMatchExprs {
   }
 
   public static MatchHeaderSpace matchSrcIp(String ip) {
-    return matchSrc(new Ip(ip).toIpSpace());
+    return matchSrc(Ip.parse(ip).toIpSpace());
   }
 
   public static MatchHeaderSpace matchSrcPrefix(String prefix) {

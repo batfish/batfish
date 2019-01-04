@@ -131,8 +131,8 @@ public class RdsInstanceTest {
   @Test
   public void testDefaultRoute() throws IOException {
     Map<String, Configuration> configurations = loadAwsConfigurations();
-    StaticRoute defaultRoute1 = _staticRouteBuilder.setNextHopIp(new Ip("172.31.0.1")).build();
-    StaticRoute defaultRoute2 = _staticRouteBuilder.setNextHopIp(new Ip("192.168.2.17")).build();
+    StaticRoute defaultRoute1 = _staticRouteBuilder.setNextHopIp(Ip.parse("172.31.0.1")).build();
+    StaticRoute defaultRoute2 = _staticRouteBuilder.setNextHopIp(Ip.parse("192.168.2.17")).build();
 
     // checking that both default routes exist(to both the subnets) in RDS instance
     assertThat(configurations, hasKey("test-rds"));

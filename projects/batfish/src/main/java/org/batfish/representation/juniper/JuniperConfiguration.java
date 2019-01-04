@@ -37,7 +37,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.AuthenticationKey;
 import org.batfish.datamodel.AuthenticationKeyChain;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -158,7 +157,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private static final String DEFAULT_BGP_IMPORT_POLICY_NAME = "~DEFAULT_BGP_IMPORT_POLICY~";
 
-  @VisibleForTesting static final long DEFAULT_ISIS_COST = 10L;
+  @VisibleForTesting static final int DEFAULT_ISIS_COST = 10;
+
+  /** Maximum IS-IS route cost if wide-metrics-only is not set */
+  @VisibleForTesting static final int MAX_ISIS_COST_WITHOUT_WIDE_METRICS = 63;
 
   private static final String FIRST_LOOPBACK_INTERFACE_NAME = "lo0";
 
@@ -616,12 +618,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (level1) {
       newInterfaceSettingsBuilder.setLevel1(
           toIsisInterfaceLevelSettings(
-              interfaceSettings, interfaceSettings.getLevel1Settings(), defaultCost));
+              settings.getLevel1Settings(),
+              interfaceSettings,
+              interfaceSettings.getLevel1Settings(),
+              defaultCost));
     }
     if (level2) {
       newInterfaceSettingsBuilder.setLevel2(
           toIsisInterfaceLevelSettings(
-              interfaceSettings, interfaceSettings.getLevel2Settings(), defaultCost));
+              settings.getLevel2Settings(),
+              interfaceSettings,
+              interfaceSettings.getLevel2Settings(),
+              defaultCost));
     }
     return newInterfaceSettingsBuilder
         .setBfdLivenessDetectionMinimumInterval(
@@ -633,15 +641,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.isis.IsisInterfaceLevelSettings toIsisInterfaceLevelSettings(
+      IsisLevelSettings levelSettings,
       IsisInterfaceSettings interfaceSettings,
-      IsisInterfaceLevelSettings settings,
+      IsisInterfaceLevelSettings interfaceLevelSettings,
       long defaultCost) {
+    long cost = firstNonNull(interfaceLevelSettings.getMetric(), defaultCost);
+    if (!levelSettings.getWideMetricsOnly()) {
+      cost = Math.min(cost, MAX_ISIS_COST_WITHOUT_WIDE_METRICS);
+    }
     return org.batfish.datamodel.isis.IsisInterfaceLevelSettings.builder()
-        .setCost(firstNonNull(settings.getMetric(), defaultCost))
-        .setHelloAuthenticationKey(settings.getHelloAuthenticationKey())
-        .setHelloAuthenticationType(settings.getHelloAuthenticationType())
-        .setHelloInterval(settings.getHelloInterval())
-        .setHoldTime(settings.getHoldTime())
+        .setCost(cost)
+        .setHelloAuthenticationKey(interfaceLevelSettings.getHelloAuthenticationKey())
+        .setHelloAuthenticationType(interfaceLevelSettings.getHelloAuthenticationType())
+        .setHelloInterval(interfaceLevelSettings.getHelloInterval())
+        .setHoldTime(interfaceLevelSettings.getHoldTime())
         .setMode(
             interfaceSettings.getPassive() ? IsisInterfaceMode.PASSIVE : IsisInterfaceMode.ACTIVE)
         .build();
@@ -946,6 +959,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       newRoute.setTag(route.getTag());
     }
 
+    newRoute.setDiscard(firstNonNull(route.getDrop(), Boolean.FALSE));
+
     return newRoute.build();
   }
 
@@ -965,7 +980,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       newRoute.setTag(route.getTag());
     }
 
-    // sole semantic difference from generated route
+    // sole semantic difference from generated route: aggregate routes are "reject" by default.
+    // Note that this can be overridden to "discard", but we model both as discard in Batfish
+    // semantics since the sole difference is whether ICMP unreachables are sent.
     newRoute.setDiscard(true);
 
     return newRoute.build();
@@ -1843,23 +1860,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
               // If this address book references other entries, add them to an AclIpSpace
               if (!entry.getEntries().isEmpty()) {
-                ImmutableList.Builder<AclIpSpaceLine> aclIpSpaceLineBuilder =
-                    ImmutableList.builder();
+                AclIpSpace.Builder aclIpSpaceBuilder = AclIpSpace.builder();
                 entry
                     .getEntries()
                     .keySet()
                     .forEach(
                         name -> {
                           String subEntryName = bookName + "~" + name;
-                          aclIpSpaceLineBuilder.add(
-                              AclIpSpaceLine.builder()
-                                  .setIpSpace(new IpSpaceReference(subEntryName))
-                                  .setAction(LineAction.PERMIT)
-                                  .build());
+                          aclIpSpaceBuilder.thenPermitting(new IpSpaceReference(subEntryName));
                         });
-                ipSpaces.put(
-                    entryName,
-                    AclIpSpace.builder().setLines(aclIpSpaceLineBuilder.build()).build());
+                ipSpaces.put(entryName, aclIpSpaceBuilder.build());
               } else {
                 ipSpaces.put(
                     entryName,
@@ -2075,9 +2085,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .setAdministrativeCost(route.getDistance())
             .setMetric(route.getMetric())
             .setTag(tag)
+            .setNonForwarding(firstNonNull(route.getNoInstall(), Boolean.FALSE))
             .build();
-
-    newStaticRoute.setNonForwarding(firstNonNull(route.getNoInstall(), Boolean.FALSE));
     return newStaticRoute;
   }
 
@@ -2128,7 +2137,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem.getDnsServers().clear();
     _masterLogicalSystem.getDnsServers().addAll(ls.getDnsServers());
     _masterLogicalSystem.getFirewallFilters().putAll(ls.getFirewallFilters());
-    _masterLogicalSystem.getGlobalAddressBooks().putAll(ls.getGlobalAddressBooks());
+    _masterLogicalSystem.getAddressBooks().putAll(ls.getAddressBooks());
     _masterLogicalSystem.getIkeGateways().clear();
     _masterLogicalSystem.getIkeGateways().putAll(ls.getIkeGateways());
     _masterLogicalSystem.getIkePolicies().clear();
@@ -2220,6 +2229,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _c.getVrfs().put(riName, new Vrf(riName));
     }
 
+    // process interface ranges. this changes the _interfaces map
+    _masterLogicalSystem.expandInterfaceRanges();
+
     // convert prefix lists to route filter lists
     for (Entry<String, PrefixList> e : _masterLogicalSystem.getPrefixLists().entrySet()) {
       String name = e.getKey();
@@ -2237,7 +2249,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // Convert AddressBooks to IpSpaces
     _masterLogicalSystem
-        .getGlobalAddressBooks()
+        .getAddressBooks()
         .forEach(
             (name, addressBook) -> {
               Map<String, IpSpace> ipspaces = toIpSpaces(name, addressBook);

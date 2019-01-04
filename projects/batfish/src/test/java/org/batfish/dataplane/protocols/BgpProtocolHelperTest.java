@@ -31,7 +31,7 @@ public final class BgpProtocolHelperTest {
     BgpActivePeerConfig fromNeighbor = nf.bgpNeighborBuilder().build();
     BgpPeerConfig toNeighbor = nf.bgpNeighborBuilder().build();
     BgpSessionProperties sessionProperties = BgpSessionProperties.from(fromNeighbor, toNeighbor);
-    Ip fromVrfIp = new Ip("2.2.2.2");
+    Ip fromVrfIp = Ip.parse("2.2.2.2");
     Vrf fromVrf = nf.vrfBuilder().build();
     nf.bgpProcessBuilder().setVrf(fromVrf).setRouterId(fromVrfIp).build();
     assertNotNull(fromVrf.getBgpProcess());
@@ -62,12 +62,12 @@ public final class BgpProtocolHelperTest {
     Vrf toVrf = nf.vrfBuilder().build();
     BgpRoute route =
         new BgpRoute.Builder()
-            .setOriginatorIp(new Ip("1.1.1.1"))
+            .setOriginatorIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.IGP)
             .setCommunities(ImmutableSortedSet.of(WellKnownCommunity.NO_ADVERTISE))
             .setNetwork(Prefix.ZERO)
             .setProtocol(RoutingProtocol.IBGP)
-            .setReceivedFromIp(new Ip("2.2.2.2"))
+            .setReceivedFromIp(Ip.parse("2.2.2.2"))
             .build();
     BgpRoute.Builder transformedRoute =
         BgpProtocolHelper.transformBgpRouteOnExport(

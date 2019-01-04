@@ -76,10 +76,10 @@ public class BgpTopologyUtilsTest {
     // Peer 2 on node2 with IP 2.2.2.2 is passive, with remote prefix 1.1.1.0/24
     // Should see one edge in BGP topology: peer 1 to peer 2
 
-    Ip ip1 = new Ip("1.1.1.1");
-    Ip ip2 = new Ip("2.2.2.2");
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("2.2.2.2");
 
-    Prefix peer1PeerPrefix = new Prefix(ip2, 32);
+    Prefix peer1PeerPrefix = Prefix.create(ip2, 32);
     BgpActivePeerConfig peer1 =
         BgpActivePeerConfig.builder()
             .setLocalIp(ip1)
@@ -89,7 +89,7 @@ public class BgpTopologyUtilsTest {
             .build();
     _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(peer1PeerPrefix, peer1));
 
-    Prefix peer2PeerPrefix = new Prefix(ip1, 24);
+    Prefix peer2PeerPrefix = Prefix.create(ip1, 24);
     BgpPassivePeerConfig peer2 =
         BgpPassivePeerConfig.builder()
             .setLocalIp(Ip.AUTO)
@@ -117,11 +117,11 @@ public class BgpTopologyUtilsTest {
     // Peer 3 has the same configuration as peer 2, but on node3 with IP 1.1.1.3
     // Should see one edge in BGP topology: peer 1 to peer 2
 
-    Ip ip1 = new Ip("1.1.1.1");
-    Ip ip2 = new Ip("1.1.1.2");
-    Ip ip3 = new Ip("1.1.1.3");
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("1.1.1.2");
+    Ip ip3 = Ip.parse("1.1.1.3");
 
-    Prefix peer1PeerPrefix = new Prefix(ip2, 32);
+    Prefix peer1PeerPrefix = Prefix.create(ip2, 32);
     BgpActivePeerConfig peer1 =
         BgpActivePeerConfig.builder()
             .setLocalIp(ip1)
@@ -131,7 +131,7 @@ public class BgpTopologyUtilsTest {
             .build();
     _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(peer1PeerPrefix, peer1));
 
-    Prefix prefixForPeer1 = new Prefix(ip1, 24);
+    Prefix prefixForPeer1 = Prefix.create(ip1, 24);
     BgpPassivePeerConfig.Builder passivePeerBuilder =
         BgpPassivePeerConfig.builder()
             .setLocalIp(Ip.AUTO)

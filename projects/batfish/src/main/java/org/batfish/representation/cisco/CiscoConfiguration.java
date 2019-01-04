@@ -6,6 +6,7 @@ import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.computeInterfaceType;
+import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
@@ -79,6 +80,8 @@ import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.IkeProposal;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
@@ -111,6 +114,7 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -123,6 +127,7 @@ import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
+import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
@@ -582,10 +587,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
       BooleanExpr expr, OriginType originType) {
     WithEnvironmentExpr we = new WithEnvironmentExpr();
     we.setExpr(expr);
-    we.getPreStatements().add(Statements.SetWriteIntermediateBgpAttributes.toStaticStatement());
-    we.getPostStatements().add(Statements.UnsetWriteIntermediateBgpAttributes.toStaticStatement());
-    we.getPostTrueStatements().add(Statements.SetReadIntermediateBgpAttributes.toStaticStatement());
-    we.getPostTrueStatements().add(new SetOrigin(new LiteralOrigin(originType, null)));
+    we.setPreStatements(
+        ImmutableList.of(Statements.SetWriteIntermediateBgpAttributes.toStaticStatement()));
+    we.setPostStatements(
+        ImmutableList.of(Statements.UnsetWriteIntermediateBgpAttributes.toStaticStatement()));
+    we.setPostTrueStatements(
+        ImmutableList.of(
+            Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
+            new SetOrigin(new LiteralOrigin(originType, null))));
     return we;
   }
 
@@ -2126,7 +2135,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     boolean level1 = false;
     boolean level2 = false;
     IsisProcess isisProcess = vrf.getIsisProcess();
-    if (isisProcess != null) {
+    if (isisProcess != null && iface.getIsisInterfaceMode() != IsisInterfaceMode.UNSET) {
       switch (isisProcess.getLevel()) {
         case LEVEL_1:
           level1 = true;
@@ -2166,7 +2175,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       encapsulation = SwitchportEncapsulationType.DOT1Q;
     }
     newIface.setSwitchportTrunkEncapsulation(encapsulation);
-    newIface.addAllowedRanges(iface.getAllowedVlans());
+    if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
+      newIface.setAllowedVlans(iface.getAllowedVlans());
+    }
 
     String incomingFilterName = iface.getIncomingFilter();
     if (incomingFilterName != null) {
@@ -3107,6 +3118,31 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
           c.getAllInterfaces().put(newIfaceName, newInterface);
           c.getVrfs().get(vrfName).getInterfaces().put(newIfaceName, newInterface);
+        });
+    /*
+     * Second pass over the interfaces to set dependency pointers correctly for portchannels
+     * and tunnel interfaces
+     * TODO: VLAN interfaces
+     */
+    _interfaces.forEach(
+        (ifaceName, iface) -> {
+          // Portchannels
+          String chGroup = iface.getChannelGroup();
+          if (chGroup != null) {
+            org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(chGroup);
+            if (viIface != null) {
+              viIface.addDependency(new Dependency(ifaceName, DependencyType.AGGREGATE));
+            }
+          }
+          // Tunnels
+          Tunnel tunnel = iface.getTunnel();
+          if (tunnel != null && isRealInterfaceName(tunnel.getSourceInterfaceName())) {
+            org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
+            if (viIface != null) {
+              viIface.addDependency(
+                  new Dependency(tunnel.getSourceInterfaceName(), DependencyType.BIND));
+            }
+          }
         });
 
     // copy tracking groups

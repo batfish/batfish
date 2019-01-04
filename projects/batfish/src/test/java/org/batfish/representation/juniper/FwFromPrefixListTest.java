@@ -48,7 +48,7 @@ public class FwFromPrefixListTest {
 
   @Test
   public void testApplyTo() {
-    IpSpace additionalIpSpace = new Ip("2.2.2.2").toIpSpace();
+    IpSpace additionalIpSpace = Ip.parse("2.2.2.2").toIpSpace();
     IpSpace baseIpSpace = new IpWildcard(BASE_IP_PREFIX).toIpSpace();
 
     HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();

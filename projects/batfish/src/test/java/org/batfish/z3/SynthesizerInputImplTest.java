@@ -175,11 +175,11 @@ public class SynthesizerInputImplTest {
                 ImmutableList.of(
                     IpAccessListLine.acceptingHeaderSpace(
                         HeaderSpace.builder()
-                            .setDstIps(ImmutableSet.of(new IpWildcard(new Ip("1.2.3.4"))))
+                            .setDstIps(ImmutableSet.of(new IpWildcard(Ip.parse("1.2.3.4"))))
                             .build()),
                     IpAccessListLine.acceptingHeaderSpace(
                         HeaderSpace.builder()
-                            .setDstIps(ImmutableSet.of(new IpWildcard(new Ip("5.6.7.8"))))
+                            .setDstIps(ImmutableSet.of(new IpWildcard(Ip.parse("5.6.7.8"))))
                             .build())))
             .build();
     Vrf vrf = _vb.setOwner(c).build();
@@ -213,10 +213,10 @@ public class SynthesizerInputImplTest {
     Configuration nextHop = _cb.build();
     Vrf srcVrf = _vb.setOwner(srcNode).build();
     Vrf nextHopVrf = _vb.setOwner(nextHop).build();
-    Ip ip11 = new Ip("1.0.0.0");
-    Ip ip12 = new Ip("1.0.0.10");
-    Ip ip21 = new Ip("2.0.0.0");
-    Ip ip22 = new Ip("2.0.0.10");
+    Ip ip11 = Ip.parse("1.0.0.0");
+    Ip ip12 = Ip.parse("1.0.0.10");
+    Ip ip21 = Ip.parse("2.0.0.0");
+    Ip ip22 = Ip.parse("2.0.0.10");
     IpAccessList sourceNat1Acl = _aclb.setLines(ImmutableList.of()).setOwner(srcNode).build();
     IpAccessList sourceNat2Acl = _aclb.build();
     SourceNat sourceNat1 =
@@ -439,9 +439,9 @@ public class SynthesizerInputImplTest {
     Configuration c = _cb.build();
     Vrf v = _vb.setOwner(c).build();
     // Enabled but not flow sink. Should not appear in enabledFlowSinks.
-    Ip ipEnabled1 = new Ip("1.1.1.1");
-    Ip ipEnabled2 = new Ip("2.2.2.2");
-    Ip ipDisabled = new Ip("3.3.3.3");
+    Ip ipEnabled1 = Ip.parse("1.1.1.1");
+    Ip ipEnabled2 = Ip.parse("2.2.2.2");
+    Ip ipDisabled = Ip.parse("3.3.3.3");
     // enabledInterface1
     _ib.setOwner(c)
         .setVrf(v)
@@ -534,10 +534,10 @@ public class SynthesizerInputImplTest {
     Configuration nextHop = _cb.build();
     Vrf srcVrf = _vb.setOwner(srcNode).build();
     Vrf nextHopVrf = _vb.setOwner(nextHop).build();
-    Ip ip11 = new Ip("1.0.0.0");
-    Ip ip12 = new Ip("1.0.0.10");
-    Ip ip21 = new Ip("2.0.0.0");
-    Ip ip22 = new Ip("2.0.0.10");
+    Ip ip11 = Ip.parse("1.0.0.0");
+    Ip ip12 = Ip.parse("1.0.0.10");
+    Ip ip21 = Ip.parse("2.0.0.0");
+    Ip ip22 = Ip.parse("2.0.0.10");
     IpAccessList sourceNat1Acl = _aclb.setLines(ImmutableList.of()).setOwner(srcNode).build();
     IpAccessList sourceNat2Acl = _aclb.build();
     SourceNat sourceNat1 =
@@ -700,8 +700,8 @@ public class SynthesizerInputImplTest {
     Configuration nextHop = _cb.build();
     Vrf srcVrf = _vb.setOwner(srcNode).build();
     Vrf nextHopVrf = _vb.setOwner(nextHop).build();
-    Ip ip1 = new Ip("1.0.0.0");
-    Ip ip2 = new Ip("1.0.0.10");
+    Ip ip1 = Ip.parse("1.0.0.0");
+    Ip ip2 = Ip.parse("1.0.0.10");
     SourceNat sourceNat = _snb.setPoolIpFirst(ip1).setPoolIpLast(ip2).build();
     Interface srcInterfaceOneSourceNat =
         _ib.setOwner(srcNode).setVrf(srcVrf).setSourceNats(ImmutableList.of(sourceNat)).build();

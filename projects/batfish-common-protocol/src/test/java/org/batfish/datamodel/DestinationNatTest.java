@@ -20,7 +20,7 @@ public class DestinationNatTest {
             .setName("foo")
             .setLines(ImmutableList.of(IpAccessListLine.accepting(AclLineMatchExprs.TRUE)))
             .build();
-    dnat = new DestinationNat(acl, new Ip("1.1.1.1"), new Ip("2.2.2.2"));
+    dnat = new DestinationNat(acl, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"));
     assertThat(BatfishObjectMapper.clone(dnat, DestinationNat.class), equalTo(dnat));
   }
 }

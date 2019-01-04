@@ -107,7 +107,7 @@ public class EdgesAnswererTest {
             "int1",
             Interface.builder()
                 .setName("int1")
-                .setAddress(new InterfaceAddress(new Ip("1.1.1.1"), 24))
+                .setAddress(new InterfaceAddress(Ip.parse("1.1.1.1"), 24))
                 .build()));
 
     _host2 = cb.setHostname("host2").build();
@@ -116,7 +116,7 @@ public class EdgesAnswererTest {
             "int2",
             Interface.builder()
                 .setName("int2")
-                .setAddress(new InterfaceAddress(new Ip("2.2.2.2"), 24))
+                .setAddress(new InterfaceAddress(Ip.parse("2.2.2.2"), 24))
                 .build()));
 
     _configurations = ImmutableSortedMap.of("host1", _host1, "host2", _host2);
@@ -157,20 +157,20 @@ public class EdgesAnswererTest {
   @Test
   public void testGetBgpEdges() {
     BgpProcess bgp1 = new BgpProcess();
-    bgp1.setRouterId(new Ip("1.1.1.1"));
+    bgp1.setRouterId(Ip.parse("1.1.1.1"));
     BgpActivePeerConfig peer1 =
-        BgpActivePeerConfig.builder().setLocalIp(new Ip("1.1.1.1")).setLocalAs(1L).build();
-    bgp1.getActiveNeighbors().put(new Prefix(new Ip("2.2.2.2"), 24), peer1);
+        BgpActivePeerConfig.builder().setLocalIp(Ip.parse("1.1.1.1")).setLocalAs(1L).build();
+    bgp1.getActiveNeighbors().put(Prefix.create(Ip.parse("2.2.2.2"), 24), peer1);
     BgpPeerConfigId neighborId1 =
-        new BgpPeerConfigId("host1", "vrf1", new Prefix(new Ip("2.2.2.2"), 24), false);
+        new BgpPeerConfigId("host1", "vrf1", Prefix.create(Ip.parse("2.2.2.2"), 24), false);
 
     BgpProcess bgp2 = new BgpProcess();
-    bgp2.setRouterId(new Ip("2.2.2.2"));
+    bgp2.setRouterId(Ip.parse("2.2.2.2"));
     BgpActivePeerConfig peer2 =
-        BgpActivePeerConfig.builder().setLocalIp(new Ip("2.2.2.2")).setLocalAs(2L).build();
-    bgp2.getActiveNeighbors().put(new Prefix(new Ip("1.1.1.1"), 24), peer2);
+        BgpActivePeerConfig.builder().setLocalIp(Ip.parse("2.2.2.2")).setLocalAs(2L).build();
+    bgp2.getActiveNeighbors().put(Prefix.create(Ip.parse("1.1.1.1"), 24), peer2);
     BgpPeerConfigId neighborId2 =
-        new BgpPeerConfigId("host2", "vrf2", new Prefix(new Ip("1.1.1.1"), 24), false);
+        new BgpPeerConfigId("host2", "vrf2", Prefix.create(Ip.parse("1.1.1.1"), 24), false);
 
     Vrf vrf1 = new Vrf("vrf1");
     vrf1.setBgpProcess(bgp1);
@@ -192,10 +192,10 @@ public class EdgesAnswererTest {
         contains(
             allOf(
                 hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
-                hasColumn(COL_IP, equalTo(new Ip("1.1.1.1")), Schema.IP),
+                hasColumn(COL_IP, equalTo(Ip.parse("1.1.1.1")), Schema.IP),
                 hasColumn(COL_AS_NUMBER, equalTo("1"), Schema.STRING),
                 hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
-                hasColumn(COL_REMOTE_IP, equalTo(new Ip("2.2.2.2")), Schema.IP),
+                hasColumn(COL_REMOTE_IP, equalTo(Ip.parse("2.2.2.2")), Schema.IP),
                 hasColumn(COL_REMOTE_AS_NUMBER, equalTo("2"), Schema.STRING))));
   }
 
@@ -238,12 +238,14 @@ public class EdgesAnswererTest {
   public void testGetRipEdges() {
     RipProcess rip1 = new RipProcess();
     RipProcess rip2 = new RipProcess();
-    RipNeighbor ripNeighbor1 = new RipNeighbor(new Pair<>(new Ip("1.1.1.1"), new Ip("2.2.2.2")));
-    RipNeighbor ripNeighbor2 = new RipNeighbor(new Pair<>(new Ip("2.2.2.2"), new Ip("1.1.1.1")));
+    RipNeighbor ripNeighbor1 =
+        new RipNeighbor(new Pair<>(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2")));
+    RipNeighbor ripNeighbor2 =
+        new RipNeighbor(new Pair<>(Ip.parse("2.2.2.2"), Ip.parse("1.1.1.1")));
     rip1.setRipNeighbors(
-        ImmutableSortedMap.of(new Pair<>(new Ip("1.1.1.1"), new Ip("2.2.2.2")), ripNeighbor1));
+        ImmutableSortedMap.of(new Pair<>(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2")), ripNeighbor1));
     rip2.setRipNeighbors(
-        ImmutableSortedMap.of(new Pair<>(new Ip("2.2.2.2"), new Ip("1.1.1.1")), ripNeighbor2));
+        ImmutableSortedMap.of(new Pair<>(Ip.parse("2.2.2.2"), Ip.parse("1.1.1.1")), ripNeighbor2));
     ripNeighbor1.setOwner(_host1);
     ripNeighbor2.setOwner(_host2);
     ripNeighbor1.setIface(_host1.getAllInterfaces().get("int1"));
@@ -380,14 +382,14 @@ public class EdgesAnswererTest {
                     equalTo(new NodeInterfacePair("host1", "int1")),
                     Schema.INTERFACE),
                 hasColumn(
-                    COL_IPS, equalTo(ImmutableSet.of(new Ip("1.1.1.1"))), Schema.set(Schema.IP)),
+                    COL_IPS, equalTo(ImmutableSet.of(Ip.parse("1.1.1.1"))), Schema.set(Schema.IP)),
                 hasColumn(
                     COL_REMOTE_INTERFACE,
                     equalTo(new NodeInterfacePair("host2", "int2")),
                     Schema.INTERFACE),
                 hasColumn(
                     COL_REMOTE_IPS,
-                    equalTo(ImmutableSet.of(new Ip("2.2.2.2"))),
+                    equalTo(ImmutableSet.of(Ip.parse("2.2.2.2"))),
                     Schema.set(Schema.IP)))));
   }
 
@@ -460,15 +462,15 @@ public class EdgesAnswererTest {
 
   @Test
   public void testBgpToRow() {
-    Row row = getBgpEdgeRow("host1", new Ip("1.1.1.1"), 1L, "host2", new Ip("2.2.2.2"), 2L);
+    Row row = getBgpEdgeRow("host1", Ip.parse("1.1.1.1"), 1L, "host2", Ip.parse("2.2.2.2"), 2L);
     assertThat(
         row,
         allOf(
             hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
-            hasColumn(COL_IP, equalTo(new Ip("1.1.1.1")), Schema.IP),
+            hasColumn(COL_IP, equalTo(Ip.parse("1.1.1.1")), Schema.IP),
             hasColumn(COL_AS_NUMBER, equalTo("1"), Schema.STRING),
             hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
-            hasColumn(COL_REMOTE_IP, equalTo(new Ip("2.2.2.2")), Schema.IP),
+            hasColumn(COL_REMOTE_IP, equalTo(Ip.parse("2.2.2.2")), Schema.IP),
             hasColumn(COL_REMOTE_AS_NUMBER, equalTo("2"), Schema.STRING)));
   }
 
@@ -512,14 +514,15 @@ public class EdgesAnswererTest {
         allOf(
             hasColumn(
                 COL_INTERFACE, equalTo(new NodeInterfacePair("host1", "int1")), Schema.INTERFACE),
-            hasColumn(COL_IPS, equalTo(ImmutableSet.of(new Ip("1.1.1.1"))), Schema.set(Schema.IP)),
+            hasColumn(
+                COL_IPS, equalTo(ImmutableSet.of(Ip.parse("1.1.1.1"))), Schema.set(Schema.IP)),
             hasColumn(
                 COL_REMOTE_INTERFACE,
                 equalTo(new NodeInterfacePair("host2", "int2")),
                 Schema.INTERFACE),
             hasColumn(
                 COL_REMOTE_IPS,
-                equalTo(ImmutableSet.of(new Ip("2.2.2.2"))),
+                equalTo(ImmutableSet.of(Ip.parse("2.2.2.2"))),
                 Schema.set(Schema.IP))));
   }
 

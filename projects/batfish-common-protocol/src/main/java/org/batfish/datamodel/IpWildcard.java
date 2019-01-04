@@ -20,17 +20,17 @@ public class IpWildcard extends Pair<Ip, Ip> {
       if (parts.length != 2) {
         throw new BatfishException("Invalid IpWildcard string: '" + str + "'");
       } else {
-        return new Ip(parts[0]);
+        return Ip.parse(parts[0]);
       }
     } else if (str.contains("/")) {
       String[] parts = str.split("/");
       if (parts.length != 2) {
         throw new BatfishException("Invalid IpWildcard string: '" + str + "'");
       } else {
-        return new Ip(parts[0]);
+        return Ip.parse(parts[0]);
       }
     } else {
-      return new Ip(str);
+      return Ip.parse(str);
     }
   }
 
@@ -40,7 +40,7 @@ public class IpWildcard extends Pair<Ip, Ip> {
       if (parts.length != 2) {
         throw new BatfishException("Invalid IpWildcard string: '" + str + "'");
       } else {
-        return new Ip(parts[1]);
+        return Ip.parse(parts[1]);
       }
     } else if (str.contains("/")) {
       String[] parts = str.split("/");
@@ -56,12 +56,12 @@ public class IpWildcard extends Pair<Ip, Ip> {
   }
 
   public IpWildcard(Ip ip) {
-    this(new Prefix(ip, Prefix.MAX_PREFIX_LENGTH));
+    this(Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH));
   }
 
   public IpWildcard(Ip address, Ip wildcardMask) {
     // Canonicalize the address before passing it to parent, so that #equals works.
-    super(new Ip(address.asLong() & ~wildcardMask.asLong()), wildcardMask);
+    super(Ip.create(address.asLong() & ~wildcardMask.asLong()), wildcardMask);
     if (!wildcardMask.valid()) {
       throw new BatfishException("Invalid wildcard: " + wildcardMask);
     }
@@ -159,7 +159,7 @@ public class IpWildcard extends Pair<Ip, Ip> {
 
   public Prefix toPrefix() {
     if (isPrefix()) {
-      return new Prefix(_first, _second.inverted());
+      return Prefix.create(_first, _second.inverted());
     } else {
       throw new BatfishException("Invalid wildcard format for conversion to prefix: " + _second);
     }

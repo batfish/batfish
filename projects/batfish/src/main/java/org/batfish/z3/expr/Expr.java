@@ -12,6 +12,9 @@ public abstract class Expr {
     if (this == o) {
       return true;
     }
+    if (o == null) {
+      return false;
+    }
     if (!getClass().equals(o.getClass())) {
       return false;
     }

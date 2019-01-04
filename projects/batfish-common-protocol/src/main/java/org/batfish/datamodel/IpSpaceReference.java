@@ -46,11 +46,6 @@ public class IpSpaceReference extends IpSpace {
   }
 
   @Override
-  public IpSpace complement() {
-    return AclIpSpace.rejecting(this).thenPermitting(UniverseIpSpace.INSTANCE).build();
-  }
-
-  @Override
   public boolean containsIp(@Nonnull Ip ip, @Nonnull Map<String, IpSpace> namedIpSpaces) {
     return namedIpSpaces.containsKey(_name)
         && namedIpSpaces.get(_name).containsIp(ip, namedIpSpaces);

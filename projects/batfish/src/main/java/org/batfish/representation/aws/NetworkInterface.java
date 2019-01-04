@@ -50,7 +50,7 @@ public class NetworkInterface implements AwsVpcEntity, Serializable {
 
     if (jObj.has(JSON_KEY_ASSOCIATION)) {
       JSONObject assocJson = jObj.getJSONObject(JSON_KEY_ASSOCIATION);
-      _associationPublicIp = new Ip(assocJson.getString(JSON_KEY_PUBLIC_IP));
+      _associationPublicIp = Ip.parse(assocJson.getString(JSON_KEY_PUBLIC_IP));
     } else {
       _associationPublicIp = null;
     }
@@ -105,14 +105,14 @@ public class NetworkInterface implements AwsVpcEntity, Serializable {
     for (int index = 0; index < associations.length(); index++) {
       JSONObject childObject = associations.getJSONObject(index);
 
-      Ip privateIpAddress = new Ip(childObject.getString(JSON_KEY_PRIVATE_IP_ADDRESS));
+      Ip privateIpAddress = Ip.parse(childObject.getString(JSON_KEY_PRIVATE_IP_ADDRESS));
 
       Ip publicIpAddress = null;
 
       if (childObject.has(JSON_KEY_ASSOCIATION)) {
         JSONObject assocJson = childObject.getJSONObject(JSON_KEY_ASSOCIATION);
 
-        publicIpAddress = new Ip(assocJson.getString(JSON_KEY_PUBLIC_IP));
+        publicIpAddress = Ip.parse(assocJson.getString(JSON_KEY_PUBLIC_IP));
       }
 
       _ipAddressAssociations.put(privateIpAddress, publicIpAddress);

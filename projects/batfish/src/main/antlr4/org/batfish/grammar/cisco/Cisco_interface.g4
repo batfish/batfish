@@ -572,6 +572,11 @@ if_no_nameif
    NO NAMEIF NEWLINE
 ;
 
+if_no_routing_dynamic
+:
+   NO ROUTING DYNAMIC NEWLINE
+;
+
 if_no_security_level
 :
    NO SECURITY_LEVEL NEWLINE
@@ -993,6 +998,11 @@ if_port_security
 if_private_vlan
 :
    PRIVATE_VLAN MAPPING (ADD | REMOVE)? null_rest_of_line
+;
+
+if_routing_dynamic
+:
+   ROUTING DYNAMIC NEWLINE
 ;
 
 if_service_instance
@@ -1683,9 +1693,11 @@ if_inner
    | if_no_bfd
    | if_no_ip_address
    | if_no_nameif
+   | if_no_routing_dynamic
    | if_no_security_level
    | if_port_security
    | if_private_vlan
+   | if_routing_dynamic
    | if_service_instance
    | if_service_policy
    | if_shutdown

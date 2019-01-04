@@ -148,8 +148,7 @@ public class AclTracerTest {
 
   @Test
   public void testDeniedByNamedAclIpSpaceLine() {
-    AclIpSpace aclIpSpace =
-        AclIpSpace.builder().setLines(ImmutableList.of(AclIpSpaceLine.DENY_ALL)).build();
+    AclIpSpace aclIpSpace = AclIpSpace.of(AclIpSpaceLine.DENY_ALL);
     IpAccessList acl =
         IpAccessList.builder()
             .setName(ACL_NAME)

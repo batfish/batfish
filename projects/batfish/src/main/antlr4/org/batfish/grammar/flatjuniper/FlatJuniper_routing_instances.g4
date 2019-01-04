@@ -296,6 +296,7 @@ roa_common
   | roa_active
   | roa_as_path
   | roa_community
+  | roa_discard
   | roa_passive
   | roa_policy
   | roa_preference
@@ -310,6 +311,11 @@ roa_community
 roa_defaults
 :
   DEFAULTS roa_common
+;
+
+roa_discard
+:
+  DISCARD
 ;
 
 roa_passive
