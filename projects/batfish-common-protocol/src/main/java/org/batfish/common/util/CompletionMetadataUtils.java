@@ -12,7 +12,7 @@ import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 
-/** various functions useful for pulling certain data from configs */
+/** Various functions useful for fetching data used in the creation of CompletionMetadata */
 public class CompletionMetadataUtils {
   @VisibleForTesting
   public static Set<String> getAddressBooks(ReferenceLibrary referenceLibrary) {
