@@ -12,6 +12,7 @@ import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 
+/** various functions useful for pulling certain data from configs */
 public class ConfigUtils {
   @VisibleForTesting
   public static Set<String> getAddressBooks(ReferenceLibrary referenceLibrary) {
