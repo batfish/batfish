@@ -3417,8 +3417,7 @@ public class CiscoGrammarTest {
         .stream()
         .flatMap(c -> c.getIpsecVpns().values().stream())
         .forEach(iv -> assertThat(iv.getRemoteIpsecVpn(), not(nullValue())));
-    /* Two tunnels should not be established because of a password mismatch between r1 and r3
-    * (Now pruning is not done using old IPsec datamodel, and it affects )*/
+    /* Two tunnels should not be established because of a password mismatch between r1 and r3 */
     assertThat(
         configurations
             .values()
@@ -3426,7 +3425,7 @@ public class CiscoGrammarTest {
             .flatMap(c -> c.getAllInterfaces().values().stream())
             .filter(i -> i.getInterfaceType().equals(InterfaceType.TUNNEL) && i.getActive())
             .count(),
-        equalTo(6L));
+        equalTo(4L));
   }
 
   @Test

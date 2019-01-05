@@ -346,14 +346,15 @@ public class IpsecUtil {
   /**
    * Removes all edges between tunnel interfaces in the layer 3 topology which have either a failed
    * IPsec session, or don't have a neighboring IPsec peer. It does not affect the tunnel interfaces
-   * which are not not configured to use IPsec or interfaces which use crypto maps
+   * which are not not configured to use IPsec or interfaces which use crypto maps. It also disables
+   * the interfaces which have IPsec enabled but have no peers
    *
    * @param l3Topology {@link Topology} for layer 3
    * @param ipsecTopology {@link ValueGraph} between the {@link IpsecPeerConfigId}s showing the
    *     peering information
    * @param configurations {@link Map} of configuration names and {@link Configuration} objects
    */
-  public static void pruneFailedIpsecSessionEdges(
+  public static void pruneFailedIpsecSessionEdgesAndDisableIfaces(
       Topology l3Topology,
       ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology,
       Map<String, Configuration> configurations) {

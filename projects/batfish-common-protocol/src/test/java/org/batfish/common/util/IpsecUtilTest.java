@@ -200,7 +200,7 @@ public class IpsecUtilTest {
 
   @Test
   public void testPruneFailedIpsecSessionEdges() {
-    IpsecUtil.pruneFailedIpsecSessionEdges(_topology, _ipsecTopology, _configurations);
+    IpsecUtil.pruneFailedIpsecSessionEdgesAndDisableIfaces(_topology, _ipsecTopology, _configurations);
 
     // Edges between host1:Tunnel3->host2:Tunnel4 and host1:Tunnel7->host2:Tunnel8 should be pruned
     assertThat(
