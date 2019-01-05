@@ -6,6 +6,7 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -15,7 +16,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** Grouping of various snapshot properties used for autocomplete */
 @ParametersAreNonnullByDefault
-public final class CompletionMetadata {
+public final class CompletionMetadata implements Serializable {
 
   public static final class Builder {
 
@@ -107,6 +108,8 @@ public final class CompletionMetadata {
   private static final String PROP_STRUCTURE_NAMES = "structureNames";
   private static final String PROP_VRFS = "vrfs";
   private static final String PROP_ZONES = "zones";
+
+  private static final long serialVersionUID = 1L;
 
   private final Set<String> _addressBooks;
 
