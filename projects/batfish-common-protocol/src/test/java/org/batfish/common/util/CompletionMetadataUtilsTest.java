@@ -41,7 +41,7 @@ import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.junit.Test;
 
-public class CompletionMetadataUtilsTest {
+public final class CompletionMetadataUtilsTest {
 
   private static Configuration createTestConfiguration(
       String nodeName, ConfigurationFormat configFormat, String... interfaceNames) {

@@ -13,7 +13,10 @@ import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 
 /** Various functions useful for fetching data used in the creation of CompletionMetadata */
-public class CompletionMetadataUtils {
+public final class CompletionMetadataUtils {
+
+  private CompletionMetadataUtils() {}
+
   @VisibleForTesting
   public static Set<String> getAddressBooks(ReferenceLibrary referenceLibrary) {
     ImmutableSet.Builder<String> addressBooks = ImmutableSet.builder();
