@@ -890,7 +890,7 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     Path completionMetadataPath = getSnapshotCompletionMetadataPath(networkId, snapshotId);
     if (!Files.exists(completionMetadataPath)) {
-      return new CompletionMetadata();
+      return CompletionMetadata.EMPTY;
     }
     String completionMetadataStr =
         FileUtils.readFileToString(completionMetadataPath.toFile(), UTF_8);

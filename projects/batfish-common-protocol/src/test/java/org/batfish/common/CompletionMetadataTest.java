@@ -46,7 +46,9 @@ public class CompletionMetadataTest {
             .setZones(ImmutableSet.of("zone"))
             .build();
 
-    assertThat(BatfishObjectMapper.clone(completionMetadata, CompletionMetadata.class), equalTo(completionMetadata));
+    assertThat(
+        BatfishObjectMapper.clone(completionMetadata, CompletionMetadata.class),
+        equalTo(completionMetadata));
   }
 
   @Test
@@ -56,7 +58,7 @@ public class CompletionMetadataTest {
 
     new EqualsTester()
         .addEqualityGroup(new Object())
-        .addEqualityGroup(initial, initial, builder.build(), new CompletionMetadata())
+        .addEqualityGroup(initial, initial, builder.build(), CompletionMetadata.EMPTY)
         .addEqualityGroup(builder.setAddressBooks(ImmutableSet.of("addressBook")).build())
         .addEqualityGroup(builder.setAddressGroups(ImmutableSet.of("addressGroup")).build())
         .addEqualityGroup(builder.setFilterNames(ImmutableSet.of("filter")).build())
@@ -70,7 +72,5 @@ public class CompletionMetadataTest {
         .addEqualityGroup(builder.setVrfs(ImmutableSet.of("vrf")).build())
         .addEqualityGroup(builder.setZones(ImmutableSet.of("zone")).build())
         .testEquals();
-
-    assertThat(CompletionMetadata.builder().build(), equalTo(new CompletionMetadata()));
   }
 }

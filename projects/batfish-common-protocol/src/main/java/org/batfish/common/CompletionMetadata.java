@@ -133,6 +133,8 @@ public final class CompletionMetadata implements Serializable {
     return new Builder();
   }
 
+  public static final CompletionMetadata EMPTY = builder().build();
+
   @JsonCreator
   private static @Nonnull CompletionMetadata create(
       @Nullable @JsonProperty(PROP_ADDRESS_BOOKS) Set<String> addressBooks,
@@ -175,19 +177,6 @@ public final class CompletionMetadata implements Serializable {
     _structureNames = structureNames;
     _vrfs = vrfs;
     _zones = zones;
-  }
-
-  public CompletionMetadata() {
-    this(
-        ImmutableSet.of(),
-        ImmutableSet.of(),
-        ImmutableSet.of(),
-        ImmutableSet.of(),
-        ImmutableSet.of(),
-        ImmutableSet.of(),
-        ImmutableSet.of(),
-        ImmutableSet.of(),
-        ImmutableSet.of());
   }
 
   @JsonProperty(PROP_ADDRESS_BOOKS)
