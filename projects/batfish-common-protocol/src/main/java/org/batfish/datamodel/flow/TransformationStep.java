@@ -28,12 +28,12 @@ public final class TransformationStep extends Step<TransformationStepDetail> {
 
   public static TransformationType inferTypeFromIpField(IpField ipField) {
     switch (ipField) {
-    case DESTINATION:
-      return DEST_NAT;
-    case SOURCE:
-      return SOURCE_NAT;
-    default:
-      throw new BatfishException("Unknown IpField: " + ipField);
+      case DESTINATION:
+        return DEST_NAT;
+      case SOURCE:
+        return SOURCE_NAT;
+      default:
+        throw new BatfishException("Unknown IpField: " + ipField);
     }
   }
 
