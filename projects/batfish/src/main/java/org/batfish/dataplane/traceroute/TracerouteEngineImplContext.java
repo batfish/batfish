@@ -717,7 +717,7 @@ public class TracerouteEngineImplContext {
 
   @Nullable
   private static Flow hopFlow(Flow originalFlow, @Nullable Flow transformedFlow) {
-    if (originalFlow.equals(transformedFlow)) {
+    if (originalFlow == transformedFlow) {
       return null;
     } else {
       return transformedFlow;
