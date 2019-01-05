@@ -22,6 +22,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpsecDynamicPeerConfig;
 import org.batfish.datamodel.IpsecPeerConfig;
@@ -357,52 +358,75 @@ public class IpsecUtil {
       ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology,
       Map<String, Configuration> configurations) {
     NetworkConfigurations networkConfigurations = NetworkConfigurations.of(configurations);
-    Set<Edge> failedSessionsEdges = new HashSet<>();
-    Set<NodeInterfacePair> disConnectedTunnels = new HashSet<>();
+    // graph to contain the IPsec peerings with tunnel interfaces which have established sessions
+    MutableValueGraph<NodeInterfacePair, Edge> finalIpsecGraph =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
 
     for (IpsecPeerConfigId node : ipsecTopology.nodes()) {
-      IpsecPeerConfig ipsecPeerConfig = networkConfigurations.getIpsecPeerConfig(node);
+      IpsecPeerConfig nodeIpsecConfig = networkConfigurations.getIpsecPeerConfig(node);
 
-      if (ipsecPeerConfig == null || ipsecPeerConfig.getTunnelInterface() == null) {
+      if (nodeIpsecConfig == null || nodeIpsecConfig.getTunnelInterface() == null) {
         // only considering IPsec peers on tunnel interfaces
         continue;
       }
 
+      finalIpsecGraph.addNode(
+          new NodeInterfacePair(node.getHostName(), nodeIpsecConfig.getTunnelInterface()));
+
       Set<IpsecPeerConfigId> neighbors = ipsecTopology.adjacentNodes(node);
-      // no peers/neighbors present for this node
+
       if (neighbors.isEmpty()) {
-        disConnectedTunnels.add(
-            new NodeInterfacePair(node.getHostName(), ipsecPeerConfig.getTunnelInterface()));
+        // no peers/neighbors present for this node
         continue;
       }
 
-      neighbors
-          .stream()
-          .filter(
-              neighbor -> {
-                Optional<IpsecSession> ipsecSession = ipsecTopology.edgeValue(node, neighbor);
-                // only considering neighbors with failed IPsec negotiation
-                return ipsecSession.isPresent()
-                    && ipsecSession.get().getNegotiatedIpsecP2Proposal() == null;
-              })
-          .forEach(
-              neighbor -> {
-                IpsecPeerConfig neighborIpsecConfig =
-                    networkConfigurations.getIpsecPeerConfig(neighbor);
-                // only consider IPsec sessions between tunnel interfaces
-                if (neighborIpsecConfig == null
-                    || neighborIpsecConfig.getTunnelInterface() == null) {
-                  return;
-                }
-                failedSessionsEdges.add(
-                    new Edge(
-                        new NodeInterfacePair(
-                            node.getHostName(), ipsecPeerConfig.getTunnelInterface()),
-                        new NodeInterfacePair(
-                            neighbor.getHostName(), neighborIpsecConfig.getTunnelInterface())));
-              });
+      neighbors.forEach(
+          neighbor -> {
+            IpsecPeerConfig neighborIpsecConfig =
+                networkConfigurations.getIpsecPeerConfig(neighbor);
+            if (neighborIpsecConfig == null || neighborIpsecConfig.getTunnelInterface() == null) {
+              // don't do anything for non-tunnel IPsec sessions
+              return;
+            }
+
+            Optional<IpsecSession> ipsecSession = ipsecTopology.edgeValue(node, neighbor);
+            if (ipsecSession.isPresent()
+                && ipsecSession.get().getNegotiatedIpsecP2Proposal() != null) {
+              NodeInterfacePair nodeU =
+                  new NodeInterfacePair(node.getHostName(), nodeIpsecConfig.getTunnelInterface());
+              NodeInterfacePair nodeV =
+                  new NodeInterfacePair(
+                      neighbor.getHostName(), neighborIpsecConfig.getTunnelInterface());
+              finalIpsecGraph.putEdgeValue(nodeU, nodeV, new Edge(nodeU, nodeV));
+            }
+          });
     }
 
-    l3Topology.prune(failedSessionsEdges, ImmutableSet.of(), disConnectedTunnels);
+    Set<Edge> failedIpsecEdges = new HashSet<>();
+
+    for (Edge edge : l3Topology.getEdges()) {
+      NodeInterfacePair tail = edge.getTail();
+      NodeInterfacePair head = edge.getHead();
+      if ((finalIpsecGraph.nodes().contains(tail) || finalIpsecGraph.nodes().contains(head))
+          && !finalIpsecGraph.edgeValue(tail, head).isPresent()) {
+        failedIpsecEdges.add(edge);
+      }
+    }
+
+    // deactivating and collecting interfaces with 0 in-degree & out-degree in filtered IPsec graph
+    Set<NodeInterfacePair> blackListedInterface = new HashSet<>();
+    for (NodeInterfacePair nodeInterfacePair : finalIpsecGraph.nodes()) {
+      if (finalIpsecGraph.inDegree(nodeInterfacePair) == 0
+          && finalIpsecGraph.outDegree(nodeInterfacePair) == 0) {
+        Configuration configuration = configurations.get(nodeInterfacePair.getHostname());
+        Interface iface = configuration.getAllInterfaces().get(nodeInterfacePair.getInterface());
+        if (iface != null) {
+          blackListedInterface.add(nodeInterfacePair);
+          iface.setActive(false);
+        }
+      }
+    }
+
+    l3Topology.prune(failedIpsecEdges, ImmutableSet.of(), blackListedInterface);
   }
 }

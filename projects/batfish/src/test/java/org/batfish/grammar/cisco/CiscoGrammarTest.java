@@ -263,7 +263,6 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
-import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -3417,15 +3416,6 @@ public class CiscoGrammarTest {
         .stream()
         .flatMap(c -> c.getIpsecVpns().values().stream())
         .forEach(iv -> assertThat(iv.getRemoteIpsecVpn(), not(nullValue())));
-    /* Two tunnels should not be established because of a password mismatch between r1 and r3 */
-    assertThat(
-        configurations
-            .values()
-            .stream()
-            .flatMap(c -> c.getAllInterfaces().values().stream())
-            .filter(i -> i.getInterfaceType().equals(InterfaceType.TUNNEL) && i.getActive())
-            .count(),
-        equalTo(4L));
   }
 
   @Test
