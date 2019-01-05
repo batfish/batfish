@@ -1,14 +1,14 @@
 package org.batfish.common.util;
 
-import static org.batfish.common.util.ConfigUtils.getAddressBooks;
-import static org.batfish.common.util.ConfigUtils.getAddressGroups;
-import static org.batfish.common.util.ConfigUtils.getFilterNames;
-import static org.batfish.common.util.ConfigUtils.getInterfaces;
-import static org.batfish.common.util.ConfigUtils.getIps;
-import static org.batfish.common.util.ConfigUtils.getPrefixes;
-import static org.batfish.common.util.ConfigUtils.getStructureNames;
-import static org.batfish.common.util.ConfigUtils.getVrfs;
-import static org.batfish.common.util.ConfigUtils.getZones;
+import static org.batfish.common.util.CompletionMetadataUtils.getAddressBooks;
+import static org.batfish.common.util.CompletionMetadataUtils.getAddressGroups;
+import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
+import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
+import static org.batfish.common.util.CompletionMetadataUtils.getIps;
+import static org.batfish.common.util.CompletionMetadataUtils.getPrefixes;
+import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
+import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
+import static org.batfish.common.util.CompletionMetadataUtils.getZones;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -41,7 +41,7 @@ import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.junit.Test;
 
-public class ConfigUtilsTest {
+public class CompletionMetadataUtilsTest {
 
   private static Configuration createTestConfiguration(
       String nodeName, ConfigurationFormat configFormat, String... interfaceNames) {

@@ -13,7 +13,7 @@ import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 
 /** various functions useful for pulling certain data from configs */
-public class ConfigUtils {
+public class CompletionMetadataUtils {
   @VisibleForTesting
   public static Set<String> getAddressBooks(ReferenceLibrary referenceLibrary) {
     ImmutableSet.Builder<String> addressBooks = ImmutableSet.builder();
