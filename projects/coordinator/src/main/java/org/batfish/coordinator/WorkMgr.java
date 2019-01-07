@@ -97,6 +97,7 @@ import org.batfish.coordinator.resources.ForkSnapshotBean;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SnapshotMetadata;
@@ -151,6 +152,7 @@ import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
+import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.storage.FileBasedStorageDirectoryProvider;
 import org.batfish.storage.StorageProvider;
@@ -472,6 +474,14 @@ public class WorkMgr extends AbstractCoordinator {
               PropertySpecifier.baseAutoComplete(query, completionMetadata.getFilterNames());
           break;
         }
+      case FLOW_STATE:
+        {
+          suggestions =
+              PropertySpecifier.baseAutoComplete(
+                  query,
+                  Stream.of(FlowState.values()).map(FlowState::name).collect(Collectors.toSet()));
+          break;
+        }
       case INTERFACE:
         {
           CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
@@ -511,6 +521,26 @@ public class WorkMgr extends AbstractCoordinator {
           suggestions = NamedStructureSpecifier.autoComplete(query);
           break;
         }
+      case NODE_PROPERTY_SPEC:
+        {
+          suggestions = NodePropertySpecifier.autoComplete(query);
+          break;
+        }
+      case NODE_ROLE_DIMENSION:
+        {
+          checkArgument(
+              !isNullOrEmpty(network),
+              "Network name should be supplied for 'NODE_ROLE_DIMENSION' autoCompletion");
+          suggestions =
+              PropertySpecifier.baseAutoComplete(
+                  query,
+                  getNetworkNodeRoles(network)
+                      .getNodeRoleDimensions()
+                      .stream()
+                      .map(NodeRoleDimension::getName)
+                      .collect(Collectors.toSet()));
+          break;
+        }
       case NODE_SPEC:
         {
           checkArgument(
@@ -519,11 +549,6 @@ public class WorkMgr extends AbstractCoordinator {
           suggestions =
               NodesSpecifier.autoComplete(
                   query, getNodes(network, snapshot), getNetworkNodeRoles(network));
-          break;
-        }
-      case NODE_PROPERTY_SPEC:
-        {
-          suggestions = NodePropertySpecifier.autoComplete(query);
           break;
         }
       case OSPF_PROPERTY_SPEC:
