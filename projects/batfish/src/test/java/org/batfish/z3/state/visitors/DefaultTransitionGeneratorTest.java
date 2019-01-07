@@ -1,5 +1,7 @@
 package org.batfish.z3.state.visitors;
 
+import static org.batfish.datamodel.transformation.Noop.noop;
+import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -10,7 +12,6 @@ import static org.hamcrest.Matchers.not;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,8 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.transformation.IpField;
+import org.batfish.z3.AclLineMatchExprToBooleanExpr;
 import org.batfish.z3.Field;
 import org.batfish.z3.MockSynthesizerInput;
 import org.batfish.z3.SynthesizerInput;
@@ -36,6 +39,8 @@ import org.batfish.z3.expr.MockBooleanAtom;
 import org.batfish.z3.expr.MockIntAtom;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.RuleStatement;
+import org.batfish.z3.expr.TransformationExpr;
+import org.batfish.z3.expr.TransformationStepExpr;
 import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
@@ -164,6 +169,9 @@ public class DefaultTransitionGeneratorTest {
 
   @Test
   public void testPreOutEdgePostNat() {
+    AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr =
+        new AclLineMatchExprToBooleanExpr(
+            ImmutableMap.of(), ImmutableMap.of(), null, ImmutableMap.of());
     SynthesizerInput input =
         MockSynthesizerInput.builder()
             .setEnabledEdges(
@@ -176,13 +184,16 @@ public class DefaultTransitionGeneratorTest {
                     Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE2),
                     Edge.of(NODE2, INTERFACE2, NODE1, INTERFACE1),
                     Edge.of(NODE2, INTERFACE2, NODE1, INTERFACE2)))
+            .setAclLineMatchExprToBooleanExprs(
+                ImmutableMap.of(
+                    NODE1, aclLineMatchExprToBooleanExpr,
+                    NODE2, aclLineMatchExprToBooleanExpr))
             .build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
                 input, ImmutableSet.of(PreOutEdgePostNat.State.INSTANCE)));
 
-    // PreOutEdgePostNatForTopologyEdges
     assertThat(
         rules,
         hasItem(
@@ -855,29 +866,6 @@ public class DefaultTransitionGeneratorTest {
                     ImmutableMap.of(INTERFACE1, ACL1),
                     NODE2,
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2)))
-            .setSourceNats(
-                ImmutableMap.of(
-                    NODE1,
-                    ImmutableMap.of(
-                        INTERFACE1,
-                        ImmutableList.of(
-                            Maps.immutableEntry(new AclPermit(NODE1, NAT_ACL1), TrueExpr.INSTANCE),
-                            Maps.immutableEntry(
-                                new AclPermit(NODE1, NAT_ACL2), FalseExpr.INSTANCE)),
-                        INTERFACE2,
-                        ImmutableList.of(
-                            Maps.immutableEntry(new AclPermit(NODE1, NAT_ACL1), TrueExpr.INSTANCE),
-                            Maps.immutableEntry(
-                                new AclPermit(NODE1, NAT_ACL2), FalseExpr.INSTANCE))),
-                    NODE2,
-                    ImmutableMap.of(
-                        INTERFACE1,
-                        ImmutableList.of(
-                            Maps.immutableEntry(new AclPermit(NODE2, NAT_ACL1), TrueExpr.INSTANCE),
-                            Maps.immutableEntry(
-                                new AclPermit(NODE2, NAT_ACL1), FalseExpr.INSTANCE)),
-                        INTERFACE2,
-                        ImmutableList.of())))
             .setTopologyInterfaces(
                 ImmutableMap.of(
                     NODE1,
@@ -1339,29 +1327,6 @@ public class DefaultTransitionGeneratorTest {
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2),
                     NODE2,
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2)))
-            .setSourceNats(
-                ImmutableMap.of(
-                    NODE1,
-                    ImmutableMap.of(
-                        INTERFACE1,
-                        ImmutableList.of(
-                            Maps.immutableEntry(new AclPermit(NODE1, NAT_ACL1), TrueExpr.INSTANCE),
-                            Maps.immutableEntry(
-                                new AclPermit(NODE1, NAT_ACL2), FalseExpr.INSTANCE)),
-                        INTERFACE2,
-                        ImmutableList.of(),
-                        INTERFACE3,
-                        ImmutableList.of()),
-                    NODE2,
-                    ImmutableMap.of(
-                        INTERFACE1,
-                        ImmutableList.of(
-                            Maps.immutableEntry(new AclPermit(NODE2, NAT_ACL1), FalseExpr.INSTANCE),
-                            Maps.immutableEntry(new AclPermit(NODE2, NAT_ACL2), TrueExpr.INSTANCE)),
-                        INTERFACE2,
-                        ImmutableList.of(),
-                        INTERFACE3,
-                        ImmutableList.of())))
             .setNodesWithSrcInterfaceConstraints(ImmutableSet.of(NODE1))
             .setSrcInterfaceField(SRC_INTERFACE_FIELD)
             .setSrcInterfaceFieldValues(
@@ -1886,31 +1851,33 @@ public class DefaultTransitionGeneratorTest {
         MockSynthesizerInput.builder()
             .setEnabledEdges(ImmutableSet.of(Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE2)))
             .setTopologyInterfaces(ImmutableMap.of(NODE1, ImmutableSet.of(INTERFACE1)))
-            .setSourceNats(
+            .setAclLineMatchExprToBooleanExprs(
                 ImmutableMap.of(
                     NODE1,
-                    ImmutableMap.of(
-                        INTERFACE1,
-                        ImmutableList.of(Maps.immutableEntry(new AclPermit(NODE1, NAT_ACL1), B1)))))
+                    new AclLineMatchExprToBooleanExpr(
+                        ImmutableMap.of(), ImmutableMap.of(), null, ImmutableMap.of())))
+            .setOutgoingTransformations(
+                ImmutableMap.of(
+                    NODE1,
+                    ImmutableMap.of(INTERFACE1, always().apply(noop(IpField.DESTINATION)).build())))
             .build();
     List<RuleStatement> rules =
         DefaultTransitionGenerator.generateTransitions(
             input, ImmutableSet.of(PreOutEdgePostNat.State.INSTANCE));
 
-    RuleStatement permitRule =
-        new BasicRuleStatement(
-            B1,
-            ImmutableSet.of(
-                new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2),
-                new AclPermit(NODE1, NAT_ACL1)),
-            new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE2));
+    PreOutEdge preState = new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2);
+    TransformationExpr transformationExpr =
+        new TransformationExpr(NODE1, INTERFACE1, NODE2, INTERFACE2, "OUTGOING", 0);
+    TransformationStepExpr noopStep =
+        new TransformationStepExpr(NODE1, INTERFACE1, NODE2, INTERFACE2, "OUTGOING", 0, 0);
+    PreOutEdgePostNat postState = new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE2);
 
-    RuleStatement denyRule =
-        new BasicRuleStatement(
-            ImmutableSet.of(
-                new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2), new AclDeny(NODE1, NAT_ACL1)),
-            new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE2));
+    RuleStatement enterRule = new BasicRuleStatement(preState, transformationExpr);
+    RuleStatement stepRule = new BasicRuleStatement(transformationExpr, noopStep);
+    RuleStatement andThenRule = new BasicRuleStatement(noopStep, postState);
+    RuleStatement orElseRule =
+        new BasicRuleStatement(FalseExpr.INSTANCE, transformationExpr, postState);
 
-    assertThat(rules, containsInAnyOrder(permitRule, denyRule));
+    assertThat(rules, containsInAnyOrder(enterRule, stepRule, andThenRule, orElseRule));
   }
 }

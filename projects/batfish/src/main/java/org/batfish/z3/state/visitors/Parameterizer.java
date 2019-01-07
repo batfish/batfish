@@ -332,8 +332,10 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   @Override
   public List<StateParameter> visitTransformation(TransformationExpr transformationExpr) {
     return ImmutableList.of(
-        new StateParameter(transformationExpr.getNode(), NODE),
-        new StateParameter(transformationExpr.getIface(), INTERFACE),
+        new StateParameter(transformationExpr.getNode1(), NODE),
+        new StateParameter(transformationExpr.getIface1(), INTERFACE),
+        new StateParameter(transformationExpr.getNode2(), NODE),
+        new StateParameter(transformationExpr.getIface2(), INTERFACE),
         new StateParameter(transformationExpr.getTag(), TRANSFORMATION_TAG),
         new StateParameter(Integer.toString(transformationExpr.getId()), TRANSFORMATION_ID));
   }
@@ -342,8 +344,10 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   public List<StateParameter> visitTransformationStep(
       TransformationStepExpr transformationStepExpr) {
     return ImmutableList.of(
-        new StateParameter(transformationStepExpr.getNode(), NODE),
-        new StateParameter(transformationStepExpr.getIface(), INTERFACE),
+        new StateParameter(transformationStepExpr.getNode1(), NODE),
+        new StateParameter(transformationStepExpr.getIface1(), INTERFACE),
+        new StateParameter(transformationStepExpr.getNode2(), NODE),
+        new StateParameter(transformationStepExpr.getIface2(), INTERFACE),
         new StateParameter(transformationStepExpr.getTag(), TRANSFORMATION_TAG),
         new StateParameter(
             Integer.toString(transformationStepExpr.getTransformationId()), TRANSFORMATION_ID),

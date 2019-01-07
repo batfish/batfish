@@ -1,6 +1,5 @@
 package org.batfish.z3;
 
-import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasAclActions;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasAclConditions;
@@ -11,7 +10,6 @@ import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledNodes;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledVrfs;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasIpsByHostname;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasNeighborUnreachable;
-import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasSourceNats;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasTopologyInterfaces;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -25,7 +23,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Range;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,10 +46,7 @@ import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.z3.expr.BooleanExpr;
-import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.visitors.IpSpaceBooleanExprTransformer;
-import org.batfish.z3.state.AclPermit;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -529,97 +523,6 @@ public class SynthesizerInputImplTest {
   }
 
   @Test
-  public void testComputeSourceNats() {
-    Configuration srcNode = _cb.build();
-    Configuration nextHop = _cb.build();
-    Vrf srcVrf = _vb.setOwner(srcNode).build();
-    Vrf nextHopVrf = _vb.setOwner(nextHop).build();
-    Ip ip11 = Ip.parse("1.0.0.0");
-    Ip ip12 = Ip.parse("1.0.0.10");
-    Ip ip21 = Ip.parse("2.0.0.0");
-    Ip ip22 = Ip.parse("2.0.0.10");
-    IpAccessList sourceNat1Acl = _aclb.setLines(ImmutableList.of()).setOwner(srcNode).build();
-    IpAccessList sourceNat2Acl = _aclb.build();
-    SourceNat sourceNat1 =
-        _snb.setPoolIpFirst(ip11).setPoolIpLast(ip12).setAcl(sourceNat1Acl).build();
-    SourceNat sourceNat2 =
-        _snb.setPoolIpFirst(ip21).setPoolIpLast(ip22).setAcl(sourceNat2Acl).build();
-    Interface srcInterfaceZeroSourceNats =
-        _ib.setOwner(srcNode).setVrf(srcVrf).setSourceNats(ImmutableList.of()).build();
-    Interface srcInterfaceOneSourceNat = _ib.setSourceNats(ImmutableList.of(sourceNat1)).build();
-    Interface srcInterfaceTwoSourceNats =
-        _ib.setSourceNats(ImmutableList.of(sourceNat1, sourceNat2)).build();
-    Interface nextHopInterface =
-        _ib.setOwner(nextHop).setVrf(nextHopVrf).setSourceNats(ImmutableList.of()).build();
-    Edge forwardEdge1 = new Edge(srcInterfaceZeroSourceNats, nextHopInterface);
-    Edge forwardEdge2 = new Edge(srcInterfaceOneSourceNat, nextHopInterface);
-    Edge forwardEdge3 = new Edge(srcInterfaceTwoSourceNats, nextHopInterface);
-    Edge backEdge1 = new Edge(nextHopInterface, srcInterfaceZeroSourceNats);
-    Edge backEdge2 = new Edge(nextHopInterface, srcInterfaceOneSourceNat);
-    Edge backEdge3 = new Edge(nextHopInterface, srcInterfaceTwoSourceNats);
-    SynthesizerInput inputWithoutDataPlane =
-        _inputBuilder
-            .setConfigurations(
-                ImmutableMap.of(srcNode.getHostname(), srcNode, nextHop.getHostname(), nextHop))
-            .build();
-    SynthesizerInput inputWithDataPlane =
-        _inputBuilder
-            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
-            .setTopology(
-                new Topology(
-                    ImmutableSortedSet.of(
-                        forwardEdge1, forwardEdge2, forwardEdge3, backEdge1, backEdge2, backEdge3)))
-            .build();
-
-    assertThat(
-        inputWithDataPlane,
-        hasSourceNats(
-            hasEntry(
-                equalTo(srcNode.getHostname()),
-                hasEntry(
-                    equalTo(srcInterfaceZeroSourceNats.getName()), equalTo(ImmutableList.of())))));
-    assertThat(
-        inputWithDataPlane,
-        hasSourceNats(
-            hasEntry(
-                equalTo(srcNode.getHostname()),
-                hasEntry(
-                    equalTo(srcInterfaceOneSourceNat.getName()),
-                    equalTo(
-                        ImmutableList.of(
-                            immutableEntry(
-                                new AclPermit(srcNode.getHostname(), sourceNat1Acl.getName()),
-                                new RangeMatchExpr(
-                                    new TransformedVarIntExpr(Field.SRC_IP),
-                                    Field.SRC_IP.getSize(),
-                                    ImmutableSet.of(
-                                        Range.closed(ip11.asLong(), ip12.asLong()))))))))));
-    assertThat(
-        inputWithDataPlane,
-        hasSourceNats(
-            hasEntry(
-                equalTo(srcNode.getHostname()),
-                hasEntry(
-                    equalTo(srcInterfaceTwoSourceNats.getName()),
-                    equalTo(
-                        ImmutableList.of(
-                            immutableEntry(
-                                new AclPermit(srcNode.getHostname(), sourceNat1Acl.getName()),
-                                new RangeMatchExpr(
-                                    new TransformedVarIntExpr(Field.SRC_IP),
-                                    Field.SRC_IP.getSize(),
-                                    ImmutableSet.of(Range.closed(ip11.asLong(), ip12.asLong())))),
-                            immutableEntry(
-                                new AclPermit(srcNode.getHostname(), sourceNat2Acl.getName()),
-                                new RangeMatchExpr(
-                                    new TransformedVarIntExpr(Field.SRC_IP),
-                                    Field.SRC_IP.getSize(),
-                                    ImmutableSet.of(
-                                        Range.closed(ip21.asLong(), ip22.asLong()))))))))));
-    assertThat(inputWithoutDataPlane, hasSourceNats(nullValue()));
-  }
-
-  @Test
   public void testComputeTopologyInterfaces() {
     Configuration srcNode = _cb.build();
     Configuration nextHop = _cb.build();
@@ -688,51 +591,5 @@ public class SynthesizerInputImplTest {
         inputImpl.getAclConditions(),
         hasEntry(equalTo(config.getHostname()), hasKey(equalTo(acl1.getName()))));
     assertThat(inputImpl.getAclConditions().get(config.getHostname()).size(), equalTo(1));
-  }
-
-  /**
-   * Test that for a SourceNat with no ACL, the SynthesizerInput will have an "accept everything"
-   * ACL.
-   */
-  @Test
-  public void testSourceNatWithNoAcl() {
-    Configuration srcNode = _cb.build();
-    Configuration nextHop = _cb.build();
-    Vrf srcVrf = _vb.setOwner(srcNode).build();
-    Vrf nextHopVrf = _vb.setOwner(nextHop).build();
-    Ip ip1 = Ip.parse("1.0.0.0");
-    Ip ip2 = Ip.parse("1.0.0.10");
-    SourceNat sourceNat = _snb.setPoolIpFirst(ip1).setPoolIpLast(ip2).build();
-    Interface srcInterfaceOneSourceNat =
-        _ib.setOwner(srcNode).setVrf(srcVrf).setSourceNats(ImmutableList.of(sourceNat)).build();
-    Interface nextHopInterface =
-        _ib.setOwner(nextHop).setVrf(nextHopVrf).setSourceNats(ImmutableList.of()).build();
-    Edge forwardEdge = new Edge(srcInterfaceOneSourceNat, nextHopInterface);
-    Edge backEdge = new Edge(nextHopInterface, srcInterfaceOneSourceNat);
-    SynthesizerInput inputWithDataPlane =
-        _inputBuilder
-            .setConfigurations(
-                ImmutableMap.of(srcNode.getHostname(), srcNode, nextHop.getHostname(), nextHop))
-            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
-            .setTopology(new Topology(ImmutableSortedSet.of(forwardEdge, backEdge)))
-            .build();
-
-    // Acl for the SourceNat is DefaultSourceNatAcl
-    assertThat(
-        inputWithDataPlane,
-        hasSourceNats(
-            hasEntry(
-                equalTo(srcNode.getHostname()),
-                hasEntry(
-                    equalTo(srcInterfaceOneSourceNat.getName()),
-                    equalTo(
-                        ImmutableList.of(
-                            immutableEntry(
-                                null,
-                                new RangeMatchExpr(
-                                    new TransformedVarIntExpr(Field.SRC_IP),
-                                    Field.SRC_IP.getSize(),
-                                    ImmutableSet.of(
-                                        Range.closed(ip1.asLong(), ip2.asLong()))))))))));
   }
 }

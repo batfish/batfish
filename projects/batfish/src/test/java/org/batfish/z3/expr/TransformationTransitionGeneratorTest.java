@@ -26,6 +26,7 @@ import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.z3.AclLineMatchExprToBooleanExpr;
 import org.batfish.z3.Field;
+import org.batfish.z3.state.Debug;
 import org.batfish.z3.state.Query;
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,8 +38,10 @@ public class TransformationTransitionGeneratorTest {
   /** */
   @Rule public ExpectedException _exception = ExpectedException.none();
 
-  private static final String NODE = "node";
-  private static final String IFACE = "iface";
+  private static final String NODE1 = "node1";
+  private static final String IFACE1 = "iface1";
+  private static final String NODE2 = "node2";
+  private static final String IFACE2 = "iface2";
   private static final String TAG = "tag";
   private static final AclLineMatchExprToBooleanExpr TO_BOOLEAN_EXPR =
       new AclLineMatchExprToBooleanExpr(
@@ -46,19 +49,20 @@ public class TransformationTransitionGeneratorTest {
           ImmutableMap.of(),
           new Field("SOURCE_INTERFACE", 0),
           ImmutableMap.of());
-  private static final StateExpr OUT_STATE = Query.INSTANCE;
+  private static final StateExpr PRE_STATE = Debug.INSTANCE;
+  private static final StateExpr POST_STATE = Query.INSTANCE;
 
   private static List<BasicRuleStatement> generateTransitions(Transformation transformation) {
     return TransformationTransitionGenerator.generateTransitions(
-        NODE, IFACE, TAG, TO_BOOLEAN_EXPR, OUT_STATE, transformation);
+        NODE1, IFACE1, NODE2, IFACE2, TAG, TO_BOOLEAN_EXPR, PRE_STATE, POST_STATE, transformation);
   }
 
   private static TransformationExpr stateExpr(int id) {
-    return new TransformationExpr(NODE, IFACE, TAG, id);
+    return new TransformationExpr(NODE1, IFACE1, NODE2, IFACE2, TAG, id);
   }
 
   private static TransformationStepExpr stepStateExpr(int transformationId, int stepId) {
-    return new TransformationStepExpr(NODE, IFACE, TAG, transformationId, stepId);
+    return new TransformationStepExpr(NODE1, IFACE1, NODE2, IFACE2, TAG, transformationId, stepId);
   }
 
   @Test
@@ -68,9 +72,10 @@ public class TransformationTransitionGeneratorTest {
     assertThat(
         stmts,
         containsInAnyOrder(
+            new BasicRuleStatement(PRE_STATE, stateExpr(0)),
             new BasicRuleStatement(TrueExpr.INSTANCE, stateExpr(0), stepStateExpr(0, 0)),
-            new BasicRuleStatement(stepStateExpr(0, 0), OUT_STATE),
-            new BasicRuleStatement(FalseExpr.INSTANCE, stateExpr(0), OUT_STATE)));
+            new BasicRuleStatement(stepStateExpr(0, 0), POST_STATE),
+            new BasicRuleStatement(FalseExpr.INSTANCE, stateExpr(0), POST_STATE)));
   }
 
   @Test
@@ -81,10 +86,11 @@ public class TransformationTransitionGeneratorTest {
     assertThat(
         stmts,
         containsInAnyOrder(
+            new BasicRuleStatement(PRE_STATE, stateExpr(0)),
             new BasicRuleStatement(matchIp(ip, Field.DST_IP), stateExpr(0), stepStateExpr(0, 0)),
-            new BasicRuleStatement(stepStateExpr(0, 0), OUT_STATE),
+            new BasicRuleStatement(stepStateExpr(0, 0), POST_STATE),
             new BasicRuleStatement(
-                new NotExpr(matchIp(ip, Field.DST_IP)), stateExpr(0), OUT_STATE)));
+                new NotExpr(matchIp(ip, Field.DST_IP)), stateExpr(0), POST_STATE)));
   }
 
   @Test
@@ -95,10 +101,11 @@ public class TransformationTransitionGeneratorTest {
     assertThat(
         stmts,
         containsInAnyOrder(
+            new BasicRuleStatement(PRE_STATE, stateExpr(0)),
             new BasicRuleStatement(TrueExpr.INSTANCE, stateExpr(0), stepStateExpr(0, 0)),
             new BasicRuleStatement(
-                shiftIntoSubnetExpr(Field.DST_IP, prefix), stepStateExpr(0, 0), OUT_STATE),
-            new BasicRuleStatement(FalseExpr.INSTANCE, stateExpr(0), OUT_STATE)));
+                shiftIntoSubnetExpr(Field.DST_IP, prefix), stepStateExpr(0, 0), POST_STATE),
+            new BasicRuleStatement(FalseExpr.INSTANCE, stateExpr(0), POST_STATE)));
   }
 
   @Test
@@ -110,10 +117,11 @@ public class TransformationTransitionGeneratorTest {
     assertThat(
         stmts,
         containsInAnyOrder(
+            new BasicRuleStatement(PRE_STATE, stateExpr(0)),
             new BasicRuleStatement(TrueExpr.INSTANCE, stateExpr(0), stepStateExpr(0, 0)),
             new BasicRuleStatement(
-                assignFromPoolExpr(Field.DST_IP, startIp, endIp), stepStateExpr(0, 0), OUT_STATE),
-            new BasicRuleStatement(FalseExpr.INSTANCE, stateExpr(0), OUT_STATE)));
+                assignFromPoolExpr(Field.DST_IP, startIp, endIp), stepStateExpr(0, 0), POST_STATE),
+            new BasicRuleStatement(FalseExpr.INSTANCE, stateExpr(0), POST_STATE)));
   }
 
   @Test
@@ -127,14 +135,15 @@ public class TransformationTransitionGeneratorTest {
     assertThat(
         stmts,
         containsInAnyOrder(
-            new BasicRuleStatement(TrueExpr.INSTANCE, stateExpr(0), stepStateExpr(0, 0)),
+            new BasicRuleStatement(PRE_STATE, stateExpr(0)),
+            new BasicRuleStatement(stateExpr(0), stepStateExpr(0, 0)),
             new BasicRuleStatement(
                 shiftIntoSubnetExpr(Field.SRC_IP, prefix),
                 stepStateExpr(0, 0),
                 stepStateExpr(0, 1)),
             new BasicRuleStatement(
-                assignFromPoolExpr(Field.DST_IP, startIp, endIp), stepStateExpr(0, 1), OUT_STATE),
-            new BasicRuleStatement(FalseExpr.INSTANCE, stateExpr(0), OUT_STATE)));
+                assignFromPoolExpr(Field.DST_IP, startIp, endIp), stepStateExpr(0, 1), POST_STATE),
+            new BasicRuleStatement(FalseExpr.INSTANCE, stateExpr(0), POST_STATE)));
   }
 
   @Test
@@ -153,6 +162,8 @@ public class TransformationTransitionGeneratorTest {
     assertThat(
         stmts,
         containsInAnyOrder(
+            // entry
+            new BasicRuleStatement(PRE_STATE, stateExpr(0)),
             // root
             new BasicRuleStatement(
                 matchIp(match1, Field.DST_IP), stateExpr(0), stepStateExpr(0, 0)),
@@ -162,15 +173,15 @@ public class TransformationTransitionGeneratorTest {
             // true branch
             new BasicRuleStatement(
                 matchIp(match2, Field.DST_IP), stateExpr(1), stepStateExpr(1, 0)),
-            new BasicRuleStatement(stepStateExpr(1, 0), OUT_STATE),
+            new BasicRuleStatement(stepStateExpr(1, 0), POST_STATE),
             new BasicRuleStatement(
-                new NotExpr(matchIp(match2, Field.DST_IP)), stateExpr(1), OUT_STATE),
+                new NotExpr(matchIp(match2, Field.DST_IP)), stateExpr(1), POST_STATE),
             // else branch
             new BasicRuleStatement(
                 matchIp(match3, Field.DST_IP), stateExpr(2), stepStateExpr(2, 0)),
-            new BasicRuleStatement(stepStateExpr(2, 0), OUT_STATE),
+            new BasicRuleStatement(stepStateExpr(2, 0), POST_STATE),
             new BasicRuleStatement(
-                new NotExpr(matchIp(match3, Field.DST_IP)), stateExpr(2), OUT_STATE)));
+                new NotExpr(matchIp(match3, Field.DST_IP)), stateExpr(2), POST_STATE)));
   }
 
   @Test
