@@ -7,7 +7,6 @@ import static org.batfish.dataplane.traceroute.TracerouteUtils.applyFilter;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createEnterSrcIfaceStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.isArpSuccessful;
-import static org.batfish.dataplane.traceroute.TracerouteUtils.transformationStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.validateInputs;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -65,8 +64,10 @@ import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
-import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.TransformationEvaluator;
+import org.batfish.datamodel.transformation.TransformationEvaluator.TransformationResult;
 
 /**
  * Class containing an implementation of {@link
@@ -430,14 +431,18 @@ public class TracerouteEngineImplContext {
         }
       }
 
-      List<DestinationNat> destinationNats =
-          currentConfiguration.getAllInterfaces().get(inputIfaceName).getDestinationNats();
-      if (destinationNats != null && !destinationNats.isEmpty()) {
-        dstNatFlow =
-            applyDestinationNat(
-                inputFlow, inputIfaceName, aclDefinitions, namedIpSpaces, destinationNats);
-        steps.add(transformationStep(TransformationType.DEST_NAT, inputFlow, dstNatFlow));
-      }
+      TransformationResult transformationResult =
+          TransformationEvaluator.eval(
+              currentConfiguration
+                  .getAllInterfaces()
+                  .get(inputIfaceName)
+                  .getIncomingTransformation(),
+              inputFlow,
+              inputIfaceName,
+              aclDefinitions,
+              namedIpSpaces);
+      dstNatFlow = transformationResult.getOutputFlow();
+      steps.addAll(transformationResult.getTraceSteps());
     } else if (inputFlow.getIngressVrf() != null) {
       // if inputIfaceName is not set for this hop, this is the originating step
       steps.add(
@@ -631,17 +636,17 @@ public class TracerouteEngineImplContext {
                     }
                   }
 
-                  // Apply any relevant source NAT rules.
-                  List<SourceNat> sourceNats = outgoingInterface.getSourceNats();
-                  Flow newTransformedFlow = currentFlow;
-                  if (sourceNats != null && !sourceNats.isEmpty()) {
-                    newTransformedFlow =
-                        applySourceNat(
-                            currentFlow, inputIfaceName, aclDefinitions, namedIpSpaces, sourceNats);
-                    clonedStepsBuilder.add(
-                        transformationStep(
-                            TransformationType.SOURCE_NAT, currentFlow, newTransformedFlow));
-                  }
+                  // Apply outgoing transformation
+                  Transformation transformation = outgoingInterface.getOutgoingTransformation();
+                  TransformationResult transformationResult =
+                      TransformationEvaluator.eval(
+                          transformation,
+                          currentFlow,
+                          inputIfaceName,
+                          aclDefinitions,
+                          namedIpSpaces);
+                  Flow newTransformedFlow = transformationResult.getOutputFlow();
+                  clonedStepsBuilder.addAll(transformationResult.getTraceSteps());
 
                   SortedSet<Edge> edges =
                       _dataPlane.getTopology().getInterfaceEdges().get(nextHopInterface);
@@ -711,7 +716,7 @@ public class TracerouteEngineImplContext {
   }
 
   @Nullable
-  private static Flow hopFlow(@Nullable Flow originalFlow, @Nullable Flow transformedFlow) {
+  private static Flow hopFlow(Flow originalFlow, @Nullable Flow transformedFlow) {
     if (originalFlow == transformedFlow) {
       return null;
     } else {

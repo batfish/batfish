@@ -2,6 +2,7 @@ package org.batfish.bddreachability.transition;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
+import static org.batfish.datamodel.transformation.Noop.NOOP_SOURCE_NAT;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
@@ -250,13 +251,14 @@ public class TransformationToTransitionTest {
   }
 
   @Test
-  public void testMultipleTrasnformations() {
+  public void testMultipleTransformations() {
     Ip matchDstIp = Ip.parse("1.1.1.1");
     Ip matchSrcIp = Ip.parse("2.2.2.2");
     Ip truePoolIp = Ip.parse("3.3.3.3");
     Ip falsePoolIp = Ip.parse("4.4.4.4");
     Transformation transformation =
         when(matchDst(matchDstIp))
+            .apply(NOOP_SOURCE_NAT)
             .setAndThen(
                 when(matchSrc(matchSrcIp)).apply(assignSourceIp(truePoolIp, truePoolIp)).build())
             .setOrElse(

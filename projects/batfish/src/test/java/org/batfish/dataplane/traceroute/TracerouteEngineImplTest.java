@@ -654,11 +654,10 @@ public class TracerouteEngineImplTest {
                 .setNextHopInterface(i2.getName())
                 .build()));
 
-    String filterName = "preSourceFilter";
-
     IpAccessList filter =
         IpAccessList.builder()
-            .setName(filterName)
+            .setName("preSourceFilter")
+            .setOwner(c1)
             .setLines(
                 ImmutableList.of(
                     accepting(
@@ -667,7 +666,6 @@ public class TracerouteEngineImplTest {
                             matchSrc(Prefix.parse("10.0.0.1/32"))))))
             .build();
 
-    c1.getIpAccessLists().put(filterName, filter);
     i2.setPreSourceNatOutgoingFilter(filter);
 
     Batfish batfish =
@@ -786,6 +784,7 @@ public class TracerouteEngineImplTest {
     IpAccessList filter =
         IpAccessList.builder()
             .setName(filterName)
+            .setOwner(c1)
             .setLines(
                 ImmutableList.of(
                     accepting(
@@ -796,7 +795,6 @@ public class TracerouteEngineImplTest {
                         LineAction.PERMIT, OriginatingFromDevice.INSTANCE, "HOST_OUTBOUND")))
             .build();
 
-    c1.getIpAccessLists().put(filterName, filter);
     i2.setPreSourceNatOutgoingFilter(filter);
 
     Batfish batfish =
