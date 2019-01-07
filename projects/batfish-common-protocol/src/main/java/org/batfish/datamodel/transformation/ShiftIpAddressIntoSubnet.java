@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.Serializable;
 import java.util.Objects;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 
 /**
  * A {@link TransformationStep} that transforms the an IP by shifting it into a subnet. For example,
@@ -24,13 +25,15 @@ public final class ShiftIpAddressIntoSubnet implements TransformationStep, Seria
 
   private final IpField _ipField;
   private final Prefix _subnet;
+  private final TransformationType _type;
 
-  public ShiftIpAddressIntoSubnet(IpField ipField, Prefix subnet) {
+  public ShiftIpAddressIntoSubnet(TransformationType type, IpField ipField, Prefix subnet) {
     checkArgument(
         subnet.getPrefixLength() < Prefix.MAX_PREFIX_LENGTH,
         "subnet prefix must be less than the maximum prefix length");
     _ipField = ipField;
     _subnet = subnet;
+    _type = type;
   }
 
   @Override
@@ -47,6 +50,11 @@ public final class ShiftIpAddressIntoSubnet implements TransformationStep, Seria
   }
 
   @Override
+  public TransformationType getType() {
+    return _type;
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -55,11 +63,13 @@ public final class ShiftIpAddressIntoSubnet implements TransformationStep, Seria
       return false;
     }
     ShiftIpAddressIntoSubnet that = (ShiftIpAddressIntoSubnet) o;
-    return _ipField == that._ipField && Objects.equals(_subnet, that._subnet);
+    return _type == that._type
+        && _ipField == that._ipField
+        && Objects.equals(_subnet, that._subnet);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ipField, _subnet);
+    return Objects.hash(_type, _ipField, _subnet);
   }
 }

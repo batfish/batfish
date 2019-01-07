@@ -8,5 +8,7 @@ public interface TransformationStepVisitor<T> {
 
   T visitAssignIpAddressFromPool(AssignIpAddressFromPool assignIpAddressFromPool);
 
+  T visitNoop(Noop noop);
+
   T visitShiftIpAddressIntoSubnet(ShiftIpAddressIntoSubnet shiftIpAddressIntoSubnet);
 }

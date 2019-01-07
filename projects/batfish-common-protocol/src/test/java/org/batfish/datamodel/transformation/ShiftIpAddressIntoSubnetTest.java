@@ -1,5 +1,7 @@
 package org.batfish.datamodel.transformation;
 
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 import static org.batfish.datamodel.transformation.IpField.DESTINATION;
 import static org.batfish.datamodel.transformation.IpField.SOURCE;
 
@@ -20,22 +22,23 @@ public class ShiftIpAddressIntoSubnetTest {
     Prefix subnet2 = Prefix.parse("2.2.2.2/30");
     new EqualsTester()
         .addEqualityGroup(
-            new ShiftIpAddressIntoSubnet(DESTINATION, subnet1),
-            new ShiftIpAddressIntoSubnet(DESTINATION, subnet1))
-        .addEqualityGroup(new ShiftIpAddressIntoSubnet(SOURCE, subnet1))
-        .addEqualityGroup(new ShiftIpAddressIntoSubnet(DESTINATION, subnet2))
+            new ShiftIpAddressIntoSubnet(DEST_NAT, DESTINATION, subnet1),
+            new ShiftIpAddressIntoSubnet(DEST_NAT, DESTINATION, subnet1))
+        .addEqualityGroup(new ShiftIpAddressIntoSubnet(SOURCE_NAT, DESTINATION, subnet1))
+        .addEqualityGroup(new ShiftIpAddressIntoSubnet(DEST_NAT, SOURCE, subnet1))
+        .addEqualityGroup(new ShiftIpAddressIntoSubnet(DEST_NAT, DESTINATION, subnet2))
         .testEquals();
   }
 
   @Test
   public void testPrefixLength() {
     // /31 subnets and shorter are allowed
-    new ShiftIpAddressIntoSubnet(DESTINATION, Prefix.parse("1.1.1.1/0"));
-    new ShiftIpAddressIntoSubnet(DESTINATION, Prefix.parse("1.1.1.1/10"));
-    new ShiftIpAddressIntoSubnet(DESTINATION, Prefix.parse("1.1.1.1/31"));
+    new ShiftIpAddressIntoSubnet(DEST_NAT, DESTINATION, Prefix.parse("1.1.1.1/0"));
+    new ShiftIpAddressIntoSubnet(DEST_NAT, DESTINATION, Prefix.parse("1.1.1.1/10"));
+    new ShiftIpAddressIntoSubnet(DEST_NAT, DESTINATION, Prefix.parse("1.1.1.1/31"));
 
     // /32 subnets are not allowed
     _exception.expect(IllegalArgumentException.class);
-    new ShiftIpAddressIntoSubnet(DESTINATION, Prefix.parse("1.1.1.1/32"));
+    new ShiftIpAddressIntoSubnet(DEST_NAT, DESTINATION, Prefix.parse("1.1.1.1/32"));
   }
 }
