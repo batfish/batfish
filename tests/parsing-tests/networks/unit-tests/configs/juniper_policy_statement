@@ -31,4 +31,5 @@ set policy-options policy-statement POLICY-NAME term TERM then next-hop self
 set policy-options policy-statement POLICY-NAME term TERM then next term
 set policy-options policy-statement POLICY-NAME term TERM then origin igp
 set policy-options policy-statement POLICY-NAME term TERM then preference 100
+set policy-options policy-statement POLICY-NAME from protocol evpn
 #

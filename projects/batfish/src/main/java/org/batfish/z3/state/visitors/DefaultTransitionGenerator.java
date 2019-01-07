@@ -29,6 +29,8 @@ import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.StateExpr.State;
+import org.batfish.z3.expr.TransformationExpr;
+import org.batfish.z3.expr.TransformationStepExpr;
 import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
@@ -1045,4 +1047,10 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   @Override
   public void visitQuery(Query.State query) {}
+
+  @Override
+  public void visitTransformation(TransformationExpr.State state) {}
+
+  @Override
+  public void visitTransformationStep(TransformationStepExpr.State state) {}
 }

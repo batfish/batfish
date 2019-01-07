@@ -358,6 +358,6 @@ public final class FileBasedStorageTest {
     // if CompletionMetadata file is missing, should return a CompletionMetadata object with all
     // fields empty
     assertThat(
-        _storage.loadCompletionMetadata(networkId, snapshotId), equalTo(new CompletionMetadata()));
+        _storage.loadCompletionMetadata(networkId, snapshotId), equalTo(CompletionMetadata.EMPTY));
   }
 }

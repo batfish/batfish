@@ -573,7 +573,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
       newProc.setLevel2(toIsisLevelSettings(settings.getLevel2Settings()));
     }
     processIsisInterfaceSettings(routingInstance, level1, level2);
-    newProc.setOverloadTimeout(settings.getOverloadTimeout());
+
+    // If overload is set with a timeout, just pretend overload isn't set at all
+    if (settings.getOverload() && settings.getOverloadTimeout() == null) {
+      newProc.setOverload(true);
+    }
     newProc.setReferenceBandwidth(settings.getReferenceBandwidth());
     return newProc.build();
   }

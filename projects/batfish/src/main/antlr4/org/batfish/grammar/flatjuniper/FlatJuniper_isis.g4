@@ -76,7 +76,11 @@ is_null
 
 is_overload
 :
-  OVERLOAD iso_timeout
+  OVERLOAD
+  (
+    apply
+    | iso_timeout
+  )
 ;
 
 is_reference_bandwidth

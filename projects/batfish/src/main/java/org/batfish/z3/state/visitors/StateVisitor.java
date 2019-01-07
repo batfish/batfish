@@ -1,5 +1,7 @@
 package org.batfish.z3.state.visitors;
 
+import org.batfish.z3.expr.TransformationExpr;
+import org.batfish.z3.expr.TransformationStepExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
 import org.batfish.z3.state.AclLineIndependentMatch;
@@ -129,4 +131,8 @@ public interface StateVisitor {
   void visitPreOutEdgePostNat(PreOutEdgePostNat.State state);
 
   void visitQuery(Query.State query);
+
+  void visitTransformation(TransformationExpr.State state);
+
+  void visitTransformationStep(TransformationStepExpr.State state);
 }

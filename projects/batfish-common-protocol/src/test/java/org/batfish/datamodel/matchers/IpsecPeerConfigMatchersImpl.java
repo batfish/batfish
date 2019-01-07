@@ -84,19 +84,6 @@ final class IpsecPeerConfigMatchersImpl {
     }
   }
 
-  static class HasPeerConfigs
-      extends FeatureMatcher<IpsecDynamicPeerConfig, List<IpsecPeerConfig>> {
-
-    HasPeerConfigs(@Nonnull Matcher<? super List<IpsecPeerConfig>> subMatcher) {
-      super(subMatcher, "An IPSec peer config with PeerConfigs:", "PeerConfigs");
-    }
-
-    @Override
-    protected List<IpsecPeerConfig> featureValueOf(IpsecDynamicPeerConfig actual) {
-      return actual.getPeerConfigs();
-    }
-  }
-
   static class HasIkePhase1Policy extends FeatureMatcher<IpsecStaticPeerConfig, String> {
 
     HasIkePhase1Policy(@Nonnull Matcher<? super String> subMatcher) {
@@ -106,18 +93,6 @@ final class IpsecPeerConfigMatchersImpl {
     @Override
     protected String featureValueOf(IpsecStaticPeerConfig actual) {
       return actual.getIkePhase1Policy();
-    }
-  }
-
-  static class HasPeerConfig extends FeatureMatcher<IpsecStaticPeerConfig, IpsecPeerConfig> {
-
-    HasPeerConfig(@Nonnull Matcher<? super IpsecPeerConfig> subMatcher) {
-      super(subMatcher, "An IPSec peer config with PeerConfig:", "PeerConfig");
-    }
-
-    @Override
-    protected IpsecPeerConfig featureValueOf(IpsecStaticPeerConfig actual) {
-      return actual.getPeerConfig();
     }
   }
 

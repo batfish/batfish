@@ -6,6 +6,15 @@ import static com.google.common.base.Verify.verify;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
+import static org.batfish.common.util.CompletionMetadataUtils.getAddressBooks;
+import static org.batfish.common.util.CompletionMetadataUtils.getAddressGroups;
+import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
+import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
+import static org.batfish.common.util.CompletionMetadataUtils.getIps;
+import static org.batfish.common.util.CompletionMetadataUtils.getPrefixes;
+import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
+import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
+import static org.batfish.common.util.CompletionMetadataUtils.getZones;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
@@ -42,7 +51,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -162,7 +170,6 @@ import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
-import org.batfish.datamodel.questions.NamedStructureSpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
@@ -201,8 +208,6 @@ import org.batfish.question.differentialreachability.DifferentialReachabilityRes
 import org.batfish.question.multipath.MultipathConsistencyParameters;
 import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
 import org.batfish.question.searchfilters.SearchFiltersResult;
-import org.batfish.referencelibrary.AddressGroup;
-import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.representation.aws.AwsConfiguration;
 import org.batfish.representation.host.HostConfiguration;
@@ -243,7 +248,6 @@ import org.batfish.z3.Synthesizer;
 import org.batfish.z3.SynthesizerInputImpl;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.OrExpr;
-import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.jgrapht.Graph;
@@ -2568,53 +2572,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return advertSet;
   }
 
-  /**
-   * Reads the external bgp announcement specified in the environment, and populates the
-   * vendor-independent configurations with data about those announcements
-   *
-   * @param configurations The vendor-independent configurations to be modified
-   */
-  public Set<BgpAdvertisement> processExternalBgpAnnouncements(
-      Map<String, Configuration> configurations, SortedSet<Long> allCommunities) {
-    Set<BgpAdvertisement> advertSet = new LinkedHashSet<>();
-    Path externalBgpAnnouncementsPath = _testrigSettings.getExternalBgpAnnouncementsPath();
-    if (Files.exists(externalBgpAnnouncementsPath)) {
-      String externalBgpAnnouncementsFileContents =
-          CommonUtil.readFile(externalBgpAnnouncementsPath);
-      // Populate advertSet with BgpAdvertisements that
-      // gets passed to populatePrecomputedBgpAdvertisements.
-      // See populatePrecomputedBgpAdvertisements for the things that get
-      // extracted from these advertisements.
-
-      try {
-        JSONObject jsonObj = new JSONObject(externalBgpAnnouncementsFileContents);
-
-        JSONArray announcements = jsonObj.getJSONArray(BfConsts.PROP_BGP_ANNOUNCEMENTS);
-
-        for (int index = 0; index < announcements.length(); index++) {
-          JSONObject announcement = new JSONObject();
-          announcement.put("@id", index);
-          JSONObject announcementSrc = announcements.getJSONObject(index);
-          for (Iterator<?> i = announcementSrc.keys(); i.hasNext(); ) {
-            String key = (String) i.next();
-            if (!key.equals("@id")) {
-              announcement.put(key, announcementSrc.get(key));
-            }
-          }
-          BgpAdvertisement bgpAdvertisement =
-              BatfishObjectMapper.mapper()
-                  .readValue(announcement.toString(), BgpAdvertisement.class);
-          allCommunities.addAll(bgpAdvertisement.getCommunities());
-          advertSet.add(bgpAdvertisement);
-        }
-
-      } catch (JSONException | IOException e) {
-        throw new BatfishException("Problems parsing JSON in " + externalBgpAnnouncementsPath, e);
-      }
-    }
-    return advertSet;
-  }
-
   @Override
   public void processFlows(Set<Flow> flows, boolean ignoreFilters) {
     DataPlane dp = loadDataPlane();
@@ -3038,20 +2995,25 @@ public class Batfish extends PluginConsumer implements IBatfish {
     updateBlacklistedAndInactiveConfigs(configurations);
     postProcessAggregatedInterfaces(configurations);
     postProcessOspfCosts(configurations);
+    computeAndStoreCompletionMetadata(configurations);
+  }
+
+  private void computeAndStoreCompletionMetadata(Map<String, Configuration> configurations) {
     try {
       _storage.storeCompletionMetadata(
           computeCompletionMetadata(configurations),
           _settings.getContainer(),
           _testrigSettings.getName());
     } catch (IOException e) {
-      throw new BatfishException("Error storing CompletionMetadata", e);
+      _logger.errorf("Error storing CompletionMetadata: %s", e);
     }
   }
 
   private CompletionMetadata computeCompletionMetadata(Map<String, Configuration> configurations) {
+    ReferenceLibrary referenceLibrary = getReferenceLibraryData();
     return new CompletionMetadata(
-        getAddressBooks(getReferenceLibraryData()),
-        getAddressGroups(getReferenceLibraryData()),
+        getAddressBooks(referenceLibrary),
+        getAddressGroups(referenceLibrary),
         getFilterNames(configurations),
         getInterfaces(configurations),
         getIps(configurations),
@@ -3059,155 +3021,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         getStructureNames(configurations),
         getVrfs(configurations),
         getZones(configurations));
-  }
-
-  @VisibleForTesting
-  static Set<String> getAddressBooks(ReferenceLibrary referenceLibrary) {
-    ImmutableSet.Builder<String> addressBooks = ImmutableSet.builder();
-    return addressBooks
-        .addAll(
-            referenceLibrary
-                .getReferenceBooks()
-                .stream()
-                .map(ReferenceBook::getName)
-                .collect(Collectors.toSet()))
-        .build();
-  }
-
-  @VisibleForTesting
-  static Set<String> getAddressGroups(ReferenceLibrary referenceLibrary) {
-    ImmutableSet.Builder<String> addressGroups = ImmutableSet.builder();
-    referenceLibrary
-        .getReferenceBooks()
-        .forEach(
-            referenceBook ->
-                addressGroups.addAll(
-                    referenceBook
-                        .getAddressGroups()
-                        .stream()
-                        .map(AddressGroup::getName)
-                        .collect(Collectors.toSet())));
-    return addressGroups.build();
-  }
-
-  @VisibleForTesting
-  static Set<String> getFilterNames(Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<String> filterNames = ImmutableSet.builder();
-    configurations
-        .values()
-        .forEach(configuration -> filterNames.addAll(configuration.getIpAccessLists().keySet()));
-    return filterNames.build();
-  }
-
-  @VisibleForTesting
-  static Set<NodeInterfacePair> getInterfaces(Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<NodeInterfacePair> interfaces = ImmutableSet.builder();
-    configurations
-        .values()
-        .forEach(
-            configuration ->
-                interfaces.addAll(
-                    configuration
-                        .getAllInterfaces()
-                        .values()
-                        .stream()
-                        .map(NodeInterfacePair::new)
-                        .collect(Collectors.toSet())));
-    return interfaces.build();
-  }
-
-  @VisibleForTesting
-  static Set<String> getIps(Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<String> ips = ImmutableSet.builder();
-    configurations
-        .values()
-        .forEach(
-            configuration ->
-                configuration
-                    .getAllInterfaces()
-                    .values()
-                    .forEach(
-                        iface ->
-                            ips.addAll(
-                                iface
-                                    .getAllAddresses()
-                                    .stream()
-                                    .map(interfaceAddress -> interfaceAddress.getIp().toString())
-                                    .collect(Collectors.toSet()))));
-
-    return ips.build();
-  }
-
-  @VisibleForTesting
-  static Set<String> getPrefixes(Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<String> prefixes = ImmutableSet.builder();
-    configurations
-        .values()
-        .forEach(
-            configuration ->
-                configuration
-                    .getAllInterfaces()
-                    .values()
-                    .forEach(
-                        iface ->
-                            prefixes.addAll(
-                                iface
-                                    .getAllAddresses()
-                                    .stream()
-                                    .map(
-                                        interfaceAddress -> interfaceAddress.getPrefix().toString())
-                                    .collect(Collectors.toSet()))));
-    return prefixes.build();
-  }
-
-  @VisibleForTesting
-  static Set<String> getStructureNames(Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<String> structureNames = ImmutableSet.builder();
-    configurations
-        .values()
-        .forEach(
-            configuration ->
-                NamedStructureSpecifier.JAVA_MAP
-                    .values()
-                    .forEach(
-                        type -> {
-                          Object namedStructuresMap = type.getGetter().apply(configuration);
-                          if (namedStructuresMap instanceof Map<?, ?>) {
-                            structureNames.addAll(
-                                ((Map<?, ?>) namedStructuresMap)
-                                    .keySet()
-                                    .stream()
-                                    .map(key -> (String) key)
-                                    .collect(Collectors.toSet()));
-                          }
-                        }));
-    return structureNames.build();
-  }
-
-  @VisibleForTesting
-  static Set<String> getVrfs(Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<String> vrfs = ImmutableSet.builder();
-    configurations
-        .values()
-        .forEach(
-            configuration ->
-                vrfs.addAll(
-                    configuration
-                        .getAllInterfaces()
-                        .values()
-                        .stream()
-                        .map(Interface::getVrfName)
-                        .collect(Collectors.toSet())));
-    return vrfs.build();
-  }
-
-  @VisibleForTesting
-  static Set<String> getZones(Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<String> zones = ImmutableSet.builder();
-    configurations
-        .values()
-        .forEach(configuration -> zones.addAll(configuration.getZones().keySet()));
-    return zones.build();
   }
 
   private void repairEnvironmentBgpTables() {

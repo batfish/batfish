@@ -75,6 +75,9 @@ import org.batfish.role.NodeRolesData;
 /** A utility class that abstracts the underlying file system storage used by Batfish. */
 @ParametersAreNonnullByDefault
 public final class FileBasedStorage implements StorageProvider {
+
+  private static final String RELPATH_COMPLETION_METADATA_FILE = "completion_metadata.json";
+
   private final BatfishLogger _logger;
   private final BiFunction<String, Integer, AtomicInteger> _newBatch;
   private FileBasedStorageDirectoryProvider _d;
@@ -887,7 +890,7 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     Path completionMetadataPath = getSnapshotCompletionMetadataPath(networkId, snapshotId);
     if (!Files.exists(completionMetadataPath)) {
-      return new CompletionMetadata();
+      return CompletionMetadata.EMPTY;
     }
     String completionMetadataStr =
         FileUtils.readFileToString(completionMetadataPath.toFile(), UTF_8);
@@ -903,14 +906,13 @@ public final class FileBasedStorage implements StorageProvider {
     mkdirs(completionMetadataPath.getParent());
     FileUtils.write(
         completionMetadataPath.toFile(),
-        BatfishObjectMapper.writePrettyString(completionMetadata),
+        BatfishObjectMapper.writeString(completionMetadata),
         UTF_8);
   }
 
   private @Nonnull Path getSnapshotCompletionMetadataPath(
       NetworkId networkId, SnapshotId snapshotId) {
-    return _d.getSnapshotDir(networkId, snapshotId)
-        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_COMPLETION_METADATA_FILE));
+    return _d.getSnapshotOutputDir(networkId, snapshotId).resolve(RELPATH_COMPLETION_METADATA_FILE);
   }
 
   /**

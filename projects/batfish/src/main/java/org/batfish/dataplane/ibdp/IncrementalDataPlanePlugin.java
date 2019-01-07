@@ -30,7 +30,6 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   public static final String PLUGIN_NAME = "ibdp";
 
   private final Map<IncrementalDataPlane, Map<Flow, Set<FlowTrace>>> _flowTraces;
-
   private IncrementalBdpEngine _engine;
 
   public IncrementalDataPlanePlugin() {

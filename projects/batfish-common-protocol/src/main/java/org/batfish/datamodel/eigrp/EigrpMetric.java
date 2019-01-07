@@ -9,6 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.stream.LongStream;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Handles EIGRP metric information. */
@@ -100,6 +101,7 @@ public class EigrpMetric implements Serializable {
     return namedDelay / EIGRP_DELAY_PICO / 10L;
   }
 
+  @Nonnull
   public EigrpMetric accumulate(EigrpMetric neighborInterfaceMetric, EigrpMetric routeMetric) {
     long classicBandwidth;
     long classicDelay;

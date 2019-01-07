@@ -42,7 +42,7 @@ public class BatfishTestUtils {
   }
 
   private static Cache<NetworkSnapshot, SortedMap<String, Configuration>> makeTestrigCache() {
-    return CacheBuilder.newBuilder().maximumSize(5).build();
+    return CacheBuilder.newBuilder().softValues().maximumSize(5).build();
   }
 
   private static Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>> makeEnvBgpCache() {
@@ -54,7 +54,7 @@ public class BatfishTestUtils {
   }
 
   private static Cache<NetworkSnapshot, DataPlane> makeDataPlaneCache() {
-    return CacheBuilder.newBuilder().maximumSize(2).build();
+    return CacheBuilder.newBuilder().softValues().maximumSize(2).build();
   }
 
   private static Batfish initBatfish(

@@ -48515,6 +48515,34 @@
             "                  NODE_LINK_PROTECTION:'node-link-protection'",
             "                  (null_filler))))))))",
             "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_isis",
+            "              ISIS:'isis'",
+            "              (is_overload",
+            "                OVERLOAD:'overload'",
+            "                (iso_timeout",
+            "                  TIMEOUT:'timeout'",
+            "                  DEC:'30')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_isis",
+            "              ISIS:'isis'",
+            "              (is_overload",
+            "                OVERLOAD:'overload'",
+            "                (apply)))))))",
+            "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -50047,6 +50075,25 @@
             "                      (popst_preference",
             "                        PREFERENCE:'preference'",
             "                        preference = DEC:'100'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_common",
+            "                (pops_from",
+            "                  FROM:'from'",
+            "                  (popsf_protocol",
+            "                    PROTOCOL:'protocol'",
+            "                    protocol = (routing_protocol",
+            "                      EVPN:'evpn')))))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
@@ -59726,6 +59773,12 @@
             "            low = DEC:'1'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (if_inner",
+            "        (if_switchport_mode",
+            "          SWITCHPORT:'switchport'",
+            "          MODE:'mode'",
+            "          TRUNK:'trunk'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
             "        (if_switchport_trunk_allowed",
             "          SWITCHPORT:'switchport'",
             "          TRUNK:'trunk'",
@@ -66593,7 +66646,8 @@
                 30,
                 31,
                 32,
-                33
+                33,
+                34
               ],
               "numReferrers" : 0
             }
@@ -67345,7 +67399,8 @@
             "FastEthernet0/1" : {
               "definitionLines" : [
                 4,
-                5
+                5,
+                6
               ],
               "numReferrers" : 1
             }
