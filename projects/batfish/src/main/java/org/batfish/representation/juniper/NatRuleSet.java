@@ -78,8 +78,7 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
   /**
    * Convert to a vendor-independent {@link Transformation}.
    *
-   * @param type
-   * @param andThen The next {@link Transformation} to apply after any {@link NatRule} matches and
+   * @param andThen The next {@link Transformation} to apply after any {@link NatRule} matches.
    */
   public Optional<Transformation> toTransformation(
       TransformationType type,
