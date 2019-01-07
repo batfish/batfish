@@ -104,10 +104,6 @@ public class DefaultTransitionGeneratorTest {
 
   private static final Ip IP4 = Ip.parse("4.4.4.4");
 
-  private static final String NAT_ACL1 = "natacl1";
-
-  private static final String NAT_ACL2 = "natacl2";
-
   private static final String NODE1 = "node1";
 
   private static final String NODE2 = "node2";
