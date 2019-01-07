@@ -122,6 +122,8 @@ public class Vrf extends ComparableStructure<String> {
 
   private SortedSet<StaticRoute> _staticRoutes;
 
+  private NavigableMap<Integer, VniSettings> _vniSettings;
+
   @JsonCreator
   public Vrf(@JsonProperty(PROP_NAME) String name) {
     super(name);
@@ -130,6 +132,7 @@ public class Vrf extends ComparableStructure<String> {
     _generatedIpv6Routes = new TreeSet<>();
     _interfaces = new TreeMap<>();
     _staticRoutes = new TreeSet<>();
+    _vniSettings = new TreeMap<>();
   }
 
   @JsonIgnore
