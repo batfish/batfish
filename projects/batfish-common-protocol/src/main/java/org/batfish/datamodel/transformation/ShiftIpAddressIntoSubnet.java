@@ -1,7 +1,6 @@
 package org.batfish.datamodel.transformation;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.flow.TransformationStep.inferTypeFromIpField;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -27,10 +26,6 @@ public final class ShiftIpAddressIntoSubnet implements TransformationStep, Seria
   private final IpField _ipField;
   private final Prefix _subnet;
   private final TransformationType _type;
-
-  public ShiftIpAddressIntoSubnet(IpField ipField, Prefix subnet) {
-    this(inferTypeFromIpField(ipField), ipField, subnet);
-  }
 
   public ShiftIpAddressIntoSubnet(TransformationType type, IpField ipField, Prefix subnet) {
     checkArgument(
@@ -68,11 +63,13 @@ public final class ShiftIpAddressIntoSubnet implements TransformationStep, Seria
       return false;
     }
     ShiftIpAddressIntoSubnet that = (ShiftIpAddressIntoSubnet) o;
-    return _ipField == that._ipField && Objects.equals(_subnet, that._subnet);
+    return _type == that._type
+        && _ipField == that._ipField
+        && Objects.equals(_subnet, that._subnet);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ipField, _subnet);
+    return Objects.hash(_type, _ipField, _subnet);
   }
 }

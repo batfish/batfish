@@ -1,7 +1,5 @@
 package org.batfish.datamodel.transformation;
 
-import static org.batfish.datamodel.flow.TransformationStep.inferTypeFromIpField;
-
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -18,10 +16,6 @@ public final class AssignIpAddressFromPool implements TransformationStep, Serial
   private final IpField _ipField;
   private final Ip _poolStart;
   private final Ip _poolEnd;
-
-  public AssignIpAddressFromPool(IpField ipField, Ip poolStart, Ip poolEnd) {
-    this(inferTypeFromIpField(ipField), ipField, poolStart, poolEnd);
-  }
 
   public AssignIpAddressFromPool(
       TransformationType type, IpField ipField, Ip poolStart, Ip poolEnd) {
@@ -62,13 +56,14 @@ public final class AssignIpAddressFromPool implements TransformationStep, Serial
       return false;
     }
     AssignIpAddressFromPool that = (AssignIpAddressFromPool) o;
-    return _ipField == that._ipField
+    return _type == that._type
+        && _ipField == that._ipField
         && Objects.equals(_poolStart, that._poolStart)
         && Objects.equals(_poolEnd, that._poolEnd);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ipField, _poolStart, _poolEnd);
+    return Objects.hash(_type, _ipField, _poolStart, _poolEnd);
   }
 }

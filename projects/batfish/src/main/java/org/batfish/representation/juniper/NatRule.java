@@ -13,6 +13,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Transformation;
@@ -56,7 +57,7 @@ public final class NatRule implements Serializable {
 
   /** Convert to vendor-independent {@link Transformation}. */
   public Optional<Transformation.Builder> toTransformationBuilder(
-      IpField field, Map<String, NatPool> pools) {
+      TransformationType type, IpField field, Map<String, NatPool> pools) {
     Transformation.Builder builder = when(new MatchHeaderSpace(toHeaderSpace(_matches)));
 
     if (_then instanceof NatRuleThenPool) {
@@ -65,7 +66,8 @@ public final class NatRule implements Serializable {
         // pool is undefined.
         return Optional.empty();
       }
-      builder.apply(new AssignIpAddressFromPool(field, pool.getFromAddress(), pool.getToAddress()));
+      builder.apply(
+          new AssignIpAddressFromPool(type, field, pool.getFromAddress(), pool.getToAddress()));
     } else if (_then instanceof NatRuleThenOff) {
       // don't transform
       builder.apply(noop(field));

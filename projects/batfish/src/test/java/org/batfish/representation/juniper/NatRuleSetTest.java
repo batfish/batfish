@@ -2,6 +2,7 @@ package org.batfish.representation.juniper;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
 import static org.batfish.datamodel.transformation.Transformation.when;
@@ -87,7 +88,9 @@ public class NatRuleSetTest {
     Transformation andThen = when(matchSrcInterface("IFACE")).apply(new Noop(SOURCE_NAT)).build();
 
     assertThat(
-        ruleSet.toTransformation(IpField.DESTINATION, ImmutableMap.of("POOL", pool), andThen).get(),
+        ruleSet
+            .toTransformation(DEST_NAT, IpField.DESTINATION, ImmutableMap.of("POOL", pool), andThen)
+            .get(),
         equalTo(
             // first apply natRule1
             when(matchDst(prefix1))

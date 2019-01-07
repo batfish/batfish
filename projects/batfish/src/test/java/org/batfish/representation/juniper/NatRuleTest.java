@@ -2,6 +2,7 @@ package org.batfish.representation.juniper;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 import static org.batfish.datamodel.transformation.IpField.DESTINATION;
 import static org.batfish.datamodel.transformation.IpField.SOURCE;
 import static org.batfish.datamodel.transformation.Transformation.when;
@@ -29,14 +30,14 @@ public class NatRuleTest {
     rule.setThen(NatRuleThenOff.INSTANCE);
 
     assertThat(
-        rule.toTransformationBuilder(DESTINATION, ImmutableMap.of()).map(Builder::build),
+        rule.toTransformationBuilder(DEST_NAT, DESTINATION, ImmutableMap.of()).map(Builder::build),
         equalTo(Optional.of(when(match(hs)).apply(new Noop(DEST_NAT)).build())));
 
     rule.setThen(new NatRuleThenPool("pool"));
 
     // pool is undefined
     assertThat(
-        rule.toTransformationBuilder(DESTINATION, ImmutableMap.of()).map(Builder::build),
+        rule.toTransformationBuilder(DEST_NAT, DESTINATION, ImmutableMap.of()).map(Builder::build),
         equalTo(Optional.empty()));
 
     // pool is defined
@@ -48,7 +49,7 @@ public class NatRuleTest {
 
     // destination NAT
     assertThat(
-        rule.toTransformationBuilder(DESTINATION, ImmutableMap.of("pool", pool))
+        rule.toTransformationBuilder(DEST_NAT, DESTINATION, ImmutableMap.of("pool", pool))
             .map(Builder::build),
         equalTo(
             Optional.of(
@@ -58,7 +59,8 @@ public class NatRuleTest {
 
     // source NAT
     assertThat(
-        rule.toTransformationBuilder(SOURCE, ImmutableMap.of("pool", pool)).map(Builder::build),
+        rule.toTransformationBuilder(SOURCE_NAT, SOURCE, ImmutableMap.of("pool", pool))
+            .map(Builder::build),
         equalTo(
             Optional.of(
                 when(match(hs)).apply(TransformationStep.assignSourceIp(startIp, endIp)).build())));

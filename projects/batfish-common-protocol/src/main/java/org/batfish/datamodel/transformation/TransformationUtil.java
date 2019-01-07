@@ -2,6 +2,10 @@ package org.batfish.datamodel.transformation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
+import static org.batfish.datamodel.transformation.IpField.DESTINATION;
+import static org.batfish.datamodel.transformation.IpField.SOURCE;
 import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
 import static org.batfish.datamodel.transformation.Noop.NOOP_SOURCE_NAT;
 import static org.batfish.datamodel.transformation.Noop.noop;
@@ -19,6 +23,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 
 /** Utility methods related to {@link Transformation}. */
 @ParametersAreNonnullByDefault
@@ -37,7 +42,7 @@ public final class TransformationUtil {
           when(matchCondition(nat.getAcl()))
               .apply(
                   assignFromPoolOrNoop(
-                      IpField.DESTINATION, nat.getPoolIpFirst(), nat.getPoolIpLast()))
+                      DEST_NAT, DESTINATION, nat.getPoolIpFirst(), nat.getPoolIpLast()))
               .setOrElse(transformation)
               .build();
     }
@@ -55,7 +60,8 @@ public final class TransformationUtil {
       transformation =
           when(matchCondition(nat.getAcl()))
               .apply(
-                  assignFromPoolOrNoop(IpField.SOURCE, nat.getPoolIpFirst(), nat.getPoolIpLast()))
+                  assignFromPoolOrNoop(
+                      SOURCE_NAT, SOURCE, nat.getPoolIpFirst(), nat.getPoolIpLast()))
               .setOrElse(transformation)
               .build();
     }
@@ -63,10 +69,10 @@ public final class TransformationUtil {
   }
 
   private static List<TransformationStep> assignFromPoolOrNoop(
-      IpField ipField, @Nullable Ip poolFirst, @Nullable Ip poolLast) {
+      TransformationType type, IpField ipField, @Nullable Ip poolFirst, @Nullable Ip poolLast) {
     return poolFirst == null || poolLast == null
         ? ImmutableList.of(noop(ipField))
-        : ImmutableList.of(new AssignIpAddressFromPool(ipField, poolFirst, poolLast));
+        : ImmutableList.of(new AssignIpAddressFromPool(type, ipField, poolFirst, poolLast));
   }
 
   private static AclLineMatchExpr matchCondition(@Nullable IpAccessList acl) {

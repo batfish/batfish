@@ -10,6 +10,7 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.Transformation.Builder;
@@ -77,14 +78,17 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
   /**
    * Convert to a vendor-independent {@link Transformation}.
    *
+   * @param type
    * @param andThen The next {@link Transformation} to apply after any {@link NatRule} matches and
-   *     is applied.
    */
   public Optional<Transformation> toTransformation(
-      IpField ipField, Map<String, NatPool> pools, @Nullable Transformation andThen) {
+      TransformationType type,
+      IpField ipField,
+      Map<String, NatPool> pools,
+      @Nullable Transformation andThen) {
     Transformation transformation = null;
     for (NatRule rule : Lists.reverse(_rules)) {
-      Optional<Builder> optionalBuilder = rule.toTransformationBuilder(ipField, pools);
+      Optional<Builder> optionalBuilder = rule.toTransformationBuilder(type, ipField, pools);
       if (optionalBuilder.isPresent()) {
         transformation =
             optionalBuilder.get().setAndThen(andThen).setOrElse(transformation).build();
