@@ -23,14 +23,14 @@ public class VniSettingsTest {
     VniSettings vs =
         new VniSettings(
             bumTransportIps,
-            BumTransportMethod.MULTICAST_GROUP,
+            BumTransportMethod.UNICAST_FLOOD_GROUP,
             Ip.parse("1.2.3.4"),
             2345,
             7,
             10007);
     assertThat(
         vs.getBumTransportIps(), containsInAnyOrder(Ip.parse("2.2.2.2"), Ip.parse("2.2.2.3")));
-    assertThat(vs.getBumTransportMethod(), equalTo(BumTransportMethod.MULTICAST_GROUP));
+    assertThat(vs.getBumTransportMethod(), equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP));
     assertThat(vs.getSourceAddress(), equalTo(Ip.parse("1.2.3.4")));
     assertThat(vs.getUdpPort(), equalTo(2345));
     assertThat(vs.getVlan(), equalTo(7));
@@ -43,7 +43,7 @@ public class VniSettingsTest {
     VniSettings vs =
         new VniSettings(
             bumTransportIps,
-            BumTransportMethod.MULTICAST_GROUP,
+            BumTransportMethod.UNICAST_FLOOD_GROUP,
             Ip.parse("1.2.3.4"),
             2345,
             7,
@@ -53,7 +53,8 @@ public class VniSettingsTest {
       assertThat(
           parsedObj.getBumTransportIps(),
           containsInAnyOrder(Ip.parse("2.2.2.2"), Ip.parse("2.2.2.3")));
-      assertThat(parsedObj.getBumTransportMethod(), equalTo(BumTransportMethod.MULTICAST_GROUP));
+      assertThat(
+          parsedObj.getBumTransportMethod(), equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP));
       assertThat(parsedObj.getSourceAddress(), equalTo(Ip.parse("1.2.3.4")));
       assertThat(parsedObj.getUdpPort(), equalTo(2345));
       assertThat(parsedObj.getVlan(), equalTo(7));
