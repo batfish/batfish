@@ -4,7 +4,7 @@ import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
-/** A {@link StateExpr} for an outgoing {@link TransformationStep} on an edge. */
+/** A {@link StateExpr} for a {@link TransformationStep} on an edge. */
 public class TransformationStepExpr extends StateExpr {
   public static class State extends StateExpr.State {
 
@@ -74,7 +74,6 @@ public class TransformationStepExpr extends StateExpr {
   public String getIface2() {
     return _iface2;
   }
-
 
   public String getTag() {
     return _tag;

@@ -4,7 +4,7 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
-/** A {@link StateExpr} for an outgoing {@link Transformation} on an edge. */
+/** A {@link StateExpr} for a {@link Transformation} on an edge. */
 public class TransformationExpr extends StateExpr {
   public static class State extends StateExpr.State {
 
