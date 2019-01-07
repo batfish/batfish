@@ -72,10 +72,10 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
     peerSrcMgr = factory.getBDDSourceManagers().get(PEER_NAME);
     srcMgr = factory.getBDDSourceManagers().get(CONFIG_NAME);
 
-    Ip ingressIfaceSrcIp = new Ip("6.6.6.6");
+    Ip ingressIfaceSrcIp = Ip.parse("6.6.6.6");
     ingressIfaceSrcIpBdd = pkt.getSrcIp().value(ingressIfaceSrcIp.asLong());
 
-    Ip originatingFromDeviceSrcIp = new Ip("7.7.7.7");
+    Ip originatingFromDeviceSrcIp = Ip.parse("7.7.7.7");
     originatingFromDeviceSrcIpBdd = pkt.getSrcIp().value(originatingFromDeviceSrcIp.asLong());
 
     one = pkt.getFactory().one();

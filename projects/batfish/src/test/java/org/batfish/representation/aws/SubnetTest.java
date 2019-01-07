@@ -53,8 +53,8 @@ public class SubnetTest {
 
     // test getNextIp()
     Subnet subnet = _subnetList.get(0);
-    assertThat(subnet.getNextIp(), equalTo(new Ip("172.31.0.2")));
-    assertThat(subnet.getNextIp(), equalTo(new Ip("172.31.0.3")));
-    assertThat(subnet.getNextIp(), equalTo(new Ip("172.31.0.4")));
+    assertThat(subnet.getNextIp(), equalTo(Ip.parse("172.31.0.2")));
+    assertThat(subnet.getNextIp(), equalTo(Ip.parse("172.31.0.3")));
+    assertThat(subnet.getNextIp(), equalTo(Ip.parse("172.31.0.4")));
   }
 }

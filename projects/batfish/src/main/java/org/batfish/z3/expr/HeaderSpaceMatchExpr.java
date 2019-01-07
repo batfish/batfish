@@ -93,14 +93,15 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
   }
 
   public static BooleanExpr matchIpWildcards(Set<IpWildcard> ipWildcards, Field ipField) {
+    IntExpr intExpr = new VarIntExpr(ipField);
     return new OrExpr(
         ipWildcards
             .stream()
-            .map(ipWildcard -> matchIpWildcard(ipWildcard, ipField))
+            .map(ipWildcard -> matchIpWildcard(ipWildcard, intExpr))
             .collect(Collectors.toList()));
   }
 
-  public static BooleanExpr matchPrefix(Prefix prefix, Field ipField) {
+  public static BooleanExpr matchPrefix(Prefix prefix, IntExpr ipField) {
     long ip = prefix.getStartIp().asLong();
     int ipWildcardBits = Prefix.MAX_PREFIX_LENGTH - prefix.getPrefixLength();
     int ipStart = ipWildcardBits;
@@ -114,7 +115,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
     }
   }
 
-  public static BooleanExpr matchIpWildcard(IpWildcard ipWildcard, Field ipField) {
+  public static BooleanExpr matchIpWildcard(IpWildcard ipWildcard, IntExpr ipField) {
     if (ipWildcard.isPrefix()) {
       return matchPrefix(ipWildcard.toPrefix(), ipField);
     }

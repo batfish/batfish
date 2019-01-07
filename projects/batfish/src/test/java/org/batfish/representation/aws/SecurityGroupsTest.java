@@ -291,7 +291,7 @@ public class SecurityGroupsTest {
         IpAccessList.builder().setName(TEST_ACL).setLines(outboundRules).build();
 
     // flow containing SYN and ~ACK should be rejected
-    _flowBuilder.setDstIp(new Ip("1.2.3.4"));
+    _flowBuilder.setDstIp(Ip.parse("1.2.3.4"));
     _flowBuilder.setSrcPort(22);
     _flowBuilder.setTcpFlagsAck(0);
     _flowBuilder.setTcpFlagsSyn(1);
@@ -316,7 +316,7 @@ public class SecurityGroupsTest {
         IpAccessList.builder().setName(TEST_ACL).setLines(outboundRules).build();
 
     // flow containing SYN and ACK should be accepted
-    _flowBuilder.setDstIp(new Ip("1.2.3.4"));
+    _flowBuilder.setDstIp(Ip.parse("1.2.3.4"));
     _flowBuilder.setSrcPort(22);
     _flowBuilder.setTcpFlagsAck(1);
     _flowBuilder.setTcpFlagsSyn(1);
@@ -341,7 +341,7 @@ public class SecurityGroupsTest {
         IpAccessList.builder().setName(TEST_ACL).setLines(outboundRules).build();
 
     // flow containing wrong destination IP should be rejected
-    _flowBuilder.setDstIp(new Ip("1.2.3.5"));
+    _flowBuilder.setDstIp(Ip.parse("1.2.3.5"));
     _flowBuilder.setSrcPort(22);
     _flowBuilder.setTcpFlagsAck(1);
     _flowBuilder.setTcpFlagsSyn(1);

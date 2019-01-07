@@ -573,7 +573,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
       newProc.setLevel2(toIsisLevelSettings(settings.getLevel2Settings()));
     }
     processIsisInterfaceSettings(routingInstance, level1, level2);
-    newProc.setOverloadTimeout(settings.getOverloadTimeout());
+
+    // If overload is set with a timeout, just pretend overload isn't set at all
+    if (settings.getOverload() && settings.getOverloadTimeout() == null) {
+      newProc.setOverload(true);
+    }
     newProc.setReferenceBandwidth(settings.getReferenceBandwidth());
     return newProc.build();
   }
@@ -2085,9 +2089,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .setAdministrativeCost(route.getDistance())
             .setMetric(route.getMetric())
             .setTag(tag)
+            .setNonForwarding(firstNonNull(route.getNoInstall(), Boolean.FALSE))
             .build();
-
-    newStaticRoute.setNonForwarding(firstNonNull(route.getNoInstall(), Boolean.FALSE));
     return newStaticRoute;
   }
 
@@ -2229,6 +2232,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (String riName : _masterLogicalSystem.getRoutingInstances().keySet()) {
       _c.getVrfs().put(riName, new Vrf(riName));
     }
+
+    // process interface ranges. this changes the _interfaces map
+    _masterLogicalSystem.expandInterfaceRanges();
 
     // convert prefix lists to route filter lists
     for (Entry<String, PrefixList> e : _masterLogicalSystem.getPrefixLists().entrySet()) {

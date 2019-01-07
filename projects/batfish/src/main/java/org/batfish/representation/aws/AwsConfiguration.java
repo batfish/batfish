@@ -53,9 +53,10 @@ public class AwsConfiguration implements Serializable, GenericConfigObject {
   public synchronized Pair<InterfaceAddress, InterfaceAddress> getNextGeneratedLinkSubnet() {
     assert _currentGeneratedIpAsLong % 2 == 0;
     InterfaceAddress val =
-        new InterfaceAddress(new Ip(_currentGeneratedIpAsLong), Prefix.MAX_PREFIX_LENGTH - 1);
+        new InterfaceAddress(Ip.create(_currentGeneratedIpAsLong), Prefix.MAX_PREFIX_LENGTH - 1);
     InterfaceAddress val2 =
-        new InterfaceAddress(new Ip(_currentGeneratedIpAsLong + 1), Prefix.MAX_PREFIX_LENGTH - 1);
+        new InterfaceAddress(
+            Ip.create(_currentGeneratedIpAsLong + 1), Prefix.MAX_PREFIX_LENGTH - 1);
     _currentGeneratedIpAsLong += 2L;
     return new Pair<>(val, val2);
   }

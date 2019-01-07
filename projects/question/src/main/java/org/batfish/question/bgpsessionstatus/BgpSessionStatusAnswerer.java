@@ -6,6 +6,7 @@ import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.Ses
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.NOT_ESTABLISHED;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Streams;
 import com.google.common.graph.ValueGraph;
 import java.util.List;
@@ -151,9 +152,13 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
                   Set<BgpPeerConfigId> compatibleRemotes =
                       configuredBgpTopology.adjacentNodes(neighbor);
 
-                  // Find all remote peers that established a session with this peer
+                  // Find all remote peers that established a session with this peer. Node will not
+                  // be in establishedBgpTopology at all if peer was not valid according to
+                  // BgpTopologyUtils.bgpConfigPassesSanityChecks()
                   Set<BgpPeerConfigId> establishedRemotes =
-                      establishedBgpTopology.adjacentNodes(neighbor);
+                      establishedBgpTopology.nodes().contains(neighbor)
+                          ? establishedBgpTopology.adjacentNodes(neighbor)
+                          : ImmutableSet.of();
 
                   // If no compatible neighbors exist, generate one NOT_ESTABLISHED row
                   if (compatibleRemotes.isEmpty()) {

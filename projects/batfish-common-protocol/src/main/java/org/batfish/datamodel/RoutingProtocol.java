@@ -13,6 +13,7 @@ public enum RoutingProtocol {
   EGP("egp"),
   EIGRP("eigrp"),
   EIGRP_EX("eigrpEX"),
+  EVPN("evpn"),
   IBGP("ibgp"),
   IGP("igp"),
   ISIS("isis"),

@@ -53,9 +53,9 @@ public class BgpRibTest {
         .setLocalPreference(100)
         .setClusterList(ImmutableSortedSet.of(3L, 4L))
         .setCommunities(ImmutableSortedSet.of(5L, 6L))
-        .setOriginatorIp(new Ip("1.1.1.1"))
+        .setOriginatorIp(Ip.parse("1.1.1.1"))
         .setOriginType(OriginType.IGP)
-        .setReceivedFromIp(new Ip("1.1.1.1"))
+        .setReceivedFromIp(Ip.parse("1.1.1.1"))
         .setSrcProtocol(RoutingProtocol.CONNECTED)
         .setWeight(0);
 
@@ -216,9 +216,9 @@ public class BgpRibTest {
             null,
             MultipathEquivalentAsPathMatchMode.EXACT_PATH);
 
-    BgpRoute worse = _rb.setNextHopIp(new Ip("5.5.5.6")).build();
+    BgpRoute worse = _rb.setNextHopIp(Ip.parse("5.5.5.6")).build();
     // Lower IGP cost to next hop is better
-    BgpRoute best = _rb.setNextHopIp(new Ip("5.5.5.5")).build();
+    BgpRoute best = _rb.setNextHopIp(Ip.parse("5.5.5.5")).build();
 
     rib.mergeRoute(worse);
     rib.mergeRoute(best);
@@ -238,9 +238,9 @@ public class BgpRibTest {
 
     BgpRoute base = _rb.setAsPath(AsPath.ofSingletonAsSets(1L, 2L)).build();
     BgpRoute candidate1 =
-        _rb.setAsPath(AsPath.ofSingletonAsSets(1L, 2L)).setNextHopIp(new Ip("5.5.5.5")).build();
+        _rb.setAsPath(AsPath.ofSingletonAsSets(1L, 2L)).setNextHopIp(Ip.parse("5.5.5.5")).build();
     BgpRoute candidate2 =
-        _rb.setAsPath(AsPath.ofSingletonAsSets(1L, 3L)).setNextHopIp(new Ip("5.5.5.6")).build();
+        _rb.setAsPath(AsPath.ofSingletonAsSets(1L, 3L)).setNextHopIp(Ip.parse("5.5.5.6")).build();
 
     rib.mergeRoute(base);
     assertThat("Exact AS path match, allow merge", rib.mergeRoute(candidate1));
@@ -257,9 +257,9 @@ public class BgpRibTest {
 
     BgpRoute base = _rb.setAsPath(AsPath.ofSingletonAsSets(1L, 2L)).build();
     BgpRoute candidate1 =
-        _rb.setAsPath(AsPath.ofSingletonAsSets(1L, 3L)).setNextHopIp(new Ip("5.5.5.5")).build();
+        _rb.setAsPath(AsPath.ofSingletonAsSets(1L, 3L)).setNextHopIp(Ip.parse("5.5.5.5")).build();
     BgpRoute candidate2 =
-        _rb.setAsPath(AsPath.ofSingletonAsSets(2L, 3L)).setNextHopIp(new Ip("5.5.5.6")).build();
+        _rb.setAsPath(AsPath.ofSingletonAsSets(2L, 3L)).setNextHopIp(Ip.parse("5.5.5.6")).build();
 
     rib.mergeRoute(base);
     assertThat("Exact AS path match, allow merge", rib.mergeRoute(candidate1));
@@ -271,8 +271,8 @@ public class BgpRibTest {
   @Test
   public void testMultipathDiffOriginator() {
     BgpRoute bestPath = _rb.build();
-    _multiPathRib.mergeRoute(_rb.setOriginatorIp(new Ip("2.2.2.2")).build());
-    _multiPathRib.mergeRoute(_rb.setOriginatorIp(new Ip("2.2.2.3")).build());
+    _multiPathRib.mergeRoute(_rb.setOriginatorIp(Ip.parse("2.2.2.2")).build());
+    _multiPathRib.mergeRoute(_rb.setOriginatorIp(Ip.parse("2.2.2.3")).build());
     _multiPathRib.mergeRoute(bestPath);
     assertThat(_multiPathRib.getRoutes(), hasSize(3));
     assertThat(_multiPathRib.getBestPathRoutes(), equalTo(Collections.singleton(bestPath)));
@@ -288,9 +288,9 @@ public class BgpRibTest {
             null,
             MultipathEquivalentAsPathMatchMode.EXACT_PATH);
     BgpRoute best = _rb.build();
-    BgpRoute earliest = _rb.setOriginatorIp(new Ip("2.2.2.2")).build();
+    BgpRoute earliest = _rb.setOriginatorIp(Ip.parse("2.2.2.2")).build();
     _multiPathRib.mergeRoute(earliest);
-    _multiPathRib.mergeRoute(_rb.setOriginatorIp(new Ip("2.2.2.3")).build());
+    _multiPathRib.mergeRoute(_rb.setOriginatorIp(Ip.parse("2.2.2.3")).build());
     _multiPathRib.mergeRoute(best);
 
     assertThat(_multiPathRib.getRoutes(), hasSize(3));
@@ -312,8 +312,8 @@ public class BgpRibTest {
   @Test
   public void testMultipathDiffNeighbor() {
     BgpRoute bestPath = _rb.build();
-    _multiPathRib.mergeRoute(_rb.setReceivedFromIp(new Ip("2.2.2.2")).build());
-    _multiPathRib.mergeRoute(_rb.setReceivedFromIp(new Ip("2.2.2.3")).build());
+    _multiPathRib.mergeRoute(_rb.setReceivedFromIp(Ip.parse("2.2.2.2")).build());
+    _multiPathRib.mergeRoute(_rb.setReceivedFromIp(Ip.parse("2.2.2.3")).build());
     _multiPathRib.mergeRoute(bestPath);
 
     assertThat(_multiPathRib.getRoutes(), hasSize(3));
@@ -333,9 +333,9 @@ public class BgpRibTest {
 
   @Test
   public void testMultipathEviction() {
-    _multiPathRib.mergeRoute(_rb.setOriginatorIp(new Ip("4.4.4.4")).build());
-    _multiPathRib.mergeRoute(_rb.setReceivedFromIp(new Ip("2.2.2.2")).build());
-    _multiPathRib.mergeRoute(_rb.setReceivedFromIp(new Ip("2.2.2.3")).build());
+    _multiPathRib.mergeRoute(_rb.setOriginatorIp(Ip.parse("4.4.4.4")).build());
+    _multiPathRib.mergeRoute(_rb.setReceivedFromIp(Ip.parse("2.2.2.2")).build());
+    _multiPathRib.mergeRoute(_rb.setReceivedFromIp(Ip.parse("2.2.2.3")).build());
 
     assertThat(_multiPathRib.getRoutes(), hasSize(3));
     assertThat(_multiPathRib.getBestPathRoutes(), hasSize(1));
@@ -350,8 +350,8 @@ public class BgpRibTest {
   public void testBestPathsEqualRoutesForBestPathRib() {
     BgpRib bestPathRib = new BgpRib(null, null, BgpTieBreaker.ROUTER_ID, 1, null);
     BgpRoute bestPath = _rb.build();
-    bestPathRib.mergeRoute(_rb.setReceivedFromIp(new Ip("2.2.2.2")).build());
-    bestPathRib.mergeRoute(_rb.setReceivedFromIp(new Ip("2.2.2.3")).build());
+    bestPathRib.mergeRoute(_rb.setReceivedFromIp(Ip.parse("2.2.2.2")).build());
+    bestPathRib.mergeRoute(_rb.setReceivedFromIp(Ip.parse("2.2.2.3")).build());
     bestPathRib.mergeRoute(bestPath);
 
     assertThat(bestPathRib.getRoutes(), equalTo(Collections.singleton(bestPath)));
@@ -368,7 +368,9 @@ public class BgpRibTest {
     assertThat(_multiPathRib.getRoutes(), equalTo(_multiPathRib.getBestPathRoutes()));
 
     _multiPathRib.mergeRoute(
-        _rb.setNetwork(Prefix.parse("10.1.1.0/24")).setOriginatorIp(new Ip("22.22.22.22")).build());
+        _rb.setNetwork(Prefix.parse("10.1.1.0/24"))
+            .setOriginatorIp(Ip.parse("22.22.22.22"))
+            .build());
     assertThat(_multiPathRib.getRoutes(), hasSize(4));
     assertThat(_multiPathRib.getBestPathRoutes(), hasSize(3));
   }
@@ -386,7 +388,7 @@ public class BgpRibTest {
   public void testBestPathSelectionTieBreakRouterId() {
     _bestPathRib.mergeRoute(_rb.build());
     // Lower originator IP is better
-    BgpRoute bestPath = _rb.setOriginatorIp(new Ip("1.1.0.1")).build();
+    BgpRoute bestPath = _rb.setOriginatorIp(Ip.parse("1.1.0.1")).build();
     _bestPathRib.mergeRoute(bestPath);
 
     assertThat(_bestPathRib.getRoutes(), equalTo(Collections.singleton(bestPath)));
@@ -396,7 +398,7 @@ public class BgpRibTest {
   public void testBestPathSelectionTieBreakReceivedFrom() {
     _bestPathRib.mergeRoute(_rb.build());
     // Lower IP is better
-    BgpRoute bestPath = _rb.setReceivedFromIp(new Ip("1.1.0.1")).build();
+    BgpRoute bestPath = _rb.setReceivedFromIp(Ip.parse("1.1.0.1")).build();
     _bestPathRib.mergeRoute(bestPath);
 
     assertThat(_bestPathRib.getRoutes(), equalTo(Collections.singleton(bestPath)));
@@ -408,7 +410,7 @@ public class BgpRibTest {
     BgpRoute bestPath = _rb.build();
     _bestPathRib.mergeRoute(bestPath);
     // Oldest route should win despite newer having lower in Originator IP
-    _bestPathRib.mergeRoute(_rb.setOriginatorIp(new Ip("1.1.0.1")).build());
+    _bestPathRib.mergeRoute(_rb.setOriginatorIp(Ip.parse("1.1.0.1")).build());
 
     assertThat(_bestPathRib.getRoutes(), equalTo(Collections.singleton(bestPath)));
   }
@@ -440,11 +442,11 @@ public class BgpRibTest {
     AsPath bestAsPath = AsPath.ofSingletonAsSets(3L, 4L, 6L);
     AsPath asPath3c = bestAsPath;
     AsPath asPath3d = bestAsPath;
-    Ip nextHop2 = new Ip("2.0.0.0");
-    Ip nextHop3a = new Ip("3.0.0.1");
-    Ip nextHop3b = new Ip("3.0.0.2");
-    Ip nextHop3c = new Ip("3.0.0.3");
-    Ip nextHop3d = new Ip("3.0.0.4");
+    Ip nextHop2 = Ip.parse("2.0.0.0");
+    Ip nextHop3a = Ip.parse("3.0.0.1");
+    Ip nextHop3b = Ip.parse("3.0.0.2");
+    Ip nextHop3c = Ip.parse("3.0.0.3");
+    Ip nextHop3d = Ip.parse("3.0.0.4");
 
     /*
      * Common attributes for all routes
@@ -458,9 +460,9 @@ public class BgpRibTest {
 
     BgpRoute bestRoute =
         b.setAsPath(bestAsPath)
-            .setNextHopIp(new Ip("1.1.1.1"))
-            .setOriginatorIp(new Ip("1.1.1.1"))
-            .setReceivedFromIp(new Ip("1.1.1.1."))
+            .setNextHopIp(Ip.parse("1.1.1.1"))
+            .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setReceivedFromIp(Ip.parse("1.1.1.1."))
             .build();
 
     /*
@@ -621,8 +623,8 @@ public class BgpRibTest {
             BgpTieBreaker.ROUTER_ID,
             null,
             MultipathEquivalentAsPathMatchMode.EXACT_PATH);
-    Ip ip1 = new Ip("1.0.0.0");
-    Ip ip2 = new Ip("2.2.0.0");
+    Ip ip1 = Ip.parse("1.0.0.0");
+    Ip ip2 = Ip.parse("2.2.0.0");
     BgpRoute.Builder b1 =
         new BgpRoute.Builder()
             .setNextHopIp(Ip.ZERO)
@@ -643,7 +645,7 @@ public class BgpRibTest {
      * routes should remain. In the multipath RIB, all routes should remain.
      */
     for (int i = 8; i <= Prefix.MAX_PREFIX_LENGTH; i++) {
-      Prefix p = new Prefix(ip1, i);
+      Prefix p = Prefix.create(ip1, i);
       b1.setNetwork(p);
       b2.setNetwork(p);
       bbr.mergeRoute(b1.build());
@@ -652,7 +654,7 @@ public class BgpRibTest {
       bmr.mergeRoute(b2.build());
     }
     for (int i = 16; i <= Prefix.MAX_PREFIX_LENGTH; i++) {
-      Prefix p = new Prefix(ip2, i);
+      Prefix p = Prefix.create(ip2, i);
       b1.setNetwork(p);
       b2.setNetwork(p);
       bbr.mergeRoute(b1.build());
@@ -661,7 +663,7 @@ public class BgpRibTest {
       bmr.mergeRoute(b2.build());
     }
     for (int i = 8; i <= Prefix.MAX_PREFIX_LENGTH; i++) {
-      Prefix p = new Prefix(ip1, i);
+      Prefix p = Prefix.create(ip1, i);
       assertTrue(bbr.containsRoute(b1.setNetwork(p).build()));
       b1.setNetwork(p);
       b2.setNetwork(p);
@@ -671,7 +673,7 @@ public class BgpRibTest {
       assertTrue(bmr.containsRoute(b2.build()));
     }
     for (int i = 16; i <= Prefix.MAX_PREFIX_LENGTH; i++) {
-      Prefix p = new Prefix(ip2, i);
+      Prefix p = Prefix.create(ip2, i);
       b1.setNetwork(p);
       b2.setNetwork(p);
       assertTrue(bbr.containsRoute(b1.build()));
@@ -703,9 +705,9 @@ public class BgpRibTest {
             .setProtocol(RoutingProtocol.BGP)
             .setReceivedFromIp(Ip.ZERO);
     BgpRoute ebgpOlderHigherOriginator =
-        ebgpBuilder.setOriginatorIp(Ip.MAX).setReceivedFromIp(new Ip("1.1.1.1")).build();
+        ebgpBuilder.setOriginatorIp(Ip.MAX).setReceivedFromIp(Ip.parse("1.1.1.1")).build();
     BgpRoute ebgpNewerHigherOriginator =
-        ebgpBuilder.setOriginatorIp(Ip.MAX).setReceivedFromIp(new Ip("1.1.1.2")).build();
+        ebgpBuilder.setOriginatorIp(Ip.MAX).setReceivedFromIp(Ip.parse("1.1.1.2")).build();
     BgpRoute ebgpLowerOriginator = ebgpBuilder.setOriginatorIp(Ip.ZERO).build();
     // ibgp
     BgpRib ibgpBpr =
@@ -719,9 +721,9 @@ public class BgpRibTest {
             .setProtocol(RoutingProtocol.IBGP)
             .setReceivedFromIp(Ip.ZERO);
     BgpRoute ibgpOlderHigherOriginator =
-        ibgpBuilder.setOriginatorIp(Ip.MAX).setReceivedFromIp(new Ip("1.1.1.1")).build();
+        ibgpBuilder.setOriginatorIp(Ip.MAX).setReceivedFromIp(Ip.parse("1.1.1.1")).build();
     BgpRoute ibgpNewerHigherOriginator =
-        ibgpBuilder.setOriginatorIp(Ip.MAX).setReceivedFromIp(new Ip("1.1.1.2")).build();
+        ibgpBuilder.setOriginatorIp(Ip.MAX).setReceivedFromIp(Ip.parse("1.1.1.2")).build();
     BgpRoute ibgpLowerOriginator = ibgpBuilder.setOriginatorIp(Ip.ZERO).build();
 
     ebgpBpr.mergeRoute(ebgpOlderHigherOriginator);

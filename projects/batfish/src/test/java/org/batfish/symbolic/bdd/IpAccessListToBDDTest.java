@@ -53,7 +53,7 @@ public class IpAccessListToBDDTest {
 
   @Test
   public void testPermittedByAcl2() {
-    Ip fooIp = new Ip("1.1.1.1");
+    Ip fooIp = Ip.parse("1.1.1.1");
     BDD fooIpBDD = _pkt.getDstIp().value(fooIp.asLong());
     IpAccessList fooAcl =
         aclWithLines(accepting(HeaderSpace.builder().setDstIps(fooIp.toIpSpace()).build()));
@@ -68,7 +68,7 @@ public class IpAccessListToBDDTest {
 
   @Test
   public void testPermittedByAcl() {
-    Ip fooIp = new Ip("1.1.1.1");
+    Ip fooIp = Ip.parse("1.1.1.1");
     BDD fooIpBDD = _pkt.getDstIp().value(fooIp.asLong());
     IpAccessList fooAcl =
         aclWithLines(accepting(HeaderSpace.builder().setDstIps(fooIp.toIpSpace()).build()));

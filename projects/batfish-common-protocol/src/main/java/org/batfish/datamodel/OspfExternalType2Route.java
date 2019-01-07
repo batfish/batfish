@@ -7,7 +7,6 @@ import org.batfish.datamodel.ospf.OspfMetricType;
 
 public class OspfExternalType2Route extends OspfExternalRoute {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @JsonCreator
@@ -86,17 +85,11 @@ public class OspfExternalType2Route extends OspfExternalRoute {
   }
 
   @Override
-  protected final String ospfExternalRouteString() {
-    return " costToAdvertiser:" + getCostToAdvertiser();
-  }
-
-  @Override
   public int routeCompare(@Nonnull AbstractRoute rhs) {
     if (getClass() != rhs.getClass()) {
       return 0;
     }
     OspfExternalType2Route castRhs = (OspfExternalType2Route) rhs;
-    int ret = Long.compare(getCostToAdvertiser(), castRhs.getCostToAdvertiser());
-    return ret;
+    return Long.compare(getCostToAdvertiser(), castRhs.getCostToAdvertiser());
   }
 }

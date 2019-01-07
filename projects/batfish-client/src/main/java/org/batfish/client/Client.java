@@ -400,7 +400,7 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new Ip(value.textValue());
+        Ip.parse(value.textValue());
         break;
       case IP_PROTOCOL:
         if (!value.isTextual()) {
@@ -2213,16 +2213,14 @@ public class Client extends AbstractClient implements IClient {
       // that case
       String answerStringToPrint = answerString;
       if (outWriter == null && _settings.getPrettyPrintAnswers()) {
-        Answer answer;
         try {
-          answer = BatfishObjectMapper.mapper().readValue(answerString, Answer.class);
+          Answer answer = BatfishObjectMapper.mapper().readValue(answerString, Answer.class);
+          answerStringToPrint = answer.prettyPrint();
         } catch (IOException e) {
-          throw new BatfishException(
-              "Response does not appear to be valid JSON representation of "
-                  + Answer.class.getSimpleName(),
-              e);
+          _logger.warnf(
+              "Using Json for pretty printing because could not deserialize response as %s: %s",
+              Answer.class.getSimpleName(), e.getMessage());
         }
-        answerStringToPrint = answer.prettyPrint();
       }
 
       logOutput(outWriter, answerStringToPrint);

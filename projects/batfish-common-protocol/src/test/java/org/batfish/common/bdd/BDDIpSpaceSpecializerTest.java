@@ -34,22 +34,24 @@ public class BDDIpSpaceSpecializerTest {
 
   @Test
   public void testSpecializeIpIpSpace() {
-    IpSpace ipSpace = new Ip("1.2.3.4").toIpSpace();
+    IpSpace ipSpace = Ip.parse("1.2.3.4").toIpSpace();
     assertThat(specializer(ipSpace).visit(ipSpace), equalTo(UniverseIpSpace.INSTANCE));
     assertThat(
         specializer(Prefix.parse("1.2.3.0/24").toIpSpace()).visit(ipSpace), equalTo(ipSpace));
     assertThat(
-        specializer(new Ip("1.2.3.3").toIpSpace()).visit(ipSpace), equalTo(EmptyIpSpace.INSTANCE));
+        specializer(Ip.parse("1.2.3.3").toIpSpace()).visit(ipSpace),
+        equalTo(EmptyIpSpace.INSTANCE));
   }
 
   @Test
   public void testSpecializeIpWildcardIpSpace() {
-    IpSpace ipSpace = new IpWildcard(new Ip("255.0.255.0"), new Ip("0.255.0.255")).toIpSpace();
+    IpSpace ipSpace = new IpWildcard(Ip.parse("255.0.255.0"), Ip.parse("0.255.0.255")).toIpSpace();
     assertThat(specializer(ipSpace).visit(ipSpace), equalTo(UniverseIpSpace.INSTANCE));
     assertThat(
         specializer(Prefix.parse("255.0.0.0/8").toIpSpace()).visit(ipSpace), equalTo(ipSpace));
     assertThat(
-        specializer(new Ip("1.2.3.4").toIpSpace()).visit(ipSpace), equalTo(EmptyIpSpace.INSTANCE));
+        specializer(Ip.parse("1.2.3.4").toIpSpace()).visit(ipSpace),
+        equalTo(EmptyIpSpace.INSTANCE));
   }
 
   @Test
@@ -77,7 +79,7 @@ public class BDDIpSpaceSpecializerTest {
         specializer(
                 IpWildcardSetIpSpace.builder()
                     .including(IpWildcard.ANY)
-                    .excluding(new IpWildcard(new Ip("0.1.0.0"), new Ip("255.0.255.255")))
+                    .excluding(new IpWildcard(Ip.parse("0.1.0.0"), Ip.parse("255.0.255.255")))
                     .build())
             .visit(ipSpace),
         equalTo(
@@ -90,7 +92,7 @@ public class BDDIpSpaceSpecializerTest {
   @Test
   public void testSpecializeToUniverse() {
     IpSpace ipSpace = Prefix.parse("1.0.0.0/8").toIpSpace();
-    Ip ip = new Ip("1.1.1.1");
+    Ip ip = Ip.parse("1.1.1.1");
     IpSpaceSpecializer specializer =
         new BDDIpSpaceSpecializer(_toBdd.toBDD(ip), ImmutableMap.of(), _toBdd, true);
     assertThat(specializer.specialize(ipSpace), equalTo(UniverseIpSpace.INSTANCE));
@@ -99,7 +101,7 @@ public class BDDIpSpaceSpecializerTest {
   @Test
   public void testDontSpecializeToUniverse() {
     IpSpace ipSpace = Prefix.parse("1.0.0.0/8").toIpSpace();
-    Ip ip = new Ip("1.1.1.1");
+    Ip ip = Ip.parse("1.1.1.1");
     IpSpaceSpecializer specializer =
         new BDDIpSpaceSpecializer(_toBdd.toBDD(ip), ImmutableMap.of(), _toBdd, false);
     assertThat(specializer.specialize(ipSpace), equalTo(ipSpace));

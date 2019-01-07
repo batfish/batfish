@@ -128,7 +128,7 @@ public class BgpProtocolHelper {
               fromVrf
                   .getBgpProcess()
                   .getActiveNeighbors()
-                  .get(new Prefix(remoteReceivedFromIp, Prefix.MAX_PREFIX_LENGTH));
+                  .get(Prefix.create(remoteReceivedFromIp, Prefix.MAX_PREFIX_LENGTH));
           long newClusterId = remoteReceivedFromSession.getClusterId();
           transformedOutgoingRouteBuilder.addToClusterList(newClusterId);
         }
@@ -246,8 +246,10 @@ public class BgpProtocolHelper {
    *
    * @param generatedRoute a {@link GeneratedRoute} to convert to a {@link BgpRoute}.
    * @param routerId Router ID to set as the originatorIp for the resulting BGP route.
+   * @param nonRouting Whether to mark the BgpRoute as non-routing
    */
-  public static BgpRoute convertGeneratedRouteToBgp(GeneratedRoute generatedRoute, Ip routerId) {
+  public static BgpRoute convertGeneratedRouteToBgp(
+      GeneratedRoute generatedRoute, Ip routerId, boolean nonRouting) {
     BgpRoute.Builder b = new BgpRoute.Builder();
     b.setAdmin(generatedRoute.getAdministrativeCost());
     b.setAsPath(generatedRoute.getAsPath());
@@ -264,6 +266,7 @@ public class BgpProtocolHelper {
     b.setOriginatorIp(routerId);
     b.setOriginType(OriginType.INCOMPLETE);
     b.setReceivedFromIp(Ip.ZERO);
+    b.setNonRouting(nonRouting);
     return b.build();
   }
 }

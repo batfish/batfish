@@ -65,7 +65,7 @@ import org.junit.rules.TemporaryFolder;
 
 /** Test of {@link org.batfish.common.plugin.IBatfish#bddDifferentialReachability} */
 public class BatfishBDDDifferentialReachabilityTest {
-  private static final Ip DST_IP = new Ip("3.3.3.3");
+  private static final Ip DST_IP = Ip.parse("3.3.3.3");
   private static final String NODE1 = "node1";
   private static final String NODE2 = "node2";
   private static final String PHYSICAL = "FastEthernet0/0";
@@ -74,7 +74,7 @@ public class BatfishBDDDifferentialReachabilityTest {
   private static final InterfaceAddress NODE2_PHYSICAL_NETWORK = new InterfaceAddress("2.0.0.2/8");
 
   // the lowest IP addr of the network other than NODE1_PHYSICAL_IP and NODE2_PHYSICAL_IP.
-  private static final Ip PHYSICAL_LINK_IP = new Ip("2.0.0.3");
+  private static final Ip PHYSICAL_LINK_IP = Ip.parse("2.0.0.3");
 
   private Configuration.Builder _cb;
 
@@ -176,7 +176,7 @@ public class BatfishBDDDifferentialReachabilityTest {
         v1.setStaticRoutes(
             ImmutableSortedSet.of(
                 StaticRoute.builder()
-                    .setNetwork(new Prefix(DST_IP, 32))
+                    .setNetwork(Prefix.create(DST_IP, 32))
                     .setNextHopInterface(PHYSICAL)
                     .setAdministrativeCost(1)
                     .build()));
@@ -266,7 +266,7 @@ public class BatfishBDDDifferentialReachabilityTest {
         v1.setStaticRoutes(
             ImmutableSortedSet.of(
                 StaticRoute.builder()
-                    .setNetwork(new Prefix(DST_IP, 32))
+                    .setNetwork(Prefix.create(DST_IP, 32))
                     .setNextHopInterface(PHYSICAL)
                     .setAdministrativeCost(1)
                     .build()));
@@ -311,7 +311,7 @@ public class BatfishBDDDifferentialReachabilityTest {
       v1.setStaticRoutes(
           ImmutableSortedSet.of(
               StaticRoute.builder()
-                  .setNetwork(new Prefix(DST_IP, 32))
+                  .setNetwork(Prefix.create(DST_IP, 32))
                   .setNextHopInterface(PHYSICAL)
                   .setAdministrativeCost(1)
                   .build()));
@@ -397,7 +397,7 @@ public class BatfishBDDDifferentialReachabilityTest {
       v1.setStaticRoutes(
           ImmutableSortedSet.of(
               StaticRoute.builder()
-                  .setNetwork(new Prefix(DST_IP, 32))
+                  .setNetwork(Prefix.create(DST_IP, 32))
                   .setNextHopInterface(PHYSICAL)
                   .setAdministrativeCost(1)
                   .build()));
@@ -459,7 +459,7 @@ public class BatfishBDDDifferentialReachabilityTest {
       v1.setStaticRoutes(
           ImmutableSortedSet.of(
               StaticRoute.builder()
-                  .setNetwork(new Prefix(DST_IP, 32))
+                  .setNetwork(Prefix.create(DST_IP, 32))
                   .setNextHopInterface(PHYSICAL)
                   .setAdministrativeCost(1)
                   .build()));
@@ -513,7 +513,7 @@ public class BatfishBDDDifferentialReachabilityTest {
         v1.setStaticRoutes(
             ImmutableSortedSet.of(
                 StaticRoute.builder()
-                    .setNetwork(new Prefix(DST_IP, 32))
+                    .setNetwork(Prefix.create(DST_IP, 32))
                     .setNextHopInterface(PHYSICAL)
                     .setAdministrativeCost(1)
                     .build()));
@@ -568,7 +568,7 @@ public class BatfishBDDDifferentialReachabilityTest {
         v1.setStaticRoutes(
             ImmutableSortedSet.of(
                 StaticRoute.builder()
-                    .setNetwork(new Prefix(DST_IP, 32))
+                    .setNetwork(Prefix.create(DST_IP, 32))
                     .setNextHopInterface(NULL_INTERFACE_NAME)
                     .setAdministrativeCost(1)
                     .build()));

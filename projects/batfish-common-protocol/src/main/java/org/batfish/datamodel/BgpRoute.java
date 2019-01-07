@@ -253,7 +253,6 @@ public class BgpRoute extends AbstractRoute {
 
   private static final long serialVersionUID = 1L;
 
-  private final int _admin;
   @Nonnull private final AsPath _asPath;
   @Nonnull private final SortedSet<Long> _clusterList;
   @Nonnull private final SortedSet<Long> _communities;
@@ -269,6 +268,8 @@ public class BgpRoute extends AbstractRoute {
   @Nullable private final RoutingProtocol _srcProtocol;
   /* NOTE: Cisco-only attribute */
   private final int _weight;
+  /* Cache the hashcode */
+  private int _hashCode = 0;
 
   @JsonCreator
   private static BgpRoute jsonCreator(
@@ -333,10 +334,7 @@ public class BgpRoute extends AbstractRoute {
       int weight,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(network);
-    setNonForwarding(nonForwarding);
-    setNonRouting(nonRouting);
-    _admin = admin;
+    super(network, admin, nonRouting, nonForwarding);
     _asPath = firstNonNull(asPath, AsPath.empty());
     _clusterList =
         clusterList == null ? ImmutableSortedSet.of() : ImmutableSortedSet.copyOf(clusterList);
@@ -388,30 +386,28 @@ public class BgpRoute extends AbstractRoute {
 
   @Override
   public int hashCode() {
-    return Objects.hash(
-        _admin,
-        _asPath,
-        _clusterList,
-        _communities,
-        _discard,
-        _localPreference,
-        _med,
-        _network,
-        _nextHopIp,
-        _originatorIp,
-        _originType.ordinal(),
-        _protocol.ordinal(),
-        _receivedFromIp,
-        _receivedFromRouteReflectorClient,
-        _srcProtocol == null ? 0 : _srcProtocol.ordinal(),
-        _weight);
-  }
-
-  @JsonIgnore(false)
-  @JsonProperty(PROP_ADMINISTRATIVE_COST)
-  @Override
-  public int getAdministrativeCost() {
-    return _admin;
+    if (_hashCode != 0) {
+      return _hashCode;
+    }
+    _hashCode =
+        Objects.hash(
+            _admin,
+            _asPath,
+            _clusterList,
+            _communities,
+            _discard,
+            _localPreference,
+            _med,
+            _network,
+            _nextHopIp,
+            _originatorIp,
+            _originType.ordinal(),
+            _protocol.ordinal(),
+            _receivedFromIp,
+            _receivedFromRouteReflectorClient,
+            _srcProtocol == null ? 0 : _srcProtocol.ordinal(),
+            _weight);
+    return _hashCode;
   }
 
   @Nonnull
@@ -508,32 +504,6 @@ public class BgpRoute extends AbstractRoute {
   @JsonProperty(PROP_WEIGHT)
   public int getWeight() {
     return _weight;
-  }
-
-  @Override
-  protected final String protocolRouteString() {
-    return " asPath:"
-        + _asPath
-        + " clusterList:"
-        + _clusterList
-        + " communities:"
-        + _communities
-        + " discard:"
-        + _discard
-        + " localPreference:"
-        + _localPreference
-        + " med:"
-        + _med
-        + " originatorIp:"
-        + _originatorIp
-        + " originType:"
-        + _originType
-        + " receivedFromIp:"
-        + _receivedFromIp
-        + " srcProtocol:"
-        + _srcProtocol
-        + " weight:"
-        + _weight;
   }
 
   @Override

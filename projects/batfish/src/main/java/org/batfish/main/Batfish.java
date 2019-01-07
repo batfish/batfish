@@ -6,6 +6,15 @@ import static com.google.common.base.Verify.verify;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
+import static org.batfish.common.util.CompletionMetadataUtils.getAddressBooks;
+import static org.batfish.common.util.CompletionMetadataUtils.getAddressGroups;
+import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
+import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
+import static org.batfish.common.util.CompletionMetadataUtils.getIps;
+import static org.batfish.common.util.CompletionMetadataUtils.getPrefixes;
+import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
+import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
+import static org.batfish.common.util.CompletionMetadataUtils.getZones;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
@@ -42,7 +51,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +83,7 @@ import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
+import org.batfish.common.CompletionMetadata;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.common.NetworkSnapshot;
@@ -239,7 +248,6 @@ import org.batfish.z3.Synthesizer;
 import org.batfish.z3.SynthesizerInputImpl;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.OrExpr;
-import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.jgrapht.Graph;
@@ -2564,53 +2572,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return advertSet;
   }
 
-  /**
-   * Reads the external bgp announcement specified in the environment, and populates the
-   * vendor-independent configurations with data about those announcements
-   *
-   * @param configurations The vendor-independent configurations to be modified
-   */
-  public Set<BgpAdvertisement> processExternalBgpAnnouncements(
-      Map<String, Configuration> configurations, SortedSet<Long> allCommunities) {
-    Set<BgpAdvertisement> advertSet = new LinkedHashSet<>();
-    Path externalBgpAnnouncementsPath = _testrigSettings.getExternalBgpAnnouncementsPath();
-    if (Files.exists(externalBgpAnnouncementsPath)) {
-      String externalBgpAnnouncementsFileContents =
-          CommonUtil.readFile(externalBgpAnnouncementsPath);
-      // Populate advertSet with BgpAdvertisements that
-      // gets passed to populatePrecomputedBgpAdvertisements.
-      // See populatePrecomputedBgpAdvertisements for the things that get
-      // extracted from these advertisements.
-
-      try {
-        JSONObject jsonObj = new JSONObject(externalBgpAnnouncementsFileContents);
-
-        JSONArray announcements = jsonObj.getJSONArray(BfConsts.PROP_BGP_ANNOUNCEMENTS);
-
-        for (int index = 0; index < announcements.length(); index++) {
-          JSONObject announcement = new JSONObject();
-          announcement.put("@id", index);
-          JSONObject announcementSrc = announcements.getJSONObject(index);
-          for (Iterator<?> i = announcementSrc.keys(); i.hasNext(); ) {
-            String key = (String) i.next();
-            if (!key.equals("@id")) {
-              announcement.put(key, announcementSrc.get(key));
-            }
-          }
-          BgpAdvertisement bgpAdvertisement =
-              BatfishObjectMapper.mapper()
-                  .readValue(announcement.toString(), BgpAdvertisement.class);
-          allCommunities.addAll(bgpAdvertisement.getCommunities());
-          advertSet.add(bgpAdvertisement);
-        }
-
-      } catch (JSONException | IOException e) {
-        throw new BatfishException("Problems parsing JSON in " + externalBgpAnnouncementsPath, e);
-      }
-    }
-    return advertSet;
-  }
-
   @Override
   public void processFlows(Set<Flow> flows, boolean ignoreFilters) {
     DataPlane dp = loadDataPlane();
@@ -3034,6 +2995,32 @@ public class Batfish extends PluginConsumer implements IBatfish {
     updateBlacklistedAndInactiveConfigs(configurations);
     postProcessAggregatedInterfaces(configurations);
     postProcessOspfCosts(configurations);
+    computeAndStoreCompletionMetadata(configurations);
+  }
+
+  private void computeAndStoreCompletionMetadata(Map<String, Configuration> configurations) {
+    try {
+      _storage.storeCompletionMetadata(
+          computeCompletionMetadata(configurations),
+          _settings.getContainer(),
+          _testrigSettings.getName());
+    } catch (IOException e) {
+      _logger.errorf("Error storing CompletionMetadata: %s", e);
+    }
+  }
+
+  private CompletionMetadata computeCompletionMetadata(Map<String, Configuration> configurations) {
+    ReferenceLibrary referenceLibrary = getReferenceLibraryData();
+    return new CompletionMetadata(
+        getAddressBooks(referenceLibrary),
+        getAddressGroups(referenceLibrary),
+        getFilterNames(configurations),
+        getInterfaces(configurations),
+        getIps(configurations),
+        getPrefixes(configurations),
+        getStructureNames(configurations),
+        getVrfs(configurations),
+        getZones(configurations));
   }
 
   private void repairEnvironmentBgpTables() {

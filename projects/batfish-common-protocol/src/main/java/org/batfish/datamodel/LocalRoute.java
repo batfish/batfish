@@ -7,30 +7,35 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
+/**
+ * A local route. Local routes are more specific versions of interface (i.e., connected) routes.
+ * They are {@link Prefix#MAX_PREFIX_LENGTH} routes to the interface's IP address.
+ */
+@ParametersAreNonnullByDefault
 public class LocalRoute extends AbstractRoute {
 
+  private static final long serialVersionUID = 1L;
   private static final String PROP_SOURCE_PREFIX_LENGTH = "sourcePrefixLength";
 
-  private static final long serialVersionUID = 1L;
-
   private final String _nextHopInterface;
-
   private final int _sourcePrefixLength;
 
-  public LocalRoute(@Nonnull InterfaceAddress interfaceAddress, String nextHopInterface) {
+  public LocalRoute(InterfaceAddress interfaceAddress, String nextHopInterface) {
     this(
-        new Prefix(interfaceAddress.getIp(), Prefix.MAX_PREFIX_LENGTH),
+        Prefix.create(interfaceAddress.getIp(), Prefix.MAX_PREFIX_LENGTH),
         nextHopInterface,
         interfaceAddress.getNetworkBits());
   }
 
   @JsonCreator
   private LocalRoute(
-      @JsonProperty(PROP_NETWORK) @Nonnull Prefix network,
-      @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
+      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
+      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @JsonProperty(PROP_SOURCE_PREFIX_LENGTH) int sourcePrefixLength) {
-    super(network);
+    super(network, 0, false, false);
     _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
     _sourcePrefixLength = sourcePrefixLength;
   }
@@ -44,13 +49,14 @@ public class LocalRoute extends AbstractRoute {
     }
     LocalRoute rhs = (LocalRoute) o;
     return _network.equals(rhs._network)
+        && _admin == rhs._admin
         && _nextHopInterface.equals(rhs._nextHopInterface)
         && _sourcePrefixLength == rhs._sourcePrefixLength;
   }
 
   @Override
-  public int getAdministrativeCost() {
-    return 0;
+  public int hashCode() {
+    return Objects.hash(_network, _admin, _nextHopInterface, _sourcePrefixLength);
   }
 
   @Override
@@ -85,16 +91,6 @@ public class LocalRoute extends AbstractRoute {
   @Override
   public int getTag() {
     return Route.UNSET_ROUTE_TAG;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(_network, _nextHopInterface, _sourcePrefixLength);
-  }
-
-  @Override
-  protected String protocolRouteString() {
-    return " sourcePrefixLength: " + _sourcePrefixLength;
   }
 
   @Override

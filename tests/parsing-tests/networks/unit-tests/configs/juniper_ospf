@@ -1,6 +1,9 @@
 #
 set system host-name juniper-ospf
 set protocols ospf area 0.1.2.3 interface xe-0/0/20:0.0
+set protocols ospf area 0.1.2.3 interface xe-0/0/20:0.0 ldp-synchronization
+set protocols ospf area 0.1.2.3 interface xe-0/0/20:0.0 ldp-synchronization disable
+set protocols ospf area 0.1.2.3 interface xe-0/0/20:0.0 ldp-synchronization hold-time 30
 set protocols ospf area 0.1.2.3 interface xe-0/0/21:0.0 passive
 set protocols ospf area 0.1.2.3 area-range 1.2.0.0/16 override-metric 100
 set protocols ospf no-rfc-1583

@@ -38,7 +38,7 @@ public class BatfishSearchFiltersDifferentialTest {
   private static final String HOSTNAME = "hostname";
   private static final String IFACE1 = "iface1";
   private static final String IFACE2 = "iface2";
-  private static final Ip IP = new Ip("1.2.3.4");
+  private static final Ip IP = Ip.parse("1.2.3.4");
 
   private NetworkFactory _nf;
   private Configuration.Builder _cb;

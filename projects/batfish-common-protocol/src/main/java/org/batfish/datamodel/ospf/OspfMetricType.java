@@ -3,8 +3,11 @@ package org.batfish.datamodel.ospf;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.RoutingProtocol;
 
+/** Type of metric for OSPF external routes */
 public enum OspfMetricType {
+  /** External type 1 */
   E1,
+  /** External type 2 */
   E2;
 
   public static OspfMetricType fromInteger(int i) {

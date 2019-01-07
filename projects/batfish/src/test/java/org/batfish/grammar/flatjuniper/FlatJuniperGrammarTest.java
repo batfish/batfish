@@ -80,7 +80,7 @@ import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasLe
 import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasLevel2;
 import static org.batfish.datamodel.matchers.IsisLevelSettingsMatchers.hasWideMetricsOnly;
 import static org.batfish.datamodel.matchers.IsisProcessMatchers.hasNetAddress;
-import static org.batfish.datamodel.matchers.IsisProcessMatchers.hasOverloadTimeout;
+import static org.batfish.datamodel.matchers.IsisProcessMatchers.hasOverload;
 import static org.batfish.datamodel.matchers.LineMatchers.hasAuthenticationLoginList;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.hasVal;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.isLiteralIntThat;
@@ -243,6 +243,9 @@ import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.juniper.InterfaceRange;
+import org.batfish.representation.juniper.InterfaceRangeMember;
+import org.batfish.representation.juniper.InterfaceRangeMemberRange;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.Nat;
 import org.batfish.representation.juniper.Nat.Type;
@@ -284,8 +287,8 @@ public final class FlatJuniperGrammarTest {
   private static Flow createFlow(String sourceAddress, String destinationAddress, FlowState state) {
     Flow.Builder fb = new Flow.Builder();
     fb.setIngressNode("node");
-    fb.setSrcIp(new Ip(sourceAddress));
-    fb.setDstIp(new Ip(destinationAddress));
+    fb.setSrcIp(Ip.parse(sourceAddress));
+    fb.setDstIp(Ip.parse(destinationAddress));
     fb.setState(state);
     fb.setTag("test");
     return fb.build();
@@ -630,8 +633,8 @@ public final class FlatJuniperGrammarTest {
   public void testBgpClusterId() throws IOException {
     String testrigName = "rr";
     String configName = "rr";
-    Ip neighbor1Ip = new Ip("2.2.2.2");
-    Ip neighbor2Ip = new Ip("4.4.4.4");
+    Ip neighbor1Ip = Ip.parse("2.2.2.2");
+    Ip neighbor2Ip = Ip.parse("4.4.4.4");
 
     List<String> configurationNames = ImmutableList.of(configName);
     Batfish batfish =
@@ -645,12 +648,12 @@ public final class FlatJuniperGrammarTest {
     Configuration rr = configurations.get(configName);
     BgpProcess proc = rr.getDefaultVrf().getBgpProcess();
     BgpPeerConfig neighbor1 =
-        proc.getActiveNeighbors().get(new Prefix(neighbor1Ip, Prefix.MAX_PREFIX_LENGTH));
+        proc.getActiveNeighbors().get(Prefix.create(neighbor1Ip, Prefix.MAX_PREFIX_LENGTH));
     BgpPeerConfig neighbor2 =
-        proc.getActiveNeighbors().get(new Prefix(neighbor2Ip, Prefix.MAX_PREFIX_LENGTH));
+        proc.getActiveNeighbors().get(Prefix.create(neighbor2Ip, Prefix.MAX_PREFIX_LENGTH));
 
-    assertThat(neighbor1, hasClusterId(new Ip("3.3.3.3").asLong()));
-    assertThat(neighbor2, hasClusterId(new Ip("1.1.1.1").asLong()));
+    assertThat(neighbor1, hasClusterId(Ip.parse("3.3.3.3").asLong()));
+    assertThat(neighbor2, hasClusterId(Ip.parse("1.1.1.1").asLong()));
   }
 
   @Test
@@ -1012,17 +1015,17 @@ public final class FlatJuniperGrammarTest {
     IpSpace indirectSpace = c.getIpSpaces().get(indirectSpaceName);
 
     // Specific space should contain the specific addr and not others
-    assertThat(specificSpace, containsIp(new Ip(specificAddr)));
-    assertThat(specificSpace, not(containsIp(new Ip(wildcardAddr))));
+    assertThat(specificSpace, containsIp(Ip.parse(specificAddr)));
+    assertThat(specificSpace, not(containsIp(Ip.parse(wildcardAddr))));
 
     // Wildcard space should contain the wildcard addr and not others
-    assertThat(wildcardSpace, containsIp(new Ip(wildcardAddr)));
-    assertThat(wildcardSpace, not(containsIp(new Ip(notWildcardAddr))));
+    assertThat(wildcardSpace, containsIp(Ip.parse(wildcardAddr)));
+    assertThat(wildcardSpace, not(containsIp(Ip.parse(notWildcardAddr))));
 
     // Indirect space should contain both specific and wildcard addr, but not others
-    assertThat(indirectSpace, containsIp(new Ip(specificAddr), c.getIpSpaces()));
-    assertThat(indirectSpace, containsIp(new Ip(wildcardAddr), c.getIpSpaces()));
-    assertThat(indirectSpace, not(containsIp(new Ip(notWildcardAddr), c.getIpSpaces())));
+    assertThat(indirectSpace, containsIp(Ip.parse(specificAddr), c.getIpSpaces()));
+    assertThat(indirectSpace, containsIp(Ip.parse(wildcardAddr), c.getIpSpaces()));
+    assertThat(indirectSpace, not(containsIp(Ip.parse(notWildcardAddr), c.getIpSpaces())));
 
     // Specifically allowed source addr should be accepted
     assertThat(
@@ -1108,10 +1111,10 @@ public final class FlatJuniperGrammarTest {
     IpSpace ipSpace = Iterables.getOnlyElement(c.getIpSpaces().values());
 
     // It should contain the specific address
-    assertThat(ipSpace, containsIp(new Ip(trustedIpAddr)));
+    assertThat(ipSpace, containsIp(Ip.parse(trustedIpAddr)));
 
     // It should not contain the address that is not allowed
-    assertThat(ipSpace, not(containsIp(new Ip(untrustedIpAddr))));
+    assertThat(ipSpace, not(containsIp(Ip.parse(untrustedIpAddr))));
 
     /* Flow from ADDR1 to untrust should be permitted */
     assertThat(
@@ -1247,10 +1250,10 @@ public final class FlatJuniperGrammarTest {
     IpSpace ipSpace = Iterables.getOnlyElement(c.getIpSpaces().values());
 
     // It should contain the specific address
-    assertThat(ipSpace, containsIp(new Ip(specificAddr)));
+    assertThat(ipSpace, containsIp(Ip.parse(specificAddr)));
 
     // It should not contain the address that is not allowed
-    assertThat(ipSpace, not(containsIp(new Ip(notAllowedAddr))));
+    assertThat(ipSpace, not(containsIp(Ip.parse(notAllowedAddr))));
 
     // There should me metadata for this ipspace
     assertThat(c.getIpSpaceMetadata(), hasKey(ipSpaceName));
@@ -1737,7 +1740,7 @@ public final class FlatJuniperGrammarTest {
         StaticRoute.builder()
             .setNetwork(Prefix.parse("10.0.1.0/24"))
             .setNextHopInterface("nextint")
-            .setNextHopIp(new Ip("10.0.0.1"))
+            .setNextHopIp(Ip.parse("10.0.0.1"))
             .setAdministrativeCost(1)
             .build();
 
@@ -1880,7 +1883,7 @@ public final class FlatJuniperGrammarTest {
     Configuration c = parseConfig("interface-arp");
 
     /* The additional ARP IP set for irb.0 should appear in the data model */
-    assertThat(c, hasInterface("irb.0", hasAdditionalArpIps(hasItem(new Ip("1.0.0.2")))));
+    assertThat(c, hasInterface("irb.0", hasAdditionalArpIps(hasItem(Ip.parse("1.0.0.2")))));
   }
 
   @Test
@@ -1915,10 +1918,40 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInteraceOspfPointToPoint() throws IOException {
+  public void testInterfaceOspfPointToPoint() throws IOException {
     String hostname = "ospf-interface-point-to-point";
     Configuration c = parseConfig(hostname);
     assertThat(c, hasInterface("ge-0/0/0.0", hasOspfPointToPoint(equalTo(true))));
+  }
+
+  @Test
+  public void testInterfaceRange() throws IOException {
+    String hostname = "interface-range";
+    JuniperConfiguration juniperConfig = parseJuniperConfig(hostname);
+
+    // range definitions are inserted properly into the vendor model
+    InterfaceRange ae1 =
+        juniperConfig.getMasterLogicalSystem().getInterfaceRanges().get("ae1-members");
+    assertThat(ae1.getMtu(), equalTo(8000));
+    assertThat(ae1.getDescription(), equalTo("dodo"));
+    assertThat(
+        ae1.getMembers(), equalTo(ImmutableList.of(new InterfaceRangeMember("xe-0/0/[0,1]"))));
+    assertThat(
+        ae1.getMemberRanges(),
+        equalTo(ImmutableList.of(new InterfaceRangeMemberRange("xe-0/0/0", "xe-0/0/1"))));
+
+    InterfaceRange ae2 =
+        juniperConfig.getMasterLogicalSystem().getInterfaceRanges().get("ae2-members");
+    assertThat(ae2.getDescription(), equalTo("dodo"));
+    assertThat(ae2.getMembers(), equalTo(ImmutableList.of(new InterfaceRangeMember("xe-8/1/2"))));
+    assertThat(ae2.get8023adInterface(), equalTo("ae1"));
+    assertThat(ae2.getRedundantParentInterface(), equalTo("reth0"));
+
+    // all interfaces should show up; no need to test their specific settings here
+    Configuration c = parseConfig("interface-range");
+    assertThat(
+        c.getAllInterfaces().keySet(),
+        equalTo(ImmutableSet.of("xe-0/0/0", "xe-0/0/1", "xe-8/1/2")));
   }
 
   @Test
@@ -1998,7 +2031,8 @@ public final class FlatJuniperGrammarTest {
                                         .setSrcIps(
                                             AclIpSpace.union(
                                                 new IpWildcard(
-                                                        new Ip("1.0.3.0"), new Ip("0.255.0.255"))
+                                                        Ip.parse("1.0.3.0"),
+                                                        Ip.parse("0.255.0.255"))
                                                     .toIpSpace(),
                                                 new IpWildcard("2.3.4.5/24").toIpSpace()))
                                         .build()))
@@ -2332,11 +2366,11 @@ public final class FlatJuniperGrammarTest {
             "ike-vpn-chicago",
             isIpsecStaticPeerConfigThat(
                 allOf(
-                    hasDestinationAddress(new Ip("198.51.100.102")),
+                    hasDestinationAddress(Ip.parse("198.51.100.102")),
                     IpsecPeerConfigMatchers.hasIkePhase1Policy("ike-phase1-policy"),
                     IpsecPeerConfigMatchers.hasIpsecPolicy("ipsec-phase2-policy"),
                     IpsecPeerConfigMatchers.hasPhysicalInterface("ge-0/0/3.0"),
-                    IpsecPeerConfigMatchers.hasLocalAddress(new Ip("198.51.100.2")),
+                    IpsecPeerConfigMatchers.hasLocalAddress(Ip.parse("198.51.100.2")),
                     IpsecPeerConfigMatchers.hasTunnelInterface(equalTo("st0.0"))))));
   }
 
@@ -2367,7 +2401,8 @@ public final class FlatJuniperGrammarTest {
                                         .setDstIps(
                                             AclIpSpace.union(
                                                 new IpWildcard(
-                                                        new Ip("1.0.3.0"), new Ip("0.255.0.255"))
+                                                        Ip.parse("1.0.3.0"),
+                                                        Ip.parse("0.255.0.255"))
                                                     .toIpSpace(),
                                                 new IpWildcard("2.3.4.5/24").toIpSpace()))
                                         .build()))
@@ -2456,7 +2491,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(c, hasDefaultVrf(hasIsisProcess(IsisProcessMatchers.hasLevel1(nullValue()))));
     assertThat(
         c, hasDefaultVrf(hasIsisProcess(IsisProcessMatchers.hasLevel2(hasWideMetricsOnly()))));
-    assertThat(c, hasDefaultVrf(hasIsisProcess(hasOverloadTimeout(360))));
+    assertThat(c, hasDefaultVrf(hasIsisProcess(hasOverload(false))));
     assertThat(
         c,
         hasDefaultVrf(
@@ -2511,7 +2546,8 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         c,
         hasInterface(
-            "ge-1/0/0.0", hasAllAddresses(contains(new InterfaceAddress(new Ip("10.1.1.1"), 24)))));
+            "ge-1/0/0.0",
+            hasAllAddresses(contains(new InterfaceAddress(Ip.parse("10.1.1.1"), 24)))));
   }
 
   @Test
@@ -2541,6 +2577,18 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         c,
         hasInterface("lo0.0", hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasCost(10L)))));
+  }
+
+  @Test
+  public void testJuniperIsisOverload() throws IOException {
+    Configuration c = parseConfig("juniper-isis-overload");
+    assertThat(c, hasDefaultVrf(hasIsisProcess(IsisProcessMatchers.hasOverload(true))));
+  }
+
+  @Test
+  public void testJuniperIsisOverloadWithTimeout() throws IOException {
+    Configuration c = parseConfig("juniper-isis-overload-with-timeout");
+    assertThat(c, hasDefaultVrf(hasIsisProcess(IsisProcessMatchers.hasOverload(false))));
   }
 
   @Test
@@ -3018,8 +3066,8 @@ public final class FlatJuniperGrammarTest {
                                             .setSrcIps(Prefix.parse("2.2.2.2/24").toIpSpace())
                                             .build()))))
                         .build())
-                .setPoolIpFirst(new Ip("10.10.10.10"))
-                .setPoolIpLast(new Ip("10.10.10.20"))
+                .setPoolIpFirst(Ip.parse("10.10.10.10"))
+                .setPoolIpLast(Ip.parse("10.10.10.20"))
                 .build(),
             DestinationNat.builder()
                 .setAcl(
@@ -3069,8 +3117,8 @@ public final class FlatJuniperGrammarTest {
     assertThat(pool1.getToAddress(), equalTo(pool1Prefix.getEndIp()));
 
     NatPool pool2 = pools.get("POOL2");
-    assertThat(pool2.getFromAddress(), equalTo(new Ip("10.10.10.10")));
-    assertThat(pool2.getToAddress(), equalTo(new Ip("10.10.10.20")));
+    assertThat(pool2.getFromAddress(), equalTo(Ip.parse("10.10.10.10")));
+    assertThat(pool2.getToAddress(), equalTo(Ip.parse("10.10.10.20")));
 
     // test rule sets
     Map<String, NatRuleSet> ruleSets = nat.getRuleSets();
@@ -3164,8 +3212,8 @@ public final class FlatJuniperGrammarTest {
                                         .setDstIps(Prefix.parse("2.2.2.2/24").toIpSpace())
                                         .build())))))
                 .build()));
-    assertThat(nat1.getPoolIpFirst(), equalTo(new Ip("10.10.10.0")));
-    assertThat(nat1.getPoolIpLast(), equalTo(new Ip("10.10.10.255")));
+    assertThat(nat1.getPoolIpFirst(), equalTo(Ip.parse("10.10.10.0")));
+    assertThat(nat1.getPoolIpLast(), equalTo(Ip.parse("10.10.10.255")));
 
     SourceNat nat2 = sourceNatList.get(1);
     assertThat(
@@ -3183,8 +3231,8 @@ public final class FlatJuniperGrammarTest {
                                         .setDstIps(Prefix.parse("1.1.1.1/24").toIpSpace())
                                         .build())))))
                 .build()));
-    assertThat(nat2.getPoolIpFirst(), equalTo(new Ip("10.10.10.0")));
-    assertThat(nat2.getPoolIpLast(), equalTo(new Ip("10.10.10.255")));
+    assertThat(nat2.getPoolIpFirst(), equalTo(Ip.parse("10.10.10.0")));
+    assertThat(nat2.getPoolIpLast(), equalTo(Ip.parse("10.10.10.255")));
 
     Flow flow1 = createFlow("3.3.3.3", "2.2.2.1");
     Flow flow2 = createFlow("3.3.3.3", "1.1.1.1");
@@ -3238,8 +3286,8 @@ public final class FlatJuniperGrammarTest {
     assertThat(pool1.getToAddress(), equalTo(pool1Prefix.getEndIp()));
 
     NatPool pool2 = pools.get("POOL2");
-    assertThat(pool2.getFromAddress(), equalTo(new Ip("10.10.10.10")));
-    assertThat(pool2.getToAddress(), equalTo(new Ip("10.10.10.20")));
+    assertThat(pool2.getFromAddress(), equalTo(Ip.parse("10.10.10.10")));
+    assertThat(pool2.getToAddress(), equalTo(Ip.parse("10.10.10.20")));
 
     // test rule sets
     Map<String, NatRuleSet> ruleSets = nat.getRuleSets();
@@ -3379,7 +3427,7 @@ public final class FlatJuniperGrammarTest {
   public void testOspfRouterId() throws IOException {
     Configuration c = parseConfig("ospf-router-id");
 
-    assertThat(c, hasVrf("default", hasOspfProcess(hasRouterId(equalTo(new Ip("1.0.0.0"))))));
+    assertThat(c, hasVrf("default", hasOspfProcess(hasRouterId(equalTo(Ip.parse("1.0.0.0"))))));
   }
 
   @Test
@@ -3665,12 +3713,12 @@ public final class FlatJuniperGrammarTest {
                     ImmutableSet.of(
                         StaticRoute.builder()
                             .setNetwork(Prefix.parse("1.2.3.4/24"))
-                            .setNextHopIp(new Ip("10.0.0.1"))
+                            .setNextHopIp(Ip.parse("10.0.0.1"))
                             .setAdministrativeCost(250)
                             .build(),
                         StaticRoute.builder()
                             .setNetwork(Prefix.parse("2.3.4.5/24"))
-                            .setNextHopIp(new Ip("10.0.0.2"))
+                            .setNextHopIp(Ip.parse("10.0.0.2"))
                             .setAdministrativeCost(5)
                             .build())))));
   }

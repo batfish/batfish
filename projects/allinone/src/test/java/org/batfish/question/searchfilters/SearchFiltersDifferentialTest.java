@@ -68,7 +68,7 @@ public class SearchFiltersDifferentialTest {
 
   @Test
   public void testAclLineAddedRemoved() throws IOException {
-    Ip ip = new Ip("1.2.3.4");
+    Ip ip = Ip.parse("1.2.3.4");
     Configuration baseConfig = _cb.build();
     Configuration deltaConfig = _cb.build();
     _ib.setOwner(baseConfig).build();
@@ -104,7 +104,7 @@ public class SearchFiltersDifferentialTest {
 
   @Test
   public void testDenyWithExplanations() throws IOException {
-    Ip ip = new Ip("1.2.3.4");
+    Ip ip = Ip.parse("1.2.3.4");
     Configuration baseConfig = _cb.build();
     Configuration deltaConfig = _cb.build();
     _ib.setOwner(baseConfig).build();

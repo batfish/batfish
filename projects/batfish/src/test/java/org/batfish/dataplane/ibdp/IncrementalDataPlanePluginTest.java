@@ -13,8 +13,10 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.Collection;
@@ -42,14 +44,25 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute.Builder;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.collections.RoutesByVrf;
+import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
+import org.batfish.datamodel.isis.IsisInterfaceMode;
+import org.batfish.datamodel.isis.IsisInterfaceSettings;
+import org.batfish.datamodel.isis.IsisLevelSettings;
+import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.main.Batfish;
@@ -105,9 +118,9 @@ public class IncrementalDataPlanePluginTest {
   }
 
   private SortedMap<String, Configuration> generateNetworkWithDuplicates() {
-    Ip coreId = new Ip("1.1.1.1");
-    Ip neighborId1 = new Ip("1.1.1.9");
-    Ip neighborId2 = new Ip("1.1.1.2");
+    Ip coreId = Ip.parse("1.1.1.1");
+    Ip neighborId1 = Ip.parse("1.1.1.9");
+    Ip neighborId2 = Ip.parse("1.1.1.2");
     final int interfcePrefixBits = 30;
     _vb.setName(DEFAULT_VRF_NAME);
 
@@ -340,7 +353,7 @@ public class IncrementalDataPlanePluginTest {
         StaticRoute.builder()
             .setNetwork(Prefix.parse("10.0.1.0/24"))
             .setNextHopInterface(i.getName())
-            .setNextHopIp(new Ip("10.0.0.1"))
+            .setNextHopIp(Ip.parse("10.0.0.1"))
             .setAdministrativeCost(1)
             .build();
     vrf.getStaticRoutes().add(srBoth);
@@ -433,5 +446,325 @@ public class IncrementalDataPlanePluginTest {
     assertThat(
         dp.getRibs().get(n1.getHostname()).get(vrf.getName()).getRoutes(),
         hasItem(hasPrefix(genRoutePrefix)));
+  }
+
+  @Test
+  public void testEbgpSinglehopSuccess() throws IOException {
+    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false);
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
+    DataPlane dp = dataPlanePlugin.computeDataPlane(false)._dataPlane;
+
+    BgpPeerConfigId initiator =
+        new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
+    BgpPeerConfigId listener =
+        new BgpPeerConfigId("node2", "~Vrf_1~", Prefix.parse("1.0.0.1/32"), false);
+
+    BgpActivePeerConfig source =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(Ip.parse("1.0.0.0"))
+            .setPeerAddress(Ip.parse("1.0.0.1"))
+            .setEbgpMultihop(false)
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .build();
+
+    // the neighbor should be reachable because it is only one hop away from the initiator
+    assertTrue(
+        BgpTopologyUtils.isReachableBgpNeighbor(
+            initiator, listener, source, dataPlanePlugin.getTracerouteEngine(), dp));
+  }
+
+  @Test
+  public void testEbgpSinglehopFailure() throws IOException {
+    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false);
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
+    DataPlane dp = dataPlanePlugin.computeDataPlane(false)._dataPlane;
+
+    BgpPeerConfigId initiator =
+        new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
+    BgpPeerConfigId listener =
+        new BgpPeerConfigId("node3", "~Vrf_2~", Prefix.parse("1.0.0.3/32"), false);
+
+    BgpActivePeerConfig source =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(Ip.parse("1.0.0.0"))
+            .setPeerAddress(Ip.parse("1.0.0.3"))
+            .setEbgpMultihop(false)
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .build();
+
+    // the neighbor should be not be reachable because it is two hops away from the initiator
+    assertFalse(
+        BgpTopologyUtils.isReachableBgpNeighbor(
+            initiator, listener, source, dataPlanePlugin.getTracerouteEngine(), dp));
+  }
+
+  @Test
+  public void testEbgpMultihopSuccess() throws IOException {
+    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false);
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
+    DataPlane dp = dataPlanePlugin.computeDataPlane(false)._dataPlane;
+
+    BgpPeerConfigId initiator =
+        new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
+    BgpPeerConfigId listener =
+        new BgpPeerConfigId("node3", "~Vrf_2~", Prefix.parse("1.0.0.3/32"), false);
+
+    BgpActivePeerConfig source =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(Ip.parse("1.0.0.0"))
+            .setPeerAddress(Ip.parse("1.0.0.3"))
+            .setEbgpMultihop(true)
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .build();
+
+    // the neighbor should be reachable because multi-hops are allowed
+    assertTrue(
+        BgpTopologyUtils.isReachableBgpNeighbor(
+            initiator, listener, source, dataPlanePlugin.getTracerouteEngine(), dp));
+  }
+
+  @Test
+  public void testEbgpMultihopFailureWithAcl() throws IOException {
+    // use a network with a deny all ACL on node 3
+    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(true);
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
+    DataPlane dp = dataPlanePlugin.computeDataPlane(false)._dataPlane;
+
+    BgpPeerConfigId initiator =
+        new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
+    BgpPeerConfigId listener =
+        new BgpPeerConfigId("node3", "~Vrf_2~", Prefix.parse("1.0.0.3/32"), false);
+
+    BgpActivePeerConfig source =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(Ip.parse("1.0.0.0"))
+            .setPeerAddress(Ip.parse("1.0.0.3"))
+            .setEbgpMultihop(true)
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .build();
+
+    // the neighbor should not be reachable even though multihops are allowed as traceroute would be
+    // denied in on node 3
+    assertFalse(
+        BgpTopologyUtils.isReachableBgpNeighbor(
+            initiator, listener, source, dataPlanePlugin.getTracerouteEngine(), dp));
+  }
+
+  /**
+   * Generates configurations for a three node network with connectivity as shown in the diagram
+   * below. Also adds static routes from node 1 to node 3 and back from node 3 to node 1
+   *
+   * @param denyIntoHop3 If true, add an incoming ACL on node3 that blocks all traffic
+   * @return {@link SortedMap} of generated configuration names and corresponding {@link
+   *     Configuration}s
+   */
+
+  /* +-----------+                       +-------------+                   +--------------+
+     |           |1.0.0.0/31             |             |                   |              |
+     |           +-----------------------+             |                   |    node3     |
+     |   node1   |            1.0.0.1/31 |   node2     |1.0.0.2/31         |              |
+     |           |                       |             +-------------------+              |
+     |           |                       |             |         1.0.0.3/31|              |
+     +-----------+                       +-------------+                   +--------------+
+
+  */
+  private static SortedMap<String, Configuration> generateNetworkWithThreeHops(
+      boolean denyIntoHop3) {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    // first node
+    Configuration c1 = cb.setHostname("node1").build();
+    Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
+    InterfaceAddress c1Addr1 = new InterfaceAddress("1.0.0.0/31");
+    Interface i11 = nf.interfaceBuilder().setOwner(c1).setVrf(v1).setAddress(c1Addr1).build();
+
+    // second node
+    Configuration c2 = cb.setHostname("node2").build();
+    Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
+    InterfaceAddress c2Addr1 = new InterfaceAddress("1.0.0.1/31");
+    nf.interfaceBuilder().setOwner(c2).setVrf(v2).setAddress(c2Addr1).build();
+    InterfaceAddress c2Addr2 = new InterfaceAddress("1.0.0.2/31");
+    nf.interfaceBuilder().setOwner(c2).setVrf(v2).setAddress(c2Addr2).build();
+
+    // third node
+    Configuration c3 = cb.setHostname("node3").build();
+    Vrf v3 = nf.vrfBuilder().setOwner(c3).build();
+    InterfaceAddress c3Addr1 = new InterfaceAddress("1.0.0.3/31");
+    Interface i31 = nf.interfaceBuilder().setOwner(c3).setVrf(v3).setAddress(c3Addr1).build();
+
+    // static routes on node1
+    v1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("1.0.0.3/32"))
+                .setAdministrativeCost(1)
+                .setNextHopInterface(i11.getName())
+                .setNextHopIp(c2Addr1.getIp())
+                .build()));
+
+    // static routes on node 3 to get back to node1
+    v3.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("1.0.0.0/32"))
+                .setAdministrativeCost(1)
+                .setNextHopInterface(i31.getName())
+                .setNextHopIp(c2Addr2.getIp())
+                .build()));
+
+    if (denyIntoHop3) {
+      // stop the flow from entering Node3
+      i31.setIncomingFilter(
+          nf.aclBuilder()
+              .setOwner(c3)
+              .setLines(
+                  ImmutableList.of(
+                      IpAccessListLine.rejecting(
+                          AclLineMatchExprs.matchSrc(UniverseIpSpace.INSTANCE))))
+              .build());
+    }
+
+    return ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3);
+  }
+
+  /**
+   * Check that ibdp topology fixed-point computation is performed correctly. In particular, ensure
+   * that iBGP adjacency are established between loopbacks over IS-IS as the IGP.
+   */
+  @Test
+  public void testBgpOverIsis() throws IOException {
+    /*
+    *
+    * Network setup: an IBGP loopback peering with ISIS as the IGP.
+    *
+                +-----+ 1.1.1.2/31           1.1.1.3/31+-----+
+     1.1.1.1/32 |  n1 +--------------------------------+  n2 |2.2.2.2/32
+                +-----+                                +-----+
+    *
+    */
+
+    Ip lo1Ip = Ip.parse("1.1.1.1");
+    Ip lo2Ip = Ip.parse("2.2.2.2");
+    IsoAddress isoAddress1 = new IsoAddress("49.0001.0100.0100.1001.00");
+    IsoAddress isoAddress2 = new IsoAddress("49.0001.0100.0200.2002.00");
+    IsisInterfaceSettings isisInterfaceSettings =
+        IsisInterfaceSettings.builder()
+            .setPointToPoint(true)
+            .setLevel2(
+                IsisInterfaceLevelSettings.builder()
+                    .setCost(10L)
+                    .setMode(IsisInterfaceMode.ACTIVE)
+                    .build())
+            .build();
+
+    // Node 1
+    Configuration c1 =
+        _cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS).setHostname("n1").build();
+    Vrf vrf1 = _vb.setName(DEFAULT_VRF_NAME).setOwner(c1).build();
+    // Interfaces: loopback and connecting
+    _ib.setOwner(c1)
+        .setVrf(vrf1)
+        .setName("Loopback0")
+        .setType(InterfaceType.LOOPBACK)
+        .setAddress(new InterfaceAddress(lo1Ip, Prefix.MAX_PREFIX_LENGTH))
+        .setIsis(isisInterfaceSettings)
+        .build();
+
+    _ib.setOwner(c1)
+        .setName("Ethernet0")
+        .setType(InterfaceType.PHYSICAL)
+        .setVrf(vrf1)
+        .setAddress(new InterfaceAddress("1.1.1.2/31"))
+        .setIsis(isisInterfaceSettings)
+        .build();
+    // ISIS process
+    IsisProcess.builder()
+        .setNetAddress(isoAddress1)
+        .setLevel1(null)
+        .setLevel2(IsisLevelSettings.builder().build())
+        .setVrf(vrf1)
+        .build();
+    // Bgp process and neighbor:
+    BgpProcess bgpp1 = _pb.setVrf(vrf1).build();
+    _nb.setPeerAddress(lo2Ip)
+        .setLocalAs(1L)
+        .setLocalIp(lo1Ip)
+        .setRemoteAs(1L)
+        .setBgpProcess(bgpp1)
+        .setExportPolicy(_epb.setOwner(c1).build().getName())
+        .build();
+
+    // Node 2
+    Configuration c2 =
+        _cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS).setHostname("n2").build();
+    Vrf vrf2 = _vb.setName(DEFAULT_VRF_NAME).setOwner(c2).build();
+    // Interfaces: loopback and connecting
+    _ib.setOwner(c2)
+        .setVrf(vrf2)
+        .setName("Loopback0")
+        .setType(InterfaceType.LOOPBACK)
+        .setAddress(new InterfaceAddress(lo2Ip, Prefix.MAX_PREFIX_LENGTH))
+        .setIsis(isisInterfaceSettings)
+        .build();
+    _ib.setOwner(c2)
+        .setName("Ethernet0")
+        .setType(InterfaceType.PHYSICAL)
+        .setVrf(vrf2)
+        .setAddress(new InterfaceAddress("1.1.1.3/31"))
+        .setIsis(isisInterfaceSettings)
+        .build();
+    // ISIS process
+    IsisProcess.builder()
+        .setNetAddress(isoAddress2)
+        .setLevel1(null)
+        .setLevel2(IsisLevelSettings.builder().build())
+        .setVrf(vrf2)
+        .build();
+    BgpProcess bgpp2 = _pb.setVrf(vrf2).build();
+    // Bgp neighbor:
+    _nb.setPeerAddress(lo1Ip)
+        .setLocalAs(1L)
+        .setLocalIp(lo2Ip)
+        .setRemoteAs(1L)
+        .setBgpProcess(bgpp2)
+        .setExportPolicy(_epb.setOwner(c2).build().getName())
+        .build();
+
+    ImmutableSortedMap<String, Configuration> configs = ImmutableSortedMap.of("n1", c1, "n2", c2);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
+    batfish.computeDataPlane(false);
+    DataPlane dp = batfish.loadDataPlane();
+
+    assertThat(dp.getBgpTopology().edges().size(), equalTo(2));
+    BgpPeerConfigId bgpConfig1 =
+        new BgpPeerConfigId(
+            "n1", DEFAULT_VRF_NAME, Prefix.create(lo2Ip, Prefix.MAX_PREFIX_LENGTH), false);
+    BgpPeerConfigId bgpConfig2 =
+        new BgpPeerConfigId(
+            "n2", DEFAULT_VRF_NAME, Prefix.create(lo1Ip, Prefix.MAX_PREFIX_LENGTH), false);
+    assertThat(
+        dp.getBgpTopology().edges(),
+        equalTo(
+            ImmutableSet.of(
+                EndpointPair.ordered(bgpConfig1, bgpConfig2),
+                EndpointPair.ordered(bgpConfig2, bgpConfig1))));
   }
 }

@@ -519,8 +519,8 @@ public class Encoder {
     String tcpSyn = valuation.get(p.getTcpSyn());
     String tcpUrg = valuation.get(p.getTcpUrg());
 
-    Ip dip = new Ip(Long.parseLong(dstIp));
-    Ip sip = new Ip(Long.parseLong(srcIp));
+    Ip dip = Ip.create(Long.parseLong(dstIp));
+    Ip sip = Ip.create(Long.parseLong(srcIp));
 
     packetModel.put("dstIp", dip.toString());
 
@@ -583,7 +583,7 @@ public class Encoder {
             String x = valuation.get(r.getPrefixLength());
             if (x != null) {
               int len = Integer.parseInt(x);
-              Prefix p1 = new Prefix(dip, len);
+              Prefix p1 = Prefix.create(dip, len);
               recordMap.put("prefix", p1.toString());
             }
           }
