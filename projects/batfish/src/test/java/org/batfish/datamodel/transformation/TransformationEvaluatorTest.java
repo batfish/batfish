@@ -14,6 +14,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignDest
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
@@ -126,12 +127,9 @@ public class TransformationEvaluatorTest {
         "Noop transformations should return the original (==) flow",
         result.getOutputFlow() == origFlow);
 
-    List<Step<?>> steps = result.getTraceSteps();
-
-    assertThat(steps, hasSize(1));
     assertThat(
-        steps.get(0),
-        equalTo(
+        result.getTraceSteps(),
+        contains(
             new org.batfish.datamodel.flow.TransformationStep(
                 new TransformationStepDetail(SOURCE_NAT, ImmutableSortedSet.of()),
                 StepAction.PERMITTED)));
