@@ -18,12 +18,10 @@ public class TransformationExpr extends StateExpr {
     }
   }
 
-  /** source edge, on which the transformation is defined. */
   private final String _node1;
 
   private final String _iface1;
 
-  /** destination edge. */
   private final String _node2;
 
   private final String _iface2;
