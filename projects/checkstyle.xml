@@ -45,6 +45,11 @@
           <property name="message" value="Static import MoreObjects.firstNonNull"/>
         </module>
 
+        <module name="RegexpSinglelineJava">
+          <property name="format" value=".*String COL_[^ ]+ *= *&quot;[^A-Z]"/>
+          <property name="message" value="Column name must begin with capital letter"/>
+        </module>
+
         <module name="UnusedImports"/>
         <module name="OuterTypeFilename"/>
         <module name="IllegalTokenText">
