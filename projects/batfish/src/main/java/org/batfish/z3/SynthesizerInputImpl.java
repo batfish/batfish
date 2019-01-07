@@ -228,6 +228,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nonnull Map<String, Map<String, String>> _outgoingAcls;
 
+  private final @Nonnull Map<String, Map<String, Transformation>> _outgoingTransformations;
+
   private final @Nullable Map<String, Map<String, BooleanExpr>> _routableIps;
 
   private final boolean _simplify;
@@ -275,6 +277,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _incomingAcls = computeIncomingAcls();
     _srcIpConstraints = computeSrcIpConstraints(builder._srcIpConstraints);
     _outgoingAcls = computeOutgoingAcls();
+    _outgoingTransformations = computeOutgoingTransformations();
     _simplify = builder._simplify;
     _vectorizedParameters = builder._vectorizedParameters;
 
@@ -790,6 +793,23 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         });
   }
 
+  public Map<String, Map<String, Transformation>> computeOutgoingTransformations() {
+    return toImmutableMap(
+        _configurations,
+        Entry::getKey,
+        nodeEntry ->
+            nodeEntry
+                .getValue()
+                .getAllInterfaces()
+                .entrySet()
+                .stream()
+                .filter(ifaceEntry -> ifaceEntry.getValue().getOutgoingTransformation() != null)
+                .collect(
+                    ImmutableMap.toImmutableMap(
+                        Entry::getKey,
+                        ifaceEntry -> ifaceEntry.getValue().getOutgoingTransformation())));
+  }
+
   private Map<String, Map<String, BooleanExpr>> computeRoutableIps(
       Map<String, Map<String, IpSpace>> routableIps) {
     return toImmutableMap(
@@ -917,20 +937,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   @Override
   public Map<String, Map<String, Transformation>> getOutgoingTransformations() {
-    return toImmutableMap(
-        _configurations,
-        Entry::getKey,
-        nodeEntry ->
-            nodeEntry
-                .getValue()
-                .getAllInterfaces()
-                .entrySet()
-                .stream()
-                .filter(ifaceEntry -> ifaceEntry.getValue().getOutgoingTransformation() != null)
-                .collect(
-                    ImmutableMap.toImmutableMap(
-                        Entry::getKey,
-                        ifaceEntry -> ifaceEntry.getValue().getOutgoingTransformation())));
+    return _outgoingTransformations;
   }
 
   @Override
