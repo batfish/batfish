@@ -2171,6 +2171,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterS_eos_vxlan_interface(S_eos_vxlan_interfaceContext ctx) {
+    if (_configuration.getEosVxlan() != null) {
+      _w.redFlag("Only one VXLAN interface may be defined, overwriting existing interface");
+    }
     _eosVxlan = new AristaEosVxlan();
     _configuration.setEosVxlan(_eosVxlan);
     String vxlanName = ctx.iname.getText();
@@ -2180,12 +2183,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterEos_vxif_description(Eos_vxif_descriptionContext ctx) {
+  public void exitEos_vxif_description(Eos_vxif_descriptionContext ctx) {
     _eosVxlan.setDescription(ctx.description_line().text.getText().trim());
   }
 
   @Override
-  public void enterEos_vxif_vxlan_flood(Eos_vxif_vxlan_floodContext ctx) {
+  public void exitEos_vxif_vxlan_flood(Eos_vxif_vxlan_floodContext ctx) {
     SortedSet<Ip> floodAddresses = _eosVxlan.getFloodAddresses();
     if (_currentVlanNum != null) {
       floodAddresses =
@@ -2209,12 +2212,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterEos_vxif_vxlan_multicast_group(Eos_vxif_vxlan_multicast_groupContext ctx) {
+  public void exitEos_vxif_vxlan_multicast_group(Eos_vxif_vxlan_multicast_groupContext ctx) {
     _eosVxlan.setMulticastGroup(toIp(ctx.IP_ADDRESS()));
   }
 
   @Override
-  public void enterEos_vxif_vxlan_source_interface(Eos_vxif_vxlan_source_interfaceContext ctx) {
+  public void exitEos_vxif_vxlan_source_interface(Eos_vxif_vxlan_source_interfaceContext ctx) {
     String ifaceName = ctx.iface.getText();
     _eosVxlan.setSourceInterface(ifaceName);
     _configuration.referenceStructure(
@@ -2222,7 +2225,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterEos_vxif_vxlan_udp_port(Eos_vxif_vxlan_udp_portContext ctx) {
+  public void exitEos_vxif_vxlan_udp_port(Eos_vxif_vxlan_udp_portContext ctx) {
     _eosVxlan.setUdpPort(toInteger(ctx.num));
   }
 
@@ -2237,7 +2240,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterEos_vxif_vxlan_vlan_vni(Eos_vxif_vxlan_vlan_vniContext ctx) {
+  public void exitEos_vxif_vxlan_vlan_vni(Eos_vxif_vxlan_vlan_vniContext ctx) {
     _eosVxlan.getVlanVnis().computeIfAbsent(_currentVlanNum, n -> toInteger(ctx.num));
   }
 
