@@ -3114,8 +3114,8 @@ public class CiscoGrammarTest {
     assertThat(eosVxlan.getDescription(), equalTo("vxlan vti"));
     // Confirm flood address set doesn't contain the removed address
     assertThat(
-        eosVxlan.getFloodAddresses(), containsInAnyOrder(new Ip("1.1.1.5"), new Ip("1.1.1.7")));
-    assertThat(eosVxlan.getMulticastGroup(), equalTo(new Ip("227.10.1.1")));
+        eosVxlan.getFloodAddresses(), containsInAnyOrder(Ip.parse("1.1.1.5"), Ip.parse("1.1.1.7")));
+    assertThat(eosVxlan.getMulticastGroup(), equalTo(Ip.parse("227.10.1.1")));
     assertThat(eosVxlan.getSourceInterface(), equalTo("Loopback1"));
     assertThat(eosVxlan.getUdpPort(), equalTo(4789));
 
@@ -3124,7 +3124,7 @@ public class CiscoGrammarTest {
 
     // Confirm flood address set was overwritten as expected
     assertThat(
-        eosVxlan.getVlanFloodAddresses(), hasEntry(equalTo(2), contains(new Ip("1.1.1.10"))));
+        eosVxlan.getVlanFloodAddresses(), hasEntry(equalTo(2), contains(Ip.parse("1.1.1.10"))));
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations().get(hostname);
