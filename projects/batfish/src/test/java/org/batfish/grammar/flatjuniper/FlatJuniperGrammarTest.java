@@ -143,6 +143,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
@@ -3841,5 +3842,34 @@ public final class FlatJuniperGrammarTest {
                             .build())
                     .build());
     assertThat(result.getBooleanValue(), equalTo(false));
+  }
+
+  @Test
+  public void testSourceNatPool() throws IOException {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-sourcenat-pool");
+    Map<String, NatPool> pools =
+        juniperConfiguration.getMasterLogicalSystem().getNatSource().getPools();
+
+    Ip ip0 = Ip.parse("1.0.0.0");
+    Ip ip1 = Ip.parse("1.0.0.1");
+    Ip ip2 = Ip.parse("1.0.0.2");
+    Ip ip3 = Ip.parse("1.0.0.3");
+
+    assertThat(pools.keySet(), hasSize(5));
+
+    assertThat(pools.get("POOL1").getFromAddress(), equalTo(ip1));
+    assertThat(pools.get("POOL1").getToAddress(), equalTo(ip3));
+
+    assertThat(pools.get("POOL2").getFromAddress(), equalTo(ip1));
+    assertThat(pools.get("POOL2").getToAddress(), equalTo(ip3));
+
+    assertThat(pools.get("POOL3").getFromAddress(), equalTo(ip0));
+    assertThat(pools.get("POOL3").getToAddress(), equalTo(ip0));
+
+    assertThat(pools.get("POOL4").getFromAddress(), equalTo(ip0));
+    assertThat(pools.get("POOL4").getToAddress(), equalTo(ip1));
+
+    assertThat(pools.get("POOL5").getFromAddress(), equalTo(ip1));
+    assertThat(pools.get("POOL5").getToAddress(), equalTo(ip2));
   }
 }
