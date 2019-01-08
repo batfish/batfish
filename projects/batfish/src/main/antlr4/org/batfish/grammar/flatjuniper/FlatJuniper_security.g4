@@ -416,6 +416,7 @@ se_address_book
        apply
        | sead_address
        | sead_address_set
+       | sead_attach
    )
 ;
 
@@ -540,6 +541,11 @@ sead_address_set
       | seada_address_set
       | seada_description
    )
+;
+
+sead_attach
+:
+   ATTACH ZONE name = variable
 ;
 
 seada_address

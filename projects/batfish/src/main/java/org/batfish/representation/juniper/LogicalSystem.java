@@ -17,6 +17,8 @@ import org.batfish.representation.juniper.Nat.Type;
 @ParametersAreNonnullByDefault
 public class LogicalSystem implements Serializable {
 
+  public static final String GLOBAL_ADDRESS_BOOK_NAME = "global";
+
   private static final long serialVersionUID = 1L;
 
   private final Map<String, AddressBook> _addressBooks;
@@ -92,6 +94,8 @@ public class LogicalSystem implements Serializable {
   public LogicalSystem(String name) {
     _name = name;
     _addressBooks = new TreeMap<>();
+    // insert the implicit global address book
+    _addressBooks.put(GLOBAL_ADDRESS_BOOK_NAME, new AddressBook(GLOBAL_ADDRESS_BOOK_NAME, null));
     _applications = new TreeMap<>();
     _applicationSets = new TreeMap<>();
     _asPathGroups = new TreeMap<>();
@@ -187,6 +191,11 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, FirewallFilter> getFirewallFilters() {
     return _filters;
+  }
+
+  @Nonnull
+  public AddressBook getGlobalAddressBook() {
+    return _addressBooks.get(GLOBAL_ADDRESS_BOOK_NAME);
   }
 
   public Interface getGlobalMasterInterface() {

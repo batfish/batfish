@@ -421,6 +421,11 @@ ASDOT_NOTATION
    'asdot-notation'
 ;
 
+ATTACH
+:
+   'attach'
+;
+
 AUTHENTICATION
 :
    'authentication'
