@@ -37,12 +37,12 @@ eos_vxif_description
 
 eos_vxif_vxlan_flood
 :
-   FLOOD VTEP (ADD? | REMOVE) (hosts += IP_ADDRESS)+ NEWLINE
+   FLOOD VTEP (ADD | REMOVE)? (hosts += IP_ADDRESS)+ NEWLINE
 ;
 
 eos_vxif_vxlan_multicast_group
 :
-   MULTICAST_GROUP IP_ADDRESS NEWLINE
+   MULTICAST_GROUP group = IP_ADDRESS NEWLINE
 ;
 
 eos_vxif_vxlan_source_interface

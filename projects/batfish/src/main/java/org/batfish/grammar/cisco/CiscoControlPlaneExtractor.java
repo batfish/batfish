@@ -2216,7 +2216,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_vxif_vxlan_multicast_group(Eos_vxif_vxlan_multicast_groupContext ctx) {
-    _eosVxlan.setMulticastGroup(toIp(ctx.IP_ADDRESS()));
+    _eosVxlan.setMulticastGroup(toIp(ctx.group));
   }
 
   @Override

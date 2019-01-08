@@ -256,7 +256,6 @@ null_block
       | VLAN_POLICY
       | VLT
       | VTY_POOL
-      | VXLAN
       | WISM
       | WRED_PROFILE
       | WSMA
