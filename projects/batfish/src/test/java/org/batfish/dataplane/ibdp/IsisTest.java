@@ -59,6 +59,7 @@ public class IsisTest {
   private static final Ip R2_LOOPBACK_IP = Ip.parse("10.2.2.2");
   private static final Ip R1_INTERFACE_IP = Ip.parse("10.1.2.1");
   private static final Ip R2_INTERFACE_IP = Ip.parse("10.1.2.2");
+  private static final int INTERFACE_PREFIX_LENGTH = 24;
 
   private static void assertInterAreaRoute(
       SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
@@ -83,7 +84,6 @@ public class IsisTest {
    *
    * @param r1Level1Passive Whether to make IS-IS passive on level 1 of r1's interface to r2
    * @param r1Level2Passive Whether to make IS-IS passive on level 2 of r1's interface to r2
-   * @return
    */
   private IncrementalDataPlane setUpPassiveIsis(boolean r1Level1Passive, boolean r1Level2Passive) {
     NetworkFactory nf = new NetworkFactory();
@@ -151,9 +151,9 @@ public class IsisTest {
     // Test with passive level 1 on r1. Should see each other's loopback addresses in L2 RIB, but
     // not L1, and both should have routes to the other's loopback with ISIS_L2 protocol.
     IncrementalDataPlane dp = setUpPassiveIsis(true, false);
-    Prefix r1LoopbackPrefix = Prefix.create(R1_LOOPBACK_IP, 32);
-    Prefix r2LoopbackPrefix = Prefix.create(R2_LOOPBACK_IP, 32);
-    Prefix isisInterfacePrefix = Prefix.create(R1_INTERFACE_IP, 24);
+    Prefix r1LoopbackPrefix = Prefix.create(R1_LOOPBACK_IP, Prefix.MAX_PREFIX_LENGTH);
+    Prefix r2LoopbackPrefix = Prefix.create(R2_LOOPBACK_IP, Prefix.MAX_PREFIX_LENGTH);
+    Prefix isisInterfacePrefix = Prefix.create(R1_INTERFACE_IP, INTERFACE_PREFIX_LENGTH);
 
     Set<IsisRoute> r1L1RibRoutes =
         dp.getNodes().get(R1).getVirtualRouters().get(DEFAULT_VRF_NAME)._isisL1Rib.getRoutes();
@@ -211,9 +211,9 @@ public class IsisTest {
     // Test with passive level 2 on r1. Should see each other's loopback addresses in L1 RIB, but
     // not L2, and both should have routes to the other's loopback with ISIS_L1 protocol.
     IncrementalDataPlane dp = setUpPassiveIsis(false, true);
-    Prefix r1LoopbackPrefix = Prefix.create(R1_LOOPBACK_IP, 32);
-    Prefix r2LoopbackPrefix = Prefix.create(R2_LOOPBACK_IP, 32);
-    Prefix isisInterfacePrefix = Prefix.parse("10.1.2.0/24");
+    Prefix r1LoopbackPrefix = Prefix.create(R1_LOOPBACK_IP, Prefix.MAX_PREFIX_LENGTH);
+    Prefix r2LoopbackPrefix = Prefix.create(R2_LOOPBACK_IP, Prefix.MAX_PREFIX_LENGTH);
+    Prefix isisInterfacePrefix = Prefix.create(R1_INTERFACE_IP, INTERFACE_PREFIX_LENGTH);
 
     Set<IsisRoute> r1L1RibRoutes =
         dp.getNodes().get(R1).getVirtualRouters().get(DEFAULT_VRF_NAME)._isisL1Rib.getRoutes();
