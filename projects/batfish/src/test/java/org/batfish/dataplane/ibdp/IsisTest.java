@@ -109,11 +109,11 @@ public class IsisTest {
         .setLevel2(levelSettings)
         .build();
     // r1 loopback
-    ib.setAddress(new InterfaceAddress(R1_LOOPBACK_IP, 32))
+    ib.setAddress(new InterfaceAddress(R1_LOOPBACK_IP, Prefix.MAX_PREFIX_LENGTH))
         .setIsis(iib.setLevel1(passiveIls).setLevel2(passiveIls).build())
         .build();
     // r1 interface to r2
-    ib.setAddress(new InterfaceAddress(R1_INTERFACE_IP, 24))
+    ib.setAddress(new InterfaceAddress(R1_INTERFACE_IP, INTERFACE_PREFIX_LENGTH))
         .setIsis(
             iib.setLevel1(r1Level1Passive ? passiveIls : activeIls)
                 .setLevel2(r1Level2Passive ? passiveIls : activeIls)
@@ -126,11 +126,11 @@ public class IsisTest {
     ib.setOwner(r2).setVrf(v2);
     ipb.setVrf(v2).setNetAddress(new IsoAddress("49.0001.0100.0200.2002.00")).build();
     // r2 loopback
-    ib.setAddress(new InterfaceAddress(R2_LOOPBACK_IP, 32))
+    ib.setAddress(new InterfaceAddress(R2_LOOPBACK_IP, Prefix.MAX_PREFIX_LENGTH))
         .setIsis(iib.setLevel1(passiveIls).setLevel2(passiveIls).build())
         .build();
     // r2 interface to r1
-    ib.setAddress(new InterfaceAddress(R2_INTERFACE_IP, 24))
+    ib.setAddress(new InterfaceAddress(R2_INTERFACE_IP, INTERFACE_PREFIX_LENGTH))
         .setIsis(iib.setLevel1(activeIls).setLevel2(activeIls).build())
         .build();
 
