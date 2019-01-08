@@ -49,6 +49,10 @@ public class BgpCommunityRegex extends BaseParser<String> {
     return FirstOf(RegularCommunity(), WellKnownCommunity());
   }
 
+  Rule Wildcard() {
+    return Sequence(Ch('*'), push(".*"));
+  }
+
   Rule RegularCommunity() {
     return Sequence(Digits(), ':', Digits(), push(String.format("^%s:%s$", pop(1), pop(0))));
   }
@@ -115,11 +119,13 @@ public class BgpCommunityRegex extends BaseParser<String> {
   }
 
   Rule Term() {
-    return Sequence(
-        Term_Inner(), // first term, will be pop(1) below
-        ZeroOrMore(
-            Term_Inner(), // pop()
-            push(String.format("%s%s", pop(1), pop()))));
+    return FirstOf(
+        Wildcard(), // wildcard is only valid if it's the entire term
+        Sequence(
+            Term_Inner(), // first term, will be pop(1) below
+            ZeroOrMore(
+                Term_Inner(), // pop()
+                push(String.format("%s%s", pop(1), pop())))));
   }
 
   Rule T_TopLevel() {
@@ -189,7 +195,7 @@ public class BgpCommunityRegex extends BaseParser<String> {
   }
 
   /** Converts the given Juniper regular expression to a Java regular expression. */
-  static String convertToJavaRegex(String regex) {
+  public static String convertToJavaRegex(String regex) {
     BgpCommunityRegex parser = Parboiled.createParser(BgpCommunityRegex.class);
     BasicParseRunner<String> runner = new BasicParseRunner<>(parser.TopLevel());
     ParsingResult<String> result = runner.run(regex);

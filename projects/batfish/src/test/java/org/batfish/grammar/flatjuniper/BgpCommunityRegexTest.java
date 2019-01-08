@@ -18,6 +18,7 @@ public class BgpCommunityRegexTest {
     "^56:(2.*)$",
     "^(.*):(.*[579])$",
     "^((56) | (78)):(2.*[2-8])$",
+    "*:*",
   };
 
   private static final String[][] MATCHES = {
@@ -29,6 +30,7 @@ public class BgpCommunityRegexTest {
     {"56:2", "56:222", "56:234"},
     {"1234:5", "78:2357", "34:64509"},
     {"56:22", "56:21197", "78:2678"},
+    {"0:0", "123:123", "65535:12345"},
   };
 
   private static final String[][] NO_MATCHES = {
@@ -40,6 +42,7 @@ public class BgpCommunityRegexTest {
     {"56:3", "2:56"},
     {"1234:51"},
     {"56:122", "56:82", "56:828", "56:21", "78:29", "78:299"},
+    {}, // "*:*" matches everything.
   };
 
   @Test
