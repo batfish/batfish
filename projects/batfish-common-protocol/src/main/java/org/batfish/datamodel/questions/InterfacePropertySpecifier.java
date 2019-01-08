@@ -43,7 +43,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String HSRP_GROUPS = "HSRP_Groups";
   public static final String HSRP_VERSION = "HSRP_Version";
   public static final String INCOMING_FILTER_NAME = "Incoming_Filter_Name";
-  public static final String INCOMING_TRANSFORMATION = "Incoming_Transformation";
   public static final String INTERFACE_TYPE = "Interface_Type";
   public static final String MTU = "MTU";
   public static final String NATIVE_VLAN = "Native_VLAN";
@@ -54,7 +53,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String OSPF_PASSIVE = "OSPF_Passive";
   public static final String OSPF_POINT_TO_POINT = "OSPF_Point_To_Point";
   public static final String OUTGOING_FILTER_NAME = "Outgoing_Filter_Name";
-  public static final String OUTGOING_TRANSFORMATION = "Outgoing_Transformation";
   public static final String PRIMARY_ADDRESS = "Primary_Address";
   public static final String PRIMARY_NETWORK = "Primary_Network";
   public static final String PROXY_ARP = "Proxy_ARP";
@@ -103,9 +101,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               INCOMING_FILTER_NAME,
               new PropertyDescriptor<>(Interface::getIncomingFilter, Schema.STRING))
-          .put(
-              INCOMING_TRANSFORMATION,
-              new PropertyDescriptor<>(Interface::getIncomingTransformation, Schema.STRING))
           .put(INTERFACE_TYPE, new PropertyDescriptor<>(Interface::getInterfaceType, Schema.STRING))
           .put(MTU, new PropertyDescriptor<>(Interface::getMtu, Schema.INTEGER))
           .put(NATIVE_VLAN, new PropertyDescriptor<>(Interface::getNativeVlan, Schema.INTEGER))
@@ -124,9 +119,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               OUTGOING_FILTER_NAME,
               new PropertyDescriptor<>(Interface::getOutgoingFilterName, Schema.STRING))
-          .put(
-              OUTGOING_TRANSFORMATION,
-              new PropertyDescriptor<>(Interface::getOutgoingTransformation, Schema.STRING))
           // skip getOwner
           .put(PRIMARY_ADDRESS, new PropertyDescriptor<>(Interface::getAddress, Schema.STRING))
           .put(
