@@ -17,9 +17,10 @@ import org.parboiled.support.ParsingResult;
 
 /** A class that converts a Juniper community regex to a Java regex. */
 @BuildParseTree
+@SuppressWarnings({"checkstyle:MethodName", "WeakerAccess"})
 public class BgpCommunityRegex extends BaseParser<String> {
 
-  private static String wellKnownToRegex(String s) {
+  static String wellKnownToRegex(String s) {
     long wellKnownValue;
     switch (s) {
       case "no-advertise":
@@ -76,26 +77,32 @@ public class BgpCommunityRegex extends BaseParser<String> {
         push(matchOrDefault("")));
   }
 
+  @SuppressSubnodes
   Rule Op_Asterisk() {
     return Ch('*');
   }
 
+  @SuppressSubnodes
   Rule Op_Plus() {
     return Ch('+');
   }
 
+  @SuppressSubnodes
   Rule Op_QuestionMark() {
     return Ch('?');
   }
 
+  @SuppressSubnodes
   Rule Op_Exact() {
     return Sequence('{', Digits(), '}');
   }
 
+  @SuppressSubnodes
   Rule Op_Range() {
     return Sequence('{', Digits(), ',', Digits(), '}');
   }
 
+  @SuppressSubnodes
   Rule Op_OrMore() {
     return Sequence('{', Digits(), ',', '}');
   }
@@ -116,6 +123,7 @@ public class BgpCommunityRegex extends BaseParser<String> {
     return FirstOf(T_Group(), T_Or(), SetOfDigits(), Digits(), T_Dot());
   }
 
+  @SuppressSubnodes
   Rule T_Dot() {
     return Sequence(Ch('.'), push(match()));
   }
