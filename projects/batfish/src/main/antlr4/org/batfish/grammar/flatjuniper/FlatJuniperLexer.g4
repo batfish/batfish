@@ -226,6 +226,21 @@ AH
    'ah'
 ;
 
+AH_HEADER
+:
+   'AH-header'
+;
+
+ALARM_WITHOUT_DROP
+:
+   'alarm_without_drop'
+;
+
+ALARM_THRESHOLD
+:
+   'alarm-threshold'
+;
+
 ALG
 :
    'alg'
@@ -421,6 +436,11 @@ ASDOT_NOTATION
    'asdot-notation'
 ;
 
+ATTACK_THRESHOLD
+:
+   'attack-threshold'
+;
+
 AUTHENTICATION
 :
    'authentication'
@@ -506,6 +526,16 @@ AUXILIARY
    'auxiliary'
 ;
 
+BAD_INNER_HEADER
+:
+   'bad-inner-header'
+;
+
+BAD_OPTION
+:
+   'bad-option'
+;
+
 BACKUP_ROUTER
 :
    'backup-router'
@@ -544,6 +574,11 @@ BIFF
 BIND_INTERFACE
 :
    'bind-interface' -> pushMode ( M_Interface )
+;
+
+BLOCK_FRAG
+:
+   'block-frag'
 ;
 
 BMP
@@ -599,6 +634,11 @@ BUNDLE
 C
 :
     'c'
+;
+
+CALIPSO_OPTION
+:
+   'CALIPSO-option'
 ;
 
 CATEGORIES
@@ -800,6 +840,16 @@ DATABASE_REPLICATION
    'database-replication'
 ;
 
+DESTINATION_HEADER
+:
+   'destination-header'
+;
+
+DESTINATION_THRESHOLD
+:
+   'destination-threshold'
+;
+
 DCBX
 :
    'dcbx'
@@ -930,6 +980,11 @@ DESTINATION_IP
    'destination-ip'
 ;
 
+DESTINATION_IP_BASED
+:
+   'destination-ip-based'
+;
+
 DESTINATION_NAT
 :
    'destination-nat'
@@ -1045,6 +1100,11 @@ DSCP
    'dscp' -> pushMode ( M_DSCP )
 ;
 
+DSLITE
+:
+   'dslite'
+;
+
 DSTOPTS
 :
    'dstopts'
@@ -1153,6 +1213,11 @@ ENHANCED_HASH_KEY
 ESP
 :
    'esp'
+;
+
+ESP_HEADER
+:
+   'ESP-header'
 ;
 
 ESTABLISH_TUNNELS
@@ -1325,6 +1390,11 @@ FILTER_INTERFACES
     'filter-interfaces'
 ;
 
+FIN_NO_ACK
+:
+   'fin-no-ack'
+;
+
 FINGER
 :
    'finger'
@@ -1348,6 +1418,11 @@ FIRST_FRAGMENT
 FLEXIBLE_VLAN_TAGGING
 :
    'flexible-vlan-tagging'
+;
+
+FLOOD
+:
+   'flood'
 ;
 
 FLOW
@@ -1413,6 +1488,11 @@ FORWARDING_TABLE
 FRAGMENT
 :
    'fragment'
+;
+
+FRAGMENT_HEADER
+:
+   'fragment-header'
 ;
 
 FRAGMENTATION_NEEDED
@@ -1493,6 +1573,26 @@ GRACEFUL_RESTART
 GRE
 :
    'gre'
+;
+
+GRE_4IN4
+:
+   'gre-4in4'
+;
+
+GRE_4IN6
+:
+   'gre-4in6'
+;
+
+GRE_6IN4
+:
+   'gre-6in4'
+;
+
+GRE_6IN6
+:
+   'gre-6in6'
 ;
 
 GROUP
@@ -1588,6 +1688,21 @@ HELPERS
 HIGH
 :
    'high'
+;
+
+HIP_HEADER
+:
+   'HIP-header'
+;
+
+HOME_ADDRESS_OPTION
+:
+   'home-address-option'
+;
+
+HOP_BY_HOP_HEADER
+:
+   'hop-by-hop-header'
 ;
 
 HMAC_MD5_96
@@ -1700,6 +1815,11 @@ ICMP6_CODE
    'icmp6-code'
 ;
 
+ICMPV6_MALFORMED
+:
+   'icmpv6-malformed'
+;
+
 ICMP6_TYPE
 :
    'icmp6-type'
@@ -1723,6 +1843,11 @@ IDENT_RESET
 IDLE_TIMEOUT
 :
    'idle-timeout'
+;
+
+IDS_OPTION
+:
+   'ids-option'
 ;
 
 IGMP
@@ -1768,6 +1893,11 @@ IKE_POLICY
 IKE_USER_TYPE
 :
    'ike-user-type'
+;
+
+ILNP_NONCE_OPTION
+:
+   'ILNP-nonce-option'
 ;
 
 IMAP
@@ -2010,6 +2140,11 @@ IP_HEADER_BAD
    'ip-header-bad'
 ;
 
+IP_IN_UDP
+:
+   'ip-in-udp'
+;
+
 IP_OPTIONS
 :
    'ip-options'
@@ -2025,9 +2160,44 @@ IP_SOURCE_ADDRESS
    'ip-source-address'
 ;
 
+IP_SWEEP
+:
+   'ip-sweep'
+;
+
 IPIP
 :
    'ipip'
+;
+
+IPIP_4IN4
+:
+   'ipip-4in4'
+;
+
+IPIP_4IN6
+:
+   'ipip-4in6'
+;
+
+IPIP_6IN4
+:
+   'ipip-6in4'
+;
+
+IPIP_6IN6
+:
+   'ipip-6in6'
+;
+
+IPIP_6OVER4
+:
+   'ipip-6over4'
+;
+
+IPIP_6TO4RELAY
+:
+   'ipip-6to4relay'
 ;
 
 IPSEC
@@ -2050,9 +2220,29 @@ IPV6
    'ipv6'
 ;
 
+IPV6_EXTENSION_HEADER
+:
+   'ipv6-extension-header'
+;
+
+IPV6_EXTENSION_HEADER_LIMIT
+:
+   'ipv6-extension-header-limit'
+;
+
+IPV6_MALFORMED_HEADER
+:
+   'ipv6-malformed-header'
+;
+
 IS_FRAGMENT
 :
    'is-fragment'
+;
+
+ISATAP
+:
+   'isatap'
 ;
 
 ISIS
@@ -2073,6 +2263,11 @@ ISO
 ISO_VPN
 :
    'iso-vpn'
+;
+
+JUMBO_PAYLOAD_OPTION
+:
+   'jumbo-payload-option'
 ;
 
 JUNOS_AOL
@@ -3182,6 +3377,16 @@ LAN
    'lan'
 ;
 
+LAND
+:
+   'land'
+;
+
+LARGE
+:
+   'large'
+;
+
 LAST_AS
 :
    'last-as'
@@ -3200,6 +3405,11 @@ LDP_SYNCHRONIZATION
 LICENSE
 :
    'license'
+;
+
+LINE_IDENTIFICATION_OPTION
+:
+   'line-identification-option'
 ;
 
 LINK_MODE
@@ -3235,6 +3445,11 @@ LIFETIME_KILOBYTES
 LIFETIME_SECONDS
 :
    'lifetime-seconds'
+;
+
+LIMIT_SESSION
+:
+   'limit_session'
 ;
 
 LINK_PROTECTION
@@ -3335,6 +3550,11 @@ LOOPBACK
 LOOPS
 :
    'loops'
+;
+
+LOOSE_SOURCE_ROUTE_OPTION
+:
+   'loose-source-route-option'
 ;
 
 LOSS_PRIORITY
@@ -3545,6 +3765,11 @@ MOBILEIP_AGENT
 MOBILIP_MN
 :
    'mobilip-mn'
+;
+
+MOBILITY_HEADER
+:
+   'mobility-header'
 ;
 
 MODE
@@ -3857,6 +4082,11 @@ NO_NEIGHBOR_DOWN_NOTIFICATION
    'no-neighbor-down-notification'
 ;
 
+NO_NEXT_HEADER
+:
+   'no-next-header'
+;
+
 NO_NEXTHOP_CHANGE
 :
    'no-nexthop-change'
@@ -4167,6 +4397,11 @@ PING
    'ping'
 ;
 
+PING_DEATH
+:
+   'ping_death'
+;
+
 POE
 :
    'poe'
@@ -4260,6 +4495,11 @@ PORT_OVERLOADING_FACTOR
 PORT_RANDOMIZATION
 :
    'port-randomization'
+;
+
+PORT_SCAN
+:
+	'port-scan'
 ;
 
 PORT_UNREACHABLE
@@ -4462,6 +4702,11 @@ QUALIFIED_NEXT_HOP
    'qualified-next-hop'
 ;
 
+QUICK_START_OPTION
+:
+   'quick-start-option'
+;
+
 R2CP
 :
    'r2cp'
@@ -4520,6 +4765,11 @@ READVERTISE
 RECEIVE
 :
    'receive'
+;
+
+RECORD_ROUTE_OPTION
+:
+   'record-route-option'
 ;
 
 REDIRECT
@@ -4732,6 +4982,11 @@ ROUTER_ADVERTISEMENT
    'router-advertisement'
 ;
 
+ROUTER_ALERT_OPTION
+:
+   'router-alert-option'
+;
+
 ROUTER_DISCOVERY
 :
    'router-discovery'
@@ -4745,6 +5000,11 @@ ROUTER_ID
 ROUTER_SOLICIT
 :
    'router-solicit'
+;
+
+ROUTING_HEADER
+:
+   'routing-header'
 ;
 
 ROUTING_INSTANCE
@@ -4770,6 +5030,11 @@ RPC_PROGRAM_NUMBER
 RPF_CHECK
 :
    'rpf-check'
+;
+
+RPL_OPTION
+:
+   'RPL-option'
 ;
 
 RPM
@@ -4877,6 +5142,11 @@ SECURITY
    'security'
 ;
 
+SECURITY_OPTION
+:
+   'security-option'
+;
+
 SECURITY_PROFILE
 :
    'security-profile'
@@ -4937,6 +5207,11 @@ SFLOW
    'sflow'
 ;
 
+SFM_DPD_OPTION
+:
+   'SFM-DPD-option'
+;
+
 SHA_256
 :
    'sha-256'
@@ -4955,6 +5230,11 @@ SHA1
 SHARED_IKE_ID
 :
    'shared-ike-id'
+;
+
+SHIM6_HEADER
+:
+   'shim6-header'
 ;
 
 SHORTCUTS
@@ -5072,6 +5352,11 @@ SOURCE_INTERFACE
    'source-interface'
 ;
 
+SOURCE_IP_BASED
+:
+   'source-ip-based'
+;
+
 SOURCE_MAC_ADDRESS
 :
    'source-mac-address' -> pushMode ( M_MacAddress )
@@ -5097,6 +5382,16 @@ SOURCE_ROUTE_FAILED
    'source-route-failed'
 ;
 
+SOURCE_ROUTE_OPTION
+:
+   'source-route-option'
+;
+
+SOURCE_THRESHOLD
+:
+   'source-threshold'
+;
+
 SOURCE_QUENCH
 :
    'source-quench'
@@ -5110,6 +5405,11 @@ SPEED
 SPF_OPTIONS
 :
    'spf-options'
+;
+
+SPOOFING
+:
+   'spoofing'
 ;
 
 SSH
@@ -5170,6 +5470,16 @@ STORM_CONTROL_PROFILES
 STP
 :
    'stp'
+;
+
+STREAM_OPTION
+:
+   'stream-option'
+;
+
+STRICT_SOURCE_ROUTE_OPTION
+:
+   'strict-source-route-option'
 ;
 
 STRUCTURED_DATA
@@ -5312,9 +5622,19 @@ TCP_MSS
    'tcp-mss'
 ;
 
+TCP_NO_FLAG
+:
+   'tcp-no-flag'
+;
+
 TCP_RST
 :
    'tcp-rst'
+;
+
+TCP_SWEEP
+:
+   'tcp-sweep'
 ;
 
 TE_METRIC
@@ -5325,6 +5645,16 @@ TE_METRIC
 TEARDOWN
 :
    'teardown'
+;
+
+TEAR_DROP
+:
+   'tear-drop'
+;
+
+TEREDO
+:
+   'teredo'
 ;
 
 TELNET
@@ -5355,6 +5685,11 @@ THEN
 THREEDES_CBC
 :
    '3des-cbc'
+;
+
+THRESHOLD
+:
+   'threshold'
 ;
 
 THROUGH
@@ -5390,6 +5725,11 @@ TIMEOUT
 TIMESTAMP
 :
    'timestamp'
+;
+
+TIMESTAMP_OPTION
+:
+   'timestamp-option'
 ;
 
 TIMESTAMP_REPLY
@@ -5441,6 +5781,11 @@ TRAP_DESTINATIONS
    'trap-destinations'
 ;
 
+TRAP
+:
+   'trap'
+;
+
 TRAP_GROUP
 :
    'trap-group'
@@ -5486,6 +5831,11 @@ TUNNEL
    'tunnel'
 ;
 
+TUNNEL_ENCAPSULATION_LIMIT_OPTION
+:
+   'tunnel-encapsulation-limit-option'
+;
+
 TYPE
 :
    'type'
@@ -5501,6 +5851,11 @@ UDP
    'udp'
 ;
 
+UDP_SWEEP
+:
+   'udp-sweep'
+;
+
 UNICAST
 :
    'unicast'
@@ -5509,6 +5864,11 @@ UNICAST
 UNIT
 :
    'unit'
+;
+
+UNKNOWN_PROTOCOL
+:
+   'unknown-protocol'
 ;
 
 UNREACHABLE
@@ -5549,6 +5909,11 @@ URPF_LOGGING
 USER
 :
    'user'
+;
+
+USER_DEFINED_OPTION_TYPE
+:
+   'user-defined-option-type'
 ;
 
 UUID
@@ -6038,14 +6403,44 @@ SINGLE_QUOTE
    '\''
 ;
 
+SYN_ACK_ACK_PROXY
+:
+   'syn-ack-ack-proxy'
+;
+
+SYN_FIN
+:
+   'syn-fin'
+;
+
+SYN_FLOOD
+:
+   'syn-flood'
+;
+
+SYN_FRAG
+:
+   'syn-frag'
+;
+
 UNDERSCORE
 :
    '_'
 ;
 
+WHITE_LIST
+:
+   'white-list'
+;
+
 WILDCARD
 :
    '<' ~'>'* '>' {setWildcard();}
+;
+
+WINNUKE
+:
+   'winnuke'
 ;
 
 WS

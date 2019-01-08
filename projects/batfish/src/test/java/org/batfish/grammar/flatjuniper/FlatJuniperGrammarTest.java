@@ -3842,4 +3842,9 @@ public final class FlatJuniperGrammarTest {
                     .build());
     assertThat(result.getBooleanValue(), equalTo(false));
   }
+
+  @Test
+  public void testScreenOptions() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("screen-options");
+  }
 }
