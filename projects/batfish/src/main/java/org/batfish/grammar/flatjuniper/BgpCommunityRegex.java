@@ -17,7 +17,7 @@ import org.parboiled.support.ParsingResult;
 
 /** A class that converts a Juniper community regex to a Java regex. */
 @BuildParseTree
-@SuppressWarnings({"checkstyle:MethodName", "WeakerAccess"})
+@SuppressWarnings({"checkstyle:methodname", "WeakerAccess"})
 public class BgpCommunityRegex extends BaseParser<String> {
 
   static String wellKnownToRegex(String s) {
