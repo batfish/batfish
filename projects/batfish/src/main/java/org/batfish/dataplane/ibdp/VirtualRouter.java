@@ -1412,17 +1412,10 @@ public class VirtualRouter implements Serializable {
                     : iface.getIsis().getLevel2();
 
             // Do not propagate route if ISIS interface is not active at this level
-            switch (isisLevelSettings.getMode()) {
-              case PASSIVE:
-              case SUPPRESSED:
-              case UNSET:
-                continue;
-              case ACTIVE:
-                break;
-              default:
-                throw new BatfishException(
-                    String.format("Unrecognized IS-IS mode %s", isisLevelSettings.getMode()));
+            if (isisLevelSettings.getMode() != IsisInterfaceMode.ACTIVE) {
+              break;
             }
+
             routeBuilder
                 .setNetwork(neighborRoute.getNetwork())
                 .setArea(neighborRoute.getArea())
@@ -2097,6 +2090,21 @@ public class VirtualRouter implements Serializable {
         .keySet()
         .forEach(
             edge -> {
+              // Do not queue routes on non-active ISIS interface levels
+              Interface iface = edge.getNode2().getInterface(nc);
+              IsisInterfaceLevelSettings level1Settings = iface.getIsis().getLevel1();
+              IsisInterfaceLevelSettings level2Settings = iface.getIsis().getLevel2();
+              IsisLevel activeLevels = null;
+              if (level1Settings != null && level1Settings.getMode() == IsisInterfaceMode.ACTIVE) {
+                activeLevels = IsisLevel.LEVEL_1;
+              }
+              if (level2Settings != null && level2Settings.getMode() == IsisInterfaceMode.ACTIVE) {
+                activeLevels = IsisLevel.union(activeLevels, IsisLevel.LEVEL_2);
+              }
+              if (activeLevels == null) {
+                return;
+              }
+
               VirtualRouter remoteVr =
                   allNodes
                       .get(edge.getNode1().getNode())
@@ -2105,10 +2113,12 @@ public class VirtualRouter implements Serializable {
               Queue<RouteAdvertisement<IsisRoute>> queue =
                   remoteVr._isisIncomingRoutes.get(edge.reverse());
               IsisLevel circuitType = edge.getCircuitType();
-              if (circuitType == IsisLevel.LEVEL_1_2 || circuitType == IsisLevel.LEVEL_1) {
+              if (circuitType.includes(IsisLevel.LEVEL_1)
+                  && activeLevels.includes(IsisLevel.LEVEL_1)) {
                 queueDelta(queue, l1delta);
               }
-              if (circuitType == IsisLevel.LEVEL_1_2 || circuitType == IsisLevel.LEVEL_2) {
+              if (circuitType.includes(IsisLevel.LEVEL_2)
+                  && activeLevels.includes(IsisLevel.LEVEL_2)) {
                 queueDelta(queue, l2delta);
                 if (_vrf.getIsisProcess().getLevel1() != null
                     && _vrf.getIsisProcess().getLevel2() != null
