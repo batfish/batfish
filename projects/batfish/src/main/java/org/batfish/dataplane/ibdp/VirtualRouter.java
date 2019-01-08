@@ -1405,6 +1405,16 @@ public class VirtualRouter implements Serializable {
           while (queue.peek() != null) {
             RouteAdvertisement<IsisRoute> routeAdvert = queue.remove();
             IsisRoute neighborRoute = routeAdvert.getRoute();
+            IsisLevel routeLevel = neighborRoute.getLevel();
+            IsisInterfaceLevelSettings isisLevelSettings =
+                routeLevel == IsisLevel.LEVEL_1
+                    ? iface.getIsis().getLevel1()
+                    : iface.getIsis().getLevel2();
+
+            // Do not propagate route if ISIS interface is not active at this level
+            if (isisLevelSettings.getMode() != IsisInterfaceMode.ACTIVE) {
+              break;
+            }
 
             routeBuilder
                 .setNetwork(neighborRoute.getNetwork())
@@ -1412,41 +1422,29 @@ public class VirtualRouter implements Serializable {
                 .setAttach(neighborRoute.getAttach())
                 .setSystemId(neighborRoute.getSystemId());
             boolean withdraw = routeAdvert.isWithdrawn();
-            // TODO: simplify
-            if (neighborRoute.getLevel() == IsisLevel.LEVEL_1) {
-              long incrementalMetric =
-                  firstNonNull(iface.getIsis().getLevel1().getCost(), IsisRoute.DEFAULT_METRIC);
-              IsisRoute newL1Route =
-                  routeBuilder
-                      .setAdmin(l1Admin)
-                      .setLevel(IsisLevel.LEVEL_1)
-                      .setMetric(incrementalMetric + neighborRoute.getMetric())
-                      .setProtocol(RoutingProtocol.ISIS_L1)
-                      .build();
-              if (withdraw) {
-                l1DeltaBuilder.remove(newL1Route, Reason.WITHDRAW);
-                _isisL1Rib.removeBackupRoute(newL1Route);
-              } else {
-                l1DeltaBuilder.from(_isisL1StagingRib.mergeRouteGetDelta(newL1Route));
-                _isisL1Rib.removeBackupRoute(newL1Route);
-              }
-            } else { // neighborRoute is level2
-              long incrementalMetric =
-                  firstNonNull(iface.getIsis().getLevel2().getCost(), IsisRoute.DEFAULT_METRIC);
-              IsisRoute newL2Route =
-                  routeBuilder
-                      .setAdmin(l2Admin)
-                      .setLevel(IsisLevel.LEVEL_2)
-                      .setMetric(incrementalMetric + neighborRoute.getMetric())
-                      .setProtocol(RoutingProtocol.ISIS_L2)
-                      .build();
-              if (withdraw) {
-                l2DeltaBuilder.remove(newL2Route, Reason.WITHDRAW);
-                _isisL2Rib.removeBackupRoute(newL2Route);
-              } else {
-                l2DeltaBuilder.from(_isisL2StagingRib.mergeRouteGetDelta(newL2Route));
-                _isisL2Rib.addBackupRoute(newL2Route);
-              }
+            int adminCost = routeLevel == IsisLevel.LEVEL_1 ? l1Admin : l2Admin;
+            RoutingProtocol levelProtocol =
+                routeLevel == IsisLevel.LEVEL_1 ? RoutingProtocol.ISIS_L1 : RoutingProtocol.ISIS_L2;
+            RibDelta.Builder<IsisRoute> deltaBuilder =
+                routeLevel == IsisLevel.LEVEL_1 ? l1DeltaBuilder : l2DeltaBuilder;
+            IsisLevelRib levelRib = routeLevel == IsisLevel.LEVEL_1 ? _isisL1Rib : _isisL2Rib;
+            long incrementalMetric =
+                firstNonNull(isisLevelSettings.getCost(), IsisRoute.DEFAULT_METRIC);
+            IsisRoute newRoute =
+                routeBuilder
+                    .setAdmin(adminCost)
+                    .setLevel(routeLevel)
+                    .setMetric(incrementalMetric + neighborRoute.getMetric())
+                    .setProtocol(levelProtocol)
+                    .build();
+            if (withdraw) {
+              deltaBuilder.remove(newRoute, Reason.WITHDRAW);
+              levelRib.removeBackupRoute(newRoute);
+            } else {
+              IsisLevelRib levelStagingRib =
+                  routeLevel == IsisLevel.LEVEL_1 ? _isisL1StagingRib : _isisL2StagingRib;
+              deltaBuilder.from(levelStagingRib.mergeRouteGetDelta(newRoute));
+              levelRib.addBackupRoute(newRoute);
             }
           }
         });
@@ -2092,6 +2090,21 @@ public class VirtualRouter implements Serializable {
         .keySet()
         .forEach(
             edge -> {
+              // Do not queue routes on non-active ISIS interface levels
+              Interface iface = edge.getNode2().getInterface(nc);
+              IsisInterfaceLevelSettings level1Settings = iface.getIsis().getLevel1();
+              IsisInterfaceLevelSettings level2Settings = iface.getIsis().getLevel2();
+              IsisLevel activeLevels = null;
+              if (level1Settings != null && level1Settings.getMode() == IsisInterfaceMode.ACTIVE) {
+                activeLevels = IsisLevel.LEVEL_1;
+              }
+              if (level2Settings != null && level2Settings.getMode() == IsisInterfaceMode.ACTIVE) {
+                activeLevels = IsisLevel.union(activeLevels, IsisLevel.LEVEL_2);
+              }
+              if (activeLevels == null) {
+                return;
+              }
+
               VirtualRouter remoteVr =
                   allNodes
                       .get(edge.getNode1().getNode())
@@ -2100,10 +2113,12 @@ public class VirtualRouter implements Serializable {
               Queue<RouteAdvertisement<IsisRoute>> queue =
                   remoteVr._isisIncomingRoutes.get(edge.reverse());
               IsisLevel circuitType = edge.getCircuitType();
-              if (circuitType == IsisLevel.LEVEL_1_2 || circuitType == IsisLevel.LEVEL_1) {
+              if (circuitType.includes(IsisLevel.LEVEL_1)
+                  && activeLevels.includes(IsisLevel.LEVEL_1)) {
                 queueDelta(queue, l1delta);
               }
-              if (circuitType == IsisLevel.LEVEL_1_2 || circuitType == IsisLevel.LEVEL_2) {
+              if (circuitType.includes(IsisLevel.LEVEL_2)
+                  && activeLevels.includes(IsisLevel.LEVEL_2)) {
                 queueDelta(queue, l2delta);
                 if (_vrf.getIsisProcess().getLevel1() != null
                     && _vrf.getIsisProcess().getLevel2() != null
