@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
@@ -31,6 +30,7 @@ import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.StateExpr.State;
 import org.batfish.z3.expr.TransformationExpr;
 import org.batfish.z3.expr.TransformationStepExpr;
+import org.batfish.z3.expr.TransformationTransitionGenerator;
 import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
@@ -951,98 +951,35 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   @Override
   public void visitPreOutEdgePostNat(PreOutEdgePostNat.State preOutEdgePostNat) {
-    visitPreOutEdgePostNat_generateTopologyEdgeRules();
-  }
-
-  private void visitPreOutEdgePostNat_generateMatchSourceNatRules(
-      String node1, String iface1, String node2, String iface2) {
-
-    List<Entry<AclPermit, BooleanExpr>> sourceNats = _input.getSourceNats().get(node1).get(iface1);
-
-    for (int natNumber = 0; natNumber < sourceNats.size(); natNumber++) {
-      ImmutableSet.Builder<StateExpr> preStates = ImmutableSet.builder();
-
-      preStates.add(new PreOutEdge(node1, iface1, node2, iface2));
-
-      // does not match any previous source NAT.
-      sourceNats
-          .subList(0, natNumber)
-          .stream()
-          .map(Entry::getKey)
-          .map(aclPermit -> new AclDeny(aclPermit.getHostname(), aclPermit.getAcl()))
-          .forEach(preStates::add);
-
-      // does match the current source NAT.
-      AclPermit aclPermit = sourceNats.get(natNumber).getKey();
-      if (aclPermit != null) {
-        preStates.add(sourceNats.get(natNumber).getKey());
-      }
-
-      BooleanExpr transformationExpr = sourceNats.get(natNumber).getValue();
-
-      _rules.add(
-          new BasicRuleStatement(
-              transformationExpr,
-              preStates.build(),
-              new PreOutEdgePostNat(node1, iface1, node2, iface2)));
-
-      if (aclPermit == null) {
-        // null means accept everything, so no need to consider subsequent NATs.
-        break;
-      }
-    }
-  }
-
-  private void visitPreOutEdgePostNat_generateNoMatchSourceNatRules(
-      String node1, String iface1, String node2, String iface2) {
-    List<Entry<AclPermit, BooleanExpr>> sourceNats =
-        _input
-            .getSourceNats()
-            .getOrDefault(node1, ImmutableMap.of())
-            .getOrDefault(iface1, ImmutableList.of());
-
-    ImmutableSet.Builder<StateExpr> preStates = ImmutableSet.builder();
-    preStates.add(new PreOutEdge(node1, iface1, node2, iface2));
-
-    sourceNats
-        .stream()
-        .map(Entry::getKey)
-        .map(aclPermit -> new AclDeny(aclPermit.getHostname(), aclPermit.getAcl()))
-        .forEach(preStates::add);
-
-    _rules.add(
-        new BasicRuleStatement(
-            preStates.build(), new PreOutEdgePostNat(node1, iface1, node2, iface2)));
-  }
-
-  private void visitPreOutEdgePostNat_generateTopologyEdgeRules() {
-    // Matches source nat.
     _input
         .getEnabledEdges()
         .stream()
-        .filter(e -> _input.getSourceNats().containsKey(e.getNode1()))
-        .filter(e -> _input.getSourceNats().get(e.getNode1()).containsKey(e.getInt1()))
-        .forEach(
+        .flatMap(
             edge -> {
               String node1 = edge.getNode1();
-              String iface1 = edge.getInt1();
               String node2 = edge.getNode2();
-              String iface2 = edge.getInt2();
-              visitPreOutEdgePostNat_generateMatchSourceNatRules(node1, iface1, node2, iface2);
-            });
-
-    // Doesn't match source nat.
-    _input
-        .getEnabledEdges()
-        .forEach(
-            edge -> {
-              String node1 = edge.getNode1();
               String iface1 = edge.getInt1();
-              String node2 = edge.getNode2();
               String iface2 = edge.getInt2();
 
-              visitPreOutEdgePostNat_generateNoMatchSourceNatRules(node1, iface1, node2, iface2);
-            });
+              PreOutEdge preState = new PreOutEdge(node1, iface1, node2, iface2);
+              StateExpr postState = new PreOutEdgePostNat(node1, iface1, node2, iface2);
+
+              return TransformationTransitionGenerator.generateTransitions(
+                      node1,
+                      iface1,
+                      node2,
+                      iface2,
+                      "OUTGOING",
+                      _input.getAclLineMatchExprToBooleanExprs().get(node1),
+                      preState,
+                      postState,
+                      _input
+                          .getOutgoingTransformations()
+                          .getOrDefault(node1, ImmutableMap.of())
+                          .get(iface1))
+                  .stream();
+            })
+        .forEach(_rules::add);
   }
 
   @Override

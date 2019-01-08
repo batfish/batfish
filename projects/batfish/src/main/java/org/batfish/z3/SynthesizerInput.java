@@ -2,15 +2,14 @@ package org.batfish.z3;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.IntExpr;
-import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.StateParameter.Type;
 
 /**
@@ -88,17 +87,14 @@ public interface SynthesizerInput {
   /** Mapping: hostname -&gt; interface-&gt; outgoingAcl */
   Map<String, Map<String, String>> getOutgoingAcls();
 
+  /** Mapping: hostname -&gt; interface -&gt; outgoingTransformation */
+  Map<String, Map<String, Transformation>> getOutgoingTransformations();
+
   /** Mapping: hostname -&gt; vrfName -&gt; routableIps */
   Map<String, Map<String, BooleanExpr>> getRoutableIps();
 
   /** Whether to run simplifier on AST after rule generation */
   boolean getSimplify();
-
-  /**
-   * Mapping: hostname -&gt; interface -&gt; [(preconditionPreTransformationState,
-   * transformationToApply)]
-   */
-  Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getSourceNats();
 
   /** The set of nodes for which we should track whether they are transited */
   Set<String> getTransitNodes();
@@ -126,4 +122,7 @@ public interface SynthesizerInput {
 
   /** Whether it's synthesizing data plane rules */
   boolean isDataPlane();
+
+  /** Mapping: hostname -&gt; AclLineMatchExprToBooleanExpr */
+  Map<String, AclLineMatchExprToBooleanExpr> getAclLineMatchExprToBooleanExprs();
 }
