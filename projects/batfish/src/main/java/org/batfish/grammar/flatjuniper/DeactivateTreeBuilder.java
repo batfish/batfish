@@ -35,7 +35,7 @@ public class DeactivateTreeBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterInterface_id(Interface_idContext ctx) {
-    if (_enablePathRecording && (ctx.unit != null || ctx.suffix != null || ctx.node != null)) {
+    if (_enablePathRecording && (ctx.unit != null || ctx.chnl != null || ctx.node != null)) {
       _enablePathRecording = false;
       _reenablePathRecording = true;
       String text = ctx.getText();
