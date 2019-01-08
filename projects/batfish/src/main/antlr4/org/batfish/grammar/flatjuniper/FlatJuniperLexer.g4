@@ -6547,7 +6547,8 @@ M_Interface_INTERFACE_NAME
 :
    (
       F_InterfaceMediaType '-'? F_Digit+ ('/' F_Digit+)*
-      | 'irb' | 'vlan'
+      | 'irb'
+      | 'vlan'
    ) -> type(INTERFACE_NAME), popMode
 ;
 
