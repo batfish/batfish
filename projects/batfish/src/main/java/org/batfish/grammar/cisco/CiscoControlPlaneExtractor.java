@@ -595,6 +595,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_sitemapContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
+import org.batfish.grammar.cisco.CiscoParser.If_mlagContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.If_nameifContext;
 import org.batfish.grammar.cisco.CiscoParser.If_no_security_levelContext;
@@ -690,6 +691,11 @@ import org.batfish.grammar.cisco.CiscoParser.Match_source_protocol_rm_stanzaCont
 import org.batfish.grammar.cisco.CiscoParser.Match_tag_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_paths_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_peers_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Mlag_domainContext;
+import org.batfish.grammar.cisco.CiscoParser.Mlag_local_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.Mlag_peer_addressContext;
+import org.batfish.grammar.cisco.CiscoParser.Mlag_peer_linkContext;
+import org.batfish.grammar.cisco.CiscoParser.Mlag_reload_delayContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_block_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_block_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_flat_rb_stanzaContext;
@@ -923,6 +929,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_class_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.S_depi_classContext;
 import org.batfish.grammar.cisco.CiscoParser.S_depi_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.S_domain_nameContext;
+import org.batfish.grammar.cisco.CiscoParser.S_eos_mlagContext;
 import org.batfish.grammar.cisco.CiscoParser.S_featureContext;
 import org.batfish.grammar.cisco.CiscoParser.S_hostnameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_interfaceContext;
@@ -1114,6 +1121,7 @@ import org.batfish.representation.cisco.LiteralCommunitySetElemHalf;
 import org.batfish.representation.cisco.MacAccessList;
 import org.batfish.representation.cisco.MasterBgpPeerGroup;
 import org.batfish.representation.cisco.MatchSemantics;
+import org.batfish.representation.cisco.MlagConfiguration;
 import org.batfish.representation.cisco.NamedBgpPeerGroup;
 import org.batfish.representation.cisco.NamedCommunitySet;
 import org.batfish.representation.cisco.NatPool;
@@ -1445,6 +1453,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @SuppressWarnings("unused")
   private MacAccessList _currentMacAccessList;
+
+  private MlagConfiguration _currentMlagConfiguration;
 
   private NamedBgpPeerGroup _currentNamedPeerGroup;
 
@@ -3772,6 +3782,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterS_eos_mlag(S_eos_mlagContext ctx) {
+    _currentMlagConfiguration = new MlagConfiguration();
+  }
+
+  @Override
   public void enterS_interface(S_interfaceContext ctx) {
     String nameAlpha = ctx.iname.name_prefix_alpha.getText();
     String canonicalNamePrefix;
@@ -5879,6 +5894,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitIf_mlag(If_mlagContext ctx) {
+    int mlagId = toInteger(ctx.DEC());
+    _currentInterfaces.forEach(iface -> iface.setMlagId(mlagId));
+  }
+
+  @Override
   public void exitIf_mtu(If_mtuContext ctx) {
     int mtu = toInteger(ctx.DEC());
     for (Interface currentInterface : _currentInterfaces) {
@@ -6902,6 +6923,40 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitMaximum_peers_bgp_tail(Maximum_peers_bgp_tailContext ctx) {
     todo(ctx);
+  }
+
+  @Override
+  public void exitMlag_domain(Mlag_domainContext ctx) {
+
+    _currentMlagConfiguration.setDomainId(ctx.DOMAIN_ID().getText());
+  }
+
+  @Override
+  public void exitMlag_local_interface(Mlag_local_interfaceContext ctx) {
+    _currentMlagConfiguration.setLocalInterface(ctx.iface.getText());
+  }
+
+  @Override
+  public void exitMlag_peer_address(Mlag_peer_addressContext ctx) {
+    _currentMlagConfiguration.setPeerAddress(toIp(ctx.ip));
+  }
+
+  @Override
+  public void exitMlag_peer_link(Mlag_peer_linkContext ctx) {
+    _currentMlagConfiguration.setPeerLink(ctx.iface.getText());
+  }
+
+  @Override
+  public void exitMlag_reload_delay(Mlag_reload_delayContext ctx) {
+    Integer period = ctx.INFINITY() == null ? Integer.MAX_VALUE : toInteger(ctx.period);
+    if (ctx.MLAG() != null) {
+      _currentMlagConfiguration.setReloadDelayMlag(period);
+    } else if (ctx.NON_MLAG() != null) {
+      _currentMlagConfiguration.setReloadDelayNonMlag(period);
+    } else {
+      _currentMlagConfiguration.setReloadDelayMlag(period);
+      _currentMlagConfiguration.setReloadDelayNonMlag(period);
+    }
   }
 
   @Override
@@ -8494,6 +8549,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitS_domain_name(S_domain_nameContext ctx) {
     String domainName = ctx.hostname.getText();
     _configuration.setDomainName(domainName);
+  }
+
+  @Override
+  public void exitS_eos_mlag(S_eos_mlagContext ctx) {
+    _currentMlagConfiguration = null;
   }
 
   @Override
