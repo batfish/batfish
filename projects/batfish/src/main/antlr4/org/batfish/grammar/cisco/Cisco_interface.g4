@@ -540,7 +540,7 @@ if_load_interval
 
 if_mlag
 :
-   MLAG id = DEC
+   MLAG id = DEC NEWLINE
 ;
 
 if_mtu
@@ -1692,6 +1692,7 @@ if_inner
    | if_isis_passive
    | if_isis_tag
    | if_load_interval
+   | if_mlag
    | if_mtu
    | if_nameif
    | if_no_bfd

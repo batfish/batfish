@@ -439,7 +439,7 @@
           "configs/community_set"
         ],
         "eos-mlag" : [
-          "configs/eos-mlag"
+          "configs/eos_mlag"
         ],
         "foundry_access_list" : [
           "configs/foundry_access_list"
@@ -947,7 +947,7 @@
         "configs/community_name_numbers" : "PASSED",
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
-        "configs/eos-mlag" : "PASSED",
+        "configs/eos_mlag" : "PASSED",
         "configs/foundry_access_list" : "PASSED",
         "configs/foundry_bgp" : "PASSED",
         "configs/foundry_interface" : "PASSED",
@@ -39087,7 +39087,7 @@
             "        (if_description",
             "          (description_line",
             "            DESCRIPTION:'description'",
-            "            text = RAW_TEXT:' to st93cn01k2lf (MLAG PEER LINK)'  <== mode:M_Description",
+            "            text = RAW_TEXT:' to MLAG PEER'  <== mode:M_Description",
             "            NEWLINE:'\\n'  <== mode:M_Description)))",
             "      (if_inner",
             "        (if_switchport_mode",
@@ -39096,48 +39096,105 @@
             "          TRUNK:'trunk'",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Port-Channel'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'2'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_mlag",
+            "          MLAG:'mlag'",
+            "          id = DEC:'2'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          prefix = IP_PREFIX:'2.2.2.2/32'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
             "    (s_eos_mlag",
             "      MLAG:'mlag'",
             "      CONFIGURATION:'configuration'",
             "      NEWLINE:'\\n'",
-            "      (mlag_domain",
+            "      (eos_mlag_domain",
             "        DOMAIN_ID:'domain-id'",
             "        id = (variable",
             "          VARIABLE:'MLAG_DOMAIN')",
             "        NEWLINE:'\\n')))",
             "  (stanza",
             "    (s_eos_mlag",
-            "      (mlag_local_interface",
+            "      (eos_mlag_local_interface",
             "        LOCAL_INTERFACE:'local-interface'",
             "        iface = (variable",
             "          VARIABLE:'Vlan4094')",
             "        NEWLINE:'\\n')))",
             "  (stanza",
             "    (s_eos_mlag",
-            "      (mlag_peer_address",
+            "      (eos_mlag_peer_address",
             "        PEER_ADDRESS:'peer-address'",
             "        ip = IP_ADDRESS:'1.1.1.3'",
             "        NEWLINE:'\\n')))",
             "  (stanza",
             "    (s_eos_mlag",
-            "      (mlag_peer_link",
+            "      (eos_mlag_peer_link",
             "        PEER_LINK:'peer-link'",
             "        iface = (variable",
             "          VARIABLE:'Port-Channel1')",
             "        NEWLINE:'\\n')))",
             "  (stanza",
             "    (s_eos_mlag",
-            "      (mlag_reload_delay",
+            "      (eos_mlag_reload_delay",
             "        RELOAD_DELAY:'reload-delay'",
             "        MLAG:'mlag'",
             "        period = DEC:'300'",
             "        NEWLINE:'\\n')))",
             "  (stanza",
             "    (s_eos_mlag",
-            "      (mlag_reload_delay",
+            "      (eos_mlag_reload_delay",
+            "        RELOAD_DELAY:'reload-delay'",
+            "        MLAG:'mlag'",
+            "        period = INFINITY:'infinity'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_reload_delay",
             "        RELOAD_DELAY:'reload-delay'",
             "        NON_MLAG:'non-mlag'",
             "        period = DEC:'360'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_reload_delay",
+            "        RELOAD_DELAY:'reload-delay'",
+            "        NON_MLAG:'non-mlag'",
+            "        period = INFINITY:'infinity'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_reload_delay",
+            "        RELOAD_DELAY:'reload-delay'",
+            "        period = DEC:'400'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_reload_delay",
+            "        RELOAD_DELAY:'reload-delay'",
+            "        period = INFINITY:'infinity'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_shutdown",
+            "        SHUTDOWN:'shutdown'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_shutdown",
+            "        NO:'no'",
+            "        SHUTDOWN:'shutdown'",
             "        NEWLINE:'\\n')))",
             "  EOF:<EOF>)"
           ]
@@ -65238,13 +65295,21 @@
             }
           }
         },
-        "configs/eos-mlag" : {
+        "configs/eos_mlag" : {
           "interface" : {
             "Port-Channel1" : {
               "definitionLines" : [
                 9,
                 10,
                 11
+              ],
+              "numReferrers" : 1
+            },
+            "Port-Channel2" : {
+              "definitionLines" : [
+                13,
+                14,
+                15
               ],
               "numReferrers" : 1
             }
@@ -69237,11 +69302,24 @@
             }
           }
         },
-        "configs/eos-mlag" : {
+        "configs/eos_mlag" : {
           "interface" : {
             "Port-Channel1" : {
               "interface" : [
                 9
+              ],
+              "mlag configuraiton" : [
+                21
+              ]
+            },
+            "Port-Channel2" : {
+              "interface" : [
+                13
+              ]
+            },
+            "Vlan4094" : {
+              "mlag configuraiton" : [
+                19
               ]
             }
           }
@@ -72857,7 +72935,7 @@
         "configs/community_name_numbers" : "PASSED",
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
-        "configs/eos-mlag" : "PASSED",
+        "configs/eos_mlag" : "PASSED",
         "configs/foundry_access_list" : "PASSED",
         "configs/foundry_bgp" : "PASSED",
         "configs/foundry_interface" : "PASSED",

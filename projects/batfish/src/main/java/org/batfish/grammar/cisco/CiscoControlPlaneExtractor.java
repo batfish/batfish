@@ -186,6 +186,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.LINE_ACCESS_C
 import static org.batfish.representation.cisco.CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6;
 import static org.batfish.representation.cisco.CiscoStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.MLAG_CONFIGURATION;
 import static org.batfish.representation.cisco.CiscoStructureUsage.MSDP_PEER_SA_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT;
@@ -550,6 +551,12 @@ import org.batfish.grammar.cisco.CiscoParser.Elseif_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Empty_neighbor_block_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Enable_secretContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_bandwidth_specifierContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_domainContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_local_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_peer_addressContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_peer_linkContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_reload_delayContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_additional_featureContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_tailContext;
@@ -691,11 +698,6 @@ import org.batfish.grammar.cisco.CiscoParser.Match_source_protocol_rm_stanzaCont
 import org.batfish.grammar.cisco.CiscoParser.Match_tag_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_paths_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_peers_bgp_tailContext;
-import org.batfish.grammar.cisco.CiscoParser.Mlag_domainContext;
-import org.batfish.grammar.cisco.CiscoParser.Mlag_local_interfaceContext;
-import org.batfish.grammar.cisco.CiscoParser.Mlag_peer_addressContext;
-import org.batfish.grammar.cisco.CiscoParser.Mlag_peer_linkContext;
-import org.batfish.grammar.cisco.CiscoParser.Mlag_reload_delayContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_block_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_block_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_flat_rb_stanzaContext;
@@ -1423,6 +1425,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Nullable private EigrpProcess _currentEigrpProcess;
 
+  @Nullable private MlagConfiguration _currentEosMlagConfiguration;
+
   private ExpandedCommunityList _currentExpandedCommunityList;
 
   private ExtendedAccessList _currentExtendedAcl;
@@ -1453,8 +1457,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @SuppressWarnings("unused")
   private MacAccessList _currentMacAccessList;
-
-  private MlagConfiguration _currentMlagConfiguration;
 
   private NamedBgpPeerGroup _currentNamedPeerGroup;
 
@@ -3783,7 +3785,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterS_eos_mlag(S_eos_mlagContext ctx) {
-    _currentMlagConfiguration = new MlagConfiguration();
+    _currentEosMlagConfiguration = new MlagConfiguration();
   }
 
   @Override
@@ -6926,36 +6928,48 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitMlag_domain(Mlag_domainContext ctx) {
-
-    _currentMlagConfiguration.setDomainId(ctx.DOMAIN_ID().getText());
+  public void exitEos_mlag_domain(Eos_mlag_domainContext ctx) {
+    _currentEosMlagConfiguration.setDomainId(ctx.DOMAIN_ID().getText());
   }
 
   @Override
-  public void exitMlag_local_interface(Mlag_local_interfaceContext ctx) {
-    _currentMlagConfiguration.setLocalInterface(ctx.iface.getText());
+  public void exitEos_mlag_local_interface(Eos_mlag_local_interfaceContext ctx) {
+    String iface = ctx.iface.getText();
+    _currentEosMlagConfiguration.setLocalInterface(iface);
+    _configuration.referenceStructure(
+        INTERFACE, iface, MLAG_CONFIGURATION, ctx.getStart().getLine());
   }
 
   @Override
-  public void exitMlag_peer_address(Mlag_peer_addressContext ctx) {
-    _currentMlagConfiguration.setPeerAddress(toIp(ctx.ip));
+  public void exitEos_mlag_peer_address(Eos_mlag_peer_addressContext ctx) {
+    _currentEosMlagConfiguration.setPeerAddress(toIp(ctx.ip));
   }
 
   @Override
-  public void exitMlag_peer_link(Mlag_peer_linkContext ctx) {
-    _currentMlagConfiguration.setPeerLink(ctx.iface.getText());
+  public void exitEos_mlag_peer_link(Eos_mlag_peer_linkContext ctx) {
+    String iface = ctx.iface.getText();
+    _currentEosMlagConfiguration.setPeerLink(iface);
+    _configuration.referenceStructure(
+        INTERFACE, iface, MLAG_CONFIGURATION, ctx.getStart().getLine());
   }
 
   @Override
-  public void exitMlag_reload_delay(Mlag_reload_delayContext ctx) {
-    Integer period = ctx.INFINITY() == null ? Integer.MAX_VALUE : toInteger(ctx.period);
+  public void exitEos_mlag_reload_delay(Eos_mlag_reload_delayContext ctx) {
+    Integer period = ctx.INFINITY() != null ? Integer.MAX_VALUE : toInteger(ctx.period);
     if (ctx.MLAG() != null) {
-      _currentMlagConfiguration.setReloadDelayMlag(period);
+      _currentEosMlagConfiguration.setReloadDelayMlag(period);
     } else if (ctx.NON_MLAG() != null) {
-      _currentMlagConfiguration.setReloadDelayNonMlag(period);
+      _currentEosMlagConfiguration.setReloadDelayNonMlag(period);
     } else {
-      _currentMlagConfiguration.setReloadDelayMlag(period);
-      _currentMlagConfiguration.setReloadDelayNonMlag(period);
+      _currentEosMlagConfiguration.setReloadDelayMlag(period);
+      _currentEosMlagConfiguration.setReloadDelayNonMlag(period);
+    }
+  }
+
+  @Override
+  public void exitEos_mlag_shutdown(Eos_mlag_shutdownContext ctx) {
+    if (ctx.NO() != null) {
+      _currentEosMlagConfiguration.setShutdown(true);
     }
   }
 
@@ -8553,7 +8567,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitS_eos_mlag(S_eos_mlagContext ctx) {
-    _currentMlagConfiguration = null;
+    _currentEosMlagConfiguration = null;
   }
 
   @Override

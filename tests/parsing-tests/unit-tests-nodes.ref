@@ -11931,7 +11931,7 @@
             "declaredNames" : [
               "Port-Channel1"
             ],
-            "description" : "to st93cn01k2lf (MLAG PEER LINK)",
+            "description" : "to MLAG PEER",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -11947,6 +11947,36 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATED",
             "vrf" : "default"
+          },
+          "Port-Channel2" : {
+            "name" : "Port-Channel2",
+            "accessVlan" : 0,
+            "active" : false,
+            "allPrefixes" : [
+              "2.2.2.2/32"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 0.0,
+            "declaredNames" : [
+              "Port-Channel2"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "2.2.2.2/32",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "ACCESS",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "AGGREGATED",
+            "vrf" : "default"
           }
         },
         "vendorFamily" : {
@@ -11958,7 +11988,8 @@
           "default" : {
             "name" : "default",
             "interfaces" : [
-              "Port-Channel1"
+              "Port-Channel1",
+              "Port-Channel2"
             ]
           }
         }

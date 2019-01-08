@@ -3521,7 +3521,6 @@ stanza
    | banner_stanza
    | community_set_stanza
    | del_stanza
-   | s_eos_mlag
    | extended_access_list_stanza
    | extended_ipv6_access_list_stanza
    | ip_as_path_access_list_stanza
@@ -3588,6 +3587,7 @@ stanza
    | s_dspfarm
    | s_dynamic_access_policy_record
    | s_enable
+   | s_eos_mlag
    | s_ephone_dn_template
    | s_ethernet_services
    | s_event

@@ -17,6 +17,7 @@ public class MlagConfiguration implements Serializable {
   @Nullable private Integer _reloadDelayMlag;
   @Nullable private Integer _reloadDelayNonMlag;
   private boolean _reloadDelayStandbyMode;
+  private boolean _shutdown;
 
   @Nullable
   public Ip getPeerAddress() {
@@ -78,5 +79,13 @@ public class MlagConfiguration implements Serializable {
 
   public void setReloadDelayStandbyMode(boolean reloadDelayStandbyMode) {
     _reloadDelayStandbyMode = reloadDelayStandbyMode;
+  }
+
+  public boolean isShutdown() {
+    return _shutdown;
+  }
+
+  public void setShutdown(boolean shutdown) {
+    _shutdown = shutdown;
   }
 }
