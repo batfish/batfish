@@ -27,13 +27,13 @@
             },
             "status": {
                 "description": "Only include sessions for which status matches this regex",
-                "type": "javaRegex",
+                "type": "bgpSessionStatus",
                 "optional": true,
                 "displayName": "Status"
             },
             "type": {
                 "description": "Only include sessions for which type (ibgp, ebgp_singlehop, ebgp_multihop) matches this regex",
-                "type": "javaRegex",
+                "type": "bgpSessionType",
                 "optional": true,
                 "displayName": "Type"
             }

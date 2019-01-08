@@ -32,7 +32,7 @@
             "filters": {
                 "description": "Only evaluate filters that match this regex",
                 "optional": true,
-                "type": "javaRegex",
+                "type": "filter",
                 "displayName": "Filters"
             },
             "headers": {
@@ -66,7 +66,7 @@
             "nodes": {
                 "description": "Only evaluate filters present on nodes matching this regex",
                 "optional": true,
-                "type": "string",
+                "type": "nodeSpec",
                 "displayName": "Nodes"
             },
             "startLocation": {

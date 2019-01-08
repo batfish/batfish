@@ -491,7 +491,7 @@ public class WorkMgr extends AbstractCoordinator {
                   completionMetadata
                       .getInterfaces()
                       .stream()
-                      .map(NodeInterfacePair::getInterface)
+                      .map(NodeInterfacePair::toString)
                       .collect(Collectors.toSet()));
           break;
         }

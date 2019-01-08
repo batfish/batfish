@@ -8,7 +8,7 @@
         "variables": {
             "names": {
                 "description": "Include structures whose name matches this string or regex",
-                "type": "javaRegex",
+                "type": "structureName",
                 "value": ".*",
                 "optional": true,
                 "displayName": "Names"
@@ -22,7 +22,7 @@
             },
             "types": {
                 "description": "Include structures whose vendor-specific type matches this string or regex",
-                "type": "javaRegex",
+                "type": "namedStructureSpec",
                 "value": ".*",
                 "optional": true,
                 "displayName": "Types"

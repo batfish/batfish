@@ -15,7 +15,7 @@
         "variables": {
             "filters": {
                 "description": "Name or regex identifying the filters to test",
-                "type": "string",
+                "type": "filter",
                 "optional": true,
                 "displayName": "Filters"
             },

@@ -38,7 +38,7 @@
             },
             "structureNames": {
                 "description": "Include structures matching this name or regex",
-                "type": "javaRegex",
+                "type": "structureName",
                 "optional": true,
                 "displayName": "Structure names"
             }

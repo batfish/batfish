@@ -18,7 +18,7 @@
         "variables": {
             "filters": {
                 "description": "Only consider filters that match this regular expression",
-                "type": "javaRegex",
+                "type": "filter",
                 "value": ".*",
                 "displayName": "Filters"
             },

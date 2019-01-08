@@ -32,7 +32,7 @@
             },
             "interfaces": {
                 "description": "Evaluate interfaces matching this regex",
-                "type": "javaRegex",
+                "type": "interface",
                 "value": ".*",
                 "displayName": "Interfaces"
             },

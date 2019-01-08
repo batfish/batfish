@@ -105,7 +105,7 @@ public class WorkMgrService {
               .autoComplete(
                   networkNameParam,
                   snapshotNameParam,
-                  Variable.Type.valueOf(completionType.toUpperCase()),
+                  Variable.Type.fromString(completionType),
                   query,
                   Strings.isNullOrEmpty(maxSuggestions)
                       ? Integer.MAX_VALUE

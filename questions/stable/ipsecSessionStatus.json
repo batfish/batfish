@@ -26,7 +26,7 @@
             },
             "status": {
                 "description": "Only include IPSec sessions for which status matches this regex",
-                "type": "javaRegex",
+                "type": "ipsecSessionStatus",
                 "optional": true,
                 "displayName": "Status"
             }

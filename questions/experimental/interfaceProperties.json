@@ -21,7 +21,7 @@
             },
             "interfaces": {
                 "description": "Include interfaces matching this regex",
-                "type": "javaRegex",
+                "type": "interface",
                 "optional": true,
                 "displayName": "Interfaces"
             },
