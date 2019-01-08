@@ -461,6 +461,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, RoutePolicy> _routePolicies;
 
+  /**
+   * Maps zone names to integers. Only includes zones that were created for security levels. In
+   * effect, the reverse of computeSecurityLevelZoneName.
+   */
   private final Map<String, Integer> _securityLevels;
 
   private boolean _sameSecurityTrafficInter;
@@ -2294,6 +2298,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     String combinedOutgoingAclName = computeCombinedOutgoingAclName(newIface.getName());
     IpAccessList combinedOutgoingAcl;
+    ImmutableList<AclLineMatchExpr> securityFilters =
+        ImmutableList.of(new PermittedByAcl(zoneOutgoingAclName), ifaceFilter);
+
     if (oldOutgoingFilterName != null) {
       combinedOutgoingAcl =
           IpAccessList.builder()
@@ -2305,10 +2312,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                           .setMatchCondition(
                               new AndMatchExpr(
                                   ImmutableList.of(
-                                      new OrMatchExpr(
-                                          ImmutableList.of(
-                                              new PermittedByAcl(zoneOutgoingAclName),
-                                              ifaceFilter)),
+                                      new OrMatchExpr(securityFilters),
                                       new PermittedByAcl(oldOutgoingFilterName)),
                                   String.format(
                                       "Permit if permitted by policy for zone '%s' and permitted by"
@@ -2326,8 +2330,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                       IpAccessListLine.accepting()
                           .setMatchCondition(
                               new OrMatchExpr(
-                                  ImmutableList.of(
-                                      new PermittedByAcl(zoneOutgoingAclName), ifaceFilter),
+                                  securityFilters,
                                   String.format(
                                       "Permit if permitted by policy for zone '%s'", zoneName)))
                           .build()))

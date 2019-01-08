@@ -751,7 +751,9 @@ public class CiscoGrammarTest {
 
     // Confirm reference tracking is correct for ASA access lists in access group
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "FILTER_IN", 1));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "FILTER_IN4", 1));
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "FILTER_OUT", 1));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "FILTER_OUT5", 1));
     assertThat(ccae, hasUndefinedReference(filename, IP_ACCESS_LIST, "FILTER_UNDEF"));
   }
 
@@ -764,6 +766,7 @@ public class CiscoGrammarTest {
     String lowIface2 = "name2"; // GigabitEthernet0/2
     String highIface3 = "name3"; // GigabitEthernet0/3
     String lowIface4 = "name4"; // GigabitEthernet0/4
+    String lowIface5 = "name5"; // GigabitEthernet0/5
 
     Flow flowPass = createFlow(IpProtocol.TCP, 1, 123);
     Flow flowFail = createFlow(IpProtocol.TCP, 1, 1);
@@ -774,6 +777,13 @@ public class CiscoGrammarTest {
     // highIface1 has outbound filter permitting only TCP port 123
     // highIface1 rejects all traffic from lowIface2 due to security level restriction
     assertThat(c, hasInterface(highIface1, hasOutgoingFilter(rejects(anyFlow, lowIface2, c))));
+
+    // Confirm access list permits only traffic matching both ACL and security level restrictions
+    // highIface1 has a higher security level than lowIface5
+    // lowIface5 has no inbound filter
+    // lowIface5 rejects all outbound traffic except TCP port 123
+    assertThat(c, hasInterface(lowIface5, hasOutgoingFilter(rejects(flowFail, highIface1, c))));
+    assertThat(c, hasInterface(lowIface5, hasOutgoingFilter(accepts(flowPass, highIface1, c))));
 
     // lowIface4 has inbound filter permitting only TCP port 123
     // highIface3 has no explicit outbound filter
@@ -3864,7 +3874,7 @@ public class CiscoGrammarTest {
     String ifaceAlias2 = "name2";
     Flow newFlow = createFlow(IpProtocol.IP, 0, 0, FlowState.NEW);
 
-    // No traffic in and out of the same interface
+    // Allow traffic in and out of the same interface
     assertThat(c, hasInterface(ifaceAlias1, hasOutgoingFilter(accepts(newFlow, ifaceAlias1, c))));
     assertThat(c, hasInterface(ifaceAlias2, hasOutgoingFilter(accepts(newFlow, ifaceAlias2, c))));
 
