@@ -1,5 +1,8 @@
 package org.batfish.common.util;
 
+import static org.batfish.datamodel.transformation.TransformationUtil.hasSourceNat;
+import static org.batfish.datamodel.transformation.TransformationUtil.sourceNatPoolIps;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
@@ -601,7 +604,7 @@ public class CommonUtil {
       Set<InterfaceAddress> nonNattedInterfaceAddresses =
           interfaces
               .stream()
-              .filter(i -> i.getSourceNats().isEmpty())
+              .filter(i -> !hasSourceNat(i.getOutgoingTransformation()))
               .flatMap(i -> i.getAllAddresses().stream())
               .collect(ImmutableSet.toImmutableSet());
       Set<IpWildcard> blacklist =
@@ -618,18 +621,8 @@ public class CommonUtil {
           IpWildcardSetIpSpace.builder().including(whitelist).excluding(blacklist).build();
       interfaces
           .stream()
-          .flatMap(i -> i.getSourceNats().stream())
-          .forEach(
-              sourceNat -> {
-                if (sourceNat.getPoolIpFirst() != null && sourceNat.getPoolIpLast() != null) {
-                  for (long ipAsLong = sourceNat.getPoolIpFirst().asLong();
-                      ipAsLong <= sourceNat.getPoolIpLast().asLong();
-                      ipAsLong++) {
-                    Ip currentPoolIp = Ip.create(ipAsLong);
-                    builder.put(currentPoolIp, ipSpace);
-                  }
-                }
-              });
+          .flatMap(i -> sourceNatPoolIps(i.getOutgoingTransformation()))
+          .forEach(currentPoolIp -> builder.put(currentPoolIp, ipSpace));
     }
     return builder.build();
   }
