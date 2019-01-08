@@ -74,16 +74,20 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     return prefix;
   }
 
-  private final Ip _ip;
+  private final Ip _normalizedIp;
+
+  private final Ip _originalIp;
 
   private final int _prefixLength;
 
   private Prefix(Ip ip, int prefixLength) {
     if (ip.valid()) {
+      _originalIp = ip;
       // TODO: stop using Ip as a holder for invalid values.
-      _ip = ip.getNetworkAddress(prefixLength);
+      _normalizedIp = ip.getNetworkAddress(prefixLength);
     } else {
-      _ip = ip;
+      _originalIp = ip;
+      _normalizedIp = ip;
     }
     _prefixLength = prefixLength;
   }
@@ -104,7 +108,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
   @Override
   public int compareTo(Prefix rhs) {
-    int ret = _ip.compareTo(rhs._ip);
+    int ret = _normalizedIp.compareTo(rhs._normalizedIp);
     if (ret != 0) {
       return ret;
     }
@@ -112,14 +116,14 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   }
 
   public boolean containsIp(Ip ip) {
-    long start = _ip.asLong();
+    long start = _normalizedIp.asLong();
     long end = getNetworkEnd(start, _prefixLength);
     long ipAsLong = ip.asLong();
     return start <= ipAsLong && ipAsLong <= end;
   }
 
   public boolean containsPrefix(Prefix prefix) {
-    return containsIp(prefix._ip) && _prefixLength <= prefix._prefixLength;
+    return containsIp(prefix._normalizedIp) && _prefixLength <= prefix._prefixLength;
   }
 
   @Override
@@ -130,12 +134,12 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
       return false;
     }
     Prefix rhs = (Prefix) o;
-    return _ip.equals(rhs._ip) && _prefixLength == rhs._prefixLength;
+    return _normalizedIp.equals(rhs._normalizedIp) && _prefixLength == rhs._prefixLength;
   }
 
   @Nonnull
   public Ip getEndIp() {
-    return Ip.create(getNetworkEnd(_ip.asLong(), _prefixLength));
+    return Ip.create(getNetworkEnd(_normalizedIp.asLong(), _prefixLength));
   }
 
   public int getPrefixLength() {
@@ -151,12 +155,17 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
   @Nonnull
   public Ip getStartIp() {
-    return _ip;
+    return _normalizedIp;
+  }
+
+  @Nonnull
+  public Ip getOriginalIp() {
+    return _originalIp;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ip, _prefixLength);
+    return Objects.hash(_normalizedIp, _prefixLength);
   }
 
   public PrefixIpSpace toIpSpace() {
@@ -179,9 +188,37 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
         .build();
   }
 
+  /**
+   * Returns the first ip in the prefix that is not a subnet address.
+   * When the prefix is /32 or /31, returns the getStartIp(), otherwise,
+   * returns the ip after getStartIp().
+   */
+  public Ip getFirstNonSubnetIp() {
+    if (_prefixLength >= Prefix.MAX_PREFIX_LENGTH - 1) {
+      return getStartIp();
+    } else {
+      Ip subnetIp = getStartIp();
+      return Ip.create(subnetIp.asLong() + 1);
+    }
+  }
+
+  /**
+   * Returns the last ip in the prefix that is not a broadcast address.
+   * When the prefix is /32 or /31, returns the getEndIp(), otherwise,
+   * returns the ip before getEndIp().
+   */
+  public Ip getLastNonBroadcastIp() {
+    if (_prefixLength >= Prefix.MAX_PREFIX_LENGTH - 1) {
+      return getEndIp();
+    } else {
+      Ip broadcastIp = getEndIp();
+      return Ip.create(broadcastIp.asLong() - 1);
+    }
+  }
+
   @Override
   @JsonValue
   public String toString() {
-    return _ip + "/" + _prefixLength;
+    return _normalizedIp + "/" + _prefixLength;
   }
 }
