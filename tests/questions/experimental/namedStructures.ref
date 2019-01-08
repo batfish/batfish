@@ -36,7 +36,7 @@
         "description" : "Include structures matching this name or regex",
         "displayName" : "Structure names",
         "optional" : true,
-        "type" : "javaRegex",
+        "type" : "structureName",
         "value" : ".*"
       },
       "structureTypes" : {

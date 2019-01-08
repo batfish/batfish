@@ -25,7 +25,7 @@
         "description" : "Include interfaces matching this regex",
         "displayName" : "Interfaces",
         "optional" : true,
-        "type" : "javaRegex",
+        "type" : "interface",
         "value" : ".*"
       },
       "nodes" : {

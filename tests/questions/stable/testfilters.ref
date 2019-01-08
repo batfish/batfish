@@ -23,7 +23,7 @@
         "description" : "Only consider filters that match this regular expression",
         "displayName" : "Filters",
         "optional" : false,
-        "type" : "javaRegex",
+        "type" : "filter",
         "value" : ".*"
       },
       "headers" : {

@@ -14,7 +14,7 @@
         "description" : "Include structures whose name matches this string or regex",
         "displayName" : "Names",
         "optional" : true,
-        "type" : "javaRegex",
+        "type" : "structureName",
         "value" : "m1"
       },
       "nodes" : {
@@ -28,7 +28,7 @@
         "description" : "Include structures whose vendor-specific type matches this string or regex",
         "displayName" : "Types",
         "optional" : true,
-        "type" : "javaRegex",
+        "type" : "namedStructureSpec",
         "value" : "t1"
       }
     }

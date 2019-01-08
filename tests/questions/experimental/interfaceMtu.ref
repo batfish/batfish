@@ -38,7 +38,7 @@
         "description" : "Evaluate interfaces matching this regex",
         "displayName" : "Interfaces",
         "optional" : false,
-        "type" : "javaRegex",
+        "type" : "interface",
         "value" : "Gig.*"
       },
       "mtuBytes" : {
