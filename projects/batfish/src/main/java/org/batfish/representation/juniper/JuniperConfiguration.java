@@ -122,6 +122,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.grammar.flatjuniper.BgpCommunityRegex;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 import org.batfish.representation.juniper.Interface.OspfInterfaceType;
 import org.batfish.vendor.VendorConfiguration;
@@ -166,13 +167,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   /** */
   private static final long serialVersionUID = 1L;
-
-  private static String communityRegexToJavaRegex(String regex) {
-    String out = regex;
-    out = out.replace(":*", ":.*");
-    out = out.replaceFirst("^\\*", ".*");
-    return out;
-  }
 
   private final Set<Long> _allStandardCommunities;
 
@@ -1105,12 +1099,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newRoute.build();
   }
 
-  private org.batfish.datamodel.CommunityList toCommunityList(CommunityList cl) {
+  private static org.batfish.datamodel.CommunityList toCommunityList(CommunityList cl) {
     String name = cl.getName();
     List<org.batfish.datamodel.CommunityListLine> newLines = new ArrayList<>();
     for (CommunityListLine line : cl.getLines()) {
       String regex = line.getText();
-      String javaRegex = communityRegexToJavaRegex(regex);
+      String javaRegex = BgpCommunityRegex.convertToJavaRegex(regex);
       org.batfish.datamodel.CommunityListLine newLine =
           new org.batfish.datamodel.CommunityListLine(
               LineAction.PERMIT, new RegexCommunitySet(javaRegex));

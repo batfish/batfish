@@ -14,7 +14,7 @@ public final class CommunityListLine implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  public static @Nullable Long literalCommunityValue(String str) {
+  static @Nullable Long literalCommunityValue(String str) {
     Matcher m = LITERAL_STANDARD_COMMUNITY_PATTERN.matcher(str);
     if (!m.matches()) {
       return null;
