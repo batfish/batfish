@@ -15,6 +15,10 @@ import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 
 /** A {@link Step} for packet transformations. */
 public final class TransformationStep extends Step<TransformationStepDetail> {
+  /**
+   * The type of transformation (i.e. what vendor-specific configuration construct) this step is
+   * (partially) encoding.
+   */
   public enum TransformationType {
     /** Destination nat */
     DEST_NAT,

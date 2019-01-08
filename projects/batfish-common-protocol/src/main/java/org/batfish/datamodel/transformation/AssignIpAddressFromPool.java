@@ -2,18 +2,24 @@ package org.batfish.datamodel.transformation;
 
 import java.io.Serializable;
 import java.util.Objects;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 
 /** A {@link TransformationStep} that transforms the destination IP */
+@ParametersAreNonnullByDefault
 public final class AssignIpAddressFromPool implements TransformationStep, Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
+  private final TransformationType _type;
   private final IpField _ipField;
   private final Ip _poolStart;
   private final Ip _poolEnd;
 
-  public AssignIpAddressFromPool(IpField ipField, Ip poolStart, Ip poolEnd) {
+  public AssignIpAddressFromPool(
+      TransformationType type, IpField ipField, Ip poolStart, Ip poolEnd) {
+    _type = type;
     _ipField = ipField;
     _poolStart = poolStart;
     _poolEnd = poolEnd;
@@ -37,6 +43,11 @@ public final class AssignIpAddressFromPool implements TransformationStep, Serial
   }
 
   @Override
+  public TransformationType getType() {
+    return _type;
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -45,13 +56,14 @@ public final class AssignIpAddressFromPool implements TransformationStep, Serial
       return false;
     }
     AssignIpAddressFromPool that = (AssignIpAddressFromPool) o;
-    return _ipField == that._ipField
+    return _type == that._type
+        && _ipField == that._ipField
         && Objects.equals(_poolStart, that._poolStart)
         && Objects.equals(_poolEnd, that._poolEnd);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ipField, _poolStart, _poolEnd);
+    return Objects.hash(_type, _ipField, _poolStart, _poolEnd);
   }
 }

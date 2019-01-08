@@ -2,6 +2,9 @@ package org.batfish.representation.juniper;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
+import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -14,6 +17,7 @@ import java.util.List;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.Transformation;
 import org.junit.Test;
 
@@ -81,14 +85,16 @@ public class NatRuleSetTest {
     pool.setToAddress(poolEnd);
 
     // the transformation to apply after any NatRule transformation is applied.
-    Transformation andThen = when(matchSrcInterface("IFACE")).apply().build();
+    Transformation andThen = when(matchSrcInterface("IFACE")).apply(new Noop(SOURCE_NAT)).build();
 
     assertThat(
-        ruleSet.toTransformation(IpField.DESTINATION, ImmutableMap.of("POOL", pool), andThen).get(),
+        ruleSet
+            .toTransformation(DEST_NAT, IpField.DESTINATION, ImmutableMap.of("POOL", pool), andThen)
+            .get(),
         equalTo(
             // first apply natRule1
             when(matchDst(prefix1))
-                .apply()
+                .apply(NOOP_DEST_NAT)
                 .setAndThen(andThen)
                 .setOrElse(
                     // only apply natRule2 if natRule1 doesn't match

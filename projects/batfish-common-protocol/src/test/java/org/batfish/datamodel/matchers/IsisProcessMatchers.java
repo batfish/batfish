@@ -10,7 +10,7 @@ import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.matchers.IsisProcessMatchersImpl.HasLevel1;
 import org.batfish.datamodel.matchers.IsisProcessMatchersImpl.HasLevel2;
 import org.batfish.datamodel.matchers.IsisProcessMatchersImpl.HasNetAddress;
-import org.batfish.datamodel.matchers.IsisProcessMatchersImpl.HasOverloadTimeout;
+import org.batfish.datamodel.matchers.IsisProcessMatchersImpl.HasOverload;
 import org.batfish.datamodel.matchers.IsisProcessMatchersImpl.HasReferenceBandwidth;
 import org.hamcrest.Matcher;
 
@@ -35,20 +35,19 @@ public final class IsisProcessMatchers {
 
   /**
    * Provides a matcher that matches if the {@link IsisProcess}'s overloadTimeout is {@code
-   * expectedOverloadTimeout}.
+   * expectedOverload}.
    */
-  public static @Nonnull Matcher<IsisProcess> hasOverloadTimeout(
-      @Nullable Integer expectedOverloadTimeout) {
-    return new HasOverloadTimeout(equalTo(expectedOverloadTimeout));
+  public static @Nonnull Matcher<IsisProcess> hasOverload(boolean expectedOverload) {
+    return new HasOverload(equalTo(expectedOverload));
   }
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
-   * IsisProcess}'s overloadTimeout.
+   * IsisProcess}'s overload.
    */
-  public static @Nonnull Matcher<IsisProcess> hasOverloadTimeout(
-      @Nonnull Matcher<? super Integer> subMatcher) {
-    return new HasOverloadTimeout(subMatcher);
+  public static @Nonnull Matcher<IsisProcess> hasOverload(
+      @Nonnull Matcher<? super Boolean> subMatcher) {
+    return new HasOverload(subMatcher);
   }
 
   /**

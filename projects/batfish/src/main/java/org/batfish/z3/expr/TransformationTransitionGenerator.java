@@ -15,6 +15,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
@@ -81,6 +82,11 @@ public final class TransformationTransitionGenerator {
               assignIpAddressFromPool.getPoolEnd()),
           _preState,
           _postState);
+    }
+
+    @Override
+    public BasicRuleStatement visitNoop(Noop noop) {
+      return new BasicRuleStatement(_preState, _postState);
     }
 
     @Override

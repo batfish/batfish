@@ -1,24 +1,42 @@
 package org.batfish.bddreachability.transition;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import net.sf.javabdd.BDD;
 
-/** The functional composition of two transitions */
+/** The functional composition of two or more transitions */
 public final class Composite implements Transition {
-  private final Transition _first;
-  private final Transition _second;
+  private final List<Transition> _transitions;
 
-  Composite(Transition first, Transition second) {
-    _first = first;
-    _second = second;
+  Composite(Transition... transitions) {
+    this(ImmutableList.copyOf(transitions));
+  }
+
+  Composite(List<Transition> transitions) {
+    checkArgument(!transitions.isEmpty(), "Cannot compose 0 Transitions. Use Identity instead");
+    checkArgument(
+        transitions.size() != 1,
+        "Cannot compose 1 Transition. Use that transition directly instead.");
+    _transitions = ImmutableList.copyOf(transitions);
   }
 
   @Override
   public BDD transitForward(BDD bdd) {
-    return _second.transitForward(_first.transitForward(bdd));
+    BDD result = bdd;
+    for (int i = 0; i < _transitions.size() && !result.isZero(); i++) {
+      result = _transitions.get(i).transitForward(result);
+    }
+    return result;
   }
 
   @Override
   public BDD transitBackward(BDD bdd) {
-    return _first.transitBackward(_second.transitBackward(bdd));
+    BDD result = bdd;
+    for (int i = _transitions.size() - 1; i >= 0 && !result.isZero(); i--) {
+      result = _transitions.get(i).transitBackward(result);
+    }
+    return result;
   }
 }

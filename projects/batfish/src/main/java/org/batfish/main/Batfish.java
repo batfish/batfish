@@ -6,6 +6,15 @@ import static com.google.common.base.Verify.verify;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
+import static org.batfish.common.util.CompletionMetadataUtils.getAddressBooks;
+import static org.batfish.common.util.CompletionMetadataUtils.getAddressGroups;
+import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
+import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
+import static org.batfish.common.util.CompletionMetadataUtils.getIps;
+import static org.batfish.common.util.CompletionMetadataUtils.getPrefixes;
+import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
+import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
+import static org.batfish.common.util.CompletionMetadataUtils.getZones;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
@@ -74,6 +83,7 @@ import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
+import org.batfish.common.CompletionMetadata;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.common.NetworkSnapshot;
@@ -2985,6 +2995,32 @@ public class Batfish extends PluginConsumer implements IBatfish {
     updateBlacklistedAndInactiveConfigs(configurations);
     postProcessAggregatedInterfaces(configurations);
     postProcessOspfCosts(configurations);
+    computeAndStoreCompletionMetadata(configurations);
+  }
+
+  private void computeAndStoreCompletionMetadata(Map<String, Configuration> configurations) {
+    try {
+      _storage.storeCompletionMetadata(
+          computeCompletionMetadata(configurations),
+          _settings.getContainer(),
+          _testrigSettings.getName());
+    } catch (IOException e) {
+      _logger.errorf("Error storing CompletionMetadata: %s", e);
+    }
+  }
+
+  private CompletionMetadata computeCompletionMetadata(Map<String, Configuration> configurations) {
+    ReferenceLibrary referenceLibrary = getReferenceLibraryData();
+    return new CompletionMetadata(
+        getAddressBooks(referenceLibrary),
+        getAddressGroups(referenceLibrary),
+        getFilterNames(configurations),
+        getInterfaces(configurations),
+        getIps(configurations),
+        getPrefixes(configurations),
+        getStructureNames(configurations),
+        getVrfs(configurations),
+        getZones(configurations));
   }
 
   private void repairEnvironmentBgpTables() {

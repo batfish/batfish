@@ -4182,7 +4182,8 @@
               "level1" : {
                 "wideMetricsOnly" : false
               },
-              "netAddress" : "12.3456.7890.1234.5678.90"
+              "netAddress" : "12.3456.7890.1234.5678.90",
+              "overload" : false
             }
           }
         }
@@ -8681,7 +8682,8 @@
               "level2" : {
                 "wideMetricsOnly" : false
               },
-              "netAddress" : "12.1234.1234.1234.1234.12"
+              "netAddress" : "12.1234.1234.1234.1234.12",
+              "overload" : false
             }
           }
         }
@@ -27793,7 +27795,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOOPBACK",
-            "vrf" : "fabric"
+            "vrf" : "default"
           },
           "lo0.1" : {
             "name" : "lo0.1",
@@ -29251,10 +29253,7 @@
             ]
           },
           "fabric" : {
-            "name" : "fabric",
-            "interfaces" : [
-              "lo0.0"
-            ]
+            "name" : "fabric"
           },
           "vr" : {
             "name" : "vr",
