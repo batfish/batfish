@@ -189,9 +189,8 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   }
 
   /**
-   * Returns the first ip in the prefix that is not a subnet address.
-   * When the prefix is /32 or /31, returns the getStartIp(), otherwise,
-   * returns the ip after getStartIp().
+   * Returns the first ip in the prefix that is not a subnet address. When the prefix is /32 or /31,
+   * returns the getStartIp(), otherwise, returns the ip after getStartIp().
    */
   public Ip getFirstNonSubnetIp() {
     if (_prefixLength >= Prefix.MAX_PREFIX_LENGTH - 1) {
@@ -203,9 +202,8 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   }
 
   /**
-   * Returns the last ip in the prefix that is not a broadcast address.
-   * When the prefix is /32 or /31, returns the getEndIp(), otherwise,
-   * returns the ip before getEndIp().
+   * Returns the last ip in the prefix that is not a broadcast address. When the prefix is /32 or
+   * /31, returns the getEndIp(), otherwise, returns the ip before getEndIp().
    */
   public Ip getLastNonBroadcastIp() {
     if (_prefixLength >= Prefix.MAX_PREFIX_LENGTH - 1) {
