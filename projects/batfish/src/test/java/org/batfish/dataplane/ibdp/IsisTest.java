@@ -17,6 +17,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Sets;
 import java.util.Collections;
@@ -167,32 +168,36 @@ public class IsisTest {
     assertThat(
         r1L1RibRoutes,
         containsInAnyOrder(
-            isisRouteTo(r1LoopbackPrefix, R1_LOOPBACK_IP),
-            isisRouteTo(isisInterfacePrefix, R1_INTERFACE_IP),
-            isisRouteTo(Prefix.ZERO, R1_INTERFACE_IP)));
+            ImmutableList.of(
+                isisRouteTo(r1LoopbackPrefix, R1_LOOPBACK_IP, 0),
+                isisRouteTo(isisInterfacePrefix, R1_INTERFACE_IP, 0), // 0 because passive
+                isisRouteTo(Prefix.ZERO, R1_INTERFACE_IP, 0))));
     assertThat(
         r2L1RibRoutes,
         containsInAnyOrder(
-            isisRouteTo(r2LoopbackPrefix, R2_LOOPBACK_IP),
-            isisRouteTo(isisInterfacePrefix, R2_INTERFACE_IP),
-            isisRouteTo(Prefix.ZERO, R2_INTERFACE_IP)));
+            ImmutableList.of(
+                isisRouteTo(r2LoopbackPrefix, R2_LOOPBACK_IP, 0),
+                isisRouteTo(isisInterfacePrefix, R2_INTERFACE_IP, 10),
+                isisRouteTo(Prefix.ZERO, R2_INTERFACE_IP, 0))));
 
     // L2 RIBs have the other's loopback
     assertThat(
         r1L2RibRoutes,
         containsInAnyOrder(
-            isisRouteTo(r1LoopbackPrefix, R1_LOOPBACK_IP),
-            isisRouteTo(r2LoopbackPrefix, R2_INTERFACE_IP),
-            isisRouteTo(isisInterfacePrefix, R1_INTERFACE_IP)));
+            ImmutableList.of(
+                isisRouteTo(r1LoopbackPrefix, R1_LOOPBACK_IP, 0),
+                isisRouteTo(r2LoopbackPrefix, R2_INTERFACE_IP, 10),
+                isisRouteTo(isisInterfacePrefix, R1_INTERFACE_IP, 10))));
     assertThat(
         r2L2RibRoutes,
         containsInAnyOrder(
-            isisRouteTo(r1LoopbackPrefix, R1_INTERFACE_IP),
-            isisRouteTo(r2LoopbackPrefix, R2_LOOPBACK_IP),
-            isisRouteTo(isisInterfacePrefix, R2_INTERFACE_IP),
-            // This route comes from r1's route on the passive L1 interface level. That route starts
-            // with cost 0, then gets upgraded and sent to r2 with cost 10, same as previous route.
-            isisRouteTo(isisInterfacePrefix, R1_INTERFACE_IP)));
+            ImmutableList.of(
+                isisRouteTo(r1LoopbackPrefix, R1_INTERFACE_IP, 10),
+                isisRouteTo(r2LoopbackPrefix, R2_LOOPBACK_IP, 0),
+                isisRouteTo(isisInterfacePrefix, R2_INTERFACE_IP, 10),
+                // This route comes from r1's passive L1 interface level. It starts with cost 0,
+                // then gets upgraded to L2 and sent to r2 with cost 10 (same as previous route).
+                isisRouteTo(isisInterfacePrefix, R1_INTERFACE_IP, 10))));
 
     // Both nodes have an L2 route to the other's loopback
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
@@ -223,29 +228,33 @@ public class IsisTest {
     assertThat(
         r1L1RibRoutes,
         containsInAnyOrder(
-            isisRouteTo(r1LoopbackPrefix, R1_LOOPBACK_IP),
-            isisRouteTo(r2LoopbackPrefix, R2_INTERFACE_IP),
-            isisRouteTo(isisInterfacePrefix, R1_INTERFACE_IP),
-            isisRouteTo(Prefix.ZERO, R1_INTERFACE_IP)));
+            ImmutableList.of(
+                isisRouteTo(r1LoopbackPrefix, R1_LOOPBACK_IP, 0),
+                isisRouteTo(r2LoopbackPrefix, R2_INTERFACE_IP, 10),
+                isisRouteTo(isisInterfacePrefix, R1_INTERFACE_IP, 10),
+                isisRouteTo(Prefix.ZERO, R1_INTERFACE_IP, 0))));
     assertThat(
         r2L1RibRoutes,
         containsInAnyOrder(
-            isisRouteTo(r1LoopbackPrefix, R1_INTERFACE_IP),
-            isisRouteTo(r2LoopbackPrefix, R2_LOOPBACK_IP),
-            isisRouteTo(isisInterfacePrefix, R2_INTERFACE_IP),
-            isisRouteTo(Prefix.ZERO, R2_INTERFACE_IP)));
+            ImmutableList.of(
+                isisRouteTo(r1LoopbackPrefix, R1_INTERFACE_IP, 10),
+                isisRouteTo(r2LoopbackPrefix, R2_LOOPBACK_IP, 0),
+                isisRouteTo(isisInterfacePrefix, R2_INTERFACE_IP, 10),
+                isisRouteTo(Prefix.ZERO, R2_INTERFACE_IP, 0))));
 
     // L2 RIBs lack the other's loopback
     assertThat(
         r1L2RibRoutes,
         containsInAnyOrder(
-            isisRouteTo(r1LoopbackPrefix, R1_LOOPBACK_IP),
-            isisRouteTo(isisInterfacePrefix, R1_INTERFACE_IP)));
+            ImmutableList.of(
+                isisRouteTo(r1LoopbackPrefix, R1_LOOPBACK_IP, 0),
+                isisRouteTo(isisInterfacePrefix, R1_INTERFACE_IP, 0)))); // 0 because passive
     assertThat(
         r2L2RibRoutes,
         containsInAnyOrder(
-            isisRouteTo(r2LoopbackPrefix, R2_LOOPBACK_IP),
-            isisRouteTo(isisInterfacePrefix, R2_INTERFACE_IP)));
+            ImmutableList.of(
+                isisRouteTo(r2LoopbackPrefix, R2_LOOPBACK_IP, 0),
+                isisRouteTo(isisInterfacePrefix, R2_INTERFACE_IP, 10))));
 
     // Both nodes have an L1 route to the other's loopback
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =

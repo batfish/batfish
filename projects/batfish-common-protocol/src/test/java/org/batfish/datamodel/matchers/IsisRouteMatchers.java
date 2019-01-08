@@ -1,5 +1,6 @@
 package org.batfish.datamodel.matchers;
 
+import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.hamcrest.Matchers.allOf;
@@ -21,9 +22,11 @@ public final class IsisRouteMatchers {
   }
 
   /** Matches with a route with the given prefix and next hop IP */
-  public static Matcher<AbstractRoute> isisRouteTo(Prefix prefix, Ip nextHopIp) {
+  public static Matcher<AbstractRoute> isisRouteTo(Prefix prefix, Ip nextHopIp, long metric) {
     return allOf(
-        isIsisRouteThat(hasPrefix(prefix)), isIsisRouteThat(hasNextHopIp(equalTo(nextHopIp))));
+        isIsisRouteThat(hasPrefix(prefix)),
+        isIsisRouteThat(hasNextHopIp(equalTo(nextHopIp))),
+        isIsisRouteThat(hasMetric(metric)));
   }
 
   public static @Nonnull Matcher<AbstractRoute> isIsisRouteThat(
