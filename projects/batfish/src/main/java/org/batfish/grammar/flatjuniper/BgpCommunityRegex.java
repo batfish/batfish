@@ -1,7 +1,5 @@
 package org.batfish.grammar.flatjuniper;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.util.CommonUtil;
 import org.parboiled.BaseParser;
@@ -12,14 +10,19 @@ import org.parboiled.annotations.SkipNode;
 import org.parboiled.annotations.SuppressNode;
 import org.parboiled.annotations.SuppressSubnodes;
 import org.parboiled.common.StringBuilderSink;
+import org.parboiled.parserunners.BasicParseRunner;
 import org.parboiled.parserunners.TracingParseRunner;
 import org.parboiled.support.ParsingResult;
 
 /** A class that converts a Juniper community regex to a Java regex. */
 @BuildParseTree
-@SuppressWarnings({"checkstyle:methodname", "WeakerAccess"})
+@SuppressWarnings({
+  "checkstyle:methodname", // this class uses idiomatic names
+  "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
+})
 public class BgpCommunityRegex extends BaseParser<String> {
 
+  // Helper to convert Juniper constants to BGP community constants.
   static String wellKnownToRegex(String s) {
     long wellKnownValue;
     switch (s) {
@@ -185,12 +188,20 @@ public class BgpCommunityRegex extends BaseParser<String> {
         push(String.format("[%s%s]", pop(1), pop())));
   }
 
-  static void testParsingRegex(String regex, String output) {
-    String result = convertToJavaRegex(regex);
-    checkArgument(output.equals(result), "Expected %s, got %s", output, result);
+  /** Converts the given Juniper regular expression to a Java regular expression. */
+  static String convertToJavaRegex(String regex) {
+    BgpCommunityRegex parser = Parboiled.createParser(BgpCommunityRegex.class);
+    BasicParseRunner<String> runner = new BasicParseRunner<>(parser.TopLevel());
+    ParsingResult<String> result = runner.run(regex);
+    if (!result.matched) {
+      throw new IllegalArgumentException("Unhandled input: " + regex);
+    }
+    return result.resultValue;
   }
 
-  static String convertToJavaRegex(String regex) {
+  /** Like {@link #convertToJavaRegex(String)}, but for debugging. */
+  @SuppressWarnings("unused") // leaving here for future debugging.
+  private static String debugConvertToJavaRegex(String regex) {
     BgpCommunityRegex parser = Parboiled.createParser(BgpCommunityRegex.class);
     TracingParseRunner<String> runner =
         new TracingParseRunner<String>(parser.TopLevel()).withLog(new StringBuilderSink());
@@ -199,35 +210,5 @@ public class BgpCommunityRegex extends BaseParser<String> {
       throw new IllegalArgumentException("Unhandled input: " + regex + runner.getLog());
     }
     return result.resultValue;
-  }
-
-  static void testMatches(String regex, String... inputs) {
-    String javaRegex = convertToJavaRegex(regex);
-    for (String input : inputs) {
-      checkArgument(
-          input.matches(javaRegex),
-          "%s doesn't match /%s/ (converted from /%s/)",
-          input,
-          javaRegex,
-          regex);
-    }
-  }
-
-  public static void main(String[] args) {
-    // test that they parse.
-    testParsingRegex("no-advertise", "^65535:65282$");
-    testParsingRegex("no-export", "^65535:65281$");
-    testParsingRegex("no-export-subconfed", "^65535:65283$");
-    testParsingRegex("123+:123+", "123+:123+");
-    testParsingRegex("^(56):123$", "^(56):123$");
-    testParsingRegex("^((56) | (78)):(.*)$", "^((56)|(78)):(.*)$");
-    testParsingRegex("^(.*):(.*[579])$", "^(.*):(.*[579])$");
-    testParsingRegex("^((56) | (78)):(2.*[2-8])$", "^((56)|(78)):(2.*[2-8])$");
-
-    // test that the conversion matches
-    testMatches("^((56) | (78)):(.*)$", "56:1000", "78:64500");
-    testMatches("^56:(2.*)$", "56:2", "56:222", "56:234");
-    testMatches("^(.*):(.*[579])$", "1234:5", "78:2357", "34:64509");
-    testMatches("^((56) | (78)):(2.*[2-8])$", "56:22", "56:21197", "78:2678");
   }
 }
