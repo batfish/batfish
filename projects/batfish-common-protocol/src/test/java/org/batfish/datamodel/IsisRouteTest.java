@@ -9,7 +9,7 @@ import org.junit.Test;
 /** Tests of {@link IsisRoute} */
 public class IsisRouteTest {
   @Test
-  public void testEqualsByValue() {
+  public void testEqualsAndToBuilder() {
     IsisRoute.Builder b =
         new IsisRoute.Builder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))
@@ -20,9 +20,8 @@ public class IsisRouteTest {
             .setSystemId("id");
 
     IsisRoute original = b.build();
-    // use StringBuilder to get fresh instance
-    IsisRoute updated = b.setArea(new StringBuilder("0").toString()).build();
+    IsisRoute copy = original.toBuilder().build();
 
-    assertThat(updated, equalTo(original));
+    assertThat(copy, equalTo(original));
   }
 }
