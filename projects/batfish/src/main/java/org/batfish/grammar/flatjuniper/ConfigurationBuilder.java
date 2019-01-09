@@ -1,6 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.common.util.CommonUtil.parseIp;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
@@ -4187,10 +4188,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (ctx.IP_ADDRESS().isEmpty()) {
         // from IP_PREFIX to IP_PREFIX
         // Juniper will treat IP_PREFIX as IP ADDRESS
-        Prefix fromPrefix = Prefix.parse(ctx.from.getText());
-        Prefix toPrefix = Prefix.parse(ctx.to.getText());
-        _currentNatPool.setFromAddress(fromPrefix.getOriginalIp());
-        _currentNatPool.setToAddress(toPrefix.getOriginalIp());
+        _currentNatPool.setFromAddress(parseIp(ctx.from.getText()));
+        _currentNatPool.setToAddress(parseIp(ctx.to.getText()));
       } else {
         // from IP_ADDRESS to IP_ADDRESS
         _currentNatPool.setFromAddress(Ip.parse(ctx.from.getText()));

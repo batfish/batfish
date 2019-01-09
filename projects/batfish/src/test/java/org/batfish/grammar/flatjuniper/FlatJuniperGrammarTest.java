@@ -3112,7 +3112,6 @@ public final class FlatJuniperGrammarTest {
     assertThat(pools.keySet(), equalTo(ImmutableSet.of("POOL1", "POOL2")));
 
     NatPool pool1 = pools.get("POOL1");
-    Prefix pool1Prefix = Prefix.parse("10.10.10.10/24");
     assertThat(pool1.getFromAddress(), equalTo(Ip.parse("10.10.10.1")));
     assertThat(pool1.getToAddress(), equalTo(Ip.parse("10.10.10.254")));
 

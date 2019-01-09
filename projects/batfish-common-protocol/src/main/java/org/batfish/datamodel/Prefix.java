@@ -76,17 +76,13 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
   private final Ip _normalizedIp;
 
-  private final Ip _originalIp;
-
   private final int _prefixLength;
 
   private Prefix(Ip ip, int prefixLength) {
     if (ip.valid()) {
-      _originalIp = ip;
       // TODO: stop using Ip as a holder for invalid values.
       _normalizedIp = ip.getNetworkAddress(prefixLength);
     } else {
-      _originalIp = ip;
       _normalizedIp = ip;
     }
     _prefixLength = prefixLength;
@@ -158,14 +154,9 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     return _normalizedIp;
   }
 
-  @Nonnull
-  public Ip getOriginalIp() {
-    return _originalIp;
-  }
-
   @Override
   public int hashCode() {
-    return Objects.hash(_originalIp, _normalizedIp, _prefixLength);
+    return Objects.hash(_normalizedIp, _prefixLength);
   }
 
   public PrefixIpSpace toIpSpace() {
