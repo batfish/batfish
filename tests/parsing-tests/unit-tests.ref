@@ -6442,7 +6442,7 @@
             "        comm_or_username = (variable_snmp_host",
             "          VARIABLE:'foofoo')",
             "        (variable_snmp_host",
-            "          VARIABLE:'udp-port')",
+            "          UDP_PORT:'udp-port')",
             "        (variable_snmp_host",
             "          DEC:'123')",
             "        NEWLINE:'\\n')))",
@@ -23865,38 +23865,6 @@
             "          VTP:'vtp'",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
-            "        (if_null_block",
-            "          VXLAN:'vxlan'",
-            "          SOURCE_INTERFACE:'source-interface'",
-            "          M_Interface_PREFIX:'Loopback'  <== mode:M_Interface",
-            "          DEC:'1'  <== mode:M_Interface",
-            "          NEWLINE:'\\n'  <== mode:M_Interface))",
-            "      (if_inner",
-            "        (if_null_block",
-            "          VXLAN:'vxlan'",
-            "          VARIABLE:'udp-port'",
-            "          DEC:'1234'",
-            "          NEWLINE:'\\n'))",
-            "      (if_inner",
-            "        (if_null_block",
-            "          VXLAN:'vxlan'",
-            "          VLAN:'vlan'",
-            "          DEC:'123'",
-            "          VARIABLE:'vni'",
-            "          DEC:'456'",
-            "          NEWLINE:'\\n'))",
-            "      (if_inner",
-            "        (if_null_block",
-            "          VXLAN:'vxlan'",
-            "          VLAN:'vlan'",
-            "          DEC:'123'",
-            "          VARIABLE:'flood'",
-            "          VARIABLE:'vtep'",
-            "          IP_ADDRESS:'1.0.0.1'",
-            "          IP_ADDRESS:'2.0.0.1'",
-            "          IP_ADDRESS:'3.0.0.1'",
-            "          NEWLINE:'\\n'))",
-            "      (if_inner",
             "        (if_zone_member",
             "          ZONE_MEMBER:'zone-member'",
             "          name = (variable_permissive",
@@ -24069,14 +24037,49 @@
             "            low = DEC:'111'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface))",
             "  (stanza",
-            "    (s_interface",
+            "    (s_eos_vxlan_interface",
             "      INTERFACE:'interface'",
-            "      iname = (interface_name",
-            "        name_prefix_alpha = M_Interface_PREFIX:'Vxlan'  <== mode:M_Interface",
-            "        (range",
-            "          (subrange",
-            "            low = DEC:'1'  <== mode:M_Interface)))",
-            "      NEWLINE:'\\n'  <== mode:M_Interface))",
+            "      iname = (eos_vxlan_interface_name",
+            "        VXLAN:'Vxlan'  <== mode:M_Interface",
+            "        DEC:'1'  <== mode:M_Interface)",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (eos_vxlan_if_inner",
+            "        VXLAN:'vxlan'",
+            "        (eos_vxif_vxlan_source_interface",
+            "          SOURCE_INTERFACE:'source-interface'",
+            "          iface = (interface_name",
+            "            name_prefix_alpha = M_Interface_PREFIX:'Loopback'  <== mode:M_Interface",
+            "            (range",
+            "              (subrange",
+            "                low = DEC:'1'  <== mode:M_Interface)))",
+            "          NEWLINE:'\\n'  <== mode:M_Interface))",
+            "      (eos_vxlan_if_inner",
+            "        VXLAN:'vxlan'",
+            "        (eos_vxif_vxlan_udp_port",
+            "          UDP_PORT:'udp-port'",
+            "          num = DEC:'1234'",
+            "          NEWLINE:'\\n'))",
+            "      (eos_vxlan_if_inner",
+            "        VXLAN:'vxlan'",
+            "        (eos_vxif_vxlan_vlan",
+            "          VLAN:'vlan'",
+            "          num = DEC:'123'",
+            "          (eos_vxif_vxlan_vlan_vni",
+            "            VNI:'vni'",
+            "            num = DEC:'456'",
+            "            NEWLINE:'\\n')))",
+            "      (eos_vxlan_if_inner",
+            "        VXLAN:'vxlan'",
+            "        (eos_vxif_vxlan_vlan",
+            "          VLAN:'vlan'",
+            "          num = DEC:'123'",
+            "          (eos_vxif_vxlan_flood",
+            "            FLOOD:'flood'",
+            "            VTEP:'vtep'",
+            "            IP_ADDRESS:'1.0.0.1'",
+            "            IP_ADDRESS:'2.0.0.1'",
+            "            IP_ADDRESS:'3.0.0.1'",
+            "            NEWLINE:'\\n')))))",
             "  (stanza",
             "    (s_interface",
             "      INTERFACE:'interface'",
@@ -29763,7 +29766,7 @@
             "      (null_block",
             "        XDR:'xdr'",
             "        (null_rest_of_line",
-            "          VARIABLE:'multicast-group'",
+            "          MULTICAST_GROUP:'multicast-group'",
             "          INTERNAL:'internal'",
             "          VARIABLE:'issu-slots-split'",
             "          NEWLINE:'\\n'))))",
@@ -29772,7 +29775,7 @@
             "      (null_block",
             "        XDR:'xdr'",
             "        (null_rest_of_line",
-            "          VARIABLE:'multicast-group'",
+            "          MULTICAST_GROUP:'multicast-group'",
             "          MODE:'mode'",
             "          VARIABLE:'individual'",
             "          NEWLINE:'\\n'))))",
@@ -54147,7 +54150,7 @@
             "              (lbgbdml_null",
             "                ACTION:'action'",
             "                (null_rest_of_line",
-            "                  VARIABLE:'flood'",
+            "                  FLOOD:'flood'",
             "                  NEWLINE:'\\n'))))",
             "          (lbgbd_null",
             "            MTU:'mtu'",
@@ -62470,7 +62473,7 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 294,
+              "Line" : 290,
               "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
               "Text" : "zone-member t1"
             }
@@ -64405,25 +64408,25 @@
           "interface" : {
             "Async1" : {
               "definitionLines" : [
-                297
+                293
               ],
               "numReferrers" : 1
             },
             "Cable1/2/3:4" : {
               "definitionLines" : [
-                299
+                295
               ],
               "numReferrers" : 1
             },
             "Crypto-Engine1/2/3" : {
               "definitionLines" : [
-                301
+                297
               ],
               "numReferrers" : 1
             },
             "Dot11Radio0" : {
               "definitionLines" : [
-                303
+                299
               ],
               "numReferrers" : 1
             },
@@ -64713,17 +64716,13 @@
                 288,
                 289,
                 290,
-                291,
-                292,
-                293,
-                294,
-                295
+                291
               ],
               "numReferrers" : 1
             },
             "Ethernet1/11" : {
               "definitionLines" : [
-                305
+                301
               ],
               "numReferrers" : 1
             },
@@ -64736,32 +64735,32 @@
             },
             "GigabitEthernet0/0" : {
               "definitionLines" : [
-                307,
-                308,
-                309,
-                310,
-                311
+                303,
+                304,
+                305,
+                306,
+                307
               ],
               "numReferrers" : 1
             },
             "Loopback0" : {
               "definitionLines" : [
-                313,
-                314,
-                315,
-                316
+                309,
+                310,
+                311,
+                312
               ],
               "numReferrers" : 1
             },
             "Modular-Cable1/2/3:4" : {
               "definitionLines" : [
-                318
+                314
               ],
               "numReferrers" : 1
             },
             "Null0" : {
               "definitionLines" : [
-                320
+                316
               ],
               "numReferrers" : 1
             },
@@ -64785,7 +64784,7 @@
             },
             "Vlan111" : {
               "definitionLines" : [
-                324
+                320
               ],
               "numReferrers" : 1
             },
@@ -64813,12 +64812,6 @@
               ],
               "numReferrers" : 1
             },
-            "Vxlan1" : {
-              "definitionLines" : [
-                326
-              ],
-              "numReferrers" : 1
-            },
             "Wideband-Cable1/2/3:4" : {
               "definitionLines" : [
                 343
@@ -64827,13 +64820,25 @@
             },
             "inside" : {
               "definitionLines" : [
-                308
+                304
               ],
               "numReferrers" : 1
             },
             "tunnel-ip6" : {
               "definitionLines" : [
-                322
+                318
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "vxlan" : {
+            "Vxlan1" : {
+              "definitionLines" : [
+                322,
+                323,
+                324,
+                325,
+                326
               ],
               "numReferrers" : 1
             }
@@ -68842,12 +68847,12 @@
           "interface" : {
             "Async1" : {
               "interface" : [
-                297
+                293
               ]
             },
             "Cable1/2/3:4" : {
               "interface" : [
-                299
+                295
               ]
             },
             "Cellular0" : {
@@ -68857,12 +68862,12 @@
             },
             "Crypto-Engine1/2/3" : {
               "interface" : [
-                301
+                297
               ]
             },
             "Dot11Radio0" : {
               "interface" : [
-                303
+                299
               ]
             },
             "Ethernet0" : {
@@ -68875,7 +68880,7 @@
             },
             "Ethernet1/11" : {
               "interface" : [
-                305
+                301
               ]
             },
             "Ethernet1/12" : {
@@ -68885,22 +68890,27 @@
             },
             "GigabitEthernet0/0" : {
               "interface" : [
-                307
+                303
               ]
             },
             "Loopback0" : {
               "interface" : [
-                313
+                309
+              ]
+            },
+            "Loopback1" : {
+              "vxlan source-interface" : [
+                323
               ]
             },
             "Modular-Cable1/2/3:4" : {
               "interface" : [
-                318
+                314
               ]
             },
             "Null0" : {
               "interface" : [
-                320
+                316
               ]
             },
             "Vlan1" : {
@@ -68920,7 +68930,7 @@
             },
             "Vlan111" : {
               "interface" : [
-                324
+                320
               ]
             },
             "Vlan1234" : {
@@ -68943,11 +68953,6 @@
                 341
               ]
             },
-            "Vxlan1" : {
-              "interface" : [
-                326
-              ]
-            },
             "Wideband-Cable1/2/3:4" : {
               "interface" : [
                 343
@@ -68960,12 +68965,12 @@
             },
             "inside" : {
               "interface" : [
-                308
+                304
               ]
             },
             "tunnel-ip6" : {
               "interface" : [
-                322
+                318
               ]
             }
           },
@@ -69037,17 +69042,24 @@
               ]
             }
           },
+          "vxlan" : {
+            "Vxlan1" : {
+              "vxlan" : [
+                322
+              ]
+            }
+          },
           "zone" : {
             "t1" : {
               "interface zone-member" : [
-                294
+                290
               ]
             }
           },
           "zone security" : {
             "z1" : {
               "interface zone-member security" : [
-                295
+                291
               ]
             }
           }
@@ -71580,6 +71592,13 @@
           }
         },
         "configs/cisco_interface" : {
+          "interface" : {
+            "Loopback1" : {
+              "vxlan source-interface" : [
+                323
+              ]
+            }
+          },
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
@@ -71646,7 +71665,7 @@
           "zone security" : {
             "z1" : {
               "interface zone-member security" : [
-                295
+                291
               ]
             }
           }

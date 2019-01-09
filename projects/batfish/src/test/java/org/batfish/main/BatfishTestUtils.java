@@ -164,6 +164,17 @@ public class BatfishTestUtils {
     ibdpPlugin.initialize(batfish);
   }
 
+  /** Configure common Batfish settings for tests (e.g. disable recovery, debug level logging) */
+  public static void configureBatfishTestSettings(Settings settings) {
+    settings.setLogger(new BatfishLogger("debug", false));
+    settings.setDisableUnrecognized(true);
+    settings.setHaltOnConvertError(true);
+    settings.setHaltOnParseError(true);
+    settings.setThrowOnLexerError(true);
+    settings.setThrowOnParserError(true);
+    settings.setVerboseParse(true);
+  }
+
   /**
    * Get a new Batfish instance with given configurations, tempFolder should be present for
    * non-empty configurations
@@ -184,13 +195,7 @@ public class BatfishTestUtils {
     Map<String, String> routingTablesText = testrigText.getRoutingTablesText();
 
     Settings settings = new Settings(new String[] {});
-    settings.setLogger(new BatfishLogger("debug", false));
-    settings.setDisableUnrecognized(true);
-    settings.setHaltOnConvertError(true);
-    settings.setHaltOnParseError(true);
-    settings.setThrowOnLexerError(true);
-    settings.setThrowOnParserError(true);
-    settings.setVerboseParse(true);
+    configureBatfishTestSettings(settings);
     settings.setStorageBase(tempFolder.newFolder().toPath());
     settings.setContainer("tempNetworkId");
     settings.setTestrig("tempSnapshotId");
