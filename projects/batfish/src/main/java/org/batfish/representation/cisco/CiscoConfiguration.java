@@ -3446,7 +3446,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       String sourceIfaceName = _eosVxlan.getSourceInterface();
       Interface sourceIface = sourceIfaceName == null ? null : _interfaces.get(sourceIfaceName);
       org.batfish.datamodel.Vrf vrf =
-          sourceIface == null ? c.getDefaultVrf() : c.getVrfs().get(sourceIface.getVrf());
+          sourceIface != null && sourceIface.getVrf() != null
+              ? c.getVrfs().get(sourceIface.getVrf())
+              : c.getDefaultVrf();
 
       for (Entry<Integer, Integer> entry : _eosVxlan.getVlanVnis().entrySet()) {
         Integer vni = entry.getValue();
@@ -3786,7 +3788,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             ? null
             : sourceInterface.getAddress() == null ? null : sourceInterface.getAddress().getIp();
 
-    // Prefer VLAN specific or general flood address (in that order) over multicast address
+    // Prefer VLAN-specific or general flood address (in that order) over multicast address
     SortedSet<Ip> bumTransportIps =
         firstNonNull(
             vxlan.getVlanFloodAddresses().getOrDefault(vlan, null), vxlan.getFloodAddresses());

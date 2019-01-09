@@ -34,8 +34,8 @@ public class VniSettingsMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the {@link VniSettings}'s source address matches the {@code
-   * subMatcher}.
+   * Provides a matcher that matches if the {@link VniSettings}'s source IP address matches the
+   * {@code subMatcher}.
    */
   public static @Nonnull Matcher<VniSettings> hasSourceAddress(
       @Nonnull Matcher<? super Ip> subMatcher) {
@@ -52,7 +52,7 @@ public class VniSettingsMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the {@link VniSettings}'s vlan matches the {@code
+   * Provides a matcher that matches if the {@link VniSettings}'s VLAN number matches the {@code
    * subMatcher}.
    */
   public static @Nonnull Matcher<VniSettings> hasVlan(

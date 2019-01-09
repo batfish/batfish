@@ -35,7 +35,7 @@ public class VniSettingsMatchersImpl {
 
   static final class HasSourceAddress extends FeatureMatcher<VniSettings, Ip> {
     HasSourceAddress(@Nonnull Matcher<? super Ip> subMatcher) {
-      super(subMatcher, "VniSettings with source address:", "sourceAddress");
+      super(subMatcher, "VniSettings with source IP address:", "sourceAddress");
     }
 
     @Override
@@ -57,7 +57,7 @@ public class VniSettingsMatchersImpl {
 
   static final class HasVlan extends FeatureMatcher<VniSettings, Integer> {
     HasVlan(@Nonnull Matcher<? super Integer> subMatcher) {
-      super(subMatcher, "VniSettings with vlan:", "vlan");
+      super(subMatcher, "VniSettings with VLAN number:", "vlan");
     }
 
     @Override
