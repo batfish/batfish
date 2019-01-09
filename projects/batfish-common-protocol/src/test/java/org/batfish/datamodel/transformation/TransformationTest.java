@@ -1,6 +1,7 @@
 package org.batfish.datamodel.transformation;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
+import static org.batfish.datamodel.transformation.Noop.NOOP_SOURCE_NAT;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
@@ -13,18 +14,13 @@ import org.junit.Test;
 public class TransformationTest {
   @Test
   public void testEquals() {
+    Transformation trivial = always().apply(NOOP_SOURCE_NAT).build();
     new EqualsTester()
-        .addEqualityGroup(always().build(), always().build())
-        .addEqualityGroup(when(FALSE).build(), when(FALSE).build())
-        .addEqualityGroup(
-            always().apply(shiftDestinationIp(Prefix.ZERO)).build(),
-            always().apply(shiftDestinationIp(Prefix.ZERO)).build())
-        .addEqualityGroup(
-            always().setAndThen(always().build()).build(),
-            always().setAndThen(always().build()).build())
-        .addEqualityGroup(
-            always().setOrElse(always().build()).build(),
-            always().setOrElse(always().build()).build())
+        .addEqualityGroup(trivial, always().apply(NOOP_SOURCE_NAT).build())
+        .addEqualityGroup(when(FALSE).apply(NOOP_SOURCE_NAT).build())
+        .addEqualityGroup(always().apply(shiftDestinationIp(Prefix.ZERO)).build())
+        .addEqualityGroup(always().apply(NOOP_SOURCE_NAT).setAndThen(trivial).build())
+        .addEqualityGroup(always().apply(NOOP_SOURCE_NAT).setOrElse(trivial).build())
         .testEquals();
   }
 }

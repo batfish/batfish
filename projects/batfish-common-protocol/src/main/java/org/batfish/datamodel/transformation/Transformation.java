@@ -1,5 +1,6 @@
 package org.batfish.datamodel.transformation;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 
 import com.google.common.collect.ImmutableList;
@@ -13,6 +14,9 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 /** A representation of a composite packet transformation. */
 @ParametersAreNonnullByDefault
 public final class Transformation {
+  private static final String ERROR_NO_STEPS =
+      "Cannot create Transformation with zero transformationSteps. Consider using Noop.";
+
   public static final class Builder {
     private @Nonnull AclLineMatchExpr _guard;
     private @Nonnull List<TransformationStep> _transformationSteps;
@@ -25,6 +29,7 @@ public final class Transformation {
     }
 
     public Builder apply(TransformationStep... transformationSteps) {
+      checkArgument(transformationSteps.length > 0, ERROR_NO_STEPS);
       _transformationSteps = ImmutableList.copyOf(transformationSteps);
       return this;
     }
@@ -72,6 +77,7 @@ public final class Transformation {
       @Nonnull List<TransformationStep> transformationSteps,
       @Nullable Transformation andThen,
       @Nullable Transformation orElse) {
+    checkArgument(!transformationSteps.isEmpty(), ERROR_NO_STEPS);
     _guard = guard;
     _transformationSteps = ImmutableList.copyOf(transformationSteps);
     _andThen = andThen;

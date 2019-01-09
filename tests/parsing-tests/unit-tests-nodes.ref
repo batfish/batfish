@@ -1089,7 +1089,7 @@
           },
           "vrfName" : {
             "name" : "vrfName",
-            "description" : " descriptive sentence"
+            "description" : "descriptive sentence"
           }
         }
       },
@@ -1820,7 +1820,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Ethernet0/0~",
+            "outgoingFilter" : "~COMBINED_OUTGOING_ACL~blah~",
             "prefix" : "192.168.1.0/24",
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -1833,8 +1833,30 @@
           }
         },
         "ipAccessLists" : {
-          "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Ethernet0/0~" : {
-            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Ethernet0/0~",
+          "~COMBINED_OUTGOING_ACL~blah~" : {
+            "name" : "~COMBINED_OUTGOING_ACL~blah~",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                  "description" : "Permit if permitted by policy for zone 'SECURITY_LEVEL_0'",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.FalseExpr"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                      "aclName" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0~",
+                      "defaultAccept" : false
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0~" : {
+            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0~",
             "lines" : [
               {
                 "action" : "PERMIT",
@@ -1842,16 +1864,6 @@
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 },
                 "name" : "Allow traffic originating from this device"
-              },
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
-                  "srcInterfaces" : [
-                    "Ethernet0/0"
-                  ]
-                },
-                "name" : "Allow traffic received on interface in same zone: 'SECURITY_LEVEL_0_Ethernet0/0'"
               },
               {
                 "action" : "PERMIT",
@@ -1913,10 +1925,10 @@
           }
         },
         "zones" : {
-          "SECURITY_LEVEL_0_Ethernet0/0" : {
-            "name" : "SECURITY_LEVEL_0_Ethernet0/0",
+          "SECURITY_LEVEL_0" : {
+            "name" : "SECURITY_LEVEL_0",
             "interfaces" : [
-              "Ethernet0/0"
+              "blah"
             ]
           }
         }
@@ -7287,7 +7299,6 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Loopback0~",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -7565,32 +7576,6 @@
             "vlan" : 4094,
             "vrf" : "default"
           },
-          "Vxlan1" : {
-            "name" : "Vxlan1",
-            "accessVlan" : 0,
-            "active" : true,
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "declaredNames" : [
-              "Vxlan1"
-            ],
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "TUNNEL",
-            "vrf" : "default"
-          },
           "Wideband-Cable1/2/3:4" : {
             "name" : "Wideband-Cable1/2/3:4",
             "accessVlan" : 0,
@@ -7638,7 +7623,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100_GigabitEthernet0/0~",
+            "outgoingFilter" : "~COMBINED_OUTGOING_ACL~inside~",
             "prefix" : "192.168.0.1/24",
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -7705,53 +7690,30 @@
             "sourceName" : "abc",
             "sourceType" : "extended ipv4 access-list"
           },
-          "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Loopback0~" : {
-            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Loopback0~",
+          "~COMBINED_OUTGOING_ACL~inside~" : {
+            "name" : "~COMBINED_OUTGOING_ACL~inside~",
             "lines" : [
               {
                 "action" : "PERMIT",
                 "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
-                },
-                "name" : "Allow traffic originating from this device"
-              },
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
-                  "srcInterfaces" : [
-                    "Loopback0"
+                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                  "description" : "Permit if permitted by policy for zone 'SECURITY_LEVEL_100'",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.FalseExpr"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                      "aclName" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~",
+                      "defaultAccept" : false
+                    }
                   ]
-                },
-                "name" : "Allow traffic received on interface in same zone: 'SECURITY_LEVEL_0_Loopback0'"
-              },
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
-                  "srcInterfaces" : [
-                    "GigabitEthernet0/0"
-                  ]
-                },
-                "name" : "Traffic from security level 100"
-              },
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "states" : [
-                      "ESTABLISHED"
-                    ]
-                  }
-                },
-                "name" : "~EXISTING_CONNECTION~"
+                }
               }
             ]
           },
-          "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100_GigabitEthernet0/0~" : {
-            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100_GigabitEthernet0/0~",
+          "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~" : {
+            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~",
             "lines" : [
               {
                 "action" : "PERMIT",
@@ -7759,16 +7721,6 @@
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 },
                 "name" : "Allow traffic originating from this device"
-              },
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
-                  "srcInterfaces" : [
-                    "GigabitEthernet0/0"
-                  ]
-                },
-                "name" : "Allow traffic received on interface in same zone: 'SECURITY_LEVEL_100_GigabitEthernet0/0'"
               },
               {
                 "action" : "PERMIT",
@@ -7821,7 +7773,6 @@
               "Vlan2",
               "Vlan3",
               "Vlan4094",
-              "Vxlan1",
               "Wideband-Cable1/2/3:4",
               "inside",
               "tunnel-ip6"
@@ -7829,16 +7780,10 @@
           }
         },
         "zones" : {
-          "SECURITY_LEVEL_0_Loopback0" : {
-            "name" : "SECURITY_LEVEL_0_Loopback0",
+          "SECURITY_LEVEL_100" : {
+            "name" : "SECURITY_LEVEL_100",
             "interfaces" : [
-              "Loopback0"
-            ]
-          },
-          "SECURITY_LEVEL_100_GigabitEthernet0/0" : {
-            "name" : "SECURITY_LEVEL_100_GigabitEthernet0/0",
-            "interfaces" : [
-              "GigabitEthernet0/0"
+              "inside"
             ]
           }
         }
@@ -11914,6 +11859,86 @@
           }
         }
       },
+      "eos_mlag" : {
+        "configurationFormat" : "ARISTA",
+        "name" : "eos_mlag",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "Port-Channel1" : {
+            "name" : "Port-Channel1",
+            "accessVlan" : 0,
+            "active" : false,
+            "allowedVlans" : "1-4094",
+            "autostate" : true,
+            "bandwidth" : 0.0,
+            "declaredNames" : [
+              "Port-Channel1"
+            ],
+            "description" : "to MLAG PEER",
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "TRUNK",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "AGGREGATED",
+            "vrf" : "default"
+          },
+          "Port-Channel2" : {
+            "name" : "Port-Channel2",
+            "accessVlan" : 0,
+            "active" : false,
+            "allPrefixes" : [
+              "2.2.2.2/32"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 0.0,
+            "declaredNames" : [
+              "Port-Channel2"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "2.2.2.2/32",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "ACCESS",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "AGGREGATED",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "eos_mlag"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "Port-Channel1",
+              "Port-Channel2"
+            ]
+          }
+        }
+      },
       "foundry_access_list" : {
         "configurationFormat" : "FOUNDRY",
         "name" : "foundry_access_list",
@@ -13453,6 +13478,213 @@
             "interfaces" : [
               "Loopback0"
             ]
+          }
+        }
+      },
+      "interfacemtu" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "interfacemtu",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "ROUTER",
+        "interfaces" : {
+          "xe-0/0/0" : {
+            "name" : "xe-0/0/0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "declaredNames" : [
+              "xe-0/0/0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "xe-0/0/0:0" : {
+            "name" : "xe-0/0/0:0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "declaredNames" : [
+              "xe-0/0/0:0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "xe-0/0/0:0.0" : {
+            "name" : "xe-0/0/0:0.0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allPrefixes" : [
+              "10.1.2.3/31"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "declaredNames" : [
+              "xe-0/0/0:0.0"
+            ],
+            "mtu" : 9000,
+            "nativeVlan" : 1,
+            "ospfArea" : 0,
+            "ospfCost" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : true,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "10.1.2.3/31",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default"
+          }
+        },
+        "routeFilterLists" : {
+          "~OSPF_SUMMARY_FILTER:default:0~" : {
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
+              }
+            ],
+            "name" : "~OSPF_SUMMARY_FILTER:default:0~"
+          }
+        },
+        "routingPolicies" : {
+          "~OSPF_EXPORT_POLICY:default~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "local"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetOspfMetricType",
+                "metricType" : "E2"
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "xe-0/0/0",
+              "xe-0/0/0:0",
+              "xe-0/0/0:0.0"
+            ],
+            "ospfProcess" : {
+              "areas" : {
+                "0" : {
+                  "injectDefaultRoute" : false,
+                  "interfaces" : [
+                    "xe-0/0/0:0.0"
+                  ],
+                  "metricOfDefaultRoute" : 0,
+                  "name" : 0,
+                  "stubType" : "NONE",
+                  "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
+                }
+              },
+              "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "referenceBandwidth" : 1.0E9,
+              "routerId" : "10.1.2.3"
+            }
           }
         }
       },
@@ -17710,6 +17942,60 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "my.domain.name",
+        "interfaces" : {
+          "lo0" : {
+            "name" : "lo0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "declaredNames" : [
+              "lo0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "default"
+          },
+          "lo0.0" : {
+            "name" : "lo0.0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "declaredNames" : [
+              "lo0.0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "default"
+          }
+        },
         "vendorFamily" : {
           "juniper" : {
             "lines" : {
@@ -17744,8 +18030,15 @@
           }
         },
         "vrfs" : {
+          "ROUTING_INSTANCE" : {
+            "name" : "ROUTING_INSTANCE"
+          },
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "interfaces" : [
+              "lo0",
+              "lo0.0"
+            ]
           }
         }
       },
@@ -27775,6 +28068,9 @@
             "name" : "lo0.0",
             "accessVlan" : 0,
             "active" : true,
+            "allPrefixes" : [
+              "192.168.1.2/32"
+            ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -27788,6 +28084,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "prefix" : "192.168.1.2/32",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -28020,7 +28317,9 @@
                       },
                       "prefixSet" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                        "prefixSpace" : [ ]
+                        "prefixSpace" : [
+                          "192.168.1.2/32"
+                        ]
                       }
                     }
                   ]

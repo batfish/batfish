@@ -438,6 +438,9 @@
         "community_set" : [
           "configs/community_set"
         ],
+        "eos_mlag" : [
+          "configs/eos_mlag"
+        ],
         "foundry_access_list" : [
           "configs/foundry_access_list"
         ],
@@ -474,6 +477,9 @@
         ],
         "interface_sdr" : [
           "configs/interface_sdr"
+        ],
+        "interfacemtu" : [
+          "configs/juniper-interfaces"
         ],
         "ios_bfd" : [
           "configs/ios_bfd"
@@ -944,6 +950,7 @@
         "configs/community_name_numbers" : "PASSED",
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
+        "configs/eos_mlag" : "PASSED",
         "configs/foundry_access_list" : "PASSED",
         "configs/foundry_bgp" : "PASSED",
         "configs/foundry_interface" : "PASSED",
@@ -984,6 +991,7 @@
         "configs/ip_prefix_list_single_line" : "PASSED",
         "configs/isr_crypto" : "PASSED",
         "configs/isr_voip" : "PASSED",
+        "configs/juniper-interfaces" : "PASSED",
         "configs/juniper-tcpflags" : "PASSED",
         "configs/juniper_application" : "PASSED",
         "configs/juniper_apply_macro" : "PASSED",
@@ -6434,7 +6442,7 @@
             "        comm_or_username = (variable_snmp_host",
             "          VARIABLE:'foofoo')",
             "        (variable_snmp_host",
-            "          VARIABLE:'udp-port')",
+            "          UDP_PORT:'udp-port')",
             "        (variable_snmp_host",
             "          DEC:'123')",
             "        NEWLINE:'\\n')))",
@@ -12770,6 +12778,12 @@
             "      SECURITY:'security'",
             "      name = (variable_permissive",
             "        VARIABLE:'z2')",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_zone",
+            "      ZONE:'zone'",
+            "      name = (variable_permissive",
+            "        VARIABLE:'t1')",
             "      NEWLINE:'\\n'))",
             "  EOF:<EOF>)"
           ]
@@ -23851,36 +23865,10 @@
             "          VTP:'vtp'",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
-            "        (if_null_block",
-            "          VXLAN:'vxlan'",
-            "          SOURCE_INTERFACE:'source-interface'",
-            "          M_Interface_PREFIX:'Loopback'  <== mode:M_Interface",
-            "          DEC:'1'  <== mode:M_Interface",
-            "          NEWLINE:'\\n'  <== mode:M_Interface))",
-            "      (if_inner",
-            "        (if_null_block",
-            "          VXLAN:'vxlan'",
-            "          VARIABLE:'udp-port'",
-            "          DEC:'1234'",
-            "          NEWLINE:'\\n'))",
-            "      (if_inner",
-            "        (if_null_block",
-            "          VXLAN:'vxlan'",
-            "          VLAN:'vlan'",
-            "          DEC:'123'",
-            "          VARIABLE:'vni'",
-            "          DEC:'456'",
-            "          NEWLINE:'\\n'))",
-            "      (if_inner",
-            "        (if_null_block",
-            "          VXLAN:'vxlan'",
-            "          VLAN:'vlan'",
-            "          DEC:'123'",
-            "          VARIABLE:'flood'",
-            "          VARIABLE:'vtep'",
-            "          IP_ADDRESS:'1.0.0.1'",
-            "          IP_ADDRESS:'2.0.0.1'",
-            "          IP_ADDRESS:'3.0.0.1'",
+            "        (if_zone_member",
+            "          ZONE_MEMBER:'zone-member'",
+            "          name = (variable_permissive",
+            "            VARIABLE:'t1')",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
             "        (if_zone_member",
@@ -24049,14 +24037,49 @@
             "            low = DEC:'111'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface))",
             "  (stanza",
-            "    (s_interface",
+            "    (s_eos_vxlan_interface",
             "      INTERFACE:'interface'",
-            "      iname = (interface_name",
-            "        name_prefix_alpha = M_Interface_PREFIX:'Vxlan'  <== mode:M_Interface",
-            "        (range",
-            "          (subrange",
-            "            low = DEC:'1'  <== mode:M_Interface)))",
-            "      NEWLINE:'\\n'  <== mode:M_Interface))",
+            "      iname = (eos_vxlan_interface_name",
+            "        VXLAN:'Vxlan'  <== mode:M_Interface",
+            "        DEC:'1'  <== mode:M_Interface)",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (eos_vxlan_if_inner",
+            "        VXLAN:'vxlan'",
+            "        (eos_vxif_vxlan_source_interface",
+            "          SOURCE_INTERFACE:'source-interface'",
+            "          iface = (interface_name",
+            "            name_prefix_alpha = M_Interface_PREFIX:'Loopback'  <== mode:M_Interface",
+            "            (range",
+            "              (subrange",
+            "                low = DEC:'1'  <== mode:M_Interface)))",
+            "          NEWLINE:'\\n'  <== mode:M_Interface))",
+            "      (eos_vxlan_if_inner",
+            "        VXLAN:'vxlan'",
+            "        (eos_vxif_vxlan_udp_port",
+            "          UDP_PORT:'udp-port'",
+            "          num = DEC:'1234'",
+            "          NEWLINE:'\\n'))",
+            "      (eos_vxlan_if_inner",
+            "        VXLAN:'vxlan'",
+            "        (eos_vxif_vxlan_vlan",
+            "          VLAN:'vlan'",
+            "          num = DEC:'123'",
+            "          (eos_vxif_vxlan_vlan_vni",
+            "            VNI:'vni'",
+            "            num = DEC:'456'",
+            "            NEWLINE:'\\n')))",
+            "      (eos_vxlan_if_inner",
+            "        VXLAN:'vxlan'",
+            "        (eos_vxif_vxlan_vlan",
+            "          VLAN:'vlan'",
+            "          num = DEC:'123'",
+            "          (eos_vxif_vxlan_flood",
+            "            FLOOD:'flood'",
+            "            VTEP:'vtep'",
+            "            IP_ADDRESS:'1.0.0.1'",
+            "            IP_ADDRESS:'2.0.0.1'",
+            "            IP_ADDRESS:'3.0.0.1'",
+            "            NEWLINE:'\\n')))))",
             "  (stanza",
             "    (s_interface",
             "      INTERFACE:'interface'",
@@ -29743,7 +29766,7 @@
             "      (null_block",
             "        XDR:'xdr'",
             "        (null_rest_of_line",
-            "          VARIABLE:'multicast-group'",
+            "          MULTICAST_GROUP:'multicast-group'",
             "          INTERNAL:'internal'",
             "          VARIABLE:'issu-slots-split'",
             "          NEWLINE:'\\n'))))",
@@ -29752,7 +29775,7 @@
             "      (null_block",
             "        XDR:'xdr'",
             "        (null_rest_of_line",
-            "          VARIABLE:'multicast-group'",
+            "          MULTICAST_GROUP:'multicast-group'",
             "          MODE:'mode'",
             "          VARIABLE:'individual'",
             "          NEWLINE:'\\n'))))",
@@ -39045,6 +39068,156 @@
             "  EOF:<EOF>)"
           ]
         },
+        "eos_mlag" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'eos_mlag'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_vlan",
+            "      VLAN:'vlan'",
+            "      DEC:'4094'",
+            "      (null_rest_of_line",
+            "        NEWLINE:'\\n')",
+            "      (vlan_null",
+            "        NAME:'name'",
+            "        (null_rest_of_line",
+            "          VARIABLE:'MLAG'  <== mode:M_Name",
+            "          NEWLINE:'\\n'))",
+            "      (vlan_null",
+            "        TRUNK:'trunk'",
+            "        (null_rest_of_line",
+            "          GROUP:'group'",
+            "          VARIABLE:'MLAG-Peer'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Port-Channel'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'1'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_description",
+            "          (description_line",
+            "            DESCRIPTION:'description'",
+            "            text = RAW_TEXT:' to MLAG PEER'  <== mode:M_Description",
+            "            NEWLINE:'\\n'  <== mode:M_Description)))",
+            "      (if_inner",
+            "        (if_switchport_mode",
+            "          SWITCHPORT:'switchport'",
+            "          MODE:'mode'",
+            "          TRUNK:'trunk'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Port-Channel'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'2'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_eos_mlag",
+            "          MLAG:'mlag'",
+            "          id = DEC:'2'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          prefix = IP_PREFIX:'2.2.2.2/32'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      MLAG:'mlag'",
+            "      CONFIGURATION:'configuration'",
+            "      NEWLINE:'\\n'",
+            "      (eos_mlag_domain",
+            "        DOMAIN_ID:'domain-id'",
+            "        id = (variable",
+            "          VARIABLE:'MLAG_DOMAIN')",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_local_interface",
+            "        LOCAL_INTERFACE:'local-interface'",
+            "        iface = (variable",
+            "          VARIABLE:'Vlan4094')",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_peer_address",
+            "        PEER_ADDRESS:'peer-address'",
+            "        ip = IP_ADDRESS:'1.1.1.3'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_peer_link",
+            "        PEER_LINK:'peer-link'",
+            "        iface = (variable",
+            "          VARIABLE:'Port-Channel1')",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_reload_delay",
+            "        RELOAD_DELAY:'reload-delay'",
+            "        MLAG:'mlag'",
+            "        period = DEC:'300'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_reload_delay",
+            "        RELOAD_DELAY:'reload-delay'",
+            "        MLAG:'mlag'",
+            "        period = INFINITY:'infinity'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_reload_delay",
+            "        RELOAD_DELAY:'reload-delay'",
+            "        NON_MLAG:'non-mlag'",
+            "        period = DEC:'360'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_reload_delay",
+            "        RELOAD_DELAY:'reload-delay'",
+            "        NON_MLAG:'non-mlag'",
+            "        period = INFINITY:'infinity'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_reload_delay",
+            "        RELOAD_DELAY:'reload-delay'",
+            "        period = DEC:'400'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_reload_delay",
+            "        RELOAD_DELAY:'reload-delay'",
+            "        period = INFINITY:'infinity'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_shutdown",
+            "        SHUTDOWN:'shutdown'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_shutdown",
+            "        NO:'no'",
+            "        SHUTDOWN:'shutdown'",
+            "        NEWLINE:'\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
         "foundry_access_list" : {
           "sentences" : [
             "(cisco_configuration",
@@ -40056,7 +40229,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -40078,7 +40251,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface)",
             "              (i_common",
             "                (i_common_physical",
             "                  (i_gigether_options",
@@ -40098,7 +40271,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'ge-0/0/1'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'ge-0/0/1'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -40120,7 +40293,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'ge-0/0/1'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'ge-0/0/1'  <== mode:M_Interface)",
             "              (i_common",
             "                (i_common_physical",
             "                  (i_gigether_options",
@@ -40140,7 +40313,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'reth0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'reth0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'3'",
@@ -40414,6 +40587,265 @@
             "          ADDRESS:'address'",
             "          IPV6_PREFIX:'2607:F380::118:9A41:500/124'",
             "          NEWLINE:'\\n'))))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "interfacemtu" : {
+          "sentences" : [
+            "(flat_juniper_configuration",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_system",
+            "            SYSTEM:'system'",
+            "            (sy_host_name",
+            "              HOST_NAME:'host-name'",
+            "              (variable",
+            "                text = VARIABLE:'interfaceMtu'))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (s_groups",
+            "        GROUPS:'groups'",
+            "        (s_groups_named",
+            "          name = (variable",
+            "            text = VARIABLE:'MTU_GROUP')",
+            "          (s_groups_tail",
+            "            (statement",
+            "              (s_common",
+            "                (s_interfaces",
+            "                  INTERFACES:'interfaces'",
+            "                  (int_named",
+            "                    (wildcard",
+            "                      WILDCARD:'<[xe][et]-*>'  <== mode:M_InterfaceQuote)",
+            "                    (i_common",
+            "                      (i_common_physical",
+            "                        (i_mtu",
+            "                          MTU:'mtu'",
+            "                          size = DEC:'9300')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (s_groups",
+            "        GROUPS:'groups'",
+            "        (s_groups_named",
+            "          name = (variable",
+            "            text = VARIABLE:'MTU_GROUP')",
+            "          (s_groups_tail",
+            "            (statement",
+            "              (s_common",
+            "                (s_interfaces",
+            "                  INTERFACES:'interfaces'",
+            "                  (int_named",
+            "                    (wildcard",
+            "                      WILDCARD:'<[xe][et]-*>'  <== mode:M_InterfaceQuote)",
+            "                    (i_unit",
+            "                      UNIT:'unit'",
+            "                      (wildcard",
+            "                        WILDCARD:'<*>')",
+            "                      (i_common",
+            "                        (i_family",
+            "                          FAMILY:'family'",
+            "                          (if_inet",
+            "                            INET:'inet'",
+            "                            (ifi_mtu",
+            "                              (i_mtu",
+            "                                MTU:'mtu'",
+            "                                size = DEC:'9000'))))))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                node = (variable",
+            "                  text = VARIABLE:'node1'  <== mode:M_Interface)",
+            "                COLON:':'  <== mode:M_Interface",
+            "                name = INTERFACE_NAME:'xe-0/0/0'  <== mode:M_Interface)",
+            "              (i_common",
+            "                (apply",
+            "                  (apply_groups",
+            "                    APPLY_GROUPS:'apply-groups'",
+            "                    name = (variable",
+            "                      text = VARIABLE:'MTU_GROUP')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                node = (variable",
+            "                  text = VARIABLE:'node1'  <== mode:M_Interface)",
+            "                COLON:':'  <== mode:M_Interface",
+            "                name = INTERFACE_NAME:'xe-0/0/0'  <== mode:M_Interface",
+            "                COLON:':'",
+            "                chnl = DEC:'0')",
+            "              (i_common",
+            "                (apply",
+            "                  (apply_groups",
+            "                    APPLY_GROUPS:'apply-groups'",
+            "                    name = (variable",
+            "                      text = VARIABLE:'MTU_GROUP')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                node = (variable",
+            "                  text = VARIABLE:'node1'  <== mode:M_Interface)",
+            "                COLON:':'  <== mode:M_Interface",
+            "                name = INTERFACE_NAME:'xe-0/0/0'  <== mode:M_Interface",
+            "                COLON:':'",
+            "                chnl = DEC:'0'",
+            "                PERIOD:'.'",
+            "                unit = DEC:'0')",
+            "              (i_common",
+            "                (apply",
+            "                  (apply_groups",
+            "                    APPLY_GROUPS:'apply-groups'",
+            "                    name = (variable",
+            "                      text = VARIABLE:'MTU_GROUP')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = INTERFACE_NAME:'xe-0/0/0'  <== mode:M_Interface)",
+            "              (i_common",
+            "                (apply",
+            "                  (apply_groups",
+            "                    APPLY_GROUPS:'apply-groups'",
+            "                    name = (variable",
+            "                      text = VARIABLE:'MTU_GROUP')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = INTERFACE_NAME:'xe-0/0/0'  <== mode:M_Interface",
+            "                COLON:':'",
+            "                chnl = DEC:'0')",
+            "              (i_common",
+            "                (apply",
+            "                  (apply_groups",
+            "                    APPLY_GROUPS:'apply-groups'",
+            "                    name = (variable",
+            "                      text = VARIABLE:'MTU_GROUP')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = INTERFACE_NAME:'xe-0/0/0'  <== mode:M_Interface",
+            "                COLON:':'",
+            "                chnl = DEC:'0'",
+            "                PERIOD:'.'",
+            "                unit = DEC:'0')",
+            "              (i_common",
+            "                (apply",
+            "                  (apply_groups",
+            "                    APPLY_GROUPS:'apply-groups'",
+            "                    name = (variable",
+            "                      text = VARIABLE:'MTU_GROUP')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = INTERFACE_NAME:'xe-0/0/0'  <== mode:M_Interface",
+            "                PERIOD:'.'",
+            "                unit = DEC:'0')",
+            "              (i_common",
+            "                (apply",
+            "                  (apply_groups",
+            "                    APPLY_GROUPS:'apply-groups'",
+            "                    name = (variable",
+            "                      text = VARIABLE:'MTU_GROUP')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = INTERFACE_NAME:'xe-0/0/0'  <== mode:M_Interface",
+            "                COLON:':'",
+            "                chnl = DEC:'0')",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_inet",
+            "                      INET:'inet'",
+            "                      (ifi_address",
+            "                        ADDRESS:'address'",
+            "                        IP_PREFIX:'10.1.2.3/31'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_ospf",
+            "              OSPF:'ospf'",
+            "              (o_common",
+            "                (o_area",
+            "                  AREA:'area'",
+            "                  area = IP_ADDRESS:'0.0.0.0'",
+            "                  (oa_interface",
+            "                    INTERFACE:'interface'",
+            "                    id = (interface_id",
+            "                      name = INTERFACE_NAME:'xe-0/0/0'  <== mode:M_Interface",
+            "                      COLON:':'",
+            "                      chnl = DEC:'0'",
+            "                      PERIOD:'.'",
+            "                      unit = DEC:'0')",
+            "                    (apply)))))))))",
+            "    NEWLINE:'\\n\\n\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -43519,9 +43951,9 @@
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
-            "                      name = VARIABLE:'xe-0/0/20'  <== mode:M_Interface",
+            "                      name = INTERFACE_NAME:'xe-0/0/20'  <== mode:M_Interface",
             "                      COLON:':'",
-            "                      suffix = DEC:'0'",
+            "                      chnl = DEC:'0'",
             "                      PERIOD:'.'",
             "                      unit = DEC:'0')",
             "                    (apply)))))))))",
@@ -43542,9 +43974,9 @@
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
-            "                      name = VARIABLE:'xe-0/0/20'  <== mode:M_Interface",
+            "                      name = INTERFACE_NAME:'xe-0/0/20'  <== mode:M_Interface",
             "                      COLON:':'",
-            "                      suffix = DEC:'0'",
+            "                      chnl = DEC:'0'",
             "                      PERIOD:'.'",
             "                      unit = DEC:'0')",
             "                    (oai_ldp_synchronization",
@@ -43567,9 +43999,9 @@
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
-            "                      name = VARIABLE:'xe-0/0/20'  <== mode:M_Interface",
+            "                      name = INTERFACE_NAME:'xe-0/0/20'  <== mode:M_Interface",
             "                      COLON:':'",
-            "                      suffix = DEC:'0'",
+            "                      chnl = DEC:'0'",
             "                      PERIOD:'.'",
             "                      unit = DEC:'0')",
             "                    (oai_ldp_synchronization",
@@ -43593,9 +44025,9 @@
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
-            "                      name = VARIABLE:'xe-0/0/20'  <== mode:M_Interface",
+            "                      name = INTERFACE_NAME:'xe-0/0/20'  <== mode:M_Interface",
             "                      COLON:':'",
-            "                      suffix = DEC:'0'",
+            "                      chnl = DEC:'0'",
             "                      PERIOD:'.'",
             "                      unit = DEC:'0')",
             "                    (oai_ldp_synchronization",
@@ -43620,9 +44052,9 @@
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
-            "                      name = VARIABLE:'xe-0/0/21'  <== mode:M_Interface",
+            "                      name = INTERFACE_NAME:'xe-0/0/21'  <== mode:M_Interface",
             "                      COLON:':'",
-            "                      suffix = DEC:'0'",
+            "                      chnl = DEC:'0'",
             "                      PERIOD:'.'",
             "                      unit = DEC:'0')",
             "                    (oai_passive",
@@ -43769,7 +44201,7 @@
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
-            "                      name = VARIABLE:'xe-0/0/1'  <== mode:M_Interface",
+            "                      name = INTERFACE_NAME:'xe-0/0/1'  <== mode:M_Interface",
             "                      PERIOD:'.'",
             "                      unit = DEC:'0')",
             "                    (apply)))))))))",
@@ -43790,7 +44222,7 @@
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
-            "                      name = VARIABLE:'ae16'  <== mode:M_Interface",
+            "                      name = INTERFACE_NAME:'ae16'  <== mode:M_Interface",
             "                      PERIOD:'.'",
             "                      unit = DEC:'0')",
             "                    (oai_interface_type",
@@ -43814,7 +44246,7 @@
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
-            "                      name = VARIABLE:'ae16'  <== mode:M_Interface",
+            "                      name = INTERFACE_NAME:'ae16'  <== mode:M_Interface",
             "                      PERIOD:'.'",
             "                      unit = DEC:'0')",
             "                    (oai_interface_type",
@@ -43838,7 +44270,7 @@
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
-            "                      name = VARIABLE:'ae16'  <== mode:M_Interface",
+            "                      name = INTERFACE_NAME:'ae16'  <== mode:M_Interface",
             "                      PERIOD:'.'",
             "                      unit = DEC:'0')",
             "                    (oai_interface_type",
@@ -43862,7 +44294,7 @@
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
-            "                      name = VARIABLE:'ae16'  <== mode:M_Interface",
+            "                      name = INTERFACE_NAME:'ae16'  <== mode:M_Interface",
             "                      PERIOD:'.'",
             "                      unit = DEC:'0')",
             "                    (oai_interface_type",
@@ -43886,7 +44318,7 @@
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
-            "                      name = VARIABLE:'ae16'  <== mode:M_Interface",
+            "                      name = INTERFACE_NAME:'ae16'  <== mode:M_Interface",
             "                      PERIOD:'.'",
             "                      unit = DEC:'0')",
             "                    (oai_neighbor",
@@ -43909,7 +44341,7 @@
             "                  (oa_interface",
             "                    INTERFACE:'interface'",
             "                    id = (interface_id",
-            "                      name = VARIABLE:'ae16'  <== mode:M_Interface",
+            "                      name = INTERFACE_NAME:'ae16'  <== mode:M_Interface",
             "                      PERIOD:'.'",
             "                      unit = DEC:'0')",
             "                    (oai_neighbor",
@@ -46580,7 +47012,7 @@
             "                INPUT:'input'",
             "                INGRESS:'ingress'",
             "                INTERFACE:'interface'",
-            "                VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
+            "                INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface",
             "                PERIOD:'.'",
             "                DEC:'0'))))))",
             "    NEWLINE:'\\n')",
@@ -46598,7 +47030,7 @@
             "                INPUT:'input'",
             "                EGRESS:'egress'",
             "                INTERFACE:'interface'",
-            "                VARIABLE:'ge-0/0/1'  <== mode:M_Interface",
+            "                INTERFACE_NAME:'ge-0/0/1'  <== mode:M_Interface",
             "                PERIOD:'.'",
             "                DEC:'0'))))))",
             "    NEWLINE:'\\n')",
@@ -46615,7 +47047,7 @@
             "                ANALYZER:'analyzer'",
             "                OUTPUT:'output'",
             "                INTERFACE:'interface'",
-            "                VARIABLE:'ge-0/0/2'  <== mode:M_Interface",
+            "                INTERFACE_NAME:'ge-0/0/2'  <== mode:M_Interface",
             "                PERIOD:'.'",
             "                DEC:'0'))))))",
             "    NEWLINE:'\\n')",
@@ -46665,7 +47097,7 @@
             "                (fodg_interface",
             "                  INTERFACE:'interface'",
             "                  (interface_id",
-            "                    name = VARIABLE:'xe-1/0/0'  <== mode:M_Interface",
+            "                    name = INTERFACE_NAME:'xe-1/0/0'  <== mode:M_Interface",
             "                    PERIOD:'.'",
             "                    unit = DEC:'0'))))))))",
             "    NEWLINE:'\\n')",
@@ -46757,7 +47189,7 @@
             "                (fodg_interface",
             "                  INTERFACE:'interface'",
             "                  (interface_id",
-            "                    name = VARIABLE:'et-0/0/10'  <== mode:M_Interface",
+            "                    name = INTERFACE_NAME:'et-0/0/10'  <== mode:M_Interface",
             "                    PERIOD:'.'",
             "                    unit = DEC:'0'))))))))",
             "    NEWLINE:'\\n')",
@@ -46814,7 +47246,7 @@
             "                (fodg_interface",
             "                  INTERFACE:'interface'",
             "                  (interface_id",
-            "                    name = VARIABLE:'ge-0/2/5'  <== mode:M_Interface",
+            "                    name = INTERFACE_NAME:'ge-0/2/5'  <== mode:M_Interface",
             "                    PERIOD:'.'",
             "                    unit = DEC:'0'))))))))",
             "    NEWLINE:'\\n')",
@@ -47062,7 +47494,7 @@
             "                (fohb_interface",
             "                  INTERFACE:'interface'",
             "                  (interface_id",
-            "                    name = VARIABLE:'ae1'  <== mode:M_Interface",
+            "                    name = INTERFACE_NAME:'ae1'  <== mode:M_Interface",
             "                    PERIOD:'.'",
             "                    unit = DEC:'1116')",
             "                  (apply))))))))",
@@ -47097,7 +47529,7 @@
             "                (fohb_interface",
             "                  INTERFACE:'interface'",
             "                  (interface_id",
-            "                    name = VARIABLE:'xe-0/0/18'  <== mode:M_Interface",
+            "                    name = INTERFACE_NAME:'xe-0/0/18'  <== mode:M_Interface",
             "                    PERIOD:'.'",
             "                    unit = DEC:'949')",
             "                  (fohb_common",
@@ -47120,7 +47552,7 @@
             "                (fohb_interface",
             "                  INTERFACE:'interface'",
             "                  (interface_id",
-            "                    name = VARIABLE:'xe-0/0/18'  <== mode:M_Interface",
+            "                    name = INTERFACE_NAME:'xe-0/0/18'  <== mode:M_Interface",
             "                    PERIOD:'.'",
             "                    unit = DEC:'949')",
             "                  (fohb_common",
@@ -47142,7 +47574,7 @@
             "                (fohb_interface",
             "                  INTERFACE:'interface'",
             "                  (interface_id",
-            "                    name = VARIABLE:'xe-0/0/18'  <== mode:M_Interface",
+            "                    name = INTERFACE_NAME:'xe-0/0/18'  <== mode:M_Interface",
             "                    PERIOD:'.'",
             "                    unit = DEC:'952')",
             "                  (apply))))))))",
@@ -47161,7 +47593,7 @@
             "                (fohb_interface",
             "                  INTERFACE:'interface'",
             "                  (interface_id",
-            "                    name = VARIABLE:'xe-1/0/0'  <== mode:M_Interface",
+            "                    name = INTERFACE_NAME:'xe-1/0/0'  <== mode:M_Interface",
             "                    PERIOD:'.'",
             "                    unit = DEC:'100')",
             "                  (fohb_common",
@@ -47186,7 +47618,7 @@
             "                (fohb_interface",
             "                  INTERFACE:'interface'",
             "                  (interface_id",
-            "                    name = VARIABLE:'xe-1/0/0'  <== mode:M_Interface",
+            "                    name = INTERFACE_NAME:'xe-1/0/0'  <== mode:M_Interface",
             "                    PERIOD:'.'",
             "                    unit = DEC:'119')",
             "                  (fohb_common",
@@ -47344,7 +47776,7 @@
             "                INET:'inet'",
             "                OUTPUT:'output'",
             "                INTERFACE:'interface'",
-            "                VARIABLE:'ge-0/2/2'  <== mode:M_Interface",
+            "                INTERFACE_NAME:'ge-0/2/2'  <== mode:M_Interface",
             "                PERIOD:'.'",
             "                DEC:'0'",
             "                NEXT_HOP:'next-hop'",
@@ -47547,7 +47979,7 @@
             "                INET:'inet'",
             "                OUTPUT:'output'",
             "                INTERFACE:'interface'",
-            "                VARIABLE:'sp-1/0/0'  <== mode:M_Interface",
+            "                INTERFACE_NAME:'sp-1/0/0'  <== mode:M_Interface",
             "                SOURCE_ADDRESS:'source-address'",
             "                IP_ADDRESS:'44.44.44.44'))))))",
             "    NEWLINE:'\\n')",
@@ -47955,7 +48387,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'ae0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'ae0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -47982,7 +48414,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface)",
             "              (i_common",
             "                (i_common_physical",
             "                  (i_null",
@@ -47998,7 +48430,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'ge-1/0/0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'ge-1/0/0'  <== mode:M_Interface)",
             "              (i_common",
             "                (i_common_physical",
             "                  (i_ether_options",
@@ -48019,7 +48451,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'ge-2/0/0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'ge-2/0/0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -48037,7 +48469,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'ge-2/0/0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'ge-2/0/0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'1'",
@@ -48056,7 +48488,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'ge-3/0/0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'ge-3/0/0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -48075,7 +48507,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'ge-4/0/0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'ge-4/0/0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -48094,7 +48526,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'ge-5/0/0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'ge-5/0/0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -48113,9 +48545,9 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'xe-0/0/0'  <== mode:M_Interface",
+            "                name = INTERFACE_NAME:'xe-0/0/0'  <== mode:M_Interface",
             "                COLON:':'",
-            "                suffix = DEC:'0')",
+            "                chnl = DEC:'0')",
             "              (i_common",
             "                (i_common_physical",
             "                  (i_gigether_options",
@@ -48134,9 +48566,9 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'xe-0/0/0'  <== mode:M_Interface",
+            "                name = INTERFACE_NAME:'xe-0/0/0'  <== mode:M_Interface",
             "                COLON:':'",
-            "                suffix = DEC:'0')",
+            "                chnl = DEC:'0')",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -48159,7 +48591,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'irb'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'irb'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'5'",
@@ -48187,7 +48619,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'irb'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'irb'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'5'",
@@ -48217,7 +48649,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'irb'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'irb'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'5'",
@@ -48246,7 +48678,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'irb'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'irb'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'5'",
@@ -48268,9 +48700,9 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'xe-0/0/5'  <== mode:M_Interface",
+            "                name = INTERFACE_NAME:'xe-0/0/5'  <== mode:M_Interface",
             "                COLON:':'",
-            "                suffix = DEC:'0')",
+            "                chnl = DEC:'0')",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -48298,7 +48730,7 @@
             "              (ri_interface",
             "                INTERFACE:'interface'",
             "                id = (interface_id",
-            "                  name = VARIABLE:'ge-0/0/1'  <== mode:M_Interface)))))))",
+            "                  name = INTERFACE_NAME:'ge-0/0/1'  <== mode:M_Interface)))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -48428,7 +48860,7 @@
             "              (is_interface",
             "                INTERFACE:'interface'",
             "                id = (interface_id",
-            "                  name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
+            "                  name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface",
             "                  PERIOD:'.'",
             "                  unit = DEC:'0')",
             "                (isi_disable",
@@ -48446,7 +48878,7 @@
             "              (is_interface",
             "                INTERFACE:'interface'",
             "                id = (interface_id",
-            "                  name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
+            "                  name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface",
             "                  PERIOD:'.'",
             "                  unit = DEC:'0')",
             "                (isi_level",
@@ -48467,7 +48899,7 @@
             "              (is_interface",
             "                INTERFACE:'interface'",
             "                id = (interface_id",
-            "                  name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
+            "                  name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface",
             "                  PERIOD:'.'",
             "                  unit = DEC:'0')",
             "                (isi_level",
@@ -48489,7 +48921,7 @@
             "              (is_interface",
             "                INTERFACE:'interface'",
             "                id = (interface_id",
-            "                  name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
+            "                  name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface",
             "                  PERIOD:'.'",
             "                  unit = DEC:'0')",
             "                (isi_null",
@@ -48508,7 +48940,7 @@
             "              (is_interface",
             "                INTERFACE:'interface'",
             "                id = (interface_id",
-            "                  name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
+            "                  name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface",
             "                  PERIOD:'.'",
             "                  unit = DEC:'0')",
             "                (isi_null",
@@ -48634,6 +49066,23 @@
             "                VARIABLE:'link-to-monitor'",
             "                VARIABLE:'xe-0/0/0'))))))",
             "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_instances",
+            "            ROUTING_INSTANCES:'routing-instances'",
+            "            (ri_named_routing_instance",
+            "              name = (variable",
+            "                text = VARIABLE:'ROUTING_INSTANCE')",
+            "              (ri_vtep_source_interface",
+            "                VTEP_SOURCE_INTERFACE:'vtep-source-interface'",
+            "                iface = (interface_id",
+            "                  name = INTERFACE_NAME:'lo0'  <== mode:M_Interface",
+            "                  PERIOD:'.'",
+            "                  unit = DEC:'0')))))))",
+            "    NEWLINE:'\\n\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -48732,7 +49181,7 @@
             "                    (rs_interface",
             "                      INTERFACE:'interface'",
             "                      name = (interface_id",
-            "                        name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
+            "                        name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface",
             "                        PERIOD:'.'",
             "                        unit = DEC:'0'))))))))))",
             "    NEWLINE:'\\n')",
@@ -48903,7 +49352,7 @@
             "                    (rs_interface",
             "                      INTERFACE:'interface'",
             "                      name = (interface_id",
-            "                        name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
+            "                        name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface",
             "                        PERIOD:'.'",
             "                        unit = DEC:'0'))))))))))",
             "    NEWLINE:'\\n')",
@@ -49046,7 +49495,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -50178,7 +50627,7 @@
             "                (fodg_interface",
             "                  INTERFACE:'interface'",
             "                  (interface_id",
-            "                    name = VARIABLE:'irb'  <== mode:M_Interface",
+            "                    name = INTERFACE_NAME:'irb'  <== mode:M_Interface",
             "                    PERIOD:'.'",
             "                    unit = DEC:'10'))))))))",
             "    NEWLINE:'\\n')",
@@ -50198,7 +50647,7 @@
             "                (fodg_interface",
             "                  INTERFACE:'interface'",
             "                  (interface_id",
-            "                    name = VARIABLE:'irb'  <== mode:M_Interface",
+            "                    name = INTERFACE_NAME:'irb'  <== mode:M_Interface",
             "                    PERIOD:'.'",
             "                    unit = DEC:'20'))))))))",
             "    NEWLINE:'\\n')",
@@ -50780,7 +51229,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -50804,7 +51253,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -50838,7 +51287,7 @@
             "                    (popsf_interface",
             "                      INTERFACE:'interface'",
             "                      id = (interface_id",
-            "                        name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
+            "                        name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface",
             "                        PERIOD:'.'",
             "                        unit = DEC:'0'))))))))))",
             "    NEWLINE:'\\n')",
@@ -50885,7 +51334,7 @@
             "                    (popsf_interface",
             "                      INTERFACE:'interface'",
             "                      id = (interface_id",
-            "                        name = VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
+            "                        name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface",
             "                        PERIOD:'.'",
             "                        unit = DEC:'99'))))))))))",
             "    NEWLINE:'\\n')",
@@ -51296,7 +51745,7 @@
             "            (snmp_null",
             "              INTERFACE:'interface'",
             "              (null_filler",
-            "                VARIABLE:'ge-0/0/0'  <== mode:M_Interface",
+            "                INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface",
             "                PERIOD:'.'",
             "                DEC:'0'))))))",
             "    NEWLINE:'\\n')",
@@ -53504,7 +53953,9 @@
             "                (vlt_l3_interface",
             "                  L3_INTERFACE:'l3-interface'",
             "                  (interface_id",
-            "                    name = VARIABLE:'vlan.30'))))))))",
+            "                    name = INTERFACE_NAME:'vlan'  <== mode:M_Interface",
+            "                    PERIOD:'.'",
+            "                    unit = DEC:'30'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -53535,7 +53986,9 @@
             "                (vlt_l3_interface",
             "                  L3_INTERFACE:'l3-interface'",
             "                  (interface_id",
-            "                    name = VARIABLE:'vlan.40'))))))))",
+            "                    name = INTERFACE_NAME:'vlan'  <== mode:M_Interface",
+            "                    PERIOD:'.'",
+            "                    unit = DEC:'40'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -53546,7 +53999,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'xe-0/0/0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'xe-0/0/0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -53568,7 +54021,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'xe-0/0/0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'xe-0/0/0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -53592,7 +54045,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'xe-0/0/0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'xe-0/0/0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -53616,7 +54069,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'xe-0/0/0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'xe-0/0/0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -53641,7 +54094,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'xe-0/0/0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'xe-0/0/0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -53697,7 +54150,7 @@
             "              (lbgbdml_null",
             "                ACTION:'action'",
             "                (null_rest_of_line",
-            "                  VARIABLE:'flood'",
+            "                  FLOOD:'flood'",
             "                  NEWLINE:'\\n'))))",
             "          (lbgbd_null",
             "            MTU:'mtu'",
@@ -60401,7 +60854,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'xe-0/0/2'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'xe-0/0/2'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -60423,7 +60876,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'xe-0/0/3'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'xe-0/0/3'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -60445,7 +60898,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'xe-0/0/4'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'xe-0/0/4'  <== mode:M_Interface)",
             "              (i_common",
             "                (i_common_physical",
             "                  (i_disable",
@@ -60460,7 +60913,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'xe-0/0/4'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'xe-0/0/4'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -60482,7 +60935,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'fxp0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'fxp0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -60504,7 +60957,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'irb'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'irb'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'100'",
@@ -60523,7 +60976,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'irb'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'irb'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'100'",
@@ -60545,7 +60998,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'irb'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'irb'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'100'",
@@ -60564,7 +61017,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'lo0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'lo0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'0'",
@@ -60586,7 +61039,7 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
-            "                name = VARIABLE:'lo0'  <== mode:M_Interface)",
+            "                name = INTERFACE_NAME:'lo0'  <== mode:M_Interface)",
             "              (i_unit",
             "                UNIT:'unit'",
             "                num = DEC:'1'",
@@ -61065,7 +61518,7 @@
             "                    (popsf_interface",
             "                      INTERFACE:'interface'",
             "                      id = (interface_id",
-            "                        name = VARIABLE:'lo0'  <== mode:M_Interface",
+            "                        name = INTERFACE_NAME:'lo0'  <== mode:M_Interface",
             "                        PERIOD:'.'",
             "                        unit = DEC:'0'))))))))))",
             "    NEWLINE:'\\n')",
@@ -61372,7 +61825,7 @@
             "              (ri_interface",
             "                INTERFACE:'interface'",
             "                id = (interface_id",
-            "                  name = VARIABLE:'lo0'  <== mode:M_Interface",
+            "                  name = INTERFACE_NAME:'lo0'  <== mode:M_Interface",
             "                  PERIOD:'.'",
             "                  unit = DEC:'1')))))))",
             "    NEWLINE:'\\n')",
@@ -61389,7 +61842,9 @@
             "              (ri_vtep_source_interface",
             "                VTEP_SOURCE_INTERFACE:'vtep-source-interface'",
             "                iface = (interface_id",
-            "                  name = VARIABLE:'lo0.0')))))))",
+            "                  name = INTERFACE_NAME:'lo0'  <== mode:M_Interface",
+            "                  PERIOD:'.'",
+            "                  unit = DEC:'0')))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -61880,6 +62335,16 @@
             }
           ]
         },
+        "cisco-zone" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 10,
+              "Parser_Context" : "[s_zone stanza cisco_configuration]",
+              "Text" : "zone t1"
+            }
+          ]
+        },
         "cisco_acl" : {
           "Parse warnings" : [
             {
@@ -62005,6 +62470,12 @@
               "Line" : 279,
               "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
               "Text" : "mode gre multipoint"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 290,
+              "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
+              "Text" : "zone-member t1"
             }
           ]
         },
@@ -62682,6 +63153,7 @@
         "community-name-numbers_dos" : "PASSED",
         "community_list_named" : "PASSED",
         "community_set" : "PASSED",
+        "eos_mlag" : "PASSED",
         "foundry_access_list" : "PASSED",
         "foundry_bgp" : "PASSED",
         "foundry_interface" : "PASSED",
@@ -62694,6 +63166,7 @@
         "interface_exit" : "PASSED",
         "interface_name" : "PASSED",
         "interface_sdr" : "PASSED",
+        "interfacemtu" : "PASSED",
         "ios_bfd" : "PASSED",
         "ios_bgp" : "PASSED",
         "ios_interface" : "PASSED",
@@ -63935,25 +64408,25 @@
           "interface" : {
             "Async1" : {
               "definitionLines" : [
-                296
+                293
               ],
               "numReferrers" : 1
             },
             "Cable1/2/3:4" : {
               "definitionLines" : [
-                298
+                295
               ],
               "numReferrers" : 1
             },
             "Crypto-Engine1/2/3" : {
               "definitionLines" : [
-                300
+                297
               ],
               "numReferrers" : 1
             },
             "Dot11Radio0" : {
               "definitionLines" : [
-                302
+                299
               ],
               "numReferrers" : 1
             },
@@ -64243,126 +64716,129 @@
                 288,
                 289,
                 290,
-                291,
-                292,
-                293,
-                294
+                291
               ],
               "numReferrers" : 1
             },
             "Ethernet1/11" : {
               "definitionLines" : [
-                304
+                301
               ],
               "numReferrers" : 1
             },
             "Ethernet1/12" : {
               "definitionLines" : [
-                344,
-                345
+                345,
+                346
               ],
               "numReferrers" : 1
             },
             "GigabitEthernet0/0" : {
               "definitionLines" : [
+                303,
+                304,
+                305,
                 306,
-                307,
-                308,
-                309,
-                310
+                307
               ],
               "numReferrers" : 1
             },
             "Loopback0" : {
               "definitionLines" : [
-                312,
-                313,
-                314,
-                315
+                309,
+                310,
+                311,
+                312
               ],
               "numReferrers" : 1
             },
             "Modular-Cable1/2/3:4" : {
               "definitionLines" : [
-                317
+                314
               ],
               "numReferrers" : 1
             },
             "Null0" : {
               "definitionLines" : [
-                319
+                316
               ],
               "numReferrers" : 1
             },
             "Vlan1" : {
               "definitionLines" : [
-                328
+                329
               ],
               "numReferrers" : 1
             },
             "Vlan1005" : {
               "definitionLines" : [
-                334
+                335
               ],
               "numReferrers" : 1
             },
             "Vlan1006" : {
               "definitionLines" : [
-                336
+                337
               ],
               "numReferrers" : 1
             },
             "Vlan111" : {
               "definitionLines" : [
-                323
+                320
               ],
               "numReferrers" : 1
             },
             "Vlan1234" : {
               "definitionLines" : [
-                338
+                339
               ],
               "numReferrers" : 1
             },
             "Vlan2" : {
               "definitionLines" : [
-                330
+                331
               ],
               "numReferrers" : 1
             },
             "Vlan3" : {
               "definitionLines" : [
-                332
+                333
               ],
               "numReferrers" : 1
             },
             "Vlan4094" : {
               "definitionLines" : [
-                340
-              ],
-              "numReferrers" : 1
-            },
-            "Vxlan1" : {
-              "definitionLines" : [
-                325
+                341
               ],
               "numReferrers" : 1
             },
             "Wideband-Cable1/2/3:4" : {
               "definitionLines" : [
-                342
+                343
               ],
               "numReferrers" : 1
             },
             "inside" : {
               "definitionLines" : [
-                307
+                304
               ],
               "numReferrers" : 1
             },
             "tunnel-ip6" : {
               "definitionLines" : [
-                321
+                318
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "vxlan" : {
+            "Vxlan1" : {
+              "definitionLines" : [
+                322,
+                323,
+                324,
+                325,
+                326
               ],
               "numReferrers" : 1
             }
@@ -65023,6 +65499,14 @@
         "configs/cisco_webvpn" : { },
         "configs/cisco_wsma" : { },
         "configs/cisco_zone" : {
+          "zone" : {
+            "t1" : {
+              "definitionLines" : [
+                10
+              ],
+              "numReferrers" : 0
+            }
+          },
           "zone security" : {
             "z1" : {
               "definitionLines" : [
@@ -65137,6 +65621,26 @@
                 6
               ],
               "numReferrers" : 0
+            }
+          }
+        },
+        "configs/eos_mlag" : {
+          "interface" : {
+            "Port-Channel1" : {
+              "definitionLines" : [
+                9,
+                10,
+                11
+              ],
+              "numReferrers" : 1
+            },
+            "Port-Channel2" : {
+              "definitionLines" : [
+                13,
+                14,
+                15
+              ],
+              "numReferrers" : 1
             }
           }
         },
@@ -66136,6 +66640,31 @@
         },
         "configs/isr_crypto" : { },
         "configs/isr_voip" : { },
+        "configs/juniper-interfaces" : {
+          "interface" : {
+            "xe-0/0/0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 2
+            },
+            "xe-0/0/0:0" : {
+              "definitionLines" : [
+                4,
+                5,
+                15
+              ],
+              "numReferrers" : 4
+            },
+            "xe-0/0/0:0.0" : {
+              "definitionLines" : [
+                5,
+                15
+              ],
+              "numReferrers" : 3
+            }
+          }
+        },
         "configs/juniper-tcpflags" : {
           "firewall filter" : {
             "foo" : {
@@ -68318,12 +68847,12 @@
           "interface" : {
             "Async1" : {
               "interface" : [
-                296
+                293
               ]
             },
             "Cable1/2/3:4" : {
               "interface" : [
-                298
+                295
               ]
             },
             "Cellular0" : {
@@ -68333,12 +68862,12 @@
             },
             "Crypto-Engine1/2/3" : {
               "interface" : [
-                300
+                297
               ]
             },
             "Dot11Radio0" : {
               "interface" : [
-                302
+                299
               ]
             },
             "Ethernet0" : {
@@ -68351,82 +68880,82 @@
             },
             "Ethernet1/11" : {
               "interface" : [
-                304
+                301
               ]
             },
             "Ethernet1/12" : {
               "interface" : [
-                344
+                345
               ]
             },
             "GigabitEthernet0/0" : {
               "interface" : [
-                306
+                303
               ]
             },
             "Loopback0" : {
               "interface" : [
-                312
+                309
+              ]
+            },
+            "Loopback1" : {
+              "vxlan source-interface" : [
+                323
               ]
             },
             "Modular-Cable1/2/3:4" : {
               "interface" : [
-                317
+                314
               ]
             },
             "Null0" : {
               "interface" : [
-                319
+                316
               ]
             },
             "Vlan1" : {
               "interface" : [
-                328
+                329
               ]
             },
             "Vlan1005" : {
               "interface" : [
-                334
+                335
               ]
             },
             "Vlan1006" : {
               "interface" : [
-                336
+                337
               ]
             },
             "Vlan111" : {
               "interface" : [
-                323
+                320
               ]
             },
             "Vlan1234" : {
               "interface" : [
-                338
+                339
               ]
             },
             "Vlan2" : {
               "interface" : [
-                330
+                331
               ]
             },
             "Vlan3" : {
               "interface" : [
-                332
+                333
               ]
             },
             "Vlan4094" : {
               "interface" : [
-                340
-              ]
-            },
-            "Vxlan1" : {
-              "interface" : [
-                325
+                341
               ]
             },
             "Wideband-Cable1/2/3:4" : {
               "interface" : [
-                342
+                343
               ]
             },
             "dynamic" : {
@@ -68436,12 +68965,12 @@
             },
             "inside" : {
               "interface" : [
-                307
+                304
               ]
             },
             "tunnel-ip6" : {
               "interface" : [
-                321
+                318
               ]
             }
           },
@@ -68513,10 +69042,24 @@
               ]
             }
           },
+          "vxlan" : {
+            "Vxlan1" : {
+              "vxlan" : [
+                322
+              ]
+            }
+          },
+          "zone" : {
+            "t1" : {
+              "interface zone-member" : [
+                290
+              ]
+            }
+          },
           "zone security" : {
             "z1" : {
-              "interface zone-member" : [
-                294
+              "interface zone-member security" : [
+                291
               ]
             }
           }
@@ -69127,6 +69670,28 @@
             }
           }
         },
+        "configs/eos_mlag" : {
+          "interface" : {
+            "Port-Channel1" : {
+              "interface" : [
+                9
+              ],
+              "mlag configuration peer-link" : [
+                21
+              ]
+            },
+            "Port-Channel2" : {
+              "interface" : [
+                13
+              ]
+            },
+            "Vlan4094" : {
+              "mlag configuration local-interface" : [
+                19
+              ]
+            }
+          }
+        },
         "configs/foundry_bgp" : {
           "interface" : {
             "Loopback1" : {
@@ -69687,6 +70252,31 @@
             }
           }
         },
+        "configs/juniper-interfaces" : {
+          "interface" : {
+            "xe-0/0/0" : {
+              "interface" : [
+                4
+              ]
+            },
+            "xe-0/0/0:0" : {
+              "interface" : [
+                4,
+                5,
+                15
+              ]
+            },
+            "xe-0/0/0:0.0" : {
+              "interface" : [
+                5,
+                15
+              ],
+              "ospf area interface" : [
+                17
+              ]
+            }
+          }
+        },
         "configs/juniper_as_path_group" : {
           "as-path-group as-path" : {
             "AS_PATH_REGEX_NAME1" : {
@@ -69951,6 +70541,15 @@
                 8,
                 9,
                 10
+              ]
+            }
+          }
+        },
+        "configs/juniper_misc" : {
+          "interface" : {
+            "lo0.0" : {
+              "routing-instances vtep-source-interface" : [
+                9
               ]
             }
           }
@@ -70993,6 +71592,13 @@
           }
         },
         "configs/cisco_interface" : {
+          "interface" : {
+            "Loopback1" : {
+              "vxlan source-interface" : [
+                323
+              ]
+            }
+          },
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
@@ -71058,8 +71664,8 @@
           },
           "zone security" : {
             "z1" : {
-              "interface zone-member" : [
-                294
+              "interface zone-member security" : [
+                291
               ]
             }
           }
@@ -71919,6 +72525,15 @@
             }
           }
         },
+        "configs/juniper_misc" : {
+          "interface" : {
+            "lo0.0" : {
+              "routing-instances vtep-source-interface" : [
+                9
+              ]
+            }
+          }
+        },
         "configs/juniper_ospf" : {
           "interface" : {
             "ae16.0" : {
@@ -72738,6 +73353,7 @@
         "configs/community_name_numbers" : "PASSED",
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
+        "configs/eos_mlag" : "PASSED",
         "configs/foundry_access_list" : "PASSED",
         "configs/foundry_bgp" : "PASSED",
         "configs/foundry_interface" : "PASSED",
@@ -72778,6 +73394,7 @@
         "configs/ip_prefix_list_single_line" : "PASSED",
         "configs/isr_crypto" : "PASSED",
         "configs/isr_voip" : "PASSED",
+        "configs/juniper-interfaces" : "PASSED",
         "configs/juniper-tcpflags" : "PASSED",
         "configs/juniper_application" : "PASSED",
         "configs/juniper_apply_macro" : "PASSED",
