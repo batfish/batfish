@@ -3078,8 +3078,8 @@ public final class FlatJuniperGrammarTest {
                                             .setDstIps(Prefix.parse("1.1.1.1/32").toIpSpace())
                                             .build()))))
                         .build())
-                .setPoolIpFirst(Prefix.parse("10.10.10.10/24").getStartIp())
-                .setPoolIpLast(Prefix.parse("10.10.10.10/24").getEndIp())
+                .setPoolIpFirst(Ip.parse("10.10.10.1"))
+                .setPoolIpLast(Ip.parse("10.10.10.254"))
                 .build(),
             DestinationNat.builder()
                 .setAcl(
@@ -3108,9 +3108,8 @@ public final class FlatJuniperGrammarTest {
     assertThat(pools.keySet(), equalTo(ImmutableSet.of("POOL1", "POOL2")));
 
     NatPool pool1 = pools.get("POOL1");
-    Prefix pool1Prefix = Prefix.parse("10.10.10.10/24");
-    assertThat(pool1.getFromAddress(), equalTo(pool1Prefix.getStartIp()));
-    assertThat(pool1.getToAddress(), equalTo(pool1Prefix.getEndIp()));
+    assertThat(pool1.getFromAddress(), equalTo(Ip.parse("10.10.10.1")));
+    assertThat(pool1.getToAddress(), equalTo(Ip.parse("10.10.10.254")));
 
     NatPool pool2 = pools.get("POOL2");
     assertThat(pool2.getFromAddress(), equalTo(Ip.parse("10.10.10.10")));
@@ -3208,8 +3207,8 @@ public final class FlatJuniperGrammarTest {
                                         .setDstIps(Prefix.parse("2.2.2.2/24").toIpSpace())
                                         .build())))))
                 .build()));
-    assertThat(nat1.getPoolIpFirst(), equalTo(Ip.parse("10.10.10.0")));
-    assertThat(nat1.getPoolIpLast(), equalTo(Ip.parse("10.10.10.255")));
+    assertThat(nat1.getPoolIpFirst(), equalTo(Ip.parse("10.10.10.1")));
+    assertThat(nat1.getPoolIpLast(), equalTo(Ip.parse("10.10.10.254")));
 
     SourceNat nat2 = sourceNatList.get(1);
     assertThat(
@@ -3227,8 +3226,8 @@ public final class FlatJuniperGrammarTest {
                                         .setDstIps(Prefix.parse("1.1.1.1/24").toIpSpace())
                                         .build())))))
                 .build()));
-    assertThat(nat2.getPoolIpFirst(), equalTo(Ip.parse("10.10.10.0")));
-    assertThat(nat2.getPoolIpLast(), equalTo(Ip.parse("10.10.10.255")));
+    assertThat(nat2.getPoolIpFirst(), equalTo(Ip.parse("10.10.10.1")));
+    assertThat(nat2.getPoolIpLast(), equalTo(Ip.parse("10.10.10.254")));
 
     Flow flow1 = createFlow("3.3.3.3", "2.2.2.1");
     Flow flow2 = createFlow("3.3.3.3", "1.1.1.1");
@@ -3277,9 +3276,10 @@ public final class FlatJuniperGrammarTest {
     assertThat(pools.keySet(), containsInAnyOrder("POOL1", "POOL2"));
 
     NatPool pool1 = pools.get("POOL1");
-    Prefix pool1Prefix = Prefix.parse("10.10.10.10/24");
-    assertThat(pool1.getFromAddress(), equalTo(pool1Prefix.getStartIp()));
-    assertThat(pool1.getToAddress(), equalTo(pool1Prefix.getEndIp()));
+    Ip ip1 = Ip.parse("10.10.10.1");
+    Ip ip2 = Ip.parse("10.10.10.254");
+    assertThat(pool1.getFromAddress(), equalTo(ip1));
+    assertThat(pool1.getToAddress(), equalTo(ip2));
 
     NatPool pool2 = pools.get("POOL2");
     assertThat(pool2.getFromAddress(), equalTo(Ip.parse("10.10.10.10")));
@@ -3342,9 +3342,10 @@ public final class FlatJuniperGrammarTest {
     assertThat(pools.keySet(), contains("POOL1"));
 
     NatPool pool1 = pools.get("POOL1");
-    Prefix pool1Prefix = Prefix.parse("10.10.10.10/24");
-    assertThat(pool1.getFromAddress(), equalTo(pool1Prefix.getStartIp()));
-    assertThat(pool1.getToAddress(), equalTo(pool1Prefix.getEndIp()));
+    Ip ip1 = Ip.parse("10.10.10.1");
+    Ip ip2 = Ip.parse("10.10.10.254");
+    assertThat(pool1.getFromAddress(), equalTo(ip1));
+    assertThat(pool1.getToAddress(), equalTo(ip2));
 
     // test rule sets
     Map<String, NatRuleSet> ruleSets = nat.getRuleSets();
@@ -3837,5 +3838,34 @@ public final class FlatJuniperGrammarTest {
                             .build())
                     .build());
     assertThat(result.getBooleanValue(), equalTo(false));
+  }
+
+  @Test
+  public void testSourceNatPool() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-sourcenat-pool");
+    Map<String, NatPool> pools =
+        juniperConfiguration.getMasterLogicalSystem().getNatSource().getPools();
+
+    Ip ip0 = Ip.parse("1.0.0.0");
+    Ip ip1 = Ip.parse("1.0.0.1");
+    Ip ip2 = Ip.parse("1.0.0.2");
+    Ip ip3 = Ip.parse("1.0.0.3");
+
+    assertThat(pools.keySet(), hasSize(5));
+
+    assertThat(pools.get("POOL1").getFromAddress(), equalTo(ip1));
+    assertThat(pools.get("POOL1").getToAddress(), equalTo(ip3));
+
+    assertThat(pools.get("POOL2").getFromAddress(), equalTo(ip1));
+    assertThat(pools.get("POOL2").getToAddress(), equalTo(ip3));
+
+    assertThat(pools.get("POOL3").getFromAddress(), equalTo(ip0));
+    assertThat(pools.get("POOL3").getToAddress(), equalTo(ip0));
+
+    assertThat(pools.get("POOL4").getFromAddress(), equalTo(ip0));
+    assertThat(pools.get("POOL4").getToAddress(), equalTo(ip1));
+
+    assertThat(pools.get("POOL5").getFromAddress(), equalTo(ip1));
+    assertThat(pools.get("POOL5").getToAddress(), equalTo(ip2));
   }
 }
