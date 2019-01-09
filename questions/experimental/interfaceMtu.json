@@ -31,8 +31,8 @@
                 "displayName": "Comparator"
             },
             "interfaces": {
-                "description": "Evaluate interfaces matching this regex",
-                "type": "interface",
+                "description": "Evaluate interfaces matching this specifier",
+                "type": "interfacesSpec",
                 "value": ".*",
                 "displayName": "Interfaces"
             },

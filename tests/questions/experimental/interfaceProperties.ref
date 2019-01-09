@@ -22,10 +22,10 @@
         "value" : false
       },
       "interfaces" : {
-        "description" : "Include interfaces matching this regex",
+        "description" : "Include interfaces matching this specifier",
         "displayName" : "Interfaces",
         "optional" : true,
-        "type" : "interface",
+        "type" : "interfacesSpec",
         "value" : ".*"
       },
       "nodes" : {

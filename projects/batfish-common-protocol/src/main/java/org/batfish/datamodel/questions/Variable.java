@@ -39,6 +39,7 @@ public class Variable {
     INTEGER("integer", false),
     INTERFACE("interface", true),
     INTERFACE_PROPERTY_SPEC("interfacePropertySpec", true),
+    INTERFACES_SPEC("interfacesSpec", true),
     IP("ip", true),
     IP_PROTOCOL("ipProtocol", true),
     IP_WILDCARD("ipWildcard", true),
