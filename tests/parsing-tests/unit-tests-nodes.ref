@@ -1089,7 +1089,7 @@
           },
           "vrfName" : {
             "name" : "vrfName",
-            "description" : " descriptive sentence"
+            "description" : "descriptive sentence"
           }
         }
       },

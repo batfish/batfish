@@ -16,6 +16,8 @@ public class AristaEosVxlan implements Serializable {
 
   private SortedSet<Ip> _floodAddresses;
 
+  private String _interfaceName;
+
   private Ip _multicastGroup;
 
   private String _sourceInterface;
@@ -28,8 +30,9 @@ public class AristaEosVxlan implements Serializable {
   /** Map of VLAN number to VXLAN segment id (VNI) */
   private SortedMap<Integer, Integer> _vlanVnis;
 
-  public AristaEosVxlan() {
+  public AristaEosVxlan(String interfaceName) {
     _floodAddresses = new TreeSet<>();
+    _interfaceName = interfaceName;
     _vlanFloodAddresses = new TreeMap<>();
     _vlanVnis = new TreeMap<>();
   }
@@ -40,6 +43,10 @@ public class AristaEosVxlan implements Serializable {
 
   public SortedSet<Ip> getFloodAddresses() {
     return _floodAddresses;
+  }
+
+  public String getInterfaceName() {
+    return _interfaceName;
   }
 
   public Ip getMulticastGroup() {

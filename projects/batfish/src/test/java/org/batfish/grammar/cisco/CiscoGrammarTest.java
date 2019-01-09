@@ -149,6 +149,7 @@ import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasA
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasLogging;
 import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
 import static org.batfish.grammar.cisco.CiscoControlPlaneExtractor.SERIAL_LINE;
+import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeIcmpObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectClassMapAclName;
@@ -400,6 +401,7 @@ public class CiscoGrammarTest {
   private CiscoConfiguration parseCiscoConfig(String hostname, ConfigurationFormat format) {
     String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
     Settings settings = new Settings();
+    configureBatfishTestSettings(settings);
     CiscoCombinedParser ciscoParser = new CiscoCombinedParser(src, settings, format);
     CiscoControlPlaneExtractor extractor =
         new CiscoControlPlaneExtractor(src, ciscoParser, format, new Warnings());
@@ -3107,9 +3109,9 @@ public class CiscoGrammarTest {
 
     CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.ARISTA);
 
-    assertThat(config, not(equalTo(null)));
+    assertThat(config, notNullValue());
     AristaEosVxlan eosVxlan = config.getEosVxlan();
-    assertThat(eosVxlan, not(equalTo(null)));
+    assertThat(eosVxlan, notNullValue());
 
     assertThat(eosVxlan.getDescription(), equalTo("vxlan vti"));
     // Confirm flood address set doesn't contain the removed address
@@ -3119,17 +3121,11 @@ public class CiscoGrammarTest {
     assertThat(eosVxlan.getSourceInterface(), equalTo("Loopback1"));
     assertThat(eosVxlan.getUdpPort(), equalTo(4789));
 
-    SortedMap<Integer, Integer> vlanVnis = eosVxlan.getVlanVnis();
-    assertThat(vlanVnis, hasEntry(equalTo(2), equalTo(10002)));
+    assertThat(eosVxlan.getVlanVnis(), hasEntry(equalTo(2), equalTo(10002)));
 
     // Confirm flood address set was overwritten as expected
     assertThat(
         eosVxlan.getVlanFloodAddresses(), hasEntry(equalTo(2), contains(Ip.parse("1.1.1.10"))));
-
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations().get(hostname);
-
-    assertThat(c, not(equalTo(null)));
   }
 
   @Test
