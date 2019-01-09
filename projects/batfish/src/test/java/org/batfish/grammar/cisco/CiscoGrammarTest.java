@@ -3122,36 +3122,39 @@ public class CiscoGrammarTest {
     Batfish batfish =
         getBatfishForConfigurationNames(
             hostnameBase, hostnameNoSourceIface, hostnameNoLoopbackAddr);
+    // Config with proper loopback iface, VLAN-specific unicast, explicit UDP port
     Configuration configBase = batfish.loadConfigurations().get(hostnameBase);
-    Configuration configNoSourceIface = batfish.loadConfigurations().get(hostnameNoSourceIface);
-    Configuration configNoLoopbackAddr = batfish.loadConfigurations().get(hostnameNoLoopbackAddr);
-
-    // Check config with proper loopback iface, VLAN-specific unicast, explicit UDP port
     assertThat(configBase, hasDefaultVrf(hasVniSettings(hasKey(10002))));
     VniSettings vnisBase = configBase.getDefaultVrf().getVniSettings().get(10002);
-    // Confirm VLAN specific unicast address takes priority over the other addresses
+
+    // Config with no loopback address, using multicast, and default UDP port
+    Configuration configNoLoopbackAddr = batfish.loadConfigurations().get(hostnameNoLoopbackAddr);
+    assertThat(configNoLoopbackAddr, hasDefaultVrf(hasVniSettings(hasKey(10002))));
+    VniSettings vnisNoAddr = configNoLoopbackAddr.getDefaultVrf().getVniSettings().get(10002);
+
+    // Config with no source interface and general VXLAN unicast address
+    Configuration configNoSourceIface = batfish.loadConfigurations().get(hostnameNoSourceIface);
+    assertThat(configNoSourceIface, hasDefaultVrf(hasVniSettings(hasKey(10002))));
+    VniSettings vnisNoIface = configNoSourceIface.getDefaultVrf().getVniSettings().get(10002);
+
+    // Confirm VLAN-specific unicast address takes priority over the other addresses
     assertThat(vnisBase, hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)));
     assertThat(vnisBase, hasBumTransportIps(contains(Ip.parse("1.1.1.10"))));
     // Confirm source address is inherited from source interface
     assertThat(vnisBase, hasSourceAddress(equalTo(Ip.parse("1.1.1.4"))));
     // Confirm explicit UDP port is used
     assertThat(vnisBase, hasUdpPort(equalTo(5555)));
+    // Confirm VLAN<->VNI mapping is applied
     assertThat(vnisBase, hasVlan(equalTo(2)));
 
-    // Check config with no loopback address, using multicast, and default UDP port
-    assertThat(configNoLoopbackAddr, hasDefaultVrf(hasVniSettings(hasKey(10002))));
-    VniSettings vnisNoAddr = configNoLoopbackAddr.getDefaultVrf().getVniSettings().get(10002);
     // Confirm multicast address is present
     assertThat(vnisNoAddr, hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)));
     assertThat(vnisNoAddr, hasBumTransportIps(contains(Ip.parse("227.10.1.1"))));
     // Confirm no source address is present (no address specified for loopback interface)
     assertThat(vnisNoAddr, hasSourceAddress(nullValue()));
-    // Confirm default UDP port is used
+    // Confirm default UDP port is used even though none is supplied
     assertThat(vnisNoAddr, hasUdpPort(equalTo(4789)));
 
-    // Check config with no source interface and general VXLAN unicast address
-    assertThat(configNoSourceIface, hasDefaultVrf(hasVniSettings(hasKey(10002))));
-    VniSettings vnisNoIface = configNoSourceIface.getDefaultVrf().getVniSettings().get(10002);
     // Confirm general VXLAN flood addresses are used
     assertThat(vnisNoIface, hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)));
     assertThat(
