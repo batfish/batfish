@@ -7,6 +7,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasBgpProcess;
@@ -17,6 +18,7 @@ import org.batfish.datamodel.matchers.VrfMatchersImpl.HasName;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasOspfProcess;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasSnmpServer;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasStaticRoutes;
+import org.batfish.datamodel.matchers.VrfMatchersImpl.HasVniSettings;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.hamcrest.Matcher;
 
@@ -81,5 +83,14 @@ public class VrfMatchers {
   public static HasStaticRoutes hasStaticRoutes(
       Matcher<? super SortedSet<StaticRoute>> subMatcher) {
     return new HasStaticRoutes(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the VRF's VXLAN VNI
+   * settings.
+   */
+  public static HasVniSettings hasVniSettings(
+      Matcher<? super Map<Integer, VniSettings>> subMatcher) {
+    return new HasVniSettings(subMatcher);
   }
 }
