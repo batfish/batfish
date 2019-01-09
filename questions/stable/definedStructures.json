@@ -14,14 +14,14 @@
                 "displayName": "Names"
             },
             "nodes": {
-                "description": "Include files used to generate nodes whose name matches this name or regex",
+                "description": "Include files used to generate nodes whose name matches this specifier",
                 "type": "nodeSpec",
                 "value": ".*",
                 "optional": true,
                 "displayName": "Nodes"
             },
             "types": {
-                "description": "Include structures whose vendor-specific type matches this string or regex",
+                "description": "Include structures whose vendor-specific type matches this specifier",
                 "type": "namedStructureSpec",
                 "value": ".*",
                 "optional": true,

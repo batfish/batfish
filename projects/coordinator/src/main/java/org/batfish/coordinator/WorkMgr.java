@@ -402,13 +402,17 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-  private CompletionMetadata getCompletionMetadata(String network, String snapshot)
-      throws IOException {
+  private CompletionMetadata getCompletionMetadata(String network, String snapshot) {
     checkArgument(!isNullOrEmpty(network), "Network name should be supplied");
     checkArgument(!isNullOrEmpty(snapshot), "Snapshot name should be supplied");
-    NetworkId networkId = _idManager.getNetworkId(network);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
-    return _storage.loadCompletionMetadata(networkId, snapshotId);
+    try {
+      NetworkId networkId = _idManager.getNetworkId(network);
+      SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+      return _storage.loadCompletionMetadata(networkId, snapshotId);
+    } catch (Exception e) {
+      _logger.errorf("Got exception fetching CompletionMetadata: %s\n", e);
+      return null;
+    }
   }
 
   public List<AutocompleteSuggestion> autoComplete(
@@ -425,13 +429,20 @@ public class WorkMgr extends AbstractCoordinator {
       case ADDRESS_BOOK:
         {
           CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
+          if (completionMetadata == null) {
+            return null;
+          }
           suggestions =
               PropertySpecifier.baseAutoComplete(query, completionMetadata.getAddressBooks());
+
           break;
         }
       case ADDRESS_GROUP:
         {
           CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
+          if (completionMetadata == null) {
+            return null;
+          }
           suggestions =
               PropertySpecifier.baseAutoComplete(query, completionMetadata.getAddressGroups());
           break;
@@ -470,6 +481,9 @@ public class WorkMgr extends AbstractCoordinator {
       case FILTER:
         {
           CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
+          if (completionMetadata == null) {
+            return null;
+          }
           suggestions =
               PropertySpecifier.baseAutoComplete(query, completionMetadata.getFilterNames());
           break;
@@ -485,6 +499,9 @@ public class WorkMgr extends AbstractCoordinator {
       case INTERFACE:
         {
           CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
+          if (completionMetadata == null) {
+            return null;
+          }
           suggestions =
               PropertySpecifier.baseAutoComplete(
                   query,
@@ -503,6 +520,9 @@ public class WorkMgr extends AbstractCoordinator {
       case IP:
         {
           CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
+          if (completionMetadata == null) {
+            return null;
+          }
           suggestions = PropertySpecifier.baseAutoComplete(query, completionMetadata.getIps());
           break;
         }
@@ -559,6 +579,9 @@ public class WorkMgr extends AbstractCoordinator {
       case PREFIX:
         {
           CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
+          if (completionMetadata == null) {
+            return null;
+          }
           suggestions = PropertySpecifier.baseAutoComplete(query, completionMetadata.getPrefixes());
           break;
         }
@@ -573,6 +596,9 @@ public class WorkMgr extends AbstractCoordinator {
       case STRUCTURE_NAME:
         {
           CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
+          if (completionMetadata == null) {
+            return null;
+          }
           suggestions =
               PropertySpecifier.baseAutoComplete(query, completionMetadata.getStructureNames());
           break;
@@ -580,17 +606,23 @@ public class WorkMgr extends AbstractCoordinator {
       case VRF:
         {
           CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
+          if (completionMetadata == null) {
+            return null;
+          }
           suggestions = PropertySpecifier.baseAutoComplete(query, completionMetadata.getVrfs());
           break;
         }
       case ZONE:
         {
           CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
+          if (completionMetadata == null) {
+            return null;
+          }
           suggestions = PropertySpecifier.baseAutoComplete(query, completionMetadata.getZones());
           break;
         }
       default:
-        throw new UnsupportedOperationException("Unsupported completion type: " + completionType);
+        throw new IllegalArgumentException("Unsupported completion type: " + completionType);
     }
     return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
   }

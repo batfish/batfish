@@ -16,14 +16,14 @@
     ],
     "variables" : {
       "nodes" : {
-        "description" : "Include sessions whose first node matches this name or regex",
+        "description" : "Include sessions whose first node matches this specifier",
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",
         "value" : ".*"
       },
       "remoteNodes" : {
-        "description" : "Include sessions whose second node matches this name or regex",
+        "description" : "Include sessions whose second node matches this specifier",
         "displayName" : "Remote Nodes",
         "optional" : true,
         "type" : "nodeSpec",

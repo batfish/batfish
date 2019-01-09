@@ -11,7 +11,7 @@
         ],
         "variables": {
             "nodes": {
-                "description": "Examine routes on nodes matching this name or regex",
+                "description": "Examine routes on nodes matching this specifier",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Nodes"

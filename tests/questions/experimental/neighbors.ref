@@ -64,14 +64,14 @@
         ]
       },
       "nodes" : {
-        "description" : "Include neighbors whose first node matches this name or regex",
+        "description" : "Include neighbors whose first node matches this specifier",
         "displayName" : "Nodes",
         "optional" : false,
         "type" : "nodeSpec",
         "value" : ".*"
       },
       "remoteNodes" : {
-        "description" : "Include neighbors whose second node matches this name or regex",
+        "description" : "Include neighbors whose second node matches this specifier",
         "displayName" : "Remote Nodes",
         "optional" : false,
         "type" : "nodeSpec",

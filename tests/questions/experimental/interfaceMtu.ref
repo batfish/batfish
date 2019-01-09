@@ -49,7 +49,7 @@
         "value" : 0
       },
       "nodes" : {
-        "description" : "Include nodes matching this name or regex",
+        "description" : "Include nodes matching this specifier",
         "displayName" : "Nodes",
         "optional" : false,
         "type" : "nodeSpec",

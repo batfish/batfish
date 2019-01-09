@@ -80,7 +80,7 @@
         }
       },
       "nodes" : {
-        "description" : "Only examine filters on nodes matching this name or regex",
+        "description" : "Only examine filters on nodes matching this specifier",
         "displayName" : "Nodes",
         "optional" : false,
         "type" : "nodeSpec",

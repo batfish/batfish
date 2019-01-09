@@ -109,7 +109,7 @@
         "value" : false
       },
       "nodes" : {
-        "description" : "Only evaluate filters present on nodes matching this regex",
+        "description" : "Only evaluate filters present on nodes matching this specifier",
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",

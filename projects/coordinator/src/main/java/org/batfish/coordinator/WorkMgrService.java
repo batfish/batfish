@@ -110,6 +110,9 @@ public class WorkMgrService {
                   Strings.isNullOrEmpty(maxSuggestions)
                       ? Integer.MAX_VALUE
                       : Integer.parseInt(maxSuggestions));
+      if (answer == null) {
+        return failureResponse("There was a problem getting Autocomplete suggestions!");
+      }
       return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_SUGGESTIONS, answer));
     } catch (IllegalArgumentException | AccessControlException e) {
       _logger.errorf("WMS:autoComplete exception: %s\n", e.getMessage());

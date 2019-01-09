@@ -27,7 +27,7 @@
                 "displayName": "Ignore composite filters"
             },
             "nodes": {
-                "description": "Examine filters on nodes matching this name or regex",
+                "description": "Examine filters on nodes matching this specifier",
                 "type": "nodeSpec",
                 "optional": true,
                 "displayName": "Nodes"

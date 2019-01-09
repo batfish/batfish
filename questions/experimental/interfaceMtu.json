@@ -43,7 +43,7 @@
                 "displayName": "MTU Bytes"
             },
             "nodes": {
-                "description": "Include nodes matching this name or regex",
+                "description": "Include nodes matching this specifier",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Nodes"

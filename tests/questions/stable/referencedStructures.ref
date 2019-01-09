@@ -18,14 +18,14 @@
         "value" : "m1"
       },
       "nodes" : {
-        "description" : "Include files used to generate nodes whose name matches this name or regex",
+        "description" : "Include files used to generate nodes whose name matches this specifier",
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",
         "value" : "n1"
       },
       "types" : {
-        "description" : "Include structures whose vendor-specific type matches this string or regex",
+        "description" : "Include structures whose vendor-specific type matches this specifier",
         "displayName" : "Types",
         "optional" : true,
         "type" : "namedStructureSpec",
