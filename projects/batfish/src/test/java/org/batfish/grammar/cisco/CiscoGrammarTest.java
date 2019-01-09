@@ -3129,27 +3129,35 @@ public class CiscoGrammarTest {
     // Check config with proper loopback iface, VLAN-specific unicast, explicit UDP port
     assertThat(configBase, hasDefaultVrf(hasVniSettings(hasKey(10002))));
     VniSettings vniSettings = configBase.getDefaultVrf().getVniSettings().get(10002);
+    // Confirm VLAN specific unicast address takes priority over the other addresses
     assertThat(vniSettings, hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)));
     assertThat(vniSettings, hasBumTransportIps(contains(Ip.parse("1.1.1.10"))));
+    // Confirm source address is inherited from source interface
     assertThat(vniSettings, hasSourceAddress(equalTo(Ip.parse("1.1.1.4"))));
-    assertThat(vniSettings, hasUdpPort(equalTo(4789)));
+    // Confirm explicit UDP port is used
+    assertThat(vniSettings, hasUdpPort(equalTo(5555)));
     assertThat(vniSettings, hasVlan(equalTo(2)));
 
     // Check config with no loopback address, using multicast, and default UDP port
     assertThat(configNoLoopbackAddr, hasDefaultVrf(hasVniSettings(hasKey(10002))));
     vniSettings = configNoLoopbackAddr.getDefaultVrf().getVniSettings().get(10002);
+    // Confirm multicast address is present
     assertThat(vniSettings, hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)));
     assertThat(vniSettings, hasBumTransportIps(contains(Ip.parse("227.10.1.1"))));
+    // Confirm no source address is present (no address specified for loopback interface)
     assertThat(vniSettings, hasSourceAddress(nullValue()));
+    // Confirm default UDP port is used
     assertThat(vniSettings, hasUdpPort(equalTo(4789)));
 
     // Check config with no source interface and general VXLAN unicast address
     assertThat(configNoSourceIface, hasDefaultVrf(hasVniSettings(hasKey(10002))));
     vniSettings = configNoSourceIface.getDefaultVrf().getVniSettings().get(10002);
+    // Confirm general VXLAN flood addresses are used
     assertThat(vniSettings, hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)));
     assertThat(
         vniSettings,
         hasBumTransportIps(containsInAnyOrder(Ip.parse("1.1.1.5"), Ip.parse("1.1.1.6"))));
+    // Confirm no source address is present (no interface is linked to the VXLAN)
     assertThat(vniSettings, hasSourceAddress(nullValue()));
   }
 
