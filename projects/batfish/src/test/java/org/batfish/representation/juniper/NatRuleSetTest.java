@@ -7,6 +7,7 @@ import static org.batfish.datamodel.flow.TransformationStep.TransformationType.S
 import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
+import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.Transformation;
@@ -23,7 +25,7 @@ import org.junit.Test;
 
 /** Tests for {@link NatRuleSet}. */
 public class NatRuleSetTest {
-  private void setLocation(
+  private static void setLocation(
       NatPacketLocation location, NatPacketLocation.Type type, String direction) {
     switch (type) {
       case InterfaceType:
@@ -75,6 +77,8 @@ public class NatRuleSetTest {
     natRule2.setThen(new NatRuleThenPool("POOL"));
 
     NatRuleSet ruleSet = new NatRuleSet("ruleset");
+    String fromIface = "fromLocationInterface";
+    ruleSet.getFromLocation().setInterface(fromIface);
     ruleSet.getRules().add(natRule1);
     ruleSet.getRules().add(natRule2);
 
@@ -85,23 +89,50 @@ public class NatRuleSetTest {
     pool.setToAddress(poolEnd);
 
     // the transformation to apply after any NatRule transformation is applied.
-    Transformation andThen = when(matchSrcInterface("IFACE")).apply(new Noop(SOURCE_NAT)).build();
+    Transformation andThen =
+        when(matchSrcInterface("and then")).apply(new Noop(SOURCE_NAT)).build();
+    Transformation orElse = when(matchSrcInterface("or else")).apply(new Noop(SOURCE_NAT)).build();
+
+    MatchSrcInterface matchFromIface = matchSrcInterface(fromIface);
+
+    // the transformation for the rules themselves
+    Transformation rulesTransformation =
+        // first apply natRule1
+        when(matchDst(prefix1))
+            .apply(NOOP_DEST_NAT)
+            .setAndThen(andThen)
+            .setOrElse(
+                // only apply natRule2 if natRule1 doesn't match
+                when(matchDst(prefix2))
+                    .apply(assignDestinationIp(poolStart, poolEnd))
+                    .setAndThen(andThen)
+                    .setOrElse(orElse)
+                    .build())
+            .build();
 
     assertThat(
         ruleSet
-            .toTransformation(DEST_NAT, IpField.DESTINATION, ImmutableMap.of("POOL", pool), andThen)
+            .toOutgoingTransformation(
+                DEST_NAT,
+                IpField.DESTINATION,
+                ImmutableMap.of("POOL", pool),
+                ImmutableMap.of(interfaceLocation(fromIface), matchFromIface),
+                andThen,
+                orElse)
             .get(),
         equalTo(
-            // first apply natRule1
-            when(matchDst(prefix1))
+            // first match from location
+            when(matchFromIface)
                 .apply(NOOP_DEST_NAT)
-                .setAndThen(andThen)
-                .setOrElse(
-                    // only apply natRule2 if natRule1 doesn't match
-                    when(matchDst(prefix2))
-                        .apply(assignDestinationIp(poolStart, poolEnd))
-                        .setAndThen(andThen)
-                        .build())
+                .setAndThen(rulesTransformation)
+                .setOrElse(orElse)
                 .build()));
+
+    assertThat(
+        ruleSet
+            .toIncomingTransformation(
+                DEST_NAT, IpField.DESTINATION, ImmutableMap.of("POOL", pool), andThen, orElse)
+            .get(),
+        equalTo(rulesTransformation));
   }
 }
