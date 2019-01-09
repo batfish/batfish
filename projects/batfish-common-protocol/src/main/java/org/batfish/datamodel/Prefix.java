@@ -165,7 +165,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_normalizedIp, _prefixLength);
+    return Objects.hash(_originalIp, _normalizedIp, _prefixLength);
   }
 
   public PrefixIpSpace toIpSpace() {
