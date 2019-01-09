@@ -1,6 +1,5 @@
-package org.batfish.symbolic;
+package org.batfish.compiler;
 
-import com.microsoft.z3.Expr;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -9,7 +8,7 @@ import org.batfish.symbolic.collections.PList;
 
 public class TransferResult<U, T> {
 
-  private PList<Pair<String, Expr>> _changedVariables; // should be a map
+  private PList<Pair<String, String>> _changedVariables; // should be a map
 
   private U _returnValue;
 
@@ -32,8 +31,8 @@ public class TransferResult<U, T> {
   }
 
   @Nullable
-  private Expr find(PList<Pair<String, Expr>> vals, String s) {
-    for (Pair<String, Expr> pair : vals) {
+  private String find(PList<Pair<String, String>> vals, String s) {
+    for (Pair<String, String> pair : vals) {
       if (pair.getFirst().equals(s)) {
         return pair.getSecond();
       }
@@ -42,28 +41,29 @@ public class TransferResult<U, T> {
   }
 
   // TODO: this really needs to use persistent set data types
-  public PList<Pair<String, Pair<Expr, Expr>>> mergeChangedVariables(TransferResult<U, T> other) {
+  public PList<Pair<String, Pair<String, String>>> mergeChangedVariables(
+      TransferResult<U, T> other) {
     Set<String> seen = new HashSet<>();
-    PList<Pair<String, Pair<Expr, Expr>>> vars = PList.empty();
+    PList<Pair<String, Pair<String, String>>> vars = PList.empty();
 
-    for (Pair<String, Expr> cv1 : this._changedVariables) {
+    for (Pair<String, String> cv1 : this._changedVariables) {
       String s = cv1.getFirst();
-      Expr x = cv1.getSecond();
+      String x = cv1.getSecond();
       if (!seen.contains(s)) {
         seen.add(s);
-        Expr e = find(other._changedVariables, s);
-        Pair<Expr, Expr> pair = new Pair<>(x, e);
+        String e = find(other._changedVariables, s);
+        Pair<String, String> pair = new Pair<>(x, e);
         vars = vars.plus(new Pair<>(s, pair));
       }
     }
 
-    for (Pair<String, Expr> cv1 : other._changedVariables) {
+    for (Pair<String, String> cv1 : other._changedVariables) {
       String s = cv1.getFirst();
-      Expr x = cv1.getSecond();
+      String x = cv1.getSecond();
       if (!seen.contains(s)) {
         seen.add(s);
-        Expr e = find(this._changedVariables, s);
-        Pair<Expr, Expr> pair = new Pair<>(e, x); // preserve order
+        String e = find(this._changedVariables, s);
+        Pair<String, String> pair = new Pair<>(e, x); // preserve order
         vars = vars.plus(new Pair<>(s, pair));
       }
     }
@@ -71,7 +71,7 @@ public class TransferResult<U, T> {
     return vars;
   }
 
-  public PList<Pair<String, Expr>> getChangedVariables() {
+  public PList<Pair<String, String>> getChangedVariables() {
     return _changedVariables;
   }
 
@@ -87,7 +87,7 @@ public class TransferResult<U, T> {
     return _returnAssignedValue;
   }
 
-  public TransferResult<U, T> addChangedVariable(String s, Expr x) {
+  public TransferResult<U, T> addChangedVariable(String s, String x) {
     TransferResult<U, T> ret = new TransferResult<>(this);
     ret._changedVariables = ret._changedVariables.plus(new Pair<>(s, x));
     return ret;
@@ -100,7 +100,7 @@ public class TransferResult<U, T> {
   }
 
   public boolean isChanged(String s) {
-    for (Pair<String, Expr> pair : this._changedVariables) {
+    for (Pair<String, String> pair : this._changedVariables) {
       if (pair.getFirst().equals(s)) {
         return true;
       }
