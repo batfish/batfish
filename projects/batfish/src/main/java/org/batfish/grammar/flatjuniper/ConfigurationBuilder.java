@@ -2926,14 +2926,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSead_attach(Sead_attachContext ctx) {
     String zoneName = ctx.name.getText();
-    Zone zone = _currentLogicalSystem.getZones().get(zoneName);
-    if (zone == null) {
-      zone = new Zone(zoneName, _currentLogicalSystem.getGlobalAddressBook());
-      _currentLogicalSystem
-          .getFirewallFilters()
-          .put(zone.getInboundFilter().getName(), zone.getInboundFilter());
-      _currentLogicalSystem.getZones().put(zoneName, zone);
-    }
+    Zone zone = _currentLogicalSystem.getOrCreateZone(zoneName);
     switch (zone.getAddressBookType()) {
       case GLOBAL:
         zone.attachAddressBook(_currentAddressBook);
@@ -2956,8 +2949,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             getLine(ctx.name.getStart()));
         break;
       case INLINED:
-        throw new BatfishException(
-            "Both inline and attached address books are defined for zone " + _currentZone);
+        _w.redFlag(
+            String.format(
+                "Not attaching the address book %s to zone %s because an inline address book is defined",
+                _currentAddressBook.getName(), zone.getName()));
+        break;
       default:
         throw new BatfishException(
             "Unsupported AddressBook type: " + _currentZone.getAddressBookType());
@@ -3079,27 +3075,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       String toName = ctx.to.getText();
       String policyName = zoneToZoneFilter(fromName, toName);
       if (ctx.from.JUNOS_HOST() == null) {
-        _currentFromZone = _currentLogicalSystem.getZones().get(fromName);
-        if (_currentFromZone == null) {
-          _currentFromZone = new Zone(fromName, _currentLogicalSystem.getGlobalAddressBook());
-          _currentLogicalSystem.getZones().put(fromName, _currentFromZone);
-          _currentLogicalSystem
-              .getFirewallFilters()
-              .put(
-                  _currentFromZone.getInboundFilter().getName(),
-                  _currentFromZone.getInboundFilter());
-        }
+        _currentFromZone = _currentLogicalSystem.getOrCreateZone(fromName);
       }
 
       if (ctx.to.JUNOS_HOST() == null) {
-        _currentToZone = _currentLogicalSystem.getZones().get(toName);
-        if (_currentToZone == null) {
-          _currentToZone = new Zone(toName, _currentLogicalSystem.getGlobalAddressBook());
-          _currentLogicalSystem
-              .getFirewallFilters()
-              .put(_currentToZone.getInboundFilter().getName(), _currentToZone.getInboundFilter());
-          _currentLogicalSystem.getZones().put(toName, _currentToZone);
-        }
+        _currentToZone = _currentLogicalSystem.getOrCreateZone(toName);
       }
 
       if (ctx.from.JUNOS_HOST() != null) {
@@ -3162,14 +3142,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterSez_security_zone(Sez_security_zoneContext ctx) {
     String zoneName = ctx.zone().getText();
-    _currentZone = _currentLogicalSystem.getZones().get(zoneName);
-    if (_currentZone == null) {
-      _currentZone = new Zone(zoneName, _currentLogicalSystem.getGlobalAddressBook());
-      _currentLogicalSystem
-          .getFirewallFilters()
-          .put(_currentZone.getInboundFilter().getName(), _currentZone.getInboundFilter());
-      _currentLogicalSystem.getZones().put(zoneName, _currentZone);
-    }
+    _currentZone = _currentLogicalSystem.getOrCreateZone(zoneName);
     _currentZoneInboundFilter = _currentZone.getInboundFilter();
   }
 
@@ -3184,8 +3157,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         _currentAddressBook = _currentZone.getAddressBook();
         return;
       case ATTACHED:
-        throw new BatfishException(
-            "Both inline and attached address books are defined for zone " + _currentZone);
+        _w.redFlag(
+            String.format(
+                "Ignoring attached address book %s to zone %s because an inline address book is defined",
+                _currentZone.getAddressBook().getName(), _currentZone.getName()));
+        _currentAddressBook =
+            _currentZone.initInlinedAddressBook(_currentLogicalSystem.getGlobalAddressBook());
+        break;
       default:
         throw new BatfishException(
             "Unsupported AddressBook type: " + _currentZone.getAddressBookType());

@@ -288,6 +288,15 @@ public class LogicalSystem implements Serializable {
     }
   }
 
+  public Zone getOrCreateZone(String zoneName) {
+    if (!_zones.containsKey(zoneName)) {
+      Zone zone = new Zone(zoneName, getGlobalAddressBook());
+      _filters.put(zone.getInboundFilter().getName(), zone.getInboundFilter());
+      _zones.put(zoneName, zone);
+    }
+    return _zones.get(zoneName);
+  }
+
   public Map<String, PolicyStatement> getPolicyStatements() {
     return _policyStatements;
   }
