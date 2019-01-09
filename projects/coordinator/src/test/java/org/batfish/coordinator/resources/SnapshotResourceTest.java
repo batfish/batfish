@@ -34,7 +34,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
 
   private Builder getCompletedWorkTarget(String network, String snapshot) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_CONTAINERS)
+        .path(CoordConstsV2.RSC_NETWORKS)
         .path(network)
         .path(CoordConstsV2.RSC_SNAPSHOTS)
         .path(snapshot)
@@ -46,7 +46,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
 
   private Builder getPojoTopologyTarget(String network, String snapshot) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_CONTAINERS)
+        .path(CoordConstsV2.RSC_NETWORKS)
         .path(network)
         .path(CoordConstsV2.RSC_SNAPSHOTS)
         .path(snapshot)
@@ -58,7 +58,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
 
   private Builder getTarget(String network, String snapshot) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_CONTAINERS)
+        .path(CoordConstsV2.RSC_NETWORKS)
         .path(network)
         .path(CoordConstsV2.RSC_SNAPSHOTS)
         .path(snapshot)
@@ -69,7 +69,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
 
   private Builder getTopologyTarget(String network, String snapshot) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_CONTAINERS)
+        .path(CoordConstsV2.RSC_NETWORKS)
         .path(network)
         .path(CoordConstsV2.RSC_SNAPSHOTS)
         .path(snapshot)
@@ -81,7 +81,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
 
   private Builder getWorkLogTarget(String network, String snapshot, String workId) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_CONTAINERS)
+        .path(CoordConstsV2.RSC_NETWORKS)
         .path(network)
         .path(CoordConstsV2.RSC_SNAPSHOTS)
         .path(snapshot)
@@ -93,7 +93,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Before
-  public void initContainerEnvironment() throws Exception {
+  public void initTestEnvironment() throws Exception {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 

@@ -167,7 +167,7 @@ public class WorkMgrService {
   }
 
   private void checkNetworkAccessibility(String apiKey, String networkName) {
-    if (!Main.getAuthorizer().isAccessibleContainer(apiKey, networkName, true)) {
+    if (!Main.getAuthorizer().isAccessibleNetwork(apiKey, networkName, true)) {
       throw new AccessControlException(
           String.format("network '%s' is not accessible by the api key '%s", networkName, apiKey));
     }
@@ -671,42 +671,31 @@ public class WorkMgrService {
   public JSONArray getAnalysisAnswers(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
-      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
-      @FormDataParam(CoordConsts.SVC_KEY_DELTA_TESTRIG_NAME) String deltaTestrig,
-      @FormDataParam(CoordConsts.SVC_KEY_DELTA_SNAPSHOT_NAME) String deltaSnapshot,
       @FormDataParam(CoordConsts.SVC_KEY_REFERENCE_SNAPSHOT_NAME) String referenceSnapshot,
       @FormDataParam(CoordConsts.SVC_KEY_ANALYSIS_NAME) String analysisName,
       @FormDataParam(CoordConsts.SVC_KEY_WORKITEM) String workItemStr /* optional */) {
-    String networkNameParam = networkName == null ? containerName : networkName;
-    String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
-    String referenceSnapshotParam = referenceSnapshot;
-    if (referenceSnapshotParam == null) {
-      referenceSnapshotParam = deltaSnapshot == null ? deltaTestrig : deltaSnapshot;
-    }
     try {
       _logger.infof(
-          "WMS:getAnalysisAnswers %s %s %s %s\n",
-          apiKey, networkNameParam, snapshotNameParam, analysisName);
+          "WMS:getAnalysisAnswers %s %s %s %s\n", apiKey, networkName, snapshotName, analysisName);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkNameParam, "Network name");
-      checkStringParam(snapshotNameParam, "Current snapshot name");
+      checkStringParam(networkName, "Network name");
+      checkStringParam(snapshotName, "Current snapshot name");
       checkStringParam(analysisName, "Analysis name");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
-      checkNetworkAccessibility(apiKey, networkNameParam);
+      checkNetworkAccessibility(apiKey, networkName);
 
       JSONObject response = new JSONObject();
 
       if (!Strings.isNullOrEmpty(workItemStr)) {
         WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
-        if (!workItem.getContainerName().equals(networkNameParam)
-            || !workItem.getTestrigName().equals(snapshotNameParam)) {
+        if (!workItem.getContainerName().equals(networkName)
+            || !workItem.getTestrigName().equals(snapshotName)) {
           return failureResponse(
               "Mismatch in parameters: WorkItem is not for the supplied network or snapshot");
         }
@@ -723,11 +712,7 @@ public class WorkMgrService {
       Map<String, String> answers =
           Main.getWorkMgr()
               .getAnalysisAnswers(
-                  networkNameParam,
-                  snapshotNameParam,
-                  referenceSnapshotParam,
-                  analysisName,
-                  ImmutableSet.of());
+                  networkName, snapshotName, referenceSnapshot, analysisName, ImmutableSet.of());
 
       String answersStr = BatfishObjectMapper.writePrettyString(answers);
 
@@ -740,7 +725,7 @@ public class WorkMgrService {
       _logger.errorf(
           "WMS:getAnalysisAnswers exception for apikey:%s in network:%s, snapshot:%s, "
               + "referencesnapshot:%s; exception:%s",
-          apiKey, networkNameParam, snapshotNameParam, referenceSnapshotParam, stackTrace);
+          apiKey, networkName, snapshotName, referenceSnapshot, stackTrace);
       return failureResponse(e.getMessage());
     }
   }
@@ -2442,15 +2427,13 @@ public class WorkMgrService {
   public JSONArray uploadSnapshot(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
-      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
       @FormDataParam(CoordConsts.SVC_KEY_ZIPFILE) InputStream fileStream,
       @FormDataParam(CoordConsts.SVC_KEY_AUTO_ANALYZE_TESTRIG) String autoAnalyzeTestrigStr,
       @FormDataParam(CoordConsts.SVC_KEY_AUTO_ANALYZE) String autoAnalyzeStr) {
-    String networkNameParam = networkName == null ? containerName : networkName;
-    String snapshotNameParam = snapshotName == null ? testrigName : snapshotName;
+    String networkNameParam = networkName;
+    String snapshotNameParam = snapshotName;
     String autoAnalyzeStrParam = autoAnalyzeStr == null ? autoAnalyzeTestrigStr : autoAnalyzeStr;
     try {
       _logger.infof("WMS:uploadSnapshot %s %s %s\n", apiKey, networkNameParam, snapshotNameParam);
@@ -2504,7 +2487,7 @@ public class WorkMgrService {
    * @param fileStream The stream from which the new testrig is read
    * @return TODO: document JSON response
    * @deprecated because testrigs were renamed to snapshots. Use {@link #uploadSnapshot(String,
-   *     String, String, String, String, String, InputStream, String, String)} instead.
+   *     String, String, String, InputStream, String, String)} instead.
    */
   @POST
   @Path(CoordConsts.SVC_RSC_UPLOAD_TESTRIG)
@@ -2519,14 +2502,6 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_ZIPFILE) InputStream fileStream,
       @FormDataParam(CoordConsts.SVC_KEY_AUTO_ANALYZE_TESTRIG) String autoAnalyzeStr) {
     return uploadSnapshot(
-        apiKey,
-        clientVersion,
-        containerName,
-        null,
-        testrigName,
-        null,
-        fileStream,
-        autoAnalyzeStr,
-        null);
+        apiKey, clientVersion, containerName, testrigName, fileStream, autoAnalyzeStr, null);
   }
 }

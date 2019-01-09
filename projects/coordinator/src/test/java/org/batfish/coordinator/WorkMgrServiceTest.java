@@ -1169,7 +1169,7 @@ public class WorkMgrServiceTest {
           }
 
           @Override
-          public boolean isAccessibleContainer(
+          public boolean isAccessibleNetwork(
               String apiKey, String containerName, boolean logError) {
             networkArg.complete(containerName);
             return true;

@@ -83,7 +83,7 @@ public class FileAuthorizer implements Authorizer {
   }
 
   @Override
-  public boolean isAccessibleContainer(String apiKey, String containerName, boolean logError) {
+  public boolean isAccessibleNetwork(String apiKey, String containerName, boolean logError) {
     Permissions allPerms = loadPermissions();
     boolean allowed = accessAllowed(apiKey, containerName, allPerms);
     if (!allowed && logError) {

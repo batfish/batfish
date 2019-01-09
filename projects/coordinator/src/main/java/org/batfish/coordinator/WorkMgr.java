@@ -2198,8 +2198,7 @@ public class WorkMgr extends AbstractCoordinator {
         _idManager
             .listNetworks()
             .stream()
-            .filter(
-                container -> Main.getAuthorizer().isAccessibleContainer(apiKey, container, false))
+            .filter(container -> Main.getAuthorizer().isAccessibleNetwork(apiKey, container, false))
             .collect(toCollection(TreeSet::new));
     return authorizedContainers;
   }
@@ -2529,7 +2528,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-  public boolean checkContainerExists(String containerName) {
+  public boolean checkNetworkExists(String containerName) {
     if (!_idManager.hasNetworkId(containerName)) {
       return false;
     }

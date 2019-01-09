@@ -50,8 +50,8 @@ public class FileAuthorizerTest {
 
     // Rejects any key.
     Authorizer authorizer = new FileAuthorizer(users, perms, _logger);
-    assertFalse(authorizer.isAccessibleContainer("nokey", "nocontainer", false));
-    assertFalse(authorizer.isAccessibleContainer("", "", false));
+    assertFalse(authorizer.isAccessibleNetwork("nokey", "nocontainer", false));
+    assertFalse(authorizer.isAccessibleNetwork("", "", false));
   }
 
   @Test
@@ -63,15 +63,15 @@ public class FileAuthorizerTest {
 
     // Accepts initial key and initial container.
     Authorizer authorizer = new FileAuthorizer(users, perms, _logger);
-    assertTrue(authorizer.isAccessibleContainer("key", "cont", false));
+    assertTrue(authorizer.isAccessibleNetwork("key", "cont", false));
 
     // Rejects right key wrong container, and vice versa.
-    assertFalse(authorizer.isAccessibleContainer("key", "nocont", false));
-    assertFalse(authorizer.isAccessibleContainer("nokey", "cont", false));
+    assertFalse(authorizer.isAccessibleNetwork("key", "nocont", false));
+    assertFalse(authorizer.isAccessibleNetwork("nokey", "cont", false));
 
     // Is case-sensitive
-    assertFalse(authorizer.isAccessibleContainer("kEy", "cont", false));
-    assertFalse(authorizer.isAccessibleContainer("key", "CONT", false));
+    assertFalse(authorizer.isAccessibleNetwork("kEy", "cont", false));
+    assertFalse(authorizer.isAccessibleNetwork("key", "CONT", false));
   }
 
   @Test
@@ -87,24 +87,24 @@ public class FileAuthorizerTest {
 
     // Accepts initial key and initial container, but not second key or container.
     Authorizer authorizer = new FileAuthorizer(users, perms, _logger);
-    assertTrue(authorizer.isAccessibleContainer(KEY, CONT, false));
-    assertFalse(authorizer.isAccessibleContainer(KEY, CONT2, false));
-    assertFalse(authorizer.isAccessibleContainer(KEY2, CONT, false));
-    assertFalse(authorizer.isAccessibleContainer(KEY2, CONT2, false));
+    assertTrue(authorizer.isAccessibleNetwork(KEY, CONT, false));
+    assertFalse(authorizer.isAccessibleNetwork(KEY, CONT2, false));
+    assertFalse(authorizer.isAccessibleNetwork(KEY2, CONT, false));
+    assertFalse(authorizer.isAccessibleNetwork(KEY2, CONT2, false));
 
     // Authorize key for second container, ensure only 1 new interaction is valid.
     authorizer.authorizeContainer(KEY, CONT2);
-    assertTrue(authorizer.isAccessibleContainer(KEY, CONT, false));
-    assertTrue(authorizer.isAccessibleContainer(KEY, CONT2, false));
-    assertFalse(authorizer.isAccessibleContainer(KEY2, CONT, false));
-    assertFalse(authorizer.isAccessibleContainer(KEY2, CONT2, false));
+    assertTrue(authorizer.isAccessibleNetwork(KEY, CONT, false));
+    assertTrue(authorizer.isAccessibleNetwork(KEY, CONT2, false));
+    assertFalse(authorizer.isAccessibleNetwork(KEY2, CONT, false));
+    assertFalse(authorizer.isAccessibleNetwork(KEY2, CONT2, false));
 
     // Authorize key2 for second container, ensure only 1 new interaction is valid.
     authorizer.authorizeContainer(KEY2, CONT2);
-    assertTrue(authorizer.isAccessibleContainer(KEY, CONT, false));
-    assertTrue(authorizer.isAccessibleContainer(KEY, CONT2, false));
-    assertFalse(authorizer.isAccessibleContainer(KEY2, CONT, false));
-    assertTrue(authorizer.isAccessibleContainer(KEY2, CONT2, false));
+    assertTrue(authorizer.isAccessibleNetwork(KEY, CONT, false));
+    assertTrue(authorizer.isAccessibleNetwork(KEY, CONT2, false));
+    assertFalse(authorizer.isAccessibleNetwork(KEY2, CONT, false));
+    assertTrue(authorizer.isAccessibleNetwork(KEY2, CONT2, false));
   }
 
   private static String generateUsers(String... keys) {
