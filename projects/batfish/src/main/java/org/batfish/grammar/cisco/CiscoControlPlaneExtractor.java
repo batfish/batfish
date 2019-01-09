@@ -68,6 +68,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
+import static org.batfish.representation.cisco.CiscoStructureType.TRAFFIC_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ACCESS_GROUP_GLOBAL_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
@@ -173,6 +174,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SEL
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_STANDBY_TRACK;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_TRAFFIC_ZONE_MEMBER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_ZONE_MEMBER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
@@ -947,6 +949,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_ntpContext;
 import org.batfish.grammar.cisco.CiscoParser.S_policy_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.S_router_ospfContext;
 import org.batfish.grammar.cisco.CiscoParser.S_router_ripContext;
+import org.batfish.grammar.cisco.CiscoParser.S_same_security_trafficContext;
 import org.batfish.grammar.cisco.CiscoParser.S_serviceContext;
 import org.batfish.grammar.cisco.CiscoParser.S_service_policy_globalContext;
 import org.batfish.grammar.cisco.CiscoParser.S_service_policy_interfaceContext;
@@ -4589,8 +4592,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitS_zone(S_zoneContext ctx) {
     String name = ctx.name.getText();
-    _configuration.getSecurityZones().computeIfAbsent(name, SecurityZone::new);
-    defineStructure(SECURITY_ZONE, name, ctx);
+    if (ctx.SECURITY() != null) {
+      _configuration.getSecurityZones().computeIfAbsent(name, SecurityZone::new);
+      defineStructure(SECURITY_ZONE, name, ctx);
+    } else {
+      todo(ctx);
+      defineStructure(TRAFFIC_ZONE, name, ctx);
+    }
   }
 
   @Override
@@ -4628,8 +4636,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIf_zone_member(If_zone_memberContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
-    _configuration.referenceStructure(SECURITY_ZONE, name, INTERFACE_ZONE_MEMBER, line);
-    _currentInterfaces.forEach(iface -> iface.setSecurityZone(name));
+    if (ctx.SECURITY() != null) {
+      _configuration.referenceStructure(SECURITY_ZONE, name, INTERFACE_ZONE_MEMBER, line);
+      _currentInterfaces.forEach(iface -> iface.setSecurityZone(name));
+    } else {
+      _configuration.referenceStructure(TRAFFIC_ZONE, name, INTERFACE_TRAFFIC_ZONE_MEMBER, line);
+      todo(ctx);
+    }
   }
 
   @Override
@@ -5916,10 +5929,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (iface.getSecurityLevel() == null) {
         switch (alias) {
           case TRUST_SECURITY_LEVEL_ALIAS:
-            setIfaceSecurityLevel(iface, TRUST_SECURITY_LEVEL);
+            iface.setSecurityLevel(TRUST_SECURITY_LEVEL);
             break;
           case NO_TRUST_SECURITY_LEVEL_ALIAS:
-            setIfaceSecurityLevel(iface, NO_TRUST_SECURITY_LEVEL);
+            iface.setSecurityLevel(NO_TRUST_SECURITY_LEVEL);
             break;
           default:
             // don't set a level
@@ -5938,7 +5951,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           "Security level can only be configured in single-interface context");
       return;
     }
-    setIfaceSecurityLevel(_currentInterfaces.get(0), 0);
+    _currentInterfaces.get(0).setSecurityLevel(0);
   }
 
   @Override
@@ -5951,14 +5964,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           "Security level can only be configured in single-interface context");
       return;
     }
-    setIfaceSecurityLevel(_currentInterfaces.get(0), toInteger(ctx.level));
-  }
-
-  private void setIfaceSecurityLevel(Interface iface, int level) {
-    iface.setSecurityLevel(level);
-    String zoneName = CiscoConfiguration.computeSecurityLevelZoneName(level, iface.getName());
-    iface.setSecurityZone(zoneName);
-    _configuration.getSecurityZones().put(zoneName, new SecurityZone(zoneName));
+    _currentInterfaces.get(0).setSecurityLevel(toInteger(ctx.level));
   }
 
   @Override
@@ -8617,6 +8623,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitS_router_rip(S_router_ripContext ctx) {
     _currentRipProcess = null;
+  }
+
+  @Override
+  public void exitS_same_security_traffic(S_same_security_trafficContext ctx) {
+    if (ctx.INTER_INTERFACE() != null) {
+      _configuration.setSameSecurityTrafficInter(true);
+    }
+    if (ctx.INTRA_INTERFACE() != null) {
+      _configuration.setSameSecurityTrafficIntra(true);
+    }
   }
 
   @Override
