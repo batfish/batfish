@@ -204,6 +204,8 @@ public enum CiscoStructureUsage implements StructureUsage {
   WCCP_GROUP_LIST("ip wccp group-list"),
   WCCP_REDIRECT_LIST("ip wccp redirect-list"),
   WCCP_SERVICE_LIST("ip wccp service-list"),
+  VXLAN_SOURCE_INTERFACE("vxlan source-interface"),
+  VXLAN_SELF_REF("vxlan"),
   ZONE_PAIR_DESTINATION_ZONE("zone-pair security destination"),
   ZONE_PAIR_INSPECT_SERVICE_POLICY("zone-pair service-policy type inspect"),
   ZONE_PAIR_SOURCE_ZONE("zone-pair security source");
