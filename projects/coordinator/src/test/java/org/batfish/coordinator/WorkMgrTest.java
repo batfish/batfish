@@ -14,12 +14,29 @@ import static org.batfish.datamodel.FlowState.RELATED;
 import static org.batfish.datamodel.Protocol.HTTP;
 import static org.batfish.datamodel.Protocol.HTTPS;
 import static org.batfish.datamodel.Protocol.SSH;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IS_PASSIVE;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.LOCAL_AS;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.REMOTE_AS;
+import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.MULTIPATH_EBGP;
+import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE;
+import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.MULTIPATH_IBGP;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.DYNAMIC_MATCH;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.NO_MATCH_FOUND;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.UNIQUE_MATCH;
+import static org.batfish.datamodel.questions.InterfacePropertySpecifier.ACCESS_VLAN;
+import static org.batfish.datamodel.questions.InterfacePropertySpecifier.ALLOWED_VLANS;
+import static org.batfish.datamodel.questions.InterfacePropertySpecifier.AUTO_STATE_VLAN;
+import static org.batfish.datamodel.questions.InterfacePropertySpecifier.NATIVE_VLAN;
 import static org.batfish.datamodel.questions.IpsecSessionStatus.IKE_PHASE1_FAILED;
 import static org.batfish.datamodel.questions.IpsecSessionStatus.IKE_PHASE1_KEY_MISMATCH;
 import static org.batfish.datamodel.questions.IpsecSessionStatus.IPSEC_PHASE2_FAILED;
+import static org.batfish.datamodel.questions.NamedStructureSpecifier.AS_PATH_ACCESS_LIST;
+import static org.batfish.datamodel.questions.NamedStructureSpecifier.IP_6_ACCESS_LIST;
+import static org.batfish.datamodel.questions.NamedStructureSpecifier.IP_ACCESS_LIST;
+import static org.batfish.datamodel.questions.NodePropertySpecifier.DNS_SERVERS;
+import static org.batfish.datamodel.questions.NodePropertySpecifier.DNS_SOURCE_INTERFACE;
+import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREAS;
+import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREA_BORDER_ROUTER;
 import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
 import static org.batfish.identifiers.QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
 import static org.hamcrest.CoreMatchers.is;
@@ -2984,6 +3001,30 @@ public final class WorkMgrTest {
   }
 
   @Test
+  public void testBgpPeerPropertySpecAutocomplete() throws IOException {
+    assertThat(
+        _manager
+            .autoComplete("network", "snapshot", Type.BGP_PEER_PROPERTY_SPEC, "as", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(LOCAL_AS, IS_PASSIVE, REMOTE_AS)));
+  }
+
+  @Test
+  public void testBgpProcessPropertySpecAutocomplete() throws IOException {
+    assertThat(
+        _manager
+            .autoComplete("network", "snapshot", Type.BGP_PROCESS_PROPERTY_SPEC, "multi", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(
+            ImmutableSet.of(
+                MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE, MULTIPATH_EBGP, MULTIPATH_IBGP)));
+  }
+
+  @Test
   public void testBgpSessionStatusAutocomplete() throws IOException {
     assertThat(
         _manager
@@ -3066,6 +3107,17 @@ public final class WorkMgrTest {
   }
 
   @Test
+  public void testInterfacePropertySpecAutocomplete() throws IOException {
+    assertThat(
+        _manager
+            .autoComplete("network", "snapshot", Type.INTERFACE_PROPERTY_SPEC, "vlan", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(ACCESS_VLAN, ALLOWED_VLANS, AUTO_STATE_VLAN, NATIVE_VLAN)));
+  }
+
+  @Test
   public void testIpAutocomplete() throws IOException {
     String network = "network";
     String snapshot = "snapshot";
@@ -3102,6 +3154,28 @@ public final class WorkMgrTest {
   }
 
   @Test
+  public void testNamedStructureSpecAutocomplete() throws IOException {
+    assertThat(
+        _manager
+            .autoComplete("network", "snapshot", Type.NAMED_STRUCTURE_SPEC, "access", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(AS_PATH_ACCESS_LIST, IP_ACCESS_LIST, IP_6_ACCESS_LIST)));
+  }
+
+  @Test
+  public void testNodePropertySpecAutocomplete() throws IOException {
+    assertThat(
+        _manager
+            .autoComplete("network", "snapshot", Type.NODE_PROPERTY_SPEC, "dns", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(DNS_SERVERS, DNS_SOURCE_INTERFACE)));
+  }
+
+  @Test
   public void testNodeRoleDimensionAutocomplete() throws IOException {
     String network = "network";
     NetworkId networkId = _idManager.generateNetworkId();
@@ -3122,6 +3196,44 @@ public final class WorkMgrTest {
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(suggested.getName())));
+  }
+
+  @Test
+  public void testNodeSpecAutocomplete() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+
+    _manager.initNetwork(network, null);
+
+    // create a testrig and write a topology object for it
+    createSnapshotWithMetadata(network, snapshot);
+    Topology topology = new Topology(snapshot);
+    topology.setNodes(ImmutableSet.of(new Node("a1"), new Node("b1")));
+    CommonUtil.writeFile(
+        _manager
+            .getdirSnapshot(network, snapshot)
+            .resolve(
+                Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH)),
+        BatfishObjectMapper.mapper().writeValueAsString(topology));
+
+    assertThat(
+        _manager
+            .autoComplete(network, snapshot, Type.NODE_SPEC, "a", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("a1", "a.*")));
+  }
+
+  @Test
+  public void testOspfPropertySpecAutocomplete() throws IOException {
+    assertThat(
+        _manager
+            .autoComplete("network", "snapshot", Type.OSPF_PROPERTY_SPEC, "area", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(AREA_BORDER_ROUTER, AREAS)));
   }
 
   @Test
@@ -3233,5 +3345,15 @@ public final class WorkMgrTest {
     _idManager.assignNetwork(network, _idManager.generateNetworkId());
     // should return null if snapshot is not set up
     assertThat(_manager.autoComplete(network, "snapshot", Type.ZONE, "z", 5), equalTo(null));
+  }
+
+  @Test
+  public void testAutocompleteUnsupportedType() throws IOException {
+    Type type = Type.ANSWER_ELEMENT;
+
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage("Unsupported completion type: " + type);
+
+    _manager.autoComplete("network", "snapshot", type, "blah", 5);
   }
 }

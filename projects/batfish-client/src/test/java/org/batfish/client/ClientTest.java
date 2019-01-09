@@ -544,6 +544,42 @@ public class ClientTest {
   }
 
   @Test
+  public void testInvalidAddressBookValue() throws IOException {
+    String input = "5";
+    Type expectedType = ADDRESS_BOOK;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidAddressGroupValue() throws IOException {
+    String input = "5";
+    Type expectedType = ADDRESS_GROUP;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidBgpSessionStatusValue() throws IOException {
+    String input = "5";
+    Type expectedType = BGP_SESSION_STATUS;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidBgpSessionTypeValue() throws IOException {
+    String input = "5";
+    Type expectedType = BGP_SESSION_TYPE;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
   public void testInvalidBooleanValue() throws IOException {
     String input = "\"true\"";
     Type expectedType = BOOLEAN;
@@ -569,10 +605,28 @@ public class ClientTest {
   }
 
   @Test
+  public void testInvalidFilterValue() throws IOException {
+    String input = "5";
+    Type expectedType = FILTER;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
   public void testInvalidFloatValue() throws IOException {
     String input = "\"string\"";
     Type expectedType = FLOAT;
     String expectedMessage = String.format("It is not a valid JSON %s value", FLOAT.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidFlowStateValue() throws IOException {
+    String input = "5";
+    Type expectedType = FLOW_STATE;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
@@ -595,6 +649,15 @@ public class ClientTest {
     String input = "1.5";
     Type expectedType = INTEGER;
     String expectedMessage = String.format("It is not a valid JSON %s value", INTEGER.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidInterfaceValue() throws IOException {
+    String input = "5";
+    Type expectedType = INTERFACE;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
@@ -630,6 +693,15 @@ public class ClientTest {
     String expectedMessage = "Invalid ip segment: \"$\" in ip string: " + "\"10.168.100.$\"";
     validateTypeWithInvalidInput(
         input, IllegalArgumentException.class, expectedMessage, IP_WILDCARD);
+  }
+
+  @Test
+  public void testInvalidIpsecSessionStatusValue() throws IOException {
+    String input = "5";
+    Type expectedType = IPSEC_SESSION_STATUS;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
   @Test
@@ -676,6 +748,15 @@ public class ClientTest {
   }
 
   @Test
+  public void testInvalidNodeRoleDimensionValue() throws IOException {
+    String input = "5";
+    Type expectedType = NODE_ROLE_DIMENSION;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
   public void testInvalidPrefixRangeValue() throws IOException {
     String input = "\"10.168.5.5/30:s10-50\"";
     String expectedMessage = "Invalid subrange start: \"s10\"";
@@ -700,10 +781,37 @@ public class ClientTest {
   }
 
   @Test
+  public void testInvalidStructureNameValue() throws IOException {
+    String input = "5";
+    Type expectedType = STRUCTURE_NAME;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
   public void testInvalidSubRangeValue() throws IOException {
     String input = "\"10-s50\"";
     String expectedMessage = "Invalid subrange end: \"s50\"";
     validateTypeWithInvalidInput(input, expectedMessage, SUBRANGE);
+  }
+
+  @Test
+  public void testInvalidVrfValue() throws IOException {
+    String input = "5";
+    Type expectedType = VRF;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidZoneValue() throws IOException {
+    String input = "5";
+    Type expectedType = ZONE;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
   @Test
