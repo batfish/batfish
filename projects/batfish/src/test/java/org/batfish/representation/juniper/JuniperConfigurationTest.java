@@ -25,7 +25,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 import java.util.Map;
-import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warning;
@@ -264,7 +263,7 @@ public class JuniperConfigurationTest {
         .getInterfaces()
         .put(interface1Name, new Interface(interface1Name));
 
-    Zone zone = new Zone("zone", new TreeMap<>());
+    Zone zone = new Zone("zone", new AddressBook("global", null));
     String zoneInterface1Name = "zoneInterface1";
     zone.getInterfaces().add(new Interface(zoneInterface1Name));
     String zoneInterface2Name = "zoneInterface2";
