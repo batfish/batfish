@@ -11914,9 +11914,9 @@
           }
         }
       },
-      "eos-mlag" : {
+      "eos_mlag" : {
         "configurationFormat" : "ARISTA",
-        "name" : "eos-mlag",
+        "name" : "eos_mlag",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
@@ -11981,7 +11981,7 @@
         },
         "vendorFamily" : {
           "cisco" : {
-            "hostname" : "eos-mlag"
+            "hostname" : "eos_mlag"
           }
         },
         "vrfs" : {

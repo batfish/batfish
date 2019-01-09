@@ -538,7 +538,7 @@ if_load_interval
    LOAD_INTERVAL li = DEC NEWLINE
 ;
 
-if_mlag
+if_eos_mlag
 :
    MLAG id = DEC NEWLINE
 ;
@@ -1644,6 +1644,7 @@ if_inner
    | if_default_gw
    | if_delay
    | if_description
+   | if_eos_mlag
    | if_flow_sampler
    | if_hsrp
    | if_hsrp6
@@ -1692,7 +1693,6 @@ if_inner
    | if_isis_passive
    | if_isis_tag
    | if_load_interval
-   | if_mlag
    | if_mtu
    | if_nameif
    | if_no_bfd

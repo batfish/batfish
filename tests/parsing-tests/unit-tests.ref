@@ -438,7 +438,7 @@
         "community_set" : [
           "configs/community_set"
         ],
-        "eos-mlag" : [
+        "eos_mlag" : [
           "configs/eos_mlag"
         ],
         "foundry_access_list" : [
@@ -39049,13 +39049,13 @@
             "  EOF:<EOF>)"
           ]
         },
-        "eos-mlag" : {
+        "eos_mlag" : {
           "sentences" : [
             "(cisco_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
-            "      VARIABLE:'eos-mlag'",
+            "      VARIABLE:'eos_mlag'",
             "      NEWLINE:'\\n'))",
             "  (stanza",
             "    (s_vlan",
@@ -39105,7 +39105,7 @@
             "            low = DEC:'2'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (if_inner",
-            "        (if_mlag",
+            "        (if_eos_mlag",
             "          MLAG:'mlag'",
             "          id = DEC:'2'",
             "          NEWLINE:'\\n'))",
@@ -62836,7 +62836,7 @@
         "community-name-numbers_dos" : "PASSED",
         "community_list_named" : "PASSED",
         "community_set" : "PASSED",
-        "eos-mlag" : "PASSED",
+        "eos_mlag" : "PASSED",
         "foundry_access_list" : "PASSED",
         "foundry_bgp" : "PASSED",
         "foundry_interface" : "PASSED",
@@ -69308,7 +69308,7 @@
               "interface" : [
                 9
               ],
-              "mlag configuraiton" : [
+              "mlag configuration peer-link" : [
                 21
               ]
             },
@@ -69318,7 +69318,7 @@
               ]
             },
             "Vlan4094" : {
-              "mlag configuraiton" : [
+              "mlag configuration local-interface" : [
                 19
               ]
             }

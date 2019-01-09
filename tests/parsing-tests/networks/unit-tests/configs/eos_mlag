@@ -1,6 +1,6 @@
 ! boot system flash:/EOS-4.19.1F.swi
 !
-hostname eos-mlag
+hostname eos_mlag
 !
 vlan 4094
    name MLAG

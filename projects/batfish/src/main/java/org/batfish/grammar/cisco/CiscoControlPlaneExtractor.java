@@ -186,7 +186,8 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.LINE_ACCESS_C
 import static org.batfish.representation.cisco.CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6;
 import static org.batfish.representation.cisco.CiscoStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP;
-import static org.batfish.representation.cisco.CiscoStructureUsage.MLAG_CONFIGURATION;
+import static org.batfish.representation.cisco.CiscoStructureUsage.MLAG_CONFIGURATION_LOCAL_INTERFACE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.MLAG_CONFIGURATION_PEER_LINK;
 import static org.batfish.representation.cisco.CiscoStructureUsage.MSDP_PEER_SA_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT;
@@ -576,6 +577,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_channel_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.If_crypto_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.If_delayContext;
 import org.batfish.grammar.cisco.CiscoParser.If_descriptionContext;
+import org.batfish.grammar.cisco.CiscoParser.If_eos_mlagContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_address_secondaryContext;
@@ -602,7 +604,6 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_sitemapContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
-import org.batfish.grammar.cisco.CiscoParser.If_mlagContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.If_nameifContext;
 import org.batfish.grammar.cisco.CiscoParser.If_no_security_levelContext;
@@ -5896,7 +5897,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitIf_mlag(If_mlagContext ctx) {
+  public void exitIf_eos_mlag(If_eos_mlagContext ctx) {
     int mlagId = toInteger(ctx.DEC());
     _currentInterfaces.forEach(iface -> iface.setMlagId(mlagId));
   }
@@ -6937,7 +6938,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String iface = ctx.iface.getText();
     _currentEosMlagConfiguration.setLocalInterface(iface);
     _configuration.referenceStructure(
-        INTERFACE, iface, MLAG_CONFIGURATION, ctx.getStart().getLine());
+        INTERFACE, iface, MLAG_CONFIGURATION_LOCAL_INTERFACE, ctx.getStart().getLine());
   }
 
   @Override
@@ -6950,7 +6951,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String iface = ctx.iface.getText();
     _currentEosMlagConfiguration.setPeerLink(iface);
     _configuration.referenceStructure(
-        INTERFACE, iface, MLAG_CONFIGURATION, ctx.getStart().getLine());
+        INTERFACE, iface, MLAG_CONFIGURATION_PEER_LINK, ctx.getStart().getLine());
   }
 
   @Override
@@ -6968,9 +6969,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_mlag_shutdown(Eos_mlag_shutdownContext ctx) {
-    if (ctx.NO() != null) {
-      _currentEosMlagConfiguration.setShutdown(true);
-    }
+    _currentEosMlagConfiguration.setShutdown(ctx.NO() == null);
   }
 
   @Override
