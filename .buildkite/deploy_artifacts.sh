@@ -16,7 +16,7 @@ echo "${BATFISH_VERSION}" > version
 tar -cf "${ARTIFACT_TAR}" allinone.jar questions.tgz tag version
 ln "${ARTIFACT_TAR}" dev.tar
 ARTIFACT_KEY="${ARTIFACTS_DIR}/${ARTIFACT_TAR}"
-if aws s3api head-object --bucket "${S3_BUCKET_NAME}" --key "${ARTIFACT_KEY}"; then
+if aws s3api head-object --bucket "${S3_BUCKET_NAME}" --key "${ARTIFACT_KEY}" >& /dev/null; then
   echo "Skipping upload since artifact already exists for this commit"
 else
   buildkite-agent artifact upload "${ARTIFACT_TAR}" "${S3_BUCKET}/${ARTIFACT_KEY}"
