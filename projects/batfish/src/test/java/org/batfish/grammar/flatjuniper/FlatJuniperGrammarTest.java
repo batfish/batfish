@@ -3845,7 +3845,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testSourceNatPool() throws IOException {
+  public void testSourceNatPool() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-sourcenat-pool");
     Map<String, NatPool> pools =
         juniperConfiguration.getMasterLogicalSystem().getNatSource().getPools();
