@@ -1,5 +1,6 @@
 package org.batfish.question.vxlanproperties;
 
+import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_NODE;
 import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_REMOTE_VTEP_MULTICAST_GROUP;
 import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_REMOTE_VTEP_UNICAST_ADDRESSES;
 import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VLAN;
@@ -44,16 +45,34 @@ public class VxlanVniPropertiesAnswererTest {
                     Row.of(
                         COL_VNI,
                         1,
-                        COL_REMOTE_VTEP_MULTICAST_GROUP,
-                        null,
-                        COL_REMOTE_VTEP_UNICAST_ADDRESSES,
-                        ImmutableSet.of(Ip.parse("1.2.3.4")),
+                        COL_NODE,
+                        "hostname",
                         COL_VLAN,
                         10001,
                         COL_VTEP_ADDRESS,
-                        Ip.parse("2.3.4.5"),
+                        Ip.parse("1.2.3.4"),
+                        COL_REMOTE_VTEP_MULTICAST_GROUP,
+                        null,
+                        COL_REMOTE_VTEP_UNICAST_ADDRESSES,
+                        ImmutableSet.of(Ip.parse("2.3.4.5"), Ip.parse("2.3.4.6")),
                         COL_VXLAN_UDP_PORT,
-                        5555))));
+                        4242))
+                .add(
+                    Row.of(
+                        COL_VNI,
+                        2,
+                        COL_NODE,
+                        "hostname",
+                        COL_VLAN,
+                        10002,
+                        COL_VTEP_ADDRESS,
+                        Ip.parse("1.2.3.4"),
+                        COL_REMOTE_VTEP_MULTICAST_GROUP,
+                        ImmutableSet.of(Ip.parse("227.10.1.1")),
+                        COL_REMOTE_VTEP_UNICAST_ADDRESSES,
+                        null,
+                        COL_VXLAN_UDP_PORT,
+                        4789))));
   }
 
   private static class TestBatfish extends IBatfishTestAdapter {
@@ -63,17 +82,27 @@ public class VxlanVniPropertiesAnswererTest {
       conf.setVrfs(
           ImmutableMap.of(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME)));
       conf.getDefaultVrf()
-          .getVniSettings()
-          .put(
-              1,
-              VniSettings.builder()
-                  .setVni(1)
-                  .setVlan(10001)
-                  .setSourceAddress(Ip.parse("1.2.3.4"))
-                  .setUdpPort(4242)
-                  .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
-                  .setBumTransportIps(ImmutableSortedSet.of(Ip.parse("2.3.4.5")))
-                  .build());
+          .setVniSettings(
+              ImmutableSortedMap.of(
+                  1,
+                  VniSettings.builder()
+                      .setVni(1)
+                      .setVlan(10001)
+                      .setSourceAddress(Ip.parse("1.2.3.4"))
+                      .setUdpPort(4242)
+                      .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+                      .setBumTransportIps(
+                          ImmutableSortedSet.of(Ip.parse("2.3.4.5"), Ip.parse("2.3.4.6")))
+                      .build(),
+                  2,
+                  VniSettings.builder()
+                      .setVni(2)
+                      .setVlan(10002)
+                      .setSourceAddress(Ip.parse("1.2.3.4"))
+                      .setUdpPort(4789)
+                      .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
+                      .setBumTransportIps(ImmutableSortedSet.of(Ip.parse("227.10.1.1")))
+                      .build()));
       return ImmutableSortedMap.of("hostname", conf);
     }
 

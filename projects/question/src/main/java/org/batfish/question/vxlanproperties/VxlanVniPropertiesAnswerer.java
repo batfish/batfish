@@ -2,17 +2,15 @@ package org.batfish.question.vxlanproperties;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.VniSettings;
-import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -31,11 +29,17 @@ final class VxlanVniPropertiesAnswerer extends Answerer {
     Rows rows = new Rows();
     nodes.forEach(
         n -> {
-          Map<String, Vrf> vrfs = configurations.get(n).getVrfs();
-          vrfs.forEach(vrf -> {});
-
-          VniSettings vniSettings = configurations.get(n).getVniSettings();
-          rows.add(getRow(n /*, vniSettings*/));
+          configurations
+              .get(n)
+              .getVrfs()
+              .forEach(
+                  (vrfName, vrf) -> {
+                    vrf.getVniSettings()
+                        .forEach(
+                            (vni, vniSettings) -> {
+                              rows.add(getRow(n, vniSettings));
+                            });
+                  });
         });
 
     TableAnswerElement answerElement = new TableAnswerElement(TABLE_METADATA);
@@ -49,17 +53,17 @@ final class VxlanVniPropertiesAnswerer extends Answerer {
 
   @Nonnull
   @VisibleForTesting
-  static Row getRow(String node /*, VniSettings vniSettings*/) {
+  static Row getRow(String node, VniSettings vniSettings) {
     Row.TypedRowBuilder builder = Row.builder(TABLE_METADATA.toColumnMap());
-    builder.put(COL_VNI, 10007);
+    builder.put(COL_VNI, vniSettings.getVni());
     builder.put(COL_NODE, node);
-    builder.put(COL_VLAN, 7);
-    builder.put(COL_VTEP_ADDRESS, Ip.parse("1.2.3.4"));
-    builder.put(COL_REMOTE_VTEP_MULTICAST_GROUP, null);
+    builder.put(COL_VLAN, vniSettings.getVlan());
+    builder.put(COL_VTEP_ADDRESS, vniSettings.getSourceAddress());
+    boolean unicast = vniSettings.getBumTransportMethod() == BumTransportMethod.UNICAST_FLOOD_GROUP;
+    builder.put(COL_REMOTE_VTEP_MULTICAST_GROUP, unicast ? null : vniSettings.getBumTransportIps());
     builder.put(
-        COL_REMOTE_VTEP_UNICAST_ADDRESSES,
-        ImmutableSet.of(Ip.parse("2.2.2.2"), Ip.parse("2.2.2.3")));
-    builder.put(COL_VXLAN_UDP_PORT, 2345);
+        COL_REMOTE_VTEP_UNICAST_ADDRESSES, unicast ? vniSettings.getBumTransportIps() : null);
+    builder.put(COL_VXLAN_UDP_PORT, vniSettings.getUdpPort());
     return builder.build();
   }
 
@@ -85,8 +89,8 @@ final class VxlanVniPropertiesAnswerer extends Answerer {
               COL_VTEP_ADDRESS, Schema.IP, "Source address for this VTEP", false, true),
           new ColumnMetadata(
               COL_REMOTE_VTEP_MULTICAST_GROUP,
-              Schema.IP,
-              "VXLAN network remote VTEP multicast group",
+              Schema.set(Schema.IP),
+              "VXLAN network remote VTEP multicast addresses",
               false,
               true),
           new ColumnMetadata(
