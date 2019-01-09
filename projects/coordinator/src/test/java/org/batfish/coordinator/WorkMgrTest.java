@@ -3205,7 +3205,7 @@ public final class WorkMgrTest {
 
     _manager.initNetwork(network, null);
 
-    // create a testrig and write a topology object for it
+    // create a snapshot and write a topology object for it
     createSnapshotWithMetadata(network, snapshot);
     Topology topology = new Topology(snapshot);
     topology.setNodes(ImmutableSet.of(new Node("a1"), new Node("b1")));
