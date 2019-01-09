@@ -46,7 +46,6 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
@@ -116,7 +115,6 @@ public class NodJobTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Interface.Builder ib = nf.interfaceBuilder().setBandwidth(1E9d);
     IpAccessList.Builder aclb = nf.aclBuilder();
-    SourceNat.Builder snb = SourceNat.builder();
     Vrf.Builder vb = nf.vrfBuilder();
 
     _srcNode = cb.build();

@@ -10,7 +10,12 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 
-/** A representation of an atomic transformation step. */
+/**
+ * A representation of an atomic transformation step. Each step has a {@link TransformationType},
+ * which is included in traces. In order to build meaningful traces, the transformation must apply
+ * at least one stepl whenever a flow would match a transformation rule in the source configs. Use
+ * the {@link Noop} step for rules that match but do not transform the flow.
+ */
 @ParametersAreNonnullByDefault
 public interface TransformationStep {
   /** Which {@link TransformationType} this step is (partially) encoding. */

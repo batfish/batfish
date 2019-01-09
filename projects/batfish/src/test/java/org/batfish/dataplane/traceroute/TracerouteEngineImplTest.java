@@ -1,6 +1,5 @@
 package org.batfish.dataplane.traceroute;
 
-import static java.util.Collections.singletonList;
 import static org.batfish.datamodel.FlowDiff.flowDiffs;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
@@ -29,7 +28,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
@@ -39,7 +37,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +45,6 @@ import java.util.SortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.DestinationNat;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -61,13 +57,11 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
-import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
@@ -105,152 +99,6 @@ public class TracerouteEngineImplTest {
     builder.setIngressNode("foo");
     builder.setTag("TEST");
     return builder.build();
-  }
-
-  private static IpAccessList makeAcl(String name, LineAction action) {
-    IpAccessListLine aclLine =
-        IpAccessListLine.builder().setAction(action).setMatchCondition(TrueExpr.INSTANCE).build();
-    return IpAccessList.builder().setName(name).setLines(singletonList(aclLine)).build();
-  }
-
-  @Test
-  public void testApplyDestinationNatSingleAclMatch() {
-    Flow flow = makeFlow();
-
-    DestinationNat nat =
-        DestinationNat.builder()
-            .setAcl(makeAcl("accept", LineAction.PERMIT))
-            .setPoolIpFirst(Ip.parse("4.5.6.7"))
-            .build();
-
-    Flow transformed =
-        TracerouteEngineImplContext.applyDestinationNat(
-            flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
-    assertThat(transformed.getDstIp(), equalTo(Ip.parse("4.5.6.7")));
-  }
-
-  @Test
-  public void testApplyDestinationNatSingleAclNoMatch() {
-    Flow flow = makeFlow();
-
-    DestinationNat nat =
-        DestinationNat.builder()
-            .setAcl(makeAcl("reject", LineAction.DENY))
-            .setPoolIpFirst(Ip.parse("4.5.6.7"))
-            .build();
-
-    Flow transformed =
-        TracerouteEngineImplContext.applyDestinationNat(
-            flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
-    assertThat(transformed, is(flow));
-  }
-
-  @Test
-  public void testApplyDestinationNatFirstMatchWins() {
-    Flow flow = makeFlow();
-
-    DestinationNat nat =
-        DestinationNat.builder()
-            .setAcl(makeAcl("firstAccept", LineAction.PERMIT))
-            .setPoolIpFirst(Ip.parse("4.5.6.7"))
-            .build();
-
-    DestinationNat secondNat =
-        DestinationNat.builder()
-            .setAcl(makeAcl("secondAccept", LineAction.PERMIT))
-            .setPoolIpFirst(Ip.parse("4.5.6.8"))
-            .build();
-
-    Flow transformed =
-        TracerouteEngineImplContext.applyDestinationNat(
-            flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
-    assertThat(transformed.getDstIp(), equalTo(Ip.parse("4.5.6.7")));
-  }
-
-  @Test
-  public void testApplyDestinationNatLateMatchWins() {
-    Flow flow = makeFlow();
-
-    DestinationNat nat =
-        DestinationNat.builder()
-            .setAcl(makeAcl("rejectAll", LineAction.DENY))
-            .setPoolIpFirst(Ip.parse("4.5.6.7"))
-            .build();
-
-    DestinationNat secondNat =
-        DestinationNat.builder()
-            .setAcl(makeAcl("acceptAnyway", LineAction.PERMIT))
-            .setPoolIpFirst(Ip.parse("4.5.6.8"))
-            .build();
-
-    Flow transformed =
-        TracerouteEngineImplContext.applyDestinationNat(
-            flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
-    assertThat(transformed.getDstIp(), equalTo(Ip.parse("4.5.6.8")));
-  }
-
-  @Test
-  public void testApplySourceNatSingleAclMatch() {
-    Flow flow = makeFlow();
-
-    SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("accept", LineAction.PERMIT));
-    nat.setPoolIpFirst(Ip.parse("4.5.6.7"));
-
-    Flow transformed =
-        TracerouteEngineImplContext.applySourceNat(
-            flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
-    assertThat(transformed.getSrcIp(), equalTo(Ip.parse("4.5.6.7")));
-  }
-
-  @Test
-  public void testApplySourceNatSingleAclNoMatch() {
-    Flow flow = makeFlow();
-
-    SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("reject", LineAction.DENY));
-    nat.setPoolIpFirst(Ip.parse("4.5.6.7"));
-
-    Flow transformed =
-        TracerouteEngineImplContext.applySourceNat(
-            flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
-    assertThat(transformed, is(flow));
-  }
-
-  @Test
-  public void testApplySourceNatFirstMatchWins() {
-    Flow flow = makeFlow();
-
-    SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("firstAccept", LineAction.PERMIT));
-    nat.setPoolIpFirst(Ip.parse("4.5.6.7"));
-
-    SourceNat secondNat = new SourceNat();
-    secondNat.setAcl(makeAcl("secondAccept", LineAction.PERMIT));
-    secondNat.setPoolIpFirst(Ip.parse("4.5.6.8"));
-
-    Flow transformed =
-        TracerouteEngineImplContext.applySourceNat(
-            flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
-    assertThat(transformed.getSrcIp(), equalTo(Ip.parse("4.5.6.7")));
-  }
-
-  @Test
-  public void testApplySourceNatLateMatchWins() {
-    Flow flow = makeFlow();
-
-    SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("rejectAll", LineAction.DENY));
-    nat.setPoolIpFirst(Ip.parse("4.5.6.7"));
-
-    SourceNat secondNat = new SourceNat();
-    secondNat.setAcl(makeAcl("acceptAnyway", LineAction.PERMIT));
-    secondNat.setPoolIpFirst(Ip.parse("4.5.6.8"));
-
-    Flow transformed =
-        TracerouteEngineImplContext.applySourceNat(
-            flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
-    assertThat(transformed.getSrcIp(), equalTo(Ip.parse("4.5.6.8")));
   }
 
   /*

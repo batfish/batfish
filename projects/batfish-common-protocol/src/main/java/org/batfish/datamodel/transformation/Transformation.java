@@ -1,6 +1,5 @@
 package org.batfish.datamodel.transformation;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 
 import com.google.common.collect.ImmutableList;
@@ -12,14 +11,16 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 
-/** A representation of a composite packet transformation. */
+/**
+ * A representation of a composite packet transformation. When the guard matches the input flow,
+ * apply the {@link TransformationStep TransformationSteps} and then apply the {@code andThen}
+ * {@link Transformation}. When the guard does not match the flow, apply the {@code orElse} {@link
+ * Transformation}. Stop upon reaching a {@code null} transformation.
+ */
 @ParametersAreNonnullByDefault
 public final class Transformation implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
-
-  private static final String ERROR_NO_STEPS =
-      "Cannot create Transformation with zero transformationSteps. Consider using Noop.";
 
   public static final class Builder {
     private @Nonnull AclLineMatchExpr _guard;
@@ -33,7 +34,6 @@ public final class Transformation implements Serializable {
     }
 
     public Builder apply(TransformationStep... transformationSteps) {
-      checkArgument(transformationSteps.length > 0, ERROR_NO_STEPS);
       _transformationSteps = ImmutableList.copyOf(transformationSteps);
       return this;
     }
@@ -81,7 +81,6 @@ public final class Transformation implements Serializable {
       @Nonnull List<TransformationStep> transformationSteps,
       @Nullable Transformation andThen,
       @Nullable Transformation orElse) {
-    checkArgument(!transformationSteps.isEmpty(), ERROR_NO_STEPS);
     _guard = guard;
     _transformationSteps = ImmutableList.copyOf(transformationSteps);
     _andThen = andThen;

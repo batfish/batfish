@@ -106,7 +106,6 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasGeneratedRoutes;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
-import static org.batfish.datamodel.transformation.Noop.NOOP_SOURCE_NAT;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
@@ -3157,7 +3156,6 @@ public final class FlatJuniperGrammarTest {
 
     Transformation ruleSet1Transformation =
         when(matchSrcInterface("ge-0/0/0.0"))
-            .apply(NOOP_SOURCE_NAT)
             .setAndThen(
                 when(matchDst(Prefix.parse("1.1.1.1/24"))).apply(transformationStep).build())
             .build();
@@ -3165,7 +3163,6 @@ public final class FlatJuniperGrammarTest {
     // rule set 3 has a zone from location, so it goes second
     Transformation ruleSet3Transformation =
         when(matchSrcInterface("ge-0/0/0.0", "ge-0/0/1.0"))
-            .apply(NOOP_SOURCE_NAT)
             .setAndThen(
                 when(matchDst(Prefix.parse("3.3.3.3/24")))
                     .apply(transformationStep)
@@ -3177,7 +3174,6 @@ public final class FlatJuniperGrammarTest {
     // rule set 2 has an interface from location, so it goes first
     Transformation ruleSet2Transformation =
         when(matchSrcInterface("ge-0/0/0.0"))
-            .apply(NOOP_SOURCE_NAT)
             .setAndThen(
                 when(matchDst(Prefix.parse("2.2.2.2/24")))
                     .apply(transformationStep)

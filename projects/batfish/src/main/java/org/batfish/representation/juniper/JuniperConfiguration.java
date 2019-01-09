@@ -1,7 +1,6 @@
 package org.batfish.representation.juniper;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
@@ -10,16 +9,10 @@ import static org.batfish.datamodel.transformation.IpField.SOURCE;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
-import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
-import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
-import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
-import static org.batfish.representation.juniper.NatRuleMatchToHeaderSpace.toHeaderSpace;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
@@ -92,13 +85,11 @@ import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpServer;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -1455,6 +1446,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return builder.build();
   }
 
+  /*
   @VisibleForTesting
   Map<NatPacketLocation, AclLineMatchExpr> fromNatPacketLocationMatchExprs() {
     ImmutableMap.Builder<NatPacketLocation, AclLineMatchExpr> builder = ImmutableMap.builder();
@@ -1485,44 +1477,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                         routingInstance.getInterfaces().keySet().toArray(new String[0]))));
     return builder.build();
   }
-
-  private Map<NatPacketLocation, Set<String>> computeAllInterfacesForAllNatPacketLocation(Nat nat) {
-    if (nat == null) {
-      return ImmutableMap.of();
-    }
-
-    ImmutableMap.Builder<NatPacketLocation, Set<String>> builder = new ImmutableMap.Builder<>();
-
-    for (NatRuleSet rs : nat.getRuleSets().values()) {
-      builder.put(
-          rs.getFromLocation(), computeAllInterfacesPerNatPacketLocation(rs.getFromLocation()));
-    }
-
-    return builder.build();
-  }
-
-  private Set<String> computeAllInterfacesPerNatPacketLocation(NatPacketLocation location) {
-    ImmutableSet.Builder<String> builder = new ImmutableSet.Builder<>();
-
-    if (location.getInterface() != null) {
-      builder.add(location.getInterface());
-    }
-    if (location.getZone() != null) {
-      Zone zone = _masterLogicalSystem.getZones().get(location.getZone());
-      if (zone != null) {
-        zone.getInterfaces().stream().map(Interface::getName).forEach(builder::add);
-      }
-    }
-    if (location.getRoutingInstance() != null) {
-      RoutingInstance ri =
-          _masterLogicalSystem.getRoutingInstances().get(location.getRoutingInstance());
-      if (ri != null) {
-        ri.getInterfaces().keySet().stream().forEach(builder::add);
-      }
-    }
-
-    return builder.build();
-  }
+  */
 
   private Transformation buildIncomingTransformation(Interface iface) {
     Nat dnat = _masterLogicalSystem.getNatDestination();
@@ -1567,39 +1522,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
               .orElse(transformation);
     }
     return transformation;
-  }
-
-  private SourceNat toSourceNat(
-      String ifaceName,
-      String rulesetName,
-      Map<String, NatPool> pools,
-      Set<String> fromInterfaces,
-      NatRule natRule) {
-    SourceNat.Builder builder = SourceNat.builder();
-
-    builder.setAcl(
-        IpAccessList.builder()
-            .setOwner(_c)
-            .setName(
-                String.format("~SOURCENAT~%s~%s~%s~", ifaceName, rulesetName, natRule.getName()))
-            .setLines(
-                ImmutableList.of(
-                    accepting(
-                        AclLineMatchExprs.and(
-                            new MatchSrcInterface(fromInterfaces),
-                            new MatchHeaderSpace(toHeaderSpace(natRule.getMatches()))))))
-            .build());
-
-    NatRuleThen then = natRule.getThen();
-    if (then instanceof NatRuleThenPool) {
-      NatPool pool = pools.get(((NatRuleThenPool) then).getPoolName());
-      builder.setPoolIpFirst(pool.getFromAddress());
-      builder.setPoolIpLast(pool.getToAddress());
-    } else if (!(then instanceof NatRuleThenOff)) {
-      throw new IllegalArgumentException("Unrecognized NatRuleThen type");
-    }
-
-    return builder.build();
   }
 
   /** Generate IpAccessList from the specified to-zone's security policies. */
