@@ -1446,39 +1446,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return builder.build();
   }
 
-  /*
-  @VisibleForTesting
-  Map<NatPacketLocation, AclLineMatchExpr> fromNatPacketLocationMatchExprs() {
-    ImmutableMap.Builder<NatPacketLocation, AclLineMatchExpr> builder = ImmutableMap.builder();
-    _masterLogicalSystem
-        .getInterfaces()
-        .keySet()
-        .forEach(iface -> builder.put(interfaceLocation(iface), matchSrcInterface(iface)));
-    _masterLogicalSystem
-        .getZones()
-        .values()
-        .forEach(
-            zone ->
-                builder.put(
-                    zoneLocation(zone.getName()),
-                    matchSrcInterface(
-                        zone.getInterfaces()
-                            .stream()
-                            .map(Interface::getName)
-                            .toArray(String[]::new))));
-    _masterLogicalSystem
-        .getRoutingInstances()
-        .values()
-        .forEach(
-            routingInstance ->
-                builder.put(
-                    routingInstanceLocation(routingInstance.getName()),
-                    matchSrcInterface(
-                        routingInstance.getInterfaces().keySet().toArray(new String[0]))));
-    return builder.build();
-  }
-  */
-
   private Transformation buildIncomingTransformation(Interface iface) {
     Nat dnat = _masterLogicalSystem.getNatDestination();
     if (dnat == null) {

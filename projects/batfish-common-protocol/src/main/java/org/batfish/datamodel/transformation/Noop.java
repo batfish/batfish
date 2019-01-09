@@ -1,8 +1,11 @@
 package org.batfish.datamodel.transformation;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -17,13 +20,21 @@ public final class Noop implements TransformationStep, Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private final TransformationType _type;
-
   public static final Noop NOOP_DEST_NAT = new Noop(DEST_NAT);
   public static final Noop NOOP_SOURCE_NAT = new Noop(SOURCE_NAT);
 
+  private static final String PROP_TRANSFORMATION_TYPE = "transformationType";
+
+  private final TransformationType _type;
+
   public Noop(TransformationType type) {
     _type = type;
+  }
+
+  @JsonCreator
+  private static Noop jsonCreator(@JsonProperty(PROP_TRANSFORMATION_TYPE) TransformationType type) {
+    checkNotNull(type, PROP_TRANSFORMATION_TYPE + " cannot be null");
+    return new Noop(type);
   }
 
   @Override
@@ -48,6 +59,7 @@ public final class Noop implements TransformationStep, Serializable {
     return Objects.hash(_type);
   }
 
+  @JsonProperty(PROP_TRANSFORMATION_TYPE)
   @Override
   public TransformationType getType() {
     return _type;

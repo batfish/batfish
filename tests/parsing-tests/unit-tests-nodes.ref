@@ -18132,10 +18132,11 @@
               },
               "transformationSteps" : [
                 {
+                  "class" : "org.batfish.datamodel.transformation.AssignIpAddressFromPool",
                   "ipField" : "DESTINATION",
                   "poolEnd" : "10.10.10.255",
                   "poolStart" : "10.10.10.0",
-                  "type" : "DEST_NAT"
+                  "transformationType" : "DEST_NAT"
                 }
               ]
             },
@@ -18164,7 +18165,8 @@
                 },
                 "transformationSteps" : [
                   {
-                    "type" : "SOURCE_NAT"
+                    "class" : "org.batfish.datamodel.transformation.Noop",
+                    "transformationType" : "SOURCE_NAT"
                   }
                 ]
               },
