@@ -5,15 +5,14 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.IntExpr;
-import org.batfish.z3.state.AclPermit;
 import org.batfish.z3.state.StateParameter.Type;
 
 public class MockSynthesizerInput implements SynthesizerInput {
@@ -23,6 +22,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
     private Map<String, Map<String, List<LineAction>>> _aclActions;
 
     private Map<String, Map<String, List<BooleanExpr>>> _aclConditions;
+
+    private Map<String, AclLineMatchExprToBooleanExpr> _aclLineMatchExprToBooleanExprs;
 
     private Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
         _arpTrueEdge;
@@ -61,11 +62,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Map<String, String>> _outgoingAcls;
 
+    private Map<String, Map<String, Transformation>> _outgoingTransformations;
+
     private Map<String, Map<String, BooleanExpr>> _routableIps;
 
     private boolean _simplify;
-
-    private Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _sourceNats;
 
     private Map<String, Set<String>> _topologyInterfaces;
 
@@ -80,6 +81,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
     private Builder() {
       _aclActions = ImmutableMap.of();
       _aclConditions = ImmutableMap.of();
+      _aclLineMatchExprToBooleanExprs = ImmutableMap.of();
       _arpTrueEdge = ImmutableMap.of();
       _enabledEdges = ImmutableSet.of();
       _enabledInterfaces = ImmutableMap.of();
@@ -97,8 +99,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _nonTransitNodes = ImmutableSortedSet.of();
       _nullRoutedIps = ImmutableMap.of();
       _outgoingAcls = ImmutableMap.of();
+      _outgoingTransformations = ImmutableMap.of();
       _routableIps = ImmutableMap.of();
-      _sourceNats = ImmutableMap.of();
       _srcInterfaceField = null;
       _srcInterfaceFieldValues = ImmutableMap.of();
       _topologyInterfaces = ImmutableMap.of();
@@ -209,6 +211,12 @@ public class MockSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
+    public Builder setOutgoingTransformations(
+        Map<String, Map<String, Transformation>> outgoingTransformations) {
+      _outgoingTransformations = outgoingTransformations;
+      return this;
+    }
+
     public Builder setRoutableIps(Map<String, Map<String, BooleanExpr>> routableIps) {
       _routableIps = routableIps;
       return this;
@@ -216,12 +224,6 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     public Builder setSimplify(boolean simplify) {
       _simplify = simplify;
-      return this;
-    }
-
-    public Builder setSourceNats(
-        Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> sourceNats) {
-      _sourceNats = sourceNats;
       return this;
     }
 
@@ -255,6 +257,12 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _ipsByNodeVrf = ipsByNodeVrf;
       return this;
     }
+
+    public Builder setAclLineMatchExprToBooleanExprs(
+        Map<String, AclLineMatchExprToBooleanExpr> aclLineMatchExprToBooleanExprs) {
+      _aclLineMatchExprToBooleanExprs = aclLineMatchExprToBooleanExprs;
+      return this;
+    }
   }
 
   public static Builder builder() {
@@ -264,6 +272,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
   private final Map<String, Map<String, List<LineAction>>> _aclActions;
 
   private final Map<String, Map<String, List<BooleanExpr>>> _aclConditions;
+
+  private final Map<String, AclLineMatchExprToBooleanExpr> _aclLineMatchExprToBooleanExprs;
 
   private final Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
       _arpTrueEdge;
@@ -303,11 +313,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Map<String, String>> _outgoingAcls;
 
+  private Map<String, Map<String, Transformation>> _outgoingTransformations;
+
   private final Map<String, Map<String, BooleanExpr>> _routableIps;
 
   private final boolean _simplify;
-
-  private final Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _sourceNats;
 
   private final Field _sourceInterfaceField;
 
@@ -322,6 +332,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
   private MockSynthesizerInput(Builder builder) {
     _aclActions = builder._aclActions;
     _aclConditions = builder._aclConditions;
+    _aclLineMatchExprToBooleanExprs = builder._aclLineMatchExprToBooleanExprs;
     _arpTrueEdge = builder._arpTrueEdge;
     _dataPlane = builder._dataPlane;
     _enabledEdges = builder._enabledEdges;
@@ -339,9 +350,9 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _nullRoutedIps = builder._nullRoutedIps;
     _nonTransitNodes = builder._nonTransitNodes;
     _outgoingAcls = builder._outgoingAcls;
+    _outgoingTransformations = builder._outgoingTransformations;
     _routableIps = builder._routableIps;
     _simplify = builder._simplify;
-    _sourceNats = builder._sourceNats;
     _sourceInterfaceField = builder._srcInterfaceField;
     _sourceInterfaceFieldValues = builder._srcInterfaceFieldValues;
     _topologyInterfaces = builder._topologyInterfaces;
@@ -442,6 +453,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
+  public Map<String, Map<String, Transformation>> getOutgoingTransformations() {
+    return _outgoingTransformations;
+  }
+
+  @Override
   public Map<String, Map<String, BooleanExpr>> getRoutableIps() {
     return _routableIps;
   }
@@ -449,11 +465,6 @@ public class MockSynthesizerInput implements SynthesizerInput {
   @Override
   public boolean getSimplify() {
     return _simplify;
-  }
-
-  @Override
-  public Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getSourceNats() {
-    return _sourceNats;
   }
 
   @Override
@@ -494,5 +505,10 @@ public class MockSynthesizerInput implements SynthesizerInput {
   @Override
   public boolean isDataPlane() {
     return _dataPlane;
+  }
+
+  @Override
+  public Map<String, AclLineMatchExprToBooleanExpr> getAclLineMatchExprToBooleanExprs() {
+    return _aclLineMatchExprToBooleanExprs;
   }
 }

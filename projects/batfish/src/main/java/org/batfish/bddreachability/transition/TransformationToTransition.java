@@ -1,5 +1,7 @@
 package org.batfish.bddreachability.transition;
 
+import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
+
 import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -14,6 +16,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
@@ -65,6 +68,11 @@ public class TransformationToTransition {
     @Override
     public Transition visitAssignIpAddressFromPool(AssignIpAddressFromPool step) {
       return assignIpFromPool(ipField(step.getIpField()), step.getPoolStart(), step.getPoolEnd());
+    }
+
+    @Override
+    public Transition visitNoop(Noop noop) {
+      return IDENTITY;
     }
 
     @Override

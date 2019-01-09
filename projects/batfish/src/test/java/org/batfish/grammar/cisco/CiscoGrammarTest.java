@@ -231,7 +231,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -362,10 +361,15 @@ public class CiscoGrammarTest {
   }
 
   private Flow createFlow(IpProtocol protocol, int srcPort, int dstPort) {
+    return createFlow(protocol, srcPort, dstPort, FlowState.NEW);
+  }
+
+  private Flow createFlow(IpProtocol protocol, int srcPort, int dstPort, FlowState state) {
     return Flow.builder()
         .setIngressNode("")
         .setTag("")
         .setIpProtocol(protocol)
+        .setState(state)
         .setSrcPort(srcPort)
         .setDstPort(dstPort)
         .build();
@@ -378,24 +382,6 @@ public class CiscoGrammarTest {
         .setIpProtocol(IpProtocol.ICMP)
         .setIcmpType(icmpType)
         .build();
-  }
-
-  private static Flow createFlow(String sourceAddress, String destinationAddress) {
-    return createFlow(sourceAddress, destinationAddress, FlowState.NEW);
-  }
-
-  private static Flow createEstablishedFlow(String sourceAddress, String destinationAddress) {
-    return createFlow(sourceAddress, destinationAddress, FlowState.ESTABLISHED);
-  }
-
-  private static Flow createFlow(String sourceAddress, String destinationAddress, FlowState state) {
-    Flow.Builder fb = new Flow.Builder();
-    fb.setIngressNode("node");
-    fb.setSrcIp(Ip.parse(sourceAddress));
-    fb.setDstIp(Ip.parse(destinationAddress));
-    fb.setState(state);
-    fb.setTag("test");
-    return fb.build();
   }
 
   private CiscoConfiguration parseCiscoConfig(String hostname, ConfigurationFormat format) {
@@ -786,7 +772,9 @@ public class CiscoGrammarTest {
 
     // Confirm reference tracking is correct for ASA access lists in access group
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "FILTER_IN", 1));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "FILTER_IN4", 1));
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "FILTER_OUT", 1));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "FILTER_OUT5", 1));
     assertThat(ccae, hasUndefinedReference(filename, IP_ACCESS_LIST, "FILTER_UNDEF"));
   }
 
@@ -795,22 +783,36 @@ public class CiscoGrammarTest {
     String hostname = "asa-filters";
     Configuration c = parseConfig(hostname);
 
-    String ifaceAlias = "name1";
+    String highIface1 = "name1"; // GigabitEthernet0/1
+    String lowIface2 = "name2"; // GigabitEthernet0/2
+    String highIface3 = "name3"; // GigabitEthernet0/3
+    String lowIface4 = "name4"; // GigabitEthernet0/4
+    String lowIface5 = "name5"; // GigabitEthernet0/5
 
     Flow flowPass = createFlow(IpProtocol.TCP, 1, 123);
     Flow flowFail = createFlow(IpProtocol.TCP, 1, 1);
+    Flow anyFlow = createFlow(IpProtocol.IP, 0, 0, FlowState.NEW);
 
     // Confirm access list permits only traffic matching both ACL and security level restrictions
-    assertThat(
-        c, hasInterface(ifaceAlias, hasOutgoingFilter(accepts(flowPass, "GigabitEthernet0/1", c))));
-    assertThat(
-        c,
-        hasInterface(
-            ifaceAlias, hasOutgoingFilter(not(accepts(flowPass, "GigabitEthernet0/2", c)))));
-    assertThat(
-        c,
-        hasInterface(
-            ifaceAlias, hasOutgoingFilter(not(accepts(flowFail, "GigabitEthernet0/2", c)))));
+    // highIface1 has inbound filter permitting all IP traffic
+    // highIface1 has outbound filter permitting only TCP port 123
+    // highIface1 rejects all traffic from lowIface2 due to security level restriction
+    assertThat(c, hasInterface(highIface1, hasOutgoingFilter(rejects(anyFlow, lowIface2, c))));
+
+    // Confirm access list permits only traffic matching both ACL and security level restrictions
+    // highIface1 has a higher security level than lowIface5
+    // lowIface5 has no inbound filter
+    // lowIface5 rejects all outbound traffic except TCP port 123
+    assertThat(c, hasInterface(lowIface5, hasOutgoingFilter(rejects(flowFail, highIface1, c))));
+    assertThat(c, hasInterface(lowIface5, hasOutgoingFilter(accepts(flowPass, highIface1, c))));
+
+    // lowIface4 has inbound filter permitting only TCP port 123
+    // highIface3 has no explicit outbound filter
+    assertThat(c, hasInterface(lowIface4, hasIncomingFilter(accepts(flowPass, lowIface4, c))));
+    assertThat(c, hasInterface(lowIface4, hasIncomingFilter(rejects(flowFail, lowIface4, c))));
+    // any flow outbound on highIface3 from lowIface4 is allowed, assuming it was allowed incoming
+    // security level restriction is removed because lowIface4 has an inbound ACL
+    assertThat(c, hasInterface(highIface3, hasOutgoingFilter(accepts(anyFlow, lowIface4, c))));
   }
 
   @Test
@@ -3842,70 +3844,134 @@ public class CiscoGrammarTest {
 
   @Test
   public void testAsaSecurityLevel() throws IOException {
-    String hostname = "asa-security-level";
-    String explicit100Interface = "GigabitEthernet0/1";
-    String explicit100Ip = "3.0.0.3";
-    String insideInterface = "GigabitEthernet0/2";
-    String insideIp = "3.0.1.3";
-    String explicit45Interface = "GigabitEthernet0/3";
-    String explicit45Ip = "3.0.2.3";
-    String outsideInterface = "GigabitEthernet0/4";
-    String outsideIp = "3.0.3.3";
+    Configuration c = parseConfig("asa-security-level");
+    String explicit100Interface = "all-trust";
+    String insideInterface = "inside";
+    String explicit45Interface = "some-trust";
+    String outsideInterface = "outside";
 
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations().get(hostname);
+    Flow newFlow = createFlow(IpProtocol.IP, 0, 0, FlowState.NEW);
+    Flow establishedFlow = createFlow(IpProtocol.IP, 0, 0, FlowState.ESTABLISHED);
 
-    // Confirm zones are created for each interface
+    // Confirm zones are created for each level
+    assertThat(c, hasZone(computeSecurityLevelZoneName(100), hasMemberInterfaces(hasSize(2))));
+    assertThat(c, hasZone(computeSecurityLevelZoneName(45), hasMemberInterfaces(hasSize(1))));
+    assertThat(c, hasZone(computeSecurityLevelZoneName(1), hasMemberInterfaces(hasSize(1))));
+
+    // No traffic in and out of the same interface
     assertThat(
-        c, hasZone(computeZoneName(100, explicit100Interface), hasMemberInterfaces(hasSize(1))));
-    assertThat(c, hasZone(computeZoneName(100, insideInterface), hasMemberInterfaces(hasSize(1))));
+        c,
+        hasInterface(
+            explicit100Interface, hasOutgoingFilter(rejects(newFlow, explicit100Interface, c))));
     assertThat(
-        c, hasZone(computeZoneName(45, explicit45Interface), hasMemberInterfaces(hasSize(1))));
-    assertThat(c, hasZone(computeZoneName(1, outsideInterface), hasMemberInterfaces(hasSize(1))));
+        c, hasInterface(insideInterface, hasOutgoingFilter(rejects(newFlow, insideInterface, c))));
+    assertThat(
+        c,
+        hasInterface(
+            explicit45Interface, hasOutgoingFilter(rejects(newFlow, explicit45Interface, c))));
+    assertThat(
+        c,
+        hasInterface(outsideInterface, hasOutgoingFilter(rejects(newFlow, outsideInterface, c))));
 
-    IpAccessList aclExplicit100 = getInterface(c, explicit100Interface).getOutgoingFilter();
-    IpAccessList aclInside = getInterface(c, insideInterface).getOutgoingFilter();
-    IpAccessList aclExplicit45 = getInterface(c, explicit45Interface).getOutgoingFilter();
-    IpAccessList aclOutside = getInterface(c, outsideInterface).getOutgoingFilter();
-
-    // No traffic between interface with same level
-    assertThat(aclInside, rejects(createFlow(explicit100Ip, insideIp), explicit100Interface, c));
-    assertThat(aclExplicit100, rejects(createFlow(insideIp, explicit100Ip), insideInterface, c));
+    // No traffic between interfaces with same level
+    assertThat(
+        c,
+        hasInterface(
+            insideInterface, hasOutgoingFilter(rejects(newFlow, explicit100Interface, c))));
+    assertThat(
+        c,
+        hasInterface(
+            explicit100Interface, hasOutgoingFilter(rejects(newFlow, insideInterface, c))));
 
     // Allow traffic from 100 to others
-    assertThat(aclExplicit45, accepts(createFlow(insideIp, explicit45Ip), insideInterface, c));
-    assertThat(aclOutside, accepts(createFlow(insideIp, outsideIp), insideInterface, c));
+    assertThat(
+        c,
+        hasInterface(explicit45Interface, hasOutgoingFilter(accepts(newFlow, insideInterface, c))));
+    assertThat(
+        c, hasInterface(outsideInterface, hasOutgoingFilter(accepts(newFlow, insideInterface, c))));
 
-    // Mid level is accepted by higher, but not lower
-    assertThat(aclInside, rejects(createFlow(explicit45Ip, insideIp), explicit45Interface, c));
-    assertThat(aclOutside, accepts(createFlow(explicit45Ip, outsideIp), explicit45Interface, c));
+    // Mid level is accepted by lower, but not higher
+    assertThat(
+        c,
+        hasInterface(insideInterface, hasOutgoingFilter(rejects(newFlow, explicit45Interface, c))));
+    assertThat(
+        c,
+        hasInterface(
+            outsideInterface, hasOutgoingFilter(accepts(newFlow, explicit45Interface, c))));
 
     // No traffic from outside
-    assertThat(aclInside, rejects(createFlow(outsideIp, insideIp), outsideInterface, c));
-    assertThat(aclExplicit45, rejects(createFlow(outsideIp, explicit45Ip), outsideInterface, c));
+    assertThat(
+        c, hasInterface(insideInterface, hasOutgoingFilter(rejects(newFlow, outsideInterface, c))));
+    assertThat(
+        c,
+        hasInterface(
+            explicit45Interface, hasOutgoingFilter(rejects(newFlow, outsideInterface, c))));
 
     // All established flows are accepted
     assertThat(
-        aclExplicit45,
-        accepts(createEstablishedFlow(outsideIp, explicit45Ip), outsideInterface, c));
-    assertThat(aclInside, accepts(createEstablishedFlow(outsideIp, insideIp), outsideInterface, c));
+        c,
+        hasInterface(
+            explicit45Interface, hasOutgoingFilter(accepts(establishedFlow, outsideInterface, c))));
     assertThat(
-        aclInside, accepts(createEstablishedFlow(explicit45Ip, insideIp), explicit45Interface, c));
+        c,
+        hasInterface(
+            insideInterface, hasOutgoingFilter(accepts(establishedFlow, outsideInterface, c))));
     assertThat(
-        aclInside,
-        accepts(createEstablishedFlow(explicit100Ip, insideIp), explicit100Interface, c));
+        c,
+        hasInterface(
+            insideInterface, hasOutgoingFilter(accepts(establishedFlow, explicit45Interface, c))));
+    assertThat(
+        c,
+        hasInterface(
+            insideInterface, hasOutgoingFilter(accepts(establishedFlow, explicit100Interface, c))));
   }
 
-  // Finds first interface with the given name, checking all declared names
-  private Interface getInterface(Configuration c, String name) {
-    Optional<Interface> match =
-        c.getAllInterfaces()
-            .values()
-            .stream()
-            .filter(iface -> iface.getDeclaredNames().contains(name))
-            .findFirst();
-    assertThat(match.isPresent(), is(true));
-    return match.get();
+  @Test
+  public void testAsaSecurityLevelPermitBoth() throws IOException {
+    Configuration c = parseConfig("asa-security-level-permit-both");
+    String ifaceAlias1 = "name1";
+    String ifaceAlias2 = "name2";
+    Flow newFlow = createFlow(IpProtocol.IP, 0, 0, FlowState.NEW);
+
+    // Allow traffic in and out of the same interface
+    assertThat(c, hasInterface(ifaceAlias1, hasOutgoingFilter(accepts(newFlow, ifaceAlias1, c))));
+    assertThat(c, hasInterface(ifaceAlias2, hasOutgoingFilter(accepts(newFlow, ifaceAlias2, c))));
+
+    // Allow traffic between interfaces with same level
+    assertThat(c, hasInterface(ifaceAlias1, hasOutgoingFilter(accepts(newFlow, ifaceAlias2, c))));
+    assertThat(c, hasInterface(ifaceAlias2, hasOutgoingFilter(accepts(newFlow, ifaceAlias1, c))));
+  }
+
+  @Test
+  public void testAsaSecurityLevelPermitInter() throws IOException {
+    Configuration c = parseConfig("asa-security-level-permit-inter");
+    String ifaceAlias1 = "name1";
+    String ifaceAlias2 = "name2";
+    Flow newFlow = createFlow(IpProtocol.IP, 0, 0, FlowState.NEW);
+
+    // No traffic in and out of the same interface
+    assertThat(c, hasInterface(ifaceAlias1, hasOutgoingFilter(rejects(newFlow, ifaceAlias1, c))));
+    assertThat(c, hasInterface(ifaceAlias2, hasOutgoingFilter(rejects(newFlow, ifaceAlias2, c))));
+
+    // Allow traffic between interfaces with same level
+    assertThat(c, hasInterface(ifaceAlias1, hasOutgoingFilter(accepts(newFlow, ifaceAlias2, c))));
+    assertThat(c, hasInterface(ifaceAlias2, hasOutgoingFilter(accepts(newFlow, ifaceAlias1, c))));
+  }
+
+  @Test
+  public void testAsaSecurityLevelPermitIntra() throws IOException {
+    Configuration c = parseConfig("asa-security-level-permit-intra");
+    String ifaceAlias1 = "name1";
+    String ifaceAlias2 = "name2";
+    Flow newFlow = createFlow(IpProtocol.IP, 0, 0, FlowState.NEW);
+
+    // Allow traffic in and out of the same interface
+    assertThat(c, hasInterface(ifaceAlias1, hasOutgoingFilter(accepts(newFlow, ifaceAlias1, c))));
+    assertThat(c, hasInterface(ifaceAlias2, hasOutgoingFilter(accepts(newFlow, ifaceAlias2, c))));
+
+    // No traffic between interfaces with same level
+    assertThat(c, hasInterface(ifaceAlias1, hasOutgoingFilter(rejects(newFlow, ifaceAlias2, c))));
+    assertThat(c, hasInterface(ifaceAlias2, hasOutgoingFilter(rejects(newFlow, ifaceAlias1, c))));
   }
 
   @Test
@@ -3932,9 +3998,5 @@ public class CiscoGrammarTest {
                             .setNextHopInterface("ifname")
                             .setAdministrativeCost(3)
                             .build())))));
-  }
-
-  private static String computeZoneName(int securityLevel, @Nonnull String interfaceName) {
-    return computeSecurityLevelZoneName(securityLevel, interfaceName);
   }
 }

@@ -11,10 +11,12 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
@@ -27,8 +29,13 @@ import org.batfish.z3.Field;
  */
 public final class TransformationTransitionGenerator {
   private int _ctr;
-  private final String _node;
-  private final String _iface;
+
+  private final String _node1;
+  private final String _iface1;
+
+  private final String _node2;
+  private final String _iface2;
+
   private final String _tag; // distinguish this transformation from others on the same interface
   private final AclLineMatchExprToBooleanExpr _aclLineMatchExprToBooleanExpr;
   private final StateExpr _outState;
@@ -37,15 +44,19 @@ public final class TransformationTransitionGenerator {
   private ImmutableList.Builder<BasicRuleStatement> _statements;
 
   private TransformationTransitionGenerator(
-      String node,
-      String iface,
+      String node1,
+      String iface1,
+      String node2,
+      String iface2,
       String tag,
       AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr,
       StateExpr outState) {
     _ctr = 0;
     _statements = ImmutableList.builder();
-    _node = node;
-    _iface = iface;
+    _node1 = node1;
+    _iface1 = iface1;
+    _node2 = node2;
+    _iface2 = iface2;
     _tag = tag;
     _aclLineMatchExprToBooleanExpr = aclLineMatchExprToBooleanExpr;
     _outState = outState;
@@ -84,6 +95,11 @@ public final class TransformationTransitionGenerator {
     }
 
     @Override
+    public BasicRuleStatement visitNoop(Noop noop) {
+      return new BasicRuleStatement(_preState, _postState);
+    }
+
+    @Override
     public BasicRuleStatement visitShiftIpAddressIntoSubnet(
         ShiftIpAddressIntoSubnet shiftIpAddressIntoSubnet) {
       return new BasicRuleStatement(
@@ -98,7 +114,7 @@ public final class TransformationTransitionGenerator {
   /** Generate a new StateExpr for this transformation, and transitions from it to the end state. */
   private StateExpr generateTransitions(Transformation transformation) {
     int id = _ctr++;
-    StateExpr state = new TransformationExpr(_node, _iface, _tag, id);
+    StateExpr state = new TransformationExpr(_node1, _iface1, _node2, _iface2, _tag, id);
 
     BooleanExpr guardExpr =
         simplifyBooleanExpr(
@@ -129,7 +145,8 @@ public final class TransformationTransitionGenerator {
     int stepId = transformationSteps.size() - 1;
     for (TransformationStep step : Lists.reverse(transformationSteps)) {
       StateExpr stepExpr =
-          new TransformationStepExpr(_node, _iface, _tag, transformationId, stepId);
+          new TransformationStepExpr(
+              _node1, _iface1, _node2, _iface2, _tag, transformationId, stepId);
       _statements.add(step.accept(new StepRuleVisitor(stepExpr, next)));
       next = stepExpr;
       stepId--;
@@ -138,16 +155,24 @@ public final class TransformationTransitionGenerator {
   }
 
   public static List<BasicRuleStatement> generateTransitions(
-      String node,
-      String iface,
+      String node1,
+      String iface1,
+      String node2,
+      String iface2,
       String tag,
       AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr,
-      StateExpr outState,
-      Transformation transformation) {
+      StateExpr preState,
+      StateExpr postState,
+      @Nullable Transformation transformation) {
+    if (transformation == null) {
+      return ImmutableList.of(new BasicRuleStatement(preState, postState));
+    }
+
     TransformationTransitionGenerator gen =
         new TransformationTransitionGenerator(
-            node, iface, tag, aclLineMatchExprToBooleanExpr, outState);
-    gen.generateTransitions(transformation);
+            node1, iface1, node2, iface2, tag, aclLineMatchExprToBooleanExpr, postState);
+    StateExpr stateExpr = gen.generateTransitions(transformation);
+    gen._statements.add(new BasicRuleStatement(preState, stateExpr));
     return gen._statements.build();
   }
 

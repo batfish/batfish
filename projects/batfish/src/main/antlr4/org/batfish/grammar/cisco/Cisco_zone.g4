@@ -8,7 +8,7 @@ options {
 
 s_zone
 :
-   ZONE SECURITY name = variable_permissive NEWLINE
+   ZONE SECURITY? name = variable_permissive NEWLINE
 ;
 
 s_zone_pair

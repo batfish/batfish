@@ -9,12 +9,14 @@ public class TransformationExprTest {
   public void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            new TransformationExpr("node1", "iface1", "tag1", 1),
-            new TransformationExpr("node1", "iface1", "tag1", 1))
-        .addEqualityGroup(new TransformationExpr("node1", "iface1", "tag1", 2))
-        .addEqualityGroup(new TransformationExpr("node1", "iface1", "tag2", 1))
-        .addEqualityGroup(new TransformationExpr("node1", "iface2", "tag1", 1))
-        .addEqualityGroup(new TransformationExpr("node2", "iface1", "tag1", 1))
+            new TransformationExpr("node1", "iface1", "node2", "iface2", "tag1", 1),
+            new TransformationExpr("node1", "iface1", "node2", "iface2", "tag1", 1))
+        .addEqualityGroup(new TransformationExpr("node1", "iface1", "node2", "iface2", "tag1", 2))
+        .addEqualityGroup(new TransformationExpr("node1", "iface1", "node2", "iface2", "tag2", 1))
+        .addEqualityGroup(new TransformationExpr("node1", "iface1", "node2", "iface3", "tag1", 1))
+        .addEqualityGroup(new TransformationExpr("node1", "iface1", "node3", "iface2", "tag1", 1))
+        .addEqualityGroup(new TransformationExpr("node1", "iface2", "node2", "iface2", "tag1", 1))
+        .addEqualityGroup(new TransformationExpr("node2", "iface1", "node2", "iface2", "tag1", 1))
         .testEquals();
   }
 }

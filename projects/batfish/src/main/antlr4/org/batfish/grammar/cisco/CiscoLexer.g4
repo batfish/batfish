@@ -6007,6 +6007,11 @@ INTEGRITY
    'integrity'
 ;
 
+INTER_INTERFACE
+:
+   'inter-interface'
+;
+
 INTERAREA
 :
    'interarea'
@@ -6042,6 +6047,11 @@ INTERVAL
 INTERWORKING
 :
    'interworking'
+;
+
+INTRA_INTERFACE
+:
+   'intra-interface'
 ;
 
 INVALID_SPI_RECOVERY
@@ -8527,6 +8537,11 @@ NON_DETERMINISTIC_MED
 NON_EXIST_MAP
 :
    'non-exist-map'
+;
+
+NON_MLAG
+:
+   'non-mlag'
 ;
 
 NON_SILENT

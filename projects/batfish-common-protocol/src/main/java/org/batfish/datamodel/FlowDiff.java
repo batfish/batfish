@@ -17,6 +17,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.BatfishException;
+import org.batfish.datamodel.transformation.IpField;
 
 /** A representation of one difference between two flows. */
 @JsonTypeName("FlowDiff")
@@ -68,6 +70,22 @@ public final class FlowDiff implements Comparable<FlowDiff> {
     checkNotNull(oldValue);
     checkNotNull(newValue);
     return new FlowDiff(fieldName, oldValue, newValue);
+  }
+
+  private static String ipFieldName(IpField ipField) {
+    switch (ipField) {
+      case DESTINATION:
+        return PROP_DST_IP;
+      case SOURCE:
+        return PROP_SRC_IP;
+      default:
+        throw new BatfishException("Unknown IpField: " + ipField);
+    }
+  }
+
+  /** Create a {@link FlowDiff} for a specific changed IpField. */
+  public static FlowDiff flowDiff(IpField ipField, Ip oldValue, Ip newValue) {
+    return new FlowDiff(ipFieldName(ipField), oldValue.toString(), newValue.toString());
   }
 
   @JsonProperty(PROP_FIELD_NAME)
