@@ -148,6 +148,8 @@ public class Interface implements Serializable {
 
   @Nullable private IsisInterfaceMode _isisInterfaceMode;
 
+  @Nullable private Integer _mlagId;
+
   private int _mtu;
 
   private final String _name;
@@ -356,6 +358,11 @@ public class Interface implements Serializable {
     return _isisInterfaceMode;
   }
 
+  @Nullable
+  public Integer getMlagId() {
+    return _mlagId;
+  }
+
   public int getMtu() {
     return _mtu;
   }
@@ -520,6 +527,10 @@ public class Interface implements Serializable {
 
   public void setIsisInterfaceMode(IsisInterfaceMode mode) {
     _isisInterfaceMode = mode;
+  }
+
+  public void setMlagId(Integer mlagId) {
+    _mlagId = mlagId;
   }
 
   public void setMtu(int mtu) {

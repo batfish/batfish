@@ -438,6 +438,9 @@
         "community_set" : [
           "configs/community_set"
         ],
+        "eos_mlag" : [
+          "configs/eos_mlag"
+        ],
         "foundry_access_list" : [
           "configs/foundry_access_list"
         ],
@@ -947,6 +950,7 @@
         "configs/community_name_numbers" : "PASSED",
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
+        "configs/eos_mlag" : "PASSED",
         "configs/foundry_access_list" : "PASSED",
         "configs/foundry_bgp" : "PASSED",
         "configs/foundry_interface" : "PASSED",
@@ -12775,6 +12779,12 @@
             "      name = (variable_permissive",
             "        VARIABLE:'z2')",
             "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_zone",
+            "      ZONE:'zone'",
+            "      name = (variable_permissive",
+            "        VARIABLE:'t1')",
+            "      NEWLINE:'\\n'))",
             "  EOF:<EOF>)"
           ]
         },
@@ -23885,6 +23895,12 @@
             "          IP_ADDRESS:'1.0.0.1'",
             "          IP_ADDRESS:'2.0.0.1'",
             "          IP_ADDRESS:'3.0.0.1'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_zone_member",
+            "          ZONE_MEMBER:'zone-member'",
+            "          name = (variable_permissive",
+            "            VARIABLE:'t1')",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
             "        (if_zone_member",
@@ -39046,6 +39062,156 @@
             "        NEWLINE:'\\n')",
             "      END_SET:'end-set'",
             "      NEWLINE:'\\n'))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "eos_mlag" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'eos_mlag'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_vlan",
+            "      VLAN:'vlan'",
+            "      DEC:'4094'",
+            "      (null_rest_of_line",
+            "        NEWLINE:'\\n')",
+            "      (vlan_null",
+            "        NAME:'name'",
+            "        (null_rest_of_line",
+            "          VARIABLE:'MLAG'  <== mode:M_Name",
+            "          NEWLINE:'\\n'))",
+            "      (vlan_null",
+            "        TRUNK:'trunk'",
+            "        (null_rest_of_line",
+            "          GROUP:'group'",
+            "          VARIABLE:'MLAG-Peer'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Port-Channel'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'1'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_description",
+            "          (description_line",
+            "            DESCRIPTION:'description'",
+            "            text = RAW_TEXT:' to MLAG PEER'  <== mode:M_Description",
+            "            NEWLINE:'\\n'  <== mode:M_Description)))",
+            "      (if_inner",
+            "        (if_switchport_mode",
+            "          SWITCHPORT:'switchport'",
+            "          MODE:'mode'",
+            "          TRUNK:'trunk'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Port-Channel'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'2'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_eos_mlag",
+            "          MLAG:'mlag'",
+            "          id = DEC:'2'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          prefix = IP_PREFIX:'2.2.2.2/32'",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      MLAG:'mlag'",
+            "      CONFIGURATION:'configuration'",
+            "      NEWLINE:'\\n'",
+            "      (eos_mlag_domain",
+            "        DOMAIN_ID:'domain-id'",
+            "        id = (variable",
+            "          VARIABLE:'MLAG_DOMAIN')",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_local_interface",
+            "        LOCAL_INTERFACE:'local-interface'",
+            "        iface = (variable",
+            "          VARIABLE:'Vlan4094')",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_peer_address",
+            "        PEER_ADDRESS:'peer-address'",
+            "        ip = IP_ADDRESS:'1.1.1.3'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_peer_link",
+            "        PEER_LINK:'peer-link'",
+            "        iface = (variable",
+            "          VARIABLE:'Port-Channel1')",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_reload_delay",
+            "        RELOAD_DELAY:'reload-delay'",
+            "        MLAG:'mlag'",
+            "        period = DEC:'300'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_reload_delay",
+            "        RELOAD_DELAY:'reload-delay'",
+            "        MLAG:'mlag'",
+            "        period = INFINITY:'infinity'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_reload_delay",
+            "        RELOAD_DELAY:'reload-delay'",
+            "        NON_MLAG:'non-mlag'",
+            "        period = DEC:'360'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_reload_delay",
+            "        RELOAD_DELAY:'reload-delay'",
+            "        NON_MLAG:'non-mlag'",
+            "        period = INFINITY:'infinity'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_reload_delay",
+            "        RELOAD_DELAY:'reload-delay'",
+            "        period = DEC:'400'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_reload_delay",
+            "        RELOAD_DELAY:'reload-delay'",
+            "        period = INFINITY:'infinity'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_shutdown",
+            "        SHUTDOWN:'shutdown'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_eos_mlag",
+            "      (eos_mlag_shutdown",
+            "        NO:'no'",
+            "        SHUTDOWN:'shutdown'",
+            "        NEWLINE:'\\n')))",
             "  EOF:<EOF>)"
           ]
         },
@@ -62187,6 +62353,16 @@
             }
           ]
         },
+        "cisco-zone" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 10,
+              "Parser_Context" : "[s_zone stanza cisco_configuration]",
+              "Text" : "zone t1"
+            }
+          ]
+        },
         "cisco_acl" : {
           "Parse warnings" : [
             {
@@ -62312,6 +62488,12 @@
               "Line" : 279,
               "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
               "Text" : "mode gre multipoint"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 294,
+              "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
+              "Text" : "zone-member t1"
             }
           ]
         },
@@ -62989,6 +63171,7 @@
         "community-name-numbers_dos" : "PASSED",
         "community_list_named" : "PASSED",
         "community_set" : "PASSED",
+        "eos_mlag" : "PASSED",
         "foundry_access_list" : "PASSED",
         "foundry_bgp" : "PASSED",
         "foundry_interface" : "PASSED",
@@ -64243,25 +64426,25 @@
           "interface" : {
             "Async1" : {
               "definitionLines" : [
-                296
+                297
               ],
               "numReferrers" : 1
             },
             "Cable1/2/3:4" : {
               "definitionLines" : [
-                298
+                299
               ],
               "numReferrers" : 1
             },
             "Crypto-Engine1/2/3" : {
               "definitionLines" : [
-                300
+                301
               ],
               "numReferrers" : 1
             },
             "Dot11Radio0" : {
               "definitionLines" : [
-                302
+                303
               ],
               "numReferrers" : 1
             },
@@ -64554,123 +64737,124 @@
                 291,
                 292,
                 293,
-                294
+                294,
+                295
               ],
               "numReferrers" : 1
             },
             "Ethernet1/11" : {
               "definitionLines" : [
-                304
+                305
               ],
               "numReferrers" : 1
             },
             "Ethernet1/12" : {
               "definitionLines" : [
-                344,
-                345
+                345,
+                346
               ],
               "numReferrers" : 1
             },
             "GigabitEthernet0/0" : {
               "definitionLines" : [
-                306,
                 307,
                 308,
                 309,
-                310
+                310,
+                311
               ],
               "numReferrers" : 1
             },
             "Loopback0" : {
               "definitionLines" : [
-                312,
                 313,
                 314,
-                315
+                315,
+                316
               ],
               "numReferrers" : 1
             },
             "Modular-Cable1/2/3:4" : {
               "definitionLines" : [
-                317
+                318
               ],
               "numReferrers" : 1
             },
             "Null0" : {
               "definitionLines" : [
-                319
+                320
               ],
               "numReferrers" : 1
             },
             "Vlan1" : {
               "definitionLines" : [
-                328
+                329
               ],
               "numReferrers" : 1
             },
             "Vlan1005" : {
               "definitionLines" : [
-                334
+                335
               ],
               "numReferrers" : 1
             },
             "Vlan1006" : {
               "definitionLines" : [
-                336
+                337
               ],
               "numReferrers" : 1
             },
             "Vlan111" : {
               "definitionLines" : [
-                323
+                324
               ],
               "numReferrers" : 1
             },
             "Vlan1234" : {
               "definitionLines" : [
-                338
+                339
               ],
               "numReferrers" : 1
             },
             "Vlan2" : {
               "definitionLines" : [
-                330
+                331
               ],
               "numReferrers" : 1
             },
             "Vlan3" : {
               "definitionLines" : [
-                332
+                333
               ],
               "numReferrers" : 1
             },
             "Vlan4094" : {
               "definitionLines" : [
-                340
+                341
               ],
               "numReferrers" : 1
             },
             "Vxlan1" : {
               "definitionLines" : [
-                325
+                326
               ],
               "numReferrers" : 1
             },
             "Wideband-Cable1/2/3:4" : {
               "definitionLines" : [
-                342
+                343
               ],
               "numReferrers" : 1
             },
             "inside" : {
               "definitionLines" : [
-                307
+                308
               ],
               "numReferrers" : 1
             },
             "tunnel-ip6" : {
               "definitionLines" : [
-                321
+                322
               ],
               "numReferrers" : 1
             }
@@ -65331,6 +65515,14 @@
         "configs/cisco_webvpn" : { },
         "configs/cisco_wsma" : { },
         "configs/cisco_zone" : {
+          "zone" : {
+            "t1" : {
+              "definitionLines" : [
+                10
+              ],
+              "numReferrers" : 0
+            }
+          },
           "zone security" : {
             "z1" : {
               "definitionLines" : [
@@ -65445,6 +65637,26 @@
                 6
               ],
               "numReferrers" : 0
+            }
+          }
+        },
+        "configs/eos_mlag" : {
+          "interface" : {
+            "Port-Channel1" : {
+              "definitionLines" : [
+                9,
+                10,
+                11
+              ],
+              "numReferrers" : 1
+            },
+            "Port-Channel2" : {
+              "definitionLines" : [
+                13,
+                14,
+                15
+              ],
+              "numReferrers" : 1
             }
           }
         },
@@ -68651,12 +68863,12 @@
           "interface" : {
             "Async1" : {
               "interface" : [
-                296
+                297
               ]
             },
             "Cable1/2/3:4" : {
               "interface" : [
-                298
+                299
               ]
             },
             "Cellular0" : {
@@ -68666,12 +68878,12 @@
             },
             "Crypto-Engine1/2/3" : {
               "interface" : [
-                300
+                301
               ]
             },
             "Dot11Radio0" : {
               "interface" : [
-                302
+                303
               ]
             },
             "Ethernet0" : {
@@ -68684,82 +68896,82 @@
             },
             "Ethernet1/11" : {
               "interface" : [
-                304
+                305
               ]
             },
             "Ethernet1/12" : {
               "interface" : [
-                344
+                345
               ]
             },
             "GigabitEthernet0/0" : {
               "interface" : [
-                306
+                307
               ]
             },
             "Loopback0" : {
               "interface" : [
-                312
+                313
               ]
             },
             "Modular-Cable1/2/3:4" : {
               "interface" : [
-                317
+                318
               ]
             },
             "Null0" : {
               "interface" : [
-                319
+                320
               ]
             },
             "Vlan1" : {
               "interface" : [
-                328
+                329
               ]
             },
             "Vlan1005" : {
               "interface" : [
-                334
+                335
               ]
             },
             "Vlan1006" : {
               "interface" : [
-                336
+                337
               ]
             },
             "Vlan111" : {
               "interface" : [
-                323
+                324
               ]
             },
             "Vlan1234" : {
               "interface" : [
-                338
+                339
               ]
             },
             "Vlan2" : {
               "interface" : [
-                330
+                331
               ]
             },
             "Vlan3" : {
               "interface" : [
-                332
+                333
               ]
             },
             "Vlan4094" : {
               "interface" : [
-                340
+                341
               ]
             },
             "Vxlan1" : {
               "interface" : [
-                325
+                326
               ]
             },
             "Wideband-Cable1/2/3:4" : {
               "interface" : [
-                342
+                343
               ]
             },
             "dynamic" : {
@@ -68769,12 +68981,12 @@
             },
             "inside" : {
               "interface" : [
-                307
+                308
               ]
             },
             "tunnel-ip6" : {
               "interface" : [
-                321
+                322
               ]
             }
           },
@@ -68846,10 +69058,17 @@
               ]
             }
           },
-          "zone security" : {
-            "z1" : {
+          "zone" : {
+            "t1" : {
               "interface zone-member" : [
                 294
+              ]
+            }
+          },
+          "zone security" : {
+            "z1" : {
+              "interface zone-member security" : [
+                295
               ]
             }
           }
@@ -69456,6 +69675,28 @@
             "9999-RRR" : {
               "route-map match community-list" : [
                 7
+              ]
+            }
+          }
+        },
+        "configs/eos_mlag" : {
+          "interface" : {
+            "Port-Channel1" : {
+              "interface" : [
+                9
+              ],
+              "mlag configuration peer-link" : [
+                21
+              ]
+            },
+            "Port-Channel2" : {
+              "interface" : [
+                13
+              ]
+            },
+            "Vlan4094" : {
+              "mlag configuration local-interface" : [
+                19
               ]
             }
           }
@@ -71428,8 +71669,8 @@
           },
           "zone security" : {
             "z1" : {
-              "interface zone-member" : [
-                294
+              "interface zone-member security" : [
+                295
               ]
             }
           }
@@ -73117,6 +73358,7 @@
         "configs/community_name_numbers" : "PASSED",
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
+        "configs/eos_mlag" : "PASSED",
         "configs/foundry_access_list" : "PASSED",
         "configs/foundry_bgp" : "PASSED",
         "configs/foundry_interface" : "PASSED",
