@@ -24,7 +24,7 @@ public final class VniSettings implements Serializable {
     private Ip _sourceAddress;
     private Integer _udpPort;
     private Integer _vlan;
-    private int _vni;
+    private Integer _vni;
 
     private Builder() {}
 
