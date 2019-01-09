@@ -4183,13 +4183,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitNatp_address(Natp_addressContext ctx) {
-    if (ctx.IP_PREFIX() != null) {
-      Prefix prefix = Prefix.parse(ctx.IP_PREFIX().getText());
-      _currentNatPool.setFromAddress(prefix.getStartIp());
-      _currentNatPool.setToAddress(prefix.getEndIp());
+    if (ctx.TO() != null) {
+      if (ctx.IP_ADDRESS().isEmpty()) {
+        // from IP_PREFIX to IP_PREFIX
+        // Juniper will treat IP_PREFIX as IP ADDRESS
+        _currentNatPool.setFromAddress(new InterfaceAddress(ctx.from.getText()).getIp());
+        _currentNatPool.setToAddress(new InterfaceAddress(ctx.to.getText()).getIp());
+      } else {
+        // from IP_ADDRESS to IP_ADDRESS
+        _currentNatPool.setFromAddress(Ip.parse(ctx.from.getText()));
+        _currentNatPool.setToAddress(Ip.parse(ctx.to.getText()));
+      }
     } else {
-      _currentNatPool.setFromAddress(Ip.parse(ctx.from.getText()));
-      _currentNatPool.setToAddress(Ip.parse(ctx.to.getText()));
+      Prefix prefix = Prefix.parse(ctx.prefix.getText());
+      _currentNatPool.setFromAddress(prefix.getFirstHostIp());
+      _currentNatPool.setToAddress(prefix.getLastHostIp());
     }
   }
 
