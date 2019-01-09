@@ -1,8 +1,6 @@
 package org.batfish.datamodel;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-
+import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.junit.Test;
 
@@ -21,7 +19,17 @@ public class IsisRouteTest {
 
     IsisRoute original = b.build();
     IsisRoute copy = original.toBuilder().build();
+    IsisRoute differentAdmin = original.toBuilder().setAdmin(9000).build();
+    IsisRoute differentMetric = original.toBuilder().setMetric(original.getMetric() + 50).build();
+    IsisRoute differentNetwork = original.toBuilder().setNetwork(Prefix.parse("1.1.1.1/8")).build();
+    IsisRoute differentNextHop = original.toBuilder().setNextHopIp(Ip.parse("3.3.3.3")).build();
 
-    assertThat(copy, equalTo(original));
+    new EqualsTester()
+        .addEqualityGroup(original, copy)
+        .addEqualityGroup(differentAdmin)
+        .addEqualityGroup(differentMetric)
+        .addEqualityGroup(differentNetwork)
+        .addEqualityGroup(differentNextHop)
+        .testEquals();
   }
 }
