@@ -3177,7 +3177,7 @@ public class CiscoGrammarTest {
         eosVxlan.getFloodAddresses(), containsInAnyOrder(Ip.parse("1.1.1.5"), Ip.parse("1.1.1.7")));
     assertThat(eosVxlan.getMulticastGroup(), equalTo(Ip.parse("227.10.1.1")));
     assertThat(eosVxlan.getSourceInterface(), equalTo("Loopback1"));
-    assertThat(eosVxlan.getUdpPort(), equalTo(4789));
+    assertThat(eosVxlan.getUdpPort(), equalTo(5555));
 
     assertThat(eosVxlan.getVlanVnis(), hasEntry(equalTo(2), equalTo(10002)));
 
