@@ -3165,7 +3165,9 @@ public final class WorkMgrTest {
     String notSuggested = "blah";
 
     CompletionMetadata completionMetadata =
-        CompletionMetadata.builder().setStructureNames(ImmutableSet.of(suggested, notSuggested)).build();
+        CompletionMetadata.builder()
+            .setStructureNames(ImmutableSet.of(suggested, notSuggested))
+            .build();
     storeCompletionMetadata(completionMetadata, network, snapshot);
 
     assertThat(
