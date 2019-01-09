@@ -111,7 +111,8 @@ public class WorkMgrService {
                       ? Integer.MAX_VALUE
                       : Integer.parseInt(maxSuggestions));
       if (answer == null) {
-        return failureResponse("There was a problem getting Autocomplete suggestions!");
+        return failureResponse(
+            "There was a problem getting Autocomplete suggestions - network or snapshot does not exist!");
       }
       return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_SUGGESTIONS, answer));
     } catch (IllegalArgumentException | AccessControlException e) {

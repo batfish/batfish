@@ -402,17 +402,21 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-  private CompletionMetadata getCompletionMetadata(String network, String snapshot) {
+  private CompletionMetadata getCompletionMetadata(String network, String snapshot)
+      throws IOException {
     checkArgument(!isNullOrEmpty(network), "Network name should be supplied");
     checkArgument(!isNullOrEmpty(snapshot), "Snapshot name should be supplied");
-    try {
-      NetworkId networkId = _idManager.getNetworkId(network);
-      SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
-      return _storage.loadCompletionMetadata(networkId, snapshotId);
-    } catch (Exception e) {
-      _logger.errorf("Got exception fetching CompletionMetadata: %s\n", e);
+
+    if (!_idManager.hasNetworkId(network)) {
       return null;
     }
+    NetworkId networkId = _idManager.getNetworkId(network);
+
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return null;
+    }
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    return _storage.loadCompletionMetadata(networkId, snapshotId);
   }
 
   public List<AutocompleteSuggestion> autoComplete(

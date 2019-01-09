@@ -3220,4 +3220,18 @@ public final class WorkMgrTest {
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(suggested)));
   }
+
+  @Test
+  public void testAutocompleteNonExistentNetwork() throws IOException {
+    // should return null if network is not set up
+    assertThat(_manager.autoComplete("network", "snapshot", Type.ZONE, "z", 5), equalTo(null));
+  }
+
+  @Test
+  public void testAutocompleteNonExistentSnapshot() throws IOException {
+    String network = "network";
+    _idManager.assignNetwork(network, _idManager.generateNetworkId());
+    // should return null if snapshot is not set up
+    assertThat(_manager.autoComplete(network, "snapshot", Type.ZONE, "z", 5), equalTo(null));
+  }
 }
