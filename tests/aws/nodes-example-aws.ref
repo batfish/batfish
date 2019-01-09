@@ -3812,6 +3812,84 @@
             "localAddress" : "52.39.121.126"
           }
         },
+        "ikePhase1Keys" : {
+          "vpn-ba2e34a8-1" : {
+            "keyHash" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
+            "keyType" : "PRE_SHARED_KEY",
+            "localInterface" : "external1",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpIpSpace",
+              "ip" : "147.75.69.27"
+            }
+          },
+          "vpn-ba2e34a8-2" : {
+            "keyHash" : "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87",
+            "keyType" : "PRE_SHARED_KEY",
+            "localInterface" : "external2",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpIpSpace",
+              "ip" : "147.75.69.27"
+            }
+          }
+        },
+        "ikePhase1Policies" : {
+          "vpn-ba2e34a8-1" : {
+            "name" : "vpn-ba2e34a8-1",
+            "ikePhase1Key" : {
+              "keyHash" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
+              "keyType" : "PRE_SHARED_KEY",
+              "localInterface" : "external1",
+              "remoteIdentity" : {
+                "class" : "org.batfish.datamodel.IpIpSpace",
+                "ip" : "147.75.69.27"
+              }
+            },
+            "ikePhase1Proposals" : [
+              "vpn-ba2e34a8-1"
+            ],
+            "localInterface" : "external1",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpIpSpace",
+              "ip" : "147.75.69.27"
+            }
+          },
+          "vpn-ba2e34a8-2" : {
+            "name" : "vpn-ba2e34a8-2",
+            "ikePhase1Key" : {
+              "keyHash" : "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87",
+              "keyType" : "PRE_SHARED_KEY",
+              "localInterface" : "external2",
+              "remoteIdentity" : {
+                "class" : "org.batfish.datamodel.IpIpSpace",
+                "ip" : "147.75.69.27"
+              }
+            },
+            "ikePhase1Proposals" : [
+              "vpn-ba2e34a8-2"
+            ],
+            "localInterface" : "external2",
+            "remoteIdentity" : {
+              "class" : "org.batfish.datamodel.IpIpSpace",
+              "ip" : "147.75.69.27"
+            }
+          }
+        },
+        "ikePhase1Proposals" : {
+          "vpn-ba2e34a8-1" : {
+            "name" : "vpn-ba2e34a8-1",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "vpn-ba2e34a8-2" : {
+            "name" : "vpn-ba2e34a8-2",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA1"
+          }
+        },
         "ikePolicies" : {
           "vpn-ba2e34a8-1" : {
             "name" : "vpn-ba2e34a8-1",
@@ -3981,6 +4059,58 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VPN",
             "vrf" : "default"
+          }
+        },
+        "ipsecPeerConfigs" : {
+          "vpn-ba2e34a8-1" : {
+            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
+            "destinationAddress" : "147.75.69.27",
+            "ikePhase1Policy" : "vpn-ba2e34a8-1",
+            "ipsecPolicy" : "vpn-ba2e34a8-1",
+            "localAddress" : "52.27.166.152",
+            "physicalInterface" : "external1",
+            "tunnelInterface" : "vpn1"
+          },
+          "vpn-ba2e34a8-2" : {
+            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
+            "destinationAddress" : "147.75.69.27",
+            "ikePhase1Policy" : "vpn-ba2e34a8-2",
+            "ipsecPolicy" : "vpn-ba2e34a8-2",
+            "localAddress" : "52.39.121.126",
+            "physicalInterface" : "external2",
+            "tunnelInterface" : "vpn2"
+          }
+        },
+        "ipsecPhase2Policies" : {
+          "vpn-ba2e34a8-1" : {
+            "pfsKeyGroup" : "GROUP2",
+            "proposals" : [
+              "vpn-ba2e34a8-1"
+            ]
+          },
+          "vpn-ba2e34a8-2" : {
+            "pfsKeyGroup" : "GROUP2",
+            "proposals" : [
+              "vpn-ba2e34a8-2"
+            ]
+          }
+        },
+        "ipsecPhase2Proposals" : {
+          "vpn-ba2e34a8-1" : {
+            "authenticationAlgorithm" : "HMAC_SHA1_96",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "vpn-ba2e34a8-2" : {
+            "authenticationAlgorithm" : "HMAC_SHA1_96",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
           }
         },
         "ipsecPolicies" : {
