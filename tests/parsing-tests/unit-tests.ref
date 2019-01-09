@@ -49338,6 +49338,27 @@
             "                      (ifi_address",
             "                        ADDRESS:'address'",
             "                        IP_PREFIX:'1.0.0.1/24'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_security",
+            "            SECURITY:'security'",
+            "            (se_zones",
+            "              ZONES:'zones'",
+            "              (sez_security_zone",
+            "                SECURITY_ZONE:'security-zone'",
+            "                (zone",
+            "                  TRUST:'trust')",
+            "                (sezs_interfaces",
+            "                  INTERFACES:'interfaces'",
+            "                  (interface_id",
+            "                    name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface",
+            "                    PERIOD:'.'",
+            "                    unit = DEC:'0')",
+            "                  (apply))))))))",
             "    NEWLINE:'\\n\\n')",
             "  EOF:<EOF>)"
           ]
@@ -66861,7 +66882,7 @@
               "definitionLines" : [
                 27
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             }
           },
           "nat pool" : {
@@ -70311,6 +70332,9 @@
             "ge-0/0/0.0" : {
               "interface" : [
                 27
+              ],
+              "security zones security-zone interfaces" : [
+                28
               ]
             }
           }
