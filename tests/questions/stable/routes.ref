@@ -24,7 +24,7 @@
         "value" : "1.1.1.1/24"
       },
       "nodes" : {
-        "description" : "Examine routes on nodes matching this name or regex",
+        "description" : "Examine routes on nodes matching this specifier",
         "displayName" : "Nodes",
         "optional" : false,
         "type" : "nodeSpec",
@@ -64,7 +64,7 @@
         "description" : "Examine routes on VRFs matching this name or regex",
         "displayName" : "VRFs",
         "optional" : false,
-        "type" : "javaRegex",
+        "type" : "vrf",
         "value" : ".*"
       }
     }

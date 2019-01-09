@@ -20,7 +20,7 @@
         "description" : "Name or regex identifying the filters to test",
         "displayName" : "Filters",
         "optional" : true,
-        "type" : "string",
+        "type" : "filter",
         "value" : ".*"
       },
       "ignoreComposites" : {
@@ -31,7 +31,7 @@
         "value" : false
       },
       "nodes" : {
-        "description" : "Examine filters on nodes matching this name or regex",
+        "description" : "Examine filters on nodes matching this specifier",
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",

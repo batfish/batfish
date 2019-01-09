@@ -26,7 +26,7 @@
         "value" : false
       },
       "nodes" : {
-        "description" : "Include nodes matching this name or regex",
+        "description" : "Include nodes matching this specifier",
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",
@@ -36,7 +36,7 @@
         "description" : "Include structures matching this name or regex",
         "displayName" : "Structure names",
         "optional" : true,
-        "type" : "javaRegex",
+        "type" : "structureName",
         "value" : ".*"
       },
       "structureTypes" : {
