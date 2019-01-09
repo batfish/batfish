@@ -1149,6 +1149,16 @@
         }
       },
       {
+        "Structure_Type" : "zone",
+        "Structure_Name" : "t1",
+        "Source_Lines" : {
+          "filename" : "configs/cisco_zone",
+          "lines" : [
+            10
+          ]
+        }
+      },
+      {
         "Structure_Type" : "zone-pair security",
         "Structure_Name" : "zp1",
         "Source_Lines" : {

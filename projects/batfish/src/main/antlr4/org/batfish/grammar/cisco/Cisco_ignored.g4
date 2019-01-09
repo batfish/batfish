@@ -153,7 +153,6 @@ null_block
       | MAP_LIST
       | MASTERIP
       | MENU
-      | MLAG
       | MODULE
       | MONITOR_INTERFACE
       |
@@ -871,7 +870,6 @@ null_single
       | NO ROUTE
       | ROUTE_TARGET
       | RTR
-      | SAME_SECURITY_TRAFFIC
       | SAT
       | SCHEDULE
       | SCHEDULER

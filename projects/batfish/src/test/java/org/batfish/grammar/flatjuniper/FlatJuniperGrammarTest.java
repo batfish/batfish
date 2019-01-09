@@ -2548,13 +2548,13 @@ public final class FlatJuniperGrammarTest {
     Flow whiteListedSrc = createFlow("1.8.3.9", "2.5.6.7");
     Flow blackListedSrc = createFlow("5.8.4.9", "2.5.6.7");
 
-    IpAccessList incomingFilter = c.getAllInterfaces().get("fw-s-add.0").getIncomingFilter();
+    IpAccessList incomingFilter = c.getAllInterfaces().get("xe-0/0/0.0").getIncomingFilter();
 
     // Whitelisted source address should be allowed
-    assertThat(incomingFilter, accepts(whiteListedSrc, "fw-s-add.0", c));
+    assertThat(incomingFilter, accepts(whiteListedSrc, "xe-0/0/0.0", c));
 
     // Blacklisted source address should be denied
-    assertThat(incomingFilter, rejects(blackListedSrc, "fw-s-add.0", c));
+    assertThat(incomingFilter, rejects(blackListedSrc, "xe-0/0/0.0", c));
   }
 
   @Test
@@ -2566,13 +2566,13 @@ public final class FlatJuniperGrammarTest {
     Flow whiteListedDst = createFlow("2.5.6.7", "1.8.3.9");
     Flow blackListedDst = createFlow("2.5.6.7", "5.8.4.9");
 
-    IpAccessList incomingFilter = c.getAllInterfaces().get("fw-s-add.0").getIncomingFilter();
+    IpAccessList incomingFilter = c.getAllInterfaces().get("xe-0/0/0.0").getIncomingFilter();
 
     // Whitelisted source address should be allowed
-    assertThat(incomingFilter, accepts(whiteListedDst, "fw-s-add.0", c));
+    assertThat(incomingFilter, accepts(whiteListedDst, "xe-0/0/0.0", c));
 
     // Blacklisted source address should be denied
-    assertThat(incomingFilter, rejects(blackListedDst, "fw-s-add.0", c));
+    assertThat(incomingFilter, rejects(blackListedDst, "xe-0/0/0.0", c));
   }
 
   @Test
@@ -2818,11 +2818,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         ccae,
         hasUndefinedReferenceWithReferenceLines(
-            filename,
-            INTERFACE,
-            "iface_undefined",
-            OSPF_AREA_INTERFACE,
-            containsInAnyOrder(6, 14)));
+            filename, INTERFACE, "et-0/0/0.0", OSPF_AREA_INTERFACE, containsInAnyOrder(6, 14)));
   }
 
   @Test

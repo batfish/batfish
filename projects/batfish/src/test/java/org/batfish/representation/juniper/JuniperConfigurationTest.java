@@ -1,6 +1,7 @@
 package org.batfish.representation.juniper;
 
 import static org.batfish.common.Warnings.TAG_PEDANTIC;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
@@ -10,6 +11,9 @@ import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderS
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
 import static org.batfish.representation.juniper.JuniperConfiguration.MAX_ISIS_COST_WITHOUT_WIDE_METRICS;
+import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
+import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
+import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -20,6 +24,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
+import java.util.Map;
+import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warning;
@@ -33,6 +39,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.junit.Test;
@@ -245,5 +252,45 @@ public class JuniperConfigurationTest {
     routingInstance.getIsisSettings().getLevel1Settings().setWideMetricsOnly(true);
     config.processIsisInterfaceSettings(routingInstance, true, false);
     assertThat(viIface.getIsis().getLevel1().getCost(), equalTo(100L));
+  }
+
+  @Test
+  public void testFromNatPacketLocationMatchExprs() {
+    JuniperConfiguration config = createConfig();
+
+    String interface1Name = "interface1";
+    config
+        .getMasterLogicalSystem()
+        .getInterfaces()
+        .put(interface1Name, new Interface(interface1Name));
+
+    Zone zone = new Zone("zone", new TreeMap<>());
+    String zoneInterface1Name = "zoneInterface1";
+    zone.getInterfaces().add(new Interface(zoneInterface1Name));
+    String zoneInterface2Name = "zoneInterface2";
+    zone.getInterfaces().add(new Interface(zoneInterface2Name));
+    config.getMasterLogicalSystem().getZones().put(zone.getName(), zone);
+
+    RoutingInstance routingInstance = config.getMasterLogicalSystem().getDefaultRoutingInstance();
+    String routingInstanceInterface1Name = "routingInstanceInterface1";
+    routingInstance
+        .getInterfaces()
+        .put(routingInstanceInterface1Name, new Interface(routingInstanceInterface1Name));
+    String routingInstanceInterface2Name = "routingInstanceInterface2";
+    routingInstance
+        .getInterfaces()
+        .put(routingInstanceInterface2Name, new Interface(routingInstanceInterface2Name));
+
+    Map<NatPacketLocation, AclLineMatchExpr> matchExprs = config.fromNatPacketLocationMatchExprs();
+    assertThat(
+        matchExprs,
+        equalTo(
+            ImmutableMap.of(
+                interfaceLocation(interface1Name), matchSrcInterface(interface1Name),
+                zoneLocation(zone.getName()),
+                    matchSrcInterface(zoneInterface1Name, zoneInterface2Name),
+                routingInstanceLocation(routingInstance.getName()),
+                    matchSrcInterface(
+                        routingInstanceInterface1Name, routingInstanceInterface2Name))));
   }
 }

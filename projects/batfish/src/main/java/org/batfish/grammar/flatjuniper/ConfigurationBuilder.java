@@ -5577,8 +5577,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private String getInterfaceName(Interface_idContext ctx) {
     String name = ctx.name.getText();
-    if (ctx.suffix != null) {
-      name += ":" + ctx.suffix.getText();
+    if (ctx.chnl != null) {
+      name += ":" + ctx.chnl.getText();
     }
     return name;
   }

@@ -2,7 +2,11 @@ package org.batfish.representation.juniper;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.IpAccessListLine.accepting;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
+import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
+import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
+import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
 import static org.batfish.representation.juniper.NatRuleMatchToHeaderSpace.toHeaderSpace;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -1402,6 +1406,37 @@ public final class JuniperConfiguration extends VendorConfiguration {
                                 natRule)))
         .filter(Objects::nonNull)
         .collect(ImmutableList.toImmutableList());
+  }
+
+  @VisibleForTesting
+  Map<NatPacketLocation, AclLineMatchExpr> fromNatPacketLocationMatchExprs() {
+    ImmutableMap.Builder<NatPacketLocation, AclLineMatchExpr> builder = ImmutableMap.builder();
+    _masterLogicalSystem
+        .getInterfaces()
+        .keySet()
+        .forEach(iface -> builder.put(interfaceLocation(iface), matchSrcInterface(iface)));
+    _masterLogicalSystem
+        .getZones()
+        .values()
+        .forEach(
+            zone ->
+                builder.put(
+                    zoneLocation(zone.getName()),
+                    matchSrcInterface(
+                        zone.getInterfaces()
+                            .stream()
+                            .map(Interface::getName)
+                            .toArray(String[]::new))));
+    _masterLogicalSystem
+        .getRoutingInstances()
+        .values()
+        .forEach(
+            routingInstance ->
+                builder.put(
+                    routingInstanceLocation(routingInstance.getName()),
+                    matchSrcInterface(
+                        routingInstance.getInterfaces().keySet().toArray(new String[0]))));
+    return builder.build();
   }
 
   private Map<NatPacketLocation, Set<String>> computeAllInterfacesForAllNatPacketLocation(Nat nat) {

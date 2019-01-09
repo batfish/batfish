@@ -991,11 +991,11 @@
         "File_Name" : "configs/cisco_interface",
         "Struct_Type" : "zone security",
         "Ref_Name" : "z1",
-        "Context" : "interface zone-member",
+        "Context" : "interface zone-member security",
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [
-            294
+            295
           ]
         }
       },
@@ -2615,6 +2615,18 @@
         }
       },
       {
+        "File_Name" : "configs/juniper_misc",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "lo0.0",
+        "Context" : "routing-instances vtep-source-interface",
+        "Lines" : {
+          "filename" : "configs/juniper_misc",
+          "lines" : [
+            9
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/juniper_ospf",
         "Struct_Type" : "interface",
         "Ref_Name" : "ae16.0",
@@ -3152,10 +3164,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 255 results",
+      "notes" : "Found 256 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 255
+      "numResults" : 256
     }
   }
 ]
