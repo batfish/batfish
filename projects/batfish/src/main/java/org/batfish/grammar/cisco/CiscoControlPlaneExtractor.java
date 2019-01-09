@@ -2179,16 +2179,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterS_eos_vxlan_interface(S_eos_vxlan_interfaceContext ctx) {
-    String vxlanName = ctx.iname.getText();
+    String canonicalVxlanName = getCanonicalInterfaceName(ctx.iname.getText());
     if (_eosVxlan == null) {
-      _eosVxlan = new AristaEosVxlan(vxlanName);
-    } else if (!_eosVxlan.getInterfaceName().equals(vxlanName)) {
+      _eosVxlan = new AristaEosVxlan(canonicalVxlanName);
+    } else if (!_eosVxlan.getInterfaceName().equals(canonicalVxlanName)) {
       _w.redFlag("Only one VXLAN interface may be defined, appending to existing interface");
     }
     _configuration.setEosVxlan(_eosVxlan);
-    defineStructure(VXLAN, vxlanName, ctx);
+    defineStructure(VXLAN, canonicalVxlanName, ctx);
     _configuration.referenceStructure(
-        VXLAN, vxlanName, VXLAN_SELF_REF, ctx.iname.getStart().getLine());
+        VXLAN, canonicalVxlanName, VXLAN_SELF_REF, ctx.iname.getStart().getLine());
   }
 
   @Override
