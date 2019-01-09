@@ -153,7 +153,6 @@ null_block
       | MAP_LIST
       | MASTERIP
       | MENU
-      | MLAG
       | MODULE
       | MONITOR_INTERFACE
       |

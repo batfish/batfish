@@ -11886,6 +11886,86 @@
           }
         }
       },
+      "eos_mlag" : {
+        "configurationFormat" : "ARISTA",
+        "name" : "eos_mlag",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "Port-Channel1" : {
+            "name" : "Port-Channel1",
+            "accessVlan" : 0,
+            "active" : false,
+            "allowedVlans" : "1-4094",
+            "autostate" : true,
+            "bandwidth" : 0.0,
+            "declaredNames" : [
+              "Port-Channel1"
+            ],
+            "description" : "to MLAG PEER",
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "TRUNK",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "AGGREGATED",
+            "vrf" : "default"
+          },
+          "Port-Channel2" : {
+            "name" : "Port-Channel2",
+            "accessVlan" : 0,
+            "active" : false,
+            "allPrefixes" : [
+              "2.2.2.2/32"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 0.0,
+            "declaredNames" : [
+              "Port-Channel2"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "2.2.2.2/32",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "ACCESS",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "AGGREGATED",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "eos_mlag"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "Port-Channel1",
+              "Port-Channel2"
+            ]
+          }
+        }
+      },
       "foundry_access_list" : {
         "configurationFormat" : "FOUNDRY",
         "name" : "foundry_access_list",

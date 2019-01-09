@@ -127,6 +127,8 @@ public enum CiscoStructureUsage implements StructureUsage {
   LINE_ACCESS_CLASS_LIST6("line access-class ipv6 list"),
   MANAGEMENT_SSH_ACCESS_GROUP("management ssh ip access-group"),
   MANAGEMENT_TELNET_ACCESS_GROUP("management telnet ip access-group"),
+  MLAG_CONFIGURATION_LOCAL_INTERFACE("mlag configuration local-interface"),
+  MLAG_CONFIGURATION_PEER_LINK("mlag configuration peer-link"),
   MSDP_PEER_SA_LIST("msdp peer sa-list"),
   NETWORK_OBJECT_GROUP_GROUP_OBJECT("object-group network group-object"),
   NETWORK_OBJECT_GROUP_NETWORK_OBJECT("object-group network network-object object"),
