@@ -61,6 +61,8 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, IpsecVpn> _ipsecVpns;
 
+  private final Map<String, IdsOption> _idsOptions;
+
   private final JuniperFamily _jf;
 
   private final String _name;
@@ -101,6 +103,7 @@ public class LogicalSystem implements Serializable {
     _defaultRoutingInstance = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
     _dnsServers = new TreeSet<>();
     _filters = new TreeMap<>();
+    _idsOptions = new TreeMap<>();
     _ikeGateways = new TreeMap<>();
     _ikePolicies = new TreeMap<>();
     _ikeProposals = new TreeMap<>();
