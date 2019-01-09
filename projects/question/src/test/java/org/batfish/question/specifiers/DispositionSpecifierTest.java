@@ -1,6 +1,6 @@
 package org.batfish.question.specifiers;
 
-import static org.batfish.question.specifiers.DispositionSpecifier.FAILURE_SPECIFIER;
+import static org.batfish.specifier.DispositionSpecifier.FAILURE_SPECIFIER;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.Set;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.FlowDisposition;
+import org.batfish.specifier.DispositionSpecifier;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
