@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 
 import com.google.common.collect.ImmutableList;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -13,7 +14,10 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 
 /** A representation of a composite packet transformation. */
 @ParametersAreNonnullByDefault
-public final class Transformation {
+public final class Transformation implements Serializable {
+  /** */
+  private static final long serialVersionUID = 1L;
+
   private static final String ERROR_NO_STEPS =
       "Cannot create Transformation with zero transformationSteps. Consider using Noop.";
 

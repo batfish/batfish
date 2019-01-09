@@ -17,6 +17,12 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
+import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
+import static org.batfish.datamodel.transformation.Noop.NOOP_SOURCE_NAT;
+import static org.batfish.datamodel.transformation.Transformation.always;
+import static org.batfish.datamodel.transformation.Transformation.when;
+import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -523,17 +529,8 @@ public class TracerouteEngineImplTest {
             .setOwner(c2)
             .setLines(ImmutableList.of(IpAccessListLine.rejecting(matchSrc(natPoolIp))))
             .build());
-    i2.setSourceNats(
-        ImmutableList.of(
-            SourceNat.builder()
-                .setAcl(
-                    nf.aclBuilder()
-                        .setOwner(c2)
-                        .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL))
-                        .build())
-                .setPoolIpFirst(natPoolIp.getStartIp())
-                .setPoolIpLast(natPoolIp.getStartIp())
-                .build()));
+    i2.setOutgoingTransformation(
+        always().apply(assignSourceIp(natPoolIp.getStartIp(), natPoolIp.getStartIp())).build());
     v2.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.builder()
@@ -666,7 +663,7 @@ public class TracerouteEngineImplTest {
                             matchSrc(Prefix.parse("10.0.0.1/32"))))))
             .build();
 
-    i2.setPreSourceNatOutgoingFilter(filter);
+    i2.setPreTransformationOutgoingFilter(filter);
 
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c1.getHostname(), c1), _tempFolder);
@@ -795,7 +792,7 @@ public class TracerouteEngineImplTest {
                         LineAction.PERMIT, OriginatingFromDevice.INSTANCE, "HOST_OUTBOUND")))
             .build();
 
-    i2.setPreSourceNatOutgoingFilter(filter);
+    i2.setPreTransformationOutgoingFilter(filter);
 
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c1.getHostname(), c1), _tempFolder);
@@ -840,7 +837,6 @@ public class TracerouteEngineImplTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().setOwner(c).build();
 
-    IpAccessList.Builder ab = nf.aclBuilder().setOwner(c);
     Ip ip21 = Ip.parse("2.0.0.1");
     Ip ip22 = Ip.parse("2.0.0.2");
     Ip ip33 = Ip.parse("3.0.0.3");
@@ -849,28 +845,19 @@ public class TracerouteEngineImplTest {
     Interface.Builder ib = nf.interfaceBuilder().setOwner(c).setVrf(vrf).setActive(true);
     Interface inInterface =
         ib.setAddress(new InterfaceAddress("1.0.0.0/24"))
-            .setDestinationNats(
-                ImmutableList.of(
-                    DestinationNat.builder()
-                        .setAcl(ab.setLines(ImmutableList.of(accepting(matchDst(ip21)))).build())
-                        .build(),
-                    DestinationNat.builder()
-                        .setAcl(ab.setLines(ImmutableList.of(accepting(matchDst(prefix2)))).build())
-                        .setPoolIpFirst(ip33)
-                        .setPoolIpLast(ip33)
-                        .build()))
+            .setIncomingTransformation(
+                when(matchDst(ip21))
+                    .apply(NOOP_DEST_NAT)
+                    .setOrElse(
+                        when(matchDst(prefix2)).apply(assignDestinationIp(ip33, ip33)).build())
+                    .build())
             .build();
     ib.setAddress(new InterfaceAddress("4.0.0.0/24"))
-        .setSourceNats(
-            ImmutableList.of(
-                SourceNat.builder()
-                    .setAcl(ab.setLines(ImmutableList.of(accepting(matchSrc(ip21)))).build())
-                    .build(),
-                SourceNat.builder()
-                    .setAcl(ab.setLines(ImmutableList.of(accepting(matchSrc(prefix2)))).build())
-                    .setPoolIpFirst(ip33)
-                    .setPoolIpLast(ip33)
-                    .build()))
+        .setOutgoingTransformation(
+            when(matchSrc(ip21))
+                .apply(NOOP_SOURCE_NAT)
+                .setOrElse(when(matchSrc(prefix2)).apply(assignSourceIp(ip33, ip33)).build())
+                .build())
         .build();
 
     Batfish batfish =
@@ -962,15 +949,7 @@ public class TracerouteEngineImplTest {
     assertThat(trace.getHops(), hasSize(1));
     hop = trace.getHops().get(0);
 
-    assertThat(hop.getSteps(), hasSize(3));
-    steps = hop.getSteps();
-
-    assertThat(
-        steps.get(1),
-        equalTo(
-            new TransformationStep(
-                new TransformationStepDetail(DEST_NAT, ImmutableSortedSet.of()),
-                StepAction.PERMITTED)));
+    assertThat(hop.getSteps(), hasSize(2));
 
     // Test flows matched by source nat rules that permit but don't transform
     flow =
@@ -993,19 +972,12 @@ public class TracerouteEngineImplTest {
     assertThat(trace.getHops(), hasSize(1));
     hop = trace.getHops().get(0);
 
-    assertThat(hop.getSteps(), hasSize(5));
+    assertThat(hop.getSteps(), hasSize(4));
     steps = hop.getSteps();
 
-    // dest nat step
-    assertThat(
-        steps.get(1),
-        equalTo(
-            new TransformationStep(
-                new TransformationStepDetail(DEST_NAT, ImmutableSortedSet.of()),
-                StepAction.PERMITTED)));
     // source nat step
     assertThat(
-        steps.get(3),
+        steps.get(2),
         equalTo(
             new TransformationStep(
                 new TransformationStepDetail(SOURCE_NAT, ImmutableSortedSet.of()),
@@ -1032,19 +1004,12 @@ public class TracerouteEngineImplTest {
     assertThat(trace.getHops(), hasSize(1));
     hop = trace.getHops().get(0);
 
-    assertThat(hop.getSteps(), hasSize(5));
+    assertThat(hop.getSteps(), hasSize(4));
     steps = hop.getSteps();
 
-    // dest nat step
-    assertThat(
-        steps.get(1),
-        equalTo(
-            new TransformationStep(
-                new TransformationStepDetail(DEST_NAT, ImmutableSortedSet.of()),
-                StepAction.PERMITTED)));
     // source nat step
     assertThat(
-        steps.get(3),
+        steps.get(2),
         equalTo(
             new TransformationStep(
                 new TransformationStepDetail(
@@ -1072,23 +1037,7 @@ public class TracerouteEngineImplTest {
     assertThat(trace.getHops(), hasSize(1));
     hop = trace.getHops().get(0);
 
-    assertThat(hop.getSteps(), hasSize(5));
-    steps = hop.getSteps();
-
-    // dest nat step
-    assertThat(
-        steps.get(1),
-        equalTo(
-            new TransformationStep(
-                new TransformationStepDetail(DEST_NAT, ImmutableSortedSet.of()),
-                StepAction.PERMITTED)));
-    // source nat step
-    assertThat(
-        steps.get(3),
-        equalTo(
-            new TransformationStep(
-                new TransformationStepDetail(SOURCE_NAT, ImmutableSortedSet.of()),
-                StepAction.PERMITTED)));
+    assertThat(hop.getSteps(), hasSize(3));
   }
 
   @Test

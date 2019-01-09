@@ -8,7 +8,6 @@ import static org.batfish.datamodel.transformation.IpField.DESTINATION;
 import static org.batfish.datamodel.transformation.IpField.SOURCE;
 import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
 import static org.batfish.datamodel.transformation.Noop.NOOP_SOURCE_NAT;
-import static org.batfish.datamodel.transformation.Noop.noop;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.Transformation.when;
 
@@ -120,7 +119,7 @@ public final class TransformationUtil {
   private static List<TransformationStep> assignFromPoolOrNoop(
       TransformationType type, IpField ipField, @Nullable Ip poolFirst, @Nullable Ip poolLast) {
     return poolFirst == null || poolLast == null
-        ? ImmutableList.of(noop(ipField))
+        ? ImmutableList.of(new Noop(type))
         : ImmutableList.of(new AssignIpAddressFromPool(type, ipField, poolFirst, poolLast));
   }
 

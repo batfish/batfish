@@ -606,7 +606,7 @@ public class TracerouteEngineImplContext {
                           .getAllInterfaces()
                           .get(nextHopInterface.getInterface());
 
-                  IpAccessList filter = outgoingInterface.getPreSourceNatOutgoingFilter();
+                  IpAccessList filter = outgoingInterface.getPreTransformationOutgoingFilter();
                   // Apply preSourceNatOutgoingFilter
                   if (filter != null) {
                     FilterStep step =

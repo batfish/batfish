@@ -1,5 +1,7 @@
 package org.batfish.z3;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
+import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.question.SrcNattedConstraint.REQUIRE_NOT_SRC_NATTED;
 import static org.batfish.question.SrcNattedConstraint.REQUIRE_SRC_NATTED;
 import static org.batfish.question.SrcNattedConstraint.UNCONSTRAINED;
@@ -49,6 +51,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.SrcNattedConstraint;
@@ -135,20 +138,18 @@ public class NodJobTest {
             .setOwner(_srcNode)
             .build();
 
-    SourceNat sourceNat1 =
-        // TODO add a test with poolIp1 to poolIp2. That will exercise the range logic,
-        // which is complex and inscrutable. Consider replacing that with bv_lte and bv_gte.
-        // Would be easier to understand, and Nuno says it will likely be more efficient.
-        snb.setPoolIpFirst(poolIp1).setPoolIpLast(poolIp1).setAcl(sourceNat1Acl).build();
     ib.setOwner(_srcNode)
         .setVrf(_srcVrf)
         .setAddress(new InterfaceAddress(p1.getStartIp(), p1.getPrefixLength()))
-        .setSourceNats(ImmutableList.of(sourceNat1))
+        .setOutgoingTransformation(
+            when(permittedByAcl(sourceNat1Acl.getName()))
+                .apply(TransformationStep.assignSourceIp(poolIp1, poolIp1))
+                .build())
         .build();
     ib.setOwner(_dstNode)
         .setVrf(dstVrf)
         .setAddress(new InterfaceAddress(p1.getEndIp(), p1.getPrefixLength()))
-        .setSourceNats(ImmutableList.of())
+        .setOutgoingTransformation(null)
         .build();
 
     // For the destination

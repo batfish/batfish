@@ -1,5 +1,8 @@
 package org.batfish.question.loop;
 
+import static org.batfish.datamodel.transformation.Transformation.always;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -12,7 +15,6 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -57,17 +59,8 @@ public class LoopNetwork {
               .build());
     }
 
-    i2.setSourceNats(
-        ImmutableList.of(
-            SourceNat.builder()
-                .setAcl(
-                    nf.aclBuilder()
-                        .setOwner(c2)
-                        .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL))
-                        .build())
-                .setPoolIpFirst(natPoolIp.getStartIp())
-                .setPoolIpLast(natPoolIp.getStartIp())
-                .build()));
+    i2.setOutgoingTransformation(
+        always().apply(assignSourceIp(natPoolIp.getStartIp(), natPoolIp.getStartIp())).build());
     v2.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.builder()

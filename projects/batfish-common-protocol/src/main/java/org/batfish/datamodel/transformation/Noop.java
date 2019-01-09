@@ -3,9 +3,9 @@ package org.batfish.datamodel.transformation;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 
+import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 
 /**
@@ -13,7 +13,10 @@ import org.batfish.datamodel.flow.TransformationStep.TransformationType;
  * in the trace.
  */
 @ParametersAreNonnullByDefault
-public final class Noop implements TransformationStep {
+public final class Noop implements TransformationStep, Serializable {
+  /** */
+  private static final long serialVersionUID = 1L;
+
   private final TransformationType _type;
 
   public static final Noop NOOP_DEST_NAT = new Noop(DEST_NAT);
@@ -21,17 +24,6 @@ public final class Noop implements TransformationStep {
 
   public Noop(TransformationType type) {
     _type = type;
-  }
-
-  public static Noop noop(IpField field) {
-    switch (field) {
-      case DESTINATION:
-        return NOOP_DEST_NAT;
-      case SOURCE:
-        return NOOP_SOURCE_NAT;
-      default:
-        throw new BatfishException("Unknown IpField: " + field);
-    }
   }
 
   @Override

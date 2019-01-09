@@ -33,6 +33,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
@@ -162,6 +163,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.TrackMethod;
+import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
@@ -2192,15 +2194,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     List<CiscoSourceNat> origSourceNats = iface.getSourceNats();
     if (origSourceNats != null) {
-      // Process each of the CiscoSourceNats:
-      //   1) Collect references to ACLs and NAT pools.
-      //   2) For valid CiscoSourceNat rules, add them to the newIface source NATs list.
-      newIface.setSourceNats(
-          origSourceNats
-              .stream()
-              .map(nat -> processSourceNat(nat, iface, ipAccessLists))
-              .filter(Objects::nonNull)
-              .collect(ImmutableList.toImmutableList()));
+      Transformation outgoingTransformation = null;
+      for (CiscoSourceNat srcNat : Lists.reverse(origSourceNats)) {
+        outgoingTransformation =
+            srcNat
+                .toTransformation(ipAccessLists, _natPools, outgoingTransformation)
+                .orElse(outgoingTransformation);
+      }
+      newIface.setOutgoingTransformation(outgoingTransformation);
     }
     String routingPolicyName = iface.getRoutingPolicy();
     if (routingPolicyName != null) {
