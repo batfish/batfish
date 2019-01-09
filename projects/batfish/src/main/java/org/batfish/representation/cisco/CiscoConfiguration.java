@@ -3443,15 +3443,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // convert Arista EOS VXLAN
     if (_eosVxlan != null) {
-      String sourceIface = _eosVxlan.getSourceInterface();
+      String sourceIfaceName = _eosVxlan.getSourceInterface();
+      Interface sourceIface = sourceIfaceName == null ? null : _interfaces.get(sourceIfaceName);
       org.batfish.datamodel.Vrf vrf =
-          sourceIface == null
-              ? c.getDefaultVrf()
-              : c.getVrfs().get(_interfaces.get(sourceIface).getVrf());
+          sourceIface == null ? c.getDefaultVrf() : c.getVrfs().get(sourceIface.getVrf());
 
       for (Entry<Integer, Integer> entry : _eosVxlan.getVlanVnis().entrySet()) {
         Integer vni = entry.getValue();
-        vrf.getVniSettings().put(vni, toVniSettings(c, _eosVxlan, vni, entry.getKey()));
+        vrf.getVniSettings().put(vni, toVniSettings(_eosVxlan, vni, entry.getKey(), sourceIface));
       }
     }
 
@@ -3778,13 +3777,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private static VniSettings toVniSettings(
-      Configuration c, AristaEosVxlan vxlan, Integer vni, Integer vlan) {
-    String sourceInterface = vxlan.getSourceInterface();
-    Ip sourceAddress = null;
-    if (sourceInterface != null) {
-      InterfaceAddress ifaceAddress = c.getAllInterfaces().get(sourceInterface).getAddress();
-      sourceAddress = ifaceAddress == null ? null : ifaceAddress.getIp();
-    }
+      @Nonnull AristaEosVxlan vxlan,
+      @Nonnull Integer vni,
+      @Nonnull Integer vlan,
+      @Nullable Interface sourceInterface) {
+    Ip sourceAddress =
+        sourceInterface == null
+            ? null
+            : sourceInterface.getAddress() == null ? null : sourceInterface.getAddress().getIp();
 
     // Prefer VLAN specific or general flood address (in that order) over multicast address
     SortedSet<Ip> bumTransportIps =
