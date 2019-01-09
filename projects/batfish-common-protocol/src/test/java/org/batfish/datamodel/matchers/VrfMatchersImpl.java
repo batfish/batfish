@@ -126,5 +126,4 @@ final class VrfMatchersImpl {
       return actual.getVniSettings();
     }
   }
-
 }
