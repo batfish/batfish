@@ -108,7 +108,9 @@ public final class Transformation implements Serializable {
     return new Transformation(
         guard,
         // jackson serializes empty lists as null
-        firstNonNull(transformationSteps, ImmutableList.of()), andThen, orElse);
+        firstNonNull(transformationSteps, ImmutableList.of()),
+        andThen,
+        orElse);
   }
 
   /** A predicate specifying which flows should be transformed. */
