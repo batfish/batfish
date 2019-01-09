@@ -11,6 +11,8 @@ import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.VniSettings;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -29,7 +31,10 @@ final class VxlanVniPropertiesAnswerer extends Answerer {
     Rows rows = new Rows();
     nodes.forEach(
         n -> {
-          // VniSettings vniSettings = configurations.get(n).getVniSettings();
+          Map<String, Vrf> vrfs = configurations.get(n).getVrfs();
+          vrfs.forEach(vrf -> {});
+
+          VniSettings vniSettings = configurations.get(n).getVniSettings();
           rows.add(getRow(n /*, vniSettings*/));
         });
 

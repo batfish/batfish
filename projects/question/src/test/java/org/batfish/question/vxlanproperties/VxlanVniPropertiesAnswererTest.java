@@ -1,13 +1,27 @@
 package org.batfish.question.vxlanproperties;
 
-import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_CONVERT_STATUS;
-import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_NODE;
+import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_REMOTE_VTEP_MULTICAST_GROUP;
+import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_REMOTE_VTEP_UNICAST_ADDRESSES;
+import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VLAN;
+import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VNI;
+import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VTEP_ADDRESS;
+import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VXLAN_UDP_PORT;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
+import java.util.SortedMap;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfishTestAdapter;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
-import org.batfish.datamodel.answers.ConvertStatus;
+import org.batfish.datamodel.BumTransportMethod;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.VniSettings;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
@@ -26,19 +40,46 @@ public class VxlanVniPropertiesAnswererTest {
         answer.getRows(),
         equalTo(
             new Rows()
-                .add(Row.of(COL_NODE, "n1", COL_CONVERT_STATUS, ConvertStatus.PASSED))
-                .add(Row.of(COL_NODE, "n2", COL_CONVERT_STATUS, ConvertStatus.WARNINGS))
-                .add(Row.of(COL_NODE, "n3", COL_CONVERT_STATUS, ConvertStatus.FAILED))));
+                .add(
+                    Row.of(
+                        COL_VNI,
+                        1,
+                        COL_REMOTE_VTEP_MULTICAST_GROUP,
+                        null,
+                        COL_REMOTE_VTEP_UNICAST_ADDRESSES,
+                        ImmutableSet.of(Ip.parse("1.2.3.4")),
+                        COL_VLAN,
+                        10001,
+                        COL_VTEP_ADDRESS,
+                        Ip.parse("2.3.4.5"),
+                        COL_VXLAN_UDP_PORT,
+                        5555))));
   }
 
   private static class TestBatfish extends IBatfishTestAdapter {
     @Override
-    public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
-      ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
-      ccae.getConvertStatus().put("n1", ConvertStatus.PASSED);
-      ccae.getConvertStatus().put("n2", ConvertStatus.WARNINGS);
-      ccae.getConvertStatus().put("n3", ConvertStatus.FAILED);
-      return ccae;
+    public SortedMap<String, Configuration> loadConfigurations() {
+      Configuration conf = new Configuration("hostname", ConfigurationFormat.ARISTA);
+      conf.setVrfs(
+          ImmutableMap.of(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME)));
+      conf.getDefaultVrf()
+          .getVniSettings()
+          .put(
+              1,
+              VniSettings.builder()
+                  .setVni(1)
+                  .setVlan(10001)
+                  .setSourceAddress(Ip.parse("1.2.3.4"))
+                  .setUdpPort(4242)
+                  .setBumTransportMethod(BumTransportMethod.UNICAST_FLOOD_GROUP)
+                  .setBumTransportIps(ImmutableSortedSet.of(Ip.parse("2.3.4.5")))
+                  .build());
+      return ImmutableSortedMap.of("hostname", conf);
+    }
+
+    @Override
+    public SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
+      return loadConfigurations();
     }
   }
 }
