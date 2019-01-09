@@ -1,7 +1,6 @@
 package org.batfish.grammar.flatjuniper;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
-import static org.batfish.common.util.CommonUtil.parseIp;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
@@ -4188,8 +4187,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (ctx.IP_ADDRESS().isEmpty()) {
         // from IP_PREFIX to IP_PREFIX
         // Juniper will treat IP_PREFIX as IP ADDRESS
-        _currentNatPool.setFromAddress(parseIp(ctx.from.getText()));
-        _currentNatPool.setToAddress(parseIp(ctx.to.getText()));
+        _currentNatPool.setFromAddress(new InterfaceAddress(ctx.from.getText()).getIp());
+        _currentNatPool.setToAddress(new InterfaceAddress(ctx.to.getText()).getIp());
       } else {
         // from IP_ADDRESS to IP_ADDRESS
         _currentNatPool.setFromAddress(Ip.parse(ctx.from.getText()));
@@ -4197,8 +4196,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
     } else {
       Prefix prefix = Prefix.parse(ctx.prefix.getText());
-      _currentNatPool.setFromAddress(prefix.getFirstNonSubnetIp());
-      _currentNatPool.setToAddress(prefix.getLastNonBroadcastIp());
+      _currentNatPool.setFromAddress(prefix.getFirstHostIp());
+      _currentNatPool.setToAddress(prefix.getLastHostIp());
     }
   }
 

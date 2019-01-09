@@ -968,13 +968,4 @@ public class CommonUtil {
           "Failed to write input stream to output file: '" + outputFile + "'", e);
     }
   }
-
-  public static Ip parseIp(String text) {
-    if (text.contains("/")) {
-      String[] parts = text.split("/");
-      return Ip.parse(parts[0]);
-    } else {
-      return Ip.parse(text);
-    }
-  }
 }
