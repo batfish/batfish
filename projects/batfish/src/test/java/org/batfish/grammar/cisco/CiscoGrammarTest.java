@@ -139,11 +139,17 @@ import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasAreas;
 import static org.batfish.datamodel.matchers.RegexCommunitySetMatchers.hasRegex;
 import static org.batfish.datamodel.matchers.RegexCommunitySetMatchers.isRegexCommunitySet;
 import static org.batfish.datamodel.matchers.SnmpServerMatchers.hasCommunities;
+import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportIps;
+import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportMethod;
+import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasSourceAddress;
+import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasUdpPort;
+import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasEigrpProcesses;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasSnmpServer;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasVniSettings;
 import static org.batfish.datamodel.vendor_family.VendorFamilyMatchers.hasCisco;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasAaa;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasLogging;
@@ -250,6 +256,7 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -294,6 +301,7 @@ import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -3103,6 +3111,46 @@ public class CiscoGrammarTest {
             ImmutableSet.of(
                 new Dependency("Ethernet0", DependencyType.AGGREGATE),
                 new Dependency("Ethernet1", DependencyType.AGGREGATE))));
+  }
+
+  @Test
+  public void testEosVxlan() throws IOException {
+    String hostnameBase = "eos-vxlan";
+    String hostnameNoLoopbackAddr = "eos-vxlan-no-loopback-address";
+    String hostnameNoSourceIface = "eos-vxlan-no-source-interface";
+
+    Batfish batfish =
+        getBatfishForConfigurationNames(
+            hostnameBase, hostnameNoSourceIface, hostnameNoLoopbackAddr);
+    Configuration configBase = batfish.loadConfigurations().get(hostnameBase);
+    Configuration configNoSourceIface = batfish.loadConfigurations().get(hostnameNoSourceIface);
+    Configuration configNoLoopbackAddr = batfish.loadConfigurations().get(hostnameNoLoopbackAddr);
+
+    // Check config with proper loopback iface, VLAN-specific unicast, explicit UDP port
+    assertThat(configBase, hasDefaultVrf(hasVniSettings(hasKey(10002))));
+    VniSettings vniSettings = configBase.getDefaultVrf().getVniSettings().get(10002);
+    assertThat(vniSettings, hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)));
+    assertThat(vniSettings, hasBumTransportIps(contains(Ip.parse("1.1.1.10"))));
+    assertThat(vniSettings, hasSourceAddress(equalTo(Ip.parse("1.1.1.4"))));
+    assertThat(vniSettings, hasUdpPort(equalTo(4789)));
+    assertThat(vniSettings, hasVlan(equalTo(2)));
+
+    // Check config with no loopback address, using multicast, and default UDP port
+    assertThat(configNoLoopbackAddr, hasDefaultVrf(hasVniSettings(hasKey(10002))));
+    vniSettings = configNoLoopbackAddr.getDefaultVrf().getVniSettings().get(10002);
+    assertThat(vniSettings, hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)));
+    assertThat(vniSettings, hasBumTransportIps(contains(Ip.parse("227.10.1.1"))));
+    assertThat(vniSettings, hasSourceAddress(nullValue()));
+    assertThat(vniSettings, hasUdpPort(equalTo(4789)));
+
+    // Check config with no source interface and general VXLAN unicast address
+    assertThat(configNoSourceIface, hasDefaultVrf(hasVniSettings(hasKey(10002))));
+    vniSettings = configNoSourceIface.getDefaultVrf().getVniSettings().get(10002);
+    assertThat(vniSettings, hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)));
+    assertThat(
+        vniSettings,
+        hasBumTransportIps(containsInAnyOrder(Ip.parse("1.1.1.5"), Ip.parse("1.1.1.6"))));
+    assertThat(vniSettings, hasSourceAddress(nullValue()));
   }
 
   @Test
