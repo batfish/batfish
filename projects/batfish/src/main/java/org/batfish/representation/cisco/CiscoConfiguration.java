@@ -167,6 +167,7 @@ import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
+import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.batfish.representation.cisco.nx.CiscoNxBgpGlobalConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpRedistributionPolicy;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration;
@@ -392,6 +393,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private String _dnsSourceInterface;
 
   private String _domainName;
+
+  private AristaEosVxlan _eosVxlan;
 
   private final Map<String, ExpandedCommunityList> _expandedCommunityLists;
 
@@ -734,6 +737,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public String getDnsSourceInterface() {
     return _dnsSourceInterface;
+  }
+
+  public AristaEosVxlan getEosVxlan() {
+    return _eosVxlan;
   }
 
   public Map<String, ExpandedCommunityList> getExpandedCommunityLists() {
@@ -1158,6 +1165,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public void setDomainName(String domainName) {
     _domainName = domainName;
+  }
+
+  public void setEosVxlan(AristaEosVxlan eosVxlan) {
+    _eosVxlan = eosVxlan;
   }
 
   public void setFailover(boolean failover) {
@@ -3453,7 +3464,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
         CiscoStructureUsage.SERVICE_POLICY_INTERFACE,
         CiscoStructureUsage.ROUTER_VRRP_INTERFACE,
-        CiscoStructureUsage.TRACK_INTERFACE);
+        CiscoStructureUsage.TRACK_INTERFACE,
+        CiscoStructureUsage.VXLAN_SOURCE_INTERFACE);
 
     // mark references to ACLs that may not appear in data model
     markIpOrMacAcls(
@@ -3699,6 +3711,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // track
     markConcreteStructure(CiscoStructureType.TRACK, CiscoStructureUsage.INTERFACE_STANDBY_TRACK);
+
+    // VXLAN
+    markConcreteStructure(CiscoStructureType.VXLAN, CiscoStructureUsage.VXLAN_SELF_REF);
 
     // zone
     markConcreteStructure(

@@ -69,6 +69,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
 import static org.batfish.representation.cisco.CiscoStructureType.TRAFFIC_ZONE;
+import static org.batfish.representation.cisco.CiscoStructureType.VXLAN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ACCESS_GROUP_GLOBAL_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
@@ -252,6 +253,8 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.SYSTEM_SERVIC
 import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_SOURCE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.VXLAN_SELF_REF;
+import static org.batfish.representation.cisco.CiscoStructureUsage.VXLAN_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_GROUP_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_REDIRECT_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_SERVICE_LIST;
@@ -536,6 +539,7 @@ import org.batfish.grammar.cisco.CiscoParser.Default_originate_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Default_shutdown_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Delete_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Description_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Description_lineContext;
 import org.batfish.grammar.cisco.CiscoParser.Dh_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Disable_peer_as_check_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Disposition_rp_stanzaContext;
@@ -560,6 +564,13 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_peer_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_peer_linkContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_reload_delayContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_shutdownContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_descriptionContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_floodContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_multicast_groupContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_source_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_udp_portContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_vlanContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_vlan_vniContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_additional_featureContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_tailContext;
@@ -935,6 +946,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_depi_classContext;
 import org.batfish.grammar.cisco.CiscoParser.S_depi_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.S_domain_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_eos_mlagContext;
+import org.batfish.grammar.cisco.CiscoParser.S_eos_vxlan_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.S_featureContext;
 import org.batfish.grammar.cisco.CiscoParser.S_hostnameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_interfaceContext;
@@ -1260,6 +1272,7 @@ import org.batfish.representation.cisco.Vrf;
 import org.batfish.representation.cisco.VrrpGroup;
 import org.batfish.representation.cisco.VrrpInterface;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
+import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfConfiguration;
@@ -1291,6 +1304,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     for (int i = ctx.getStart().getLine(); i <= ctx.getStop().getLine(); ++i) {
       _configuration.defineStructure(type, name, i);
     }
+  }
+
+  private static String getDescription(Description_lineContext ctx) {
+    return ctx.text != null ? ctx.text.getText().trim() : "";
   }
 
   private static Ip6 getIp(Access_list_ip6_rangeContext ctx) {
@@ -1507,6 +1524,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private User _currentUser;
 
+  private Integer _currentVlanNum;
+
   private String _currentVrf;
 
   private VrrpGroup _currentVrrpGroup;
@@ -1556,6 +1575,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private Integer _currentHsrpGroup;
 
   private String _currentTrackingGroup;
+
+  private AristaEosVxlan _eosVxlan;
 
   public CiscoControlPlaneExtractor(
       String text, CiscoCombinedParser parser, ConfigurationFormat format, Warnings warnings) {
@@ -2173,6 +2194,82 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterS_eos_vxlan_interface(S_eos_vxlan_interfaceContext ctx) {
+    String canonicalVxlanName = getCanonicalInterfaceName(ctx.iname.getText());
+    if (_eosVxlan == null) {
+      _eosVxlan = new AristaEosVxlan(canonicalVxlanName);
+    } else if (!_eosVxlan.getInterfaceName().equals(canonicalVxlanName)) {
+      _w.redFlag("Only one VXLAN interface may be defined, appending to existing interface");
+    }
+    _configuration.setEosVxlan(_eosVxlan);
+    defineStructure(VXLAN, canonicalVxlanName, ctx);
+    _configuration.referenceStructure(
+        VXLAN, canonicalVxlanName, VXLAN_SELF_REF, ctx.iname.getStart().getLine());
+  }
+
+  @Override
+  public void exitEos_vxif_description(Eos_vxif_descriptionContext ctx) {
+    _eosVxlan.setDescription(getDescription(ctx.description_line()));
+  }
+
+  @Override
+  public void exitEos_vxif_vxlan_flood(Eos_vxif_vxlan_floodContext ctx) {
+    SortedSet<Ip> floodAddresses = _eosVxlan.getFloodAddresses();
+    if (_currentVlanNum != null) {
+      floodAddresses =
+          _eosVxlan.getVlanFloodAddresses().computeIfAbsent(_currentVlanNum, n -> new TreeSet<>());
+    }
+
+    if (ctx.REMOVE() != null) {
+      for (Token host : ctx.hosts) {
+        floodAddresses.remove(toIp(host));
+      }
+      return;
+    }
+
+    if (ctx.ADD() == null) {
+      // Replace existing addresses instead of adding
+      floodAddresses.clear();
+    }
+    for (Token host : ctx.hosts) {
+      floodAddresses.add(toIp(host));
+    }
+  }
+
+  @Override
+  public void exitEos_vxif_vxlan_multicast_group(Eos_vxif_vxlan_multicast_groupContext ctx) {
+    _eosVxlan.setMulticastGroup(toIp(ctx.group));
+  }
+
+  @Override
+  public void exitEos_vxif_vxlan_source_interface(Eos_vxif_vxlan_source_interfaceContext ctx) {
+    String ifaceName = ctx.iface.getText();
+    _eosVxlan.setSourceInterface(ifaceName);
+    _configuration.referenceStructure(
+        INTERFACE, ifaceName, VXLAN_SOURCE_INTERFACE, ctx.iface.getStart().getLine());
+  }
+
+  @Override
+  public void exitEos_vxif_vxlan_udp_port(Eos_vxif_vxlan_udp_portContext ctx) {
+    _eosVxlan.setUdpPort(toInteger(ctx.num));
+  }
+
+  @Override
+  public void enterEos_vxif_vxlan_vlan(Eos_vxif_vxlan_vlanContext ctx) {
+    _currentVlanNum = toInteger(ctx.num);
+  }
+
+  @Override
+  public void exitEos_vxif_vxlan_vlan(Eos_vxif_vxlan_vlanContext ctx) {
+    _currentVlanNum = null;
+  }
+
+  @Override
+  public void exitEos_vxif_vxlan_vlan_vni(Eos_vxif_vxlan_vlan_vniContext ctx) {
+    _eosVxlan.getVlanVnis().computeIfAbsent(_currentVlanNum, n -> toInteger(ctx.num));
+  }
+
+  @Override
   public void enterExtended_access_list_stanza(Extended_access_list_stanzaContext ctx) {
     String name;
     if (ctx.name != null) {
@@ -2204,8 +2301,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterIf_description(If_descriptionContext ctx) {
-    Token descriptionToken = ctx.description_line().text;
-    String description = descriptionToken != null ? descriptionToken.getText().trim() : "";
+    String description = getDescription(ctx.description_line());
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setDescription(description);
     }
@@ -2970,7 +3066,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitOn_description(On_descriptionContext ctx) {
-    _currentNetworkObject.setDescription(ctx.description_line().getText());
+    _currentNetworkObject.setDescription(getDescription(ctx.description_line()));
   }
 
   @Override
@@ -3007,7 +3103,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitOs_description(Os_descriptionContext ctx) {
-    _currentServiceObject.setDescription(ctx.description_line().getText());
+    _currentServiceObject.setDescription(getDescription(ctx.description_line()));
   }
 
   @Override
@@ -4945,8 +5041,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitDescription_bgp_tail(Description_bgp_tailContext ctx) {
-    String description = ctx.description_line().text.getText().trim();
-    _currentPeerGroup.setDescription(description);
+    _currentPeerGroup.setDescription(getDescription(ctx.description_line()));
   }
 
   @Override
@@ -9376,7 +9471,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitVrfd_description(Vrfd_descriptionContext ctx) {
-    currentVrf().setDescription(ctx.description_line().text.getText());
+    currentVrf().setDescription(getDescription(ctx.description_line()));
   }
 
   @Override

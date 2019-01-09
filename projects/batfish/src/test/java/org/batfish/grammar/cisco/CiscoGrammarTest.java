@@ -149,6 +149,7 @@ import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasA
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasLogging;
 import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
 import static org.batfish.grammar.cisco.CiscoControlPlaneExtractor.SERIAL_LINE;
+import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeIcmpObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectClassMapAclName;
@@ -163,6 +164,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.ICMP_TYPE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_CLASS_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_POLICY_MAP;
+import static org.batfish.representation.cisco.CiscoStructureType.INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST_STANDARD;
@@ -183,6 +185,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
+import static org.batfish.representation.cisco.CiscoStructureType.VXLAN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
@@ -233,11 +236,15 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warnings;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.IpsecUtil;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -330,7 +337,7 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.cisco.CiscoConfiguration;
-import org.batfish.representation.cisco.CiscoStructureType;
+import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -375,6 +382,20 @@ public class CiscoGrammarTest {
         .setIpProtocol(IpProtocol.ICMP)
         .setIcmpType(icmpType)
         .build();
+  }
+
+  private CiscoConfiguration parseCiscoConfig(String hostname, ConfigurationFormat format) {
+    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    Settings settings = new Settings();
+    configureBatfishTestSettings(settings);
+    CiscoCombinedParser ciscoParser = new CiscoCombinedParser(src, settings, format);
+    CiscoControlPlaneExtractor extractor =
+        new CiscoControlPlaneExtractor(src, ciscoParser, format, new Warnings());
+    ParserRuleContext tree =
+        Batfish.parse(
+            ciscoParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+    extractor.processParseTree(tree);
+    return (CiscoConfiguration) extractor.getVendorConfiguration();
   }
 
   @Test
@@ -3085,6 +3106,44 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testEosVxlanCiscoConfig() throws IOException {
+    String hostname = "eos-vxlan";
+
+    CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.ARISTA);
+
+    assertThat(config, notNullValue());
+    AristaEosVxlan eosVxlan = config.getEosVxlan();
+    assertThat(eosVxlan, notNullValue());
+
+    assertThat(eosVxlan.getDescription(), equalTo("vxlan vti"));
+    // Confirm flood address set doesn't contain the removed address
+    assertThat(
+        eosVxlan.getFloodAddresses(), containsInAnyOrder(Ip.parse("1.1.1.5"), Ip.parse("1.1.1.7")));
+    assertThat(eosVxlan.getMulticastGroup(), equalTo(Ip.parse("227.10.1.1")));
+    assertThat(eosVxlan.getSourceInterface(), equalTo("Loopback1"));
+    assertThat(eosVxlan.getUdpPort(), equalTo(4789));
+
+    assertThat(eosVxlan.getVlanVnis(), hasEntry(equalTo(2), equalTo(10002)));
+
+    // Confirm flood address set was overwritten as expected
+    assertThat(
+        eosVxlan.getVlanFloodAddresses(), hasEntry(equalTo(2), contains(Ip.parse("1.1.1.10"))));
+  }
+
+  @Test
+  public void testEosVxlanReference() throws IOException {
+    String hostname = "eos-vxlan";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ccae, hasNumReferrers(filename, VXLAN, "Vxlan1", 1));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "Loopback1", 2));
+  }
+
+  @Test
   public void testInterfaceNames() throws IOException {
     String testrigName = "interface-names";
     String iosHostname = "ios";
@@ -3780,7 +3839,7 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface("ifname", hasMtu(1400)));
 
     // Confirm interface definition is tracked for the alias name
-    assertThat(ccae, hasDefinedStructure(filename, CiscoStructureType.INTERFACE, "ifname"));
+    assertThat(ccae, hasDefinedStructure(filename, INTERFACE, "ifname"));
   }
 
   @Test
