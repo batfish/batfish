@@ -6,12 +6,14 @@ import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.DisplayHints;
@@ -117,14 +119,17 @@ final class VxlanVniPropertiesAnswerer extends Answerer {
                   RowBuilder row = Row.builder(columns).put(COL_NODE, nodeName).put(COL_VNI, vni);
                   boolean unicast =
                       vniSettings.getBumTransportMethod() == BumTransportMethod.UNICAST_FLOOD_GROUP;
+                  SortedSet<Ip> bumTransportIps = vniSettings.getBumTransportIps();
                   VxlanVniPropertiesRow vxlanVniProperties =
                       new VxlanVniPropertiesRow(
                           nodeName,
                           vni,
                           vniSettings.getVlan(),
                           vniSettings.getSourceAddress(),
-                          unicast ? null : vniSettings.getBumTransportIps().first(),
-                          unicast ? vniSettings.getBumTransportIps() : null,
+                          unicast
+                              ? null
+                              : bumTransportIps.isEmpty() ? null : bumTransportIps.first(),
+                          unicast ? bumTransportIps : null,
                           vniSettings.getUdpPort());
 
                   for (String property : propertySpecifier.getMatchingProperties()) {

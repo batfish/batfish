@@ -62,6 +62,41 @@ public final class VxlanVniPropertiesAnswererTest {
                         .put(VLAN, 10002)
                         .put(VTEP_FLOOD_LIST, null)
                         .put(VXLAN_PORT, 4789)
+                        .build())
+                .add(
+                    Row.builder()
+                        .put(COL_NODE, "minimal")
+                        .put(COL_VNI, 1)
+                        .put(LOCAL_VTEP_IP, null)
+                        .put(MULTICAST_GROUP, null)
+                        .put(VLAN, null)
+                        .put(VTEP_FLOOD_LIST, null)
+                        .put(VXLAN_PORT, 1234)
+                        .build())));
+  }
+
+  @Test
+  public void testSpecifyNodes() {
+    VxlanVniPropertiesAnswerer answerer =
+        new VxlanVniPropertiesAnswerer(
+            new VxlanVniPropertiesQuestion("minimal", VxlanVniPropertySpecifier.ALL),
+            new VxlanVniPropertiesAnswererTest.TestBatfish());
+    TableAnswerElement answer = answerer.answer();
+
+    // Should have only the one VNI from the specified node
+    assertThat(
+        answer.getRows(),
+        equalTo(
+            new Rows()
+                .add(
+                    Row.builder()
+                        .put(COL_NODE, "minimal")
+                        .put(COL_VNI, 1)
+                        .put(LOCAL_VTEP_IP, null)
+                        .put(MULTICAST_GROUP, null)
+                        .put(VLAN, null)
+                        .put(VTEP_FLOOD_LIST, null)
+                        .put(VXLAN_PORT, 1234)
                         .build())));
   }
 
@@ -89,6 +124,12 @@ public final class VxlanVniPropertiesAnswererTest {
                         .put(COL_NODE, "hostname")
                         .put(COL_VNI, 2)
                         .put(VLAN, 10002)
+                        .build())
+                .add(
+                    Row.builder()
+                        .put(COL_NODE, "minimal")
+                        .put(COL_VNI, 1)
+                        .put(VLAN, null)
                         .build())));
   }
 
@@ -120,7 +161,22 @@ public final class VxlanVniPropertiesAnswererTest {
                       .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
                       .setBumTransportIps(ImmutableSortedSet.of(Ip.parse("227.10.1.1")))
                       .build()));
-      return ImmutableSortedMap.of("hostname", conf);
+
+      Configuration confMinimal = new Configuration("minimal", ConfigurationFormat.ARISTA);
+      confMinimal.setVrfs(
+          ImmutableMap.of(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME)));
+      confMinimal
+          .getDefaultVrf()
+          .setVniSettings(
+              ImmutableSortedMap.of(
+                  1,
+                  VniSettings.builder()
+                      .setVni(1)
+                      .setUdpPort(1234)
+                      .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
+                      .build()));
+
+      return ImmutableSortedMap.of("hostname", conf, "minimal", confMinimal);
     }
 
     @Override
