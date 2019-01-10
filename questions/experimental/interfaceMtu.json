@@ -31,8 +31,8 @@
                 "displayName": "Comparator"
             },
             "interfaces": {
-                "description": "Evaluate interfaces matching this regex",
-                "type": "javaRegex",
+                "description": "Evaluate interfaces matching this specifier",
+                "type": "interfacesSpec",
                 "value": ".*",
                 "displayName": "Interfaces"
             },
@@ -43,7 +43,7 @@
                 "displayName": "MTU Bytes"
             },
             "nodes": {
-                "description": "Include nodes matching this name or regex",
+                "description": "Include nodes matching this specifier",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Nodes"

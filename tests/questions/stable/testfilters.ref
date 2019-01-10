@@ -23,7 +23,7 @@
         "description" : "Only consider filters that match this regular expression",
         "displayName" : "Filters",
         "optional" : false,
-        "type" : "javaRegex",
+        "type" : "filter",
         "value" : ".*"
       },
       "headers" : {
@@ -80,7 +80,7 @@
         }
       },
       "nodes" : {
-        "description" : "Only examine filters on nodes matching this name or regex",
+        "description" : "Only examine filters on nodes matching this specifier",
         "displayName" : "Nodes",
         "optional" : false,
         "type" : "nodeSpec",
