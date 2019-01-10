@@ -875,8 +875,9 @@ public class CommonUtil {
 
       for (Interface iface1 : bucketEntry.getValue()) {
         for (Interface iface2 : candidateInterfaces) {
-          // No device self-adjacencies
-          if (iface1.getOwner() == iface2.getOwner()) {
+          // No device self-adjacencies in the same VRF.
+          if (iface1.getOwner() == iface2.getOwner()
+              && iface1.getVrfName().equals(iface2.getVrfName())) {
             continue;
           }
           // don't connect interfaces that have any IP address in common

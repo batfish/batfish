@@ -19,6 +19,17 @@ final class IsisRouteMatchersImpl {
     }
   }
 
+  static final class HasOverload extends FeatureMatcher<IsisRoute, Boolean> {
+    HasOverload(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "An IsisRoute with overload:", "overload");
+    }
+
+    @Override
+    protected Boolean featureValueOf(IsisRoute actual) {
+      return actual.getOverload();
+    }
+  }
+
   static final class IsIsisRouteThat extends IsInstanceThat<AbstractRoute, IsisRoute> {
     IsIsisRouteThat(Matcher<? super IsisRoute> subMatcher) {
       super(IsisRoute.class, subMatcher);

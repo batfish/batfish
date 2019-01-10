@@ -564,6 +564,9 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_peer_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_peer_linkContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_reload_delayContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_shutdownContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_idContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_nameContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_trunkContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_floodContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_vxlan_multicast_groupContext;
@@ -634,6 +637,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_switchport_accessContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_modeContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_allowedContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_encapsulationContext;
+import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_group_eosContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_nativeContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrf_memberContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrrpContext;
@@ -984,6 +988,8 @@ import org.batfish.grammar.cisco.CiscoParser.S_system_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.S_tacacs_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.S_trackContext;
 import org.batfish.grammar.cisco.CiscoParser.S_usernameContext;
+import org.batfish.grammar.cisco.CiscoParser.S_vlan_eosContext;
+import org.batfish.grammar.cisco.CiscoParser.S_vlan_internal_eosContext;
 import org.batfish.grammar.cisco.CiscoParser.S_vrf_contextContext;
 import org.batfish.grammar.cisco.CiscoParser.S_vrf_definitionContext;
 import org.batfish.grammar.cisco.CiscoParser.S_zoneContext;
@@ -1268,6 +1274,7 @@ import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.UdpServiceObjectGroupLine;
 import org.batfish.representation.cisco.UnimplementedAccessListServiceSpecifier;
 import org.batfish.representation.cisco.VarCommunitySetElemHalf;
+import org.batfish.representation.cisco.VlanTrunkGroup;
 import org.batfish.representation.cisco.Vrf;
 import org.batfish.representation.cisco.VrrpGroup;
 import org.batfish.representation.cisco.VrrpInterface;
@@ -1524,7 +1531,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private User _currentUser;
 
-  private Integer _currentVlanNum;
+  @Nullable private IntegerSpace _currentVlans;
+
+  private Integer _currentVxlanVlanNum;
 
   private String _currentVrf;
 
@@ -2194,6 +2203,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterEos_vlan_id(Eos_vlan_idContext ctx) {
+    _currentVlans =
+        ctx.vlan_ids
+            .stream()
+            .map(innerctx -> IntegerSpace.of(toSubRange(innerctx)))
+            .reduce(IntegerSpace::union)
+            .get();
+  }
+
+  @Override
   public void enterS_eos_vxlan_interface(S_eos_vxlan_interfaceContext ctx) {
     String canonicalVxlanName = getCanonicalInterfaceName(ctx.iname.getText());
     if (_eosVxlan == null) {
@@ -2215,9 +2234,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitEos_vxif_vxlan_flood(Eos_vxif_vxlan_floodContext ctx) {
     SortedSet<Ip> floodAddresses = _eosVxlan.getFloodAddresses();
-    if (_currentVlanNum != null) {
+    if (_currentVxlanVlanNum != null) {
       floodAddresses =
-          _eosVxlan.getVlanFloodAddresses().computeIfAbsent(_currentVlanNum, n -> new TreeSet<>());
+          _eosVxlan
+              .getVlanFloodAddresses()
+              .computeIfAbsent(_currentVxlanVlanNum, n -> new TreeSet<>());
     }
 
     if (ctx.REMOVE() != null) {
@@ -2256,17 +2277,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterEos_vxif_vxlan_vlan(Eos_vxif_vxlan_vlanContext ctx) {
-    _currentVlanNum = toInteger(ctx.num);
+    _currentVxlanVlanNum = toInteger(ctx.num);
   }
 
   @Override
   public void exitEos_vxif_vxlan_vlan(Eos_vxif_vxlan_vlanContext ctx) {
-    _currentVlanNum = null;
+    _currentVxlanVlanNum = null;
   }
 
   @Override
   public void exitEos_vxif_vxlan_vlan_vni(Eos_vxif_vxlan_vlan_vniContext ctx) {
-    _eosVxlan.getVlanVnis().computeIfAbsent(_currentVlanNum, n -> toInteger(ctx.num));
+    _eosVxlan.getVlanVnis().computeIfAbsent(_currentVxlanVlanNum, n -> toInteger(ctx.num));
   }
 
   @Override
@@ -6240,6 +6261,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitIf_switchport_trunk_group_eos(If_switchport_trunk_group_eosContext ctx) {
+    String groupName = ctx.name.getText();
+    _configuration.getEosVlanTrunkGroups().putIfAbsent(groupName, new VlanTrunkGroup(groupName));
+    for (Interface currentInterface : _currentInterfaces) {
+      currentInterface.addVlanTrunkGroup(groupName);
+    }
+  }
+
+  @Override
   public void exitIf_switchport_trunk_native(If_switchport_trunk_nativeContext ctx) {
     int vlan = toInteger(ctx.vlan);
     for (Interface currentInterface : _currentInterfaces) {
@@ -7071,6 +7101,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitEos_mlag_shutdown(Eos_mlag_shutdownContext ctx) {
     _currentEosMlagConfiguration.setShutdown(ctx.NO() == null);
+  }
+
+  @Override
+  public void exitEos_vlan_name(Eos_vlan_nameContext ctx) {
+    _configuration.getNamedVlans().put(ctx.name.getText(), _currentVlans);
+  }
+
+  @Override
+  public void exitS_vlan_internal_eos(S_vlan_internal_eosContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitEos_vlan_trunk(Eos_vlan_trunkContext ctx) {
+    String groupName = ctx.name.getText();
+    VlanTrunkGroup trunkGroup =
+        _configuration.getEosVlanTrunkGroups().computeIfAbsent(groupName, VlanTrunkGroup::new);
+    assert _currentVlans != null;
+    trunkGroup.addVlans(_currentVlans);
   }
 
   @Override
@@ -8883,6 +8932,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitS_username(S_usernameContext ctx) {
     _currentUser = null;
+  }
+
+  @Override
+  public void exitS_vlan_eos(S_vlan_eosContext ctx) {
+    _currentVlans = null;
   }
 
   @Override

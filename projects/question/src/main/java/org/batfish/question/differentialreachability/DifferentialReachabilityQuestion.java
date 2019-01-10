@@ -2,7 +2,7 @@ package org.batfish.question.differentialreachability;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.common.util.TracePruner.DEFAULT_MAX_TRACES;
-import static org.batfish.question.specifiers.DispositionSpecifier.SUCCESS_SPECIFIER;
+import static org.batfish.specifier.DispositionSpecifier.SUCCESS_SPECIFIER;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,8 +10,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.question.specifiers.DispositionSpecifier;
 import org.batfish.question.specifiers.PathConstraintsInput;
+import org.batfish.specifier.DispositionSpecifier;
 
 /** A zero-input question to check for reduced reachability between base and delta snapshots. */
 public final class DifferentialReachabilityQuestion extends Question {

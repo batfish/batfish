@@ -108,6 +108,7 @@ import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Variable;
+import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
 import org.batfish.specifier.FlexibleInterfaceSpecifierFactory;
 import org.batfish.specifier.FlexibleNodeSpecifierFactory;
 import org.batfish.specifier.InterfaceSpecifierFactory;
@@ -540,6 +541,13 @@ public class Client extends AbstractClient implements IClient {
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         new OspfPropertySpecifier(value.textValue());
+        break;
+      case VXLAN_VNI_PROPERTY_SPEC:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        new VxlanVniPropertySpecifier(value.textValue());
         break;
       case PATH_CONSTRAINT:
         if (!(value.isObject()) && !value.isNull()) {
