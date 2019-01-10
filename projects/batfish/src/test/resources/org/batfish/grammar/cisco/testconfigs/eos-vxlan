@@ -9,7 +9,7 @@ interface Loopback1
 interface Vxlan1
   description vxlan vti
   vxlan source-interface Loopback1
-  vxlan udp-port 4789
+  vxlan udp-port 5555
   vxlan multicast-group 227.10.1.1
   !
   vxlan flood vtep 1.1.1.5 1.1.1.6
