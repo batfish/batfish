@@ -6,6 +6,7 @@ import static org.batfish.datamodel.flow.TransformationStep.TransformationType.D
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 import static org.batfish.datamodel.transformation.IpField.DESTINATION;
 import static org.batfish.datamodel.transformation.IpField.SOURCE;
+import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
@@ -127,6 +128,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 import org.batfish.representation.juniper.Interface.OspfInterfaceType;
+import org.batfish.representation.juniper.Zone.AddressBookType;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class JuniperConfiguration extends VendorConfiguration {
@@ -2193,9 +2195,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                           _c.getIpSpaceMetadata()
                               .put(
                                   ipSpaceName,
-                                  new IpSpaceMetadata(
-                                      ipSpaceName,
-                                      JuniperStructureType.ADDRESS_BOOK.getDescription())));
+                                  new IpSpaceMetadata(ipSpaceName, ADDRESS_BOOK.getDescription())));
             });
 
     // TODO: instead make both IpAccessList and Ip6AccessList instances from
@@ -2400,7 +2400,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Zone zone : _masterLogicalSystem.getZones().values()) {
       org.batfish.datamodel.Zone newZone = toZone(zone);
       _c.getZones().put(zone.getName(), newZone);
-      if (!zone.getAddressBook().getEntries().isEmpty()) {
+      if (zone.getAddressBookType() == AddressBookType.INLINED) {
         Map<String, IpSpace> ipSpaces = toIpSpaces(zone.getName(), zone.getAddressBook());
         _c.getIpSpaces().putAll(ipSpaces);
         ipSpaces
@@ -2410,8 +2410,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                     _c.getIpSpaceMetadata()
                         .put(
                             ipSpaceName,
-                            new IpSpaceMetadata(
-                                ipSpaceName, JuniperStructureType.ADDRESS_BOOK.getDescription())));
+                            new IpSpaceMetadata(ipSpaceName, ADDRESS_BOOK.getDescription())));
       }
     }
     // If there are zones, then assume we will need to support existing connection ACL
@@ -2562,6 +2561,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     // Count and mark structure usages and identify undefined references
+    markConcreteStructure(
+        JuniperStructureType.ADDRESS_BOOK, JuniperStructureUsage.ADDRESS_BOOK_ATTACH_ZONE);
     markConcreteStructure(
         JuniperStructureType.AUTHENTICATION_KEY_CHAIN,
         JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY);

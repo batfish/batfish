@@ -19822,8 +19822,12 @@
             "sourceName" : "global~ASET",
             "sourceType" : "address-book"
           },
-          "notglobal~ASET" : {
-            "sourceName" : "notglobal~ASET",
+          "notglobalAttached~ASET" : {
+            "sourceName" : "notglobalAttached~ASET",
+            "sourceType" : "address-book"
+          },
+          "notglobalUnattached~ASET" : {
+            "sourceName" : "notglobalUnattached~ASET",
             "sourceType" : "address-book"
           }
         },
@@ -19831,7 +19835,10 @@
           "global~ASET" : {
             "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
           },
-          "notglobal~ASET" : {
+          "notglobalAttached~ASET" : {
+            "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+          },
+          "notglobalUnattached~ASET" : {
             "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
           }
         },
