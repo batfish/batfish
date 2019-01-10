@@ -46,23 +46,23 @@ public class VxlanVniPropertiesAnswererTest {
                     Row.builder()
                         .put(COL_NODE, "hostname")
                         .put(COL_VNI, 1)
-                        .put(MULTICAST_GROUP, null)
-                        .put(VXLAN_PORT, 4242)
                         .put(LOCAL_VTEP_IP, Ip.parse("1.2.3.4"))
+                        .put(MULTICAST_GROUP, null)
+                        .put(VLAN, 10001)
                         .put(
                             VTEP_FLOOD_LIST,
                             ImmutableSet.of(Ip.parse("2.3.4.5"), Ip.parse("2.3.4.6")))
-                        .put(VLAN, 10001)
+                        .put(VXLAN_PORT, 4242)
                         .build())
                 .add(
                     Row.builder()
                         .put(COL_NODE, "hostname")
                         .put(COL_VNI, 2)
-                        .put(MULTICAST_GROUP, Ip.parse("227.10.1.1"))
-                        .put(VXLAN_PORT, 4789)
                         .put(LOCAL_VTEP_IP, Ip.parse("1.2.3.4"))
-                        .put(VTEP_FLOOD_LIST, null)
+                        .put(MULTICAST_GROUP, Ip.parse("227.10.1.1"))
                         .put(VLAN, 10002)
+                        .put(VTEP_FLOOD_LIST, null)
+                        .put(VXLAN_PORT, 4789)
                         .build())));
   }
 

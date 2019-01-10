@@ -474,6 +474,13 @@ public class Client extends AbstractClient implements IClient {
         }
         new OspfPropertySpecifier(value.textValue());
         break;
+      case VXLAN_VNI_PROPERTY_SPEC:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        new VxlanVniPropertySpecifier(value.textValue());
+        break;
       case PATH_CONSTRAINT:
         if (!(value.isObject()) && !value.isNull()) {
           throw new BatfishException(
@@ -522,13 +529,6 @@ public class Client extends AbstractClient implements IClient {
         break;
       case JSON_PATH:
         validateJsonPath(value);
-        break;
-      case VXLAN_VNI_PROPERTY_SPEC:
-        if (!(value.isTextual())) {
-          throw new BatfishException(
-              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
-        }
-        new VxlanVniPropertySpecifier(value.textValue());
         break;
       default:
         throw new BatfishException(String.format("Unsupported parameter type: %s", expectedType));

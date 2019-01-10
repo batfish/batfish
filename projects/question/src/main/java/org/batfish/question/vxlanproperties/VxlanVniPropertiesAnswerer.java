@@ -117,7 +117,7 @@ final class VxlanVniPropertiesAnswerer extends Answerer {
                   RowBuilder row = Row.builder(columns).put(COL_NODE, nodeName).put(COL_VNI, vni);
                   boolean unicast =
                       vniSettings.getBumTransportMethod() == BumTransportMethod.UNICAST_FLOOD_GROUP;
-                  VxlanVniPropertiesRow vxlanVniProperty =
+                  VxlanVniPropertiesRow vxlanVniProperties =
                       new VxlanVniPropertiesRow(
                           nodeName,
                           vni,
@@ -132,15 +132,15 @@ final class VxlanVniPropertiesAnswerer extends Answerer {
                         VxlanVniPropertySpecifier.JAVA_MAP.get(property);
                     try {
                       PropertySpecifier.fillProperty(
-                          propertyDescriptor, vxlanVniProperty, property, row);
+                          propertyDescriptor, vxlanVniProperties, property, row);
                     } catch (ClassCastException e) {
                       throw new BatfishException(
                           String.format(
                               "Type mismatch between property value ('%s') and Schema ('%s') for property '%s' for VXLAN VNI settings '%s': %s",
-                              propertyDescriptor.getGetter().apply(vxlanVniProperty),
+                              propertyDescriptor.getGetter().apply(vxlanVniProperties),
                               propertyDescriptor.getSchema(),
                               property,
-                              vxlanVniProperty,
+                              vxlanVniProperties,
                               e.getMessage()),
                           e);
                     }
