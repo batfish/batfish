@@ -1226,8 +1226,8 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallZoneAddressBook() throws IOException {
-    Configuration c = parseConfig("firewall-zone-address-book");
+  public void testFirewallZoneAddressBookInline() throws IOException {
+    Configuration c = parseConfig("firewall-zone-address-book-inline");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
     // Address on untrust interface's subnet
@@ -1257,7 +1257,7 @@ public final class FlatJuniperGrammarTest {
     // It should not contain the address that is not allowed
     assertThat(ipSpace, not(containsIp(Ip.parse(notAllowedAddr))));
 
-    // There should me metadata for this ipspace
+    // There should be metadata for this ipspace
     assertThat(c.getIpSpaceMetadata(), hasKey(ipSpaceName));
 
     // Specifically allowed source address should be accepted
@@ -1265,6 +1265,135 @@ public final class FlatJuniperGrammarTest {
         aclUntrustOut,
         accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     // Source address not covered by the address-book should be rejected
+    assertThat(
+        aclUntrustOut,
+        rejects(flowFromNotAllowedAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  /**
+   * Similar test to {@link #testFirewallZoneAddressBookInline()} except with attached instead of
+   * inlined address book
+   */
+  @Test
+  public void testFirewallZoneAddressBookAttach() throws IOException {
+    Configuration c = parseConfig("firewall-zone-address-book-attach");
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    // Address on untrust interface's subnet
+    String untrustIpAddr = "1.2.4.5";
+    // Specific address allowed by the address-book
+    String specificAddr = "2.2.2.2";
+    // Address not allowed by the address-book
+    String notAllowedAddr = "3.3.3.3";
+
+    Flow flowFromSpecificAddr = createFlow(specificAddr, untrustIpAddr);
+    Flow flowFromNotAllowedAddr = createFlow(notAllowedAddr, untrustIpAddr);
+
+    IpAccessList aclUntrustOut =
+        c.getAllInterfaces().get(interfaceNameUntrust).getPreTransformationOutgoingFilter();
+
+    // Should have a an IpSpace in the config corresponding to the trust zone's ADDR1 address
+    final String ipSpaceName = "trust-book~ADDR1";
+    assertThat(c.getIpSpaces(), hasKey(equalTo(ipSpaceName)));
+
+    // It should be the only IpSpace
+    assertThat(c.getIpSpaces().keySet(), iterableWithSize(1));
+    IpSpace ipSpace = Iterables.getOnlyElement(c.getIpSpaces().values());
+
+    // It should contain the specific address
+    assertThat(ipSpace, containsIp(Ip.parse(specificAddr)));
+
+    // It should not contain the address that is not allowed
+    assertThat(ipSpace, not(containsIp(Ip.parse(notAllowedAddr))));
+
+    // There should be metadata for this ipspace
+    assertThat(c.getIpSpaceMetadata(), hasKey(ipSpaceName));
+
+    // Specifically allowed source address should be accepted
+    assertThat(
+        aclUntrustOut,
+        accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    // Source address not covered by the address-book should be rejected
+    assertThat(
+        aclUntrustOut,
+        rejects(flowFromNotAllowedAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  /**
+   * Similar test to {@link #testFirewallZoneAddressBookInline()} except with attached instead of
+   * inlined address book
+   */
+  @Test
+  public void testFirewallZoneAddressBookGlobal() throws IOException {
+    Configuration c = parseConfig("firewall-zone-address-book-global");
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    // Address on untrust interface's subnet
+    String untrustIpAddr = "1.2.4.5";
+    // Specific address allowed by the address-book
+    String specificAddr = "2.2.2.2";
+    // Address not allowed by the address-book
+    String notAllowedAddr = "3.3.3.3";
+
+    Flow flowFromSpecificAddr = createFlow(specificAddr, untrustIpAddr);
+    Flow flowFromNotAllowedAddr = createFlow(notAllowedAddr, untrustIpAddr);
+
+    IpAccessList aclUntrustOut =
+        c.getAllInterfaces().get(interfaceNameUntrust).getPreTransformationOutgoingFilter();
+
+    // Should have a an IpSpace in the config corresponding to the trust zone's ADDR1 address
+    final String ipSpaceName = "global~ADDR1";
+    assertThat(c.getIpSpaces(), hasKey(equalTo(ipSpaceName)));
+
+    // It should be the only IpSpace
+    assertThat(c.getIpSpaces().keySet(), iterableWithSize(1));
+    IpSpace ipSpace = Iterables.getOnlyElement(c.getIpSpaces().values());
+
+    // It should contain the specific address
+    assertThat(ipSpace, containsIp(Ip.parse(specificAddr)));
+
+    // It should not contain the address that is not allowed
+    assertThat(ipSpace, not(containsIp(Ip.parse(notAllowedAddr))));
+
+    // There should be metadata for this ipspace
+    assertThat(c.getIpSpaceMetadata(), hasKey(ipSpaceName));
+
+    // Specifically allowed source address should be accepted
+    assertThat(
+        aclUntrustOut,
+        accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    // Source address not covered by the address-book should be rejected
+    assertThat(
+        aclUntrustOut,
+        rejects(flowFromNotAllowedAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  /**
+   * When both global and zone-specific (attached or inline) address books are present, global loses
+   */
+  @Test
+  public void testFirewallZoneAddressBookGlobalLoses() throws IOException {
+    Configuration c = parseConfig("firewall-zone-address-book-global-loses");
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    // Address on untrust interface's subnet
+    String untrustIpAddr = "1.2.4.5";
+    // Specific address allowed by the address-book
+    String specificAddr = "2.2.2.2";
+    // Address not allowed by the address-book
+    String notAllowedAddr = "3.3.3.3";
+
+    Flow flowFromSpecificAddr = createFlow(specificAddr, untrustIpAddr);
+    Flow flowFromNotAllowedAddr = createFlow(notAllowedAddr, untrustIpAddr);
+
+    IpAccessList aclUntrustOut =
+        c.getAllInterfaces().get(interfaceNameUntrust).getPreTransformationOutgoingFilter();
+
+    // Specifically allowed source address should be accepted
+    assertThat(
+        aclUntrustOut,
+        accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    // Source address not covered by the zone address-book should be rejected
     assertThat(
         aclUntrustOut,
         rejects(flowFromNotAllowedAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
