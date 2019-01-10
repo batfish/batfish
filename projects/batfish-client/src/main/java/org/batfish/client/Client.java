@@ -108,6 +108,7 @@ import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Variable;
+import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -521,6 +522,13 @@ public class Client extends AbstractClient implements IClient {
         break;
       case JSON_PATH:
         validateJsonPath(value);
+        break;
+      case VXLAN_VNI_PROPERTY_SPEC:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        new VxlanVniPropertySpecifier(value.textValue());
         break;
       default:
         throw new BatfishException(String.format("Unsupported parameter type: %s", expectedType));

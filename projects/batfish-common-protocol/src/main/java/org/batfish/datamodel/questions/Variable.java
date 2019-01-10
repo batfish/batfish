@@ -49,7 +49,8 @@ public class Variable {
     PROTOCOL("protocol", true),
     QUESTION("question", true),
     STRING("string", true),
-    SUBRANGE("subrange", true);
+    SUBRANGE("subrange", true),
+    VXLAN_VNI_PROPERTY_SPEC("vxlanVniPropertySpec", true);
 
     private static final Map<String, Variable.Type> MAP = initMap();
 
