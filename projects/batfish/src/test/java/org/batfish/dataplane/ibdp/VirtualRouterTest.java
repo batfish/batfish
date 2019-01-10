@@ -1,7 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
 import static org.batfish.common.topology.TopologyUtil.computeIpNodeOwners;
-import static org.batfish.common.util.CommonUtil.synthesizeTopology;
+import static org.batfish.common.topology.TopologyUtil.synthesizeL3Topology;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.batfish.datamodel.eigrp.EigrpTopology.initEigrpTopology;
@@ -601,7 +601,7 @@ public class VirtualRouterTest {
     ib.setAddress(new InterfaceAddress("1.1.1.1/30")).setOwner(c1).build();
     ib.setAddress(new InterfaceAddress("1.1.1.2/30")).setOwner(c2).build();
 
-    Topology topology = synthesizeTopology(ImmutableMap.of("r1", c1, "r2", c2));
+    Topology topology = synthesizeL3Topology(ImmutableMap.of("r1", c1, "r2", c2));
 
     Map<String, Configuration> configs = ImmutableMap.of("r1", c1, "r2", c2);
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
@@ -710,7 +710,7 @@ public class VirtualRouterTest {
 
     Map<String, Configuration> configs =
         ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
-    Topology topology = synthesizeTopology(configs);
+    Topology topology = synthesizeL3Topology(configs);
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         ImmutableValueGraph.copyOf(ValueGraphBuilder.directed().allowsSelfLoops(false).build());
     Map<String, Node> nodes =
