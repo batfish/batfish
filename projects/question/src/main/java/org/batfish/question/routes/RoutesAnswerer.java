@@ -58,7 +58,6 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_ORIGIN_PROTOCOL = "Origin_Protocol";
 
   // Diff Only
-  // static final String COL_NETWORK_PRESENCE = "Network_Presence";
   static final String COL_ROUTE_ENTRY_PRESENCE = "Entry_Presence";
 
   RoutesAnswerer(Question question, IBatfish batfish) {
