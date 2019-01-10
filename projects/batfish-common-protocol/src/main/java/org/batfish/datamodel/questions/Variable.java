@@ -70,7 +70,7 @@ public class Variable {
     // map from deprecated CompletionTypes to corresponding Variable.Type used for backwards
     // compatibility
     private static final Map<CompletionType, Variable.Type> COMPLETION_TYPE_MAP =
-        new ImmutableMap.Builder<CompletionType, Type>()
+        ImmutableMap.<CompletionType, Type>builder()
             .put(CompletionType.BGP_PEER_PROPERTY, BGP_PEER_PROPERTY_SPEC)
             .put(CompletionType.BGP_PROCESS_PROPERTY, BGP_PROCESS_PROPERTY_SPEC)
             .put(CompletionType.INTERFACE_PROPERTY, INTERFACE_PROPERTY_SPEC)
