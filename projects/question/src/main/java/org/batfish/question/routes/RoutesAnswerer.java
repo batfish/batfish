@@ -247,14 +247,14 @@ public class RoutesAnswerer extends Answerer {
                 COL_PROTOCOL, Schema.STRING, "Route's Protocol", Boolean.FALSE, Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
+                COL_METRIC, Schema.INTEGER, "Route's Metric", Boolean.FALSE, Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
                 COL_ADMIN_DISTANCE,
                 Schema.INTEGER,
                 "Route's Admin distance",
                 Boolean.FALSE,
                 Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_METRIC, Schema.INTEGER, "Route's Metric", Boolean.FALSE, Boolean.TRUE));
     }
     addCommonTableColumnsAtEnd(columnBuilder);
     return new TableMetadata(columnBuilder.build(), "Display RIB routes");

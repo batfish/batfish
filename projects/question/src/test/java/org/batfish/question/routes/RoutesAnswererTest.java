@@ -201,8 +201,8 @@ public class RoutesAnswererTest {
             COL_NEXT_HOP,
             COL_NEXT_HOP_IP,
             COL_PROTOCOL,
-            COL_ADMIN_DISTANCE,
             COL_METRIC,
+            COL_ADMIN_DISTANCE,
             COL_TAG));
 
     assertThat(
