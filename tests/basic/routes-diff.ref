@@ -25,13 +25,6 @@
           "schema" : "Prefix"
         },
         {
-          "description" : "Presence of the Route's Network (Prefix)",
-          "isKey" : false,
-          "isValue" : true,
-          "name" : "Network_Presence",
-          "schema" : "String"
-        },
-        {
           "description" : "Presence of a Route for the given Network (Prefix)",
           "isKey" : false,
           "isValue" : true,
@@ -81,20 +74,6 @@
           "schema" : "String"
         },
         {
-          "description" : "Route's Admin distance",
-          "isKey" : false,
-          "isValue" : true,
-          "name" : "Snapshot_Admin_Distance",
-          "schema" : "Integer"
-        },
-        {
-          "description" : "Route's Admin distance",
-          "isKey" : false,
-          "isValue" : true,
-          "name" : "Reference_Admin_Distance",
-          "schema" : "Integer"
-        },
-        {
           "description" : "Route's Metric",
           "isKey" : false,
           "isValue" : true,
@@ -106,6 +85,20 @@
           "isKey" : false,
           "isValue" : true,
           "name" : "Reference_Metric",
+          "schema" : "Integer"
+        },
+        {
+          "description" : "Route's Admin distance",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "Snapshot_Admin_Distance",
+          "schema" : "Integer"
+        },
+        {
+          "description" : "Route's Admin distance",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "Reference_Admin_Distance",
           "schema" : "Integer"
         },
         {
@@ -128,34 +121,11 @@
     "rows" : [
       {
         "Node" : {
-          "id" : "node-as1border1",
-          "name" : "as1border1"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.0.0/8",
-        "Network_Presence" : "Only in Snapshot",
-        "Entry_Presence" : "Only in Snapshot",
-        "Snapshot_Next_Hop_IP" : "10.14.22.4",
-        "Snapshot_Protocol" : "ibgp",
-        "Snapshot_Next_Hop" : null,
-        "Snapshot_Metric" : 20,
-        "Snapshot_Admin_Distance" : 200,
-        "Snapshot_Tag" : null,
-        "Reference_Next_Hop" : null,
-        "Reference_Metric" : null,
-        "Reference_Admin_Distance" : null,
-        "Reference_Tag" : null,
-        "Reference_Next_Hop_IP" : null,
-        "Reference_Protocol" : null
-      },
-      {
-        "Node" : {
           "id" : "node-as1border2",
           "name" : "as1border2"
         },
         "VRF" : "default",
         "Network" : "4.0.0.0/8",
-        "Network_Presence" : "Only in Snapshot",
         "Entry_Presence" : "Only in Snapshot",
         "Snapshot_Next_Hop_IP" : "10.14.22.4",
         "Snapshot_Protocol" : "bgp",
@@ -177,7 +147,27 @@
         },
         "VRF" : "default",
         "Network" : "4.0.0.0/8",
-        "Network_Presence" : "Only in Snapshot",
+        "Entry_Presence" : "Only in Snapshot",
+        "Snapshot_Next_Hop_IP" : "10.14.22.4",
+        "Snapshot_Protocol" : "ibgp",
+        "Snapshot_Next_Hop" : null,
+        "Snapshot_Metric" : 20,
+        "Snapshot_Admin_Distance" : 200,
+        "Snapshot_Tag" : null,
+        "Reference_Next_Hop" : null,
+        "Reference_Metric" : null,
+        "Reference_Admin_Distance" : null,
+        "Reference_Tag" : null,
+        "Reference_Next_Hop_IP" : null,
+        "Reference_Protocol" : null
+      },
+      {
+        "Node" : {
+          "id" : "node-as1border1",
+          "name" : "as1border1"
+        },
+        "VRF" : "default",
+        "Network" : "4.0.0.0/8",
         "Entry_Presence" : "Only in Snapshot",
         "Snapshot_Next_Hop_IP" : "10.14.22.4",
         "Snapshot_Protocol" : "ibgp",

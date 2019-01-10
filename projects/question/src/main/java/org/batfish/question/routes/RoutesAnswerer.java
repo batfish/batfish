@@ -58,7 +58,6 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_ORIGIN_PROTOCOL = "Origin_Protocol";
 
   // Diff Only
-  static final String COL_NETWORK_PRESENCE = "Network_Presence";
   static final String COL_ROUTE_ENTRY_PRESENCE = "Entry_Presence";
 
   RoutesAnswerer(Question question, IBatfish batfish) {
@@ -248,14 +247,14 @@ public class RoutesAnswerer extends Answerer {
                 COL_PROTOCOL, Schema.STRING, "Route's Protocol", Boolean.FALSE, Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
+                COL_METRIC, Schema.INTEGER, "Route's Metric", Boolean.FALSE, Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
                 COL_ADMIN_DISTANCE,
                 Schema.INTEGER,
                 "Route's Admin distance",
                 Boolean.FALSE,
                 Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_METRIC, Schema.INTEGER, "Route's Metric", Boolean.FALSE, Boolean.TRUE));
     }
     addCommonTableColumnsAtEnd(columnBuilder);
     return new TableMetadata(columnBuilder.build(), "Display RIB routes");
@@ -286,13 +285,6 @@ public class RoutesAnswerer extends Answerer {
   static TableMetadata getDiffTableMetadata(RibProtocol rib) {
     ImmutableList.Builder<ColumnMetadata> columnBuilder = ImmutableList.builder();
     addCommonTableColumnsAtStart(columnBuilder);
-    columnBuilder.add(
-        new ColumnMetadata(
-            COL_NETWORK_PRESENCE,
-            Schema.STRING,
-            "Presence of the Route's Network (Prefix)",
-            Boolean.FALSE,
-            Boolean.TRUE));
     columnBuilder.add(
         new ColumnMetadata(
             COL_ROUTE_ENTRY_PRESENCE,
@@ -448,20 +440,6 @@ public class RoutesAnswerer extends Answerer {
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
-                COL_BASE_PREFIX + COL_ADMIN_DISTANCE,
-                Schema.INTEGER,
-                "Route's Admin distance",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_DELTA_PREFIX + COL_ADMIN_DISTANCE,
-                Schema.INTEGER,
-                "Route's Admin distance",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
                 COL_BASE_PREFIX + COL_METRIC,
                 Schema.INTEGER,
                 "Route's Metric",
@@ -472,6 +450,20 @@ public class RoutesAnswerer extends Answerer {
                 COL_DELTA_PREFIX + COL_METRIC,
                 Schema.INTEGER,
                 "Route's Metric",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_ADMIN_DISTANCE,
+                Schema.INTEGER,
+                "Route's Admin distance",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_ADMIN_DISTANCE,
+                Schema.INTEGER,
+                "Route's Admin distance",
                 Boolean.FALSE,
                 Boolean.TRUE));
     }
