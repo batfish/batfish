@@ -63,6 +63,7 @@ public class Variable {
     STRUCTURE_NAME("structureName", true),
     SUBRANGE("subrange", true),
     VRF("vrf", true),
+    VXLAN_VNI_PROPERTY_SPEC("vxlanVniPropertySpec", true),
     ZONE("zone", true);
 
     private static final Map<String, Variable.Type> MAP = initMap();
