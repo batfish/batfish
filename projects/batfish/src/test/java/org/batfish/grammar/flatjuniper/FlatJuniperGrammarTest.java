@@ -3006,8 +3006,8 @@ public final class FlatJuniperGrammarTest {
 
     Interface iface = interfaces.get("ge-0/0/0.0");
 
-    Ip pool1Start = Prefix.parse("10.10.10.10/24").getStartIp();
-    Ip pool1End = Prefix.parse("10.10.10.10/24").getEndIp();
+    Ip pool1Start = Prefix.parse("10.10.10.10/24").getFirstHostIp();
+    Ip pool1End = Prefix.parse("10.10.10.10/24").getLastHostIp();
 
     Ip pool2Start = Ip.parse("10.10.10.10");
     Ip pool2End = Ip.parse("10.10.10.20");
@@ -3151,7 +3151,7 @@ public final class FlatJuniperGrammarTest {
 
     // rule set 1 has a routing instance from location, so it goes last
     AssignIpAddressFromPool transformationStep =
-        assignSourceIp(Ip.parse("10.10.10.0"), Ip.parse("10.10.10.255"));
+        assignSourceIp(Ip.parse("10.10.10.1"), Ip.parse("10.10.10.254"));
 
     Transformation ruleSet1Transformation =
         when(matchSrcInterface("ge-0/0/0.0"))
