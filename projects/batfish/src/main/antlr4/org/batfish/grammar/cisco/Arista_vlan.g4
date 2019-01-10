@@ -16,41 +16,41 @@ eos_vlan_id
 
 eos_vlan_name
 :
-   (NO | DEFAULT)? NAME name = variable NEWLINE
+   NAME name = variable NEWLINE
 ;
 
 eos_vlan_no_name
 :
-   (NO | DEFAULT) NAME NEWLINE
+   (NO | DEFAULT) NAME (name = variable)? NEWLINE
 ;
 
 eos_vlan_no_state
 :
-   (NO | DEFAULT) STATE NEWLINE
+   (NO | DEFAULT) STATE (ACTIVE | SUSPEND)? NEWLINE
 ;
 
 eos_vlan_no_trunk
 :
-   (NO | DEFAULT) TRUNK GROUP NEWLINE
+   (NO | DEFAULT) TRUNK GROUP (name = variable)? NEWLINE
 ;
 
 eos_vlan_state
 :
-   (NO | DEFAULT)? STATE (ACTIVE | SUSPEND) NEWLINE
+   STATE (ACTIVE | SUSPEND) NEWLINE
 ;
 
 eos_vlan_trunk
 :
-   (NO | DEFAULT)? TRUNK GROUP name = variable NEWLINE
+   TRUNK GROUP name = variable NEWLINE
 ;
 
 s_no_vlan_internal_eos
 :
-   (NO | DEFAULT)? VLAN INTERNAL ALLOCATION POLICY NEWLINE
+   (NO | DEFAULT)? VLAN INTERNAL ALLOCATION POLICY (ASCENDING | DESCENDING)? (RANGE lo=DEC hi=DEC)? NEWLINE
 ;
 
 s_vlan_internal_eos
 :
-   (NO | DEFAULT)? VLAN INTERNAL ALLOCATION POLICY (ASCENDING | DESCENDING) RANGE lo=DEC hi=DEC NEWLINE
+   VLAN INTERNAL ALLOCATION POLICY (ASCENDING | DESCENDING) RANGE lo=DEC hi=DEC NEWLINE
 ;
 

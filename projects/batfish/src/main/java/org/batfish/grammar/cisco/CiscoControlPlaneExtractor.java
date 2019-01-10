@@ -7105,11 +7105,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_vlan_name(Eos_vlan_nameContext ctx) {
-    if (ctx.NO() == null && ctx.DEFAULT() == null) {
-      _configuration.getNamedVlans().put(ctx.name.getText(), _currentVlans);
-    } else {
-      todo(ctx);
-    }
+    _configuration.getNamedVlans().put(ctx.name.getText(), _currentVlans);
   }
 
   @Override
@@ -7119,15 +7115,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_vlan_trunk(Eos_vlan_trunkContext ctx) {
-    if (ctx.NO() == null && ctx.DEFAULT() == null) {
-      String groupName = ctx.name.getText();
-      VlanTrunkGroup trunkGroup =
-          _configuration.getEosVlanTrunkGroups().computeIfAbsent(groupName, VlanTrunkGroup::new);
-      assert _currentVlans != null;
-      trunkGroup.addVlans(_currentVlans);
-    } else {
-      todo(ctx);
-    }
+    String groupName = ctx.name.getText();
+    VlanTrunkGroup trunkGroup =
+        _configuration.getEosVlanTrunkGroups().computeIfAbsent(groupName, VlanTrunkGroup::new);
+    assert _currentVlans != null;
+    trunkGroup.addVlans(_currentVlans);
   }
 
   @Override
