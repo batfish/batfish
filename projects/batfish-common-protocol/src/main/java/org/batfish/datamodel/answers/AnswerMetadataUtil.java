@@ -107,7 +107,7 @@ public final class AnswerMetadataUtil {
         .getData()
         .stream()
         .map(rowToInteger)
-        .filter(streamInteger -> streamInteger != null)
+        .filter(Objects::nonNull)
         .max(Comparator.naturalOrder())
         .orElse(null);
   }
