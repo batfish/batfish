@@ -1,4 +1,4 @@
-package org.batfish.question.specifiers;
+package org.batfish.specifier;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
@@ -22,19 +22,22 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.batfish.datamodel.questions.PropertySpecifier;
 
 /** A way to specify dispositions using a shorthand, such as "success" or "failure". */
 @ParametersAreNonnullByDefault
 public final class DispositionSpecifier {
 
-  private static final String SUCCESS = "success";
-  private static final String FAILURE = "failure";
+  @VisibleForTesting public static final String SUCCESS = "success";
+  @VisibleForTesting public static final String FAILURE = "failure";
 
   private static final Set<FlowDisposition> FAILURE_DISPOSITIONS =
       ImmutableSet.<FlowDisposition>builder()
@@ -103,6 +106,14 @@ public final class DispositionSpecifier {
 
   public DispositionSpecifier(Set<FlowDisposition> dispositions) {
     _dispositions = dispositions;
+  }
+
+  /**
+   * Returns a list of suggestions based on the query, based on {@link
+   * PropertySpecifier#baseAutoComplete}.
+   */
+  public static List<AutocompleteSuggestion> autoComplete(String query) {
+    return PropertySpecifier.baseAutoComplete(query, _map.keySet());
   }
 
   public Set<FlowDisposition> getDispositions() {
