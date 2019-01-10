@@ -1,6 +1,6 @@
 package org.batfish.question.bgpsessionstatus;
 
-import static org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.ConfiguredSessionStatus.UNIQUE_MATCH;
+import static org.batfish.datamodel.questions.ConfiguredSessionStatus.UNIQUE_MATCH;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.ESTABLISHED;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.NOT_COMPATIBLE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.NOT_ESTABLISHED;
@@ -32,6 +32,7 @@ import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
