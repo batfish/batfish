@@ -34,7 +34,7 @@ public final class IsisProcessMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the {@link IsisProcess}'s overloadTimeout is {@code
+   * Provides a matcher that matches if the {@link IsisProcess}'s overload is {@code
    * expectedOverload}.
    */
   public static @Nonnull Matcher<IsisProcess> hasOverload(boolean expectedOverload) {
