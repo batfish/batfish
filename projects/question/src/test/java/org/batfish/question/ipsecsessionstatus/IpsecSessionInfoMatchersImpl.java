@@ -2,7 +2,7 @@ package org.batfish.question.ipsecsessionstatus;
 
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.questions.IpsecSessionStatus;
+import org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStatus;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 

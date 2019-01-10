@@ -32,7 +32,7 @@
             },
             "interfaces": {
                 "description": "Evaluate interfaces matching this regex",
-                "type": "interface",
+                "type": "javaRegex",
                 "value": ".*",
                 "displayName": "Interfaces"
             },
@@ -43,7 +43,7 @@
                 "displayName": "MTU Bytes"
             },
             "nodes": {
-                "description": "Include nodes matching this specifier",
+                "description": "Include nodes matching this name or regex",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Nodes"

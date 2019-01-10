@@ -41,7 +41,7 @@
         "description" : "Only evaluate filters that match this regex",
         "displayName" : "Filters",
         "optional" : true,
-        "type" : "filter",
+        "type" : "javaRegex",
         "value" : ".*"
       },
       "headers" : {
@@ -109,10 +109,10 @@
         "value" : false
       },
       "nodes" : {
-        "description" : "Only evaluate filters present on nodes matching this specifier",
+        "description" : "Only evaluate filters present on nodes matching this regex",
         "displayName" : "Nodes",
         "optional" : true,
-        "type" : "nodeSpec",
+        "type" : "string",
         "value" : ".*"
       },
       "startLocation" : {
