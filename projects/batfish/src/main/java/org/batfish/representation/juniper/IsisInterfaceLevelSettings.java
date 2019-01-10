@@ -20,6 +20,8 @@ public class IsisInterfaceLevelSettings implements Serializable {
 
   @Nullable private Long _metric;
 
+  private boolean _passive;
+
   @Nullable private Long _teMetric;
 
   public boolean getEnabled() {
@@ -51,6 +53,10 @@ public class IsisInterfaceLevelSettings implements Serializable {
     return _metric;
   }
 
+  public boolean getPassive() {
+    return _passive;
+  }
+
   @Nullable
   public Long getTeMetric() {
     return _teMetric;
@@ -78,6 +84,10 @@ public class IsisInterfaceLevelSettings implements Serializable {
 
   public void setMetric(long metric) {
     _metric = metric;
+  }
+
+  public void setPassive(boolean passive) {
+    _passive = passive;
   }
 
   public void setTeMetric(long teMetric) {

@@ -48853,6 +48853,22 @@
             "    (set_line_tail",
             "      (statement",
             "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (apply))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
             "          (s_protocols",
             "            PROTOCOLS:'protocols'",
             "            (p_isis",
@@ -48886,6 +48902,45 @@
             "                  DEC:'1'",
             "                  (isil_disable",
             "                    DISABLE:'disable'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_isis",
+            "              ISIS:'isis'",
+            "              (is_interface",
+            "                INTERFACE:'interface'",
+            "                id = (interface_id",
+            "                  name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface",
+            "                  PERIOD:'.'",
+            "                  unit = DEC:'0')",
+            "                (isi_passive",
+            "                  PASSIVE:'passive')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_isis",
+            "              ISIS:'isis'",
+            "              (is_interface",
+            "                INTERFACE:'interface'",
+            "                id = (interface_id",
+            "                  name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface",
+            "                  PERIOD:'.'",
+            "                  unit = DEC:'0')",
+            "                (isi_level",
+            "                  LEVEL:'level'",
+            "                  DEC:'1'",
+            "                  (isil_passive",
+            "                    PASSIVE:'passive'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -62943,7 +62998,7 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 8,
+              "Line" : 12,
               "Parser_Context" : "[isil_priority isi_level is_interface p_isis s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "priority 65"
             }
@@ -67121,7 +67176,22 @@
             }
           }
         },
-        "configs/juniper_isis" : { },
+        "configs/juniper_isis" : {
+          "interface" : {
+            "ge-0/0/0" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 1
+            },
+            "ge-0/0/0.0" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 8
+            }
+          }
+        },
         "configs/juniper_l2_learning" : { },
         "configs/juniper_misc" : { },
         "configs/juniper_nat" : {
@@ -70607,13 +70677,23 @@
         },
         "configs/juniper_isis" : {
           "interface" : {
+            "ge-0/0/0" : {
+              "interface" : [
+                6
+              ]
+            },
             "ge-0/0/0.0" : {
+              "interface" : [
+                6
+              ],
               "isis interface" : [
-                6,
-                7,
                 8,
                 9,
-                10
+                10,
+                11,
+                12,
+                13,
+                14
               ]
             }
           }
@@ -72591,19 +72671,6 @@
             "bippetyboppety" : {
               "interface vlan" : [
                 19
-              ]
-            }
-          }
-        },
-        "configs/juniper_isis" : {
-          "interface" : {
-            "ge-0/0/0.0" : {
-              "isis interface" : [
-                6,
-                7,
-                8,
-                9,
-                10
               ]
             }
           }

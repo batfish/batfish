@@ -284,6 +284,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_hello_authenticati
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_hello_intervalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_hold_timeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_metricContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_priorityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_te_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_disableContext;
@@ -4115,7 +4116,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitIsi_passive(Isi_passiveContext ctx) {
-    _currentIsisInterface.getIsisSettings().setPassive(true);
+    _currentIsisInterface.getIsisSettings().getLevel1Settings().setPassive(true);
+    _currentIsisInterface.getIsisSettings().getLevel2Settings().setPassive(true);
   }
 
   @Override
@@ -4172,6 +4174,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitIsil_metric(Isil_metricContext ctx) {
     int metric = toInt(ctx.DEC());
     _currentIsisInterfaceLevelSettings.setMetric(metric);
+  }
+
+  @Override
+  public void exitIsil_passive(Isil_passiveContext ctx) {
+    _currentIsisInterfaceLevelSettings.setPassive(true);
   }
 
   @Override

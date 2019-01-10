@@ -1,0 +1,13 @@
+#
+set system host-name juniper-isis-passive-level
+#
+set interfaces ge-1/2/0 unit 0 family inet address 10.0.0.1/30
+set interfaces ge-1/2/0 unit 0 family iso
+#
+set interfaces lo0 unit 0 family inet address 192.168.0.1/32
+set interfaces lo0 unit 0 family iso address 49.0002.0192.0168.0001.00
+#
+set protocols isis interface ge-1/2/0.0 level 1 passive
+set protocols isis interface lo0.0 passive
+set protocols isis level 1 wide-metrics-only
+set protocols isis level 2 wide-metrics-only
