@@ -35,10 +35,10 @@
         "value" : ">"
       },
       "interfaces" : {
-        "description" : "Evaluate interfaces matching this regex",
+        "description" : "Evaluate interfaces matching this specifier",
         "displayName" : "Interfaces",
         "optional" : false,
-        "type" : "interface",
+        "type" : "interfacesSpec",
         "value" : "Gig.*"
       },
       "mtuBytes" : {

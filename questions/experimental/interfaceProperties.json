@@ -20,8 +20,8 @@
                 "displayName": "Exclude Shut Interfaces"
             },
             "interfaces": {
-                "description": "Include interfaces matching this regex",
-                "type": "interface",
+                "description": "Include interfaces matching this specifier",
+                "type": "interfacesSpec",
                 "optional": true,
                 "displayName": "Interfaces"
             },

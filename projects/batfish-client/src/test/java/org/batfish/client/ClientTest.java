@@ -70,6 +70,7 @@ import static org.batfish.datamodel.questions.Variable.Type.FLOAT;
 import static org.batfish.datamodel.questions.Variable.Type.FLOW_STATE;
 import static org.batfish.datamodel.questions.Variable.Type.INTEGER;
 import static org.batfish.datamodel.questions.Variable.Type.INTERFACE;
+import static org.batfish.datamodel.questions.Variable.Type.INTERFACES_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.IP;
 import static org.batfish.datamodel.questions.Variable.Type.IPSEC_SESSION_STATUS;
 import static org.batfish.datamodel.questions.Variable.Type.IP_PROTOCOL;
@@ -654,6 +655,15 @@ public class ClientTest {
 
   @Test
   public void testInvalidInterfaceValue() throws IOException {
+    String input = "5";
+    Type expectedType = INTERFACE;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidInterfacesSpecValue() throws IOException {
     String input = "5";
     Type expectedType = INTERFACE;
     String expectedMessage =
@@ -1701,6 +1711,14 @@ public class ClientTest {
     Variable variable = new Variable();
     variable.setType(INTERFACE);
     Client.validateType(interfaceNode, variable);
+  }
+
+  @Test
+  public void testValidInterfacesSpecValue() throws IOException {
+    JsonNode interfacesSpecNode = _mapper.readTree("\"TYPE:LOOPBACK\"");
+    Variable variable = new Variable();
+    variable.setType(INTERFACES_SPEC);
+    Client.validateType(interfacesSpecNode, variable);
   }
 
   @Test
