@@ -70,7 +70,15 @@ public class Variable {
     // map from deprecated CompletionTypes to corresponding Variable.Type used for backwards
     // compatibility
     private static final Map<CompletionType, Variable.Type> COMPLETION_TYPE_MAP =
-        initCompletionTypeMap();
+        new ImmutableMap.Builder<CompletionType, Type>()
+            .put(CompletionType.BGP_PEER_PROPERTY, BGP_PEER_PROPERTY_SPEC)
+            .put(CompletionType.BGP_PROCESS_PROPERTY, BGP_PROCESS_PROPERTY_SPEC)
+            .put(CompletionType.INTERFACE_PROPERTY, INTERFACE_PROPERTY_SPEC)
+            .put(CompletionType.NAMED_STRUCTURE, NAMED_STRUCTURE_SPEC)
+            .put(CompletionType.NODE, NODE_SPEC)
+            .put(CompletionType.NODE_PROPERTY, NODE_PROPERTY_SPEC)
+            .put(CompletionType.OSPF_PROPERTY, OSPF_PROPERTY_SPEC)
+            .build();
 
     @JsonCreator
     public static Variable.Type fromString(String name) {
@@ -101,18 +109,6 @@ public class Variable {
         String name = value._name.toLowerCase();
         map.put(name, value);
       }
-      return map.build();
-    }
-
-    private static Map<CompletionType, Variable.Type> initCompletionTypeMap() {
-      ImmutableMap.Builder<CompletionType, Variable.Type> map = ImmutableMap.builder();
-      map.put(CompletionType.BGP_PEER_PROPERTY, BGP_PEER_PROPERTY_SPEC)
-          .put(CompletionType.BGP_PROCESS_PROPERTY, BGP_PROCESS_PROPERTY_SPEC)
-          .put(CompletionType.INTERFACE_PROPERTY, INTERFACE_PROPERTY_SPEC)
-          .put(CompletionType.NAMED_STRUCTURE, NAMED_STRUCTURE_SPEC)
-          .put(CompletionType.NODE, NODE_SPEC)
-          .put(CompletionType.NODE_PROPERTY, NODE_PROPERTY_SPEC)
-          .put(CompletionType.OSPF_PROPERTY, OSPF_PROPERTY_SPEC);
       return map.build();
     }
 
