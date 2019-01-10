@@ -1,13 +1,19 @@
 package org.batfish.datamodel.questions;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.Schema;
 
@@ -20,6 +26,7 @@ import org.batfish.datamodel.answers.Schema;
  *   <li>vlan gets the VLAN ID property
  * </ul>
  */
+@ParametersAreNonnullByDefault
 public class VxlanVniPropertySpecifier extends PropertySpecifier {
 
   public static final String NODE = "Node";
@@ -55,8 +62,8 @@ public class VxlanVniPropertySpecifier extends PropertySpecifier {
   private final Pattern _pattern;
 
   @JsonCreator
-  public VxlanVniPropertySpecifier(String expression) {
-    _expression = expression;
+  public VxlanVniPropertySpecifier(@Nullable String expression) {
+    _expression = firstNonNull(expression, ".*");
     _pattern = Pattern.compile(_expression.trim(), Pattern.CASE_INSENSITIVE);
   }
 
@@ -72,12 +79,12 @@ public class VxlanVniPropertySpecifier extends PropertySpecifier {
   }
 
   @Override
-  public List<String> getMatchingProperties() {
+  public @Nonnull List<String> getMatchingProperties() {
     return JAVA_MAP
         .keySet()
         .stream()
         .filter(prop -> _pattern.matcher(prop).matches())
-        .collect(Collectors.toList());
+        .collect(ImmutableList.toImmutableList());
   }
 
   @Override

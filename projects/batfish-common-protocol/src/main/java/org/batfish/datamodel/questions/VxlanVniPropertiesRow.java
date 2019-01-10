@@ -1,9 +1,13 @@
 package org.batfish.datamodel.questions;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 
 /** Contains the values needed to populate a table answer row with VXLAN VNI properties. */
-public class VxlanVniPropertiesRow {
+@ParametersAreNonnullByDefault
+public final class VxlanVniPropertiesRow {
 
   private final String _node;
   private final Integer _vni;
@@ -16,10 +20,10 @@ public class VxlanVniPropertiesRow {
   public VxlanVniPropertiesRow(
       String node,
       Integer vni,
-      Integer vlan,
-      Ip localVtepIp,
-      Ip multicastGroup,
-      Iterable<Ip> vtepFloodList,
+      @Nullable Integer vlan,
+      @Nullable Ip localVtepIp,
+      @Nullable Ip multicastGroup,
+      @Nullable Iterable<Ip> vtepFloodList,
       Integer vxlanPort) {
     _node = node;
     _vni = vni;
@@ -30,31 +34,31 @@ public class VxlanVniPropertiesRow {
     _vxlanPort = vxlanPort;
   }
 
-  public String getNode() {
+  public @Nonnull String getNode() {
     return _node;
   }
 
-  public Integer getVni() {
+  public @Nonnull Integer getVni() {
     return _vni;
   }
 
-  public Integer getVlan() {
+  public @Nullable Integer getVlan() {
     return _vlan;
   }
 
-  public Ip getLocalVtepIp() {
+  public @Nullable Ip getLocalVtepIp() {
     return _localVtepIp;
   }
 
-  public Ip getMulticastGroup() {
+  public @Nullable Ip getMulticastGroup() {
     return _multicastGroup;
   }
 
-  public Iterable<Ip> getVtepFloodList() {
+  public @Nullable Iterable<Ip> getVtepFloodList() {
     return _vtepFloodList;
   }
 
-  public Integer getVxlanPort() {
+  public @Nonnull Integer getVxlanPort() {
     return _vxlanPort;
   }
 }

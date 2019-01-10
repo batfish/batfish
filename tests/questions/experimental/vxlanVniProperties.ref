@@ -1,7 +1,7 @@
 {
   "class" : "org.batfish.question.vxlanproperties.VxlanVniPropertiesQuestion",
-  "nodes" : ".*",
-  "properties" : ".*",
+  "nodes" : "nodename",
+  "properties" : "VLAN",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
@@ -13,18 +13,18 @@
     ],
     "variables" : {
       "nodes" : {
-        "description" : "Include nodes matching this name or regex",
+        "description" : "Include nodes matching this specifier",
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",
-        "value" : ".*"
+        "value" : "nodename"
       },
       "properties" : {
-        "description" : "Include properties matching this regex",
+        "description" : "Include properties matching this specifier",
         "displayName" : "Properties",
         "optional" : true,
         "type" : "vxlanVniPropertySpec",
-        "value" : ".*"
+        "value" : "VLAN"
       }
     }
   }

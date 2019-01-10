@@ -29,7 +29,7 @@ import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.junit.Test;
 
-public class VxlanVniPropertiesAnswererTest {
+public final class VxlanVniPropertiesAnswererTest {
   @Test
   public void testAnswer() {
     VxlanVniPropertiesAnswerer answerer =
