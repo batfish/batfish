@@ -18,6 +18,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.Vrf;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -84,6 +85,25 @@ public class CommonUtilTest {
     Topology t =
         CommonUtil.synthesizeTopology(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
     assertThat(t.getEdges(), equalTo(ImmutableSet.of(new Edge(i1, i2), new Edge(i2, i1))));
+  }
+
+  @Test
+  public void testSynthesizeTopology_selfEdges() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf v1 = nf.vrfBuilder().setOwner(c).setName("v1").build();
+    Vrf v2 = nf.vrfBuilder().setOwner(c).setName("v2").build();
+    Interface.Builder builder = nf.interfaceBuilder().setOwner(c);
+    Interface i1 = builder.setAddresses(new InterfaceAddress("1.2.3.4/24")).setVrf(v1).build();
+    Interface i2 = builder.setAddresses(new InterfaceAddress("1.2.3.5/24")).setVrf(v1).build();
+    Interface i3 = builder.setAddresses(new InterfaceAddress("1.2.3.6/24")).setVrf(v2).build();
+    Topology t = CommonUtil.synthesizeTopology(ImmutableMap.of(c.getHostname(), c));
+    assertThat(
+        t.getEdges(),
+        equalTo(
+            ImmutableSet.of(
+                new Edge(i1, i3), new Edge(i3, i1), new Edge(i2, i3), new Edge(i3, i2))));
   }
 
   @Test
