@@ -28,6 +28,7 @@ import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Pro
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecProposal;
 
 import com.google.common.base.Functions;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -3288,7 +3289,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           _eosMlagConfigurations
               .values()
               .stream()
-              .filter(m -> !m.isShutdown())
+              .filter(Predicates.not(MlagConfiguration::isShutdown))
               .collect(
                   ImmutableSortedMap.toImmutableSortedMap(
                       Ordering.natural(), MlagConfiguration::getDomainId, this::toMlag)));

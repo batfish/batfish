@@ -18,11 +18,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class Mlag implements Serializable {
   private static final long serialVersionUID = 1L;
 
+  private static final String PROP_ACCESS_INTERFACES = "accessInterfaces";
   private static final String PROP_ID = "id";
+  private static final String PROP_LOCAL_INTERFACE = "localInterface";
   private static final String PROP_PEER_ADDRESS = "peerAddress";
   private static final String PROP_PEER_INTERFACE = "peerInterface";
-  private static final String PROP_LOCAL_INTERFACE = "localInterface";
-  private static final String PROP_ACCESS_INTERFACES = "accessInterfaces";
 
   private final String _id;
   @Nullable private final Ip _peerAddress;
@@ -30,7 +30,7 @@ public class Mlag implements Serializable {
   @Nullable private final String _localInterface;
   private final Set<String> _accessInterfaces;
 
-  public Mlag(
+  private Mlag(
       String id,
       @Nullable Ip peerAddress,
       @Nullable String peerInterface,

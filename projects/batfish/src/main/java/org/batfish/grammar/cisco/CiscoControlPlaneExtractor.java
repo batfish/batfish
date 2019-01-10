@@ -7066,7 +7066,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_mlag_local_interface(Eos_mlag_local_interfaceContext ctx) {
-    String iface = ctx.iface.getText();
+    String iface = getCanonicalInterfaceName(ctx.iface.getText());
     _currentEosMlagConfiguration.setLocalInterface(iface);
     _configuration.referenceStructure(
         INTERFACE, iface, MLAG_CONFIGURATION_LOCAL_INTERFACE, ctx.getStart().getLine());
@@ -7079,7 +7079,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_mlag_peer_link(Eos_mlag_peer_linkContext ctx) {
-    String iface = ctx.iface.getText();
+    String iface = getCanonicalInterfaceName(ctx.iface.getText());
     _currentEosMlagConfiguration.setPeerLink(iface);
     _configuration.referenceStructure(
         INTERFACE, iface, MLAG_CONFIGURATION_PEER_LINK, ctx.getStart().getLine());
