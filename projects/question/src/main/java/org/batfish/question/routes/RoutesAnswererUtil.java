@@ -9,7 +9,6 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_COMMUNITIES;
 import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
 import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK;
-import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK_PRESENCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
@@ -293,7 +292,6 @@ public class RoutesAnswererUtil {
       String hostName = routeRowKey.getHostName();
       String vrfName = routeRowKey.getVrfName();
       Prefix network = routeRowKey.getPrefix();
-      KeyPresenceStatus networkKeyPresenceStatus = diffRoutesOutput.getNetworkKeyPresenceStatus();
       RouteRowSecondaryKey routeRowSecondaryKey = diffRoutesOutput.getRouteRowSecondaryKey();
       KeyPresenceStatus secondaryKeyPresenceStatus =
           diffRoutesOutput.getRouteRowSecondaryKeyStatus();
@@ -304,8 +302,7 @@ public class RoutesAnswererUtil {
         rowBuilder
             .put(COL_NODE, new Node(hostName))
             .put(COL_VRF_NAME, vrfName)
-            .put(COL_NETWORK, network)
-            .put(COL_NETWORK_PRESENCE, networkKeyPresenceStatus);
+            .put(COL_NETWORK, network);
 
         RouteRowAttribute routeRowAttributeBase = routeRowAttributeInBaseAndRef.get(0);
         RouteRowAttribute routeRowAttributeRef = routeRowAttributeInBaseAndRef.get(1);
@@ -435,16 +432,13 @@ public class RoutesAnswererUtil {
       KeyPresenceStatus secondaryKeyPresenceStatus =
           diffRoutesOutput.getRouteRowSecondaryKeyStatus();
 
-      KeyPresenceStatus networkKeyPresenceStatus = diffRoutesOutput.getNetworkKeyPresenceStatus();
-
       for (List<RouteRowAttribute> routeRowAttributeInBaseAndRef :
           diffRoutesOutput.getDiffInAttributes()) {
         Row.RowBuilder rowBuilder = Row.builder(columnMetadataMap);
         rowBuilder
             .put(COL_NODE, new Node(hostName))
             .put(COL_VRF_NAME, vrfName)
-            .put(COL_NETWORK, network)
-            .put(COL_NETWORK_PRESENCE, networkKeyPresenceStatus);
+            .put(COL_NETWORK, network);
 
         RouteRowAttribute routeRowAttributeBase = routeRowAttributeInBaseAndRef.get(0);
         RouteRowAttribute routeRowAttributeRef = routeRowAttributeInBaseAndRef.get(1);
