@@ -39404,7 +39404,7 @@
             "        STATE:'state'",
             "        NEWLINE:'\\n')))",
             "  (stanza",
-            "    (s_vlan_eos",
+            "    (s_no_vlan_eos",
             "      NO:'no'",
             "      VLAN:'vlan'",
             "      (eos_vlan_id",

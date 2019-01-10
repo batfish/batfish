@@ -2840,6 +2840,11 @@ s_no_enable
    NO ENABLE PASSWORD (LEVEL level = DEC)? NEWLINE
 ;
 
+s_no_vlan_eos
+:
+  (NO | DEFAULT) VLAN eos_vlan_id NEWLINE
+;
+
 s_nv
 :
    NO? NV NEWLINE
@@ -3207,16 +3212,15 @@ s_vlan_cisco
 
 s_vlan_eos
 :
-   (NO | DEFAULT)? VLAN eos_vlan_id NEWLINE
-   | VLAN eos_vlan_id NEWLINE
-     (
-       eos_vlan_name
-       | eos_vlan_state
-       | eos_vlan_trunk
-       | eos_vlan_no_name
-       | eos_vlan_no_state
-       | eos_vlan_no_trunk
-     )*
+   VLAN eos_vlan_id NEWLINE
+   (
+     eos_vlan_name
+     | eos_vlan_state
+     | eos_vlan_trunk
+     | eos_vlan_no_name
+     | eos_vlan_no_state
+     | eos_vlan_no_trunk
+   )*
 ;
 
 s_vlan_internal_cisco
@@ -3704,6 +3708,7 @@ stanza
    | s_no_bfd
    | s_no_enable
    | { _eos }? s_no_vlan_internal_eos
+   | { _eos }? s_no_vlan_eos
    | s_ntp
    | s_null
    | s_nv
