@@ -565,7 +565,6 @@ import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_peer_linkContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_reload_delayContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_mlag_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_idContext;
-import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_internalContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vlan_trunkContext;
 import org.batfish.grammar.cisco.CiscoParser.Eos_vxif_descriptionContext;
@@ -990,6 +989,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_tacacs_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.S_trackContext;
 import org.batfish.grammar.cisco.CiscoParser.S_usernameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_vlan_eosContext;
+import org.batfish.grammar.cisco.CiscoParser.S_vlan_internal_eosContext;
 import org.batfish.grammar.cisco.CiscoParser.S_vrf_contextContext;
 import org.batfish.grammar.cisco.CiscoParser.S_vrf_definitionContext;
 import org.batfish.grammar.cisco.CiscoParser.S_zoneContext;
@@ -7107,11 +7107,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitEos_vlan_name(Eos_vlan_nameContext ctx) {
     if (ctx.NO() == null && ctx.DEFAULT() == null) {
       _configuration.getNamedVlans().put(ctx.name.getText(), _currentVlans);
+    } else {
+      todo(ctx);
     }
   }
 
   @Override
-  public void exitEos_vlan_internal(Eos_vlan_internalContext ctx) {
+  public void exitS_vlan_internal_eos(S_vlan_internal_eosContext ctx) {
     todo(ctx);
   }
 
@@ -7121,9 +7123,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String groupName = ctx.name.getText();
       VlanTrunkGroup trunkGroup =
           _configuration.getEosVlanTrunkGroups().computeIfAbsent(groupName, VlanTrunkGroup::new);
-      if (_currentVlans != null) {
-        trunkGroup.addVlans(_currentVlans);
-      }
+      assert _currentVlans != null;
+      trunkGroup.addVlans(_currentVlans);
+    } else {
+      todo(ctx);
     }
   }
 

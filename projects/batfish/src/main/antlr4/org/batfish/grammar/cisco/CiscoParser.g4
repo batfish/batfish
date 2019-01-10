@@ -3189,15 +3189,6 @@ s_username_attributes
    )*
 ;
 
-s_vlan_eos
-:
-   (
-     (NO | DEFAULT)? VLAN
-     eos_vlan_id
-     eos_vlan_inner*
-   )
-   | eos_vlan_internal
-;
 
 s_vlan_cisco
 :
@@ -3212,6 +3203,25 @@ s_vlan_cisco
    (
       vlan_null
    )*
+;
+
+s_vlan_eos
+:
+   (NO | DEFAULT)? VLAN eos_vlan_id NEWLINE
+   | VLAN eos_vlan_id NEWLINE
+     (
+       eos_vlan_name
+       | eos_vlan_state
+       | eos_vlan_trunk
+       | eos_vlan_no_name
+       | eos_vlan_no_state
+       | eos_vlan_no_trunk
+     )*
+;
+
+s_vlan_internal_cisco
+:
+   NO? VLAN INTERNAL ALLOCATION POLICY (ASCENDING | DESCENDING) NEWLINE
 ;
 
 s_vlan_name
@@ -3693,6 +3703,7 @@ stanza
    | s_no_access_list_standard
    | s_no_bfd
    | s_no_enable
+   | { _eos }? s_no_vlan_internal_eos
    | s_ntp
    | s_null
    | s_nv
@@ -3747,6 +3758,8 @@ stanza
    | s_username_attributes
    | { !_eos }? s_vlan_cisco
    | { _eos }? s_vlan_eos
+   | { !_eos }? s_vlan_internal_cisco
+   | { _eos }? s_vlan_internal_eos
    | s_vlan_name
    | s_voice
    | s_voice_card

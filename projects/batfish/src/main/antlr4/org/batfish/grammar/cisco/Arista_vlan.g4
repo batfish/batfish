@@ -8,41 +8,49 @@ options {
 
 eos_vlan_id
 :
+   vlan_ids += subrange
    (
-      vlan_ids += subrange
-      (
-         COMMA vlan_ids += subrange
-      )*
-   ) NEWLINE
-;
-
-eos_vlan_internal
-:
-   (NO | DEFAULT)? VLAN INTERNAL ALLOCATION POLICY NEWLINE
-   | INTERNAL ALLOCATION POLICY (ASCENDING | DESCENDING) RANGE lo=DEC hi=DEC NEWLINE
-;
-
-eos_vlan_inner
-:
-   eos_vlan_name
-   | eos_vlan_state
-   | eos_vlan_trunk
+      COMMA vlan_ids += subrange
+   )*
 ;
 
 eos_vlan_name
 :
-   (NO | DEFAULT)? NAME NEWLINE
-   | NAME name = variable NEWLINE
+   (NO | DEFAULT)? NAME name = variable NEWLINE
+;
+
+eos_vlan_no_name
+:
+   (NO | DEFAULT) NAME NEWLINE
+;
+
+eos_vlan_no_state
+:
+   (NO | DEFAULT) STATE NEWLINE
+;
+
+eos_vlan_no_trunk
+:
+   (NO | DEFAULT) TRUNK GROUP NEWLINE
 ;
 
 eos_vlan_state
 :
-   (NO | DEFAULT)? STATE NEWLINE
-   | STATE (ACTIVE | SUSPEND) NEWLINE
+   (NO | DEFAULT)? STATE (ACTIVE | SUSPEND) NEWLINE
 ;
 
 eos_vlan_trunk
 :
-   (NO | DEFAULT)? TRUNK GROUP NEWLINE
-   | TRUNK GROUP name = variable NEWLINE
+   (NO | DEFAULT)? TRUNK GROUP name = variable NEWLINE
 ;
+
+s_no_vlan_internal_eos
+:
+   (NO | DEFAULT)? VLAN INTERNAL ALLOCATION POLICY NEWLINE
+;
+
+s_vlan_internal_eos
+:
+   (NO | DEFAULT)? VLAN INTERNAL ALLOCATION POLICY (ASCENDING | DESCENDING) RANGE lo=DEC hi=DEC NEWLINE
+;
+

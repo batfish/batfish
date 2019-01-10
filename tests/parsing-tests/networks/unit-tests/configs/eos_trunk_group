@@ -18,6 +18,8 @@ no vlan internal allocation policy ascending range 6 7
 no vlan internal allocation policy descending range 10 11 
 default vlan internal allocation policy ascending range 6 7
 default vlan internal allocation policy ascending range 6 7
+no vlan internal allocation policy
+default vlan internal allocation policy
 !
 vlan 99
    state active
@@ -26,11 +28,8 @@ vlan 99
    default name 
    no state
    default state
-
+!
 no vlan 101
-no vlan 102
-   state active
-   
 !
 interface Port-Channel1
    switchport mode trunk

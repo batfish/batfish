@@ -2218,7 +2218,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 .map(_eosVlanTrunkGroups::get)
                 .map(VlanTrunkGroup::getVlans)
                 .reduce(IntegerSpace::union)
-                .orElse(IntegerSpace.EMPTY));
+                .get());
       }
     }
 
