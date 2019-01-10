@@ -787,7 +787,7 @@ public final class BDDReachabilityAnalysisFactory {
                       .get(node1)
                       .getAllInterfaces()
                       .get(iface1)
-                      .getPreSourceNatOutgoingFilterName();
+                      .getPreTransformationOutgoingFilterName();
 
               BDD denyPreNat = ignorableAclDenyBDD(node1, preNatAcl);
               if (denyPreNat.equals(_zero)) {
@@ -820,7 +820,7 @@ public final class BDDReachabilityAnalysisFactory {
                       .get(node1)
                       .getAllInterfaces()
                       .get(iface1)
-                      .getPreSourceNatOutgoingFilterName();
+                      .getPreTransformationOutgoingFilterName();
 
               BDD aclPermit = ignorableAclPermitBDD(node1, preNatAcl);
               if (aclPermit.equals(_zero)) {
@@ -939,10 +939,10 @@ public final class BDDReachabilityAnalysisFactory {
                                           .reduce(_zero, BDD::or);
                                   BDD denyPreAclBDD =
                                       ignorableAclDenyBDD(
-                                          node, iface.getPreSourceNatOutgoingFilterName());
+                                          node, iface.getPreTransformationOutgoingFilterName());
                                   BDD permitPreAclBDD =
                                       ignorableAclPermitBDD(
-                                          node, iface.getPreSourceNatOutgoingFilterName());
+                                          node, iface.getPreTransformationOutgoingFilterName());
                                   BDD denyPostAclBDD =
                                       ignorableAclDenyBDD(node, iface.getOutgoingFilterName());
                                   Transition transformation =
@@ -1015,7 +1015,7 @@ public final class BDDReachabilityAnalysisFactory {
                                   Interface iface = nodeInterfaces.get(ifaceName);
                                   BDD permitBeforeNatBDD =
                                       ignorableAclPermitBDD(
-                                          node, iface.getPreSourceNatOutgoingFilterName());
+                                          node, iface.getPreTransformationOutgoingFilterName());
                                   BDD permitAfterNatBDD =
                                       ignorableAclPermitBDD(node, iface.getOutgoingFilterName());
                                   Transition outgoingTransformation =
