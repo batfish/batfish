@@ -27,12 +27,11 @@ public final class EraseAndSet implements Transition {
   }
 
   EraseAndSet(BDD eraseVars, BDD setValue) {
-    /* Require that the erased variables exactly match the set variables. We consider it an error to
-     * erase a variable that isn't set, or to set a variable that wasn't erased. If we want to set
-     * a variable that wasn't erased, or erase a variable without setting it afterwards, we should
-     * use a different transition class.
+    /* Require that the erased variables include the set variables. We consider it an error to
+     * set a variable that wasn't erased. If we want to set a variable that wasn't erased, use a
+     * different transition class.
      */
-    checkArgument(vars(eraseVars).equals(vars(setValue)));
+    checkArgument(vars(eraseVars).containsAll(vars(setValue)));
 
     _eraseVars = eraseVars;
     _setValue = setValue;

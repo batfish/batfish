@@ -1089,7 +1089,7 @@
           },
           "vrfName" : {
             "name" : "vrfName",
-            "description" : " descriptive sentence"
+            "description" : "descriptive sentence"
           }
         }
       },
@@ -7576,32 +7576,6 @@
             "vlan" : 4094,
             "vrf" : "default"
           },
-          "Vxlan1" : {
-            "name" : "Vxlan1",
-            "accessVlan" : 0,
-            "active" : true,
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "declaredNames" : [
-              "Vxlan1"
-            ],
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "TUNNEL",
-            "vrf" : "default"
-          },
           "Wideband-Cable1/2/3:4" : {
             "name" : "Wideband-Cable1/2/3:4",
             "accessVlan" : 0,
@@ -7799,7 +7773,6 @@
               "Vlan2",
               "Vlan3",
               "Vlan4094",
-              "Vxlan1",
               "Wideband-Cable1/2/3:4",
               "inside",
               "tunnel-ip6"
@@ -18072,8 +18045,8 @@
       "juniper_nat" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_nat",
-        "defaultCrossZoneAction" : "PERMIT",
-        "defaultInboundAction" : "PERMIT",
+        "defaultCrossZoneAction" : "DENY",
+        "defaultInboundAction" : "DENY",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "ge-0/0/0" : {
@@ -18115,34 +18088,31 @@
             "declaredNames" : [
               "ge-0/0/0.0"
             ],
-            "destinationNats" : [
-              {
-                "acl" : {
-                  "name" : "~DESTINATION_NAT~ge-0/0/0.0~DST-NAT~DST-RULE~",
-                  "lines" : [
-                    {
-                      "action" : "PERMIT",
-                      "matchCondition" : {
-                        "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                        "headerSpace" : {
-                          "dstIps" : {
-                            "class" : "org.batfish.datamodel.IpSpaceReference",
-                            "name" : "global~NAME"
-                          },
-                          "negate" : false,
-                          "srcIps" : {
-                            "class" : "org.batfish.datamodel.IpSpaceReference",
-                            "name" : "global~SA-NAME"
-                          }
-                        }
-                      }
-                    }
-                  ]
-                },
-                "poolIpFirst" : "10.10.10.0",
-                "poolIpLast" : "10.10.10.255"
-              }
-            ],
+            "incomingTransformation" : {
+              "guard" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : {
+                    "class" : "org.batfish.datamodel.IpSpaceReference",
+                    "name" : "global~NAME"
+                  },
+                  "negate" : false,
+                  "srcIps" : {
+                    "class" : "org.batfish.datamodel.IpSpaceReference",
+                    "name" : "global~SA-NAME"
+                  }
+                }
+              },
+              "transformationSteps" : [
+                {
+                  "class" : "org.batfish.datamodel.transformation.AssignIpAddressFromPool",
+                  "ipField" : "DESTINATION",
+                  "poolEnd" : "10.10.10.254",
+                  "poolStart" : "10.10.10.1",
+                  "transformationType" : "DEST_NAT"
+                }
+              ]
+            },
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -18150,58 +18120,9 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "prefix" : "1.0.0.1/24",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "sourceNats" : [
-              {
-                "acl" : {
-                  "name" : "~SOURCENAT~ge-0/0/0.0~SRC-NAT~SRC-RULE~",
-                  "lines" : [
-                    {
-                      "action" : "PERMIT",
-                      "matchCondition" : {
-                        "class" : "org.batfish.datamodel.acl.AndMatchExpr",
-                        "conjuncts" : [
-                          {
-                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                            "headerSpace" : {
-                              "dstIps" : {
-                                "class" : "org.batfish.datamodel.IpSpaceReference",
-                                "name" : "global~NAME"
-                              },
-                              "negate" : false,
-                              "srcIps" : {
-                                "class" : "org.batfish.datamodel.IpSpaceReference",
-                                "name" : "global~SA-NAME"
-                              }
-                            }
-                          },
-                          {
-                            "class" : "org.batfish.datamodel.acl.MatchSrcInterface"
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              }
-            ],
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "LOGICAL",
-            "vrf" : "default"
-          }
-        },
-        "ipAccessLists" : {
-          "~DESTINATION_NAT~ge-0/0/0.0~DST-NAT~DST-RULE~" : {
-            "name" : "~DESTINATION_NAT~ge-0/0/0.0~DST-NAT~DST-RULE~",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
+            "outgoingTransformation" : {
+              "andThen" : {
+                "guard" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
@@ -18214,37 +18135,78 @@
                       "name" : "global~SA-NAME"
                     }
                   }
-                }
+                },
+                "transformationSteps" : [
+                  {
+                    "class" : "org.batfish.datamodel.transformation.Noop",
+                    "transformationType" : "SOURCE_NAT"
+                  }
+                ]
+              },
+              "guard" : {
+                "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
+                "srcInterfaces" : [
+                  "ge-0/0/0.0"
+                ]
               }
-            ]
-          },
-          "~SOURCENAT~ge-0/0/0.0~SRC-NAT~SRC-RULE~" : {
-            "name" : "~SOURCENAT~ge-0/0/0.0~SRC-NAT~SRC-RULE~",
+            },
+            "preTransformationOutgoingFilter" : "~SECURITY_POLICIES_TO~ge-0/0/0.0",
+            "prefix" : "1.0.0.1/24",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default",
+            "zone" : "trust"
+          }
+        },
+        "ipAccessLists" : {
+          "~EXISTING_CONNECTION~" : {
+            "name" : "~EXISTING_CONNECTION~",
             "lines" : [
               {
                 "action" : "PERMIT",
                 "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.AndMatchExpr",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                      "headerSpace" : {
-                        "dstIps" : {
-                          "class" : "org.batfish.datamodel.IpSpaceReference",
-                          "name" : "global~NAME"
-                        },
-                        "negate" : false,
-                        "srcIps" : {
-                          "class" : "org.batfish.datamodel.IpSpaceReference",
-                          "name" : "global~SA-NAME"
-                        }
-                      }
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface"
-                    }
-                  ]
-                }
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false,
+                    "states" : [
+                      "ESTABLISHED"
+                    ]
+                  }
+                },
+                "name" : "~EXISTING_CONNECTION~"
+              }
+            ]
+          },
+          "~SECURITY_POLICIES_TO~ge-0/0/0.0" : {
+            "name" : "~SECURITY_POLICIES_TO~ge-0/0/0.0",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                  "aclName" : "~EXISTING_CONNECTION~",
+                  "defaultAccept" : false
+                },
+                "name" : "EXISTING_CONNECTION"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                },
+                "name" : "HOST_OUTBOUND"
+              },
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "DEFAULT_POLICY"
               }
             ]
           }
@@ -18289,6 +18251,11 @@
               "ge-0/0/0",
               "ge-0/0/0.0"
             ]
+          }
+        },
+        "zones" : {
+          "trust" : {
+            "name" : "trust"
           }
         }
       },

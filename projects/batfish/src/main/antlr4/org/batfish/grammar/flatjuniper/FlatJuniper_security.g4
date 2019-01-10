@@ -173,10 +173,14 @@ natp_address
 :
    ADDRESS
    (
-      IP_PREFIX
+      prefix = IP_PREFIX
       |
       (
          from = IP_ADDRESS TO to = IP_ADDRESS
+      )
+      |
+      (
+         from = IP_PREFIX TO to = IP_PREFIX
       )
    )
 ;

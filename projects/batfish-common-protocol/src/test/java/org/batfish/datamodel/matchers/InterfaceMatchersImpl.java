@@ -1,6 +1,5 @@
 package org.batfish.datamodel.matchers;
 
-import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -10,7 +9,6 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
@@ -246,17 +244,6 @@ final class InterfaceMatchersImpl {
     @Override
     protected String featureValueOf(Interface actual) {
       return actual.getOutgoingFilterName();
-    }
-  }
-
-  static final class HasSourceNats extends FeatureMatcher<Interface, List<SourceNat>> {
-    HasSourceNats(@Nonnull Matcher<? super List<SourceNat>> subMatcher) {
-      super(subMatcher, "an Interface with sourceNats:", "sourceNats");
-    }
-
-    @Override
-    protected List<SourceNat> featureValueOf(Interface actual) {
-      return actual.getSourceNats();
     }
   }
 

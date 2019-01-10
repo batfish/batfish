@@ -257,11 +257,11 @@ public class JuniperConfigurationTest {
   public void testFromNatPacketLocationMatchExprs() {
     JuniperConfiguration config = createConfig();
 
+    Interface parent = new Interface("parent");
+
     String interface1Name = "interface1";
-    config
-        .getMasterLogicalSystem()
-        .getInterfaces()
-        .put(interface1Name, new Interface(interface1Name));
+    parent.getUnits().put(interface1Name, new Interface(interface1Name));
+    config.getMasterLogicalSystem().getInterfaces().put(parent.getName(), parent);
 
     Zone zone = new Zone("zone", new AddressBook("global", null));
     String zoneInterface1Name = "zoneInterface1";

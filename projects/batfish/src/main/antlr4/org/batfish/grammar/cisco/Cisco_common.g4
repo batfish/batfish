@@ -172,6 +172,11 @@ int_expr
    | RP_VARIABLE
 ;
 
+eos_vxlan_interface_name
+:
+   VXLAN DEC
+;
+
 interface_name
 :
    (

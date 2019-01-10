@@ -33,6 +33,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
@@ -110,7 +111,6 @@ import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpServer;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
@@ -162,11 +162,13 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.TrackMethod;
+import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
+import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.batfish.representation.cisco.nx.CiscoNxBgpGlobalConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpRedistributionPolicy;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration;
@@ -392,6 +394,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private String _dnsSourceInterface;
 
   private String _domainName;
+
+  private AristaEosVxlan _eosVxlan;
 
   private final Map<String, ExpandedCommunityList> _expandedCommunityLists;
 
@@ -734,6 +738,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public String getDnsSourceInterface() {
     return _dnsSourceInterface;
+  }
+
+  public AristaEosVxlan getEosVxlan() {
+    return _eosVxlan;
   }
 
   public Map<String, ExpandedCommunityList> getExpandedCommunityLists() {
@@ -1158,6 +1166,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public void setDomainName(String domainName) {
     _domainName = domainName;
+  }
+
+  public void setEosVxlan(AristaEosVxlan eosVxlan) {
+    _eosVxlan = eosVxlan;
   }
 
   public void setFailover(boolean failover) {
@@ -1975,57 +1987,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return newBgpProcess;
   }
 
-  /**
-   * Processes a {@link CiscoSourceNat} rule. This function performs two actions:
-   *
-   * <p>1. Record references to ACLs and NAT pools by the various parsed {@link CiscoSourceNat}
-   * objects.
-   *
-   * <p>2. Convert to vendor-independent {@link SourceNat} objects if valid, aka, no undefined ACL
-   * and valid output configuration.
-   *
-   * <p>Returns the vendor-independeng {@link SourceNat}, or {@code null} if the source NAT rule is
-   * invalid.
-   */
-  @Nullable
-  SourceNat processSourceNat(
-      CiscoSourceNat nat, Interface iface, Map<String, IpAccessList> ipAccessLists) {
-    String sourceNatAclName = nat.getAclName();
-    if (sourceNatAclName == null) {
-      // Source NAT rules must have an ACL; this rule is invalid.
-      return null;
-    }
-
-    SourceNat convertedNat = new SourceNat();
-
-    /* source nat acl */
-    IpAccessList sourceNatAcl = ipAccessLists.get(sourceNatAclName);
-    if (sourceNatAcl != null) {
-      convertedNat.setAcl(sourceNatAcl);
-    }
-
-    /* source nat pool */
-    String sourceNatPoolName = nat.getNatPool();
-    if (sourceNatPoolName != null) {
-      NatPool sourceNatPool = _natPools.get(sourceNatPoolName);
-      if (sourceNatPool != null) {
-        Ip firstIp = sourceNatPool.getFirst();
-        if (firstIp != null) {
-          Ip lastIp = sourceNatPool.getLast();
-          convertedNat.setPoolIpFirst(firstIp);
-          convertedNat.setPoolIpLast(lastIp);
-        }
-      }
-    }
-
-    // The source NAT rule is valid iff it has an ACL and a pool of IPs to NAT into.
-    if (convertedNat.getAcl() != null && convertedNat.getPoolIpFirst() != null) {
-      return convertedNat;
-    } else {
-      return null;
-    }
-  }
-
   private static final Pattern INTERFACE_WITH_SUBINTERFACE = Pattern.compile("^(.*)\\.(\\d+)$");
 
   /**
@@ -2237,15 +2198,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     List<CiscoSourceNat> origSourceNats = iface.getSourceNats();
     if (origSourceNats != null) {
-      // Process each of the CiscoSourceNats:
-      //   1) Collect references to ACLs and NAT pools.
-      //   2) For valid CiscoSourceNat rules, add them to the newIface source NATs list.
-      newIface.setSourceNats(
-          origSourceNats
-              .stream()
-              .map(nat -> processSourceNat(nat, iface, ipAccessLists))
-              .filter(Objects::nonNull)
-              .collect(ImmutableList.toImmutableList()));
+      Transformation outgoingTransformation = null;
+      for (CiscoSourceNat srcNat : Lists.reverse(origSourceNats)) {
+        outgoingTransformation =
+            srcNat
+                .toTransformation(ipAccessLists, _natPools, outgoingTransformation)
+                .orElse(outgoingTransformation);
+      }
+      newIface.setOutgoingTransformation(outgoingTransformation);
     }
     String routingPolicyName = iface.getRoutingPolicy();
     if (routingPolicyName != null) {
@@ -3453,7 +3413,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
         CiscoStructureUsage.SERVICE_POLICY_INTERFACE,
         CiscoStructureUsage.ROUTER_VRRP_INTERFACE,
-        CiscoStructureUsage.TRACK_INTERFACE);
+        CiscoStructureUsage.TRACK_INTERFACE,
+        CiscoStructureUsage.VXLAN_SOURCE_INTERFACE);
 
     // mark references to ACLs that may not appear in data model
     markIpOrMacAcls(
@@ -3699,6 +3660,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // track
     markConcreteStructure(CiscoStructureType.TRACK, CiscoStructureUsage.INTERFACE_STANDBY_TRACK);
+
+    // VXLAN
+    markConcreteStructure(CiscoStructureType.VXLAN, CiscoStructureUsage.VXLAN_SELF_REF);
 
     // zone
     markConcreteStructure(

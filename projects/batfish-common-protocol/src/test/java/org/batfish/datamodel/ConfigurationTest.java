@@ -1,11 +1,11 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Collections;
 import java.util.Map;
@@ -14,6 +14,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
+import org.batfish.datamodel.transformation.TransformationStep;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 import org.junit.Before;
@@ -213,14 +214,9 @@ public class ConfigurationTest {
     InterfaceAddress p3to4Physical = new InterfaceAddress(ip3to4Physical, 24);
     Interface i3to1 = ib.setOwner(c3).setVrf(v3).setAddress(p3to1Physical).build();
     ib.setAddress(p3to4Physical).build();
-    SourceNat snat3copy1 = new SourceNat();
-    snat3copy1.setPoolIpFirst(ip3to1Physical);
-    snat3copy1.setPoolIpLast(ip3to1Physical);
-    SourceNat snat3copy2 = new SourceNat();
-    snat3copy2.setPoolIpFirst(ip3to1Physical);
-    snat3copy2.setPoolIpLast(ip3to1Physical);
     /* Should not crash with two source-nats aliasing the same public IP */
-    i3to1.setSourceNats(ImmutableList.of(snat3copy1, snat3copy2));
+    i3to1.setOutgoingTransformation(
+        always().apply(TransformationStep.assignSourceIp(ip3to1Physical, ip3to1Physical)).build());
 
     Configuration c4 = cb.build();
     Vrf v4 = vb.setOwner(c4).build();

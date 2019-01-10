@@ -129,19 +129,15 @@ public class CommunityList extends CommunitySetExpr {
 
   /** Check if any line matches given community */
   private boolean computeIfMatches(long community, @Nullable Environment environment) {
-    Optional<LineAction> action =
+    Optional<CommunityListLine> matchingLine =
         _lines
             .stream()
-            .map(
-                line ->
-                    line.getMatchCondition().matchCommunity(environment, community)
-                        ? line.getAction()
-                        : null)
-            .filter(Objects::nonNull)
+            .filter(line -> line.getMatchCondition().matchCommunity(environment, community))
             .findFirst();
 
     // "invert != condition" is a concise way of inverting a boolean
-    return action.isPresent() && _invertMatch != (action.get() == LineAction.PERMIT);
+    return matchingLine.isPresent()
+        && _invertMatch != (matchingLine.get().getAction() == LineAction.PERMIT);
   }
 
   @Override
@@ -206,19 +202,17 @@ public class CommunityList extends CommunitySetExpr {
           .stream()
           .anyMatch(community -> matchCommunity(environment, community));
     }
-    Optional<LineAction> action =
+    Optional<CommunityListLine> matchingLine =
         _lines
             .stream()
-            .map(
+            .filter(
                 line ->
-                    line.getMatchCondition().matchCommunities(environment, communitySetCandidate)
-                        ? line.getAction()
-                        : null)
-            .filter(Objects::nonNull)
+                    line.getMatchCondition().matchCommunities(environment, communitySetCandidate))
             .findFirst();
 
     // "invert != condition" is a concise way of inverting a boolean
-    return action.isPresent() && _invertMatch != (action.get() == LineAction.PERMIT);
+    return matchingLine.isPresent()
+        && _invertMatch != (matchingLine.get().getAction() == LineAction.PERMIT);
   }
 
   /**
