@@ -1,12 +1,12 @@
 package org.batfish.question.vxlanproperties;
 
+import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_LOCAL_VTEP_IP;
+import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_MULTICAST_GROUP;
 import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_NODE;
-import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_REMOTE_VTEP_MULTICAST_GROUP;
-import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_REMOTE_VTEP_UNICAST_ADDRESSES;
 import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VLAN;
 import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VNI;
-import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VTEP_ADDRESS;
-import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VXLAN_UDP_PORT;
+import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VTEP_FLOOD_LIST;
+import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VXLAN_PORT;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -49,13 +49,13 @@ public class VxlanVniPropertiesAnswererTest {
                         "hostname",
                         COL_VLAN,
                         10001,
-                        COL_VTEP_ADDRESS,
+                        COL_LOCAL_VTEP_IP,
                         Ip.parse("1.2.3.4"),
-                        COL_REMOTE_VTEP_MULTICAST_GROUP,
+                        COL_MULTICAST_GROUP,
                         null,
-                        COL_REMOTE_VTEP_UNICAST_ADDRESSES,
+                        COL_VTEP_FLOOD_LIST,
                         ImmutableSet.of(Ip.parse("2.3.4.5"), Ip.parse("2.3.4.6")),
-                        COL_VXLAN_UDP_PORT,
+                        COL_VXLAN_PORT,
                         4242))
                 .add(
                     Row.of(
@@ -65,13 +65,13 @@ public class VxlanVniPropertiesAnswererTest {
                         "hostname",
                         COL_VLAN,
                         10002,
-                        COL_VTEP_ADDRESS,
+                        COL_LOCAL_VTEP_IP,
                         Ip.parse("1.2.3.4"),
-                        COL_REMOTE_VTEP_MULTICAST_GROUP,
-                        ImmutableSet.of(Ip.parse("227.10.1.1")),
-                        COL_REMOTE_VTEP_UNICAST_ADDRESSES,
+                        COL_MULTICAST_GROUP,
+                        Ip.parse("227.10.1.1"),
+                        COL_VTEP_FLOOD_LIST,
                         null,
-                        COL_VXLAN_UDP_PORT,
+                        COL_VXLAN_PORT,
                         4789))));
   }
 

@@ -58,49 +58,46 @@ final class VxlanVniPropertiesAnswerer extends Answerer {
     builder.put(COL_VNI, vniSettings.getVni());
     builder.put(COL_NODE, node);
     builder.put(COL_VLAN, vniSettings.getVlan());
-    builder.put(COL_VTEP_ADDRESS, vniSettings.getSourceAddress());
+    builder.put(COL_LOCAL_VTEP_IP, vniSettings.getSourceAddress());
     boolean unicast = vniSettings.getBumTransportMethod() == BumTransportMethod.UNICAST_FLOOD_GROUP;
-    builder.put(COL_REMOTE_VTEP_MULTICAST_GROUP, unicast ? null : vniSettings.getBumTransportIps());
-    builder.put(
-        COL_REMOTE_VTEP_UNICAST_ADDRESSES, unicast ? vniSettings.getBumTransportIps() : null);
-    builder.put(COL_VXLAN_UDP_PORT, vniSettings.getUdpPort());
+    builder.put(COL_MULTICAST_GROUP, unicast ? null : vniSettings.getBumTransportIps().first());
+    builder.put(COL_VTEP_FLOOD_LIST, unicast ? vniSettings.getBumTransportIps() : null);
+    builder.put(COL_VXLAN_PORT, vniSettings.getUdpPort());
     return builder.build();
   }
 
   static final String COL_NODE = "Node";
-  static final String COL_REMOTE_VTEP_MULTICAST_GROUP = "Remote_Vtep_Multicast_Address";
-  static final String COL_REMOTE_VTEP_UNICAST_ADDRESSES = "Remote_Vtep_Unicast_Addresses";
-  static final String COL_VLAN = "Vlan";
-  static final String COL_VNI = "Vni";
-  static final String COL_VTEP_ADDRESS = "Vtep_Address";
-  static final String COL_VXLAN_UDP_PORT = "Vxlan_Udp_Port";
-
-  static final String COL_CONVERT_STATUS = "Status";
+  static final String COL_LOCAL_VTEP_IP = "Local_VTEP_IP";
+  static final String COL_MULTICAST_GROUP = "Multicast_Group";
+  static final String COL_VLAN = "VLAN";
+  static final String COL_VNI = "VNI";
+  static final String COL_VTEP_FLOOD_LIST = "VTEP_Flood_List";
+  static final String COL_VXLAN_PORT = "VXLAN_Port";
 
   private static final List<ColumnMetadata> METADATA =
       ImmutableList.of(
           new ColumnMetadata(
               COL_VNI, Schema.INTEGER, "VXLAN network segment identifier", true, false),
           new ColumnMetadata(
-              COL_NODE, Schema.STRING, "The node containing this VXLAN VNI", true, false),
+              COL_NODE, Schema.STRING, "Node containing this VXLAN VNI", true, false),
           new ColumnMetadata(
               COL_VLAN, Schema.INTEGER, "VLAN ID associated with this VNI", false, true),
           new ColumnMetadata(
-              COL_VTEP_ADDRESS, Schema.IP, "Source address for this VTEP", false, true),
+              COL_LOCAL_VTEP_IP, Schema.IP, "Source IP address for this VTEP", false, true),
           new ColumnMetadata(
-              COL_REMOTE_VTEP_MULTICAST_GROUP,
-              Schema.set(Schema.IP),
-              "VXLAN network remote VTEP multicast addresses",
+              COL_MULTICAST_GROUP,
+              Schema.IP,
+              "Multicast group used for replication of broadcast and unknown traffic",
               false,
               true),
           new ColumnMetadata(
-              COL_REMOTE_VTEP_UNICAST_ADDRESSES,
+              COL_VTEP_FLOOD_LIST,
               Schema.set(Schema.IP),
-              "VXLAN network remote VTEP IP addresses",
+              "List of IP addresses configured for remote VTEP flooding",
               false,
               true),
           new ColumnMetadata(
-              COL_VXLAN_UDP_PORT, Schema.INTEGER, "UDP port for this VXLAN tunnel", false, true));
+              COL_VXLAN_PORT, Schema.INTEGER, "UDP port for this VXLAN tunnel", false, true));
 
   private static final String TEXT_DESC =
       String.format(
