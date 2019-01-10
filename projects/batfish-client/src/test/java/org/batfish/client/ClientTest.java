@@ -130,7 +130,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link org.batfish.client.Client}. */
-public class ClientTest {
+public final class ClientTest {
 
   private static final String NETWORK_NOT_SET = "Active network is not set\n";
 
