@@ -123,9 +123,9 @@ public class IpsecUtil {
    */
   @Nonnull
   private static Set<IpsecPeerConfigId> getCandidatePeersBehindNat(
-      Ip destinationIp,
-      SetMultimap<Ip, IpWildcardSetIpSpace> privateIpsByPublicIp,
-      Map<Ip, Set<IpsecPeerConfigId>> localIpsAndIpsecPeers) {
+      @Nonnull Ip destinationIp,
+      @Nonnull SetMultimap<Ip, IpWildcardSetIpSpace> privateIpsByPublicIp,
+      @Nonnull Map<Ip, Set<IpsecPeerConfigId>> localIpsAndIpsecPeers) {
     Set<IpsecPeerConfigId> candidateNeighbors = new HashSet<>();
     Set<IpWildcardSetIpSpace> privateIpsBehindDestIp = privateIpsByPublicIp.get(destinationIp);
     if (privateIpsBehindDestIp == null) {
