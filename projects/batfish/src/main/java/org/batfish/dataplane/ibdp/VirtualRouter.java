@@ -2081,11 +2081,11 @@ public class VirtualRouter implements Serializable {
     if (_vrf.getIsisProcess() == null || _isisIncomingRoutes == null) {
       return;
     }
-    if (_vrf.getIsisProcess().getOverload()) {
-      // All outgoing routes should have overload bit set
-      l1delta = setOverloadOnAllRoutes(l1delta);
-      l2delta = setOverloadOnAllRoutes(l2delta);
-    }
+    // All outgoing routes should have overload bit set
+    RibDelta<IsisRoute> correctedL1Delta =
+        _vrf.getIsisProcess().getOverload() ? setOverloadOnAllRoutes(l1delta) : l1delta;
+    RibDelta<IsisRoute> correctedL2Delta =
+        _vrf.getIsisProcess().getOverload() ? setOverloadOnAllRoutes(l2delta) : l2delta;
     // Loop over neighbors, enqueue messages
     for (IsisEdge edge : _isisIncomingRoutes.keySet()) {
       // Do not queue routes on non-active ISIS interface levels
@@ -2111,21 +2111,21 @@ public class VirtualRouter implements Serializable {
       Queue<RouteAdvertisement<IsisRoute>> queue = remoteVr._isisIncomingRoutes.get(edge.reverse());
       IsisLevel circuitType = edge.getCircuitType();
       if (circuitType.includes(IsisLevel.LEVEL_1) && activeLevels.includes(IsisLevel.LEVEL_1)) {
-        queueDelta(queue, l1delta);
+        queueDelta(queue, correctedL1Delta);
       }
       if (circuitType.includes(IsisLevel.LEVEL_2) && activeLevels.includes(IsisLevel.LEVEL_2)) {
-        queueDelta(queue, l2delta);
+        queueDelta(queue, correctedL2Delta);
         if (_vrf.getIsisProcess().getLevel1() != null
             && _vrf.getIsisProcess().getLevel2() != null
             // An L1-L2 router in overload mode stops leaking route information between L1 and L2
             // levels and clears its attached bit.
             && !_vrf.getIsisProcess().getOverload()
-            && l1delta != null) {
+            && correctedL1Delta != null) {
 
           // We are a L1_L2 router, we must "upgrade" L1 routes to L2 routes
           // TODO: a little cumbersome, simplify later
           RibDelta.Builder<IsisRoute> upgradedRoutes = new RibDelta.Builder<>(null);
-          l1delta
+          correctedL1Delta
               .getActions()
               .forEach(
                   ra -> {
