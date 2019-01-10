@@ -7776,7 +7776,20 @@
               "Wideband-Cable1/2/3:4",
               "inside",
               "tunnel-ip6"
-            ]
+            ],
+            "vniSettings" : {
+              "456" : {
+                "bumTransportIps" : [
+                  "1.0.0.1",
+                  "2.0.0.1",
+                  "3.0.0.1"
+                ],
+                "bumTransportMethod" : "UNICAST_FLOOD_GROUP",
+                "udpPort" : 1234,
+                "vlan" : 123,
+                "vni" : 456
+              }
+            }
           }
         },
         "zones" : {
