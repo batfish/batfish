@@ -82,11 +82,8 @@ public class SwitchedVlanPropertiesAnswerer extends Answerer {
   }
 
   /**
-   * Creates {@link ColumnMetadata}s that the answer should have based on the {@code
-   * propertySpecifier}.
+   * Creates {@link ColumnMetadata}s that the answer should have.
    *
-   * @param propertySpecifier The {@link InterfacePropertySpecifier} that describes the set of
-   *     properties
    * @return The {@link List} of {@link ColumnMetadata}s
    */
   public static List<ColumnMetadata> createColumnMetadata() {
