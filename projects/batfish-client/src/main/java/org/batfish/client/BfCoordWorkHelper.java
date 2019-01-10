@@ -54,7 +54,7 @@ public class BfCoordWorkHelper {
   private final Settings _settings;
   private final Client _client;
 
-  BfCoordWorkHelper(BatfishLogger logger, Settings settings) {
+  public BfCoordWorkHelper(BatfishLogger logger, Settings settings) {
     _logger = logger;
     _settings = settings;
     _coordWorkMgr = _settings.getCoordinatorHost() + ":" + _settings.getCoordinatorWorkPort();
@@ -237,7 +237,7 @@ public class BfCoordWorkHelper {
     }
   }
 
-  boolean delNetwork(String networkName) {
+  public boolean delNetwork(String networkName) {
     try {
       WebTarget webTarget =
           getTargetV2(Lists.newArrayList(CoordConstsV2.RSC_NETWORKS, networkName));
@@ -283,7 +283,7 @@ public class BfCoordWorkHelper {
     }
   }
 
-  boolean delSnapshot(String networkName, String snapshotName) {
+  public boolean delSnapshot(String networkName, String snapshotName) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_DEL_SNAPSHOT);
 
@@ -487,7 +487,7 @@ public class BfCoordWorkHelper {
    * no access to the network
    */
   @Nullable
-  Container getNetwork(String networkName) {
+  public Container getNetwork(String networkName) {
     try {
       WebTarget webTarget =
           getTargetV2(Lists.newArrayList(CoordConstsV2.RSC_NETWORKS, networkName));
@@ -559,7 +559,7 @@ public class BfCoordWorkHelper {
   }
 
   @Nullable
-  String getObject(String networkName, String snapshotName, String objectName) {
+  public String getObject(String networkName, String snapshotName, String objectName) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_OBJECT);
 
@@ -664,7 +664,7 @@ public class BfCoordWorkHelper {
    * Returns a {@link WebTarget webTarget} for BatFish service V2 by resolving each segment in
    * {@code resources} to base url of service V2.
    */
-  private WebTarget getTargetV2(List<String> resources) {
+  public WebTarget getTargetV2(List<String> resources) {
     String protocol = (_settings.getSslDisable()) ? "http" : "https";
     String urlString =
         String.format("%s://%s%s", protocol, _coordWorkMgrV2, CoordConsts.SVC_CFG_WORK_MGR2);
@@ -676,7 +676,7 @@ public class BfCoordWorkHelper {
   }
 
   @Nullable
-  Pair<WorkStatusCode, String> getWorkStatus(UUID workId) {
+  public Pair<WorkStatusCode, String> getWorkStatus(UUID workId) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_GET_WORKSTATUS);
 
@@ -713,7 +713,7 @@ public class BfCoordWorkHelper {
   }
 
   @Nullable
-  String initNetwork(@Nullable String networkName, @Nullable String networkPrefix) {
+  public String initNetwork(@Nullable String networkName, @Nullable String networkPrefix) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_INIT_NETWORK);
 
@@ -745,7 +745,7 @@ public class BfCoordWorkHelper {
     }
   }
 
-  boolean isReachable(boolean chatty) {
+  public boolean isReachable(boolean chatty) {
 
     WebTarget webTarget = getTarget("");
 
@@ -1023,7 +1023,7 @@ public class BfCoordWorkHelper {
     }
   }
 
-  boolean queueWork(WorkItem wItem) {
+  public boolean queueWork(WorkItem wItem) {
 
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_QUEUE_WORK);
@@ -1118,7 +1118,7 @@ public class BfCoordWorkHelper {
     }
   }
 
-  boolean uploadQuestion(String networkName, String snapshotName, String qName, String qFileName) {
+  public boolean uploadQuestion(String networkName, String snapshotName, String qName, String qFileName) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_UPLOAD_QUESTION);
 
@@ -1144,7 +1144,7 @@ public class BfCoordWorkHelper {
     }
   }
 
-  boolean uploadSnapshot(
+  public boolean uploadSnapshot(
       String networkName, String snapshotName, String zipfileName, boolean autoAnalyze) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_UPLOAD_SNAPSHOT);
