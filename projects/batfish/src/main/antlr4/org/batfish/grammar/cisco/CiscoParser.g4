@@ -1,7 +1,7 @@
 parser grammar CiscoParser;
 
 import
-Cisco_common, Arista_mlag, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
+Cisco_common, Arista_mlag, Arista_vlan, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
 
 
 options {
@@ -10,14 +10,24 @@ options {
 }
 
 @members {
+   private boolean _eos;
+
    private boolean _cadant;
 
    private boolean _multilineBgpNeighbors;
 
    private boolean _nxos;
 
+   public boolean isEos() {
+      return _eos;
+   }
+
    public boolean isNxos() {
       return _nxos;
+   }
+
+   public void setEos(boolean b) {
+      _eos = b;
    }
 
    public void setCadant(boolean b) {
@@ -34,10 +44,11 @@ options {
 
    @Override
    public String getStateInfo() {
-      return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n_nxos: %s\n",
+      return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n_nxos: %s\n_eos: %s\n",
          _cadant,
          _multilineBgpNeighbors,
-         _nxos
+         _nxos,
+         _eos
       );
    }
 }
@@ -3178,7 +3189,17 @@ s_username_attributes
    )*
 ;
 
-s_vlan
+s_vlan_eos
+:
+   (
+     (NO | DEFAULT)? VLAN
+     eos_vlan_id
+     eos_vlan_inner*
+   )
+   | eos_vlan_internal
+;
+
+s_vlan_cisco
 :
    NO? VLAN
    (
@@ -3724,7 +3745,8 @@ stanza
    | s_user_role
    | s_username
    | s_username_attributes
-   | s_vlan
+   | { !_eos }? s_vlan_cisco
+   | { _eos }? s_vlan_eos
    | s_vlan_name
    | s_voice
    | s_voice_card
