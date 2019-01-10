@@ -199,6 +199,20 @@ public class AnswerMetadataUtilTest {
   }
 
   @Test
+  public void testComputeColumnMaxIntegerNull() {
+    String columnName = "col";
+
+    TableAnswerElement table =
+        new TableAnswerElement(
+                new TableMetadata(
+                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
+                    new DisplayHints().getTextDesc()))
+            .addRow(Row.of(columnName, null));
+
+    assertThat(AnswerMetadataUtil.computeColumnMax(table, columnName, _logger), nullValue());
+  }
+
+  @Test
   public void testComputeColumnMaxOneRowInteger() {
     String columnName = "col";
     int value = 5;
