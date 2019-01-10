@@ -3,15 +3,20 @@ package org.batfish.question.switchedvlanproperties;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.questions.InterfacesSpecifier;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.specifier.FlexibleInterfaceSpecifierFactory;
+import org.batfish.specifier.FlexibleNodeSpecifierFactory;
+import org.batfish.specifier.InterfaceSpecifier;
+import org.batfish.specifier.InterfaceSpecifierFactory;
+import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.NodeSpecifierFactory;
 
 @ParametersAreNonnullByDefault
 public final class SwitchedVlanPropertiesQuestion extends Question {
@@ -28,33 +33,30 @@ public final class SwitchedVlanPropertiesQuestion extends Question {
   @JsonCreator
   private static @Nonnull SwitchedVlanPropertiesQuestion create(
       @JsonProperty(PROP_EXCLUDE_SHUT_INTERFACES) @Nullable Boolean excludeShutInterfaces,
-      @JsonProperty(PROP_INTERFACES) @Nullable InterfacesSpecifier interfaces,
-      @JsonProperty(PROP_NODES) @Nullable NodesSpecifier nodes,
+      @JsonProperty(PROP_INTERFACES) @Nullable String interfaces,
+      @JsonProperty(PROP_NODES) @Nullable String nodes,
       @JsonProperty(PROP_VLANS) @Nullable IntegerSpace vlans) {
     return new SwitchedVlanPropertiesQuestion(
         firstNonNull(excludeShutInterfaces, DEFAULT_EXCLUDE_SHUT_INTERFACES),
-        firstNonNull(interfaces, InterfacesSpecifier.ALL),
-        firstNonNull(nodes, NodesSpecifier.ALL),
+        interfaces,
+        nodes,
         firstNonNull(vlans, ALL_VLANS));
   }
 
   private boolean _excludeShutInterfaces;
 
-  private final InterfacesSpecifier _interfaces;
+  private final String _interfaces;
 
-  private final NodesSpecifier _nodes;
+  private final String _nodes;
 
   private final IntegerSpace _vlans;
 
   SwitchedVlanPropertiesQuestion() {
-    this(DEFAULT_EXCLUDE_SHUT_INTERFACES, InterfacesSpecifier.ALL, NodesSpecifier.ALL, ALL_VLANS);
+    this(DEFAULT_EXCLUDE_SHUT_INTERFACES, null, null, ALL_VLANS);
   }
 
   public SwitchedVlanPropertiesQuestion(
-      boolean excludeShutInterfaces,
-      InterfacesSpecifier interfaces,
-      NodesSpecifier nodes,
-      IntegerSpace vlans) {
+      boolean excludeShutInterfaces, String interfaces, String nodes, IntegerSpace vlans) {
     _excludeShutInterfaces = excludeShutInterfaces;
     _interfaces = interfaces;
     _nodes = nodes;
@@ -72,8 +74,14 @@ public final class SwitchedVlanPropertiesQuestion extends Question {
   }
 
   @JsonProperty(PROP_INTERFACES)
-  public @Nonnull InterfacesSpecifier getInterfaces() {
+  public @Nullable String getInterfaces() {
     return _interfaces;
+  }
+
+  @JsonIgnore
+  public @Nonnull InterfaceSpecifier getInterfacesSpecifier() {
+    return InterfaceSpecifierFactory.load(FlexibleInterfaceSpecifierFactory.NAME)
+        .buildInterfaceSpecifier(_interfaces);
   }
 
   @Override
@@ -82,8 +90,13 @@ public final class SwitchedVlanPropertiesQuestion extends Question {
   }
 
   @JsonProperty(PROP_NODES)
-  public @Nonnull NodesSpecifier getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
+  }
+
+  @JsonIgnore
+  public @Nonnull NodeSpecifier getNodesSpecifier() {
+    return NodeSpecifierFactory.load(FlexibleNodeSpecifierFactory.NAME).buildNodeSpecifier(_nodes);
   }
 
   @JsonProperty(PROP_VLANS)

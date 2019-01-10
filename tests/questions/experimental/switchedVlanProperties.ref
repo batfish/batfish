@@ -27,7 +27,7 @@
         "description" : "Include interfaces matching this specifier",
         "displayName" : "Interfaces",
         "optional" : true,
-        "type" : "string",
+        "type" : "interfacesSpec",
         "value" : "i1"
       },
       "nodes" : {

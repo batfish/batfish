@@ -39,9 +39,13 @@ import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
-import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
+import org.batfish.specifier.FlexibleInterfaceSpecifierFactory;
+import org.batfish.specifier.InterfaceSpecifier;
+import org.batfish.specifier.InterfaceSpecifierFactory;
+import org.batfish.specifier.SpecifierContext;
+import org.batfish.specifier.TestSpecifierContext;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -49,11 +53,12 @@ public final class SwitchedVlanPropertiesAnswererTest {
 
   private static final String INTERFACE = "i1";
   private static final String NODE = "n1";
-  private Map<String, Configuration> _configurations;
 
+  private Map<String, Configuration> _configurations;
   private Interface.Builder _ib;
   private NetworkFactory _nf;
   private VniSettings.Builder _vnb;
+  private SpecifierContext _specifierContext;
 
   @Before
   public void setup() {
@@ -67,12 +72,21 @@ public final class SwitchedVlanPropertiesAnswererTest {
     _ib = _nf.interfaceBuilder().setOwner(c).setVrf(v).setName(INTERFACE).setActive(true);
     _configurations = ImmutableMap.of(c.getHostname(), c);
     _vnb = VniSettings.builder().setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP);
+    _specifierContext =
+        new TestSpecifierContext() {
+          @Override
+          public Map<String, Configuration> getConfigs() {
+            return _configurations;
+          }
+        };
   }
 
   @Test
   public void testComputeNodeVlanProperties() {
     int vlan = 1;
-    InterfacesSpecifier interfacesSpecifier = InterfacesSpecifier.ALL;
+    InterfaceSpecifier interfacesSpecifier =
+        InterfaceSpecifierFactory.load(FlexibleInterfaceSpecifierFactory.NAME)
+            .buildInterfaceSpecifier(null);
     boolean excludeShutInterfaces = false;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -86,6 +100,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
     c.getDefaultVrf().getVniSettings().put(vni, _vnb.setVlan(vlan).setVni(vni).build());
 
     computeNodeVlanProperties(
+        _specifierContext,
         c,
         interfacesSpecifier,
         excludeShutInterfaces,
@@ -152,7 +167,9 @@ public final class SwitchedVlanPropertiesAnswererTest {
   public void testGetProperties() {
     int vlan = 1;
     int vni = 10000;
-    InterfacesSpecifier interfacesSpecifier = InterfacesSpecifier.ALL;
+    InterfaceSpecifier interfacesSpecifier =
+        InterfaceSpecifierFactory.load(FlexibleInterfaceSpecifierFactory.NAME)
+            .buildInterfaceSpecifier(null);
     boolean excludeShutInterfaces = false;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<String, ColumnMetadata> columns =
@@ -169,6 +186,7 @@ public final class SwitchedVlanPropertiesAnswererTest {
 
     assertThat(
         getProperties(
+            _specifierContext,
             _configurations,
             ImmutableSet.of(NODE),
             interfacesSpecifier,
@@ -245,7 +263,9 @@ public final class SwitchedVlanPropertiesAnswererTest {
   @Test
   public void testTryAddInterfaceToVlansAccess() {
     int vlan = 1;
-    InterfacesSpecifier interfacesSpecifier = InterfacesSpecifier.ALL;
+    InterfaceSpecifier interfacesSpecifier =
+        InterfaceSpecifierFactory.load(FlexibleInterfaceSpecifierFactory.NAME)
+            .buildInterfaceSpecifier(null);
     boolean excludeShutInterfaces = false;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -255,7 +275,13 @@ public final class SwitchedVlanPropertiesAnswererTest {
     iface.setAccessVlan(vlan);
 
     tryAddInterfaceToVlans(
-        interfacesSpecifier, excludeShutInterfaces, vlans, switchedVlanInterfaces, NODE, iface);
+        _specifierContext,
+        interfacesSpecifier,
+        excludeShutInterfaces,
+        vlans,
+        switchedVlanInterfaces,
+        NODE,
+        iface);
 
     assertThat(switchedVlanInterfaces, hasKey(vlan));
     assertThat(
@@ -265,7 +291,9 @@ public final class SwitchedVlanPropertiesAnswererTest {
   @Test
   public void testTryAddInterfaceToVlansExcludedInterfaceByShutdown() {
     int vlan = 1;
-    InterfacesSpecifier interfacesSpecifier = InterfacesSpecifier.ALL;
+    InterfaceSpecifier interfacesSpecifier =
+        InterfaceSpecifierFactory.load(FlexibleInterfaceSpecifierFactory.NAME)
+            .buildInterfaceSpecifier(null);
     boolean excludeShutInterfaces = true;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -275,7 +303,13 @@ public final class SwitchedVlanPropertiesAnswererTest {
     iface.setAccessVlan(vlan);
 
     tryAddInterfaceToVlans(
-        interfacesSpecifier, excludeShutInterfaces, vlans, switchedVlanInterfaces, NODE, iface);
+        _specifierContext,
+        interfacesSpecifier,
+        excludeShutInterfaces,
+        vlans,
+        switchedVlanInterfaces,
+        NODE,
+        iface);
 
     assertThat(switchedVlanInterfaces, anEmptyMap());
   }
@@ -283,7 +317,9 @@ public final class SwitchedVlanPropertiesAnswererTest {
   @Test
   public void testTryAddInterfaceToVlansExcludedInterfaceBySpecifier() {
     int vlan = 1;
-    InterfacesSpecifier interfacesSpecifier = InterfacesSpecifier.NONE;
+    InterfaceSpecifier interfacesSpecifier =
+        InterfaceSpecifierFactory.load(FlexibleInterfaceSpecifierFactory.NAME)
+            .buildInterfaceSpecifier("");
     boolean excludeShutInterfaces = false;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -293,7 +329,13 @@ public final class SwitchedVlanPropertiesAnswererTest {
     iface.setAccessVlan(vlan);
 
     tryAddInterfaceToVlans(
-        interfacesSpecifier, excludeShutInterfaces, vlans, switchedVlanInterfaces, NODE, iface);
+        _specifierContext,
+        interfacesSpecifier,
+        excludeShutInterfaces,
+        vlans,
+        switchedVlanInterfaces,
+        NODE,
+        iface);
 
     assertThat(switchedVlanInterfaces, anEmptyMap());
   }
@@ -301,7 +343,9 @@ public final class SwitchedVlanPropertiesAnswererTest {
   @Test
   public void testTryAddInterfaceToVlansExcludedInterfaceByType() {
     int vlan = 1;
-    InterfacesSpecifier interfacesSpecifier = InterfacesSpecifier.ALL;
+    InterfaceSpecifier interfacesSpecifier =
+        InterfaceSpecifierFactory.load(FlexibleInterfaceSpecifierFactory.NAME)
+            .buildInterfaceSpecifier(null);
     boolean excludeShutInterfaces = true;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -309,7 +353,13 @@ public final class SwitchedVlanPropertiesAnswererTest {
     iface.setSwitchport(false);
 
     tryAddInterfaceToVlans(
-        interfacesSpecifier, excludeShutInterfaces, vlans, switchedVlanInterfaces, NODE, iface);
+        _specifierContext,
+        interfacesSpecifier,
+        excludeShutInterfaces,
+        vlans,
+        switchedVlanInterfaces,
+        NODE,
+        iface);
 
     assertThat(switchedVlanInterfaces, anEmptyMap());
   }
@@ -317,7 +367,9 @@ public final class SwitchedVlanPropertiesAnswererTest {
   @Test
   public void testTryAddInterfaceToVlansIncludeShutWithFlag() {
     int vlan = 1;
-    InterfacesSpecifier interfacesSpecifier = InterfacesSpecifier.ALL;
+    InterfaceSpecifier interfacesSpecifier =
+        InterfaceSpecifierFactory.load(FlexibleInterfaceSpecifierFactory.NAME)
+            .buildInterfaceSpecifier(null);
     boolean excludeShutInterfaces = false;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -327,7 +379,13 @@ public final class SwitchedVlanPropertiesAnswererTest {
     iface.setVlan(vlan);
 
     tryAddInterfaceToVlans(
-        interfacesSpecifier, excludeShutInterfaces, vlans, switchedVlanInterfaces, NODE, iface);
+        _specifierContext,
+        interfacesSpecifier,
+        excludeShutInterfaces,
+        vlans,
+        switchedVlanInterfaces,
+        NODE,
+        iface);
 
     assertThat(switchedVlanInterfaces, hasKey(vlan));
     assertThat(
@@ -337,7 +395,9 @@ public final class SwitchedVlanPropertiesAnswererTest {
   @Test
   public void testTryAddInterfaceToVlansIrb() {
     int vlan = 1;
-    InterfacesSpecifier interfacesSpecifier = InterfacesSpecifier.ALL;
+    InterfaceSpecifier interfacesSpecifier =
+        InterfaceSpecifierFactory.load(FlexibleInterfaceSpecifierFactory.NAME)
+            .buildInterfaceSpecifier(null);
     boolean excludeShutInterfaces = false;
     IntegerSpace vlans = IntegerSpace.of(vlan);
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -347,7 +407,13 @@ public final class SwitchedVlanPropertiesAnswererTest {
     iface.setVlan(vlan);
 
     tryAddInterfaceToVlans(
-        interfacesSpecifier, excludeShutInterfaces, vlans, switchedVlanInterfaces, NODE, iface);
+        _specifierContext,
+        interfacesSpecifier,
+        excludeShutInterfaces,
+        vlans,
+        switchedVlanInterfaces,
+        NODE,
+        iface);
 
     assertThat(switchedVlanInterfaces, hasKey(vlan));
     assertThat(
@@ -357,7 +423,9 @@ public final class SwitchedVlanPropertiesAnswererTest {
   @Test
   public void testTryAddInterfaceToVlansTrunk() {
     int vlan = 1;
-    InterfacesSpecifier interfacesSpecifier = InterfacesSpecifier.ALL;
+    InterfaceSpecifier interfacesSpecifier =
+        InterfaceSpecifierFactory.load(FlexibleInterfaceSpecifierFactory.NAME)
+            .buildInterfaceSpecifier(null);
     boolean excludeShutInterfaces = false;
     IntegerSpace vlans = IntegerSpace.of(Range.closed(1, 3));
     Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
@@ -368,7 +436,13 @@ public final class SwitchedVlanPropertiesAnswererTest {
     iface.setAllowedVlans(vlans);
 
     tryAddInterfaceToVlans(
-        interfacesSpecifier, excludeShutInterfaces, vlans, switchedVlanInterfaces, NODE, iface);
+        _specifierContext,
+        interfacesSpecifier,
+        excludeShutInterfaces,
+        vlans,
+        switchedVlanInterfaces,
+        NODE,
+        iface);
 
     assertThat(switchedVlanInterfaces.keySet(), containsInAnyOrder(1, 2, 3));
     switchedVlanInterfaces

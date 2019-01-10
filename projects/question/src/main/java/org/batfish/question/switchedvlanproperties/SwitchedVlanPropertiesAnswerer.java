@@ -25,12 +25,13 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
-import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.specifier.InterfaceSpecifier;
+import org.batfish.specifier.SpecifierContext;
 
 public class SwitchedVlanPropertiesAnswerer extends Answerer {
 
@@ -60,8 +61,9 @@ public class SwitchedVlanPropertiesAnswerer extends Answerer {
 
   @VisibleForTesting
   static void computeNodeVlanProperties(
+      SpecifierContext ctxt,
       Configuration c,
-      InterfacesSpecifier interfacesSpecifier,
+      InterfaceSpecifier interfacesSpecifier,
       boolean excludeShutInterfaces,
       IntegerSpace vlans,
       Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces,
@@ -69,6 +71,7 @@ public class SwitchedVlanPropertiesAnswerer extends Answerer {
     addVlanVnis(c, vlans, switchedVlanInterfaces, vlanVnisBuilder);
     for (Interface iface : c.getAllInterfaces().values()) {
       tryAddInterfaceToVlans(
+          ctxt,
           interfacesSpecifier,
           excludeShutInterfaces,
           vlans,
@@ -146,6 +149,7 @@ public class SwitchedVlanPropertiesAnswerer extends Answerer {
   /**
    * Gets properties of switched vlans.
    *
+   * @param ctxt TODO
    * @param configurations configuration to use in extractions
    * @param nodes the set of nodes to consider
    * @param interfacesSpecifier Specifies which interfaces to consider
@@ -154,9 +158,10 @@ public class SwitchedVlanPropertiesAnswerer extends Answerer {
    *     correspond to property values.
    */
   public static Multiset<Row> getProperties(
+      SpecifierContext ctxt,
       Map<String, Configuration> configurations,
       Set<String> nodes,
-      InterfacesSpecifier interfacesSpecifier,
+      InterfaceSpecifier interfacesSpecifier,
       boolean excludeShutInterfaces,
       IntegerSpace vlans,
       Map<String, ColumnMetadata> columns) {
@@ -166,6 +171,7 @@ public class SwitchedVlanPropertiesAnswerer extends Answerer {
           new HashMap<>();
       ImmutableMap.Builder<Integer, Integer> vlanVnisBuilder = ImmutableMap.builder();
       computeNodeVlanProperties(
+          ctxt,
           configurations.get(node),
           interfacesSpecifier,
           excludeShutInterfaces,
@@ -207,13 +213,14 @@ public class SwitchedVlanPropertiesAnswerer extends Answerer {
 
   @VisibleForTesting
   static void tryAddInterfaceToVlans(
-      InterfacesSpecifier interfacesSpecifier,
+      SpecifierContext ctxt,
+      InterfaceSpecifier interfacesSpecifier,
       boolean excludeShutInterfaces,
       IntegerSpace vlans,
       Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces,
       String node,
       Interface iface) {
-    if (!interfacesSpecifier.matches(iface)
+    if (!interfacesSpecifier.resolve(ImmutableSet.of(node), ctxt).contains(iface)
         || (excludeShutInterfaces && !iface.getActive())
         || (iface.getInterfaceType() != InterfaceType.VLAN
             && !Boolean.TRUE.equals(iface.getSwitchport()))) {
@@ -257,14 +264,15 @@ public class SwitchedVlanPropertiesAnswerer extends Answerer {
   public TableAnswerElement answer() {
     SwitchedVlanPropertiesQuestion question = (SwitchedVlanPropertiesQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);
+    Set<String> nodes = question.getNodesSpecifier().resolve(_batfish.specifierContext());
     TableMetadata tableMetadata = createTableMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
     Multiset<Row> propertyRows =
         getProperties(
+            _batfish.specifierContext(),
             configurations,
             nodes,
-            question.getInterfaces(),
+            question.getInterfacesSpecifier(),
             question.getExcludeShutInterfaces(),
             question.getVlans(),
             tableMetadata.toColumnMap());

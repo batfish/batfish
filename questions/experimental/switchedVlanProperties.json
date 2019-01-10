@@ -23,7 +23,7 @@
             },
             "interfaces": {
                 "description": "Include interfaces matching this specifier",
-                "type": "string",
+                "type": "interfacesSpec",
                 "optional": true,
                 "displayName": "Interfaces"
             },
