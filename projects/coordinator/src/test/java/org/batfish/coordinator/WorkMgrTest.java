@@ -8,6 +8,10 @@ import static org.batfish.coordinator.WorkMgrTestUtils.createSnapshot;
 import static org.batfish.datamodel.BgpSessionProperties.SessionType.EBGP_MULTIHOP;
 import static org.batfish.datamodel.BgpSessionProperties.SessionType.EBGP_SINGLEHOP;
 import static org.batfish.datamodel.BgpSessionProperties.SessionType.IBGP;
+import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
+import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
+import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
+import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK;
 import static org.batfish.datamodel.FlowState.ESTABLISHED;
 import static org.batfish.datamodel.FlowState.NEW;
 import static org.batfish.datamodel.FlowState.RELATED;
@@ -39,6 +43,7 @@ import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREAS;
 import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREA_BORDER_ROUTER;
 import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
 import static org.batfish.identifiers.QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
+import static org.batfish.specifier.DispositionSpecifier.SUCCESS;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.startsWith;
@@ -3047,6 +3052,23 @@ public final class WorkMgrTest {
             .collect(Collectors.toSet()),
         equalTo(
             ImmutableSet.of(IBGP.toString(), EBGP_SINGLEHOP.toString(), EBGP_MULTIHOP.toString())));
+  }
+
+  @Test
+  public void testDispositionSpecAutocomplete() throws IOException {
+    assertThat(
+        _manager
+            .autoComplete("network", "snapshot", Type.DISPOSITION_SPEC, "s", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(
+            ImmutableSet.of(
+                SUCCESS,
+                NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK.name().toLowerCase(),
+                INSUFFICIENT_INFO.name().toLowerCase(),
+                DELIVERED_TO_SUBNET.name().toLowerCase(),
+                EXITS_NETWORK.name().toLowerCase())));
   }
 
   @Test
