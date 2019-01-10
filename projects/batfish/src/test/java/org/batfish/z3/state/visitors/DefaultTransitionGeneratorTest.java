@@ -1,6 +1,6 @@
 package org.batfish.z3.state.visitors;
 
-import static org.batfish.datamodel.transformation.Noop.noop;
+import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -22,7 +22,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.transformation.IpField;
 import org.batfish.z3.AclLineMatchExprToBooleanExpr;
 import org.batfish.z3.Field;
 import org.batfish.z3.MockSynthesizerInput;
@@ -1854,8 +1853,7 @@ public class DefaultTransitionGeneratorTest {
                         ImmutableMap.of(), ImmutableMap.of(), null, ImmutableMap.of())))
             .setOutgoingTransformations(
                 ImmutableMap.of(
-                    NODE1,
-                    ImmutableMap.of(INTERFACE1, always().apply(noop(IpField.DESTINATION)).build())))
+                    NODE1, ImmutableMap.of(INTERFACE1, always().apply(NOOP_DEST_NAT).build())))
             .build();
     List<RuleStatement> rules =
         DefaultTransitionGenerator.generateTransitions(

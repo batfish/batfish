@@ -42,7 +42,6 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MockForwardingAnalysis;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.z3.expr.BooleanExpr;
@@ -62,8 +61,6 @@ public class SynthesizerInputImplTest {
 
   private NetworkFactory _nf;
 
-  private SourceNat.Builder _snb;
-
   private Vrf.Builder _vb;
 
   @Before
@@ -74,7 +71,6 @@ public class SynthesizerInputImplTest {
     _ib = _nf.interfaceBuilder().setBandwidth(1E9d);
     _aclb = _nf.aclBuilder();
     _inputBuilder = SynthesizerInputImpl.builder();
-    _snb = SourceNat.builder();
   }
 
   @Test
@@ -202,55 +198,6 @@ public class SynthesizerInputImplTest {
                                 aclWithLines.getLines().get(0).getMatchCondition()),
                             aclLineMatchExprToBooleanExpr.toBooleanExpr(
                                 aclWithLines.getLines().get(1).getMatchCondition())))))));
-
-    Configuration srcNode = _cb.build();
-    Configuration nextHop = _cb.build();
-    Vrf srcVrf = _vb.setOwner(srcNode).build();
-    Vrf nextHopVrf = _vb.setOwner(nextHop).build();
-    Ip ip11 = Ip.parse("1.0.0.0");
-    Ip ip12 = Ip.parse("1.0.0.10");
-    Ip ip21 = Ip.parse("2.0.0.0");
-    Ip ip22 = Ip.parse("2.0.0.10");
-    IpAccessList sourceNat1Acl = _aclb.setLines(ImmutableList.of()).setOwner(srcNode).build();
-    IpAccessList sourceNat2Acl = _aclb.build();
-    SourceNat sourceNat1 =
-        _snb.setPoolIpFirst(ip11).setPoolIpLast(ip12).setAcl(sourceNat1Acl).build();
-    SourceNat sourceNat2 =
-        _snb.setPoolIpFirst(ip21).setPoolIpLast(ip22).setAcl(sourceNat2Acl).build();
-    Interface srcInterfaceZeroSourceNats =
-        _ib.setOwner(srcNode).setVrf(srcVrf).setSourceNats(ImmutableList.of()).build();
-    Interface srcInterfaceOneSourceNat = _ib.setSourceNats(ImmutableList.of(sourceNat1)).build();
-    Interface srcInterfaceTwoSourceNats =
-        _ib.setSourceNats(ImmutableList.of(sourceNat1, sourceNat2)).build();
-    Interface nextHopInterface =
-        _ib.setOwner(nextHop).setVrf(nextHopVrf).setSourceNats(ImmutableList.of()).build();
-    Edge forwardEdge1 = new Edge(srcInterfaceZeroSourceNats, nextHopInterface);
-    Edge forwardEdge2 = new Edge(srcInterfaceOneSourceNat, nextHopInterface);
-    Edge forwardEdge3 = new Edge(srcInterfaceTwoSourceNats, nextHopInterface);
-    Edge backEdge1 = new Edge(nextHopInterface, srcInterfaceZeroSourceNats);
-    Edge backEdge2 = new Edge(nextHopInterface, srcInterfaceOneSourceNat);
-    Edge backEdge3 = new Edge(nextHopInterface, srcInterfaceTwoSourceNats);
-    SynthesizerInput inputWithDataPlane =
-        _inputBuilder
-            .setConfigurations(
-                ImmutableMap.of(srcNode.getHostname(), srcNode, nextHop.getHostname(), nextHop))
-            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
-            .setTopology(
-                new Topology(
-                    ImmutableSortedSet.of(
-                        forwardEdge1, forwardEdge2, forwardEdge3, backEdge1, backEdge2, backEdge3)))
-            .build();
-    assertThat(
-        inputWithDataPlane,
-        hasAclConditions(
-            equalTo(
-                ImmutableMap.of(
-                    srcNode.getHostname(),
-                    ImmutableMap.of(
-                        sourceNat1Acl.getName(), ImmutableList.of(),
-                        sourceNat2Acl.getName(), ImmutableList.of()),
-                    nextHop.getHostname(),
-                    ImmutableMap.of()))));
   }
 
   @Test
