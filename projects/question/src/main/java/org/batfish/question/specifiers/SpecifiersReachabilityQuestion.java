@@ -16,6 +16,7 @@ import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.PathConstraints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.ReachabilityParameters;
+import org.batfish.specifier.DispositionSpecifier;
 import org.batfish.specifier.FlexibleInferFromLocationIpSpaceSpecifierFactory;
 import org.batfish.specifier.FlexibleUniverseIpSpaceSpecifierFactory;
 import org.batfish.specifier.IpSpaceSpecifier;
