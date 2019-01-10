@@ -12,7 +12,7 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.ConfiguredSessionStatus;
+import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.junit.Before;
 import org.junit.Test;
 

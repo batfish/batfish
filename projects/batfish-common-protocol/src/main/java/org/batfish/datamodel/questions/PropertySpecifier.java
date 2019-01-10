@@ -51,7 +51,7 @@ public abstract class PropertySpecifier {
    * @param query The query that came to the concrete child class
    * @return The list of suggestions
    */
-  static List<AutocompleteSuggestion> baseAutoComplete(
+  public static List<AutocompleteSuggestion> baseAutoComplete(
       @Nullable String query, Set<String> allProperties) {
 
     String finalQuery = firstNonNull(query, "").toLowerCase();
