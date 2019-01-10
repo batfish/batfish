@@ -1,5 +1,5 @@
 #
-set system host-name firewall-zone-address-book
+set system host-name firewall-zone-address-book-inline
 #
 set security policies from-zone trust to-zone untrust policy PNAME match source-address ADDR1
 set security policies from-zone trust to-zone untrust policy PNAME match destination-address any

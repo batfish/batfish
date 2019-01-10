@@ -15,7 +15,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.IpField;
-import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.Transformation.Builder;
 
@@ -107,11 +106,7 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
     return rulesTransformation(type, ipField, pools, andThen, orElse)
         .map(
             rulesTransformation ->
-                when(matchFromLocation)
-                    .apply(new Noop(type))
-                    .setAndThen(rulesTransformation)
-                    .setOrElse(orElse)
-                    .build());
+                when(matchFromLocation).setAndThen(rulesTransformation).setOrElse(orElse).build());
   }
 
   /**

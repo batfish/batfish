@@ -8,10 +8,18 @@ import java.util.TreeMap;
 
 public final class Zone implements Serializable {
 
+  public enum AddressBookType {
+    ATTACHED,
+    INLINED,
+    GLOBAL
+  }
+
   /** */
   private static final long serialVersionUID = 1L;
 
-  private final AddressBook _addressBook;
+  private AddressBook _addressBook;
+
+  private AddressBookType _addressBookType;
 
   private FirewallFilter _fromHostFilter;
 
@@ -29,9 +37,10 @@ public final class Zone implements Serializable {
 
   private final Map<String, FirewallFilter> _toZonePolicies;
 
-  public Zone(String name, Map<String, AddressBook> globalAddressBooks) {
+  public Zone(String name, AddressBook globalAddressBook) {
     _name = name;
-    _addressBook = new AddressBook(name, globalAddressBooks);
+    _addressBook = globalAddressBook;
+    _addressBookType = AddressBookType.GLOBAL;
     _inboundFilter = new FirewallFilter("~INBOUND_ZONE_FILTER~" + name, Family.INET);
     _inboundInterfaceFilters = new TreeMap<>();
     _interfaces = new ArrayList<>();
@@ -39,8 +48,23 @@ public final class Zone implements Serializable {
     _toZonePolicies = new TreeMap<>();
   }
 
+  public void attachAddressBook(AddressBook addressBook) {
+    _addressBookType = AddressBookType.ATTACHED;
+    _addressBook = addressBook;
+  }
+
+  public AddressBook initInlinedAddressBook(AddressBook globalAddressBook) {
+    _addressBookType = AddressBookType.INLINED;
+    _addressBook = new AddressBook(_name, globalAddressBook);
+    return _addressBook;
+  }
+
   public AddressBook getAddressBook() {
     return _addressBook;
+  }
+
+  public AddressBookType getAddressBookType() {
+    return _addressBookType;
   }
 
   public FirewallFilter getFromHostFilter() {
