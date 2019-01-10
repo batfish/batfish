@@ -23,6 +23,6 @@ public final class VxlanVniPropertiesQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new VxlanVniPropertiesQuestion(null);
+    return new VxlanVniPropertiesQuestion(null, null);
   }
 }

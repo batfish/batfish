@@ -1,12 +1,12 @@
 package org.batfish.question.vxlanproperties;
 
-import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_LOCAL_VTEP_IP;
-import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_MULTICAST_GROUP;
+import static org.batfish.datamodel.questions.VxlanVniPropertySpecifier.LOCAL_VTEP_IP;
+import static org.batfish.datamodel.questions.VxlanVniPropertySpecifier.MULTICAST_GROUP;
+import static org.batfish.datamodel.questions.VxlanVniPropertySpecifier.VLAN;
+import static org.batfish.datamodel.questions.VxlanVniPropertySpecifier.VTEP_FLOOD_LIST;
+import static org.batfish.datamodel.questions.VxlanVniPropertySpecifier.VXLAN_PORT;
 import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_NODE;
-import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VLAN;
 import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VNI;
-import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VTEP_FLOOD_LIST;
-import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VXLAN_PORT;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -24,6 +24,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.questions.NodesSpecifier;
+import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -34,7 +35,7 @@ public class VxlanVniPropertiesAnswererTest {
   public void testAnswer() {
     VxlanVniPropertiesAnswerer answerer =
         new VxlanVniPropertiesAnswerer(
-            new VxlanVniPropertiesQuestion(NodesSpecifier.ALL),
+            new VxlanVniPropertiesQuestion(NodesSpecifier.ALL, VxlanVniPropertySpecifier.ALL),
             new VxlanVniPropertiesAnswererTest.TestBatfish());
     TableAnswerElement answer = answerer.answer();
     assertThat(
@@ -42,37 +43,54 @@ public class VxlanVniPropertiesAnswererTest {
         equalTo(
             new Rows()
                 .add(
-                    Row.of(
-                        COL_VNI,
-                        1,
-                        COL_NODE,
-                        "hostname",
-                        COL_VLAN,
-                        10001,
-                        COL_LOCAL_VTEP_IP,
-                        Ip.parse("1.2.3.4"),
-                        COL_MULTICAST_GROUP,
-                        null,
-                        COL_VTEP_FLOOD_LIST,
-                        ImmutableSet.of(Ip.parse("2.3.4.5"), Ip.parse("2.3.4.6")),
-                        COL_VXLAN_PORT,
-                        4242))
+                    Row.builder()
+                        .put(COL_NODE, "hostname")
+                        .put(COL_VNI, 1)
+                        .put(MULTICAST_GROUP, null)
+                        .put(VXLAN_PORT, 4242)
+                        .put(LOCAL_VTEP_IP, Ip.parse("1.2.3.4"))
+                        .put(
+                            VTEP_FLOOD_LIST,
+                            ImmutableSet.of(Ip.parse("2.3.4.5"), Ip.parse("2.3.4.6")))
+                        .put(VLAN, 10001)
+                        .build())
                 .add(
-                    Row.of(
-                        COL_VNI,
-                        2,
-                        COL_NODE,
-                        "hostname",
-                        COL_VLAN,
-                        10002,
-                        COL_LOCAL_VTEP_IP,
-                        Ip.parse("1.2.3.4"),
-                        COL_MULTICAST_GROUP,
-                        Ip.parse("227.10.1.1"),
-                        COL_VTEP_FLOOD_LIST,
-                        null,
-                        COL_VXLAN_PORT,
-                        4789))));
+                    Row.builder()
+                        .put(COL_NODE, "hostname")
+                        .put(COL_VNI, 2)
+                        .put(MULTICAST_GROUP, Ip.parse("227.10.1.1"))
+                        .put(VXLAN_PORT, 4789)
+                        .put(LOCAL_VTEP_IP, Ip.parse("1.2.3.4"))
+                        .put(VTEP_FLOOD_LIST, null)
+                        .put(VLAN, 10002)
+                        .build())));
+  }
+
+  @Test
+  public void testSpecifyProperties() {
+    VxlanVniPropertiesAnswerer answerer =
+        new VxlanVniPropertiesAnswerer(
+            new VxlanVniPropertiesQuestion(NodesSpecifier.ALL, new VxlanVniPropertySpecifier(VLAN)),
+            new VxlanVniPropertiesAnswererTest.TestBatfish());
+    TableAnswerElement answer = answerer.answer();
+
+    // Should have the mandatory properties (Node, VNI) as well as the requested property: VLAN
+    assertThat(
+        answer.getRows(),
+        equalTo(
+            new Rows()
+                .add(
+                    Row.builder()
+                        .put(COL_NODE, "hostname")
+                        .put(COL_VNI, 1)
+                        .put(VLAN, 10001)
+                        .build())
+                .add(
+                    Row.builder()
+                        .put(COL_NODE, "hostname")
+                        .put(COL_VNI, 2)
+                        .put(VLAN, 10002)
+                        .build())));
   }
 
   private static class TestBatfish extends IBatfishTestAdapter {
