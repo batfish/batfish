@@ -3446,14 +3446,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
       String sourceIfaceName = _eosVxlan.getSourceInterface();
       Interface sourceIface = sourceIfaceName == null ? null : _interfaces.get(sourceIfaceName);
       org.batfish.datamodel.Vrf vrf =
-          sourceIface != null && sourceIface.getVrf() != null
-              ? c.getVrfs().get(sourceIface.getVrf())
-              : c.getDefaultVrf();
+          sourceIface != null ? c.getVrfs().get(sourceIface.getVrf()) : c.getDefaultVrf();
 
-      for (Entry<Integer, Integer> entry : _eosVxlan.getVlanVnis().entrySet()) {
-        Integer vni = entry.getValue();
-        vrf.getVniSettings().put(vni, toVniSettings(_eosVxlan, vni, entry.getKey(), sourceIface));
-      }
+      _eosVxlan
+          .getVlanVnis()
+          .forEach(
+              (vlan, vni) ->
+                  vrf.getVniSettings().put(vni, toVniSettings(_eosVxlan, vni, vlan, sourceIface)));
     }
 
     markConcreteStructure(
@@ -3790,8 +3789,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // Prefer VLAN-specific or general flood address (in that order) over multicast address
     SortedSet<Ip> bumTransportIps =
-        firstNonNull(
-            vxlan.getVlanFloodAddresses().getOrDefault(vlan, null), vxlan.getFloodAddresses());
+        firstNonNull(vxlan.getVlanFloodAddresses().get(vlan), vxlan.getFloodAddresses());
     BumTransportMethod bumTransportMethod = BumTransportMethod.UNICAST_FLOOD_GROUP;
 
     if (bumTransportIps.isEmpty()) {
