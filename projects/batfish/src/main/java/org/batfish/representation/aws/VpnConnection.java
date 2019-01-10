@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -73,6 +74,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+@ParametersAreNonnullByDefault
 public class VpnConnection implements AwsVpcEntity, Serializable {
 
   private static final int BGP_NEIGHBOR_DEFAULT_METRIC = 0;
@@ -137,7 +139,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
 
   @Nullable
   private static IpsecEncapsulationMode toIpsecEncapdulationMode(
-      String ipsecEncapsulationMode, Warnings warnings) {
+      @Nonnull String ipsecEncapsulationMode, @Nonnull Warnings warnings) {
     switch (ipsecEncapsulationMode) {
       case "tunnel":
         return IpsecEncapsulationMode.TUNNEL;
