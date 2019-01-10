@@ -139,7 +139,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
 
   @Nullable
   private static IpsecEncapsulationMode toIpsecEncapdulationMode(
-      @Nonnull String ipsecEncapsulationMode, @Nonnull Warnings warnings) {
+      String ipsecEncapsulationMode, Warnings warnings) {
     switch (ipsecEncapsulationMode) {
       case "tunnel":
         return IpsecEncapsulationMode.TUNNEL;
