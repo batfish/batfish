@@ -1290,7 +1290,7 @@ public final class FlatJuniperGrammarTest {
     Flow flowFromNotAllowedAddr = createFlow(notAllowedAddr, untrustIpAddr);
 
     IpAccessList aclUntrustOut =
-        c.getAllInterfaces().get(interfaceNameUntrust).getPreSourceNatOutgoingFilter();
+        c.getAllInterfaces().get(interfaceNameUntrust).getPreTransformationOutgoingFilter();
 
     // Should have a an IpSpace in the config corresponding to the trust zone's ADDR1 address
     final String ipSpaceName = "trust-book~ADDR1";
@@ -1339,7 +1339,7 @@ public final class FlatJuniperGrammarTest {
     Flow flowFromNotAllowedAddr = createFlow(notAllowedAddr, untrustIpAddr);
 
     IpAccessList aclUntrustOut =
-        c.getAllInterfaces().get(interfaceNameUntrust).getPreSourceNatOutgoingFilter();
+        c.getAllInterfaces().get(interfaceNameUntrust).getPreTransformationOutgoingFilter();
 
     // Should have a an IpSpace in the config corresponding to the trust zone's ADDR1 address
     final String ipSpaceName = "global~ADDR1";
@@ -1387,7 +1387,7 @@ public final class FlatJuniperGrammarTest {
     Flow flowFromNotAllowedAddr = createFlow(notAllowedAddr, untrustIpAddr);
 
     IpAccessList aclUntrustOut =
-        c.getAllInterfaces().get(interfaceNameUntrust).getPreSourceNatOutgoingFilter();
+        c.getAllInterfaces().get(interfaceNameUntrust).getPreTransformationOutgoingFilter();
 
     // Specifically allowed source address should be accepted
     assertThat(
