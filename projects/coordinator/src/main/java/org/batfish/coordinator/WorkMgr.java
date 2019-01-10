@@ -597,6 +597,10 @@ public class WorkMgr extends AbstractCoordinator {
                   Stream.of(Protocol.values()).map(Protocol::name).collect(Collectors.toSet()));
           break;
         }
+      case ROUTING_PROTOCOL_SPEC:
+        {
+          break;
+        }
       case STRUCTURE_NAME:
         {
           CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);

@@ -30,7 +30,7 @@
             },
             "protocols": {
                 "description": "Examine routes for protocols matching this name or regex",
-                "type": "javaRegex",
+                "type": "routingProtocolSpec",
                 "value": ".*",
                 "displayName": "Protocols"
             },
