@@ -11,14 +11,14 @@
         ],
         "variables": {
             "nodes": {
-                "description": "Examine routes on nodes matching this specifier",
+                "description": "Examine routes on nodes matching this name or regex",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Nodes"
             },
             "vrfs": {
                 "description": "Examine routes on VRFs matching this name or regex",
-                "type": "vrf",
+                "type": "javaRegex",
                 "value": ".*",
                 "displayName": "VRFs"
             },

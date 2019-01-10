@@ -19,7 +19,7 @@
             "nodes": {
                 "description": "Input to the NodeSpecifier",
                 "optional": true,
-                "type": "nodeSpec",
+                "type": "string",
                 "displayName": "Nodes"
             }
         }
