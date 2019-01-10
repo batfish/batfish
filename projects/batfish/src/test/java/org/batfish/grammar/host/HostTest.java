@@ -154,8 +154,8 @@ public class HostTest {
     IpsecPeerConfigId awsVpn1 = new IpsecPeerConfigId("vpn-ba2e34a8-1", "vgw-81fd279f");
     IpsecPeerConfigId awsVpn2 = new IpsecPeerConfigId("vpn-ba2e34a8-2", "vgw-81fd279f");
 
-    //  NAT settings on host1 (not-shared version) should result in one directional edges in the
-    // topology since cisco_host's interface will not be mapped to the public IP
+    //  In the shared version, now the public IP 4.4.4.27 will be mapped to the private IPs owned by
+    // cisco_host, so edges will exist in both directions
 
     // edges exist from the cisco host's tunnel to AWS
     assertTrue(ipsecTopology.edgeValue(tunnel1, awsVpn1).isPresent());
