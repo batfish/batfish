@@ -30,12 +30,12 @@ public final class SwitchedVlanPropertiesQuestion extends Question {
       @JsonProperty(PROP_EXCLUDE_SHUT_INTERFACES) @Nullable Boolean excludeShutInterfaces,
       @JsonProperty(PROP_INTERFACES) @Nullable InterfacesSpecifier interfaces,
       @JsonProperty(PROP_NODES) @Nullable NodesSpecifier nodes,
-      @JsonProperty(PROP_VLANS) @Nullable SubRange vlans) {
+      @JsonProperty(PROP_VLANS) @Nullable IntegerSpace vlans) {
     return new SwitchedVlanPropertiesQuestion(
         firstNonNull(excludeShutInterfaces, DEFAULT_EXCLUDE_SHUT_INTERFACES),
         firstNonNull(interfaces, InterfacesSpecifier.ALL),
         firstNonNull(nodes, NodesSpecifier.ALL),
-        vlans != null ? IntegerSpace.of(vlans) : ALL_VLANS);
+        firstNonNull(vlans, ALL_VLANS));
   }
 
   private boolean _excludeShutInterfaces;
