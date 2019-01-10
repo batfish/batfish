@@ -23,7 +23,6 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
@@ -35,7 +34,7 @@ public class VxlanVniPropertiesAnswererTest {
   public void testAnswer() {
     VxlanVniPropertiesAnswerer answerer =
         new VxlanVniPropertiesAnswerer(
-            new VxlanVniPropertiesQuestion(NodesSpecifier.ALL, VxlanVniPropertySpecifier.ALL),
+            new VxlanVniPropertiesQuestion(null, VxlanVniPropertySpecifier.ALL),
             new VxlanVniPropertiesAnswererTest.TestBatfish());
     TableAnswerElement answer = answerer.answer();
     assertThat(
@@ -70,7 +69,7 @@ public class VxlanVniPropertiesAnswererTest {
   public void testSpecifyProperties() {
     VxlanVniPropertiesAnswerer answerer =
         new VxlanVniPropertiesAnswerer(
-            new VxlanVniPropertiesQuestion(NodesSpecifier.ALL, new VxlanVniPropertySpecifier(VLAN)),
+            new VxlanVniPropertiesQuestion(null, new VxlanVniPropertySpecifier(VLAN)),
             new VxlanVniPropertiesAnswererTest.TestBatfish());
     TableAnswerElement answer = answerer.answer();
 

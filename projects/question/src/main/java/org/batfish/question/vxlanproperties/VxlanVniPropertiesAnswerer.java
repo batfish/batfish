@@ -80,7 +80,7 @@ final class VxlanVniPropertiesAnswerer extends Answerer {
   public TableAnswerElement answer() {
     VxlanVniPropertiesQuestion question = (VxlanVniPropertiesQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);
+    Set<String> nodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
 
     TableMetadata tableMetadata = createTableMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);

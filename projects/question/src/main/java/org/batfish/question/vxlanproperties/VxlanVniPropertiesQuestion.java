@@ -2,11 +2,16 @@ package org.batfish.question.vxlanproperties;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.questions.NodesSpecifier;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
+import org.batfish.specifier.FlexibleNodeSpecifierFactory;
+import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.NodeSpecifierFactory;
 
 /** A question that returns a table with VXLAN network segments and their properties. */
 public final class VxlanVniPropertiesQuestion extends Question {
@@ -14,7 +19,7 @@ public final class VxlanVniPropertiesQuestion extends Question {
   private static final String PROP_NODES = "nodes";
   private static final String PROP_PROPERTIES = "properties";
 
-  @Nonnull private NodesSpecifier _nodes;
+  @Nullable private String _nodes;
   @Nonnull private VxlanVniPropertySpecifier _properties;
 
   @Override
@@ -27,16 +32,28 @@ public final class VxlanVniPropertiesQuestion extends Question {
     return "vxlanVniProperties";
   }
 
-  VxlanVniPropertiesQuestion(
-      @JsonProperty(PROP_NODES) NodesSpecifier nodeRegex,
+  @JsonCreator
+  private static VxlanVniPropertiesQuestion create(
+      @JsonProperty(PROP_NODES) String nodes,
       @JsonProperty(PROP_PROPERTIES) VxlanVniPropertySpecifier propertySpec) {
-    _nodes = firstNonNull(nodeRegex, NodesSpecifier.ALL);
-    _properties = firstNonNull(propertySpec, VxlanVniPropertySpecifier.ALL);
+    return new VxlanVniPropertiesQuestion(
+        nodes, firstNonNull(propertySpec, VxlanVniPropertySpecifier.ALL));
+  }
+
+  VxlanVniPropertiesQuestion(
+      @Nullable String nodes, @Nonnull VxlanVniPropertySpecifier propertySpec) {
+    _nodes = nodes;
+    _properties = propertySpec;
   }
 
   @JsonProperty(PROP_NODES)
-  public NodesSpecifier getNodes() {
+  public String getNodes() {
     return _nodes;
+  }
+
+  @JsonIgnore
+  NodeSpecifier getNodeSpecifier() {
+    return NodeSpecifierFactory.load(FlexibleNodeSpecifierFactory.NAME).buildNodeSpecifier(_nodes);
   }
 
   @JsonProperty(PROP_PROPERTIES)
