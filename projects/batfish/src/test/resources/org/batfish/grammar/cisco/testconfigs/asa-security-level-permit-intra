@@ -1,0 +1,16 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-security-level-permit-intra
+!
+interface GigabitEthernet0/1
+  nameif name1
+  security-level 100
+  ip address 3.0.0.2 255.255.255.0
+!
+interface GigabitEthernet0/2
+  nameif name2
+  security-level 100
+  ip address 3.0.1.2 255.255.255.0
+!
+same-security-traffic permit intra-interface

@@ -2,7 +2,6 @@ package org.batfish.z3.matchers;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Edge;
@@ -10,7 +9,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.BooleanExpr;
-import org.batfish.z3.state.AclPermit;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
@@ -132,23 +130,6 @@ public class SynthesizerInputMatchersImpl {
     protected Map<String, Map<String, Map<String, BooleanExpr>>> featureValueOf(
         SynthesizerInput actual) {
       return actual.getNeighborUnreachableOrExitsNetwork();
-    }
-  }
-
-  static final class HasSourceNats
-      extends FeatureMatcher<
-          SynthesizerInput, Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>> {
-    HasSourceNats(
-        @Nonnull
-            Matcher<? super Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>>>
-                subMatcher) {
-      super(subMatcher, "SynthesizerInput with source NATs", "source NATs");
-    }
-
-    @Override
-    protected Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> featureValueOf(
-        SynthesizerInput actual) {
-      return actual.getSourceNats();
     }
   }
 

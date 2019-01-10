@@ -19,13 +19,15 @@ public class CiscoSourceNatTest {
     CiscoSourceNat nat = new CiscoSourceNat();
 
     assertThat(
-        nat.toTransformation(ImmutableMap.of(), ImmutableMap.of()), equalTo(Optional.empty()));
+        nat.toTransformation(ImmutableMap.of(), ImmutableMap.of(), null),
+        equalTo(Optional.empty()));
 
     nat.setAclName("acl");
     nat.setNatPool("pool");
 
     assertThat(
-        nat.toTransformation(ImmutableMap.of(), ImmutableMap.of()), equalTo(Optional.empty()));
+        nat.toTransformation(ImmutableMap.of(), ImmutableMap.of(), null),
+        equalTo(Optional.empty()));
 
     NatPool pool = new NatPool();
     Ip first = Ip.parse("1.1.1.1");
@@ -35,7 +37,8 @@ public class CiscoSourceNatTest {
     assertThat(
         nat.toTransformation(
             ImmutableMap.of("acl", IpAccessList.builder().setName("acl").build()),
-            ImmutableMap.of("pool", pool)),
+            ImmutableMap.of("pool", pool),
+            null),
         equalTo(
             Optional.of(when(permittedByAcl("acl")).apply(assignSourceIp(first, last)).build())));
   }

@@ -113,8 +113,6 @@ public class IsisRoute extends AbstractRoute {
         false);
   }
 
-  private final int _administrativeCost;
-
   private final String _area;
 
   private final boolean _attach;
@@ -145,7 +143,6 @@ public class IsisRoute extends AbstractRoute {
       boolean nonForwarding,
       boolean nonRouting) {
     super(network, administrativeCost, nonRouting, nonForwarding);
-    _administrativeCost = administrativeCost;
     _area = area;
     _attach = attach;
     _down = down;
@@ -165,7 +162,7 @@ public class IsisRoute extends AbstractRoute {
       return false;
     }
     IsisRoute rhs = (IsisRoute) o;
-    return _administrativeCost == rhs._administrativeCost
+    return _admin == rhs._admin
         && _area.equals(rhs._area)
         && _attach == rhs._attach
         && _down == rhs._down
@@ -173,8 +170,43 @@ public class IsisRoute extends AbstractRoute {
         && _metric == rhs._metric
         && _network.equals(rhs._network)
         && _nextHopIp.equals(rhs._nextHopIp)
+        && getNonForwarding() == rhs.getNonForwarding()
+        && getNonRouting() == rhs.getNonRouting()
         && _protocol == rhs._protocol
         && _systemId.equals(rhs._systemId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _admin,
+        _area,
+        _attach,
+        _down,
+        _level.ordinal(),
+        _metric,
+        _network,
+        _nextHopIp,
+        getNonForwarding(),
+        getNonRouting(),
+        _protocol.ordinal(),
+        _systemId);
+  }
+
+  public Builder toBuilder() {
+    return new Builder()
+        .setAdmin(_admin)
+        .setArea(_area)
+        .setAttach(_attach)
+        .setDown(_down)
+        .setLevel(_level)
+        .setMetric(_metric)
+        .setNetwork(_network)
+        .setNextHopIp(_nextHopIp)
+        .setNonForwarding(getNonForwarding())
+        .setNonRouting(getNonRouting())
+        .setProtocol(_protocol)
+        .setSystemId(_systemId);
   }
 
   @JsonProperty(PROP_AREA)
@@ -234,20 +266,6 @@ public class IsisRoute extends AbstractRoute {
   @Override
   public int getTag() {
     return NO_TAG;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(
-        _administrativeCost,
-        _area,
-        _attach,
-        _down,
-        _level.ordinal(),
-        _metric,
-        _nextHopIp,
-        _protocol.ordinal(),
-        _systemId);
   }
 
   @Override

@@ -85,6 +85,13 @@
         "Comment" : "clause in IPv6 extended access list"
       },
       {
+        "Filename" : "cisco-zone",
+        "Line" : 10,
+        "Text" : "zone t1",
+        "Parser_Context" : "[s_zone stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
         "Filename" : "cisco_acl",
         "Line" : 10,
         "Text" : "ttl eq 255",
@@ -208,6 +215,13 @@
         "Line" : 279,
         "Text" : "mode gre multipoint",
         "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_interface",
+        "Line" : 290,
+        "Text" : "zone-member t1",
+        "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
@@ -583,10 +597,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 77 results",
+      "notes" : "Found 79 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 77
+      "numResults" : 79
     }
   }
 ]

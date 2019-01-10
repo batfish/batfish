@@ -1149,6 +1149,16 @@
         }
       },
       {
+        "Structure_Type" : "zone",
+        "Structure_Name" : "t1",
+        "Source_Lines" : {
+          "filename" : "configs/cisco_zone",
+          "lines" : [
+            10
+          ]
+        }
+      },
+      {
         "Structure_Type" : "zone-pair security",
         "Structure_Name" : "zp1",
         "Source_Lines" : {
@@ -2267,12 +2277,22 @@
         }
       },
       {
+        "Structure_Type" : "address-book",
+        "Structure_Name" : "notglobalUnattached",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_security",
+          "lines" : [
+            11
+          ]
+        }
+      },
+      {
         "Structure_Type" : "ike policy",
         "Structure_Name" : "1.2.3.4",
         "Source_Lines" : {
           "filename" : "configs/juniper_security",
           "lines" : [
-            12
+            14
           ]
         }
       },
@@ -2758,10 +2778,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 194 results",
+      "notes" : "Found 196 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 194
+      "numResults" : 196
     }
   }
 ]

@@ -5,11 +5,11 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -108,12 +108,12 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
   }
 
   @Override
-  public Set<String> getMatchingProperties() {
+  public List<String> getMatchingProperties() {
     return JAVA_MAP
         .keySet()
         .stream()
         .filter(prop -> _pattern.matcher(prop.toLowerCase()).matches())
-        .collect(Collectors.toSet());
+        .collect(ImmutableList.toImmutableList());
   }
 
   @VisibleForTesting

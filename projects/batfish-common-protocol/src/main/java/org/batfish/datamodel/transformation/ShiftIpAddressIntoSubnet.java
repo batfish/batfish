@@ -1,7 +1,10 @@
 package org.batfish.datamodel.transformation;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
 import org.batfish.datamodel.Prefix;
@@ -23,6 +26,10 @@ public final class ShiftIpAddressIntoSubnet implements TransformationStep, Seria
   /** */
   private static final long serialVersionUID = 1L;
 
+  private static final String PROP_TRANSFORMATION_TYPE = "transformationType";
+  private static final String PROP_IP_FIELD = "ipField";
+  private static final String PROP_SUBNET = "subnet";
+
   private final IpField _ipField;
   private final Prefix _subnet;
   private final TransformationType _type;
@@ -36,19 +43,33 @@ public final class ShiftIpAddressIntoSubnet implements TransformationStep, Seria
     _type = type;
   }
 
+  @JsonCreator
+  private static ShiftIpAddressIntoSubnet jsonCreator(
+      @JsonProperty(PROP_TRANSFORMATION_TYPE) TransformationType type,
+      @JsonProperty(PROP_IP_FIELD) IpField ipField,
+      @JsonProperty(PROP_SUBNET) Prefix subnet) {
+    checkNotNull(type, PROP_TRANSFORMATION_TYPE + " cannot be null");
+    checkNotNull(ipField, PROP_IP_FIELD + " cannot be null");
+    checkNotNull(subnet, PROP_SUBNET + " cannot be null");
+    return new ShiftIpAddressIntoSubnet(type, ipField, subnet);
+  }
+
   @Override
   public <T> T accept(TransformationStepVisitor<T> visitor) {
     return visitor.visitShiftIpAddressIntoSubnet(this);
   }
 
+  @JsonProperty(PROP_IP_FIELD)
   public IpField getIpField() {
     return _ipField;
   }
 
+  @JsonProperty(PROP_SUBNET)
   public Prefix getSubnet() {
     return _subnet;
   }
 
+  @JsonProperty(PROP_TRANSFORMATION_TYPE)
   @Override
   public TransformationType getType() {
     return _type;

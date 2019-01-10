@@ -2,11 +2,11 @@ package org.batfish.datamodel.questions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
@@ -103,12 +103,12 @@ public class OspfPropertySpecifier extends PropertySpecifier {
   }
 
   @Override
-  public Set<String> getMatchingProperties() {
+  public List<String> getMatchingProperties() {
     return JAVA_MAP
         .keySet()
         .stream()
         .filter(prop -> _pattern.matcher(prop.toLowerCase()).matches())
-        .collect(Collectors.toSet());
+        .collect(ImmutableList.toImmutableList());
   }
 
   @Override
