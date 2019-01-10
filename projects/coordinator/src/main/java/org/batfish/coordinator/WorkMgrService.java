@@ -49,10 +49,10 @@ import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
-import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.answers.GetAnalysisAnswerMetricsAnswer;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.Variable;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -105,11 +105,15 @@ public class WorkMgrService {
               .autoComplete(
                   networkNameParam,
                   snapshotNameParam,
-                  CompletionType.valueOf(completionType.toUpperCase()),
+                  Variable.Type.fromString(completionType),
                   query,
                   Strings.isNullOrEmpty(maxSuggestions)
                       ? Integer.MAX_VALUE
                       : Integer.parseInt(maxSuggestions));
+      if (answer == null) {
+        return failureResponse(
+            "There was a problem getting Autocomplete suggestions - network or snapshot does not exist!");
+      }
       return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_SUGGESTIONS, answer));
     } catch (IllegalArgumentException | AccessControlException e) {
       _logger.errorf("WMS:autoComplete exception: %s\n", e.getMessage());

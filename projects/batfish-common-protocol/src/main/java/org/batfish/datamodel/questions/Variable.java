@@ -17,31 +17,42 @@ import java.util.SortedSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
+import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 
 public class Variable {
 
   public enum Type {
+    ADDRESS_BOOK("addressBook", true),
+    ADDRESS_GROUP("addressGroup", true),
     ANSWER_ELEMENT("answerElement", true),
     BGP_PEER_PROPERTY_SPEC("bgpPeerPropertySpec", true),
     BGP_PROCESS_PROPERTY_SPEC("bgpProcessPropertySpec", true),
+    BGP_SESSION_STATUS("bgpSessionStatus", true),
+    BGP_SESSION_TYPE("bgpSessionType", true),
     BOOLEAN("boolean", false),
     COMPARATOR("comparator", true),
     DOUBLE("double", false),
     DISPOSITION_SPEC("dispositionSpec", true),
+    FILTER("filter", true),
     FLOAT("float", false),
+    FLOW_STATE("flowState", true),
     HEADER_CONSTRAINT("headerConstraint", false),
     INTEGER("integer", false),
     INTEGER_SPACE("integerSpace", true),
+    INTERFACE("interface", true),
     INTERFACE_PROPERTY_SPEC("interfacePropertySpec", true),
+    INTERFACES_SPEC("interfacesSpec", true),
     IP("ip", true),
     IP_PROTOCOL("ipProtocol", true),
     IP_WILDCARD("ipWildcard", true),
+    IPSEC_SESSION_STATUS("ipsecSessionStatus", true),
     JAVA_REGEX("javaRegex", true),
     JSON_PATH("jsonPath", true),
     JSON_PATH_REGEX("jsonPathRegex", true),
     LONG("long", false),
     NAMED_STRUCTURE_SPEC("namedStructureSpec", true),
     NODE_PROPERTY_SPEC("nodePropertySpec", true),
+    NODE_ROLE_DIMENSION("nodeRoleDimension", true),
     NODE_SPEC("nodeSpec", true),
     OSPF_PROPERTY_SPEC("ospfPropertySpec", true),
     PATH_CONSTRAINT("pathConstraint", true),
@@ -50,13 +61,42 @@ public class Variable {
     PROTOCOL("protocol", true),
     QUESTION("question", true),
     STRING("string", true),
-    SUBRANGE("subrange", true);
+    STRUCTURE_NAME("structureName", true),
+    SUBRANGE("subrange", true),
+    VRF("vrf", true),
+    ZONE("zone", true);
 
     private static final Map<String, Variable.Type> MAP = initMap();
+
+    // map from deprecated CompletionTypes to corresponding Variable.Type used for backwards
+    // compatibility
+    private static final Map<CompletionType, Variable.Type> COMPLETION_TYPE_MAP =
+        ImmutableMap.<CompletionType, Type>builder()
+            .put(CompletionType.BGP_PEER_PROPERTY, BGP_PEER_PROPERTY_SPEC)
+            .put(CompletionType.BGP_PROCESS_PROPERTY, BGP_PROCESS_PROPERTY_SPEC)
+            .put(CompletionType.INTERFACE_PROPERTY, INTERFACE_PROPERTY_SPEC)
+            .put(CompletionType.NAMED_STRUCTURE, NAMED_STRUCTURE_SPEC)
+            .put(CompletionType.NODE, NODE_SPEC)
+            .put(CompletionType.NODE_PROPERTY, NODE_PROPERTY_SPEC)
+            .put(CompletionType.OSPF_PROPERTY, OSPF_PROPERTY_SPEC)
+            .build();
 
     @JsonCreator
     public static Variable.Type fromString(String name) {
       Variable.Type value = MAP.get(name.toLowerCase());
+      if (value != null) {
+        return value;
+      }
+
+      // no variable type of that name, check if it's an old CompletionType
+      try {
+        CompletionType completionType = CompletionType.valueOf(name.toUpperCase());
+        value = COMPLETION_TYPE_MAP.get(completionType);
+      } catch (IllegalArgumentException e) {
+        // neither a Variable.Type or CompletionType
+        value = null;
+      }
+
       if (value == null) {
         throw new BatfishException(
             "No " + Variable.Type.class.getSimpleName() + " with name: '" + name + "'");

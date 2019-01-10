@@ -86,6 +86,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -103,6 +104,7 @@ import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.InstanceData;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
+import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
@@ -321,6 +323,18 @@ public class Client extends AbstractClient implements IClient {
     }
     Variable.Type expectedType = variable.getType();
     switch (expectedType) {
+      case ADDRESS_BOOK:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        break;
+      case ADDRESS_GROUP:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        break;
       case ANSWER_ELEMENT:
         // this will barf with JsonProcessingException if the value is not castable
         try {
@@ -343,6 +357,18 @@ public class Client extends AbstractClient implements IClient {
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         new BgpProcessPropertySpecifier(value.textValue());
+        break;
+      case BGP_SESSION_STATUS:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        break;
+      case BGP_SESSION_TYPE:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
         break;
       case BOOLEAN:
         if (!value.isBoolean()) {
@@ -370,11 +396,24 @@ public class Client extends AbstractClient implements IClient {
               String.format("It is not a valid JSON %s value", expectedType.getName()));
         }
         break;
+      case FILTER:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        break;
       case FLOAT:
         if (!value.isFloat()) {
           throw new BatfishException(
               String.format("It is not a valid JSON %s value", expectedType.getName()));
         }
+        break;
+      case FLOW_STATE:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        FlowState.fromString(value.textValue());
         break;
       case HEADER_CONSTRAINT:
         if (!value.isObject() && !value.isNull()) {
@@ -395,12 +434,25 @@ public class Client extends AbstractClient implements IClient {
         }
         IntegerSpace.parse(value.asText());
         break;
+      case INTERFACE:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        break;
       case INTERFACE_PROPERTY_SPEC:
         if (!(value.isTextual())) {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         new InterfacePropertySpecifier(value.textValue());
+        break;
+      case INTERFACES_SPEC:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        new InterfacesSpecifier(value.textValue());
         break;
       case IP:
         // TODO: Need to double check isInetAddress()
@@ -428,6 +480,12 @@ public class Client extends AbstractClient implements IClient {
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         new IpWildcard(value.textValue());
+        break;
+      case IPSEC_SESSION_STATUS:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
         break;
       case JAVA_REGEX:
         if (!value.isTextual()) {
@@ -467,6 +525,12 @@ public class Client extends AbstractClient implements IClient {
         }
         new NodePropertySpecifier(value.textValue());
         break;
+      case NODE_ROLE_DIMENSION:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        break;
       case NODE_SPEC:
         if (!(value.isTextual())) {
           throw new BatfishException(
@@ -501,11 +565,24 @@ public class Client extends AbstractClient implements IClient {
         }
         PrefixRange.fromString(value.textValue());
         break;
+      case PROTOCOL:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        Protocol.fromString(value.textValue());
+        break;
       case QUESTION:
         // TODO: Implement
         break;
 
       case STRING:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        break;
+      case STRUCTURE_NAME:
         if (!value.isTextual()) {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
@@ -520,12 +597,17 @@ public class Client extends AbstractClient implements IClient {
         Object actualValue = value.isTextual() ? value.textValue() : value.asInt();
         new SubRange(actualValue);
         break;
-      case PROTOCOL:
+      case VRF:
         if (!value.isTextual()) {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        Protocol.fromString(value.textValue());
+        break;
+      case ZONE:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
         break;
       case JSON_PATH:
         validateJsonPath(value);
