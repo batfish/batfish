@@ -1,6 +1,12 @@
-package org.batfish.question.specifiers;
+package org.batfish.specifier;
 
+import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
+import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
+import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
+import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK;
+import static org.batfish.specifier.DispositionSpecifier.FAILURE;
 import static org.batfish.specifier.DispositionSpecifier.FAILURE_SPECIFIER;
+import static org.batfish.specifier.DispositionSpecifier.SUCCESS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -8,9 +14,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.specifier.DispositionSpecifier;
+import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -84,7 +91,7 @@ public class DispositionSpecifierTest {
         equalTo(
             Sets.difference(
                 ImmutableSet.copyOf(FlowDisposition.values()),
-                ImmutableSet.of(FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))));
+                ImmutableSet.of(NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))));
   }
 
   @Test
@@ -93,5 +100,29 @@ public class DispositionSpecifierTest {
     assertThat(
         BatfishObjectMapper.mapper().readValue(serialized, DispositionSpecifier.class),
         equalTo(FAILURE_SPECIFIER));
+  }
+
+  @Test
+  public void testAutocomplete() {
+    // should include values from FlowDisposition enum as well as "success" and "failure"
+    assertThat(
+        DispositionSpecifier.autoComplete("s")
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(
+            ImmutableSet.of(
+                SUCCESS,
+                NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK.name().toLowerCase(),
+                INSUFFICIENT_INFO.name().toLowerCase(),
+                DELIVERED_TO_SUBNET.name().toLowerCase(),
+                EXITS_NETWORK.name().toLowerCase())));
+
+    assertThat(
+        DispositionSpecifier.autoComplete("f")
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(FAILURE, INSUFFICIENT_INFO.name().toLowerCase())));
   }
 }

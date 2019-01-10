@@ -36,8 +36,8 @@ import org.batfish.datamodel.questions.PropertySpecifier;
 @ParametersAreNonnullByDefault
 public final class DispositionSpecifier {
 
-  private static final String SUCCESS = "success";
-  private static final String FAILURE = "failure";
+  @VisibleForTesting static final String SUCCESS = "success";
+  @VisibleForTesting static final String FAILURE = "failure";
 
   private static final Set<FlowDisposition> FAILURE_DISPOSITIONS =
       ImmutableSet.<FlowDisposition>builder()
