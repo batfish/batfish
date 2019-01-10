@@ -68,6 +68,7 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -114,6 +115,7 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -3388,6 +3390,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
         });
 
+    // convert Arista EOS VXLAN
+    if (_eosVxlan != null) {
+      String sourceIfaceName = _eosVxlan.getSourceInterface();
+      Interface sourceIface = sourceIfaceName == null ? null : _interfaces.get(sourceIfaceName);
+      org.batfish.datamodel.Vrf vrf =
+          sourceIface != null ? c.getVrfs().get(sourceIface.getVrf()) : c.getDefaultVrf();
+
+      _eosVxlan
+          .getVlanVnis()
+          .forEach(
+              (vlan, vni) ->
+                  vrf.getVniSettings().put(vni, toVniSettings(_eosVxlan, vni, vlan, sourceIface)));
+    }
+
     markConcreteStructure(
         CiscoStructureType.BFD_TEMPLATE, CiscoStructureUsage.INTERFACE_BFD_TEMPLATE);
 
@@ -3708,6 +3724,35 @@ public final class CiscoConfiguration extends VendorConfiguration {
     c.computeRoutingPolicySources(_w);
 
     return ImmutableList.of(c);
+  }
+
+  private static VniSettings toVniSettings(
+      @Nonnull AristaEosVxlan vxlan,
+      @Nonnull Integer vni,
+      @Nonnull Integer vlan,
+      @Nullable Interface sourceInterface) {
+    Ip sourceAddress =
+        sourceInterface == null
+            ? null
+            : sourceInterface.getAddress() == null ? null : sourceInterface.getAddress().getIp();
+
+    // Prefer VLAN-specific or general flood address (in that order) over multicast address
+    SortedSet<Ip> bumTransportIps =
+        firstNonNull(vxlan.getVlanFloodAddresses().get(vlan), vxlan.getFloodAddresses());
+    BumTransportMethod bumTransportMethod = BumTransportMethod.UNICAST_FLOOD_GROUP;
+
+    if (bumTransportIps.isEmpty()) {
+      bumTransportIps = ImmutableSortedSet.of(vxlan.getMulticastGroup());
+      bumTransportMethod = BumTransportMethod.MULTICAST_GROUP;
+    }
+
+    return new VniSettings(
+        bumTransportIps,
+        bumTransportMethod,
+        sourceAddress,
+        firstNonNull(vxlan.getUdpPort(), AristaEosVxlan.DEFAULT_UDP_PORT),
+        vlan,
+        vni);
   }
 
   private boolean allowsIntraZoneTraffic(String zoneName) {
