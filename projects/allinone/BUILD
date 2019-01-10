@@ -7,6 +7,7 @@ java_binary(
     main_class = "org.batfish.allinone.Main",
     runtime_deps = [
         ":allinone",
+        "@slf4j_jdk14//:runtime",
     ],
 )
 
