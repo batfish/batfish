@@ -51,7 +51,7 @@ public abstract class PropertySpecifier {
    * @param query The query that came to the concrete child class
    * @return The list of suggestions
    */
-  static List<AutocompleteSuggestion> baseAutoComplete(
+  public static List<AutocompleteSuggestion> baseAutoComplete(
       @Nullable String query, Set<String> allProperties) {
 
     String finalQuery = firstNonNull(query, "").toLowerCase();
@@ -154,11 +154,12 @@ public abstract class PropertySpecifier {
   }
 
   /**
-   * Returns all properties that match this specifier object
+   * Returns a list of the names of all properties that match this specifier object, in preference
+   * order.
    *
-   * @return The matching set
+   * <p>Note: the returned list is expected to have unique entries.
    */
-  public abstract Set<String> getMatchingProperties();
+  public abstract List<String> getMatchingProperties();
 
   /** Returns the Pattern if {@code candidateRegex} is a valid regex, and null otherwise */
   private static Pattern safeGetPattern(String candidateRegex) {

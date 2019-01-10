@@ -43,13 +43,13 @@
                 "displayName": "Neighbor Types"
             },
             "nodes": {
-                "description": "Include neighbors whose first node matches this name or regex",
+                "description": "Include neighbors whose first node matches this specifier",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Nodes"
             },
             "remoteNodes": {
-                "description": "Include neighbors whose second node matches this name or regex",
+                "description": "Include neighbors whose second node matches this specifier",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Remote Nodes"
@@ -73,7 +73,7 @@
             },
             "roleDimension": {
                 "description": "Role dimension to run the question on",
-                "type": "string",
+                "type": "nodeRoleDimension",
                 "optional": true,
                 "displayName": "Role Dimension"
             }

@@ -25,7 +25,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 import java.util.Map;
-import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warning;
@@ -65,7 +64,7 @@ public class JuniperConfigurationTest {
     filter.getTerms().put("term", term);
     IpAccessList headerSpaceAcl = config.toIpAccessList(filter);
 
-    Zone zone = new Zone("zone", new TreeMap<>());
+    Zone zone = new Zone("zone", new AddressBook("global", null));
     String interface1Name = "interface1";
     zone.getInterfaces().add(new Interface(interface1Name));
     String interface2Name = "interface2";
@@ -258,13 +257,13 @@ public class JuniperConfigurationTest {
   public void testFromNatPacketLocationMatchExprs() {
     JuniperConfiguration config = createConfig();
 
-    String interface1Name = "interface1";
-    config
-        .getMasterLogicalSystem()
-        .getInterfaces()
-        .put(interface1Name, new Interface(interface1Name));
+    Interface parent = new Interface("parent");
 
-    Zone zone = new Zone("zone", new TreeMap<>());
+    String interface1Name = "interface1";
+    parent.getUnits().put(interface1Name, new Interface(interface1Name));
+    config.getMasterLogicalSystem().getInterfaces().put(parent.getName(), parent);
+
+    Zone zone = new Zone("zone", new AddressBook("global", null));
     String zoneInterface1Name = "zoneInterface1";
     zone.getInterfaces().add(new Interface(zoneInterface1Name));
     String zoneInterface2Name = "zoneInterface2";

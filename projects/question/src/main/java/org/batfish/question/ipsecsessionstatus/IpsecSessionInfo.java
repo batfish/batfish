@@ -1,22 +1,15 @@
 package org.batfish.question.ipsecsessionstatus;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStatus.MISSING_END_POINT;
+import static org.batfish.datamodel.questions.IpsecSessionStatus.MISSING_END_POINT;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.questions.IpsecSessionStatus;
 
 /** Captures the configuration state of an IPSec session */
 public class IpsecSessionInfo {
-
-  public enum IpsecSessionStatus {
-    IPSEC_SESSION_ESTABLISHED,
-    IKE_PHASE1_FAILED,
-    IKE_PHASE1_KEY_MISMATCH,
-    IPSEC_PHASE2_FAILED,
-    MISSING_END_POINT
-  }
 
   @Nonnull private String _initiatorHostname;
 

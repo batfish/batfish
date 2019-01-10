@@ -8,6 +8,9 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.util.LinkedList;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -71,6 +74,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+@ParametersAreNonnullByDefault
 public class VpnConnection implements AwsVpcEntity, Serializable {
 
   private static final int BGP_NEIGHBOR_DEFAULT_METRIC = 0;
@@ -133,15 +137,18 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
     }
   }
 
-  private static IpsecEncapsulationMode toIpsecEncapdulationMode(String ipsecEncapsulationMode) {
+  @Nullable
+  private static IpsecEncapsulationMode toIpsecEncapdulationMode(
+      String ipsecEncapsulationMode, Warnings warnings) {
     switch (ipsecEncapsulationMode) {
       case "tunnel":
         return IpsecEncapsulationMode.TUNNEL;
       case "transport":
         return IpsecEncapsulationMode.TRANSPORT;
       default:
-        throw new BatfishException(
+        warnings.redFlag(
             String.format("No IPsec encapsulation mode for string '%s'", ipsecEncapsulationMode));
+        return null;
     }
   }
 
@@ -213,6 +220,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
     }
   }
 
+  @Nonnull
   private static IkePhase1Proposal toIkePhase1Proposal(
       String proposalName, IpsecTunnel ipsecTunnel) {
     IkePhase1Proposal ikePhase1Proposal = new IkePhase1Proposal(proposalName);
@@ -228,6 +236,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
     return ikePhase1Proposal;
   }
 
+  @Nonnull
   private static IkePhase1Key toIkePhase1PreSharedKey(
       IpsecTunnel ipsecTunnel, Ip remoteIdentity, String localInterface) {
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
@@ -238,6 +247,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
     return ikePhase1Key;
   }
 
+  @Nonnull
   private static IkePhase1Policy toIkePhase1Policy(
       String vpnId,
       String ikePhase1ProposalName,
@@ -252,7 +262,9 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
     return ikePhase1Policy;
   }
 
-  private static IpsecPhase2Proposal toIpsecPhase2Proposal(IpsecTunnel ipsecTunnel) {
+  @Nonnull
+  private static IpsecPhase2Proposal toIpsecPhase2Proposal(
+      IpsecTunnel ipsecTunnel, Warnings warnings) {
     IpsecPhase2Proposal ipsecPhase2Proposal = new IpsecPhase2Proposal();
     ipsecPhase2Proposal.setAuthenticationAlgorithm(
         toIpsecAuthenticationAlgorithm(ipsecTunnel.getIpsecAuthProtocol()));
@@ -261,10 +273,11 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
     ipsecPhase2Proposal.setProtocols(
         ImmutableSortedSet.of(toIpsecProtocol(ipsecTunnel.getIpsecProtocol())));
     ipsecPhase2Proposal.setIpsecEncapsulationMode(
-        toIpsecEncapdulationMode(ipsecTunnel.getIpsecMode()));
+        toIpsecEncapdulationMode(ipsecTunnel.getIpsecMode(), warnings));
     return ipsecPhase2Proposal;
   }
 
+  @Nonnull
   private static IpsecPhase2Policy toIpsecPhase2Policy(
       IpsecTunnel ipsecTunnel, String ipsecPhase2Proposal) {
     IpsecPhase2Policy ipsecPhase2Policy = new IpsecPhase2Policy();
@@ -381,7 +394,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
               ikePhase1Key,
               ipsecTunnel.getCgwOutsideAddress(),
               externalInterfaceName));
-      ipsecPhase2ProposalMapBuilder.put(vpnId, toIpsecPhase2Proposal(ipsecTunnel));
+      ipsecPhase2ProposalMapBuilder.put(vpnId, toIpsecPhase2Proposal(ipsecTunnel, warnings));
       ipsecPhase2PolicyMapBuilder.put(vpnId, toIpsecPhase2Policy(ipsecTunnel, vpnId));
       ipsecPeerConfigMapBuilder.put(
           vpnId,

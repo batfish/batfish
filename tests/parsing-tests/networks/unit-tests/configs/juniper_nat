@@ -25,3 +25,4 @@ set security nat destination rule-set DST-NAT rule DST-RULE match source-address
 set security nat destination rule-set DST-NAT rule DST-RULE then destination-nat pool POOL
 #
 set interfaces ge-0/0/0 unit 0 family inet address 1.0.0.1/24
+set security zones security-zone trust interfaces ge-0/0/0.0

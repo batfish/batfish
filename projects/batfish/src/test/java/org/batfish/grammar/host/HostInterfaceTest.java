@@ -1,14 +1,11 @@
 package org.batfish.grammar.host;
 
-import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSourceNats;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
-import static org.batfish.datamodel.matchers.SourceNatMatchers.hasPoolIpFirst;
-import static org.batfish.datamodel.matchers.SourceNatMatchers.hasPoolIpLast;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.empty;
+import static org.batfish.datamodel.transformation.Transformation.always;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -110,9 +107,9 @@ public class HostInterfaceTest {
      * should not contain any source NAT information.
      */
     assertThat(
-        sharedInterface,
-        hasSourceNats(hasItem(allOf(hasPoolIpFirst(sharedIp), hasPoolIpLast(sharedIp)))));
-    assertThat(nonShared1Interface, hasSourceNats(empty()));
-    assertThat(nonShared2Interface, hasSourceNats(empty()));
+        sharedInterface.getOutgoingTransformation(),
+        equalTo(always().apply(assignSourceIp(sharedIp, sharedIp)).build()));
+    assertThat(nonShared1Interface.getOutgoingTransformation(), nullValue());
+    assertThat(nonShared2Interface.getOutgoingTransformation(), nullValue());
   }
 }

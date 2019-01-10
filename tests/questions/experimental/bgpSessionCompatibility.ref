@@ -15,14 +15,14 @@
     ],
     "variables" : {
       "nodes" : {
-        "description" : "Include sessions whose first node matches this name or regex",
+        "description" : "Include sessions whose first node matches this specifier",
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",
         "value" : ".*"
       },
       "remoteNodes" : {
-        "description" : "Include sessions whose second node matches this name or regex",
+        "description" : "Include sessions whose second node matches this specifier",
         "displayName" : "Remote Nodes",
         "optional" : true,
         "type" : "nodeSpec",
@@ -32,14 +32,14 @@
         "description" : "Only include sessions for which status matches this regex",
         "displayName" : "Status",
         "optional" : true,
-        "type" : "javaRegex",
+        "type" : "bgpSessionStatus",
         "value" : ".*"
       },
       "type" : {
         "description" : "Only include sessions for which type (ibgp, ebgp_singlehop, ebgp_multihop) matches this regex",
         "displayName" : "Type",
         "optional" : true,
-        "type" : "javaRegex",
+        "type" : "bgpSessionType",
         "value" : ".*"
       }
     }

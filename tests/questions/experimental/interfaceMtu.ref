@@ -35,10 +35,10 @@
         "value" : ">"
       },
       "interfaces" : {
-        "description" : "Evaluate interfaces matching this regex",
+        "description" : "Evaluate interfaces matching this specifier",
         "displayName" : "Interfaces",
         "optional" : false,
-        "type" : "javaRegex",
+        "type" : "interfacesSpec",
         "value" : "Gig.*"
       },
       "mtuBytes" : {
@@ -49,7 +49,7 @@
         "value" : 0
       },
       "nodes" : {
-        "description" : "Include nodes matching this name or regex",
+        "description" : "Include nodes matching this specifier",
         "displayName" : "Nodes",
         "optional" : false,
         "type" : "nodeSpec",
