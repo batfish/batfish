@@ -8,9 +8,9 @@ import com.google.common.base.Strings;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.questions.IpsecSessionStatus;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStatus;
 
 /** Return status of all IPSec sessions in the network */
 public class IpsecSessionStatusQuestion extends Question {

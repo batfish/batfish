@@ -1,6 +1,5 @@
 package org.batfish.representation.juniper;
 
-import static org.batfish.datamodel.transformation.Noop.noop;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.representation.juniper.NatRuleMatchToHeaderSpace.toHeaderSpace;
 
@@ -16,6 +15,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.Transformation;
 
 /** Represents a nat rule for Juniper */
@@ -70,7 +70,7 @@ public final class NatRule implements Serializable {
           new AssignIpAddressFromPool(type, field, pool.getFromAddress(), pool.getToAddress()));
     } else if (_then instanceof NatRuleThenOff) {
       // don't transform
-      builder.apply(noop(field));
+      builder.apply(new Noop(type));
     } else {
       throw new IllegalArgumentException("Unrecognized NatRuleThen type");
     }

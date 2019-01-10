@@ -32,7 +32,7 @@
             "filters": {
                 "description": "Only evaluate filters that match this regex",
                 "optional": true,
-                "type": "filter",
+                "type": "javaRegex",
                 "displayName": "Filters"
             },
             "headers": {
@@ -64,9 +64,9 @@
                 "displayName": "Invert Search"
             },
             "nodes": {
-                "description": "Only evaluate filters present on nodes matching this specifier",
+                "description": "Only evaluate filters present on nodes matching this regex",
                 "optional": true,
-                "type": "nodeSpec",
+                "type": "string",
                 "displayName": "Nodes"
             },
             "startLocation": {

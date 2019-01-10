@@ -77,7 +77,9 @@ public class CiscoSourceNat implements Serializable {
    * return {@link Optional#empty}.
    */
   public Optional<Transformation> toTransformation(
-      Map<String, IpAccessList> ipAccessLists, Map<String, NatPool> natPools) {
+      Map<String, IpAccessList> ipAccessLists,
+      Map<String, NatPool> natPools,
+      @Nullable Transformation orElse) {
     if (_aclName == null
         || !ipAccessLists.containsKey(_aclName)
         || _natPool == null
@@ -95,6 +97,9 @@ public class CiscoSourceNat implements Serializable {
     }
 
     return Optional.of(
-        when(permittedByAcl(_aclName)).apply(assignSourceIp(firstIp, lastIp)).build());
+        when(permittedByAcl(_aclName))
+            .apply(assignSourceIp(firstIp, lastIp))
+            .setOrElse(orElse)
+            .build());
   }
 }

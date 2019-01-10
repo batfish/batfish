@@ -1,6 +1,5 @@
 package org.batfish.symbolic.smt;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
@@ -51,7 +50,6 @@ public class TwoNodeNetworkWithTwoLinks {
         .setVrf(dstVrf)
         .setAddress(
             new InterfaceAddress(LINK_1_NETWORK.getEndIp(), LINK_1_NETWORK.getPrefixLength()))
-        .setSourceNats(ImmutableList.of())
         .build();
 
     // second link
@@ -64,7 +62,6 @@ public class TwoNodeNetworkWithTwoLinks {
         .setVrf(dstVrf)
         .setAddress(
             new InterfaceAddress(LINK_2_NETWORK.getEndIp(), LINK_2_NETWORK.getPrefixLength()))
-        .setSourceNats(ImmutableList.of())
         .build();
 
     // destination for the first link
