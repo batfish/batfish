@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -13,7 +12,6 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
@@ -36,7 +34,6 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfArea;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfAreaName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfCost;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfPointToPoint;
-import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSourceNats;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSwitchPortMode;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVrf;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasZoneName;
@@ -229,14 +226,6 @@ public final class InterfaceMatchers {
   public static @Nonnull Matcher<Interface> hasOspfPointToPoint(
       @Nonnull Matcher<? super Boolean> subMatcher) {
     return new HasOspfPointToPoint(subMatcher);
-  }
-
-  /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
-   * source NATs.
-   */
-  public static HasSourceNats hasSourceNats(@Nonnull Matcher<? super List<SourceNat>> subMatcher) {
-    return new HasSourceNats(subMatcher);
   }
 
   /**

@@ -17,6 +17,7 @@ import java.util.SortedSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
+import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 
 public class Variable {
 
@@ -39,6 +40,7 @@ public class Variable {
     INTEGER("integer", false),
     INTERFACE("interface", true),
     INTERFACE_PROPERTY_SPEC("interfacePropertySpec", true),
+    INTERFACES_SPEC("interfacesSpec", true),
     IP("ip", true),
     IP_PROTOCOL("ipProtocol", true),
     IP_WILDCARD("ipWildcard", true),
@@ -65,9 +67,35 @@ public class Variable {
 
     private static final Map<String, Variable.Type> MAP = initMap();
 
+    // map from deprecated CompletionTypes to corresponding Variable.Type used for backwards
+    // compatibility
+    private static final Map<CompletionType, Variable.Type> COMPLETION_TYPE_MAP =
+        ImmutableMap.<CompletionType, Type>builder()
+            .put(CompletionType.BGP_PEER_PROPERTY, BGP_PEER_PROPERTY_SPEC)
+            .put(CompletionType.BGP_PROCESS_PROPERTY, BGP_PROCESS_PROPERTY_SPEC)
+            .put(CompletionType.INTERFACE_PROPERTY, INTERFACE_PROPERTY_SPEC)
+            .put(CompletionType.NAMED_STRUCTURE, NAMED_STRUCTURE_SPEC)
+            .put(CompletionType.NODE, NODE_SPEC)
+            .put(CompletionType.NODE_PROPERTY, NODE_PROPERTY_SPEC)
+            .put(CompletionType.OSPF_PROPERTY, OSPF_PROPERTY_SPEC)
+            .build();
+
     @JsonCreator
     public static Variable.Type fromString(String name) {
       Variable.Type value = MAP.get(name.toLowerCase());
+      if (value != null) {
+        return value;
+      }
+
+      // no variable type of that name, check if it's an old CompletionType
+      try {
+        CompletionType completionType = CompletionType.valueOf(name.toUpperCase());
+        value = COMPLETION_TYPE_MAP.get(completionType);
+      } catch (IllegalArgumentException e) {
+        // neither a Variable.Type or CompletionType
+        value = null;
+      }
+
       if (value == null) {
         throw new BatfishException(
             "No " + Variable.Type.class.getSimpleName() + " with name: '" + name + "'");

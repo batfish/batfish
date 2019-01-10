@@ -10,7 +10,14 @@ import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
+import static org.batfish.datamodel.transformation.Noop.NOOP_SOURCE_NAT;
+import static org.batfish.datamodel.transformation.Transformation.always;
+import static org.batfish.datamodel.transformation.Transformation.when;
+import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.z3.expr.NodeInterfaceNeighborUnreachableMatchers.hasHostname;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -44,7 +51,6 @@ import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.DestinationNat;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
@@ -53,7 +59,6 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -61,6 +66,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
+import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.ReachabilityParameters;
@@ -571,19 +577,10 @@ public final class BDDReachabilityAnalysisFactoryTest {
                     .setOwner(config)
                     .setLines(ImmutableList.of(acceptingHeaderSpace(ingressAclHeaderSpace)))
                     .build())
-            .setDestinationNats(
-                ImmutableList.of(
-                    // if 100
-                    DestinationNat.builder()
-                        .setAcl(
-                            nf.aclBuilder()
-                                .setOwner(config)
-                                .setLines(
-                                    ImmutableList.of(acceptingHeaderSpace(natMatchHeaderSpace)))
-                                .build())
-                        .setPoolIpFirst(poolIp)
-                        .setPoolIpLast(poolIp)
-                        .build()))
+            .setIncomingTransformation(
+                when(match(natMatchHeaderSpace))
+                    .apply(TransformationStep.assignDestinationIp(poolIp, poolIp))
+                    .build())
             .build();
 
     SortedMap<String, Configuration> configurations =
@@ -647,28 +644,14 @@ public final class BDDReachabilityAnalysisFactoryTest {
                     .setOwner(config)
                     .setLines(ImmutableList.of(acceptingHeaderSpace(ingressAclHeaderSpace)))
                     .build())
-            .setDestinationNats(
-                ImmutableList.of(
-                    // if srcPort = 105, don't NAT
-                    DestinationNat.builder()
-                        .setAcl(
-                            nf.aclBuilder()
-                                .setOwner(config)
-                                .setLines(
-                                    ImmutableList.of(acceptingHeaderSpace(nat1MatchHeaderSpace)))
-                                .build())
-                        .build(),
-                    // if srcPort = 100-110, NAT
-                    DestinationNat.builder()
-                        .setAcl(
-                            nf.aclBuilder()
-                                .setOwner(config)
-                                .setLines(
-                                    ImmutableList.of(acceptingHeaderSpace(nat2MatchHeaderSpace)))
-                                .build())
-                        .setPoolIpFirst(poolIp)
-                        .setPoolIpLast(poolIp)
-                        .build()))
+            .setIncomingTransformation(
+                when(match(nat1MatchHeaderSpace))
+                    .apply(NOOP_DEST_NAT)
+                    .setOrElse(
+                        when(match(nat2MatchHeaderSpace))
+                            .apply(assignDestinationIp(poolIp, poolIp))
+                            .build())
+                    .build())
             .build();
 
     SortedMap<String, Configuration> configurations =
@@ -725,33 +708,19 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .setVrf(vrf)
             .setActive(true)
             .setAddress(new InterfaceAddress("1.0.0.1/24"))
-            .setPreSourceNatOutgoingFilter(
+            .setPreTransformationOutgoingFilter(
                 nf.aclBuilder()
                     .setOwner(config)
                     .setLines(ImmutableList.of(acceptingHeaderSpace(preNatAclHeaderSpace)))
                     .build())
-            .setSourceNats(
-                ImmutableList.of(
-                    // if srcPort = 105, don't NAT
-                    SourceNat.builder()
-                        .setAcl(
-                            nf.aclBuilder()
-                                .setOwner(config)
-                                .setLines(
-                                    ImmutableList.of(acceptingHeaderSpace(nat1MatchHeaderSpace)))
-                                .build())
-                        .build(),
-                    // if srcPort = 100-110, NAT
-                    SourceNat.builder()
-                        .setAcl(
-                            nf.aclBuilder()
-                                .setOwner(config)
-                                .setLines(
-                                    ImmutableList.of(acceptingHeaderSpace(nat2MatchHeaderSpace)))
-                                .build())
-                        .setPoolIpFirst(poolIp)
-                        .setPoolIpLast(poolIp)
-                        .build()))
+            .setOutgoingTransformation(
+                when(match(nat1MatchHeaderSpace))
+                    .apply(NOOP_SOURCE_NAT)
+                    .setOrElse(
+                        when(match(nat2MatchHeaderSpace))
+                            .apply(assignSourceIp(poolIp, poolIp))
+                            .build())
+                    .build())
             .build();
 
     SortedMap<String, Configuration> configurations =
@@ -816,7 +785,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .setVrf(vrf)
             .setActive(true)
             .setAddress(new InterfaceAddress("1.0.0.0/31"))
-            .setPreSourceNatOutgoingFilter(
+            .setPreTransformationOutgoingFilter(
                 nf.aclBuilder()
                     .setOwner(config)
                     .setLines(ImmutableList.of(acceptingHeaderSpace(preNatOutAclHeaderSpace)))
@@ -826,18 +795,8 @@ public final class BDDReachabilityAnalysisFactoryTest {
                     .setOwner(config)
                     .setLines(ImmutableList.of(acceptingHeaderSpace(postNatOutAclHeaderSpace)))
                     .build())
-            .setSourceNats(
-                ImmutableList.of(
-                    SourceNat.builder()
-                        .setAcl(
-                            nf.aclBuilder()
-                                .setOwner(config)
-                                .setLines(
-                                    ImmutableList.of(acceptingHeaderSpace(natMatchHeaderSpace)))
-                                .build())
-                        .setPoolIpFirst(poolIp)
-                        .setPoolIpLast(poolIp)
-                        .build()))
+            .setOutgoingTransformation(
+                when(match(natMatchHeaderSpace)).apply(assignSourceIp(poolIp, poolIp)).build())
             .build();
     String ifaceName = iface.getName();
     Prefix staticRoutePrefix = Prefix.parse("3.3.3.3/32");
@@ -950,7 +909,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .setVrf(vrf)
             .setActive(true)
             .setAddress(new InterfaceAddress("1.0.0.0/31"))
-            .setPreSourceNatOutgoingFilter(
+            .setPreTransformationOutgoingFilter(
                 nf.aclBuilder()
                     .setOwner(config)
                     .setLines(ImmutableList.of(acceptingHeaderSpace(preNatOutAclHeaderSpace)))
@@ -960,18 +919,8 @@ public final class BDDReachabilityAnalysisFactoryTest {
                     .setOwner(config)
                     .setLines(ImmutableList.of(acceptingHeaderSpace(postNatOutAclHeaderSpace)))
                     .build())
-            .setSourceNats(
-                ImmutableList.of(
-                    SourceNat.builder()
-                        .setAcl(
-                            nf.aclBuilder()
-                                .setOwner(config)
-                                .setLines(
-                                    ImmutableList.of(acceptingHeaderSpace(natMatchHeaderSpace)))
-                                .build())
-                        .setPoolIpFirst(poolIp)
-                        .setPoolIpLast(poolIp)
-                        .build()))
+            .setOutgoingTransformation(
+                when(match(natMatchHeaderSpace)).apply(assignSourceIp(poolIp, poolIp)).build())
             .build();
     String ifaceName = iface.getName();
     Prefix staticRoutePrefix = Prefix.parse("3.3.3.3/32");
@@ -1199,18 +1148,10 @@ public final class BDDReachabilityAnalysisFactoryTest {
         .setVrf(vrf)
         .setActive(true)
         .setAddress(new InterfaceAddress("1.0.0.0/31"))
-        .setSourceNats(
-            ImmutableList.of(
-                SourceNat.builder()
-                    .setPoolIpFirst(srcNatPoolIp)
-                    .setPoolIpLast(srcNatPoolIp)
-                    .build()))
-        .setDestinationNats(
-            ImmutableList.of(
-                DestinationNat.builder()
-                    .setPoolIpFirst(dstNatPoolIp)
-                    .setPoolIpLast(dstNatPoolIp)
-                    .build()))
+        .setOutgoingTransformation(
+            always().apply(assignSourceIp(srcNatPoolIp, srcNatPoolIp)).build())
+        .setIncomingTransformation(
+            always().apply(assignDestinationIp(dstNatPoolIp, dstNatPoolIp)).build())
         .build();
 
     String hostname = config.getHostname();
