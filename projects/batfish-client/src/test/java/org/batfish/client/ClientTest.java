@@ -602,7 +602,8 @@ public class ClientTest {
   public void testInvalidDispositionSpecifierValue() throws IOException {
     String input = "5";
     Type expectedType = DISPOSITION_SPEC;
-    String expectedMessage = String.format("It is not a valid JSON %s value", DISPOSITION_SPEC.getName());
+    String expectedMessage =
+        String.format("It is not a valid JSON %s value", DISPOSITION_SPEC.getName());
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
