@@ -954,7 +954,6 @@ null_single
             ACCESS_LOG
             | CONFIGURATION
             | DOT1Q
-            | INTERNAL
             | IFDESCR DETAIL
          )
       )

@@ -81,6 +81,7 @@ import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.IkeProposal;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
@@ -397,6 +398,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private String _domainName;
 
+  private Map<String, VlanTrunkGroup> _eosVlanTrunkGroups;
+
   private AristaEosVxlan _eosVxlan;
 
   private final Map<String, ExpandedCommunityList> _expandedCommunityLists;
@@ -446,6 +449,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private final Map<String, NatPool> _natPools;
 
   private final Map<String, IcmpTypeObjectGroup> _icmpTypeObjectGroups;
+
+  private final Map<String, IntegerSpace> _namedVlans;
 
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
 
@@ -522,6 +527,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _cryptoMapSets = new HashMap<>();
     _dhcpRelayServers = new ArrayList<>();
     _dnsServers = new TreeSet<>();
+    _eosVlanTrunkGroups = new HashMap<>();
     _expandedCommunityLists = new TreeMap<>();
     _extendedAccessLists = new TreeMap<>();
     _extendedIpv6AccessLists = new TreeMap<>();
@@ -539,6 +545,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _macAccessLists = new TreeMap<>();
     _natPools = new TreeMap<>();
     _icmpTypeObjectGroups = new TreeMap<>();
+    _namedVlans = new HashMap<>();
     _networkObjectGroups = new TreeMap<>();
     _networkObjects = new TreeMap<>();
     _nxBgpGlobalConfiguration = new CiscoNxBgpGlobalConfiguration();
@@ -742,6 +749,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _dnsSourceInterface;
   }
 
+  @Nonnull
+  public Map<String, VlanTrunkGroup> getEosVlanTrunkGroups() {
+    return _eosVlanTrunkGroups;
+  }
+
   public AristaEosVxlan getEosVxlan() {
     return _eosVxlan;
   }
@@ -853,6 +865,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, NatPool> getNatPools() {
     return _natPools;
+  }
+
+  public Map<String, IntegerSpace> getNamedVlans() {
+    return _namedVlans;
   }
 
   private String getNewInterfaceName(Interface iface) {
@@ -2184,7 +2200,26 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
     newIface.setSwitchportTrunkEncapsulation(encapsulation);
     if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
-      newIface.setAllowedVlans(iface.getAllowedVlans());
+      /*
+       * Compute allowed VLANs:
+       * - If allowed VLANs are set, honor them;
+       * - Otherwise prune allowed VLANs based on configured trunk groups (if any).
+       *
+       * https://www.arista.com/en/um-eos/eos-section-19-3-vlan-configuration-procedures#ww1152330
+       */
+      if (!Interface.ALL_VLANS.equals(iface.getAllowedVlans())
+          || iface.getVlanTrunkGroups().isEmpty()) {
+        newIface.setAllowedVlans(iface.getAllowedVlans());
+      } else {
+        newIface.setAllowedVlans(
+            iface
+                .getVlanTrunkGroups()
+                .stream()
+                .map(_eosVlanTrunkGroups::get)
+                .map(VlanTrunkGroup::getVlans)
+                .reduce(IntegerSpace::union)
+                .get());
+      }
     }
 
     String incomingFilterName = iface.getIncomingFilter();
