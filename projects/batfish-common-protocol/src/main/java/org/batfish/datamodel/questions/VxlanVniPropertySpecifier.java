@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
@@ -73,12 +72,12 @@ public class VxlanVniPropertySpecifier extends PropertySpecifier {
   }
 
   @Override
-  public Set<String> getMatchingProperties() {
+  public List<String> getMatchingProperties() {
     return JAVA_MAP
         .keySet()
         .stream()
         .filter(prop -> _pattern.matcher(prop).matches())
-        .collect(Collectors.toSet());
+        .collect(Collectors.toList());
   }
 
   @Override
