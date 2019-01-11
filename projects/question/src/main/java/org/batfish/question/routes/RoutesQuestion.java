@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.question.routes.RoutesQuestion.RibProtocol.MAIN;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
@@ -63,7 +64,7 @@ public class RoutesQuestion extends Question {
 
   @Nonnull private NodesSpecifier _nodes;
 
-  @Nonnull private RoutingProtocolSpecifier _protocols;
+  @Nonnull private String _protocols;
 
   @Nonnull private RibProtocol _rib;
 
@@ -81,11 +82,11 @@ public class RoutesQuestion extends Question {
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NODES) NodesSpecifier nodes,
       @Nullable @JsonProperty(PROP_VRFS) String vrfs,
-      @Nullable @JsonProperty(PROP_PROTOCOLS) RoutingProtocolSpecifier protocols,
+      @Nullable @JsonProperty(PROP_PROTOCOLS) String protocols,
       @Nullable @JsonProperty(PROP_RIB) RibProtocol rib) {
     _network = network;
     _nodes = firstNonNull(nodes, NodesSpecifier.ALL);
-    _protocols = firstNonNull(protocols, RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER);
+    _protocols = firstNonNull(protocols, RoutingProtocolSpecifier.ALL);
     _rib = firstNonNull(rib, MAIN);
     _vrfs = firstNonNull(vrfs, ".*");
   }
@@ -119,8 +120,13 @@ public class RoutesQuestion extends Question {
 
   @JsonProperty(PROP_PROTOCOLS)
   @Nonnull
-  public RoutingProtocolSpecifier getProtocols() {
+  public String getProtocols() {
     return _protocols;
+  }
+
+  @JsonIgnore
+  public @Nonnull RoutingProtocolSpecifier getRoutingProtocolSpecifier() {
+    return new RoutingProtocolSpecifier(_protocols);
   }
 
   @JsonProperty(PROP_RIB)

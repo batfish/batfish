@@ -52,8 +52,9 @@ public class RoutingProtocolSpecifier {
   //  LOCAL
   //  CONNECTED
 
+  public static final String ALL = "all";
+
   private static final String AGGREGATE = "aggregate";
-  private static final String ALL = "all";
   private static final String BGP = "bgp";
   private static final String CONNECTED = "connected";
   private static final String EBGP = "ebgp";
@@ -113,11 +114,6 @@ public class RoutingProtocolSpecifier {
 
   private static final Map<String, Set<RoutingProtocol>> _map;
 
-  private final Set<RoutingProtocol> _protocols;
-
-  public static final RoutingProtocolSpecifier ALL_PROTOCOLS_SPECIFIER =
-      new RoutingProtocolSpecifier(fromString(ALL));
-
   // initialize all protocol groups
   static {
     OSPF_INT_PROTOCOLS = ImmutableSet.of(OSPF_INTRA_PROTOCOL, OSPF_INTER_PROTOCOL);
@@ -172,10 +168,17 @@ public class RoutingProtocolSpecifier {
             .build();
   }
 
+  public static final RoutingProtocolSpecifier ALL_PROTOCOLS_SPECIFIER =
+      new RoutingProtocolSpecifier(ALL);
+
+  private final String _stringValue;
+
+  private final Set<RoutingProtocol> _protocols;
+
   @JsonCreator
   @VisibleForTesting
   static RoutingProtocolSpecifier create(@Nullable String values) {
-    return new RoutingProtocolSpecifier(fromString(firstNonNull(values, ALL)));
+    return new RoutingProtocolSpecifier(firstNonNull(values, ALL));
   }
 
   private static Set<RoutingProtocol> fromString(String s) {
@@ -189,18 +192,28 @@ public class RoutingProtocolSpecifier {
         .collect(ImmutableSet.toImmutableSet());
   }
 
-  @JsonValue
-  public String value() {
+  private static String toString(Set<RoutingProtocol> protocols) {
     return String.join(
         ",",
-        _protocols
+        protocols
             .stream()
             .map(RoutingProtocol::name)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }
 
+  @JsonValue
+  public String value() {
+    return _stringValue;
+  }
+
   public RoutingProtocolSpecifier(Set<RoutingProtocol> protocols) {
     _protocols = protocols;
+    _stringValue = toString(protocols);
+  }
+
+  public RoutingProtocolSpecifier(String values) {
+    _stringValue = values;
+    _protocols = fromString(values);
   }
 
   /**

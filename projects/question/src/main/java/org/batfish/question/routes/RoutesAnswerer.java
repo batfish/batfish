@@ -73,7 +73,7 @@ public class RoutesAnswerer extends Answerer {
     DataPlane dp = _batfish.loadDataPlane();
     Set<String> matchingNodes = question.getNodes().getMatchingNodes(_batfish);
     Prefix network = question.getNetwork();
-    RoutingProtocolSpecifier protocolSpec = question.getProtocols();
+    RoutingProtocolSpecifier protocolSpec = question.getRoutingProtocolSpecifier();
     String vrfRegex = question.getVrfs();
     Map<Ip, Set<String>> ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(), true);
 
@@ -119,7 +119,7 @@ public class RoutesAnswerer extends Answerer {
 
     Set<String> matchingNodes = question.getNodes().getMatchingNodes(_batfish);
     Prefix network = question.getNetwork();
-    RoutingProtocolSpecifier protocolSpec = question.getProtocols();
+    RoutingProtocolSpecifier protocolSpec = question.getRoutingProtocolSpecifier();
     String vrfRegex = question.getVrfs();
 
     Multiset<Row> rows;

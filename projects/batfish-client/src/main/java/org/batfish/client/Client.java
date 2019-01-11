@@ -114,6 +114,7 @@ import org.batfish.specifier.FlexibleInterfaceSpecifierFactory;
 import org.batfish.specifier.FlexibleNodeSpecifierFactory;
 import org.batfish.specifier.InterfaceSpecifierFactory;
 import org.batfish.specifier.NodeSpecifierFactory;
+import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -550,13 +551,6 @@ public class Client extends AbstractClient implements IClient {
         }
         new OspfPropertySpecifier(value.textValue());
         break;
-      case VXLAN_VNI_PROPERTY_SPEC:
-        if (!(value.isTextual())) {
-          throw new BatfishException(
-              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
-        }
-        new VxlanVniPropertySpecifier(value.textValue());
-        break;
       case PATH_CONSTRAINT:
         if (!(value.isObject()) && !value.isNull()) {
           throw new BatfishException(
@@ -587,7 +581,13 @@ public class Client extends AbstractClient implements IClient {
       case QUESTION:
         // TODO: Implement
         break;
-
+      case ROUTING_PROTOCOL_SPEC:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        new RoutingProtocolSpecifier(value.textValue());
+        break;
       case STRING:
         if (!value.isTextual()) {
           throw new BatfishException(
@@ -614,6 +614,13 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
+        break;
+      case VXLAN_VNI_PROPERTY_SPEC:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        new VxlanVniPropertySpecifier(value.textValue());
         break;
       case ZONE:
         if (!value.isTextual()) {
