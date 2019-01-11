@@ -1453,8 +1453,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Nullable private EigrpProcess _currentEigrpProcess;
 
-  @Nullable private MlagConfiguration _currentEosMlagConfiguration;
-
   private ExpandedCommunityList _currentExpandedCommunityList;
 
   private ExtendedAccessList _currentExtendedAcl;
@@ -3906,7 +3904,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterS_eos_mlag(S_eos_mlagContext ctx) {
-    _currentEosMlagConfiguration = new MlagConfiguration();
+    if (_configuration.getEosMlagConfiguration() == null) {
+      _configuration.setEosMlagConfiguration(new MlagConfiguration());
+    }
   }
 
   @Override
@@ -7061,26 +7061,26 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_mlag_domain(Eos_mlag_domainContext ctx) {
-    _currentEosMlagConfiguration.setDomainId(ctx.DOMAIN_ID().getText());
+    _configuration.getEosMlagConfiguration().setDomainId(ctx.id.getText());
   }
 
   @Override
   public void exitEos_mlag_local_interface(Eos_mlag_local_interfaceContext ctx) {
-    String iface = ctx.iface.getText();
-    _currentEosMlagConfiguration.setLocalInterface(iface);
+    String iface = getCanonicalInterfaceName(ctx.iface.getText());
+    _configuration.getEosMlagConfiguration().setLocalInterface(iface);
     _configuration.referenceStructure(
         INTERFACE, iface, MLAG_CONFIGURATION_LOCAL_INTERFACE, ctx.getStart().getLine());
   }
 
   @Override
   public void exitEos_mlag_peer_address(Eos_mlag_peer_addressContext ctx) {
-    _currentEosMlagConfiguration.setPeerAddress(toIp(ctx.ip));
+    _configuration.getEosMlagConfiguration().setPeerAddress(toIp(ctx.ip));
   }
 
   @Override
   public void exitEos_mlag_peer_link(Eos_mlag_peer_linkContext ctx) {
-    String iface = ctx.iface.getText();
-    _currentEosMlagConfiguration.setPeerLink(iface);
+    String iface = getCanonicalInterfaceName(ctx.iface.getText());
+    _configuration.getEosMlagConfiguration().setPeerLink(iface);
     _configuration.referenceStructure(
         INTERFACE, iface, MLAG_CONFIGURATION_PEER_LINK, ctx.getStart().getLine());
   }
@@ -7089,18 +7089,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitEos_mlag_reload_delay(Eos_mlag_reload_delayContext ctx) {
     Integer period = ctx.INFINITY() != null ? Integer.MAX_VALUE : toInteger(ctx.period);
     if (ctx.MLAG() != null) {
-      _currentEosMlagConfiguration.setReloadDelayMlag(period);
+      _configuration.getEosMlagConfiguration().setReloadDelayMlag(period);
     } else if (ctx.NON_MLAG() != null) {
-      _currentEosMlagConfiguration.setReloadDelayNonMlag(period);
+      _configuration.getEosMlagConfiguration().setReloadDelayNonMlag(period);
     } else {
-      _currentEosMlagConfiguration.setReloadDelayMlag(period);
-      _currentEosMlagConfiguration.setReloadDelayNonMlag(period);
+      _configuration.getEosMlagConfiguration().setReloadDelayMlag(period);
+      _configuration.getEosMlagConfiguration().setReloadDelayNonMlag(period);
     }
   }
 
   @Override
   public void exitEos_mlag_shutdown(Eos_mlag_shutdownContext ctx) {
-    _currentEosMlagConfiguration.setShutdown(ctx.NO() == null);
+    _configuration.getEosMlagConfiguration().setShutdown(ctx.NO() == null);
   }
 
   @Override
@@ -8712,11 +8712,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitS_domain_name(S_domain_nameContext ctx) {
     String domainName = ctx.hostname.getText();
     _configuration.setDomainName(domainName);
-  }
-
-  @Override
-  public void exitS_eos_mlag(S_eos_mlagContext ctx) {
-    _currentEosMlagConfiguration = null;
   }
 
   @Override

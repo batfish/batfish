@@ -11919,6 +11919,7 @@
             "declaredNames" : [
               "Port-Channel2"
             ],
+            "mlagId" : 2,
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -11935,6 +11936,14 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATED",
             "vrf" : "default"
+          }
+        },
+        "mlags" : {
+          "MLAG_DOMAIN" : {
+            "id" : "MLAG_DOMAIN",
+            "localInterface" : "Vlan4094",
+            "peerAddress" : "1.1.1.3",
+            "peerInterface" : "Port-Channel1"
           }
         },
         "vendorFamily" : {
