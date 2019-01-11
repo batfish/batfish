@@ -87,6 +87,7 @@ import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FlowState;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
@@ -428,6 +429,13 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("It is not a valid JSON %s value", expectedType.getName()));
         }
+        break;
+      case INTEGER_SPACE:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        IntegerSpace.parse(value.asText());
         break;
       case INTERFACE:
         if (!value.isTextual()) {
