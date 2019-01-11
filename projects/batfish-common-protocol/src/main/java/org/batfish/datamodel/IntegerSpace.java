@@ -56,6 +56,10 @@ public final class IntegerSpace implements Serializable {
     return IntegerSpace.Builder.create(s).build();
   }
 
+  public static @Nonnull IntegerSpace parse(String s) {
+    return create(s);
+  }
+
   /** This space as a set of included {@link Range}s */
   public Set<Range<Integer>> getRanges() {
     return _rangeset.asRanges();
