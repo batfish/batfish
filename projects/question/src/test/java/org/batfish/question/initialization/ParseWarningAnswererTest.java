@@ -25,7 +25,7 @@ import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.question.initialization.ParseWarningAnswerer.Triplet;
+import org.batfish.question.initialization.ParseWarningAnswerer.WarningTriplet;
 import org.junit.Test;
 
 /** Tests of {@link ParseWarningAnswerer}. */
@@ -52,9 +52,9 @@ public class ParseWarningAnswererTest {
         aggregateDuplicateWarnings(fileWarnings),
         equalTo(
             ImmutableMap.of(
-                new Triplet("dup", "[configuration]", null),
+                new WarningTriplet("dup", "[configuration]", null),
                 ImmutableMap.of("f1", ImmutableSortedSet.of(3, 4), "f2", ImmutableSortedSet.of(23)),
-                new Triplet("unique", "[configuration]", null),
+                new WarningTriplet("unique", "[configuration]", null),
                 ImmutableMap.of("f1", ImmutableSortedSet.of(5)))));
   }
 
@@ -62,7 +62,7 @@ public class ParseWarningAnswererTest {
   public void testAggregateRow() {
     Row row =
         getAggregateRow(
-            new Triplet("dup", "[configuration]", null),
+            new WarningTriplet("dup", "[configuration]", null),
             ImmutableMap.of("f1", ImmutableSortedSet.of(3, 4), "f2", ImmutableSortedSet.of(23)),
             createMetadata(new ParseWarningQuestion(true)).toColumnMap());
 

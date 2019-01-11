@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.Warnings;
@@ -24,19 +23,19 @@ import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
-/** Implements {@link ParseWarningQuestion}. */
+/** Answers {@link ParseWarningQuestion}. */
 class ParseWarningAnswerer extends Answerer {
 
-  static class Triplet {
+  static class WarningTriplet {
     String _text;
     String _parserContext;
     String _comment;
 
-    public Triplet(ParseWarning w) {
+    public WarningTriplet(ParseWarning w) {
       this(w.getText(), w.getParserContext(), w.getComment());
     }
 
-    public Triplet(String text, String parserContext, String comment) {
+    public WarningTriplet(String text, String parserContext, String comment) {
       _text = text;
       _parserContext = parserContext;
       _comment = comment;
@@ -47,12 +46,12 @@ class ParseWarningAnswerer extends Answerer {
       if (this == o) {
         return true;
       }
-      if (!(o instanceof Triplet)) {
+      if (!(o instanceof WarningTriplet)) {
         return false;
       }
-      return Objects.equals(_text, ((Triplet) o)._text)
-          && Objects.equals(_parserContext, ((Triplet) o)._parserContext)
-          && Objects.equals(_comment, ((Triplet) o)._comment);
+      return Objects.equals(_text, ((WarningTriplet) o)._text)
+          && Objects.equals(_parserContext, ((WarningTriplet) o)._parserContext)
+          && Objects.equals(_comment, ((WarningTriplet) o)._comment);
     }
 
     @Override
@@ -101,13 +100,13 @@ class ParseWarningAnswerer extends Answerer {
   @Nonnull
   @VisibleForTesting
   // triplet -> filename -> lines
-  static Map<Triplet, Map<String, SortedSet<Integer>>> aggregateDuplicateWarnings(
+  static Map<WarningTriplet, Map<String, SortedSet<Integer>>> aggregateDuplicateWarnings(
       Map<String, Warnings> fileWarnings) {
-    Map<Triplet, Map<String, SortedSet<Integer>>> map = new HashMap<>();
+    Map<WarningTriplet, Map<String, SortedSet<Integer>>> map = new HashMap<>();
     fileWarnings.forEach(
         (filename, warnings) -> {
           for (ParseWarning w : warnings.getParseWarnings()) {
-            Triplet triplet = new Triplet(w);
+            WarningTriplet triplet = new WarningTriplet(w);
             map.computeIfAbsent(triplet, k -> new HashMap<>())
                 .computeIfAbsent(filename, k -> new TreeSet<>())
                 .add(w.getLine());
@@ -119,7 +118,7 @@ class ParseWarningAnswerer extends Answerer {
   @Nonnull
   @VisibleForTesting
   static Row getAggregateRow(
-      Triplet triplet,
+      WarningTriplet triplet,
       Map<String, SortedSet<Integer>> filelines,
       Map<String, ColumnMetadata> columnMetadataMap) {
     return Row.builder(columnMetadataMap)
@@ -129,7 +128,7 @@ class ParseWarningAnswerer extends Answerer {
                 .entrySet()
                 .stream()
                 .map(e -> new FileLines(e.getKey(), e.getValue()))
-                .collect(Collectors.toList()))
+                .collect(ImmutableList.toImmutableList()))
         .put(COL_TEXT, triplet._text)
         .put(COL_PARSER_CONTEXT, triplet._parserContext)
         .put(COL_COMMENT, firstNonNull(triplet._comment, "(not provided)"))
