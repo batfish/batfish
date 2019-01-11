@@ -42,6 +42,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsActive;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPassive;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPointToPoint;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsProxyArp;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsSwitchport;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.hamcrest.Matcher;
 
@@ -322,6 +323,19 @@ public final class InterfaceMatchers {
    */
   public static IsProxyArp isProxyArp(Matcher<? super Boolean> subMatcher) {
     return new IsProxyArp(subMatcher);
+  }
+
+  /** Provides a matcher that matches if the interface is configured as a switchport. */
+  public static Matcher<Interface> isSwitchport() {
+    return new IsSwitchport(equalTo(true));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided switchport flag matches the interface's
+   * switchport flag.
+   */
+  public static Matcher<Interface> isSwitchport(boolean switchport) {
+    return new IsSwitchport(equalTo(switchport));
   }
 
   private InterfaceMatchers() {}

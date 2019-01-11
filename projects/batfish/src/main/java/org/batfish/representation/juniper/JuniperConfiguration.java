@@ -1927,6 +1927,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         If ifStatement = new If();
         ifStatement.setComment(term.getName());
         Conjunction conj = new Conjunction();
+        Disjunction prefixListsDisjunction = new Disjunction();
         List<BooleanExpr> subroutines = new ArrayList<>();
         for (PsFrom from : term.getFroms()) {
           if (from instanceof PsFromRouteFilter) {
@@ -1958,9 +1959,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
           if (from instanceof PsFromPolicyStatement
               || from instanceof PsFromPolicyStatementConjunction) {
             subroutines.add(booleanExpr);
+          } else if (from instanceof PsFromPrefixList) {
+            prefixListsDisjunction.getDisjuncts().add(booleanExpr);
           } else {
             conj.getConjuncts().add(booleanExpr);
           }
+        }
+        if (!prefixListsDisjunction.getDisjuncts().isEmpty()) {
+          conj.getConjuncts().add(prefixListsDisjunction);
         }
         if (!subroutines.isEmpty()) {
           ConjunctionChain chain = new ConjunctionChain(subroutines);

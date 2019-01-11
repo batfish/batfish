@@ -1613,7 +1613,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Interface newInterface = _configuration.getInterfaces().get(name);
     if (newInterface == null) {
       newInterface = new Interface(name, _configuration);
-      initInterface(newInterface, _configuration.getVendor());
       _configuration.getInterfaces().put(name, newInterface);
       initInterface(newInterface, ctx);
     } else {
@@ -6197,8 +6196,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
     } else {
       for (Interface iface : _currentInterfaces) {
-        iface.setSwitchportMode(SwitchportMode.ACCESS);
         iface.setSwitchport(true);
+        SwitchportMode defaultSwitchportMode = _configuration.getCf().getDefaultSwitchportMode();
+        iface.setSwitchportMode(
+            (defaultSwitchportMode == SwitchportMode.NONE || defaultSwitchportMode == null)
+                ? Interface.getUndeclaredDefaultSwitchportMode(_configuration.getVendor())
+                : defaultSwitchportMode);
       }
     }
   }
@@ -9660,25 +9663,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return Ip6.ZERO;
     } else {
       throw convError(Ip.class, ctx);
-    }
-  }
-
-  private void initInterface(Interface iface, ConfigurationFormat format) {
-    switch (format) {
-      case CISCO_ASA:
-      case CISCO_IOS:
-        iface.setProxyArp(true);
-        break;
-
-      case ARISTA:
-        if (iface.getName().startsWith("Ethernet")) {
-          iface.setSwitchportMode(SwitchportMode.ACCESS);
-        }
-        break;
-
-        // $CASES-OMITTED$
-      default:
-        break;
     }
   }
 
