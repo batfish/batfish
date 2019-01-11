@@ -4116,8 +4116,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitIsi_passive(Isi_passiveContext ctx) {
-    _currentIsisInterface.getIsisSettings().getLevel1Settings().setPassive(true);
-    _currentIsisInterface.getIsisSettings().getLevel2Settings().setPassive(true);
+    _currentIsisInterface.getIsisSettings().setPassive(true);
   }
 
   @Override

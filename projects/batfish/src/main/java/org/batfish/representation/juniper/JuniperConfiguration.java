@@ -627,12 +627,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (level1) {
       newInterfaceSettingsBuilder.setLevel1(
           toIsisInterfaceLevelSettings(
-              settings.getLevel1Settings(), interfaceSettings.getLevel1Settings(), defaultCost));
+              settings.getLevel1Settings(),
+              interfaceSettings,
+              interfaceSettings.getLevel1Settings(),
+              defaultCost));
     }
     if (level2) {
       newInterfaceSettingsBuilder.setLevel2(
           toIsisInterfaceLevelSettings(
-              settings.getLevel2Settings(), interfaceSettings.getLevel2Settings(), defaultCost));
+              settings.getLevel2Settings(),
+              interfaceSettings,
+              interfaceSettings.getLevel2Settings(),
+              defaultCost));
     }
     return newInterfaceSettingsBuilder
         .setBfdLivenessDetectionMinimumInterval(
@@ -645,6 +651,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.isis.IsisInterfaceLevelSettings toIsisInterfaceLevelSettings(
       IsisLevelSettings levelSettings,
+      IsisInterfaceSettings interfaceSettings,
       IsisInterfaceLevelSettings interfaceLevelSettings,
       long defaultCost) {
     long cost = firstNonNull(interfaceLevelSettings.getMetric(), defaultCost);
@@ -658,7 +665,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .setHelloInterval(interfaceLevelSettings.getHelloInterval())
         .setHoldTime(interfaceLevelSettings.getHoldTime())
         .setMode(
-            interfaceLevelSettings.getPassive()
+            interfaceSettings.getPassive() || interfaceLevelSettings.getPassive()
                 ? IsisInterfaceMode.PASSIVE
                 : IsisInterfaceMode.ACTIVE)
         .build();

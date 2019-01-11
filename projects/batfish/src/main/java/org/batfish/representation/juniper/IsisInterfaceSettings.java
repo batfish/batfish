@@ -17,6 +17,8 @@ public class IsisInterfaceSettings implements Serializable {
 
   private final IsisInterfaceLevelSettings _level2Settings;
 
+  private boolean _passive;
+
   private boolean _pointToPoint;
 
   public IsisInterfaceSettings() {
@@ -44,6 +46,10 @@ public class IsisInterfaceSettings implements Serializable {
     return _level2Settings;
   }
 
+  public boolean getPassive() {
+    return _passive;
+  }
+
   public boolean getPointToPoint() {
     return _pointToPoint;
   }
@@ -58,6 +64,10 @@ public class IsisInterfaceSettings implements Serializable {
 
   public void setEnabled(boolean enabled) {
     _enabled = enabled;
+  }
+
+  public void setPassive(boolean passive) {
+    _passive = passive;
   }
 
   public void setPointToPoint(boolean pointToPoint) {
