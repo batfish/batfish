@@ -4,8 +4,12 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.Warnings;
@@ -13,6 +17,7 @@ import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
@@ -21,22 +26,70 @@ import org.batfish.datamodel.table.TableMetadata;
 
 /** Implements {@link ParseWarningQuestion}. */
 class ParseWarningAnswerer extends Answerer {
+
+  static class Triplet {
+    String _text;
+    String _parserContext;
+    String _comment;
+
+    public Triplet(ParseWarning w) {
+      this(w.getText(), w.getParserContext(), w.getComment());
+    }
+
+    public Triplet(String text, String parserContext, String comment) {
+      _text = text;
+      _parserContext = parserContext;
+      _comment = comment;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof Triplet)) {
+        return false;
+      }
+      return Objects.equals(_text, ((Triplet) o)._text)
+          && Objects.equals(_parserContext, ((Triplet) o)._parserContext)
+          && Objects.equals(_comment, ((Triplet) o)._comment);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_text, _parserContext, _comment);
+    }
+  }
+
   @Override
   public TableAnswerElement answer() {
+    ParseWarningQuestion question = (ParseWarningQuestion) _question;
+    TableMetadata metadata = createMetadata(question);
+    Map<String, ColumnMetadata> columnMetadataMap = metadata.toColumnMap();
+
     ParseVendorConfigurationAnswerElement pvcae =
         _batfish.loadParseVendorConfigurationAnswerElement();
 
     Map<String, Warnings> fileWarnings = pvcae.getWarnings();
 
     Rows rows = new Rows();
-    fileWarnings.forEach(
-        (filename, warnings) -> {
-          for (ParseWarning w : warnings.getParseWarnings()) {
-            rows.add(getRow(filename, w));
-          }
-        });
 
-    TableAnswerElement answerElement = new TableAnswerElement(TABLE_METADATA);
+    if (question.getAggregateDuplicates()) {
+      aggregateDuplicateWarnings(fileWarnings)
+          .forEach(
+              (triplet, filelines) ->
+                  rows.add(getAggregateRow(triplet, filelines, columnMetadataMap)));
+
+    } else {
+      fileWarnings.forEach(
+          (filename, warnings) -> {
+            for (ParseWarning w : warnings.getParseWarnings()) {
+              rows.add(getRow(filename, w, columnMetadataMap));
+            }
+          });
+    }
+
+    TableAnswerElement answerElement = new TableAnswerElement(createMetadata(question));
     answerElement.postProcessAnswer(_question, rows.getData());
     return answerElement;
   }
@@ -47,8 +100,47 @@ class ParseWarningAnswerer extends Answerer {
 
   @Nonnull
   @VisibleForTesting
-  static Row getRow(String filename, ParseWarning warning) {
-    return Row.builder(TABLE_METADATA.toColumnMap())
+  // triplet -> filename -> lines
+  static Map<Triplet, Map<String, SortedSet<Integer>>> aggregateDuplicateWarnings(
+      Map<String, Warnings> fileWarnings) {
+    Map<Triplet, Map<String, SortedSet<Integer>>> map = new HashMap<>();
+    fileWarnings.forEach(
+        (filename, warnings) -> {
+          for (ParseWarning w : warnings.getParseWarnings()) {
+            Triplet triplet = new Triplet(w);
+            map.computeIfAbsent(triplet, k -> new HashMap<>())
+                .computeIfAbsent(filename, k -> new TreeSet<>())
+                .add(w.getLine());
+          }
+        });
+    return map;
+  }
+
+  @Nonnull
+  @VisibleForTesting
+  static Row getAggregateRow(
+      Triplet triplet,
+      Map<String, SortedSet<Integer>> filelines,
+      Map<String, ColumnMetadata> columnMetadataMap) {
+    return Row.builder(columnMetadataMap)
+        .put(
+            COL_FILELINES,
+            filelines
+                .entrySet()
+                .stream()
+                .map(e -> new FileLines(e.getKey(), e.getValue()))
+                .collect(Collectors.toList()))
+        .put(COL_TEXT, triplet._text)
+        .put(COL_PARSER_CONTEXT, triplet._parserContext)
+        .put(COL_COMMENT, firstNonNull(triplet._comment, "(not provided)"))
+        .build();
+  }
+
+  @Nonnull
+  @VisibleForTesting
+  static Row getRow(
+      String filename, ParseWarning warning, Map<String, ColumnMetadata> columnMetadataMap) {
+    return Row.builder(columnMetadataMap)
         .put(COL_FILENAME, filename)
         .put(COL_LINE, warning.getLine())
         .put(COL_TEXT, warning.getText())
@@ -57,45 +149,74 @@ class ParseWarningAnswerer extends Answerer {
         .build();
   }
 
-  static final String COL_FILENAME = "Filename";
-  static final String COL_LINE = "Line";
+  static final String COL_FILELINES = "Filelines"; // with aggregation
+  static final String COL_FILENAME = "Filename"; // without aggregation
+  static final String COL_LINE = "Line"; // without aggregation
   static final String COL_TEXT = "Text";
   static final String COL_COMMENT = "Comment";
   static final String COL_PARSER_CONTEXT = "Parser_Context";
 
-  private static final List<ColumnMetadata> METADATA =
-      ImmutableList.of(
-          new ColumnMetadata(COL_FILENAME, Schema.STRING, "The file that was parsed", true, false),
+  @Nonnull
+  @VisibleForTesting
+  static TableMetadata createMetadata(ParseWarningQuestion question) {
+
+    ImmutableList.Builder<ColumnMetadata> columnMetadata = ImmutableList.builder();
+
+    if (question.getAggregateDuplicates()) {
+      columnMetadata.add(
           new ColumnMetadata(
-              COL_TEXT,
-              Schema.STRING,
-              "The text of the input that caused the warning",
+              COL_FILELINES,
+              Schema.list(Schema.FILE_LINES),
+              "The files and files that were parsed",
               true,
-              false),
-          new ColumnMetadata(
-              COL_LINE,
-              Schema.INTEGER,
-              "The line number in the input file that caused the warning",
-              false,
-              false),
-          new ColumnMetadata(
-              COL_PARSER_CONTEXT,
-              Schema.STRING,
-              "The context of the Batfish parser when the warning occurred",
-              false,
-              false),
-          new ColumnMetadata(
-              COL_COMMENT,
-              Schema.STRING,
-              "An optional comment explaining more information about the warning",
-              false,
               false));
+    } else {
+      columnMetadata
+          .add(
+              new ColumnMetadata(
+                  COL_FILENAME, Schema.STRING, "The file that was parsed", true, false))
+          .add(
+              new ColumnMetadata(
+                  COL_LINE,
+                  Schema.INTEGER,
+                  "The line number in the input file that caused the warning",
+                  true,
+                  false));
+    }
 
-  private static final String TEXT_DESC =
-      String.format(
-          "File ${%s}: warning at line ${%s}: ${%s} when the Batfish parser was in state ${%s}."
-              + " Optional comment: ${%s}.",
-          COL_FILENAME, COL_LINE, COL_TEXT, COL_PARSER_CONTEXT, COL_COMMENT);
+    columnMetadata
+        .add(
+            new ColumnMetadata(
+                COL_TEXT,
+                Schema.STRING,
+                "The text of the input that caused the warning",
+                true,
+                false))
+        .add(
+            new ColumnMetadata(
+                COL_PARSER_CONTEXT,
+                Schema.STRING,
+                "The context of the Batfish parser when the warning occurred",
+                false,
+                false))
+        .add(
+            new ColumnMetadata(
+                COL_COMMENT,
+                Schema.STRING,
+                "An optional comment explaining more information about the warning",
+                false,
+                false));
 
-  private static final TableMetadata TABLE_METADATA = new TableMetadata(METADATA, TEXT_DESC);
+    String textDesc =
+        question.getAggregateDuplicates()
+            ? String.format(
+                "Warning at line ${%s} when the Batfish parser was in state ${%s}. Optional comment: ${%s}.",
+                COL_FILENAME, COL_LINE, COL_TEXT, COL_PARSER_CONTEXT, COL_COMMENT)
+            : String.format(
+                "File ${%s}: warning at line ${%s}: ${%s} when the Batfish parser was in state ${%s}."
+                    + " Optional comment: ${%s}.",
+                COL_FILENAME, COL_LINE, COL_TEXT, COL_PARSER_CONTEXT, COL_COMMENT);
+
+    return new TableMetadata(columnMetadata.build(), textDesc);
+  }
 }
