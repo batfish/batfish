@@ -2611,22 +2611,6 @@
         }
       },
       {
-        "File_Name" : "configs/juniper_isis",
-        "Struct_Type" : "interface",
-        "Ref_Name" : "ge-0/0/0.0",
-        "Context" : "isis interface",
-        "Lines" : {
-          "filename" : "configs/juniper_isis",
-          "lines" : [
-            6,
-            7,
-            8,
-            9,
-            10
-          ]
-        }
-      },
-      {
         "File_Name" : "configs/juniper_misc",
         "Struct_Type" : "interface",
         "Ref_Name" : "lo0.0",
@@ -3176,10 +3160,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 257 results",
+      "notes" : "Found 256 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 257
+      "numResults" : 256
     }
   }
 ]
