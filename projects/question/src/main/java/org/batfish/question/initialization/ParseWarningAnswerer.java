@@ -185,7 +185,7 @@ class ParseWarningAnswerer extends Answerer {
               COL_LINE,
               Schema.INTEGER,
               "The line number in the input file that caused the warning",
-              true,
+              false,
               false));
     }
     columnMetadata
