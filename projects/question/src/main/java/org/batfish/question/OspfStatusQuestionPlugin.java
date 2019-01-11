@@ -142,7 +142,7 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
             String interfaceName = e2.getKey();
             Interface iface = e2.getValue();
             if (question.getInterfacesSpecifier().matches(iface)) {
-              if (iface.getSwitchport() != null && iface.getSwitchport()) {
+              if (iface.getSwitchport()) {
                 // it's a layer2 interface
                 conditionalAdd(
                     question, answerElement, hostname, interfaceName, OspfStatus.SWITCHPORT);

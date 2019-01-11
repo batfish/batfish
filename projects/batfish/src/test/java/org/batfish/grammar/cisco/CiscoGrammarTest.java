@@ -96,11 +96,13 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPointToPoint;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
 import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
@@ -309,6 +311,7 @@ import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -3885,6 +3888,128 @@ public class CiscoGrammarTest {
     Configuration c = parseConfig("aristaInterface");
 
     assertThat(c, hasInterface("Ethernet3/2/1.4", hasMtu(9000)));
+  }
+
+  @Test
+  public void testAristaDefaultSwitchPort() throws IOException {
+    Configuration cUndeclared = parseConfig("eos_switchport_default_mode_undeclared");
+    Configuration cDefaultAccess = parseConfig("eos_switchport_default_mode_access");
+    Configuration cDefaultRouted = parseConfig("eos_switchport_default_mode_routed");
+
+    String l0Name = "Loopback0";
+    String e0Name = "Ethernet0/0";
+    String e1Name = "Ethernet0/1";
+    String e2Name = "Ethernet0/2";
+    String e3Name = "Ethernet0/3";
+    String e4Name = "Ethernet0/4";
+    String p0Name = "Port-Channel0";
+
+    Interface l0Undeclared = cUndeclared.getAllInterfaces().get(l0Name);
+    Interface e0Undeclared = cUndeclared.getAllInterfaces().get(e0Name);
+    Interface e1Undeclared = cUndeclared.getAllInterfaces().get(e1Name);
+    Interface e2Undeclared = cUndeclared.getAllInterfaces().get(e2Name);
+    Interface e3Undeclared = cUndeclared.getAllInterfaces().get(e3Name);
+    Interface e4Undeclared = cUndeclared.getAllInterfaces().get(e4Name);
+    Interface p0Undeclared = cUndeclared.getAllInterfaces().get(p0Name);
+
+    Interface l0DefaultAccess = cDefaultAccess.getAllInterfaces().get(l0Name);
+    Interface e0DefaultAccess = cDefaultAccess.getAllInterfaces().get(e0Name);
+    Interface e1DefaultAccess = cDefaultAccess.getAllInterfaces().get(e1Name);
+    Interface e2DefaultAccess = cDefaultAccess.getAllInterfaces().get(e2Name);
+    Interface e3DefaultAccess = cDefaultAccess.getAllInterfaces().get(e3Name);
+    Interface e4DefaultAccess = cDefaultAccess.getAllInterfaces().get(e4Name);
+    Interface p0DefaultAccess = cDefaultAccess.getAllInterfaces().get(p0Name);
+
+    Interface l0DefaultRouted = cDefaultRouted.getAllInterfaces().get(l0Name);
+    Interface e0DefaultRouted = cDefaultRouted.getAllInterfaces().get(e0Name);
+    Interface e1DefaultRouted = cDefaultRouted.getAllInterfaces().get(e1Name);
+    Interface e2DefaultRouted = cDefaultRouted.getAllInterfaces().get(e2Name);
+    Interface e3DefaultRouted = cDefaultRouted.getAllInterfaces().get(e3Name);
+    Interface e4DefaultRouted = cDefaultRouted.getAllInterfaces().get(e4Name);
+    Interface p0DefaultRouted = cDefaultRouted.getAllInterfaces().get(p0Name);
+
+    assertThat(l0Undeclared, isSwitchport(false));
+    assertThat(l0Undeclared, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e0Undeclared, isSwitchport(true));
+    assertThat(e0Undeclared, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e1Undeclared, isSwitchport(true));
+    assertThat(e1Undeclared, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e2Undeclared, isSwitchport(true));
+    assertThat(e2Undeclared, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e3Undeclared, isSwitchport(false));
+    assertThat(e3Undeclared, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e4Undeclared, isSwitchport(true));
+    assertThat(e4Undeclared, hasSwitchPortMode(SwitchportMode.TRUNK));
+    assertThat(p0Undeclared, isSwitchport(true));
+    assertThat(p0Undeclared, hasSwitchPortMode(SwitchportMode.ACCESS));
+
+    assertThat(l0DefaultAccess, isSwitchport(false));
+    assertThat(l0DefaultAccess, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e0DefaultAccess, isSwitchport(true));
+    assertThat(e0DefaultAccess, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e1DefaultAccess, isSwitchport(true));
+    assertThat(e1DefaultAccess, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e2DefaultAccess, isSwitchport(true));
+    assertThat(e2DefaultAccess, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e3DefaultAccess, isSwitchport(false));
+    assertThat(e3DefaultAccess, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e4DefaultAccess, isSwitchport(true));
+    assertThat(e4DefaultAccess, hasSwitchPortMode(SwitchportMode.TRUNK));
+    assertThat(p0DefaultAccess, isSwitchport(true));
+    assertThat(p0DefaultAccess, hasSwitchPortMode(SwitchportMode.ACCESS));
+
+    assertThat(l0DefaultRouted, isSwitchport(false));
+    assertThat(l0DefaultRouted, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e0DefaultRouted, isSwitchport(false));
+    assertThat(e0DefaultRouted, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e1DefaultRouted, isSwitchport(true));
+    assertThat(e1DefaultRouted, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e2DefaultRouted, isSwitchport(true));
+    assertThat(e2DefaultRouted, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e3DefaultRouted, isSwitchport(false));
+    assertThat(e3DefaultRouted, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e4DefaultRouted, isSwitchport(true));
+    assertThat(e4DefaultRouted, hasSwitchPortMode(SwitchportMode.TRUNK));
+    assertThat(p0DefaultRouted, isSwitchport(false));
+    assertThat(p0DefaultRouted, hasSwitchPortMode(SwitchportMode.NONE));
+  }
+
+  @Test
+  public void testIosSwitchportMode() throws IOException {
+    Configuration c = parseConfig("ios_switchport_mode");
+
+    Interface e0 = c.getAllInterfaces().get("Ethernet0/0");
+    Interface e1 = c.getAllInterfaces().get("Ethernet0/1");
+    Interface e2 = c.getAllInterfaces().get("Ethernet0/2");
+    Interface e3 = c.getAllInterfaces().get("Ethernet0/3");
+
+    assertThat(e0, isSwitchport(false));
+    assertThat(e0, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e1, isSwitchport(true));
+    assertThat(e1, hasSwitchPortMode(SwitchportMode.DYNAMIC_AUTO));
+    assertThat(e2, isSwitchport(true));
+    assertThat(e2, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e3, isSwitchport(true));
+    assertThat(e3, hasSwitchPortMode(SwitchportMode.TRUNK));
+  }
+
+  @Test
+  public void testNxosSwitchportMode() throws IOException {
+    Configuration c = parseConfig("nxos_switchport_mode");
+
+    Interface e0 = c.getAllInterfaces().get("Ethernet0/0");
+    Interface e1 = c.getAllInterfaces().get("Ethernet0/1");
+    Interface e2 = c.getAllInterfaces().get("Ethernet0/2");
+    Interface e3 = c.getAllInterfaces().get("Ethernet0/3");
+
+    assertThat(e0, isSwitchport(false));
+    assertThat(e0, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e1, isSwitchport(true));
+    assertThat(e1, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e2, isSwitchport(true));
+    assertThat(e2, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e3, isSwitchport(true));
+    assertThat(e3, hasSwitchPortMode(SwitchportMode.TRUNK));
   }
 
   @Test
