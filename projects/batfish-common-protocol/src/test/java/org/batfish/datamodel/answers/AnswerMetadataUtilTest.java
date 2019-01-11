@@ -199,7 +199,7 @@ public class AnswerMetadataUtilTest {
   }
 
   @Test
-  public void testComputeColumnMaxIntegerNull() {
+  public void testComputeColumnMaxNullInteger() {
     String columnName = "col";
 
     TableAnswerElement table =
@@ -210,6 +210,24 @@ public class AnswerMetadataUtilTest {
             .addRow(Row.of(columnName, null));
 
     assertThat(AnswerMetadataUtil.computeColumnMax(table, columnName, _logger), nullValue());
+  }
+
+  @Test
+  public void testComputeColumnMaxNullAndNonNullInteger() {
+    String columnName = "col";
+
+    TableAnswerElement table =
+        new TableAnswerElement(
+                new TableMetadata(
+                    ImmutableList.of(new ColumnMetadata(columnName, Schema.INTEGER, "foobar")),
+                    new DisplayHints().getTextDesc()))
+            .addRow(Row.of(columnName, 1))
+            .addRow(Row.of(columnName, null))
+            .addRow(Row.of(columnName, 3))
+            .addRow(Row.of(columnName, null))
+            .addRow(Row.of(columnName, 2));
+
+    assertThat(AnswerMetadataUtil.computeColumnMax(table, columnName, _logger), equalTo(3));
   }
 
   @Test
