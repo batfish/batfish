@@ -1,7 +1,10 @@
 package org.batfish.common.util;
 
+import static org.batfish.common.util.CommonUtil.initPrivateIpsByPublicIp;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.SetMultimap;
 import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraph;
@@ -12,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -24,6 +26,7 @@ import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecDynamicPeerConfig;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPeerConfigId;
@@ -51,6 +54,8 @@ public class IpsecUtil {
     Map<Ip, Set<IpsecPeerConfigId>> localIpIpsecPeerConfigIds = new HashMap<>();
     MutableValueGraph<IpsecPeerConfigId, IpsecSession> graph =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+    SetMultimap<Ip, IpWildcardSetIpSpace> privateIpsByPublicIp =
+        initPrivateIpsByPublicIp(configurations);
 
     for (Configuration node : configurations.values()) {
       for (Entry<String, IpsecPeerConfig> entry : node.getIpsecPeerConfigs().entrySet()) {
@@ -78,12 +83,21 @@ public class IpsecUtil {
         continue;
       }
       Configuration initiatorOwner = configurations.get(ipsecPeerConfigId.getHostName());
-      Set<IpsecPeerConfigId> candidateIpsecPeerConfigIds =
-          localIpIpsecPeerConfigIds.get(ipsecStaticPeerConfig.getDestinationAddress());
-      if (candidateIpsecPeerConfigIds == null) {
-        continue;
+
+      Ip destinationIp = ipsecStaticPeerConfig.getDestinationAddress();
+
+      // adding the possible IPsec peers which may peer through NAT
+      Set<IpsecPeerConfigId> allCandidateIpsecNeighbors =
+          new HashSet<>(
+              getCandidatePeersBehindNat(
+                  destinationIp, privateIpsByPublicIp, localIpIpsecPeerConfigIds));
+
+      // adding the possible IPsec peers which may peer directly (No NAT involved)
+      if (localIpIpsecPeerConfigIds.containsKey(destinationIp)) {
+        allCandidateIpsecNeighbors.addAll(localIpIpsecPeerConfigIds.get(destinationIp));
       }
-      for (IpsecPeerConfigId candidateIpsecPeerConfigId : candidateIpsecPeerConfigIds) {
+
+      for (IpsecPeerConfigId candidateIpsecPeerConfigId : allCandidateIpsecNeighbors) {
 
         IpsecPeerConfig candidateIpsecPeer =
             networkConfigurations.getIpsecPeerConfig(candidateIpsecPeerConfigId);
@@ -106,6 +120,30 @@ public class IpsecUtil {
     }
 
     return ImmutableValueGraph.copyOf(graph);
+  }
+
+  /**
+   * Returns all {@link IpsecPeerConfigId}s whose local IP is equal to any of the IPs behind
+   * destinationIp after NAT
+   */
+  @Nonnull
+  private static Set<IpsecPeerConfigId> getCandidatePeersBehindNat(
+      @Nonnull Ip destinationIp,
+      @Nonnull SetMultimap<Ip, IpWildcardSetIpSpace> privateIpsByPublicIp,
+      @Nonnull Map<Ip, Set<IpsecPeerConfigId>> localIpsAndIpsecPeers) {
+    Set<IpsecPeerConfigId> candidateNeighbors = new HashSet<>();
+    Set<IpWildcardSetIpSpace> privateIpsBehindDestIp = privateIpsByPublicIp.get(destinationIp);
+    if (privateIpsBehindDestIp == null) {
+      return candidateNeighbors;
+    }
+    for (IpWildcardSetIpSpace ipWildcardSetIpSpace : privateIpsBehindDestIp) {
+      for (Entry<Ip, Set<IpsecPeerConfigId>> entry : localIpsAndIpsecPeers.entrySet()) {
+        if (ipWildcardSetIpSpace.containsIp(entry.getKey(), ImmutableMap.of())) {
+          candidateNeighbors.addAll(entry.getValue());
+        }
+      }
+    }
+    return candidateNeighbors;
   }
 
   /**
@@ -267,9 +305,13 @@ public class IpsecUtil {
           negotiatedProposal.setEncryptionAlgorithm(initiatorProposal.getEncryptionAlgorithm());
           negotiatedProposal.setDiffieHellmanGroup(initiatorProposal.getDiffieHellmanGroup());
           negotiatedProposal.setAuthenticationMethod(initiatorProposal.getAuthenticationMethod());
-          negotiatedProposal.setLifetimeSeconds(
-              Math.min(
-                  initiatorProposal.getLifetimeSeconds(), responderProposal.getLifetimeSeconds()));
+          if (initiatorProposal.getLifetimeSeconds() != null
+              && responderProposal.getLifetimeSeconds() != null) {
+            negotiatedProposal.setLifetimeSeconds(
+                Math.min(
+                    initiatorProposal.getLifetimeSeconds(),
+                    responderProposal.getLifetimeSeconds()));
+          }
           return negotiatedProposal;
         }
       }
