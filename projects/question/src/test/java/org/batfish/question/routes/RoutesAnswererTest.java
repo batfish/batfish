@@ -55,7 +55,6 @@ import org.batfish.datamodel.MockDataPlane;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -168,12 +167,7 @@ public class RoutesAnswererTest {
 
     Multiset<Row> actual =
         getMainRibRoutes(
-            ribs,
-            ImmutableSet.of("n1"),
-            null,
-            new RoutingProtocolSpecifier(ImmutableSet.of(RoutingProtocol.STATIC)),
-            ".*",
-            null);
+            ribs, ImmutableSet.of("n1"), null, new RoutingProtocolSpecifier("static"), ".*", null);
 
     assertThat(actual, hasSize(1));
     assertThat(

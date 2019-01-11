@@ -8,15 +8,14 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.RoutingProtocol;
@@ -55,13 +54,13 @@ public class RoutingProtocolSpecifier {
   public static final String ALL = "all";
 
   private static final String AGGREGATE = "aggregate";
-  private static final String BGP = "bgp";
+  @VisibleForTesting static final String BGP = "bgp";
   private static final String CONNECTED = "connected";
-  private static final String EBGP = "ebgp";
+  @VisibleForTesting static final String EBGP = "ebgp";
   private static final String EIGRP = "eigrp";
   private static final String EIGRP_EXT = "eigrp-ext";
   private static final String EIGRP_INT = "eigrp-int";
-  private static final String IBGP = "ibgp";
+  @VisibleForTesting static final String IBGP = "ibgp";
   private static final String IGP = "igp";
   private static final String ISIS = "isis";
   private static final String ISIS_L1 = "isis-l1";
@@ -112,7 +111,9 @@ public class RoutingProtocolSpecifier {
 
   private static final Set<RoutingProtocol> BGP_PROTOCOLS;
 
-  private static final Map<String, Set<RoutingProtocol>> _map;
+  private static final Map<String, Set<RoutingProtocol>> MAP;
+
+  public static final RoutingProtocolSpecifier ALL_PROTOCOLS_SPECIFIER;
 
   // initialize all protocol groups
   static {
@@ -140,7 +141,7 @@ public class RoutingProtocolSpecifier {
 
     BGP_PROTOCOLS = ImmutableSet.of(EBGP_PROTOCOL, IBGP_PROTOCOL);
 
-    _map =
+    MAP =
         ImmutableMap.<String, Set<RoutingProtocol>>builder()
             .put(AGGREGATE, ImmutableSet.of(AGGREGATE_PROTOCOL))
             .put(ALL, ALL_PROTOCOLS)
@@ -166,54 +167,39 @@ public class RoutingProtocolSpecifier {
             .put(RIP, ImmutableSet.of(RIP_PROTOCOL))
             .put(STATIC, ImmutableSet.of(STATIC_PROTOCOL))
             .build();
+
+    ALL_PROTOCOLS_SPECIFIER = new RoutingProtocolSpecifier(ALL);
   }
 
-  public static final RoutingProtocolSpecifier ALL_PROTOCOLS_SPECIFIER =
-      new RoutingProtocolSpecifier(ALL);
-
-  private final String _stringValue;
+  private final String _text;
 
   private final Set<RoutingProtocol> _protocols;
 
   @JsonCreator
   @VisibleForTesting
-  static RoutingProtocolSpecifier create(@Nullable String values) {
-    return new RoutingProtocolSpecifier(firstNonNull(values, ALL));
+  static RoutingProtocolSpecifier create(@Nullable String text) {
+    return new RoutingProtocolSpecifier(firstNonNull(text, ALL));
   }
 
-  private static Set<RoutingProtocol> fromString(String s) {
-    String[] values = s.trim().split(",");
+  private static Set<RoutingProtocol> fromString(String text) {
+    String[] values = text.trim().split(",");
     return Arrays.stream(values)
         .map(String::trim)
         .map(String::toLowerCase)
-        .map(_map::get)
+        .map(MAP::get)
         .filter(Objects::nonNull)
         .flatMap(Set::stream)
         .collect(ImmutableSet.toImmutableSet());
   }
 
-  private static String toString(Set<RoutingProtocol> protocols) {
-    return String.join(
-        ",",
-        protocols
-            .stream()
-            .map(RoutingProtocol::name)
-            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
-  }
-
   @JsonValue
-  public String value() {
-    return _stringValue;
+  public @Nonnull String value() {
+    return _text;
   }
 
-  public RoutingProtocolSpecifier(Set<RoutingProtocol> protocols) {
-    _protocols = protocols;
-    _stringValue = toString(protocols);
-  }
-
-  public RoutingProtocolSpecifier(String values) {
-    _stringValue = values;
-    _protocols = fromString(values);
+  public RoutingProtocolSpecifier(String text) {
+    _text = text;
+    _protocols = fromString(text);
   }
 
   /**
@@ -221,7 +207,7 @@ public class RoutingProtocolSpecifier {
    * PropertySpecifier#baseAutoComplete}.
    */
   public static List<AutocompleteSuggestion> autoComplete(String query) {
-    return PropertySpecifier.baseAutoComplete(query, _map.keySet());
+    return PropertySpecifier.baseAutoComplete(query, MAP.keySet());
   }
 
   public Set<RoutingProtocol> getProtocols() {
@@ -237,16 +223,19 @@ public class RoutingProtocolSpecifier {
       return false;
     }
     RoutingProtocolSpecifier that = (RoutingProtocolSpecifier) o;
-    return Objects.equals(_protocols, that._protocols);
+    return Objects.equals(_protocols, that._protocols) && _text.equals(that._text);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_protocols);
+    return Objects.hash(_protocols, _text);
   }
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this).add("protocols", _protocols).toString();
+    return MoreObjects.toStringHelper(this)
+        .add("stringValue", _text)
+        .add("protocols", _protocols)
+        .toString();
   }
 }
