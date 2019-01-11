@@ -2768,7 +2768,7 @@ public final class FlatJuniperGrammarTest {
     // Configuration has policy statement with term that checks two prefix lists.
     Configuration c = parseConfig("juniper-from-prefix-list");
 
-    // Accept if network matches EITHER prefix list
+    // Accept if network matches either prefix list
     for (Prefix p : ImmutableList.of(Prefix.parse("1.1.1.0/24"), Prefix.parse("2.2.2.0/24"))) {
       Result result =
           c.getRoutingPolicies()
@@ -2781,8 +2781,23 @@ public final class FlatJuniperGrammarTest {
       assertThat(result.getBooleanValue(), equalTo(true));
     }
 
-    // Reject if network is missing from both prefix lists
+    // Reject if network does not match protocol
     Result result =
+        c.getRoutingPolicies()
+            .get("POLICY-NAME")
+            .call(
+                Environment.builder(c)
+                    .setVrf(Configuration.DEFAULT_VRF_NAME)
+                    .setOriginalRoute(
+                        StaticRoute.builder()
+                            .setAdministrativeCost(0)
+                            .setNetwork(Prefix.parse("1.1.1.0/24"))
+                            .build())
+                    .build());
+    assertThat(result.getBooleanValue(), equalTo(false));
+
+    // Reject if network is missing from both prefix lists
+    result =
         c.getRoutingPolicies()
             .get("POLICY-NAME")
             .call(

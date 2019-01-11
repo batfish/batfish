@@ -1964,7 +1964,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
           }
         }
         if (!prefixListsDisjunction.getDisjuncts().isEmpty()) {
-          conj.getConjuncts().add(prefixListsDisjunction.simplify());
+          conj.getConjuncts().add(prefixListsDisjunction);
         }
         if (!subroutines.isEmpty()) {
           ConjunctionChain chain = new ConjunctionChain(subroutines);
