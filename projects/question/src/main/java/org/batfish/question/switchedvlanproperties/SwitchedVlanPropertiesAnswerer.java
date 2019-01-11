@@ -32,7 +32,7 @@ import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.specifier.InterfaceSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
-public class SwitchedVlanPropertiesAnswerer extends Answerer {
+public final class SwitchedVlanPropertiesAnswerer extends Answerer {
 
   @VisibleForTesting static final String COL_INTERFACES = "Interfaces";
   @VisibleForTesting static final String COL_NODE = "Node";
@@ -145,7 +145,7 @@ public class SwitchedVlanPropertiesAnswerer extends Answerer {
   /**
    * Gets properties of switched vlans.
    *
-   * @param ctxt TODO
+   * @param ctxt context in which to apply {@code interfacesSpecifier}
    * @param configurations configuration to use in extractions
    * @param nodes the set of nodes to consider
    * @param interfacesSpecifier Specifies which interfaces to consider
