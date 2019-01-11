@@ -92,71 +92,85 @@ public class RoutingProtocolSpecifier {
   private static final RoutingProtocol RIP_PROTOCOL = RoutingProtocol.RIP;
   private static final RoutingProtocol STATIC_PROTOCOL = RoutingProtocol.STATIC;
 
-  private static final Set<RoutingProtocol> OSPF_INT_PROTOCOLS =
-      ImmutableSet.of(OSPF_INTRA_PROTOCOL, OSPF_INTER_PROTOCOL);
-
-  private static final Set<RoutingProtocol> OSPF_EXT_PROTOCOLS =
-      ImmutableSet.of(OSPF_EXT1_PROTOCOL, OSPF_EXT2_PROTOCOL);
-
-  private static final Set<RoutingProtocol> OSPF_PROTOCOLS =
-      ImmutableSet.<RoutingProtocol>builder()
-          .addAll(OSPF_EXT_PROTOCOLS)
-          .addAll(OSPF_INT_PROTOCOLS)
-          .build();
-
-  private static final Set<RoutingProtocol> ISIS_PROTOCOLS =
-      ImmutableSet.of(ISIS_L1_PROTOCOL, ISIS_L2_PROTOCOL);
-
-  private static final Set<RoutingProtocol> EIGRP_PROTOCOLS =
-      ImmutableSet.of(EIGRP_INT_PROTOCOL, EIGRP_EXT_PROTOCOL);
-
-  private static final Set<RoutingProtocol> IGP_PROTOCOLS =
-      ImmutableSet.<RoutingProtocol>builder()
-          .addAll(OSPF_PROTOCOLS)
-          .addAll(ISIS_PROTOCOLS)
-          .addAll(EIGRP_PROTOCOLS)
-          .add(RIP_PROTOCOL)
-          .build();
-
-  private static final Set<RoutingProtocol> BGP_PROTOCOLS =
-      ImmutableSet.of(EBGP_PROTOCOL, IBGP_PROTOCOL);
-
   private static final Set<RoutingProtocol> ALL_PROTOCOLS =
       ImmutableSet.<RoutingProtocol>builder()
           .addAll(Stream.of(RoutingProtocol.values()).collect(Collectors.toSet()))
           .build();
 
-  private static final Map<String, Set<RoutingProtocol>> _map =
-      ImmutableMap.<String, Set<RoutingProtocol>>builder()
-          .put(AGGREGATE, ImmutableSet.of(AGGREGATE_PROTOCOL))
-          .put(ALL, ALL_PROTOCOLS)
-          .put(BGP, BGP_PROTOCOLS)
-          .put(CONNECTED, ImmutableSet.of(CONNECTED_PROTOCOL))
-          .put(EBGP, ImmutableSet.of(EBGP_PROTOCOL))
-          .put(EIGRP, EIGRP_PROTOCOLS)
-          .put(EIGRP_EXT, ImmutableSet.of(EIGRP_EXT_PROTOCOL))
-          .put(EIGRP_INT, ImmutableSet.of(EIGRP_INT_PROTOCOL))
-          .put(IBGP, ImmutableSet.of(IBGP_PROTOCOL))
-          .put(IGP, IGP_PROTOCOLS)
-          .put(ISIS, ISIS_PROTOCOLS)
-          .put(ISIS_L1, ImmutableSet.of(ISIS_L1_PROTOCOL))
-          .put(ISIS_L2, ImmutableSet.of(ISIS_L2_PROTOCOL))
-          .put(LOCAL, ImmutableSet.of(LOCAL_PROTOCOL))
-          .put(OSPF, OSPF_PROTOCOLS)
-          .put(OSPF_EXT, OSPF_EXT_PROTOCOLS)
-          .put(OSPF_EXT1, ImmutableSet.of(OSPF_EXT1_PROTOCOL))
-          .put(OSPF_EXT2, ImmutableSet.of(OSPF_EXT2_PROTOCOL))
-          .put(OSPF_INT, OSPF_INT_PROTOCOLS)
-          .put(OSPF_INTER, ImmutableSet.of(OSPF_INTER_PROTOCOL))
-          .put(OSPF_INTRA, ImmutableSet.of(OSPF_INTRA_PROTOCOL))
-          .put(RIP, ImmutableSet.of(RIP_PROTOCOL))
-          .put(STATIC, ImmutableSet.of(STATIC_PROTOCOL))
-          .build();
+  private static final Set<RoutingProtocol> OSPF_INT_PROTOCOLS;
+
+  private static final Set<RoutingProtocol> OSPF_EXT_PROTOCOLS;
+
+  private static final Set<RoutingProtocol> OSPF_PROTOCOLS;
+
+  private static final Set<RoutingProtocol> ISIS_PROTOCOLS;
+
+  private static final Set<RoutingProtocol> EIGRP_PROTOCOLS;
+
+  private static final Set<RoutingProtocol> IGP_PROTOCOLS;
+
+  private static final Set<RoutingProtocol> BGP_PROTOCOLS;
+
+  private static final Map<String, Set<RoutingProtocol>> _map;
 
   private final Set<RoutingProtocol> _protocols;
 
   public static final RoutingProtocolSpecifier ALL_PROTOCOLS_SPECIFIER =
       new RoutingProtocolSpecifier(fromString(ALL));
+
+  // initialize all protocol groups
+  static {
+    OSPF_INT_PROTOCOLS = ImmutableSet.of(OSPF_INTRA_PROTOCOL, OSPF_INTER_PROTOCOL);
+
+    OSPF_EXT_PROTOCOLS = ImmutableSet.of(OSPF_EXT1_PROTOCOL, OSPF_EXT2_PROTOCOL);
+
+    OSPF_PROTOCOLS =
+        ImmutableSet.<RoutingProtocol>builder()
+            .addAll(OSPF_EXT_PROTOCOLS)
+            .addAll(OSPF_INT_PROTOCOLS)
+            .build();
+
+    ISIS_PROTOCOLS = ImmutableSet.of(ISIS_L1_PROTOCOL, ISIS_L2_PROTOCOL);
+
+    EIGRP_PROTOCOLS = ImmutableSet.of(EIGRP_INT_PROTOCOL, EIGRP_EXT_PROTOCOL);
+
+    IGP_PROTOCOLS =
+        ImmutableSet.<RoutingProtocol>builder()
+            .addAll(OSPF_PROTOCOLS)
+            .addAll(ISIS_PROTOCOLS)
+            .addAll(EIGRP_PROTOCOLS)
+            .add(RIP_PROTOCOL)
+            .build();
+
+    BGP_PROTOCOLS = ImmutableSet.of(EBGP_PROTOCOL, IBGP_PROTOCOL);
+
+    _map =
+        ImmutableMap.<String, Set<RoutingProtocol>>builder()
+            .put(AGGREGATE, ImmutableSet.of(AGGREGATE_PROTOCOL))
+            .put(ALL, ALL_PROTOCOLS)
+            .put(BGP, BGP_PROTOCOLS)
+            .put(CONNECTED, ImmutableSet.of(CONNECTED_PROTOCOL))
+            .put(EBGP, ImmutableSet.of(EBGP_PROTOCOL))
+            .put(EIGRP, EIGRP_PROTOCOLS)
+            .put(EIGRP_EXT, ImmutableSet.of(EIGRP_EXT_PROTOCOL))
+            .put(EIGRP_INT, ImmutableSet.of(EIGRP_INT_PROTOCOL))
+            .put(IBGP, ImmutableSet.of(IBGP_PROTOCOL))
+            .put(IGP, IGP_PROTOCOLS)
+            .put(ISIS, ISIS_PROTOCOLS)
+            .put(ISIS_L1, ImmutableSet.of(ISIS_L1_PROTOCOL))
+            .put(ISIS_L2, ImmutableSet.of(ISIS_L2_PROTOCOL))
+            .put(LOCAL, ImmutableSet.of(LOCAL_PROTOCOL))
+            .put(OSPF, OSPF_PROTOCOLS)
+            .put(OSPF_EXT, OSPF_EXT_PROTOCOLS)
+            .put(OSPF_EXT1, ImmutableSet.of(OSPF_EXT1_PROTOCOL))
+            .put(OSPF_EXT2, ImmutableSet.of(OSPF_EXT2_PROTOCOL))
+            .put(OSPF_INT, OSPF_INT_PROTOCOLS)
+            .put(OSPF_INTER, ImmutableSet.of(OSPF_INTER_PROTOCOL))
+            .put(OSPF_INTRA, ImmutableSet.of(OSPF_INTRA_PROTOCOL))
+            .put(RIP, ImmutableSet.of(RIP_PROTOCOL))
+            .put(STATIC, ImmutableSet.of(STATIC_PROTOCOL))
+            .build();
+  }
 
   @JsonCreator
   @VisibleForTesting
