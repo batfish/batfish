@@ -82,6 +82,12 @@ public final class AnswerMetadataUtil {
                 columnAggregationsByColumnEntry.getValue(), Entry::getKey, Entry::getValue));
   }
 
+  /**
+   * Return the largest non-null value in the specified column. If the column cannot be interpreted
+   * as an Integer,or has only null values, returns null.
+   *
+   * @throws IllegalArgumentException if the named column is not present in the table.
+   */
   @VisibleForTesting
   @Nullable
   static Integer computeColumnMax(
