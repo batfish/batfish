@@ -2777,6 +2777,51 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testJuniperPolicyStatementPrefixListDisjunction() throws IOException {
+    // Configuration has policy statement with term that checks two prefix lists.
+    Configuration c = parseConfig("juniper-from-prefix-list");
+
+    // Accept if network matches either prefix list
+    for (Prefix p : ImmutableList.of(Prefix.parse("1.1.1.0/24"), Prefix.parse("2.2.2.0/24"))) {
+      Result result =
+          c.getRoutingPolicies()
+              .get("POLICY-NAME")
+              .call(
+                  Environment.builder(c)
+                      .setVrf(Configuration.DEFAULT_VRF_NAME)
+                      .setOriginalRoute(new ConnectedRoute(p, "nextHop"))
+                      .build());
+      assertThat(result.getBooleanValue(), equalTo(true));
+    }
+
+    // Reject if network does not match protocol
+    Result result =
+        c.getRoutingPolicies()
+            .get("POLICY-NAME")
+            .call(
+                Environment.builder(c)
+                    .setVrf(Configuration.DEFAULT_VRF_NAME)
+                    .setOriginalRoute(
+                        StaticRoute.builder()
+                            .setAdministrativeCost(0)
+                            .setNetwork(Prefix.parse("1.1.1.0/24"))
+                            .build())
+                    .build());
+    assertThat(result.getBooleanValue(), equalTo(false));
+
+    // Reject if network is missing from both prefix lists
+    result =
+        c.getRoutingPolicies()
+            .get("POLICY-NAME")
+            .call(
+                Environment.builder(c)
+                    .setVrf(Configuration.DEFAULT_VRF_NAME)
+                    .setOriginalRoute(new ConnectedRoute(Prefix.parse("3.3.3.0/24"), "nextHop"))
+                    .build());
+    assertThat(result.getBooleanValue(), equalTo(false));
+  }
+
+  @Test
   public void testJuniperWildcards() throws IOException {
     String hostname = "juniper-wildcards";
     String loopback = "lo0.0";
