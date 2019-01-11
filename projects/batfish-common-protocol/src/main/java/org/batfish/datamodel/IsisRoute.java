@@ -19,6 +19,7 @@ public class IsisRoute extends AbstractRoute {
     private boolean _attach;
     private boolean _down;
     private IsisLevel _level;
+    private boolean _overload;
     private RoutingProtocol _protocol;
     private String _systemId;
 
@@ -33,6 +34,7 @@ public class IsisRoute extends AbstractRoute {
           getMetric(),
           requireNonNull(getNetwork()),
           requireNonNull(getNextHopIp()),
+          _overload,
           requireNonNull(_protocol),
           requireNonNull(_systemId),
           getNonForwarding(),
@@ -64,6 +66,11 @@ public class IsisRoute extends AbstractRoute {
       return this;
     }
 
+    public Builder setOverload(boolean overload) {
+      _overload = overload;
+      return this;
+    }
+
     public Builder setProtocol(@Nonnull RoutingProtocol protocol) {
       _protocol = protocol;
       return this;
@@ -82,6 +89,7 @@ public class IsisRoute extends AbstractRoute {
   private static final String PROP_ATTACH = "attach";
   private static final String PROP_DOWN = "down";
   private static final String PROP_LEVEL = "level";
+  private static final String PROP_OVERLOAD = "overload";
   private static final String PROP_SYSTEM_ID = "systemId";
 
   private static final long serialVersionUID = 1L;
@@ -96,6 +104,7 @@ public class IsisRoute extends AbstractRoute {
       @JsonProperty(PROP_METRIC) long metric,
       @JsonProperty(PROP_NETWORK) Prefix network,
       @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @JsonProperty(PROP_OVERLOAD) boolean overload,
       @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
       @JsonProperty(PROP_SYSTEM_ID) String systemId) {
     return new IsisRoute(
@@ -107,6 +116,7 @@ public class IsisRoute extends AbstractRoute {
         metric,
         requireNonNull(network),
         requireNonNull(nextHopIp),
+        overload,
         requireNonNull(protocol),
         requireNonNull(systemId),
         false,
@@ -125,6 +135,8 @@ public class IsisRoute extends AbstractRoute {
 
   private final Ip _nextHopIp;
 
+  private final boolean _overload;
+
   private final RoutingProtocol _protocol;
 
   private final String _systemId;
@@ -138,6 +150,7 @@ public class IsisRoute extends AbstractRoute {
       long metric,
       @Nonnull Prefix network,
       @Nonnull Ip nextHopIp,
+      boolean overload,
       @Nonnull RoutingProtocol protocol,
       @Nonnull String systemId,
       boolean nonForwarding,
@@ -149,6 +162,7 @@ public class IsisRoute extends AbstractRoute {
     _level = level;
     _metric = metric;
     _nextHopIp = nextHopIp;
+    _overload = overload;
     _protocol = protocol;
     _systemId = systemId;
   }
@@ -172,6 +186,7 @@ public class IsisRoute extends AbstractRoute {
         && _nextHopIp.equals(rhs._nextHopIp)
         && getNonForwarding() == rhs.getNonForwarding()
         && getNonRouting() == rhs.getNonRouting()
+        && _overload == rhs._overload
         && _protocol == rhs._protocol
         && _systemId.equals(rhs._systemId);
   }
@@ -189,6 +204,7 @@ public class IsisRoute extends AbstractRoute {
         _nextHopIp,
         getNonForwarding(),
         getNonRouting(),
+        _overload,
         _protocol.ordinal(),
         _systemId);
   }
@@ -205,6 +221,7 @@ public class IsisRoute extends AbstractRoute {
         .setNextHopIp(_nextHopIp)
         .setNonForwarding(getNonForwarding())
         .setNonRouting(getNonRouting())
+        .setOverload(_overload)
         .setProtocol(_protocol)
         .setSystemId(_systemId);
   }
@@ -250,6 +267,12 @@ public class IsisRoute extends AbstractRoute {
     return _nextHopIp;
   }
 
+  /** Overload bit indicates this route came through an overloaded interface level. */
+  @JsonProperty(PROP_OVERLOAD)
+  public boolean getOverload() {
+    return _overload;
+  }
+
   @JsonIgnore(false)
   @JsonProperty(PROP_PROTOCOL)
   @Override
@@ -278,6 +301,7 @@ public class IsisRoute extends AbstractRoute {
         .thenComparing(IsisRoute::getAttach)
         .thenComparing(IsisRoute::getDown)
         .thenComparing(IsisRoute::getLevel)
+        .thenComparing(IsisRoute::getOverload)
         .thenComparing(IsisRoute::getSystemId)
         .compare(this, castRhs);
   }

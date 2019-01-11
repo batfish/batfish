@@ -1,0 +1,31 @@
+{
+  "class" : "org.batfish.question.vxlanproperties.VxlanVniPropertiesQuestion",
+  "nodes" : "nodename",
+  "properties" : "VLAN",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Returns configuration properties of VXLANs",
+    "instanceName" : "qname",
+    "tags" : [
+      "configuration",
+      "tunnel"
+    ],
+    "variables" : {
+      "nodes" : {
+        "description" : "Include nodes matching this specifier",
+        "displayName" : "Nodes",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : "nodename"
+      },
+      "properties" : {
+        "description" : "Include properties matching this specifier",
+        "displayName" : "Properties",
+        "optional" : true,
+        "type" : "vxlanVniPropertySpec",
+        "value" : "VLAN"
+      }
+    }
+  }
+}

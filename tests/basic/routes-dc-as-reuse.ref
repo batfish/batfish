@@ -46,17 +46,17 @@
           "schema" : "String"
         },
         {
-          "description" : "Route's Admin distance",
-          "isKey" : false,
-          "isValue" : true,
-          "name" : "Admin_Distance",
-          "schema" : "Integer"
-        },
-        {
           "description" : "Route's Metric",
           "isKey" : false,
           "isValue" : true,
           "name" : "Metric",
+          "schema" : "Integer"
+        },
+        {
+          "description" : "Route's Admin distance",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "Admin_Distance",
           "schema" : "Integer"
         },
         {

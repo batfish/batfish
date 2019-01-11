@@ -33,6 +33,7 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.question.traceroute.TracerouteAnswerer;
+import org.batfish.specifier.DispositionSpecifier;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;

@@ -3,6 +3,7 @@ package org.batfish.grammar.flatjuniper;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
@@ -26,6 +27,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STA
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_PROFILE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
+import static org.batfish.representation.juniper.JuniperStructureUsage.ADDRESS_BOOK_ATTACH_ZONE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.AGGREGATE_ROUTE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET;
@@ -85,7 +87,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -433,6 +434,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sea_keyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sea_toleranceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sead_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sead_address_setContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sead_attachContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seada_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seada_address_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_algorithmContext;
@@ -696,8 +698,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   private static final BgpGroup DUMMY_BGP_GROUP = new BgpGroup();
 
   private static final StaticRoute DUMMY_STATIC_ROUTE = new StaticRoute(Prefix.ZERO);
-
-  private static final String GLOBAL_ADDRESS_BOOK_NAME = "global";
 
   private String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
     return String.format("Could not convert to %s: %s", type.getSimpleName(), getFullText(ctx));
@@ -1938,8 +1938,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private int _disjunctionPolicyIndex;
 
-  private AddressBook _globalAddressBook;
-
   private boolean _hasZones;
 
   private FlatJuniperCombinedParser _parser;
@@ -1981,10 +1979,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   private void setLogicalSystem(LogicalSystem logicalSystem) {
     _currentLogicalSystem = logicalSystem;
     _currentRoutingInstance = _currentLogicalSystem.getDefaultRoutingInstance();
-    _globalAddressBook =
-        _currentLogicalSystem
-            .getAddressBooks()
-            .computeIfAbsent(GLOBAL_ADDRESS_BOOK_NAME, n -> new AddressBook(n, new TreeMap<>()));
   }
 
   private BatfishException convError(Class<?> type, ParserRuleContext ctx) {
@@ -2865,7 +2859,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentAddressBook =
         _currentLogicalSystem
             .getAddressBooks()
-            .computeIfAbsent(name, n -> new AddressBook(n, new TreeMap<>()));
+            .computeIfAbsent(
+                name, n -> new AddressBook(n, _currentLogicalSystem.getGlobalAddressBook()));
+    if (!_currentAddressBook.getName().equals(LogicalSystem.GLOBAL_ADDRESS_BOOK_NAME)) {
+      defineStructure(JuniperStructureType.ADDRESS_BOOK, _currentAddressBook.getName(), ctx);
+    }
   }
 
   @Override
@@ -2923,6 +2921,43 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentAddressSetAddressBookEntry
         .getEntries()
         .put(name, new AddressSetEntry(name, _currentAddressBook));
+  }
+
+  @Override
+  public void exitSead_attach(Sead_attachContext ctx) {
+    String zoneName = ctx.name.getText();
+    Zone zone = _currentLogicalSystem.getOrCreateZone(zoneName);
+    switch (zone.getAddressBookType()) {
+      case GLOBAL:
+        zone.attachAddressBook(_currentAddressBook);
+        _configuration.referenceStructure(
+            ADDRESS_BOOK,
+            _currentAddressBook.getName(),
+            ADDRESS_BOOK_ATTACH_ZONE,
+            getLine(ctx.name.getStart()));
+        break;
+      case ATTACHED:
+        _w.redFlag(
+            String.format(
+                "Two address books are attached to zone %s: %s and %s. Ignoring the first one",
+                zone.getName(), zone.getAddressBook().getName(), _currentAddressBook.getName()));
+        zone.attachAddressBook(_currentAddressBook);
+        _configuration.referenceStructure(
+            ADDRESS_BOOK,
+            _currentAddressBook.getName(),
+            ADDRESS_BOOK_ATTACH_ZONE,
+            getLine(ctx.name.getStart()));
+        break;
+      case INLINED:
+        _w.redFlag(
+            String.format(
+                "Not attaching the address book %s to zone %s because an inline address book is defined",
+                _currentAddressBook.getName(), zone.getName()));
+        break;
+      default:
+        throw new BatfishException(
+            "Unsupported AddressBook type: " + _currentZone.getAddressBookType());
+    }
   }
 
   @Override
@@ -3040,27 +3075,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       String toName = ctx.to.getText();
       String policyName = zoneToZoneFilter(fromName, toName);
       if (ctx.from.JUNOS_HOST() == null) {
-        _currentFromZone = _currentLogicalSystem.getZones().get(fromName);
-        if (_currentFromZone == null) {
-          _currentFromZone = new Zone(fromName, _currentLogicalSystem.getAddressBooks());
-          _currentLogicalSystem.getZones().put(fromName, _currentFromZone);
-          _currentLogicalSystem
-              .getFirewallFilters()
-              .put(
-                  _currentFromZone.getInboundFilter().getName(),
-                  _currentFromZone.getInboundFilter());
-        }
+        _currentFromZone = _currentLogicalSystem.getOrCreateZone(fromName);
       }
 
       if (ctx.to.JUNOS_HOST() == null) {
-        _currentToZone = _currentLogicalSystem.getZones().get(toName);
-        if (_currentToZone == null) {
-          _currentToZone = new Zone(toName, _currentLogicalSystem.getAddressBooks());
-          _currentLogicalSystem
-              .getFirewallFilters()
-              .put(_currentToZone.getInboundFilter().getName(), _currentToZone.getInboundFilter());
-          _currentLogicalSystem.getZones().put(toName, _currentToZone);
-        }
+        _currentToZone = _currentLogicalSystem.getOrCreateZone(toName);
       }
 
       if (ctx.from.JUNOS_HOST() != null) {
@@ -3123,20 +3142,32 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterSez_security_zone(Sez_security_zoneContext ctx) {
     String zoneName = ctx.zone().getText();
-    _currentZone = _currentLogicalSystem.getZones().get(zoneName);
-    if (_currentZone == null) {
-      _currentZone = new Zone(zoneName, _currentLogicalSystem.getAddressBooks());
-      _currentLogicalSystem
-          .getFirewallFilters()
-          .put(_currentZone.getInboundFilter().getName(), _currentZone.getInboundFilter());
-      _currentLogicalSystem.getZones().put(zoneName, _currentZone);
-    }
+    _currentZone = _currentLogicalSystem.getOrCreateZone(zoneName);
     _currentZoneInboundFilter = _currentZone.getInboundFilter();
   }
 
   @Override
   public void enterSezs_address_book(Sezs_address_bookContext ctx) {
-    _currentAddressBook = _currentZone.getAddressBook();
+    switch (_currentZone.getAddressBookType()) {
+      case GLOBAL:
+        _currentAddressBook =
+            _currentZone.initInlinedAddressBook(_currentLogicalSystem.getGlobalAddressBook());
+        return;
+      case INLINED:
+        _currentAddressBook = _currentZone.getAddressBook();
+        return;
+      case ATTACHED:
+        _w.redFlag(
+            String.format(
+                "Ignoring attached address book %s to zone %s because an inline address book is defined",
+                _currentZone.getAddressBook().getName(), _currentZone.getName()));
+        _currentAddressBook =
+            _currentZone.initInlinedAddressBook(_currentLogicalSystem.getGlobalAddressBook());
+        break;
+      default:
+        throw new BatfishException(
+            "Unsupported AddressBook type: " + _currentZone.getAddressBookType());
+    }
   }
 
   @Override
@@ -5234,10 +5265,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return;
     } else if (ctx.address_specifier().variable() != null) {
       String addressBookEntryName = ctx.address_specifier().variable().getText();
-      // Use global address book for global policies (no toZone)
-      AddressBook addressBook =
-          (_currentToZone == null) ? _globalAddressBook : _currentToZone.getAddressBook();
-      FwFrom match = new FwFromDestinationAddressBookEntry(addressBook, addressBookEntryName);
+      FwFrom match =
+          new FwFromDestinationAddressBookEntry(
+              _currentToZone, _currentLogicalSystem.getGlobalAddressBook(), addressBookEntryName);
       _currentFwTerm.getFroms().add(match);
     } else {
       throw new BatfishException("Invalid address-specifier");
@@ -5255,10 +5285,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return;
     } else if (ctx.address_specifier().variable() != null) {
       String addressBookEntryName = ctx.address_specifier().variable().getText();
-      // Use global address book for global policies (no fromZone)
-      AddressBook addressBook =
-          (_currentFromZone == null) ? _globalAddressBook : _currentFromZone.getAddressBook();
-      FwFrom match = new FwFromSourceAddressBookEntry(addressBook, addressBookEntryName);
+      FwFrom match =
+          new FwFromSourceAddressBookEntry(
+              _currentFromZone, _currentLogicalSystem.getGlobalAddressBook(), addressBookEntryName);
       _currentFwTerm.getFroms().add(match);
     } else {
       throw new BatfishException("Invalid address-specifier");

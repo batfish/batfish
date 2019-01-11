@@ -1,6 +1,7 @@
 package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableList;
+import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
@@ -15,10 +16,15 @@ public final class FwFromSourceAddressBookEntry extends FwFrom {
 
   private final String _addressBookEntryName;
 
-  private final AddressBook _localAddressBook;
+  private final AddressBook _globalAddressBook;
 
-  public FwFromSourceAddressBookEntry(AddressBook localAddressBook, String addressBookEntryName) {
-    _localAddressBook = localAddressBook;
+  // if zone is null, consult the global address book; o/w, the zone's address book
+  @Nullable private final Zone _zone;
+
+  public FwFromSourceAddressBookEntry(
+      Zone zone, AddressBook globalAddressBook, String addressBookEntryName) {
+    _zone = zone;
+    _globalAddressBook = globalAddressBook;
     _addressBookEntryName = addressBookEntryName;
   }
 
@@ -28,8 +34,8 @@ public final class FwFromSourceAddressBookEntry extends FwFrom {
       JuniperConfiguration jc,
       Warnings w,
       Configuration c) {
-    // Address book name may be the local address book name or the global name
-    String addressBookName = _localAddressBook.getAddressBookName(_addressBookEntryName);
+    AddressBook addressBook = _zone == null ? _globalAddressBook : _zone.getAddressBook();
+    String addressBookName = addressBook.getAddressBookName(_addressBookEntryName);
     String ipSpaceName = addressBookName + "~" + _addressBookEntryName;
     IpSpaceReference ipSpaceReference = new IpSpaceReference(ipSpaceName);
     if (headerSpaceBuilder.getSrcIps() != null) {

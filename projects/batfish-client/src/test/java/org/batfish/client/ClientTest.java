@@ -64,6 +64,7 @@ import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_STATUS;
 import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_TYPE;
 import static org.batfish.datamodel.questions.Variable.Type.BOOLEAN;
 import static org.batfish.datamodel.questions.Variable.Type.COMPARATOR;
+import static org.batfish.datamodel.questions.Variable.Type.DISPOSITION_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.DOUBLE;
 import static org.batfish.datamodel.questions.Variable.Type.FILTER;
 import static org.batfish.datamodel.questions.Variable.Type.FLOAT;
@@ -594,6 +595,15 @@ public class ClientTest {
     Type expectedType = COMPARATOR;
     String expectedMessage =
         "It is not a known comparator. Valid options " + "are: [==, <=, !=, <, >, >=]";
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidDispositionSpecifierValue() throws IOException {
+    String input = "5";
+    Type expectedType = DISPOSITION_SPEC;
+    String expectedMessage =
+        String.format("It is not a valid JSON %s value", DISPOSITION_SPEC.getName());
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
@@ -1662,6 +1672,14 @@ public class ClientTest {
     Variable variable = new Variable();
     variable.setType(COMPARATOR);
     Client.validateType(comparatorNode, variable);
+  }
+
+  @Test
+  public void testValidDispositionSpecifierValue() throws IOException {
+    JsonNode dispositionSpecNode = _mapper.readTree("\"success\"");
+    Variable variable = new Variable();
+    variable.setType(DISPOSITION_SPEC);
+    Client.validateType(dispositionSpecNode, variable);
   }
 
   @Test

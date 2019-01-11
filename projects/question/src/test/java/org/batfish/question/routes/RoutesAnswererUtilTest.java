@@ -7,7 +7,6 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_AS_PATH;
 import static org.batfish.question.routes.RoutesAnswerer.COL_COMMUNITIES;
 import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK;
-import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK_PRESENCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENCE;
@@ -330,62 +329,30 @@ public class RoutesAnswererUtilTest {
         rows,
         containsInAnyOrder(
             ImmutableList.of(
-                allOf(
-                    hasColumn(
-                        COL_NETWORK_PRESENCE,
-                        equalTo(KeyPresenceStatus.IN_BOTH.presenceStatusName()),
-                        Schema.STRING),
-                    hasColumn(
-                        COL_ROUTE_ENTRY_PRESENCE,
-                        equalTo(RouteEntryPresenceStatus.UNCHANGED.routeEntryPresenceName()),
-                        Schema.STRING)),
-                allOf(
-                    hasColumn(
-                        COL_NETWORK_PRESENCE,
-                        equalTo(KeyPresenceStatus.IN_BOTH.presenceStatusName()),
-                        Schema.STRING),
-                    hasColumn(
-                        COL_ROUTE_ENTRY_PRESENCE,
-                        equalTo(RouteEntryPresenceStatus.CHANGED.routeEntryPresenceName()),
-                        Schema.STRING)),
-                allOf(
-                    hasColumn(
-                        COL_NETWORK_PRESENCE,
-                        equalTo(KeyPresenceStatus.IN_BOTH.presenceStatusName()),
-                        Schema.STRING),
-                    hasColumn(
-                        COL_ROUTE_ENTRY_PRESENCE,
-                        equalTo(RouteEntryPresenceStatus.ONLY_IN_SNAPSHOT.routeEntryPresenceName()),
-                        Schema.STRING)),
-                allOf(
-                    hasColumn(
-                        COL_NETWORK_PRESENCE,
-                        equalTo(KeyPresenceStatus.IN_BOTH.presenceStatusName()),
-                        Schema.STRING),
-                    hasColumn(
-                        COL_ROUTE_ENTRY_PRESENCE,
-                        equalTo(
-                            RouteEntryPresenceStatus.ONLY_IN_REFERENCE.routeEntryPresenceName()),
-                        Schema.STRING)),
-                allOf(
-                    hasColumn(
-                        COL_NETWORK_PRESENCE,
-                        equalTo(KeyPresenceStatus.IN_BOTH.presenceStatusName()),
-                        Schema.STRING),
-                    hasColumn(
-                        COL_ROUTE_ENTRY_PRESENCE,
-                        equalTo(RouteEntryPresenceStatus.ONLY_IN_SNAPSHOT.routeEntryPresenceName()),
-                        Schema.STRING)),
-                allOf(
-                    hasColumn(
-                        COL_NETWORK_PRESENCE,
-                        equalTo(KeyPresenceStatus.IN_BOTH.presenceStatusName()),
-                        Schema.STRING),
-                    hasColumn(
-                        COL_ROUTE_ENTRY_PRESENCE,
-                        equalTo(
-                            RouteEntryPresenceStatus.ONLY_IN_REFERENCE.routeEntryPresenceName()),
-                        Schema.STRING)))));
+                hasColumn(
+                    COL_ROUTE_ENTRY_PRESENCE,
+                    equalTo(RouteEntryPresenceStatus.UNCHANGED.routeEntryPresenceName()),
+                    Schema.STRING),
+                hasColumn(
+                    COL_ROUTE_ENTRY_PRESENCE,
+                    equalTo(RouteEntryPresenceStatus.CHANGED.routeEntryPresenceName()),
+                    Schema.STRING),
+                hasColumn(
+                    COL_ROUTE_ENTRY_PRESENCE,
+                    equalTo(RouteEntryPresenceStatus.ONLY_IN_SNAPSHOT.routeEntryPresenceName()),
+                    Schema.STRING),
+                hasColumn(
+                    COL_ROUTE_ENTRY_PRESENCE,
+                    equalTo(RouteEntryPresenceStatus.ONLY_IN_REFERENCE.routeEntryPresenceName()),
+                    Schema.STRING),
+                hasColumn(
+                    COL_ROUTE_ENTRY_PRESENCE,
+                    equalTo(RouteEntryPresenceStatus.ONLY_IN_SNAPSHOT.routeEntryPresenceName()),
+                    Schema.STRING),
+                hasColumn(
+                    COL_ROUTE_ENTRY_PRESENCE,
+                    equalTo(RouteEntryPresenceStatus.ONLY_IN_REFERENCE.routeEntryPresenceName()),
+                    Schema.STRING))));
   }
 
   @Test
@@ -646,14 +613,9 @@ public class RoutesAnswererUtilTest {
         rows,
         containsInAnyOrder(
             ImmutableList.of(
-                allOf(
-                    hasColumn(
-                        COL_NETWORK_PRESENCE,
-                        equalTo(KeyPresenceStatus.IN_BOTH.presenceStatusName()),
-                        Schema.STRING),
-                    hasColumn(
-                        COL_ROUTE_ENTRY_PRESENCE,
-                        equalTo(RouteEntryPresenceStatus.UNCHANGED.routeEntryPresenceName()),
-                        Schema.STRING)))));
+                hasColumn(
+                    COL_ROUTE_ENTRY_PRESENCE,
+                    equalTo(RouteEntryPresenceStatus.UNCHANGED.routeEntryPresenceName()),
+                    Schema.STRING))));
   }
 }

@@ -1,9 +1,11 @@
 package org.batfish.dataplane.protocols;
 
 import java.util.Optional;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.isis.IsisLevel;
+import org.batfish.dataplane.rib.RibDelta;
 
 /** Helper class that implements various IS-IS protocol logic. */
 public class IsisProtocolHelper {
@@ -23,15 +25,31 @@ public class IsisProtocolHelper {
     }
 
     return Optional.of(
-        new IsisRoute.Builder()
-            .setProtocol(RoutingProtocol.ISIS_L2)
-            .setLevel(IsisLevel.LEVEL_2)
+        route
+            .toBuilder()
             .setAdmin(l2Admin)
-            .setMetric(route.getMetric())
-            .setNetwork(route.getNetwork())
-            .setNextHopIp(route.getNextHopIp())
-            .setArea(route.getArea())
-            .setSystemId(route.getSystemId())
+            .setLevel(IsisLevel.LEVEL_2)
+            .setProtocol(RoutingProtocol.ISIS_L2)
             .build());
+  }
+
+  public static @Nullable RibDelta<IsisRoute> setOverloadOnAllRoutes(
+      @Nullable RibDelta<IsisRoute> delta) {
+    if (delta == null) {
+      return null;
+    }
+    RibDelta.Builder<IsisRoute> deltaWithOverloadTrue = new RibDelta.Builder<>(null);
+    delta
+        .getActions()
+        .forEach(
+            ra -> {
+              IsisRoute newRoute = ra.getRoute().toBuilder().setOverload(true).build();
+              if (ra.isWithdrawn()) {
+                deltaWithOverloadTrue.remove(newRoute, ra.getReason());
+              } else {
+                deltaWithOverloadTrue.add(newRoute);
+              }
+            });
+    return deltaWithOverloadTrue.build();
   }
 }

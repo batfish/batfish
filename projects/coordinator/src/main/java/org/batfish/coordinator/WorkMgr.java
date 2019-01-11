@@ -154,6 +154,7 @@ import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.DispositionSpecifier;
 import org.batfish.storage.FileBasedStorageDirectoryProvider;
 import org.batfish.storage.StorageProvider;
 import org.codehaus.jettison.json.JSONArray;
@@ -482,6 +483,11 @@ public class WorkMgr extends AbstractCoordinator {
 
           break;
         }
+      case DISPOSITION_SPEC:
+        {
+          suggestions = DispositionSpecifier.autoComplete(query);
+          break;
+        }
       case FILTER:
         {
           CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
@@ -599,6 +605,7 @@ public class WorkMgr extends AbstractCoordinator {
         }
       case ROUTING_PROTOCOL_SPEC:
         {
+          suggestions = ImmutableList.of();
           break;
         }
       case STRUCTURE_NAME:
