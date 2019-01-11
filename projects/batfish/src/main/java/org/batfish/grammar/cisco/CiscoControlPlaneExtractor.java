@@ -2262,7 +2262,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_vxif_vxlan_source_interface(Eos_vxif_vxlan_source_interfaceContext ctx) {
-    String ifaceName = ctx.iface.getText();
+    String ifaceName = getCanonicalInterfaceName(ctx.iface.getText());
     _eosVxlan.setSourceInterface(ifaceName);
     _configuration.referenceStructure(
         INTERFACE, ifaceName, VXLAN_SOURCE_INTERFACE, ctx.iface.getStart().getLine());
@@ -3753,12 +3753,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterRoa_interface(Roa_interfaceContext ctx) {
-    String ifaceName = ctx.iname.getText();
-    String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-    Interface iface = _configuration.getInterfaces().get(canonicalIfaceName);
+    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    Interface iface = _configuration.getInterfaces().get(ifaceName);
     if (iface == null) {
       _w.redFlag("OSPF: Interface: '" + ifaceName + "' not declared before OSPF process");
-      iface = addInterface(canonicalIfaceName, ctx.iname, false);
+      iface = addInterface(ifaceName, ctx.iname, false);
     }
     // might cause problems if interfaces are declared after ospf, but
     // whatever
@@ -4405,8 +4404,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterVrrp_interface(Vrrp_interfaceContext ctx) {
-    String ifaceName = ctx.iface.getText();
-    _currentVrrpInterface = getCanonicalInterfaceName(ifaceName);
+    _currentVrrpInterface = getCanonicalInterfaceName(ctx.iface.getText());
     _configuration.referenceStructure(
         INTERFACE, _currentVrrpInterface, ROUTER_VRRP_INTERFACE, ctx.iface.getStart().getLine());
   }
@@ -5085,8 +5083,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitDomain_lookup(Domain_lookupContext ctx) {
     if (ctx.iname != null) {
-      String ifaceName = ctx.iname.getText();
-      String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
+      String canonicalIfaceName = getCanonicalInterfaceName(ctx.iname.getText());
       _configuration.setDnsSourceInterface(canonicalIfaceName);
     }
   }
@@ -5633,7 +5630,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitFailover_link(Failover_linkContext ctx) {
     String alias = ctx.name.getText();
-    String ifaceName = ctx.iface.getText();
+    String ifaceName = getCanonicalInterfaceName(ctx.iface.getText());
     _configuration.getFailoverInterfaces().put(alias, ifaceName);
     _configuration.setFailoverStatefulSignalingInterfaceAlias(alias);
     _configuration.setFailoverStatefulSignalingInterface(ifaceName);
@@ -5653,7 +5650,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitFlan_interface(Flan_interfaceContext ctx) {
     String alias = ctx.name.getText();
-    String ifaceName = ctx.iface.getText();
+    String ifaceName = getCanonicalInterfaceName(ctx.iface.getText());
     _configuration.getFailoverInterfaces().put(alias, ifaceName);
     _configuration.setFailoverCommunicationInterface(ifaceName);
     _configuration.setFailoverCommunicationInterfaceAlias(alias);
@@ -5739,8 +5736,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitAsa_ag_interface(Asa_ag_interfaceContext ctx) {
-    String ifaceName = ctx.iface.getText();
-    // Interface iface = _configuration.getInterfaces().get(ifaceName);
+    String ifaceName = ctx.iface.getText(); // Note: Interface alias is not canonicalized.
     Interface iface = getAsaInterfaceByAlias(ifaceName);
     if (iface == null) {
       // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
@@ -6371,21 +6367,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIftunnel_source(Iftunnel_sourceContext ctx) {
-    Ip sourceAddress = null;
     String sourceInterfaceName = null;
     if (ctx.IP_ADDRESS() != null) {
-      sourceAddress = toIp(ctx.IP_ADDRESS());
-    } else {
-      sourceInterfaceName = ctx.interface_name().getText();
+      Ip sourceAddress = toIp(ctx.IP_ADDRESS());
+      for (Interface iface : _currentInterfaces) {
+        iface.getTunnelInitIfNull().setSourceAddress(sourceAddress);
+      }
+    } else if (ctx.interface_name() != null) {
+      sourceInterfaceName = getCanonicalInterfaceName(ctx.interface_name().getText());
       _configuration.referenceStructure(
           INTERFACE, sourceInterfaceName, TUNNEL_SOURCE, ctx.interface_name().getStart().getLine());
-    }
-    for (Interface iface : _currentInterfaces) {
-      if (sourceAddress != null) {
-        iface.getTunnelInitIfNull().setSourceAddress(sourceAddress);
-      } else {
+      for (Interface iface : _currentInterfaces) {
         iface.getTunnelInitIfNull().setSourceInterfaceName(sourceInterfaceName);
       }
+    } else {
+      // TODO(tunnel source dynamic)
+      assert true; // do nothing
     }
   }
 
@@ -6555,9 +6552,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIp_domain_lookup(Ip_domain_lookupContext ctx) {
     if (ctx.iname != null) {
-      String ifaceName = ctx.iname.getText();
-      String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-      _configuration.setDnsSourceInterface(canonicalIfaceName);
+      String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+      _configuration.setDnsSourceInterface(ifaceName);
     }
   }
 
@@ -7618,9 +7614,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitNtp_source_interface(Ntp_source_interfaceContext ctx) {
-    String ifaceName = ctx.iname.getText();
-    String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-    _configuration.setNtpSourceInterface(canonicalIfaceName);
+    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    _configuration.setNtpSourceInterface(ifaceName);
   }
 
   @Override
@@ -8244,8 +8239,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _configuration.referenceStructure(type, name, usage, line);
 
     if (ctx.iname != null) {
-      String canonicalIfaceName = getCanonicalInterfaceName(ctx.iname.getText());
-      _configuration.referenceStructure(INTERFACE, canonicalIfaceName, usage, line);
+      String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+      _configuration.referenceStructure(INTERFACE, ifaceName, usage, line);
     }
 
     todo(ctx);
@@ -8786,9 +8781,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitS_ip_tacacs_source_interface(S_ip_tacacs_source_interfaceContext ctx) {
-    String ifaceName = ctx.iname.getText();
-    String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-    _configuration.setTacacsSourceInterface(canonicalIfaceName);
+    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    _configuration.setTacacsSourceInterface(ifaceName);
   }
 
   @Override
@@ -8803,7 +8797,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitS_mtu(S_mtuContext ctx) {
-    String ifaceName = ctx.iface.getText();
+    String ifaceName = ctx.iface.getText(); // Note: Interface alias is not canonicalized.
     Interface iface = getAsaInterfaceByAlias(ifaceName);
     if (iface == null) {
       // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
@@ -8878,7 +8872,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         ctx.name.getText(),
         SERVICE_POLICY_INTERFACE_POLICY,
         ctx.name.getStart().getLine());
-    String ifaceName = ctx.iface.getText();
+    String ifaceName = ctx.iface.getText(); // Note: Interface alias is not canonicalized.
     Interface iface = getAsaInterfaceByAlias(ifaceName);
     if (iface == null) {
       // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
@@ -9175,9 +9169,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitSs_source_interface(Ss_source_interfaceContext ctx) {
-    String ifaceName = ctx.iname.getText();
-    String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-    _configuration.setSnmpSourceInterface(canonicalIfaceName);
+    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    _configuration.setSnmpSourceInterface(ifaceName);
   }
 
   @Override
@@ -9189,9 +9182,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitSs_trap_source(Ss_trap_sourceContext ctx) {
-    String ifaceName = ctx.iname.getText();
-    String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-    _configuration.setSnmpSourceInterface(canonicalIfaceName);
+    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    _configuration.setSnmpSourceInterface(ifaceName);
   }
 
   @Override
@@ -9379,9 +9371,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitT_source_interface(T_source_interfaceContext ctx) {
-    String ifaceName = ctx.iname.getText();
-    String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-    _configuration.setTacacsSourceInterface(canonicalIfaceName);
+    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    _configuration.setTacacsSourceInterface(ifaceName);
   }
 
   @Override
