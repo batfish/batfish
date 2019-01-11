@@ -55,6 +55,7 @@ import org.batfish.datamodel.MockDataPlane;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -63,6 +64,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 import org.batfish.specifier.MockSpecifierContext;
+import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.SpecifierContext;
 import org.junit.Test;
 
@@ -75,7 +77,14 @@ public class RoutesAnswererTest {
         ImmutableSortedMap.of(
             "n1", ImmutableSortedMap.of(Configuration.DEFAULT_VRF_NAME, new MockRib<>()));
 
-    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, ".*", ".*", null);
+    Multiset<Row> actual =
+        getMainRibRoutes(
+            ribs,
+            ImmutableSet.of("n1"),
+            null,
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            ".*",
+            null);
 
     assertThat(actual.entrySet(), hasSize(0));
   }
@@ -102,7 +111,12 @@ public class RoutesAnswererTest {
 
     Multiset<Row> actual =
         getMainRibRoutes(
-            ribs, ImmutableSet.of("n1"), Prefix.create(Ip.parse("2.2.2.0"), 24), ".*", ".*", null);
+            ribs,
+            ImmutableSet.of("n1"),
+            Prefix.create(Ip.parse("2.2.2.0"), 24),
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            ".*",
+            null);
 
     assertThat(actual, hasSize(1));
     assertThat(
@@ -125,7 +139,13 @@ public class RoutesAnswererTest {
                             .build()))));
 
     Multiset<Row> actual =
-        getMainRibRoutes(ribs, ImmutableSet.of("differentNode"), null, ".*", ".*", null);
+        getMainRibRoutes(
+            ribs,
+            ImmutableSet.of("differentNode"),
+            null,
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            ".*",
+            null);
 
     assertThat(actual, hasSize(0));
   }
@@ -147,7 +167,13 @@ public class RoutesAnswererTest {
                         new LocalRoute(new InterfaceAddress("2.2.2.0/24"), "Null")))));
 
     Multiset<Row> actual =
-        getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, "stati.*", ".*", null);
+        getMainRibRoutes(
+            ribs,
+            ImmutableSet.of("n1"),
+            null,
+            new RoutingProtocolSpecifier(ImmutableSet.of(RoutingProtocol.STATIC)),
+            ".*",
+            null);
 
     assertThat(actual, hasSize(1));
     assertThat(
@@ -178,7 +204,13 @@ public class RoutesAnswererTest {
                             .build()))));
 
     Multiset<Row> actual =
-        getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, ".*", "^not.*", null);
+        getMainRibRoutes(
+            ribs,
+            ImmutableSet.of("n1"),
+            null,
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            "^not.*",
+            null);
 
     assertThat(actual, hasSize(1));
     assertThat(

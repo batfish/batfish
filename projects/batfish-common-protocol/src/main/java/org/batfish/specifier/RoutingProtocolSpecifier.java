@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -19,6 +20,8 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.batfish.datamodel.questions.PropertySpecifier;
 
 /** A way to specify groups of RoutingProtocols */
 @ParametersAreNonnullByDefault
@@ -152,6 +155,9 @@ public class RoutingProtocolSpecifier {
 
   private final Set<RoutingProtocol> _protocols;
 
+  public static final RoutingProtocolSpecifier ALL_PROTOCOLS_SPECIFIER =
+      new RoutingProtocolSpecifier(fromString(ALL));
+
   @JsonCreator
   @VisibleForTesting
   static RoutingProtocolSpecifier create(@Nullable String values) {
@@ -181,6 +187,14 @@ public class RoutingProtocolSpecifier {
 
   public RoutingProtocolSpecifier(Set<RoutingProtocol> protocols) {
     _protocols = protocols;
+  }
+
+  /**
+   * Returns a list of suggestions based on the query, based on {@link
+   * PropertySpecifier#baseAutoComplete}.
+   */
+  public static List<AutocompleteSuggestion> autoComplete(String query) {
+    return PropertySpecifier.baseAutoComplete(query, _map.keySet());
   }
 
   public Set<RoutingProtocol> getProtocols() {

@@ -15,6 +15,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.specifier.RoutingProtocolSpecifier;
 
 /** Returns computed routes after dataplane computation. */
 @ParametersAreNonnullByDefault
@@ -62,7 +63,7 @@ public class RoutesQuestion extends Question {
 
   @Nonnull private NodesSpecifier _nodes;
 
-  @Nonnull private String _protocols;
+  @Nonnull private RoutingProtocolSpecifier _protocols;
 
   @Nonnull private RibProtocol _rib;
 
@@ -80,11 +81,11 @@ public class RoutesQuestion extends Question {
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NODES) NodesSpecifier nodes,
       @Nullable @JsonProperty(PROP_VRFS) String vrfs,
-      @Nullable @JsonProperty(PROP_PROTOCOLS) String protocols,
+      @Nullable @JsonProperty(PROP_PROTOCOLS) RoutingProtocolSpecifier protocols,
       @Nullable @JsonProperty(PROP_RIB) RibProtocol rib) {
     _network = network;
     _nodes = firstNonNull(nodes, NodesSpecifier.ALL);
-    _protocols = firstNonNull(protocols, ".*");
+    _protocols = firstNonNull(protocols, RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER);
     _rib = firstNonNull(rib, MAIN);
     _vrfs = firstNonNull(vrfs, ".*");
   }
@@ -118,7 +119,7 @@ public class RoutesQuestion extends Question {
 
   @JsonProperty(PROP_PROTOCOLS)
   @Nonnull
-  public String getProtocols() {
+  public RoutingProtocolSpecifier getProtocols() {
     return _protocols;
   }
 

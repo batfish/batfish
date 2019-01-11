@@ -32,6 +32,7 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
+import org.batfish.specifier.RoutingProtocolSpecifier;
 
 /** Answerer for {@link RoutesQuestion} */
 @ParametersAreNonnullByDefault
@@ -72,7 +73,7 @@ public class RoutesAnswerer extends Answerer {
     DataPlane dp = _batfish.loadDataPlane();
     Set<String> matchingNodes = question.getNodes().getMatchingNodes(_batfish);
     Prefix network = question.getNetwork();
-    String protocolRegex = question.getProtocols();
+    RoutingProtocolSpecifier protocolSpec = question.getProtocols();
     String vrfRegex = question.getVrfs();
     Map<Ip, Set<String>> ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(), true);
 
@@ -86,7 +87,7 @@ public class RoutesAnswerer extends Answerer {
                 RibProtocol.BGP,
                 matchingNodes,
                 network,
-                protocolRegex,
+                protocolSpec,
                 vrfRegex);
         break;
 
@@ -97,14 +98,14 @@ public class RoutesAnswerer extends Answerer {
                 RibProtocol.BGPMP,
                 matchingNodes,
                 network,
-                protocolRegex,
+                protocolSpec,
                 vrfRegex);
         break;
       case MAIN:
       default:
         rows =
             getMainRibRoutes(
-                dp.getRibs(), matchingNodes, network, protocolRegex, vrfRegex, ipOwners);
+                dp.getRibs(), matchingNodes, network, protocolSpec, vrfRegex, ipOwners);
     }
 
     answer.postProcessAnswer(_question, rows);
@@ -118,7 +119,7 @@ public class RoutesAnswerer extends Answerer {
 
     Set<String> matchingNodes = question.getNodes().getMatchingNodes(_batfish);
     Prefix network = question.getNetwork();
-    String protocolRegex = question.getProtocols();
+    RoutingProtocolSpecifier protocolSpec = question.getProtocols();
     String vrfRegex = question.getVrfs();
 
     Multiset<Row> rows;
@@ -170,14 +171,14 @@ public class RoutesAnswerer extends Answerer {
         dp = _batfish.loadDataPlane();
         ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(), true);
         routesGroupedByKeyInBase =
-            groupRoutes(dp.getRibs(), matchingNodes, network, protocolRegex, vrfRegex, ipOwners);
+            groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec, ipOwners);
         _batfish.popSnapshot();
 
         _batfish.pushDeltaSnapshot();
         dp = _batfish.loadDataPlane();
         ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(), true);
         routesGroupedByKeyInDelta =
-            groupRoutes(dp.getRibs(), matchingNodes, network, protocolRegex, vrfRegex, ipOwners);
+            groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec, ipOwners);
         _batfish.popSnapshot();
 
         routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
