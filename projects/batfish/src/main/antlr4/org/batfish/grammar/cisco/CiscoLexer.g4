@@ -664,6 +664,11 @@ ALLOCATE
    'allocate'
 ;
 
+ALLOCATION
+:
+   'allocation'
+;
+
 ALLOW
 :
    'allow'
@@ -959,6 +964,11 @@ AS_SET
 ASA
 :
    'ASA'
+;
+
+ASCENDING
+:
+   'ascending'
 ;
 
 ASCII_AUTHENTICATION
@@ -3042,6 +3052,11 @@ DES_SHA1
    'des-sha1'
 ;
 
+DESCENDING
+:
+   'descending'
+;
+
 DESCRIPTION
 :
    'description' -> pushMode ( M_Description )
@@ -4777,6 +4792,11 @@ FLOATING_CONN
    'floating-conn'
 ;
 
+FLOOD
+:
+   'flood'
+;
+
 FLOW
 :
    'flow'
@@ -6002,6 +6022,11 @@ INTEGRITY
    'integrity'
 ;
 
+INTER_INTERFACE
+:
+   'inter-interface'
+;
+
 INTERAREA
 :
    'interarea'
@@ -6037,6 +6062,11 @@ INTERVAL
 INTERWORKING
 :
    'interworking'
+;
+
+INTRA_INTERFACE
+:
+   'intra-interface'
 ;
 
 INVALID_SPI_RECOVERY
@@ -7949,6 +7979,11 @@ MULTICAST_BOUNDARY
    'multicast-boundary'
 ;
 
+MULTICAST_GROUP
+:
+   'multicast-group'
+;
+
 MULTICAST_ROUTING
 :
    'multicast-routing'
@@ -8517,6 +8552,11 @@ NON_DETERMINISTIC_MED
 NON_EXIST_MAP
 :
    'non-exist-map'
+;
+
+NON_MLAG
+:
+   'non-mlag'
 ;
 
 NON_SILENT
@@ -12288,6 +12328,11 @@ SUSPECT_ROGUE_CONF_LEVEL
    'suspect-rogue-conf-level'
 ;
 
+SUSPEND
+:
+   'suspend'
+;
+
 SVC
 :
    'svc'
@@ -13133,6 +13178,11 @@ UDP
    'udp'
 ;
 
+UDP_PORT
+:
+   'udp-port'
+;
+
 UDP_JITTER
 :
    'udp-jitter'
@@ -13623,6 +13673,11 @@ VMTRACER
    'vmtracer'
 ;
 
+VNI
+:
+   'vni'
+;
+
 VOCERA
 :
    'vocera'
@@ -13763,6 +13818,11 @@ VSERVER
 VSTACK
 :
    'vstack'
+;
+
+VTEP
+:
+   'vtep'
 ;
 
 VTP
@@ -15587,6 +15647,12 @@ M_Interface_PIPE
 M_Interface_PRECFONFIGURE
 :
    'preconfigure' -> type ( PRECONFIGURE )
+;
+
+// M_Interface_VXLAN must come before M_Interface_PREFIX
+M_Interface_VXLAN
+:
+   [Vv]'xlan' -> type (VXLAN)
 ;
 
 M_Interface_PREFIX

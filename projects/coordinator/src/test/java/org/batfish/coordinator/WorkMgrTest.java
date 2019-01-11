@@ -5,8 +5,45 @@ import static org.batfish.coordinator.WorkMgr.addToSerializedList;
 import static org.batfish.coordinator.WorkMgr.generateFileDateString;
 import static org.batfish.coordinator.WorkMgr.removeFromSerializedList;
 import static org.batfish.coordinator.WorkMgrTestUtils.createSnapshot;
+import static org.batfish.datamodel.BgpSessionProperties.SessionType.EBGP_MULTIHOP;
+import static org.batfish.datamodel.BgpSessionProperties.SessionType.EBGP_SINGLEHOP;
+import static org.batfish.datamodel.BgpSessionProperties.SessionType.IBGP;
+import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
+import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
+import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
+import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK;
+import static org.batfish.datamodel.FlowState.ESTABLISHED;
+import static org.batfish.datamodel.FlowState.NEW;
+import static org.batfish.datamodel.FlowState.RELATED;
+import static org.batfish.datamodel.Protocol.HTTP;
+import static org.batfish.datamodel.Protocol.HTTPS;
+import static org.batfish.datamodel.Protocol.SSH;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IS_PASSIVE;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.LOCAL_AS;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.REMOTE_AS;
+import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.MULTIPATH_EBGP;
+import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE;
+import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.MULTIPATH_IBGP;
+import static org.batfish.datamodel.questions.ConfiguredSessionStatus.DYNAMIC_MATCH;
+import static org.batfish.datamodel.questions.ConfiguredSessionStatus.NO_MATCH_FOUND;
+import static org.batfish.datamodel.questions.ConfiguredSessionStatus.UNIQUE_MATCH;
+import static org.batfish.datamodel.questions.InterfacePropertySpecifier.ACCESS_VLAN;
+import static org.batfish.datamodel.questions.InterfacePropertySpecifier.ALLOWED_VLANS;
+import static org.batfish.datamodel.questions.InterfacePropertySpecifier.AUTO_STATE_VLAN;
+import static org.batfish.datamodel.questions.InterfacePropertySpecifier.NATIVE_VLAN;
+import static org.batfish.datamodel.questions.IpsecSessionStatus.IKE_PHASE1_FAILED;
+import static org.batfish.datamodel.questions.IpsecSessionStatus.IKE_PHASE1_KEY_MISMATCH;
+import static org.batfish.datamodel.questions.IpsecSessionStatus.IPSEC_PHASE2_FAILED;
+import static org.batfish.datamodel.questions.NamedStructureSpecifier.AS_PATH_ACCESS_LIST;
+import static org.batfish.datamodel.questions.NamedStructureSpecifier.IP_6_ACCESS_LIST;
+import static org.batfish.datamodel.questions.NamedStructureSpecifier.IP_ACCESS_LIST;
+import static org.batfish.datamodel.questions.NodePropertySpecifier.DNS_SERVERS;
+import static org.batfish.datamodel.questions.NodePropertySpecifier.DNS_SOURCE_INTERFACE;
+import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREAS;
+import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREA_BORDER_ROUTER;
 import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
 import static org.batfish.identifiers.QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
+import static org.batfish.specifier.DispositionSpecifier.SUCCESS;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.startsWith;
@@ -56,6 +93,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.batfish.common.AnswerRowsOptions;
@@ -63,6 +101,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.ColumnFilter;
 import org.batfish.common.ColumnSortOption;
+import org.batfish.common.CompletionMetadata;
 import org.batfish.common.Container;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -88,6 +127,7 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerMetadataUtil;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.Issue;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.MinorIssueConfig;
@@ -102,6 +142,7 @@ import org.batfish.datamodel.pojo.Topology;
 import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.TestQuestion;
+import org.batfish.datamodel.questions.Variable.Type;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -2907,5 +2948,434 @@ public final class WorkMgrTest {
 
     // extra dir should be ignored, and s1Path should be considered the snapshot subdir
     assertThat(WorkMgr.getSnapshotSubdir(root), equalTo(s1Path));
+  }
+
+  private void storeCompletionMetadata(
+      CompletionMetadata completionMetadata, String network, String snapshot) throws IOException {
+    NetworkId networkId = _idManager.generateNetworkId();
+    _idManager.assignNetwork(network, networkId);
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+    _idManager.assignSnapshot(snapshot, networkId, snapshotId);
+    _storage.storeCompletionMetadata(completionMetadata, networkId, snapshotId);
+  }
+
+  @Test
+  public void testAddressBookAutocomplete() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+
+    String suggestion = "book";
+    String notSuggestion = "addresses";
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder()
+            .setAddressBooks(ImmutableSet.of(notSuggestion, suggestion))
+            .build();
+    storeCompletionMetadata(completionMetadata, network, snapshot);
+
+    assertThat(
+        _manager
+            .autoComplete(network, snapshot, Type.ADDRESS_BOOK, "bo", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(suggestion)));
+  }
+
+  @Test
+  public void testAddressGroupAutocomplete() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+
+    String suggestion = "group";
+    String notSuggestion = "addresses";
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder()
+            .setAddressGroups(ImmutableSet.of(suggestion, notSuggestion))
+            .build();
+    storeCompletionMetadata(completionMetadata, network, snapshot);
+
+    assertThat(
+        _manager
+            .autoComplete(network, snapshot, Type.ADDRESS_GROUP, "gr", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(suggestion)));
+  }
+
+  @Test
+  public void testBgpPeerPropertySpecAutocomplete() throws IOException {
+    assertThat(
+        _manager
+            .autoComplete("network", "snapshot", Type.BGP_PEER_PROPERTY_SPEC, "as", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(LOCAL_AS, IS_PASSIVE, REMOTE_AS)));
+  }
+
+  @Test
+  public void testBgpProcessPropertySpecAutocomplete() throws IOException {
+    assertThat(
+        _manager
+            .autoComplete("network", "snapshot", Type.BGP_PROCESS_PROPERTY_SPEC, "multi", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(
+            ImmutableSet.of(
+                MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE, MULTIPATH_EBGP, MULTIPATH_IBGP)));
+  }
+
+  @Test
+  public void testBgpSessionStatusAutocomplete() throws IOException {
+    assertThat(
+        _manager
+            .autoComplete("network", "snapshot", Type.BGP_SESSION_STATUS, "match", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(
+            ImmutableSet.of(
+                DYNAMIC_MATCH.toString(), NO_MATCH_FOUND.toString(), UNIQUE_MATCH.toString())));
+  }
+
+  @Test
+  public void testBgpSessionTypeAutocomplete() throws IOException {
+    assertThat(
+        _manager
+            .autoComplete("network", "snapshot", Type.BGP_SESSION_TYPE, "bgp", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(
+            ImmutableSet.of(IBGP.toString(), EBGP_SINGLEHOP.toString(), EBGP_MULTIHOP.toString())));
+  }
+
+  @Test
+  public void testDispositionSpecAutocomplete() throws IOException {
+    assertThat(
+        _manager
+            .autoComplete("network", "snapshot", Type.DISPOSITION_SPEC, "s", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(
+            ImmutableSet.of(
+                SUCCESS,
+                NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK.name().toLowerCase(),
+                INSUFFICIENT_INFO.name().toLowerCase(),
+                DELIVERED_TO_SUBNET.name().toLowerCase(),
+                EXITS_NETWORK.name().toLowerCase())));
+  }
+
+  @Test
+  public void testFilterAutocomplete() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+
+    String suggestion = "someFilter";
+    String notSuggestion = "blah";
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder()
+            .setFilterNames(ImmutableSet.of(suggestion, notSuggestion))
+            .build();
+    storeCompletionMetadata(completionMetadata, network, snapshot);
+
+    assertThat(
+        _manager
+            .autoComplete(network, snapshot, Type.FILTER, "fil", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(suggestion)));
+  }
+
+  @Test
+  public void testFlowStateAutocomplete() throws IOException {
+    assertThat(
+        _manager
+            .autoComplete("network", "snapshot", Type.FLOW_STATE, "e", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(ESTABLISHED.toString(), RELATED.toString(), NEW.toString())));
+  }
+
+  @Test
+  public void testInterfaceAutocomplete() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+
+    NodeInterfacePair suggested = new NodeInterfacePair("hostname", "interface");
+    NodeInterfacePair notSuggested = new NodeInterfacePair("blah", "blahhh");
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder()
+            .setInterfaces(ImmutableSet.of(suggested, notSuggested))
+            .build();
+    storeCompletionMetadata(completionMetadata, network, snapshot);
+
+    assertThat(
+        _manager
+            .autoComplete(network, snapshot, Type.INTERFACE, "int", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(suggested.toString())));
+  }
+
+  @Test
+  public void testInterfacePropertySpecAutocomplete() throws IOException {
+    assertThat(
+        _manager
+            .autoComplete("network", "snapshot", Type.INTERFACE_PROPERTY_SPEC, "vlan", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(ACCESS_VLAN, ALLOWED_VLANS, AUTO_STATE_VLAN, NATIVE_VLAN)));
+  }
+
+  @Test
+  public void testIpAutocomplete() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+
+    String suggested = "1.2.3.4";
+    String notSuggested = "1.3.2.4";
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder().setIps(ImmutableSet.of(suggested, notSuggested)).build();
+    storeCompletionMetadata(completionMetadata, network, snapshot);
+
+    assertThat(
+        _manager
+            .autoComplete(network, snapshot, Type.IP, "1.2", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(suggested)));
+  }
+
+  @Test
+  public void testIpsecSessionStatusAutocomplete() throws IOException {
+    assertThat(
+        _manager
+            .autoComplete("network", "snapshot", Type.IPSEC_SESSION_STATUS, "phase", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(
+            ImmutableSet.of(
+                IKE_PHASE1_FAILED.toString(),
+                IKE_PHASE1_KEY_MISMATCH.toString(),
+                IPSEC_PHASE2_FAILED.toString())));
+  }
+
+  @Test
+  public void testNamedStructureSpecAutocomplete() throws IOException {
+    assertThat(
+        _manager
+            .autoComplete("network", "snapshot", Type.NAMED_STRUCTURE_SPEC, "access", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(AS_PATH_ACCESS_LIST, IP_ACCESS_LIST, IP_6_ACCESS_LIST)));
+  }
+
+  @Test
+  public void testNodePropertySpecAutocomplete() throws IOException {
+    assertThat(
+        _manager
+            .autoComplete("network", "snapshot", Type.NODE_PROPERTY_SPEC, "dns", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(DNS_SERVERS, DNS_SOURCE_INTERFACE)));
+  }
+
+  @Test
+  public void testNodeRoleDimensionAutocomplete() throws IOException {
+    String network = "network";
+    NetworkId networkId = _idManager.generateNetworkId();
+    _idManager.assignNetwork(network, networkId);
+
+    NodeRoleDimension suggested = NodeRoleDimension.builder().setName("someDimension").build();
+    NodeRoleDimension notSuggested = NodeRoleDimension.builder().setName("blah").build();
+    NodeRolesData nodeRolesData =
+        NodeRolesData.builder()
+            .setRoleDimensions(ImmutableSortedSet.of(suggested, notSuggested))
+            .build();
+    _manager.putNetworkNodeRoles(nodeRolesData, network);
+
+    assertThat(
+        _manager
+            .autoComplete(network, "snapshot", Type.NODE_ROLE_DIMENSION, "dim", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(suggested.getName())));
+  }
+
+  @Test
+  public void testNodeSpecAutocomplete() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+
+    _manager.initNetwork(network, null);
+
+    // create a snapshot and write a topology object for it
+    createSnapshotWithMetadata(network, snapshot);
+    Topology topology = new Topology(snapshot);
+    topology.setNodes(ImmutableSet.of(new Node("a1"), new Node("b1")));
+    CommonUtil.writeFile(
+        _manager
+            .getdirSnapshot(network, snapshot)
+            .resolve(
+                Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH)),
+        BatfishObjectMapper.mapper().writeValueAsString(topology));
+
+    assertThat(
+        _manager
+            .autoComplete(network, snapshot, Type.NODE_SPEC, "a", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("a1", "a.*")));
+  }
+
+  @Test
+  public void testOspfPropertySpecAutocomplete() throws IOException {
+    assertThat(
+        _manager
+            .autoComplete("network", "snapshot", Type.OSPF_PROPERTY_SPEC, "area", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(AREA_BORDER_ROUTER, AREAS)));
+  }
+
+  @Test
+  public void testPrefixAutocomplete() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+
+    String suggested = "1.2.3.4/24";
+    String notSuggested = "1.3.2.4/30";
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder().setPrefixes(ImmutableSet.of(suggested, notSuggested)).build();
+    storeCompletionMetadata(completionMetadata, network, snapshot);
+
+    assertThat(
+        _manager
+            .autoComplete(network, snapshot, Type.PREFIX, "1.2", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(suggested)));
+  }
+
+  @Test
+  public void testProtocolAutocomplete() throws IOException {
+    assertThat(
+        _manager
+            .autoComplete("network", "snapshot", Type.PROTOCOL, "h", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(HTTP.toString(), HTTPS.toString(), SSH.toString())));
+  }
+
+  @Test
+  public void testStructureNameAutocomplete() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+
+    String suggested = "someStructure";
+    String notSuggested = "blah";
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder()
+            .setStructureNames(ImmutableSet.of(suggested, notSuggested))
+            .build();
+    storeCompletionMetadata(completionMetadata, network, snapshot);
+
+    assertThat(
+        _manager
+            .autoComplete(network, snapshot, Type.STRUCTURE_NAME, "str", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(suggested)));
+  }
+
+  @Test
+  public void testVrfAutocomplete() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+
+    String suggested = "someVrf";
+    String notSuggested = "blah";
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder().setVrfs(ImmutableSet.of(suggested, notSuggested)).build();
+    storeCompletionMetadata(completionMetadata, network, snapshot);
+
+    assertThat(
+        _manager
+            .autoComplete(network, snapshot, Type.VRF, "v", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(suggested)));
+  }
+
+  @Test
+  public void testZoneAutocomplete() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+
+    String suggested = "someZone";
+    String notSuggested = "blah";
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder().setZones(ImmutableSet.of(suggested, notSuggested)).build();
+    storeCompletionMetadata(completionMetadata, network, snapshot);
+
+    assertThat(
+        _manager
+            .autoComplete(network, snapshot, Type.ZONE, "z", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(suggested)));
+  }
+
+  @Test
+  public void testAutocompleteNonExistentNetwork() throws IOException {
+    // should return null if network is not set up
+    assertThat(_manager.autoComplete("network", "snapshot", Type.ZONE, "z", 5), equalTo(null));
+  }
+
+  @Test
+  public void testAutocompleteNonExistentSnapshot() throws IOException {
+    String network = "network";
+    _idManager.assignNetwork(network, _idManager.generateNetworkId());
+    // should return null if snapshot is not set up
+    assertThat(_manager.autoComplete(network, "snapshot", Type.ZONE, "z", 5), equalTo(null));
+  }
+
+  @Test
+  public void testAutocompleteUnsupportedType() throws IOException {
+    Type type = Type.ANSWER_ELEMENT;
+
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage("Unsupported completion type: " + type);
+
+    _manager.autoComplete("network", "snapshot", type, "blah", 5);
   }
 }

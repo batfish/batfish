@@ -1,10 +1,14 @@
 package org.batfish.datamodel.transformation;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 
 /**
  * A {@link TransformationStep} that transforms the an IP by shifting it into a subnet. For example,
@@ -22,15 +26,32 @@ public final class ShiftIpAddressIntoSubnet implements TransformationStep, Seria
   /** */
   private static final long serialVersionUID = 1L;
 
+  private static final String PROP_TRANSFORMATION_TYPE = "transformationType";
+  private static final String PROP_IP_FIELD = "ipField";
+  private static final String PROP_SUBNET = "subnet";
+
   private final IpField _ipField;
   private final Prefix _subnet;
+  private final TransformationType _type;
 
-  public ShiftIpAddressIntoSubnet(IpField ipField, Prefix subnet) {
+  public ShiftIpAddressIntoSubnet(TransformationType type, IpField ipField, Prefix subnet) {
     checkArgument(
         subnet.getPrefixLength() < Prefix.MAX_PREFIX_LENGTH,
         "subnet prefix must be less than the maximum prefix length");
     _ipField = ipField;
     _subnet = subnet;
+    _type = type;
+  }
+
+  @JsonCreator
+  private static ShiftIpAddressIntoSubnet jsonCreator(
+      @JsonProperty(PROP_TRANSFORMATION_TYPE) TransformationType type,
+      @JsonProperty(PROP_IP_FIELD) IpField ipField,
+      @JsonProperty(PROP_SUBNET) Prefix subnet) {
+    checkNotNull(type, PROP_TRANSFORMATION_TYPE + " cannot be null");
+    checkNotNull(ipField, PROP_IP_FIELD + " cannot be null");
+    checkNotNull(subnet, PROP_SUBNET + " cannot be null");
+    return new ShiftIpAddressIntoSubnet(type, ipField, subnet);
   }
 
   @Override
@@ -38,12 +59,20 @@ public final class ShiftIpAddressIntoSubnet implements TransformationStep, Seria
     return visitor.visitShiftIpAddressIntoSubnet(this);
   }
 
+  @JsonProperty(PROP_IP_FIELD)
   public IpField getIpField() {
     return _ipField;
   }
 
+  @JsonProperty(PROP_SUBNET)
   public Prefix getSubnet() {
     return _subnet;
+  }
+
+  @JsonProperty(PROP_TRANSFORMATION_TYPE)
+  @Override
+  public TransformationType getType() {
+    return _type;
   }
 
   @Override
@@ -55,11 +84,13 @@ public final class ShiftIpAddressIntoSubnet implements TransformationStep, Seria
       return false;
     }
     ShiftIpAddressIntoSubnet that = (ShiftIpAddressIntoSubnet) o;
-    return _ipField == that._ipField && Objects.equals(_subnet, that._subnet);
+    return _type == that._type
+        && _ipField == that._ipField
+        && Objects.equals(_subnet, that._subnet);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_ipField, _subnet);
+    return Objects.hash(_type, _ipField, _subnet);
   }
 }

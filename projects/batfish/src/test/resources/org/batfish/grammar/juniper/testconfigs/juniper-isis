@@ -21,7 +21,6 @@ set protocols isis interface lo0.0 passive
 #
 set protocols isis level 1 disable
 set protocols isis level 2 wide-metrics-only
-set protocols isis overload timeout 360
 set protocols isis reference-bandwidth 100g
 #
 #

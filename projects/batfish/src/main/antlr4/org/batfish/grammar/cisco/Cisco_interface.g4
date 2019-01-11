@@ -15,6 +15,60 @@ eos_bandwidth_specifier
    | ONE_THOUSAND_FULL
 ;
 
+eos_vxlan_if_inner
+:
+   (
+      VXLAN
+      (
+         eos_vxif_vxlan_flood
+         | eos_vxif_vxlan_multicast_group
+         | eos_vxif_vxlan_source_interface
+         | eos_vxif_vxlan_udp_port
+         | eos_vxif_vxlan_vlan
+      )
+   )
+   | eos_vxif_description
+;
+
+eos_vxif_description
+:
+   description_line
+;
+
+eos_vxif_vxlan_flood
+:
+   FLOOD VTEP (ADD | REMOVE)? (hosts += IP_ADDRESS)+ NEWLINE
+;
+
+eos_vxif_vxlan_multicast_group
+:
+   MULTICAST_GROUP group = IP_ADDRESS NEWLINE
+;
+
+eos_vxif_vxlan_source_interface
+:
+   SOURCE_INTERFACE iface = interface_name NEWLINE
+;
+
+eos_vxif_vxlan_udp_port
+:
+   UDP_PORT num = DEC NEWLINE
+;
+
+eos_vxif_vxlan_vlan
+:
+   VLAN num = DEC
+   (
+      eos_vxif_vxlan_flood
+      | eos_vxif_vxlan_vlan_vni
+   )
+;
+
+eos_vxif_vxlan_vlan_vni
+:
+   VNI num = DEC NEWLINE
+;
+
 if_autostate
 :
    NO? AUTOSTATE NEWLINE
@@ -538,6 +592,11 @@ if_load_interval
    LOAD_INTERVAL li = DEC NEWLINE
 ;
 
+if_eos_mlag
+:
+   MLAG id = DEC NEWLINE
+;
+
 if_mtu
 :
    MTU mtu_size = DEC NEWLINE
@@ -808,7 +867,6 @@ if_null_block
       | MEDIUM
       | MEMBER
       | MINIMUM_LINKS
-      | MLAG
       | MLS
       | MOBILITY
       | MOP
@@ -906,11 +964,7 @@ if_null_block
             | TOOL
             |
             (
-               TRUNK
-               (
-                  GROUP
-                  | PRUNING
-               )
+               TRUNK PRUNING
             )
             | VOICE
             | VLAN
@@ -932,7 +986,6 @@ if_null_block
       | VMTRACER
       | VPC
       | VTP
-      | VXLAN
       | WEIGHTING
       | WRR_QUEUE
       | X25
@@ -1344,6 +1397,11 @@ if_switchport_trunk_encapsulation
    SWITCHPORT TRUNK ENCAPSULATION e = switchport_trunk_encapsulation NEWLINE
 ;
 
+if_switchport_trunk_group_eos
+:
+   SWITCHPORT TRUNK GROUP name = variable NEWLINE
+;
+
 if_switchport_trunk_native
 :
    SWITCHPORT TRUNK NATIVE VLAN vlan = DEC NEWLINE
@@ -1402,7 +1460,7 @@ ifvrrpno_preempt
 
 if_zone_member
 :
-   ZONE_MEMBER SECURITY name = variable_permissive NEWLINE
+   ZONE_MEMBER SECURITY? name = variable_permissive NEWLINE
 ;
 
 if_security_level
@@ -1612,6 +1670,12 @@ ifvrrp_priority
    PRIORITY priority = DEC NEWLINE
 ;
 
+s_eos_vxlan_interface
+:
+   INTERFACE iname = eos_vxlan_interface_name NEWLINE
+   eos_vxlan_if_inner*
+;
+
 s_interface
 :
    INTERFACE PRECONFIGURE? iname = interface_name
@@ -1640,6 +1704,7 @@ if_inner
    | if_default_gw
    | if_delay
    | if_description
+   | if_eos_mlag
    | if_flow_sampler
    | if_hsrp
    | if_hsrp6
@@ -1715,6 +1780,7 @@ if_inner
    | if_switchport_private_vlan_mapping
    | if_switchport_trunk_allowed
    | if_switchport_trunk_encapsulation
+   | if_switchport_trunk_group_eos
    | if_switchport_trunk_native
    | if_tunnel
    | if_vrf

@@ -1,8 +1,10 @@
 package org.batfish.common.util;
 
+import static org.batfish.datamodel.transformation.TransformationUtil.hasSourceNat;
+import static org.batfish.datamodel.transformation.TransformationUtil.sourceNatPoolIps;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Comparators;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -42,8 +44,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -58,7 +58,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -78,7 +77,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.Interface;
@@ -89,9 +87,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecVpn;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
@@ -601,7 +597,7 @@ public class CommonUtil {
       Set<InterfaceAddress> nonNattedInterfaceAddresses =
           interfaces
               .stream()
-              .filter(i -> i.getSourceNats().isEmpty())
+              .filter(i -> !hasSourceNat(i.getOutgoingTransformation()))
               .flatMap(i -> i.getAllAddresses().stream())
               .collect(ImmutableSet.toImmutableSet());
       Set<IpWildcard> blacklist =
@@ -618,18 +614,8 @@ public class CommonUtil {
           IpWildcardSetIpSpace.builder().including(whitelist).excluding(blacklist).build();
       interfaces
           .stream()
-          .flatMap(i -> i.getSourceNats().stream())
-          .forEach(
-              sourceNat -> {
-                if (sourceNat.getPoolIpFirst() != null && sourceNat.getPoolIpLast() != null) {
-                  for (long ipAsLong = sourceNat.getPoolIpFirst().asLong();
-                      ipAsLong <= sourceNat.getPoolIpLast().asLong();
-                      ipAsLong++) {
-                    Ip currentPoolIp = Ip.create(ipAsLong);
-                    builder.put(currentPoolIp, ipSpace);
-                  }
-                }
-              });
+          .flatMap(i -> sourceNatPoolIps(i.getOutgoingTransformation()))
+          .forEach(currentPoolIp -> builder.put(currentPoolIp, ipSpace));
     }
     return builder.build();
   }
@@ -830,71 +816,6 @@ public class CommonUtil {
         resourceConfig,
         true,
         new SSLEngineConfigurator(sslCon, false, verifyClient, false));
-  }
-
-  /** Returns {@code true} if any {@link Ip IP address} is owned by both devices. */
-  private static boolean haveIpInCommon(Interface i1, Interface i2) {
-    for (InterfaceAddress ia : i1.getAllAddresses()) {
-      for (InterfaceAddress ia2 : i2.getAllAddresses()) {
-        if (ia.getIp().equals(ia2.getIp())) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  public static Topology synthesizeTopology(Map<String, Configuration> configurations) {
-    Map<Prefix, List<Interface>> prefixInterfaces = new HashMap<>();
-    configurations.forEach(
-        (nodeName, node) -> {
-          for (Interface iface : node.getAllInterfaces().values()) {
-            if (iface.isLoopback(node.getConfigurationFormat()) || !iface.getActive()) {
-              continue;
-            }
-            for (InterfaceAddress address : iface.getAllAddresses()) {
-              if (address.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH) {
-                Prefix prefix = address.getPrefix();
-                List<Interface> interfaceBucket =
-                    prefixInterfaces.computeIfAbsent(prefix, k -> new LinkedList<>());
-                interfaceBucket.add(iface);
-              }
-            }
-          }
-        });
-
-    ImmutableSortedSet.Builder<Edge> edges = ImmutableSortedSet.naturalOrder();
-    for (Entry<Prefix, List<Interface>> bucketEntry : prefixInterfaces.entrySet()) {
-      Prefix p = bucketEntry.getKey();
-
-      // Collect all interfaces that have subnets overlapping P iff they have an IP address in P.
-      // Use an IdentityHashSet to prevent duplicates.
-      Set<Interface> candidateInterfaces = Sets.newIdentityHashSet();
-      IntStream.range(0, Prefix.MAX_PREFIX_LENGTH)
-          .mapToObj(
-              i ->
-                  prefixInterfaces.getOrDefault(
-                      Prefix.create(p.getStartIp(), i), ImmutableList.of()))
-          .flatMap(Collection::stream)
-          .filter(
-              iface -> iface.getAllAddresses().stream().anyMatch(ia -> p.containsIp(ia.getIp())))
-          .forEach(candidateInterfaces::add);
-
-      for (Interface iface1 : bucketEntry.getValue()) {
-        for (Interface iface2 : candidateInterfaces) {
-          // No device self-adjacencies
-          if (iface1.getOwner() == iface2.getOwner()) {
-            continue;
-          }
-          // don't connect interfaces that have any IP address in common
-          if (haveIpInCommon(iface1, iface2)) {
-            continue;
-          }
-          edges.add(new Edge(iface1, iface2));
-        }
-      }
-    }
-    return new Topology(edges.build());
   }
 
   public static <K1, K2, V1, V2> Map<K2, V2> toImmutableMap(

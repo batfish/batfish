@@ -153,7 +153,6 @@ null_block
       | MAP_LIST
       | MASTERIP
       | MENU
-      | MLAG
       | MODULE
       | MONITOR_INTERFACE
       |
@@ -255,8 +254,8 @@ null_block
       | VLAN_GROUP
       | VLAN_POLICY
       | VLT
-      | VXLAN
       | VTY_POOL
+      | VXLAN
       | WISM
       | WRED_PROFILE
       | WSMA
@@ -871,7 +870,6 @@ null_single
       | NO ROUTE
       | ROUTE_TARGET
       | RTR
-      | SAME_SECURITY_TRAFFIC
       | SAT
       | SCHEDULE
       | SCHEDULER
@@ -956,7 +954,6 @@ null_single
             ACCESS_LOG
             | CONFIGURATION
             | DOT1Q
-            | INTERNAL
             | IFDESCR DETAIL
          )
       )

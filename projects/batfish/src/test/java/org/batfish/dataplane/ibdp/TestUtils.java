@@ -24,6 +24,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.matchers.IsisRouteMatchers;
 import org.hamcrest.Matchers;
 
 public class TestUtils {
@@ -54,6 +55,21 @@ public class TestUtils {
     assertRoute(routesByNode, protocol, hostname, address.getPrefix(), expectedCost);
   }
 
+  public static void assertIsisRoute(
+      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
+      RoutingProtocol protocol,
+      String hostname,
+      Prefix prefix,
+      long expectedCost,
+      Ip nextHopIp,
+      boolean overload) {
+    List<AbstractRoute> routesForPrefix = getRoutesForPrefix(routesByNode, hostname, prefix);
+    assertThat(
+        routesForPrefix,
+        hasItem(
+            IsisRouteMatchers.isisRouteWith(prefix, nextHopIp, expectedCost, overload, protocol)));
+  }
+
   public static void assertRoute(
       SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
       RoutingProtocol protocol,
@@ -70,13 +86,7 @@ public class TestUtils {
       Prefix prefix,
       long expectedCost,
       @Nullable Ip nextHopIp) {
-    assertThat(routesByNode, hasKey(hostname));
-    SortedMap<String, SortedSet<AbstractRoute>> routesByVrf = routesByNode.get(hostname);
-    assertThat(routesByVrf, hasKey(Configuration.DEFAULT_VRF_NAME));
-    SortedSet<AbstractRoute> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
-    assertThat(routes, hasItem(hasPrefix(prefix)));
-    List<AbstractRoute> routesForPrefix =
-        routes.stream().filter(r -> r.getNetwork().equals(prefix)).collect(Collectors.toList());
+    List<AbstractRoute> routesForPrefix = getRoutesForPrefix(routesByNode, hostname, prefix);
     assertThat(
         routesForPrefix,
         hasItem(
@@ -84,6 +94,18 @@ public class TestUtils {
                 hasMetric(expectedCost),
                 hasProtocol(protocol),
                 hasNextHopIp(nextHopIp == null ? Matchers.any(Ip.class) : equalTo(nextHopIp)))));
+  }
+
+  private static List<AbstractRoute> getRoutesForPrefix(
+      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
+      String hostname,
+      Prefix prefix) {
+    assertThat(routesByNode, hasKey(hostname));
+    SortedMap<String, SortedSet<AbstractRoute>> routesByVrf = routesByNode.get(hostname);
+    assertThat(routesByVrf, hasKey(Configuration.DEFAULT_VRF_NAME));
+    SortedSet<AbstractRoute> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
+    assertThat(routes, hasItem(hasPrefix(prefix)));
+    return routes.stream().filter(r -> r.getNetwork().equals(prefix)).collect(Collectors.toList());
   }
 
   public static Node makeIosRouter(String hostname) {

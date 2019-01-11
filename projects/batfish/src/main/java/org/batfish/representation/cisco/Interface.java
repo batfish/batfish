@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.LinkedHashSet;
@@ -9,6 +10,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -148,6 +150,8 @@ public class Interface implements Serializable {
 
   @Nullable private IsisInterfaceMode _isisInterfaceMode;
 
+  @Nullable private Integer _mlagId;
+
   private int _mtu;
 
   private final String _name;
@@ -193,6 +197,8 @@ public class Interface implements Serializable {
   private SwitchportEncapsulationType _switchportTrunkEncapsulation;
 
   private Tunnel _tunnel;
+
+  @Nonnull private Set<String> _vlanTrunkGroups;
 
   private String _vrf;
 
@@ -275,7 +281,13 @@ public class Interface implements Serializable {
     } else if (_switchportMode == SwitchportMode.ACCESS) {
       _allowedVlans = null;
     }
+    _vlanTrunkGroups = ImmutableSet.of();
     _spanningTreePortfast = c.getSpanningTreePortfastDefault();
+  }
+
+  public void addVlanTrunkGroup(@Nonnull String groupName) {
+    _vlanTrunkGroups =
+        ImmutableSet.<String>builder().addAll(_vlanTrunkGroups).add(groupName).build();
   }
 
   public void setAllowedVlans(@Nullable IntegerSpace allowedVlans) {
@@ -354,6 +366,11 @@ public class Interface implements Serializable {
 
   public IsisInterfaceMode getIsisInterfaceMode() {
     return _isisInterfaceMode;
+  }
+
+  @Nullable
+  public Integer getMlagId() {
+    return _mlagId;
   }
 
   public int getMtu() {
@@ -466,6 +483,15 @@ public class Interface implements Serializable {
     return _securityLevel;
   }
 
+  /**
+   * Retun the (immutable) set of VLAN trunk groups that this interface belongs to. To add trunk
+   * groups, see {@link #addVlanTrunkGroup(String)}
+   */
+  @Nonnull
+  public Set<String> getVlanTrunkGroups() {
+    return _vlanTrunkGroups;
+  }
+
   public String getVrf() {
     return _vrf;
   }
@@ -520,6 +546,10 @@ public class Interface implements Serializable {
 
   public void setIsisInterfaceMode(IsisInterfaceMode mode) {
     _isisInterfaceMode = mode;
+  }
+
+  public void setMlagId(Integer mlagId) {
+    _mlagId = mlagId;
   }
 
   public void setMtu(int mtu) {

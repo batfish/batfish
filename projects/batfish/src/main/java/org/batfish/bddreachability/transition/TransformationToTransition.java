@@ -1,8 +1,12 @@
 package org.batfish.bddreachability.transition;
 
+import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
+
 import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
@@ -12,12 +16,14 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.datamodel.transformation.TransformationStepVisitor;
 
 /** Convert a {@link Transformation} to a BDD reachability graph {@link Transition}. */
+@ParametersAreNonnullByDefault
 public class TransformationToTransition {
   private final BDDPacket _bddPacket;
   private final IdentityHashMap<Transformation, Transition> _cache;
@@ -65,13 +71,20 @@ public class TransformationToTransition {
     }
 
     @Override
+    public Transition visitNoop(Noop noop) {
+      return IDENTITY;
+    }
+
+    @Override
     public Transition visitShiftIpAddressIntoSubnet(ShiftIpAddressIntoSubnet step) {
       return shiftIpIntoPrefix(ipField(step.getIpField()), step.getSubnet());
     }
   }
 
-  public Transition toTransition(Transformation transformation) {
-    return _cache.computeIfAbsent(transformation, this::computeTransition);
+  public Transition toTransition(@Nullable Transformation transformation) {
+    return transformation == null
+        ? Identity.INSTANCE
+        : _cache.computeIfAbsent(transformation, this::computeTransition);
   }
 
   private Transition computeTransition(Transformation transformation) {

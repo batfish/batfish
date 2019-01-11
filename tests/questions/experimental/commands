@@ -81,8 +81,14 @@ test -raw tests/questions/experimental/searchfilters.ref validate-template searc
 # validate subnetMultipathConsistency
 test -raw tests/questions/experimental/subnetMultipathConsistency.ref validate-template subnetMultipathConsistency maxTraces=1
 
+# validate switchedVlanProperties
+test -raw tests/questions/experimental/switchedVlanProperties.ref validate-template switchedVlanProperties excludeShutInterfaces=true, interfaces="i1", nodes="n1", vlans="1-5,7"
+
 # test traceroute
 test -raw tests/questions/experimental/traceroute.ref validate-template traceroute startLocation="location", ignoreFilters=false, maxTraces=0, headers={"dstIps" : "1.1.1.1/32"}
 
 # test viModel
 test -raw tests/questions/experimental/viModel.ref validate-template viModel
+
+# validate vxlanVniProperties
+test -raw tests/questions/experimental/vxlanVniProperties.ref validate-template vxlanVniProperties nodes="nodename", properties="VLAN"

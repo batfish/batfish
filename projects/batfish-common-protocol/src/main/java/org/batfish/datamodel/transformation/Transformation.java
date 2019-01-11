@@ -1,8 +1,14 @@
 package org.batfish.datamodel.transformation;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -10,9 +16,23 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 
-/** A representation of a composite packet transformation. */
+/**
+ * A representation of a composite packet transformation. When the guard matches the input flow,
+ * apply the {@link TransformationStep TransformationSteps} and then apply the {@code andThen}
+ * {@link Transformation}. When the guard does not match the flow, apply the {@code orElse} {@link
+ * Transformation}. Stop upon reaching a {@code null} transformation.
+ */
+@JsonSchemaDescription("A packet transformation")
 @ParametersAreNonnullByDefault
-public final class Transformation {
+public final class Transformation implements Serializable {
+  /** */
+  private static final long serialVersionUID = 1L;
+
+  private static final String PROP_GUARD = "guard";
+  private static final String PROP_TRANSFORMATION_STEPS = "transformationSteps";
+  private static final String PROP_AND_THEN = "andThen";
+  private static final String PROP_OR_ELSE = "orElse";
+
   public static final class Builder {
     private @Nonnull AclLineMatchExpr _guard;
     private @Nonnull List<TransformationStep> _transformationSteps;
@@ -78,25 +98,44 @@ public final class Transformation {
     _orElse = orElse;
   }
 
+  @JsonCreator
+  private static Transformation jsonCreator(
+      @JsonProperty(PROP_GUARD) AclLineMatchExpr guard,
+      @JsonProperty(PROP_TRANSFORMATION_STEPS) List<TransformationStep> transformationSteps,
+      @JsonProperty(PROP_AND_THEN) Transformation andThen,
+      @JsonProperty(PROP_OR_ELSE) Transformation orElse) {
+    checkNotNull(guard, PROP_GUARD + " cannot be null");
+    return new Transformation(
+        guard,
+        // jackson serializes empty lists as null
+        firstNonNull(transformationSteps, ImmutableList.of()),
+        andThen,
+        orElse);
+  }
+
   /** A predicate specifying which flows should be transformed. */
+  @JsonProperty(PROP_GUARD)
   @Nonnull
   public AclLineMatchExpr getGuard() {
     return _guard;
   }
 
   /** A list of transformation steps to apply if the guard matches the flow. */
+  @JsonProperty(PROP_TRANSFORMATION_STEPS)
   @Nonnull
   public List<TransformationStep> getTransformationSteps() {
     return _transformationSteps;
   }
 
   /** The next transformation to apply (if any) when this one matches and transforms. */
+  @JsonProperty(PROP_AND_THEN)
   @Nullable
   public Transformation getAndThen() {
     return _andThen;
   }
 
   /** The next transformation to apply (if any) when this one does not match. */
+  @JsonProperty(PROP_OR_ELSE)
   @Nullable
   public Transformation getOrElse() {
     return _orElse;

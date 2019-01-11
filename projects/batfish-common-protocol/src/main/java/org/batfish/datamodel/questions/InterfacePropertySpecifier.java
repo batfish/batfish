@@ -2,11 +2,11 @@ package org.batfish.datamodel.questions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.Interface;
@@ -59,7 +59,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String RIP_ENABLED = "Rip_Enabled";
   public static final String RIP_PASSIVE = "Rip_Passive";
   public static final String ROUTING_POLICY_NAME = "Routing_Policy_Name";
-  public static final String SOURCE_NATS = "Source_NATs";
   public static final String SPANNING_TREE_PORTFAST = "Spanning_Tree_Portfast";
   public static final String SWITCHPORT = "Switchport";
   public static final String SWITCHPORT_MODE = "Switchport_Mode";
@@ -133,9 +132,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
               ROUTING_POLICY_NAME,
               new PropertyDescriptor<>(Interface::getRoutingPolicyName, Schema.STRING))
           .put(
-              SOURCE_NATS,
-              new PropertyDescriptor<>(Interface::getSourceNats, Schema.list(Schema.STRING)))
-          .put(
               SPANNING_TREE_PORTFAST,
               new PropertyDescriptor<>(Interface::getSpanningTreePortfast, Schema.BOOLEAN))
           .put(SWITCHPORT, new PropertyDescriptor<>(Interface::getSwitchport, Schema.BOOLEAN))
@@ -181,12 +177,12 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   }
 
   @Override
-  public Set<String> getMatchingProperties() {
+  public List<String> getMatchingProperties() {
     return JAVA_MAP
         .keySet()
         .stream()
         .filter(prop -> _pattern.matcher(prop).matches())
-        .collect(Collectors.toSet());
+        .collect(ImmutableList.toImmutableList());
   }
 
   @Override

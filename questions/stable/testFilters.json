@@ -18,12 +18,12 @@
         "variables": {
             "filters": {
                 "description": "Only consider filters that match this regular expression",
-                "type": "javaRegex",
+                "type": "filter",
                 "value": ".*",
                 "displayName": "Filters"
             },
             "nodes": {
-                "description": "Only examine filters on nodes matching this name or regex",
+                "description": "Only examine filters on nodes matching this specifier",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Nodes"

@@ -58,23 +58,37 @@ import static org.batfish.client.Command.SHOW_SNAPSHOT;
 import static org.batfish.client.Command.TEST;
 import static org.batfish.client.Command.UPLOAD_CUSTOM_OBJECT;
 import static org.batfish.common.CoordConsts.DEFAULT_API_KEY;
+import static org.batfish.datamodel.questions.Variable.Type.ADDRESS_BOOK;
+import static org.batfish.datamodel.questions.Variable.Type.ADDRESS_GROUP;
+import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_STATUS;
+import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_TYPE;
 import static org.batfish.datamodel.questions.Variable.Type.BOOLEAN;
 import static org.batfish.datamodel.questions.Variable.Type.COMPARATOR;
+import static org.batfish.datamodel.questions.Variable.Type.DISPOSITION_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.DOUBLE;
+import static org.batfish.datamodel.questions.Variable.Type.FILTER;
 import static org.batfish.datamodel.questions.Variable.Type.FLOAT;
+import static org.batfish.datamodel.questions.Variable.Type.FLOW_STATE;
 import static org.batfish.datamodel.questions.Variable.Type.INTEGER;
+import static org.batfish.datamodel.questions.Variable.Type.INTERFACE;
+import static org.batfish.datamodel.questions.Variable.Type.INTERFACES_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.IP;
+import static org.batfish.datamodel.questions.Variable.Type.IPSEC_SESSION_STATUS;
 import static org.batfish.datamodel.questions.Variable.Type.IP_PROTOCOL;
 import static org.batfish.datamodel.questions.Variable.Type.IP_WILDCARD;
 import static org.batfish.datamodel.questions.Variable.Type.JAVA_REGEX;
 import static org.batfish.datamodel.questions.Variable.Type.JSON_PATH;
 import static org.batfish.datamodel.questions.Variable.Type.JSON_PATH_REGEX;
 import static org.batfish.datamodel.questions.Variable.Type.LONG;
+import static org.batfish.datamodel.questions.Variable.Type.NODE_ROLE_DIMENSION;
 import static org.batfish.datamodel.questions.Variable.Type.PREFIX;
 import static org.batfish.datamodel.questions.Variable.Type.PREFIX_RANGE;
 import static org.batfish.datamodel.questions.Variable.Type.PROTOCOL;
 import static org.batfish.datamodel.questions.Variable.Type.STRING;
+import static org.batfish.datamodel.questions.Variable.Type.STRUCTURE_NAME;
 import static org.batfish.datamodel.questions.Variable.Type.SUBRANGE;
+import static org.batfish.datamodel.questions.Variable.Type.VRF;
+import static org.batfish.datamodel.questions.Variable.Type.ZONE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -117,7 +131,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link org.batfish.client.Client}. */
-public class ClientTest {
+public final class ClientTest {
 
   private static final String NETWORK_NOT_SET = "Active network is not set\n";
 
@@ -532,6 +546,42 @@ public class ClientTest {
   }
 
   @Test
+  public void testInvalidAddressBookValue() throws IOException {
+    String input = "5";
+    Type expectedType = ADDRESS_BOOK;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidAddressGroupValue() throws IOException {
+    String input = "5";
+    Type expectedType = ADDRESS_GROUP;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidBgpSessionStatusValue() throws IOException {
+    String input = "5";
+    Type expectedType = BGP_SESSION_STATUS;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidBgpSessionTypeValue() throws IOException {
+    String input = "5";
+    Type expectedType = BGP_SESSION_TYPE;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
   public void testInvalidBooleanValue() throws IOException {
     String input = "\"true\"";
     Type expectedType = BOOLEAN;
@@ -549,6 +599,15 @@ public class ClientTest {
   }
 
   @Test
+  public void testInvalidDispositionSpecifierValue() throws IOException {
+    String input = "5";
+    Type expectedType = DISPOSITION_SPEC;
+    String expectedMessage =
+        String.format("It is not a valid JSON %s value", DISPOSITION_SPEC.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
   public void testInvalidDoubleValue() throws IOException {
     String input = "\"string\"";
     Type expectedType = DOUBLE;
@@ -557,10 +616,28 @@ public class ClientTest {
   }
 
   @Test
+  public void testInvalidFilterValue() throws IOException {
+    String input = "5";
+    Type expectedType = FILTER;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
   public void testInvalidFloatValue() throws IOException {
     String input = "\"string\"";
     Type expectedType = FLOAT;
     String expectedMessage = String.format("It is not a valid JSON %s value", FLOAT.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidFlowStateValue() throws IOException {
+    String input = "5";
+    Type expectedType = FLOW_STATE;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
@@ -583,6 +660,24 @@ public class ClientTest {
     String input = "1.5";
     Type expectedType = INTEGER;
     String expectedMessage = String.format("It is not a valid JSON %s value", INTEGER.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidInterfaceValue() throws IOException {
+    String input = "5";
+    Type expectedType = INTERFACE;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidInterfacesSpecValue() throws IOException {
+    String input = "5";
+    Type expectedType = INTERFACE;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
@@ -618,6 +713,15 @@ public class ClientTest {
     String expectedMessage = "Invalid ip segment: \"$\" in ip string: " + "\"10.168.100.$\"";
     validateTypeWithInvalidInput(
         input, IllegalArgumentException.class, expectedMessage, IP_WILDCARD);
+  }
+
+  @Test
+  public void testInvalidIpsecSessionStatusValue() throws IOException {
+    String input = "5";
+    Type expectedType = IPSEC_SESSION_STATUS;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
   @Test
@@ -664,6 +768,15 @@ public class ClientTest {
   }
 
   @Test
+  public void testInvalidNodeRoleDimensionValue() throws IOException {
+    String input = "5";
+    Type expectedType = NODE_ROLE_DIMENSION;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
   public void testInvalidPrefixRangeValue() throws IOException {
     String input = "\"10.168.5.5/30:s10-50\"";
     String expectedMessage = "Invalid subrange start: \"s10\"";
@@ -688,10 +801,37 @@ public class ClientTest {
   }
 
   @Test
+  public void testInvalidStructureNameValue() throws IOException {
+    String input = "5";
+    Type expectedType = STRUCTURE_NAME;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
   public void testInvalidSubRangeValue() throws IOException {
     String input = "\"10-s50\"";
     String expectedMessage = "Invalid subrange end: \"s50\"";
     validateTypeWithInvalidInput(input, expectedMessage, SUBRANGE);
+  }
+
+  @Test
+  public void testInvalidVrfValue() throws IOException {
+    String input = "5";
+    Type expectedType = VRF;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidZoneValue() throws IOException {
+    String input = "5";
+    Type expectedType = ZONE;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
   @Test
@@ -1487,11 +1627,43 @@ public class ClientTest {
   }
 
   @Test
+  public void testValidAddressBookValue() throws IOException {
+    JsonNode addressBookNode = _mapper.readTree("\"addressBookName\"");
+    Variable variable = new Variable();
+    variable.setType(ADDRESS_BOOK);
+    Client.validateType(addressBookNode, variable);
+  }
+
+  @Test
+  public void testValidAddressGroupValue() throws IOException {
+    JsonNode addressGroupNode = _mapper.readTree("\"addressGroupName\"");
+    Variable variable = new Variable();
+    variable.setType(ADDRESS_GROUP);
+    Client.validateType(addressGroupNode, variable);
+  }
+
+  @Test
   public void testValidBooleanValue() throws IOException {
     JsonNode booleanNode = _mapper.readTree("true");
     Variable variable = new Variable();
     variable.setType(BOOLEAN);
     Client.validateType(booleanNode, variable);
+  }
+
+  @Test
+  public void testValidBgpSessionStatusValue() throws IOException {
+    JsonNode sessionStatusNode = _mapper.readTree("\"sessionStatus\"");
+    Variable variable = new Variable();
+    variable.setType(BGP_SESSION_STATUS);
+    Client.validateType(sessionStatusNode, variable);
+  }
+
+  @Test
+  public void testValidBgpSessionTypeValue() throws IOException {
+    JsonNode sessionTypeNode = _mapper.readTree("\"sessionType\"");
+    Variable variable = new Variable();
+    variable.setType(BGP_SESSION_TYPE);
+    Client.validateType(sessionTypeNode, variable);
   }
 
   @Test
@@ -1503,11 +1675,27 @@ public class ClientTest {
   }
 
   @Test
+  public void testValidDispositionSpecifierValue() throws IOException {
+    JsonNode dispositionSpecNode = _mapper.readTree("\"success\"");
+    Variable variable = new Variable();
+    variable.setType(DISPOSITION_SPEC);
+    Client.validateType(dispositionSpecNode, variable);
+  }
+
+  @Test
   public void testValidDoubleValue() throws IOException {
     JsonNode doubleNode = _mapper.readTree("15.0");
     Variable variable = new Variable();
     variable.setType(DOUBLE);
     Client.validateType(doubleNode, variable);
+  }
+
+  @Test
+  public void testValidFilterValue() throws IOException {
+    JsonNode filterNode = _mapper.readTree("\"filterName\"");
+    Variable variable = new Variable();
+    variable.setType(FILTER);
+    Client.validateType(filterNode, variable);
   }
 
   @Test
@@ -1520,11 +1708,35 @@ public class ClientTest {
   }
 
   @Test
+  public void testValidFlowStateValue() throws IOException {
+    JsonNode flowStateNode = _mapper.readTree("\"ESTABLISHED\"");
+    Variable variable = new Variable();
+    variable.setType(FLOW_STATE);
+    Client.validateType(flowStateNode, variable);
+  }
+
+  @Test
   public void testValidIntegerValue() throws IOException {
     JsonNode integerNode = _mapper.readTree("15");
     Variable variable = new Variable();
     variable.setType(INTEGER);
     Client.validateType(integerNode, variable);
+  }
+
+  @Test
+  public void testValidInterfaceValue() throws IOException {
+    JsonNode interfaceNode = _mapper.readTree("\"interfaceName\"");
+    Variable variable = new Variable();
+    variable.setType(INTERFACE);
+    Client.validateType(interfaceNode, variable);
+  }
+
+  @Test
+  public void testValidInterfacesSpecValue() throws IOException {
+    JsonNode interfacesSpecNode = _mapper.readTree("\"TYPE:LOOPBACK\"");
+    Variable variable = new Variable();
+    variable.setType(INTERFACES_SPEC);
+    Client.validateType(interfacesSpecNode, variable);
   }
 
   @Test
@@ -1549,6 +1761,14 @@ public class ClientTest {
     Variable variable = new Variable();
     variable.setType(IP_WILDCARD);
     Client.validateType(ipWildcardNode, variable);
+  }
+
+  @Test
+  public void testValidIpsecSessionStatusValue() throws IOException {
+    JsonNode ipsecSessionStatusNode = _mapper.readTree("\"sessionStatus\"");
+    Variable variable = new Variable();
+    variable.setType(IPSEC_SESSION_STATUS);
+    Client.validateType(ipsecSessionStatusNode, variable);
   }
 
   @Test
@@ -1591,6 +1811,14 @@ public class ClientTest {
   }
 
   @Test
+  public void testValidNodeRoleDimensionValue() throws IOException {
+    JsonNode nodeRoleDimensionNode = _mapper.readTree("\"roleDimension\"");
+    Variable variable = new Variable();
+    variable.setType(NODE_ROLE_DIMENSION);
+    Client.validateType(nodeRoleDimensionNode, variable);
+  }
+
+  @Test
   public void testValidPathRegex() {
     String jsonPathRegex = "/.*/";
     Client.validateJsonPathRegex(jsonPathRegex);
@@ -1621,6 +1849,14 @@ public class ClientTest {
   }
 
   @Test
+  public void testValidStructureNameValue() throws IOException {
+    JsonNode structureNameNode = _mapper.readTree("\"structureName\"");
+    Variable variable = new Variable();
+    variable.setType(STRUCTURE_NAME);
+    Client.validateType(structureNameNode, variable);
+  }
+
+  @Test
   public void testValidSubRangeIntegerValue() throws IOException {
     JsonNode subRangeNode = _mapper.readTree("10");
     Variable variable = new Variable();
@@ -1634,6 +1870,22 @@ public class ClientTest {
     Variable variable = new Variable();
     variable.setType(SUBRANGE);
     Client.validateType(subRangeNode, variable);
+  }
+
+  @Test
+  public void testValidVrfValue() throws IOException {
+    JsonNode vrfNode = _mapper.readTree("\"vrfName\"");
+    Variable variable = new Variable();
+    variable.setType(VRF);
+    Client.validateType(vrfNode, variable);
+  }
+
+  @Test
+  public void testValidZoneValue() throws IOException {
+    JsonNode zoneNode = _mapper.readTree("\"zoneName\"");
+    Variable variable = new Variable();
+    variable.setType(ZONE);
+    Client.validateType(zoneNode, variable);
   }
 
   private void validateTypeWithInvalidInput(
