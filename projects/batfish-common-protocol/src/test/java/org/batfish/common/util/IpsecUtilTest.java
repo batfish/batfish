@@ -1,9 +1,7 @@
 package org.batfish.common.util;
 
-import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -112,6 +110,7 @@ public class IpsecUtilTest {
         new IpsecPeerConfigId("peer4", "host2"),
         new IpsecPeerConfigId("peer3", "host1"),
         establishedSession);
+    // peer5 and peer6 are not running IPsec on tunnel interfaces
     graph.putEdgeValue(
         new IpsecPeerConfigId("peer5", "host1"),
         new IpsecPeerConfigId("peer6", "host2"),
@@ -181,11 +180,12 @@ public class IpsecUtilTest {
                     new Edge(
                         new NodeInterfacePair("host2", "Tunnel4"),
                         new NodeInterfacePair("host1", "Tunnel3")))
-                // next two edges don't run IPsec
+                // interface5->interface6 do not run IPsec on tunnel interfaces
                 .add(
                     new Edge(
                         new NodeInterfacePair("host1", "interface5"),
                         new NodeInterfacePair("host2", "interface6")))
+                // Tunnel9-> Tunnel10 do not run IPsec at all
                 .add(
                     new Edge(
                         new NodeInterfacePair("host1", "Tunnel9"),
@@ -200,9 +200,9 @@ public class IpsecUtilTest {
 
   @Test
   public void testPruneFailedIpsecSessionEdges() {
-    IpsecUtil.pruneFailedIpsecSessionEdgesAndDisableIfaces(_topology, _ipsecTopology, _configurations);
+    _topology.pruneFailedIpsecSessionEdges(_ipsecTopology, _configurations);
 
-    // Edges between host1:Tunnel3->host2:Tunnel4 and host1:Tunnel7->host2:Tunnel8 should be pruned
+    // Edges involving host1:Tunnel3, host2:Tunnel4, host1:Tunnel7 will be pruned
     assertThat(
         _topology.getEdges(),
         equalTo(
@@ -217,25 +217,7 @@ public class IpsecUtilTest {
                     new NodeInterfacePair("host1", "interface5"),
                     new NodeInterfacePair("host2", "interface6")),
                 new Edge(
-                    new NodeInterfacePair("host2", "Tunnel4"),
-                    new NodeInterfacePair("host1", "Tunnel3")),
-                new Edge(
                     new NodeInterfacePair("host1", "Tunnel9"),
                     new NodeInterfacePair("host2", "Tunnel10")))));
-
-    // only Tunnel7 on host1 will be inactive because it is the only node in the final IPsec
-    // topology with no neighbors (Since Tunnel8 on host 2 is not in IPsec topology it will be
-    // unaffected)
-    assertThat(_configurations.get("host1").getAllInterfaces().get("Tunnel1"), isActive());
-    assertThat(_configurations.get("host1").getAllInterfaces().get("Tunnel3"), isActive());
-    assertThat(_configurations.get("host1").getAllInterfaces().get("interface5"), isActive());
-    assertThat(_configurations.get("host1").getAllInterfaces().get("Tunnel9"), isActive());
-    assertThat(_configurations.get("host1").getAllInterfaces().get("Tunnel7"), not(isActive()));
-
-    assertThat(_configurations.get("host2").getAllInterfaces().get("Tunnel2"), isActive());
-    assertThat(_configurations.get("host2").getAllInterfaces().get("Tunnel4"), isActive());
-    assertThat(_configurations.get("host2").getAllInterfaces().get("interface6"), isActive());
-    assertThat(_configurations.get("host2").getAllInterfaces().get("Tunnel10"), isActive());
-    assertThat(_configurations.get("host2").getAllInterfaces().get("Tunnel8"), isActive());
   }
 }

@@ -840,6 +840,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.resetTimer();
     Topology topology = computeTestrigTopology(configurations);
     topology.prune(getEdgeBlacklist(), getNodeBlacklist(), getInterfaceBlacklist());
+    topology.pruneFailedIpsecSessionEdges(
+        IpsecUtil.initIpsecTopology(configurations), configurations);
     _logger.printElapsedTime();
     return topology;
   }
@@ -1691,8 +1693,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     verify(
         configurations != null,
         "Configurations should not be null when loaded immediately after repair.");
-    IpsecUtil.pruneFailedIpsecSessionEdgesAndDisableIfaces(
-        getEnvironmentTopology(), IpsecUtil.initIpsecTopology(configurations), configurations);
     postProcessSnapshot(configurations);
     return configurations;
   }
@@ -3256,8 +3256,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     postProcessSnapshot(configurations);
     Topology envTopology = computeEnvironmentTopology(configurations);
-    IpsecUtil.pruneFailedIpsecSessionEdgesAndDisableIfaces(
-        envTopology, IpsecUtil.initIpsecTopology(configurations), configurations);
     serializeAsJson(
         _testrigSettings.getSerializeTopologyPath(), envTopology, "environment topology");
 

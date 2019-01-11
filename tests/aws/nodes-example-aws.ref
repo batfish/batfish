@@ -896,7 +896,7 @@
           "Tunnel1" : {
             "name" : "Tunnel1",
             "accessVlan" : 0,
-            "active" : false,
+            "active" : true,
             "allPrefixes" : [
               "169.254.15.194/30"
             ],
@@ -926,7 +926,7 @@
           "Tunnel2" : {
             "name" : "Tunnel2",
             "accessVlan" : 0,
-            "active" : false,
+            "active" : true,
             "allPrefixes" : [
               "169.254.13.238/30"
             ],
@@ -4009,7 +4009,7 @@
           "vpn1" : {
             "name" : "vpn1",
             "accessVlan" : 0,
-            "active" : false,
+            "active" : true,
             "allPrefixes" : [
               "169.254.15.193/30"
             ],
@@ -4036,7 +4036,7 @@
           "vpn2" : {
             "name" : "vpn2",
             "accessVlan" : 0,
-            "active" : false,
+            "active" : true,
             "allPrefixes" : [
               "169.254.13.237/30"
             ],

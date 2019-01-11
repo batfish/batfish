@@ -3,7 +3,6 @@ package org.batfish.common.util;
 import static org.batfish.common.util.CommonUtil.initPrivateIpsByPublicIp;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
 import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.MutableValueGraph;
@@ -20,11 +19,9 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecDynamicPeerConfig;
@@ -35,8 +32,6 @@ import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.NetworkConfigurations;
-import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public class IpsecUtil {
 
@@ -383,93 +378,5 @@ public class IpsecUtil {
                     .containsIp(initiator.getLocalAddress(), ImmutableMap.of()))
         .findFirst()
         .orElse(null);
-  }
-
-  /**
-   * Removes all edges between tunnel interfaces in the layer 3 topology which have either a failed
-   * IPsec session, or don't have a neighboring IPsec peer. It does not affect the tunnel interfaces
-   * which are not not configured to use IPsec or interfaces which use crypto maps. It also disables
-   * the interfaces which have IPsec enabled but have no peers
-   *
-   * @param l3Topology {@link Topology} for layer 3
-   * @param ipsecTopology {@link ValueGraph} between the {@link IpsecPeerConfigId}s showing the
-   *     peering information
-   * @param configurations {@link Map} of configuration names and {@link Configuration} objects
-   */
-  public static void pruneFailedIpsecSessionEdgesAndDisableIfaces(
-      Topology l3Topology,
-      ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology,
-      Map<String, Configuration> configurations) {
-    NetworkConfigurations networkConfigurations = NetworkConfigurations.of(configurations);
-    // graph to contain the IPsec peerings with tunnel interfaces which have established sessions
-    MutableValueGraph<NodeInterfacePair, Edge> finalIpsecGraph =
-        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
-
-    for (IpsecPeerConfigId node : ipsecTopology.nodes()) {
-      IpsecPeerConfig nodeIpsecConfig = networkConfigurations.getIpsecPeerConfig(node);
-
-      if (nodeIpsecConfig == null || nodeIpsecConfig.getTunnelInterface() == null) {
-        // only considering IPsec peers on tunnel interfaces
-        continue;
-      }
-
-      finalIpsecGraph.addNode(
-          new NodeInterfacePair(node.getHostName(), nodeIpsecConfig.getTunnelInterface()));
-
-      Set<IpsecPeerConfigId> neighbors = ipsecTopology.adjacentNodes(node);
-
-      if (neighbors.isEmpty()) {
-        // no peers/neighbors present for this node
-        continue;
-      }
-
-      neighbors.forEach(
-          neighbor -> {
-            IpsecPeerConfig neighborIpsecConfig =
-                networkConfigurations.getIpsecPeerConfig(neighbor);
-            if (neighborIpsecConfig == null || neighborIpsecConfig.getTunnelInterface() == null) {
-              // don't do anything for non-tunnel IPsec sessions
-              return;
-            }
-
-            Optional<IpsecSession> ipsecSession = ipsecTopology.edgeValue(node, neighbor);
-            if (ipsecSession.isPresent()
-                && ipsecSession.get().getNegotiatedIpsecP2Proposal() != null) {
-              NodeInterfacePair nodeU =
-                  new NodeInterfacePair(node.getHostName(), nodeIpsecConfig.getTunnelInterface());
-              NodeInterfacePair nodeV =
-                  new NodeInterfacePair(
-                      neighbor.getHostName(), neighborIpsecConfig.getTunnelInterface());
-              finalIpsecGraph.putEdgeValue(nodeU, nodeV, new Edge(nodeU, nodeV));
-            }
-          });
-    }
-
-    Set<Edge> failedIpsecEdges = new HashSet<>();
-
-    for (Edge edge : l3Topology.getEdges()) {
-      NodeInterfacePair tail = edge.getTail();
-      NodeInterfacePair head = edge.getHead();
-      if ((finalIpsecGraph.nodes().contains(tail) || finalIpsecGraph.nodes().contains(head))
-          && !finalIpsecGraph.edgeValue(tail, head).isPresent()) {
-        failedIpsecEdges.add(edge);
-      }
-    }
-
-    // deactivating and collecting interfaces with 0 in-degree & out-degree in filtered IPsec graph
-    Set<NodeInterfacePair> blackListedInterface = new HashSet<>();
-    for (NodeInterfacePair nodeInterfacePair : finalIpsecGraph.nodes()) {
-      if (finalIpsecGraph.inDegree(nodeInterfacePair) == 0
-          && finalIpsecGraph.outDegree(nodeInterfacePair) == 0) {
-        Configuration configuration = configurations.get(nodeInterfacePair.getHostname());
-        Interface iface = configuration.getAllInterfaces().get(nodeInterfacePair.getInterface());
-        if (iface != null) {
-          blackListedInterface.add(nodeInterfacePair);
-          iface.setActive(false);
-        }
-      }
-    }
-
-    l3Topology.prune(failedIpsecEdges, ImmutableSet.of(), blackListedInterface);
   }
 }
