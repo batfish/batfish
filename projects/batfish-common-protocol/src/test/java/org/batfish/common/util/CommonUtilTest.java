@@ -5,20 +5,9 @@ import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
 import static org.batfish.common.util.CommonUtil.communityStringToLong;
 import static org.batfish.common.util.CommonUtil.longToCommunity;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
-import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.Vrf;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -69,68 +58,5 @@ public class CommonUtilTest {
   public void testLongToCommunity() {
     assertThat(longToCommunity(0L), equalTo("0:0"));
     assertThat(longToCommunity(4294967295L), equalTo("65535:65535"));
-  }
-
-  @Test
-  public void testSynthesizeTopology_asymmetric() {
-    NetworkFactory nf = new NetworkFactory();
-    Configuration.Builder cb =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Configuration c1 = cb.build();
-    Configuration c2 = cb.build();
-    Interface i1 =
-        nf.interfaceBuilder().setOwner(c1).setAddresses(new InterfaceAddress("1.2.3.4/24")).build();
-    Interface i2 =
-        nf.interfaceBuilder().setOwner(c2).setAddresses(new InterfaceAddress("1.2.3.5/28")).build();
-    Topology t =
-        CommonUtil.synthesizeTopology(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
-    assertThat(t.getEdges(), equalTo(ImmutableSet.of(new Edge(i1, i2), new Edge(i2, i1))));
-  }
-
-  @Test
-  public void testSynthesizeTopology_selfEdges() {
-    NetworkFactory nf = new NetworkFactory();
-    Configuration c =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    Vrf v1 = nf.vrfBuilder().setOwner(c).setName("v1").build();
-    Vrf v2 = nf.vrfBuilder().setOwner(c).setName("v2").build();
-    Interface.Builder builder = nf.interfaceBuilder().setOwner(c);
-    Interface i1 = builder.setAddresses(new InterfaceAddress("1.2.3.4/24")).setVrf(v1).build();
-    Interface i2 = builder.setAddresses(new InterfaceAddress("1.2.3.5/24")).setVrf(v1).build();
-    Interface i3 = builder.setAddresses(new InterfaceAddress("1.2.3.6/24")).setVrf(v2).build();
-    Topology t = CommonUtil.synthesizeTopology(ImmutableMap.of(c.getHostname(), c));
-    assertThat(
-        t.getEdges(),
-        equalTo(
-            ImmutableSet.of(
-                new Edge(i1, i3), new Edge(i3, i1), new Edge(i2, i3), new Edge(i3, i2))));
-  }
-
-  @Test
-  public void testSynthesizeTopology_asymmetricPartialOverlap() {
-    NetworkFactory nf = new NetworkFactory();
-    Configuration.Builder cb =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Configuration c1 = cb.build();
-    Configuration c2 = cb.build();
-    nf.interfaceBuilder().setOwner(c1).setAddresses(new InterfaceAddress("1.2.3.4/24")).build();
-    nf.interfaceBuilder().setOwner(c2).setAddresses(new InterfaceAddress("1.2.3.17/28")).build();
-    Topology t =
-        CommonUtil.synthesizeTopology(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
-    assertThat(t.getEdges(), empty());
-  }
-
-  @Test
-  public void testSynthesizeTopology_asymmetricSharedIp() {
-    NetworkFactory nf = new NetworkFactory();
-    Configuration.Builder cb =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Configuration c1 = cb.build();
-    Configuration c2 = cb.build();
-    nf.interfaceBuilder().setOwner(c1).setAddresses(new InterfaceAddress("1.2.3.4/24")).build();
-    nf.interfaceBuilder().setOwner(c2).setAddresses(new InterfaceAddress("1.2.3.4/28")).build();
-    Topology t =
-        CommonUtil.synthesizeTopology(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
-    assertThat(t.getEdges(), empty());
   }
 }
