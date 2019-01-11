@@ -103,14 +103,16 @@ import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.InstanceData;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
-import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
+import org.batfish.specifier.FlexibleInterfaceSpecifierFactory;
+import org.batfish.specifier.FlexibleNodeSpecifierFactory;
+import org.batfish.specifier.InterfaceSpecifierFactory;
+import org.batfish.specifier.NodeSpecifierFactory;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -445,7 +447,8 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new InterfacesSpecifier(value.textValue());
+        InterfaceSpecifierFactory.load(FlexibleInterfaceSpecifierFactory.NAME)
+            .buildInterfaceSpecifier(value.textValue());
         break;
       case IP:
         // TODO: Need to double check isInetAddress()
@@ -529,7 +532,8 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        new NodesSpecifier(value.textValue());
+        NodeSpecifierFactory.load(FlexibleNodeSpecifierFactory.NAME)
+            .buildNodeSpecifier(value.textValue());
         break;
       case OSPF_PROPERTY_SPEC:
         if (!(value.isTextual())) {
