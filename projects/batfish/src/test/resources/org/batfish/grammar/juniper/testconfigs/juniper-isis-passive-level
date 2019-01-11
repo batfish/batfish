@@ -5,7 +5,7 @@ set interfaces ge-1/2/0 unit 0 family inet address 10.0.0.1/30
 set interfaces ge-1/2/0 unit 0 family iso
 #
 set interfaces lo0 unit 0 family inet address 192.168.0.1/32
-set interfaces lo0 unit 0 family iso address 49.0002.0192.0168.0001.00
+set interfaces lo0 unit 0 family iso address 49.0002.1921.6800.0001.00
 #
 set protocols isis interface ge-1/2/0.0 level 1 passive
 set protocols isis interface lo0.0 passive
