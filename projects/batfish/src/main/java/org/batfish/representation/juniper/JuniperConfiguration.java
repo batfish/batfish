@@ -665,7 +665,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .setHelloInterval(interfaceLevelSettings.getHelloInterval())
         .setHoldTime(interfaceLevelSettings.getHoldTime())
         .setMode(
-            interfaceSettings.getPassive() ? IsisInterfaceMode.PASSIVE : IsisInterfaceMode.ACTIVE)
+            interfaceSettings.getPassive() || interfaceLevelSettings.getPassive()
+                ? IsisInterfaceMode.PASSIVE
+                : IsisInterfaceMode.ACTIVE)
         .build();
   }
 
