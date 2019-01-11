@@ -38,6 +38,7 @@ public class Variable {
     FLOW_STATE("flowState", true),
     HEADER_CONSTRAINT("headerConstraint", false),
     INTEGER("integer", false),
+    INTEGER_SPACE("integerSpace", true),
     INTERFACE("interface", true),
     INTERFACE_PROPERTY_SPEC("interfacePropertySpec", true),
     INTERFACES_SPEC("interfacesSpec", true),

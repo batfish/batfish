@@ -99,6 +99,7 @@ import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -401,6 +402,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private Map<String, VlanTrunkGroup> _eosVlanTrunkGroups;
 
   private AristaEosVxlan _eosVxlan;
+
+  @Nullable private MlagConfiguration _eosMlagConfiguration;
 
   private final Map<String, ExpandedCommunityList> _expandedCommunityLists;
 
@@ -756,6 +759,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public AristaEosVxlan getEosVxlan() {
     return _eosVxlan;
+  }
+
+  @Nullable
+  public MlagConfiguration getEosMlagConfiguration() {
+    return _eosMlagConfiguration;
   }
 
   public Map<String, ExpandedCommunityList> getExpandedCommunityLists() {
@@ -1184,6 +1192,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public void setDomainName(String domainName) {
     _domainName = domainName;
+  }
+
+  public void setEosMlagConfiguration(@Nullable MlagConfiguration eosMlagConfiguration) {
+    _eosMlagConfiguration = eosMlagConfiguration;
   }
 
   public void setEosVxlan(AristaEosVxlan eosVxlan) {
@@ -2067,6 +2079,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     } else {
       newIface.setDhcpRelayAddresses(ImmutableList.copyOf(iface.getDhcpRelayAddresses()));
     }
+    newIface.setMlagId(iface.getMlagId());
     newIface.setMtu(getInterfaceMtu(iface));
     newIface.setOspfPointToPoint(iface.getOspfPointToPoint());
     newIface.setProxyArp(iface.getProxyArp());
@@ -2606,6 +2619,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .collect(Collectors.toList()));
 
     return newProcess;
+  }
+
+  @Nullable
+  private Mlag toMlag(@Nullable MlagConfiguration mlag) {
+    if (mlag == null || mlag.getDomainId() == null) {
+      return null;
+    }
+    return Mlag.builder()
+        .setId(mlag.getDomainId())
+        .setPeerAddress(mlag.getPeerAddress())
+        .setPeerInterface(mlag.getPeerLink())
+        .setLocalInterface(mlag.getLocalInterface())
+        .build();
   }
 
   private org.batfish.datamodel.ospf.StubSettings toStubSettings(StubSettings stubSettings) {
@@ -3261,6 +3287,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // apply vrrp settings to interfaces
     applyVrrp(c);
+
+    // convert MLAG configs
+    if (_vendor.equals(ConfigurationFormat.ARISTA)) {
+      Mlag viMlag = toMlag(_eosMlagConfiguration);
+      if (viMlag != null) {
+        c.setMlags(ImmutableMap.of(viMlag.getId(), viMlag));
+      }
+    }
 
     // ISAKMP policies to IKE proposals
     for (Entry<Integer, IsakmpPolicy> e : _isakmpPolicies.entrySet()) {

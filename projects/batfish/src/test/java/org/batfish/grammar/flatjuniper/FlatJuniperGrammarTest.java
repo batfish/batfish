@@ -2723,6 +2723,19 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testJuniperIsisPassiveLevel() throws IOException {
+    Configuration c = parseConfig("juniper-isis-passive-level");
+    assertThat(
+        c,
+        hasInterface(
+            "ge-1/2/0.0",
+            hasIsis(
+                allOf(
+                    hasLevel1(hasMode(IsisInterfaceMode.PASSIVE)),
+                    hasLevel2(hasMode(IsisInterfaceMode.ACTIVE))))));
+  }
+
+  @Test
   public void testJuniperOspfStubSettings() throws IOException {
     Configuration c = parseConfig("juniper-ospf-stub-settings");
 
