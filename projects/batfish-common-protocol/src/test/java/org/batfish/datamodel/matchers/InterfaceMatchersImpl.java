@@ -336,5 +336,16 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class IsSwitchport extends FeatureMatcher<Interface, Boolean> {
+    IsSwitchport(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "an Interface with switchport:", "switchport");
+    }
+
+    @Override
+    protected Boolean featureValueOf(Interface actual) {
+      return actual.getSwitchport();
+    }
+  }
+
   private InterfaceMatchersImpl() {}
 }
