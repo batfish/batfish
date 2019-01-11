@@ -28,7 +28,6 @@ import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Pro
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecProposal;
 
 import com.google.common.base.Functions;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -38,7 +37,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
-import com.google.common.collect.Ordering;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -405,7 +403,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private AristaEosVxlan _eosVxlan;
 
-  @Nonnull private Map<String, MlagConfiguration> _eosMlagConfigurations;
+  @Nullable private MlagConfiguration _eosMlagConfiguration;
 
   private final Map<String, ExpandedCommunityList> _expandedCommunityLists;
 
@@ -532,7 +530,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _cryptoMapSets = new HashMap<>();
     _dhcpRelayServers = new ArrayList<>();
     _dnsServers = new TreeSet<>();
-    _eosMlagConfigurations = new HashMap<>();
     _eosVlanTrunkGroups = new HashMap<>();
     _expandedCommunityLists = new TreeMap<>();
     _extendedAccessLists = new TreeMap<>();
@@ -764,9 +761,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _eosVxlan;
   }
 
-  @Nonnull
-  public Map<String, MlagConfiguration> getEosMlagConfigurations() {
-    return _eosMlagConfigurations;
+  @Nullable
+  public MlagConfiguration getEosMlagConfiguration() {
+    return _eosMlagConfiguration;
   }
 
   public Map<String, ExpandedCommunityList> getExpandedCommunityLists() {
@@ -1195,6 +1192,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public void setDomainName(String domainName) {
     _domainName = domainName;
+  }
+
+  public void setEosMlagConfiguration(@Nullable MlagConfiguration eosMlagConfiguration) {
+    _eosMlagConfiguration = eosMlagConfiguration;
   }
 
   public void setEosVxlan(AristaEosVxlan eosVxlan) {
@@ -2620,7 +2621,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return newProcess;
   }
 
-  private Mlag toMlag(MlagConfiguration mlag) {
+  @Nullable
+  private Mlag toMlag(@Nullable MlagConfiguration mlag) {
+    if (mlag == null || mlag.getDomainId() == null) {
+      return null;
+    }
     return Mlag.builder()
         .setId(mlag.getDomainId())
         .setPeerAddress(mlag.getPeerAddress())
@@ -3285,14 +3290,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // convert MLAG configs
     if (_vendor.equals(ConfigurationFormat.ARISTA)) {
-      c.setMlags(
-          _eosMlagConfigurations
-              .values()
-              .stream()
-              .filter(Predicates.not(MlagConfiguration::isShutdown))
-              .collect(
-                  ImmutableSortedMap.toImmutableSortedMap(
-                      Ordering.natural(), MlagConfiguration::getDomainId, this::toMlag)));
+      Mlag viMlag = toMlag(_eosMlagConfiguration);
+      if (viMlag != null) {
+        c.setMlags(ImmutableMap.of(viMlag.getId(), viMlag));
+      }
     }
 
     // ISAKMP policies to IKE proposals

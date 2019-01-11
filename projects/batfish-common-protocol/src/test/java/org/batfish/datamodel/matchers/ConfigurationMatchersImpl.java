@@ -290,7 +290,7 @@ final class ConfigurationMatchersImpl {
     private final String _name;
 
     HasMlag(@Nonnull String name, @Nonnull Matcher<? super Mlag> subMatcher) {
-      super(subMatcher, "A Configuration with Mlag" + name + ":", "ipsecPeerConfig " + name);
+      super(subMatcher, "A Configuration with Mlag" + name + ":", "mlag " + name);
       _name = name;
     }
 

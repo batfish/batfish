@@ -27,6 +27,7 @@ public class MlagTest {
             .setPeerInterface("Eth1");
     new EqualsTester()
         .addEqualityGroup(b.build(), b.build())
+        .addEqualityGroup(new Object())
         .addEqualityGroup(b.setId("id2").build())
         .addEqualityGroup(b.setPeerInterface("Eth2").build())
         .addEqualityGroup(b.setLocalInterface("Vlan2").build())

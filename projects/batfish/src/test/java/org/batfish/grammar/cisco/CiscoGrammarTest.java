@@ -3135,12 +3135,6 @@ public class CiscoGrammarTest {
     assertThat(c, hasMlagConfig(mlagName, hasPeerInterface("Port-Channel1")));
     assertThat(c, hasMlagConfig(mlagName, MlagMatchers.hasLocalInterface("Vlan4094")));
 
-    final String mlagShutdown = "MLAG_SHUTDOWN";
-    assertThat(c, hasMlagConfig(mlagShutdown, nullValue()));
-
-    final String mlagNoShutdown = "MLAG_NO_SHUTDOWN";
-    assertThat(c, hasMlagConfig(mlagNoShutdown, hasId(mlagNoShutdown)));
-
     // Test interface config
     assertThat(c, hasInterface("Port-Channel1", hasMlagId(5)));
   }
