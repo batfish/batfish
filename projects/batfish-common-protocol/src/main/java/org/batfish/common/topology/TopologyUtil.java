@@ -12,16 +12,19 @@ import com.google.common.graph.Graph;
 import com.google.common.graph.Graphs;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
@@ -35,6 +38,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
@@ -661,5 +665,76 @@ public final class TopologyUtil {
         configurations,
         Entry::getKey,
         e -> ImmutableSet.copyOf(e.getValue().getAllInterfaces().values()));
+  }
+
+  /** Returns {@code true} if any {@link Ip IP address} is owned by both devices. */
+  private static boolean haveIpInCommon(Interface i1, Interface i2) {
+    for (InterfaceAddress ia : i1.getAllAddresses()) {
+      for (InterfaceAddress ia2 : i2.getAllAddresses()) {
+        if (ia.getIp().equals(ia2.getIp())) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns a {@link Topology} inferred from the L3 configuration of interfaces on the devices.
+   *
+   * <p>Ignores {@code Loopback} interfaces and inactive interfaces.
+   */
+  public static Topology synthesizeL3Topology(Map<String, Configuration> configurations) {
+    Map<Prefix, List<Interface>> prefixInterfaces = new HashMap<>();
+    configurations.forEach(
+        (nodeName, node) -> {
+          for (Interface iface : node.getAllInterfaces().values()) {
+            if (iface.isLoopback(node.getConfigurationFormat()) || !iface.getActive()) {
+              continue;
+            }
+            for (InterfaceAddress address : iface.getAllAddresses()) {
+              if (address.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH) {
+                Prefix prefix = address.getPrefix();
+                List<Interface> interfaceBucket =
+                    prefixInterfaces.computeIfAbsent(prefix, k -> new LinkedList<>());
+                interfaceBucket.add(iface);
+              }
+            }
+          }
+        });
+
+    ImmutableSortedSet.Builder<Edge> edges = ImmutableSortedSet.naturalOrder();
+    for (Entry<Prefix, List<Interface>> bucketEntry : prefixInterfaces.entrySet()) {
+      Prefix p = bucketEntry.getKey();
+
+      // Collect all interfaces that have subnets overlapping P iff they have an IP address in P.
+      // Use an IdentityHashSet to prevent duplicates.
+      Set<Interface> candidateInterfaces = Sets.newIdentityHashSet();
+      IntStream.range(0, Prefix.MAX_PREFIX_LENGTH)
+          .mapToObj(
+              i ->
+                  prefixInterfaces.getOrDefault(
+                      Prefix.create(p.getStartIp(), i), ImmutableList.of()))
+          .flatMap(Collection::stream)
+          .filter(
+              iface -> iface.getAllAddresses().stream().anyMatch(ia -> p.containsIp(ia.getIp())))
+          .forEach(candidateInterfaces::add);
+
+      for (Interface iface1 : bucketEntry.getValue()) {
+        for (Interface iface2 : candidateInterfaces) {
+          // No device self-adjacencies in the same VRF.
+          if (iface1.getOwner() == iface2.getOwner()
+              && iface1.getVrfName().equals(iface2.getVrfName())) {
+            continue;
+          }
+          // don't connect interfaces that have any IP address in common
+          if (haveIpInCommon(iface1, iface2)) {
+            continue;
+          }
+          edges.add(new Edge(iface1, iface2));
+        }
+      }
+    }
+    return new Topology(edges.build());
   }
 }

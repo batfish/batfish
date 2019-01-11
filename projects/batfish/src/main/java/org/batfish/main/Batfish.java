@@ -777,7 +777,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     Map<String, Configuration> configs =
         new BatfishCompressor(new BDDPacket(), this, clonedConfigs).compress(headerSpace);
-    Topology topo = CommonUtil.synthesizeTopology(configs);
+    Topology topo = TopologyUtil.synthesizeL3Topology(configs);
     DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
     ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(false, configs, topo);
 
@@ -880,7 +880,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     // guess adjacencies based on interface subnetworks
     _logger.info("*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
-    return CommonUtil.synthesizeTopology(configurations);
+    return TopologyUtil.synthesizeL3Topology(configurations);
   }
 
   private Map<String, Configuration> convertConfigurations(
