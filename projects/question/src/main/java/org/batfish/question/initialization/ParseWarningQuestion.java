@@ -4,10 +4,11 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.questions.Question;
 
 /** A question that returns a table with the parse warnings for each file. */
+@ParametersAreNonnullByDefault
 public final class ParseWarningQuestion extends Question {
 
   private static final boolean DEFAULT_AGGREGATE_DUPLICATES = false;
@@ -16,15 +17,19 @@ public final class ParseWarningQuestion extends Question {
 
   private final boolean _aggregateDuplicates;
 
-  // package-private constructor
-  ParseWarningQuestion() {
-    this(null);
+  @JsonCreator
+  private static ParseWarningQuestion create(
+      @JsonProperty(PROP_AGGREGATE_DUPLICATES) Boolean aggregate) {
+    return new ParseWarningQuestion(firstNonNull(aggregate, DEFAULT_AGGREGATE_DUPLICATES));
   }
 
-  @JsonCreator
-  public ParseWarningQuestion(
-      @Nullable @JsonProperty(PROP_AGGREGATE_DUPLICATES) Boolean aggregate) {
-    _aggregateDuplicates = firstNonNull(aggregate, DEFAULT_AGGREGATE_DUPLICATES);
+  // package-private constructor
+  ParseWarningQuestion() {
+    this(DEFAULT_AGGREGATE_DUPLICATES);
+  }
+
+  public ParseWarningQuestion(boolean aggregateDuplicates) {
+    _aggregateDuplicates = aggregateDuplicates;
   }
 
   public boolean getAggregateDuplicates() {

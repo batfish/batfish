@@ -148,7 +148,7 @@ class ParseWarningAnswerer extends Answerer {
         .build();
   }
 
-  static final String COL_FILELINES = "Filelines"; // with aggregation
+  static final String COL_FILELINES = "Source_Lines"; // with aggregation
   static final String COL_FILENAME = "Filename"; // without aggregation
   static final String COL_LINE = "Line"; // without aggregation
   static final String COL_TEXT = "Text";
@@ -166,7 +166,7 @@ class ParseWarningAnswerer extends Answerer {
           new ColumnMetadata(
               COL_FILELINES,
               Schema.list(Schema.FILE_LINES),
-              "The files and files that were parsed",
+              "The files and lines that caused the warning",
               true,
               false));
     } else {
@@ -206,8 +206,8 @@ class ParseWarningAnswerer extends Answerer {
     String textDesc =
         question.getAggregateDuplicates()
             ? String.format(
-                "Warning at line ${%s} when the Batfish parser was in state ${%s}. Optional comment: ${%s}.",
-                COL_FILENAME, COL_LINE, COL_TEXT, COL_PARSER_CONTEXT, COL_COMMENT)
+                "Warning for ${%s} when the Batfish parser was in state ${%s}. Optional comment: ${%s}.",
+                COL_TEXT, COL_PARSER_CONTEXT, COL_COMMENT)
             : String.format(
                 "File ${%s}: warning at line ${%s}: ${%s} when the Batfish parser was in state ${%s}."
                     + " Optional comment: ${%s}.",
