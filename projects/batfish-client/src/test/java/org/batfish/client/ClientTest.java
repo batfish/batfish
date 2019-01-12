@@ -84,6 +84,7 @@ import static org.batfish.datamodel.questions.Variable.Type.NODE_ROLE_DIMENSION;
 import static org.batfish.datamodel.questions.Variable.Type.PREFIX;
 import static org.batfish.datamodel.questions.Variable.Type.PREFIX_RANGE;
 import static org.batfish.datamodel.questions.Variable.Type.PROTOCOL;
+import static org.batfish.datamodel.questions.Variable.Type.ROUTING_PROTOCOL_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.STRING;
 import static org.batfish.datamodel.questions.Variable.Type.STRUCTURE_NAME;
 import static org.batfish.datamodel.questions.Variable.Type.SUBRANGE;
@@ -798,6 +799,15 @@ public final class ClientTest {
             "No %s with name: '%s'",
             Protocol.class.getSimpleName(), _mapper.readTree(input).textValue());
     validateTypeWithInvalidInput(input, expectedMessage, PROTOCOL);
+  }
+
+  @Test
+  public void testInvalidRoutingProtocolSpecValue() throws IOException {
+    String input = "5";
+    Type expectedType = ROUTING_PROTOCOL_SPEC;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
   @Test
@@ -1846,6 +1856,14 @@ public final class ClientTest {
     Variable variable = new Variable();
     variable.setType(PROTOCOL);
     Client.validateType(prefixRangeNode, variable);
+  }
+
+  @Test
+  public void testValidRoutingProtocolSpecValue() throws IOException {
+    JsonNode rpsNode = _mapper.readTree("\"all\"");
+    Variable variable = new Variable();
+    variable.setType(ROUTING_PROTOCOL_SPEC);
+    Client.validateType(rpsNode, variable);
   }
 
   @Test
