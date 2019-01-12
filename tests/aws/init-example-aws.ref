@@ -309,6 +309,12 @@
             ],
             "numReferrers" : 2
           },
+          "Null0" : {
+            "definitionLines" : [
+              236
+            ],
+            "numReferrers" : 1
+          },
           "Tunnel1" : {
             "definitionLines" : [
               108,
@@ -495,6 +501,11 @@
             ],
             "update-source interface" : [
               205
+            ]
+          },
+          "Null0" : {
+            "ip route next-hop interface" : [
+              236
             ]
           },
           "Tunnel1" : {

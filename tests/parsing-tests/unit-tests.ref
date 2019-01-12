@@ -23760,90 +23760,6 @@
             "          DEC:'100000'",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
-            "        (if_tunnel",
-            "          TUNNEL:'tunnel'",
-            "          (iftunnel_bandwidth",
-            "            BANDWIDTH:'bandwidth'",
-            "            RECEIVE:'receive'",
-            "            DEC:'1000000'",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner",
-            "        (if_tunnel",
-            "          TUNNEL:'tunnel'",
-            "          (iftunnel_bandwidth",
-            "            BANDWIDTH:'bandwidth'",
-            "            TRANSMIT:'transmit'",
-            "            DEC:'1000000'",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner",
-            "        (if_tunnel",
-            "          TUNNEL:'tunnel'",
-            "          (iftunnel_destination",
-            "            DESTINATION:'destination'",
-            "            IP_ADDRESS:'3.4.5.6'",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner",
-            "        (if_tunnel",
-            "          TUNNEL:'tunnel'",
-            "          (iftunnel_key",
-            "            KEY:'key'",
-            "            keynum = DEC:'123'",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner",
-            "        (if_tunnel",
-            "          TUNNEL:'tunnel'",
-            "          (iftunnel_mode",
-            "            MODE:'mode'",
-            "            GRE:'gre'",
-            "            IPV4:'ipv4'",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner",
-            "        (if_tunnel",
-            "          TUNNEL:'tunnel'",
-            "          (iftunnel_mode",
-            "            MODE:'mode'",
-            "            GRE:'gre'",
-            "            MULTIPOINT:'multipoint'",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner",
-            "        (if_tunnel",
-            "          TUNNEL:'tunnel'",
-            "          (iftunnel_path_mtu_discovery",
-            "            PATH_MTU_DISCOVERY:'path-mtu-discovery'",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner",
-            "        (if_tunnel",
-            "          TUNNEL:'tunnel'",
-            "          (iftunnel_source",
-            "            SOURCE:'source'",
-            "            IP_ADDRESS:'2.3.4.5'",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner",
-            "        (if_tunnel",
-            "          TUNNEL:'tunnel'",
-            "          (iftunnel_source",
-            "            SOURCE:'source'",
-            "            (interface_name",
-            "              VARIABLE:'Cellular0')",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner",
-            "        (if_tunnel",
-            "          TUNNEL:'tunnel'",
-            "          (iftunnel_source",
-            "            SOURCE:'source'",
-            "            (interface_name",
-            "              VARIABLE:'Ethernet0')",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner",
-            "        (if_tunnel",
-            "          TUNNEL:'tunnel'",
-            "          (iftunnel_source",
-            "            SOURCE:'source'",
-            "            (interface_name",
-            "              (variable_interface_name",
-            "                DYNAMIC:'dynamic'))",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner",
             "        (if_null_block",
             "          XCONNECT:'xconnect'",
             "          IP_ADDRESS:'1.2.3.4'",
@@ -24031,6 +23947,97 @@
             "          (subrange",
             "            low = DEC:'6'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'tunnel'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_tunnel",
+            "          TUNNEL:'tunnel'",
+            "          (iftunnel_bandwidth",
+            "            BANDWIDTH:'bandwidth'",
+            "            RECEIVE:'receive'",
+            "            DEC:'1000000'",
+            "            NEWLINE:'\\n')))",
+            "      (if_inner",
+            "        (if_tunnel",
+            "          TUNNEL:'tunnel'",
+            "          (iftunnel_bandwidth",
+            "            BANDWIDTH:'bandwidth'",
+            "            TRANSMIT:'transmit'",
+            "            DEC:'1000000'",
+            "            NEWLINE:'\\n')))",
+            "      (if_inner",
+            "        (if_tunnel",
+            "          TUNNEL:'tunnel'",
+            "          (iftunnel_destination",
+            "            DESTINATION:'destination'",
+            "            IP_ADDRESS:'3.4.5.6'",
+            "            NEWLINE:'\\n')))",
+            "      (if_inner",
+            "        (if_tunnel",
+            "          TUNNEL:'tunnel'",
+            "          (iftunnel_key",
+            "            KEY:'key'",
+            "            keynum = DEC:'123'",
+            "            NEWLINE:'\\n')))",
+            "      (if_inner",
+            "        (if_tunnel",
+            "          TUNNEL:'tunnel'",
+            "          (iftunnel_mode",
+            "            MODE:'mode'",
+            "            GRE:'gre'",
+            "            IPV4:'ipv4'",
+            "            NEWLINE:'\\n')))",
+            "      (if_inner",
+            "        (if_tunnel",
+            "          TUNNEL:'tunnel'",
+            "          (iftunnel_mode",
+            "            MODE:'mode'",
+            "            GRE:'gre'",
+            "            MULTIPOINT:'multipoint'",
+            "            NEWLINE:'\\n')))",
+            "      (if_inner",
+            "        (if_tunnel",
+            "          TUNNEL:'tunnel'",
+            "          (iftunnel_path_mtu_discovery",
+            "            PATH_MTU_DISCOVERY:'path-mtu-discovery'",
+            "            NEWLINE:'\\n')))",
+            "      (if_inner",
+            "        (if_tunnel",
+            "          TUNNEL:'tunnel'",
+            "          (iftunnel_source",
+            "            SOURCE:'source'",
+            "            IP_ADDRESS:'2.3.4.5'",
+            "            NEWLINE:'\\n')))",
+            "      (if_inner",
+            "        (if_tunnel",
+            "          TUNNEL:'tunnel'",
+            "          (iftunnel_source",
+            "            SOURCE:'source'",
+            "            (interface_name",
+            "              VARIABLE:'Cellular0')",
+            "            NEWLINE:'\\n')))",
+            "      (if_inner",
+            "        (if_tunnel",
+            "          TUNNEL:'tunnel'",
+            "          (iftunnel_source",
+            "            SOURCE:'source'",
+            "            (interface_name",
+            "              VARIABLE:'Ethernet0')",
+            "            NEWLINE:'\\n')))",
+            "      (if_inner",
+            "        (if_tunnel",
+            "          TUNNEL:'tunnel'",
+            "          (iftunnel_source",
+            "            SOURCE:'source'",
+            "            DYNAMIC:'dynamic'",
+            "            NEWLINE:'\\n')))))",
             "  (stanza",
             "    (s_interface",
             "      INTERFACE:'interface'",
@@ -62786,14 +62793,14 @@
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 279,
-              "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
-              "Text" : "mode gre multipoint"
+              "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
+              "Text" : "zone-member t1"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 290,
-              "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
-              "Text" : "zone-member t1"
+              "Line" : 315,
+              "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
+              "Text" : "mode gre multipoint"
             }
           ]
         },
@@ -63083,15 +63090,15 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "OSPF: Interface: 'Bundle-Ether101' not declared before OSPF process"
+              "text" : "OSPF: Interface: 'Bundle-Ethernet101' not declared before OSPF process"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "OSPF: Interface: 'Bundle-Ether103' not declared before OSPF process"
+              "text" : "OSPF: Interface: 'Bundle-Ethernet103' not declared before OSPF process"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "OSPF: Interface: 'Bundle-Ether201' not declared before OSPF process"
+              "text" : "OSPF: Interface: 'Bundle-Ethernet201' not declared before OSPF process"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -63099,23 +63106,23 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "OSPF: Interface: 'TenGigE0/0/0/4' not declared before OSPF process"
+              "text" : "OSPF: Interface: 'TenGigabitEthernet0/0/0/4' not declared before OSPF process"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "OSPF: Interface: 'TenGigE0/0/0/5' not declared before OSPF process"
+              "text" : "OSPF: Interface: 'TenGigabitEthernet0/0/0/5' not declared before OSPF process"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "OSPF: Interface: 'HundredGigE0/2/0/0.292' not declared before OSPF process"
+              "text" : "OSPF: Interface: 'HundredGigabitEthernet0/2/0/0.292' not declared before OSPF process"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "OSPF: Interface: 'HundredGigE0/2/0/3' not declared before OSPF process"
+              "text" : "OSPF: Interface: 'HundredGigabitEthernet0/2/0/3' not declared before OSPF process"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "OSPF: Interface: 'TenGigE0/0/0/2' not declared before OSPF process"
+              "text" : "OSPF: Interface: 'TenGigabitEthernet0/0/0/2' not declared before OSPF process"
             }
           ]
         },
@@ -63663,7 +63670,16 @@
             }
           }
         },
-        "configs/arista_ip_route" : { },
+        "configs/arista_ip_route" : {
+          "interface" : {
+            "Null0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/arista_misc" : {
           "standard ipv4 access-list" : {
             "sshabc" : {
@@ -64674,7 +64690,7 @@
               "definitionLines" : [
                 155
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             }
           }
         },
@@ -64727,25 +64743,25 @@
           "interface" : {
             "Async1" : {
               "definitionLines" : [
-                293
+                282
               ],
               "numReferrers" : 1
             },
             "Cable1/2/3:4" : {
               "definitionLines" : [
-                295
+                284
               ],
               "numReferrers" : 1
             },
             "Crypto-Engine1/2/3" : {
               "definitionLines" : [
-                297
+                286
               ],
               "numReferrers" : 1
             },
             "Dot11Radio0" : {
               "definitionLines" : [
-                299
+                288
               ],
               "numReferrers" : 1
             },
@@ -65024,128 +65040,134 @@
                 277,
                 278,
                 279,
-                280,
-                281,
-                282,
-                283,
-                284,
-                285,
-                286,
-                287,
-                288,
-                289,
-                290,
-                291
+                280
               ],
               "numReferrers" : 1
             },
             "Ethernet1/11" : {
               "definitionLines" : [
-                301
+                290
               ],
               "numReferrers" : 1
             },
             "Ethernet1/12" : {
               "definitionLines" : [
-                345,
-                346
+                346,
+                347
               ],
               "numReferrers" : 1
             },
             "GigabitEthernet0/0" : {
               "definitionLines" : [
-                303,
-                304,
-                305,
-                306,
-                307
+                292,
+                293,
+                294,
+                295,
+                296
               ],
               "numReferrers" : 1
             },
             "Loopback0" : {
               "definitionLines" : [
-                309,
-                310,
-                311,
-                312
+                298,
+                299,
+                300,
+                301
               ],
               "numReferrers" : 1
             },
             "Modular-Cable1/2/3:4" : {
               "definitionLines" : [
-                314
+                303
               ],
               "numReferrers" : 1
             },
             "Null0" : {
               "definitionLines" : [
-                316
+                305
+              ],
+              "numReferrers" : 1
+            },
+            "Tunnel0" : {
+              "definitionLines" : [
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320
               ],
               "numReferrers" : 1
             },
             "Vlan1" : {
               "definitionLines" : [
-                329
+                330
               ],
               "numReferrers" : 1
             },
             "Vlan1005" : {
               "definitionLines" : [
-                335
+                336
               ],
               "numReferrers" : 1
             },
             "Vlan1006" : {
               "definitionLines" : [
-                337
+                338
               ],
               "numReferrers" : 1
             },
             "Vlan111" : {
               "definitionLines" : [
-                320
+                321
               ],
               "numReferrers" : 1
             },
             "Vlan1234" : {
               "definitionLines" : [
-                339
+                340
               ],
               "numReferrers" : 1
             },
             "Vlan2" : {
               "definitionLines" : [
-                331
+                332
               ],
               "numReferrers" : 1
             },
             "Vlan3" : {
               "definitionLines" : [
-                333
+                334
               ],
               "numReferrers" : 1
             },
             "Vlan4094" : {
               "definitionLines" : [
-                341
+                342
               ],
               "numReferrers" : 1
             },
             "Wideband-Cable1/2/3:4" : {
               "definitionLines" : [
-                343
+                344
               ],
               "numReferrers" : 1
             },
             "inside" : {
               "definitionLines" : [
-                304
+                293
               ],
               "numReferrers" : 1
             },
             "tunnel-ip6" : {
               "definitionLines" : [
-                318
+                307
               ],
               "numReferrers" : 1
             }
@@ -65153,11 +65175,11 @@
           "vxlan" : {
             "Vxlan1" : {
               "definitionLines" : [
-                322,
                 323,
                 324,
                 325,
-                326
+                326,
+                327
               ],
               "numReferrers" : 1
             }
@@ -66956,7 +66978,16 @@
             }
           }
         },
-        "configs/ios_xr_router_static" : { },
+        "configs/ios_xr_router_static" : {
+          "interface" : {
+            "Null0" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 7
+            }
+          }
+        },
         "configs/ios_xr_ssh" : { },
         "configs/ios_xr_taskgroup" : { },
         "configs/ip_default_route_classless" : { },
@@ -68421,6 +68452,15 @@
             }
           }
         },
+        "configs/arista_ip_route" : {
+          "interface" : {
+            "Null0" : {
+              "ip route next-hop interface" : [
+                4
+              ]
+            }
+          }
+        },
         "configs/arista_misc" : {
           "ipv4 acl" : {
             "abc" : {
@@ -68793,6 +68833,18 @@
             }
           }
         },
+        "configs/cadant_misc" : {
+          "interface" : {
+            "Loopback0" : {
+              "ntp source-interface" : [
+                80
+              ],
+              "tacacs source-interface" : [
+                94
+              ]
+            }
+          }
+        },
         "configs/cadant_rip" : {
           "ipv4/6 acl" : {
             "blah-std-acl" : {
@@ -68819,6 +68871,13 @@
           }
         },
         "configs/cadant_snmp" : {
+          "interface" : {
+            "Loopback0" : {
+              "snmp-server source-interface" : [
+                18
+              ]
+            }
+          },
           "ipv4 acl" : {
             "52" : {
               "snmp server community ipv4 acl" : [
@@ -69141,11 +69200,48 @@
             }
           }
         },
+        "configs/cisco_domain" : {
+          "interface" : {
+            "Loopback666" : {
+              "domain lookup source-interface" : [
+                5
+              ]
+            }
+          }
+        },
         "configs/cisco_eigrp" : {
           "interface" : {
             "Ethernet0" : {
+              "eigrp address-family af-interface" : [
+                119
+              ],
               "interface" : [
                 155
+              ]
+            },
+            "FastEthernet0/1" : {
+              "eigrp passive-interface" : [
+                140
+              ]
+            },
+            "GigabitEthernet1/5/3" : {
+              "eigrp passive-interface" : [
+                23
+              ]
+            },
+            "GigabitEthernet2/5/3" : {
+              "eigrp passive-interface" : [
+                24
+              ]
+            },
+            "Port-Channel34" : {
+              "eigrp passive-interface" : [
+                25
+              ]
+            },
+            "Port-Channel35" : {
+              "eigrp passive-interface" : [
+                26
               ]
             }
           },
@@ -69209,27 +69305,27 @@
           "interface" : {
             "Async1" : {
               "interface" : [
-                293
+                282
               ]
             },
             "Cable1/2/3:4" : {
               "interface" : [
-                295
+                284
               ]
             },
             "Cellular0" : {
               "tunnel source" : [
-                282
+                318
               ]
             },
             "Crypto-Engine1/2/3" : {
               "interface" : [
-                297
+                286
               ]
             },
             "Dot11Radio0" : {
               "interface" : [
-                299
+                288
               ]
             },
             "Ethernet0" : {
@@ -69237,102 +69333,102 @@
                 7
               ],
               "tunnel source" : [
-                283
+                319
               ]
             },
             "Ethernet1/11" : {
               "interface" : [
-                301
+                290
               ]
             },
             "Ethernet1/12" : {
               "interface" : [
-                345
+                346
               ]
             },
             "GigabitEthernet0/0" : {
               "interface" : [
-                303
+                292
               ]
             },
             "Loopback0" : {
               "interface" : [
-                309
+                298
               ]
             },
             "Loopback1" : {
               "vxlan source-interface" : [
-                323
+                324
               ]
             },
             "Modular-Cable1/2/3:4" : {
               "interface" : [
-                314
+                303
               ]
             },
             "Null0" : {
               "interface" : [
-                316
+                305
+              ]
+            },
+            "Tunnel0" : {
+              "interface" : [
+                309
               ]
             },
             "Vlan1" : {
               "interface" : [
-                329
+                330
               ]
             },
             "Vlan1005" : {
               "interface" : [
-                335
+                336
               ]
             },
             "Vlan1006" : {
               "interface" : [
-                337
+                338
               ]
             },
             "Vlan111" : {
               "interface" : [
-                320
+                321
               ]
             },
             "Vlan1234" : {
               "interface" : [
-                339
+                340
               ]
             },
             "Vlan2" : {
               "interface" : [
-                331
+                332
               ]
             },
             "Vlan3" : {
               "interface" : [
-                333
+                334
               ]
             },
             "Vlan4094" : {
               "interface" : [
-                341
+                342
               ]
             },
             "Wideband-Cable1/2/3:4" : {
               "interface" : [
-                343
-              ]
-            },
-            "dynamic" : {
-              "tunnel source" : [
-                284
+                344
               ]
             },
             "inside" : {
               "interface" : [
-                304
+                293
               ]
             },
             "tunnel-ip6" : {
               "interface" : [
-                318
+                307
               ]
             }
           },
@@ -69407,21 +69503,21 @@
           "vxlan" : {
             "Vxlan1" : {
               "vxlan" : [
-                322
+                323
               ]
             }
           },
           "zone" : {
             "t1" : {
               "interface zone-member" : [
-                290
+                279
               ]
             }
           },
           "zone security" : {
             "z1" : {
               "interface zone-member security" : [
-                291
+                280
               ]
             }
           }
@@ -69445,6 +69541,50 @@
             "wccp-redir" : {
               "ip wccp redirect-list" : [
                 11
+              ]
+            }
+          }
+        },
+        "configs/cisco_ip_route" : {
+          "interface" : {
+            "Dialer1" : {
+              "ip route next-hop interface" : [
+                14
+              ]
+            },
+            "Dialer2" : {
+              "ip route next-hop interface" : [
+                15
+              ]
+            },
+            "GigabitEthernet3/0/0.212" : {
+              "ip route next-hop interface" : [
+                6
+              ]
+            },
+            "Loopback66" : {
+              "ip route next-hop interface" : [
+                12
+              ]
+            },
+            "Loopback99" : {
+              "ip route next-hop interface" : [
+                13
+              ]
+            },
+            "POS5/3:10" : {
+              "ip route next-hop interface" : [
+                10
+              ]
+            },
+            "Serial5/0:2" : {
+              "ip route next-hop interface" : [
+                7
+              ]
+            },
+            "Serial5/1:5" : {
+              "ip route next-hop interface" : [
+                9
               ]
             }
           }
@@ -69548,6 +69688,13 @@
           }
         },
         "configs/cisco_ntp" : {
+          "interface" : {
+            "Loopback0" : {
+              "ntp source-interface" : [
+                7
+              ]
+            }
+          },
           "ipv4 acl" : {
             "ntp-peer-group" : {
               "ntp access-group" : [
@@ -69859,6 +70006,23 @@
           }
         },
         "configs/cisco_snmp" : {
+          "interface" : {
+            "Loopback0" : {
+              "snmp-server source-interface" : [
+                87
+              ]
+            },
+            "Vlan1" : {
+              "snmp-server source-interface" : [
+                89
+              ]
+            },
+            "mgmt0" : {
+              "snmp-server source-interface" : [
+                88
+              ]
+            }
+          },
           "ipv4 acl" : {
             "1" : {
               "snmp server community ipv4 acl" : [
@@ -69906,6 +70070,12 @@
               "snmp server tftp-server list" : [
                 92
               ]
+            },
+            "Loopback0" : {
+              "snmp-server trap-source" : [
+                94,
+                95
+              ]
             }
           },
           "ipv6 acl" : {
@@ -69926,6 +70096,19 @@
             "POLICY" : {
               "system service-policy" : [
                 21
+              ]
+            }
+          }
+        },
+        "configs/cisco_tacacs" : {
+          "interface" : {
+            "Loopback0" : {
+              "ip tacacs source-interface" : [
+                6,
+                7
+              ],
+              "tacacs source-interface" : [
+                26
               ]
             }
           }
@@ -70082,6 +70265,13 @@
           }
         },
         "configs/foundry_misc" : {
+          "interface" : {
+            "Ethernet13/10" : {
+              "ip route next-hop interface" : [
+                39
+              ]
+            }
+          },
           "ipv4 acl" : {
             "blib" : {
               "ssh ipv4 access-list" : [
@@ -70442,6 +70632,55 @@
             }
           }
         },
+        "configs/ios_xr_ospf" : {
+          "interface" : {
+            "Bundle-Ethernet101" : {
+              "router ospf area interface" : [
+                17
+              ]
+            },
+            "Bundle-Ethernet103" : {
+              "router ospf area interface" : [
+                23
+              ]
+            },
+            "Bundle-Ethernet201" : {
+              "router ospf area interface" : [
+                27
+              ]
+            },
+            "HundredGigabitEthernet0/2/0/0.292" : {
+              "router ospf area interface" : [
+                41
+              ]
+            },
+            "HundredGigabitEthernet0/2/0/3" : {
+              "router ospf area interface" : [
+                43
+              ]
+            },
+            "Loopback0" : {
+              "router ospf area interface" : [
+                32
+              ]
+            },
+            "TenGigabitEthernet0/0/0/2" : {
+              "router ospf area interface" : [
+                50
+              ]
+            },
+            "TenGigabitEthernet0/0/0/4" : {
+              "router ospf area interface" : [
+                35
+              ]
+            },
+            "TenGigabitEthernet0/0/0/5" : {
+              "router ospf area interface" : [
+                38
+              ]
+            }
+          }
+        },
         "configs/ios_xr_route_policy" : {
           "as-path-set" : {
             "chill-as-path" : {
@@ -70603,6 +70842,31 @@
             "remote-router-loopbacks" : {
               "route-policy prefix-set" : [
                 66
+              ]
+            }
+          }
+        },
+        "configs/ios_xr_router_static" : {
+          "interface" : {
+            "GigabitEthernet0/2/1/5.290" : {
+              "router static route" : [
+                16
+              ]
+            },
+            "Null0" : {
+              "router static route" : [
+                6,
+                9,
+                10,
+                11,
+                12,
+                14,
+                15
+              ]
+            },
+            "TenGigabitEthernet0/0/2/3" : {
+              "router static route" : [
+                7
               ]
             }
           }
@@ -71739,6 +72003,18 @@
             }
           }
         },
+        "configs/cadant_misc" : {
+          "interface" : {
+            "Loopback0" : {
+              "ntp source-interface" : [
+                80
+              ],
+              "tacacs source-interface" : [
+                94
+              ]
+            }
+          }
+        },
         "configs/cadant_rip" : {
           "ipv4/6 acl" : {
             "blah-std-acl" : {
@@ -71765,6 +72041,13 @@
           }
         },
         "configs/cadant_snmp" : {
+          "interface" : {
+            "Loopback0" : {
+              "snmp-server source-interface" : [
+                18
+              ]
+            }
+          },
           "ipv4 acl" : {
             "52" : {
               "snmp server community ipv4 acl" : [
@@ -71943,7 +72226,43 @@
             }
           }
         },
+        "configs/cisco_domain" : {
+          "interface" : {
+            "Loopback666" : {
+              "domain lookup source-interface" : [
+                5
+              ]
+            }
+          }
+        },
         "configs/cisco_eigrp" : {
+          "interface" : {
+            "FastEthernet0/1" : {
+              "eigrp passive-interface" : [
+                140
+              ]
+            },
+            "GigabitEthernet1/5/3" : {
+              "eigrp passive-interface" : [
+                23
+              ]
+            },
+            "GigabitEthernet2/5/3" : {
+              "eigrp passive-interface" : [
+                24
+              ]
+            },
+            "Port-Channel34" : {
+              "eigrp passive-interface" : [
+                25
+              ]
+            },
+            "Port-Channel35" : {
+              "eigrp passive-interface" : [
+                26
+              ]
+            }
+          },
           "route-map" : {
             "BGP_TO_EIGRP" : {
               "eigrp redistribute bgp route-map" : [
@@ -71986,7 +72305,7 @@
           "interface" : {
             "Loopback1" : {
               "vxlan source-interface" : [
-                323
+                324
               ]
             }
           },
@@ -72056,7 +72375,7 @@
           "zone security" : {
             "z1" : {
               "interface zone-member security" : [
-                291
+                280
               ]
             }
           }
@@ -72071,6 +72390,50 @@
             "wccp-redir" : {
               "ip wccp redirect-list" : [
                 11
+              ]
+            }
+          }
+        },
+        "configs/cisco_ip_route" : {
+          "interface" : {
+            "Dialer1" : {
+              "ip route next-hop interface" : [
+                14
+              ]
+            },
+            "Dialer2" : {
+              "ip route next-hop interface" : [
+                15
+              ]
+            },
+            "GigabitEthernet3/0/0.212" : {
+              "ip route next-hop interface" : [
+                6
+              ]
+            },
+            "Loopback66" : {
+              "ip route next-hop interface" : [
+                12
+              ]
+            },
+            "Loopback99" : {
+              "ip route next-hop interface" : [
+                13
+              ]
+            },
+            "POS5/3:10" : {
+              "ip route next-hop interface" : [
+                10
+              ]
+            },
+            "Serial5/0:2" : {
+              "ip route next-hop interface" : [
+                7
+              ]
+            },
+            "Serial5/1:5" : {
+              "ip route next-hop interface" : [
+                9
               ]
             }
           }
@@ -72129,6 +72492,13 @@
           }
         },
         "configs/cisco_ntp" : {
+          "interface" : {
+            "Loopback0" : {
+              "ntp source-interface" : [
+                7
+              ]
+            }
+          },
           "ipv4 acl" : {
             "ntp-peer-group" : {
               "ntp access-group" : [
@@ -72372,6 +72742,23 @@
           }
         },
         "configs/cisco_snmp" : {
+          "interface" : {
+            "Loopback0" : {
+              "snmp-server source-interface" : [
+                87
+              ]
+            },
+            "Vlan1" : {
+              "snmp-server source-interface" : [
+                89
+              ]
+            },
+            "mgmt0" : {
+              "snmp-server source-interface" : [
+                88
+              ]
+            }
+          },
           "ipv4 acl" : {
             "1" : {
               "snmp server community ipv4 acl" : [
@@ -72430,6 +72817,19 @@
             "to-VTY" : {
               "snmp server community ipv6 acl" : [
                 16
+              ]
+            }
+          }
+        },
+        "configs/cisco_tacacs" : {
+          "interface" : {
+            "Loopback0" : {
+              "ip tacacs source-interface" : [
+                6,
+                7
+              ],
+              "tacacs source-interface" : [
+                26
               ]
             }
           }
@@ -72495,6 +72895,13 @@
           }
         },
         "configs/foundry_misc" : {
+          "interface" : {
+            "Ethernet13/10" : {
+              "ip route next-hop interface" : [
+                39
+              ]
+            }
+          },
           "ipv4 acl" : {
             "blib" : {
               "ssh ipv4 access-list" : [
@@ -72646,6 +73053,55 @@
             "GNS-VTY-ACCESS" : {
               "ssh ipv4 access-list" : [
                 31
+              ]
+            }
+          }
+        },
+        "configs/ios_xr_ospf" : {
+          "interface" : {
+            "Bundle-Ethernet101" : {
+              "router ospf area interface" : [
+                17
+              ]
+            },
+            "Bundle-Ethernet103" : {
+              "router ospf area interface" : [
+                23
+              ]
+            },
+            "Bundle-Ethernet201" : {
+              "router ospf area interface" : [
+                27
+              ]
+            },
+            "HundredGigabitEthernet0/2/0/0.292" : {
+              "router ospf area interface" : [
+                41
+              ]
+            },
+            "HundredGigabitEthernet0/2/0/3" : {
+              "router ospf area interface" : [
+                43
+              ]
+            },
+            "Loopback0" : {
+              "router ospf area interface" : [
+                32
+              ]
+            },
+            "TenGigabitEthernet0/0/0/2" : {
+              "router ospf area interface" : [
+                50
+              ]
+            },
+            "TenGigabitEthernet0/0/0/4" : {
+              "router ospf area interface" : [
+                35
+              ]
+            },
+            "TenGigabitEthernet0/0/0/5" : {
+              "router ospf area interface" : [
+                38
               ]
             }
           }
@@ -72811,6 +73267,20 @@
             "remote-router-loopbacks" : {
               "route-policy prefix-set" : [
                 66
+              ]
+            }
+          }
+        },
+        "configs/ios_xr_router_static" : {
+          "interface" : {
+            "GigabitEthernet0/2/1/5.290" : {
+              "router static route" : [
+                16
+              ]
+            },
+            "TenGigabitEthernet0/0/2/3" : {
+              "router static route" : [
+                7
               ]
             }
           }

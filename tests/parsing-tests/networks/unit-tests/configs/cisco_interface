@@ -271,17 +271,6 @@ interface Ethernet0
    bandwidth percent 49
  tx-queue 2
    bandwidth guaranteed 100000
- tunnel bandwidth receive 1000000
- tunnel bandwidth transmit 1000000
- tunnel destination 3.4.5.6
- tunnel key 123
- tunnel mode gre ipv4
- tunnel mode gre multipoint
- tunnel path-mtu-discovery
- tunnel source 2.3.4.5
- tunnel source Cellular0
- tunnel source Ethernet0
- tunnel source dynamic
  xconnect 1.2.3.4 649 encapsulation mpls
   backup peer 13.5.25.3 707
   remote circuit id 649
@@ -317,6 +306,18 @@ interface Null0
 !
 interface tunnel-ip6
 !
+interface tunnel0
+ tunnel bandwidth receive 1000000
+ tunnel bandwidth transmit 1000000
+ tunnel destination 3.4.5.6
+ tunnel key 123
+ tunnel mode gre ipv4
+ tunnel mode gre multipoint
+ tunnel path-mtu-discovery
+ tunnel source 2.3.4.5
+ tunnel source Cellular0
+ tunnel source Ethernet0
+ tunnel source dynamic
 interface Vlan111
 !
 interface Vxlan1
