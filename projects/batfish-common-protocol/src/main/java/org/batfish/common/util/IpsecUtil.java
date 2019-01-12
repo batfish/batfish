@@ -3,7 +3,9 @@ package org.batfish.common.util;
 import static org.batfish.common.util.CommonUtil.initPrivateIpsByPublicIp;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Streams;
 import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraph;
@@ -82,36 +84,34 @@ public class IpsecUtil {
       Ip destinationIp = ipsecStaticPeerConfig.getDestinationAddress();
 
       // adding the possible IPsec peers which may peer through NAT
-      Set<IpsecPeerConfigId> allCandidateIpsecNeighbors =
-          new HashSet<>(
+      // also adding the possible IPsec peers which may peer directly (No NAT involved)
+      Streams.concat(
               getCandidatePeersBehindNat(
-                  destinationIp, privateIpsByPublicIp, localIpIpsecPeerConfigIds));
+                      destinationIp, privateIpsByPublicIp, localIpIpsecPeerConfigIds)
+                  .stream(),
+              localIpIpsecPeerConfigIds.getOrDefault(destinationIp, ImmutableSet.of()).stream())
+          .forEach(
+              candidateIpsecPeerConfigId -> {
+                IpsecPeerConfig candidateIpsecPeer =
+                    networkConfigurations.getIpsecPeerConfig(candidateIpsecPeerConfigId);
+                if (candidateIpsecPeer == null) {
+                  return;
+                }
+                // skip if an IPSec peer is a crypto map based vpn and other is a tunnel interface
+                // based vpn
+                if (ipsecStaticPeerConfig.getTunnelInterface() == null
+                    ^ candidateIpsecPeer.getTunnelInterface() == null) {
+                  return;
+                }
+                Configuration candidateOwner =
+                    configurations.get(candidateIpsecPeerConfigId.getHostName());
 
-      // adding the possible IPsec peers which may peer directly (No NAT involved)
-      if (localIpIpsecPeerConfigIds.containsKey(destinationIp)) {
-        allCandidateIpsecNeighbors.addAll(localIpIpsecPeerConfigIds.get(destinationIp));
-      }
+                IpsecSession ipsecSession =
+                    getIpsecSession(
+                        initiatorOwner, candidateOwner, ipsecStaticPeerConfig, candidateIpsecPeer);
 
-      for (IpsecPeerConfigId candidateIpsecPeerConfigId : allCandidateIpsecNeighbors) {
-
-        IpsecPeerConfig candidateIpsecPeer =
-            networkConfigurations.getIpsecPeerConfig(candidateIpsecPeerConfigId);
-        if (candidateIpsecPeer == null) {
-          continue;
-        }
-        // skip if an IPSec peer is a crypto map based vpn and other is a tunnel interface based vpn
-        if (ipsecStaticPeerConfig.getTunnelInterface() == null
-            ^ candidateIpsecPeer.getTunnelInterface() == null) {
-          continue;
-        }
-        Configuration candidateOwner = configurations.get(candidateIpsecPeerConfigId.getHostName());
-
-        IpsecSession ipsecSession =
-            getIpsecSession(
-                initiatorOwner, candidateOwner, ipsecStaticPeerConfig, candidateIpsecPeer);
-
-        graph.putEdgeValue(ipsecPeerConfigId, candidateIpsecPeerConfigId, ipsecSession);
-      }
+                graph.putEdgeValue(ipsecPeerConfigId, candidateIpsecPeerConfigId, ipsecSession);
+              });
     }
 
     return ImmutableValueGraph.copyOf(graph);
@@ -126,10 +126,10 @@ public class IpsecUtil {
       @Nonnull Ip destinationIp,
       @Nonnull SetMultimap<Ip, IpWildcardSetIpSpace> privateIpsByPublicIp,
       @Nonnull Map<Ip, Set<IpsecPeerConfigId>> localIpsAndIpsecPeers) {
-    Set<IpsecPeerConfigId> candidateNeighbors = new HashSet<>();
+    ImmutableSet.Builder<IpsecPeerConfigId> candidateNeighbors = ImmutableSet.builder();
     Set<IpWildcardSetIpSpace> privateIpsBehindDestIp = privateIpsByPublicIp.get(destinationIp);
     if (privateIpsBehindDestIp == null) {
-      return candidateNeighbors;
+      return candidateNeighbors.build();
     }
     for (IpWildcardSetIpSpace ipWildcardSetIpSpace : privateIpsBehindDestIp) {
       for (Entry<Ip, Set<IpsecPeerConfigId>> entry : localIpsAndIpsecPeers.entrySet()) {
@@ -138,7 +138,7 @@ public class IpsecUtil {
         }
       }
     }
-    return candidateNeighbors;
+    return candidateNeighbors.build();
   }
 
   /**
