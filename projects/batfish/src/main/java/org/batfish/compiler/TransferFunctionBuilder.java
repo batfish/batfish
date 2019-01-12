@@ -27,10 +27,12 @@ import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
+import org.batfish.datamodel.routing_policy.expr.DecrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.DisjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
@@ -57,6 +59,7 @@ import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.RetainCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
+import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
@@ -227,6 +230,14 @@ class TransferFunctionBuilder {
     }
   }
 
+  private long communityVarToNvValue(CommunityVar cvar) {
+    Long l = cvar.asLong();
+    if (l == null) {
+      return 0;
+    }
+    return l;
+  }
+
   /*
    * Converts a community list to a boolean expression.
    */
@@ -237,7 +248,7 @@ class TransferFunctionBuilder {
     for (CommunityListLine line : lines) {
       boolean action = (line.getAction() == LineAction.PERMIT);
       CommunityVar cvar = toCommunityVar(line.getMatchCondition());
-      String c = other.get_communities() + "[" + cvar.getValue() + "]";
+      String c = other.get_communities() + "[" + communityVarToNvValue(cvar) + "]";
       acc = mkIf(c, mkBool(action), acc);
     }
     return acc;
@@ -299,12 +310,12 @@ class TransferFunctionBuilder {
     if (expr instanceof Conjunction) {
       pCur.debug("Conjunction");
       Conjunction c = (Conjunction) expr;
-      String acc = "(true";
+      String acc = "(";
       TransferResult<String, String> result = new TransferResult<>();
       for (BooleanExpr be : c.getConjuncts()) {
         TransferResult<String, String> r = compute(be, pCur.indent());
         result = result.addChangedVariables(r);
-        acc = mkAnd(acc, r.getReturnValue());
+        acc = acc.equals("(") ? acc + r.getReturnValue() : mkAnd(acc, r.getReturnValue());
       }
       pCur.debug("has changed variable");
       return result.setReturnValue(acc + ")");
@@ -313,12 +324,12 @@ class TransferFunctionBuilder {
     if (expr instanceof Disjunction) {
       pCur.debug("Disjunction");
       Disjunction d = (Disjunction) expr;
-      String acc = "(false";
+      String acc = "(";
       TransferResult<String, String> result = new TransferResult<>();
       for (BooleanExpr be : d.getDisjuncts()) {
         TransferResult<String, String> r = compute(be, pCur.indent());
         result = result.addChangedVariables(r);
-        acc = mkOr(acc, r.getReturnValue());
+        acc = acc.equals("(") ? acc + r.getReturnValue() : mkOr(acc, r.getReturnValue());
       }
       pCur.debug("has changed variable");
       return result.setReturnValue(acc + ")");
@@ -523,14 +534,13 @@ class TransferFunctionBuilder {
    */
   private TransferResult<String, String> returnValue(
       TransferParam<Environment> p, TransferResult<String, String> r, boolean val) {
-    String b = "if " + r.getReturnAssignedValue() + " then " + r.getReturnValue() + " else " + val;
+    String b = mkIf(r.getReturnAssignedValue(), r.getReturnValue(), "" + val);
     return r.setReturnValue(b).setReturnAssignedValue("true").addChangedVariable("RETURN", b);
   }
 
   private TransferResult<String, String> fallthrough(
       TransferParam<Environment> p, TransferResult<String, String> r) {
-    String b =
-        "if " + r.getReturnAssignedValue() + " then " + r.getFallthroughValue() + " else true";
+    String b = mkIf(r.getReturnAssignedValue(), r.getFallthroughValue(), "true");
     return r.setFallthroughValue(b)
         .setReturnAssignedValue("true")
         .addChangedVariable("FALLTHROUGH", b);
@@ -551,24 +561,70 @@ class TransferFunctionBuilder {
         break;
       case "COMMUNITIES":
         p.getData().set_communities(expr);
+        break;
       default:
         throw new BatfishException("bad");
     }
   }
 
   private String mkIf(String guard, String trueBranch, String falseBranch) {
+    if (guard.equals("true")) {
+      return trueBranch;
+    }
+    if (guard.equals("false")) {
+      return falseBranch;
+    }
+    if (trueBranch.equals("true") && falseBranch.equals("false")) {
+      return guard;
+    }
+    if (trueBranch.equals("false") && falseBranch.equals("true")) {
+      return mkNot(guard);
+    }
+    if (trueBranch.equals(falseBranch)) {
+      return trueBranch;
+    }
+    if (guard.equals(trueBranch)) {
+      return mkIf(guard, "true", falseBranch);
+    }
+    if (guard.equals(falseBranch)) {
+      return mkIf(guard, trueBranch, "false");
+    }
     return "(if " + guard + " then " + trueBranch + " else " + falseBranch + ")";
   }
 
   private String mkAnd(String x, String y) {
+    if (x.equals("true")) {
+      return y;
+    }
+    if (y.equals("true")) {
+      return x;
+    }
+    if (x.equals("false") || y.equals("false")) {
+      return "false";
+    }
     return "(" + x + " and " + y + ")";
   }
 
   private String mkOr(String x, String y) {
+    if (x.equals("false")) {
+      return y;
+    }
+    if (y.equals("false")) {
+      return x;
+    }
+    if (x.equals("true") || y.equals("true")) {
+      return "true";
+    }
     return "(" + x + " or " + y + ")";
   }
 
   private String mkNot(String x) {
+    if (x.equals("true")) {
+      return "false";
+    }
+    if (x.equals("false")) {
+      return "true";
+    }
     return "(not " + x + ")";
   }
 
@@ -621,22 +677,10 @@ class TransferFunctionBuilder {
       String f = (falseBranch == null ? "false" : falseBranch);
       String tass = (trueBranch == null ? r.getReturnAssignedValue() : "true");
       String fass = (falseBranch == null ? r.getReturnAssignedValue() : "true");
-      String newAss = "if " + guard + " then " + tass + " else " + fass;
+      String newAss = mkIf(guard, tass, fass);
       String variable =
           (variableName.equals("RETURN") ? r.getReturnValue() : r.getFallthroughValue());
-      String newValue =
-          "if "
-              + r.getReturnAssignedValue()
-              + " then "
-              + variable
-              + " else ("
-              + "if "
-              + guard
-              + " then "
-              + t
-              + " else "
-              + f
-              + ")";
+      String newValue = mkIf(r.getReturnAssignedValue(), variable, mkIf(guard, t, f));
       return new Pair<>(newValue, newAss);
     }
     if (variableName.equals("ADMIN-DIST")) {
@@ -672,6 +716,25 @@ class TransferFunctionBuilder {
       return new Pair<>(newValue, null);
     }
     throw new BatfishException("[joinPoint]: unhandled case for " + variableName);
+  }
+
+  /*
+   * Apply the effect of modifying an integer value (e.g., to set the local pref)
+   */
+  private String applyIntExprModification(String x, IntExpr e) {
+    if (e instanceof LiteralInt) {
+      LiteralInt z = (LiteralInt) e;
+      return mkInt(z.getValue());
+    }
+    if (e instanceof IncrementLocalPreference) {
+      IncrementLocalPreference z = (IncrementLocalPreference) e;
+      return "(" + x + " + " + mkInt(z.getAddend()) + ")";
+    }
+    if (e instanceof DecrementLocalPreference) {
+      DecrementLocalPreference z = (DecrementLocalPreference) e;
+      return "(" + x + mkInt(z.getSubtrahend()) + ")";
+    }
+    throw new BatfishException("TODO: int expr transfer function: " + e);
   }
 
   /*
@@ -862,7 +925,7 @@ class TransferFunctionBuilder {
         String commExpr = curP.getData().get_communities();
         String newValue = "";
         for (CommunityVar cvar : comms) {
-          newValue = newValue + "[" + cvar.getValue() + ":= true]";
+          newValue = newValue + "[" + communityVarToNvValue(cvar) + ":= true]";
         }
         newValue = mkIf(curResult.getReturnAssignedValue(), commExpr, commExpr + newValue);
         curP.getData().set_communities(newValue);
@@ -877,7 +940,7 @@ class TransferFunctionBuilder {
         String commExpr = curP.getData().get_communities();
         String newValue = "";
         for (CommunityVar cvar : comms) {
-          newValue = newValue + "[" + cvar.getValue() + ":= true]";
+          newValue = newValue + "[" + communityVarToNvValue(cvar) + ":= true]";
         }
         newValue = mkIf(curResult.getReturnAssignedValue(), commExpr, commExpr + newValue);
         curP.getData().set_communities(newValue);
@@ -892,7 +955,7 @@ class TransferFunctionBuilder {
         String commExpr = curP.getData().get_communities();
         String newValue = "";
         for (CommunityVar cvar : comms) {
-          newValue = newValue + "[" + cvar.getValue() + ":= false]";
+          newValue = newValue + "[" + communityVarToNvValue(cvar) + ":= false]";
         }
         newValue = mkIf(curResult.getReturnAssignedValue(), commExpr, commExpr + newValue);
         curP.getData().set_communities(newValue);
@@ -901,6 +964,17 @@ class TransferFunctionBuilder {
       } else if (stmt instanceof RetainCommunity) {
         curP.debug("RetainCommunity");
         // no op
+
+      } else if (stmt instanceof SetLocalPreference) {
+        curP.debug("SetLocalPreference");
+        SetLocalPreference slp = (SetLocalPreference) stmt;
+        IntExpr ie = slp.getLocalPreference();
+        String newValue = applyIntExprModification(curP.getData().get_lp(), ie);
+        curP.debug("Value after modification: " + newValue);
+        newValue = mkIf(curResult.getReturnAssignedValue(), curP.getData().get_lp(), newValue);
+        curP.debug("Value after modification: " + newValue);
+        curP.getData().set_lp(newValue);
+        curResult = curResult.addChangedVariable("LOCAL-PREF", newValue);
 
       } else if (stmt instanceof PrependAsPath) {
         curP.debug("PrependAsPath");
@@ -945,7 +1019,21 @@ class TransferFunctionBuilder {
         }
       }
       String ret = result.getReturnValue();
-      String retVal = mkIf(curResult.getReturnValue(), "(Some" + ret + ")", "None");
+      String retVal =
+          mkIf(
+              curResult.getReturnValue(),
+              "(Some ("
+                  + p.getData().get_ad()
+                  + ","
+                  + p.getData().get_lp()
+                  + ","
+                  + p.getData().get_cost()
+                  + ","
+                  + p.getData().get_med()
+                  + ","
+                  + p.getData().get_communities()
+                  + "))",
+              "None");
       curResult = curResult.setReturnValue(retVal);
     }
     return curResult;

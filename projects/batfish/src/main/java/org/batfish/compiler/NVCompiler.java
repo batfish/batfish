@@ -11,6 +11,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
@@ -24,6 +25,21 @@ public class NVCompiler {
   }
 
   public String compile() {
+
+    for (Entry<String, Configuration> entry : _graph.getConfigurations().entrySet()) {
+      String router = entry.getKey();
+      Configuration conf = entry.getValue();
+      for (GraphEdge edge : _graph.getEdgeMap().get(router)) {
+        System.out.println("Export function for: " + edge);
+        RoutingPolicy policy = _graph.findExportRoutingPolicy(router, Protocol.BGP, edge);
+        System.out.println("Policy: " + policy.getName());
+        TransferFunctionBuilder builder =
+            new TransferFunctionBuilder(conf, policy.getStatements(), edge, true);
+        String result = builder.compute();
+        System.out.println("Result for " + edge + " export is: " + result);
+      }
+    }
+
     StringBuilder sb = new StringBuilder();
     String ospfType = "option[(int, int, int, int)]"; // (ad, cost, area-type, area-id)
     String connType = "option[int]"; // ad

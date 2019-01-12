@@ -33,86 +33,86 @@ public class Environment implements IDeepCopy<Environment> {
   }
 
   public Environment(
-      String _lp,
-      String _ad,
-      String _cost,
-      String _med,
-      String _communities,
-      String _protocol,
-      String _prefixLength,
-      String _prefixValue) {
-    this._lp = _lp;
-    this._ad = _ad;
-    this._cost = _cost;
-    this._med = _med;
-    this._communities = _communities;
-    this._protocol = _protocol;
-    this._prefixLength = _prefixLength;
-    this._prefixValue = _prefixValue;
+      String lp,
+      String ad,
+      String cost,
+      String med,
+      String communities,
+      String protocol,
+      String prefixLength,
+      String prefixValue) {
+    this._lp = lp;
+    this._ad = ad;
+    this._cost = cost;
+    this._med = med;
+    this._communities = communities;
+    this._protocol = protocol;
+    this._prefixLength = prefixLength;
+    this._prefixValue = prefixValue;
   }
 
   public String get_prefixValue() {
     return _prefixValue;
   }
 
-  public void set_prefixValue(String _prefixValue) {
-    this._prefixValue = _prefixValue;
+  public void set_prefixValue(String prefixValue) {
+    this._prefixValue = prefixValue;
   }
 
   public String get_prefixLength() {
     return _prefixLength;
   }
 
-  public void set_prefixLength(String _prefixLength) {
-    this._prefixLength = _prefixLength;
+  public void set_prefixLength(String prefixLength) {
+    this._prefixLength = prefixLength;
   }
 
   public String get_lp() {
     return _lp;
   }
 
-  public void set_lp(String _lp) {
-    this._lp = _lp;
+  public void set_lp(String lp) {
+    this._lp = lp;
   }
 
   public String get_ad() {
     return _ad;
   }
 
-  public void set_ad(String _ad) {
-    this._ad = _ad;
+  public void set_ad(String ad) {
+    this._ad = ad;
   }
 
   public String get_cost() {
     return _cost;
   }
 
-  public void set_cost(String _cost) {
-    this._cost = _cost;
+  public void set_cost(String cost) {
+    this._cost = cost;
   }
 
   public String get_med() {
     return _med;
   }
 
-  public void set_med(String _med) {
-    this._med = _med;
+  public void set_med(String med) {
+    this._med = med;
   }
 
   public String get_communities() {
     return _communities;
   }
 
-  public void set_communities(String _communities) {
-    this._communities = _communities;
+  public void set_communities(String communities) {
+    this._communities = communities;
   }
 
   public String get_protocol() {
     return _protocol;
   }
 
-  public void set_protocol(String _protocol) {
-    this._protocol = _protocol;
+  public void set_protocol(String protocol) {
+    this._protocol = protocol;
   }
 
   @Override
