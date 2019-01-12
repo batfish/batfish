@@ -36,7 +36,7 @@ public class MlagTest {
   }
 
   @Test
-  public void testJavaSeraialization() {
+  public void testJavaSerialization() {
     Mlag m =
         Mlag.builder()
             .setId("ID")
