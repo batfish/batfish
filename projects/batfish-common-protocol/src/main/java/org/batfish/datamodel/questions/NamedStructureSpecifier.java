@@ -19,12 +19,14 @@ public class NamedStructureSpecifier extends PropertySpecifier {
   public static final String AS_PATH_ACCESS_LIST = "AS_Path_Access_List";
   public static final String AUTHENTICATION_KEY_CHAIN = "Authentication_Key_Chain";
   public static final String COMMUNITY_LIST = "Community_List";
-  public static final String IKE_POLICIES = "IKE_Policies";
+  public static final String IKE_PHASE1_KEYS = "IKE_Phase1_Keys";
+  public static final String IKE_PHASE1_POLICIES = "IKE_Phase1_Policies";
+  public static final String IKE_PHASE1_PROPOSALS = "IKE_Phase1_Proposals";
   public static final String IP_ACCESS_LIST = "IP_Access_List";
   public static final String IP_6_ACCESS_LIST = "IP6_Access_List";
-  public static final String IPSEC_POLICY = "IPSec_Policy";
-  public static final String IPSEC_PROPOSAL = "IPSec_Proposal";
-  public static final String IPSEC_VPN = "IPSec_Vpn";
+  public static final String IPSEC_PEER_CONFIGS = "IPsec_Peer_Configs";
+  public static final String IPSEC_PHASE2_POLICIES = "IPsec_Phase2_Policies";
+  public static final String IPSEC_PHASE2_PROPOSALS = "IPsec_Phase2_Proposals";
   public static final String ROUTE_FILTER_LIST = "Route_Filter_List";
   public static final String ROUTE_6_FILTER_LIST = "Route6_Filter_List";
   public static final String ROUTING_POLICY = "Routing_Policy";
@@ -42,7 +44,15 @@ public class NamedStructureSpecifier extends PropertySpecifier {
           .put(
               COMMUNITY_LIST,
               new PropertyDescriptor<>(Configuration::getCommunityLists, Schema.OBJECT))
-          .put(IKE_POLICIES, new PropertyDescriptor<>(Configuration::getIkePolicies, Schema.OBJECT))
+          .put(
+              IKE_PHASE1_KEYS,
+              new PropertyDescriptor<>(Configuration::getIkePhase1Keys, Schema.OBJECT))
+          .put(
+              IKE_PHASE1_POLICIES,
+              new PropertyDescriptor<>(Configuration::getIkePhase1Policies, Schema.OBJECT))
+          .put(
+              IKE_PHASE1_PROPOSALS,
+              new PropertyDescriptor<>(Configuration::getIkePhase1Proposals, Schema.OBJECT))
           .put(
               IP_ACCESS_LIST,
               new PropertyDescriptor<>(Configuration::getIpAccessLists, Schema.OBJECT))
@@ -50,12 +60,14 @@ public class NamedStructureSpecifier extends PropertySpecifier {
               IP_6_ACCESS_LIST,
               new PropertyDescriptor<>(Configuration::getIp6AccessLists, Schema.OBJECT))
           .put(
-              IPSEC_POLICY,
-              new PropertyDescriptor<>(Configuration::getIpsecPolicies, Schema.OBJECT))
+              IPSEC_PEER_CONFIGS,
+              new PropertyDescriptor<>(Configuration::getIpsecPeerConfigs, Schema.OBJECT))
           .put(
-              IPSEC_PROPOSAL,
-              new PropertyDescriptor<>(Configuration::getIpsecProposals, Schema.OBJECT))
-          .put(IPSEC_VPN, new PropertyDescriptor<>(Configuration::getIpsecVpns, Schema.OBJECT))
+              IPSEC_PHASE2_POLICIES,
+              new PropertyDescriptor<>(Configuration::getIpsecPhase2Proposals, Schema.OBJECT))
+          .put(
+              IPSEC_PHASE2_PROPOSALS,
+              new PropertyDescriptor<>(Configuration::getIpsecPhase2Proposals, Schema.OBJECT))
           .put(
               ROUTE_FILTER_LIST,
               new PropertyDescriptor<>(Configuration::getRouteFilterLists, Schema.OBJECT))
