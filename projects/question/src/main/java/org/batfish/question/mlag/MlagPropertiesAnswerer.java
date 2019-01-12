@@ -26,7 +26,7 @@ import org.batfish.datamodel.table.TableMetadata;
 
 /** Answerer for the {@link MlagPropertiesQuestion} */
 public class MlagPropertiesAnswerer extends Answerer {
-  static final String COL_MLAG_ID = "Mlag_ID";
+  static final String COL_MLAG_ID = "MLAG_ID";
   static final String COL_MLAG_LOCAL_INTERFACE = "Source_Interface";
   static final String COL_MLAG_PEER_ADDRESS = "Peer_Address";
   static final String COL_MLAG_PEER_INTERFACE = "Local_Interface";
@@ -80,11 +80,19 @@ public class MlagPropertiesAnswerer extends Answerer {
     b.add(
         new ColumnMetadata(COL_NODE, Schema.NODE, "Node name", true, false),
         new ColumnMetadata(COL_MLAG_ID, Schema.STRING, "MLAG ID", true, false),
-        new ColumnMetadata(COL_MLAG_PEER_ADDRESS, Schema.IP, "Peer IP address", false, true),
+        new ColumnMetadata(COL_MLAG_PEER_ADDRESS, Schema.IP, "Peer's IP address", false, true),
         new ColumnMetadata(
-            COL_MLAG_PEER_INTERFACE, Schema.INTERFACE, "Peer IP address", false, true),
+            COL_MLAG_PEER_INTERFACE,
+            Schema.INTERFACE,
+            "Local interface used for MLAG peering",
+            false,
+            true),
         new ColumnMetadata(
-            COL_MLAG_LOCAL_INTERFACE, Schema.INTERFACE, "Peer IP address", false, true));
+            COL_MLAG_LOCAL_INTERFACE,
+            Schema.INTERFACE,
+            "Local interface used as source-interface for MLAG peering",
+            false,
+            true));
     return new TableMetadata(b.build());
   }
 
