@@ -1,6 +1,5 @@
 {
   "class" : "org.batfish.question.initialization.ParseWarningQuestion",
-  "aggregateDuplicates" : true,
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
@@ -10,15 +9,6 @@
       "file",
       "initialization",
       "parse"
-    ],
-    "variables" : {
-      "aggregateDuplicates" : {
-        "description" : "Whether to aggregate duplicate results",
-        "displayName" : "Aggregate duplicates",
-        "optional" : true,
-        "type" : "boolean",
-        "value" : true
-      }
-    }
+    ]
   }
 }

@@ -19,7 +19,7 @@ test -raw tests/questions/stable/edges.ref validate-template edges edgeType="bgp
 test -raw tests/questions/stable/ipsecSessionStatus.ref validate-template ipsecSessionStatus nodes="n1", remoteNodes="n2", status=".*"
 
 # validate parseWarning
-test -raw tests/questions/stable/parseWarning.ref validate-template parseWarning aggregateDuplicates=true
+test -raw tests/questions/stable/parseWarning.ref validate-template parseWarning
 
 # validate referencedStructures
 test -raw tests/questions/stable/referencedStructures.ref validate-template referencedStructures nodes="n1", names="m1", types="t1"
