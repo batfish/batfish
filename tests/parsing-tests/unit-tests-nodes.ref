@@ -7397,7 +7397,7 @@
           "Tunnel0" : {
             "name" : "Tunnel0",
             "accessVlan" : 0,
-            "active" : false,
+            "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
