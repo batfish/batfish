@@ -133,9 +133,6 @@ public class NodePropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(
                   Configuration::getIpsecPhase2Proposals, Schema.set(Schema.STRING)))
           .put(
-              IPSEC_VPNS,
-              new PropertyDescriptor<>(Configuration::getIpsecVpns, Schema.set(Schema.STRING)))
-          .put(
               LOGGING_SERVERS,
               new PropertyDescriptor<>(Configuration::getLoggingServers, Schema.set(Schema.STRING)))
           .put(

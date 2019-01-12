@@ -148,7 +148,6 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       add(IpsecPhase2Policy.class, Configuration::getIpsecPhase2Policies);
       add(IpsecPhase2Proposal.class, Configuration::getIpsecPhase2Proposals);
       add(IpsecPeerConfig.class, Configuration::getIpsecPeerConfigs);
-      add(IpsecVpn.class, Configuration::getIpsecVpns);
       add(Route6FilterList.class, Configuration::getRoute6FilterLists);
       add(RouteFilterList.class, Configuration::getRouteFilterLists);
       add(RoutingPolicy.class, Configuration::getRoutingPolicies);
