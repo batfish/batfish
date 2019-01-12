@@ -207,13 +207,13 @@ public class BgpCommunityRegex extends BaseParser<String> {
 
   /** Like {@link #convertToJavaRegex(String)}, but for debugging. */
   @SuppressWarnings("unused") // leaving here for future debugging.
-  private static String debugConvertToJavaRegex(String regex) {
+  static String debugConvertToJavaRegex(String regex) {
     BgpCommunityRegex parser = Parboiled.createParser(BgpCommunityRegex.class);
     TracingParseRunner<String> runner =
         new TracingParseRunner<String>(parser.TopLevel()).withLog(new StringBuilderSink());
     ParsingResult<String> result = runner.run(regex);
     if (!result.matched) {
-      throw new IllegalArgumentException("Unhandled input: " + regex + runner.getLog());
+      throw new IllegalArgumentException("Unhandled input: " + regex + "\n" + runner.getLog());
     }
     return result.resultValue;
   }
