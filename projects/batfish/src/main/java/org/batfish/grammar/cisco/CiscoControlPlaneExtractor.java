@@ -6395,22 +6395,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIftunnel_source(Iftunnel_sourceContext ctx) {
-    String sourceInterfaceName = null;
     if (ctx.IP_ADDRESS() != null) {
       Ip sourceAddress = toIp(ctx.IP_ADDRESS());
       for (Interface iface : _currentInterfaces) {
         iface.getTunnelInitIfNull().setSourceAddress(sourceAddress);
       }
     } else if (ctx.interface_name() != null) {
-      sourceInterfaceName = getCanonicalInterfaceName(ctx.interface_name().getText());
+      String sourceInterfaceName = getCanonicalInterfaceName(ctx.interface_name().getText());
       _configuration.referenceStructure(
           INTERFACE, sourceInterfaceName, TUNNEL_SOURCE, ctx.interface_name().getStart().getLine());
       for (Interface iface : _currentInterfaces) {
         iface.getTunnelInitIfNull().setSourceInterfaceName(sourceInterfaceName);
       }
-    } else {
-      // TODO(tunnel source dynamic)
-      assert true; // do nothing
+    } else if (ctx.DYNAMIC() != null) {
+      for (Interface iface : _currentInterfaces) {
+        iface.getTunnelInitIfNull().setSourceInterfaceName(null);
+      }
     }
   }
 
