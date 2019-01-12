@@ -11,14 +11,14 @@
       "CommunityList" : {
         "structureClassName" : "CommunityList"
       },
-      "IkeGateway" : {
-        "structureClassName" : "IkeGateway"
+      "IkePhase1Key" : {
+        "structureClassName" : "IkePhase1Key"
       },
-      "IkePolicy" : {
-        "structureClassName" : "IkePolicy"
+      "IkePhase1Policy" : {
+        "structureClassName" : "IkePhase1Policy"
       },
-      "IkeProposal" : {
-        "structureClassName" : "IkeProposal"
+      "IkePhase1Proposal" : {
+        "structureClassName" : "IkePhase1Proposal"
       },
       "Ip6AccessList" : {
         "structureClassName" : "Ip6AccessList"
@@ -112,14 +112,14 @@
           ]
         }
       },
-      "IpsecPolicy" : {
-        "structureClassName" : "IpsecPolicy"
+      "IpsecPeerConfig" : {
+        "structureClassName" : "IpsecPeerConfig"
       },
-      "IpsecProposal" : {
-        "structureClassName" : "IpsecProposal"
+      "IpsecPhase2Policy" : {
+        "structureClassName" : "IpsecPhase2Policy"
       },
-      "IpsecVpn" : {
-        "structureClassName" : "IpsecVpn"
+      "IpsecPhase2Proposal" : {
+        "structureClassName" : "IpsecPhase2Proposal"
       },
       "Route6FilterList" : {
         "structureClassName" : "Route6FilterList"

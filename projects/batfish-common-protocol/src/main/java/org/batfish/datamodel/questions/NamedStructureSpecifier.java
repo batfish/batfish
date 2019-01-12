@@ -64,7 +64,7 @@ public class NamedStructureSpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(Configuration::getIpsecPeerConfigs, Schema.OBJECT))
           .put(
               IPSEC_PHASE2_POLICIES,
-              new PropertyDescriptor<>(Configuration::getIpsecPhase2Proposals, Schema.OBJECT))
+              new PropertyDescriptor<>(Configuration::getIpsecPhase2Policies, Schema.OBJECT))
           .put(
               IPSEC_PHASE2_PROPOSALS,
               new PropertyDescriptor<>(Configuration::getIpsecPhase2Proposals, Schema.OBJECT))
