@@ -92,9 +92,9 @@ public final class Topology implements Serializable {
   }
 
   /**
-   * Given a {@link ValueGraph} between {@link IpsecPeerConfigId}s, trims the edges which are not
-   * fully established (not having a negotiated {@link IpsecPhase2Proposal}) and returns the trimmed
-   * graph
+   * Given a {@link ValueGraph} between {@link IpsecPeerConfigId}s, trims the edges in current
+   * {@link Topology} which are not fully established in the IPsec topology i.e. they do not have a
+   * negotiated {@link IpsecPhase2Proposal})
    *
    * @param ipsecTopology original IPsec topology's {@link ValueGraph}
    * @param configurations {@link Map} of {@link Configuration} to configuration names
