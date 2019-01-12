@@ -9,7 +9,7 @@ import org.batfish.question.QuestionPlugin;
 
 /** Plugin for {@link org.batfish.question.mlag.MlagPropertiesQuestion} */
 @AutoService(Plugin.class)
-public class MlagPropertiesQuestionPlugin extends QuestionPlugin {
+public final class MlagPropertiesQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected Answerer createAnswerer(Question question, IBatfish batfish) {

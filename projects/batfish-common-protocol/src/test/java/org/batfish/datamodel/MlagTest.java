@@ -3,7 +3,6 @@ package org.batfish.datamodel;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
@@ -14,14 +13,13 @@ import org.junit.runners.JUnit4;
 
 /** Tests of {@link Mlag} */
 @RunWith(JUnit4.class)
-public class MlagTest {
+public final class MlagTest {
 
   @Test
   public void testEquals() {
     Mlag.Builder b =
         Mlag.builder()
             .setId("id")
-            .setAccessInterfaces(ImmutableSet.of())
             .setLocalInterface("Vlan1")
             .setPeerAddress(Ip.parse("1.1.1.1"))
             .setPeerInterface("Eth1");
@@ -40,7 +38,6 @@ public class MlagTest {
     Mlag m =
         Mlag.builder()
             .setId("ID")
-            .setAccessInterfaces(ImmutableSet.of())
             .setPeerAddress(Ip.parse("1.1.1.1"))
             .setLocalInterface("Ethernet1")
             .build();
