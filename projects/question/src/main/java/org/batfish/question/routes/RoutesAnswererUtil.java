@@ -58,6 +58,7 @@ import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableDiff;
 import org.batfish.question.routes.DiffRoutesOutput.KeyPresenceStatus;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
+import org.batfish.specifier.RoutingProtocolSpecifier;
 
 public class RoutesAnswererUtil {
 
@@ -121,7 +122,7 @@ public class RoutesAnswererUtil {
    * @param ribs {@link Map} representing all RIBs of all nodes
    * @param matchingNodes {@link Set} of hostnames of nodes whose routes are to be returned
    * @param network {@link Prefix} of the network used to filter the routes
-   * @param protocolRegex protocols used to filter the routes
+   * @param protocolSpec {@link RoutingProtocolSpecifier} used to filter the routes
    * @param vrfRegex Regex used to filter the VRF of routes
    * @param ipOwners {@link Map} of {@link Ip} to {@link Set} of owner nodes
    * @return {@link Multiset} of {@link Row}s representing the routes
@@ -130,11 +131,10 @@ public class RoutesAnswererUtil {
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
       Set<String> matchingNodes,
       @Nullable Prefix network,
-      String protocolRegex,
+      RoutingProtocolSpecifier protocolSpec,
       String vrfRegex,
       @Nullable Map<Ip, Set<String>> ipOwners) {
     Multiset<Row> rows = HashMultiset.create();
-    Pattern compiledProtocolRegex = Pattern.compile(protocolRegex, Pattern.CASE_INSENSITIVE);
     Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
     Map<String, ColumnMetadata> columnMetadataMap =
         getTableMetadata(RibProtocol.MAIN).toColumnMap();
@@ -149,9 +149,7 @@ public class RoutesAnswererUtil {
                         .filter(
                             route ->
                                 (network == null || network.equals(route.getNetwork()))
-                                    && compiledProtocolRegex
-                                        .matcher(route.getProtocol().protocolName())
-                                        .matches())
+                                    && protocolSpec.getProtocols().contains(route.getProtocol()))
                         .forEach(
                             route ->
                                 rows.add(
@@ -172,7 +170,7 @@ public class RoutesAnswererUtil {
    *     RibProtocol#BGPMP}
    * @param matchingNodes {@link Set} of nodes from which {@link BgpRoute}s are to be selected
    * @param network {@link Prefix} of the network used to filter the routes
-   * @param protocolRegex protocols used to filter the {@link BgpRoute}s
+   * @param protocolSpec {@link RoutingProtocolSpecifier} used to filter the {@link BgpRoute}s
    * @param vrfRegex Regex used to filter the routes based on {@link org.batfish.datamodel.Vrf}
    * @return {@link Multiset} of {@link Row}s representing the routes
    */
@@ -181,11 +179,10 @@ public class RoutesAnswererUtil {
       RibProtocol ribProtocol,
       Set<String> matchingNodes,
       @Nullable Prefix network,
-      String protocolRegex,
+      RoutingProtocolSpecifier protocolSpec,
       String vrfRegex) {
     Multiset<Row> rows = HashMultiset.create();
     Map<String, ColumnMetadata> columnMetadataMap = getTableMetadata(ribProtocol).toColumnMap();
-    Pattern compiledProtocolRegex = Pattern.compile(protocolRegex, Pattern.CASE_INSENSITIVE);
     Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
     matchingNodes.forEach(
         hostname ->
@@ -199,9 +196,9 @@ public class RoutesAnswererUtil {
                             .filter(
                                 route ->
                                     (network == null || network.equals(route.getNetwork()))
-                                        && compiledProtocolRegex
-                                            .matcher(route.getProtocol().protocolName())
-                                            .matches())
+                                        && protocolSpec
+                                            .getProtocols()
+                                            .contains(route.getProtocol()))
                             .forEach(
                                 route ->
                                     rows.add(
@@ -483,7 +480,7 @@ public class RoutesAnswererUtil {
    * @param matchingNodes {@link Set} of nodes to be matched
    * @param network {@link Prefix}
    * @param vrfRegex Regex to filter the VRF
-   * @param protocolRegex Regex to filter the protocols of the routes
+   * @param protocolSpec {@link RoutingProtocolSpecifier} to filter the protocols of the routes
    * @param ipOwners {@link Map} of {@link Ip} to {@link Set} of owner nodes
    * @return {@link Map} of {@link RouteRowKey}s to corresponding sub{@link Map}s of {@link
    *     RouteRowSecondaryKey} to {@link SortedSet} of {@link RouteRowAttribute}s
@@ -493,11 +490,10 @@ public class RoutesAnswererUtil {
       Set<String> matchingNodes,
       @Nullable Prefix network,
       String vrfRegex,
-      String protocolRegex,
+      RoutingProtocolSpecifier protocolSpec,
       @Nullable Map<Ip, Set<String>> ipOwners) {
     Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> routesGroups =
         new HashMap<>();
-    Pattern compiledProtocolRegex = Pattern.compile(protocolRegex, Pattern.CASE_INSENSITIVE);
     Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
     ribs.forEach(
         (node, vrfMap) -> {
@@ -510,9 +506,7 @@ public class RoutesAnswererUtil {
                         .filter(
                             route ->
                                 (network == null || network.equals(route.getNetwork()))
-                                    && compiledProtocolRegex
-                                        .matcher(route.getProtocol().protocolName())
-                                        .matches())
+                                    && protocolSpec.getProtocols().contains(route.getProtocol()))
                         .forEach(
                             route ->
                                 routesGroups

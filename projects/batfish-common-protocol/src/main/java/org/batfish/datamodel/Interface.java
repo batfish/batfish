@@ -781,7 +781,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private boolean _spanningTreePortfast;
 
-  private Boolean _switchport;
+  private boolean _switchport;
 
   private SwitchportMode _switchportMode;
 
@@ -1272,10 +1272,8 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_SWITCHPORT)
-  @JsonPropertyDescription(
-      "Whether this interface is explicitly set as a switchport. Nothing may be inferred from "
-          + "absence of this field.")
-  public Boolean getSwitchport() {
+  @JsonPropertyDescription("Whether this interface is configured as a switchport.")
+  public boolean getSwitchport() {
     return _switchport;
   }
 
@@ -1611,7 +1609,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_SWITCHPORT)
-  public void setSwitchport(Boolean switchport) {
+  public void setSwitchport(boolean switchport) {
     _switchport = switchport;
   }
 

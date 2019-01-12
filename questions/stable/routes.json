@@ -29,9 +29,9 @@
                 "displayName": "Network"
             },
             "protocols": {
-                "description": "Examine routes for protocols matching this name or regex",
-                "type": "javaRegex",
-                "value": ".*",
+                "description": "Examine routes for protocols matching this specifier",
+                "type": "routingProtocolSpec",
+                "optional": true,
                 "displayName": "Protocols"
             },
             "rib": {

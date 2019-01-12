@@ -60,6 +60,7 @@ public class Variable {
     PREFIX_RANGE("prefixRange", true),
     PROTOCOL("protocol", true),
     QUESTION("question", true),
+    ROUTING_PROTOCOL_SPEC("routingProtocolSpec", true),
     STRING("string", true),
     STRUCTURE_NAME("structureName", true),
     SUBRANGE("subrange", true),
