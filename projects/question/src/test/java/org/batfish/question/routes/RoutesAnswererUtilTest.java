@@ -62,6 +62,7 @@ import org.batfish.question.routes.DiffRoutesOutput.KeyPresenceStatus;
 import org.batfish.question.routes.RoutesAnswererTest.MockRib;
 import org.batfish.question.routes.RoutesAnswererUtil.RouteEntryPresenceStatus;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
+import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.junit.Test;
 
 /** Tests for {@link RoutesAnswererUtil} */
@@ -170,7 +171,14 @@ public class RoutesAnswererUtilTest {
                             .setOspfMetricType(OspfMetricType.E2)
                             .build()))));
 
-    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, ".*", ".*", null);
+    Multiset<Row> actual =
+        getMainRibRoutes(
+            ribs,
+            ImmutableSet.of("n1"),
+            null,
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            ".*",
+            null);
 
     assertThat(actual, hasSize(1));
     Row row = actual.iterator().next();
@@ -203,7 +211,13 @@ public class RoutesAnswererUtilTest {
                 .setTag(1)
                 .build()));
     Multiset<Row> rows =
-        getBgpRibRoutes(bgpRouteTable, RibProtocol.BGP, ImmutableSet.of("node"), null, ".*", ".*");
+        getBgpRibRoutes(
+            bgpRouteTable,
+            RibProtocol.BGP,
+            ImmutableSet.of("node"),
+            null,
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            ".*");
 
     assertThat(rows, hasSize(1));
 
@@ -242,7 +256,13 @@ public class RoutesAnswererUtilTest {
                 .setProtocol(RoutingProtocol.BGP)
                 .build()));
     Multiset<Row> rows =
-        getBgpRibRoutes(bgpRouteTable, RibProtocol.BGP, ImmutableSet.of("node"), null, ".*", ".*");
+        getBgpRibRoutes(
+            bgpRouteTable,
+            RibProtocol.BGP,
+            ImmutableSet.of("node"),
+            null,
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            ".*");
     assertThat(
         rows.iterator().next().get(COL_COMMUNITIES, Schema.list(Schema.STRING)),
         equalTo(ImmutableList.of("1:1")));
@@ -388,7 +408,13 @@ public class RoutesAnswererUtilTest {
                             .build()))));
 
     Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> grouped =
-        groupRoutes(ribs, ImmutableSet.of("n1"), null, ".*", ".*", null);
+        groupRoutes(
+            ribs,
+            ImmutableSet.of("n1"),
+            null,
+            ".*",
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            null);
 
     assertThat(grouped.keySet(), hasSize(1));
     RouteRowKey expectedKey =

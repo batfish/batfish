@@ -1,10 +1,10 @@
 {
   "class" : "org.batfish.question.routes.RoutesQuestion",
   "network" : "1.1.1.0/24",
-  "nodes" : ".*",
-  "protocols" : ".*",
+  "nodes" : "n1",
+  "protocols" : "igp",
   "rib" : "MAIN",
-  "vrfs" : ".*",
+  "vrfs" : "default",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
@@ -28,14 +28,14 @@
         "displayName" : "Nodes",
         "optional" : false,
         "type" : "nodeSpec",
-        "value" : ".*"
+        "value" : "n1"
       },
       "protocols" : {
-        "description" : "Examine routes for protocols matching this name or regex",
+        "description" : "Examine routes for protocols matching this specifier",
         "displayName" : "Protocols",
-        "optional" : false,
-        "type" : "javaRegex",
-        "value" : ".*"
+        "optional" : true,
+        "type" : "routingProtocolSpec",
+        "value" : "igp"
       },
       "rib" : {
         "allowedValues" : [
@@ -65,7 +65,7 @@
         "displayName" : "VRFs",
         "optional" : false,
         "type" : "vrf",
-        "value" : ".*"
+        "value" : "default"
       }
     }
   }
