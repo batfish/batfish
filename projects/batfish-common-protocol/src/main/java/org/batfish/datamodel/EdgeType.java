@@ -8,5 +8,6 @@ public enum EdgeType {
   LAYER2,
   LAYER3,
   OSPF,
-  RIP
+  RIP,
+  VXLAN
 }
