@@ -7394,6 +7394,33 @@
             "type" : "NULL",
             "vrf" : "default"
           },
+          "Tunnel0" : {
+            "name" : "Tunnel0",
+            "accessVlan" : 0,
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "declaredNames" : [
+              "tunnel0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "TUNNEL",
+            "vrf" : "default"
+          },
           "Vlan1" : {
             "name" : "Vlan1",
             "accessVlan" : 0,
@@ -7810,6 +7837,7 @@
               "Loopback0",
               "Modular-Cable1/2/3:4",
               "Null0",
+              "Tunnel0",
               "Vlan1",
               "Vlan1005",
               "Vlan1006",

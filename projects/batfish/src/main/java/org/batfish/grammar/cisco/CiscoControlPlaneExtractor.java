@@ -142,6 +142,9 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.DEPI_TUNNEL_L
 import static org.batfish.representation.cisco.CiscoStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_AF_INTERFACE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_PASSIVE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_BGP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_CONNECTED_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_EIGRP_MAP;
@@ -155,6 +158,8 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCE
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.FAILOVER_LAN_INTERFACE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.FAILOVER_LINK_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
@@ -179,9 +184,12 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_TRA
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_ZONE_MEMBER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
+import static org.batfish.representation.cisco.CiscoStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_SOURCE_POOL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.IP_ROUTE_NHINT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.IP_TACACS_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ISAKMP_POLICY_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ISAKMP_PROFILE_KEYRING;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ISAKMP_PROFILE_SELF_REF;
@@ -195,7 +203,9 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.MSDP_PEER_SA_
 import static org.batfish.representation.cisco.CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.NTP_ACCESS_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.NTP_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_AREA_FILTER_LIST;
+import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
@@ -223,6 +233,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.PROTOCOL_OBJE
 import static org.batfish.representation.cisco.CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_STATIC_ROUTE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_VRRP_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_ADD_COMMUNITY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_DELETE_COMMUNITY;
@@ -246,10 +257,13 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLIC
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST;
+import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_TRAP_SOURCE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SSH_IPV4_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SSH_IPV6_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SYSTEM_SERVICE_POLICY;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TACACS_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_SOURCE;
@@ -2261,7 +2275,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitEos_vxif_vxlan_source_interface(Eos_vxif_vxlan_source_interfaceContext ctx) {
-    String ifaceName = ctx.iface.getText();
+    String ifaceName = getCanonicalInterfaceName(ctx.iface.getText());
     _eosVxlan.setSourceInterface(ifaceName);
     _configuration.referenceStructure(
         INTERFACE, ifaceName, VXLAN_SOURCE_INTERFACE, ctx.iface.getStart().getLine());
@@ -3752,12 +3766,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterRoa_interface(Roa_interfaceContext ctx) {
-    String ifaceName = ctx.iname.getText();
-    String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-    Interface iface = _configuration.getInterfaces().get(canonicalIfaceName);
+    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    _configuration.referenceStructure(
+        INTERFACE, ifaceName, OSPF_AREA_INTERFACE, ctx.iname.getStart().getLine());
+    Interface iface = _configuration.getInterfaces().get(ifaceName);
     if (iface == null) {
       _w.redFlag("OSPF: Interface: '" + ifaceName + "' not declared before OSPF process");
-      iface = addInterface(canonicalIfaceName, ctx.iname, false);
+      iface = addInterface(ifaceName, ctx.iname, false);
     }
     // might cause problems if interfaces are declared after ospf, but
     // whatever
@@ -3833,7 +3848,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterReaf_interface(Reaf_interfaceContext ctx) {
-    _currentEigrpInterface = getCanonicalInterfaceName(ctx.iname.getText());
+    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    _configuration.referenceStructure(
+        INTERFACE, ifaceName, EIGRP_AF_INTERFACE, ctx.iname.getStart().getLine());
+    _currentEigrpInterface = ifaceName;
   }
 
   @Override
@@ -4404,8 +4422,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterVrrp_interface(Vrrp_interfaceContext ctx) {
-    String ifaceName = ctx.iface.getText();
-    _currentVrrpInterface = getCanonicalInterfaceName(ifaceName);
+    _currentVrrpInterface = getCanonicalInterfaceName(ctx.iface.getText());
     _configuration.referenceStructure(
         INTERFACE, _currentVrrpInterface, ROUTER_VRRP_INTERFACE, ctx.iface.getStart().getLine());
   }
@@ -5084,9 +5101,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitDomain_lookup(Domain_lookupContext ctx) {
     if (ctx.iname != null) {
-      String ifaceName = ctx.iname.getText();
-      String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-      _configuration.setDnsSourceInterface(canonicalIfaceName);
+      String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+      _configuration.referenceStructure(
+          INTERFACE, ifaceName, DOMAIN_LOOKUP_SOURCE_INTERFACE, ctx.iname.getStart().getLine());
+      _configuration.setDnsSourceInterface(ifaceName);
     }
   }
 
@@ -5632,7 +5650,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitFailover_link(Failover_linkContext ctx) {
     String alias = ctx.name.getText();
-    String ifaceName = ctx.iface.getText();
+    String ifaceName = getCanonicalInterfaceName(ctx.iface.getText());
+    _configuration.referenceStructure(
+        INTERFACE, ifaceName, FAILOVER_LINK_INTERFACE, ctx.iface.getStart().getLine());
     _configuration.getFailoverInterfaces().put(alias, ifaceName);
     _configuration.setFailoverStatefulSignalingInterfaceAlias(alias);
     _configuration.setFailoverStatefulSignalingInterface(ifaceName);
@@ -5652,7 +5672,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitFlan_interface(Flan_interfaceContext ctx) {
     String alias = ctx.name.getText();
-    String ifaceName = ctx.iface.getText();
+    String ifaceName = getCanonicalInterfaceName(ctx.iface.getText());
+    _configuration.referenceStructure(
+        INTERFACE, ifaceName, FAILOVER_LAN_INTERFACE, ctx.iface.getStart().getLine());
     _configuration.getFailoverInterfaces().put(alias, ifaceName);
     _configuration.setFailoverCommunicationInterface(ifaceName);
     _configuration.setFailoverCommunicationInterfaceAlias(alias);
@@ -5738,8 +5760,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitAsa_ag_interface(Asa_ag_interfaceContext ctx) {
-    String ifaceName = ctx.iface.getText();
-    // Interface iface = _configuration.getInterfaces().get(ifaceName);
+    String ifaceName = ctx.iface.getText(); // Note: Interface alias is not canonicalized.
     Interface iface = getAsaInterfaceByAlias(ifaceName);
     if (iface == null) {
       // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
@@ -6374,20 +6395,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIftunnel_source(Iftunnel_sourceContext ctx) {
-    Ip sourceAddress = null;
-    String sourceInterfaceName = null;
     if (ctx.IP_ADDRESS() != null) {
-      sourceAddress = toIp(ctx.IP_ADDRESS());
-    } else {
-      sourceInterfaceName = ctx.interface_name().getText();
+      Ip sourceAddress = toIp(ctx.IP_ADDRESS());
+      for (Interface iface : _currentInterfaces) {
+        iface.getTunnelInitIfNull().setSourceAddress(sourceAddress);
+      }
+    } else if (ctx.interface_name() != null) {
+      String sourceInterfaceName = getCanonicalInterfaceName(ctx.interface_name().getText());
       _configuration.referenceStructure(
           INTERFACE, sourceInterfaceName, TUNNEL_SOURCE, ctx.interface_name().getStart().getLine());
-    }
-    for (Interface iface : _currentInterfaces) {
-      if (sourceAddress != null) {
-        iface.getTunnelInitIfNull().setSourceAddress(sourceAddress);
-      } else {
+      for (Interface iface : _currentInterfaces) {
         iface.getTunnelInitIfNull().setSourceInterfaceName(sourceInterfaceName);
+      }
+    } else if (ctx.DYNAMIC() != null) {
+      for (Interface iface : _currentInterfaces) {
+        iface.getTunnelInitIfNull().setSourceInterfaceName(null);
       }
     }
   }
@@ -6558,9 +6580,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIp_domain_lookup(Ip_domain_lookupContext ctx) {
     if (ctx.iname != null) {
-      String ifaceName = ctx.iname.getText();
-      String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-      _configuration.setDnsSourceInterface(canonicalIfaceName);
+      String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+      _configuration.referenceStructure(
+          INTERFACE,
+          ifaceName,
+          IP_DOMAIN_LOOKUP_INTERFACE,
+          ctx.interface_name().getStart().getLine());
+      _configuration.setDnsSourceInterface(ifaceName);
     }
   }
 
@@ -6648,6 +6674,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.nexthopint != null) {
       try {
         nextHopInterface = getCanonicalInterfaceName(ctx.nexthopint.getText());
+        _configuration.referenceStructure(
+            INTERFACE, nextHopInterface, IP_ROUTE_NHINT, ctx.nexthopint.getStart().getLine());
       } catch (BatfishException e) {
         _w.redFlag(
             "Error fetching interface name at: "
@@ -7258,6 +7286,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     boolean passive = (ctx.NO() == null);
     String interfaceName = getCanonicalInterfaceName(ctx.i.getText());
     _currentEigrpProcess.getInterfacePassiveStatus().put(interfaceName, passive);
+    _configuration.referenceStructure(
+        INTERFACE, interfaceName, EIGRP_PASSIVE_INTERFACE, ctx.i.getStart().getLine());
   }
 
   @Override
@@ -7621,9 +7651,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitNtp_source_interface(Ntp_source_interfaceContext ctx) {
-    String ifaceName = ctx.iname.getText();
-    String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-    _configuration.setNtpSourceInterface(canonicalIfaceName);
+    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    _configuration.setNtpSourceInterface(ifaceName);
+    _configuration.referenceStructure(
+        INTERFACE, ifaceName, NTP_SOURCE_INTERFACE, ctx.iname.getStart().getLine());
   }
 
   @Override
@@ -8247,8 +8278,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _configuration.referenceStructure(type, name, usage, line);
 
     if (ctx.iname != null) {
-      String canonicalIfaceName = getCanonicalInterfaceName(ctx.iname.getText());
-      _configuration.referenceStructure(INTERFACE, canonicalIfaceName, usage, line);
+      String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+      _configuration.referenceStructure(INTERFACE, ifaceName, usage, line);
     }
 
     todo(ctx);
@@ -8678,6 +8709,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       if (ctx.nhint != null) {
         nextHopInterface = getCanonicalInterfaceName(ctx.nhint.getText());
+        _configuration.referenceStructure(
+            INTERFACE, nextHopInterface, ROUTER_STATIC_ROUTE, ctx.nhint.getStart().getLine());
       }
       int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
       if (ctx.distance != null) {
@@ -8789,9 +8822,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitS_ip_tacacs_source_interface(S_ip_tacacs_source_interfaceContext ctx) {
-    String ifaceName = ctx.iname.getText();
-    String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-    _configuration.setTacacsSourceInterface(canonicalIfaceName);
+    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    _configuration.setTacacsSourceInterface(ifaceName);
+    _configuration.referenceStructure(
+        INTERFACE, ifaceName, IP_TACACS_SOURCE_INTERFACE, ctx.iname.getStart().getLine());
   }
 
   @Override
@@ -8806,7 +8840,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitS_mtu(S_mtuContext ctx) {
-    String ifaceName = ctx.iface.getText();
+    String ifaceName = ctx.iface.getText(); // Note: Interface alias is not canonicalized.
     Interface iface = getAsaInterfaceByAlias(ifaceName);
     if (iface == null) {
       // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
@@ -8881,7 +8915,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         ctx.name.getText(),
         SERVICE_POLICY_INTERFACE_POLICY,
         ctx.name.getStart().getLine());
-    String ifaceName = ctx.iface.getText();
+    String ifaceName = ctx.iface.getText(); // Note: Interface alias is not canonicalized.
     Interface iface = getAsaInterfaceByAlias(ifaceName);
     if (iface == null) {
       // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
@@ -8891,10 +8925,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
 
     _configuration.referenceStructure(
-        INTERFACE,
-        getCanonicalInterfaceName(iface.getName()),
-        SERVICE_POLICY_INTERFACE,
-        ctx.iface.getStart().getLine());
+        INTERFACE, iface.getName(), SERVICE_POLICY_INTERFACE, ctx.iface.getStart().getLine());
   }
 
   @Override
@@ -9178,9 +9209,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitSs_source_interface(Ss_source_interfaceContext ctx) {
-    String ifaceName = ctx.iname.getText();
-    String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-    _configuration.setSnmpSourceInterface(canonicalIfaceName);
+    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    _configuration.setSnmpSourceInterface(ifaceName);
+    _configuration.referenceStructure(
+        INTERFACE, ifaceName, SNMP_SERVER_SOURCE_INTERFACE, ctx.iname.getStart().getLine());
   }
 
   @Override
@@ -9192,9 +9224,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitSs_trap_source(Ss_trap_sourceContext ctx) {
-    String ifaceName = ctx.iname.getText();
-    String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-    _configuration.setSnmpSourceInterface(canonicalIfaceName);
+    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    _configuration.setSnmpSourceInterface(ifaceName);
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST, ifaceName, SNMP_SERVER_TRAP_SOURCE, ctx.iname.getStart().getLine());
   }
 
   @Override
@@ -9382,9 +9415,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitT_source_interface(T_source_interfaceContext ctx) {
-    String ifaceName = ctx.iname.getText();
-    String canonicalIfaceName = getCanonicalInterfaceName(ifaceName);
-    _configuration.setTacacsSourceInterface(canonicalIfaceName);
+    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    _configuration.setTacacsSourceInterface(ifaceName);
+    _configuration.referenceStructure(
+        INTERFACE, ifaceName, TACACS_SOURCE_INTERFACE, ctx.iname.getStart().getLine());
   }
 
   @Override

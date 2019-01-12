@@ -1626,7 +1626,8 @@ iftunnel_source
 :
    SOURCE 
    (
-     IP_ADDRESS 
+     DYNAMIC
+     | IP_ADDRESS
      | interface_name
    ) NEWLINE
 ;

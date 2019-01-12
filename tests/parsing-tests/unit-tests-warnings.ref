@@ -213,15 +213,15 @@
       {
         "Filename" : "cisco_interface",
         "Line" : 279,
-        "Text" : "mode gre multipoint",
-        "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
+        "Text" : "zone-member t1",
+        "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "cisco_interface",
-        "Line" : 290,
-        "Text" : "zone-member t1",
-        "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
+        "Line" : 315,
+        "Text" : "mode gre multipoint",
+        "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
