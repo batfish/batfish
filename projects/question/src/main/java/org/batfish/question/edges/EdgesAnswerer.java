@@ -51,10 +51,10 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
-import org.batfish.datamodel.vxlan.VxlanEdge;
-import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.datamodel.vxlan.VxlanEdge;
+import org.batfish.datamodel.vxlan.VxlanTopology;
 
 public class EdgesAnswerer extends Answerer {
 

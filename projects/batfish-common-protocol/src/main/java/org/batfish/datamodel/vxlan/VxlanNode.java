@@ -62,6 +62,7 @@ public final class VxlanNode implements Comparable<VxlanNode> {
   public static @Nonnull Builder builder() {
     return new Builder();
   }
+
   @JsonCreator
   private static @Nonnull VxlanNode create(
       @JsonProperty(PROP_HOSTNAME) @Nullable String hostname,
