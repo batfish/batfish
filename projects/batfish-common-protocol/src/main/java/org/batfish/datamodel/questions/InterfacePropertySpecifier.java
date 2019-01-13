@@ -44,6 +44,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String HSRP_VERSION = "HSRP_Version";
   public static final String INCOMING_FILTER_NAME = "Incoming_Filter_Name";
   public static final String INTERFACE_TYPE = "Interface_Type";
+  public static final String MLAG_ID = "MLAG_ID";
   public static final String MTU = "MTU";
   public static final String NATIVE_VLAN = "Native_VLAN";
   public static final String OSPF_AREA_NAME = "OSPF_Area_Name";
@@ -102,6 +103,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
               INCOMING_FILTER_NAME,
               new PropertyDescriptor<>(Interface::getIncomingFilter, Schema.STRING))
           .put(INTERFACE_TYPE, new PropertyDescriptor<>(Interface::getInterfaceType, Schema.STRING))
+          .put(MLAG_ID, new PropertyDescriptor<>(Interface::getMlagId, Schema.INTEGER))
           .put(MTU, new PropertyDescriptor<>(Interface::getMtu, Schema.INTEGER))
           .put(NATIVE_VLAN, new PropertyDescriptor<>(Interface::getNativeVlan, Schema.INTEGER))
           // skip ospf area
