@@ -22,7 +22,8 @@
           "layer2",
           "layer3",
           "ospf",
-          "rip"
+          "rip",
+          "vxlan"
         ],
         "description" : "Types of edges to include",
         "displayName" : "Edge Type",
@@ -53,6 +54,9 @@
           },
           {
             "name" : "rip"
+          },
+          {
+            "name" : "vxlan"
           }
         ]
       },
