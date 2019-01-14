@@ -45,6 +45,7 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
+import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
@@ -218,6 +219,11 @@ public class IBatfishTestAdapter implements IBatfish {
       @Override
       public IpOwners getIpOwners(NetworkSnapshot snapshot) {
         return new IpOwners(loadConfigurations(snapshot));
+      }
+
+      @Override
+      public VxlanTopology getVxlanTopology(NetworkSnapshot snapshot) {
+        return new VxlanTopology(loadConfigurations(snapshot));
       }
     };
   }
@@ -469,5 +475,11 @@ public class IBatfishTestAdapter implements IBatfish {
   public NetworkSnapshot networkSnapshot() {
     return new NetworkSnapshot(
         new NetworkId(UUID.randomUUID().toString()), new SnapshotId(UUID.randomUUID().toString()));
+  }
+
+  @Override
+  public NetworkSnapshot getNetworkSnapshot() {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 }
