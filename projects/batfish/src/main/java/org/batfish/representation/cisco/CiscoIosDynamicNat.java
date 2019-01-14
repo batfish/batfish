@@ -15,11 +15,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -89,6 +90,11 @@ public class CiscoIosDynamicNat extends CiscoIosNat {
   @Override
   public int hashCode() {
     return Objects.hash(_aclName, _aclNameLine, getAction(), _natPool, _natPoolLine);
+  }
+
+  @Override
+  public int natCompare(CiscoIosNat other) {
+    return 0;
   }
 
   @Override
@@ -166,7 +172,7 @@ public class CiscoIosDynamicNat extends CiscoIosNat {
                         origHeader
                             .toBuilder()
                             .setDstIps(origHeader.getSrcIps())
-                            .setSrcIps(UniverseIpSpace.INSTANCE)
+                            .setSrcIps((IpSpace) null)
                             .build();
                     return IpAccessListLine.builder()
                         .setAction(line.getAction())
@@ -192,8 +198,10 @@ public class CiscoIosDynamicNat extends CiscoIosNat {
     TransformationStep step;
     if (getAction() == RuleAction.SOURCE_INSIDE) {
       step = assignSourceIp(natPool.getFirst(), natPool.getLast());
-    } else {
+    } else if (getAction() == RuleAction.DESTINATION_INSIDE) {
       step = assignDestinationIp(natPool.getFirst(), natPool.getLast());
+    } else {
+      throw new BatfishException("Unexpected RuleAction");
     }
     return Optional.of(when(natAclExpr).apply(step));
   }

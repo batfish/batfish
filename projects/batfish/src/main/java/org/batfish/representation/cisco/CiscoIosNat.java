@@ -1,17 +1,10 @@
 package org.batfish.representation.cisco;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import java.io.Serializable;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -20,101 +13,50 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Transformation;
 
+/**
+ * Abstract class which represents any Cisco IOS NAT. NATs are {@link Comparable} to represent the
+ * order in which they should be evaluated when converted to {@link Transformation}s.
+ */
 public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializable {
   private static final long serialVersionUID = 1L;
 
   private RuleAction _action;
 
-  @Nonnull
-  static Optional<Transformation> toOutgoingTransformationChain(
-      Map<CiscoIosNat, Optional<Transformation.Builder>> convertedNats) {
-    return toTransformationChain(convertedNats, true);
-  }
-
-  @Nonnull
-  static Optional<Transformation> toIncomingTransformationChain(
-      Map<CiscoIosNat, Optional<Transformation.Builder>> convertedNats) {
-    return toTransformationChain(convertedNats, false);
-  }
-
-  @Nonnull
-  private static Optional<Transformation> toTransformationChain(
-      Map<CiscoIosNat, Optional<Transformation.Builder>> convertedNats, boolean outgoing) {
-
-    Map<IpField, List<Transformation.Builder>> transformationsByField =
-        convertedNats
-            .keySet()
-            .stream()
-            .filter(nat -> convertedNats.get(nat).isPresent())
-            .sorted()
-            .collect(
-                Collectors.groupingBy(
-                    nat -> nat.whatChanges(outgoing),
-                    Collectors.mapping(
-                        nat -> convertedNats.get(nat).orElse(null), Collectors.toList())));
-
-    if (!Sets.difference(
-            transformationsByField.keySet(), ImmutableSet.of(IpField.SOURCE, IpField.DESTINATION))
-        .isEmpty()) {
-      throw new BatfishException("Invalid transformation field");
-    }
-    if (transformationsByField.isEmpty()) {
-      return Optional.empty();
-    }
-
-    /*
-    * transformationsByField contains non-empty lists of non-null transformations, sorted by the
-    * order in which they are to be evaluated.
-
-    * There are currently only two possible field transformations (source and destination).
-    */
-    List<Transformation.Builder> source = transformationsByField.get(IpField.SOURCE);
-    List<Transformation.Builder> destination = transformationsByField.get(IpField.DESTINATION);
-
-    // Doesn't matter if SOURCE or DESTINATION is transformed first, pick a non-empty list
-    // If there is only one field modified, chain all transformations with orElse
-    Optional<Transformation> onlyOrDestinationTransform =
-        chain(firstNonNull(destination, source), null);
-    if (transformationsByField.keySet().size() == 1 || !onlyOrDestinationTransform.isPresent()) {
-      return onlyOrDestinationTransform;
-    }
-
-    // If there is more than one field, chain each list with orElse and subsequent lists with
-    // andThen
-    return chain(source, onlyOrDestinationTransform.get());
-  }
-
-  private static Optional<Transformation> chain(
-      List<Transformation.Builder> nonEmptySortedList, @Nullable Transformation andThen) {
-    // reduce is safe here because the operation is associative
-    return Lists.reverse(nonEmptySortedList)
-        .stream()
-        .map(t -> t.setAndThen(andThen))
-        .reduce((t1, t2) -> t2.setOrElseBuilder(t1))
-        .map(Transformation.Builder::build);
-  }
-
-  private IpField whatChanges(boolean outgoing) {
-    if (_action == RuleAction.SOURCE_INSIDE) {
-      return outgoing ? IpField.SOURCE : IpField.DESTINATION;
-    }
-    return outgoing ? IpField.DESTINATION : IpField.SOURCE;
-  }
-
-  public RuleAction getAction() {
+  /**
+   * All IOS NATs have a particular action which defines where and when to modify source and
+   * destination
+   */
+  public final RuleAction getAction() {
     return _action;
   }
 
-  public void setAction(RuleAction action) {
+  public final void setAction(RuleAction action) {
     _action = action;
   }
 
+  /**
+   * Converts a single NAT from the configuration into a {@link Transformation}.
+   *
+   * @param ipAccessLists Named access lists which may be referenced by dynamic NATs
+   * @param natPools NAT pools from the configuration
+   * @param insideInterfaces Names of interfaces which are defined as 'inside'
+   * @param c Configuration
+   * @return A single {@link Transformation} for inside-to-outside, or nothing if the {@link
+   *     Transformation} could not be built
+   */
   public abstract Optional<Transformation.Builder> toOutgoingTransformation(
       Map<String, IpAccessList> ipAccessLists,
       Map<String, NatPool> natPools,
       @Nullable Set<String> insideInterfaces,
       Configuration c);
 
+  /**
+   * Converts a single NAT from the configuration into a {@link Transformation}.
+   *
+   * @param natPools NAT pools from the configuration
+   * @return A single {@link Transformation} for inside-to-outside, or nothing if the {@link
+   *     Transformation} could not be built
+   */
   public abstract Optional<Transformation.Builder> toIncomingTransformation(
       Map<String, NatPool> natPools);
 
@@ -124,23 +66,18 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
   @Override
   public abstract int hashCode();
 
-  private int typeCompare(CiscoIosNat other) {
-    if (other.getClass() == this.getClass()) {
-      return 0;
-    }
-    if (this instanceof CiscoIosStaticNat) {
-      return -1;
-    }
-    return 0;
-  }
-
-  public int natCompare(CiscoIosNat other) {
-    return 0;
-  }
+  /**
+   * Compare NATs of equal type for sorting.
+   *
+   * @param other NAT to compare
+   * @return a negative integer, zero, or a positive integer as this NAT precedence is less than,
+   *     equal to, or greater than the specified NAT precedence.
+   */
+  public abstract int natCompare(CiscoIosNat other);
 
   @Override
-  public int compareTo(@Nonnull CiscoIosNat other) {
-    return Comparator.comparing(this::typeCompare)
+  public final int compareTo(@Nonnull CiscoIosNat other) {
+    return Comparator.comparingInt(NatUtil::getTypePrecedence)
         .thenComparing(this::natCompare)
         .compare(this, other);
   }
@@ -148,6 +85,25 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
   public enum RuleAction {
     SOURCE_INSIDE,
     SOURCE_OUTSIDE,
-    DESTINATION_INSIDE
+    DESTINATION_INSIDE;
+
+    IpField whatChanges(boolean outgoing) {
+      switch (this) {
+        case SOURCE_INSIDE:
+          // Match and transform source for outgoing (inside-to-outside)
+          // Match and transform destination for incoming (outside-to-inside)
+          return outgoing ? IpField.SOURCE : IpField.DESTINATION;
+        case SOURCE_OUTSIDE:
+          // Match and transform destination for outgoing (inside-to-outside)
+          // Match and transform source for incoming (outside-to-inside)
+          return outgoing ? IpField.DESTINATION : IpField.SOURCE;
+        case DESTINATION_INSIDE:
+          // Match and transform destination for outgoing (inside-to-outside)
+          // Match and transform source for incoming (outside-to-inside)
+          return outgoing ? IpField.DESTINATION : IpField.SOURCE;
+        default:
+          throw new BatfishException("Unsupported RuleAction");
+      }
+    }
   }
 }

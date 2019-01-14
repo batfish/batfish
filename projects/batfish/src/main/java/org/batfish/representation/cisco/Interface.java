@@ -184,8 +184,6 @@ public class Interface implements Serializable {
 
   private Set<InterfaceAddress> _secondaryAddresses;
 
-  private List<CiscoSourceNat> _sourceNats;
-
   private boolean _spanningTreePortfast;
 
   private InterfaceAddress _standbyAddress;
@@ -464,10 +462,6 @@ public class Interface implements Serializable {
     return _secondaryAddresses;
   }
 
-  public List<CiscoSourceNat> getSourceNats() {
-    return _sourceNats;
-  }
-
   public boolean getSpanningTreePortfast() {
     return _spanningTreePortfast;
   }
@@ -635,10 +629,6 @@ public class Interface implements Serializable {
 
   public void setRoutingPolicy(String routingPolicy) {
     _routingPolicy = routingPolicy;
-  }
-
-  public void setSourceNats(List<CiscoSourceNat> sourceNats) {
-    _sourceNats = sourceNats;
   }
 
   public void setSpanningTreePortfast(boolean spanningTreePortfast) {

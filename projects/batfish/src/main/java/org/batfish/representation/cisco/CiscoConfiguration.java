@@ -36,6 +36,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,7 +54,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -166,6 +166,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.TrackMethod;
+import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
@@ -2267,47 +2268,55 @@ public final class CiscoConfiguration extends VendorConfiguration {
     applyZoneFilter(iface, newIface, c);
 
     /*
-     * NAT rules are specified at the top level, but are applied as ingress transformations on the
-     * outside interface (outside-to-inside) and egress transformations on the inside interface
+     * NAT rules are specified at the top level, but are applied as incoming transformations on the
+     * outside interface (outside-to-inside) and outgoing transformations on the outside interface
      * (inside-to-outside)
      *
-     * Currently, only static NATs are supported for ingress transformations.
+     * Currently, only static NATs have both incoming and outgoingtransformations
      */
 
-    List<CiscoIosNat> egressNats = new ArrayList<>();
-    List<CiscoIosNat> ingressNats = new ArrayList<>();
+    List<CiscoIosNat> incomingNats = new ArrayList<>();
+    List<CiscoIosNat> outgoingNats = new ArrayList<>();
 
     // Check if this is an outside interface
     if (getNatOutside().contains(ifaceName)) {
-      ingressNats.addAll(getNats());
-      egressNats.addAll(getNats());
+      incomingNats.addAll(getNats());
+      outgoingNats.addAll(getNats());
     }
     // Add any arista NATs
     if (iface.getAristaNats() != null) {
-      egressNats.addAll(iface.getAristaNats());
+      outgoingNats.addAll(iface.getAristaNats());
     }
 
-    // Convert the IOS NATs to a mapping of transformations. Each field (source or dest)
-    // can be modified independently
+    // Convert the IOS NATs to a mapping of transformations. Each field (source or destination)
+    // can be modified independently but not jointly. A single CiscoIosNat can represent an incoming
+    // NAT, an outgoing NAT, or both.
 
-    CiscoIosNat.toOutgoingTransformationChain(
-            egressNats
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        Function.identity(),
-                        nat ->
-                            nat.toOutgoingTransformation(
-                                ipAccessLists, _natPools, getNatInside(), c))))
-        .ifPresent(newIface::setOutgoingTransformation);
+    Map<CiscoIosNat, Transformation.Builder> convertedIncomingNats =
+        incomingNats
+            .stream()
+            .map(nat -> new SimpleEntry<>(nat, nat.toIncomingTransformation(_natPools)))
+            .filter(entry -> entry.getValue().isPresent())
+            .collect(Collectors.toMap(SimpleEntry::getKey, entry -> entry.getValue().get()));
+    if (!convertedIncomingNats.isEmpty()) {
+      newIface.setIncomingTransformation(
+          NatUtil.toIncomingTransformationChain(convertedIncomingNats));
+    }
 
-    CiscoIosNat.toIncomingTransformationChain(
-            ingressNats
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        Function.identity(), nat -> nat.toIncomingTransformation(_natPools))))
-        .ifPresent(newIface::setIncomingTransformation);
+    Map<CiscoIosNat, Transformation.Builder> convertedOutgoingNats =
+        outgoingNats
+            .stream()
+            .map(
+                nat ->
+                    new SimpleEntry<>(
+                        nat,
+                        nat.toOutgoingTransformation(ipAccessLists, _natPools, getNatInside(), c)))
+            .filter(entry -> entry.getValue().isPresent())
+            .collect(Collectors.toMap(SimpleEntry::getKey, entry -> entry.getValue().get()));
+    if (!convertedOutgoingNats.isEmpty()) {
+      newIface.setOutgoingTransformation(
+          NatUtil.toOutgoingTransformationChain(convertedOutgoingNats));
+    }
 
     String routingPolicyName = iface.getRoutingPolicy();
     if (routingPolicyName != null) {

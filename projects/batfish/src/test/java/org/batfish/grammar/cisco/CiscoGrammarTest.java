@@ -4020,13 +4020,16 @@ public class CiscoGrammarTest {
 
     assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
 
+    Transformation destTransformation =
+        when(and(matchIface, permittedByAcl(nat2AclName)))
+            .apply(assignDestinationIp(nat2PoolFirst, nat2PoolLast))
+            .build();
+
     Transformation outTransformation =
         when(and(matchIface, permittedByAcl(nat1AclName)))
             .apply(assignSourceIp(nat1PoolFirst, nat1PoolLast))
-            .setAndThen(
-                when(and(matchIface, permittedByAcl(nat2AclName)))
-                    .apply(assignDestinationIp(nat2PoolFirst, nat2PoolLast))
-                    .build())
+            .setAndThen(destTransformation)
+            .setOrElse(destTransformation)
             .build();
 
     assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
@@ -4073,6 +4076,7 @@ public class CiscoGrammarTest {
         when(matchSrc(nat4Global))
             .apply(shiftSourceIp(nat4Local))
             .setAndThen(inDestinationTransformation)
+            .setOrElse(inDestinationTransformation)
             .build();
 
     assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
@@ -4092,10 +4096,37 @@ public class CiscoGrammarTest {
                         when(and(matchSrc(nat2Local), matchIface))
                             .apply(shiftSourceIp(nat2Global))
                             .setAndThen(outDestinationTransformation)
+                            .setOrElse(outDestinationTransformation)
                             .build())
                     .build())
             .build();
 
+    assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
+  }
+
+  @Test
+  public void testIosMixedNat() throws IOException {
+    Configuration c = parseConfig("ios-nat-mixed");
+    String insideIntf = "Ethernet1";
+    String outsideIntf = "Ethernet2";
+    Prefix staticNatLocal = Prefix.parse("1.1.3.0/24");
+    Prefix staticNatGlobal = Prefix.parse("2.2.3.0/24");
+    String dynamicNatAcl = "10";
+    Ip dynamicNatStart = Ip.parse("3.3.3.1");
+    Ip dynamicNatEnd = Ip.parse("3.3.3.254");
+
+    Interface outside = c.getAllInterfaces().get(outsideIntf);
+    MatchSrcInterface matchIface = matchSrcInterface(insideIntf);
+
+    // Check that the inside-to-outside transformation evaluates the static NAT first
+    Transformation outTransformation =
+        when(and(matchIface, matchSrc(staticNatLocal)))
+            .apply(shiftSourceIp(staticNatGlobal))
+            .setOrElse(
+                when(and(matchIface, permittedByAcl(dynamicNatAcl)))
+                    .apply(assignSourceIp(dynamicNatStart, dynamicNatEnd))
+                    .build())
+            .build();
     assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
   }
 
