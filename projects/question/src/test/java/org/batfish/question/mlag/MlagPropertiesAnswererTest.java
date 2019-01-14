@@ -36,7 +36,7 @@ import org.batfish.datamodel.table.TableMetadata;
 import org.junit.Test;
 
 /** Tests of {@link MlagPropertiesAnswerer} */
-public class MlagProperitesAnswererTest {
+public final class MlagPropertiesAnswererTest {
 
   @Test
   public void testColumnOrder() {

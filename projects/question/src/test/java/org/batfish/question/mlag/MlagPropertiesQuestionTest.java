@@ -8,7 +8,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
 /** Tests of {@link org.batfish.question.mlag.MlagPropertiesQuestion} */
-public class MlagPropertiesQuestionTest {
+public final class MlagPropertiesQuestionTest {
   @Test
   public void testJsonSerialization() throws IOException {
     MlagPropertiesQuestion q = new MlagPropertiesQuestion("nodes", "mlags");

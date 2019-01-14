@@ -16,7 +16,7 @@ import org.batfish.specifier.NodeSpecifierFactory;
 
 /** MLAG properties question */
 @ParametersAreNonnullByDefault
-public class MlagPropertiesQuestion extends Question {
+public final class MlagPropertiesQuestion extends Question {
   private static final String PROP_NODES = "nodes";
   private static final String PROP_ID_REGEX = "idRegex";
 
@@ -71,7 +71,7 @@ public class MlagPropertiesQuestion extends Question {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

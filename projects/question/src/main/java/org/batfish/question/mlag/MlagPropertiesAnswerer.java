@@ -25,7 +25,7 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
 /** Answerer for the {@link MlagPropertiesQuestion} */
-public class MlagPropertiesAnswerer extends Answerer {
+public final class MlagPropertiesAnswerer extends Answerer {
   static final String COL_MLAG_ID = "MLAG_ID";
   static final String COL_MLAG_LOCAL_INTERFACE = "Source_Interface";
   static final String COL_MLAG_PEER_ADDRESS = "Peer_Address";
