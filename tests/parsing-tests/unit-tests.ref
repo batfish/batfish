@@ -24408,6 +24408,19 @@
             "        NETMASK:'netmask'",
             "        mask = IP_ADDRESS:'255.255.255.0'",
             "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_ip_nat",
+            "      (ip_nat_source",
+            "        IP:'ip'",
+            "        NAT:'nat'",
+            "        OUTSIDE:'outside'",
+            "        SOURCE:'source'",
+            "        STATIC:'static'",
+            "        local = IP_ADDRESS:'6.6.6.6'",
+            "        global = IP_ADDRESS:'7.7.7.7'",
+            "        ADD_ROUTE:'add-route'",
+            "        NO_ALIAS:'no-alias'",
+            "        NEWLINE:'\\n')))",
             "  EOF:<EOF>)"
           ]
         },
@@ -62789,6 +62802,16 @@
               "Line" : 315,
               "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
               "Text" : "mode gre multipoint"
+            }
+          ]
+        },
+        "cisco_ip_nat" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 13,
+              "Parser_Context" : "[ip_nat_source s_ip_nat stanza cisco_configuration]",
+              "Text" : "ip nat outside source static 6.6.6.6 7.7.7.7 add-route no-alias"
             }
           ]
         },

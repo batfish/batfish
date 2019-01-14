@@ -324,16 +324,6 @@ ADDRESS_HIDING
    'address-hiding'
 ;
 
-ADDRESS_MASK_REPLY
-:
-   'address-mask-reply'
-;
-
-ADDRESS_MASK_REQUEST
-:
-   'address-mask-request'
-;
-
 ADDRESS_POOL
 :
    'address-pool'
