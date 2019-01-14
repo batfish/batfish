@@ -1,11 +1,11 @@
 package org.batfish.grammar.host;
 
-import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedIpsecP2Proposal;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -13,15 +13,16 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import org.batfish.common.util.IpsecUtil;
-import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecEncapsulationMode;
 import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecSession;
+import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.matchers.IpsecPhase2ProposalMatchers;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -39,7 +40,7 @@ public class HostTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
-  public Map<String, Configuration> natIpsecVpnsTestHelper(String hostFilename) throws IOException {
+  public Batfish getBatfishForConfigs(String hostFilename) throws IOException {
     String testrigResourcePrefix = TESTRIG_PREFIX + "ipsec-vpn-host-aws-cisco";
     List<String> awsFilenames =
         ImmutableList.of(
@@ -58,49 +59,74 @@ public class HostTest {
     List<String> configurationFilenames = ImmutableList.of("cisco_host");
     List<String> hostFilenames = ImmutableList.of(hostFilename);
 
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setAwsText(testrigResourcePrefix, awsFilenames)
-                .setConfigurationText(testrigResourcePrefix, configurationFilenames)
-                .setHostsText(testrigResourcePrefix, hostFilenames)
-                .build(),
-            _folder);
-    return batfish.loadConfigurations();
+    return BatfishTestUtils.getBatfishFromTestrigText(
+        TestrigText.builder()
+            .setAwsText(testrigResourcePrefix, awsFilenames)
+            .setConfigurationText(testrigResourcePrefix, configurationFilenames)
+            .setHostsText(testrigResourcePrefix, hostFilenames)
+            .build(),
+        _folder);
   }
 
   @Test
   public void testNatIpsecVpnsNotShared() throws IOException {
-    Map<String, Configuration> configurations = natIpsecVpnsTestHelper("host1-not-shared.json");
+    Batfish batfish = getBatfishForConfigs("host1-not-shared.json");
+    batfish.loadConfigurations();
+    Topology environmentTopology = batfish.getEnvironmentTopology();
 
     /*
-     * NAT settings on host1 (not-shared version) should result in tunnel interfaces being down
+     * NAT settings on host1 (not-shared version) should result in edges between tunnel interfaces and AWS VPNs being pruned
      */
-    assertThat(configurations.get("cisco_host").getAllInterfaces().get("Tunnel1"), not(isActive()));
-    assertThat(configurations.get("cisco_host").getAllInterfaces().get("Tunnel2"), not(isActive()));
-    assertThat(configurations.get("vgw-81fd279f").getAllInterfaces().get("vpn1"), not(isActive()));
-    assertThat(configurations.get("vgw-81fd279f").getAllInterfaces().get("vpn2"), not(isActive()));
+    assertThat(
+        environmentTopology.getEdges(),
+        not(
+            hasItems(
+                new Edge(
+                    new NodeInterfacePair("cisco_host", "Tunnel1"),
+                    new NodeInterfacePair("vgw-81fd279f", "vpn1")),
+                new Edge(
+                    new NodeInterfacePair("cisco_host", "Tunnel2"),
+                    new NodeInterfacePair("vgw-81fd279f", "vpn2")),
+                new Edge(
+                    new NodeInterfacePair("vgw-81fd279f", "vpn1"),
+                    new NodeInterfacePair("cisco_host", "Tunnel1")),
+                new Edge(
+                    new NodeInterfacePair("vgw-81fd279f", "vpn2"),
+                    new NodeInterfacePair("cisco_host", "Tunnel2")))));
   }
 
   @Test
   public void testNatIpsecVpnsShared() throws IOException {
-    Map<String, Configuration> configurations = natIpsecVpnsTestHelper("host1-shared.json");
+    Batfish batfish = getBatfishForConfigs("host1-shared.json");
+    batfish.loadConfigurations();
+    Topology environmentTopology = batfish.getEnvironmentTopology();
 
     /*
-     * NAT settings on host1 (shared version) should result in tunnel interfaces being up
+     * NAT settings on host1 (not-shared version) should result in edges between tunnel interfaces and AWS VPNs not being pruned
      */
-    assertThat(configurations.get("cisco_host").getAllInterfaces().get("Tunnel1"), isActive());
-    assertThat(configurations.get("cisco_host").getAllInterfaces().get("Tunnel2"), isActive());
-    assertThat(configurations.get("vgw-81fd279f").getAllInterfaces().get("vpn1"), isActive());
-    assertThat(configurations.get("vgw-81fd279f").getAllInterfaces().get("vpn2"), isActive());
+    assertThat(
+        environmentTopology.getEdges(),
+        hasItems(
+            new Edge(
+                new NodeInterfacePair("cisco_host", "Tunnel1"),
+                new NodeInterfacePair("vgw-81fd279f", "vpn1")),
+            new Edge(
+                new NodeInterfacePair("cisco_host", "Tunnel2"),
+                new NodeInterfacePair("vgw-81fd279f", "vpn2")),
+            new Edge(
+                new NodeInterfacePair("vgw-81fd279f", "vpn1"),
+                new NodeInterfacePair("cisco_host", "Tunnel1")),
+            new Edge(
+                new NodeInterfacePair("vgw-81fd279f", "vpn2"),
+                new NodeInterfacePair("cisco_host", "Tunnel2"))));
   }
 
   @Test
   public void testNatIpsecTopologyNotShared() throws IOException {
-    Map<String, Configuration> configurations = natIpsecVpnsTestHelper("host1-not-shared.json");
+    Batfish batfish = getBatfishForConfigs("host1-not-shared.json");
 
     ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
-        IpsecUtil.initIpsecTopology(configurations);
+        IpsecUtil.initIpsecTopology(batfish.loadConfigurations());
 
     IpsecPeerConfigId tunnel1 = new IpsecPeerConfigId("Tunnel1", "cisco_host");
     IpsecPeerConfigId tunnel2 = new IpsecPeerConfigId("Tunnel2", "cisco_host");
@@ -144,10 +170,10 @@ public class HostTest {
 
   @Test
   public void testNatIpsecTopologyShared() throws IOException {
-    Map<String, Configuration> configurations = natIpsecVpnsTestHelper("host1-shared.json");
+    Batfish batfish = getBatfishForConfigs("host1-shared.json");
 
     ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
-        IpsecUtil.initIpsecTopology(configurations);
+        IpsecUtil.initIpsecTopology(batfish.loadConfigurations());
 
     IpsecPeerConfigId tunnel1 = new IpsecPeerConfigId("Tunnel1", "cisco_host");
     IpsecPeerConfigId tunnel2 = new IpsecPeerConfigId("Tunnel2", "cisco_host");
