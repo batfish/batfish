@@ -93,7 +93,7 @@ public final class Topology implements Serializable {
 
   /**
    * Given a {@link ValueGraph} between {@link IpsecPeerConfigId}s, trims the edges in current
-   * {@link Topology} which are not fully established in the IPsec topology i.e. they do not have a
+   * {@link Topology} which are not fully established in the IPsec topology (e.g. they do not have a
    * negotiated {@link IpsecPhase2Proposal})
    *
    * @param ipsecTopology original IPsec topology's {@link ValueGraph}
@@ -111,25 +111,31 @@ public final class Topology implements Serializable {
 
     for (IpsecPeerConfigId endPointU : ipsecTopology.nodes()) {
       IpsecPeerConfig ipsecPeerU = networkConfigurations.getIpsecPeerConfig(endPointU);
+      // not considering endpoints not based on Tunnel interfaces
+      if (ipsecPeerU == null || ipsecPeerU.getTunnelInterface() == null) {
+        continue;
+      }
 
-      if (ipsecPeerU != null && ipsecPeerU.getTunnelInterface() != null) {
-        NodeInterfacePair tunnelEndPointU =
-            new NodeInterfacePair(endPointU.getHostName(), ipsecPeerU.getTunnelInterface());
-        tunnelIpsecEndpoints.add(tunnelEndPointU);
+      NodeInterfacePair tunnelEndPointU =
+          new NodeInterfacePair(endPointU.getHostName(), ipsecPeerU.getTunnelInterface());
+      tunnelIpsecEndpoints.add(tunnelEndPointU);
 
-        for (IpsecPeerConfigId endPointV : ipsecTopology.adjacentNodes(endPointU)) {
-          IpsecPeerConfig ipsecPeerV = networkConfigurations.getIpsecPeerConfig(endPointV);
-          if (ipsecPeerV != null && ipsecPeerV.getTunnelInterface() != null) {
-            NodeInterfacePair tunnelEndPointV =
-                new NodeInterfacePair(endPointV.getHostName(), ipsecPeerV.getTunnelInterface());
+      for (IpsecPeerConfigId endPointV : ipsecTopology.adjacentNodes(endPointU)) {
+        IpsecPeerConfig ipsecPeerV = networkConfigurations.getIpsecPeerConfig(endPointV);
 
-            // checking IPsec session and adding edge
-            Optional<IpsecSession> edgeIpsecSession = ipsecTopology.edgeValue(endPointU, endPointV);
-            if (edgeIpsecSession.isPresent()
-                && edgeIpsecSession.get().getNegotiatedIpsecP2Proposal() != null) {
-              successfulIPsecEdges.add(new Edge(tunnelEndPointU, tunnelEndPointV));
-            }
-          }
+        // not considering endpoints not based on Tunnel interfaces
+        if (ipsecPeerV == null || ipsecPeerV.getTunnelInterface() == null) {
+          continue;
+        }
+
+        NodeInterfacePair tunnelEndPointV =
+            new NodeInterfacePair(endPointV.getHostName(), ipsecPeerV.getTunnelInterface());
+
+        // checking IPsec session and adding edge
+        Optional<IpsecSession> edgeIpsecSession = ipsecTopology.edgeValue(endPointU, endPointV);
+        if (edgeIpsecSession.isPresent()
+            && edgeIpsecSession.get().getNegotiatedIpsecP2Proposal() != null) {
+          successfulIPsecEdges.add(new Edge(tunnelEndPointU, tunnelEndPointV));
         }
       }
     }
