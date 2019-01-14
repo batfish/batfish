@@ -22,14 +22,16 @@ import org.batfish.datamodel.AuthenticationKeyChain;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.IkePolicy;
+import org.batfish.datamodel.IkePhase1Key;
+import org.batfish.datamodel.IkePhase1Policy;
+import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpsecPolicy;
-import org.batfish.datamodel.IpsecProposal;
-import org.batfish.datamodel.IpsecVpn;
+import org.batfish.datamodel.IpsecPhase2Policy;
+import org.batfish.datamodel.IpsecPhase2Proposal;
+import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.Vrf;
@@ -202,12 +204,14 @@ public final class CompletionMetadataUtilsTest {
     String asPathAccessListName = "asPathAccessList";
     String authenticationKeyChainName = "authenticationKeyChain";
     String communityListName = "communityList";
-    String ikePolicyName = "ikePolicy";
+    String ikePhase1KeyName = "ikePhase1Key";
+    String ikePhase1PolicyName = "ikePhase1Policy";
+    String ikePhase1ProposalName = "ikePhase1Proposal";
     String ipAccessListName = "ipAccessList";
     String ip6AccessListName = "ip6AccessList";
-    String ipsecPolicyName = "ipsecPolicy";
-    String ipsecProposalName = "ipsecProposal";
-    String ipsecVpnName = "ipsecVpn";
+    String ipsecPhase2PolicyName = "ipsecPhase2Policy";
+    String ipsecPhase2ProposalName = "ipsecPhase2Proposal";
+    String ipsecPeerConfigName = "ipsecPeerConfig";
     String routeFilterListName = "routeFilterList";
     String route6FilterListName = "route6FilterList";
     String routingPolicyName = "routingPolicyName";
@@ -226,16 +230,21 @@ public final class CompletionMetadataUtilsTest {
     config.setCommunityLists(
         ImmutableSortedMap.of(
             communityListName, new CommunityList(communityListName, ImmutableList.of(), true)));
-    config.setIkePolicies(ImmutableSortedMap.of(ikePolicyName, new IkePolicy(ikePolicyName)));
+    config.setIkePhase1Keys(ImmutableSortedMap.of(ikePhase1KeyName, new IkePhase1Key()));
+    config.setIkePhase1Policies(
+        ImmutableSortedMap.of(ikePhase1PolicyName, new IkePhase1Policy(ikePhase1PolicyName)));
+    config.setIkePhase1Proposals(
+        ImmutableSortedMap.of(ikePhase1ProposalName, new IkePhase1Proposal(ikePhase1ProposalName)));
     config.setIpAccessLists(
         ImmutableSortedMap.of(ipAccessListName, new IpAccessList(ipAccessListName)));
     config.setIp6AccessLists(
         ImmutableSortedMap.of(ip6AccessListName, new Ip6AccessList(ip6AccessListName)));
-    config.setIpsecPolicies(
-        ImmutableSortedMap.of(ipsecPolicyName, new IpsecPolicy(ipsecPolicyName)));
-    config.setIpsecProposals(
-        ImmutableSortedMap.of(ipsecProposalName, new IpsecProposal(ipsecProposalName)));
-    config.setIpsecVpns(ImmutableSortedMap.of(ipsecVpnName, new IpsecVpn(ipsecVpnName)));
+    config.setIpsecPhase2Policies(
+        ImmutableSortedMap.of(ipsecPhase2PolicyName, new IpsecPhase2Policy()));
+    config.setIpsecPhase2Proposals(
+        ImmutableSortedMap.of(ipsecPhase2ProposalName, new IpsecPhase2Proposal()));
+    config.setIpsecPeerConfigs(
+        ImmutableSortedMap.of(ipsecPeerConfigName, IpsecStaticPeerConfig.builder().build()));
     config.setRouteFilterLists(
         ImmutableSortedMap.of(routeFilterListName, new RouteFilterList(routeFilterListName)));
     config.setRoute6FilterLists(
@@ -254,12 +263,14 @@ public final class CompletionMetadataUtilsTest {
                 asPathAccessListName,
                 authenticationKeyChainName,
                 communityListName,
-                ikePolicyName,
+                ikePhase1KeyName,
+                ikePhase1PolicyName,
+                ikePhase1ProposalName,
                 ipAccessListName,
                 ip6AccessListName,
-                ipsecPolicyName,
-                ipsecProposalName,
-                ipsecVpnName,
+                ipsecPhase2PolicyName,
+                ipsecPhase2ProposalName,
+                ipsecPeerConfigName,
                 routeFilterListName,
                 route6FilterListName,
                 routingPolicyName,
