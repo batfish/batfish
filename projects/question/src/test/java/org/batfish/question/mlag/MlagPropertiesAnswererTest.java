@@ -43,7 +43,9 @@ public final class MlagPropertiesAnswererTest {
     TableMetadata tableMetadata = MlagPropertiesAnswerer.getMetadata();
 
     assertThat(
-        tableMetadata.getColumnMetadata().stream()
+        tableMetadata
+            .getColumnMetadata()
+            .stream()
             .map(ColumnMetadata::getName)
             .collect(ImmutableList.toImmutableList()),
         equalTo(
@@ -60,7 +62,9 @@ public final class MlagPropertiesAnswererTest {
     TableMetadata tableMetadata = MlagPropertiesAnswerer.getMetadata();
 
     assertThat(
-        tableMetadata.getColumnMetadata().stream()
+        tableMetadata
+            .getColumnMetadata()
+            .stream()
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList()),
         equalTo(
