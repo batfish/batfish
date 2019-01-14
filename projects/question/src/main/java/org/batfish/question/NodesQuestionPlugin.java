@@ -39,21 +39,21 @@ public class NodesQuestionPlugin extends QuestionPlugin {
 
       private ConfigurationFormat _configurationFormat;
 
-      private SortedSet<String> _ikeGateways;
+      private SortedSet<String> _ikePhase1Keys;
 
-      private SortedSet<String> _ikePolicies;
+      private SortedSet<String> _ikePhase1Policies;
 
-      private SortedSet<String> _ikeProposals;
+      private SortedSet<String> _ikePhase1Proposals;
 
       private SortedSet<String> _interfaces;
 
       private SortedSet<String> _ipAccessLists;
 
-      private SortedSet<String> _ipsecPolicies;
+      private SortedSet<String> _ipsecPeerConfigs;
 
-      private SortedSet<String> _ipsecProposals;
+      private SortedSet<String> _ipsecPhase2Policies;
 
-      private SortedSet<String> _ipsecVpns;
+      private SortedSet<String> _ipsecPhase2Proposals;
 
       private SortedSet<String> _routeFilterLists;
 
@@ -76,26 +76,26 @@ public class NodesQuestionPlugin extends QuestionPlugin {
         if (!node.getAllInterfaces().isEmpty()) {
           _interfaces = node.getAllInterfaces().navigableKeySet();
         }
-        if (!node.getIkeGateways().isEmpty()) {
-          _ikeGateways = node.getIkeGateways().navigableKeySet();
+        if (!node.getIkePhase1Keys().isEmpty()) {
+          _ikePhase1Keys = node.getIkePhase1Keys().navigableKeySet();
         }
-        if (!node.getIkePolicies().isEmpty()) {
-          _ikePolicies = node.getIkePolicies().navigableKeySet();
+        if (!node.getIkePhase1Policies().isEmpty()) {
+          _ikePhase1Policies = node.getIkePhase1Policies().navigableKeySet();
         }
-        if (!node.getIkeProposals().isEmpty()) {
-          _ikeProposals = node.getIkeProposals().navigableKeySet();
+        if (!node.getIkePhase1Proposals().isEmpty()) {
+          _ikePhase1Proposals = node.getIkePhase1Proposals().navigableKeySet();
         }
         if (!node.getIpAccessLists().isEmpty()) {
           _ipAccessLists = node.getIpAccessLists().navigableKeySet();
         }
-        if (!node.getIpsecPolicies().isEmpty()) {
-          _ipsecPolicies = node.getIpsecPolicies().navigableKeySet();
+        if (!node.getIpsecPeerConfigs().isEmpty()) {
+          _ipsecPeerConfigs = node.getIpsecPeerConfigs().navigableKeySet();
         }
-        if (!node.getIpsecProposals().isEmpty()) {
-          _ipsecProposals = node.getIpsecProposals().navigableKeySet();
+        if (!node.getIpsecPhase2Policies().isEmpty()) {
+          _ipsecPhase2Policies = node.getIpsecPhase2Policies().navigableKeySet();
         }
-        if (!node.getIpsecVpns().isEmpty()) {
-          _ipsecVpns = node.getIpsecVpns().navigableKeySet();
+        if (!node.getIpsecPhase2Proposals().isEmpty()) {
+          _ipsecPhase2Proposals = node.getIpsecPhase2Proposals().navigableKeySet();
         }
         if (!node.getRoutingPolicies().isEmpty()) {
           _routingPolicies = node.getRoutingPolicies().navigableKeySet();
@@ -157,16 +157,16 @@ public class NodesQuestionPlugin extends QuestionPlugin {
         return _configurationFormat;
       }
 
-      public SortedSet<String> getIkeGateways() {
-        return _ikeGateways;
+      public SortedSet<String> getIkePhase1Keys() {
+        return _ikePhase1Keys;
       }
 
-      public SortedSet<String> getIkePolicies() {
-        return _ikePolicies;
+      public SortedSet<String> getIkePhase1Policies() {
+        return _ikePhase1Policies;
       }
 
-      public SortedSet<String> getIkeProposals() {
-        return _ikeProposals;
+      public SortedSet<String> getIkePhase1Proposals() {
+        return _ikePhase1Proposals;
       }
 
       public SortedSet<String> getInterfaces() {
@@ -177,16 +177,16 @@ public class NodesQuestionPlugin extends QuestionPlugin {
         return _ipAccessLists;
       }
 
-      public SortedSet<String> getIpsecPolicies() {
-        return _ipsecPolicies;
+      public SortedSet<String> getIpsecPeerConfigs() {
+        return _ipsecPeerConfigs;
       }
 
-      public SortedSet<String> getIpsecProposals() {
-        return _ipsecProposals;
+      public SortedSet<String> getIpsecPhase2Policies() {
+        return _ipsecPhase2Policies;
       }
 
-      public SortedSet<String> getIpsecVpns() {
-        return _ipsecVpns;
+      public SortedSet<String> get_ipsecPhase2Proposals() {
+        return _ipsecPhase2Proposals;
       }
 
       public SortedSet<String> getPolicySortedMaps() {
@@ -217,16 +217,16 @@ public class NodesQuestionPlugin extends QuestionPlugin {
         _configurationFormat = configurationFormat;
       }
 
-      public void setIkeGateways(SortedSet<String> ikeGateways) {
-        _ikeGateways = ikeGateways;
+      public void setIkePhase1Keys(SortedSet<String> ikePhase1Keys) {
+        _ikePhase1Keys = ikePhase1Keys;
       }
 
-      public void setIkePolicies(SortedSet<String> ikePolicies) {
-        _ikePolicies = ikePolicies;
+      public void setIkePhase1Policies(SortedSet<String> ikePhase1Policies) {
+        _ikePhase1Policies = ikePhase1Policies;
       }
 
-      public void setIkeProposals(SortedSet<String> ikeProposals) {
-        _ikeProposals = ikeProposals;
+      public void setIkePhase1Proposals(SortedSet<String> ikePhase1Proposals) {
+        _ikePhase1Proposals = ikePhase1Proposals;
       }
 
       public void setInterfaces(SortedSet<String> interfaces) {
@@ -237,16 +237,16 @@ public class NodesQuestionPlugin extends QuestionPlugin {
         _ipAccessLists = ipAccessLists;
       }
 
-      public void setIpsecPolicies(SortedSet<String> ipsecPolicies) {
-        _ipsecPolicies = ipsecPolicies;
+      public void setIpsecPeerConfigs(SortedSet<String> ipsecPeerConfigs) {
+        _ipsecPeerConfigs = ipsecPeerConfigs;
       }
 
-      public void setIpsecProposals(SortedSet<String> ipsecProposals) {
-        _ipsecProposals = ipsecProposals;
+      public void setIpsecPhase2Policies(SortedSet<String> ipsecPhase2Policies) {
+        _ipsecPhase2Policies = ipsecPhase2Policies;
       }
 
-      public void setIpsecVpns(SortedSet<String> ipsecVpns) {
-        _ipsecVpns = ipsecVpns;
+      public void setIpsecPhase2Proposals(SortedSet<String> ipsecPhase2Proposals) {
+        _ipsecPhase2Proposals = ipsecPhase2Proposals;
       }
 
       public void setPolicySortedMaps(SortedSet<String> policySortedMaps) {
