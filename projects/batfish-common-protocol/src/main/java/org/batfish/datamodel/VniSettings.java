@@ -63,7 +63,7 @@ public final class VniSettings implements Serializable {
     }
   }
 
-  private static final Integer DEFAULT_UDP_PORT = 4789;
+  public static final Integer DEFAULT_UDP_PORT = 4789;
 
   private static final String PROP_BUM_TRANSPORT_IPS = "bumTransportIps";
   private static final String PROP_BUM_TRANSPORT_METHOD = "bumTransportMethod";
