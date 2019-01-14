@@ -129,7 +129,8 @@ public class EdgesAnswerer extends Answerer {
         _batfish.initRemoteRipNeighbors(configurations, ipOwners, topology);
         return getRipEdges(configurations, includeNodes, includeRemoteNodes);
       case VXLAN:
-        VxlanTopology vxlanTopology = VxlanTopology.initVxlanTopology(configurations);
+        VxlanTopology vxlanTopology =
+            _batfish.getTopologyProvider().getVxlanTopology(_batfish.getNetworkSnapshot());
         return getVxlanEdges(includeNodes, includeRemoteNodes, vxlanTopology);
       case LAYER1:
         Layer1Topology layer1Topology = _batfish.getLayer1Topology();
@@ -164,12 +165,12 @@ public class EdgesAnswerer extends Answerer {
   static Multiset<Row> getVxlanEdges(
       Set<String> includeNodes, Set<String> includeRemoteNodes, VxlanTopology vxlanTopology) {
     return vxlanTopology
-        .getJsonEdges()
+        .getEdges()
         .stream()
         .filter(
             edge ->
-                includeNodes.contains(edge.getNode1().getHostname())
-                    && includeRemoteNodes.contains(edge.getNode2().getHostname()))
+                includeNodes.contains(edge.getTail().getHostname())
+                    && includeRemoteNodes.contains(edge.getHead().getHostname()))
         .map(EdgesAnswerer::vxlanEdgeToRow)
         .collect(Collectors.toCollection(HashMultiset::create));
   }
@@ -366,12 +367,12 @@ public class EdgesAnswerer extends Answerer {
   static Row vxlanEdgeToRow(VxlanEdge edge) {
     RowBuilder row = Row.builder();
     row.put(COL_VNI, edge.getVni())
-        .put(COL_NODE, new Node(edge.getNode1().getHostname()))
-        .put(COL_REMOTE_NODE, new Node(edge.getNode2().getHostname()))
-        .put(COL_VTEP_ADDRESS, edge.getNode1().getSourceAddress())
-        .put(COL_REMOTE_VTEP_ADDRESS, edge.getNode2().getSourceAddress())
-        .put(COL_VLAN, edge.getNode1().getVlan())
-        .put(COL_REMOTE_VLAN, edge.getNode2().getVlan())
+        .put(COL_NODE, new Node(edge.getTail().getHostname()))
+        .put(COL_REMOTE_NODE, new Node(edge.getHead().getHostname()))
+        .put(COL_VTEP_ADDRESS, edge.getTail().getSourceAddress())
+        .put(COL_REMOTE_VTEP_ADDRESS, edge.getHead().getSourceAddress())
+        .put(COL_VLAN, edge.getTail().getVlan())
+        .put(COL_REMOTE_VLAN, edge.getHead().getVlan())
         .put(COL_UDP_PORT, edge.getUdpPort())
         .put(COL_MULTICAST_GROUP, edge.getMulticastGroup());
     return row.build();

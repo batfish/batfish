@@ -3,6 +3,7 @@ package org.batfish.common.topology;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.datamodel.vxlan.VxlanTopology;
 
 /**
  * A provider of various topology-type data structures (e.g., IpOwners, L3 Topology,
@@ -16,4 +17,8 @@ public interface TopologyProvider {
    */
   @Nonnull
   IpOwners getIpOwners(NetworkSnapshot snapshot);
+
+  /** Return the {@link VxlanTopology} for a given {@link NetworkSnapshot}. */
+  @Nonnull
+  VxlanTopology getVxlanTopology(NetworkSnapshot snapshot);
 }
