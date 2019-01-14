@@ -740,7 +740,6 @@
         "interfaces" : {
           "Ethernet0" : {
             "name" : "Ethernet0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -771,7 +770,6 @@
           },
           "Ethernet1" : {
             "name" : "Ethernet1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -824,7 +822,6 @@
         "interfaces" : {
           "Vlan1" : {
             "name" : "Vlan1",
-            "accessVlan" : 0,
             "active" : false,
             "allPrefixes" : [
               "1.2.3.4/23",
@@ -1234,7 +1231,6 @@
         "interfaces" : {
           "GigabitEthernet0/0/0" : {
             "name" : "GigabitEthernet0/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "1.2.3.4/5"
@@ -1683,7 +1679,6 @@
         "interfaces" : {
           "ifname" : {
             "name" : "ifname",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -1804,7 +1799,6 @@
         "interfaces" : {
           "blah" : {
             "name" : "blah",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "192.168.1.0/24"
@@ -3632,7 +3626,6 @@
         "interfaces" : {
           "Ethernet6/0.0" : {
             "name" : "Ethernet6/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "11.22.33.44/30"
@@ -3664,7 +3657,6 @@
           },
           "Ethernet6/0.48" : {
             "name" : "Ethernet6/0.48",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "22.33.44.55/30"
@@ -3695,7 +3687,6 @@
           },
           "Ethernet6/1" : {
             "name" : "Ethernet6/1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -3722,7 +3713,6 @@
           },
           "cable-downstream1/2" : {
             "name" : "cable-downstream1/2",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -3749,7 +3739,6 @@
           },
           "cable-downstream1/2/3" : {
             "name" : "cable-downstream1/2/3",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -3777,7 +3766,6 @@
           },
           "cable-downstream5/0/0" : {
             "name" : "cable-downstream5/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -3804,7 +3792,6 @@
           },
           "cable-mac1" : {
             "name" : "cable-mac1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -3832,7 +3819,6 @@
           },
           "cable-mac1.1" : {
             "name" : "cable-mac1.1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "1.2.3.0/30"
@@ -3864,7 +3850,6 @@
           },
           "cable-mac1.2" : {
             "name" : "cable-mac1.2",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "2.2.2.0/25",
@@ -3899,7 +3884,6 @@
           },
           "cable-mac2" : {
             "name" : "cable-mac2",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -3926,7 +3910,6 @@
           },
           "cable-mac3" : {
             "name" : "cable-mac3",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -3953,7 +3936,6 @@
           },
           "cable-upstream1/0/0" : {
             "name" : "cable-upstream1/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -3981,7 +3963,6 @@
           },
           "cable-upstream1/0/0.0" : {
             "name" : "cable-upstream1/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -4009,7 +3990,6 @@
           },
           "cable-upstream1/0/10" : {
             "name" : "cable-upstream1/0/10",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -4036,7 +4016,6 @@
           },
           "mgmt6/0" : {
             "name" : "mgmt6/0",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -6084,7 +6063,6 @@
         "interfaces" : {
           "Cable1/2/3" : {
             "name" : "Cable1/2/3",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -6560,7 +6538,6 @@
         "interfaces" : {
           "Ethernet0" : {
             "name" : "Ethernet0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -6990,7 +6967,6 @@
         "interfaces" : {
           "GigabitEthernet0/1" : {
             "name" : "GigabitEthernet0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7062,7 +7038,6 @@
         "interfaces" : {
           "TenGigabitEthernet0/0/2/2" : {
             "name" : "TenGigabitEthernet0/0/2/2",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7114,7 +7089,6 @@
         "interfaces" : {
           "Async1" : {
             "name" : "Async1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7141,7 +7115,6 @@
           },
           "Cable1/2/3:4" : {
             "name" : "Cable1/2/3:4",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7168,7 +7141,6 @@
           },
           "Crypto-Engine1/2/3" : {
             "name" : "Crypto-Engine1/2/3",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7195,7 +7167,6 @@
           },
           "Dot11Radio0" : {
             "name" : "Dot11Radio0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7222,7 +7193,6 @@
           },
           "Ethernet0" : {
             "name" : "Ethernet0",
-            "accessVlan" : 0,
             "active" : false,
             "allPrefixes" : [
               "1.2.3.4/30"
@@ -7261,7 +7231,6 @@
           },
           "Ethernet1/11" : {
             "name" : "Ethernet1/11",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7315,7 +7284,6 @@
           },
           "Loopback0" : {
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7342,7 +7310,6 @@
           },
           "Modular-Cable1/2/3:4" : {
             "name" : "Modular-Cable1/2/3:4",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7369,7 +7336,6 @@
           },
           "Null0" : {
             "name" : "Null0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7396,7 +7362,6 @@
           },
           "Tunnel0" : {
             "name" : "Tunnel0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7423,7 +7388,6 @@
           },
           "Vlan1" : {
             "name" : "Vlan1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7451,7 +7415,6 @@
           },
           "Vlan1005" : {
             "name" : "Vlan1005",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7479,7 +7442,6 @@
           },
           "Vlan1006" : {
             "name" : "Vlan1006",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7507,7 +7469,6 @@
           },
           "Vlan111" : {
             "name" : "Vlan111",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7535,7 +7496,6 @@
           },
           "Vlan1234" : {
             "name" : "Vlan1234",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7563,7 +7523,6 @@
           },
           "Vlan2" : {
             "name" : "Vlan2",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7591,7 +7550,6 @@
           },
           "Vlan3" : {
             "name" : "Vlan3",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7619,7 +7577,6 @@
           },
           "Vlan4094" : {
             "name" : "Vlan4094",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7647,7 +7604,6 @@
           },
           "Wideband-Cable1/2/3:4" : {
             "name" : "Wideband-Cable1/2/3:4",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7674,7 +7630,6 @@
           },
           "inside" : {
             "name" : "inside",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "192.168.0.1/24"
@@ -7707,7 +7662,6 @@
           },
           "tunnel-ip6" : {
             "name" : "tunnel-ip6",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -8472,7 +8426,6 @@
         "interfaces" : {
           "GigabitEthernet0/0" : {
             "name" : "GigabitEthernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -8508,7 +8461,6 @@
           },
           "GigabitEthernet0/0/1" : {
             "name" : "GigabitEthernet0/0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "137.164.25.57/30"
@@ -8550,7 +8502,6 @@
           },
           "GigabitEthernet0/1" : {
             "name" : "GigabitEthernet0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -8586,7 +8537,6 @@
           },
           "HundredGigabitEthernet0/0/0/0.2302" : {
             "name" : "HundredGigabitEthernet0/0/0/0.2302",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -8622,7 +8572,6 @@
           },
           "Loopback0" : {
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -8658,7 +8607,6 @@
           },
           "Serial4/0" : {
             "name" : "Serial4/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -9556,7 +9504,6 @@
         "interfaces" : {
           "Ethernet2/1" : {
             "name" : "Ethernet2/1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -9837,7 +9784,6 @@
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "3.3.3.0/24"
@@ -9868,7 +9814,6 @@
           },
           "Ethernet1/0" : {
             "name" : "Ethernet1/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "4.4.4.0/24"
@@ -9901,7 +9846,6 @@
           },
           "Loopback0" : {
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "1.1.1.1/32"
@@ -11248,7 +11192,6 @@
         "interfaces" : {
           "Ethernet0" : {
             "name" : "Ethernet0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "1.0.0.0/24"
@@ -11965,7 +11908,6 @@
         "interfaces" : {
           "Port-Channel1" : {
             "name" : "Port-Channel1",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "1-4094",
             "autostate" : true,
@@ -11993,7 +11935,6 @@
           },
           "Port-Channel2" : {
             "name" : "Port-Channel2",
-            "accessVlan" : 0,
             "active" : false,
             "allPrefixes" : [
               "2.2.2.2/32"
@@ -12056,7 +11997,6 @@
         "interfaces" : {
           "Port-Channel1" : {
             "name" : "Port-Channel1",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "1-4,7-9,11",
             "autostate" : true,
@@ -12312,7 +12252,6 @@
         "interfaces" : {
           "Ethernet1/15" : {
             "name" : "Ethernet1/15",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -12412,7 +12351,6 @@
         "interfaces" : {
           "eth0" : {
             "name" : "eth0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "2.128.0.101/24"
@@ -12696,7 +12634,6 @@
         "interfaces" : {
           "Ethernet0" : {
             "name" : "Ethernet0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "2.130.0.1/24"
@@ -12730,7 +12667,6 @@
           },
           "Ethernet1" : {
             "name" : "Ethernet1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "2.131.0.1/24"
@@ -13144,7 +13080,6 @@
         "interfaces" : {
           "ge-0/0/0" : {
             "name" : "ge-0/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -13172,7 +13107,6 @@
           },
           "ge-0/0/0.0" : {
             "name" : "ge-0/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "1.0.0.0/31"
@@ -13203,7 +13137,6 @@
           },
           "ge-0/0/1" : {
             "name" : "ge-0/0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -13231,7 +13164,6 @@
           },
           "ge-0/0/1.0" : {
             "name" : "ge-0/0/1.0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "1.0.0.1/31"
@@ -13262,7 +13194,6 @@
           },
           "reth0" : {
             "name" : "reth0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -13293,7 +13224,6 @@
           },
           "reth0.3" : {
             "name" : "reth0.3",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "3.3.3.3/31"
@@ -13379,7 +13309,6 @@
         "interfaces" : {
           "Vlan303" : {
             "name" : "Vlan303",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "10.22.33.10/29"
@@ -13411,7 +13340,6 @@
           },
           "Vlan803" : {
             "name" : "Vlan803",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "10.12.12.1/23"
@@ -13473,7 +13401,6 @@
         "interfaces" : {
           "FastEthernet12/13" : {
             "name" : "FastEthernet12/13",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -13500,7 +13427,6 @@
           },
           "HundredGigabitEthernet0/6/0/8" : {
             "name" : "HundredGigabitEthernet0/6/0/8",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -13527,7 +13453,6 @@
           },
           "Port-Channel1" : {
             "name" : "Port-Channel1",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -13554,7 +13479,6 @@
           },
           "Vlan100" : {
             "name" : "Vlan100",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -13607,7 +13531,6 @@
         "interfaces" : {
           "Loopback0" : {
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "137.164.16.80/32"
@@ -13664,7 +13587,6 @@
         "interfaces" : {
           "xe-0/0/0" : {
             "name" : "xe-0/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -13691,7 +13613,6 @@
           },
           "xe-0/0/0:0" : {
             "name" : "xe-0/0/0:0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -13718,7 +13639,6 @@
           },
           "xe-0/0/0:0.0" : {
             "name" : "xe-0/0/0:0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "10.1.2.3/31"
@@ -13954,7 +13874,6 @@
         "interfaces" : {
           "GigabitEthernet1/0/1" : {
             "name" : "GigabitEthernet1/0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14006,7 +13925,6 @@
         "interfaces" : {
           "Vlan1000" : {
             "name" : "Vlan1000",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14559,7 +14477,6 @@
         "interfaces" : {
           "GigabitEthernet0/2/1/6" : {
             "name" : "GigabitEthernet0/2/1/6",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14707,7 +14624,6 @@
         "interfaces" : {
           "Bundle-Ethernet101" : {
             "name" : "Bundle-Ethernet101",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14734,7 +14650,6 @@
           },
           "Bundle-Ethernet103" : {
             "name" : "Bundle-Ethernet103",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14761,7 +14676,6 @@
           },
           "Bundle-Ethernet201" : {
             "name" : "Bundle-Ethernet201",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14789,7 +14703,6 @@
           },
           "HundredGigabitEthernet0/2/0/0.292" : {
             "name" : "HundredGigabitEthernet0/2/0/0.292",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14816,7 +14729,6 @@
           },
           "HundredGigabitEthernet0/2/0/3" : {
             "name" : "HundredGigabitEthernet0/2/0/3",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14843,7 +14755,6 @@
           },
           "Loopback0" : {
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14870,7 +14781,6 @@
           },
           "TenGigabitEthernet0/0/0/2" : {
             "name" : "TenGigabitEthernet0/0/0/2",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14897,7 +14807,6 @@
           },
           "TenGigabitEthernet0/0/0/4" : {
             "name" : "TenGigabitEthernet0/0/0/4",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14924,7 +14833,6 @@
           },
           "TenGigabitEthernet0/0/0/5" : {
             "name" : "TenGigabitEthernet0/0/0/5",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -15303,7 +15211,6 @@
         "interfaces" : {
           "ae16" : {
             "name" : "ae16",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -15330,7 +15237,6 @@
           },
           "ae16.0" : {
             "name" : "ae16.0",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -15357,7 +15263,6 @@
           },
           "xe-0/0/1" : {
             "name" : "xe-0/0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -15384,7 +15289,6 @@
           },
           "xe-0/0/1.0" : {
             "name" : "xe-0/0/1.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -15411,7 +15315,6 @@
           },
           "xe-0/0/20:0" : {
             "name" : "xe-0/0/20:0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -15438,7 +15341,6 @@
           },
           "xe-0/0/20:0.0" : {
             "name" : "xe-0/0/20:0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -15465,7 +15367,6 @@
           },
           "xe-0/0/21:0" : {
             "name" : "xe-0/0/21:0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -15492,7 +15393,6 @@
           },
           "xe-0/0/21:0.0" : {
             "name" : "xe-0/0/21:0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17169,7 +17069,6 @@
         "interfaces" : {
           "et-0/0/10" : {
             "name" : "et-0/0/10",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17196,7 +17095,6 @@
           },
           "et-0/0/10.0" : {
             "name" : "et-0/0/10.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17223,7 +17121,6 @@
           },
           "ge-0/2/5" : {
             "name" : "ge-0/2/5",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17250,7 +17147,6 @@
           },
           "ge-0/2/5.0" : {
             "name" : "ge-0/2/5.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17280,7 +17176,6 @@
           },
           "xe-1/0/0" : {
             "name" : "xe-1/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17307,7 +17202,6 @@
           },
           "xe-1/0/0.0" : {
             "name" : "xe-1/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17389,7 +17283,6 @@
         "interfaces" : {
           "ae0" : {
             "name" : "ae0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17419,7 +17312,6 @@
           },
           "ae0.0" : {
             "name" : "ae0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17446,7 +17338,6 @@
           },
           "ge-0/0/0" : {
             "name" : "ge-0/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17473,7 +17364,6 @@
           },
           "ge-0/0/1" : {
             "name" : "ge-0/0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17500,7 +17390,6 @@
           },
           "ge-1/0/0" : {
             "name" : "ge-1/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17528,7 +17417,6 @@
           },
           "ge-2/0/0" : {
             "name" : "ge-2/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17555,7 +17443,6 @@
           },
           "ge-2/0/0.0" : {
             "name" : "ge-2/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17582,7 +17469,6 @@
           },
           "ge-2/0/0.1" : {
             "name" : "ge-2/0/0.1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17609,7 +17495,6 @@
           },
           "ge-3/0/0" : {
             "name" : "ge-3/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17636,7 +17521,6 @@
           },
           "ge-3/0/0.0" : {
             "name" : "ge-3/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17663,7 +17547,6 @@
           },
           "ge-4/0/0" : {
             "name" : "ge-4/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17690,7 +17573,6 @@
           },
           "ge-4/0/0.0" : {
             "name" : "ge-4/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17717,7 +17599,6 @@
           },
           "ge-5/0/0" : {
             "name" : "ge-5/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17744,7 +17625,6 @@
           },
           "ge-5/0/0.0" : {
             "name" : "ge-5/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17771,7 +17651,6 @@
           },
           "irb" : {
             "name" : "irb",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17798,7 +17677,6 @@
           },
           "irb.5" : {
             "name" : "irb.5",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "1.2.3.0/24",
@@ -17837,7 +17715,6 @@
           },
           "vme" : {
             "name" : "vme",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17864,7 +17741,6 @@
           },
           "vme.0" : {
             "name" : "vme.0",
-            "accessVlan" : 0,
             "active" : false,
             "allPrefixes" : [
               "100.100.100.100/32"
@@ -17895,7 +17771,6 @@
           },
           "xe-0/0/0:0" : {
             "name" : "xe-0/0/0:0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17922,7 +17797,6 @@
           },
           "xe-0/0/0:0.0" : {
             "name" : "xe-0/0/0:0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17949,7 +17823,6 @@
           },
           "xe-0/0/5:0" : {
             "name" : "xe-0/0/5:0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17976,7 +17849,6 @@
           },
           "xe-0/0/5:0.0" : {
             "name" : "xe-0/0/5:0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -18079,7 +17951,6 @@
         "interfaces" : {
           "ge-0/0/0" : {
             "name" : "ge-0/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -18106,7 +17977,6 @@
           },
           "ge-0/0/0.0" : {
             "name" : "ge-0/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -18230,7 +18100,6 @@
         "interfaces" : {
           "lo0" : {
             "name" : "lo0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -18257,7 +18126,6 @@
           },
           "lo0.0" : {
             "name" : "lo0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -18338,7 +18206,6 @@
         "interfaces" : {
           "ge-0/0/0" : {
             "name" : "ge-0/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -18365,7 +18232,6 @@
           },
           "ge-0/0/0.0" : {
             "name" : "ge-0/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "1.0.0.1/24"
@@ -18996,7 +18862,6 @@
         "interfaces" : {
           "irb" : {
             "name" : "irb",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -19023,7 +18888,6 @@
           },
           "irb.10" : {
             "name" : "irb.10",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -19053,7 +18917,6 @@
           },
           "irb.20" : {
             "name" : "irb.20",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -19745,7 +19608,6 @@
         "interfaces" : {
           "ge-0/0/0" : {
             "name" : "ge-0/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -19772,7 +19634,6 @@
           },
           "ge-0/0/0.0" : {
             "name" : "ge-0/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "1.1.1.1/24",
@@ -19804,7 +19665,6 @@
           },
           "ge-0/0/0.99" : {
             "name" : "ge-0/0/0.99",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -20406,7 +20266,6 @@
         "interfaces" : {
           "xe-0/0/0" : {
             "name" : "xe-0/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -20433,7 +20292,6 @@
           },
           "xe-0/0/0.0" : {
             "name" : "xe-0/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "30,40,50",
             "autostate" : true,
@@ -20631,7 +20489,6 @@
         "interfaces" : {
           "Ethernet1" : {
             "name" : "Ethernet1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -20658,7 +20515,6 @@
           },
           "Ethernet2" : {
             "name" : "Ethernet2",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -20685,7 +20541,6 @@
           },
           "Management1" : {
             "name" : "Management1",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -20712,7 +20567,6 @@
           },
           "ap1" : {
             "name" : "ap1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -21679,7 +21533,6 @@
         "interfaces" : {
           "GigabitEthernet1" : {
             "name" : "GigabitEthernet1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "10.10.10.1/24"
@@ -22049,7 +21902,6 @@
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -22076,7 +21928,6 @@
           },
           "nve1" : {
             "name" : "nve1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -23925,7 +23776,6 @@
         "interfaces" : {
           "Loopback1" : {
             "name" : "Loopback1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "137.164.17.8/32"
@@ -27420,7 +27270,6 @@
         "interfaces" : {
           "FastEthernet0/1" : {
             "name" : "FastEthernet0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "12,34,56-78,99",
             "autostate" : true,
@@ -27967,7 +27816,6 @@
         "interfaces" : {
           "FastEthernet0/0" : {
             "name" : "FastEthernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -28019,7 +27867,6 @@
         "interfaces" : {
           "FastEthernet0/0" : {
             "name" : "FastEthernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -28237,7 +28084,6 @@
         "interfaces" : {
           "fxp0" : {
             "name" : "fxp0",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -28264,7 +28110,6 @@
           },
           "fxp0.0" : {
             "name" : "fxp0.0",
-            "accessVlan" : 0,
             "active" : false,
             "allPrefixes" : [
               "10.10.20.4/24"
@@ -28295,7 +28140,6 @@
           },
           "irb" : {
             "name" : "irb",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -28322,7 +28166,6 @@
           },
           "irb.100" : {
             "name" : "irb.100",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "10.200.100.254/24"
@@ -28353,7 +28196,6 @@
           },
           "lo0" : {
             "name" : "lo0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -28380,7 +28222,6 @@
           },
           "lo0.0" : {
             "name" : "lo0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "192.168.1.2/32"
@@ -28411,7 +28252,6 @@
           },
           "lo0.1" : {
             "name" : "lo0.1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "192.168.100.200/32"
@@ -28442,7 +28282,6 @@
           },
           "xe-0/0/2" : {
             "name" : "xe-0/0/2",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -28469,7 +28308,6 @@
           },
           "xe-0/0/2.0" : {
             "name" : "xe-0/0/2.0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "172.16.7.1/30"
@@ -28500,7 +28338,6 @@
           },
           "xe-0/0/3" : {
             "name" : "xe-0/0/3",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -28527,7 +28364,6 @@
           },
           "xe-0/0/3.0" : {
             "name" : "xe-0/0/3.0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "172.16.5.1/30"
@@ -28558,7 +28394,6 @@
           },
           "xe-0/0/4" : {
             "name" : "xe-0/0/4",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -28585,7 +28420,6 @@
           },
           "xe-0/0/4.0" : {
             "name" : "xe-0/0/4.0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "172.16.3.1/30"

@@ -12,7 +12,6 @@
         "interfaces" : {
           "es-domain-subnet-1641fa70" : {
             "name" : "es-domain-subnet-1641fa70",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "192.168.1.2/24"
@@ -42,7 +41,6 @@
           },
           "es-domain-subnet-7044ff16" : {
             "name" : "es-domain-subnet-7044ff16",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "192.168.2.2/28"
@@ -233,7 +231,6 @@
         "interfaces" : {
           "vpc-f8fad69d" : {
             "name" : "vpc-f8fad69d",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.2/31"
@@ -295,7 +292,6 @@
         "interfaces" : {
           "vpc-b390fad5" : {
             "name" : "vpc-b390fad5",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.4/31"
@@ -357,7 +353,6 @@
         "interfaces" : {
           "vpc-925131f4" : {
             "name" : "vpc-925131f4",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.0/31"
@@ -553,7 +548,6 @@
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -580,7 +574,6 @@
           },
           "Ethernet1/0" : {
             "name" : "Ethernet1/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "10.10.10.38/30"
@@ -614,7 +607,6 @@
           },
           "Ethernet1/1" : {
             "name" : "Ethernet1/1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "10.10.10.46/30"
@@ -648,7 +640,6 @@
           },
           "Ethernet1/2" : {
             "name" : "Ethernet1/2",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -675,7 +666,6 @@
           },
           "Ethernet1/3" : {
             "name" : "Ethernet1/3",
-            "accessVlan" : 0,
             "active" : false,
             "allPrefixes" : [
               "10.10.30.1/30"
@@ -708,7 +698,6 @@
           },
           "Ethernet1/4" : {
             "name" : "Ethernet1/4",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -735,7 +724,6 @@
           },
           "Ethernet1/5" : {
             "name" : "Ethernet1/5",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -762,7 +750,6 @@
           },
           "Ethernet1/6" : {
             "name" : "Ethernet1/6",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -789,7 +776,6 @@
           },
           "Ethernet1/7" : {
             "name" : "Ethernet1/7",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -816,7 +802,6 @@
           },
           "GigabitEthernet0/0" : {
             "name" : "GigabitEthernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "192.168.60.37/24"
@@ -847,7 +832,6 @@
           },
           "GigabitEthernet2/0" : {
             "name" : "GigabitEthernet2/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "172.16.1.2/30"
@@ -879,7 +863,6 @@
           },
           "Loopback0" : {
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "10.10.255.8/32"
@@ -912,7 +895,6 @@
           },
           "Tunnel1" : {
             "name" : "Tunnel1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "169.254.15.194/30"
@@ -943,7 +925,6 @@
           },
           "Tunnel2" : {
             "name" : "Tunnel2",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "169.254.13.238/30"
@@ -2092,7 +2073,6 @@
         "interfaces" : {
           "subnet-073b8061" : {
             "name" : "subnet-073b8061",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "192.168.2.17/28"
@@ -2120,7 +2100,6 @@
           },
           "vpc-b390fad5" : {
             "name" : "vpc-b390fad5",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.10/31"
@@ -2243,7 +2222,6 @@
         "interfaces" : {
           "subnet-1641fa70" : {
             "name" : "subnet-1641fa70",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "192.168.1.1/24"
@@ -2271,7 +2249,6 @@
           },
           "vpc-b390fad5" : {
             "name" : "vpc-b390fad5",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.18/31"
@@ -2394,7 +2371,6 @@
         "interfaces" : {
           "subnet-1f315846" : {
             "name" : "subnet-1f315846",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "172.31.0.1/20"
@@ -2422,7 +2398,6 @@
           },
           "vpc-f8fad69d" : {
             "name" : "vpc-f8fad69d",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.12/31"
@@ -2557,7 +2532,6 @@
         "interfaces" : {
           "subnet-30398256" : {
             "name" : "subnet-30398256",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "192.168.2.33/28"
@@ -2585,7 +2559,6 @@
           },
           "vpc-b390fad5" : {
             "name" : "vpc-b390fad5",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.26/31"
@@ -2708,7 +2681,6 @@
         "interfaces" : {
           "subnet-62f14104" : {
             "name" : "subnet-62f14104",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "10.0.0.1/24"
@@ -2736,7 +2708,6 @@
           },
           "vpc-925131f4" : {
             "name" : "vpc-925131f4",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.22/31"
@@ -2859,7 +2830,6 @@
         "interfaces" : {
           "subnet-7044ff16" : {
             "name" : "subnet-7044ff16",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "192.168.2.1/28"
@@ -2887,7 +2857,6 @@
           },
           "vpc-b390fad5" : {
             "name" : "vpc-b390fad5",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.14/31"
@@ -3010,7 +2979,6 @@
         "interfaces" : {
           "subnet-8d0cbdeb" : {
             "name" : "subnet-8d0cbdeb",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "10.0.1.1/24"
@@ -3038,7 +3006,6 @@
           },
           "vpc-925131f4" : {
             "name" : "vpc-925131f4",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.8/31"
@@ -3161,7 +3128,6 @@
         "interfaces" : {
           "subnet-9c8adceb" : {
             "name" : "subnet-9c8adceb",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "172.31.32.1/20"
@@ -3189,7 +3155,6 @@
           },
           "vpc-f8fad69d" : {
             "name" : "vpc-f8fad69d",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.16/31"
@@ -3324,7 +3289,6 @@
         "interfaces" : {
           "subnet-d9cafabc" : {
             "name" : "subnet-d9cafabc",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "172.31.16.1/20"
@@ -3352,7 +3316,6 @@
           },
           "vpc-f8fad69d" : {
             "name" : "vpc-f8fad69d",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.24/31"
@@ -3487,7 +3450,6 @@
         "interfaces" : {
           "subnet-f73a8191" : {
             "name" : "subnet-f73a8191",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "192.168.2.49/28"
@@ -3515,7 +3477,6 @@
           },
           "vpc-b390fad5" : {
             "name" : "vpc-b390fad5",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.20/31"
@@ -3638,7 +3599,6 @@
         "interfaces" : {
           "test-rds-subnet-1641fa70" : {
             "name" : "test-rds-subnet-1641fa70",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "192.168.1.3/24"
@@ -3967,7 +3927,6 @@
         "interfaces" : {
           "external1" : {
             "name" : "external1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "52.27.166.152/32"
@@ -3995,7 +3954,6 @@
           },
           "external2" : {
             "name" : "external2",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "52.39.121.126/32"
@@ -4023,7 +3981,6 @@
           },
           "vpc-815775e7" : {
             "name" : "vpc-815775e7",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.6/31"
@@ -4051,7 +4008,6 @@
           },
           "vpn1" : {
             "name" : "vpn1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "169.254.15.193/30"
@@ -4079,7 +4035,6 @@
           },
           "vpn2" : {
             "name" : "vpn2",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "169.254.13.237/30"
@@ -4465,7 +4420,6 @@
         "interfaces" : {
           "vgw-81fd279f" : {
             "name" : "vgw-81fd279f",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.7/31"
@@ -4572,7 +4526,6 @@
         "interfaces" : {
           "igw-fac5839d" : {
             "name" : "igw-fac5839d",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.1/31"
@@ -4600,7 +4553,6 @@
           },
           "subnet-62f14104" : {
             "name" : "subnet-62f14104",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.23/31"
@@ -4628,7 +4580,6 @@
           },
           "subnet-8d0cbdeb" : {
             "name" : "subnet-8d0cbdeb",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.9/31"
@@ -4711,7 +4662,6 @@
         "interfaces" : {
           "igw-9b93ddfc" : {
             "name" : "igw-9b93ddfc",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.5/31"
@@ -4739,7 +4689,6 @@
           },
           "subnet-073b8061" : {
             "name" : "subnet-073b8061",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.11/31"
@@ -4767,7 +4716,6 @@
           },
           "subnet-1641fa70" : {
             "name" : "subnet-1641fa70",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.19/31"
@@ -4795,7 +4743,6 @@
           },
           "subnet-30398256" : {
             "name" : "subnet-30398256",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.27/31"
@@ -4823,7 +4770,6 @@
           },
           "subnet-7044ff16" : {
             "name" : "subnet-7044ff16",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.15/31"
@@ -4851,7 +4797,6 @@
           },
           "subnet-f73a8191" : {
             "name" : "subnet-f73a8191",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.21/31"
@@ -4964,7 +4909,6 @@
         "interfaces" : {
           "igw-068fee63" : {
             "name" : "igw-068fee63",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.3/31"
@@ -4992,7 +4936,6 @@
           },
           "subnet-1f315846" : {
             "name" : "subnet-1f315846",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.13/31"
@@ -5020,7 +4963,6 @@
           },
           "subnet-9c8adceb" : {
             "name" : "subnet-9c8adceb",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.17/31"
@@ -5048,7 +4990,6 @@
           },
           "subnet-d9cafabc" : {
             "name" : "subnet-d9cafabc",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "240.0.0.25/31"

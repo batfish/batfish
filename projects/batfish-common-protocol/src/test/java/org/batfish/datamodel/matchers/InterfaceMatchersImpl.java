@@ -26,6 +26,7 @@ final class InterfaceMatchersImpl {
     }
 
     @Override
+    @Nullable
     protected Integer featureValueOf(Interface actual) {
       return actual.getAccessVlan();
     }

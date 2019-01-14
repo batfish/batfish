@@ -1057,7 +1057,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
           vlans.including(vlanNumber);
         } else if (iface.getSwitchportMode() == SwitchportMode.ACCESS) { // access mode ACCESS
           vlanNumber = iface.getAccessVlan();
-          vlans.including(vlanNumber);
+          if (vlanNumber != null) {
+            vlans.including(vlanNumber);
+          }
           // Any other Switch Port mode is unsupported
         } else if (iface.getSwitchportMode() != SwitchportMode.NONE) {
           _logger.warnf(
