@@ -1,5 +1,5 @@
-Note: we obtained permission from the author of Javabdd: John Whaley to use 
-the library with Batfish under the MIT license.
+Note: We obtained permission from the author of Javabdd, John Whaley, to use 
+the library with Batfish under the MIT license. The email exchange is below.
 
 MIT License
 
@@ -22,3 +22,38 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+------------------
+
+---------- Forwarded message ---------
+From: John Whaley <joewhaley@gmail.com>
+Date: Wed, Oct 25, 2017 at 9:50 AM
+Subject: Re: BDD library
+To: Ratul Mahajan <ratul@intentionet.com>
+
+You can use the note. I will try to dig up my SourceForge key at some point to update the repo/website. 
+
+On Oct 25, 2017 8:49 AM, "Ratul Mahajan" <ratul@intentionet.com> wrote:
+
+Thanks, John! 
+
+Is that documented someplace, or we just use this note from you as evidence?
+
+On Wed, Oct 25, 2017 at 7:33 AM, John Whaley <joewhaley@gmail.com> wrote:
+Hi Ratul,
+
+You can use it under the MIT license as well.
+
+-John
+
+
+On Oct 24, 2017 2:17 PM, "Ratul Mahajan" <ratul@intentionet.com> wrote:
+
+Hey, John - 
+
+We'd like to use your BDD library in an open source project (batfish.org). As our project is licensed under Apache, the LGPL license is problematic for us.
+
+Do you make your library available under any other license (e.g., MIT or Apache)?
+
+Thanks.
+
