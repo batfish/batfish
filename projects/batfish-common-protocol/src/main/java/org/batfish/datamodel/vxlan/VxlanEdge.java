@@ -1,5 +1,6 @@
 package org.batfish.datamodel.vxlan;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Objects;
@@ -18,9 +19,9 @@ public final class VxlanEdge {
 
   public static final class Builder {
 
+    private VxlanNode _head;
     private Ip _multicastGroup;
     private VxlanNode _tail;
-    private VxlanNode _head;
     private Integer _udpPort;
     private Integer _vni;
 
@@ -34,18 +35,18 @@ public final class VxlanEdge {
       return new VxlanEdge(_multicastGroup, _tail, _head, _udpPort, _vni);
     }
 
+    public @Nonnull Builder setHead(VxlanNode head) {
+      _head = head;
+      return this;
+    }
+
     public @Nonnull Builder setMulticastGroup(@Nullable Ip multicastGroup) {
       _multicastGroup = multicastGroup;
       return this;
     }
 
-    public @Nonnull Builder setNode1(VxlanNode node1) {
-      _tail = node1;
-      return this;
-    }
-
-    public @Nonnull Builder setNode2(VxlanNode node2) {
-      _head = node2;
+    public @Nonnull Builder setTail(VxlanNode tail) {
+      _tail = tail;
       return this;
     }
 
@@ -64,9 +65,9 @@ public final class VxlanEdge {
     return new Builder();
   }
 
+  private final VxlanNode _head;
   private final Ip _multicastGroup;
   private final VxlanNode _tail;
-  private final VxlanNode _head;
   private final int _udpPort;
   private final int _vni;
 
@@ -94,9 +95,9 @@ public final class VxlanEdge {
         && _udpPort == rhs._udpPort;
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(_multicastGroup, _tail, _head, _udpPort);
+  /** The listening node for the VXLAN connection represented by this edge. */
+  public @Nonnull VxlanNode getHead() {
+    return _head;
   }
 
   /**
@@ -112,11 +113,6 @@ public final class VxlanEdge {
     return _tail;
   }
 
-  /** The listening node for the VXLAN connection represented by this edge. */
-  public @Nonnull VxlanNode getHead() {
-    return _head;
-  }
-
   /** The UDP port on which VXLAN messages are sent. */
   public int getUdpPort() {
     return _udpPort;
@@ -125,5 +121,22 @@ public final class VxlanEdge {
   /** The VNI of the VXLAN connection represented by this edge. */
   public int getVni() {
     return _vni;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_multicastGroup, _tail, _head, _udpPort);
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(getClass())
+        .omitNullValues()
+        .add("head", _head)
+        .add("multicastGroup", _multicastGroup)
+        .add("tail", _tail)
+        .add("udpPort", _udpPort)
+        .add("vni", _vni)
+        .toString();
   }
 }

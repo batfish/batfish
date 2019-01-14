@@ -1,5 +1,6 @@
 package org.batfish.datamodel.vxlan;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Objects;
@@ -104,5 +105,15 @@ public final class VxlanNode {
   @Override
   public int hashCode() {
     return Objects.hash(_hostname, _sourceAddress, _vlan, _vrf);
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(getClass())
+        .add("hostname", _hostname)
+        .add("sourceAddress", _sourceAddress)
+        .add("vlan", _vlan)
+        .add("vrf", _vrf)
+        .toString();
   }
 }
