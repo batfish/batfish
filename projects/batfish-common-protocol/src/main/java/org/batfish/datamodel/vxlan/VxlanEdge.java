@@ -7,7 +7,6 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Ip;
 
 /**
