@@ -3473,6 +3473,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
                   vrf.getVniSettings().put(vni, toVniSettings(_eosVxlan, vni, vlan, sourceIface)));
     }
 
+    // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined
+    // references.
+    Optional<Integer> firstRefToNull0 =
+        _structureReferences
+            .getOrDefault(CiscoStructureType.INTERFACE, ImmutableSortedMap.of())
+            .getOrDefault("Null0", ImmutableSortedMap.of())
+            .entrySet()
+            .stream()
+            .flatMap(e -> e.getValue().stream())
+            .min(Integer::compare);
+    if (firstRefToNull0.isPresent()) {
+      defineStructure(CiscoStructureType.INTERFACE, "Null0", firstRefToNull0.get());
+    }
+
     markConcreteStructure(
         CiscoStructureType.BFD_TEMPLATE, CiscoStructureUsage.INTERFACE_BFD_TEMPLATE);
 
@@ -3489,15 +3503,29 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoStructureType.INTERFACE,
         CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
+        CiscoStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE,
+        CiscoStructureUsage.EIGRP_AF_INTERFACE,
+        CiscoStructureUsage.EIGRP_PASSIVE_INTERFACE,
+        CiscoStructureUsage.FAILOVER_LAN_INTERFACE,
+        CiscoStructureUsage.FAILOVER_LINK_INTERFACE,
         CiscoStructureUsage.INTERFACE_SELF_REF,
+        CiscoStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE,
+        CiscoStructureUsage.IP_ROUTE_NHINT,
+        CiscoStructureUsage.IP_TACACS_SOURCE_INTERFACE,
+        CiscoStructureUsage.NTP_SOURCE_INTERFACE,
+        CiscoStructureUsage.OSPF_AREA_INTERFACE,
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN,
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN,
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
-        CiscoStructureUsage.SERVICE_POLICY_INTERFACE,
+        CiscoStructureUsage.ROUTER_STATIC_ROUTE,
         CiscoStructureUsage.ROUTER_VRRP_INTERFACE,
+        CiscoStructureUsage.SERVICE_POLICY_INTERFACE,
+        CiscoStructureUsage.SNMP_SERVER_SOURCE_INTERFACE,
+        CiscoStructureUsage.SNMP_SERVER_TRAP_SOURCE,
+        CiscoStructureUsage.TACACS_SOURCE_INTERFACE,
         CiscoStructureUsage.TRACK_INTERFACE,
         CiscoStructureUsage.VXLAN_SOURCE_INTERFACE);
 

@@ -70,6 +70,12 @@ public final class NetworkConfigurations {
         .orElse(null);
   }
 
+  /** Return the {@link Mlag} configuration identified by a given ID. */
+  @Nonnull
+  public Optional<Mlag> getMlagConfig(String hostname, String id) {
+    return get(hostname).map(Configuration::getMlags).map(m -> m.get(id));
+  }
+
   /** Return a VRF identified by hostname and VRF name */
   public Optional<Vrf> getVrf(String hostname, String vrfName) {
     return get(hostname).map(Configuration::getVrfs).map(m -> m.get(vrfName));
