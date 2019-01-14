@@ -2118,8 +2118,8 @@
         "Source_Lines" : {
           "filename" : "configs/juniper_interfaces",
           "lines" : [
-            23,
-            24
+            24,
+            25
           ]
         }
       },

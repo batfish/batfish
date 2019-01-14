@@ -17835,6 +17835,64 @@
               }
             }
           },
+          "vme" : {
+            "name" : "vme",
+            "accessVlan" : 0,
+            "active" : false,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "declaredNames" : [
+              "vme"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "vme.0" : {
+            "name" : "vme.0",
+            "accessVlan" : 0,
+            "active" : false,
+            "allPrefixes" : [
+              "100.100.100.100/32"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "declaredNames" : [
+              "vme.0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "100.100.100.100/32",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default"
+          },
           "xe-0/0/0:0" : {
             "name" : "xe-0/0/0:0",
             "accessVlan" : 0,
@@ -18002,6 +18060,8 @@
               "ge-5/0/0.0",
               "irb",
               "irb.5",
+              "vme",
+              "vme.0",
               "xe-0/0/0:0",
               "xe-0/0/0:0.0",
               "xe-0/0/5:0",

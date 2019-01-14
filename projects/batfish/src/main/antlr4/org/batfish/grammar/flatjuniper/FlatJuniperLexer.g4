@@ -6128,6 +6128,7 @@ F_InterfaceMediaType
    'ls' |
    'lsi' |
    'lm' |
+   'me' |
    'mo' |
    'ms' |
    'mt' |
@@ -6154,6 +6155,7 @@ F_InterfaceMediaType
    'tap' |
    'umd' |
    'vc4' |
+   'vme' |
    'vsp' |
    'vt' |
    'xe' |
@@ -6554,6 +6556,7 @@ M_Interface_INTERFACE_NAME
       F_InterfaceMediaType '-'? F_Digit+ ('/' F_Digit+)*
       | 'irb'
       | 'vlan'
+      | 'vme'
    ) -> type(INTERFACE_NAME), popMode
 ;
 
