@@ -1159,11 +1159,11 @@ ip_nat_source
             | FORWARD_SLASH prefix = DEC
          )
       )
-      (
-         ADD_ROUTE
-         | NO_ALIAS
-      )* NEWLINE
    )
+   (
+      ADD_ROUTE
+      | NO_ALIAS
+   )* NEWLINE
 ;
 
 ip_probe_null
