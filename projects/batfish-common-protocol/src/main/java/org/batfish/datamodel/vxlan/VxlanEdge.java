@@ -101,8 +101,8 @@ public final class VxlanEdge {
   }
 
   /**
-   * Multicast group that is destination address of messages in the case multicast is the {@link
-   * BumTransportMethod} of the connection representd by this edge.
+   * Multicast group that is destination address of messages in the case multicast is the BUM
+   * transport method of the connection represented by this edge.
    */
   public @Nullable Ip getMulticastGroup() {
     return _multicastGroup;
