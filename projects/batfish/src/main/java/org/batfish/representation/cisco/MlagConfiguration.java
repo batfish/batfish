@@ -7,7 +7,7 @@ import org.batfish.datamodel.Ip;
 
 /** Arista-specific MLAG configuration on a single device */
 @ParametersAreNullableByDefault
-public class MlagConfiguration implements Serializable {
+public final class MlagConfiguration implements Serializable {
   private static final long serialVersionUID = 1L;
 
   @Nullable private Ip _peerAddress;
