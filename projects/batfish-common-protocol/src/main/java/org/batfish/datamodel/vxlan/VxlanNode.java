@@ -92,7 +92,7 @@ public final class VxlanNode {
     return _sourceAddress;
   }
 
-  /** VLAN associated with the VNI on the edges in which this {@VxlanNode} is incident. */
+  /** VLAN associated with the VNI on the edges in which this {@link VxlanNode} is incident. */
   public int getVlan() {
     return _vlan;
   }
