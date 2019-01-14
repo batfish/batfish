@@ -14,7 +14,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * Abstracted configuration for Multi-chassis link aggregation, as configured on a single device.
  *
  * <p><b>Terminology Note</b>: despite being called Mlag, this class is designed to represent not
- * just the Arista's MLAG but also other vendors (e.g., Cisco's VPC and Juniper's MC-LAG)
+ * just Arista's MLAG but also other vendors (e.g., Cisco's VPC and Juniper's MC-LAG)
  */
 @ParametersAreNonnullByDefault
 public final class Mlag implements Serializable {
@@ -23,7 +23,6 @@ public final class Mlag implements Serializable {
   private static final String PROP_ID = "id";
   private static final String PROP_LOCAL_INTERFACE = "localInterface";
   private static final String PROP_PEER_ADDRESS = "peerAddress";
-
   private static final String PROP_PEER_INTERFACE = "peerInterface";
 
   private final String _id;

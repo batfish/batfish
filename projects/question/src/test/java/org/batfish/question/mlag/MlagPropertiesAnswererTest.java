@@ -36,16 +36,14 @@ import org.batfish.datamodel.table.TableMetadata;
 import org.junit.Test;
 
 /** Tests of {@link MlagPropertiesAnswerer} */
-public final class MlagProperitesAnswererTest {
+public final class MlagPropertiesAnswererTest {
 
   @Test
   public void testColumnOrder() {
     TableMetadata tableMetadata = MlagPropertiesAnswerer.getMetadata();
 
     assertThat(
-        tableMetadata
-            .getColumnMetadata()
-            .stream()
+        tableMetadata.getColumnMetadata().stream()
             .map(ColumnMetadata::getName)
             .collect(ImmutableList.toImmutableList()),
         equalTo(
@@ -62,9 +60,7 @@ public final class MlagProperitesAnswererTest {
     TableMetadata tableMetadata = MlagPropertiesAnswerer.getMetadata();
 
     assertThat(
-        tableMetadata
-            .getColumnMetadata()
-            .stream()
+        tableMetadata.getColumnMetadata().stream()
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList()),
         equalTo(
