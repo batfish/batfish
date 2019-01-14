@@ -586,15 +586,6 @@ public class EdgesAnswerer extends Answerer {
                 Boolean.TRUE));
         break;
       case VXLAN:
-        //        row.put(COL_VNI, edge.getVni())
-        //        .put(COL_NODE, new Node(edge.getNode1().getHostname()))
-        //        .put(COL_REMOTE_NODE, new Node(edge.getNode2().getHostname()))
-        //        .put(COL_VTEP_ADDRESS, edge.getNode1().getSourceAddress())
-        //        .put(COL_REMOTE_VTEP_ADDRESS, edge.getNode2().getSourceAddress())
-        //        .put(COL_VLAN, edge.getNode1().getVlan())
-        //        .put(COL_REMOTE_VLAN, edge.getNode2().getVlan())
-        //        .put(COL_UDP_PORT, edge.getUdpPort())
-        //        .put(COL_MULTICAST_GROUP, edge.getMulticastGroup());
         columnBuilder.add(
             new ColumnMetadata(
                 COL_VNI,
