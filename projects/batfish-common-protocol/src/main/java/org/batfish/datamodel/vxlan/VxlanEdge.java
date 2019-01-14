@@ -31,7 +31,7 @@ public final class VxlanEdge {
       checkArgument(_head != null, "Missing %s", "head");
       checkArgument(_udpPort != null, "Missing %s", "udpPort");
       checkArgument(_vni != null, "Missing %s", "vni");
-      return new VxlanEdge(_multicastGroup, _tail, _head, _udpPort, _vni);
+      return new VxlanEdge(_head, _multicastGroup, _tail, _udpPort, _vni);
     }
 
     public @Nonnull Builder setHead(VxlanNode head) {
@@ -71,10 +71,10 @@ public final class VxlanEdge {
   private final int _vni;
 
   public VxlanEdge(
-      @Nullable Ip multicastGroup, VxlanNode node1, VxlanNode node2, int udpPort, int vni) {
+      VxlanNode head, @Nullable Ip multicastGroup, VxlanNode tail, int udpPort, int vni) {
     _multicastGroup = multicastGroup;
-    _tail = node1;
-    _head = node2;
+    _tail = tail;
+    _head = head;
     _udpPort = udpPort;
     _vni = vni;
   }
@@ -88,10 +88,28 @@ public final class VxlanEdge {
       return false;
     }
     VxlanEdge rhs = (VxlanEdge) obj;
-    return Objects.equals(_multicastGroup, rhs._multicastGroup)
+    return _head.equals(rhs._head)
+        && Objects.equals(_multicastGroup, rhs._multicastGroup)
         && _tail.equals(rhs._tail)
-        && _head.equals(rhs._head)
-        && _udpPort == rhs._udpPort;
+        && _udpPort == rhs._udpPort
+        && _vni == rhs._vni;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_head, _multicastGroup, _tail, _udpPort, _vni);
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(getClass())
+        .omitNullValues()
+        .add("head", _head)
+        .add("multicastGroup", _multicastGroup)
+        .add("tail", _tail)
+        .add("udpPort", _udpPort)
+        .add("vni", _vni)
+        .toString();
   }
 
   /** The listening node for the VXLAN connection represented by this edge. */
@@ -120,22 +138,5 @@ public final class VxlanEdge {
   /** The VNI of the VXLAN connection represented by this edge. */
   public int getVni() {
     return _vni;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(_multicastGroup, _tail, _head, _udpPort);
-  }
-
-  @Override
-  public String toString() {
-    return toStringHelper(getClass())
-        .omitNullValues()
-        .add("head", _head)
-        .add("multicastGroup", _multicastGroup)
-        .add("tail", _tail)
-        .add("udpPort", _udpPort)
-        .add("vni", _vni)
-        .toString();
   }
 }

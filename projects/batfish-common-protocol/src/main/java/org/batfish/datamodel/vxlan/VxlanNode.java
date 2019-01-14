@@ -82,6 +82,21 @@ public final class VxlanNode {
         && _vrf.equals(rhs._vrf);
   }
 
+  @Override
+  public int hashCode() {
+    return Objects.hash(_hostname, _sourceAddress, _vlan, _vrf);
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(getClass())
+        .add("hostname", _hostname)
+        .add("sourceAddress", _sourceAddress)
+        .add("vlan", _vlan)
+        .add("vrf", _vrf)
+        .toString();
+  }
+
   /** Hostname of the endpoint. */
   public @Nonnull String getHostname() {
     return _hostname;
@@ -100,20 +115,5 @@ public final class VxlanNode {
   /** VRF associated with the VXLAN connection */
   public @Nonnull String getVrf() {
     return _vrf;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(_hostname, _sourceAddress, _vlan, _vrf);
-  }
-
-  @Override
-  public String toString() {
-    return toStringHelper(getClass())
-        .add("hostname", _hostname)
-        .add("sourceAddress", _sourceAddress)
-        .add("vlan", _vlan)
-        .add("vrf", _vrf)
-        .toString();
   }
 }

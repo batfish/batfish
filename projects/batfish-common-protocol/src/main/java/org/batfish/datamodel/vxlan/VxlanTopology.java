@@ -91,7 +91,6 @@ public final class VxlanTopology {
   @VisibleForTesting
   static boolean compatibleVniSettings(VniSettings vniSettingsTail, VniSettings vniSettingsHead) {
     return vniSettingsTail.getBumTransportMethod() == vniSettingsHead.getBumTransportMethod()
-        && vniSettingsTail.getUdpPort() != null
         && vniSettingsTail.getUdpPort().equals(vniSettingsHead.getUdpPort())
         && vniSettingsTail.getSourceAddress() != null
         && vniSettingsHead.getSourceAddress() != null
