@@ -53,6 +53,7 @@ import org.batfish.datamodel.BgpPeerConfig.Builder;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.FirewallSessionInfo;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeKeyType;
@@ -1367,6 +1368,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newIface.setBandwidth(iface.getBandwidth());
     // treat all non-broadcast interfaces as point to point
     newIface.setOspfPointToPoint(iface.getOspfInterfaceType() != OspfInterfaceType.BROADCAST);
+
+    // create session info
+    newIface.setFirewallSessionInfo(
+        new FirewallSessionInfo(
+            zone.getInterfaces().stream().map(Interface::getName).collect(Collectors.toList()),
+            inAclName,
+            outAclName));
 
     return newIface;
   }

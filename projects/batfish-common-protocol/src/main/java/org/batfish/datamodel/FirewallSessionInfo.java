@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
- * Data that determines how to create sessions for flows routed out interfaces. In particular,
+ * Data that determines how to create sessions for flows that routed out interfaces. In particular,
  * sessions are needed for bidirectional traceroute and reachability, specifically for return flows.
  */
 @ParametersAreNonnullByDefault
@@ -27,7 +27,7 @@ public final class FirewallSessionInfo implements Serializable {
   private final @Nullable String _outgoingAclName;
 
   public FirewallSessionInfo(
-      Set<String> sessionInterfaces,
+      Iterable<String> sessionInterfaces,
       @Nullable String incomingAclName,
       @Nullable String outgoingAclName) {
     _sessionInterfaces = ImmutableSortedSet.copyOf(sessionInterfaces);
@@ -43,19 +43,19 @@ public final class FirewallSessionInfo implements Serializable {
     return new FirewallSessionInfo(sessionIntefaces, incomingAclName, outgoingAclName);
   }
 
-  /** The set of interfaces on which created sessions are in-scope. */
+  /** The set of interfaces through which return flows can enter. */
   @JsonProperty(PROP_SESSION_INTERFACES)
   public Set<String> getSessionInterfaces() {
     return _sessionInterfaces;
   }
 
-  /** The name of the incoming ACL for created sessions. */
+  /** The name of the incoming ACL for sessions that enter this interface. */
   @JsonProperty(PROP_INCOMING_ACL_NAME)
   public @Nullable String getIncomingAclName() {
     return _incomingAclName;
   }
 
-  /** The name of the outgoing ACL for created sessions. */
+  /** The name of the outgoing ACL for sessions that exit this interface. */
   @JsonProperty(PROP_OUTGOING_ACL_NAME)
   public @Nullable String getOutgoingAclName() {
     return _outgoingAclName;

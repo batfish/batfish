@@ -1435,7 +1435,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_FIREWALL_SESSION_INFO)
-  private void setFirewallSessionInfo(FirewallSessionInfo firewallSessionInfo) {
+  public void setFirewallSessionInfo(FirewallSessionInfo firewallSessionInfo) {
     _firewallSessionInfo = firewallSessionInfo;
   }
 
