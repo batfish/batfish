@@ -3,6 +3,7 @@ package org.batfish.representation.vyos;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,9 +25,13 @@ import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpsecPeerConfig;
+import org.batfish.datamodel.IpsecPhase2Policy;
+import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecProtocol;
+import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.RouteFilterLine;
@@ -108,6 +113,18 @@ public class VyosConfiguration extends VendorConfiguration {
   }
 
   private void convertVpns() {
+    ImmutableSortedMap.Builder<String, IkePhase1Policy> ikePhase1PolicyMapBuilder =
+        ImmutableSortedMap.naturalOrder();
+    ImmutableSortedMap.Builder<String, IkePhase1Key> ikePhase1KeyMapBuilder =
+        ImmutableSortedMap.naturalOrder();
+    ImmutableSortedMap.Builder<String, IkePhase1Proposal> ikePhase1ProposalMapBuilder =
+        ImmutableSortedMap.naturalOrder();
+    ImmutableSortedMap.Builder<String, IpsecPhase2Proposal> ipsecPhase2ProposalMapBuilder =
+        ImmutableSortedMap.naturalOrder();
+    ImmutableSortedMap.Builder<String, IpsecPhase2Policy> ipsecPhase2PolicyMapBuilder =
+        ImmutableSortedMap.naturalOrder();
+    ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigMapBuilder =
+        ImmutableSortedMap.naturalOrder();
     for (Entry<Ip, IpsecPeer> ipsecPeerEntry : _ipsecPeers.entrySet()) {
       // create ipsecvpn and ikegateway to correspond roughly to vyos ipsec
       // site-to-site peer
@@ -119,10 +136,14 @@ public class VyosConfiguration extends VendorConfiguration {
       _c.getIpsecVpns().put(newIpsecVpnName, newIpsecVpn);
       IkeGateway newIkeGateway = new IkeGateway(newIkeGatewayName);
       _c.getIkeGateways().put(newIkeGatewayName, newIkeGateway);
+
       newIpsecVpn.setIkeGateway(newIkeGateway);
       newIkeGateway.setLocalId(ipsecPeer.getAuthenticationId());
       newIkeGateway.setRemoteId(ipsecPeer.getAuthenticationRemoteId());
       newIkeGateway.setAddress(peerAddress);
+
+      IpsecStaticPeerConfig.Builder ipsecPeerConfigBuilder = IpsecStaticPeerConfig.builder();
+      ipsecPeerConfigBuilder.setDestinationAddress(peerAddress);
       Ip localAddress = ipsecPeer.getLocalAddress();
       org.batfish.datamodel.Interface externalInterface = _ipToInterfaceMap.get(localAddress);
       if (externalInterface == null) {
@@ -133,6 +154,8 @@ public class VyosConfiguration extends VendorConfiguration {
                 + localAddress);
       } else {
         newIkeGateway.setExternalInterface(externalInterface);
+        ipsecPeerConfigBuilder.setPhysicalInterface(externalInterface.getName());
+        ipsecPeerConfigBuilder.setLocalAddress(localAddress);
       }
 
       // bind interface
@@ -141,6 +164,7 @@ public class VyosConfiguration extends VendorConfiguration {
           _c.getDefaultVrf().getInterfaces().get(bindInterfaceName);
       if (newBindInterface != null) {
         newIpsecVpn.setBindInterface(newBindInterface);
+        ipsecPeerConfigBuilder.setTunnelInterface(newBindInterface.getName());
       } else {
         _w.redFlag("Reference to undefined bind-interface: \"" + bindInterfaceName + "\"");
       }
@@ -163,12 +187,15 @@ public class VyosConfiguration extends VendorConfiguration {
         ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
         ikePhase1Key.setKeyHash(ipsecPeer.getAuthenticationPreSharedSecretHash());
 
-        _c.getIkePhase1Keys()
-            .put(String.format("~IKE_PHASE1_KEY_%s~", ipsecPeer.getName()), ikePhase1Key);
+        ikePhase1KeyMapBuilder.put(
+            String.format("~IKE_PHASE1_KEY_%s~", ipsecPeer.getName()), ikePhase1Key);
 
         ikePhase1Policy.setIkePhase1Key(ikePhase1Key);
+        ikePhase1Policy.setLocalInterface(
+            externalInterface == null ? null : externalInterface.getName());
+        ikePhase1Policy.setRemoteIdentity(peerAddress.toIpSpace());
 
-        _c.getIkePhase1Policies().put(ikeGroupName, ikePhase1Policy);
+        ikePhase1PolicyMapBuilder.put(ikeGroupName, ikePhase1Policy);
 
         // convert contained ike proposals
         for (Entry<Integer, IkeProposal> ikeProposalEntry : ikeGroup.getProposals().entrySet()) {
@@ -193,9 +220,10 @@ public class VyosConfiguration extends VendorConfiguration {
           ikePhase1Proposal.setHashingAlgorithm(
               ikeProposal.getHashAlgorithm().toIkeAuthenticationAlgorithm());
           ikePhase1Proposal.setAuthenticationMethod(ipsecPeer.getAuthenticationMode());
-          _c.getIkePhase1Proposals().put(newIkeProposalName, ikePhase1Proposal);
+          ikePhase1ProposalMapBuilder.put(newIkeProposalName, ikePhase1Proposal);
           ikePhase1Policy.getIkePhase1Proposals().add(newIkeProposalName);
         }
+        ipsecPeerConfigBuilder.setIkePhase1Policy(ikePhase1Policy.getName());
       }
 
       // convert the referenced esp group
@@ -206,6 +234,9 @@ public class VyosConfiguration extends VendorConfiguration {
       } else {
         IpsecPolicy newIpsecPolicy = new IpsecPolicy(espGroupName);
         _c.getIpsecPolicies().put(espGroupName, newIpsecPolicy);
+
+        IpsecPhase2Policy ipsecPhase2Policy = new IpsecPhase2Policy();
+        ipsecPhase2PolicyMapBuilder.put(espGroupName, ipsecPhase2Policy);
         newIpsecVpn.setIpsecPolicy(newIpsecPolicy);
         if (espGroup.getPfsSource() == null) {
           espGroup.setPfsSource(PfsSource.IKE_GROUP);
@@ -216,6 +247,7 @@ public class VyosConfiguration extends VendorConfiguration {
 
           case ESP_GROUP:
             newIpsecPolicy.setPfsKeyGroup(espGroup.getPfsDhGroup());
+            ipsecPhase2Policy.setPfsKeyGroup(espGroup.getPfsDhGroup());
             break;
 
           case IKE_GROUP:
@@ -239,9 +271,25 @@ public class VyosConfiguration extends VendorConfiguration {
           newIpsecProposal.setEncryptionAlgorithm(espProposal.getEncryptionAlgorithm());
           newIpsecProposal.setLifetimeSeconds(espGroup.getLifetimeSeconds());
           newIpsecProposal.getProtocols().add(IpsecProtocol.ESP);
+
+          IpsecPhase2Proposal ipsecPhase2Proposal = new IpsecPhase2Proposal();
+          ipsecPhase2Proposal.setProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP));
+          ipsecPhase2Proposal.setEncryptionAlgorithm(espProposal.getEncryptionAlgorithm());
+          ipsecPhase2Proposal.setAuthenticationAlgorithm(
+              espProposal.getHashAlgorithm().toIpsecAuthenticationAlgorithm());
+          ipsecPhase2ProposalMapBuilder.put(newIpsecProposalName, ipsecPhase2Proposal);
+          ipsecPhase2Policy.getProposals().add(newIpsecProposalName);
         }
+        ipsecPeerConfigBuilder.setIpsecPolicy(espGroupName);
       }
+      ipsecPeerConfigMapBuilder.put(newIpsecVpnName, ipsecPeerConfigBuilder.build());
     }
+    _c.setIkePhase1Proposals(ikePhase1ProposalMapBuilder.build());
+    _c.setIkePhase1Keys(ikePhase1KeyMapBuilder.build());
+    _c.setIkePhase1Policies(ikePhase1PolicyMapBuilder.build());
+    _c.setIpsecPhase2Proposals(ipsecPhase2ProposalMapBuilder.build());
+    _c.setIpsecPhase2Policies(ipsecPhase2PolicyMapBuilder.build());
+    _c.setIpsecPeerConfigs(ipsecPeerConfigMapBuilder.build());
   }
 
   public BgpProcess getBgpProcess() {
