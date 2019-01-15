@@ -22520,13 +22520,13 @@
             "          IP_ADDRESS:'2.3.4.5'",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
-            "        (if_null_block",
+            "        (if_ip_nat_inside",
             "          IP:'ip'",
             "          NAT:'nat'",
             "          INSIDE:'inside'",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
-            "        (if_null_block",
+            "        (if_ip_nat_outside",
             "          IP:'ip'",
             "          NAT:'nat'",
             "          OUTSIDE:'outside'",
@@ -24369,25 +24369,24 @@
             "      NEWLINE:'\\n'))",
             "  (stanza",
             "    (s_ip_nat",
-            "      IP:'ip'",
-            "      NAT:'nat'",
-            "      (ip_nat_pool",
+            "      (ip_nat_pool_range",
+            "        IP:'ip'",
+            "        NAT:'nat'",
             "        POOL:'pool'",
             "        name = (variable",
             "          VARIABLE:'abc')",
             "        PREFIX_LENGTH:'prefix-length'",
             "        prefix_length = DEC:'32'",
             "        NEWLINE:'\\n'",
-            "        (ip_nat_pool_range",
-            "          RANGE:'range'",
-            "          first = IP_ADDRESS:'10.1.2.3'",
-            "          last = IP_ADDRESS:'10.1.2.4'",
-            "          NEWLINE:'\\n'))))",
+            "        RANGE:'range'",
+            "        first = IP_ADDRESS:'10.1.2.3'",
+            "        last = IP_ADDRESS:'10.1.2.4'",
+            "        NEWLINE:'\\n')))",
             "  (stanza",
             "    (s_ip_nat",
-            "      IP:'ip'",
-            "      NAT:'nat'",
             "      (ip_nat_pool",
+            "        IP:'ip'",
+            "        NAT:'nat'",
             "        POOL:'pool'",
             "        name = (variable",
             "          VARIABLE:'example-1-dynamic-nat-pool')",
@@ -24398,9 +24397,9 @@
             "        NEWLINE:'\\n')))",
             "  (stanza",
             "    (s_ip_nat",
-            "      IP:'ip'",
-            "      NAT:'nat'",
             "      (ip_nat_pool",
+            "        IP:'ip'",
+            "        NAT:'nat'",
             "        POOL:'pool'",
             "        name = (variable",
             "          VARIABLE:'example-2-dynamic-nat-pool')",
@@ -24411,14 +24410,16 @@
             "        NEWLINE:'\\n')))",
             "  (stanza",
             "    (s_ip_nat",
-            "      IP:'ip'",
-            "      NAT:'NAT'",
-            "      (ip_nat_pool",
-            "        POOL:'pool'",
-            "        name = (variable",
-            "          VARIABLE:'dynamic-srcnat')",
-            "        first = IP_ADDRESS:'0.0.0.0'",
-            "        last = IP_ADDRESS:'0.0.0.0'",
+            "      (ip_nat_source",
+            "        IP:'ip'",
+            "        NAT:'nat'",
+            "        OUTSIDE:'outside'",
+            "        SOURCE:'source'",
+            "        STATIC:'static'",
+            "        local = IP_ADDRESS:'6.6.6.6'",
+            "        global = IP_ADDRESS:'7.7.7.7'",
+            "        ADD_ROUTE:'add-route'",
+            "        NO_ALIAS:'no-alias'",
             "        NEWLINE:'\\n')))",
             "  EOF:<EOF>)"
           ]
@@ -62826,6 +62827,16 @@
             }
           ]
         },
+        "cisco_ip_nat" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 13,
+              "Parser_Context" : "[ip_nat_source s_ip_nat stanza cisco_configuration]",
+              "Text" : "ip nat outside source static 6.6.6.6 7.7.7.7 add-route no-alias"
+            }
+          ]
+        },
         "cisco_ipv6_access_list" : {
           "Parse warnings" : [
             {
@@ -65230,12 +65241,6 @@
               "definitionLines" : [
                 4,
                 5
-              ],
-              "numReferrers" : 0
-            },
-            "dynamic-srcnat" : {
-              "definitionLines" : [
-                12
               ],
               "numReferrers" : 0
             },

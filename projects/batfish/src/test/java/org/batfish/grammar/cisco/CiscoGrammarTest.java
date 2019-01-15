@@ -13,6 +13,11 @@ import static org.batfish.datamodel.AuthenticationMethod.LOCAL;
 import static org.batfish.datamodel.AuthenticationMethod.LOCAL_CASE;
 import static org.batfish.datamodel.AuthenticationMethod.NONE;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethod;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasListForKey;
 import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
@@ -159,6 +164,11 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasSnmpServer;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasVniSettings;
+import static org.batfish.datamodel.transformation.Transformation.when;
+import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
+import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
+import static org.batfish.datamodel.transformation.TransformationStep.shiftSourceIp;
 import static org.batfish.datamodel.vendor_family.VendorFamilyMatchers.hasCisco;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasAaa;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasLogging;
@@ -174,6 +184,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeSecurit
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeZonePairAclName;
+import static org.batfish.representation.cisco.CiscoIosDynamicNat.computeDynamicDestinationNatAclName;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.ICMP_TYPE_OBJECT_GROUP;
@@ -315,6 +326,7 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.eigrp.EigrpMetric;
@@ -353,6 +365,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralCommunityHalf;
 import org.batfish.datamodel.routing_policy.expr.RangeCommunityHalf;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackInterface;
+import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -3984,6 +3997,149 @@ public class CiscoGrammarTest {
     assertThat(e4DefaultRouted, hasSwitchPortMode(SwitchportMode.TRUNK));
     assertThat(p0DefaultRouted, isSwitchport(false));
     assertThat(p0DefaultRouted, hasSwitchPortMode(SwitchportMode.NONE));
+  }
+
+  @Test
+  public void testIosDynamicNat() throws IOException {
+    Configuration c = parseConfig("ios-nat-dynamic");
+    String insideIntf = "Ethernet1";
+    String outsideIntf = "Ethernet2";
+    Ip nat1PoolFirst = Ip.parse("3.3.3.1");
+    Ip nat1PoolLast = Ip.parse("3.3.3.254");
+    Ip nat2PoolFirst = Ip.parse("3.3.4.1");
+    Ip nat2PoolLast = Ip.parse("3.3.4.254");
+    Ip nat3PoolFirst = Ip.parse("4.4.4.1");
+    Ip nat3PoolLast = Ip.parse("4.4.4.254");
+    String nat1AclName = "10";
+    String nat2AclName = computeDynamicDestinationNatAclName("11");
+    String nat3AclName = "22";
+
+    assertThat(c, hasInterface(insideIntf, notNullValue()));
+    assertThat(c, hasInterface(outsideIntf, notNullValue()));
+
+    Interface inside = c.getAllInterfaces().get(insideIntf);
+    assertThat(inside.getIncomingTransformation(), nullValue());
+    assertThat(inside.getOutgoingTransformation(), nullValue());
+
+    MatchSrcInterface matchIface = matchSrcInterface(insideIntf);
+
+    Interface outside = c.getAllInterfaces().get(outsideIntf);
+
+    Transformation inTransformation =
+        when(permittedByAcl(nat3AclName))
+            .apply(assignSourceIp(nat3PoolFirst, nat3PoolLast))
+            .build();
+
+    assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
+
+    Transformation destTransformation =
+        when(and(matchIface, permittedByAcl(nat2AclName)))
+            .apply(assignDestinationIp(nat2PoolFirst, nat2PoolLast))
+            .build();
+
+    Transformation outTransformation =
+        when(and(matchIface, permittedByAcl(nat1AclName)))
+            .apply(assignSourceIp(nat1PoolFirst, nat1PoolLast))
+            .setAndThen(destTransformation)
+            .setOrElse(destTransformation)
+            .build();
+
+    assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
+  }
+
+  @Test
+  public void testIosStaticNat() throws IOException {
+    Configuration c = parseConfig("ios-nat-static");
+    String insideIntf = "Ethernet1";
+    String outsideIntf = "Ethernet2";
+    Prefix nat1Local = Prefix.parse("1.1.1.1/32");
+    Prefix nat3Local = Prefix.parse("1.1.3.0/24");
+    Prefix nat2Local = Prefix.parse("1.1.2.0/14");
+    Prefix nat4Local = Prefix.parse("7.7.7.7/32");
+    Prefix nat1Global = Prefix.parse("2.2.2.2/32");
+    Prefix nat2Global = Prefix.parse("2.2.2.0/14");
+    Prefix nat4Global = Prefix.parse("6.6.6.6/32");
+    Prefix nat3Global = Prefix.parse("2.2.3.0/24");
+
+    assertThat(c, hasInterface(insideIntf, notNullValue()));
+    assertThat(c, hasInterface(outsideIntf, notNullValue()));
+
+    Interface inside = c.getAllInterfaces().get(insideIntf);
+    assertThat(inside.getIncomingTransformation(), nullValue());
+    assertThat(inside.getOutgoingTransformation(), nullValue());
+
+    Interface outside = c.getAllInterfaces().get(outsideIntf);
+    assertThat(outside.getIncomingTransformation(), notNullValue());
+    assertThat(outside.getOutgoingTransformation(), notNullValue());
+
+    MatchSrcInterface matchIface = matchSrcInterface(insideIntf);
+    Transformation inDestinationTransformation =
+        when(matchDst(nat1Global))
+            .apply(shiftDestinationIp(nat1Local))
+            .setOrElse(
+                when(matchDst(nat3Global))
+                    .apply(shiftDestinationIp(nat3Local))
+                    .setOrElse(
+                        when(matchDst(nat2Global)).apply(shiftDestinationIp(nat2Local)).build())
+                    .build())
+            .build();
+
+    Transformation inTransformation =
+        when(matchSrc(nat4Global))
+            .apply(shiftSourceIp(nat4Local))
+            .setAndThen(inDestinationTransformation)
+            .setOrElse(inDestinationTransformation)
+            .build();
+
+    assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
+
+    Transformation outDestinationTransformation =
+        when(and(matchDst(nat4Local), matchIface)).apply(shiftDestinationIp(nat4Global)).build();
+
+    Transformation outTransformation =
+        when(and(matchSrc(nat1Local), matchIface))
+            .apply(shiftSourceIp(nat1Global))
+            .setAndThen(outDestinationTransformation)
+            .setOrElse(
+                when(and(matchSrc(nat3Local), matchIface))
+                    .apply(shiftSourceIp(nat3Global))
+                    .setAndThen(outDestinationTransformation)
+                    .setOrElse(
+                        when(and(matchSrc(nat2Local), matchIface))
+                            .apply(shiftSourceIp(nat2Global))
+                            .setAndThen(outDestinationTransformation)
+                            .setOrElse(outDestinationTransformation)
+                            .build())
+                    .build())
+            .build();
+
+    assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
+  }
+
+  @Test
+  public void testIosMixedNat() throws IOException {
+    Configuration c = parseConfig("ios-nat-mixed");
+    String insideIntf = "Ethernet1";
+    String outsideIntf = "Ethernet2";
+    Prefix staticNatLocal = Prefix.parse("1.1.3.0/24");
+    Prefix staticNatGlobal = Prefix.parse("2.2.3.0/24");
+    String dynamicNatAcl = "10";
+    Ip dynamicNatStart = Ip.parse("3.3.3.1");
+    Ip dynamicNatEnd = Ip.parse("3.3.3.254");
+
+    Interface outside = c.getAllInterfaces().get(outsideIntf);
+    MatchSrcInterface matchIface = matchSrcInterface(insideIntf);
+
+    // Check that the inside-to-outside transformation evaluates the static NAT first
+    Transformation outTransformation =
+        when(and(matchIface, matchSrc(staticNatLocal)))
+            .apply(shiftSourceIp(staticNatGlobal))
+            .setOrElse(
+                when(and(matchIface, permittedByAcl(dynamicNatAcl)))
+                    .apply(assignSourceIp(dynamicNatStart, dynamicNatEnd))
+                    .build())
+            .build();
+    assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
   }
 
   @Test

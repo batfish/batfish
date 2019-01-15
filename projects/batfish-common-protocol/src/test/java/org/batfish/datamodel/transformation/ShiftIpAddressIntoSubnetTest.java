@@ -7,14 +7,10 @@ import static org.batfish.datamodel.transformation.IpField.SOURCE;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.Prefix;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 /** Tests for {@link ShiftIpAddressIntoSubnet}. */
 public class ShiftIpAddressIntoSubnetTest {
-  /** */
-  @Rule public ExpectedException _exception = ExpectedException.none();
 
   @Test
   public void testEquals() {
@@ -32,13 +28,10 @@ public class ShiftIpAddressIntoSubnetTest {
 
   @Test
   public void testPrefixLength() {
-    // /31 subnets and shorter are allowed
+    // all prefix lengths are allowed
     new ShiftIpAddressIntoSubnet(DEST_NAT, DESTINATION, Prefix.parse("1.1.1.1/0"));
     new ShiftIpAddressIntoSubnet(DEST_NAT, DESTINATION, Prefix.parse("1.1.1.1/10"));
     new ShiftIpAddressIntoSubnet(DEST_NAT, DESTINATION, Prefix.parse("1.1.1.1/31"));
-
-    // /32 subnets are not allowed
-    _exception.expect(IllegalArgumentException.class);
     new ShiftIpAddressIntoSubnet(DEST_NAT, DESTINATION, Prefix.parse("1.1.1.1/32"));
   }
 }

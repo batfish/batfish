@@ -345,6 +345,16 @@ if_ip_nat_destination
    NEWLINE
 ;
 
+if_ip_nat_inside
+:
+   IP NAT INSIDE NEWLINE
+;
+
+if_ip_nat_outside
+:
+   IP NAT OUTSIDE NEWLINE
+;
+
 if_ip_nat_source
 :
    IP NAT SOURCE DYNAMIC ACCESS_LIST acl = variable
@@ -751,14 +761,6 @@ if_null_block
             | MTU
             | MULTICAST
             | MULTICAST_BOUNDARY
-            |
-            (
-               NAT
-               (
-                  INSIDE
-                  | OUTSIDE
-               )
-            )
             | NHRP
             |
             (
@@ -1721,6 +1723,8 @@ if_inner
    | if_ip_inband_access_group
    | if_ip_igmp
    | if_ip_nat_destination
+   | if_ip_nat_inside
+   | if_ip_nat_outside
    | if_ip_nat_source
    | if_ip_nbar
    | if_ip_ospf_area
