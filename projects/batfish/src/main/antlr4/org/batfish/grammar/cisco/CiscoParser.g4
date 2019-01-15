@@ -1122,6 +1122,9 @@ ip_nat_pool
 :
    IP NAT POOL name = variable first = IP_ADDRESS last = IP_ADDRESS
    (
+      // intentional blank
+
+      |
       (
          NETMASK mask = IP_ADDRESS
       )

@@ -27,13 +27,12 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 
-public class CiscoIosDynamicNat extends CiscoIosNat {
+/** Representation of a Ciscio IOS dynamic NAT. */
+public final class CiscoIosDynamicNat extends CiscoIosNat {
   private static final long serialVersionUID = 1L;
 
   private @Nullable String _aclName;
-  private int _aclNameLine;
   private @Nullable String _natPool;
-  private int _natPoolLine;
 
   @VisibleForTesting
   public static String computeDynamicDestinationNatAclName(@Nonnull String natAclName) {
@@ -49,29 +48,8 @@ public class CiscoIosDynamicNat extends CiscoIosNat {
     _aclName = aclName;
   }
 
-  public int getAclNameLine() {
-    return _aclNameLine;
-  }
-
-  public void setAclNameLine(int aclNameLine) {
-    _aclNameLine = aclNameLine;
-  }
-
-  @Nullable
-  public String getNatPool() {
-    return _natPool;
-  }
-
   public void setNatPool(@Nullable String natPool) {
     _natPool = natPool;
-  }
-
-  public int getNatPoolLine() {
-    return _natPoolLine;
-  }
-
-  public void setNatPoolLine(int natPoolLine) {
-    _natPoolLine = natPoolLine;
   }
 
   @Override
@@ -80,16 +58,14 @@ public class CiscoIosDynamicNat extends CiscoIosNat {
       return false;
     }
     CiscoIosDynamicNat other = (CiscoIosDynamicNat) o;
-    return (_aclNameLine == other._aclNameLine)
-        && (getAction() == other.getAction())
-        && (_natPoolLine == other._natPoolLine)
+    return (getAction() == other.getAction())
         && Objects.equals(_aclName, other._aclName)
         && Objects.equals(_natPool, other._natPool);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_aclName, _aclNameLine, getAction(), _natPool, _natPoolLine);
+    return Objects.hash(_aclName, getAction(), _natPool);
   }
 
   @Override

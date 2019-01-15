@@ -26,7 +26,7 @@ final class NatUtil {
    */
   private static final ImmutableMap<String, Integer> typePrecedence =
       ImmutableMap.of(
-          CiscoAristaNat.class.getSimpleName(), 1,
+          AristaDynamicSourceNat.class.getSimpleName(), 1,
           CiscoIosDynamicNat.class.getSimpleName(), 1,
           CiscoIosStaticNat.class.getSimpleName(), 0);
 

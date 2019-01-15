@@ -1107,6 +1107,7 @@ import org.batfish.grammar.cisco.CiscoParser.Wccp_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Zp_service_policy_inspectContext;
 import org.batfish.representation.cisco.AccessListAddressSpecifier;
 import org.batfish.representation.cisco.AccessListServiceSpecifier;
+import org.batfish.representation.cisco.AristaDynamicSourceNat;
 import org.batfish.representation.cisco.AsPathSet;
 import org.batfish.representation.cisco.BgpAggregateIpv4Network;
 import org.batfish.representation.cisco.BgpAggregateIpv6Network;
@@ -1115,7 +1116,6 @@ import org.batfish.representation.cisco.BgpNetwork6;
 import org.batfish.representation.cisco.BgpPeerGroup;
 import org.batfish.representation.cisco.BgpProcess;
 import org.batfish.representation.cisco.BgpRedistributionPolicy;
-import org.batfish.representation.cisco.CiscoAristaNat;
 import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.CiscoIosDynamicNat;
 import org.batfish.representation.cisco.CiscoIosNat;
@@ -5891,22 +5891,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_ip_nat_source(If_ip_nat_sourceContext ctx) {
-    // Arista syntax
-    CiscoAristaNat nat = new CiscoAristaNat();
+    String acl = null;
+    String pool = null;
     if (ctx.acl != null) {
-      String acl = ctx.acl.getText();
+      acl = ctx.acl.getText();
       int aclLine = ctx.acl.getStart().getLine();
-      nat.setAclName(acl);
-      nat.setAclNameLine(aclLine);
       _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_SOURCE_ACCESS_LIST, aclLine);
     }
     if (ctx.pool != null) {
-      String pool = ctx.pool.getText();
+      pool = ctx.pool.getText();
       int poolLine = ctx.pool.getStart().getLine();
-      nat.setNatPool(pool);
-      nat.setNatPoolLine(poolLine);
       _configuration.referenceStructure(NAT_POOL, pool, IP_NAT_SOURCE_POOL, poolLine);
     }
+
+    if (acl == null || pool == null) {
+      // incomplete definition. ignore
+      _w.redFlag(
+          String.format(
+              "Ignored incomplete defintion of Arista dynamic source nat. acl=%s, pool=%s",
+              acl, pool));
+      return;
+    }
+
+    AristaDynamicSourceNat nat = new AristaDynamicSourceNat(acl, pool);
 
     for (Interface iface : _currentInterfaces) {
       if (iface.getAristaNats() == null) {
@@ -6642,15 +6649,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String acl = ctx.acl.getText();
     int aclLine = ctx.acl.getStart().getLine();
     nat.setAclName(acl);
-    nat.setAclNameLine(aclLine);
     _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_SOURCE_ACCESS_LIST, aclLine);
     String pool = ctx.pool.getText();
     int poolLine = ctx.pool.getStart().getLine();
     nat.setNatPool(pool);
-    nat.setNatPoolLine(poolLine);
     _configuration.referenceStructure(NAT_POOL, pool, IP_NAT_SOURCE_POOL, poolLine);
     nat.setAction(RuleAction.DESTINATION_INSIDE);
-    _configuration.getNats().add(nat);
+    _configuration.getCiscoIosNats().add(nat);
   }
 
   @Override
@@ -6683,12 +6688,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String acl = ctx.acl.getText();
       int aclLine = ctx.acl.getStart().getLine();
       dynamicNat.setAclName(acl);
-      dynamicNat.setAclNameLine(aclLine);
       _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_SOURCE_ACCESS_LIST, aclLine);
       String pool = ctx.pool.getText();
       int poolLine = ctx.pool.getStart().getLine();
       dynamicNat.setNatPool(pool);
-      dynamicNat.setNatPoolLine(poolLine);
       _configuration.referenceStructure(NAT_POOL, pool, IP_NAT_SOURCE_POOL, poolLine);
       nat = dynamicNat;
     }
@@ -6702,7 +6705,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       // https://www.cisco.com/c/en/us/support/docs/ip/network-address-translation-nat/13773-2.html
       todo(ctx);
     }
-    _configuration.getNats().add(nat);
+    _configuration.getCiscoIosNats().add(nat);
   }
 
   @Override
