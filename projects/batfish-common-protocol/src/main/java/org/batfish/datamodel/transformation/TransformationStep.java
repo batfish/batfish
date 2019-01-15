@@ -33,11 +33,11 @@ public interface TransformationStep {
     return new AssignIpAddressFromPool(SOURCE_NAT, SOURCE, poolStart, poolEnd);
   }
 
-  static TransformationStep shiftDestinationIp(Prefix subnet) {
+  static ShiftIpAddressIntoSubnet shiftDestinationIp(Prefix subnet) {
     return new ShiftIpAddressIntoSubnet(DEST_NAT, DESTINATION, subnet);
   }
 
-  static TransformationStep shiftSourceIp(Prefix subnet) {
+  static ShiftIpAddressIntoSubnet shiftSourceIp(Prefix subnet) {
     return new ShiftIpAddressIntoSubnet(SOURCE_NAT, SOURCE, subnet);
   }
 }

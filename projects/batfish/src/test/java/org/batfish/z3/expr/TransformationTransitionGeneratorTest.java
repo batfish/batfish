@@ -28,15 +28,10 @@ import org.batfish.z3.AclLineMatchExprToBooleanExpr;
 import org.batfish.z3.Field;
 import org.batfish.z3.state.Debug;
 import org.batfish.z3.state.Query;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 /** Tests for {@link TransformationTransitionGenerator}. */
 public class TransformationTransitionGeneratorTest {
-
-  /** */
-  @Rule public ExpectedException _exception = ExpectedException.none();
 
   private static final String NODE1 = "node1";
   private static final String IFACE1 = "iface1";
@@ -206,8 +201,16 @@ public class TransformationTransitionGeneratorTest {
 
   @Test
   public void testShiftIntoSubnetExpr_32() {
-    _exception.expect(IllegalArgumentException.class);
-    shiftIntoSubnetExpr(Field.DST_IP, Prefix.parse("1.1.1.1/32"));
+    Prefix subnet = Prefix.parse("1.1.1.1/32");
+    TransformedVarIntExpr transformedDst = new TransformedVarIntExpr(Field.DST_IP);
+
+    // all bits are transformed
+    BooleanExpr transformedExpr =
+        new EqExpr(
+            newExtractExpr(transformedDst, 0, 31),
+            new LitIntExpr(subnet.getStartIp().asLong(), 0, 31));
+
+    assertThat(shiftIntoSubnetExpr(Field.DST_IP, subnet), equalTo(transformedExpr));
   }
 
   @Test
