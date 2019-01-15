@@ -179,10 +179,10 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
    *
    * @type PerRoleOutliers multifile
    * @param namedStructTypes Set of structure types to analyze drawn from ( AsPathAccessList,
-   *     AuthenticationKeyChain, CommunityList, IkeGateway, IkePolicies, IkeProposal, IpAccessList,
-   *     IpsecPolicy, IpsecProposal, IpsecVpn, RouteFilterList, RoutingPolicy) Default value is '[]'
-   *     (which denotes all structure types). This option is applicable to the "sameName" and
-   *     "sameDefinition" hypotheses.
+   *     AuthenticationKeyChain, CommunityList, IkePhase1Policy, IkePhase1Proposal, IkePhase1Key,
+   *     IpAccessList, IpsecPhase2Policy, IpsecPhase2Proposal, IpsecPeerConfig,, RouteFilterList,
+   *     RoutingPolicy) Default value is '[]' (which denotes all structure types).
+   *     This option is applicable to the "sameName" and "sameDefinition" hypotheses.
    * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
    *     nodes).
    * @param hypothesis A string that indicates the hypothesis being used to identify outliers.

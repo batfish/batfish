@@ -57,9 +57,7 @@ import org.batfish.datamodel.IpsecDynamicPeerConfig;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
-import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
-import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -137,8 +135,8 @@ class CiscoConversions {
   }
 
   /**
-   * Converts a {@link CryptoMapEntry} to an {@link IpsecPolicy}, a list of {@link IpsecVpn}. Also
-   * converts it to an {@link IpsecPhase2Policy} and a list of {@link IpsecPeerConfig}
+   * Converts a {@link CryptoMapEntry} to an {@link IpsecPhase2Policy} and a list of {@link
+   * IpsecPeerConfig}
    */
   private static void convertCryptoMapEntry(
       final Configuration c,
@@ -187,8 +185,8 @@ class CiscoConversions {
   }
 
   /**
-   * Converts each crypto map entry in all crypto map sets to {@link IpsecPolicy}, {@link
-   * IpsecVpn}s, {@link IpsecPhase2Policy} and {@link IpsecPeerConfig}s
+   * Converts each crypto map entry in all crypto map sets to {@link IpsecPhase2Policy} and {@link
+   * IpsecPeerConfig}s
    */
   static void convertCryptoMapSet(
       Configuration c,

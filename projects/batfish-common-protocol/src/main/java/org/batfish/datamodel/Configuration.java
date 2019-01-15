@@ -116,12 +116,6 @@ public final class Configuration implements Serializable {
 
   private static final String PROP_DOMAIN_NAME = "domainName";
 
-  private static final String PROP_IKE_GATEWAYS = "ikeGateways";
-
-  private static final String PROP_IKE_POLICIES = "ikePolicies";
-
-  private static final String PROP_IKE_PROPOSALS = "ikeProposals";
-
   private static final String PROP_IKE_PHASE1_KEYS = "ikePhase1Keys";
 
   private static final String PROP_IKE_PHASE1_POLICIES = "ikePhase1Policies";
@@ -143,12 +137,6 @@ public final class Configuration implements Serializable {
   private static final String PROP_IPSEC_PHASE2_POLICIES = "ipsecPhase2Policies";
 
   private static final String PROP_IPSEC_PHASE2_PROPOSALS = "ipsecPhase2Proposals";
-
-  private static final String PROP_IPSEC_POLICIES = "ipsecPolicies";
-
-  private static final String PROP_IPSEC_PROPOSALS = "ipsecProposals";
-
-  private static final String PROP_IPSEC_VPNS = "ipsecVpns";
 
   private static final String PROP_LOGGING_SERVERS = "loggingServers";
 
@@ -750,14 +738,6 @@ public final class Configuration implements Serializable {
     _domainName = domainName;
   }
 
-  @JsonProperty(PROP_IKE_GATEWAYS)
-  public void setIkeGateways(NavigableMap<String, IkeGateway> ikeGateways) {
-  }
-
-  @JsonProperty(PROP_IKE_POLICIES)
-  public void setIkePolicies(NavigableMap<String, IkePolicy> ikePolicies) {
-  }
-
   @JsonProperty(PROP_IKE_PHASE1_KEYS)
   public void setIkePhase1Keys(@Nullable NavigableMap<String, IkePhase1Key> ikePhase1Keys) {
     _ikePhase1keys =
@@ -772,10 +752,6 @@ public final class Configuration implements Serializable {
   @JsonProperty(PROP_IKE_PHASE1_PROPOSALS)
   public void setIkePhase1Proposals(NavigableMap<String, IkePhase1Proposal> ikePhase1Proposals) {
     _ikePhase1Proposals = ikePhase1Proposals;
-  }
-
-  @JsonProperty(PROP_IKE_PROPOSALS)
-  public void setIkeProposals(NavigableMap<String, IkeProposal> ikeProposals) {
   }
 
   @JsonProperty(PROP_INTERFACES)
@@ -823,18 +799,6 @@ public final class Configuration implements Serializable {
         ipsecPhase2Proposals == null
             ? ImmutableSortedMap.of()
             : ImmutableSortedMap.copyOf(ipsecPhase2Proposals);
-  }
-
-  @JsonProperty(PROP_IPSEC_POLICIES)
-  public void setIpsecPolicies(NavigableMap<String, IpsecPolicy> ipsecPolicies) {
-  }
-
-  @JsonProperty(PROP_IPSEC_PROPOSALS)
-  public void setIpsecProposals(NavigableMap<String, IpsecProposal> ipsecProposals) {
-  }
-
-  @JsonProperty(PROP_IPSEC_VPNS)
-  public void setIpsecVpns(NavigableMap<String, IpsecVpn> ipsecVpns) {
   }
 
   @JsonProperty(PROP_LOGGING_SERVERS)

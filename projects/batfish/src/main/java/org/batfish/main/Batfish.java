@@ -2945,8 +2945,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // TODO: take this out once dependencies are *the* definitive way to disable interfaces
     disableUnusableVlanInterfaces(configurations);
-    // TODO: Remove this initialization once old IPsec datamodel is removed
-    CommonUtil.initRemoteIpsecVpns(configurations);
   }
 
   /**

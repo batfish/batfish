@@ -299,8 +299,8 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
    *
    * @type ClusterNodes multifile
    * @param namedStructTypes Set of structure types to analyze drawn from ( AsPathAccessList,
-   *     CommunityList, IkeGateway, IkePolicies, IkeProposal, IpAccessList, IpsecPolicy,
-   *     IpsecProposal, IpsecVpn, RouteFilterList, RoutingPolicy) Default value is '[]' (which
+   *     CommunityList, IkePhase1Policy, IkePhase1Proposal, IkePhase1Key, IpAccessList, IpsecPhase2Policy,
+   *     IpsecPhase2Proposal, IpsecPeerConfig, RouteFilterList, RoutingPolicy) Default value is '[]' (which
    *     denotes all structure types).
    * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
    *     nodes).

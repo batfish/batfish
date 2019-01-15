@@ -1638,17 +1638,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return ipsecPhase2Policy;
   }
 
-  private static org.batfish.datamodel.IpsecProposal toIpsecProposal(
-      IpsecProposal oldIpsecProposal) {
-    org.batfish.datamodel.IpsecProposal newIpsecProposal =
-        new org.batfish.datamodel.IpsecProposal(oldIpsecProposal.getName());
-    newIpsecProposal.setAuthenticationAlgorithm(oldIpsecProposal.getAuthenticationAlgorithm());
-    newIpsecProposal.setEncryptionAlgorithm(oldIpsecProposal.getEncryptionAlgorithm());
-    newIpsecProposal.setProtocols(oldIpsecProposal.getProtocols());
-
-    return newIpsecProposal;
-  }
-
   private static IpsecPhase2Proposal toIpsecPhase2Proposal(IpsecProposal oldIpsecProposal) {
     IpsecPhase2Proposal ipsecPhase2Proposal = new IpsecPhase2Proposal();
     ipsecPhase2Proposal.setAuthenticationAlgorithm(oldIpsecProposal.getAuthenticationAlgorithm());

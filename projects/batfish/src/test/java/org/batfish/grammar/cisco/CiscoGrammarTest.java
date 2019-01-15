@@ -29,10 +29,8 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEqui
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeGateway;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Policy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Proposal;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
@@ -41,9 +39,6 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPeerConfig;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPhase2Policy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPhase2Proposal;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPolicy;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecProposal;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecVpn;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasMlagConfig;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
@@ -71,21 +66,11 @@ import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstPorts;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
 import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasTrackActions;
-import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasAddress;
-import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasExternalInterface;
-import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasIkePolicy;
-import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasLocalIp;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Key;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Proposals;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasLocalInterface;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasRemoteIdentity;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasSelfIdentity;
-import static org.batfish.datamodel.matchers.IkePolicyMatchers.hasPresharedKeyHash;
-import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationAlgorithm;
-import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationMethod;
-import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasDiffieHellmanGroup;
-import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasEncryptionAlgorithm;
-import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasLifeTimeSeconds;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
@@ -115,15 +100,9 @@ import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasPolicyAc
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasTunnelInterface;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.isIpsecDynamicPeerConfigThat;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.isIpsecStaticPeerConfigThat;
-import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasIpsecProposals;
-import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasPfsKeyGroup;
-import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
 import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedIkeP1Key;
 import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedIkeP1Proposal;
 import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedIpsecP2Proposal;
-import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasBindInterface;
-import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasIkeGatewaay;
-import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasPolicy;
 import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasLevel2;
 import static org.batfish.datamodel.matchers.LineMatchers.hasAuthenticationLoginList;
 import static org.batfish.datamodel.matchers.LineMatchers.requiresAuthentication;
@@ -323,16 +302,11 @@ import org.batfish.datamodel.matchers.CommunityListMatchers;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
-import org.batfish.datamodel.matchers.IkeGatewayMatchers;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
-import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2PolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2ProposalMatchers;
-import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
-import org.batfish.datamodel.matchers.IpsecProposalMatchers;
-import org.batfish.datamodel.matchers.IpsecVpnMatchers;
 import org.batfish.datamodel.matchers.MlagMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.Route6FilterListMatchers;
@@ -2696,29 +2670,6 @@ public class CiscoGrammarTest {
   @Test
   public void testToIpsecPolicies() throws IOException {
     Configuration c = parseConfig("ios-crypto-map");
-
-    assertThat(
-        c,
-        hasIpsecPolicy(
-            "mymap:10",
-            allOf(
-                IpsecPolicyMatchers.hasIkeGateway(IkeGatewayMatchers.hasName("ISAKMP-PROFILE")),
-                hasPfsKeyGroup(DiffieHellmanGroup.GROUP14),
-                hasIpsecProposals(
-                    contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts1")))))));
-
-    assertThat(
-        c,
-        hasIpsecPolicy(
-            "mymap:30:5",
-            hasIpsecProposals(contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts1"))))));
-
-    assertThat(
-        c,
-        hasIpsecPolicy(
-            "mymap:30:15",
-            hasIpsecProposals(contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts2"))))));
-
     // tests for IPSec phase 2 policies conversion
     assertThat(
         c,
@@ -2846,58 +2797,6 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testCryptoMapsToIpsecVpns() throws IOException {
-    Configuration c = parseConfig("ios-crypto-map");
-
-    List<IpAccessListLine> expectedAclLines =
-        ImmutableList.of(
-            IpAccessListLine.accepting()
-                .setName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0")
-                .setMatchCondition(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(new IpWildcard("1.1.1.1").toIpSpace())
-                            .setDstIps(new IpWildcard("2.2.2.2").toIpSpace())
-                            .build()))
-                .build(),
-            IpAccessListLine.accepting()
-                .setMatchCondition(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(new IpWildcard("2.2.2.2").toIpSpace())
-                            .setDstIps(new IpWildcard("1.1.1.1").toIpSpace())
-                            .build()))
-                .build());
-    assertThat(
-        c,
-        hasIpsecVpn(
-            "mymap:10:TenGigabitEthernet0/0",
-            allOf(
-                hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
-                IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:10")),
-                hasIkeGatewaay(IkeGatewayMatchers.hasName("ISAKMP-PROFILE")),
-                hasPolicy(hasLines(equalTo(expectedAclLines))))));
-    assertThat(
-        c,
-        hasIpsecVpn(
-            "mymap:30:5:TenGigabitEthernet0/0",
-            allOf(
-                hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
-                IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:30:5")),
-                hasPolicy(hasLines(equalTo(expectedAclLines))))));
-    assertThat(
-        c,
-        hasIpsecVpn(
-            "mymap:30:15:TenGigabitEthernet0/0",
-            allOf(
-                hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
-                IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:30:15")),
-                hasPolicy(hasLines(equalTo(expectedAclLines))))));
-
-    assertThat(c, hasInterface("TenGigabitEthernet0/0", isActive()));
-  }
-
-  @Test
   public void testInvalidCryptoMapDef() throws IOException {
     String hostname = "ios-crypto-map";
 
@@ -2914,58 +2813,8 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testIsakmpPolicyAruba() throws IOException {
-    Configuration c = parseConfig("arubaCrypto");
-    assertThat(
-        c,
-        hasIkeProposal(
-            "20",
-            allOf(
-                hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
-                hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
-                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA_256),
-                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP19),
-                hasLifeTimeSeconds(86400))));
-    // asserting the default values being set
-    assertThat(
-        c,
-        hasIkeProposal(
-            "30",
-            allOf(
-                hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
-                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
-                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1),
-                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
-                hasLifeTimeSeconds(86400))));
-  }
-
-  @Test
   public void testIsakmpPolicyIos() throws IOException {
     Configuration c = parseConfig("ios-crypto");
-
-    assertThat(
-        c,
-        hasIkeProposal(
-            "10",
-            allOf(
-                hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
-                hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
-                hasAuthenticationAlgorithm(IkeHashingAlgorithm.MD5),
-                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
-                hasLifeTimeSeconds(14400))));
-
-    // asserting the default values being set
-    assertThat(
-        c,
-        hasIkeProposal(
-            "20",
-            allOf(
-                hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
-                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
-                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1),
-                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
-                hasLifeTimeSeconds(86400))));
-
     // test for IKE phase1 proposals
     assertThat(
         c,
@@ -2995,29 +2844,6 @@ public class CiscoGrammarTest {
   @Test
   public void testIsakmpProfile() throws IOException {
     Configuration c = parseConfig("ios-crypto");
-    assertThat(
-        c,
-        hasIkeGateway(
-            "ISAKMP-PROFILE-ADDRESS",
-            allOf(
-                hasAddress(Ip.parse("1.2.3.4")),
-                hasExternalInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
-                hasLocalIp(Ip.parse("2.3.4.6")),
-                hasIkePolicy(
-                    hasPresharedKeyHash(CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))))));
-
-    // The interface in the local-address should also be mapped with the same local ip
-    assertThat(
-        c,
-        hasIkeGateway(
-            "ISAKMP-PROFILE-INTERFACE",
-            allOf(
-                hasAddress(Ip.parse("1.2.3.4")),
-                hasExternalInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
-                hasLocalIp(Ip.parse("2.3.4.6")),
-                hasIkePolicy(
-                    hasPresharedKeyHash(CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))))));
-
     // test for IKE phase 1 policy
     assertThat(
         c,
@@ -3263,108 +3089,6 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testIpsecProfile() throws IOException {
-    Configuration c = parseConfig("ios-crypto-ipsec-profile");
-
-    assertThat(
-        c,
-        hasIpsecPolicy(
-            "IPSEC-PROFILE1",
-            allOf(
-                IpsecPolicyMatchers.hasIkeGateway(
-                    allOf(hasAddress(Ip.parse("1.2.3.4")), hasLocalIp(Ip.parse("2.3.4.6")))),
-                hasIpsecProposals(
-                    contains(
-                        ImmutableList.of(
-                            allOf(
-                                IpsecProposalMatchers.hasEncryptionAlgorithm(
-                                    EncryptionAlgorithm.AES_256_CBC),
-                                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                                    IpsecAuthenticationAlgorithm.HMAC_MD5_96)),
-                            allOf(
-                                IpsecProposalMatchers.hasEncryptionAlgorithm(
-                                    EncryptionAlgorithm.AES_256_CBC),
-                                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96))))),
-                hasPfsKeyGroup(DiffieHellmanGroup.GROUP14))));
-
-    // testing the Diffie Hellman groups
-    assertThat(c, hasIpsecPolicy("IPSEC-PROFILE2", hasPfsKeyGroup(DiffieHellmanGroup.GROUP15)));
-    assertThat(c, hasIpsecPolicy("IPSEC-PROFILE3", hasPfsKeyGroup(DiffieHellmanGroup.GROUP16)));
-    assertThat(c, hasIpsecPolicy("IPSEC-PROFILE4", hasPfsKeyGroup(DiffieHellmanGroup.GROUP19)));
-    assertThat(c, hasIpsecPolicy("IPSEC-PROFILE5", hasPfsKeyGroup(DiffieHellmanGroup.GROUP21)));
-    assertThat(c, hasIpsecPolicy("IPSEC-PROFILE6", hasPfsKeyGroup(DiffieHellmanGroup.GROUP5)));
-  }
-
-  @Test
-  public void testArubaIpsecTransformset() throws IOException {
-    Configuration c = parseConfig("arubaCryptoTransformSet");
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts1",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts2",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts3",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_CBC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts4",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts5",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts6",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GCM),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts7",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GCM),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-  }
-
-  @Test
   public void testIosOspfPassive() throws IOException {
     String testrigName = "ios-ospf-passive";
     String host1name = "ios-ospf-passive1";
@@ -3391,92 +3115,6 @@ public class CiscoGrammarTest {
     // in host2, default is passive which is overridden for iface1
     assertThat(c2, hasInterface(iface1Name, isOspfPassive(equalTo(false))));
     assertThat(c2, hasInterface(iface2Name, isOspfPassive(equalTo(true))));
-  }
-
-  @Test
-  public void testIpsecTransformset() throws IOException {
-    Configuration c = parseConfig("ios-crypto-transform-set");
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts1",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_CBC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts2",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts3",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts4",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GCM),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts5",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GCM),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts6",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GMAC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts7",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GMAC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts8",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.SEAL_160),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts9",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.NULL),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
   }
 
   @Test
@@ -3554,40 +3192,6 @@ public class CiscoGrammarTest {
                 IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
                 IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
                     IpsecEncapsulationMode.TUNNEL))));
-  }
-
-  @Test
-  public void testIpsecVpnIos() throws IOException {
-    String testrigName = "ipsec-vpn-ios";
-    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
-
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
-
-    assertThat(
-        configurations.values().stream().mapToLong(c -> c.getIpsecVpns().values().size()).sum(),
-        equalTo(6L));
-    configurations
-        .values()
-        .stream()
-        .flatMap(c -> c.getIpsecVpns().values().stream())
-        .forEach(iv -> assertThat(iv.getRemoteIpsecVpn(), not(nullValue())));
-    /* Two tunnels should not be established because of a password mismatch between r1 and r3
-    Interface disabling is not being done now for configurations based on IPsec
-    https://github.com/batfish/batfish/issues/2954
-    assertThat(
-        configurations
-            .values()
-            .stream()
-            .flatMap(c -> c.getAllInterfaces().values().stream())
-            .filter(i -> i.getInterfaceType().equals(InterfaceType.TUNNEL) && i.getActive())
-            .count(),
-        equalTo(4L));*/
   }
 
   @Test
