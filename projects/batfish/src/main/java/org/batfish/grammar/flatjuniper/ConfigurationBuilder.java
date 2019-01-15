@@ -582,7 +582,6 @@ import org.batfish.representation.juniper.GeneratedRoute;
 import org.batfish.representation.juniper.HostProtocol;
 import org.batfish.representation.juniper.HostSystemService;
 import org.batfish.representation.juniper.ICMPLarge;
-import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.IkeGateway;
 import org.batfish.representation.juniper.IkePolicy;
 import org.batfish.representation.juniper.IkeProposal;
@@ -685,6 +684,7 @@ import org.batfish.representation.juniper.Route6FilterLineUpTo;
 import org.batfish.representation.juniper.RouteFilter;
 import org.batfish.representation.juniper.RoutingInformationBase;
 import org.batfish.representation.juniper.RoutingInstance;
+import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.ScreenActionAlarm;
 import org.batfish.representation.juniper.StaticRoute;
 import org.batfish.representation.juniper.StubSettings;
@@ -3259,7 +3259,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterSezs_screen(FlatJuniperParser.Sezs_screenContext ctx) {
-    String name = ctx.name.getText();
+    String name =
+        ctx.UNTRUST_SCREEN() == null ? ctx.name.getText() : ctx.UNTRUST_SCREEN().getText();
     _currentZone.getScreens().add(name);
   }
 

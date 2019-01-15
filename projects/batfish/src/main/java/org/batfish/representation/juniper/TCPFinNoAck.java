@@ -33,11 +33,7 @@ public final class TCPFinNoAck implements ScreenOption {
             .setTcpFlags(
                 ImmutableList.of(
                     TcpFlagsMatchConditions.builder()
-                        .setTcpFlags(
-                            TcpFlags.builder()
-                                .setAck(false)
-                                .setFin(true)
-                                .build())
+                        .setTcpFlags(TcpFlags.builder().setAck(false).setFin(true).build())
                         .setUseAck(true)
                         .setUseFin(true)
                         .build()))

@@ -1482,8 +1482,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         IpAccessList.builder()
             .setName(combinedAclName)
             .setLines(
-                ImmutableList.of(
-                    IpAccessListLine.accepting(new AndMatchExpr(aclConjunctList))))
+                ImmutableList.of(IpAccessListLine.accepting(new AndMatchExpr(aclConjunctList))))
             .build();
 
     _c.getIpAccessLists().put(combinedAclName, combinedAcl);
