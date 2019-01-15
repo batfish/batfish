@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
 import com.google.errorprone.annotations.MustBeClosed;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
@@ -41,7 +40,6 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -78,7 +76,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -86,7 +83,6 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
-import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -618,66 +614,6 @@ public class CommonUtil {
           .forEach(currentPoolIp -> builder.put(currentPoolIp, ipSpace));
     }
     return builder.build();
-  }
-
-  public static void initRemoteIpsecVpns(Map<String, Configuration> configurations) {
-    Map<IpsecVpn, Ip> vpnRemoteIps = new IdentityHashMap<>();
-    Map<Ip, Set<IpsecVpn>> externalIpVpnMap = new HashMap<>();
-    SetMultimap<Ip, IpWildcardSetIpSpace> privateIpsByPublicIp =
-        initPrivateIpsByPublicIp(configurations);
-    for (Configuration c : configurations.values()) {
-      for (IpsecVpn ipsecVpn : c.getIpsecVpns().values()) {
-        IkeGateway ikeGateway = ipsecVpn.getIkeGateway();
-        if (ikeGateway == null || ikeGateway.getExternalInterface() == null) {
-          continue;
-        }
-        Ip remoteIp = ikeGateway.getAddress();
-        vpnRemoteIps.put(ipsecVpn, remoteIp);
-        Set<InterfaceAddress> externalAddresses =
-            ipsecVpn.getIkeGateway().getExternalInterface().getAllAddresses();
-        for (InterfaceAddress address : externalAddresses) {
-          Ip ip = address.getIp();
-          Set<IpsecVpn> vpnsUsingExternalAddress =
-              externalIpVpnMap.computeIfAbsent(ip, k -> Sets.newIdentityHashSet());
-          vpnsUsingExternalAddress.add(ipsecVpn);
-        }
-      }
-    }
-    for (Entry<IpsecVpn, Ip> e : vpnRemoteIps.entrySet()) {
-      IpsecVpn ipsecVpn = e.getKey();
-      Ip remoteIp = e.getValue();
-      Ip localIp = ipsecVpn.getIkeGateway().getLocalIp();
-      ipsecVpn.initCandidateRemoteVpns();
-      Set<IpsecVpn> remoteIpsecVpnCandidates = externalIpVpnMap.get(remoteIp);
-      if (remoteIpsecVpnCandidates != null) {
-        for (IpsecVpn remoteIpsecVpnCandidate : remoteIpsecVpnCandidates) {
-          Ip remoteIpsecVpnLocalAddress = remoteIpsecVpnCandidate.getIkeGateway().getLocalIp();
-          if (remoteIpsecVpnLocalAddress != null && !remoteIpsecVpnLocalAddress.equals(remoteIp)) {
-            continue;
-          }
-          Ip reciprocalRemoteAddress = vpnRemoteIps.get(remoteIpsecVpnCandidate);
-          Set<IpsecVpn> reciprocalVpns = externalIpVpnMap.get(reciprocalRemoteAddress);
-          if (reciprocalVpns == null) {
-            Set<IpWildcardSetIpSpace> privateIpsBehindReciprocalRemoteAddress =
-                privateIpsByPublicIp.get(reciprocalRemoteAddress);
-            if (privateIpsBehindReciprocalRemoteAddress != null
-                && privateIpsBehindReciprocalRemoteAddress
-                    .stream()
-                    .anyMatch(ipSpace -> ipSpace.containsIp(localIp, ImmutableMap.of()))) {
-              reciprocalVpns = externalIpVpnMap.get(localIp);
-              ipsecVpn.setRemoteIpsecVpn(remoteIpsecVpnCandidate);
-              ipsecVpn.getCandidateRemoteIpsecVpns().add(remoteIpsecVpnCandidate);
-              remoteIpsecVpnCandidate.initCandidateRemoteVpns();
-              remoteIpsecVpnCandidate.setRemoteIpsecVpn(ipsecVpn);
-              remoteIpsecVpnCandidate.getCandidateRemoteIpsecVpns().add(ipsecVpn);
-            }
-          } else if (reciprocalVpns.contains(ipsecVpn)) {
-            ipsecVpn.setRemoteIpsecVpn(remoteIpsecVpnCandidate);
-            ipsecVpn.getCandidateRemoteIpsecVpns().add(remoteIpsecVpnCandidate);
-          }
-        }
-      }
-    }
   }
 
   public static <S extends Set<T>, T> S intersection(

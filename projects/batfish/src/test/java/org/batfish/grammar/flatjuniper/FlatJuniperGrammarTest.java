@@ -24,15 +24,12 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Policy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Proposal;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPeerConfig;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPhase2Policy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPhase2Proposal;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPolicy;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
@@ -47,11 +44,6 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedRefer
 import static org.batfish.datamodel.matchers.GeneratedRouteMatchers.isDiscard;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Key;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Proposals;
-import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationAlgorithm;
-import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationMethod;
-import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasDiffieHellmanGroup;
-import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasEncryptionAlgorithm;
-import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasLifeTimeSeconds;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpIps;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
@@ -70,8 +62,6 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasDestinationAddress;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.isIpsecStaticPeerConfigThat;
-import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasPfsKeyGroup;
-import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
 import static org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchers.hasHelloAuthenticationType;
 import static org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchers.hasHoldTime;
 import static org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchers.hasMode;
@@ -218,8 +208,6 @@ import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2PolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2ProposalMatchers;
-import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
-import org.batfish.datamodel.matchers.IpsecProposalMatchers;
 import org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchers;
 import org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers;
 import org.batfish.datamodel.matchers.IsisProcessMatchers;
@@ -1934,17 +1922,6 @@ public final class FlatJuniperGrammarTest {
   public void testIkeProposal() throws IOException {
     Configuration c = parseConfig("ike-proposal");
 
-    assertThat(
-        c,
-        hasIkeProposal(
-            "proposal1",
-            allOf(
-                hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
-                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
-                hasAuthenticationAlgorithm(IkeHashingAlgorithm.MD5),
-                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP14),
-                hasLifeTimeSeconds(50000))));
-
     // test for IKE phase1 proposals
     assertThat(
         c,
@@ -1957,56 +1934,6 @@ public final class FlatJuniperGrammarTest {
                 IkePhase1ProposalMatchers.hasHashingAlgorithm(IkeHashingAlgorithm.MD5),
                 IkePhase1ProposalMatchers.hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP14),
                 IkePhase1ProposalMatchers.hasLifeTimeSeconds(50000))));
-  }
-
-  @Test
-  public void testIkeProposalSet() throws IOException {
-    Configuration c = parseConfig("ike-proposal");
-
-    /* TODO: Replace with IKE phase 1 proposal tests */
-    // ike proposals added as part of the `basic` proposal set
-    assertThat(
-        c,
-        hasIkeProposal(
-            "PSK_DES_DH1_SHA1",
-            allOf(
-                hasEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC),
-                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
-                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1),
-                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
-                hasLifeTimeSeconds(28800))));
-    assertThat(
-        c,
-        hasIkeProposal(
-            "PSK_DES_DH1_MD5",
-            allOf(
-                hasEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC),
-                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
-                hasAuthenticationAlgorithm(IkeHashingAlgorithm.MD5),
-                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
-                hasLifeTimeSeconds(28800))));
-
-    // ike proposals added as part of `standard` proposal set
-    assertThat(
-        c,
-        hasIkeProposal(
-            "PSK_3DES_DH2_SHA1",
-            allOf(
-                hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
-                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
-                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1),
-                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
-                hasLifeTimeSeconds(28800))));
-    assertThat(
-        c,
-        hasIkeProposal(
-            "PSK_AES128_DH2_SHA1",
-            allOf(
-                hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
-                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
-                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1),
-                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
-                hasLifeTimeSeconds(28800))));
   }
 
   @Test
@@ -2175,33 +2102,6 @@ public final class FlatJuniperGrammarTest {
   public void testIpsecPolicy() throws IOException {
     Configuration c = parseConfig("ipsec-policy");
 
-    assertThat(
-        c,
-        hasIpsecPolicy(
-            "policy1",
-            allOf(
-                IpsecPolicyMatchers.hasIpsecProposals(
-                    contains(
-                        ImmutableList.of(
-                            allOf(
-                                IpsecProposalMatchers.hasEncryptionAlgorithm(
-                                    EncryptionAlgorithm.THREEDES_CBC),
-                                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                                    IpsecAuthenticationAlgorithm.HMAC_MD5_96)),
-                            allOf(
-                                IpsecProposalMatchers.hasEncryptionAlgorithm(
-                                    EncryptionAlgorithm.DES_CBC),
-                                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96))))),
-                hasPfsKeyGroup(DiffieHellmanGroup.GROUP14))));
-
-    // testing the Diffie Hellman groups
-    assertThat(c, hasIpsecPolicy("policy2", hasPfsKeyGroup(DiffieHellmanGroup.GROUP15)));
-    assertThat(c, hasIpsecPolicy("policy3", hasPfsKeyGroup(DiffieHellmanGroup.GROUP16)));
-    assertThat(c, hasIpsecPolicy("policy4", hasPfsKeyGroup(DiffieHellmanGroup.GROUP19)));
-    assertThat(c, hasIpsecPolicy("policy5", hasPfsKeyGroup(DiffieHellmanGroup.GROUP20)));
-    assertThat(c, hasIpsecPolicy("policy6", hasPfsKeyGroup(DiffieHellmanGroup.GROUP5)));
-
     // tests for conversion to IPSec phase 2 policies
     assertThat(
         c,
@@ -2250,65 +2150,6 @@ public final class FlatJuniperGrammarTest {
             allOf(
                 IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of())),
                 IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP5)))));
-  }
-
-  @Test
-  public void testIpsecProposal() throws IOException {
-    Configuration c = parseConfig("ipsec-proposal");
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "prop1",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "prop2",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.AH)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "prop3",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "prop4",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GCM),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "prop5",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_GCM),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "prop6",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GCM),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
   }
 
   @Test
