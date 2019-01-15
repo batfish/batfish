@@ -5906,9 +5906,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
     if (acl == null || pool == null) {
       // incomplete definition. ignore
-      _w.redFlag(
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
           String.format(
-              "Ignored incomplete defintion of Arista dynamic source nat. acl=%s, pool=%s",
+              "Ignored incomplete definition of Arista dynamic source nat. acl=%s, pool=%s",
               acl, pool));
       return;
     }
