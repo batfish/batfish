@@ -229,7 +229,7 @@ public final class TopologyUtil {
                                 .computeIfAbsent(vlan, n -> ImmutableList.builder())
                                 .add(i.getName()));
               }
-              if (i.getSwitchportMode() == SwitchportMode.ACCESS) {
+              if (i.getSwitchportMode() == SwitchportMode.ACCESS && i.getAccessVlan() != null) {
                 switchportsByVlan
                     .computeIfAbsent(i.getAccessVlan(), n -> ImmutableList.builder())
                     .add(i.getName());

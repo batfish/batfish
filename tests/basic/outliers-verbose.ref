@@ -22,7 +22,6 @@
         "name" : "Ethernet0/0",
         "structDefinition" : {
           "name" : "Ethernet0/0",
-          "accessVlan" : 0,
           "active" : false,
           "allowedVlans" : "",
           "autostate" : true,
@@ -1376,7 +1375,6 @@
         ],
         "structDefinition" : {
           "name" : "eth0",
-          "accessVlan" : 0,
           "active" : true,
           "allPrefixes" : [
             "2.128.0.101/24"
@@ -2067,7 +2065,6 @@
         ],
         "structDefinition" : {
           "name" : "GigabitEthernet3/0",
-          "accessVlan" : 0,
           "active" : true,
           "allPrefixes" : [
             "2.23.12.2/24"
@@ -2119,7 +2116,6 @@
         ],
         "structDefinition" : {
           "name" : "GigabitEthernet2/0",
-          "accessVlan" : 0,
           "active" : true,
           "allPrefixes" : [
             "10.14.22.1/24"
@@ -2172,7 +2168,6 @@
         ],
         "structDefinition" : {
           "name" : "GigabitEthernet0/0",
-          "accessVlan" : 0,
           "active" : true,
           "allPrefixes" : [
             "1.0.1.1/24"
@@ -2227,7 +2222,6 @@
         ],
         "structDefinition" : {
           "name" : "GigabitEthernet1/0",
-          "accessVlan" : 0,
           "active" : true,
           "allPrefixes" : [
             "10.12.11.1/24"
@@ -2280,7 +2274,6 @@
         ],
         "structDefinition" : {
           "name" : "Loopback0",
-          "accessVlan" : 0,
           "active" : true,
           "allPrefixes" : [
             "1.1.1.1/32"
