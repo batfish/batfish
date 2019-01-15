@@ -16,18 +16,15 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
-import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecProtocol;
-import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
@@ -114,15 +111,6 @@ public class VyosConfiguration extends VendorConfiguration {
       Ip peerAddress = ipsecPeerEntry.getKey();
       IpsecPeer ipsecPeer = ipsecPeerEntry.getValue();
       String newIpsecVpnName = peerAddress.toString();
-      String newIkeGatewayName = newIpsecVpnName;
-      IpsecVpn newIpsecVpn = new IpsecVpn(newIpsecVpnName, _c);
-      _c.getIpsecVpns().put(newIpsecVpnName, newIpsecVpn);
-      IkeGateway newIkeGateway = new IkeGateway(newIkeGatewayName);
-      _c.getIkeGateways().put(newIkeGatewayName, newIkeGateway);
-      newIpsecVpn.setIkeGateway(newIkeGateway);
-      newIkeGateway.setLocalId(ipsecPeer.getAuthenticationId());
-      newIkeGateway.setRemoteId(ipsecPeer.getAuthenticationRemoteId());
-      newIkeGateway.setAddress(peerAddress);
       Ip localAddress = ipsecPeer.getLocalAddress();
       org.batfish.datamodel.Interface externalInterface = _ipToInterfaceMap.get(localAddress);
       if (externalInterface == null) {
@@ -131,17 +119,13 @@ public class VyosConfiguration extends VendorConfiguration {
                 + newIpsecVpnName
                 + "\" from local-address: "
                 + localAddress);
-      } else {
-        newIkeGateway.setExternalInterface(externalInterface);
       }
 
       // bind interface
       String bindInterfaceName = ipsecPeer.getBindInterface();
       org.batfish.datamodel.Interface newBindInterface =
           _c.getDefaultVrf().getInterfaces().get(bindInterfaceName);
-      if (newBindInterface != null) {
-        newIpsecVpn.setBindInterface(newBindInterface);
-      } else {
+      if (newBindInterface == null) {
         _w.redFlag("Reference to undefined bind-interface: \"" + bindInterfaceName + "\"");
       }
 
@@ -151,11 +135,6 @@ public class VyosConfiguration extends VendorConfiguration {
       if (ikeGroup == null) {
         _w.redFlag("Reference to undefined ike-group: \"" + ikeGroupName + "\"");
       } else {
-        IkePolicy newIkePolicy = new IkePolicy(ikeGroupName);
-        _c.getIkePolicies().put(ikeGroupName, newIkePolicy);
-        newIkeGateway.setIkePolicy(newIkePolicy);
-        newIkePolicy.setPreSharedKeyHash(ipsecPeer.getAuthenticationPreSharedSecretHash());
-
         IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(ikeGroupName);
 
         // pre-shared-key
@@ -175,17 +154,6 @@ public class VyosConfiguration extends VendorConfiguration {
           String newIkeProposalName =
               ikeGroupName + ":" + Integer.toString(ikeProposalEntry.getKey());
           IkeProposal ikeProposal = ikeProposalEntry.getValue();
-          org.batfish.datamodel.IkeProposal newIkeProposal =
-              new org.batfish.datamodel.IkeProposal(newIkeProposalName);
-          _c.getIkeProposals().put(newIkeProposalName, newIkeProposal);
-          newIkePolicy.getProposals().put(newIkeProposalName, newIkeProposal);
-          newIkeProposal.setDiffieHellmanGroup(ikeProposal.getDhGroup());
-          newIkeProposal.setEncryptionAlgorithm(ikeProposal.getEncryptionAlgorithm());
-          newIkeProposal.setLifetimeSeconds(ikeGroup.getLifetimeSeconds());
-          newIkeProposal.setAuthenticationAlgorithm(
-              ikeProposal.getHashAlgorithm().toIkeAuthenticationAlgorithm());
-          newIkeProposal.setAuthenticationMethod(ipsecPeer.getAuthenticationMode());
-
           IkePhase1Proposal ikePhase1Proposal = new IkePhase1Proposal(newIkeProposalName);
           ikePhase1Proposal.setDiffieHellmanGroup(ikeProposal.getDhGroup());
           ikePhase1Proposal.setEncryptionAlgorithm(ikeProposal.getEncryptionAlgorithm());
@@ -204,9 +172,6 @@ public class VyosConfiguration extends VendorConfiguration {
       if (espGroup == null) {
         _w.redFlag("Reference to undefined esp-group: \"" + espGroupName + "\"");
       } else {
-        IpsecPolicy newIpsecPolicy = new IpsecPolicy(espGroupName);
-        _c.getIpsecPolicies().put(espGroupName, newIpsecPolicy);
-        newIpsecVpn.setIpsecPolicy(newIpsecPolicy);
         if (espGroup.getPfsSource() == null) {
           espGroup.setPfsSource(PfsSource.IKE_GROUP);
         }
@@ -215,11 +180,9 @@ public class VyosConfiguration extends VendorConfiguration {
             break;
 
           case ESP_GROUP:
-            newIpsecPolicy.setPfsKeyGroup(espGroup.getPfsDhGroup());
             break;
 
           case IKE_GROUP:
-            newIpsecPolicy.setPfsKeyGroupDynamicIke(true);
             break;
 
           default:
@@ -228,17 +191,7 @@ public class VyosConfiguration extends VendorConfiguration {
 
         // convert contained esp proposals
         for (Entry<Integer, EspProposal> espProposalEntry : espGroup.getProposals().entrySet()) {
-          String newIpsecProposalName =
-              espGroupName + ":" + Integer.toString(espProposalEntry.getKey());
-          EspProposal espProposal = espProposalEntry.getValue();
-          IpsecProposal newIpsecProposal = new IpsecProposal(newIpsecProposalName);
-          _c.getIpsecProposals().put(newIpsecProposalName, newIpsecProposal);
-          newIpsecPolicy.getProposals().add(newIpsecProposal);
-          newIpsecProposal.setAuthenticationAlgorithm(
-              espProposal.getHashAlgorithm().toIpsecAuthenticationAlgorithm());
-          newIpsecProposal.setEncryptionAlgorithm(espProposal.getEncryptionAlgorithm());
-          newIpsecProposal.setLifetimeSeconds(espGroup.getLifetimeSeconds());
-          newIpsecProposal.getProtocols().add(IpsecProtocol.ESP);
+
         }
       }
     }

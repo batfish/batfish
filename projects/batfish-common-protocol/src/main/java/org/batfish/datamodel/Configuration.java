@@ -212,12 +212,6 @@ public final class Configuration implements Serializable {
 
   private String _domainName;
 
-  private NavigableMap<String, IkeGateway> _ikeGateways;
-
-  private NavigableMap<String, IkePolicy> _ikePolicies;
-
-  private NavigableMap<String, IkeProposal> _ikeProposals;
-
   private @Nonnull NavigableMap<String, IkePhase1Key> _ikePhase1keys;
 
   private NavigableMap<String, IkePhase1Proposal> _ikePhase1Proposals;
@@ -239,12 +233,6 @@ public final class Configuration implements Serializable {
   private NavigableMap<String, IpsecPhase2Policy> _ipsecPhase2Policies;
 
   private NavigableMap<String, IpsecPhase2Proposal> _ipsecPhase2Proposals;
-
-  private NavigableMap<String, IpsecPolicy> _ipsecPolicies;
-
-  private NavigableMap<String, IpsecProposal> _ipsecProposals;
-
-  private NavigableMap<String, IpsecVpn> _ipsecVpns;
 
   private NavigableSet<String> _loggingServers;
 
@@ -319,9 +307,6 @@ public final class Configuration implements Serializable {
     _configurationFormat = configurationFormat;
     _dnsServers = new TreeSet<>();
     _domainName = null;
-    _ikeGateways = new TreeMap<>();
-    _ikePolicies = new TreeMap<>();
-    _ikeProposals = new TreeMap<>();
     _ikePhase1keys = ImmutableSortedMap.of();
     _ikePhase1Policies = new TreeMap<>();
     _ikePhase1Proposals = new TreeMap<>();
@@ -333,9 +318,6 @@ public final class Configuration implements Serializable {
     _ipsecPeerConfigs = ImmutableSortedMap.of();
     _ipsecPhase2Policies = ImmutableSortedMap.of();
     _ipsecPhase2Proposals = ImmutableSortedMap.of();
-    _ipsecPolicies = new TreeMap<>();
-    _ipsecProposals = new TreeMap<>();
-    _ipsecVpns = new TreeMap<>();
     _loggingServers = new TreeSet<>();
     _mlags = ImmutableSortedMap.of();
     _normalVlanRange = new SubRange(VLAN_NORMAL_MIN_DEFAULT, VLAN_NORMAL_MAX_DEFAULT);
@@ -487,24 +469,6 @@ public final class Configuration implements Serializable {
     return _name;
   }
 
-  @JsonProperty(PROP_IKE_GATEWAYS)
-  @JsonPropertyDescription("Dictionary of all IKE gateways for this node.")
-  public NavigableMap<String, IkeGateway> getIkeGateways() {
-    return _ikeGateways;
-  }
-
-  @JsonProperty(PROP_IKE_POLICIES)
-  @JsonPropertyDescription("Dictionary of all IKE policies for this node.")
-  public NavigableMap<String, IkePolicy> getIkePolicies() {
-    return _ikePolicies;
-  }
-
-  @JsonProperty(PROP_IKE_PROPOSALS)
-  @JsonPropertyDescription("Dictionary of all IKE proposals for this node.")
-  public NavigableMap<String, IkeProposal> getIkeProposals() {
-    return _ikeProposals;
-  }
-
   @JsonProperty(PROP_IKE_PHASE1_KEYS)
   @JsonPropertyDescription("Dictionary of all IKE phase1 keys for this node.")
   public NavigableMap<String, IkePhase1Key> getIkePhase1Keys() {
@@ -573,24 +537,6 @@ public final class Configuration implements Serializable {
   @JsonPropertyDescription("Dictionary of all IPSec phase 2 proposals for this node.")
   public NavigableMap<String, IpsecPhase2Proposal> getIpsecPhase2Proposals() {
     return _ipsecPhase2Proposals;
-  }
-
-  @JsonProperty(PROP_IPSEC_POLICIES)
-  @JsonPropertyDescription("Dictionary of all IPSEC policies for this node.")
-  public NavigableMap<String, IpsecPolicy> getIpsecPolicies() {
-    return _ipsecPolicies;
-  }
-
-  @JsonProperty(PROP_IPSEC_PROPOSALS)
-  @JsonPropertyDescription("Dictionary of all IPSEC proposals for this node.")
-  public NavigableMap<String, IpsecProposal> getIpsecProposals() {
-    return _ipsecProposals;
-  }
-
-  @JsonProperty(PROP_IPSEC_VPNS)
-  @JsonPropertyDescription("Dictionary of all IPSEC VPNs for this node.")
-  public NavigableMap<String, IpsecVpn> getIpsecVpns() {
-    return _ipsecVpns;
   }
 
   @JsonProperty(PROP_LOGGING_SERVERS)
@@ -806,12 +752,10 @@ public final class Configuration implements Serializable {
 
   @JsonProperty(PROP_IKE_GATEWAYS)
   public void setIkeGateways(NavigableMap<String, IkeGateway> ikeGateways) {
-    _ikeGateways = ikeGateways;
   }
 
   @JsonProperty(PROP_IKE_POLICIES)
   public void setIkePolicies(NavigableMap<String, IkePolicy> ikePolicies) {
-    _ikePolicies = ikePolicies;
   }
 
   @JsonProperty(PROP_IKE_PHASE1_KEYS)
@@ -832,7 +776,6 @@ public final class Configuration implements Serializable {
 
   @JsonProperty(PROP_IKE_PROPOSALS)
   public void setIkeProposals(NavigableMap<String, IkeProposal> ikeProposals) {
-    _ikeProposals = ikeProposals;
   }
 
   @JsonProperty(PROP_INTERFACES)
@@ -884,17 +827,14 @@ public final class Configuration implements Serializable {
 
   @JsonProperty(PROP_IPSEC_POLICIES)
   public void setIpsecPolicies(NavigableMap<String, IpsecPolicy> ipsecPolicies) {
-    _ipsecPolicies = ipsecPolicies;
   }
 
   @JsonProperty(PROP_IPSEC_PROPOSALS)
   public void setIpsecProposals(NavigableMap<String, IpsecProposal> ipsecProposals) {
-    _ipsecProposals = ipsecProposals;
   }
 
   @JsonProperty(PROP_IPSEC_VPNS)
   public void setIpsecVpns(NavigableMap<String, IpsecVpn> ipsecVpns) {
-    _ipsecVpns = ipsecVpns;
   }
 
   @JsonProperty(PROP_LOGGING_SERVERS)

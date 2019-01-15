@@ -20,12 +20,10 @@ import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Key;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Proposal;
 import static org.batfish.representation.cisco.CiscoConversions.toIpAccessList;
-import static org.batfish.representation.cisco.CiscoConversions.toIpSecPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.toIpSpace;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPeerConfig;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Proposal;
-import static org.batfish.representation.cisco.CiscoConversions.toIpsecProposal;
 
 import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
@@ -76,10 +74,8 @@ import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Proposal;
-import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
@@ -95,8 +91,6 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
-import org.batfish.datamodel.IpsecPolicy;
-import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Mlag;
@@ -2038,15 +2032,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return iface.getMtu();
   }
 
-  private static IkeProposal toIkeProposal(IsakmpPolicy isakmpPolicy) {
-    IkeProposal ikeProposal = new IkeProposal(isakmpPolicy.getName().toString());
-    ikeProposal.setDiffieHellmanGroup(isakmpPolicy.getDiffieHellmanGroup());
-    ikeProposal.setAuthenticationMethod(isakmpPolicy.getAuthenticationMethod());
-    ikeProposal.setEncryptionAlgorithm(isakmpPolicy.getEncryptionAlgorithm());
-    ikeProposal.setLifetimeSeconds(isakmpPolicy.getLifetimeSeconds());
-    ikeProposal.setAuthenticationAlgorithm(isakmpPolicy.getHashAlgorithm());
-    return ikeProposal;
-  }
 
   private org.batfish.datamodel.Interface toInterface(
       String ifaceName, Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
@@ -3296,11 +3281,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
     }
 
-    // ISAKMP policies to IKE proposals
+    // ISAKMP policies to IKE Phase 1 proposals
     for (Entry<Integer, IsakmpPolicy> e : _isakmpPolicies.entrySet()) {
-      IkeProposal ikeProposal = toIkeProposal(e.getValue());
-      c.getIkeProposals().put(ikeProposal.getName(), ikeProposal);
-
       IkePhase1Proposal ikePhase1Proposal = toIkePhase1Proposal(e.getValue());
       c.getIkePhase1Proposals().put(ikePhase1Proposal.getName(), ikePhase1Proposal);
     }
@@ -3310,8 +3292,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     resolveKeyringIfaceNames(_interfaces, _keyrings);
     resolveIsakmpProfileIfaceNames(_interfaces, _isakmpProfiles);
     resolveTunnelIfaceNames(_interfaces);
-
-    addIkePoliciesAndGateways(c);
 
     // keyrings to IKE phase 1 keys
     ImmutableSortedMap.Builder<String, IkePhase1Key> ikePhase1KeysBuilder =
@@ -3334,7 +3314,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     ImmutableSortedMap.Builder<String, IpsecPhase2Proposal> ipsecPhase2ProposalsBuilder =
         ImmutableSortedMap.naturalOrder();
     for (Entry<String, IpsecTransformSet> e : _ipsecTransformSets.entrySet()) {
-      c.getIpsecProposals().put(e.getKey(), toIpsecProposal(e.getValue()));
       ipsecPhase2ProposalsBuilder.put(e.getKey(), toIpsecPhase2Proposal(e.getValue()));
     }
     c.setIpsecPhase2Proposals(ipsecPhase2ProposalsBuilder.build());
@@ -3343,18 +3322,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
     ImmutableSortedMap.Builder<String, IpsecPhase2Policy> ipsecPhase2PoliciesBuilder =
         ImmutableSortedMap.naturalOrder();
     for (IpsecProfile ipsecProfile : _ipsecProfiles.values()) {
-      IpsecPolicy ipsecPolicy = toIpSecPolicy(c, ipsecProfile);
-      c.getIpsecPolicies().put(ipsecPolicy.getName(), ipsecPolicy);
-      ipsecPhase2PoliciesBuilder.put(ipsecPolicy.getName(), toIpsecPhase2Policy(ipsecProfile));
+      ipsecPhase2PoliciesBuilder.put(ipsecProfile.getName(), toIpsecPhase2Policy(ipsecProfile));
     }
     c.setIpsecPhase2Policies(ipsecPhase2PoliciesBuilder.build());
 
-    // crypto-map sets
+    // crypto-map sets to IPsec Peer Configs
     for (CryptoMapSet cryptoMapSet : _cryptoMapSets.values()) {
       convertCryptoMapSet(c, cryptoMapSet, _cryptoMapSets, _w);
     }
 
-    // IPSec vpns
+    // IPsec tunnels to IPsec Peer Configs
     ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigBuilder =
         ImmutableSortedMap.naturalOrder();
     ipsecPeerConfigBuilder.putAll(c.getIpsecPeerConfigs());
@@ -3367,25 +3344,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
           _w.redFlag(String.format("No IPSec Profile set for IPSec tunnel %s", name));
           continue;
         }
-        IpsecVpn ipsecVpn = new IpsecVpn(name, c);
-        ipsecVpn.setBindInterface(c.getAllInterfaces().get(name));
-        ipsecVpn.setIpsecPolicy(c.getIpsecPolicies().get(tunnel.getIpsecProfileName()));
-        Ip source = tunnel.getSourceAddress();
-        Ip destination = tunnel.getDestination();
-        if (source == null || destination == null) {
-          _w.redFlag("Can't match IkeGateway: tunnel source or destination is not set for " + name);
-        } else {
-          for (IkeGateway ikeGateway : c.getIkeGateways().values()) {
-            if (source.equals(ikeGateway.getLocalIp())
-                && destination.equals(ikeGateway.getAddress())) {
-              ipsecVpn.setIkeGateway(ikeGateway);
-            }
-          }
-          if (ipsecVpn.getIkeGateway() == null) {
-            _w.redFlag("Can't find matching IkeGateway for " + name);
-          }
-        }
-        c.getIpsecVpns().put(ipsecVpn.getName(), ipsecVpn);
         // convert to IpsecPeerConfig
         ipsecPeerConfigBuilder.put(name, toIpsecPeerConfig(tunnel, name, this, c));
       }
@@ -4156,62 +4114,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public static String computeSecurityLevelZoneName(int securityLevel) {
     return String.format("SECURITY_LEVEL_%s", securityLevel);
-  }
-
-  private void addIkePoliciesAndGateways(Configuration c) {
-    // get IKE gateways and policies from Cisco isakmp profiles and keyrings
-    for (Entry<String, IsakmpProfile> e : _isakmpProfiles.entrySet()) {
-      String name = e.getKey();
-      IsakmpProfile isakmpProfile = e.getValue();
-      IkePolicy ikePolicy = new IkePolicy(name);
-      c.getIkePolicies().put(name, ikePolicy);
-      ikePolicy.setProposals(c.getIkeProposals());
-
-      String keyringName = isakmpProfile.getKeyring();
-      if (keyringName == null) {
-        _w.redFlag(
-            String.format(
-                "Cannot get PSK hash since keyring not configured for isakmpProfile %s", name));
-      } else if (_keyrings.containsKey(keyringName)) {
-        Keyring keyring = _keyrings.get(keyringName);
-        // LocalAddress can only be Ip.AUTO if LocalInterfaceName contains an invalid interface
-        if (Objects.equals(isakmpProfile.getLocalAddress(), Ip.AUTO)) {
-          _w.redFlag(
-              String.format(
-                  "Invalid local address interface configured for ISAKMP profile %s", name));
-        } else if (keyring.match(
-            isakmpProfile.getLocalAddress(), isakmpProfile.getMatchIdentity())) {
-          ikePolicy.setPreSharedKeyHash(keyring.getKey());
-        } else {
-          _w.redFlag(
-              String.format(
-                  "The addresses of keyring %s do not match isakmpProfile %s", keyringName, name));
-        }
-      }
-
-      Ip localAddress = isakmpProfile.getLocalAddress();
-      IpWildcard remoteIdentity = isakmpProfile.getMatchIdentity();
-      if (localAddress == null || remoteIdentity == null) {
-        _w.redFlag(
-            String.format(
-                "Can't get IkeGateway: Local or remote address is not set for isakmpProfile %s",
-                name));
-      } else {
-        IkeGateway ikeGateway = new IkeGateway(e.getKey());
-        c.getIkeGateways().put(name, ikeGateway);
-        ikeGateway.setAddress(remoteIdentity.toPrefix().getStartIp());
-        Interface oldIface = getInterfaceByTunnelAddresses(localAddress, remoteIdentity.toPrefix());
-        if (oldIface != null) {
-          ikeGateway.setExternalInterface(c.getAllInterfaces().get(oldIface.getName()));
-        } else {
-          _w.redFlag(
-              String.format(
-                  "External interface not found for ikeGateway for isakmpProfile %s", name));
-        }
-        ikeGateway.setIkePolicy(ikePolicy);
-        ikeGateway.setLocalIp(isakmpProfile.getLocalAddress());
-      }
-    }
   }
 
   private boolean isAclUsedForRouting(String aclName) {

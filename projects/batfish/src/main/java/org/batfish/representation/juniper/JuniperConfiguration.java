@@ -1128,58 +1128,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newCl;
   }
 
-  private org.batfish.datamodel.IkeGateway toIkeGateway(IkeGateway oldIkeGateway) {
-    String name = oldIkeGateway.getName();
-    org.batfish.datamodel.IkeGateway newIkeGateway = new org.batfish.datamodel.IkeGateway(name);
-
-    // address
-    newIkeGateway.setAddress(oldIkeGateway.getAddress());
-    newIkeGateway.setLocalIp(oldIkeGateway.getLocalAddress());
-
-    // external interface
-    Interface oldExternalInterface = oldIkeGateway.getExternalInterface();
-    if (oldExternalInterface != null) {
-      org.batfish.datamodel.Interface newExternalInterface =
-          _c.getAllInterfaces().get(oldExternalInterface.getName());
-      if (newExternalInterface != null) {
-        newIkeGateway.setExternalInterface(newExternalInterface);
-      }
-    } else {
-      _w.redFlag("No external interface set for ike gateway: '" + name + "'");
-    }
-
-    // ike policy
-    String ikePolicyName = oldIkeGateway.getIkePolicy();
-    org.batfish.datamodel.IkePolicy newIkePolicy = _c.getIkePolicies().get(ikePolicyName);
-    if (newIkePolicy != null) {
-      newIkeGateway.setIkePolicy(newIkePolicy);
-    }
-
-    return newIkeGateway;
-  }
-
-  private org.batfish.datamodel.IkePolicy toIkePolicy(IkePolicy oldIkePolicy) {
-    String name = oldIkePolicy.getName();
-    org.batfish.datamodel.IkePolicy newIkePolicy = new org.batfish.datamodel.IkePolicy(name);
-
-    // pre-shared-key
-    newIkePolicy.setPreSharedKeyHash(oldIkePolicy.getPreSharedKeyHash());
-
-    // ike proposals
-    oldIkePolicy
-        .getProposals()
-        .forEach(
-            ikeProposalName -> {
-              org.batfish.datamodel.IkeProposal ikeProposal =
-                  _c.getIkeProposals().get(ikeProposalName);
-              if (ikeProposal != null) {
-                newIkePolicy.getProposals().put(ikeProposalName, ikeProposal);
-              }
-            });
-
-    return newIkePolicy;
-  }
-
   /**
    * Converts {@link IkePolicy} to {@link IkePhase1Policy} and puts the used pre-shared key as a
    * {@link IkePhase1Key} in the passed-in {@code ikePhase1Keys}
@@ -1203,17 +1151,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     ikePhase1Policy.setIkePhase1Proposals(ikePhase1ProposalBuilder.build());
 
     return ikePhase1Policy;
-  }
-
-  private org.batfish.datamodel.IkeProposal toIkeProposal(IkeProposal ikeProposal) {
-    org.batfish.datamodel.IkeProposal newIkeProposal =
-        new org.batfish.datamodel.IkeProposal(ikeProposal.getName());
-    newIkeProposal.setDiffieHellmanGroup(ikeProposal.getDiffieHellmanGroup());
-    newIkeProposal.setAuthenticationMethod(ikeProposal.getAuthenticationMethod());
-    newIkeProposal.setEncryptionAlgorithm(ikeProposal.getEncryptionAlgorithm());
-    newIkeProposal.setLifetimeSeconds(ikeProposal.getLifetimeSeconds());
-    newIkeProposal.setAuthenticationAlgorithm(ikeProposal.getAuthenticationAlgorithm());
-    return newIkeProposal;
   }
 
   private IkePhase1Proposal toIkePhase1Proposal(IkeProposal ikeProposal) {
@@ -1658,28 +1595,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return fwTermsToIpAccessList(name, filter.getTerms().values(), matchSrcInterface);
   }
 
-  private org.batfish.datamodel.IpsecPolicy toIpsecPolicy(IpsecPolicy oldIpsecPolicy) {
-    String name = oldIpsecPolicy.getName();
-    org.batfish.datamodel.IpsecPolicy newIpsecPolicy = new org.batfish.datamodel.IpsecPolicy(name);
-
-    // ipsec proposals
-    oldIpsecPolicy
-        .getProposals()
-        .forEach(
-            ipsecProposalName -> {
-              org.batfish.datamodel.IpsecProposal ipsecProposal =
-                  _c.getIpsecProposals().get(ipsecProposalName);
-              if (ipsecProposal != null) {
-                newIpsecPolicy.getProposals().add(ipsecProposal);
-              }
-            });
-
-    // perfect-forward-secrecy diffie-hellman key group
-    newIpsecPolicy.setPfsKeyGroup(oldIpsecPolicy.getPfsKeyGroup());
-
-    return newIpsecPolicy;
-  }
-
   @Nullable
   private IpsecPeerConfig toIpsecPeerConfig(IpsecVpn ipsecVpn) {
     IpsecStaticPeerConfig.Builder ipsecStaticConfigBuilder = IpsecStaticPeerConfig.builder();
@@ -1742,48 +1657,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     ipsecPhase2Proposal.setIpsecEncapsulationMode(oldIpsecProposal.getIpsecEncapsulationMode());
 
     return ipsecPhase2Proposal;
-  }
-
-  private org.batfish.datamodel.IpsecVpn toIpsecVpn(IpsecVpn oldIpsecVpn) {
-    String name = oldIpsecVpn.getName();
-    org.batfish.datamodel.IpsecVpn newIpsecVpn = new org.batfish.datamodel.IpsecVpn(name, _c);
-
-    // bind interface
-    Interface oldBindInterface = oldIpsecVpn.getBindInterface();
-    if (oldBindInterface != null) {
-      String bindInterfaceName = oldBindInterface.getName();
-      org.batfish.datamodel.Interface newBindInterface =
-          _c.getAllInterfaces().get(bindInterfaceName);
-      if (newBindInterface != null) {
-        newIpsecVpn.setBindInterface(newBindInterface);
-      }
-    } else {
-      _w.redFlag("No bind interface set for ipsec vpn: '" + name + "'");
-    }
-
-    // ike gateway
-    String ikeGatewayName = oldIpsecVpn.getGateway();
-    if (ikeGatewayName != null) {
-      org.batfish.datamodel.IkeGateway ikeGateway = _c.getIkeGateways().get(ikeGatewayName);
-      if (ikeGateway != null) {
-        newIpsecVpn.setIkeGateway(ikeGateway);
-      }
-    } else {
-      _w.redFlag("No ike gateway set for ipsec vpn: '" + name + "'");
-    }
-
-    // ipsec policy
-    String ipsecPolicyName = oldIpsecVpn.getIpsecPolicy();
-    if (ipsecPolicyName != null) {
-      org.batfish.datamodel.IpsecPolicy ipsecPolicy = _c.getIpsecPolicies().get(ipsecPolicyName);
-      if (ipsecPolicy != null) {
-        newIpsecVpn.setIpsecPolicy(ipsecPolicy);
-      }
-    } else {
-      _w.redFlag("No ipsec policy set for ipsec vpn: '" + name + "'");
-    }
-
-    return newIpsecVpn;
   }
 
   /** Convert address book into corresponding IpSpaces */
@@ -2324,14 +2197,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
-    // convert IKE proposals
-    _masterLogicalSystem
-        .getIkeProposals()
-        .values()
-        .forEach(
-            ikeProposal ->
-                _c.getIkeProposals().put(ikeProposal.getName(), toIkeProposal(ikeProposal)));
-
     _masterLogicalSystem
         .getIkeProposals()
         .values()
@@ -2347,21 +2212,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<String, IkePolicy> e : _masterLogicalSystem.getIkePolicies().entrySet()) {
       String name = e.getKey();
       IkePolicy oldIkePolicy = e.getValue();
-      org.batfish.datamodel.IkePolicy newPolicy = toIkePolicy(oldIkePolicy);
-      _c.getIkePolicies().put(name, newPolicy);
       // storing IKE phase 1 policy
       _c.getIkePhase1Policies().put(name, toIkePhase1Policy(oldIkePolicy, ikePhase1KeysBuilder));
     }
 
     _c.setIkePhase1Keys(ikePhase1KeysBuilder.build());
-
-    // convert ike gateways
-    for (Entry<String, IkeGateway> e : _masterLogicalSystem.getIkeGateways().entrySet()) {
-      String name = e.getKey();
-      IkeGateway oldIkeGateway = e.getValue();
-      org.batfish.datamodel.IkeGateway newIkeGateway = toIkeGateway(oldIkeGateway);
-      _c.getIkeGateways().put(name, newIkeGateway);
-    }
 
     // convert ipsec proposals
     ImmutableSortedMap.Builder<String, IpsecPhase2Proposal> ipsecPhase2ProposalsBuilder =
@@ -2370,7 +2225,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .getIpsecProposals()
         .forEach(
             (ipsecProposalName, ipsecProposal) -> {
-              _c.getIpsecProposals().put(ipsecProposalName, toIpsecProposal(ipsecProposal));
               ipsecPhase2ProposalsBuilder.put(
                   ipsecProposalName, toIpsecPhase2Proposal(ipsecProposal));
             });
@@ -2380,26 +2234,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
     ImmutableSortedMap.Builder<String, IpsecPhase2Policy> ipsecPhase2PoliciesBuilder =
         ImmutableSortedMap.naturalOrder();
     for (Entry<String, IpsecPolicy> e : _masterLogicalSystem.getIpsecPolicies().entrySet()) {
-      String name = e.getKey();
-      IpsecPolicy oldIpsecPolicy = e.getValue();
-      org.batfish.datamodel.IpsecPolicy newPolicy = toIpsecPolicy(oldIpsecPolicy);
-      _c.getIpsecPolicies().put(name, newPolicy);
-      ipsecPhase2PoliciesBuilder.put(name, toIpsecPhase2Policy(oldIpsecPolicy));
+      ipsecPhase2PoliciesBuilder.put(e.getKey(), toIpsecPhase2Policy(e.getValue()));
     }
     _c.setIpsecPhase2Policies(ipsecPhase2PoliciesBuilder.build());
 
-    // convert ipsec vpns
+    // convert Tunnels
     ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigBuilder =
         ImmutableSortedMap.naturalOrder();
     for (Entry<String, IpsecVpn> e : _masterLogicalSystem.getIpsecVpns().entrySet()) {
-      String name = e.getKey();
-      IpsecVpn oldIpsecVpn = e.getValue();
-      org.batfish.datamodel.IpsecVpn newIpsecVpn = toIpsecVpn(oldIpsecVpn);
-      _c.getIpsecVpns().put(name, newIpsecVpn);
-
-      IpsecPeerConfig ipsecPeerConfig = toIpsecPeerConfig(oldIpsecVpn);
+      IpsecPeerConfig ipsecPeerConfig = toIpsecPeerConfig(e.getValue());
       if (ipsecPeerConfig != null) {
-        ipsecPeerConfigBuilder.put(name, ipsecPeerConfig);
+        ipsecPeerConfigBuilder.put(e.getKey(), ipsecPeerConfig);
       }
     }
     _c.setIpsecPeerConfigs(ipsecPeerConfigBuilder.build());
