@@ -77,7 +77,7 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
 
   @Override
   public final int compareTo(@Nonnull CiscoIosNat other) {
-    return Comparator.comparingInt(NatUtil::getTypePrecedence)
+    return Comparator.comparingInt(CiscoIosNatUtil::getTypePrecedence)
         .thenComparing(this::natCompare)
         .compare(this, other);
   }

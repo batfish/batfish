@@ -2330,7 +2330,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .collect(Collectors.toMap(SimpleEntry::getKey, entry -> entry.getValue().get()));
     if (!convertedIncomingNats.isEmpty()) {
       newIface.setIncomingTransformation(
-          NatUtil.toIncomingTransformationChain(convertedIncomingNats));
+          CiscoIosNatUtil.toIncomingTransformationChain(convertedIncomingNats));
     }
 
     Map<CiscoIosNat, Transformation.Builder> convertedOutgoingNats =
@@ -2345,7 +2345,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .collect(Collectors.toMap(SimpleEntry::getKey, entry -> entry.getValue().get()));
     if (!convertedOutgoingNats.isEmpty()) {
       newIface.setOutgoingTransformation(
-          NatUtil.toOutgoingTransformationChain(convertedOutgoingNats));
+          CiscoIosNatUtil.toOutgoingTransformationChain(convertedOutgoingNats));
     }
   }
 
