@@ -92,6 +92,7 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
+import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -128,11 +129,15 @@ import org.batfish.vendor.VendorConfiguration;
 
 public final class JuniperConfiguration extends VendorConfiguration {
 
+  public static final String ACL_NAME_COMBINED_INCOMING = "~COMBINED_INCOMING_FILTER~";
+
   public static final String ACL_NAME_COMBINED_OUTGOING = "~COMBINED_OUTGOING_FILTER~";
 
   public static final String ACL_NAME_EXISTING_CONNECTION = "~EXISTING_CONNECTION~";
 
   public static final String ACL_NAME_GLOBAL_POLICY = "~GLOBAL_SECURITY_POLICY~";
+
+  public static final String ACL_NAME_SCREEN = "~SCREEN~";
 
   public static final String ACL_NAME_SECURITY_POLICY = "~SECURITY_POLICIES_TO~";
 
@@ -1276,12 +1281,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
         newIface.setInboundFilter(zoneInboundFilterList);
       }
     }
+
     String inAclName = iface.getIncomingFilter();
     if (inAclName != null) {
       IpAccessList inAcl = _c.getIpAccessLists().get(inAclName);
       if (inAcl != null) {
         FirewallFilter inFilter = _masterLogicalSystem.getFirewallFilters().get(inAclName);
-        newIface.setIncomingFilter(inAcl);
         if (inFilter.getRoutingPolicy()) {
           RoutingPolicy routingPolicy = _c.getRoutingPolicies().get(inAclName);
           if (routingPolicy != null) {
@@ -1292,11 +1297,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
         }
       }
     }
-
+    IpAccessList composedInAcl = buildIncomingFilter(iface);
+    if (composedInAcl != null) {
+      newIface.setIncomingFilter(composedInAcl);
+    }
     newIface.setDestinationNats(buildDestinationNats(iface));
 
     // Assume the config will need security policies only if it has zones
-    IpAccessList securityPolicyAcl = null;
+    IpAccessList securityPolicyAcl;
     if (!_masterLogicalSystem.getZones().isEmpty()) {
       String securityPolicyAclName = ACL_NAME_SECURITY_POLICY + iface.getName();
       securityPolicyAcl = buildSecurityPolicyAcl(securityPolicyAclName, zone);
@@ -1438,6 +1446,99 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     return builder.build();
+  }
+
+  @Nullable
+  @VisibleForTesting
+  static IpAccessList buildScreen(@Nullable Screen screen) {
+    if (screen == null || screen.getAction() == ScreenActionAlarm.INSTANCE) {
+      return null;
+    }
+
+    List<AclLineMatchExpr> matches =
+        screen
+            .getScreenOptions()
+            .stream()
+            .map(ScreenOption::toAclLineMatchExpr)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
+    if (matches.isEmpty()) {
+      return null;
+    }
+
+    return IpAccessList.builder()
+        .setName(ACL_NAME_SCREEN + screen.getName())
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.rejecting(new OrMatchExpr(matches)), IpAccessListLine.ACCEPT_ALL))
+        .build();
+  }
+
+  @Nullable
+  @VisibleForTesting
+  IpAccessList buildScreensPerInterface(Interface iface) {
+    Zone zone = _masterLogicalSystem.getInterfaceZones().get(iface.getName());
+    if (zone != null) {
+      List<AclLineMatchExpr> matches =
+          zone.getScreens()
+              .stream()
+              .map(
+                  screenName -> {
+                    Screen screen = _masterLogicalSystem.getScreens().get(screenName);
+                    String screenAclName = ACL_NAME_SCREEN + screenName;
+                    IpAccessList screenAcl =
+                        _c.getIpAccessLists()
+                            .computeIfAbsent(screenAclName, x -> buildScreen(screen));
+                    return screenAcl != null
+                        ? new PermittedByAcl(screenAcl.getName(), false)
+                        : null;
+                  })
+              .filter(Objects::nonNull)
+              .collect(Collectors.toList());
+
+      return matches.isEmpty()
+          ? null
+          : IpAccessList.builder()
+              .setName(ACL_NAME_SCREEN + iface.getName())
+              .setLines(ImmutableList.of(IpAccessListLine.accepting(new AndMatchExpr(matches))))
+              .build();
+    }
+
+    return null;
+  }
+
+  @Nullable
+  IpAccessList buildIncomingFilter(Interface iface) {
+    String screenAclName = ACL_NAME_SCREEN + iface.getName();
+    IpAccessList screenAcl =
+        _c.getIpAccessLists().computeIfAbsent(screenAclName, x -> buildScreensPerInterface(iface));
+    // merge screen options to incoming filter
+    String inAclName = iface.getIncomingFilter();
+    IpAccessList inAcl = inAclName != null ? _c.getIpAccessLists().get(inAclName) : null;
+
+    Set<AclLineMatchExpr> aclConjunctList;
+    if (screenAcl == null) {
+      return inAcl;
+    } else if (inAcl == null) {
+      aclConjunctList = ImmutableSet.of(new PermittedByAcl(screenAcl.getName(), false));
+    } else {
+      aclConjunctList =
+          ImmutableSet.of(
+              new PermittedByAcl(screenAcl.getName(), false), new PermittedByAcl(inAclName, false));
+    }
+
+    String combinedAclName = ACL_NAME_COMBINED_INCOMING + iface.getName();
+    IpAccessList combinedAcl =
+        IpAccessList.builder()
+            .setName(combinedAclName)
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting(new AndMatchExpr(aclConjunctList))))
+            .build();
+
+    _c.getIpAccessLists().put(combinedAclName, combinedAcl);
+    return combinedAcl;
   }
 
   /** Generate outgoing filter for the interface from existing outgoing filter */

@@ -233,7 +233,7 @@ AH_HEADER
 
 ALARM_WITHOUT_DROP
 :
-   'alarm_without_drop'
+   'alarm-without-drop'
 ;
 
 ALARM_THRESHOLD
@@ -3449,7 +3449,7 @@ LIFETIME_SECONDS
 
 LIMIT_SESSION
 :
-   'limit_session'
+   'limit-session'
 ;
 
 LINK_PROTECTION
@@ -4399,7 +4399,7 @@ PING
 
 PING_DEATH
 :
-   'ping_death'
+   'ping-death'
 ;
 
 POE
@@ -5522,6 +5522,26 @@ SWITCHOVER_ON_ROUTING_CRASH
    'switchover-on-routing-crash'
 ;
 
+SYN_ACK_ACK_PROXY
+:
+   'syn-ack-ack-proxy'
+;
+
+SYN_FIN
+:
+   'syn-fin'
+;
+
+SYN_FLOOD
+:
+   'syn-flood'
+;
+
+SYN_FRAG
+:
+   'syn-frag'
+;
+
 SYSLOG
 :
    'syslog'
@@ -6071,6 +6091,11 @@ WEBAPI
    'webapi'
 ;
 
+WHITE_LIST
+:
+   'white-list'
+;
+
 WHO
 :
    'who'
@@ -6084,6 +6109,11 @@ WIDE_METRICS_ONLY
 WILDCARD_ADDRESS
 :
    'wildcard-address' -> pushMode(M_WildcardAddress)
+;
+
+WINNUKE
+:
+   'winnuke'
 ;
 
 XAUTH
@@ -6403,44 +6433,14 @@ SINGLE_QUOTE
    '\''
 ;
 
-SYN_ACK_ACK_PROXY
-:
-   'syn-ack-ack-proxy'
-;
-
-SYN_FIN
-:
-   'syn-fin'
-;
-
-SYN_FLOOD
-:
-   'syn-flood'
-;
-
-SYN_FRAG
-:
-   'syn-frag'
-;
-
 UNDERSCORE
 :
    '_'
 ;
 
-WHITE_LIST
-:
-   'white-list'
-;
-
 WILDCARD
 :
    '<' ~'>'* '>' {setWildcard();}
-;
-
-WINNUKE
-:
-   'winnuke'
 ;
 
 WS

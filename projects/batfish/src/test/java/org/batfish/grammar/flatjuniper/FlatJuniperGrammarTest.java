@@ -138,6 +138,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.hasValue;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -155,6 +156,7 @@ import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishLogger;
@@ -206,7 +208,10 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
@@ -243,9 +248,11 @@ import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.juniper.ICMPLarge;
 import org.batfish.representation.juniper.InterfaceRange;
 import org.batfish.representation.juniper.InterfaceRangeMember;
 import org.batfish.representation.juniper.InterfaceRangeMemberRange;
+import org.batfish.representation.juniper.IpUnknownProtocol;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.Nat;
 import org.batfish.representation.juniper.Nat.Type;
@@ -261,6 +268,13 @@ import org.batfish.representation.juniper.NatRuleMatchSrcPort;
 import org.batfish.representation.juniper.NatRuleSet;
 import org.batfish.representation.juniper.NatRuleThenOff;
 import org.batfish.representation.juniper.NatRuleThenPool;
+import org.batfish.representation.juniper.Screen;
+import org.batfish.representation.juniper.ScreenActionAlarm;
+import org.batfish.representation.juniper.ScreenOption;
+import org.batfish.representation.juniper.TCPFinNoAck;
+import org.batfish.representation.juniper.TCPNoFlag;
+import org.batfish.representation.juniper.TCPSynFin;
+import org.batfish.representation.juniper.TCPWinnuke;
 import org.batfish.representation.juniper.Zone;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -3846,5 +3860,107 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testScreenOptions() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("screen-options");
+    Screen ids = juniperConfiguration.getMasterLogicalSystem().getScreens().get("IDS_OPTION_NAME");
+
+    assertThat(ids, not(nullValue()));
+
+    assertThat(ids.getAction(), equalTo(ScreenActionAlarm.INSTANCE));
+    assertThat(
+        ids.getScreenOptions(),
+        equalTo(
+            ImmutableList.of(
+                ICMPLarge.INSTANCE,
+                IpUnknownProtocol.INSTANCE,
+                TCPFinNoAck.INSTANCE,
+                TCPSynFin.INSTANCE,
+                TCPNoFlag.INSTANCE,
+                TCPWinnuke.INSTANCE)));
+  }
+
+  @Test
+  public void testScreenOptionsToVIModel() throws IOException {
+    Configuration config = parseConfig("screen-options");
+
+    IpAccessList inAcl = config.getIpAccessLists().get("FILTER1");
+    IpAccessList screenAcl = config.getIpAccessLists().get("~SCREEN~IDS_OPTION_NAME");
+    IpAccessList ifaceScreenAcl = config.getIpAccessLists().get("~SCREEN~ge-0/0/0.0");
+    IpAccessList combinedInAcl =
+        config.getIpAccessLists().get("~COMBINED_INCOMING_FILTER~ge-0/0/0.0");
+
+    assertThat(inAcl, notNullValue());
+    assertThat(screenAcl, notNullValue());
+    assertThat(ifaceScreenAcl, notNullValue());
+    assertThat(combinedInAcl, notNullValue());
+
+    List<ScreenOption> supportedOptions =
+        ImmutableList.of(
+            ICMPLarge.INSTANCE,
+            IpUnknownProtocol.INSTANCE,
+            TCPFinNoAck.INSTANCE,
+            TCPSynFin.INSTANCE,
+            TCPNoFlag.INSTANCE,
+            TCPWinnuke.INSTANCE);
+
+    assertThat(
+        inAcl,
+        equalTo(
+            IpAccessList.builder()
+                .setName("FILTER1")
+                .setLines(
+                    ImmutableList.of(
+                        new IpAccessListLine(
+                            LineAction.PERMIT,
+                            AclLineMatchExprs.match(
+                                HeaderSpace.builder()
+                                    .setSrcIps(new IpWildcard(Ip.parse("1.2.3.6")).toIpSpace())
+                                    .build()),
+                            "TERM")))
+                .build()));
+
+    assertThat(
+        screenAcl,
+        equalTo(
+            IpAccessList.builder()
+                .setName("~SCREEN~IDS_OPTION_NAME")
+                .setLines(
+                    ImmutableList.of(
+                        IpAccessListLine.rejecting(
+                            new OrMatchExpr(
+                                supportedOptions
+                                    .stream()
+                                    .map(ScreenOption::toAclLineMatchExpr)
+                                    .collect(Collectors.toList()))),
+                        IpAccessListLine.ACCEPT_ALL))
+                .build()));
+
+    assertThat(
+        ifaceScreenAcl,
+        equalTo(
+            IpAccessList.builder()
+                .setName("~SCREEN~ge-0/0/0.0")
+                .setLines(
+                    ImmutableList.of(
+                        IpAccessListLine.accepting(
+                            new AndMatchExpr(
+                                ImmutableList.of(
+                                    new PermittedByAcl("~SCREEN~IDS_OPTION_NAME", false))))))
+                .build()));
+
+    assertThat(
+        combinedInAcl,
+        equalTo(
+            IpAccessList.builder()
+                .setName("~COMBINED_INCOMING_FILTER~ge-0/0/0.0")
+                .setLines(
+                    ImmutableList.of(
+                        IpAccessListLine.accepting(
+                            new AndMatchExpr(
+                                ImmutableList.of(
+                                    new PermittedByAcl("~SCREEN~ge-0/0/0.0", false),
+                                    new PermittedByAcl("FILTER1", false))))))
+                .build()));
+
+    assertThat(
+        config.getAllInterfaces().get("ge-0/0/0.0").getIncomingFilter(), equalTo(combinedInAcl));
   }
 }

@@ -1,0 +1,41 @@
+package org.batfish.representation.juniper;
+
+import com.google.common.collect.ImmutableList;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
+
+/** Represents a {@code ScreenOption} checking unknown protocol */
+public final class IpUnknownProtocol implements ScreenOption {
+
+  /** */
+  private static final long serialVersionUID = 1L;
+
+  private static final int LARGEST_VALID_PROTOCOL = 143;
+  private static final String IP_UNKNOWN_PROTOCOL = "ip unknown-protocol";
+
+  public static final IpUnknownProtocol INSTANCE = new IpUnknownProtocol();
+
+  private IpUnknownProtocol() {}
+
+  @Override
+  public String getName() {
+    return IP_UNKNOWN_PROTOCOL;
+  }
+
+  @Override
+  public AclLineMatchExpr toAclLineMatchExpr() {
+    HeaderSpace headerSpace =
+        HeaderSpace.builder()
+            .setNotIpProtocols(
+                IntStream.range(0, LARGEST_VALID_PROTOCOL)
+                    .mapToObj(IpProtocol::fromNumber)
+                    .collect(Collectors.toList()))
+            .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
+            .build();
+    return AclLineMatchExprs.match(headerSpace);
+  }
+}

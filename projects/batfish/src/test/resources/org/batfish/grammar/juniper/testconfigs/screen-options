@@ -1,3 +1,11 @@
+#
+set system host-name screen-options
+#
+set interfaces ge-0/0/0 unit 0 family inet address 1.1.1.1/24
+#
+set security zones security-zone untrust interfaces ge-0/0/0.0
+#
+# set screen options
 set security screen ids-option IDS_OPTION_NAME alarm-without-drop
 set security screen ids-option IDS_OPTION_NAME description TEXT
 set security screen ids-option IDS_OPTION_NAME icmp flood threshold 1
@@ -66,9 +74,9 @@ set security screen ids-option IDS_OPTION_NAME tcp syn-flood alarm-threshold 1
 set security screen ids-option IDS_OPTION_NAME tcp syn-flood attack-threshold 1
 set security screen ids-option IDS_OPTION_NAME tcp syn-flood destination-threshold 1
 set security screen ids-option IDS_OPTION_NAME tcp syn-flood source-threshold 1
-set security screen ids-option IDS_OPTION_NAME tcp syn-flood timeout SECONDS
-set security screen ids-option IDS_OPTION_NAME tcp syn-flood white-list WHITE_LIST_NAME destination-address DESTINATION-ADDRESS
-set security screen ids-option IDS_OPTION_NAME tcp syn-flood white-list WHITE_LIST_NAME source-address SOURCE-ADDRESS
+set security screen ids-option IDS_OPTION_NAME tcp syn-flood timeout 1 
+set security screen ids-option IDS_OPTION_NAME tcp syn-flood white-list WHITE_LIST_NAME destination-address 1.1.1.1
+set security screen ids-option IDS_OPTION_NAME tcp syn-flood white-list WHITE_LIST_NAME source-address 2.2.2.2
 set security screen ids-option IDS_OPTION_NAME tcp syn-frag
 set security screen ids-option IDS_OPTION_NAME tcp tcp-no-flag
 set security screen ids-option IDS_OPTION_NAME tcp tcp-sweep threshold 1
@@ -76,3 +84,12 @@ set security screen ids-option IDS_OPTION_NAME tcp winnuke
 set security screen ids-option IDS_OPTION_NAME udp flood threshold 1
 set security screen ids-option IDS_OPTION_NAME udp port-scan threshold 1
 set security screen ids-option IDS_OPTION_NAME udp udp-sweep threshold 1
+#
+# apply the screen
+set security zones security-zone untrust screen IDS_OPTION_NAME
+#
+# set an incoming filter
+set firewall filter FILTER1 term TERM from source-address 1.2.3.6
+set firewall filter FILTER1 term TERM then accept
+#
+set interfaces ge-0/0/0 unit 0 family inet filter input FILTER1

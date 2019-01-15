@@ -10,17 +10,22 @@ import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderS
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
 import static org.batfish.representation.juniper.JuniperConfiguration.MAX_ISIS_COST_WITHOUT_WIDE_METRICS;
+import static org.batfish.representation.juniper.JuniperConfiguration.buildScreen;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.iterableWithSize;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
+import java.util.List;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warning;
@@ -34,8 +39,11 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.acl.PermittedByAcl;
 import org.junit.Test;
 
 public class JuniperConfigurationTest {
@@ -246,5 +254,112 @@ public class JuniperConfigurationTest {
     routingInstance.getIsisSettings().getLevel1Settings().setWideMetricsOnly(true);
     config.processIsisInterfaceSettings(routingInstance, true, false);
     assertThat(viIface.getIsis().getLevel1().getCost(), equalTo(100L));
+  }
+
+  @Test
+  public void testBuildScreen() {
+    List<ScreenOption> screenOptionList =
+        ImmutableList.of(
+            ICMPLarge.INSTANCE,
+            IpUnknownProtocol.INSTANCE,
+            TCPFinNoAck.INSTANCE,
+            TCPSynFin.INSTANCE,
+            TCPNoFlag.INSTANCE,
+            TCPWinnuke.INSTANCE);
+
+    Screen screen = new Screen("screen");
+    for (ScreenOption option : screenOptionList) {
+      screen.getScreenOptions().add(option);
+    }
+
+    IpAccessList screenAcl = buildScreen(screen);
+
+    assertThat(
+        screenAcl,
+        equalTo(
+            IpAccessList.builder()
+                .setName("~SCREEN~screen")
+                .setLines(
+                    ImmutableList.of(
+                        IpAccessListLine.rejecting(
+                            new OrMatchExpr(
+                                screenOptionList
+                                    .stream()
+                                    .map(ScreenOption::toAclLineMatchExpr)
+                                    .collect(Collectors.toList()))),
+                        IpAccessListLine.ACCEPT_ALL))
+                .build()));
+
+    Screen screen2 = new Screen("screen2");
+    IpAccessList screenAcl2 = buildScreen(screen2);
+    assertThat(screenAcl2, nullValue());
+  }
+
+  @Test
+  public void testBuildScreensPerInterface() {
+    JuniperConfiguration config = createConfig();
+    Interface iface = new Interface("iface");
+
+    List<ScreenOption> screenOptionList1 =
+        ImmutableList.of(ICMPLarge.INSTANCE, IpUnknownProtocol.INSTANCE, TCPFinNoAck.INSTANCE);
+
+    List<ScreenOption> screenOptionList2 =
+        ImmutableList.of(TCPSynFin.INSTANCE, TCPNoFlag.INSTANCE, TCPWinnuke.INSTANCE);
+
+    Screen screen1 = new Screen("screen1");
+    for (ScreenOption option : screenOptionList1) {
+      screen1.getScreenOptions().add(option);
+    }
+
+    Screen screen2 = new Screen("screen2");
+    for (ScreenOption option : screenOptionList2) {
+      screen2.getScreenOptions().add(option);
+    }
+    screen2.setAction(ScreenActionAlarm.INSTANCE);
+
+    Screen screen3 = new Screen("screen3");
+
+    config.getMasterLogicalSystem().getScreens().put("screen1", screen1);
+    config.getMasterLogicalSystem().getScreens().put("screen2", screen2);
+    config.getMasterLogicalSystem().getScreens().put("screen3", screen3);
+
+    Zone zone = new Zone("zone", ImmutableMap.of());
+    zone.getScreens().add("screen1");
+    zone.getScreens().add("screen2");
+    zone.getScreens().add("screen3");
+
+    config.getMasterLogicalSystem().getInterfaceZones().put(iface.getName(), zone);
+
+    IpAccessList screenAcl = config.buildScreensPerInterface(iface);
+
+    assertThat(
+        screenAcl,
+        equalTo(
+            IpAccessList.builder()
+                .setName("~SCREEN~iface")
+                .setLines(
+                    ImmutableList.of(
+                        IpAccessListLine.accepting(
+                            new AndMatchExpr(
+                                ImmutableList.of(new PermittedByAcl("~SCREEN~screen1", false))))))
+                .build()));
+    assertThat(config._c.getIpAccessLists().get("~SCREEN~screen1"), notNullValue());
+    assertThat(config._c.getIpAccessLists().get("~SCREEN~screen2"), nullValue());
+    assertThat(config._c.getIpAccessLists().get("~SCREEN~screen3"), nullValue());
+    assertThat(
+        config._c.getIpAccessLists().get("~SCREEN~screen1"),
+        equalTo(
+            IpAccessList.builder()
+                .setName("~SCREEN~screen1")
+                .setLines(
+                    ImmutableList.of(
+                        IpAccessListLine.rejecting(
+                            new OrMatchExpr(
+                                screenOptionList1
+                                    .stream()
+                                    .map(ScreenOption::toAclLineMatchExpr)
+                                    .collect(Collectors.toList()))),
+                        IpAccessListLine.ACCEPT_ALL))
+                .build()));
   }
 }
