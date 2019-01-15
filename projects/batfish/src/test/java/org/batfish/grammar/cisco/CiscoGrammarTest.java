@@ -3626,6 +3626,32 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testAristaDynamicSourceNat() throws IOException {
+    Configuration c = parseConfig("arista-dynamic-source-nat");
+    Interface iface = c.getAllInterfaces().get("Ethernet1");
+    assertThat(iface.getIncomingTransformation(), nullValue());
+    assertThat(
+        iface.getOutgoingTransformation(),
+        equalTo(
+            when(permittedByAcl("acl1"))
+                .apply(assignSourceIp(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2")))
+                .build()));
+
+    iface = c.getAllInterfaces().get("Ethernet2");
+    assertThat(iface.getIncomingTransformation(), nullValue());
+    assertThat(
+        iface.getOutgoingTransformation(),
+        equalTo(
+            when(permittedByAcl("acl1"))
+                .apply(assignSourceIp(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2")))
+                .setOrElse(
+                    when(permittedByAcl("acl2"))
+                        .apply(assignSourceIp(Ip.parse("2.2.2.2"), Ip.parse("2.2.2.3")))
+                        .build())
+                .build()));
+  }
+
+  @Test
   public void testIosDynamicNat() throws IOException {
     Configuration c = parseConfig("ios-nat-dynamic");
     String insideIntf = "Ethernet1";

@@ -124,7 +124,7 @@ public class Interface implements Serializable {
 
   @Nullable private IntegerSpace _allowedVlans;
 
-  private List<CiscoAristaNat> _aristaNats;
+  private List<AristaDynamicSourceNat> _aristaNats;
 
   private boolean _autoState;
 
@@ -340,7 +340,7 @@ public class Interface implements Serializable {
     return allAddresses;
   }
 
-  public List<CiscoAristaNat> getAristaNats() {
+  public List<AristaDynamicSourceNat> getAristaNats() {
     return _aristaNats;
   }
 
@@ -528,7 +528,7 @@ public class Interface implements Serializable {
     _alias = alias;
   }
 
-  public void setAristaNats(List<CiscoAristaNat> aristaNats) {
+  public void setAristaNats(List<AristaDynamicSourceNat> aristaNats) {
     _aristaNats = aristaNats;
   }
 
