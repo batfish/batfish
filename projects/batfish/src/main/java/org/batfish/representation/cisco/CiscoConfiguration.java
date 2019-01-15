@@ -31,6 +31,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
@@ -452,7 +453,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Set<String> _natOutside;
 
-  private final List<CiscoIosNat> _nats;
+  private final List<CiscoIosNat> _ciscoIosNats;
 
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
 
@@ -550,7 +551,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _namedVlans = new HashMap<>();
     _natInside = new TreeSet<>();
     _natOutside = new TreeSet<>();
-    _nats = new ArrayList<>();
+    _ciscoIosNats = new ArrayList<>();
     _networkObjectGroups = new TreeMap<>();
     _networkObjects = new TreeMap<>();
     _nxBgpGlobalConfiguration = new CiscoNxBgpGlobalConfiguration();
@@ -889,8 +890,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _natOutside;
   }
 
-  public List<CiscoIosNat> getNats() {
-    return _nats;
+  public List<CiscoIosNat> getCiscoIosNats() {
+    return _ciscoIosNats;
   }
 
   private String getNewInterfaceName(Interface iface) {
@@ -2258,24 +2259,46 @@ public final class CiscoConfiguration extends VendorConfiguration {
      * Currently, only static NATs have both incoming and outgoingtransformations
      */
 
-    if (getNats() != null
-        && !getNats().isEmpty()
-        && iface.getAristaNats() != null
-        && !iface.getAristaNats().isEmpty()) {
+    List<CiscoIosNat> ciscoIosNats = firstNonNull(_ciscoIosNats, ImmutableList.of());
+    List<AristaDynamicSourceNat> aristaDynamicSourceNats =
+        firstNonNull(iface.getAristaNats(), ImmutableList.of());
+    if (!aristaDynamicSourceNats.isEmpty() && !ciscoIosNats.isEmpty()) {
       _w.redFlag("Arista-style and IOS-style NATs should not both be present in configuration.");
+    } else if (!aristaDynamicSourceNats.isEmpty()) {
+      generateAristaDynamicSourceNats(newIface, aristaDynamicSourceNats);
+    } else if (!ciscoIosNats.isEmpty()) {
+      generateCiscoIosNatTransformations(ifaceName, newIface, ipAccessLists, c);
     }
 
+    String routingPolicyName = iface.getRoutingPolicy();
+    if (routingPolicyName != null) {
+      newIface.setRoutingPolicy(routingPolicyName);
+    }
+    return newIface;
+  }
+
+  private void generateAristaDynamicSourceNats(
+      org.batfish.datamodel.Interface newIface,
+      List<AristaDynamicSourceNat> aristaDynamicSourceNats) {
+    Transformation next = null;
+    for (AristaDynamicSourceNat nat : Lists.reverse(aristaDynamicSourceNats)) {
+      next = nat.toOutgoingTransformation(_natPools, next).orElse(next);
+    }
+    newIface.setOutgoingTransformation(next);
+  }
+
+  private void generateCiscoIosNatTransformations(
+      String ifaceName,
+      org.batfish.datamodel.Interface newIface,
+      Map<String, IpAccessList> ipAccessLists,
+      Configuration c) {
     List<CiscoIosNat> incomingNats = new ArrayList<>();
     List<CiscoIosNat> outgoingNats = new ArrayList<>();
 
     // Check if this is an outside interface
     if (getNatOutside().contains(ifaceName)) {
-      incomingNats.addAll(getNats());
-      outgoingNats.addAll(getNats());
-    }
-    // Add any arista NATs
-    if (iface.getAristaNats() != null) {
-      outgoingNats.addAll(iface.getAristaNats());
+      incomingNats.addAll(getCiscoIosNats());
+      outgoingNats.addAll(getCiscoIosNats());
     }
 
     // Convert the IOS NATs to a mapping of transformations. Each field (source or destination)
@@ -2290,7 +2313,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .collect(Collectors.toMap(SimpleEntry::getKey, entry -> entry.getValue().get()));
     if (!convertedIncomingNats.isEmpty()) {
       newIface.setIncomingTransformation(
-          NatUtil.toIncomingTransformationChain(convertedIncomingNats));
+          CiscoIosNatUtil.toIncomingTransformationChain(convertedIncomingNats));
     }
 
     Map<CiscoIosNat, Transformation.Builder> convertedOutgoingNats =
@@ -2305,14 +2328,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .collect(Collectors.toMap(SimpleEntry::getKey, entry -> entry.getValue().get()));
     if (!convertedOutgoingNats.isEmpty()) {
       newIface.setOutgoingTransformation(
-          NatUtil.toOutgoingTransformationChain(convertedOutgoingNats));
+          CiscoIosNatUtil.toOutgoingTransformationChain(convertedOutgoingNats));
     }
-
-    String routingPolicyName = iface.getRoutingPolicy();
-    if (routingPolicyName != null) {
-      newIface.setRoutingPolicy(routingPolicyName);
-    }
-    return newIface;
   }
 
   private void applyZoneFilter(

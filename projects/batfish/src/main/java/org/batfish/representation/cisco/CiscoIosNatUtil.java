@@ -19,18 +19,17 @@ import org.batfish.datamodel.transformation.Transformation.Builder;
 
 /** Utility methods related to {@link CiscoIosNat}. */
 @ParametersAreNonnullByDefault
-final class NatUtil {
+final class CiscoIosNatUtil {
   /*
    * Initialize the type precedence for the supported NAT types.
    * Currently, the only rule is that Static NATs take precedence over dynamic NATs
    */
   private static final ImmutableMap<String, Integer> typePrecedence =
       ImmutableMap.of(
-          CiscoAristaNat.class.getSimpleName(), 1,
           CiscoIosDynamicNat.class.getSimpleName(), 1,
           CiscoIosStaticNat.class.getSimpleName(), 0);
 
-  private NatUtil() {}
+  private CiscoIosNatUtil() {}
 
   /** The relative order of precedence for this NAT's type */
   static int getTypePrecedence(CiscoIosNat nat) {

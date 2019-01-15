@@ -992,6 +992,101 @@
           }
         }
       },
+      "arista_nat" : {
+        "configurationFormat" : "ARISTA",
+        "name" : "arista_nat",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "Ethernet1" : {
+            "name" : "Ethernet1",
+            "active" : true,
+            "allPrefixes" : [
+              "1.1.1.1/32"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "Ethernet1"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "outgoingTransformation" : {
+              "guard" : {
+                "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                "aclName" : "acl1",
+                "defaultAccept" : false
+              },
+              "transformationSteps" : [
+                {
+                  "class" : "org.batfish.datamodel.transformation.AssignIpAddressFromPool",
+                  "ipField" : "SOURCE",
+                  "poolEnd" : "1.1.1.2",
+                  "poolStart" : "1.1.1.1",
+                  "transformationType" : "SOURCE_NAT"
+                }
+              ]
+            },
+            "prefix" : "1.1.1.1/32",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : true,
+            "switchportMode" : "ACCESS",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "ipAccessLists" : {
+          "acl1" : {
+            "name" : "acl1",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    },
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    }
+                  }
+                },
+                "name" : "permit ip any any"
+              }
+            ],
+            "sourceName" : "acl1",
+            "sourceType" : "extended ipv4 access-list"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "arista_nat"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "Ethernet1"
+            ]
+          }
+        }
+      },
       "arista_ospf" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "arista_ospf",

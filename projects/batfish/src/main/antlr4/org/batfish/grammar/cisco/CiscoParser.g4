@@ -1122,14 +1122,9 @@ ip_nat_pool
 :
    IP NAT POOL name = variable first = IP_ADDRESS last = IP_ADDRESS
    (
-      (
-         NETMASK mask = IP_ADDRESS
-      )
-      |
-      (
-         PREFIX_LENGTH prefix_length = DEC
-      )
-   ) NEWLINE
+      NETMASK mask = IP_ADDRESS
+      | PREFIX_LENGTH prefix_length = DEC
+   )? NEWLINE
 ;
 
 ip_nat_pool_range
