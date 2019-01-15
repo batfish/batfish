@@ -71,6 +71,7 @@ import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasLocalInterface;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasRemoteIdentity;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasSelfIdentity;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
