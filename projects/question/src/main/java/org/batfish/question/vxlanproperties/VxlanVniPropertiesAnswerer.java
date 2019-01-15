@@ -68,7 +68,7 @@ public final class VxlanVniPropertiesAnswerer extends Answerer {
    * @param question The question
    * @return The resulting {@link TableMetadata} object
    */
-  public static TableMetadata createTableMetadata(VxlanVniPropertiesQuestion question) {
+  private static TableMetadata createTableMetadata(VxlanVniPropertiesQuestion question) {
     String textDesc =
         String.format("Properties of VXLAN VNI ${%s} on node ${%s}.", COL_VNI, COL_NODE);
     DisplayHints dhints = question.getDisplayHints();
