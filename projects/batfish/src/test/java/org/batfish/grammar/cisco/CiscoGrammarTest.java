@@ -3219,7 +3219,7 @@ public class CiscoGrammarTest {
     assertThat(vnisMisconfig, hasBumTransportIps(emptyIterable()));
     // No source interface so no source address
     assertThat(vnisMisconfig, hasSourceAddress(nullValue()));
-    // Confirm explicit UDP port is used
+    // Confirm default UDP port is used
     assertThat(vnisMisconfig, hasUdpPort(equalTo(4789)));
     // Confirm VLAN<->VNI mapping is applied
     assertThat(vnisMisconfig, hasVlan(equalTo(2)));
