@@ -234,6 +234,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
@@ -3214,6 +3215,27 @@ public class CiscoGrammarTest {
         hasBumTransportIps(containsInAnyOrder(Ip.parse("1.1.1.5"), Ip.parse("1.1.1.6"))));
     // Confirm no source address is present (no interface is linked to the VXLAN)
     assertThat(vnisNoIface, hasSourceAddress(nullValue()));
+  }
+
+  @Test
+  public void testEosVxlanMisconfig() throws IOException {
+    String hostname = "eos-vxlan-misconfig";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration config = batfish.loadConfigurations().get(hostname);
+
+    // Make sure that misconfigured VXLAN is still converted into VI model properly
+    assertThat(config, hasDefaultVrf(hasVniSettings(hasKey(10002))));
+    VniSettings vnisMisconfig = config.getDefaultVrf().getVniSettings().get(10002);
+
+    // No BUM IPs specified
+    assertThat(vnisMisconfig, hasBumTransportIps(emptyIterable()));
+    // No source interface so no source address
+    assertThat(vnisMisconfig, hasSourceAddress(nullValue()));
+    // Confirm default UDP port is used
+    assertThat(vnisMisconfig, hasUdpPort(equalTo(4789)));
+    // Confirm VLAN<->VNI mapping is applied
+    assertThat(vnisMisconfig, hasVlan(equalTo(2)));
   }
 
   @Test

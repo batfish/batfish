@@ -3907,7 +3907,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     BumTransportMethod bumTransportMethod = BumTransportMethod.UNICAST_FLOOD_GROUP;
 
     if (bumTransportIps.isEmpty()) {
-      bumTransportIps = ImmutableSortedSet.of(vxlan.getMulticastGroup());
+      Ip multicastAddress = vxlan.getMulticastGroup();
+      bumTransportIps =
+          multicastAddress == null
+              ? ImmutableSortedSet.of()
+              : ImmutableSortedSet.of(multicastAddress);
       bumTransportMethod = BumTransportMethod.MULTICAST_GROUP;
     }
 
