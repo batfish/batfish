@@ -88,7 +88,7 @@ We highly recommend that you install Pybatfish in a Python 3 virtual environment
 Now, you are ready to evaluate your own network with Batfish. We encourage you to use Jupyter notebooks as your starting point, but you can use other methods that you are a comfortable with, e.g., an IDE like PyCharm or an interactive Python shell. If you choose to use Jupyter notebooks as your starting point, you need to install Jupyter in your virtual environment. Jupyter documentation can be found [here](http://jupyter.org/install) - but the commands below will get you going.
 
     python3 -m pip install jupyter
-    jupyter notebook`
+    jupyter notebook
 
 Our notebooks provide a quick start guide for different use cases. Beyond that, the complete documentation is available on [readthedocs](https://pybatfish.readthedocs.io/en/latest/quickstart.html). 
 
