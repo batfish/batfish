@@ -71,6 +71,8 @@ public class Vrf extends ComparableStructure<String> {
 
   private static final String PROP_RIP_PROCESS = "ripProcess";
 
+  private static final String PROP_VNI_SETTINGS = "vniSettings";
+
   /** */
   private static final long serialVersionUID = 1L;
 
@@ -122,6 +124,8 @@ public class Vrf extends ComparableStructure<String> {
 
   private SortedSet<StaticRoute> _staticRoutes;
 
+  private NavigableMap<Integer, VniSettings> _vniSettings;
+
   @JsonCreator
   public Vrf(@JsonProperty(PROP_NAME) String name) {
     super(name);
@@ -130,6 +134,7 @@ public class Vrf extends ComparableStructure<String> {
     _generatedIpv6Routes = new TreeSet<>();
     _interfaces = new TreeMap<>();
     _staticRoutes = new TreeSet<>();
+    _vniSettings = new TreeMap<>();
   }
 
   @JsonIgnore
@@ -258,6 +263,11 @@ public class Vrf extends ComparableStructure<String> {
     return _staticRoutes;
   }
 
+  @JsonProperty(PROP_VNI_SETTINGS)
+  public NavigableMap<Integer, VniSettings> getVniSettings() {
+    return _vniSettings;
+  }
+
   public void initBgpAdvertisements() {
     _bgpAdvertisements = new TreeSet<>();
     _originatedAdvertisements = new TreeSet<>();
@@ -339,5 +349,10 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_STATIC_ROUTES)
   public void setStaticRoutes(SortedSet<StaticRoute> staticRoutes) {
     _staticRoutes = staticRoutes;
+  }
+
+  @JsonProperty(PROP_VNI_SETTINGS)
+  public void setVniSettings(NavigableMap<Integer, VniSettings> vniSetting) {
+    _vniSettings = vniSetting;
   }
 }

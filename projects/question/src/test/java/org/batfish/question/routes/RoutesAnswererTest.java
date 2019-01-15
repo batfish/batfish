@@ -10,7 +10,6 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_COMMUNITIES;
 import static org.batfish.question.routes.RoutesAnswerer.COL_LOCAL_PREF;
 import static org.batfish.question.routes.RoutesAnswerer.COL_METRIC;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK;
-import static org.batfish.question.routes.RoutesAnswerer.COL_NETWORK_PRESENCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NEXT_HOP_IP;
 import static org.batfish.question.routes.RoutesAnswerer.COL_NODE;
@@ -64,6 +63,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 import org.batfish.specifier.MockSpecifierContext;
+import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.SpecifierContext;
 import org.junit.Test;
 
@@ -76,7 +76,14 @@ public class RoutesAnswererTest {
         ImmutableSortedMap.of(
             "n1", ImmutableSortedMap.of(Configuration.DEFAULT_VRF_NAME, new MockRib<>()));
 
-    Multiset<Row> actual = getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, ".*", ".*", null);
+    Multiset<Row> actual =
+        getMainRibRoutes(
+            ribs,
+            ImmutableSet.of("n1"),
+            null,
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            ".*",
+            null);
 
     assertThat(actual.entrySet(), hasSize(0));
   }
@@ -103,7 +110,12 @@ public class RoutesAnswererTest {
 
     Multiset<Row> actual =
         getMainRibRoutes(
-            ribs, ImmutableSet.of("n1"), Prefix.create(Ip.parse("2.2.2.0"), 24), ".*", ".*", null);
+            ribs,
+            ImmutableSet.of("n1"),
+            Prefix.create(Ip.parse("2.2.2.0"), 24),
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            ".*",
+            null);
 
     assertThat(actual, hasSize(1));
     assertThat(
@@ -126,7 +138,13 @@ public class RoutesAnswererTest {
                             .build()))));
 
     Multiset<Row> actual =
-        getMainRibRoutes(ribs, ImmutableSet.of("differentNode"), null, ".*", ".*", null);
+        getMainRibRoutes(
+            ribs,
+            ImmutableSet.of("differentNode"),
+            null,
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            ".*",
+            null);
 
     assertThat(actual, hasSize(0));
   }
@@ -148,7 +166,8 @@ public class RoutesAnswererTest {
                         new LocalRoute(new InterfaceAddress("2.2.2.0/24"), "Null")))));
 
     Multiset<Row> actual =
-        getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, "stati.*", ".*", null);
+        getMainRibRoutes(
+            ribs, ImmutableSet.of("n1"), null, new RoutingProtocolSpecifier("static"), ".*", null);
 
     assertThat(actual, hasSize(1));
     assertThat(
@@ -179,7 +198,13 @@ public class RoutesAnswererTest {
                             .build()))));
 
     Multiset<Row> actual =
-        getMainRibRoutes(ribs, ImmutableSet.of("n1"), null, ".*", "^not.*", null);
+        getMainRibRoutes(
+            ribs,
+            ImmutableSet.of("n1"),
+            null,
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
+            "^not.*",
+            null);
 
     assertThat(actual, hasSize(1));
     assertThat(
@@ -202,8 +227,8 @@ public class RoutesAnswererTest {
             COL_NEXT_HOP,
             COL_NEXT_HOP_IP,
             COL_PROTOCOL,
-            COL_ADMIN_DISTANCE,
             COL_METRIC,
+            COL_ADMIN_DISTANCE,
             COL_TAG));
 
     assertThat(
@@ -266,7 +291,6 @@ public class RoutesAnswererTest {
             COL_NODE,
             COL_VRF_NAME,
             COL_NETWORK,
-            COL_NETWORK_PRESENCE,
             COL_ROUTE_ENTRY_PRESENCE,
             COL_BASE_PREFIX + COL_NEXT_HOP,
             COL_DELTA_PREFIX + COL_NEXT_HOP,
@@ -274,10 +298,10 @@ public class RoutesAnswererTest {
             COL_DELTA_PREFIX + COL_NEXT_HOP_IP,
             COL_BASE_PREFIX + COL_PROTOCOL,
             COL_DELTA_PREFIX + COL_PROTOCOL,
-            COL_BASE_PREFIX + COL_ADMIN_DISTANCE,
-            COL_DELTA_PREFIX + COL_ADMIN_DISTANCE,
             COL_BASE_PREFIX + COL_METRIC,
             COL_DELTA_PREFIX + COL_METRIC,
+            COL_BASE_PREFIX + COL_ADMIN_DISTANCE,
+            COL_DELTA_PREFIX + COL_ADMIN_DISTANCE,
             COL_BASE_PREFIX + COL_TAG,
             COL_DELTA_PREFIX + COL_TAG));
 
@@ -290,7 +314,6 @@ public class RoutesAnswererTest {
             Schema.NODE,
             Schema.STRING,
             Schema.PREFIX,
-            Schema.STRING,
             Schema.STRING,
             Schema.STRING,
             Schema.STRING,
@@ -313,7 +336,6 @@ public class RoutesAnswererTest {
         COL_NODE,
         COL_VRF_NAME,
         COL_NETWORK,
-        COL_NETWORK_PRESENCE,
         COL_ROUTE_ENTRY_PRESENCE,
         COL_BASE_PREFIX + COL_NEXT_HOP_IP,
         COL_DELTA_PREFIX + COL_NEXT_HOP_IP,
@@ -337,7 +359,6 @@ public class RoutesAnswererTest {
         Schema.NODE,
         Schema.STRING,
         Schema.PREFIX,
-        Schema.STRING,
         Schema.STRING,
         Schema.IP,
         Schema.IP,

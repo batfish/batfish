@@ -658,16 +658,6 @@
       },
       {
         "Structure_Type" : "nat pool",
-        "Structure_Name" : "dynamic-srcnat",
-        "Source_Lines" : {
-          "filename" : "configs/cisco_ip_nat",
-          "lines" : [
-            12
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "nat pool",
         "Structure_Name" : "example-1-dynamic-nat-pool",
         "Source_Lines" : {
           "filename" : "configs/cisco_ip_nat",
@@ -1145,6 +1135,16 @@
             13,
             14,
             15
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "zone",
+        "Structure_Name" : "t1",
+        "Source_Lines" : {
+          "filename" : "configs/cisco_zone",
+          "lines" : [
+            10
           ]
         }
       },
@@ -2108,8 +2108,8 @@
         "Source_Lines" : {
           "filename" : "configs/juniper_interfaces",
           "lines" : [
-            23,
-            24
+            24,
+            25
           ]
         }
       },
@@ -2267,12 +2267,22 @@
         }
       },
       {
+        "Structure_Type" : "address-book",
+        "Structure_Name" : "notglobalUnattached",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_security",
+          "lines" : [
+            11
+          ]
+        }
+      },
+      {
         "Structure_Type" : "ike policy",
         "Structure_Name" : "1.2.3.4",
         "Source_Lines" : {
           "filename" : "configs/juniper_security",
           "lines" : [
-            12
+            14
           ]
         }
       },
@@ -2758,10 +2768,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 194 results",
+      "notes" : "Found 195 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 194
+      "numResults" : 195
     }
   }
 ]

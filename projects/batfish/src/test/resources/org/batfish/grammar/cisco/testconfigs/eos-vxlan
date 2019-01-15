@@ -1,0 +1,22 @@
+!
+hostname eos-vxlan
+boot system flash fake.swi
+!
+interface Loopback1
+ description vxlan_vtep
+ ip address 1.1.1.4/32
+!
+interface Vxlan1
+  description vxlan vti
+  vxlan source-interface Loopback1
+  vxlan udp-port 5555
+  vxlan multicast-group 227.10.1.1
+  !
+  vxlan flood vtep 1.1.1.5 1.1.1.6
+  vxlan flood vtep add 1.1.1.7
+  vxlan flood vtep remove 1.1.1.6
+  !
+  vxlan vlan 2 flood vtep 1.1.1.8 1.1.1.9
+  vxlan vlan 2 flood vtep 1.1.1.10
+  vxlan vlan 2 vni 10002
+!

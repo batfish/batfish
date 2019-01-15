@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -39,7 +38,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
@@ -59,10 +57,7 @@ import org.batfish.datamodel.IpsecDynamicPeerConfig;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
-import org.batfish.datamodel.IpsecPolicy;
-import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
-import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -140,8 +135,8 @@ class CiscoConversions {
   }
 
   /**
-   * Converts a {@link CryptoMapEntry} to an {@link IpsecPolicy}, a list of {@link IpsecVpn}. Also
-   * converts it to an {@link IpsecPhase2Policy} and a list of {@link IpsecPeerConfig}
+   * Converts a {@link CryptoMapEntry} to an {@link IpsecPhase2Policy} and a list of {@link
+   * IpsecPeerConfig}
    */
   private static void convertCryptoMapEntry(
       final Configuration c,
@@ -159,10 +154,6 @@ class CiscoConversions {
         return;
       }
     }
-
-    IpsecPolicy ipsecPolicy = toIpsecPolicy(c, cryptoMapEntry, cryptoMapNameSeqNumber);
-
-    c.getIpsecPolicies().put(cryptoMapNameSeqNumber, ipsecPolicy);
 
     IpsecPhase2Policy ipsecPhase2Policy = toIpsecPhase2Policy(cryptoMapEntry);
     String ipsecPhase2PolicyName =
@@ -191,19 +182,11 @@ class CiscoConversions {
                     ipsecPhase2PolicyName,
                     w))
             .build());
-
-    List<IpsecVpn> ipsecVpns =
-        toIpsecVpns(c, cryptoMapEntry, cryptoMapNameSeqNumber, cryptoMapName, w);
-    ipsecVpns.forEach(
-        ipsecVpn -> {
-          ipsecVpn.setIpsecPolicy(ipsecPolicy);
-          c.getIpsecVpns().put(ipsecVpn.getName(), ipsecVpn);
-        });
   }
 
   /**
-   * Converts each crypto map entry in all crypto map sets to {@link IpsecPolicy}, {@link
-   * IpsecVpn}s, {@link IpsecPhase2Policy} and {@link IpsecPeerConfig}s
+   * Converts each crypto map entry in all crypto map sets to {@link IpsecPhase2Policy} and {@link
+   * IpsecPeerConfig}s
    */
   static void convertCryptoMapSet(
       Configuration c,
@@ -764,31 +747,6 @@ class CiscoConversions {
     }
   }
 
-  /** Converts an IPSec Profile to IPSec policy */
-  static IpsecPolicy toIpSecPolicy(Configuration configuration, IpsecProfile ipsecProfile) {
-    String name = ipsecProfile.getName();
-
-    IpsecPolicy policy = new IpsecPolicy(name);
-    policy.setPfsKeyGroup(ipsecProfile.getPfsGroup());
-
-    for (String transformSetName : ipsecProfile.getTransformSets()) {
-      IpsecProposal ipsecProposalName = configuration.getIpsecProposals().get(transformSetName);
-      if (ipsecProposalName != null) {
-        policy.getProposals().add(ipsecProposalName);
-      }
-    }
-
-    String isakmpProfileName = ipsecProfile.getIsakmpProfile();
-    if (isakmpProfileName != null) {
-      IkeGateway ikeGateway = configuration.getIkeGateways().get(isakmpProfileName);
-      if (ikeGateway != null) {
-        policy.setIkeGateway(ikeGateway);
-      }
-    }
-
-    return policy;
-  }
-
   /**
    * Returns a new symmetrical {@link IpAccessList} by adding mirror image {@link IpAccessListLine}s
    * to the original {@link IpAccessList} or null if the conversion is not supported
@@ -867,15 +825,6 @@ class CiscoConversions {
     return filteredIkePhase1Policies;
   }
 
-  static IpsecProposal toIpsecProposal(IpsecTransformSet ipsecTransformSet) {
-    IpsecProposal ipsecProposal = new IpsecProposal(ipsecTransformSet.getName());
-    ipsecProposal.setAuthenticationAlgorithm(ipsecTransformSet.getAuthenticationAlgorithm());
-    ipsecProposal.setEncryptionAlgorithm(ipsecTransformSet.getEncryptionAlgorithm());
-    ipsecProposal.setProtocols(ipsecTransformSet.getProtocols());
-
-    return ipsecProposal;
-  }
-
   static IpsecPhase2Proposal toIpsecPhase2Proposal(IpsecTransformSet ipsecTransformSet) {
     IpsecPhase2Proposal ipsecPhase2Proposal = new IpsecPhase2Proposal();
     ipsecPhase2Proposal.setAuthenticationAlgorithm(ipsecTransformSet.getAuthenticationAlgorithm());
@@ -899,117 +848,6 @@ class CiscoConversions {
     ipsecPhase2Policy.setProposals(ImmutableList.copyOf(cryptoMapEntry.getTransforms()));
     ipsecPhase2Policy.setPfsKeyGroup(cryptoMapEntry.getPfsKeyGroup());
     return ipsecPhase2Policy;
-  }
-
-  /**
-   * Converts a crypto map entry to a list of ipsec vpns(one per interface on which it is referred)
-   */
-  private static List<IpsecVpn> toIpsecVpns(
-      Configuration c,
-      CryptoMapEntry cryptoMapEntry,
-      String ipsecVpnName,
-      String cryptoMapName,
-      Warnings w) {
-
-    List<org.batfish.datamodel.Interface> referencingInterfaces =
-        c.getAllInterfaces()
-            .values()
-            .stream()
-            .filter(iface -> Objects.equals(iface.getCryptoMap(), cryptoMapName))
-            .collect(Collectors.toList());
-
-    List<IpsecVpn> ipsecVpns = new ArrayList<>();
-
-    for (org.batfish.datamodel.Interface iface : referencingInterfaces) {
-      // skipping interfaces with no ip-address
-      if (iface.getAddress() == null) {
-        w.redFlag(
-            String.format(
-                "Interface %s with declared crypto-map %s has no ip-address",
-                iface.getName(), cryptoMapName));
-        continue;
-      }
-      Ip bindingInterfaceIp = iface.getAddress().getIp();
-      IkeGateway ikeGateway = null;
-
-      if (cryptoMapEntry.getIsakmpProfile() != null) {
-        ikeGateway = c.getIkeGateways().get(cryptoMapEntry.getIsakmpProfile());
-        if (ikeGateway != null
-            && (!ikeGateway.getAddress().equals(cryptoMapEntry.getPeer())
-                || !ikeGateway.getLocalIp().equals(bindingInterfaceIp))) {
-          w.redFlag(
-              String.format(
-                  "cryptoMap %s's binding interface or peer does not match ISAKMP profile's local "
-                      + "Ip/remote Ip",
-                  cryptoMapEntry.getName()));
-          continue;
-        }
-      }
-
-      IpsecVpn ipsecVpn = new IpsecVpn(String.format("%s:%s", ipsecVpnName, iface.getName()));
-
-      if (ikeGateway != null) {
-        ipsecVpn.setIkeGateway(ikeGateway);
-      } else {
-        // getting an IKE gateway which can be used for this VPN
-        Optional<IkeGateway> filteredIkeGateway =
-            c.getIkeGateways()
-                .values()
-                .stream()
-                .filter(
-                    ikeGateway1 ->
-                        ikeGateway1.getLocalIp().equals(bindingInterfaceIp)
-                            && ikeGateway1.getAddress().equals(cryptoMapEntry.getPeer()))
-                .findFirst();
-        filteredIkeGateway.ifPresent(ipsecVpn::setIkeGateway);
-      }
-
-      ipsecVpn.setBindInterface(iface);
-      if (cryptoMapEntry.getAccessList() != null) {
-        IpAccessList cryptoAcl = c.getIpAccessLists().get(cryptoMapEntry.getAccessList());
-        if (cryptoAcl != null) {
-          IpAccessList symmetricCryptoAcl = createAclWithSymmetricalLines(cryptoAcl);
-          if (symmetricCryptoAcl != null) {
-            ipsecVpn.setPolicyAccessList(symmetricCryptoAcl);
-          } else {
-            w.redFlag(
-                String.format(
-                    "Cannot process the Access List for crypto map %s:%s",
-                    cryptoMapEntry.getName(), cryptoMapEntry.getSequenceNumber()));
-          }
-        }
-      }
-      ipsecVpns.add(ipsecVpn);
-    }
-
-    return ipsecVpns;
-  }
-
-  /** Converts a {@link CryptoMapEntry} to an {@link IpsecPolicy} */
-  private static IpsecPolicy toIpsecPolicy(
-      Configuration c, CryptoMapEntry cryptoMapEntry, String ipsecPolicyName) {
-    IpsecPolicy ipsecPolicy = new IpsecPolicy(ipsecPolicyName);
-
-    if (cryptoMapEntry.getIsakmpProfile() != null) {
-      IkeGateway ikeGateway = c.getIkeGateways().get(cryptoMapEntry.getIsakmpProfile());
-      if (ikeGateway != null) {
-        ipsecPolicy.setIkeGateway(ikeGateway);
-      }
-    }
-
-    cryptoMapEntry
-        .getTransforms()
-        .forEach(
-            transform -> {
-              IpsecProposal ipsecProposal = c.getIpsecProposals().get(transform);
-              if (ipsecProposal != null) {
-                ipsecPolicy.getProposals().add(ipsecProposal);
-              }
-            });
-
-    ipsecPolicy.setPfsKeyGroup(cryptoMapEntry.getPfsKeyGroup());
-
-    return ipsecPolicy;
   }
 
   @Nullable

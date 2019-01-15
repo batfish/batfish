@@ -5,12 +5,19 @@ import static org.batfish.datamodel.flow.TransformationStep.TransformationType.S
 import static org.batfish.datamodel.transformation.IpField.DESTINATION;
 import static org.batfish.datamodel.transformation.IpField.SOURCE;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 
-/** A representation of an atomic transformation step. */
+/**
+ * A representation of an atomic transformation step. Each step has a {@link TransformationType},
+ * which is included in traces. In order to build meaningful traces, the transformation must apply
+ * at least one step whenever a flow would match a transformation rule in the source configs. Use
+ * the {@link Noop} step for rules that match but do not transform the flow.
+ */
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 @ParametersAreNonnullByDefault
 public interface TransformationStep {
   /** Which {@link TransformationType} this step is (partially) encoding. */

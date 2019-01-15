@@ -1,7 +1,8 @@
 parser grammar CiscoParser;
 
 import
-Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
+Cisco_common, Arista_mlag, Arista_vlan, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
+
 
 options {
    superClass = 'org.batfish.grammar.BatfishParser';
@@ -9,14 +10,24 @@ options {
 }
 
 @members {
+   private boolean _eos;
+
    private boolean _cadant;
 
    private boolean _multilineBgpNeighbors;
 
    private boolean _nxos;
 
+   public boolean isEos() {
+      return _eos;
+   }
+
    public boolean isNxos() {
       return _nxos;
+   }
+
+   public void setEos(boolean b) {
+      _eos = b;
    }
 
    public void setCadant(boolean b) {
@@ -33,10 +44,11 @@ options {
 
    @Override
    public String getStateInfo() {
-      return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n_nxos: %s\n",
+      return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n_nxos: %s\n_eos: %s\n",
          _cadant,
          _multilineBgpNeighbors,
-         _nxos
+         _nxos,
+         _eos
       );
    }
 }
@@ -1093,43 +1105,65 @@ ip_domain_null
    ) null_rest_of_line
 ;
 
+ip_nat_destination
+:
+   IP NAT INSIDE DESTINATION LIST acl = variable POOL pool = variable NEWLINE
+;
+
 ip_nat_null
 :
-   (
-      INSIDE
-      | LOG
-      | OUTSIDE
+   IP NAT (
+      LOG
       | TRANSLATION
    ) null_rest_of_line
 ;
 
 ip_nat_pool
 :
+   IP NAT POOL name = variable first = IP_ADDRESS last = IP_ADDRESS
    (
-      POOL name = variable PREFIX_LENGTH prefix_length = DEC NEWLINE
-      ip_nat_pool_range*
-   )
-   |
-   (
-      POOL name = variable first = IP_ADDRESS last = IP_ADDRESS
       (
-      // intentional blank
-
-         |
-         (
-            NETMASK mask = IP_ADDRESS
-         )
-         |
-         (
-            PREFIX_LENGTH prefix_length = DEC
-         )
-      ) NEWLINE
-   )
+         NETMASK mask = IP_ADDRESS
+      )
+      |
+      (
+         PREFIX_LENGTH prefix_length = DEC
+      )
+   ) NEWLINE
 ;
 
 ip_nat_pool_range
 :
-   RANGE first = IP_ADDRESS last = IP_ADDRESS NEWLINE
+   IP NAT POOL name = variable PREFIX_LENGTH prefix_length = DEC NEWLINE
+   (
+      RANGE first = IP_ADDRESS last = IP_ADDRESS NEWLINE
+   )+
+;
+
+ip_nat_source
+:
+   IP NAT (INSIDE | OUTSIDE) SOURCE
+   (
+      (
+         LIST acl = variable POOL pool = variable
+      )
+      |
+      (
+         STATIC local = IP_ADDRESS global = IP_ADDRESS
+      )
+      |
+      (
+         STATIC NETWORK local = IP_ADDRESS global = IP_ADDRESS
+         (
+            mask = IP_ADDRESS
+            | FORWARD_SLASH prefix = DEC
+         )
+      )
+   )
+   (
+      ADD_ROUTE
+      | NO_ALIAS
+   )* NEWLINE
 ;
 
 ip_probe_null
@@ -2621,11 +2655,11 @@ s_ip_name_server
 
 s_ip_nat
 :
-   NO? IP NAT
-   (
-      ip_nat_null
-      | ip_nat_pool
-   )
+   ip_nat_destination
+   | ip_nat_null
+   | ip_nat_pool
+   | ip_nat_pool_range
+   | ip_nat_source
 ;
 
 s_ip_nbar
@@ -2828,6 +2862,11 @@ s_no_enable
    NO ENABLE PASSWORD (LEVEL level = DEC)? NEWLINE
 ;
 
+s_no_vlan_eos
+:
+  (NO | DEFAULT) VLAN eos_vlan_id NEWLINE
+;
+
 s_nv
 :
    NO? NV NEWLINE
@@ -2939,6 +2978,15 @@ s_router_vrrp
    (
       vrrp_interface
    )*
+;
+
+s_same_security_traffic
+:
+  SAME_SECURITY_TRAFFIC PERMIT
+  (
+     INTER_INTERFACE
+     | INTRA_INTERFACE
+  ) NEWLINE
 ;
 
 s_sccp
@@ -3168,7 +3216,8 @@ s_username_attributes
    )*
 ;
 
-s_vlan
+
+s_vlan_cisco
 :
    NO? VLAN
    (
@@ -3181,6 +3230,24 @@ s_vlan
    (
       vlan_null
    )*
+;
+
+s_vlan_eos
+:
+   VLAN eos_vlan_id NEWLINE
+   (
+     eos_vlan_name
+     | eos_vlan_state
+     | eos_vlan_trunk
+     | eos_vlan_no_name
+     | eos_vlan_no_state
+     | eos_vlan_no_trunk
+   )*
+;
+
+s_vlan_internal_cisco
+:
+   NO? VLAN INTERNAL ALLOCATION POLICY (ASCENDING | DESCENDING) NEWLINE
 ;
 
 s_vlan_name
@@ -3586,6 +3653,7 @@ stanza
    | s_dspfarm
    | s_dynamic_access_policy_record
    | s_enable
+   | s_eos_mlag
    | s_ephone_dn_template
    | s_ethernet_services
    | s_event
@@ -3605,6 +3673,7 @@ stanza
    |
    // do not move below s_interface
    s_interface_line
+   | s_eos_vxlan_interface
    | s_interface
    | s_ip_access_list_eth
    | s_ip_access_list_session
@@ -3660,6 +3729,8 @@ stanza
    | s_no_access_list_standard
    | s_no_bfd
    | s_no_enable
+   | { _eos }? s_no_vlan_internal_eos
+   | { _eos }? s_no_vlan_eos
    | s_ntp
    | s_null
    | s_nv
@@ -3685,6 +3756,7 @@ stanza
    | s_router_rip
    | s_router_static
    | s_router_vrrp
+   | s_same_security_traffic
    | s_sccp
    | s_service
    | s_service_policy_global
@@ -3711,7 +3783,10 @@ stanza
    | s_user_role
    | s_username
    | s_username_attributes
-   | s_vlan
+   | { !_eos }? s_vlan_cisco
+   | { _eos }? s_vlan_eos
+   | { !_eos }? s_vlan_internal_cisco
+   | { _eos }? s_vlan_internal_eos
    | s_vlan_name
    | s_voice
    | s_voice_card

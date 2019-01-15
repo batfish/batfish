@@ -1,6 +1,7 @@
 package org.batfish.representation.juniper;
 
 import static org.batfish.common.Warnings.TAG_PEDANTIC;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
@@ -10,6 +11,9 @@ import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderS
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
 import static org.batfish.representation.juniper.JuniperConfiguration.MAX_ISIS_COST_WITHOUT_WIDE_METRICS;
+import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
+import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
+import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
 import static org.batfish.representation.juniper.JuniperConfiguration.buildScreen;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -23,8 +27,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
+import java.util.Map;
 import java.util.List;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -39,6 +43,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -67,7 +72,7 @@ public class JuniperConfigurationTest {
     filter.getTerms().put("term", term);
     IpAccessList headerSpaceAcl = config.toIpAccessList(filter);
 
-    Zone zone = new Zone("zone", new TreeMap<>());
+    Zone zone = new Zone("zone", new AddressBook("global", null));
     String interface1Name = "interface1";
     zone.getInterfaces().add(new Interface(interface1Name));
     String interface2Name = "interface2";
@@ -257,6 +262,46 @@ public class JuniperConfigurationTest {
   }
 
   @Test
+  public void testFromNatPacketLocationMatchExprs() {
+    JuniperConfiguration config = createConfig();
+
+    Interface parent = new Interface("parent");
+
+    String interface1Name = "interface1";
+    parent.getUnits().put(interface1Name, new Interface(interface1Name));
+    config.getMasterLogicalSystem().getInterfaces().put(parent.getName(), parent);
+
+    Zone zone = new Zone("zone", new AddressBook("global", null));
+    String zoneInterface1Name = "zoneInterface1";
+    zone.getInterfaces().add(new Interface(zoneInterface1Name));
+    String zoneInterface2Name = "zoneInterface2";
+    zone.getInterfaces().add(new Interface(zoneInterface2Name));
+    config.getMasterLogicalSystem().getZones().put(zone.getName(), zone);
+
+    RoutingInstance routingInstance = config.getMasterLogicalSystem().getDefaultRoutingInstance();
+    String routingInstanceInterface1Name = "routingInstanceInterface1";
+    routingInstance
+        .getInterfaces()
+        .put(routingInstanceInterface1Name, new Interface(routingInstanceInterface1Name));
+    String routingInstanceInterface2Name = "routingInstanceInterface2";
+    routingInstance
+        .getInterfaces()
+        .put(routingInstanceInterface2Name, new Interface(routingInstanceInterface2Name));
+
+    Map<NatPacketLocation, AclLineMatchExpr> matchExprs = config.fromNatPacketLocationMatchExprs();
+    assertThat(
+        matchExprs,
+        equalTo(
+            ImmutableMap.of(
+                interfaceLocation(interface1Name), matchSrcInterface(interface1Name),
+                zoneLocation(zone.getName()),
+                    matchSrcInterface(zoneInterface1Name, zoneInterface2Name),
+                routingInstanceLocation(routingInstance.getName()),
+                    matchSrcInterface(
+                        routingInstanceInterface1Name, routingInstanceInterface2Name))));
+  }
+
+  @Test
   public void testBuildScreen() {
     List<ScreenOption> screenOptionList =
         ImmutableList.of(
@@ -323,7 +368,7 @@ public class JuniperConfigurationTest {
     config.getMasterLogicalSystem().getScreens().put("screen2", screen2);
     config.getMasterLogicalSystem().getScreens().put("screen3", screen3);
 
-    Zone zone = new Zone("zone", ImmutableMap.of());
+    Zone zone = new Zone("zone", null);
     zone.getScreens().add("screen1");
     zone.getScreens().add("screen2");
     zone.getScreens().add("screen3");

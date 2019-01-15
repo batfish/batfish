@@ -60,6 +60,7 @@ tokens {
    BANG,
    DYNAMIC_DB,
    FIN,
+   INTERFACE_NAME,
    ISO_ADDRESS,
    PIPE,
    RST,
@@ -439,6 +440,11 @@ ASDOT_NOTATION
 ATTACK_THRESHOLD
 :
    'attack-threshold'
+;
+
+ATTACH
+:
+   'attach'
 ;
 
 AUTHENTICATION
@@ -3344,7 +3350,7 @@ L2VPN
 
 L2_INTERFACE
 :
-  'l2-interface'
+  'l2-interface' -> pushMode(M_Interface)
 ;
 
 L2_LEARNING
@@ -3354,7 +3360,7 @@ L2_LEARNING
 
 L3_INTERFACE
 :
-   'l3-interface'
+   'l3-interface' -> pushMode(M_Interface)
 ;
 
 LABEL_SWITCHED_PATH
@@ -3699,12 +3705,12 @@ MEDIUM_LOW
 
 MEMBER
 :
-   'member'
+   'member' -> pushMode(M_Interface)
 ;
 
 MEMBER_RANGE
 :
-   'member-range'
+   'member-range' -> pushMode(M_MemberRange)
 ;
 
 MEMBERS
@@ -5349,7 +5355,7 @@ SOURCE_IDENTITY
 
 SOURCE_INTERFACE
 :
-   'source-interface'
+   'source-interface' -> pushMode(M_Interface)
 ;
 
 SOURCE_IP_BASED
@@ -6073,7 +6079,7 @@ VSTP
 
 VTEP_SOURCE_INTERFACE
 :
-   'vtep-source-interface'
+   'vtep-source-interface' -> pushMode(M_Interface)
 ;
 
 VXLAN
@@ -6475,6 +6481,83 @@ F_HexDigit
 ;
 
 fragment
+F_InterfaceMediaType
+:
+   ('ae' |
+   'as' |
+   'at' |
+   'bcm' |
+   'cau4' |
+   'ca1' |
+   'ci' |
+   'coc1' |
+   'coc3' |
+   'coc12' |
+   'coc48' |
+   'cp' |
+   'cstm1' |
+   'cstm4' |
+   'cstm16' |
+   'ct1' |
+   'ct3' |
+   'demux' |
+   'dfc' |
+   'ds' |
+   'dsc' |
+   'e1' |
+   'e3' |
+   'em' |
+   'es' |
+   'et' |
+   'fe' |
+   'fxp' |
+   'ge' |
+   'gr' |
+   'gre' |
+   'ip' |
+   'ipip' |
+   'ixgbe' |
+   'iw' |
+   'lc' |
+   'lo' |
+   'ls' |
+   'lsi' |
+   'lm' |
+   'me' |
+   'mo' |
+   'ms' |
+   'mt' |
+   'mtun' |
+   'oc3' |
+   'pd' |
+   'pe' |
+   'pimd' |
+   'pime' |
+   'reth' |
+   'rlsq' |
+   'rms' |
+   'rsp' |
+   'se' |
+   'si' |
+   'so' |
+   'sp' |
+   'st' |
+   'stm1' |
+   'stm4' |
+   'stm16' |
+   't1' |
+   't3' |
+   'tap' |
+   'umd' |
+   'vc4' |
+   'vme' |
+   'vsp' |
+   'vt' |
+   'xe' |
+   'xt')
+;
+
+fragment
 F_IpAddress
 :
    F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
@@ -6514,6 +6597,18 @@ fragment
 F_Variable_RequiredVarChar
 :
    ~[ 0-9\t\n\r/.,\-;{}<>[\]&|()"']
+;
+
+fragment
+F_Hostname_LeadingChar
+:
+   [A-Za-z]
+;
+
+fragment
+F_Hostname_TrailingChar
+:
+   [A-Za-z0-9_]|'-'
 ;
 
 fragment
@@ -6812,6 +6907,11 @@ M_DSCP_WS
 
 mode M_Interface;
 
+M_Interface_COLON
+:
+   ':' -> type (COLON)
+;
+
 M_Interface_ALL
 :
    'all' -> type ( ALL ) , popMode
@@ -6845,6 +6945,16 @@ M_Interface_INTERFACE_RANGE
    'interface-range' -> type ( INTERFACE_RANGE ) , popMode
 ;
 
+M_Interface_INTERFACE_NAME
+:
+   (
+      F_InterfaceMediaType '-'? F_Digit+ ('/' F_Digit+)*
+      | 'irb'
+      | 'vlan'
+      | 'vme'
+   ) -> type(INTERFACE_NAME), popMode
+;
+
 M_Interface_PORT_OVERLOADING
 :
    'port-overloading' -> type ( PORT_OVERLOADING ) , popMode
@@ -6865,10 +6975,9 @@ M_Interface_TRACEOPTIONS
    'traceoptions' -> type ( TRACEOPTIONS ) , popMode
 ;
 
-M_Interface_VARIABLE
+M_Interface_HOSTNAME
 :
-   F_Variable_RequiredVarChar F_Variable_InterfaceVarChar* -> type ( VARIABLE )
-   , popMode
+   F_Hostname_LeadingChar F_Hostname_TrailingChar* -> type ( VARIABLE )
 ;
 
 M_Interface_WILDCARD
@@ -6961,6 +7070,31 @@ MAC_ADDRESS
 M_MacAddress_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+mode M_MemberRange;
+
+M_MemberRange_INTERFACE_NAME:
+   (
+      F_InterfaceMediaType '-'? F_Digit+ ('/' F_Digit+)*
+      | 'irb' | 'vlan'
+   ) -> type(INTERFACE_NAME), mode(M_MemberRange2)
+;
+
+M_MemberRange_WS
+:
+   F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+mode M_MemberRange2;
+
+M_MemberRange2_WS
+:
+   F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+M_MemberRange2_TO:
+   'to' -> type(TO), mode(M_Interface)
 ;
 
 mode M_Members;

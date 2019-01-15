@@ -1,0 +1,32 @@
+!
+hostname eos_switchport_default_mode_undeclared
+boot system flash fake.swi
+!
+interface Loopback0
+ no shutdown
+!
+interface Ethernet0/0
+ no shutdown
+!
+interface Ethernet0/1
+ switchport
+ no shutdown
+!
+interface Ethernet0/2
+ switchport
+ switchport mode access
+ no shutdown
+!
+interface Ethernet0/3
+ no switchport
+ no shutdown
+!
+interface Ethernet0/4
+ switchport
+ switchport mode trunk
+ no shutdown
+!
+interface Port-Channel0
+ no shutdown
+!
+!

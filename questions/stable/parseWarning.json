@@ -1,6 +1,7 @@
 {
     "class": "org.batfish.question.initialization.ParseWarningQuestion",
     "differential": false,
+    "aggregateDuplicates": "${aggregateDuplicates}",
     "instance": {
         "description": "Return a table of the Batfish warnings that occurred parsing this snapshot",
         "instanceName": "parseWarning",
@@ -8,6 +9,14 @@
             "initialization",
             "parse",
             "file"
-        ]
+        ],
+        "variables": {
+            "aggregateDuplicates": {
+                "description": "Whether to aggregate duplicate results",
+                "type": "boolean",
+                "optional": true,
+                "displayName": "Aggregate duplicates"
+            }
+        }
     }
 }

@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.convertRouteLevel1ToLevel2;
+import static org.batfish.dataplane.protocols.IsisProtocolHelper.setOverloadOnAllRoutes;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.isInterfaceRoute;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.shouldActivateNextHopIpRoute;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
@@ -1037,27 +1038,28 @@ public class VirtualRouter implements Serializable {
     int l2Admin = RoutingProtocol.ISIS_L2.getDefaultAdministrativeCost(_c.getConfigurationFormat());
     IsisLevelSettings l1Settings = proc.getLevel1();
     IsisLevelSettings l2Settings = proc.getLevel2();
-    IsisRoute.Builder builder =
+    IsisRoute.Builder ifaceRouteBuilder =
         new IsisRoute.Builder()
             .setArea(proc.getNetAddress().getAreaIdString())
             .setSystemId(proc.getNetAddress().getSystemIdString());
-    _vrf.getInterfaces()
-        .values()
-        .forEach(
-            iface ->
-                generateAllIsisInterfaceRoutes(
-                    d1, d2, l1Admin, l2Admin, l1Settings, l2Settings, builder, iface));
+    for (Interface iface : _vrf.getInterfaces().values()) {
+      generateAllIsisInterfaceRoutes(
+          d1, d2, l1Admin, l2Admin, l1Settings, l2Settings, ifaceRouteBuilder, iface);
+    }
 
-    // export default route for L1 neighbors on L1L2 routers
-    if (l1Settings != null && l2Settings != null) {
+    // export default route for L1 neighbors on L1L2 routers that are not overloaded
+    if (l1Settings != null && l2Settings != null && !proc.getOverload()) {
       IsisRoute defaultRoute =
-          builder
+          new IsisRoute.Builder()
               .setAdmin(l1Admin)
+              .setArea(proc.getNetAddress().getAreaIdString())
               .setAttach(true)
               .setLevel(IsisLevel.LEVEL_1)
               .setMetric(0L)
               .setNetwork(Prefix.ZERO)
+              .setNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP)
               .setProtocol(RoutingProtocol.ISIS_L1)
+              .setSystemId(proc.getNetAddress().getSystemIdString())
               .build();
       d1.from(_isisL1Rib.mergeRouteGetDelta(defaultRoute));
     }
@@ -1394,59 +1396,51 @@ public class VirtualRouter implements Serializable {
     }
     RibDelta.Builder<IsisRoute> l1DeltaBuilder = new RibDelta.Builder<>(_isisL1StagingRib);
     RibDelta.Builder<IsisRoute> l2DeltaBuilder = new RibDelta.Builder<>(_isisL2StagingRib);
-    IsisRoute.Builder routeBuilder = new IsisRoute.Builder();
     int l1Admin = RoutingProtocol.ISIS_L1.getDefaultAdministrativeCost(_c.getConfigurationFormat());
     int l2Admin = RoutingProtocol.ISIS_L2.getDefaultAdministrativeCost(_c.getConfigurationFormat());
     _isisIncomingRoutes.forEach(
         (edge, queue) -> {
           Ip nextHopIp = edge.getNode1().getInterface(nc).getAddress().getIp();
           Interface iface = edge.getNode2().getInterface(nc);
-          routeBuilder.setNextHopIp(nextHopIp);
           while (queue.peek() != null) {
             RouteAdvertisement<IsisRoute> routeAdvert = queue.remove();
             IsisRoute neighborRoute = routeAdvert.getRoute();
+            IsisLevel routeLevel = neighborRoute.getLevel();
+            IsisInterfaceLevelSettings isisLevelSettings =
+                routeLevel == IsisLevel.LEVEL_1
+                    ? iface.getIsis().getLevel1()
+                    : iface.getIsis().getLevel2();
 
-            routeBuilder
-                .setNetwork(neighborRoute.getNetwork())
-                .setArea(neighborRoute.getArea())
-                .setAttach(neighborRoute.getAttach())
-                .setSystemId(neighborRoute.getSystemId());
+            // Do not propagate route if ISIS interface is not active at this level
+            if (isisLevelSettings.getMode() != IsisInterfaceMode.ACTIVE) {
+              break;
+            }
             boolean withdraw = routeAdvert.isWithdrawn();
-            // TODO: simplify
-            if (neighborRoute.getLevel() == IsisLevel.LEVEL_1) {
-              long incrementalMetric =
-                  firstNonNull(iface.getIsis().getLevel1().getCost(), IsisRoute.DEFAULT_METRIC);
-              IsisRoute newL1Route =
-                  routeBuilder
-                      .setAdmin(l1Admin)
-                      .setLevel(IsisLevel.LEVEL_1)
-                      .setMetric(incrementalMetric + neighborRoute.getMetric())
-                      .setProtocol(RoutingProtocol.ISIS_L1)
-                      .build();
-              if (withdraw) {
-                l1DeltaBuilder.remove(newL1Route, Reason.WITHDRAW);
-                _isisL1Rib.removeBackupRoute(newL1Route);
-              } else {
-                l1DeltaBuilder.from(_isisL1StagingRib.mergeRouteGetDelta(newL1Route));
-                _isisL1Rib.removeBackupRoute(newL1Route);
-              }
-            } else { // neighborRoute is level2
-              long incrementalMetric =
-                  firstNonNull(iface.getIsis().getLevel2().getCost(), IsisRoute.DEFAULT_METRIC);
-              IsisRoute newL2Route =
-                  routeBuilder
-                      .setAdmin(l2Admin)
-                      .setLevel(IsisLevel.LEVEL_2)
-                      .setMetric(incrementalMetric + neighborRoute.getMetric())
-                      .setProtocol(RoutingProtocol.ISIS_L2)
-                      .build();
-              if (withdraw) {
-                l2DeltaBuilder.remove(newL2Route, Reason.WITHDRAW);
-                _isisL2Rib.removeBackupRoute(newL2Route);
-              } else {
-                l2DeltaBuilder.from(_isisL2StagingRib.mergeRouteGetDelta(newL2Route));
-                _isisL2Rib.addBackupRoute(newL2Route);
-              }
+            int adminCost = routeLevel == IsisLevel.LEVEL_1 ? l1Admin : l2Admin;
+            RoutingProtocol levelProtocol =
+                routeLevel == IsisLevel.LEVEL_1 ? RoutingProtocol.ISIS_L1 : RoutingProtocol.ISIS_L2;
+            RibDelta.Builder<IsisRoute> deltaBuilder =
+                routeLevel == IsisLevel.LEVEL_1 ? l1DeltaBuilder : l2DeltaBuilder;
+            IsisLevelRib levelRib = routeLevel == IsisLevel.LEVEL_1 ? _isisL1Rib : _isisL2Rib;
+            long incrementalMetric =
+                firstNonNull(isisLevelSettings.getCost(), IsisRoute.DEFAULT_METRIC);
+            IsisRoute newRoute =
+                neighborRoute
+                    .toBuilder()
+                    .setAdmin(adminCost)
+                    .setLevel(routeLevel)
+                    .setMetric(incrementalMetric + neighborRoute.getMetric())
+                    .setNextHopIp(nextHopIp)
+                    .setProtocol(levelProtocol)
+                    .build();
+            if (withdraw) {
+              deltaBuilder.remove(newRoute, Reason.WITHDRAW);
+              levelRib.removeBackupRoute(newRoute);
+            } else {
+              IsisLevelRib levelStagingRib =
+                  routeLevel == IsisLevel.LEVEL_1 ? _isisL1StagingRib : _isisL2StagingRib;
+              deltaBuilder.from(levelStagingRib.mergeRouteGetDelta(newRoute));
+              levelRib.addBackupRoute(newRoute);
             }
           }
         });
@@ -2087,52 +2081,71 @@ public class VirtualRouter implements Serializable {
     if (_vrf.getIsisProcess() == null || _isisIncomingRoutes == null) {
       return;
     }
+    // All outgoing routes should have overload bit set
+    RibDelta<IsisRoute> correctedL1Delta =
+        _vrf.getIsisProcess().getOverload() ? setOverloadOnAllRoutes(l1delta) : l1delta;
+    RibDelta<IsisRoute> correctedL2Delta =
+        _vrf.getIsisProcess().getOverload() ? setOverloadOnAllRoutes(l2delta) : l2delta;
     // Loop over neighbors, enqueue messages
-    _isisIncomingRoutes
-        .keySet()
-        .forEach(
-            edge -> {
-              VirtualRouter remoteVr =
-                  allNodes
-                      .get(edge.getNode1().getNode())
-                      .getVirtualRouters()
-                      .get(edge.getNode1().getInterface(nc).getVrfName());
-              Queue<RouteAdvertisement<IsisRoute>> queue =
-                  remoteVr._isisIncomingRoutes.get(edge.reverse());
-              IsisLevel circuitType = edge.getCircuitType();
-              if (circuitType == IsisLevel.LEVEL_1_2 || circuitType == IsisLevel.LEVEL_1) {
-                queueDelta(queue, l1delta);
-              }
-              if (circuitType == IsisLevel.LEVEL_1_2 || circuitType == IsisLevel.LEVEL_2) {
-                queueDelta(queue, l2delta);
-                if (_vrf.getIsisProcess().getLevel1() != null
-                    && _vrf.getIsisProcess().getLevel2() != null
-                    && l1delta != null) {
+    for (IsisEdge edge : _isisIncomingRoutes.keySet()) {
+      // Do not queue routes on non-active ISIS interface levels
+      Interface iface = edge.getNode2().getInterface(nc);
+      IsisInterfaceLevelSettings level1Settings = iface.getIsis().getLevel1();
+      IsisInterfaceLevelSettings level2Settings = iface.getIsis().getLevel2();
+      IsisLevel activeLevels = null;
+      if (level1Settings != null && level1Settings.getMode() == IsisInterfaceMode.ACTIVE) {
+        activeLevels = IsisLevel.LEVEL_1;
+      }
+      if (level2Settings != null && level2Settings.getMode() == IsisInterfaceMode.ACTIVE) {
+        activeLevels = IsisLevel.union(activeLevels, IsisLevel.LEVEL_2);
+      }
+      if (activeLevels == null) {
+        return;
+      }
 
-                  // We are a L1_L2 router, we must "upgrade" L1 routes to L2 routes
-                  // TODO: a little cumbersome, simplify later
-                  RibDelta.Builder<IsisRoute> upgradedRoutes = new RibDelta.Builder<>(null);
-                  l1delta
-                      .getActions()
-                      .forEach(
-                          ra -> {
-                            Optional<IsisRoute> newRoute =
-                                convertRouteLevel1ToLevel2(
-                                    ra.getRoute(),
-                                    RoutingProtocol.ISIS_L2.getDefaultAdministrativeCost(
-                                        _c.getConfigurationFormat()));
-                            if (newRoute.isPresent()) {
-                              if (ra.isWithdrawn()) {
-                                upgradedRoutes.remove(newRoute.get(), ra.getReason());
-                              } else {
-                                upgradedRoutes.add(newRoute.get());
-                              }
-                            }
-                          });
-                  queueDelta(queue, upgradedRoutes.build());
-                }
-              }
-            });
+      VirtualRouter remoteVr =
+          allNodes
+              .get(edge.getNode1().getNode())
+              .getVirtualRouters()
+              .get(edge.getNode1().getInterface(nc).getVrfName());
+      Queue<RouteAdvertisement<IsisRoute>> queue = remoteVr._isisIncomingRoutes.get(edge.reverse());
+      IsisLevel circuitType = edge.getCircuitType();
+      if (circuitType.includes(IsisLevel.LEVEL_1) && activeLevels.includes(IsisLevel.LEVEL_1)) {
+        queueDelta(queue, correctedL1Delta);
+      }
+      if (circuitType.includes(IsisLevel.LEVEL_2) && activeLevels.includes(IsisLevel.LEVEL_2)) {
+        queueDelta(queue, correctedL2Delta);
+        if (_vrf.getIsisProcess().getLevel1() != null
+            && _vrf.getIsisProcess().getLevel2() != null
+            // An L1-L2 router in overload mode stops leaking route information between L1 and L2
+            // levels and clears its attached bit.
+            && !_vrf.getIsisProcess().getOverload()
+            && correctedL1Delta != null) {
+
+          // We are a L1_L2 router, we must "upgrade" L1 routes to L2 routes
+          // TODO: a little cumbersome, simplify later
+          RibDelta.Builder<IsisRoute> upgradedRoutes = new RibDelta.Builder<>(null);
+          correctedL1Delta
+              .getActions()
+              .forEach(
+                  ra -> {
+                    Optional<IsisRoute> newRoute =
+                        convertRouteLevel1ToLevel2(
+                            ra.getRoute(),
+                            RoutingProtocol.ISIS_L2.getDefaultAdministrativeCost(
+                                _c.getConfigurationFormat()));
+                    if (newRoute.isPresent()) {
+                      if (ra.isWithdrawn()) {
+                        upgradedRoutes.remove(newRoute.get(), ra.getReason());
+                      } else {
+                        upgradedRoutes.add(newRoute.get());
+                      }
+                    }
+                  });
+          queueDelta(queue, upgradedRoutes.build());
+        }
+      }
+    }
   }
 
   /**

@@ -4,10 +4,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.function.Function;
@@ -152,7 +152,7 @@ public class BgpRib extends AbstractRib<BgpRoute> {
   }
 
   public Set<BgpRoute> getBestPathRoutes() {
-    return _bestPaths.values().stream().collect(ImmutableSet.toImmutableSet());
+    return ImmutableSet.copyOf(_bestPaths.values());
   }
 
   private int compareRouteAsPath(BgpRoute lhs, BgpRoute rhs) {
@@ -181,15 +181,13 @@ public class BgpRib extends AbstractRib<BgpRoute> {
   }
 
   private void selectBestPath(Prefix prefix) {
-    // Get routes, sort to determine best path
-    ImmutableSortedSet<BgpRoute> s =
-        ImmutableSortedSet.copyOf(this::bestPathComparator, extractRoutes(prefix));
-    if (s.isEmpty()) {
+    Optional<BgpRoute> s = extractRoutes(prefix).stream().max(this::bestPathComparator);
+    if (!s.isPresent()) {
       // Remove best path and return
       _bestPaths.remove(prefix);
       return;
     }
-    _bestPaths.put(prefix, s.last());
+    _bestPaths.put(prefix, s.get());
   }
 
   /**
@@ -203,7 +201,7 @@ public class BgpRib extends AbstractRib<BgpRoute> {
     // Skip arrival order unless requested
     if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER) {
       result =
-          Comparator.comparing(
+          Comparator.<BgpRoute, Long>comparing(
                   r -> _logicalArrivalTime.getOrDefault(r, _logicalClock),
                   Comparator.reverseOrder())
               .compare(lhs, rhs);

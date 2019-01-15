@@ -1,0 +1,10 @@
+#
+set system host-name juniper-from-prefix-list
+#
+set policy-options prefix-list PREFIX-LIST1 1.1.1.0/24
+set policy-options prefix-list PREFIX-LIST2 2.2.2.0/24
+#
+set policy-options policy-statement POLICY-NAME term TERM1 from protocol direct
+set policy-options policy-statement POLICY-NAME term TERM1 from prefix-list PREFIX-LIST1
+set policy-options policy-statement POLICY-NAME term TERM1 from prefix-list PREFIX-LIST2
+set policy-options policy-statement POLICY-NAME term TERM1 then accept

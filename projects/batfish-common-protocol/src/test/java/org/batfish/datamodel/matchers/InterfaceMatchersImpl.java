@@ -1,6 +1,5 @@
 package org.batfish.datamodel.matchers;
 
-import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -10,7 +9,6 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
@@ -28,6 +26,7 @@ final class InterfaceMatchersImpl {
     }
 
     @Override
+    @Nullable
     protected Integer featureValueOf(Interface actual) {
       return actual.getAccessVlan();
     }
@@ -150,6 +149,18 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasMlagId extends FeatureMatcher<Interface, Integer> {
+    HasMlagId(@Nonnull Matcher<? super Integer> subMatcher) {
+      super(subMatcher, "an Interface with MLAG ID:", "mlagId");
+    }
+
+    @Override
+    @Nullable
+    protected Integer featureValueOf(Interface actual) {
+      return actual.getMlagId();
+    }
+  }
+
   static final class HasMtu extends FeatureMatcher<Interface, Integer> {
     HasMtu(@Nonnull Matcher<? super Integer> subMatcher) {
       super(subMatcher, "an Interface with MTU:", "MTU");
@@ -249,17 +260,6 @@ final class InterfaceMatchersImpl {
     }
   }
 
-  static final class HasSourceNats extends FeatureMatcher<Interface, List<SourceNat>> {
-    HasSourceNats(@Nonnull Matcher<? super List<SourceNat>> subMatcher) {
-      super(subMatcher, "an Interface with sourceNats:", "sourceNats");
-    }
-
-    @Override
-    protected List<SourceNat> featureValueOf(Interface actual) {
-      return actual.getSourceNats();
-    }
-  }
-
   static final class HasSwitchPortMode extends FeatureMatcher<Interface, SwitchportMode> {
     HasSwitchPortMode(@Nonnull Matcher<? super SwitchportMode> subMatcher) {
       super(subMatcher, "an Interface with switchPortMode:", "switchPortMode");
@@ -334,6 +334,17 @@ final class InterfaceMatchersImpl {
     @Override
     protected Boolean featureValueOf(Interface actual) {
       return actual.getProxyArp();
+    }
+  }
+
+  static final class IsSwitchport extends FeatureMatcher<Interface, Boolean> {
+    IsSwitchport(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "an Interface with switchport:", "switchport");
+    }
+
+    @Override
+    protected Boolean featureValueOf(Interface actual) {
+      return actual.getSwitchport();
     }
   }
 

@@ -179,6 +179,32 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
         .build();
   }
 
+  /**
+   * Returns the first ip in the prefix that is not a subnet address. When the prefix is /32 or /31,
+   * returns the getStartIp(), otherwise, returns the ip after getStartIp().
+   */
+  public Ip getFirstHostIp() {
+    if (_prefixLength >= Prefix.MAX_PREFIX_LENGTH - 1) {
+      return getStartIp();
+    } else {
+      Ip subnetIp = getStartIp();
+      return Ip.create(subnetIp.asLong() + 1);
+    }
+  }
+
+  /**
+   * Returns the last ip in the prefix that is not a broadcast address. When the prefix is /32 or
+   * /31, returns the getEndIp(), otherwise, returns the ip before getEndIp().
+   */
+  public Ip getLastHostIp() {
+    if (_prefixLength >= Prefix.MAX_PREFIX_LENGTH - 1) {
+      return getEndIp();
+    } else {
+      Ip broadcastIp = getEndIp();
+      return Ip.create(broadcastIp.asLong() - 1);
+    }
+  }
+
   @Override
   @JsonValue
   public String toString() {

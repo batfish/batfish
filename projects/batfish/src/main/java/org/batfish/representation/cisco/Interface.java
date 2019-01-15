@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.LinkedHashSet;
@@ -9,6 +10,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -114,13 +116,15 @@ public class Interface implements Serializable {
     return DEFAULT_INTERFACE_MTU;
   }
 
-  private int _accessVlan;
+  @Nullable private Integer _accessVlan;
 
   private boolean _active;
 
   private String _alias;
 
   @Nullable private IntegerSpace _allowedVlans;
+
+  private List<CiscoAristaNat> _aristaNats;
 
   private boolean _autoState;
 
@@ -147,6 +151,8 @@ public class Interface implements Serializable {
   @Nullable private Long _isisCost;
 
   @Nullable private IsisInterfaceMode _isisInterfaceMode;
+
+  @Nullable private Integer _mlagId;
 
   private int _mtu;
 
@@ -178,13 +184,11 @@ public class Interface implements Serializable {
 
   private Set<InterfaceAddress> _secondaryAddresses;
 
-  private List<CiscoSourceNat> _sourceNats;
-
   private boolean _spanningTreePortfast;
 
   private InterfaceAddress _standbyAddress;
 
-  private Boolean _switchport;
+  private boolean _switchport;
 
   private boolean _switchportAccessDynamic;
 
@@ -193,6 +197,8 @@ public class Interface implements Serializable {
   private SwitchportEncapsulationType _switchportTrunkEncapsulation;
 
   private Tunnel _tunnel;
+
+  @Nonnull private Set<String> _vlanTrunkGroups;
 
   private String _vrf;
 
@@ -231,6 +237,24 @@ public class Interface implements Serializable {
     return _securityZone;
   }
 
+  /**
+   * Returns the default {@link SwitchportMode} for the given {@code vendor} to be used when a
+   * switchport is explicitly enabled, ignoring any override of the default mode.
+   */
+  public static SwitchportMode getUndeclaredDefaultSwitchportMode(ConfigurationFormat vendor) {
+    switch (vendor) {
+      case ARISTA:
+        return SwitchportMode.ACCESS;
+      case CISCO_IOS:
+        return SwitchportMode.DYNAMIC_AUTO;
+      case CISCO_NX:
+        // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/sw/5_x/nx-os/interfaces/configuration/guide/if_cli/if_access_trunk.html#pgfId-1525675
+        return SwitchportMode.ACCESS;
+      default:
+        return SwitchportMode.ACCESS;
+    }
+  }
+
   public Interface(String name, CiscoConfiguration c) {
     _active = true;
     _autoState = true;
@@ -241,48 +265,56 @@ public class Interface implements Serializable {
     _name = name;
     _nativeVlan = 1;
     _secondaryAddresses = new LinkedHashSet<>();
-    SwitchportMode defaultSwitchportMode = c.getCf().getDefaultSwitchportMode();
     ConfigurationFormat vendor = c.getVendor();
-    if (defaultSwitchportMode == null) {
-      switch (vendor) {
-        case ARISTA:
-          _switchportMode = SwitchportMode.ACCESS;
-          break;
 
-        case ALCATEL_AOS:
-        case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
-        case AWS:
-        case CADANT:
-        case CISCO_ASA:
-        case CISCO_IOS:
-        case CISCO_IOS_XR:
-        case CISCO_NX:
-        case FORCE10:
-        case FOUNDRY:
-          _switchportMode = SwitchportMode.NONE;
-          break;
+    // Proxy-ARP defaults
+    switch (vendor) {
+      case CISCO_ASA:
+      case CISCO_IOS:
+        setProxyArp(true);
+        break;
 
-          // $CASES-OMITTED$
-        default:
-          throw new BatfishException(
-              "Invalid vendor format for cisco parser: " + vendor.getVendorString());
+        // $CASES-OMITTED$
+      default:
+        break;
+    }
+
+    // Switchport defaults
+    if (vendor == ConfigurationFormat.ARISTA
+        && (name.startsWith("Ethernet") || name.startsWith("Port-Channel"))) {
+      SwitchportMode defaultSwitchportMode = c.getCf().getDefaultSwitchportMode();
+      if (defaultSwitchportMode == null) {
+        // Arista Ethernet and Port-channel default switchport mode is ACCESS
+        _switchportMode = SwitchportMode.ACCESS;
+      } else {
+        // Arista use alternate default switchport mode if declared
+        _switchportMode = defaultSwitchportMode;
       }
     } else {
-      _switchportMode = defaultSwitchportMode;
+      // Default switchport mode for non-Arista and Arista non-Ethernet/Port-Channel is NONE
+      _switchportMode = SwitchportMode.NONE;
     }
+    _switchport = _switchportMode != SwitchportMode.NONE;
     if (_switchportMode == SwitchportMode.TRUNK) {
       _allowedVlans = ALL_VLANS;
     } else if (_switchportMode == SwitchportMode.ACCESS) {
       _allowedVlans = null;
     }
+    _vlanTrunkGroups = ImmutableSet.of();
     _spanningTreePortfast = c.getSpanningTreePortfastDefault();
+  }
+
+  public void addVlanTrunkGroup(@Nonnull String groupName) {
+    _vlanTrunkGroups =
+        ImmutableSet.<String>builder().addAll(_vlanTrunkGroups).add(groupName).build();
   }
 
   public void setAllowedVlans(@Nullable IntegerSpace allowedVlans) {
     _allowedVlans = allowedVlans;
   }
 
-  public int getAccessVlan() {
+  @Nullable
+  public Integer getAccessVlan() {
     return _accessVlan;
   }
 
@@ -306,6 +338,10 @@ public class Interface implements Serializable {
     }
     allAddresses.addAll(_secondaryAddresses);
     return allAddresses;
+  }
+
+  public List<CiscoAristaNat> getAristaNats() {
+    return _aristaNats;
   }
 
   public boolean getAutoState() {
@@ -354,6 +390,11 @@ public class Interface implements Serializable {
 
   public IsisInterfaceMode getIsisInterfaceMode() {
     return _isisInterfaceMode;
+  }
+
+  @Nullable
+  public Integer getMlagId() {
+    return _mlagId;
   }
 
   public int getMtu() {
@@ -422,10 +463,6 @@ public class Interface implements Serializable {
     return _secondaryAddresses;
   }
 
-  public List<CiscoSourceNat> getSourceNats() {
-    return _sourceNats;
-  }
-
   public boolean getSpanningTreePortfast() {
     return _spanningTreePortfast;
   }
@@ -466,6 +503,15 @@ public class Interface implements Serializable {
     return _securityLevel;
   }
 
+  /**
+   * Retun the (immutable) set of VLAN trunk groups that this interface belongs to. To add trunk
+   * groups, see {@link #addVlanTrunkGroup(String)}
+   */
+  @Nonnull
+  public Set<String> getVlanTrunkGroups() {
+    return _vlanTrunkGroups;
+  }
+
   public String getVrf() {
     return _vrf;
   }
@@ -480,6 +526,10 @@ public class Interface implements Serializable {
 
   public void setAlias(String alias) {
     _alias = alias;
+  }
+
+  public void setAristaNats(List<CiscoAristaNat> aristaNats) {
+    _aristaNats = aristaNats;
   }
 
   public void setAutoState(boolean autoState) {
@@ -520,6 +570,10 @@ public class Interface implements Serializable {
 
   public void setIsisInterfaceMode(IsisInterfaceMode mode) {
     _isisInterfaceMode = mode;
+  }
+
+  public void setMlagId(Integer mlagId) {
+    _mlagId = mlagId;
   }
 
   public void setMtu(int mtu) {
@@ -578,10 +632,6 @@ public class Interface implements Serializable {
     _routingPolicy = routingPolicy;
   }
 
-  public void setSourceNats(List<CiscoSourceNat> sourceNats) {
-    _sourceNats = sourceNats;
-  }
-
   public void setSpanningTreePortfast(boolean spanningTreePortfast) {
     _spanningTreePortfast = spanningTreePortfast;
   }
@@ -591,10 +641,6 @@ public class Interface implements Serializable {
   }
 
   public void setSwitchport(boolean switchport) {
-    _switchport = switchport;
-  }
-
-  public void setSwitchport(Boolean switchport) {
     _switchport = switchport;
   }
 

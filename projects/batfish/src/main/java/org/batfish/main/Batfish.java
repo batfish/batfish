@@ -108,6 +108,7 @@ import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.IpsecUtil;
 import org.batfish.config.Settings;
 import org.batfish.config.TestrigSettings;
 import org.batfish.datamodel.AbstractRoute;
@@ -132,7 +133,6 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.RipNeighbor;
 import org.batfish.datamodel.RipProcess;
@@ -260,7 +260,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
 
   private static final Pattern MANAGEMENT_INTERFACES =
-      Pattern.compile("(\\Amgmt)|(\\Amanagement)|(\\Afxp0)|(\\Aem0)|(\\Ame0)", CASE_INSENSITIVE);
+      Pattern.compile(
+          "(\\Amgmt)|(\\Amanagement)|(\\Afxp0)|(\\Aem0)|(\\Ame0)|(\\Avme)", CASE_INSENSITIVE);
 
   private static final Pattern MANAGEMENT_VRFS =
       Pattern.compile("(\\Amgmt)|(\\Amanagement)", CASE_INSENSITIVE);
@@ -777,7 +778,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     Map<String, Configuration> configs =
         new BatfishCompressor(new BDDPacket(), this, clonedConfigs).compress(headerSpace);
-    Topology topo = CommonUtil.synthesizeTopology(configs);
+    Topology topo = TopologyUtil.synthesizeL3Topology(configs);
     DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
     ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(false, configs, topo);
 
@@ -840,6 +841,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.resetTimer();
     Topology topology = computeTestrigTopology(configurations);
     topology.prune(getEdgeBlacklist(), getNodeBlacklist(), getInterfaceBlacklist());
+    topology.pruneFailedIpsecSessionEdges(
+        IpsecUtil.initIpsecTopology(configurations), configurations);
     _logger.printElapsedTime();
     return topology;
   }
@@ -880,7 +883,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     // guess adjacencies based on interface subnetworks
     _logger.info("*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
-    return CommonUtil.synthesizeTopology(configurations);
+    return TopologyUtil.synthesizeL3Topology(configurations);
   }
 
   private Map<String, Configuration> convertConfigurations(
@@ -1054,7 +1057,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
           vlans.including(vlanNumber);
         } else if (iface.getSwitchportMode() == SwitchportMode.ACCESS) { // access mode ACCESS
           vlanNumber = iface.getAccessVlan();
-          vlans.including(vlanNumber);
+          if (vlanNumber != null) {
+            vlans.including(vlanNumber);
+          }
           // Any other Switch Port mode is unsupported
         } else if (iface.getSwitchportMode() != SwitchportMode.NONE) {
           _logger.warnf(
@@ -1085,39 +1090,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
               iface.setBlacklisted(true);
             }
           }
-        }
-      }
-    }
-  }
-
-  private void disableUnusableVpnInterfaces(Map<String, Configuration> configurations) {
-    CommonUtil.initRemoteIpsecVpns(configurations);
-    for (Configuration c : configurations.values()) {
-      for (IpsecVpn vpn : c.getIpsecVpns().values()) {
-        Interface bindInterface = vpn.getBindInterface();
-        if (bindInterface == null) {
-          // Nothing to disable.
-          continue;
-        }
-
-        if (bindInterface.getInterfaceType() == InterfaceType.PHYSICAL) {
-          // Skip tunnels bound to physical interfaces (aka, Cisco interface crypto-map).
-          continue;
-        }
-
-        IpsecVpn remoteVpn = vpn.getRemoteIpsecVpn();
-        if (remoteVpn == null
-            || !vpn.compatibleIkeProposals(remoteVpn)
-            || !vpn.compatibleIpsecProposals(remoteVpn)
-            || !vpn.compatiblePreSharedKey(remoteVpn)) {
-          String hostname = c.getHostname();
-          bindInterface.setActive(false);
-          bindInterface.setBlacklisted(true);
-          String bindInterfaceName = bindInterface.getName();
-          _logger.warnf(
-              "WARNING: Disabling unusable vpn interface because we cannot determine remote "
-                  + "endpoint: \"%s:%s\"\n",
-              hostname, bindInterfaceName);
         }
       }
     }
@@ -1465,7 +1437,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return _settings.getImmutableConfiguration();
   }
 
-  NetworkSnapshot getNetworkSnapshot() {
+  @Override
+  public NetworkSnapshot getNetworkSnapshot() {
     return new NetworkSnapshot(_settings.getContainer(), _testrigSettings.getName());
   }
 
@@ -2976,7 +2949,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // TODO: take this out once dependencies are *the* definitive way to disable interfaces
     disableUnusableVlanInterfaces(configurations);
-    disableUnusableVpnInterfaces(configurations);
   }
 
   /**

@@ -1,25 +1,86 @@
 package org.batfish.question.initialization;
 
 import static org.batfish.question.initialization.ParseWarningAnswerer.COL_COMMENT;
+import static org.batfish.question.initialization.ParseWarningAnswerer.COL_FILELINES;
 import static org.batfish.question.initialization.ParseWarningAnswerer.COL_FILENAME;
 import static org.batfish.question.initialization.ParseWarningAnswerer.COL_LINE;
 import static org.batfish.question.initialization.ParseWarningAnswerer.COL_PARSER_CONTEXT;
 import static org.batfish.question.initialization.ParseWarningAnswerer.COL_TEXT;
+import static org.batfish.question.initialization.ParseWarningAnswerer.aggregateDuplicateWarnings;
+import static org.batfish.question.initialization.ParseWarningAnswerer.createMetadata;
+import static org.batfish.question.initialization.ParseWarningAnswerer.getAggregateRow;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
+import java.util.Map;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.question.initialization.ParseWarningAnswerer.WarningTriplet;
 import org.junit.Test;
 
 /** Tests of {@link ParseWarningAnswerer}. */
 public class ParseWarningAnswererTest {
+
+  @Test
+  public void testAggregateDuplicateWarnings() {
+    Warnings f1Warnings = new Warnings();
+    f1Warnings
+        .getParseWarnings()
+        .addAll(
+            ImmutableList.of(
+                new ParseWarning(3, "dup", "[configuration]", null),
+                new ParseWarning(4, "dup", "[configuration]", null),
+                new ParseWarning(5, "unique", "[configuration]", null)));
+    Warnings f2Warnings = new Warnings();
+    f2Warnings
+        .getParseWarnings()
+        .addAll(ImmutableList.of(new ParseWarning(23, "dup", "[configuration]", null)));
+
+    Map<String, Warnings> fileWarnings = ImmutableMap.of("f1", f1Warnings, "f2", f2Warnings);
+
+    assertThat(
+        aggregateDuplicateWarnings(fileWarnings),
+        equalTo(
+            ImmutableMap.of(
+                new WarningTriplet("dup", "[configuration]", null),
+                ImmutableMap.of("f1", ImmutableSortedSet.of(3, 4), "f2", ImmutableSortedSet.of(23)),
+                new WarningTriplet("unique", "[configuration]", null),
+                ImmutableMap.of("f1", ImmutableSortedSet.of(5)))));
+  }
+
+  @Test
+  public void testAggregateRow() {
+    Row row =
+        getAggregateRow(
+            new WarningTriplet("dup", "[configuration]", null),
+            ImmutableMap.of("f1", ImmutableSortedSet.of(3, 4), "f2", ImmutableSortedSet.of(23)),
+            createMetadata(new ParseWarningQuestion(true)).toColumnMap());
+
+    Row expected =
+        Row.of(
+            COL_FILELINES,
+            ImmutableList.of(
+                new FileLines("f1", ImmutableSortedSet.of(3, 4)),
+                new FileLines("f2", ImmutableSortedSet.of(23))),
+            COL_TEXT,
+            "dup",
+            COL_PARSER_CONTEXT,
+            "[configuration]",
+            COL_COMMENT,
+            "(not provided)");
+
+    assertThat(row, equalTo(expected));
+  }
 
   @Test
   public void testGetRowWithoutComment() {
@@ -37,7 +98,9 @@ public class ParseWarningAnswererTest {
             COL_COMMENT,
             "(not provided)");
 
-    Row row = ParseWarningAnswerer.getRow("nohost", input);
+    Row row =
+        ParseWarningAnswerer.getRow(
+            "nohost", input, createMetadata(new ParseWarningQuestion(false)).toColumnMap());
     assertThat(row, equalTo(expected));
   }
 
@@ -57,7 +120,9 @@ public class ParseWarningAnswererTest {
             COL_COMMENT,
             input.getComment());
 
-    Row row = ParseWarningAnswerer.getRow("nohost", input);
+    Row row =
+        ParseWarningAnswerer.getRow(
+            "nohost", input, createMetadata(new ParseWarningQuestion(false)).toColumnMap());
     assertThat(row, equalTo(expected));
   }
 

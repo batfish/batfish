@@ -30,6 +30,9 @@ test -raw tests/questions/experimental/interfaceMtu.ref validate-template interf
 # validate interfaceProperties
 test -raw tests/questions/experimental/interfaceProperties.ref validate-template interfaceProperties excludeShutInterfaces=false, nodes=".*", interfaces=".*", properties=".*"
 
+# validate mlagProperties
+test -raw tests/questions/experimental/mlagProperties.ref validate-template mlagProperties nodes="mynodes", idRegex="myids"
+
 # validate multipathConsistency
 test -raw tests/questions/experimental/multipathConsistency.ref validate-template multipathConsistency pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}, maxTraces=1
 
@@ -81,8 +84,14 @@ test -raw tests/questions/experimental/searchfilters.ref validate-template searc
 # validate subnetMultipathConsistency
 test -raw tests/questions/experimental/subnetMultipathConsistency.ref validate-template subnetMultipathConsistency maxTraces=1
 
+# validate switchedVlanProperties
+test -raw tests/questions/experimental/switchedVlanProperties.ref validate-template switchedVlanProperties excludeShutInterfaces=true, interfaces="i1", nodes="n1", vlans="1-5,7"
+
 # test traceroute
 test -raw tests/questions/experimental/traceroute.ref validate-template traceroute startLocation="location", ignoreFilters=false, maxTraces=0, headers={"dstIps" : "1.1.1.1/32"}
 
 # test viModel
 test -raw tests/questions/experimental/viModel.ref validate-template viModel
+
+# validate vxlanVniProperties
+test -raw tests/questions/experimental/vxlanVniProperties.ref validate-template vxlanVniProperties nodes="nodename", properties="VLAN"

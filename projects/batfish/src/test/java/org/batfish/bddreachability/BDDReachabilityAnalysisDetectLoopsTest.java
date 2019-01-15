@@ -3,7 +3,6 @@ package org.batfish.bddreachability;
 import static org.batfish.bddreachability.TestNetwork.LINK_1_NETWORK;
 import static org.batfish.bddreachability.TestNetwork.LINK_2_NETWORK;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
@@ -59,7 +58,6 @@ public class BDDReachabilityAnalysisDetectLoopsTest {
         .setVrf(dstVrf)
         .setAddress(
             new InterfaceAddress(LINK_1_NETWORK.getEndIp(), LINK_1_NETWORK.getPrefixLength()))
-        .setSourceNats(ImmutableList.of())
         .build();
 
     // second link
@@ -72,7 +70,6 @@ public class BDDReachabilityAnalysisDetectLoopsTest {
         .setVrf(dstVrf)
         .setAddress(
             new InterfaceAddress(LINK_2_NETWORK.getEndIp(), LINK_2_NETWORK.getPrefixLength()))
-        .setSourceNats(ImmutableList.of())
         .build();
 
     StaticRoute.Builder bld = StaticRoute.builder().setAdministrativeCost(1);

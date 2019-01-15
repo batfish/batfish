@@ -173,10 +173,14 @@ natp_address
 :
    ADDRESS
    (
-      IP_PREFIX
+      prefix = IP_PREFIX
       |
       (
          from = IP_ADDRESS TO to = IP_ADDRESS
+      )
+      |
+      (
+         from = IP_PREFIX TO to = IP_PREFIX
       )
    )
 ;
@@ -417,6 +421,7 @@ se_address_book
        apply
        | sead_address
        | sead_address_set
+       | sead_attach
    )
 ;
 
@@ -549,6 +554,11 @@ sead_address_set
       | seada_address_set
       | seada_description
    )
+;
+
+sead_attach
+:
+   ATTACH ZONE name = variable
 ;
 
 seada_address

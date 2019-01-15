@@ -8,6 +8,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.TopologyProvider;
+import org.batfish.datamodel.vxlan.VxlanTopology;
 
 /** */
 @ParametersAreNonnullByDefault
@@ -16,11 +17,13 @@ public final class TopologyProviderImpl implements TopologyProvider {
 
   private final IBatfish _batfish;
   private final Cache<NetworkSnapshot, IpOwners> _ipOwners;
+  private final Cache<NetworkSnapshot, VxlanTopology> _vxlanTopologies;
 
   /** Create a new topology provider for a given instance of {@link IBatfish} */
   public TopologyProviderImpl(IBatfish batfish) {
     _batfish = batfish;
     _ipOwners = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
+    _vxlanTopologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
   }
 
   /** Return the {@link IpOwners} for a given snapshot. */
@@ -30,6 +33,16 @@ public final class TopologyProviderImpl implements TopologyProvider {
       return _ipOwners.get(snapshot, () -> new IpOwners(_batfish.loadConfigurations(snapshot)));
     } catch (ExecutionException e) {
       return new IpOwners(_batfish.loadConfigurations(snapshot));
+    }
+  }
+
+  @Override
+  public VxlanTopology getVxlanTopology(NetworkSnapshot snapshot) {
+    try {
+      return _vxlanTopologies.get(
+          snapshot, () -> new VxlanTopology(_batfish.loadConfigurations(snapshot)));
+    } catch (ExecutionException e) {
+      return new VxlanTopology(_batfish.loadConfigurations(snapshot));
     }
   }
 }

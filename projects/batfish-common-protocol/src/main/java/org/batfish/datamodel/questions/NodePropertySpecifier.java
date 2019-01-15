@@ -2,11 +2,11 @@ package org.batfish.datamodel.questions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
@@ -39,14 +39,16 @@ public class NodePropertySpecifier extends PropertySpecifier {
   public static final String DNS_SOURCE_INTERFACE = "DNS_Source_Interface";
   public static final String DOMAIN_NAME = "Domain_Name";
   public static final String HOSTNAME = "Hostname";
-  public static final String IKE_GATEWAYS = "IKE_Gateways";
-  public static final String IKE_POLICIES = "IKE_Policies";
+  public static final String IKE_PHASE1_KEYS = "IKE_Phase1_Keys";
+  public static final String IKE_PHASE1_POLICIES = "IKE_Phase1_Policies";
+  public static final String IKE_PHASE1_PROPOSALS = "IKE_Phase1_Proposals";
   public static final String INTERFACES = "Interfaces";
   public static final String IP_ACCESS_LISTS = "IP_Access_Lists";
   public static final String IP_SPACES = "IP_Spaces";
   public static final String IP_6_ACCESS_LISTS = "IP6_Access_Lists";
-  public static final String IPSEC_POLICIES = "IPSec_Policies";
-  public static final String IPSEC_PROPOSALS = "IPSec_Proposals";
+  public static final String IPSEC_PEER_CONFIGS = "IPsec_Peer_Configs";
+  public static final String IPSEC_PHASE2_POLICIES = "IPsec_Phase2_Policies";
+  public static final String IPSEC_PHASE2_PROPOSALS = "IPsec_Phase2_Proposals";
   public static final String IPSEC_VPNS = "IPSec_Vpns";
   public static final String LOGGING_SERVERS = "Logging_Servers";
   public static final String LOGGING_SOURCE_INTERFACE = "Logging_Source_Interface";
@@ -96,11 +98,16 @@ public class NodePropertySpecifier extends PropertySpecifier {
           .put(DOMAIN_NAME, new PropertyDescriptor<>(Configuration::getDomainName, Schema.STRING))
           .put(HOSTNAME, new PropertyDescriptor<>(Configuration::getHostname, Schema.STRING))
           .put(
-              IKE_GATEWAYS,
-              new PropertyDescriptor<>(Configuration::getIkeGateways, Schema.set(Schema.STRING)))
+              IKE_PHASE1_KEYS,
+              new PropertyDescriptor<>(Configuration::getIkePhase1Keys, Schema.set(Schema.STRING)))
           .put(
-              IKE_POLICIES,
-              new PropertyDescriptor<>(Configuration::getIkePolicies, Schema.set(Schema.STRING)))
+              IKE_PHASE1_POLICIES,
+              new PropertyDescriptor<>(
+                  Configuration::getIkePhase1Policies, Schema.set(Schema.STRING)))
+          .put(
+              IKE_PHASE1_PROPOSALS,
+              new PropertyDescriptor<>(
+                  Configuration::getIkePhase1Proposals, Schema.set(Schema.STRING)))
           .put(
               INTERFACES,
               new PropertyDescriptor<>(Configuration::getAllInterfaces, Schema.set(Schema.STRING)))
@@ -114,14 +121,17 @@ public class NodePropertySpecifier extends PropertySpecifier {
               IP_6_ACCESS_LISTS,
               new PropertyDescriptor<>(Configuration::getIp6AccessLists, Schema.set(Schema.STRING)))
           .put(
-              IPSEC_POLICIES,
-              new PropertyDescriptor<>(Configuration::getIpsecPolicies, Schema.set(Schema.STRING)))
+              IPSEC_PEER_CONFIGS,
+              new PropertyDescriptor<>(
+                  Configuration::getIpsecPeerConfigs, Schema.set(Schema.STRING)))
           .put(
-              IPSEC_PROPOSALS,
-              new PropertyDescriptor<>(Configuration::getIpsecProposals, Schema.set(Schema.STRING)))
+              IPSEC_PHASE2_POLICIES,
+              new PropertyDescriptor<>(
+                  Configuration::getIpsecPhase2Policies, Schema.set(Schema.STRING)))
           .put(
-              IPSEC_VPNS,
-              new PropertyDescriptor<>(Configuration::getIpsecVpns, Schema.set(Schema.STRING)))
+              IPSEC_PHASE2_PROPOSALS,
+              new PropertyDescriptor<>(
+                  Configuration::getIpsecPhase2Proposals, Schema.set(Schema.STRING)))
           .put(
               LOGGING_SERVERS,
               new PropertyDescriptor<>(Configuration::getLoggingServers, Schema.set(Schema.STRING)))
@@ -197,12 +207,12 @@ public class NodePropertySpecifier extends PropertySpecifier {
   }
 
   @Override
-  public Set<String> getMatchingProperties() {
+  public List<String> getMatchingProperties() {
     return JAVA_MAP
         .keySet()
         .stream()
         .filter(prop -> _pattern.matcher(prop).matches())
-        .collect(Collectors.toSet());
+        .collect(ImmutableList.toImmutableList());
   }
 
   @Override
