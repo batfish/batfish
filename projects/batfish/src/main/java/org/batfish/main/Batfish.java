@@ -260,7 +260,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
 
   private static final Pattern MANAGEMENT_INTERFACES =
-      Pattern.compile("(\\Amgmt)|(\\Amanagement)|(\\Afxp0)|(\\Aem0)|(\\Ame0)", CASE_INSENSITIVE);
+      Pattern.compile(
+          "(\\Amgmt)|(\\Amanagement)|(\\Afxp0)|(\\Aem0)|(\\Ame0)|(\\Avme)", CASE_INSENSITIVE);
 
   private static final Pattern MANAGEMENT_VRFS =
       Pattern.compile("(\\Amgmt)|(\\Amanagement)", CASE_INSENSITIVE);
@@ -1056,7 +1057,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
           vlans.including(vlanNumber);
         } else if (iface.getSwitchportMode() == SwitchportMode.ACCESS) { // access mode ACCESS
           vlanNumber = iface.getAccessVlan();
-          vlans.including(vlanNumber);
+          if (vlanNumber != null) {
+            vlans.including(vlanNumber);
+          }
           // Any other Switch Port mode is unsupported
         } else if (iface.getSwitchportMode() != SwitchportMode.NONE) {
           _logger.warnf(
@@ -1434,7 +1437,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return _settings.getImmutableConfiguration();
   }
 
-  NetworkSnapshot getNetworkSnapshot() {
+  @Override
+  public NetworkSnapshot getNetworkSnapshot() {
     return new NetworkSnapshot(_settings.getContainer(), _testrigSettings.getName());
   }
 

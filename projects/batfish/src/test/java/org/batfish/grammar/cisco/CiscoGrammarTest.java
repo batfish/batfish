@@ -1005,6 +1005,16 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosAccessVlan() throws IOException {
+    String hostname = "ios-access-vlan";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasInterface("Ethernet1", hasAccessVlan(1)));
+    assertThat(c, hasInterface("Ethernet2", hasAccessVlan(nullValue())));
+    assertThat(c, hasInterface("Ethernet3", hasAccessVlan(nullValue())));
+  }
+
+  @Test
   public void testIosAclInRouteMap() throws IOException {
     String hostname = "ios-acl-in-routemap";
     Configuration c = parseConfig(hostname);

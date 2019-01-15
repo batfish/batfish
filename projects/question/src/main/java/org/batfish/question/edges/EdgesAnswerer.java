@@ -53,6 +53,8 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.datamodel.vxlan.VxlanEdge;
+import org.batfish.datamodel.vxlan.VxlanTopology;
 
 public class EdgesAnswerer extends Answerer {
 
@@ -68,6 +70,13 @@ public class EdgesAnswerer extends Answerer {
   static final String COL_REMOTE_AS_NUMBER = "Remote_AS_Number";
   static final String COL_IP = "IP";
   static final String COL_REMOTE_IP = "Remote_IP";
+
+  // VXLAN only
+  static final String COL_MULTICAST_GROUP = "Multicast_Group";
+  static final String COL_REMOTE_VTEP_ADDRESS = "Remote_VTEP_Address";
+  static final String COL_UDP_PORT = "UDP_Port";
+  static final String COL_VNI = "VNI";
+  static final String COL_VTEP_ADDRESS = "VTEP_Address";
 
   // Layer 2
   static final String COL_VLAN = "VLAN";
@@ -119,6 +128,10 @@ public class EdgesAnswerer extends Answerer {
       case RIP:
         _batfish.initRemoteRipNeighbors(configurations, ipOwners, topology);
         return getRipEdges(configurations, includeNodes, includeRemoteNodes);
+      case VXLAN:
+        VxlanTopology vxlanTopology =
+            _batfish.getTopologyProvider().getVxlanTopology(_batfish.getNetworkSnapshot());
+        return getVxlanEdges(includeNodes, includeRemoteNodes, vxlanTopology);
       case LAYER1:
         Layer1Topology layer1Topology = _batfish.getLayer1Topology();
         return getLayer1Edges(includeNodes, includeRemoteNodes, layer1Topology);
@@ -145,6 +158,20 @@ public class EdgesAnswerer extends Answerer {
                 includeNodes.contains(eigrpEdge.getNode1().getHostname())
                     && includeRemoteNodes.contains(eigrpEdge.getNode2().getHostname()))
         .map(EdgesAnswerer::eigrpEdgeToRow)
+        .collect(Collectors.toCollection(HashMultiset::create));
+  }
+
+  @VisibleForTesting
+  static Multiset<Row> getVxlanEdges(
+      Set<String> includeNodes, Set<String> includeRemoteNodes, VxlanTopology vxlanTopology) {
+    return vxlanTopology
+        .getEdges()
+        .stream()
+        .filter(
+            edge ->
+                includeNodes.contains(edge.getTail().getHostname())
+                    && includeRemoteNodes.contains(edge.getHead().getHostname()))
+        .map(EdgesAnswerer::vxlanEdgeToRow)
         .collect(Collectors.toCollection(HashMultiset::create));
   }
 
@@ -333,6 +360,21 @@ public class EdgesAnswerer extends Answerer {
             COL_REMOTE_INTERFACE,
             new NodeInterfacePair(
                 eigrpEdge.getNode2().getHostname(), eigrpEdge.getNode2().getInterfaceName()));
+    return row.build();
+  }
+
+  @VisibleForTesting
+  static Row vxlanEdgeToRow(VxlanEdge edge) {
+    RowBuilder row = Row.builder();
+    row.put(COL_VNI, edge.getVni())
+        .put(COL_NODE, new Node(edge.getTail().getHostname()))
+        .put(COL_REMOTE_NODE, new Node(edge.getHead().getHostname()))
+        .put(COL_VTEP_ADDRESS, edge.getTail().getSourceAddress())
+        .put(COL_REMOTE_VTEP_ADDRESS, edge.getHead().getSourceAddress())
+        .put(COL_VLAN, edge.getTail().getVlan())
+        .put(COL_REMOTE_VLAN, edge.getHead().getVlan())
+        .put(COL_UDP_PORT, edge.getUdpPort())
+        .put(COL_MULTICAST_GROUP, edge.getMulticastGroup());
     return row.build();
   }
 
@@ -540,6 +582,71 @@ public class EdgesAnswerer extends Answerer {
                 COL_REMOTE_AS_NUMBER,
                 Schema.STRING,
                 "AS Number at the side of responder",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        break;
+      case VXLAN:
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_VNI,
+                Schema.INTEGER,
+                "VNI of the VXLAN tunnel edge",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_NODE,
+                Schema.NODE,
+                "Node from which the edge originates",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_REMOTE_NODE,
+                Schema.NODE,
+                "Node at which the edge terminates",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_VTEP_ADDRESS,
+                Schema.IP,
+                "VTEP IP of node from which the edge originates",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_REMOTE_VTEP_ADDRESS,
+                Schema.IP,
+                "VTEP IP of node at which the edge terminates",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_VLAN,
+                Schema.INTEGER,
+                "VLAN associated with VNI on node from which the edge originates",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_REMOTE_VLAN,
+                Schema.INTEGER,
+                "VLAN associated with VNI on node at which the edge terminates",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_UDP_PORT,
+                Schema.INTEGER,
+                "UDP port of the VXLAN tunnel transport",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_MULTICAST_GROUP,
+                Schema.IP,
+                "Multicast group of the VXLAN tunnel transport",
                 Boolean.FALSE,
                 Boolean.TRUE));
         break;
