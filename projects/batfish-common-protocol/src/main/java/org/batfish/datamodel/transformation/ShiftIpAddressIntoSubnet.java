@@ -1,6 +1,5 @@
 package org.batfish.datamodel.transformation;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -15,12 +14,8 @@ import org.batfish.datamodel.flow.TransformationStep.TransformationType;
  * the result of shifting {@code 1.2.3.4} into the subnet {@code 5.5.0.0/24} is {@code 5.5.0.4}. The
  * result of shifting {@code 1.2.3.4} into the subnet {@code 1.2.3.32/27} is {@code 1.2.3.36}.
  *
- * <p>/32 subnets are not supported -- they correspond to always setting the transformed IP address
- * to a signle value. For that, use {@link AssignIpAddressFromPool} with a single pool IP.
- *
- * <p>All subnets shorter than 32 bits are supported. Note that the /0 subnet is a noop -- in
- * general, this transformation is a noop whenever the transformed IP is already in the specified
- * subnet.
+ * <p>All subnets are supported. Note that the /0 subnet is a noop -- in general, this
+ * transformation is a noop whenever the transformed IP is already in the specified subnet.
  */
 public final class ShiftIpAddressIntoSubnet implements TransformationStep, Serializable {
   /** */
@@ -35,9 +30,6 @@ public final class ShiftIpAddressIntoSubnet implements TransformationStep, Seria
   private final TransformationType _type;
 
   public ShiftIpAddressIntoSubnet(TransformationType type, IpField ipField, Prefix subnet) {
-    checkArgument(
-        subnet.getPrefixLength() < Prefix.MAX_PREFIX_LENGTH,
-        "subnet prefix must be less than the maximum prefix length");
     _ipField = ipField;
     _subnet = subnet;
     _type = type;

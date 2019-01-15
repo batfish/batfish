@@ -33,10 +33,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -455,6 +455,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, IntegerSpace> _namedVlans;
 
+  private final Set<String> _natInside;
+
+  private final Set<String> _natOutside;
+
+  private final List<CiscoIosNat> _nats;
+
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
 
   private final Map<String, NetworkObject> _networkObjects;
@@ -549,6 +555,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _natPools = new TreeMap<>();
     _icmpTypeObjectGroups = new TreeMap<>();
     _namedVlans = new HashMap<>();
+    _natInside = new TreeSet<>();
+    _natOutside = new TreeSet<>();
+    _nats = new ArrayList<>();
     _networkObjectGroups = new TreeMap<>();
     _networkObjects = new TreeMap<>();
     _nxBgpGlobalConfiguration = new CiscoNxBgpGlobalConfiguration();
@@ -877,6 +886,18 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, IntegerSpace> getNamedVlans() {
     return _namedVlans;
+  }
+
+  public Set<String> getNatInside() {
+    return _natInside;
+  }
+
+  public Set<String> getNatOutside() {
+    return _natOutside;
+  }
+
+  public List<CiscoIosNat> getNats() {
+    return _nats;
   }
 
   private String getNewInterfaceName(Interface iface) {
@@ -2246,17 +2267,64 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // Apply zone outgoing filter if necessary
     applyZoneFilter(iface, newIface, c);
 
-    List<CiscoSourceNat> origSourceNats = iface.getSourceNats();
-    if (origSourceNats != null) {
-      Transformation outgoingTransformation = null;
-      for (CiscoSourceNat srcNat : Lists.reverse(origSourceNats)) {
-        outgoingTransformation =
-            srcNat
-                .toTransformation(ipAccessLists, _natPools, outgoingTransformation)
-                .orElse(outgoingTransformation);
-      }
-      newIface.setOutgoingTransformation(outgoingTransformation);
+    /*
+     * NAT rules are specified at the top level, but are applied as incoming transformations on the
+     * outside interface (outside-to-inside) and outgoing transformations on the outside interface
+     * (inside-to-outside)
+     *
+     * Currently, only static NATs have both incoming and outgoingtransformations
+     */
+
+    if (getNats() != null
+        && !getNats().isEmpty()
+        && iface.getAristaNats() != null
+        && !iface.getAristaNats().isEmpty()) {
+      _w.redFlag("Arista-style and IOS-style NATs should not both be present in configuration.");
     }
+
+    List<CiscoIosNat> incomingNats = new ArrayList<>();
+    List<CiscoIosNat> outgoingNats = new ArrayList<>();
+
+    // Check if this is an outside interface
+    if (getNatOutside().contains(ifaceName)) {
+      incomingNats.addAll(getNats());
+      outgoingNats.addAll(getNats());
+    }
+    // Add any arista NATs
+    if (iface.getAristaNats() != null) {
+      outgoingNats.addAll(iface.getAristaNats());
+    }
+
+    // Convert the IOS NATs to a mapping of transformations. Each field (source or destination)
+    // can be modified independently but not jointly. A single CiscoIosNat can represent an incoming
+    // NAT, an outgoing NAT, or both.
+
+    Map<CiscoIosNat, Transformation.Builder> convertedIncomingNats =
+        incomingNats
+            .stream()
+            .map(nat -> new SimpleEntry<>(nat, nat.toIncomingTransformation(_natPools)))
+            .filter(entry -> entry.getValue().isPresent())
+            .collect(Collectors.toMap(SimpleEntry::getKey, entry -> entry.getValue().get()));
+    if (!convertedIncomingNats.isEmpty()) {
+      newIface.setIncomingTransformation(
+          NatUtil.toIncomingTransformationChain(convertedIncomingNats));
+    }
+
+    Map<CiscoIosNat, Transformation.Builder> convertedOutgoingNats =
+        outgoingNats
+            .stream()
+            .map(
+                nat ->
+                    new SimpleEntry<>(
+                        nat,
+                        nat.toOutgoingTransformation(ipAccessLists, _natPools, getNatInside(), c)))
+            .filter(entry -> entry.getValue().isPresent())
+            .collect(Collectors.toMap(SimpleEntry::getKey, entry -> entry.getValue().get()));
+    if (!convertedOutgoingNats.isEmpty()) {
+      newIface.setOutgoingTransformation(
+          NatUtil.toOutgoingTransformationChain(convertedOutgoingNats));
+    }
+
     String routingPolicyName = iface.getRoutingPolicy();
     if (routingPolicyName != null) {
       newIface.setRoutingPolicy(routingPolicyName);

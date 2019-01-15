@@ -115,6 +115,38 @@ public class TransformationToTransitionTest {
   }
 
   @Test
+  public void testShiftIpAddressIntoSubnetMax() {
+    Prefix shiftIntoPrefix = Prefix.parse("5.5.0.32/32");
+    Transformation transformation = always().apply(shiftDestinationIp(shiftIntoPrefix)).build();
+    Transition transition = _toTransition.toTransition(transformation);
+
+    // forward -- unconstrained
+    BDD expectedOut = _dstIpSpaceToBdd.toBDD(shiftIntoPrefix);
+    BDD actualOut = transition.transitForward(_one);
+    assertThat(actualOut, equalTo(expectedOut));
+
+    // forward -- outside prefix
+    BDD in = _dstIpSpaceToBdd.toBDD(Prefix.parse("1.2.3.12/32"));
+    expectedOut = _dstIpSpaceToBdd.toBDD(Prefix.parse("5.5.0.32/32"));
+    actualOut = transition.transitForward(in);
+    assertThat(actualOut, equalTo(expectedOut));
+
+    // forward -- inside prefix
+    actualOut = transition.transitForward(expectedOut);
+    assertThat(actualOut, equalTo(expectedOut));
+
+    // backward -- unconstrained
+    BDD expectedIn = _one;
+    BDD actualIn = transition.transitBackward(_one);
+    assertThat(actualIn, equalTo(expectedIn));
+
+    // backward -- constrained
+    expectedIn = _one;
+    actualIn = transition.transitBackward(expectedOut);
+    assertThat(actualIn, equalTo(expectedIn));
+  }
+
+  @Test
   public void testGuardAndTransformSameField() {
     Prefix guardPrefix = Prefix.parse("1.0.0.0/8");
     Prefix shiftIntoPrefix = Prefix.parse("5.5.0.0/16");
