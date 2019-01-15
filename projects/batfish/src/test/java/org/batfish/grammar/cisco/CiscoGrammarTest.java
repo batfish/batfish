@@ -86,6 +86,7 @@ import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticati
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasDiffieHellmanGroup;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasEncryptionAlgorithm;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasLifeTimeSeconds;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
@@ -1028,6 +1029,16 @@ public class CiscoGrammarTest {
   public void testIosLoggingOnDefault() throws IOException {
     Configuration loggingOnOmitted = parseConfig("iosLoggingOnOmitted");
     assertThat(loggingOnOmitted, hasVendorFamily(hasCisco(hasLogging(isOn()))));
+  }
+
+  @Test
+  public void testIosAccessVlan() throws IOException {
+    String hostname = "ios-access-vlan";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasInterface("Ethernet1", hasAccessVlan(1)));
+    assertThat(c, hasInterface("Ethernet2", hasAccessVlan(nullValue())));
+    assertThat(c, hasInterface("Ethernet3", hasAccessVlan(nullValue())));
   }
 
   @Test

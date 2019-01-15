@@ -686,7 +686,7 @@ public final class Interface extends ComparableStructure<String> {
     }
   }
 
-  private int _accessVlan;
+  @Nullable private Integer _accessVlan;
 
   private boolean _active;
 
@@ -854,7 +854,7 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
     Interface other = (Interface) o;
-    if (_accessVlan != other._accessVlan) {
+    if (!Objects.equals(_accessVlan, other._accessVlan)) {
       return false;
     }
     if (_active != other._active) {
@@ -929,7 +929,8 @@ public final class Interface extends ComparableStructure<String> {
 
   @JsonProperty(PROP_ACCESS_VLAN)
   @JsonPropertyDescription("Number of access VLAN when switchport mode is ACCESS")
-  public int getAccessVlan() {
+  @Nullable
+  public Integer getAccessVlan() {
     return _accessVlan;
   }
 
@@ -1335,7 +1336,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_ACCESS_VLAN)
-  public void setAccessVlan(int vlan) {
+  public void setAccessVlan(@Nullable Integer vlan) {
     _accessVlan = vlan;
   }
 

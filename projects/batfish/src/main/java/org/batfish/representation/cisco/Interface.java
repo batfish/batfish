@@ -116,7 +116,7 @@ public class Interface implements Serializable {
     return DEFAULT_INTERFACE_MTU;
   }
 
-  private int _accessVlan;
+  @Nullable private Integer _accessVlan;
 
   private boolean _active;
 
@@ -313,7 +313,8 @@ public class Interface implements Serializable {
     _allowedVlans = allowedVlans;
   }
 
-  public int getAccessVlan() {
+  @Nullable
+  public Integer getAccessVlan() {
     return _accessVlan;
   }
 
