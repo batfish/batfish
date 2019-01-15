@@ -28,7 +28,7 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
 /** Implements {@link VxlanVniPropertiesQuestion}. */
-final class VxlanVniPropertiesAnswerer extends Answerer {
+public final class VxlanVniPropertiesAnswerer extends Answerer {
 
   public static final String COL_NODE = "Node";
   public static final String COL_VNI = "VNI";
@@ -68,7 +68,7 @@ final class VxlanVniPropertiesAnswerer extends Answerer {
    * @param question The question
    * @return The resulting {@link TableMetadata} object
    */
-  private static TableMetadata createTableMetadata(VxlanVniPropertiesQuestion question) {
+  public static TableMetadata createTableMetadata(VxlanVniPropertiesQuestion question) {
     String textDesc =
         String.format("Properties of VXLAN VNI ${%s} on node ${%s}.", COL_VNI, COL_NODE);
     DisplayHints dhints = question.getDisplayHints();
@@ -158,7 +158,7 @@ final class VxlanVniPropertiesAnswerer extends Answerer {
     return rows;
   }
 
-  VxlanVniPropertiesAnswerer(VxlanVniPropertiesQuestion question, IBatfish batfish) {
+  public VxlanVniPropertiesAnswerer(VxlanVniPropertiesQuestion question, IBatfish batfish) {
     super(question, batfish);
   }
 }
