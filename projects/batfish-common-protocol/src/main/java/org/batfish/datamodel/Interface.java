@@ -56,6 +56,8 @@ public final class Interface extends ComparableStructure<String> {
 
     private String _hsrpVersion;
 
+    private FirewallSessionInfo _firewallSessionInfo;
+
     private IpAccessList _incomingFilter;
 
     private Transformation _incomingTransformation;
@@ -123,6 +125,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setEigrp(_eigrp);
       iface.setHsrpGroups(_hsrpGroups);
       iface.setHsrpVersion(_hsrpVersion);
+      iface.setFirewallSessionInfo(_firewallSessionInfo);
       iface.setIncomingFilter(_incomingFilter);
       iface.setIncomingTransformation(_incomingTransformation);
       iface.setIsis(_isis);
@@ -237,6 +240,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setEigrp(@Nullable EigrpInterfaceSettings eigrp) {
       _eigrp = eigrp;
+      return this;
+    }
+
+    public Builder setFirewallSessionInfo(@Nullable FirewallSessionInfo firewallSessionInfo) {
+      _firewallSessionInfo = firewallSessionInfo;
       return this;
     }
 
@@ -440,6 +448,8 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_DHCP_RELAY_ADDRESSES = "dhcpRelayAddresses";
 
   private static final String PROP_EIGRP = "eigrp";
+
+  private static final String PROP_FIREWALL_SESSION_INFO = "firewallSessionInfo";
 
   private static final String PROP_HSRP_GROUPS = "hsrpGroups";
 
@@ -718,6 +728,8 @@ public final class Interface extends ComparableStructure<String> {
   private List<Ip> _dhcpRelayAddresses;
 
   @Nullable private EigrpInterfaceSettings _eigrp;
+
+  private FirewallSessionInfo _firewallSessionInfo;
 
   private Map<Integer, HsrpGroup> _hsrpGroups;
 
@@ -1420,6 +1432,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_EIGRP)
   public void setEigrp(@Nullable EigrpInterfaceSettings eigrp) {
     _eigrp = eigrp;
+  }
+
+  @JsonProperty(PROP_FIREWALL_SESSION_INFO)
+  private void setFirewallSessionInfo(FirewallSessionInfo firewallSessionInfo) {
+    _firewallSessionInfo = firewallSessionInfo;
   }
 
   @JsonProperty(PROP_HSRP_GROUPS)
