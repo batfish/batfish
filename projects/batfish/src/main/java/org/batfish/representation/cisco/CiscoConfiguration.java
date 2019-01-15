@@ -2275,6 +2275,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
      * Currently, only static NATs have both incoming and outgoingtransformations
      */
 
+    if (getNats() != null
+        && !getNats().isEmpty()
+        && iface.getAristaNats() != null
+        && !iface.getAristaNats().isEmpty()) {
+      _w.redFlag("Arista-style and IOS-style NATs should not both be present in configuration.");
+    }
+
     List<CiscoIosNat> incomingNats = new ArrayList<>();
     List<CiscoIosNat> outgoingNats = new ArrayList<>();
 

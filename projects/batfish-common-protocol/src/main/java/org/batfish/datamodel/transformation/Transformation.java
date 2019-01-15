@@ -38,7 +38,6 @@ public final class Transformation implements Serializable {
     private @Nonnull List<TransformationStep> _transformationSteps;
     private @Nullable Transformation _andThen;
     private @Nullable Transformation _orElse;
-    private @Nullable Builder _orElseBuilder;
 
     Builder(AclLineMatchExpr guard) {
       _guard = guard;
@@ -70,15 +69,7 @@ public final class Transformation implements Serializable {
       return this;
     }
 
-    public Builder setOrElseBuilder(@Nullable Builder orElseBuilder) {
-      _orElseBuilder = orElseBuilder;
-      return this;
-    }
-
     public Transformation build() {
-      if (_orElseBuilder != null) {
-        _orElse = _orElseBuilder.build();
-      }
       return new Transformation(_guard, _transformationSteps, _andThen, _orElse);
     }
   }
