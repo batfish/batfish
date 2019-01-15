@@ -261,6 +261,18 @@ public final class SwitchedVlanPropertiesAnswererTest {
   }
 
   @Test
+  public void testTryAddInterfaceToVlanNullVlan() {
+    Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces = new HashMap<>();
+    Interface iface = _ib.build();
+    Integer vlan = null;
+    IntegerSpace vlans = IntegerSpace.of(2);
+
+    tryAddInterfaceToVlan(switchedVlanInterfaces, NODE, iface, vlan, vlans);
+
+    assertThat(switchedVlanInterfaces, anEmptyMap());
+  }
+
+  @Test
   public void testTryAddInterfaceToVlansAccess() {
     int vlan = 1;
     InterfaceSpecifier interfacesSpecifier =

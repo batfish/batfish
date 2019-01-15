@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
@@ -198,9 +199,9 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
       Map<Integer, ImmutableSet.Builder<NodeInterfacePair>> switchedVlanInterfaces,
       String node,
       Interface iface,
-      int vlan,
+      @Nullable Integer vlan,
       IntegerSpace vlans) {
-    if (vlans.contains(vlan)) {
+    if (vlan != null && vlans.contains(vlan)) {
       switchedVlanInterfaces
           .computeIfAbsent(vlan, v -> ImmutableSet.builder())
           .add(new NodeInterfacePair(node, iface.getName()));
