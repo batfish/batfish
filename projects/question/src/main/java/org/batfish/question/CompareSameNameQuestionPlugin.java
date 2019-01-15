@@ -243,9 +243,9 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     /**
      * Set of structure types to analyze drawn from ( AsPathAccessList, * AuthenticationKeyChain,
-     * CommunityList, IkeGateway, IkePolicy, IkeProposal, Interface, * Ip6AccessList, IpAccessList,
-     * IpsecPolicy, IpsecProposal, IpsecVpn, Route6FilterList, * RouteFilterList, RoutingPolicy,
-     * Vrf, Zone )
+     * CommunityList, IkePhase1Policy, IkePhase1Proposal, IkePhase1Key, Interface, * Ip6AccessList,
+     * IpAccessList, IpsecPhase2Policy, IpsecPhase2Proposal, IpsecPeerConfig, Route6FilterList, *
+     * RouteFilterList, RoutingPolicy, Vrf, Zone )
      *
      * <p>Default value is '[]', which denotes all types except those in excludedNamedStructTypes.
      */

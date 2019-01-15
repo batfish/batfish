@@ -1173,16 +1173,6 @@
             "lifetimeSeconds" : 86400
           }
         },
-        "ikeProposals" : {
-          "1" : {
-            "name" : "1",
-            "authenticationAlgorithm" : "SHA_256",
-            "authenticationMethod" : "RSA_SIGNATURES",
-            "diffieHellmanGroup" : "GROUP20",
-            "encryptionAlgorithm" : "AES_256_CBC",
-            "lifetimeSeconds" : 86400
-          }
-        },
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "aruba_crypto",
@@ -6249,24 +6239,6 @@
             "lifetimeSeconds" : 28800
           }
         },
-        "ikePolicies" : {
-          "myprofile" : {
-            "name" : "myprofile",
-            "proposals" : [
-              "1"
-            ]
-          }
-        },
-        "ikeProposals" : {
-          "1" : {
-            "name" : "1",
-            "authenticationAlgorithm" : "MD5",
-            "authenticationMethod" : "PRE_SHARED_KEYS",
-            "diffieHellmanGroup" : "GROUP2",
-            "encryptionAlgorithm" : "THREEDES_CBC",
-            "lifetimeSeconds" : 28800
-          }
-        },
         "ipsecPhase2Policies" : {
           "abcdefg" : {
             "proposals" : [
@@ -6322,63 +6294,6 @@
           "noAuthHeader" : {
             "encryptionAlgorithm" : "AES_256_CBC",
             "ipsecEncapsulationMode" : "TUNNEL",
-            "protocols" : [
-              "ESP"
-            ]
-          }
-        },
-        "ipsecPolicies" : {
-          "VPN:5" : {
-            "name" : "VPN:5",
-            "pfsKeyGroup" : "GROUP14",
-            "pfsKeyGroupDynamicIke" : false
-          },
-          "VPNMAP:2" : {
-            "name" : "VPNMAP:2",
-            "pfsKeyGroup" : "GROUP2",
-            "pfsKeyGroupDynamicIke" : false
-          },
-          "abcdefg" : {
-            "name" : "abcdefg",
-            "pfsKeyGroupDynamicIke" : false
-          }
-        },
-        "ipsecProposals" : {
-          "ESP-3DES-MD5" : {
-            "name" : "ESP-3DES-MD5",
-            "authenticationAlgorithm" : "HMAC_MD5_96",
-            "encryptionAlgorithm" : "THREEDES_CBC",
-            "protocols" : [
-              "ESP"
-            ]
-          },
-          "IPSEC_AES_256" : {
-            "name" : "IPSEC_AES_256",
-            "authenticationAlgorithm" : "HMAC_SHA1_96",
-            "encryptionAlgorithm" : "AES_256_CBC",
-            "protocols" : [
-              "ESP"
-            ]
-          },
-          "cipts1" : {
-            "name" : "cipts1",
-            "authenticationAlgorithm" : "HMAC_SHA_256_128",
-            "encryptionAlgorithm" : "AES_256_CBC",
-            "protocols" : [
-              "ESP"
-            ]
-          },
-          "cipts2" : {
-            "name" : "cipts2",
-            "authenticationAlgorithm" : "HMAC_SHA_512",
-            "encryptionAlgorithm" : "AES_256_CBC",
-            "protocols" : [
-              "ESP"
-            ]
-          },
-          "noAuthHeader" : {
-            "name" : "noAuthHeader",
-            "encryptionAlgorithm" : "AES_256_CBC",
             "protocols" : [
               "ESP"
             ]
@@ -19878,20 +19793,6 @@
           }
         },
         "ikePhase1Proposals" : {
-          "PROPOSAL" : {
-            "name" : "PROPOSAL",
-            "lifetimeSeconds" : 28800
-          }
-        },
-        "ikePolicies" : {
-          "1.2.3.4" : {
-            "name" : "1.2.3.4",
-            "proposals" : [
-              "PROPOSAL"
-            ]
-          }
-        },
-        "ikeProposals" : {
           "PROPOSAL" : {
             "name" : "PROPOSAL",
             "lifetimeSeconds" : 28800
