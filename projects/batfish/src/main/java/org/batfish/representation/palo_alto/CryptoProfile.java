@@ -1,6 +1,7 @@
 package org.batfish.representation.palo_alto;
 
 import com.google.common.base.MoreObjects;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -11,13 +12,15 @@ import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 
 /** Represents a crypto profile for Palo Alto */
-public final class CryptoProfile {
+public final class CryptoProfile implements Serializable {
 
   public enum Type {
     GLOBAL_PROTECT_APP,
     IKE,
     IPSEC,
   }
+
+  private static final long serialVersionUID = 1L;
 
   /** null implies no authentiation */
   @Nullable private IpsecAuthenticationAlgorithm _authAlgorithm;
