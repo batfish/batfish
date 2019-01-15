@@ -46,7 +46,7 @@
         "Source_Lines" : {
           "filename" : "configs/arista_nat",
           "lines" : [
-            6
+            9
           ]
         }
       },
@@ -56,7 +56,7 @@
         "Source_Lines" : {
           "filename" : "configs/arista_nat",
           "lines" : [
-            7
+            10
           ]
         }
       },

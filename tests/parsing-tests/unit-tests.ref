@@ -2017,6 +2017,23 @@
             "      VARIABLE:'arista_nat'",
             "      NEWLINE:'\\n'))",
             "  (stanza",
+            "    (extended_access_list_stanza",
+            "      IP:'ip'",
+            "      ACCESS_LIST:'access-list'",
+            "      shortname = (variable",
+            "        VARIABLE:'acl1')",
+            "      NEWLINE:'\\n'",
+            "      (extended_access_list_tail",
+            "        ala = (access_list_action",
+            "          PERMIT:'permit')",
+            "        prot = (protocol",
+            "          IP:'ip')",
+            "        srcipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        dstipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
             "    (s_ip_nat",
             "      (ip_nat_pool",
             "        IP:'ip'",
@@ -62902,6 +62919,12 @@
         "cisco_interface" : {
           "Parse warnings" : [
             {
+              "Comment" : "Ignored incomplete definition of Arista dynamic source nat. acl=def, pool=null",
+              "Line" : 92,
+              "Parser_Context" : "[if_ip_nat_source if_inner s_interface stanza cisco_configuration]",
+              "Text" : "ip nat source dynamic access-list def overload"
+            },
+            {
               "Comment" : "This feature is not currently supported",
               "Line" : 279,
               "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
@@ -62912,12 +62935,6 @@
               "Line" : 315,
               "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
               "Text" : "mode gre multipoint"
-            }
-          ],
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Ignored incomplete defintion of Arista dynamic source nat. acl=def, pool=null"
             }
           ]
         },
@@ -63820,12 +63837,21 @@
           }
         },
         "configs/arista_nat" : {
+          "extended ipv4 access-list" : {
+            "acl1" : {
+              "definitionLines" : [
+                5,
+                6
+              ],
+              "numReferrers" : 1
+            }
+          },
           "interface" : {
             "Ethernet1" : {
               "definitionLines" : [
-                9,
-                10,
-                11
+                12,
+                13,
+                14
               ],
               "numReferrers" : 1
             }
@@ -63833,19 +63859,19 @@
           "nat pool" : {
             "pool1" : {
               "definitionLines" : [
-                5
+                8
               ],
               "numReferrers" : 1
             },
             "pool2" : {
               "definitionLines" : [
-                6
+                9
               ],
               "numReferrers" : 0
             },
             "pool3" : {
               "definitionLines" : [
-                7
+                10
               ],
               "numReferrers" : 0
             }
@@ -68645,21 +68671,21 @@
           "interface" : {
             "Ethernet1" : {
               "interface" : [
-                9
+                12
               ]
             }
           },
           "ipv4 acl" : {
             "acl1" : {
               "ip nat source dynamic access-list" : [
-                11
+                14
               ]
             }
           },
           "nat pool" : {
             "pool1" : {
               "ip nat source pool" : [
-                11
+                14
               ]
             }
           }
@@ -72018,15 +72044,6 @@
             "abc" : {
               "management telnet ip access-group" : [
                 36
-              ]
-            }
-          }
-        },
-        "configs/arista_nat" : {
-          "ipv4 acl" : {
-            "acl1" : {
-              "ip nat source dynamic access-list" : [
-                11
               ]
             }
           }

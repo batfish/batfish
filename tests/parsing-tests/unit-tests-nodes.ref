@@ -1046,6 +1046,33 @@
             "vrf" : "default"
           }
         },
+        "ipAccessLists" : {
+          "acl1" : {
+            "name" : "acl1",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    },
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    }
+                  }
+                },
+                "name" : "permit ip any any"
+              }
+            ],
+            "sourceName" : "acl1",
+            "sourceType" : "extended ipv4 access-list"
+          }
+        },
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "arista_nat"
