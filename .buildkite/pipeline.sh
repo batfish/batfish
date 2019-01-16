@@ -3,19 +3,8 @@
 set -e
 cat <<EOF
 steps:
-  - label: look around env
-    command:
-      - whoami
-      - ls -lat
-      - getent group
-      - getent passwd
-      - cat /etc/docker/daemon.json
-      - ls /etc/docker
   - label: "Check Java formatting"
-    command:
-      - ls -latr
-      - whoami
-      - ".buildkite/check_java_format.sh"
+    command: ".buildkite/check_java_format.sh"
     plugins:
       - docker#v2.2.0:
           image: "batfish/ci-base:latest"
