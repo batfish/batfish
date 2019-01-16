@@ -11,7 +11,7 @@ public final class PsFroms implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private boolean _dirty = false;
+  private boolean _atLeastOneFrom = false;
 
   private final Set<PsFromAsPath> _fromAsPaths;
   private PsFromColor _fromColor;
@@ -45,60 +45,60 @@ public final class PsFroms implements Serializable {
   }
 
   public void addFromAsPath(@Nonnull PsFromAsPath fromAsPath) {
-    _dirty = true;
+    _atLeastOneFrom = true;
     _fromAsPaths.add(fromAsPath);
   }
 
   public void addFromCommunity(@Nonnull PsFromCommunity fromCommunity) {
-    _dirty = true;
+    _atLeastOneFrom = true;
     _fromCommunities.add(fromCommunity);
   }
 
   public void addFromInterface(@Nonnull PsFromInterface fromInterface) {
-    _dirty = true;
+    _atLeastOneFrom = true;
     _fromInterfaces.add(fromInterface);
   }
 
   public void addFromPolicyStatement(@Nonnull PsFromPolicyStatement fromPolicyStatement) {
-    _dirty = true;
+    _atLeastOneFrom = true;
     _fromPolicyStatements.add(fromPolicyStatement);
   }
 
   public void addFromPolicyStatementConjunction(
       @Nonnull PsFromPolicyStatementConjunction fromPolicyStatementConjunction) {
-    _dirty = true;
+    _atLeastOneFrom = true;
     _fromPolicyStatementConjunctions.add(fromPolicyStatementConjunction);
   }
 
   public void addFromPrefixList(@Nonnull PsFromPrefixList fromPrefixList) {
-    _dirty = true;
+    _atLeastOneFrom = true;
     _fromPrefixLists.add(fromPrefixList);
   }
 
   public void addFromPrefixListFilterLonger(
       @Nonnull PsFromPrefixListFilterLonger fromPrefixListFilterLonger) {
-    _dirty = true;
+    _atLeastOneFrom = true;
     _fromPrefixListFilterLongers.add(fromPrefixListFilterLonger);
   }
 
   public void addFromPrefixListFilterOrLonger(
       @Nonnull PsFromPrefixListFilterOrLonger fromPrefixListFilterOrLonger) {
-    _dirty = true;
+    _atLeastOneFrom = true;
     _fromPrefixListFilterOrLongers.add(fromPrefixListFilterOrLonger);
   }
 
   public void addFromProtocol(@Nonnull PsFromProtocol fromProtocol) {
-    _dirty = true;
+    _atLeastOneFrom = true;
     _fromProtocols.add(fromProtocol);
   }
 
   public void addFromRouteFilter(@Nonnull PsFromRouteFilter fromRouteFilter) {
-    _dirty = true;
+    _atLeastOneFrom = true;
     _fromRouteFilters.add(fromRouteFilter);
   }
 
   public void addFromTag(@Nonnull PsFromTag fromTag) {
-    _dirty = true;
+    _atLeastOneFrom = true;
     _fromTags.add(fromTag);
   }
 
@@ -183,31 +183,31 @@ public final class PsFroms implements Serializable {
   }
 
   boolean hasAtLeastOneFrom() {
-    return _dirty;
+    return _atLeastOneFrom;
   }
 
   public void setFromColor(@Nonnull PsFromColor fromColor) {
-    _dirty = true;
+    _atLeastOneFrom = true;
     _fromColor = fromColor;
   }
 
   public void setFromFamily(@Nonnull PsFromFamily fromFamily) {
-    _dirty = true;
+    _atLeastOneFrom = true;
     _fromFamily = fromFamily;
   }
 
   public void setFromLocalPreference(@Nonnull PsFromLocalPreference fromLocalPreference) {
-    _dirty = true;
+    _atLeastOneFrom = true;
     _fromLocalPreference = fromLocalPreference;
   }
 
   public void setFromMetric(@Nonnull PsFromMetric fromMetric) {
-    _dirty = true;
+    _atLeastOneFrom = true;
     _fromMetric = fromMetric;
   }
 
   public void setFromUnsupported(@Nonnull PsFromUnsupported fromUnsupported) {
-    _dirty = true;
+    _atLeastOneFrom = true;
     _fromUnsupported = fromUnsupported;
   }
 }

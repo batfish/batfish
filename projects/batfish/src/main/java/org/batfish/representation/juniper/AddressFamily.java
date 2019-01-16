@@ -13,6 +13,6 @@ public enum AddressFamily {
   IPV6_MULTICAST,
   IPV6_MULTICAST_VPN,
   IPV6_VPN,
-  ISIS,
-  BGP
+  ISO,
+  ROUTE_TARGET
 }

@@ -2002,6 +2002,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         || !froms.getFromPrefixListFilterLongers().isEmpty()
         || !froms.getFromPrefixListFilterOrLongers().isEmpty()
         || !froms.getFromRouteFilters().isEmpty()) {
+      // TODO check behavior for some edge cases: https://github.com/batfish/batfish/issues/2972
       Disjunction prefixListDisjunction = new Disjunction();
       prefixListDisjunction.getDisjuncts().addAll(toBooleanExprs(froms.getFromPrefixLists()));
       prefixListDisjunction
