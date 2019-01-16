@@ -349,7 +349,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
               .setTunnelInterface(vpnInterfaceName)
               .setIkePhase1Policy(vpnId)
               .setIpsecPolicy(vpnId)
-              .setPhysicalInterface(externalInterfaceName)
+              .setSourceInterface(externalInterfaceName)
               .setLocalAddress(ipsecTunnel.getVgwOutsideAddress())
               .setDestinationAddress(ipsecTunnel.getCgwOutsideAddress())
               .build());

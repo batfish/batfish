@@ -22,7 +22,7 @@ public final class IpsecDynamicPeerConfig extends IpsecPeerConfig implements Ser
   @JsonCreator
   private IpsecDynamicPeerConfig(
       @JsonProperty(PROP_IPSEC_POLICY) @Nullable String ipsecPolicy,
-      @JsonProperty(PROP_PHYSICAL_INTERFACE) @Nullable String physicalInterface,
+      @JsonProperty(PROP_SOURCE_INTERFACE) @Nullable String physicalInterface,
       @JsonProperty(PROP_POLICY_ACCESS_LIST) @Nullable IpAccessList policyAccessList,
       @JsonProperty(PROP_LOCAL_ADDRESS) @Nullable Ip localAddress,
       @JsonProperty(PROP_TUNNEL_INTERFACE) @Nullable String tunnelInterface,
@@ -50,7 +50,7 @@ public final class IpsecDynamicPeerConfig extends IpsecPeerConfig implements Ser
     public IpsecDynamicPeerConfig build() {
       return new IpsecDynamicPeerConfig(
           _ipsecPolicy,
-          _physicalInterface,
+          _sourceInterface,
           _policyAccessList,
           _localAddress,
           _tunnelInterface,

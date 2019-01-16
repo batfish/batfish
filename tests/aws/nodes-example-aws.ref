@@ -1028,7 +1028,7 @@
             "ikePhase1Policy" : "isakmp-vpn-ba2e34a8-0",
             "ipsecPolicy" : "ipsec-vpn-ba2e34a8-0",
             "localAddress" : "172.16.1.2",
-            "physicalInterface" : "GigabitEthernet2/0",
+            "sourceInterface" : "GigabitEthernet2/0",
             "tunnelInterface" : "Tunnel1"
           },
           "Tunnel2" : {
@@ -1037,7 +1037,7 @@
             "ikePhase1Policy" : "isakmp-vpn-ba2e34a8-1",
             "ipsecPolicy" : "ipsec-vpn-ba2e34a8-1",
             "localAddress" : "172.16.1.2",
-            "physicalInterface" : "GigabitEthernet2/0",
+            "sourceInterface" : "GigabitEthernet2/0",
             "tunnelInterface" : "Tunnel2"
           }
         },
@@ -3916,7 +3916,7 @@
             "ikePhase1Policy" : "vpn-ba2e34a8-1",
             "ipsecPolicy" : "vpn-ba2e34a8-1",
             "localAddress" : "52.27.166.152",
-            "physicalInterface" : "external1",
+            "sourceInterface" : "external1",
             "tunnelInterface" : "vpn1"
           },
           "vpn-ba2e34a8-2" : {
@@ -3925,7 +3925,7 @@
             "ikePhase1Policy" : "vpn-ba2e34a8-2",
             "ipsecPolicy" : "vpn-ba2e34a8-2",
             "localAddress" : "52.39.121.126",
-            "physicalInterface" : "external2",
+            "sourceInterface" : "external2",
             "tunnelInterface" : "vpn2"
           }
         },

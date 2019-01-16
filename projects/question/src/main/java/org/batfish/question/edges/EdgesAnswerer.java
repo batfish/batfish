@@ -88,9 +88,9 @@ public class EdgesAnswerer extends Answerer {
   static final String COL_REMOTE_VLAN = "Remote_VLAN";
 
   // IPsec only
-  static final String COL_PHYSICAL_INTERFACE = "Physical_Interface";
+  static final String COL_SOURCE_INTERFACE = "Source_Interface";
   static final String COL_TUNNEL_INTERFACE = "Tunnel_Interface";
-  static final String COL_REMOTE_PHYSICAL_INTERFACE = "Remote_Physical_Interface";
+  static final String COL_REMOTE_SOURCE_INTERFACE = "Remote_Source_Interface";
   static final String COL_REMOTE_TUNNEL_INTERFACE = "Remote_Tunnel_Interface";
 
   EdgesAnswerer(Question question, IBatfish batfish) {
@@ -405,16 +405,16 @@ public class EdgesAnswerer extends Answerer {
       IpsecPeerConfig ipsecPeerConfigV) {
     RowBuilder row = Row.builder();
     row.put(
-            COL_PHYSICAL_INTERFACE,
-            new NodeInterfacePair(nodeU, ipsecPeerConfigU.getPhysicalInterface()))
+            COL_SOURCE_INTERFACE,
+            new NodeInterfacePair(nodeU, ipsecPeerConfigU.getSourceInterface()))
         .put(
             COL_TUNNEL_INTERFACE,
             ipsecPeerConfigU.getTunnelInterface() == null
                 ? null
                 : new NodeInterfacePair(nodeU, ipsecPeerConfigU.getTunnelInterface()))
         .put(
-            COL_REMOTE_PHYSICAL_INTERFACE,
-            new NodeInterfacePair(nodeV, ipsecPeerConfigV.getPhysicalInterface()))
+            COL_REMOTE_SOURCE_INTERFACE,
+            new NodeInterfacePair(nodeV, ipsecPeerConfigV.getSourceInterface()))
         .put(
             COL_REMOTE_TUNNEL_INTERFACE,
             ipsecPeerConfigV.getTunnelInterface() == null
@@ -727,9 +727,9 @@ public class EdgesAnswerer extends Answerer {
       case IPSEC:
         columnBuilder.add(
             new ColumnMetadata(
-                COL_PHYSICAL_INTERFACE,
+                COL_SOURCE_INTERFACE,
                 Schema.INTERFACE,
-                "Physical interface used in the IPsec session",
+                "Source interface used in the IPsec session",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
@@ -742,9 +742,9 @@ public class EdgesAnswerer extends Answerer {
 
         columnBuilder.add(
             new ColumnMetadata(
-                COL_REMOTE_PHYSICAL_INTERFACE,
+                COL_REMOTE_SOURCE_INTERFACE,
                 Schema.INTERFACE,
-                "Remote physical interface used in the IPsec session",
+                "Remote source interface used in the IPsec session",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
