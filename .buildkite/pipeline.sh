@@ -8,10 +8,6 @@ DOCKER_IMAGE="batfish/ci-base:latest"
 cat <<EOF
 steps:
   - wait
-EOF
-
-cat <<EOF
-steps:
   - label: "Check Java formatting"
     command: ".buildkite/check_java_format.sh"
     plugins:
