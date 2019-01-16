@@ -398,8 +398,7 @@ public class EdgesAnswerer extends Answerer {
     return rows;
   }
 
-  @VisibleForTesting
-  static Row getIpsecEdge(
+  private static Row getIpsecEdge(
       String nodeU,
       IpsecPeerConfig ipsecPeerConfigU,
       String nodeV,
