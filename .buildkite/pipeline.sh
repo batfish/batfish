@@ -9,6 +9,8 @@ steps:
       - ls -lat
       - getent group
       - getent passwd
+      - cat /etc/docker/daemon.json
+      - ls /etc/docker
   - label: "Check Java formatting"
     command:
       - ls -latr
