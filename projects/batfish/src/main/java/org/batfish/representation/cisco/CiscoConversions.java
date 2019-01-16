@@ -621,7 +621,7 @@ class CiscoConversions {
             .setTunnelInterface(tunnelIfaceName)
             .setDestinationAddress(tunnel.getDestination())
             .setLocalAddress(tunnel.getSourceAddress())
-            .setPhysicalInterface(tunnel.getSourceInterfaceName())
+            .setSourceInterface(tunnel.getSourceInterfaceName())
             .setIpsecPolicy(tunnel.getIpsecProfileName());
 
     IpsecProfile ipsecProfile = null;
@@ -716,7 +716,7 @@ class CiscoConversions {
     }
 
     newIpsecPeerConfigBuilder
-        .setPhysicalInterface(iface.getName())
+        .setSourceInterface(iface.getName())
         .setIpsecPolicy(ipsecPhase2Policy)
         .setLocalAddress(iface.getAddress().getIp());
 

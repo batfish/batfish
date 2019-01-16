@@ -56,31 +56,31 @@ public class IpsecUtilTest {
     * */
     IpsecStaticPeerConfig ipsecPeerConfig1 =
         IpsecStaticPeerConfig.builder()
-            .setPhysicalInterface("interface1")
+            .setSourceInterface("interface1")
             .setTunnelInterface("Tunnel1")
             .build();
     IpsecStaticPeerConfig ipsecPeerConfig2 =
         IpsecStaticPeerConfig.builder()
-            .setPhysicalInterface("interface2")
+            .setSourceInterface("interface2")
             .setTunnelInterface("Tunnel2")
             .build();
     IpsecStaticPeerConfig ipsecPeerConfig3 =
         IpsecStaticPeerConfig.builder()
-            .setPhysicalInterface("interface3")
+            .setSourceInterface("interface3")
             .setTunnelInterface("Tunnel3")
             .build();
     IpsecStaticPeerConfig ipsecPeerConfig4 =
         IpsecStaticPeerConfig.builder()
-            .setPhysicalInterface("interface4")
+            .setSourceInterface("interface4")
             .setTunnelInterface("Tunnel4")
             .build();
     IpsecStaticPeerConfig ipsecPeerConfig5 =
-        IpsecStaticPeerConfig.builder().setPhysicalInterface("interface5").build();
+        IpsecStaticPeerConfig.builder().setSourceInterface("interface5").build();
     IpsecStaticPeerConfig ipsecPeerConfig6 =
-        IpsecStaticPeerConfig.builder().setPhysicalInterface("interface6").build();
+        IpsecStaticPeerConfig.builder().setSourceInterface("interface6").build();
     IpsecStaticPeerConfig ipsecPeerConfig7 =
         IpsecStaticPeerConfig.builder()
-            .setPhysicalInterface("interface7")
+            .setSourceInterface("interface7")
             .setTunnelInterface("Tunnel7")
             .build();
 

@@ -138,7 +138,7 @@ public class VyosConfiguration extends VendorConfiguration {
                 + "\" from local-address: "
                 + localAddress);
       } else {
-        ipsecPeerConfigBuilder.setPhysicalInterface(externalInterface.getName());
+        ipsecPeerConfigBuilder.setSourceInterface(externalInterface.getName());
         ipsecPeerConfigBuilder.setLocalAddress(localAddress);
       }
 

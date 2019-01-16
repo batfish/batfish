@@ -66,7 +66,7 @@ public class IpsecSessionStatusAnswererTest {
     Configuration initiatorNode;
     Configuration responderNode;
     _ipsecStaticPeerConfigBuilder
-        .setPhysicalInterface("Test_interface")
+        .setSourceInterface("Test_interface")
         .setLocalAddress(Ip.parse("1.2.3.4"))
         .setTunnelInterface("Tunnel_interface");
     _graph = ValueGraphBuilder.directed().allowsSelfLoops(false).build();
