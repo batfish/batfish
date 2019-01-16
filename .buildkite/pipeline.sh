@@ -3,6 +3,7 @@
 set -e
 cat <<EOF
 steps:
+  - wait
   - label: "Check Java formatting"
     command: ".buildkite/check_java_format.sh"
     plugins:
