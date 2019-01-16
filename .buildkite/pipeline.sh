@@ -7,7 +7,8 @@ steps:
     command:
       - whoami
       - ls -lat
-      - cat /etc/group
+      - getent group
+      - getent passwd
   - label: "Check Java formatting"
     command:
       - ls -latr
