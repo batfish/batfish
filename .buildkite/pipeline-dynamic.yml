@@ -1,6 +1,0 @@
-steps:
-  - label: ":pipeline: Generate and upload pipeline"
-    command:
-      - ".buildkite/pipeline.sh > .buildkite/pipeline.yml"
-      - "buildkite-agent pipeline upload"
-branches: "*"
