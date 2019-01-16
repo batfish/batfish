@@ -11,7 +11,7 @@ if [ ! -f ${JAR} ]; then
 fi
 
 # All java files in the project
-${GNU_FIND} projects -regex '.*/src/main/.*\.java' -or -regex '.*/src/test/.*\.java' > files_to_check
+find projects -regex '.*/src/main/.*\.java' -or -regex '.*/src/test/.*\.java' > files_to_check
 
 # On travis, print affected filenames and fail. Locally, just fix the files.
 FORMAT_ARGS="--dry-run --set-exit-if-changed"
