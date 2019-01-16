@@ -17,7 +17,7 @@ public abstract class IpsecPeerConfig implements Serializable {
 
   static final String PROP_IPSEC_POLICY = "ipsecPolicy";
 
-  static final String PROP_SOURCE_INTERFACE = "physicalInterface";
+  static final String PROP_SOURCE_INTERFACE = "sourceInterface";
 
   static final String PROP_POLICY_ACCESS_LIST = "policyAccessList";
 
