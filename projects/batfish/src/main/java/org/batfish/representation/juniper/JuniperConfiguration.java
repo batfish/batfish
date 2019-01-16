@@ -1295,11 +1295,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .collect(Collectors.toList());
     newIface.setAllowedVlans(IntegerSpace.unionOf(vlanIds));
 
-    Integer nativeVlan = null;
     if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
-      nativeVlan = iface.getNativeVlan() == null ? 1 : iface.getNativeVlan();
+      newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
     }
-    newIface.setNativeVlan(nativeVlan);
+
     newIface.setSwitchportMode(iface.getSwitchportMode());
     SwitchportEncapsulationType swe = iface.getSwitchportTrunkEncapsulation();
     if (swe == null) {

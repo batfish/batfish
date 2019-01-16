@@ -1,7 +1,7 @@
 package org.batfish.representation.cisco;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
@@ -2210,11 +2210,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // switch settings
     newIface.setAccessVlan(iface.getAccessVlan());
 
-    Integer nativeVlan = null;
     if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
-      nativeVlan = iface.getNativeVlan() == null ? 1 : iface.getNativeVlan();
+      newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
     }
-    newIface.setNativeVlan(nativeVlan);
 
     newIface.setSwitchportMode(iface.getSwitchportMode());
     SwitchportEncapsulationType encapsulation = iface.getSwitchportTrunkEncapsulation();

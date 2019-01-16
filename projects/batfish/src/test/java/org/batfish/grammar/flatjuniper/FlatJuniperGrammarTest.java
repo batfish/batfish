@@ -51,6 +51,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfAreaName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfPointToPoint;
@@ -1973,6 +1974,16 @@ public final class FlatJuniperGrammarTest {
     /* Properly configured interfaces should be present in respective areas. */
     assertThat(c.getAllInterfaces().keySet(), hasItem("xe-0/0/0:0.0"));
     assertThat(c, hasInterface("xe-0/0/0:0.0", hasMtu(9000)));
+  }
+
+  @Test
+  public void testInterfaceNativeVlan() throws IOException {
+    String hostname = "interface-native-vlan";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasInterface("ge-0/1/0.0", hasNativeVlan(3)));
+    assertThat(c, hasInterface("ge-0/2/0.0", hasNativeVlan(1)));
+    assertThat(c, hasInterface("ge-0/3/0.0", hasNativeVlan(nullValue())));
   }
 
   @Test
