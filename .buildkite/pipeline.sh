@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
 ### Build and quick lint
-set -e
+set -euo pipefail
+
+DOCKER_VERSION="v2.2.0"
+DOCKER_IMAGE="batfish/ci-base:latest"
+
 cat <<EOF
 steps:
   - wait
   - label: "Check Java formatting"
     command: ".buildkite/check_java_format.sh"
     plugins:
-      - docker#v2.2.0:
-          image: "batfish/ci-base:latest"
+      - docker#${DOCKER_VERSION}:
+          image: ${DOCKER_IMAGE}
           debug: true
   - label: "Check Python templates"
     command:
@@ -17,8 +21,8 @@ steps:
       - "python3 -m pip install pytest"
       - "cd tests && pytest"
     plugins:
-      - docker#v2.2.0:
-          image: "batfish/ci-base:latest"
+      - docker#${DOCKER_VERSION}:
+          image: ${DOCKER_IMAGE}
   - label: "Build"
     command:
       - "mkdir workspace"
@@ -27,7 +31,7 @@ steps:
     artifact_paths:
       - workspace/allinone.jar
     plugins:
-      - docker#v2.2.0:
-          image: "batfish/ci-base:latest"
+      - docker#${DOCKER_VERSION}:
+          image: ${DOCKER_IMAGE}
   - wait
 EOF
