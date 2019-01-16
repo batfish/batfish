@@ -17,7 +17,7 @@ public abstract class IpsecPeerConfig implements Serializable {
 
   static final String PROP_IPSEC_POLICY = "ipsecPolicy";
 
-  static final String PROP_PHYSICAL_INTERFACE = "physicalInterface";
+  static final String PROP_SOURCE_INTERFACE = "physicalInterface";
 
   static final String PROP_POLICY_ACCESS_LIST = "policyAccessList";
 
@@ -30,7 +30,7 @@ public abstract class IpsecPeerConfig implements Serializable {
 
   @Nullable private String _ipsecPolicy;
 
-  @Nonnull private String _physicalInterface;
+  @Nonnull private String _sourceInterface;
 
   @Nullable private IpAccessList _policyAccessList;
 
@@ -41,12 +41,12 @@ public abstract class IpsecPeerConfig implements Serializable {
   @JsonCreator
   protected IpsecPeerConfig(
       @JsonProperty(PROP_IPSEC_POLICY) @Nullable String ipsecPolicy,
-      @JsonProperty(PROP_PHYSICAL_INTERFACE) @Nullable String physicalInterface,
+      @JsonProperty(PROP_SOURCE_INTERFACE) @Nullable String sourceInterface,
       @JsonProperty(PROP_POLICY_ACCESS_LIST) @Nullable IpAccessList policyAccessList,
       @JsonProperty(PROP_LOCAL_ADDRESS) @Nullable Ip localAddress,
       @JsonProperty(PROP_TUNNEL_INTERFACE) @Nullable String tunnelInterface) {
     _ipsecPolicy = ipsecPolicy;
-    _physicalInterface = firstNonNull(physicalInterface, UNSET_LOCAL_INTERFACE);
+    _sourceInterface = firstNonNull(sourceInterface, UNSET_LOCAL_INTERFACE);
     _policyAccessList = policyAccessList;
     _localAddress = firstNonNull(localAddress, Ip.AUTO);
     _tunnelInterface = tunnelInterface;
@@ -58,10 +58,10 @@ public abstract class IpsecPeerConfig implements Serializable {
     return _localAddress;
   }
 
-  @JsonPropertyDescription("Physical interface for IPSec peer")
-  @JsonProperty(PROP_PHYSICAL_INTERFACE)
-  public String getPhysicalInterface() {
-    return _physicalInterface;
+  @JsonPropertyDescription("Source interface for IPSec peer")
+  @JsonProperty(PROP_SOURCE_INTERFACE)
+  public String getSourceInterface() {
+    return _sourceInterface;
   }
 
   @JsonPropertyDescription("Tunnel interface for IPSec peer")
@@ -85,7 +85,7 @@ public abstract class IpsecPeerConfig implements Serializable {
   public abstract static class Builder<S extends Builder<S, T>, T extends IpsecPeerConfig> {
     Ip _localAddress;
 
-    String _physicalInterface;
+    String _sourceInterface;
 
     String _tunnelInterface;
 
@@ -102,8 +102,8 @@ public abstract class IpsecPeerConfig implements Serializable {
       return getThis();
     }
 
-    public final S setPhysicalInterface(String physicalInterface) {
-      _physicalInterface = physicalInterface;
+    public final S setSourceInterface(String sourceInterface) {
+      _sourceInterface = sourceInterface;
       return getThis();
     }
 

@@ -6,13 +6,13 @@ import static org.batfish.question.edges.EdgesAnswerer.COL_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_IP;
 import static org.batfish.question.edges.EdgesAnswerer.COL_IPS;
 import static org.batfish.question.edges.EdgesAnswerer.COL_NODE;
-import static org.batfish.question.edges.EdgesAnswerer.COL_PHYSICAL_INTERFACE;
+import static org.batfish.question.edges.EdgesAnswerer.COL_SOURCE_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_AS_NUMBER;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_IP;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_IPS;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_NODE;
-import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_PHYSICAL_INTERFACE;
+import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_SOURCE_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_TUNNEL_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_VLAN;
 import static org.batfish.question.edges.EdgesAnswerer.COL_TUNNEL_INTERFACE;
@@ -155,22 +155,22 @@ public class EdgesAnswererTest {
 
     IpsecStaticPeerConfig peer1 =
         IpsecStaticPeerConfig.builder()
-            .setPhysicalInterface("int11")
+            .setSourceInterface("int11")
             .setTunnelInterface("tunnel11")
             .build();
     IpsecStaticPeerConfig peer2 =
         IpsecStaticPeerConfig.builder()
-            .setPhysicalInterface("int12")
+            .setSourceInterface("int12")
             .setTunnelInterface("tunnel12")
             .build();
     IpsecStaticPeerConfig peer3 =
         IpsecStaticPeerConfig.builder()
-            .setPhysicalInterface("int21")
+            .setSourceInterface("int21")
             .setTunnelInterface("tunnel21")
             .build();
     IpsecStaticPeerConfig peer4 =
         IpsecStaticPeerConfig.builder()
-            .setPhysicalInterface("int22")
+            .setSourceInterface("int22")
             .setTunnelInterface("tunnel22")
             .build();
 
@@ -186,7 +186,7 @@ public class EdgesAnswererTest {
             ImmutableList.of(
                 allOf(
                     hasColumn(
-                        COL_PHYSICAL_INTERFACE,
+                        COL_SOURCE_INTERFACE,
                         equalTo(new NodeInterfacePair("host1", "int11")),
                         Schema.INTERFACE),
                     hasColumn(
@@ -194,7 +194,7 @@ public class EdgesAnswererTest {
                         equalTo(new NodeInterfacePair("host1", "tunnel11")),
                         Schema.INTERFACE),
                     hasColumn(
-                        COL_REMOTE_PHYSICAL_INTERFACE,
+                        COL_REMOTE_SOURCE_INTERFACE,
                         equalTo(new NodeInterfacePair("host2", "int21")),
                         Schema.INTERFACE),
                     hasColumn(

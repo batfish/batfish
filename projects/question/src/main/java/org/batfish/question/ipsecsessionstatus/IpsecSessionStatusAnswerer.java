@@ -98,7 +98,7 @@ class IpsecSessionStatusAnswerer extends Answerer {
       IpsecSessionInfo.Builder ipsecSessionInfoBuilder = IpsecSessionInfo.builder();
 
       ipsecSessionInfoBuilder.setInitiatorHostname(node.getHostName());
-      ipsecSessionInfoBuilder.setInitiatorInterface(ipsecPeerConfig.getPhysicalInterface());
+      ipsecSessionInfoBuilder.setInitiatorInterface(ipsecPeerConfig.getSourceInterface());
       ipsecSessionInfoBuilder.setInitiatorIp(ipsecPeerConfig.getLocalAddress());
       ipsecSessionInfoBuilder.setInitiatorTunnelInterface(ipsecPeerConfig.getTunnelInterface());
 
@@ -138,7 +138,7 @@ class IpsecSessionStatusAnswerer extends Answerer {
 
     ipsecSessioningInfoBuilder.setResponderHostname(ipsecPeerConfigIdNeighbor.getHostName());
     ipsecSessioningInfoBuilder.setResponderInterface(
-        ipsecPeerConfigNeighbor.getPhysicalInterface());
+        ipsecPeerConfigNeighbor.getSourceInterface());
     ipsecSessioningInfoBuilder.setResponderIp(ipsecPeerConfigNeighbor.getLocalAddress());
     ipsecSessioningInfoBuilder.setResponderTunnelInterface(
         ipsecPeerConfigNeighbor.getTunnelInterface());

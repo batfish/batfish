@@ -2341,7 +2341,7 @@ public final class FlatJuniperGrammarTest {
                     hasDestinationAddress(Ip.parse("198.51.100.102")),
                     IpsecPeerConfigMatchers.hasIkePhase1Policy("ike-phase1-policy"),
                     IpsecPeerConfigMatchers.hasIpsecPolicy("ipsec-phase2-policy"),
-                    IpsecPeerConfigMatchers.hasPhysicalInterface("ge-0/0/3.0"),
+                    IpsecPeerConfigMatchers.hasSourceInterface("ge-0/0/3.0"),
                     IpsecPeerConfigMatchers.hasLocalAddress(Ip.parse("198.51.100.2")),
                     IpsecPeerConfigMatchers.hasTunnelInterface(equalTo("st0.0"))))));
   }
