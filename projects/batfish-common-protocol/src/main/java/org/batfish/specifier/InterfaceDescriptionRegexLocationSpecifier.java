@@ -38,9 +38,7 @@ public abstract class InterfaceDescriptionRegexLocationSpecifier implements Loca
 
   @Override
   public Set<Location> resolve(SpecifierContext ctxt) {
-    return ctxt.getConfigs()
-        .values()
-        .stream()
+    return ctxt.getConfigs().values().stream()
         .flatMap(config -> config.getAllInterfaces().values().stream())
         .filter(iface -> _pattern.matcher(iface.getDescription()).matches())
         .map(this::getLocation)

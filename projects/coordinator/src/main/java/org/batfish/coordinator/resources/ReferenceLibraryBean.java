@@ -18,9 +18,7 @@ public class ReferenceLibraryBean {
 
   public ReferenceLibraryBean(ReferenceLibrary library) {
     books =
-        library
-            .getReferenceBooks()
-            .stream()
+        library.getReferenceBooks().stream()
             .map(book -> new ReferenceBookBean(book))
             .collect(Collectors.toSet());
   }

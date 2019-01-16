@@ -38,8 +38,7 @@ public final class ZoneNameRegexInterfaceSpecifier implements InterfaceSpecifier
 
   @Override
   public Set<Interface> resolve(Set<String> nodes, SpecifierContext ctxt) {
-    return nodes
-        .stream()
+    return nodes.stream()
         .map(n -> resolve(n, ctxt))
         .flatMap(Collection::stream)
         .collect(Collectors.toSet());
@@ -49,18 +48,12 @@ public final class ZoneNameRegexInterfaceSpecifier implements InterfaceSpecifier
   private Set<Interface> resolve(String node, SpecifierContext ctxt) {
     Configuration config = ctxt.getConfigs().get(node);
     Set<String> interfaceNamesInMatchingZones =
-        config
-            .getZones()
-            .values()
-            .stream()
+        config.getZones().values().stream()
             .filter(z -> _pattern.matcher(z.getName()).matches())
             .map(z -> z.getInterfaces())
             .flatMap(Collection::stream)
             .collect(Collectors.toSet());
-    return config
-        .getAllInterfaces()
-        .values()
-        .stream()
+    return config.getAllInterfaces().values().stream()
         .filter(i -> interfaceNamesInMatchingZones.contains(i.getName()))
         .collect(Collectors.toSet());
   }

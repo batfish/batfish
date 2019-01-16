@@ -248,8 +248,7 @@ public class AclIpSpace extends IpSpace {
   }
 
   private LineAction action(Ip ip, Map<String, IpSpace> namedIpSpaces) {
-    return _lines
-        .stream()
+    return _lines.stream()
         .filter(line -> line.getIpSpace().containsIp(ip, namedIpSpaces))
         .map(AclIpSpaceLine::getAction)
         .findFirst()

@@ -69,9 +69,7 @@ public class PrefixTracerAnswererTest {
   public void testHasColumns() {
     // Set because order not important
     Set<String> columnNames =
-        getTableMetadata()
-            .getColumnMetadata()
-            .stream()
+        getTableMetadata().getColumnMetadata().stream()
             .map(ColumnMetadata::getName)
             .collect(ImmutableSet.toImmutableSet());
 

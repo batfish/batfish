@@ -20,9 +20,7 @@ public class EigrpTopology {
   public static Network<EigrpInterface, EigrpEdge> initEigrpTopology(
       Map<String, Configuration> configurations, Topology topology) {
     Set<EigrpEdge> edges =
-        topology
-            .getEdges()
-            .stream()
+        topology.getEdges().stream()
             .map(edge -> EigrpEdge.edgeIfAdjacent(edge, configurations))
             .filter(Optional::isPresent)
             .map(Optional::get)

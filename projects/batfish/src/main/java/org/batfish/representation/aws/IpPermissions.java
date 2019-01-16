@@ -89,8 +89,7 @@ public class IpPermissions implements Serializable {
 
     _ipRanges.stream().map(IpWildcard::new).forEach(ipWildcardBuilder::add);
 
-    _securityGroups
-        .stream()
+    _securityGroups.stream()
         .map(sgID -> region.getSecurityGroups().get(sgID))
         .filter(Objects::nonNull)
         .flatMap(sg -> sg.getUsersIpSpace().stream())

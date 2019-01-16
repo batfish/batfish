@@ -56,9 +56,7 @@ final class CiscoIosNatUtil {
       Map<CiscoIosNat, Transformation.Builder> convertedNats, boolean outgoing) {
 
     Map<IpField, List<Builder>> transformationsByField =
-        convertedNats
-            .keySet()
-            .stream()
+        convertedNats.keySet().stream()
             .sorted()
             .collect(
                 Collectors.groupingBy(

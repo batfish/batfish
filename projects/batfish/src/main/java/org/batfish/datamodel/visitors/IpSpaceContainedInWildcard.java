@@ -32,9 +32,7 @@ public class IpSpaceContainedInWildcard implements GenericIpSpaceVisitor<Boolean
 
   @Override
   public Boolean visitAclIpSpace(AclIpSpace aclIpSpace) {
-    return aclIpSpace
-        .getLines()
-        .stream()
+    return aclIpSpace.getLines().stream()
         .filter(line -> line.getAction() == LineAction.PERMIT)
         .allMatch(line -> line.getIpSpace().accept(this));
   }

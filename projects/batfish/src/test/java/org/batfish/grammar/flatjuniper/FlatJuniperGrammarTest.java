@@ -1433,20 +1433,17 @@ public final class FlatJuniperGrammarTest {
 
     Set<GeneratedRoute> aggregateRoutes = config.getDefaultVrf().getGeneratedRoutes();
     GeneratedRoute ar1 =
-        aggregateRoutes
-            .stream()
+        aggregateRoutes.stream()
             .filter(ar -> ar.getNetwork().equals(Prefix.parse("1.0.0.0/8")))
             .findAny()
             .get();
     GeneratedRoute ar2 =
-        aggregateRoutes
-            .stream()
+        aggregateRoutes.stream()
             .filter(ar -> ar.getNetwork().equals(Prefix.parse("2.0.0.0/8")))
             .findAny()
             .get();
     GeneratedRoute ar3 =
-        aggregateRoutes
-            .stream()
+        aggregateRoutes.stream()
             .filter(ar -> ar.getNetwork().equals(Prefix.parse("3.0.0.0/8")))
             .findAny()
             .get();
@@ -1463,20 +1460,17 @@ public final class FlatJuniperGrammarTest {
 
     Set<GeneratedRoute> aggregateRoutesRi1 = config.getVrfs().get("ri1").getGeneratedRoutes();
     GeneratedRoute ar1Ri1 =
-        aggregateRoutesRi1
-            .stream()
+        aggregateRoutesRi1.stream()
             .filter(ar -> ar.getNetwork().equals(Prefix.parse("1.0.0.0/8")))
             .findAny()
             .get();
     GeneratedRoute ar2Ri1 =
-        aggregateRoutesRi1
-            .stream()
+        aggregateRoutesRi1.stream()
             .filter(ar -> ar.getNetwork().equals(Prefix.parse("2.0.0.0/8")))
             .findAny()
             .get();
     GeneratedRoute ar3Ri1 =
-        aggregateRoutesRi1
-            .stream()
+        aggregateRoutesRi1.stream()
             .filter(ar -> ar.getNetwork().equals(Prefix.parse("3.0.0.0/8")))
             .findAny()
             .get();
@@ -1502,38 +1496,32 @@ public final class FlatJuniperGrammarTest {
 
     Set<GeneratedRoute> aggregateRoutes = config.getDefaultVrf().getGeneratedRoutes();
     GeneratedRoute ar1 =
-        aggregateRoutes
-            .stream()
+        aggregateRoutes.stream()
             .filter(ar -> ar.getNetwork().equals(Prefix.parse("1.0.0.0/8")))
             .findAny()
             .get();
     GeneratedRoute ar2 =
-        aggregateRoutes
-            .stream()
+        aggregateRoutes.stream()
             .filter(ar -> ar.getNetwork().equals(Prefix.parse("2.0.0.0/8")))
             .findAny()
             .get();
     GeneratedRoute ar3 =
-        aggregateRoutes
-            .stream()
+        aggregateRoutes.stream()
             .filter(ar -> ar.getNetwork().equals(Prefix.parse("3.0.0.0/8")))
             .findAny()
             .get();
     GeneratedRoute ar4 =
-        aggregateRoutes
-            .stream()
+        aggregateRoutes.stream()
             .filter(ar -> ar.getNetwork().equals(Prefix.parse("4.0.0.0/8")))
             .findAny()
             .get();
     GeneratedRoute ar5 =
-        aggregateRoutes
-            .stream()
+        aggregateRoutes.stream()
             .filter(ar -> ar.getNetwork().equals(Prefix.parse("5.0.0.0/8")))
             .findAny()
             .get();
     GeneratedRoute ar6 =
-        aggregateRoutes
-            .stream()
+        aggregateRoutes.stream()
             .filter(ar -> ar.getNetwork().equals(Prefix.parse("6.0.0.0/8")))
             .findAny()
             .get();
@@ -1597,20 +1585,17 @@ public final class FlatJuniperGrammarTest {
 
     Set<GeneratedRoute> generatedRoutes = config.getDefaultVrf().getGeneratedRoutes();
     GeneratedRoute gr1 =
-        generatedRoutes
-            .stream()
+        generatedRoutes.stream()
             .filter(gr -> gr.getNetwork().equals(Prefix.parse("1.0.0.0/8")))
             .findAny()
             .get();
     GeneratedRoute gr2 =
-        generatedRoutes
-            .stream()
+        generatedRoutes.stream()
             .filter(gr -> gr.getNetwork().equals(Prefix.parse("2.0.0.0/8")))
             .findAny()
             .get();
     GeneratedRoute gr3 =
-        generatedRoutes
-            .stream()
+        generatedRoutes.stream()
             .filter(gr -> gr.getNetwork().equals(Prefix.parse("3.0.0.0/8")))
             .findAny()
             .get();
@@ -1627,20 +1612,17 @@ public final class FlatJuniperGrammarTest {
 
     Set<GeneratedRoute> generatedRi1 = config.getVrfs().get("ri1").getGeneratedRoutes();
     GeneratedRoute gr1Ri1 =
-        generatedRi1
-            .stream()
+        generatedRi1.stream()
             .filter(gr -> gr.getNetwork().equals(Prefix.parse("1.0.0.0/8")))
             .findAny()
             .get();
     GeneratedRoute gr2Ri1 =
-        generatedRi1
-            .stream()
+        generatedRi1.stream()
             .filter(gr -> gr.getNetwork().equals(Prefix.parse("2.0.0.0/8")))
             .findAny()
             .get();
     GeneratedRoute gr3Ri1 =
-        generatedRi1
-            .stream()
+        generatedRi1.stream()
             .filter(gr -> gr.getNetwork().equals(Prefix.parse("3.0.0.0/8")))
             .findAny()
             .get();
@@ -1666,20 +1648,17 @@ public final class FlatJuniperGrammarTest {
 
     Set<GeneratedRoute> generatedRoutes = config.getDefaultVrf().getGeneratedRoutes();
     GeneratedRoute gr1 =
-        generatedRoutes
-            .stream()
+        generatedRoutes.stream()
             .filter(gr -> gr.getNetwork().equals(Prefix.parse("1.0.0.0/8")))
             .findAny()
             .get();
     GeneratedRoute gr2 =
-        generatedRoutes
-            .stream()
+        generatedRoutes.stream()
             .filter(gr -> gr.getNetwork().equals(Prefix.parse("2.0.0.0/8")))
             .findAny()
             .get();
     GeneratedRoute gr3 =
-        generatedRoutes
-            .stream()
+        generatedRoutes.stream()
             .filter(gr -> gr.getNetwork().equals(Prefix.parse("3.0.0.0/8")))
             .findAny()
             .get();
@@ -1721,10 +1700,7 @@ public final class FlatJuniperGrammarTest {
                 _folder, "org/batfish/grammar/juniper/testconfigs/generated-route-communities")
             .get("generated-route-communities");
     assertThat(
-        config
-            .getDefaultVrf()
-            .getGeneratedRoutes()
-            .stream()
+        config.getDefaultVrf().getGeneratedRoutes().stream()
             .map(GeneratedRoute::getCommunities)
             .collect(ImmutableSet.toImmutableSet()),
         equalTo(ImmutableSet.of(ImmutableSortedSet.of(65537L))));

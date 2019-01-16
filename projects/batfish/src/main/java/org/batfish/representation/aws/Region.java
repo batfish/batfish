@@ -434,10 +434,7 @@ public class Region implements Serializable {
                     .get(networkInterface.getSubnetId())
                     .getAllocatedIps()
                     .addAll(
-                        networkInterface
-                            .getIpAddressAssociations()
-                            .keySet()
-                            .stream()
+                        networkInterface.getIpAddressAssociations().keySet().stream()
                             .map(Ip::asLong)
                             .collect(Collectors.toSet())));
   }

@@ -2974,9 +2974,7 @@ public final class WorkMgrTest {
     storeCompletionMetadata(completionMetadata, network, snapshot);
 
     assertThat(
-        _manager
-            .autoComplete(network, snapshot, Type.ADDRESS_BOOK, "bo", 5)
-            .stream()
+        _manager.autoComplete(network, snapshot, Type.ADDRESS_BOOK, "bo", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(suggestion)));
@@ -2997,9 +2995,7 @@ public final class WorkMgrTest {
     storeCompletionMetadata(completionMetadata, network, snapshot);
 
     assertThat(
-        _manager
-            .autoComplete(network, snapshot, Type.ADDRESS_GROUP, "gr", 5)
-            .stream()
+        _manager.autoComplete(network, snapshot, Type.ADDRESS_GROUP, "gr", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(suggestion)));
@@ -3008,9 +3004,7 @@ public final class WorkMgrTest {
   @Test
   public void testBgpPeerPropertySpecAutocomplete() throws IOException {
     assertThat(
-        _manager
-            .autoComplete("network", "snapshot", Type.BGP_PEER_PROPERTY_SPEC, "as", 5)
-            .stream()
+        _manager.autoComplete("network", "snapshot", Type.BGP_PEER_PROPERTY_SPEC, "as", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(LOCAL_AS, IS_PASSIVE, REMOTE_AS)));
@@ -3019,8 +3013,7 @@ public final class WorkMgrTest {
   @Test
   public void testBgpProcessPropertySpecAutocomplete() throws IOException {
     assertThat(
-        _manager
-            .autoComplete("network", "snapshot", Type.BGP_PROCESS_PROPERTY_SPEC, "multi", 5)
+        _manager.autoComplete("network", "snapshot", Type.BGP_PROCESS_PROPERTY_SPEC, "multi", 5)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -3032,9 +3025,7 @@ public final class WorkMgrTest {
   @Test
   public void testBgpSessionStatusAutocomplete() throws IOException {
     assertThat(
-        _manager
-            .autoComplete("network", "snapshot", Type.BGP_SESSION_STATUS, "match", 5)
-            .stream()
+        _manager.autoComplete("network", "snapshot", Type.BGP_SESSION_STATUS, "match", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
@@ -3045,9 +3036,7 @@ public final class WorkMgrTest {
   @Test
   public void testBgpSessionTypeAutocomplete() throws IOException {
     assertThat(
-        _manager
-            .autoComplete("network", "snapshot", Type.BGP_SESSION_TYPE, "bgp", 5)
-            .stream()
+        _manager.autoComplete("network", "snapshot", Type.BGP_SESSION_TYPE, "bgp", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
@@ -3057,9 +3046,7 @@ public final class WorkMgrTest {
   @Test
   public void testDispositionSpecAutocomplete() throws IOException {
     assertThat(
-        _manager
-            .autoComplete("network", "snapshot", Type.DISPOSITION_SPEC, "s", 5)
-            .stream()
+        _manager.autoComplete("network", "snapshot", Type.DISPOSITION_SPEC, "s", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
@@ -3086,9 +3073,7 @@ public final class WorkMgrTest {
     storeCompletionMetadata(completionMetadata, network, snapshot);
 
     assertThat(
-        _manager
-            .autoComplete(network, snapshot, Type.FILTER, "fil", 5)
-            .stream()
+        _manager.autoComplete(network, snapshot, Type.FILTER, "fil", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(suggestion)));
@@ -3097,9 +3082,7 @@ public final class WorkMgrTest {
   @Test
   public void testFlowStateAutocomplete() throws IOException {
     assertThat(
-        _manager
-            .autoComplete("network", "snapshot", Type.FLOW_STATE, "e", 5)
-            .stream()
+        _manager.autoComplete("network", "snapshot", Type.FLOW_STATE, "e", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(ESTABLISHED.toString(), RELATED.toString(), NEW.toString())));
@@ -3120,9 +3103,7 @@ public final class WorkMgrTest {
     storeCompletionMetadata(completionMetadata, network, snapshot);
 
     assertThat(
-        _manager
-            .autoComplete(network, snapshot, Type.INTERFACE, "int", 5)
-            .stream()
+        _manager.autoComplete(network, snapshot, Type.INTERFACE, "int", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(suggested.toString())));
@@ -3131,8 +3112,7 @@ public final class WorkMgrTest {
   @Test
   public void testInterfacePropertySpecAutocomplete() throws IOException {
     assertThat(
-        _manager
-            .autoComplete("network", "snapshot", Type.INTERFACE_PROPERTY_SPEC, "vlan", 5)
+        _manager.autoComplete("network", "snapshot", Type.INTERFACE_PROPERTY_SPEC, "vlan", 5)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -3152,9 +3132,7 @@ public final class WorkMgrTest {
     storeCompletionMetadata(completionMetadata, network, snapshot);
 
     assertThat(
-        _manager
-            .autoComplete(network, snapshot, Type.IP, "1.2", 5)
-            .stream()
+        _manager.autoComplete(network, snapshot, Type.IP, "1.2", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(suggested)));
@@ -3163,9 +3141,7 @@ public final class WorkMgrTest {
   @Test
   public void testIpsecSessionStatusAutocomplete() throws IOException {
     assertThat(
-        _manager
-            .autoComplete("network", "snapshot", Type.IPSEC_SESSION_STATUS, "phase", 5)
-            .stream()
+        _manager.autoComplete("network", "snapshot", Type.IPSEC_SESSION_STATUS, "phase", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
@@ -3178,8 +3154,7 @@ public final class WorkMgrTest {
   @Test
   public void testNamedStructureSpecAutocomplete() throws IOException {
     assertThat(
-        _manager
-            .autoComplete("network", "snapshot", Type.NAMED_STRUCTURE_SPEC, "access", 5)
+        _manager.autoComplete("network", "snapshot", Type.NAMED_STRUCTURE_SPEC, "access", 5)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -3189,9 +3164,7 @@ public final class WorkMgrTest {
   @Test
   public void testNodePropertySpecAutocomplete() throws IOException {
     assertThat(
-        _manager
-            .autoComplete("network", "snapshot", Type.NODE_PROPERTY_SPEC, "dns", 5)
-            .stream()
+        _manager.autoComplete("network", "snapshot", Type.NODE_PROPERTY_SPEC, "dns", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(DNS_SERVERS, DNS_SOURCE_INTERFACE)));
@@ -3212,9 +3185,7 @@ public final class WorkMgrTest {
     _manager.putNetworkNodeRoles(nodeRolesData, network);
 
     assertThat(
-        _manager
-            .autoComplete(network, "snapshot", Type.NODE_ROLE_DIMENSION, "dim", 5)
-            .stream()
+        _manager.autoComplete(network, "snapshot", Type.NODE_ROLE_DIMENSION, "dim", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(suggested.getName())));
@@ -3239,9 +3210,7 @@ public final class WorkMgrTest {
         BatfishObjectMapper.mapper().writeValueAsString(topology));
 
     assertThat(
-        _manager
-            .autoComplete(network, snapshot, Type.NODE_SPEC, "a", 5)
-            .stream()
+        _manager.autoComplete(network, snapshot, Type.NODE_SPEC, "a", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of("a1", "a.*")));
@@ -3250,9 +3219,7 @@ public final class WorkMgrTest {
   @Test
   public void testOspfPropertySpecAutocomplete() throws IOException {
     assertThat(
-        _manager
-            .autoComplete("network", "snapshot", Type.OSPF_PROPERTY_SPEC, "area", 5)
-            .stream()
+        _manager.autoComplete("network", "snapshot", Type.OSPF_PROPERTY_SPEC, "area", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(AREA_BORDER_ROUTER, AREAS)));
@@ -3271,9 +3238,7 @@ public final class WorkMgrTest {
     storeCompletionMetadata(completionMetadata, network, snapshot);
 
     assertThat(
-        _manager
-            .autoComplete(network, snapshot, Type.PREFIX, "1.2", 5)
-            .stream()
+        _manager.autoComplete(network, snapshot, Type.PREFIX, "1.2", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(suggested)));
@@ -3282,9 +3247,7 @@ public final class WorkMgrTest {
   @Test
   public void testProtocolAutocomplete() throws IOException {
     assertThat(
-        _manager
-            .autoComplete("network", "snapshot", Type.PROTOCOL, "h", 5)
-            .stream()
+        _manager.autoComplete("network", "snapshot", Type.PROTOCOL, "h", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(HTTP.toString(), HTTPS.toString(), SSH.toString())));
@@ -3293,9 +3256,7 @@ public final class WorkMgrTest {
   @Test
   public void testRoutingProtocolSpecAutocomplete() throws IOException {
     assertThat(
-        _manager
-            .autoComplete("network", "snapshot", Type.ROUTING_PROTOCOL_SPEC, "bgp", 5)
-            .stream()
+        _manager.autoComplete("network", "snapshot", Type.ROUTING_PROTOCOL_SPEC, "bgp", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of("bgp", "ibgp", "ebgp")));
@@ -3316,9 +3277,7 @@ public final class WorkMgrTest {
     storeCompletionMetadata(completionMetadata, network, snapshot);
 
     assertThat(
-        _manager
-            .autoComplete(network, snapshot, Type.STRUCTURE_NAME, "str", 5)
-            .stream()
+        _manager.autoComplete(network, snapshot, Type.STRUCTURE_NAME, "str", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(suggested)));
@@ -3337,9 +3296,7 @@ public final class WorkMgrTest {
     storeCompletionMetadata(completionMetadata, network, snapshot);
 
     assertThat(
-        _manager
-            .autoComplete(network, snapshot, Type.VRF, "v", 5)
-            .stream()
+        _manager.autoComplete(network, snapshot, Type.VRF, "v", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(suggested)));
@@ -3358,9 +3315,7 @@ public final class WorkMgrTest {
     storeCompletionMetadata(completionMetadata, network, snapshot);
 
     assertThat(
-        _manager
-            .autoComplete(network, snapshot, Type.ZONE, "z", 5)
-            .stream()
+        _manager.autoComplete(network, snapshot, Type.ZONE, "z", 5).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(suggested)));

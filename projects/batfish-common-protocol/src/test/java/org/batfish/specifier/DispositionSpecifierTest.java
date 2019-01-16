@@ -106,8 +106,7 @@ public class DispositionSpecifierTest {
   public void testAutocomplete() {
     // should include values from FlowDisposition enum as well as "success" and "failure"
     assertThat(
-        DispositionSpecifier.autoComplete("s")
-            .stream()
+        DispositionSpecifier.autoComplete("s").stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(
@@ -119,8 +118,7 @@ public class DispositionSpecifierTest {
                 EXITS_NETWORK.name().toLowerCase())));
 
     assertThat(
-        DispositionSpecifier.autoComplete("f")
-            .stream()
+        DispositionSpecifier.autoComplete("f").stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(FAILURE, INSUFFICIENT_INFO.name().toLowerCase())));

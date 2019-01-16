@@ -62,15 +62,10 @@ public final class ReferenceFilterGroupFilterSpecifier implements FilterSpecifie
                             + _bookName
                             + "'"));
 
-    return config
-        .getIpAccessLists()
-        .values()
-        .stream()
+    return config.getIpAccessLists().values().stream()
         .filter(
             filter ->
-                filterGroup
-                    .getFilters()
-                    .stream()
+                filterGroup.getFilters().stream()
                     .anyMatch(specifier -> specifier.matches(filter, config)))
         .collect(Collectors.toSet());
   }

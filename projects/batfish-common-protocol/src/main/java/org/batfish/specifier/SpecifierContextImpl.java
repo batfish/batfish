@@ -39,10 +39,7 @@ public class SpecifierContextImpl implements SpecifierContext {
     _snapshotDeviceOwnedIps =
         firstNonNull(
             AclIpSpace.union(
-                ipOwners
-                    .getAllDeviceOwnedIps()
-                    .keySet()
-                    .stream()
+                ipOwners.getAllDeviceOwnedIps().keySet().stream()
                     .map(Ip::toIpSpace)
                     .collect(Collectors.toList())),
             EmptyIpSpace.INSTANCE);

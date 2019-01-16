@@ -2551,8 +2551,7 @@ public class CiscoGrammarTest {
     // check that private AS is present in path in received 1.1.1.1/32 advert on r2
     SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(DEFAULT_VRF_NAME);
     boolean r2HasPrivate =
-        r2Routes
-            .stream()
+        r2Routes.stream()
             .filter(r -> r.getNetwork().equals(r1Loopback))
             .flatMap(r -> ((BgpRoute) r).getAsPath().getAsSets().stream())
             .flatMap(asSet -> asSet.getAsns().stream())
@@ -2561,8 +2560,7 @@ public class CiscoGrammarTest {
 
     // check that private AS is absent from path in received 1.1.1.1/32 advert on r3
     boolean r3HasPrivate =
-        r3Routes
-            .stream()
+        r3Routes.stream()
             .filter(a -> a.getNetwork().equals(r1Loopback))
             .flatMap(r -> ((BgpRoute) r).getAsPath().getAsSets().stream())
             .flatMap(asSet -> asSet.getAsns().stream())

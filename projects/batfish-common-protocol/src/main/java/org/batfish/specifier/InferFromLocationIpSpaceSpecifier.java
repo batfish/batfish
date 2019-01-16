@@ -52,8 +52,7 @@ public final class InferFromLocationIpSpaceSpecifier implements IpSpaceSpecifier
       @Nullable
       IpSpace linkIpSpace =
           AclIpSpace.union(
-              interfaceAddresses(node, iface)
-                  .stream()
+              interfaceAddresses(node, iface).stream()
                   /*
                    * Only include addresses on networks that might have hosts.
                    */

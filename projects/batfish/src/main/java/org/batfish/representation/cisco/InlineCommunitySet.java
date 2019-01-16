@@ -11,8 +11,7 @@ public final class InlineCommunitySet extends CommunitySet {
 
   public InlineCommunitySet(@Nonnull Collection<Long> communities) {
     this(
-        communities
-            .stream()
+        communities.stream()
             .map(CommunitySetElemHalves::new)
             .collect(ImmutableList.toImmutableList()));
   }

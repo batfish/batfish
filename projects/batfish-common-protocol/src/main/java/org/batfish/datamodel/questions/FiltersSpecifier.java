@@ -100,9 +100,7 @@ public class FiltersSpecifier {
   private boolean isFilterOnInterface(
       Configuration c, Function<Interface, IpAccessList> filterGetter, IpAccessList filter) {
     InterfacesSpecifier interfaceSpecifiers = new InterfacesSpecifier(_regex);
-    return c.getAllInterfaces()
-        .values()
-        .stream()
+    return c.getAllInterfaces().values().stream()
         .filter(interfaceSpecifiers::matches)
         .map(filterGetter)
         .anyMatch(o -> o == filter);

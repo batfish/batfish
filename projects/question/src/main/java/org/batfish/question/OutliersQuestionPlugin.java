@@ -154,8 +154,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
         String name = entry.getKey();
         SortedSet<NamedStructureEquivalenceSet<T>> eClasses = entry.getValue();
         NamedStructureEquivalenceSet<T> max =
-            eClasses
-                .stream()
+            eClasses.stream()
                 .max(Comparator.comparingInt(es -> es.getNodes().size()))
                 .orElseThrow(
                     () ->
@@ -164,8 +163,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
         SortedSet<String> conformers = max.getNodes();
 
         SortedSet<String> outliers =
-            eClasses
-                .stream()
+            eClasses.stream()
                 .filter(eClass -> eClass != max)
                 .flatMap(eClass -> eClass.getNodes().stream())
                 .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
@@ -191,9 +189,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       // the equivalence class of the largest size is treated as the one whose value is
       // hypothesized to be the correct one
       Map.Entry<T, SortedSet<String>> max =
-          equivSets
-              .entrySet()
-              .stream()
+          equivSets.entrySet().stream()
               .max(Comparator.comparingInt(e -> e.getValue().size()))
               .orElseThrow(
                   () -> new BatfishException("Set " + name + " has no equivalence classes"));
@@ -342,8 +338,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
           eSets.getSameNamedStructures().entrySet()) {
         SortedSet<NamedStructureEquivalenceSet<T>> eSetSets = entry.getValue();
         SortedSet<String> presentNodes =
-            eSetSets
-                .stream()
+            eSetSets.stream()
                 .flatMap(eSet -> eSet.getNodes().stream())
                 .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
         T struct = eSetSets.first().getNamedStructure();

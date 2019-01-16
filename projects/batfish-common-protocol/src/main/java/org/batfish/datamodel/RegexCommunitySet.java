@@ -95,8 +95,7 @@ public final class RegexCommunitySet extends CommunitySetExpr {
 
   @Override
   public boolean matchCommunities(Environment environment, Set<Long> communitySetCandidate) {
-    return communitySetCandidate
-        .stream()
+    return communitySetCandidate.stream()
         .anyMatch(community -> matchCommunity(environment, community));
   }
 

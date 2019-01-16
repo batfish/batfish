@@ -5776,9 +5776,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return AsSet.of(toAsNum(ctx.bgp_asn()));
     } else {
       return AsSet.of(
-          ctx.as_set()
-              .items
-              .stream()
+          ctx.as_set().items.stream()
               .map(this::toAsNum)
               .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
     }

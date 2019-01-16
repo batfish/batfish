@@ -59,9 +59,7 @@ public class BgpProcess implements Serializable {
 
     @Override
     public Set<Long> get() {
-      return _activeNeighbors
-          .values()
-          .stream()
+      return _activeNeighbors.values().stream()
           .map(BgpPeerConfig::getClusterId)
           .collect(ImmutableSet.toImmutableSet());
     }

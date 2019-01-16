@@ -164,9 +164,7 @@ public class BDDReachabilityAnalysis {
      * Identify which of the candidates are actually on loops
      */
     Map<StateExpr, BDD> loopBDDs =
-        reachableInNRounds
-            .entrySet()
-            .stream()
+        reachableInNRounds.entrySet().stream()
             .filter(entry -> confirmLoop(entry.getKey(), entry.getValue()))
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
@@ -259,8 +257,7 @@ public class BDDReachabilityAnalysis {
   private Map<IngressLocation, BDD> getIngressLocationBDDs(
       Map<StateExpr, BDD> reverseReachableStates) {
     BDD zero = _bddPacket.getFactory().zero();
-    return _ingressLocationStates
-        .stream()
+    return _ingressLocationStates.stream()
         .collect(
             ImmutableMap.toImmutableMap(
                 BDDReachabilityAnalysis::toIngressLocation,

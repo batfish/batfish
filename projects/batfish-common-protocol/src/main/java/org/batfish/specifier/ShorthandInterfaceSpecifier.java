@@ -41,9 +41,7 @@ public final class ShorthandInterfaceSpecifier implements InterfaceSpecifier {
 
   @Override
   public Set<Interface> resolve(Set<String> nodes, SpecifierContext ctxt) {
-    return ctxt.getConfigs()
-        .values()
-        .stream()
+    return ctxt.getConfigs().values().stream()
         .filter(c -> nodes.contains(c.getHostname()))
         .map(c -> c.getAllInterfaces().values())
         .flatMap(Collection::stream)

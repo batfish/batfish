@@ -676,16 +676,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (iface.getInterfaceType() == InterfaceType.AGGREGATED) {
       /* Bandwidth should be sum of bandwidth of channel-group members. */
       iface.setBandwidth(
-          iface
-              .getChannelGroupMembers()
-              .stream()
+          iface.getChannelGroupMembers().stream()
               .mapToDouble(ifaceName -> interfaces.get(ifaceName).getBandwidth())
               .sum());
     } else if (iface.getInterfaceType() == InterfaceType.AGGREGATE_CHILD) {
       /* Bandwidth for aggregate child interfaces (e.g. units) should be inherited from the parent. */
-      iface
-          .getDependencies()
-          .stream()
+      iface.getDependencies().stream()
           .filter(d -> d.getType() == DependencyType.BIND)
           .findFirst()
           .map(Dependency::getInterfaceName)
@@ -1067,9 +1063,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               iface.getSwitchportMode(), hostname, iface.getName());
         }
 
-        vlans
-            .build()
-            .stream()
+        vlans.build().stream()
             .forEach(
                 vlanId -> vlanMemberCounts.compute(vlanId, (k, v) -> (v == null) ? 1 : (v + 1)));
       }
@@ -1909,10 +1903,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     ConvertConfigurationAnswerElement convertAnswer =
         loadConvertConfigurationAnswerElementOrReparse();
     mergeInitStepAnswer(answerElement, convertAnswer, summary, verboseError);
-    convertAnswer
-        .getConvertStatus()
-        .entrySet()
-        .stream()
+    convertAnswer.getConvertStatus().entrySet().stream()
         .filter(s -> s.getValue() == ConvertStatus.FAILED)
         .forEach(s -> answerElement.getParseStatus().put(s.getKey(), ParseStatus.FAILED));
   }
@@ -2240,10 +2231,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         baseDataPlaneSynthesizer.getInput().getSrcIpConstraints();
 
     Set<Location> sourceLocations =
-        baseParameters
-            .getSourceIpAssignment()
-            .getEntries()
-            .stream()
+        baseParameters.getSourceIpAssignment().getEntries().stream()
             .flatMap(entry -> entry.getLocations().stream())
             .collect(ImmutableSet.toImmutableSet());
 
@@ -2408,17 +2396,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
      * For aggregated logical interfaces, inherit a subset of properties
      * from the parent aggregated interfaces
      */
-    interfaces
-        .values()
-        .stream()
+    interfaces.values().stream()
         .filter(iface -> iface.getInterfaceType() == InterfaceType.AGGREGATED)
         .filter(iface -> !iface.getDependencies().isEmpty())
         .forEach(
             iface ->
                 iface.setBandwidth(
-                    iface
-                        .getDependencies()
-                        .stream()
+                    iface.getDependencies().stream()
                         .map(dependency -> interfaces.get(dependency.getInterfaceName()))
                         .filter(Objects::nonNull)
                         .map(Interface::getBandwidth)
@@ -2435,9 +2419,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       // Set device type to host iff the configuration format is HOST
       if (c.getConfigurationFormat() == ConfigurationFormat.HOST) {
         c.setDeviceType(DeviceType.HOST);
-      } else if (c.getVrfs()
-          .values()
-          .stream()
+      } else if (c.getVrfs().values().stream()
           .anyMatch(
               vrf ->
                   vrf.getBgpProcess() != null
@@ -2490,8 +2472,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private static void deactivateInterfaceIfNeeded(Interface iface) {
     Configuration config = iface.getOwner();
     Set<Dependency> dependencies = iface.getDependencies();
-    if (dependencies
-        .stream()
+    if (dependencies.stream()
         // Look at bind dependencies
         .filter(d -> d.getType() == DependencyType.BIND)
         .map(d -> config.getAllInterfaces().get(d.getInterfaceName()))
@@ -2502,13 +2483,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // Look at aggregate dependencies only now
     Set<Dependency> aggregateDependencies =
-        dependencies
-            .stream()
+        dependencies.stream()
             .filter(d -> d.getType() == DependencyType.AGGREGATE)
             .collect(ImmutableSet.toImmutableSet());
     if (iface.getInterfaceType() == InterfaceType.AGGREGATED
-        && aggregateDependencies
-            .stream()
+        && aggregateDependencies.stream()
             // Extract existing and active interfaces
             .map(d -> config.getAllInterfaces().get(d.getInterfaceName()))
             .filter(Objects::nonNull)
@@ -2567,8 +2546,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   /** Function that processes an interface blacklist across all configurations */
   private static void processInterfaceBlacklist(
       Set<NodeInterfacePair> interfaceBlacklist, NetworkConfigurations configurations) {
-    interfaceBlacklist
-        .stream()
+    interfaceBlacklist.stream()
         .map(iface -> configurations.getInterface(iface.getHostname(), iface.getInterface()))
         .filter(Optional::isPresent)
         .map(Optional::get)
@@ -2578,8 +2556,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @VisibleForTesting
   static Set<NodeInterfacePair> nodeToInterfaceBlacklist(
       SortedSet<String> blacklistNodes, NetworkConfigurations configurations) {
-    return blacklistNodes
-        .stream()
+    return blacklistNodes.stream()
         // Get all valid/present node configs
         .map(configurations::get)
         .filter(Optional::isPresent)
@@ -2592,9 +2569,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @VisibleForTesting
   static void processManagementInterfaces(Map<String, Configuration> configurations) {
-    configurations
-        .values()
-        .stream()
+    configurations.values().stream()
         .forEach(
             configuration -> {
               for (Interface iface : configuration.getAllInterfaces().values()) {
@@ -2818,9 +2793,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     loc, expr, (expr1, expr2) -> new OrExpr(ImmutableList.of(expr1, expr2))));
 
     List<CompositeNodJob> jobs =
-        srcIpConstraints
-            .entrySet()
-            .stream()
+        srcIpConstraints.entrySet().stream()
             .map(
                 entry -> {
                   Map<IngressLocation, BooleanExpr> srcIpConstraint =
@@ -3190,15 +3163,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // split into hostConfigurations and overlayConfigurations
     SortedMap<String, VendorConfiguration> overlayConfigurations =
-        allHostConfigurations
-            .entrySet()
-            .stream()
+        allHostConfigurations.entrySet().stream()
             .filter(e -> ((HostConfiguration) e.getValue()).getOverlay())
             .collect(toMap(Entry::getKey, Entry::getValue, (v1, v2) -> v1, TreeMap::new));
     SortedMap<String, VendorConfiguration> nonOverlayHostConfigurations =
-        allHostConfigurations
-            .entrySet()
-            .stream()
+        allHostConfigurations.entrySet().stream()
             .filter(e -> !((HostConfiguration) e.getValue()).getOverlay())
             .collect(toMap(Entry::getKey, Entry::getValue, (v1, v2) -> v1, TreeMap::new));
 
@@ -3466,8 +3435,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // build query jobs
     List<NodJob> jobs =
-        chunkedSrcIpConstraints
-            .stream()
+        chunkedSrcIpConstraints.stream()
             .map(
                 chunkSrcIpConstraints -> {
                   ReachabilityQuerySynthesizer query =
@@ -3631,10 +3599,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           }
         };
 
-    return parameters
-        .getStartLocationSpecifier()
-        .resolve(specifierContext())
-        .stream()
+    return parameters.getStartLocationSpecifier().resolve(specifierContext()).stream()
         .filter(LocationVisitor.onNode(node)::visit)
         .map(locationToSource::visit)
         .collect(ImmutableSet.toImmutableSet());
@@ -3808,9 +3773,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     String flowTag = getFlowTag();
     Set<Flow> flows =
-        reachableBDDs
-            .entrySet()
-            .stream()
+        reachableBDDs.entrySet().stream()
             .flatMap(
                 entry -> {
                   IngressLocation loc = entry.getKey();
@@ -3859,9 +3822,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<IngressLocation, BDD> loopBDDs = analysis.detectLoops();
 
     String flowTag = getFlowTag();
-    return loopBDDs
-        .entrySet()
-        .stream()
+    return loopBDDs.entrySet().stream()
         .map(
             entry ->
                 pkt.getFlow(entry.getValue())
@@ -4013,8 +3974,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Map<IngressLocation, BDD> includeBDDs,
       Map<IngressLocation, BDD> excludeBDDs,
       String flowTag) {
-    return commonSources
-        .stream()
+    return commonSources.stream()
         .flatMap(
             source -> {
               BDD difference = includeBDDs.get(source).and(excludeBDDs.get(source).not());
