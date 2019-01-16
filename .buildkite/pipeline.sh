@@ -16,6 +16,7 @@ steps:
     plugins:
       - docker#v2.2.0:
           image: "batfish/ci-base:latest"
+          debug: true
   - label: "Check Python templates"
     command:
       - "python3 -m virtualenv .venv"
