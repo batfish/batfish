@@ -6626,24 +6626,67 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIp_nat_pool(Ip_nat_poolContext ctx) {
     String name = ctx.name.getText();
-    NatPool natPool = new NatPool();
-    _configuration.getNatPools().put(name, natPool);
-    // Just ignore ctx.prefix_length since it is only for sanity check
-    natPool.setFirst(toIp(ctx.first));
-    natPool.setLast(toIp(ctx.last));
+    Ip first = toIp(ctx.first);
+    Ip last = toIp(ctx.last);
+    if (ctx.mask != null) {
+      Prefix subnet = new IpWildcard(first, toIp(ctx.mask).inverted()).toPrefix();
+      createNatPool(name, first, last, subnet, ctx);
+    } else if (ctx.prefix_length != null) {
+      Prefix subnet = Prefix.create(first, Integer.parseInt(ctx.prefix_length.getText()));
+      createNatPool(name, first, last, subnet, ctx);
+    } else {
+      _configuration.getNatPools().put(name, new NatPool(first, last));
+    }
     defineStructure(NAT_POOL, name, ctx);
   }
 
   @Override
   public void exitIp_nat_pool_range(Ip_nat_pool_rangeContext ctx) {
     String name = ctx.name.getText();
-    NatPool natPool = new NatPool();
-    _configuration.getNatPools().put(name, natPool);
     Ip first = toIp(ctx.first);
-    natPool.setFirst(first);
     Ip last = toIp(ctx.last);
-    natPool.setLast(last);
+    if (ctx.prefix_length != null) {
+      Prefix subnet = Prefix.create(first, Integer.parseInt(ctx.prefix_length.getText()));
+      createNatPool(name, first, last, subnet, ctx);
+    } else {
+      _configuration.getNatPools().put(name, new NatPool(first, last));
+    }
     defineStructure(NAT_POOL, name, ctx);
+  }
+
+  /**
+   * Check that the pool IPs are contained in the subnet, and warn if not. Then create the pool,
+   * while excluding the network/broadcast IPs. This means that if specified first pool IP is
+   * numerically less than the first host IP in the subnet, use the first host IP instead.
+   * Similarly, if the specified last pool IP is greater than the last host IP in the subnet, use
+   * the last host IP instead.
+   */
+  private void createNatPool(String name, Ip first, Ip last, Prefix subnet, ParserRuleContext ctx) {
+    if (!subnet.containsIp(first)) {
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          String.format("Subnet of NAT pool %s does not contain first pool IP", name));
+    }
+    if (!subnet.containsIp(last)) {
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          String.format("Subnet of NAT pool %s does not contain last pool IP", name));
+    }
+
+    Ip firstHostIp = subnet.getFirstHostIp();
+    Ip lastHostIp = subnet.getLastHostIp();
+
+    _configuration
+        .getNatPools()
+        .put(
+            name,
+            new NatPool(
+                first.asLong() < firstHostIp.asLong() ? firstHostIp : first,
+                last.asLong() > lastHostIp.asLong() ? lastHostIp : last));
   }
 
   @Override

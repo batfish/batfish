@@ -3649,6 +3649,16 @@ public class CiscoGrammarTest {
                         .apply(assignSourceIp(Ip.parse("2.2.2.2"), Ip.parse("2.2.2.3")))
                         .build())
                 .build()));
+
+    iface = c.getAllInterfaces().get("Ethernet3");
+    assertThat(iface.getIncomingTransformation(), nullValue());
+    assertThat(
+        iface.getOutgoingTransformation(),
+        equalTo(
+            when(permittedByAcl("acl1"))
+                // due to the subnet mask, shift the pool IPs to avoid network/bcast IPs.
+                .apply(assignSourceIp(Ip.parse("2.0.0.1"), Ip.parse("2.0.0.6")))
+                .build()));
   }
 
   @Test
