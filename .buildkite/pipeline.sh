@@ -3,6 +3,11 @@
 set -e
 cat <<EOF
 steps:
+  - label: look around env
+    command:
+      - whoami
+      - ls -lat
+      - cat /etc/group
   - label: "Check Java formatting"
     command:
       - ls -latr
