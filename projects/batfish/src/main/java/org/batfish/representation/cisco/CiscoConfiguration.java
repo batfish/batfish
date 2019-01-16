@@ -26,7 +26,6 @@ import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Pol
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Proposal;
 
 import com.google.common.base.Functions;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -2212,7 +2211,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setAccessVlan(iface.getAccessVlan());
 
     if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
-      newIface.setNativeVlan(MoreObjects.firstNonNull(iface.getNativeVlan(), 1));
+      newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
     }
 
     newIface.setSwitchportMode(iface.getSwitchportMode());
