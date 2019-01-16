@@ -2209,7 +2209,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // switch settings
     newIface.setAccessVlan(iface.getAccessVlan());
-    newIface.setNativeVlan(iface.getNativeVlan());
+
+    Integer nativeVlan = null;
+    if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
+      nativeVlan = iface.getNativeVlan() == null ? 1 : iface.getNativeVlan();
+    }
+    newIface.setNativeVlan(nativeVlan);
+
     newIface.setSwitchportMode(iface.getSwitchportMode());
     SwitchportEncapsulationType encapsulation = iface.getSwitchportTrunkEncapsulation();
     if (encapsulation == null) { // no encapsulation set, so use default..

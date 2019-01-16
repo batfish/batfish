@@ -1054,7 +1054,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
           }
           // Add the native VLAN as well.
           vlanNumber = iface.getNativeVlan();
-          vlans.including(vlanNumber);
+          if (vlanNumber != null) {
+            vlans.including(vlanNumber);
+          }
         } else if (iface.getSwitchportMode() == SwitchportMode.ACCESS) { // access mode ACCESS
           vlanNumber = iface.getAccessVlan();
           if (vlanNumber != null) {
