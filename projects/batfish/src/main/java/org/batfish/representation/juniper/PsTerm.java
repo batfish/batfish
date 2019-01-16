@@ -9,19 +9,17 @@ public final class PsTerm implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private final Set<PsFrom> _froms;
-
+  private final PsFroms _froms;
   private final String _name;
-
   private final Set<PsThen> _thens;
 
   public PsTerm(String name) {
-    _froms = new LinkedHashSet<>();
+    _froms = new PsFroms();
     _name = name;
     _thens = new LinkedHashSet<>();
   }
 
-  public Set<PsFrom> getFroms() {
+  public PsFroms getFroms() {
     return _froms;
   }
 
@@ -31,5 +29,9 @@ public final class PsTerm implements Serializable {
 
   public Set<PsThen> getThens() {
     return _thens;
+  }
+
+  public boolean hasAtLeastOneFrom() {
+    return _froms.hasAtLeastOneFrom();
   }
 }
