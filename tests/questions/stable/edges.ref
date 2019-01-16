@@ -17,6 +17,7 @@
         "allowedValues" : [
           "bgp",
           "eigrp",
+          "ipsec",
           "isis",
           "layer1",
           "layer2",
@@ -36,6 +37,9 @@
           },
           {
             "name" : "eigrp"
+          },
+          {
+            "name" : "ipsec"
           },
           {
             "name" : "isis"
