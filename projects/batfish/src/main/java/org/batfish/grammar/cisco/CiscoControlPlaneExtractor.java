@@ -6654,8 +6654,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     defineStructure(NAT_POOL, name, ctx);
   }
 
+  /**
+   * Check that the pool IPs are contained in the subnet, and warn if not. Then create the pool,
+   * while excluding the network/broadcast IPs. This means that if specified first pool IP is
+   * numerically less than the first host IP in the subnet, use the first host IP instead.
+   * Similarly, if the specified last pool IP is greater than the last host IP in the subnet, use
+   * the last host IP instead.
+   */
   private void createNatPool(String name, Ip first, Ip last, Prefix subnet, ParserRuleContext ctx) {
-    // Check that the pool IPs are contained in the subnet, then exclude network/broadcast IPs.
     if (!subnet.containsIp(first)) {
       _w.addWarning(
           ctx,
@@ -6673,10 +6679,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
     Ip firstHostIp = subnet.getFirstHostIp();
     Ip lastHostIp = subnet.getLastHostIp();
-    first = first.asLong() >= firstHostIp.asLong() ? first : firstHostIp;
-    last = last.asLong() <= lastHostIp.asLong() ? last : lastHostIp;
 
-    _configuration.getNatPools().put(name, new NatPool(first, last));
+    _configuration
+        .getNatPools()
+        .put(
+            name,
+            new NatPool(
+                first.asLong() < firstHostIp.asLong() ? firstHostIp : first,
+                last.asLong() > lastHostIp.asLong() ? lastHostIp : last));
   }
 
   @Override
