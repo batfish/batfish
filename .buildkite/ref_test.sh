@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
-set -x
+set -euxo pipefail
 
 ALLINONE_JAR="workspace/allinone.jar"
 MAIN_CLASS="org.batfish.allinone.Main"
