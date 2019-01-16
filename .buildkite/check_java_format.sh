@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
 GJF_VERSION=1.6
 JAR_NAME="google-java-format-${GJF_VERSION}-all-deps.jar"
