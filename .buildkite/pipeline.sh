@@ -8,12 +8,15 @@ DOCKER_IMAGE="batfish/ci-base:latest"
 cat <<EOF
 steps:
   - wait
+EOF
+
+cat <<EOF
+steps:
   - label: "Check Java formatting"
     command: ".buildkite/check_java_format.sh"
     plugins:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
-          debug: true
   - label: "Check Python templates"
     command:
       - "python3 -m virtualenv .venv"
@@ -34,4 +37,39 @@ steps:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
   - wait
+EOF
+
+
+cat <<EOF
+steps:
+  - label: "Maven tests"
+    command: "mvn -f projects/pom.xml verify -DskipTests=false"
+    plugins:
+      - docker#${DOCKER_VERSION}:
+          image: ${DOCKER_IMAGE}
+  - label: "Maven checkstyle"
+    command: "mvn -f projects/pom.xml verify -Dcheckstyle.skip=false"
+    plugins:
+      - docker#${DOCKER_VERSION}:
+          image: ${DOCKER_IMAGE}
+  - label: "Maven dependency analysis"
+    command: "mvn -f projects/pom.xml verify -Dmdep.analyze.skip=false"
+    plugins:
+      - docker#${DOCKER_VERSION}:
+          image: ${DOCKER_IMAGE}
+  - label: "Maven findbugs"
+    command: "mvn -f projects/pom.xml verify -Dfindbugs.skip=false"
+    plugins:
+      - docker#${DOCKER_VERSION}:
+          image: ${DOCKER_IMAGE}
+  - label: "Maven javadoc"
+    command: "mvn -f projects/pom.xml verify -Dmaven.javadoc.skip=false"
+    plugins:
+      - docker#${DOCKER_VERSION}:
+          image: ${DOCKER_IMAGE}
+  - label: "Maven pmd"
+    command: "mvn -f projects/pom.xml verify -Dpmd.skip=false"
+    plugins:
+      - docker#${DOCKER_VERSION}:
+          image: ${DOCKER_IMAGE}
 EOF
