@@ -14,7 +14,7 @@ steps:
       - whoami
       - ".buildkite/check_java_format.sh"
     plugins:
-      - docker#v2.1.0:
+      - docker#v2.2.0:
           image: "batfish/ci-base:latest"
   - label: "Check Python templates"
     command:
@@ -23,7 +23,7 @@ steps:
       - "python3 -m pip install pytest"
       - "cd tests && pytest"
     plugins:
-      - docker#v2.1.0:
+      - docker#v2.2.0:
           image: "batfish/ci-base:latest"
   - label: "Build"
     command:
@@ -33,7 +33,7 @@ steps:
     artifact_paths:
       - workspace/allinone.jar
     plugins:
-      - docker#v2.1.0:
+      - docker#v2.2.0:
           image: "batfish/ci-base:latest"
   - wait
 EOF
