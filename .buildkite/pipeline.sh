@@ -4,7 +4,10 @@ set -e
 cat <<EOF
 steps:
   - label: "Check Java formatting"
-    command: ".buildkite/check_java_format.sh"
+    command:
+      - ls -latr
+      - whoami
+      - ".buildkite/check_java_format.sh"
     plugins:
       - docker#v2.1.0:
           image: "batfish/ci-base:latest"
