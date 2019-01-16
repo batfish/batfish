@@ -6,17 +6,22 @@ import static org.batfish.question.edges.EdgesAnswerer.COL_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_IP;
 import static org.batfish.question.edges.EdgesAnswerer.COL_IPS;
 import static org.batfish.question.edges.EdgesAnswerer.COL_NODE;
+import static org.batfish.question.edges.EdgesAnswerer.COL_PHYSICAL_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_AS_NUMBER;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_IP;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_IPS;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_NODE;
+import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_PHYSICAL_INTERFACE;
+import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_TUNNEL_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_VLAN;
+import static org.batfish.question.edges.EdgesAnswerer.COL_TUNNEL_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_VLAN;
 import static org.batfish.question.edges.EdgesAnswerer.eigrpEdgeToRow;
 import static org.batfish.question.edges.EdgesAnswerer.getBgpEdgeRow;
 import static org.batfish.question.edges.EdgesAnswerer.getBgpEdges;
 import static org.batfish.question.edges.EdgesAnswerer.getEigrpEdges;
+import static org.batfish.question.edges.EdgesAnswerer.getIpsecEdges;
 import static org.batfish.question.edges.EdgesAnswerer.getIsisEdges;
 import static org.batfish.question.edges.EdgesAnswerer.getLayer1Edges;
 import static org.batfish.question.edges.EdgesAnswerer.getLayer2Edges;
@@ -65,6 +70,10 @@ import org.batfish.datamodel.EdgeType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpsecPeerConfigId;
+import org.batfish.datamodel.IpsecPhase2Proposal;
+import org.batfish.datamodel.IpsecSession;
+import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipNeighbor;
@@ -125,6 +134,73 @@ public class EdgesAnswererTest {
 
     // Sending an  edge from host1 to host2 in layer 3
     _topology = new Topology(ImmutableSortedSet.of(Edge.of("host1", "int1", "host2", "int2")));
+  }
+
+  @Test
+  public void testGetIpsecEdges() {
+    MutableValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+
+    IpsecPeerConfigId peerId1 = new IpsecPeerConfigId("peer1", "host1");
+    IpsecPeerConfigId peerId2 = new IpsecPeerConfigId("peer2", "host1");
+    IpsecPeerConfigId peerId3 = new IpsecPeerConfigId("peer3", "host2");
+    IpsecPeerConfigId peerId4 = new IpsecPeerConfigId("peer4", "host2");
+
+    ipsecTopology.putEdgeValue(
+        peerId1,
+        peerId3,
+        IpsecSession.builder().setNegotiatedIpsecP2Proposal(new IpsecPhase2Proposal()).build());
+    // non-established edge
+    ipsecTopology.putEdgeValue(peerId2, peerId4, IpsecSession.builder().build());
+
+    IpsecStaticPeerConfig peer1 =
+        IpsecStaticPeerConfig.builder()
+            .setPhysicalInterface("int11")
+            .setTunnelInterface("tunnel11")
+            .build();
+    IpsecStaticPeerConfig peer2 =
+        IpsecStaticPeerConfig.builder()
+            .setPhysicalInterface("int12")
+            .setTunnelInterface("tunnel12")
+            .build();
+    IpsecStaticPeerConfig peer3 =
+        IpsecStaticPeerConfig.builder()
+            .setPhysicalInterface("int21")
+            .setTunnelInterface("tunnel21")
+            .build();
+    IpsecStaticPeerConfig peer4 =
+        IpsecStaticPeerConfig.builder()
+            .setPhysicalInterface("int22")
+            .setTunnelInterface("tunnel22")
+            .build();
+
+    _host1.setIpsecPeerConfigs(ImmutableSortedMap.of("peer1", peer1, "peer2", peer2));
+    _host2.setIpsecPeerConfigs(ImmutableSortedMap.of("peer3", peer3, "peer4", peer4));
+
+    Multiset<Row> rows = getIpsecEdges(ipsecTopology, _configurations);
+
+    // only one edge should be present
+    assertThat(
+        rows,
+        containsInAnyOrder(
+            ImmutableList.of(
+                allOf(
+                    hasColumn(
+                        COL_PHYSICAL_INTERFACE,
+                        equalTo(new NodeInterfacePair("host1", "int11")),
+                        Schema.INTERFACE),
+                    hasColumn(
+                        COL_TUNNEL_INTERFACE,
+                        equalTo(new NodeInterfacePair("host1", "tunnel11")),
+                        Schema.INTERFACE),
+                    hasColumn(
+                        COL_REMOTE_PHYSICAL_INTERFACE,
+                        equalTo(new NodeInterfacePair("host2", "int21")),
+                        Schema.INTERFACE),
+                    hasColumn(
+                        COL_REMOTE_TUNNEL_INTERFACE,
+                        equalTo(new NodeInterfacePair("host2", "tunnel21")),
+                        Schema.INTERFACE)))));
   }
 
   @Test
