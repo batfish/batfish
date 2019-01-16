@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 public enum EdgeType {
   BGP,
   EIGRP,
+  IPSEC,
   ISIS,
   LAYER1,
   LAYER2,
