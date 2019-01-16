@@ -13,7 +13,7 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 
-/** Represents a "from prefix-list-filter PREFIX_LIST_NAME longer" line in a {@link PsTerm} */
+/** Represents a "from prefix-list-filter PREFIX_LIST_NAME orlonger" line in a {@link PsTerm} */
 public final class PsFromPrefixListFilterOrLonger extends PsFrom {
 
   private static final long serialVersionUID = 1L;
