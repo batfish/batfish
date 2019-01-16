@@ -25,3 +25,7 @@ interface Ethernet2
 interface Ethernet3
   ip address 7.7.7.7/32
   ip nat source dynamic access-list acl1 pool pool3
+!
+interface Ethernet4
+  ip address 8.8.8.8/32
+  ip nat source dynamic access-list acl1 overload

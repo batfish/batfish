@@ -5903,20 +5903,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       int poolLine = ctx.pool.getStart().getLine();
       _configuration.referenceStructure(NAT_POOL, pool, IP_NAT_SOURCE_POOL, poolLine);
     }
+    boolean overload = !ctx.OVERLOAD().isEmpty();
 
-    if (acl == null || pool == null) {
+    if (acl == null) {
+      // incomplete definition. ignore
+      _w.addWarning(
+          ctx, getFullText(ctx), _parser, "Arista dynamic source nat missing required ACL.");
+      return;
+    }
+    if (pool == null && !overload) {
       // incomplete definition. ignore
       _w.addWarning(
           ctx,
           getFullText(ctx),
           _parser,
-          String.format(
-              "Ignored incomplete definition of Arista dynamic source nat. acl=%s, pool=%s",
-              acl, pool));
+          "Arista dynamic source nat must have a pool or be overload.");
       return;
     }
 
-    AristaDynamicSourceNat nat = new AristaDynamicSourceNat(acl, pool);
+    AristaDynamicSourceNat nat = new AristaDynamicSourceNat(acl, pool, overload);
 
     for (Interface iface : _currentInterfaces) {
       if (iface.getAristaNats() == null) {

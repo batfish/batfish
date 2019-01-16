@@ -2280,9 +2280,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private void generateAristaDynamicSourceNats(
       org.batfish.datamodel.Interface newIface,
       List<AristaDynamicSourceNat> aristaDynamicSourceNats) {
+    Ip interfaceIp = newIface.getAddress().getIp();
     Transformation next = null;
     for (AristaDynamicSourceNat nat : Lists.reverse(aristaDynamicSourceNats)) {
-      next = nat.toOutgoingTransformation(_natPools, next).orElse(next);
+      next = nat.toTransformation(interfaceIp, _natPools, next).orElse(next);
     }
     newIface.setOutgoingTransformation(next);
   }
