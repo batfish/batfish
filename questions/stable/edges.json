@@ -18,6 +18,9 @@
                         "name": "eigrp"
                     },
                     {
+                        "name": "ipsec"
+                    },
+                    {
                         "name": "isis"
                     },
                     {
