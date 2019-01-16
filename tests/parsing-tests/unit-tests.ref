@@ -62732,6 +62732,22 @@
       },
       "version" : "0.36.0",
       "warnings" : {
+        "arista_nat" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "Subnet of NAT pool pool2 does not contain last pool IP",
+              "Line" : 9,
+              "Parser_Context" : "[ip_nat_pool s_ip_nat stanza cisco_configuration]",
+              "Text" : "ip nat pool pool2 1.1.1.1 1.1.1.2 netmask 255.255.255.255"
+            },
+            {
+              "Comment" : "Subnet of NAT pool pool3 does not contain last pool IP",
+              "Line" : 10,
+              "Parser_Context" : "[ip_nat_pool s_ip_nat stanza cisco_configuration]",
+              "Text" : "ip nat pool pool3 1.1.1.1 1.1.1.2 prefix-length 32"
+            }
+          ]
+        },
         "aruba_misc" : {
           "Parse warnings" : [
             {
@@ -62940,6 +62956,12 @@
         },
         "cisco_ip_nat" : {
           "Parse warnings" : [
+            {
+              "Comment" : "Subnet of NAT pool abc does not contain last pool IP",
+              "Line" : 4,
+              "Parser_Context" : "[ip_nat_pool_range s_ip_nat stanza cisco_configuration]",
+              "Text" : "ip nat pool abc prefix-length 32  \n range 10.1.2.3 10.1.2.4"
+            },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 13,
