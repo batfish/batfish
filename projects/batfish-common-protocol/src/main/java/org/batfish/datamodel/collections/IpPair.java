@@ -14,7 +14,7 @@ public class IpPair extends Pair<Ip, Ip> {
     String trimmed = s.substring(1, s.length() - 1);
     String[] parts = trimmed.split(":");
     String part1Str = parts[0];
-    Ip part1 = new Ip(part1Str);
+    Ip part1 = Ip.parse(part1Str);
     return part1;
   }
 
@@ -22,7 +22,7 @@ public class IpPair extends Pair<Ip, Ip> {
     String trimmed = s.substring(1, s.length() - 1);
     String[] parts = trimmed.split(":");
     String part2Str = parts[1];
-    Ip part2 = new Ip(part2Str);
+    Ip part2 = Ip.parse(part2Str);
     return part2;
   }
 

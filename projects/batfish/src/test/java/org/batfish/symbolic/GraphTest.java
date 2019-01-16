@@ -59,21 +59,33 @@ public class GraphTest {
     Vrf v1 = vb.setOwner(c1).build();
     ib.setOwner(c1).setVrf(v1).setAddress(new InterfaceAddress("1.1.2.1/30"));
     ib.setOwner(c1).setVrf(v1).setAddress(new InterfaceAddress("1.1.3.1/30"));
-    BgpProcess bp1 = bpb.setVrf(v1).setRouterId(new Ip("1.1.1.1")).build();
-    bnb.setLocalIp(new Ip("1.1.2.1")).setPeerAddress(new Ip("1.1.2.2")).setBgpProcess(bp1).build();
-    bnb.setLocalIp(new Ip("1.1.3.1")).setPeerAddress(new Ip("1.1.3.3")).setBgpProcess(bp1).build();
+    BgpProcess bp1 = bpb.setVrf(v1).setRouterId(Ip.parse("1.1.1.1")).build();
+    bnb.setLocalIp(Ip.parse("1.1.2.1"))
+        .setPeerAddress(Ip.parse("1.1.2.2"))
+        .setBgpProcess(bp1)
+        .build();
+    bnb.setLocalIp(Ip.parse("1.1.3.1"))
+        .setPeerAddress(Ip.parse("1.1.3.3"))
+        .setBgpProcess(bp1)
+        .build();
 
     Configuration c2 = cb.setHostname("r2").build();
     Vrf v2 = vb.setOwner(c2).build();
     ib.setOwner(c2).setVrf(v2).setAddress(new InterfaceAddress("1.1.2.2/30"));
-    BgpProcess bp2 = bpb.setVrf(v2).setRouterId(new Ip("2.2.2.2")).build();
-    bnb.setLocalIp(new Ip("1.1.2.2")).setPeerAddress(new Ip("1.1.2.1")).setBgpProcess(bp2).build();
+    BgpProcess bp2 = bpb.setVrf(v2).setRouterId(Ip.parse("2.2.2.2")).build();
+    bnb.setLocalIp(Ip.parse("1.1.2.2"))
+        .setPeerAddress(Ip.parse("1.1.2.1"))
+        .setBgpProcess(bp2)
+        .build();
 
     Configuration c3 = cb.setHostname("r3").build();
     Vrf v3 = vb.setOwner(c3).build();
     ib.setOwner(c3).setVrf(v3).setAddress(new InterfaceAddress("1.1.3.3/30"));
-    BgpProcess bp3 = bpb.setVrf(v3).setRouterId(new Ip("3.3.3.3")).build();
-    bnb.setLocalIp(new Ip("1.1.3.3")).setPeerAddress(new Ip("1.1.3.1")).setBgpProcess(bp3).build();
+    BgpProcess bp3 = bpb.setVrf(v3).setRouterId(Ip.parse("3.3.3.3")).build();
+    bnb.setLocalIp(Ip.parse("1.1.3.3"))
+        .setPeerAddress(Ip.parse("1.1.3.1"))
+        .setBgpProcess(bp3)
+        .build();
 
     return ImmutableMap.of("r1", c1, "r2", c2, "r3", c3);
   }
@@ -89,7 +101,7 @@ public class GraphTest {
     assertThat(neighborMap, hasEntry(equalTo("r3"), hasKey("r1")));
 
     // Assert right configs have been put in the map (based on IPs)
-    assertThat(neighborMap.get("r1").get("r2").getLocalIp(), equalTo(new Ip("1.1.2.1")));
-    assertThat(neighborMap.get("r1").get("r3").getLocalIp(), equalTo(new Ip("1.1.3.1")));
+    assertThat(neighborMap.get("r1").get("r2").getLocalIp(), equalTo(Ip.parse("1.1.2.1")));
+    assertThat(neighborMap.get("r1").get("r3").getLocalIp(), equalTo(Ip.parse("1.1.3.1")));
   }
 }

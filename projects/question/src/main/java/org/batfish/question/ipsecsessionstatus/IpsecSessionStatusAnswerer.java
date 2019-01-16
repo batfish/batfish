@@ -1,11 +1,11 @@
 package org.batfish.question.ipsecsessionstatus;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStatus.IKE_PHASE1_FAILED;
-import static org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStatus.IKE_PHASE1_KEY_MISMATCH;
-import static org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStatus.IPSEC_PHASE2_FAILED;
-import static org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStatus.IPSEC_SESSION_ESTABLISHED;
-import static org.batfish.question.ipsecsessionstatus.IpsecSessionInfo.IpsecSessionStatus.MISSING_END_POINT;
+import static org.batfish.datamodel.questions.IpsecSessionStatus.IKE_PHASE1_FAILED;
+import static org.batfish.datamodel.questions.IpsecSessionStatus.IKE_PHASE1_KEY_MISMATCH;
+import static org.batfish.datamodel.questions.IpsecSessionStatus.IPSEC_PHASE2_FAILED;
+import static org.batfish.datamodel.questions.IpsecSessionStatus.IPSEC_SESSION_ESTABLISHED;
+import static org.batfish.datamodel.questions.IpsecSessionStatus.MISSING_END_POINT;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
@@ -98,7 +98,7 @@ class IpsecSessionStatusAnswerer extends Answerer {
       IpsecSessionInfo.Builder ipsecSessionInfoBuilder = IpsecSessionInfo.builder();
 
       ipsecSessionInfoBuilder.setInitiatorHostname(node.getHostName());
-      ipsecSessionInfoBuilder.setInitiatorInterface(ipsecPeerConfig.getPhysicalInterface());
+      ipsecSessionInfoBuilder.setInitiatorInterface(ipsecPeerConfig.getSourceInterface());
       ipsecSessionInfoBuilder.setInitiatorIp(ipsecPeerConfig.getLocalAddress());
       ipsecSessionInfoBuilder.setInitiatorTunnelInterface(ipsecPeerConfig.getTunnelInterface());
 
@@ -137,8 +137,7 @@ class IpsecSessionStatusAnswerer extends Answerer {
       IpsecSession ipsecSession) {
 
     ipsecSessioningInfoBuilder.setResponderHostname(ipsecPeerConfigIdNeighbor.getHostName());
-    ipsecSessioningInfoBuilder.setResponderInterface(
-        ipsecPeerConfigNeighbor.getPhysicalInterface());
+    ipsecSessioningInfoBuilder.setResponderInterface(ipsecPeerConfigNeighbor.getSourceInterface());
     ipsecSessioningInfoBuilder.setResponderIp(ipsecPeerConfigNeighbor.getLocalAddress());
     ipsecSessioningInfoBuilder.setResponderTunnelInterface(
         ipsecPeerConfigNeighbor.getTunnelInterface());

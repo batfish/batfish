@@ -76,7 +76,11 @@ is_null
 
 is_overload
 :
-  OVERLOAD iso_timeout
+  OVERLOAD
+  (
+    apply
+    | iso_timeout
+  )
 ;
 
 is_reference_bandwidth
@@ -124,6 +128,7 @@ isi_level
     | isil_hello_interval
     | isil_hold_time
     | isil_metric
+    | isil_passive
     | isil_priority
     | isil_te_metric
   )
@@ -193,6 +198,11 @@ isil_hold_time
 isil_metric
 :
   METRIC DEC
+;
+
+isil_passive
+:
+  PASSIVE
 ;
 
 isil_priority

@@ -10,7 +10,14 @@ import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
+import static org.batfish.datamodel.transformation.Noop.NOOP_SOURCE_NAT;
+import static org.batfish.datamodel.transformation.Transformation.always;
+import static org.batfish.datamodel.transformation.Transformation.when;
+import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.z3.expr.NodeInterfaceNeighborUnreachableMatchers.hasHostname;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -44,7 +51,6 @@ import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.DestinationNat;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
@@ -53,7 +59,6 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -61,6 +66,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
+import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.ReachabilityParameters;
@@ -366,8 +372,8 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Set<Ip> srcIps = flows.stream().map(Flow::getSrcIp).collect(Collectors.toSet());
     Set<Ip> dstIps = flows.stream().map(Flow::getDstIp).collect(Collectors.toSet());
 
-    assertThat(srcIps, contains(new Ip("1.0.0.0"), new Ip("1.0.0.1")));
-    assertThat(dstIps, contains(new Ip("2.0.0.0")));
+    assertThat(srcIps, contains(Ip.parse("1.0.0.0"), Ip.parse("1.0.0.1")));
+    assertThat(dstIps, contains(Ip.parse("2.0.0.0")));
 
     Set<FlowDisposition> flowDispositions =
         flowTraces
@@ -409,7 +415,8 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .setSourceLocationSpecifier(AllInterfacesLocationSpecifier.INSTANCE)
             .setActions(ImmutableSortedSet.of(FlowDisposition.LOOP, FlowDisposition.NO_ROUTE))
             .setFinalNodesSpecifier(AllNodesNodeSpecifier.INSTANCE)
-            .setHeaderSpace(HeaderSpace.builder().setDstIps(new Ip("2.0.0.0").toIpSpace()).build())
+            .setHeaderSpace(
+                HeaderSpace.builder().setDstIps(Ip.parse("2.0.0.0").toIpSpace()).build())
             .build();
 
     AnswerElement answer = batfish.bddSingleReachability(reachabilityParameters);
@@ -422,8 +429,8 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Set<Ip> srcIps = flows.stream().map(Flow::getSrcIp).collect(Collectors.toSet());
     Set<Ip> dstIps = flows.stream().map(Flow::getDstIp).collect(Collectors.toSet());
 
-    assertThat(srcIps, contains(new Ip("1.0.0.0"), new Ip("1.0.0.1"), new Ip("1.2.3.4")));
-    assertThat(dstIps, contains(new Ip("2.0.0.0")));
+    assertThat(srcIps, contains(Ip.parse("1.0.0.0"), Ip.parse("1.0.0.1"), Ip.parse("1.2.3.4")));
+    assertThat(dstIps, contains(Ip.parse("2.0.0.0")));
 
     Set<FlowDisposition> flowDispositions =
         flowTraces
@@ -439,7 +446,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
   @Test
   public void testInactiveInterface() throws IOException {
-    Ip ip = new Ip("1.2.3.4");
+    Ip ip = Ip.parse("1.2.3.4");
     BDD ipBDD = new IpSpaceToBDD(PKT.getDstIp()).toBDD(ip);
 
     NetworkFactory nf = new NetworkFactory();
@@ -502,8 +509,8 @@ public final class BDDReachabilityAnalysisFactoryTest {
     IpSpaceToBDD srcToBDD = new IpSpaceToBDD(PKT.getSrcIp());
     BDD dst123 = dstToBDD.toBDD(Prefix.parse("1.2.3.0/24"));
     BDD dst1234 = dstToBDD.toBDD(Prefix.parse("1.2.3.4/32"));
-    BDD src1111 = srcToBDD.toBDD(new Ip("1.1.1.1"));
-    BDD src2222 = srcToBDD.toBDD(new Ip("2.2.2.2"));
+    BDD src1111 = srcToBDD.toBDD(Ip.parse("1.1.1.1"));
+    BDD src2222 = srcToBDD.toBDD(Ip.parse("2.2.2.2"));
     Function<BDD, BDD> edge =
         BDDReachabilityAnalysisFactory.natBackwardEdge(
             ImmutableList.of(new BDDNat(dst1234, src1111), new BDDNat(dst123, src2222)), var);
@@ -512,7 +519,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertThat(edge.apply(src1111), equalTo(dst1234.or(noMatch.and(src1111))));
     assertThat(edge.apply(src2222), equalTo(dst123.and(dst1234.not()).or(noMatch.and(src2222))));
 
-    BDD src3333 = srcToBDD.toBDD(new Ip("3.3.3.3"));
+    BDD src3333 = srcToBDD.toBDD(Ip.parse("3.3.3.3"));
     assertThat(edge.apply(src3333), equalTo(noMatch.and(src3333)));
   }
 
@@ -525,8 +532,8 @@ public final class BDDReachabilityAnalysisFactoryTest {
     BDD dst123 = dstToBDD.toBDD(Prefix.parse("1.2.3.0/24"));
     BDD dst1234 = dstToBDD.toBDD(Prefix.parse("1.2.3.4/32"));
     BDD dst1235 = dstToBDD.toBDD(Prefix.parse("1.2.3.5/32"));
-    BDD src1111 = srcToBDD.toBDD(new Ip("1.1.1.1"));
-    BDD src2222 = srcToBDD.toBDD(new Ip("2.2.2.2"));
+    BDD src1111 = srcToBDD.toBDD(Ip.parse("1.1.1.1"));
+    BDD src2222 = srcToBDD.toBDD(Ip.parse("2.2.2.2"));
     Function<BDD, BDD> edge =
         BDDReachabilityAnalysisFactory.natBackwardEdge(
             ImmutableList.of(
@@ -544,7 +551,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
         edge.apply(src2222),
         equalTo(dst123.and(dst1234.not()).and(dst1235.not()).or(src2222.and(noRewrite))));
 
-    BDD src3333 = srcToBDD.toBDD(new Ip("3.3.3.3"));
+    BDD src3333 = srcToBDD.toBDD(Ip.parse("3.3.3.3"));
     assertThat(edge.apply(src3333), equalTo(noRewrite.and(src3333)));
   }
 
@@ -554,7 +561,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Configuration config =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().setOwner(config).build();
-    Ip poolIp = new Ip("5.5.5.5");
+    Ip poolIp = Ip.parse("5.5.5.5");
     HeaderSpace ingressAclHeaderSpace =
         HeaderSpace.builder().setSrcIps(Prefix.parse("2.0.0.0/8").toIpSpace()).build();
     HeaderSpace natMatchHeaderSpace =
@@ -570,19 +577,10 @@ public final class BDDReachabilityAnalysisFactoryTest {
                     .setOwner(config)
                     .setLines(ImmutableList.of(acceptingHeaderSpace(ingressAclHeaderSpace)))
                     .build())
-            .setDestinationNats(
-                ImmutableList.of(
-                    // if 100
-                    DestinationNat.builder()
-                        .setAcl(
-                            nf.aclBuilder()
-                                .setOwner(config)
-                                .setLines(
-                                    ImmutableList.of(acceptingHeaderSpace(natMatchHeaderSpace)))
-                                .build())
-                        .setPoolIpFirst(poolIp)
-                        .setPoolIpLast(poolIp)
-                        .build()))
+            .setIncomingTransformation(
+                when(match(natMatchHeaderSpace))
+                    .apply(TransformationStep.assignDestinationIp(poolIp, poolIp))
+                    .build())
             .build();
 
     SortedMap<String, Configuration> configurations =
@@ -610,7 +608,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
     BDD ingressAclBdd = toBDD.toBDD(ingressAclHeaderSpace);
     BDD natMatchBdd = toBDD.toBDD(natMatchHeaderSpace);
-    BDD origDstIpBdd = toBDD.getDstIpSpaceToBdd().toBDD(new Ip("6.6.6.6"));
+    BDD origDstIpBdd = toBDD.getDstIpSpaceToBdd().toBDD(Ip.parse("6.6.6.6"));
     BDD poolIpBdd = toBDD.getDstIpSpaceToBdd().toBDD(poolIp);
 
     assertThat(
@@ -628,7 +626,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Configuration config =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().setOwner(config).build();
-    Ip poolIp = new Ip("5.5.5.5");
+    Ip poolIp = Ip.parse("5.5.5.5");
     HeaderSpace ingressAclHeaderSpace =
         HeaderSpace.builder().setSrcIps(Prefix.parse("2.0.0.0/8").toIpSpace()).build();
     HeaderSpace nat1MatchHeaderSpace =
@@ -646,28 +644,14 @@ public final class BDDReachabilityAnalysisFactoryTest {
                     .setOwner(config)
                     .setLines(ImmutableList.of(acceptingHeaderSpace(ingressAclHeaderSpace)))
                     .build())
-            .setDestinationNats(
-                ImmutableList.of(
-                    // if srcPort = 105, don't NAT
-                    DestinationNat.builder()
-                        .setAcl(
-                            nf.aclBuilder()
-                                .setOwner(config)
-                                .setLines(
-                                    ImmutableList.of(acceptingHeaderSpace(nat1MatchHeaderSpace)))
-                                .build())
-                        .build(),
-                    // if srcPort = 100-110, NAT
-                    DestinationNat.builder()
-                        .setAcl(
-                            nf.aclBuilder()
-                                .setOwner(config)
-                                .setLines(
-                                    ImmutableList.of(acceptingHeaderSpace(nat2MatchHeaderSpace)))
-                                .build())
-                        .setPoolIpFirst(poolIp)
-                        .setPoolIpLast(poolIp)
-                        .build()))
+            .setIncomingTransformation(
+                when(match(nat1MatchHeaderSpace))
+                    .apply(NOOP_DEST_NAT)
+                    .setOrElse(
+                        when(match(nat2MatchHeaderSpace))
+                            .apply(assignDestinationIp(poolIp, poolIp))
+                            .build())
+                    .build())
             .build();
 
     SortedMap<String, Configuration> configurations =
@@ -696,7 +680,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     BDD ingressAclBdd = toBDD.toBDD(ingressAclHeaderSpace);
     BDD nat1MatchBdd = toBDD.toBDD(nat1MatchHeaderSpace);
     BDD nat2MatchBdd = toBDD.toBDD(nat2MatchHeaderSpace);
-    BDD origDstIpBdd = toBDD.getDstIpSpaceToBdd().toBDD(new Ip("6.6.6.6"));
+    BDD origDstIpBdd = toBDD.getDstIpSpaceToBdd().toBDD(Ip.parse("6.6.6.6"));
     BDD poolIpBdd = toBDD.getDstIpSpaceToBdd().toBDD(poolIp);
 
     assertThat(
@@ -711,7 +695,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Configuration config =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().setOwner(config).build();
-    Ip poolIp = new Ip("5.5.5.5");
+    Ip poolIp = Ip.parse("5.5.5.5");
     HeaderSpace preNatAclHeaderSpace =
         HeaderSpace.builder().setDstIps(Prefix.parse("2.0.0.0/24").toIpSpace()).build();
     HeaderSpace nat1MatchHeaderSpace =
@@ -724,33 +708,19 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .setVrf(vrf)
             .setActive(true)
             .setAddress(new InterfaceAddress("1.0.0.1/24"))
-            .setPreSourceNatOutgoingFilter(
+            .setPreTransformationOutgoingFilter(
                 nf.aclBuilder()
                     .setOwner(config)
                     .setLines(ImmutableList.of(acceptingHeaderSpace(preNatAclHeaderSpace)))
                     .build())
-            .setSourceNats(
-                ImmutableList.of(
-                    // if srcPort = 105, don't NAT
-                    SourceNat.builder()
-                        .setAcl(
-                            nf.aclBuilder()
-                                .setOwner(config)
-                                .setLines(
-                                    ImmutableList.of(acceptingHeaderSpace(nat1MatchHeaderSpace)))
-                                .build())
-                        .build(),
-                    // if srcPort = 100-110, NAT
-                    SourceNat.builder()
-                        .setAcl(
-                            nf.aclBuilder()
-                                .setOwner(config)
-                                .setLines(
-                                    ImmutableList.of(acceptingHeaderSpace(nat2MatchHeaderSpace)))
-                                .build())
-                        .setPoolIpFirst(poolIp)
-                        .setPoolIpLast(poolIp)
-                        .build()))
+            .setOutgoingTransformation(
+                when(match(nat1MatchHeaderSpace))
+                    .apply(NOOP_SOURCE_NAT)
+                    .setOrElse(
+                        when(match(nat2MatchHeaderSpace))
+                            .apply(assignSourceIp(poolIp, poolIp))
+                            .build())
+                    .build())
             .build();
 
     SortedMap<String, Configuration> configurations =
@@ -779,7 +749,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     BDD preNatAclBdd = toBDD.toBDD(preNatAclHeaderSpace);
     BDD nat1MatchBdd = toBDD.toBDD(nat1MatchHeaderSpace);
     BDD nat2MatchBdd = toBDD.toBDD(nat2MatchHeaderSpace);
-    BDD origSrcIpBdd = toBDD.getSrcIpSpaceToBdd().toBDD(new Ip("6.6.6.6"));
+    BDD origSrcIpBdd = toBDD.getSrcIpSpaceToBdd().toBDD(Ip.parse("6.6.6.6"));
     BDD poolIpBdd = toBDD.getSrcIpSpaceToBdd().toBDD(poolIp);
     BDD routeBdd = toBDD.getDstIpSpaceToBdd().toBDD(Prefix.parse("1.0.0.0/24"));
 
@@ -802,7 +772,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Configuration config =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().setOwner(config).build();
-    Ip poolIp = new Ip("5.5.5.5");
+    Ip poolIp = Ip.parse("5.5.5.5");
     HeaderSpace postNatOutAclHeaderSpace =
         HeaderSpace.builder().setDstPorts(ImmutableList.of(new SubRange(80, 80))).build();
     HeaderSpace natMatchHeaderSpace =
@@ -815,7 +785,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .setVrf(vrf)
             .setActive(true)
             .setAddress(new InterfaceAddress("1.0.0.0/31"))
-            .setPreSourceNatOutgoingFilter(
+            .setPreTransformationOutgoingFilter(
                 nf.aclBuilder()
                     .setOwner(config)
                     .setLines(ImmutableList.of(acceptingHeaderSpace(preNatOutAclHeaderSpace)))
@@ -825,18 +795,8 @@ public final class BDDReachabilityAnalysisFactoryTest {
                     .setOwner(config)
                     .setLines(ImmutableList.of(acceptingHeaderSpace(postNatOutAclHeaderSpace)))
                     .build())
-            .setSourceNats(
-                ImmutableList.of(
-                    SourceNat.builder()
-                        .setAcl(
-                            nf.aclBuilder()
-                                .setOwner(config)
-                                .setLines(
-                                    ImmutableList.of(acceptingHeaderSpace(natMatchHeaderSpace)))
-                                .build())
-                        .setPoolIpFirst(poolIp)
-                        .setPoolIpLast(poolIp)
-                        .build()))
+            .setOutgoingTransformation(
+                when(match(natMatchHeaderSpace)).apply(assignSourceIp(poolIp, poolIp)).build())
             .build();
     String ifaceName = iface.getName();
     Prefix staticRoutePrefix = Prefix.parse("3.3.3.3/32");
@@ -879,8 +839,8 @@ public final class BDDReachabilityAnalysisFactoryTest {
     // DeliveredToSubnet
     Edge edge = preOutVrfOutEdges.get(new NodeInterfaceDeliveredToSubnet(hostname, ifaceName));
 
-    BDD origSrcIpBdd = srcToBdd.toBDD(new Ip("6.6.6.6"));
-    BDD subnetIp = dstToBdd.toBDD(new Ip("1.0.0.1"));
+    BDD origSrcIpBdd = srcToBdd.toBDD(Ip.parse("6.6.6.6"));
+    BDD subnetIp = dstToBdd.toBDD(Ip.parse("1.0.0.1"));
 
     assertThat(
         edge.traverseForward(origSrcIpBdd),
@@ -902,8 +862,8 @@ public final class BDDReachabilityAnalysisFactoryTest {
     // NeighborUnreachable
     edge = preOutVrfOutEdges.get(new NodeInterfaceNeighborUnreachable(hostname, ifaceName));
 
-    origSrcIpBdd = srcToBdd.toBDD(new Ip("6.6.6.6"));
-    BDD ifaceIp = dstToBdd.toBDD(new Ip("1.0.0.0"));
+    origSrcIpBdd = srcToBdd.toBDD(Ip.parse("6.6.6.6"));
+    BDD ifaceIp = dstToBdd.toBDD(Ip.parse("1.0.0.0"));
 
     assertThat(
         edge.traverseForward(origSrcIpBdd),
@@ -936,7 +896,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration config = cb.build();
     Vrf vrf = nf.vrfBuilder().setOwner(config).build();
-    Ip poolIp = new Ip("5.5.5.5");
+    Ip poolIp = Ip.parse("5.5.5.5");
     HeaderSpace postNatOutAclHeaderSpace =
         HeaderSpace.builder().setDstPorts(ImmutableList.of(new SubRange(80, 80))).build();
     HeaderSpace natMatchHeaderSpace =
@@ -949,7 +909,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .setVrf(vrf)
             .setActive(true)
             .setAddress(new InterfaceAddress("1.0.0.0/31"))
-            .setPreSourceNatOutgoingFilter(
+            .setPreTransformationOutgoingFilter(
                 nf.aclBuilder()
                     .setOwner(config)
                     .setLines(ImmutableList.of(acceptingHeaderSpace(preNatOutAclHeaderSpace)))
@@ -959,18 +919,8 @@ public final class BDDReachabilityAnalysisFactoryTest {
                     .setOwner(config)
                     .setLines(ImmutableList.of(acceptingHeaderSpace(postNatOutAclHeaderSpace)))
                     .build())
-            .setSourceNats(
-                ImmutableList.of(
-                    SourceNat.builder()
-                        .setAcl(
-                            nf.aclBuilder()
-                                .setOwner(config)
-                                .setLines(
-                                    ImmutableList.of(acceptingHeaderSpace(natMatchHeaderSpace)))
-                                .build())
-                        .setPoolIpFirst(poolIp)
-                        .setPoolIpLast(poolIp)
-                        .build()))
+            .setOutgoingTransformation(
+                when(match(natMatchHeaderSpace)).apply(assignSourceIp(poolIp, poolIp)).build())
             .build();
     String ifaceName = iface.getName();
     Prefix staticRoutePrefix = Prefix.parse("3.3.3.3/32");
@@ -1016,7 +966,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     BDD preNatOutAclBdd = toBDD.toBDD(preNatOutAclHeaderSpace);
     BDD natMatchBdd = toBDD.toBDD(natMatchHeaderSpace);
     BDD poolIpBdd = srcToBdd.toBDD(poolIp);
-    BDD origSrcIpBdd = srcToBdd.toBDD(new Ip("6.6.6.6"));
+    BDD origSrcIpBdd = srcToBdd.toBDD(Ip.parse("6.6.6.6"));
 
     Map<StateExpr, Edge> preOutEdgeOutEdges =
         analysis.getEdges().get(new PreOutEdge(hostname, ifaceName, peername, peerIfaceName));
@@ -1058,7 +1008,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.builder()
-                .setNextHopIp(new Ip("1.0.0.2"))
+                .setNextHopIp(Ip.parse("1.0.0.2"))
                 .setNetwork(Prefix.parse("8.8.8.0/24"))
                 .setAdministrativeCost(1)
                 .build()));
@@ -1128,7 +1078,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
             StaticRoute.builder()
-                .setNextHopIp(new Ip("2.0.0.2"))
+                .setNextHopIp(Ip.parse("2.0.0.2"))
                 .setNetwork(Prefix.parse("8.8.8.0/24"))
                 .setNextHopInterface(i1.getName())
                 .setAdministrativeCost(1)
@@ -1191,25 +1141,17 @@ public final class BDDReachabilityAnalysisFactoryTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration config = cb.build();
     Vrf vrf = nf.vrfBuilder().setOwner(config).build();
-    Ip srcNatPoolIp = new Ip("5.5.5.5");
-    Ip dstNatPoolIp = new Ip("6.6.6.6");
+    Ip srcNatPoolIp = Ip.parse("5.5.5.5");
+    Ip dstNatPoolIp = Ip.parse("6.6.6.6");
     nf.interfaceBuilder()
         .setOwner(config)
         .setVrf(vrf)
         .setActive(true)
         .setAddress(new InterfaceAddress("1.0.0.0/31"))
-        .setSourceNats(
-            ImmutableList.of(
-                SourceNat.builder()
-                    .setPoolIpFirst(srcNatPoolIp)
-                    .setPoolIpLast(srcNatPoolIp)
-                    .build()))
-        .setDestinationNats(
-            ImmutableList.of(
-                DestinationNat.builder()
-                    .setPoolIpFirst(dstNatPoolIp)
-                    .setPoolIpLast(dstNatPoolIp)
-                    .build()))
+        .setOutgoingTransformation(
+            always().apply(assignSourceIp(srcNatPoolIp, srcNatPoolIp)).build())
+        .setIncomingTransformation(
+            always().apply(assignDestinationIp(dstNatPoolIp, dstNatPoolIp)).build())
         .build();
 
     String hostname = config.getHostname();

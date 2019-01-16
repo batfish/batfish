@@ -106,6 +106,7 @@ junit_tests(
         "//projects/lib/z3",
         "@antlr4_runtime//:compile",
         "@guava//:compile",
+        "@guava_testlib//:compile",
         "@hamcrest//:compile",
         "@jackson_databind//:compile",
         "@jettison//:compile",

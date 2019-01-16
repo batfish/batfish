@@ -17,6 +17,8 @@ public class IsisSettings implements Serializable {
 
   private boolean _noIpv4Routing;
 
+  private boolean _overload;
+
   private Integer _overloadTimeout;
 
   private Double _referenceBandwidth;
@@ -47,6 +49,10 @@ public class IsisSettings implements Serializable {
     return _noIpv4Routing;
   }
 
+  public boolean getOverload() {
+    return _overload;
+  }
+
   public Integer getOverloadTimeout() {
     return _overloadTimeout;
   }
@@ -65,6 +71,10 @@ public class IsisSettings implements Serializable {
 
   public void setNoIpv4Routing(boolean noIpv4Routing) {
     _noIpv4Routing = noIpv4Routing;
+  }
+
+  public void setOverload(boolean overload) {
+    _overload = overload;
   }
 
   public void setOverloadTimeout(int overloadTimeout) {

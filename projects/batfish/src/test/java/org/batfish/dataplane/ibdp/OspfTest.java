@@ -16,7 +16,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -259,7 +259,7 @@ public class OspfTest {
             new IncrementalDataPlaneSettings(),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             (s, i) -> new AtomicInteger());
-    Topology topology = CommonUtil.synthesizeTopology(configurations);
+    Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     IncrementalDataPlane dp =
         (IncrementalDataPlane)
             engine.computeDataPlane(configurations, topology, Collections.emptySet())._dataPlane;
@@ -449,7 +449,7 @@ public class OspfTest {
             new IncrementalDataPlaneSettings(),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             (s, i) -> new AtomicInteger());
-    Topology topology = CommonUtil.synthesizeTopology(configurations);
+    Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     IncrementalDataPlane dp =
         (IncrementalDataPlane)
             engine.computeDataPlane(configurations, topology, Collections.emptySet())._dataPlane;
@@ -875,9 +875,9 @@ public class OspfTest {
     IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);
-    assertRoute(routes, OSPF_E2, "a1", Prefix.ZERO, 1, new Ip("10.1.1.4"));
-    assertRoute(routes, OSPF_E2, "a2", Prefix.ZERO, 1, new Ip("10.1.1.4"));
-    assertRoute(routes, OSPF, "fwl", Prefix.parse("11.1.1.0/31"), 2, new Ip("10.1.1.1"));
-    assertRoute(routes, OSPF, "fwl", Prefix.parse("11.1.1.0/31"), 2, new Ip("10.1.1.2"));
+    assertRoute(routes, OSPF_E2, "a1", Prefix.ZERO, 1, Ip.parse("10.1.1.4"));
+    assertRoute(routes, OSPF_E2, "a2", Prefix.ZERO, 1, Ip.parse("10.1.1.4"));
+    assertRoute(routes, OSPF, "fwl", Prefix.parse("11.1.1.0/31"), 2, Ip.parse("10.1.1.1"));
+    assertRoute(routes, OSPF, "fwl", Prefix.parse("11.1.1.0/31"), 2, Ip.parse("10.1.1.2"));
   }
 }

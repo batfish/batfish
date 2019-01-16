@@ -7,17 +7,14 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpsecDynamicPeerConfig;
-import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasDestinationAddress;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasIkePhase1Policies;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasIkePhase1Policy;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasIpsecPolicy;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasLocalAddress;
-import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasPeerConfig;
-import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasPeerConfigs;
-import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasPhysicalInterface;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasPolicyAccessList;
+import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasSourceInterface;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.HasTunnelInterface;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.IsIpsecDynamicPeerConfig;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchersImpl.IsIpsecStaticPeerConfig;
@@ -34,11 +31,11 @@ public final class IpsecPeerConfigMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the provided {@code physicalInterface} matches the IPSec
-   * peer config's {@code physicalInterface}
+   * Provides a matcher that matches if the provided {@code sourceInterface} matches the IPSec peer
+   * config's {@code sourceInterface}
    */
-  public static @Nonnull HasPhysicalInterface hasPhysicalInterface(String physicalInterface) {
-    return new HasPhysicalInterface(equalTo(physicalInterface));
+  public static @Nonnull HasSourceInterface hasSourceInterface(String sourceInterface) {
+    return new HasSourceInterface(equalTo(sourceInterface));
   }
 
   /**
@@ -77,28 +74,10 @@ public final class IpsecPeerConfigMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@code submatcher} matches the IPSec peer
-   * config's {@code peerConfigs}
-   */
-  public static @Nonnull HasPeerConfigs hasPeerConfigs(
-      @Nonnull Matcher<? super List<IpsecPeerConfig>> subMatcher) {
-    return new HasPeerConfigs(subMatcher);
-  }
-
-  /**
-   * Provides a matcher that matches if the provided {@code submatcher} matches the IPSec peer
    * config's {@code ikePhase1Policy}
    */
   public static @Nonnull HasIkePhase1Policy hasIkePhase1Policy(String ikePhase1Policy) {
     return new HasIkePhase1Policy(equalTo(ikePhase1Policy));
-  }
-
-  /**
-   * Provides a matcher that matches if the provided {@code submatcher} matches the IPSec peer
-   * config's {@code peerConfig}
-   */
-  public static @Nonnull HasPeerConfig hasPeerConfig(
-      @Nonnull Matcher<? super IpsecPeerConfig> subMatcher) {
-    return new HasPeerConfig(subMatcher);
   }
 
   /**

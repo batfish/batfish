@@ -33,9 +33,9 @@ import org.batfish.datamodel.matchers.TraceMatchers;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
-import org.batfish.question.specifiers.DispositionSpecifier;
 import org.batfish.question.specifiers.PathConstraintsInput;
 import org.batfish.question.traceroute.TracerouteAnswerer;
+import org.batfish.specifier.DispositionSpecifier;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -129,7 +129,7 @@ public class DifferentialReachabilityTest {
             PathConstraintsInput.unconstrained());
     Batfish batfish = initBatfish();
     TableAnswerElement answer = new DifferentialReachabilityAnswerer(question, batfish).answer();
-    Ip dstIp = new Ip("2.2.2.2");
+    Ip dstIp = Ip.parse("2.2.2.2");
     assertThat(
         answer,
         hasRows(
@@ -169,7 +169,7 @@ public class DifferentialReachabilityTest {
 
     Batfish batfish = initBatfish();
     TableAnswerElement answer = new DifferentialReachabilityAnswerer(question, batfish).answer();
-    Ip dstIp = new Ip("2.2.2.2");
+    Ip dstIp = Ip.parse("2.2.2.2");
     assertThat(
         answer,
         hasRows(

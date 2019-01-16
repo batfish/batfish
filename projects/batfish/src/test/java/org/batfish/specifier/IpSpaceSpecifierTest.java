@@ -115,7 +115,7 @@ public class IpSpaceSpecifierTest {
     assertThat(
         assignment,
         hasEntry(
-            containsIp(new Ip("1.0.0.1")),
+            containsIp(Ip.parse("1.0.0.1")),
             contains(new InterfaceLocation(_i1.getOwner().getHostname(), _i1.getName()))));
 
     assertThat(
@@ -123,18 +123,18 @@ public class IpSpaceSpecifierTest {
         hasEntry(
             allOf(
                 // contains a host IP
-                containsIp(new Ip("1.0.0.3")),
+                containsIp(Ip.parse("1.0.0.3")),
                 // does not contain i1's IP
-                not(containsIp(new Ip("1.0.0.1"))),
+                not(containsIp(Ip.parse("1.0.0.1"))),
                 // does not contain i2's IP
-                not(containsIp(new Ip("1.0.0.2"))),
+                not(containsIp(Ip.parse("1.0.0.2"))),
                 // does not include any IPs from 2.0.0.0/30 because it's not a host subnet.
                 not(
                     anyOf(
-                        containsIp(new Ip("2.0.0.0")),
-                        containsIp(new Ip("2.0.0.1")),
-                        containsIp(new Ip("2.0.0.2")),
-                        containsIp(new Ip("2.0.0.3"))))),
+                        containsIp(Ip.parse("2.0.0.0")),
+                        containsIp(Ip.parse("2.0.0.1")),
+                        containsIp(Ip.parse("2.0.0.2")),
+                        containsIp(Ip.parse("2.0.0.3"))))),
             contains(new InterfaceLinkLocation(_i1.getOwner().getHostname(), _i1.getName()))));
 
     // Locations that don't own any ipspace are assigned EmptyIpSpace.
@@ -155,6 +155,6 @@ public class IpSpaceSpecifierTest {
     IpSpaceAssignment assignment =
         new LocationIpSpaceSpecifier(AllInterfacesLocationSpecifier.INSTANCE)
             .resolve(ImmutableSet.of(), _context);
-    assertThat(assignment, hasEntry(containsIp(new Ip("1.0.0.1")), equalTo(ImmutableSet.of())));
+    assertThat(assignment, hasEntry(containsIp(Ip.parse("1.0.0.1")), equalTo(ImmutableSet.of())));
   }
 }

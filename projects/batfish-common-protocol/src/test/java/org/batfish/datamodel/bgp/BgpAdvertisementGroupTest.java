@@ -26,13 +26,13 @@ public final class BgpAdvertisementGroupTest {
             .setExtendedCommunities(ImmutableSet.of(new ExtendedCommunity(12345678L)))
             .setLocalPreference(123L)
             .setMed(456L)
-            .setOriginator(new Ip("1.1.1.1"))
+            .setOriginator(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.EGP)
             .setPrefixes(ImmutableSet.of(Prefix.ZERO))
-            .setRxPeer(new Ip("2.2.2.2"))
+            .setRxPeer(Ip.parse("2.2.2.2"))
             .setStandardCommunities(ImmutableSet.of(555L))
             .setTxAs(666L)
-            .setTxPeer(new Ip("3.3.3.3"))
+            .setTxPeer(Ip.parse("3.3.3.3"))
             .build();
 
     assertThat(SerializationUtils.clone(bgpAdvertisementGroup), equalTo(bgpAdvertisementGroup));
@@ -47,13 +47,13 @@ public final class BgpAdvertisementGroupTest {
             .setExtendedCommunities(ImmutableSet.of(new ExtendedCommunity(12345678L)))
             .setLocalPreference(123L)
             .setMed(456L)
-            .setOriginator(new Ip("1.1.1.1"))
+            .setOriginator(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.EGP)
             .setPrefixes(ImmutableSet.of(Prefix.ZERO))
-            .setRxPeer(new Ip("2.2.2.2"))
+            .setRxPeer(Ip.parse("2.2.2.2"))
             .setStandardCommunities(ImmutableSet.of(555L))
             .setTxAs(666L)
-            .setTxPeer(new Ip("3.3.3.3"))
+            .setTxPeer(Ip.parse("3.3.3.3"))
             .build();
 
     assertThat(
@@ -79,13 +79,13 @@ public final class BgpAdvertisementGroupTest {
             builder.setExtendedCommunities(ImmutableSet.of(new ExtendedCommunity(1L))).build())
         .addEqualityGroup(builder.setLocalPreference(1L).build())
         .addEqualityGroup(builder.setMed(1L).build())
-        .addEqualityGroup(builder.setOriginator(new Ip("1.1.1.1")).build())
+        .addEqualityGroup(builder.setOriginator(Ip.parse("1.1.1.1")).build())
         .addEqualityGroup(builder.setOriginType(OriginType.EGP).build())
         .addEqualityGroup(builder.setPrefixes(ImmutableSet.of(Prefix.strict("1.0.0.0/8"))))
-        .addEqualityGroup(builder.setRxPeer(new Ip("1.1.1.1")).build())
+        .addEqualityGroup(builder.setRxPeer(Ip.parse("1.1.1.1")).build())
         .addEqualityGroup(builder.setStandardCommunities(ImmutableSet.of(4L)).build())
         .addEqualityGroup(builder.setTxAs(123L).build())
-        .addEqualityGroup(builder.setTxPeer(new Ip("2.2.2.2")).build())
+        .addEqualityGroup(builder.setTxPeer(Ip.parse("2.2.2.2")).build())
         .testEquals();
   }
 }

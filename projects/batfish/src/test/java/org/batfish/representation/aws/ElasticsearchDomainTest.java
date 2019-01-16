@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
@@ -86,7 +87,7 @@ public class ElasticsearchDomainTest {
   @Test
   public void testEsSubnetEdge() throws IOException {
     Map<String, Configuration> configurations = loadAwsConfigurations();
-    Topology topology = CommonUtil.synthesizeTopology(configurations);
+    Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
 
     // check that ES instance is a neighbor of both  subnets in which its interfaces are
     assertThat(
@@ -126,8 +127,8 @@ public class ElasticsearchDomainTest {
   @Test
   public void testDefaultRoute() throws IOException {
     Map<String, Configuration> configurations = loadAwsConfigurations();
-    StaticRoute defaultRoute1 = _staticRouteBuilder.setNextHopIp(new Ip("172.31.0.1")).build();
-    StaticRoute defaultRoute2 = _staticRouteBuilder.setNextHopIp(new Ip("192.168.2.17")).build();
+    StaticRoute defaultRoute1 = _staticRouteBuilder.setNextHopIp(Ip.parse("172.31.0.1")).build();
+    StaticRoute defaultRoute2 = _staticRouteBuilder.setNextHopIp(Ip.parse("192.168.2.17")).build();
 
     // checking that both default routes exist(to both the subnets) in RDS instance
     assertThat(configurations, hasKey("es-domain"));

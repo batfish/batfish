@@ -83,7 +83,7 @@ public class ReachabilityParametersResolverTest {
                 AclLineMatchExprs.matchDst(UniverseIpSpace.INSTANCE), AclLineMatchExprs.TRUE)));
 
     // test setting destination IpSpace
-    IpIpSpace dstIpSpace = new Ip("1.1.1.1").toIpSpace();
+    IpIpSpace dstIpSpace = Ip.parse("1.1.1.1").toIpSpace();
     reachabilityParameters =
         reachabilityParametersBuilder
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(dstIpSpace))

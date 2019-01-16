@@ -18,6 +18,9 @@
                         "name": "eigrp"
                     },
                     {
+                        "name": "ipsec"
+                    },
+                    {
                         "name": "isis"
                     },
                     {
@@ -34,6 +37,9 @@
                     },
                     {
                         "name": "rip"
+                    },
+                    {
+                        "name": "vxlan"
                     }
                 ],
                 "description": "Types of edges to include",

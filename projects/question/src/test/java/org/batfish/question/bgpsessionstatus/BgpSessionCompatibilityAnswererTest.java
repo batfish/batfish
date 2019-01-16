@@ -41,10 +41,10 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.ConfiguredSessionStatus;
 import org.junit.Test;
 
 public class BgpSessionCompatibilityAnswererTest {
@@ -61,10 +61,10 @@ public class BgpSessionCompatibilityAnswererTest {
 
   private final IBatfish _batfish;
 
-  private static final Ip IP1 = new Ip("1.1.1.1");
-  private static final Ip IP2 = new Ip("2.2.2.2");
-  private static final Ip IP3 = new Ip("3.3.3.3");
-  private static final Ip IP4 = new Ip("3.3.3.4");
+  private static final Ip IP1 = Ip.parse("1.1.1.1");
+  private static final Ip IP2 = Ip.parse("2.2.2.2");
+  private static final Ip IP3 = Ip.parse("3.3.3.3");
+  private static final Ip IP4 = Ip.parse("3.3.3.4");
 
   private static final Row ROW_1 =
       Row.builder()
@@ -131,7 +131,8 @@ public class BgpSessionCompatibilityAnswererTest {
     Configuration node2 = createConfiguration(cb, "node2", IP2, IP1, 2L, 1L);
     Configuration node3 = createConfiguration(cb, "node3", IP3, IP4, 3L, 3L);
     Configuration node4 =
-        createConfigurationWithDynamicSession(cb, IP4, new Prefix(IP3, 24), ImmutableList.of(3L));
+        createConfigurationWithDynamicSession(
+            cb, IP4, Prefix.create(IP3, 24), ImmutableList.of(3L));
 
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of("node1", node1, "node2", node2, "node3", node3, "node4", node4);
@@ -172,7 +173,7 @@ public class BgpSessionCompatibilityAnswererTest {
             .build();
 
     BgpProcess bgpProcess = new BgpProcess();
-    bgpProcess.setNeighbors(ImmutableSortedMap.of(new Prefix(remoteIp, 32), peerConfig));
+    bgpProcess.setNeighbors(ImmutableSortedMap.of(Prefix.create(remoteIp, 32), peerConfig));
 
     Vrf vrf1 = new Vrf("vrf");
     vrf1.setBgpProcess(bgpProcess);

@@ -740,7 +740,6 @@
         "interfaces" : {
           "Ethernet0" : {
             "name" : "Ethernet0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -763,6 +762,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -770,7 +770,6 @@
           },
           "Ethernet1" : {
             "name" : "Ethernet1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -789,6 +788,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -822,7 +822,6 @@
         "interfaces" : {
           "Vlan1" : {
             "name" : "Vlan1",
-            "accessVlan" : 0,
             "active" : false,
             "allPrefixes" : [
               "1.2.3.4/23",
@@ -849,6 +848,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
@@ -992,6 +992,101 @@
           }
         }
       },
+      "arista_nat" : {
+        "configurationFormat" : "ARISTA",
+        "name" : "arista_nat",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "Ethernet1" : {
+            "name" : "Ethernet1",
+            "active" : true,
+            "allPrefixes" : [
+              "1.1.1.1/32"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "Ethernet1"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "outgoingTransformation" : {
+              "guard" : {
+                "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                "aclName" : "acl1",
+                "defaultAccept" : false
+              },
+              "transformationSteps" : [
+                {
+                  "class" : "org.batfish.datamodel.transformation.AssignIpAddressFromPool",
+                  "ipField" : "SOURCE",
+                  "poolEnd" : "1.1.1.2",
+                  "poolStart" : "1.1.1.1",
+                  "transformationType" : "SOURCE_NAT"
+                }
+              ]
+            },
+            "prefix" : "1.1.1.1/32",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : true,
+            "switchportMode" : "ACCESS",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "ipAccessLists" : {
+          "acl1" : {
+            "name" : "acl1",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    },
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    }
+                  }
+                },
+                "name" : "permit ip any any"
+              }
+            ],
+            "sourceName" : "acl1",
+            "sourceType" : "extended ipv4 access-list"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "arista_nat"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "Ethernet1"
+            ]
+          }
+        }
+      },
       "arista_ospf" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "arista_ospf",
@@ -1089,7 +1184,7 @@
           },
           "vrfName" : {
             "name" : "vrfName",
-            "description" : " descriptive sentence"
+            "description" : "descriptive sentence"
           }
         }
       },
@@ -1173,16 +1268,6 @@
             "lifetimeSeconds" : 86400
           }
         },
-        "ikeProposals" : {
-          "1" : {
-            "name" : "1",
-            "authenticationAlgorithm" : "SHA_256",
-            "authenticationMethod" : "RSA_SIGNATURES",
-            "diffieHellmanGroup" : "GROUP20",
-            "encryptionAlgorithm" : "AES_256_CBC",
-            "lifetimeSeconds" : 86400
-          }
-        },
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "aruba_crypto",
@@ -1231,7 +1316,6 @@
         "interfaces" : {
           "GigabitEthernet0/0/0" : {
             "name" : "GigabitEthernet0/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "1.2.3.4/5"
@@ -1258,6 +1342,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "TRUNK",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -1679,7 +1764,6 @@
         "interfaces" : {
           "ifname" : {
             "name" : "ifname",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -1699,6 +1783,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -1799,7 +1884,6 @@
         "interfaces" : {
           "blah" : {
             "name" : "blah",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "192.168.1.0/24"
@@ -1820,12 +1904,13 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Ethernet0/0~",
+            "outgoingFilter" : "~COMBINED_OUTGOING_ACL~blah~",
             "prefix" : "192.168.1.0/24",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -1833,8 +1918,30 @@
           }
         },
         "ipAccessLists" : {
-          "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Ethernet0/0~" : {
-            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Ethernet0/0~",
+          "~COMBINED_OUTGOING_ACL~blah~" : {
+            "name" : "~COMBINED_OUTGOING_ACL~blah~",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                  "description" : "Permit if permitted by policy for zone 'SECURITY_LEVEL_0'",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.FalseExpr"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                      "aclName" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0~",
+                      "defaultAccept" : false
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0~" : {
+            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0~",
             "lines" : [
               {
                 "action" : "PERMIT",
@@ -1842,16 +1949,6 @@
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 },
                 "name" : "Allow traffic originating from this device"
-              },
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
-                  "srcInterfaces" : [
-                    "Ethernet0/0"
-                  ]
-                },
-                "name" : "Allow traffic received on interface in same zone: 'SECURITY_LEVEL_0_Ethernet0/0'"
               },
               {
                 "action" : "PERMIT",
@@ -1913,10 +2010,10 @@
           }
         },
         "zones" : {
-          "SECURITY_LEVEL_0_Ethernet0/0" : {
-            "name" : "SECURITY_LEVEL_0_Ethernet0/0",
+          "SECURITY_LEVEL_0" : {
+            "name" : "SECURITY_LEVEL_0",
             "interfaces" : [
-              "Ethernet0/0"
+              "blah"
             ]
           }
         }
@@ -3614,7 +3711,6 @@
         "interfaces" : {
           "Ethernet6/0.0" : {
             "name" : "Ethernet6/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "11.22.33.44/30"
@@ -3638,6 +3734,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -3645,7 +3742,6 @@
           },
           "Ethernet6/0.48" : {
             "name" : "Ethernet6/0.48",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "22.33.44.55/30"
@@ -3668,6 +3764,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -3675,7 +3772,6 @@
           },
           "Ethernet6/1" : {
             "name" : "Ethernet6/1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -3694,6 +3790,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -3701,7 +3798,6 @@
           },
           "cable-downstream1/2" : {
             "name" : "cable-downstream1/2",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -3720,6 +3816,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "UNKNOWN",
@@ -3727,7 +3824,6 @@
           },
           "cable-downstream1/2/3" : {
             "name" : "cable-downstream1/2/3",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -3747,6 +3843,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "UNKNOWN",
@@ -3754,7 +3851,6 @@
           },
           "cable-downstream5/0/0" : {
             "name" : "cable-downstream5/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -3773,6 +3869,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "UNKNOWN",
@@ -3780,7 +3877,6 @@
           },
           "cable-mac1" : {
             "name" : "cable-mac1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -3800,6 +3896,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "UNKNOWN",
@@ -3807,7 +3904,6 @@
           },
           "cable-mac1.1" : {
             "name" : "cable-mac1.1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "1.2.3.0/30"
@@ -3831,6 +3927,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "UNKNOWN",
@@ -3838,7 +3935,6 @@
           },
           "cable-mac1.2" : {
             "name" : "cable-mac1.2",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "2.2.2.0/25",
@@ -3865,6 +3961,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "UNKNOWN",
@@ -3872,7 +3969,6 @@
           },
           "cable-mac2" : {
             "name" : "cable-mac2",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -3891,6 +3987,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "UNKNOWN",
@@ -3898,7 +3995,6 @@
           },
           "cable-mac3" : {
             "name" : "cable-mac3",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -3917,6 +4013,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "UNKNOWN",
@@ -3924,7 +4021,6 @@
           },
           "cable-upstream1/0/0" : {
             "name" : "cable-upstream1/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -3944,6 +4040,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "UNKNOWN",
@@ -3951,7 +4048,6 @@
           },
           "cable-upstream1/0/0.0" : {
             "name" : "cable-upstream1/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -3971,6 +4067,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "UNKNOWN",
@@ -3978,7 +4075,6 @@
           },
           "cable-upstream1/0/10" : {
             "name" : "cable-upstream1/0/10",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -3997,6 +4093,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "UNKNOWN",
@@ -4004,7 +4101,6 @@
           },
           "mgmt6/0" : {
             "name" : "mgmt6/0",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -4023,6 +4119,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -4182,7 +4279,8 @@
               "level1" : {
                 "wideMetricsOnly" : false
               },
-              "netAddress" : "12.3456.7890.1234.5678.90"
+              "netAddress" : "12.3456.7890.1234.5678.90",
+              "overload" : false
             }
           }
         }
@@ -6050,7 +6148,6 @@
         "interfaces" : {
           "Cable1/2/3" : {
             "name" : "Cable1/2/3",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -6069,6 +6166,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "UNKNOWN",
@@ -6236,24 +6334,6 @@
             "lifetimeSeconds" : 28800
           }
         },
-        "ikePolicies" : {
-          "myprofile" : {
-            "name" : "myprofile",
-            "proposals" : [
-              "1"
-            ]
-          }
-        },
-        "ikeProposals" : {
-          "1" : {
-            "name" : "1",
-            "authenticationAlgorithm" : "MD5",
-            "authenticationMethod" : "PRE_SHARED_KEYS",
-            "diffieHellmanGroup" : "GROUP2",
-            "encryptionAlgorithm" : "THREEDES_CBC",
-            "lifetimeSeconds" : 28800
-          }
-        },
         "ipsecPhase2Policies" : {
           "abcdefg" : {
             "proposals" : [
@@ -6309,63 +6389,6 @@
           "noAuthHeader" : {
             "encryptionAlgorithm" : "AES_256_CBC",
             "ipsecEncapsulationMode" : "TUNNEL",
-            "protocols" : [
-              "ESP"
-            ]
-          }
-        },
-        "ipsecPolicies" : {
-          "VPN:5" : {
-            "name" : "VPN:5",
-            "pfsKeyGroup" : "GROUP14",
-            "pfsKeyGroupDynamicIke" : false
-          },
-          "VPNMAP:2" : {
-            "name" : "VPNMAP:2",
-            "pfsKeyGroup" : "GROUP2",
-            "pfsKeyGroupDynamicIke" : false
-          },
-          "abcdefg" : {
-            "name" : "abcdefg",
-            "pfsKeyGroupDynamicIke" : false
-          }
-        },
-        "ipsecProposals" : {
-          "ESP-3DES-MD5" : {
-            "name" : "ESP-3DES-MD5",
-            "authenticationAlgorithm" : "HMAC_MD5_96",
-            "encryptionAlgorithm" : "THREEDES_CBC",
-            "protocols" : [
-              "ESP"
-            ]
-          },
-          "IPSEC_AES_256" : {
-            "name" : "IPSEC_AES_256",
-            "authenticationAlgorithm" : "HMAC_SHA1_96",
-            "encryptionAlgorithm" : "AES_256_CBC",
-            "protocols" : [
-              "ESP"
-            ]
-          },
-          "cipts1" : {
-            "name" : "cipts1",
-            "authenticationAlgorithm" : "HMAC_SHA_256_128",
-            "encryptionAlgorithm" : "AES_256_CBC",
-            "protocols" : [
-              "ESP"
-            ]
-          },
-          "cipts2" : {
-            "name" : "cipts2",
-            "authenticationAlgorithm" : "HMAC_SHA_512",
-            "encryptionAlgorithm" : "AES_256_CBC",
-            "protocols" : [
-              "ESP"
-            ]
-          },
-          "noAuthHeader" : {
-            "name" : "noAuthHeader",
-            "encryptionAlgorithm" : "AES_256_CBC",
             "protocols" : [
               "ESP"
             ]
@@ -6525,7 +6548,6 @@
         "interfaces" : {
           "Ethernet0" : {
             "name" : "Ethernet0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -6544,6 +6566,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -6954,7 +6977,6 @@
         "interfaces" : {
           "GigabitEthernet0/1" : {
             "name" : "GigabitEthernet0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -6973,6 +6995,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -7025,7 +7048,6 @@
         "interfaces" : {
           "TenGigabitEthernet0/0/2/2" : {
             "name" : "TenGigabitEthernet0/0/2/2",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7044,6 +7066,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -7076,7 +7099,6 @@
         "interfaces" : {
           "Async1" : {
             "name" : "Async1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7095,6 +7117,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -7102,7 +7125,6 @@
           },
           "Cable1/2/3:4" : {
             "name" : "Cable1/2/3:4",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7121,6 +7143,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "UNKNOWN",
@@ -7128,7 +7151,6 @@
           },
           "Crypto-Engine1/2/3" : {
             "name" : "Crypto-Engine1/2/3",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7147,6 +7169,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VPN",
@@ -7154,7 +7177,6 @@
           },
           "Dot11Radio0" : {
             "name" : "Dot11Radio0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7173,6 +7195,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -7180,12 +7203,11 @@
           },
           "Ethernet0" : {
             "name" : "Ethernet0",
-            "accessVlan" : 0,
             "active" : false,
             "allPrefixes" : [
               "1.2.3.4/30"
             ],
-            "allowedVlans" : "",
+            "allowedVlans" : "1-4094",
             "autostate" : true,
             "bandwidth" : 2.0E10,
             "channelGroup" : "Port-Channel1",
@@ -7219,7 +7241,6 @@
           },
           "Ethernet1/11" : {
             "name" : "Ethernet1/11",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7238,6 +7259,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -7264,6 +7286,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "ACCESS",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -7271,7 +7294,6 @@
           },
           "Loopback0" : {
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7286,11 +7308,11 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Loopback0~",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOOPBACK",
@@ -7298,7 +7320,6 @@
           },
           "Modular-Cable1/2/3:4" : {
             "name" : "Modular-Cable1/2/3:4",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7317,6 +7338,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "UNKNOWN",
@@ -7324,7 +7346,6 @@
           },
           "Null0" : {
             "name" : "Null0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7343,14 +7364,40 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "NULL",
             "vrf" : "default"
           },
+          "Tunnel0" : {
+            "name" : "Tunnel0",
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "declaredNames" : [
+              "tunnel0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "TUNNEL",
+            "vrf" : "default"
+          },
           "Vlan1" : {
             "name" : "Vlan1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7369,6 +7416,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
@@ -7377,7 +7425,6 @@
           },
           "Vlan1005" : {
             "name" : "Vlan1005",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7396,6 +7443,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
@@ -7404,7 +7452,6 @@
           },
           "Vlan1006" : {
             "name" : "Vlan1006",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7423,6 +7470,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
@@ -7431,7 +7479,6 @@
           },
           "Vlan111" : {
             "name" : "Vlan111",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7450,6 +7497,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
@@ -7458,7 +7506,6 @@
           },
           "Vlan1234" : {
             "name" : "Vlan1234",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7477,6 +7524,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
@@ -7485,7 +7533,6 @@
           },
           "Vlan2" : {
             "name" : "Vlan2",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7504,6 +7551,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
@@ -7512,7 +7560,6 @@
           },
           "Vlan3" : {
             "name" : "Vlan3",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7531,6 +7578,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
@@ -7539,7 +7587,6 @@
           },
           "Vlan4094" : {
             "name" : "Vlan4094",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7558,41 +7605,15 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
             "vlan" : 4094,
             "vrf" : "default"
           },
-          "Vxlan1" : {
-            "name" : "Vxlan1",
-            "accessVlan" : 0,
-            "active" : true,
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "declaredNames" : [
-              "Vxlan1"
-            ],
-            "mtu" : 1500,
-            "nativeVlan" : 1,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "TUNNEL",
-            "vrf" : "default"
-          },
           "Wideband-Cable1/2/3:4" : {
             "name" : "Wideband-Cable1/2/3:4",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7611,6 +7632,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "UNKNOWN",
@@ -7618,7 +7640,6 @@
           },
           "inside" : {
             "name" : "inside",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "192.168.0.1/24"
@@ -7637,12 +7658,13 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100_GigabitEthernet0/0~",
+            "outgoingFilter" : "~COMBINED_OUTGOING_ACL~inside~",
             "prefix" : "192.168.0.1/24",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -7650,7 +7672,6 @@
           },
           "tunnel-ip6" : {
             "name" : "tunnel-ip6",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -7669,6 +7690,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "TUNNEL",
@@ -7704,53 +7726,30 @@
             "sourceName" : "abc",
             "sourceType" : "extended ipv4 access-list"
           },
-          "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Loopback0~" : {
-            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_0_Loopback0~",
+          "~COMBINED_OUTGOING_ACL~inside~" : {
+            "name" : "~COMBINED_OUTGOING_ACL~inside~",
             "lines" : [
               {
                 "action" : "PERMIT",
                 "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
-                },
-                "name" : "Allow traffic originating from this device"
-              },
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
-                  "srcInterfaces" : [
-                    "Loopback0"
+                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                  "description" : "Permit if permitted by policy for zone 'SECURITY_LEVEL_100'",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.FalseExpr"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                      "aclName" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~",
+                      "defaultAccept" : false
+                    }
                   ]
-                },
-                "name" : "Allow traffic received on interface in same zone: 'SECURITY_LEVEL_0_Loopback0'"
-              },
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
-                  "srcInterfaces" : [
-                    "GigabitEthernet0/0"
-                  ]
-                },
-                "name" : "Traffic from security level 100"
-              },
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "states" : [
-                      "ESTABLISHED"
-                    ]
-                  }
-                },
-                "name" : "~EXISTING_CONNECTION~"
+                }
               }
             ]
           },
-          "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100_GigabitEthernet0/0~" : {
-            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100_GigabitEthernet0/0~",
+          "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~" : {
+            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~",
             "lines" : [
               {
                 "action" : "PERMIT",
@@ -7758,16 +7757,6 @@
                   "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
                 },
                 "name" : "Allow traffic originating from this device"
-              },
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
-                  "srcInterfaces" : [
-                    "GigabitEthernet0/0"
-                  ]
-                },
-                "name" : "Allow traffic received on interface in same zone: 'SECURITY_LEVEL_100_GigabitEthernet0/0'"
               },
               {
                 "action" : "PERMIT",
@@ -7812,6 +7801,7 @@
               "Loopback0",
               "Modular-Cable1/2/3:4",
               "Null0",
+              "Tunnel0",
               "Vlan1",
               "Vlan1005",
               "Vlan1006",
@@ -7820,24 +7810,30 @@
               "Vlan2",
               "Vlan3",
               "Vlan4094",
-              "Vxlan1",
               "Wideband-Cable1/2/3:4",
               "inside",
               "tunnel-ip6"
-            ]
+            ],
+            "vniSettings" : {
+              "456" : {
+                "bumTransportIps" : [
+                  "1.0.0.1",
+                  "2.0.0.1",
+                  "3.0.0.1"
+                ],
+                "bumTransportMethod" : "UNICAST_FLOOD_GROUP",
+                "udpPort" : 1234,
+                "vlan" : 123,
+                "vni" : 456
+              }
+            }
           }
         },
         "zones" : {
-          "SECURITY_LEVEL_0_Loopback0" : {
-            "name" : "SECURITY_LEVEL_0_Loopback0",
+          "SECURITY_LEVEL_100" : {
+            "name" : "SECURITY_LEVEL_100",
             "interfaces" : [
-              "Loopback0"
-            ]
-          },
-          "SECURITY_LEVEL_100_GigabitEthernet0/0" : {
-            "name" : "SECURITY_LEVEL_100_GigabitEthernet0/0",
-            "interfaces" : [
-              "GigabitEthernet0/0"
+              "inside"
             ]
           }
         }
@@ -8440,7 +8436,6 @@
         "interfaces" : {
           "GigabitEthernet0/0" : {
             "name" : "GigabitEthernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -8468,6 +8463,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -8475,7 +8471,6 @@
           },
           "GigabitEthernet0/0/1" : {
             "name" : "GigabitEthernet0/0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "137.164.25.57/30"
@@ -8509,6 +8504,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -8516,7 +8512,6 @@
           },
           "GigabitEthernet0/1" : {
             "name" : "GigabitEthernet0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -8544,6 +8539,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -8551,7 +8547,6 @@
           },
           "HundredGigabitEthernet0/0/0/0.2302" : {
             "name" : "HundredGigabitEthernet0/0/0/0.2302",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -8579,6 +8574,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -8586,7 +8582,6 @@
           },
           "Loopback0" : {
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -8614,6 +8609,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOOPBACK",
@@ -8621,7 +8617,6 @@
           },
           "Serial4/0" : {
             "name" : "Serial4/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -8649,6 +8644,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -8681,7 +8677,8 @@
               "level2" : {
                 "wideMetricsOnly" : false
               },
-              "netAddress" : "12.1234.1234.1234.1234.12"
+              "netAddress" : "12.1234.1234.1234.1234.12",
+              "overload" : false
             }
           }
         }
@@ -9517,7 +9514,6 @@
         "interfaces" : {
           "Ethernet2/1" : {
             "name" : "Ethernet2/1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -9536,6 +9532,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -9797,7 +9794,6 @@
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "3.3.3.0/24"
@@ -9820,6 +9816,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -9827,7 +9824,6 @@
           },
           "Ethernet1/0" : {
             "name" : "Ethernet1/0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "4.4.4.0/24"
@@ -9852,6 +9848,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -9859,7 +9856,6 @@
           },
           "Loopback0" : {
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "1.1.1.1/32"
@@ -9882,6 +9878,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOOPBACK",
@@ -11205,7 +11202,6 @@
         "interfaces" : {
           "Ethernet0" : {
             "name" : "Ethernet0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "1.0.0.0/24"
@@ -11228,6 +11224,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -11912,6 +11909,143 @@
           }
         }
       },
+      "eos_mlag" : {
+        "configurationFormat" : "ARISTA",
+        "name" : "eos_mlag",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "Port-Channel1" : {
+            "name" : "Port-Channel1",
+            "active" : false,
+            "allowedVlans" : "1-4094",
+            "autostate" : true,
+            "bandwidth" : 0.0,
+            "declaredNames" : [
+              "Port-Channel1"
+            ],
+            "description" : "to MLAG PEER",
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : true,
+            "switchportMode" : "TRUNK",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "AGGREGATED",
+            "vrf" : "default"
+          },
+          "Port-Channel2" : {
+            "name" : "Port-Channel2",
+            "active" : false,
+            "allPrefixes" : [
+              "2.2.2.2/32"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 0.0,
+            "declaredNames" : [
+              "Port-Channel2"
+            ],
+            "mlagId" : 2,
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "2.2.2.2/32",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : true,
+            "switchportMode" : "ACCESS",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "AGGREGATED",
+            "vrf" : "default"
+          }
+        },
+        "mlags" : {
+          "MLAG_DOMAIN" : {
+            "id" : "MLAG_DOMAIN",
+            "localInterface" : "Vlan4094",
+            "peerAddress" : "1.1.1.3",
+            "peerInterface" : "Port-Channel1"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "eos_mlag"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "Port-Channel1",
+              "Port-Channel2"
+            ]
+          }
+        }
+      },
+      "eos_trunk_group" : {
+        "configurationFormat" : "ARISTA",
+        "name" : "eos_trunk_group",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "Port-Channel1" : {
+            "name" : "Port-Channel1",
+            "active" : false,
+            "allowedVlans" : "1-4,7-9,11",
+            "autostate" : true,
+            "bandwidth" : 0.0,
+            "declaredNames" : [
+              "Port-Channel1"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : true,
+            "switchportMode" : "TRUNK",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "AGGREGATED",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "eos_trunk_group"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "Port-Channel1"
+            ]
+          }
+        }
+      },
       "foundry_access_list" : {
         "configurationFormat" : "FOUNDRY",
         "name" : "foundry_access_list",
@@ -12128,7 +12262,6 @@
         "interfaces" : {
           "Ethernet1/15" : {
             "name" : "Ethernet1/15",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -12147,6 +12280,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -12227,7 +12361,6 @@
         "interfaces" : {
           "eth0" : {
             "name" : "eth0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "2.128.0.101/24"
@@ -12252,6 +12385,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -12510,7 +12644,6 @@
         "interfaces" : {
           "Ethernet0" : {
             "name" : "Ethernet0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "2.130.0.1/24"
@@ -12536,6 +12669,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -12543,7 +12677,6 @@
           },
           "Ethernet1" : {
             "name" : "Ethernet1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "2.131.0.1/24"
@@ -12569,6 +12702,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -12956,7 +13090,6 @@
         "interfaces" : {
           "ge-0/0/0" : {
             "name" : "ge-0/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -12976,6 +13109,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -12983,7 +13117,6 @@
           },
           "ge-0/0/0.0" : {
             "name" : "ge-0/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "1.0.0.0/31"
@@ -13006,6 +13139,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -13013,7 +13147,6 @@
           },
           "ge-0/0/1" : {
             "name" : "ge-0/0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -13033,6 +13166,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -13040,7 +13174,6 @@
           },
           "ge-0/0/1.0" : {
             "name" : "ge-0/0/1.0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "1.0.0.1/31"
@@ -13063,6 +13196,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -13070,7 +13204,6 @@
           },
           "reth0" : {
             "name" : "reth0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -13093,6 +13226,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "REDUNDANT",
@@ -13100,7 +13234,6 @@
           },
           "reth0.3" : {
             "name" : "reth0.3",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "3.3.3.3/31"
@@ -13123,6 +13256,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "REDUNDANT",
@@ -13185,7 +13319,6 @@
         "interfaces" : {
           "Vlan303" : {
             "name" : "Vlan303",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "10.22.33.10/29"
@@ -13208,6 +13341,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
@@ -13216,7 +13350,6 @@
           },
           "Vlan803" : {
             "name" : "Vlan803",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "10.12.12.1/23"
@@ -13243,6 +13376,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
@@ -13277,7 +13411,6 @@
         "interfaces" : {
           "FastEthernet12/13" : {
             "name" : "FastEthernet12/13",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -13296,6 +13429,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -13303,7 +13437,6 @@
           },
           "HundredGigabitEthernet0/6/0/8" : {
             "name" : "HundredGigabitEthernet0/6/0/8",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -13322,6 +13455,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -13329,7 +13463,6 @@
           },
           "Port-Channel1" : {
             "name" : "Port-Channel1",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -13348,6 +13481,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATED",
@@ -13355,7 +13489,6 @@
           },
           "Vlan100" : {
             "name" : "Vlan100",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -13374,6 +13507,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
@@ -13407,7 +13541,6 @@
         "interfaces" : {
           "Loopback0" : {
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "137.164.16.80/32"
@@ -13431,6 +13564,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOOPBACK",
@@ -13451,6 +13585,213 @@
             "interfaces" : [
               "Loopback0"
             ]
+          }
+        }
+      },
+      "interfacemtu" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "interfacemtu",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "ROUTER",
+        "interfaces" : {
+          "xe-0/0/0" : {
+            "name" : "xe-0/0/0",
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "declaredNames" : [
+              "xe-0/0/0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "xe-0/0/0:0" : {
+            "name" : "xe-0/0/0:0",
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "declaredNames" : [
+              "xe-0/0/0:0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "xe-0/0/0:0.0" : {
+            "name" : "xe-0/0/0:0.0",
+            "active" : true,
+            "allPrefixes" : [
+              "10.1.2.3/31"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "declaredNames" : [
+              "xe-0/0/0:0.0"
+            ],
+            "mtu" : 9000,
+            "nativeVlan" : 1,
+            "ospfArea" : 0,
+            "ospfCost" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : true,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "10.1.2.3/31",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default"
+          }
+        },
+        "routeFilterLists" : {
+          "~OSPF_SUMMARY_FILTER:default:0~" : {
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
+              }
+            ],
+            "name" : "~OSPF_SUMMARY_FILTER:default:0~"
+          }
+        },
+        "routingPolicies" : {
+          "~OSPF_EXPORT_POLICY:default~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "local"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetOspfMetricType",
+                "metricType" : "E2"
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "juniper" : {
+            "lines" : {
+              "auxiliary" : {
+                "name" : "auxiliary",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
+              },
+              "console" : {
+                "name" : "console",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "PASSWORD"
+                  ]
+                },
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
+              }
+            },
+            "systemAuthenticationOrder" : {
+              "methods" : [
+                "PASSWORD"
+              ]
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "xe-0/0/0",
+              "xe-0/0/0:0",
+              "xe-0/0/0:0.0"
+            ],
+            "ospfProcess" : {
+              "areas" : {
+                "0" : {
+                  "injectDefaultRoute" : false,
+                  "interfaces" : [
+                    "xe-0/0/0:0.0"
+                  ],
+                  "metricOfDefaultRoute" : 0,
+                  "name" : 0,
+                  "stubType" : "NONE",
+                  "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
+                }
+              },
+              "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "referenceBandwidth" : 1.0E9,
+              "routerId" : "10.1.2.3"
+            }
           }
         }
       },
@@ -13543,7 +13884,6 @@
         "interfaces" : {
           "GigabitEthernet1/0/1" : {
             "name" : "GigabitEthernet1/0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -13562,6 +13902,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -13594,7 +13935,6 @@
         "interfaces" : {
           "Vlan1000" : {
             "name" : "Vlan1000",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -13631,6 +13971,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
@@ -14146,7 +14487,6 @@
         "interfaces" : {
           "GigabitEthernet0/2/1/6" : {
             "name" : "GigabitEthernet0/2/1/6",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14174,6 +14514,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -14293,7 +14634,6 @@
         "interfaces" : {
           "Bundle-Ethernet101" : {
             "name" : "Bundle-Ethernet101",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14312,6 +14652,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATED",
@@ -14319,7 +14660,6 @@
           },
           "Bundle-Ethernet103" : {
             "name" : "Bundle-Ethernet103",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14338,6 +14678,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATED",
@@ -14345,7 +14686,6 @@
           },
           "Bundle-Ethernet201" : {
             "name" : "Bundle-Ethernet201",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14365,6 +14705,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATED",
@@ -14372,7 +14713,6 @@
           },
           "HundredGigabitEthernet0/2/0/0.292" : {
             "name" : "HundredGigabitEthernet0/2/0/0.292",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14391,6 +14731,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -14398,7 +14739,6 @@
           },
           "HundredGigabitEthernet0/2/0/3" : {
             "name" : "HundredGigabitEthernet0/2/0/3",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14417,6 +14757,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -14424,7 +14765,6 @@
           },
           "Loopback0" : {
             "name" : "Loopback0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14443,6 +14783,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOOPBACK",
@@ -14450,7 +14791,6 @@
           },
           "TenGigabitEthernet0/0/0/2" : {
             "name" : "TenGigabitEthernet0/0/0/2",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14469,6 +14809,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -14476,7 +14817,6 @@
           },
           "TenGigabitEthernet0/0/0/4" : {
             "name" : "TenGigabitEthernet0/0/0/4",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14495,6 +14835,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -14502,7 +14843,6 @@
           },
           "TenGigabitEthernet0/0/0/5" : {
             "name" : "TenGigabitEthernet0/0/0/5",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14521,6 +14861,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -14880,7 +15221,6 @@
         "interfaces" : {
           "ae16" : {
             "name" : "ae16",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14899,6 +15239,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATED",
@@ -14906,7 +15247,6 @@
           },
           "ae16.0" : {
             "name" : "ae16.0",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14925,6 +15265,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATE_CHILD",
@@ -14932,7 +15273,6 @@
           },
           "xe-0/0/1" : {
             "name" : "xe-0/0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14951,6 +15291,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -14958,7 +15299,6 @@
           },
           "xe-0/0/1.0" : {
             "name" : "xe-0/0/1.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -14977,6 +15317,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -14984,7 +15325,6 @@
           },
           "xe-0/0/20:0" : {
             "name" : "xe-0/0/20:0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -15003,6 +15343,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -15010,7 +15351,6 @@
           },
           "xe-0/0/20:0.0" : {
             "name" : "xe-0/0/20:0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -15029,6 +15369,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -15036,7 +15377,6 @@
           },
           "xe-0/0/21:0" : {
             "name" : "xe-0/0/21:0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -15055,6 +15395,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -15062,7 +15403,6 @@
           },
           "xe-0/0/21:0.0" : {
             "name" : "xe-0/0/21:0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -15081,6 +15421,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -15715,6 +16056,71 @@
               }
             ]
           },
+          "~PEER_EXPORT_POLICY:3.4.5.7/32~" : {
+            "name" : "~PEER_EXPORT_POLICY:3.4.5.7/32~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
+                "defaultPolicy" : "~DEFAULT_BGP_EXPORT_POLICY~"
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "local"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                    "originType" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                      "originType" : "igp"
+                    }
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "bgp"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "ibgp"
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          },
           "~PEER_IMPORT_POLICY:1.2.3.5/32~" : {
             "name" : "~PEER_IMPORT_POLICY:1.2.3.5/32~",
             "statements" : [
@@ -15748,6 +16154,37 @@
           },
           "~PEER_IMPORT_POLICY:3.4.5.6/32~" : {
             "name" : "~PEER_IMPORT_POLICY:3.4.5.6/32~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
+                "defaultPolicy" : "~DEFAULT_BGP_IMPORT_POLICY~"
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetDefaultActionAccept"
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          },
+          "~PEER_IMPORT_POLICY:3.4.5.7/32~" : {
+            "name" : "~PEER_IMPORT_POLICY:3.4.5.7/32~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
@@ -15815,9 +16252,36 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
-              "multipathEbgp" : false,
+              "multipathEbgp" : true,
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
               "multipathIbgp" : false,
+              "neighbors" : {
+                "3.4.5.7/32" : {
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "additionalPathsReceive" : false,
+                  "additionalPathsSelectAll" : false,
+                  "additionalPathsSend" : false,
+                  "advertiseExternal" : false,
+                  "advertiseInactive" : true,
+                  "allowLocalAsIn" : true,
+                  "allowRemoteAsOut" : false,
+                  "authenticationSettings" : {
+                    "authenticationAlgorithm" : "HMAC_SHA_1_96"
+                  },
+                  "clusterId" : 0,
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "exportPolicy" : "~PEER_EXPORT_POLICY:3.4.5.7/32~",
+                  "group" : "someipv4bgpgroup",
+                  "importPolicy" : "~PEER_IMPORT_POLICY:3.4.5.7/32~",
+                  "localAs" : 1,
+                  "peerAddress" : "3.4.5.7",
+                  "remoteAs" : 12345,
+                  "routeReflectorClient" : false,
+                  "sendCommunity" : true
+                }
+              },
               "routerId" : "0.0.0.0",
               "tieBreaker" : "ARRIVAL_ORDER"
             }
@@ -16615,7 +17079,6 @@
         "interfaces" : {
           "et-0/0/10" : {
             "name" : "et-0/0/10",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -16634,6 +17097,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -16641,7 +17105,6 @@
           },
           "et-0/0/10.0" : {
             "name" : "et-0/0/10.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -16660,6 +17123,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -16667,7 +17131,6 @@
           },
           "ge-0/2/5" : {
             "name" : "ge-0/2/5",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -16686,6 +17149,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -16693,7 +17157,6 @@
           },
           "ge-0/2/5.0" : {
             "name" : "ge-0/2/5.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -16715,6 +17178,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -16722,7 +17186,6 @@
           },
           "xe-1/0/0" : {
             "name" : "xe-1/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -16741,6 +17204,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -16748,7 +17212,6 @@
           },
           "xe-1/0/0.0" : {
             "name" : "xe-1/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -16767,6 +17230,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -16829,7 +17293,6 @@
         "interfaces" : {
           "ae0" : {
             "name" : "ae0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -16851,6 +17314,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATED",
@@ -16858,7 +17322,6 @@
           },
           "ae0.0" : {
             "name" : "ae0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -16877,6 +17340,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATE_CHILD",
@@ -16884,7 +17348,6 @@
           },
           "ge-0/0/0" : {
             "name" : "ge-0/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -16903,6 +17366,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -16910,7 +17374,6 @@
           },
           "ge-0/0/1" : {
             "name" : "ge-0/0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -16929,6 +17392,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -16936,7 +17400,6 @@
           },
           "ge-1/0/0" : {
             "name" : "ge-1/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -16956,6 +17419,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -16963,7 +17427,6 @@
           },
           "ge-2/0/0" : {
             "name" : "ge-2/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -16982,6 +17445,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -16989,7 +17453,6 @@
           },
           "ge-2/0/0.0" : {
             "name" : "ge-2/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17008,6 +17471,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -17015,7 +17479,6 @@
           },
           "ge-2/0/0.1" : {
             "name" : "ge-2/0/0.1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17034,6 +17497,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -17041,7 +17505,6 @@
           },
           "ge-3/0/0" : {
             "name" : "ge-3/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17060,6 +17523,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -17067,7 +17531,6 @@
           },
           "ge-3/0/0.0" : {
             "name" : "ge-3/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17086,6 +17549,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -17093,7 +17557,6 @@
           },
           "ge-4/0/0" : {
             "name" : "ge-4/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17112,6 +17575,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -17119,7 +17583,6 @@
           },
           "ge-4/0/0.0" : {
             "name" : "ge-4/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17138,6 +17601,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -17145,7 +17609,6 @@
           },
           "ge-5/0/0" : {
             "name" : "ge-5/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17164,6 +17627,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -17171,7 +17635,6 @@
           },
           "ge-5/0/0.0" : {
             "name" : "ge-5/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17190,6 +17653,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -17197,7 +17661,6 @@
           },
           "irb" : {
             "name" : "irb",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17216,6 +17679,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -17223,7 +17687,6 @@
           },
           "irb.5" : {
             "name" : "irb.5",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "1.2.3.0/24",
@@ -17247,6 +17710,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -17259,9 +17723,64 @@
               }
             }
           },
+          "vme" : {
+            "name" : "vme",
+            "active" : false,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "declaredNames" : [
+              "vme"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "vme.0" : {
+            "name" : "vme.0",
+            "active" : false,
+            "allPrefixes" : [
+              "100.100.100.100/32"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "declaredNames" : [
+              "vme.0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "prefix" : "100.100.100.100/32",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default"
+          },
           "xe-0/0/0:0" : {
             "name" : "xe-0/0/0:0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17280,6 +17799,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -17287,7 +17807,6 @@
           },
           "xe-0/0/0:0.0" : {
             "name" : "xe-0/0/0:0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17306,6 +17825,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -17313,7 +17833,6 @@
           },
           "xe-0/0/5:0" : {
             "name" : "xe-0/0/5:0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17332,6 +17851,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -17339,7 +17859,6 @@
           },
           "xe-0/0/5:0.0" : {
             "name" : "xe-0/0/5:0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17358,6 +17877,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "ACCESS",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -17422,6 +17942,8 @@
               "ge-5/0/0.0",
               "irb",
               "irb.5",
+              "vme",
+              "vme.0",
               "xe-0/0/0:0",
               "xe-0/0/0:0.0",
               "xe-0/0/5:0",
@@ -17439,7 +17961,6 @@
         "interfaces" : {
           "ge-0/0/0" : {
             "name" : "ge-0/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17458,6 +17979,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -17465,7 +17987,6 @@
           },
           "ge-0/0/0.0" : {
             "name" : "ge-0/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17484,6 +18005,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -17585,6 +18107,60 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "domainName" : "my.domain.name",
+        "interfaces" : {
+          "lo0" : {
+            "name" : "lo0",
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "declaredNames" : [
+              "lo0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "default"
+          },
+          "lo0.0" : {
+            "name" : "lo0.0",
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "declaredNames" : [
+              "lo0.0"
+            ],
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "default"
+          }
+        },
         "vendorFamily" : {
           "juniper" : {
             "lines" : {
@@ -17619,21 +18195,27 @@
           }
         },
         "vrfs" : {
+          "ROUTING_INSTANCE" : {
+            "name" : "ROUTING_INSTANCE"
+          },
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "interfaces" : [
+              "lo0",
+              "lo0.0"
+            ]
           }
         }
       },
       "juniper_nat" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_nat",
-        "defaultCrossZoneAction" : "PERMIT",
-        "defaultInboundAction" : "PERMIT",
+        "defaultCrossZoneAction" : "DENY",
+        "defaultInboundAction" : "DENY",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "ge-0/0/0" : {
             "name" : "ge-0/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -17652,6 +18234,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -17659,7 +18242,6 @@
           },
           "ge-0/0/0.0" : {
             "name" : "ge-0/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "1.0.0.1/24"
@@ -17670,34 +18252,31 @@
             "declaredNames" : [
               "ge-0/0/0.0"
             ],
-            "destinationNats" : [
-              {
-                "acl" : {
-                  "name" : "~DESTINATION_NAT~ge-0/0/0.0~DST-NAT~DST-RULE~",
-                  "lines" : [
-                    {
-                      "action" : "PERMIT",
-                      "matchCondition" : {
-                        "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                        "headerSpace" : {
-                          "dstIps" : {
-                            "class" : "org.batfish.datamodel.IpSpaceReference",
-                            "name" : "global~NAME"
-                          },
-                          "negate" : false,
-                          "srcIps" : {
-                            "class" : "org.batfish.datamodel.IpSpaceReference",
-                            "name" : "global~SA-NAME"
-                          }
-                        }
-                      }
-                    }
-                  ]
-                },
-                "poolIpFirst" : "10.10.10.0",
-                "poolIpLast" : "10.10.10.255"
-              }
-            ],
+            "incomingTransformation" : {
+              "guard" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : {
+                    "class" : "org.batfish.datamodel.IpSpaceReference",
+                    "name" : "global~NAME"
+                  },
+                  "negate" : false,
+                  "srcIps" : {
+                    "class" : "org.batfish.datamodel.IpSpaceReference",
+                    "name" : "global~SA-NAME"
+                  }
+                }
+              },
+              "transformationSteps" : [
+                {
+                  "class" : "org.batfish.datamodel.transformation.AssignIpAddressFromPool",
+                  "ipField" : "DESTINATION",
+                  "poolEnd" : "10.10.10.254",
+                  "poolStart" : "10.10.10.1",
+                  "transformationType" : "DEST_NAT"
+                }
+              ]
+            },
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -17705,58 +18284,9 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "prefix" : "1.0.0.1/24",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "sourceNats" : [
-              {
-                "acl" : {
-                  "name" : "~SOURCENAT~ge-0/0/0.0~SRC-NAT~SRC-RULE~",
-                  "lines" : [
-                    {
-                      "action" : "PERMIT",
-                      "matchCondition" : {
-                        "class" : "org.batfish.datamodel.acl.AndMatchExpr",
-                        "conjuncts" : [
-                          {
-                            "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                            "headerSpace" : {
-                              "dstIps" : {
-                                "class" : "org.batfish.datamodel.IpSpaceReference",
-                                "name" : "global~NAME"
-                              },
-                              "negate" : false,
-                              "srcIps" : {
-                                "class" : "org.batfish.datamodel.IpSpaceReference",
-                                "name" : "global~SA-NAME"
-                              }
-                            }
-                          },
-                          {
-                            "class" : "org.batfish.datamodel.acl.MatchSrcInterface"
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              }
-            ],
-            "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "LOGICAL",
-            "vrf" : "default"
-          }
-        },
-        "ipAccessLists" : {
-          "~DESTINATION_NAT~ge-0/0/0.0~DST-NAT~DST-RULE~" : {
-            "name" : "~DESTINATION_NAT~ge-0/0/0.0~DST-NAT~DST-RULE~",
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
+            "outgoingTransformation" : {
+              "andThen" : {
+                "guard" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
@@ -17769,37 +18299,79 @@
                       "name" : "global~SA-NAME"
                     }
                   }
-                }
+                },
+                "transformationSteps" : [
+                  {
+                    "class" : "org.batfish.datamodel.transformation.Noop",
+                    "transformationType" : "SOURCE_NAT"
+                  }
+                ]
+              },
+              "guard" : {
+                "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
+                "srcInterfaces" : [
+                  "ge-0/0/0.0"
+                ]
               }
-            ]
-          },
-          "~SOURCENAT~ge-0/0/0.0~SRC-NAT~SRC-RULE~" : {
-            "name" : "~SOURCENAT~ge-0/0/0.0~SRC-NAT~SRC-RULE~",
+            },
+            "preTransformationOutgoingFilter" : "~SECURITY_POLICIES_TO~ge-0/0/0.0",
+            "prefix" : "1.0.0.1/24",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default",
+            "zone" : "trust"
+          }
+        },
+        "ipAccessLists" : {
+          "~EXISTING_CONNECTION~" : {
+            "name" : "~EXISTING_CONNECTION~",
             "lines" : [
               {
                 "action" : "PERMIT",
                 "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.AndMatchExpr",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                      "headerSpace" : {
-                        "dstIps" : {
-                          "class" : "org.batfish.datamodel.IpSpaceReference",
-                          "name" : "global~NAME"
-                        },
-                        "negate" : false,
-                        "srcIps" : {
-                          "class" : "org.batfish.datamodel.IpSpaceReference",
-                          "name" : "global~SA-NAME"
-                        }
-                      }
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface"
-                    }
-                  ]
-                }
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false,
+                    "states" : [
+                      "ESTABLISHED"
+                    ]
+                  }
+                },
+                "name" : "~EXISTING_CONNECTION~"
+              }
+            ]
+          },
+          "~SECURITY_POLICIES_TO~ge-0/0/0.0" : {
+            "name" : "~SECURITY_POLICIES_TO~ge-0/0/0.0",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                  "aclName" : "~EXISTING_CONNECTION~",
+                  "defaultAccept" : false
+                },
+                "name" : "EXISTING_CONNECTION"
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                },
+                "name" : "HOST_OUTBOUND"
+              },
+              {
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "DEFAULT_POLICY"
               }
             ]
           }
@@ -17844,6 +18416,11 @@
               "ge-0/0/0",
               "ge-0/0/0.0"
             ]
+          }
+        },
+        "zones" : {
+          "trust" : {
+            "name" : "trust"
           }
         }
       },
@@ -18110,21 +18687,8 @@
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "comment" : "TERM",
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocol" : "static"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
-                      "cmp" : "EQ",
-                      "tag" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                        "value" : 11
-                      }
-                    }
-                  ]
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "False"
                 },
                 "trueStatements" : [
                   {
@@ -18238,6 +18802,14 @@
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "__POLICY-NAME__DEFAULT_TERM__",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "evpn"
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "falseStatements" : [
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
@@ -18300,7 +18872,6 @@
         "interfaces" : {
           "irb" : {
             "name" : "irb",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -18319,6 +18890,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -18326,7 +18898,6 @@
           },
           "irb.10" : {
             "name" : "irb.10",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -18348,6 +18919,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -18355,7 +18927,6 @@
           },
           "irb.20" : {
             "name" : "irb.20",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -18377,6 +18948,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -18729,6 +19301,16 @@
             ],
             "name" : "~CONTRIBUTOR_TO_30.0.0.0/8~"
           },
+          "~CONTRIBUTOR_TO_35.0.0.0/8~" : {
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "35.0.0.0/8",
+                "lengthRange" : "9-32"
+              }
+            ],
+            "name" : "~CONTRIBUTOR_TO_35.0.0.0/8~"
+          },
           "~CONTRIBUTOR_TO_40.0.0.0/8~" : {
             "lines" : [
               {
@@ -18816,6 +19398,34 @@
                   "prefixSet" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                     "name" : "~CONTRIBUTOR_TO_30.0.0.0/8~"
+                  }
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetDefaultActionAccept"
+              }
+            ]
+          },
+          "~AGGREGATE_ROUTE_POLICY:35.0.0.0/8~" : {
+            "name" : "~AGGREGATE_ROUTE_POLICY:35.0.0.0/8~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                    "name" : "~CONTRIBUTOR_TO_35.0.0.0/8~"
                   }
                 }
               },
@@ -18940,7 +19550,7 @@
                 "communities" : [
                   131078
                 ],
-                "discard" : false,
+                "discard" : true,
                 "generationPolicy" : "~GENERATED_ROUTE_POLICY:10.0.1.0/24~",
                 "metric" : 0,
                 "network" : "10.0.1.0/24",
@@ -18980,6 +19590,16 @@
                 "administrativeCost" : 130,
                 "asPath" : [ ],
                 "discard" : true,
+                "generationPolicy" : "~AGGREGATE_ROUTE_POLICY:35.0.0.0/8~",
+                "metric" : 0,
+                "network" : "35.0.0.0/8",
+                "nextHopIp" : "AUTO/NONE(-1l)"
+              },
+              {
+                "class" : "org.batfish.datamodel.GeneratedRoute",
+                "administrativeCost" : 130,
+                "asPath" : [ ],
+                "discard" : true,
                 "generationPolicy" : "~AGGREGATE_ROUTE_POLICY:40.0.0.0/8~",
                 "metric" : 0,
                 "network" : "40.0.0.0/8",
@@ -18998,7 +19618,6 @@
         "interfaces" : {
           "ge-0/0/0" : {
             "name" : "ge-0/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -19017,6 +19636,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -19024,7 +19644,6 @@
           },
           "ge-0/0/0.0" : {
             "name" : "ge-0/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "1.1.1.1/24",
@@ -19048,6 +19667,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -19055,7 +19675,6 @@
           },
           "ge-0/0/0.99" : {
             "name" : "ge-0/0/0.99",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -19074,6 +19693,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -19273,20 +19893,6 @@
             "lifetimeSeconds" : 28800
           }
         },
-        "ikePolicies" : {
-          "1.2.3.4" : {
-            "name" : "1.2.3.4",
-            "proposals" : [
-              "PROPOSAL"
-            ]
-          }
-        },
-        "ikeProposals" : {
-          "PROPOSAL" : {
-            "name" : "PROPOSAL",
-            "lifetimeSeconds" : 28800
-          }
-        },
         "ipAccessLists" : {
           "zone~A~to~zone~B" : {
             "name" : "zone~A~to~zone~B",
@@ -19354,8 +19960,12 @@
             "sourceName" : "global~ASET",
             "sourceType" : "address-book"
           },
-          "notglobal~ASET" : {
-            "sourceName" : "notglobal~ASET",
+          "notglobalAttached~ASET" : {
+            "sourceName" : "notglobalAttached~ASET",
+            "sourceType" : "address-book"
+          },
+          "notglobalUnattached~ASET" : {
+            "sourceName" : "notglobalUnattached~ASET",
             "sourceType" : "address-book"
           }
         },
@@ -19363,7 +19973,10 @@
           "global~ASET" : {
             "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
           },
-          "notglobal~ASET" : {
+          "notglobalAttached~ASET" : {
+            "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+          },
+          "notglobalUnattached~ASET" : {
             "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
           }
         },
@@ -19649,7 +20262,6 @@
         "interfaces" : {
           "xe-0/0/0" : {
             "name" : "xe-0/0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -19668,6 +20280,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -19675,7 +20288,6 @@
           },
           "xe-0/0/0.0" : {
             "name" : "xe-0/0/0.0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "30,40,50",
             "autostate" : true,
@@ -19694,6 +20306,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "TRUNK",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -19872,7 +20485,6 @@
         "interfaces" : {
           "Ethernet1" : {
             "name" : "Ethernet1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -19891,6 +20503,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -19898,7 +20511,6 @@
           },
           "Ethernet2" : {
             "name" : "Ethernet2",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -19917,6 +20529,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -19924,7 +20537,6 @@
           },
           "Management1" : {
             "name" : "Management1",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -19943,6 +20555,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -19950,7 +20563,6 @@
           },
           "ap1" : {
             "name" : "ap1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -19969,6 +20581,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "UNKNOWN",
@@ -20916,7 +21529,6 @@
         "interfaces" : {
           "GigabitEthernet1" : {
             "name" : "GigabitEthernet1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "10.10.10.1/24"
@@ -20939,6 +21551,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -21285,7 +21898,6 @@
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -21304,6 +21916,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -21311,7 +21924,6 @@
           },
           "nve1" : {
             "name" : "nve1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -21330,6 +21942,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "VLAN",
@@ -23159,7 +23772,6 @@
         "interfaces" : {
           "Loopback1" : {
             "name" : "Loopback1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "137.164.17.8/32"
@@ -23182,6 +23794,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOOPBACK",
@@ -26653,7 +27266,6 @@
         "interfaces" : {
           "FastEthernet0/1" : {
             "name" : "FastEthernet0/1",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "12,34,56-78,99",
             "autostate" : true,
@@ -26672,7 +27284,8 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
+            "switchport" : false,
+            "switchportMode" : "TRUNK",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
@@ -27199,7 +27812,6 @@
         "interfaces" : {
           "FastEthernet0/0" : {
             "name" : "FastEthernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -27218,6 +27830,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -27250,7 +27863,6 @@
         "interfaces" : {
           "FastEthernet0/0" : {
             "name" : "FastEthernet0/0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -27269,6 +27881,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -27467,7 +28080,6 @@
         "interfaces" : {
           "fxp0" : {
             "name" : "fxp0",
-            "accessVlan" : 0,
             "active" : false,
             "allowedVlans" : "",
             "autostate" : true,
@@ -27486,6 +28098,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -27493,7 +28106,6 @@
           },
           "fxp0.0" : {
             "name" : "fxp0.0",
-            "accessVlan" : 0,
             "active" : false,
             "allPrefixes" : [
               "10.10.20.4/24"
@@ -27516,6 +28128,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -27523,7 +28136,6 @@
           },
           "irb" : {
             "name" : "irb",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -27542,6 +28154,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -27549,7 +28162,6 @@
           },
           "irb.100" : {
             "name" : "irb.100",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "10.200.100.254/24"
@@ -27572,6 +28184,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -27579,7 +28192,6 @@
           },
           "lo0" : {
             "name" : "lo0",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -27598,6 +28210,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOOPBACK",
@@ -27605,8 +28218,10 @@
           },
           "lo0.0" : {
             "name" : "lo0.0",
-            "accessVlan" : 0,
             "active" : true,
+            "allPrefixes" : [
+              "192.168.1.2/32"
+            ],
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -27620,18 +28235,19 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "prefix" : "192.168.1.2/32",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOOPBACK",
-            "vrf" : "fabric"
+            "vrf" : "default"
           },
           "lo0.1" : {
             "name" : "lo0.1",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "192.168.100.200/32"
@@ -27654,6 +28270,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOOPBACK",
@@ -27661,7 +28278,6 @@
           },
           "xe-0/0/2" : {
             "name" : "xe-0/0/2",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -27680,6 +28296,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -27687,7 +28304,6 @@
           },
           "xe-0/0/2.0" : {
             "name" : "xe-0/0/2.0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "172.16.7.1/30"
@@ -27710,6 +28326,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -27717,7 +28334,6 @@
           },
           "xe-0/0/3" : {
             "name" : "xe-0/0/3",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -27736,6 +28352,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -27743,7 +28360,6 @@
           },
           "xe-0/0/3.0" : {
             "name" : "xe-0/0/3.0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "172.16.5.1/30"
@@ -27766,6 +28382,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -27773,7 +28390,6 @@
           },
           "xe-0/0/4" : {
             "name" : "xe-0/0/4",
-            "accessVlan" : 0,
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
@@ -27792,6 +28408,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
@@ -27799,7 +28416,6 @@
           },
           "xe-0/0/4.0" : {
             "name" : "xe-0/0/4.0",
-            "accessVlan" : 0,
             "active" : true,
             "allPrefixes" : [
               "172.16.3.1/30"
@@ -27822,6 +28438,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
@@ -27852,7 +28469,9 @@
                       },
                       "prefixSet" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                        "prefixSpace" : [ ]
+                        "prefixSpace" : [
+                          "192.168.1.2/32"
+                        ]
                       }
                     }
                   ]
@@ -29085,10 +29704,7 @@
             ]
           },
           "fabric" : {
-            "name" : "fabric",
-            "interfaces" : [
-              "lo0.0"
-            ]
+            "name" : "fabric"
           },
           "vr" : {
             "name" : "vr",

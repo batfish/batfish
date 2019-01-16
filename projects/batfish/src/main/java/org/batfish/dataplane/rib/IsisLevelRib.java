@@ -18,7 +18,6 @@ public class IsisLevelRib extends AbstractRib<IsisRoute> {
 
   @Override
   public int comparePreference(@Nonnull IsisRoute lhs, @Nonnull IsisRoute rhs) {
-    // Flipped rhs & lhs because lower values are more preferred.
-    return rhs.getMetric().compareTo(lhs.getMetric());
+    return IsisRib.routePreferenceComparator.compare(lhs, rhs);
   }
 }

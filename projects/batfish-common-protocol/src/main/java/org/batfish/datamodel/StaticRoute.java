@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -13,20 +12,14 @@ import javax.annotation.Nullable;
 
 /** A static route */
 public class StaticRoute extends AbstractRoute {
-  static final long DEFAULT_STATIC_ROUTE_METRIC = 0L;
 
+  static final long DEFAULT_STATIC_ROUTE_METRIC = 0L;
+  private static final long serialVersionUID = 1L;
   private static final String PROP_NEXT_HOP_INTERFACE = "nextHopInterface";
 
-  private static final long serialVersionUID = 1L;
-
-  private final int _administrativeCost;
-
   private final long _metric;
-
   @Nonnull private final String _nextHopInterface;
-
   @Nonnull private final Ip _nextHopIp;
-
   private final int _tag;
 
   @JsonCreator
@@ -57,12 +50,7 @@ public class StaticRoute extends AbstractRoute {
       int tag,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(network);
-    setNonForwarding(nonForwarding);
-    setNonRouting(nonRouting);
-    checkArgument(
-        administrativeCost >= 0, "Invalid admin distance for static route: %d", administrativeCost);
-    _administrativeCost = administrativeCost;
+    super(network, administrativeCost, nonRouting, nonForwarding);
     _metric = metric;
     _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
     _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
@@ -77,20 +65,13 @@ public class StaticRoute extends AbstractRoute {
       return false;
     }
     StaticRoute rhs = (StaticRoute) o;
-    return _administrativeCost == rhs._administrativeCost
+    return _admin == rhs._admin
         && _tag == rhs._tag
         && getNonForwarding() == rhs.getNonForwarding()
         && getNonRouting() == rhs.getNonRouting()
         && Objects.equals(_network, rhs._network)
         && Objects.equals(_nextHopIp, rhs._nextHopIp)
         && Objects.equals(_nextHopInterface, rhs._nextHopInterface);
-  }
-
-  @Override
-  @JsonIgnore(false)
-  @JsonProperty(PROP_ADMINISTRATIVE_COST)
-  public int getAdministrativeCost() {
-    return _administrativeCost;
   }
 
   @Override
@@ -135,7 +116,7 @@ public class StaticRoute extends AbstractRoute {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _administrativeCost,
+        _admin,
         getNonForwarding(),
         getNonRouting(),
         _metric,
@@ -143,11 +124,6 @@ public class StaticRoute extends AbstractRoute {
         _nextHopInterface,
         _nextHopIp,
         _tag);
-  }
-
-  @Override
-  protected final String protocolRouteString() {
-    return " tag:" + _tag;
   }
 
   @Override

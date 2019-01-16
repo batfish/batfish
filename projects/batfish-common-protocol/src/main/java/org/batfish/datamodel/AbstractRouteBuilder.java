@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 
@@ -9,19 +10,14 @@ public abstract class AbstractRouteBuilder<
     S extends AbstractRouteBuilder<S, T>, T extends AbstractRoute> {
 
   private int _admin;
-
   private long _metric;
-
   private Prefix _network;
-
   private Ip _nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
-
   private boolean _nonForwarding;
-
   private boolean _nonRouting;
-
   private int _tag = Route.UNSET_ROUTE_TAG;
 
+  @Nonnull
   public abstract T build();
 
   public final Integer getAdmin() {
@@ -34,6 +30,7 @@ public abstract class AbstractRouteBuilder<
   }
 
   // To handle the class casting exception while returning S in chaining methods
+  @Nonnull
   protected abstract S getThis();
 
   public final Long getMetric() {

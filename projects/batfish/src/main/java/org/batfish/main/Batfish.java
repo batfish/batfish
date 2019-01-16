@@ -6,6 +6,15 @@ import static com.google.common.base.Verify.verify;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
+import static org.batfish.common.util.CompletionMetadataUtils.getAddressBooks;
+import static org.batfish.common.util.CompletionMetadataUtils.getAddressGroups;
+import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
+import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
+import static org.batfish.common.util.CompletionMetadataUtils.getIps;
+import static org.batfish.common.util.CompletionMetadataUtils.getPrefixes;
+import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
+import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
+import static org.batfish.common.util.CompletionMetadataUtils.getZones;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
@@ -42,7 +51,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +83,7 @@ import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
+import org.batfish.common.CompletionMetadata;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.common.NetworkSnapshot;
@@ -99,6 +108,7 @@ import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.IpsecUtil;
 import org.batfish.config.Settings;
 import org.batfish.config.TestrigSettings;
 import org.batfish.datamodel.AbstractRoute;
@@ -123,7 +133,6 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.RipNeighbor;
 import org.batfish.datamodel.RipProcess;
@@ -239,7 +248,6 @@ import org.batfish.z3.Synthesizer;
 import org.batfish.z3.SynthesizerInputImpl;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.OrExpr;
-import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.jgrapht.Graph;
@@ -252,7 +260,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
 
   private static final Pattern MANAGEMENT_INTERFACES =
-      Pattern.compile("(\\Amgmt)|(\\Amanagement)|(\\Afxp0)|(\\Aem0)|(\\Ame0)", CASE_INSENSITIVE);
+      Pattern.compile(
+          "(\\Amgmt)|(\\Amanagement)|(\\Afxp0)|(\\Aem0)|(\\Ame0)|(\\Avme)", CASE_INSENSITIVE);
 
   private static final Pattern MANAGEMENT_VRFS =
       Pattern.compile("(\\Amgmt)|(\\Amanagement)", CASE_INSENSITIVE);
@@ -769,7 +778,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     Map<String, Configuration> configs =
         new BatfishCompressor(new BDDPacket(), this, clonedConfigs).compress(headerSpace);
-    Topology topo = CommonUtil.synthesizeTopology(configs);
+    Topology topo = TopologyUtil.synthesizeL3Topology(configs);
     DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
     ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(false, configs, topo);
 
@@ -832,6 +841,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.resetTimer();
     Topology topology = computeTestrigTopology(configurations);
     topology.prune(getEdgeBlacklist(), getNodeBlacklist(), getInterfaceBlacklist());
+    topology.pruneFailedIpsecSessionEdges(
+        IpsecUtil.initIpsecTopology(configurations), configurations);
     _logger.printElapsedTime();
     return topology;
   }
@@ -872,7 +883,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     // guess adjacencies based on interface subnetworks
     _logger.info("*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
-    return CommonUtil.synthesizeTopology(configurations);
+    return TopologyUtil.synthesizeL3Topology(configurations);
   }
 
   private Map<String, Configuration> convertConfigurations(
@@ -1046,7 +1057,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
           vlans.including(vlanNumber);
         } else if (iface.getSwitchportMode() == SwitchportMode.ACCESS) { // access mode ACCESS
           vlanNumber = iface.getAccessVlan();
-          vlans.including(vlanNumber);
+          if (vlanNumber != null) {
+            vlans.including(vlanNumber);
+          }
           // Any other Switch Port mode is unsupported
         } else if (iface.getSwitchportMode() != SwitchportMode.NONE) {
           _logger.warnf(
@@ -1077,39 +1090,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
               iface.setBlacklisted(true);
             }
           }
-        }
-      }
-    }
-  }
-
-  private void disableUnusableVpnInterfaces(Map<String, Configuration> configurations) {
-    CommonUtil.initRemoteIpsecVpns(configurations);
-    for (Configuration c : configurations.values()) {
-      for (IpsecVpn vpn : c.getIpsecVpns().values()) {
-        Interface bindInterface = vpn.getBindInterface();
-        if (bindInterface == null) {
-          // Nothing to disable.
-          continue;
-        }
-
-        if (bindInterface.getInterfaceType() == InterfaceType.PHYSICAL) {
-          // Skip tunnels bound to physical interfaces (aka, Cisco interface crypto-map).
-          continue;
-        }
-
-        IpsecVpn remoteVpn = vpn.getRemoteIpsecVpn();
-        if (remoteVpn == null
-            || !vpn.compatibleIkeProposals(remoteVpn)
-            || !vpn.compatibleIpsecProposals(remoteVpn)
-            || !vpn.compatiblePreSharedKey(remoteVpn)) {
-          String hostname = c.getHostname();
-          bindInterface.setActive(false);
-          bindInterface.setBlacklisted(true);
-          String bindInterfaceName = bindInterface.getName();
-          _logger.warnf(
-              "WARNING: Disabling unusable vpn interface because we cannot determine remote "
-                  + "endpoint: \"%s:%s\"\n",
-              hostname, bindInterfaceName);
         }
       }
     }
@@ -1457,7 +1437,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return _settings.getImmutableConfiguration();
   }
 
-  NetworkSnapshot getNetworkSnapshot() {
+  @Override
+  public NetworkSnapshot getNetworkSnapshot() {
     return new NetworkSnapshot(_settings.getContainer(), _testrigSettings.getName());
   }
 
@@ -2564,53 +2545,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return advertSet;
   }
 
-  /**
-   * Reads the external bgp announcement specified in the environment, and populates the
-   * vendor-independent configurations with data about those announcements
-   *
-   * @param configurations The vendor-independent configurations to be modified
-   */
-  public Set<BgpAdvertisement> processExternalBgpAnnouncements(
-      Map<String, Configuration> configurations, SortedSet<Long> allCommunities) {
-    Set<BgpAdvertisement> advertSet = new LinkedHashSet<>();
-    Path externalBgpAnnouncementsPath = _testrigSettings.getExternalBgpAnnouncementsPath();
-    if (Files.exists(externalBgpAnnouncementsPath)) {
-      String externalBgpAnnouncementsFileContents =
-          CommonUtil.readFile(externalBgpAnnouncementsPath);
-      // Populate advertSet with BgpAdvertisements that
-      // gets passed to populatePrecomputedBgpAdvertisements.
-      // See populatePrecomputedBgpAdvertisements for the things that get
-      // extracted from these advertisements.
-
-      try {
-        JSONObject jsonObj = new JSONObject(externalBgpAnnouncementsFileContents);
-
-        JSONArray announcements = jsonObj.getJSONArray(BfConsts.PROP_BGP_ANNOUNCEMENTS);
-
-        for (int index = 0; index < announcements.length(); index++) {
-          JSONObject announcement = new JSONObject();
-          announcement.put("@id", index);
-          JSONObject announcementSrc = announcements.getJSONObject(index);
-          for (Iterator<?> i = announcementSrc.keys(); i.hasNext(); ) {
-            String key = (String) i.next();
-            if (!key.equals("@id")) {
-              announcement.put(key, announcementSrc.get(key));
-            }
-          }
-          BgpAdvertisement bgpAdvertisement =
-              BatfishObjectMapper.mapper()
-                  .readValue(announcement.toString(), BgpAdvertisement.class);
-          allCommunities.addAll(bgpAdvertisement.getCommunities());
-          advertSet.add(bgpAdvertisement);
-        }
-
-      } catch (JSONException | IOException e) {
-        throw new BatfishException("Problems parsing JSON in " + externalBgpAnnouncementsPath, e);
-      }
-    }
-    return advertSet;
-  }
-
   @Override
   public void processFlows(Set<Flow> flows, boolean ignoreFilters) {
     DataPlane dp = loadDataPlane();
@@ -3015,7 +2949,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // TODO: take this out once dependencies are *the* definitive way to disable interfaces
     disableUnusableVlanInterfaces(configurations);
-    disableUnusableVpnInterfaces(configurations);
   }
 
   /**
@@ -3034,6 +2967,32 @@ public class Batfish extends PluginConsumer implements IBatfish {
     updateBlacklistedAndInactiveConfigs(configurations);
     postProcessAggregatedInterfaces(configurations);
     postProcessOspfCosts(configurations);
+    computeAndStoreCompletionMetadata(configurations);
+  }
+
+  private void computeAndStoreCompletionMetadata(Map<String, Configuration> configurations) {
+    try {
+      _storage.storeCompletionMetadata(
+          computeCompletionMetadata(configurations),
+          _settings.getContainer(),
+          _testrigSettings.getName());
+    } catch (IOException e) {
+      _logger.errorf("Error storing CompletionMetadata: %s", e);
+    }
+  }
+
+  private CompletionMetadata computeCompletionMetadata(Map<String, Configuration> configurations) {
+    ReferenceLibrary referenceLibrary = getReferenceLibraryData();
+    return new CompletionMetadata(
+        getAddressBooks(referenceLibrary),
+        getAddressGroups(referenceLibrary),
+        getFilterNames(configurations),
+        getInterfaces(configurations),
+        getIps(configurations),
+        getPrefixes(configurations),
+        getStructureNames(configurations),
+        getVrfs(configurations),
+        getZones(configurations));
   }
 
   private void repairEnvironmentBgpTables() {

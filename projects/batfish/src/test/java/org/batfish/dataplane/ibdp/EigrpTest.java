@@ -20,7 +20,7 @@ import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -102,7 +102,7 @@ public class EigrpTest {
     NetworkFactory nf = new NetworkFactory();
 
     EigrpProcess.Builder epb =
-        EigrpProcess.builder().setAsNumber(asn).setRouterId(new Ip("100.100.100.100"));
+        EigrpProcess.builder().setAsNumber(asn).setRouterId(Ip.parse("100.100.100.100"));
     Interface.Builder eib = nf.interfaceBuilder().setOspfCost(1);
 
     /* Configuration 1 */
@@ -242,7 +242,7 @@ public class EigrpTest {
         nf.routingPolicyBuilder().setStatements(getExportPolicyStatements(EIGRP, EIGRP, 2L));
 
     EigrpProcess.Builder epb =
-        EigrpProcess.builder().setAsNumber(asn).setRouterId(new Ip("100.100.100.100"));
+        EigrpProcess.builder().setAsNumber(asn).setRouterId(Ip.parse("100.100.100.100"));
     Interface.Builder eib = nf.interfaceBuilder().setOspfCost(1);
 
     Interface.Builder nib = nf.interfaceBuilder().setOspfCost(1);
@@ -261,7 +261,7 @@ public class EigrpTest {
       buildOspfExternalInterface(oib, c1E1To4Name, R1_E1_4_ADDR);
     } else if (otherProcess == EIGRP) {
       // Build other EIGRP
-      epb.setAsNumber(otherAsn).setRouterId(new Ip("200.200.200.200")).build();
+      epb.setAsNumber(otherAsn).setRouterId(Ip.parse("200.200.200.200")).build();
       epb.setMode(mode1).build();
       buildEigrpLoopbackInterface(eib, otherAsn, mode1, R1_L0_ADDR);
       buildEigrpExternalInterface(
@@ -269,7 +269,7 @@ public class EigrpTest {
       buildEigrpExternalInterface(
           eib, otherAsn, mode1, R1_E1_4_ADDR, c1E1To4Name, c1E1To4DelayMult);
       // reset builder
-      epb.setAsNumber(asn).setRouterId(new Ip("100.100.100.100"));
+      epb.setAsNumber(asn).setRouterId(Ip.parse("100.100.100.100"));
     }
 
     /* Configuration 2 */
@@ -290,13 +290,13 @@ public class EigrpTest {
       buildOspfExternalInterface(oib, c2E2To1Name, R2_E2_1_ADDR);
     } else if (otherProcess == EIGRP) {
       // Build other EIGRP
-      epb.setAsNumber(otherAsn).setRouterId(new Ip("200.200.200.200")).build();
+      epb.setAsNumber(otherAsn).setRouterId(Ip.parse("200.200.200.200")).build();
       epb.setExportPolicy(exportOtherEigrpIntoEigrp.setOwner(c2).build().getName());
       buildEigrpLoopbackInterface(eib, otherAsn, mode2, R2_L0_ADDR);
       buildEigrpExternalInterface(
           eib, otherAsn, mode2, R2_E2_1_ADDR, c2E2To1Name, c2E2To1DelayMult);
       // reset builder
-      epb.setAsNumber(asn).setRouterId(new Ip("100.100.100.100"));
+      epb.setAsNumber(asn).setRouterId(Ip.parse("100.100.100.100"));
     }
 
     /* Configuration 3 */
@@ -326,11 +326,11 @@ public class EigrpTest {
       buildOspfExternalInterface(oib, c4E4To1Name, R4_E4_1_ADDR);
     } else if (otherProcess == EIGRP) {
       // Build other EIGRP
-      epb.setAsNumber(otherAsn).setRouterId(new Ip("200.200.200.200")).build();
+      epb.setAsNumber(otherAsn).setRouterId(Ip.parse("200.200.200.200")).build();
       buildEigrpExternalInterface(
           eib, otherAsn, mode4, R4_E4_1_ADDR, c4E4To1Name, c4E4To1DelayMult);
       // reset builder
-      epb.setAsNumber(asn).setRouterId(new Ip("100.100.100.100"));
+      epb.setAsNumber(asn).setRouterId(Ip.parse("100.100.100.100"));
     }
 
     return buildDataPlane(c1, c2, c3, c4);
@@ -398,7 +398,7 @@ public class EigrpTest {
             new IncrementalDataPlaneSettings(),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             (s, i) -> new AtomicInteger());
-    Topology topology = CommonUtil.synthesizeTopology(configurations);
+    Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     return (IncrementalDataPlane)
         engine.computeDataPlane(configurations, topology, Collections.emptySet())._dataPlane;
   }

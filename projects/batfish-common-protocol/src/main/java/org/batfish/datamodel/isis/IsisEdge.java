@@ -6,10 +6,11 @@ import static java.util.Optional.empty;
 import static org.batfish.datamodel.isis.IsisLevel.LEVEL_1;
 import static org.batfish.datamodel.isis.IsisLevel.LEVEL_1_2;
 import static org.batfish.datamodel.isis.IsisLevel.LEVEL_2;
+import static org.batfish.datamodel.isis.IsisLevel.intersection;
+import static org.batfish.datamodel.isis.IsisLevel.union;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.annotations.VisibleForTesting;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
@@ -29,33 +30,6 @@ public final class IsisEdge implements Comparable<IsisEdge> {
     return union(
         settings.getLevel1() != null ? LEVEL_1 : null,
         settings.getLevel2() != null ? LEVEL_2 : null);
-  }
-
-  @VisibleForTesting
-  @Nullable
-  public static IsisLevel intersection(IsisLevel... levels) {
-    if (levels.length == 0) {
-      return null;
-    }
-    IsisLevel overlap = LEVEL_1_2;
-    for (IsisLevel level : levels) {
-      overlap = intersection(overlap, level);
-    }
-    return overlap;
-  }
-
-  @Nullable
-  private static IsisLevel intersection(@Nullable IsisLevel first, @Nullable IsisLevel second) {
-    if (first == second) {
-      return first;
-    }
-    if (first == LEVEL_1_2) {
-      return second;
-    }
-    if (second == LEVEL_1_2) {
-      return first;
-    }
-    return null;
   }
 
   /** Return an {@link IsisEdge} if there is an IS-IS circuit on {@code edge}. */
@@ -120,26 +94,6 @@ public final class IsisEdge implements Comparable<IsisEdge> {
     return union(
         isisProcess.getLevel1() != null ? LEVEL_1 : null,
         isisProcess.getLevel2() != null ? LEVEL_2 : null);
-  }
-
-  @Nullable
-  private static IsisLevel union(@Nullable IsisLevel level1, @Nullable IsisLevel level2) {
-    if (level1 == level2) {
-      return level1;
-    }
-    if (level1 == LEVEL_1_2 || level2 == LEVEL_1_2) {
-      return LEVEL_1_2;
-    }
-    if (level1 == LEVEL_1 || level2 == LEVEL_1) {
-      // other is null or LEVEL_2
-      if (level1 == LEVEL_2 || level2 == LEVEL_2) {
-        return LEVEL_1_2;
-      }
-      // other is null
-      return LEVEL_1;
-    }
-    // one is null and one is LEVEL_2
-    return LEVEL_2;
   }
 
   private static final String PROP_CIRCUIT_TYPE = "circuitType";

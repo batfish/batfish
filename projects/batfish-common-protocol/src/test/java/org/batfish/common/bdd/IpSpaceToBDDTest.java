@@ -39,7 +39,7 @@ public class IpSpaceToBDDTest {
 
   @Test
   public void testIpIpSpace_0() {
-    IpSpace ipSpace = new Ip("0.0.0.0").toIpSpace();
+    IpSpace ipSpace = Ip.parse("0.0.0.0").toIpSpace();
     BDD bdd = ipSpace.accept(_ipSpaceToBdd);
     assertThat(
         bdd,
@@ -52,7 +52,7 @@ public class IpSpaceToBDDTest {
 
   @Test
   public void testIpIpSpace_255() {
-    IpSpace ipSpace = new Ip("255.255.255.255").toIpSpace();
+    IpSpace ipSpace = Ip.parse("255.255.255.255").toIpSpace();
     BDD bdd = ipSpace.accept(_ipSpaceToBdd);
     assertThat(bdd, equalTo(_bddOps.and(_ipAddrBdd.getBitvec())));
   }
@@ -110,7 +110,7 @@ public class IpSpaceToBDDTest {
 
   @Test
   public void testIpWildcard() {
-    IpSpace ipSpace = new IpWildcard(new Ip("255.0.255.0"), new Ip("0.255.0.255")).toIpSpace();
+    IpSpace ipSpace = new IpWildcard(Ip.parse("255.0.255.0"), Ip.parse("0.255.0.255")).toIpSpace();
     BDD bdd = ipSpace.accept(_ipSpaceToBdd);
     assertThat(
         bdd,
@@ -125,7 +125,7 @@ public class IpSpaceToBDDTest {
   @Test
   public void testIpWildcard_prefix() {
     IpSpace ipWildcardIpSpace =
-        new IpWildcard(new Ip("123.0.0.0"), new Ip("0.255.255.255")).toIpSpace();
+        new IpWildcard(Ip.parse("123.0.0.0"), Ip.parse("0.255.255.255")).toIpSpace();
     IpSpace prefixIpSpace = Prefix.parse("123.0.0.0/8").toIpSpace();
     BDD bdd1 = ipWildcardIpSpace.accept(_ipSpaceToBdd);
     BDD bdd2 = prefixIpSpace.accept(_ipSpaceToBdd);
@@ -134,7 +134,7 @@ public class IpSpaceToBDDTest {
 
   @Test
   public void testIpSpaceReference() {
-    Ip ip = new Ip("1.1.1.1");
+    Ip ip = Ip.parse("1.1.1.1");
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of("foo", ip.toIpSpace());
     IpSpace reference = new IpSpaceReference("foo");
     IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(_ipAddrBdd, namedIpSpaces);

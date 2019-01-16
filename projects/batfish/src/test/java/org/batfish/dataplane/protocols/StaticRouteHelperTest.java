@@ -32,7 +32,7 @@ public class StaticRouteHelperTest {
 
     StaticRoute.Builder sb =
         StaticRoute.builder().setNetwork(Prefix.parse("9.9.9.0/24")).setAdministrativeCost(1);
-    Ip someIp = new Ip("1.1.1.1");
+    Ip someIp = Ip.parse("1.1.1.1");
 
     // Unset interface
     StaticRoute sr = sb.setNextHopInterface(Route.UNSET_NEXT_HOP_INTERFACE).build();
@@ -65,7 +65,7 @@ public class StaticRouteHelperTest {
   /** Check no static routes are activated if RIB is empty */
   @Test
   public void testShouldActivateEmptyRib() {
-    Ip nextHop = new Ip("1.1.1.1");
+    Ip nextHop = Ip.parse("1.1.1.1");
     StaticRoute sr =
         StaticRoute.builder()
             .setNetwork(Prefix.parse("9.9.9.0/24"))
@@ -84,7 +84,7 @@ public class StaticRouteHelperTest {
     StaticRoute sr =
         StaticRoute.builder()
             .setNetwork(Prefix.parse("9.9.9.0/24"))
-            .setNextHopIp(new Ip("2.2.2.2"))
+            .setNextHopIp(Ip.parse("2.2.2.2"))
             .setAdministrativeCost(1)
             .build();
 
@@ -106,7 +106,7 @@ public class StaticRouteHelperTest {
     StaticRoute sr =
         StaticRoute.builder()
             .setNetwork(Prefix.parse("9.9.9.0/24"))
-            .setNextHopIp(new Ip("1.1.1.1"))
+            .setNextHopIp(Ip.parse("1.1.1.1"))
             .setAdministrativeCost(1)
             .build();
 
@@ -120,7 +120,7 @@ public class StaticRouteHelperTest {
     _rib.mergeRoute(
         StaticRoute.builder()
             .setNetwork(Prefix.parse("9.9.9.0/24"))
-            .setNextHopIp(new Ip("1.1.1.2"))
+            .setNextHopIp(Ip.parse("1.1.1.2"))
             .setAdministrativeCost(1)
             .build());
 
@@ -128,7 +128,7 @@ public class StaticRouteHelperTest {
     StaticRoute sr =
         StaticRoute.builder()
             .setNetwork(Prefix.parse("9.9.9.0/24"))
-            .setNextHopIp(new Ip("9.9.9.9"))
+            .setNextHopIp(Ip.parse("9.9.9.9"))
             .setAdministrativeCost(1)
             .build();
 
@@ -142,7 +142,7 @@ public class StaticRouteHelperTest {
     StaticRoute sr =
         StaticRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
-            .setNextHopIp(new Ip("1.1.1.1"))
+            .setNextHopIp(Ip.parse("1.1.1.1"))
             .setAdministrativeCost(1)
             .build();
     _rib.mergeRoute(sr);
@@ -165,7 +165,7 @@ public class StaticRouteHelperTest {
     _rib.mergeRoute(
         StaticRoute.builder()
             .setNetwork(Prefix.parse("9.9.9.0/24"))
-            .setNextHopIp(new Ip("1.1.1.2"))
+            .setNextHopIp(Ip.parse("1.1.1.2"))
             .setAdministrativeCost(1)
             .build());
 
@@ -173,7 +173,7 @@ public class StaticRouteHelperTest {
     StaticRoute sr =
         StaticRoute.builder()
             .setNetwork(Prefix.parse("9.9.9.0/24"))
-            .setNextHopIp(new Ip("1.1.1.1"))
+            .setNextHopIp(Ip.parse("1.1.1.1"))
             .setAdministrativeCost(1)
             .build();
 
@@ -191,13 +191,13 @@ public class StaticRouteHelperTest {
     _rib.mergeRoute(
         StaticRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
-            .setNextHopIp(new Ip("2.2.2.2"))
+            .setNextHopIp(Ip.parse("2.2.2.2"))
             .setAdministrativeCost(1)
             .build());
     _rib.mergeRoute(
         StaticRoute.builder()
             .setNetwork(Prefix.parse("2.2.2.0/24"))
-            .setNextHopIp(new Ip("9.9.9.9"))
+            .setNextHopIp(Ip.parse("9.9.9.9"))
             .setAdministrativeCost(1)
             .build());
 
@@ -205,7 +205,7 @@ public class StaticRouteHelperTest {
     StaticRoute sr =
         StaticRoute.builder()
             .setNetwork(Prefix.parse("9.9.9.0/24"))
-            .setNextHopIp(new Ip("1.1.1.1"))
+            .setNextHopIp(Ip.parse("1.1.1.1"))
             .setAdministrativeCost(1)
             .build();
 
@@ -222,7 +222,7 @@ public class StaticRouteHelperTest {
     StaticRoute sr =
         StaticRoute.builder()
             .setNetwork(Prefix.parse("9.9.9.0/24"))
-            .setNextHopIp(new Ip("9.9.9.9"))
+            .setNextHopIp(Ip.parse("9.9.9.9"))
             .setAdministrativeCost(1)
             .build();
 

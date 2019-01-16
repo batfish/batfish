@@ -1,0 +1,12 @@
+#
+set system host-name firewall-zone-address-book-inline
+#
+set security policies from-zone trust to-zone untrust policy PNAME match source-address ADDR1
+set security policies from-zone trust to-zone untrust policy PNAME match destination-address any
+set security policies from-zone trust to-zone untrust policy PNAME match application any
+set security policies from-zone trust to-zone untrust policy PNAME then permit
+set security zones security-zone trust interfaces ge-0/0/0.0
+set security zones security-zone untrust interfaces ge-0/0/1.0
+set security zones security-zone trust address-book address ADDR1 2.2.2.2/32
+set interfaces ge-0/0/1 unit 0 family inet address 1.2.4.4/24
+set interfaces ge-0/0/0 unit 0 family inet address 1.2.3.4/24

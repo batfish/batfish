@@ -76,6 +76,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.ColumnSortOption;
+import org.batfish.common.CompletionMetadata;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.Task;
@@ -94,8 +95,11 @@ import org.batfish.coordinator.config.Settings;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.coordinator.resources.ForkSnapshotBean;
 import org.batfish.datamodel.AnalysisMetadata;
+import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
+import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.SnapshotMetadataEntry;
 import org.batfish.datamodel.acl.AclTrace;
@@ -107,7 +111,6 @@ import org.batfish.datamodel.answers.AnswerMetadataUtil;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
-import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.answers.Issue;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.Metrics;
@@ -123,12 +126,16 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
+import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
+import org.batfish.datamodel.questions.IpsecSessionStatus;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
+import org.batfish.datamodel.questions.PropertySpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.Variable;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.ExcludedRows;
 import org.batfish.datamodel.table.Row;
@@ -145,7 +152,10 @@ import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
+import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.DispositionSpecifier;
+import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.storage.FileBasedStorageDirectoryProvider;
 import org.batfish.storage.StorageProvider;
 import org.codehaus.jettison.json.JSONArray;
@@ -394,58 +404,243 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  private CompletionMetadata getCompletionMetadata(String network, String snapshot)
+      throws IOException {
+    checkArgument(!isNullOrEmpty(network), "Network name should be supplied");
+    checkArgument(!isNullOrEmpty(snapshot), "Snapshot name should be supplied");
+
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return null;
+    }
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    return _storage.loadCompletionMetadata(networkId, snapshotId);
+  }
+
   public List<AutocompleteSuggestion> autoComplete(
-      String container,
-      String testrig,
-      CompletionType completionType,
+      String network,
+      String snapshot,
+      Variable.Type completionType,
       String query,
       int maxSuggestions)
       throws IOException {
+
+    List<AutocompleteSuggestion> suggestions;
+
     switch (completionType) {
-      case BGP_PEER_PROPERTY:
+      case ADDRESS_BOOK:
         {
-          List<AutocompleteSuggestion> suggestions = BgpPeerPropertySpecifier.autoComplete(query);
-          return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+          CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
+          if (completionMetadata == null) {
+            return null;
+          }
+          suggestions =
+              PropertySpecifier.baseAutoComplete(query, completionMetadata.getAddressBooks());
+
+          break;
         }
-      case BGP_PROCESS_PROPERTY:
+      case ADDRESS_GROUP:
         {
-          List<AutocompleteSuggestion> suggestions =
-              BgpProcessPropertySpecifier.autoComplete(query);
-          return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+          CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
+          if (completionMetadata == null) {
+            return null;
+          }
+          suggestions =
+              PropertySpecifier.baseAutoComplete(query, completionMetadata.getAddressGroups());
+          break;
         }
-      case INTERFACE_PROPERTY:
+      case BGP_PEER_PROPERTY_SPEC:
         {
-          List<AutocompleteSuggestion> suggestions = InterfacePropertySpecifier.autoComplete(query);
-          return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+          suggestions = BgpPeerPropertySpecifier.autoComplete(query);
+          break;
         }
-      case NAMED_STRUCTURE:
+      case BGP_PROCESS_PROPERTY_SPEC:
         {
-          List<AutocompleteSuggestion> suggestions = NamedStructureSpecifier.autoComplete(query);
-          return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+          suggestions = BgpProcessPropertySpecifier.autoComplete(query);
+          break;
         }
-      case NODE:
+      case BGP_SESSION_STATUS:
+        {
+          suggestions =
+              PropertySpecifier.baseAutoComplete(
+                  query,
+                  Stream.of(ConfiguredSessionStatus.values())
+                      .map(ConfiguredSessionStatus::name)
+                      .collect(Collectors.toSet()));
+          break;
+        }
+      case BGP_SESSION_TYPE:
+        {
+          suggestions =
+              PropertySpecifier.baseAutoComplete(
+                  query,
+                  Stream.of(SessionType.values())
+                      .map(SessionType::name)
+                      .collect(Collectors.toSet()));
+
+          break;
+        }
+      case DISPOSITION_SPEC:
+        {
+          suggestions = DispositionSpecifier.autoComplete(query);
+          break;
+        }
+      case FILTER:
+        {
+          CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
+          if (completionMetadata == null) {
+            return null;
+          }
+          suggestions =
+              PropertySpecifier.baseAutoComplete(query, completionMetadata.getFilterNames());
+          break;
+        }
+      case FLOW_STATE:
+        {
+          suggestions =
+              PropertySpecifier.baseAutoComplete(
+                  query,
+                  Stream.of(FlowState.values()).map(FlowState::name).collect(Collectors.toSet()));
+          break;
+        }
+      case INTERFACE:
+        {
+          CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
+          if (completionMetadata == null) {
+            return null;
+          }
+          suggestions =
+              PropertySpecifier.baseAutoComplete(
+                  query,
+                  completionMetadata
+                      .getInterfaces()
+                      .stream()
+                      .map(NodeInterfacePair::toString)
+                      .collect(Collectors.toSet()));
+          break;
+        }
+      case INTERFACE_PROPERTY_SPEC:
+        {
+          suggestions = InterfacePropertySpecifier.autoComplete(query);
+          break;
+        }
+      case IP:
+        {
+          CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
+          if (completionMetadata == null) {
+            return null;
+          }
+          suggestions = PropertySpecifier.baseAutoComplete(query, completionMetadata.getIps());
+          break;
+        }
+      case IPSEC_SESSION_STATUS:
+        {
+          suggestions =
+              PropertySpecifier.baseAutoComplete(
+                  query,
+                  Stream.of(IpsecSessionStatus.values())
+                      .map(IpsecSessionStatus::name)
+                      .collect(Collectors.toSet()));
+          break;
+        }
+      case NAMED_STRUCTURE_SPEC:
+        {
+          suggestions = NamedStructureSpecifier.autoComplete(query);
+          break;
+        }
+      case NODE_PROPERTY_SPEC:
+        {
+          suggestions = NodePropertySpecifier.autoComplete(query);
+          break;
+        }
+      case NODE_ROLE_DIMENSION:
         {
           checkArgument(
-              !isNullOrEmpty(testrig),
+              !isNullOrEmpty(network),
+              "Network name should be supplied for 'NODE_ROLE_DIMENSION' autoCompletion");
+          suggestions =
+              PropertySpecifier.baseAutoComplete(
+                  query,
+                  getNetworkNodeRoles(network)
+                      .getNodeRoleDimensions()
+                      .stream()
+                      .map(NodeRoleDimension::getName)
+                      .collect(Collectors.toSet()));
+          break;
+        }
+      case NODE_SPEC:
+        {
+          checkArgument(
+              !isNullOrEmpty(snapshot),
               "Snapshot name should be supplied for 'NODE' autoCompletion");
-          List<AutocompleteSuggestion> suggestions =
+          suggestions =
               NodesSpecifier.autoComplete(
-                  query, getNodes(container, testrig), getNetworkNodeRoles(container));
-          return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+                  query, getNodes(network, snapshot), getNetworkNodeRoles(network));
+          break;
         }
-      case NODE_PROPERTY:
+      case OSPF_PROPERTY_SPEC:
         {
-          List<AutocompleteSuggestion> suggestions = NodePropertySpecifier.autoComplete(query);
-          return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+          suggestions = OspfPropertySpecifier.autoComplete(query);
+          break;
         }
-      case OSPF_PROPERTY:
+      case PREFIX:
         {
-          List<AutocompleteSuggestion> suggestions = OspfPropertySpecifier.autoComplete(query);
-          return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+          CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
+          if (completionMetadata == null) {
+            return null;
+          }
+          suggestions = PropertySpecifier.baseAutoComplete(query, completionMetadata.getPrefixes());
+          break;
+        }
+      case PROTOCOL:
+        {
+          suggestions =
+              PropertySpecifier.baseAutoComplete(
+                  query,
+                  Stream.of(Protocol.values()).map(Protocol::name).collect(Collectors.toSet()));
+          break;
+        }
+      case ROUTING_PROTOCOL_SPEC:
+        {
+          suggestions = RoutingProtocolSpecifier.autoComplete(query);
+          break;
+        }
+      case STRUCTURE_NAME:
+        {
+          CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
+          if (completionMetadata == null) {
+            return null;
+          }
+          suggestions =
+              PropertySpecifier.baseAutoComplete(query, completionMetadata.getStructureNames());
+          break;
+        }
+      case VRF:
+        {
+          CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
+          if (completionMetadata == null) {
+            return null;
+          }
+          suggestions = PropertySpecifier.baseAutoComplete(query, completionMetadata.getVrfs());
+          break;
+        }
+      case ZONE:
+        {
+          CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
+          if (completionMetadata == null) {
+            return null;
+          }
+          suggestions = PropertySpecifier.baseAutoComplete(query, completionMetadata.getZones());
+          break;
         }
       default:
-        throw new UnsupportedOperationException("Unsupported completion type: " + completionType);
+        throw new IllegalArgumentException("Unsupported completion type: " + completionType);
     }
+    return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
   }
 
   private void checkTask(QueuedWork work, String worker) {

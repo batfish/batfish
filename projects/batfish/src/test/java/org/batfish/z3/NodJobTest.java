@@ -1,5 +1,7 @@
 package org.batfish.z3;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
+import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.question.SrcNattedConstraint.REQUIRE_NOT_SRC_NATTED;
 import static org.batfish.question.SrcNattedConstraint.REQUIRE_SRC_NATTED;
 import static org.batfish.question.SrcNattedConstraint.UNCONSTRAINED;
@@ -44,11 +46,11 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.SrcNattedConstraint;
@@ -113,7 +115,6 @@ public class NodJobTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Interface.Builder ib = nf.interfaceBuilder().setBandwidth(1E9d);
     IpAccessList.Builder aclb = nf.aclBuilder();
-    SourceNat.Builder snb = SourceNat.builder();
     Vrf.Builder vb = nf.vrfBuilder();
 
     _srcNode = cb.build();
@@ -122,7 +123,7 @@ public class NodJobTest {
     _ingressLocation = IngressLocation.vrf(_srcNode.getHostname(), _srcVrf.getName());
     Vrf dstVrf = vb.setOwner(_dstNode).build();
     Prefix p1 = Prefix.parse("1.0.0.0/31");
-    Ip poolIp1 = new Ip("1.0.0.10");
+    Ip poolIp1 = Ip.parse("1.0.0.10");
 
     // apply NAT to all packets
     IpAccessList sourceNat1Acl =
@@ -135,20 +136,18 @@ public class NodJobTest {
             .setOwner(_srcNode)
             .build();
 
-    SourceNat sourceNat1 =
-        // TODO add a test with poolIp1 to poolIp2. That will exercise the range logic,
-        // which is complex and inscrutable. Consider replacing that with bv_lte and bv_gte.
-        // Would be easier to understand, and Nuno says it will likely be more efficient.
-        snb.setPoolIpFirst(poolIp1).setPoolIpLast(poolIp1).setAcl(sourceNat1Acl).build();
     ib.setOwner(_srcNode)
         .setVrf(_srcVrf)
         .setAddress(new InterfaceAddress(p1.getStartIp(), p1.getPrefixLength()))
-        .setSourceNats(ImmutableList.of(sourceNat1))
+        .setOutgoingTransformation(
+            when(permittedByAcl(sourceNat1Acl.getName()))
+                .apply(TransformationStep.assignSourceIp(poolIp1, poolIp1))
+                .build())
         .build();
     ib.setOwner(_dstNode)
         .setVrf(dstVrf)
         .setAddress(new InterfaceAddress(p1.getEndIp(), p1.getPrefixLength()))
-        .setSourceNats(ImmutableList.of())
+        .setOutgoingTransformation(null)
         .build();
 
     // For the destination
@@ -210,11 +209,12 @@ public class NodJobTest {
     // Only one OriginateVrf choice, so this must be 0
     assertThat(
         fieldConstraints, hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, 0L));
-    assertThat(fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), new Ip("3.0.0.0").asLong()));
+    assertThat(
+        fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), Ip.parse("3.0.0.0").asLong()));
     assertThat(
         fieldConstraints,
-        hasEntry(equalTo(Field.SRC_IP.getName()), not(equalTo(new Ip("3.0.0.0").asLong()))));
-    assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("1.0.0.10").asLong()));
+        hasEntry(equalTo(Field.SRC_IP.getName()), not(equalTo(Ip.parse("3.0.0.0").asLong()))));
+    assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), Ip.parse("1.0.0.10").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
     _dataPlanePlugin.processFlows(flows, _dataPlane, false);
@@ -227,7 +227,7 @@ public class NodJobTest {
           assertThat(hops, hasSize(1));
           FlowTraceHop hop = hops.get(0);
           assertThat(hop.getTransformedFlow(), notNullValue());
-          assertThat(hop.getTransformedFlow().getSrcIp(), equalTo(new Ip("1.0.0.10")));
+          assertThat(hop.getTransformedFlow().getSrcIp(), equalTo(Ip.parse("1.0.0.10")));
         });
   }
 
@@ -276,8 +276,9 @@ public class NodJobTest {
     assertThat(smtInput._variablesAsConsts, hasKey("SRC_IP"));
     assertThat(fieldConstraints, hasKey(Field.SRC_IP.getName()));
 
-    assertThat(fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), new Ip("3.0.0.1").asLong()));
-    assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("3.0.0.1").asLong()));
+    assertThat(
+        fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), Ip.parse("3.0.0.1").asLong()));
+    assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), Ip.parse("3.0.0.1").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
     _dataPlanePlugin.processFlows(flows, _dataPlane, false);
@@ -300,7 +301,7 @@ public class NodJobTest {
   @Test
   public void testNotNattedSat() {
     HeaderSpace headerSpace = new HeaderSpace();
-    headerSpace.setSrcIps(new Ip("3.0.0.1").toIpSpace());
+    headerSpace.setSrcIps(Ip.parse("3.0.0.1").toIpSpace());
     NodJob nodJob = getNodJob(headerSpace, REQUIRE_NOT_SRC_NATTED);
     assertThat(checkSat(nodJob), equalTo(Status.SATISFIABLE));
   }
@@ -312,7 +313,7 @@ public class NodJobTest {
   @Test
   public void testNotNattedUnsat() {
     HeaderSpace headerSpace = new HeaderSpace();
-    headerSpace.setSrcIps(new Ip("3.0.0.1").toIpSpace());
+    headerSpace.setSrcIps(Ip.parse("3.0.0.1").toIpSpace());
     NodJob nodJob = getNodJob(headerSpace, REQUIRE_SRC_NATTED);
     assertThat(checkSat(nodJob), equalTo(Status.UNSATISFIABLE));
   }

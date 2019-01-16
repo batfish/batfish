@@ -11,5 +11,5 @@ set policy-options prefix-list p2 apply-groups g2
 set routing-options autonomous-system 1
 set protocols bgp group <SCRUBBED> neighbor 2.2.2.2 peer-as 2
 set protocols ospf apply-groups g3
-set protocols ospf area 0.0.0.1 interface iface_undefined passive
+set protocols ospf area 0.0.0.1 interface et-0/0/0.0 passive
 #

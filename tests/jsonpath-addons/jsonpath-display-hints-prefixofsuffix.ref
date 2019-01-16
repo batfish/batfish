@@ -75,7 +75,6 @@
               "interfaces" : {
                 "Ethernet0/0" : {
                   "name" : "Ethernet0/0",
-                  "accessVlan" : 0,
                   "active" : false,
                   "allowedVlans" : "",
                   "autostate" : true,
@@ -94,6 +93,7 @@
                   "ripEnabled" : false,
                   "ripPassive" : false,
                   "spanningTreePortfast" : false,
+                  "switchport" : false,
                   "switchportMode" : "NONE",
                   "switchportTrunkEncapsulation" : "DOT1Q",
                   "type" : "PHYSICAL",
@@ -101,7 +101,6 @@
                 },
                 "GigabitEthernet0/0" : {
                   "name" : "GigabitEthernet0/0",
-                  "accessVlan" : 0,
                   "active" : true,
                   "allPrefixes" : [
                     "10.12.11.2/24"
@@ -126,6 +125,7 @@
                   "ripEnabled" : false,
                   "ripPassive" : false,
                   "spanningTreePortfast" : false,
+                  "switchport" : false,
                   "switchportMode" : "NONE",
                   "switchportTrunkEncapsulation" : "DOT1Q",
                   "type" : "PHYSICAL",
@@ -133,7 +133,6 @@
                 },
                 "GigabitEthernet1/0" : {
                   "name" : "GigabitEthernet1/0",
-                  "accessVlan" : 0,
                   "active" : true,
                   "allPrefixes" : [
                     "2.12.11.1/24"
@@ -158,6 +157,7 @@
                   "ripEnabled" : false,
                   "ripPassive" : false,
                   "spanningTreePortfast" : false,
+                  "switchport" : false,
                   "switchportMode" : "NONE",
                   "switchportTrunkEncapsulation" : "DOT1Q",
                   "type" : "PHYSICAL",
@@ -165,7 +165,6 @@
                 },
                 "GigabitEthernet2/0" : {
                   "name" : "GigabitEthernet2/0",
-                  "accessVlan" : 0,
                   "active" : true,
                   "allPrefixes" : [
                     "2.12.12.1/24"
@@ -190,6 +189,7 @@
                   "ripEnabled" : false,
                   "ripPassive" : false,
                   "spanningTreePortfast" : false,
+                  "switchport" : false,
                   "switchportMode" : "NONE",
                   "switchportTrunkEncapsulation" : "DOT1Q",
                   "type" : "PHYSICAL",
@@ -197,7 +197,6 @@
                 },
                 "Loopback0" : {
                   "name" : "Loopback0",
-                  "accessVlan" : 0,
                   "active" : true,
                   "allPrefixes" : [
                     "2.1.1.1/32"
@@ -222,6 +221,7 @@
                   "ripEnabled" : false,
                   "ripPassive" : false,
                   "spanningTreePortfast" : false,
+                  "switchport" : false,
                   "switchportMode" : "NONE",
                   "switchportTrunkEncapsulation" : "DOT1Q",
                   "type" : "LOOPBACK",

@@ -276,7 +276,7 @@ public class BatfishTest {
     String testrigResourcePrefix = "org/batfish/grammar/cisco/testrigs/vrrp_multiple_best";
     List<String> configurationNames = ImmutableList.of("r1", "r2");
 
-    Ip vrrpAddress = new Ip("1.0.0.10");
+    Ip vrrpAddress = Ip.parse("1.0.0.10");
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -647,7 +647,9 @@ public class BatfishTest {
             "Management",
             "fxp0-0",
             "em0.0",
-            "me0.10");
+            "me0.10",
+            "vme",
+            "vme.0");
     config1.getAllInterfaces().get(ignoredIface1).setVrfName("Mgmt-intf");
     config1.getAllInterfaces().get(ignoredIface2).setVrfName("ManagementVrf");
     configs.put("config1", config1);

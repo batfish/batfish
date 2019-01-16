@@ -17,6 +17,8 @@ import org.batfish.representation.juniper.Nat.Type;
 @ParametersAreNonnullByDefault
 public class LogicalSystem implements Serializable {
 
+  public static final String GLOBAL_ADDRESS_BOOK_NAME = "global";
+
   private static final long serialVersionUID = 1L;
 
   private final Map<String, AddressBook> _addressBooks;
@@ -48,6 +50,8 @@ public class LogicalSystem implements Serializable {
   private final Map<String, IkePolicy> _ikePolicies;
 
   private final Map<String, IkeProposal> _ikeProposals;
+
+  private final Map<String, InterfaceRange> _interfaceRanges;
 
   private final Map<String, Interface> _interfaces;
 
@@ -90,6 +94,8 @@ public class LogicalSystem implements Serializable {
   public LogicalSystem(String name) {
     _name = name;
     _addressBooks = new TreeMap<>();
+    // insert the implicit global address book
+    _addressBooks.put(GLOBAL_ADDRESS_BOOK_NAME, new AddressBook(GLOBAL_ADDRESS_BOOK_NAME, null));
     _applications = new TreeMap<>();
     _applicationSets = new TreeMap<>();
     _asPathGroups = new TreeMap<>();
@@ -102,6 +108,7 @@ public class LogicalSystem implements Serializable {
     _ikeGateways = new TreeMap<>();
     _ikePolicies = new TreeMap<>();
     _ikeProposals = new TreeMap<>();
+    _interfaceRanges = new TreeMap<>();
     _interfaces = new TreeMap<>();
     _interfaceZones = new TreeMap<>();
     _ipsecPolicies = new TreeMap<>();
@@ -118,6 +125,24 @@ public class LogicalSystem implements Serializable {
     _tacplusServers = new TreeSet<>();
     _vlanNameToVlan = new TreeMap<>();
     _zones = new TreeMap<>();
+  }
+
+  private void expandInterfaceRange(InterfaceRange interfaceRange) {
+    interfaceRange
+        .getAllMembers()
+        .stream()
+        .forEach(
+            iname -> {
+              Interface iface = _interfaces.computeIfAbsent(iname, Interface::new);
+              iface.inheritUnsetPhysicalFields(interfaceRange);
+              iface.setRoutingInstance(interfaceRange.getRoutingInstance());
+              iface.setParent(interfaceRange.getParent());
+            });
+  }
+
+  /** Inserts members of interface ranges into the interfaces */
+  public void expandInterfaceRanges() {
+    _interfaceRanges.values().stream().forEach(this::expandInterfaceRange);
   }
 
   public Map<String, AddressBook> getAddressBooks() {
@@ -168,6 +193,11 @@ public class LogicalSystem implements Serializable {
     return _filters;
   }
 
+  @Nonnull
+  public AddressBook getGlobalAddressBook() {
+    return _addressBooks.get(GLOBAL_ADDRESS_BOOK_NAME);
+  }
+
   public Interface getGlobalMasterInterface() {
     return _defaultRoutingInstance.getGlobalMasterInterface();
   }
@@ -186,6 +216,10 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, IkeProposal> getIkeProposals() {
     return _ikeProposals;
+  }
+
+  public Map<String, InterfaceRange> getInterfaceRanges() {
+    return _interfaceRanges;
   }
 
   public Map<String, Interface> getInterfaces() {
@@ -252,6 +286,15 @@ public class LogicalSystem implements Serializable {
       default:
         throw new IllegalArgumentException("Unknnown nat type " + natType);
     }
+  }
+
+  public Zone getOrCreateZone(String zoneName) {
+    if (!_zones.containsKey(zoneName)) {
+      Zone zone = new Zone(zoneName, getGlobalAddressBook());
+      _filters.put(zone.getInboundFilter().getName(), zone.getInboundFilter());
+      _zones.put(zoneName, zone);
+    }
+    return _zones.get(zoneName);
   }
 
   public Map<String, PolicyStatement> getPolicyStatements() {

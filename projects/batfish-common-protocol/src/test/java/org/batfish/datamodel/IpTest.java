@@ -38,15 +38,15 @@ public class IpTest {
 
   @Test
   public void testContainsIp() {
-    IpSpace ipSpace = new Ip("1.1.1.1").toIpSpace();
-    assertThat(ipSpace, containsIp(new Ip("1.1.1.1")));
-    assertThat(ipSpace, not(containsIp(new Ip("1.2.3.4"))));
+    IpSpace ipSpace = Ip.parse("1.1.1.1").toIpSpace();
+    assertThat(ipSpace, containsIp(Ip.parse("1.1.1.1")));
+    assertThat(ipSpace, not(containsIp(Ip.parse("1.2.3.4"))));
   }
 
   @Test
   public void testComplement() {
-    IpSpace ipSpace = new Ip("1.1.1.1").toIpSpace().complement();
-    assertThat(ipSpace, not(containsIp(new Ip("1.1.1.1"))));
-    assertThat(ipSpace, containsIp(new Ip("1.2.3.4")));
+    IpSpace ipSpace = Ip.parse("1.1.1.1").toIpSpace().complement();
+    assertThat(ipSpace, not(containsIp(Ip.parse("1.1.1.1"))));
+    assertThat(ipSpace, containsIp(Ip.parse("1.2.3.4")));
   }
 }

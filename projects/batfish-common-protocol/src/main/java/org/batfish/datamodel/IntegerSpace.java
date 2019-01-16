@@ -56,6 +56,10 @@ public final class IntegerSpace implements Serializable {
     return IntegerSpace.Builder.create(s).build();
   }
 
+  public static @Nonnull IntegerSpace parse(String s) {
+    return create(s);
+  }
+
   /** This space as a set of included {@link Range}s */
   public Set<Range<Integer>> getRanges() {
     return _rangeset.asRanges();
@@ -225,6 +229,12 @@ public final class IntegerSpace implements Serializable {
         _including.add(
             Range.closed(range.getStart(), range.getEnd()).canonical(DiscreteDomain.integers()));
       }
+      return this;
+    }
+
+    /** Include all given {@link SubRange} */
+    public Builder includingAll(Iterable<SubRange> ranges) {
+      ranges.forEach(this::including);
       return this;
     }
 

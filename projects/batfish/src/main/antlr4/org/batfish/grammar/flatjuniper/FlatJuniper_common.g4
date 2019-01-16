@@ -164,19 +164,9 @@ icmp6_only_type
 
 interface_id
 :
-  (
-    node = variable COLON
-  )?
-  (
-    name = VARIABLE
-    (
-      COLON suffix = DEC
-    )?
-    (
-      PERIOD unit = DEC
-    )?
-  )
+   (node=variable COLON)? name = INTERFACE_NAME (COLON chnl=DEC)? (PERIOD unit = DEC)?
 ;
+
 
 ip_option
 :
@@ -545,6 +535,7 @@ routing_protocol
   AGGREGATE
   | BGP
   | DIRECT
+  | EVPN
   | ISIS
   | LDP
   | LOCAL

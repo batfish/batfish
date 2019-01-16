@@ -11,12 +11,17 @@ import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_IP;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_IPS;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_NODE;
+import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_SOURCE_INTERFACE;
+import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_TUNNEL_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_REMOTE_VLAN;
+import static org.batfish.question.edges.EdgesAnswerer.COL_SOURCE_INTERFACE;
+import static org.batfish.question.edges.EdgesAnswerer.COL_TUNNEL_INTERFACE;
 import static org.batfish.question.edges.EdgesAnswerer.COL_VLAN;
 import static org.batfish.question.edges.EdgesAnswerer.eigrpEdgeToRow;
 import static org.batfish.question.edges.EdgesAnswerer.getBgpEdgeRow;
 import static org.batfish.question.edges.EdgesAnswerer.getBgpEdges;
 import static org.batfish.question.edges.EdgesAnswerer.getEigrpEdges;
+import static org.batfish.question.edges.EdgesAnswerer.getIpsecEdges;
 import static org.batfish.question.edges.EdgesAnswerer.getIsisEdges;
 import static org.batfish.question.edges.EdgesAnswerer.getLayer1Edges;
 import static org.batfish.question.edges.EdgesAnswerer.getLayer2Edges;
@@ -65,6 +70,10 @@ import org.batfish.datamodel.EdgeType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpsecPeerConfigId;
+import org.batfish.datamodel.IpsecPhase2Proposal;
+import org.batfish.datamodel.IpsecSession;
+import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipNeighbor;
@@ -107,7 +116,7 @@ public class EdgesAnswererTest {
             "int1",
             Interface.builder()
                 .setName("int1")
-                .setAddress(new InterfaceAddress(new Ip("1.1.1.1"), 24))
+                .setAddress(new InterfaceAddress(Ip.parse("1.1.1.1"), 24))
                 .build()));
 
     _host2 = cb.setHostname("host2").build();
@@ -116,7 +125,7 @@ public class EdgesAnswererTest {
             "int2",
             Interface.builder()
                 .setName("int2")
-                .setAddress(new InterfaceAddress(new Ip("2.2.2.2"), 24))
+                .setAddress(new InterfaceAddress(Ip.parse("2.2.2.2"), 24))
                 .build()));
 
     _configurations = ImmutableSortedMap.of("host1", _host1, "host2", _host2);
@@ -125,6 +134,73 @@ public class EdgesAnswererTest {
 
     // Sending an  edge from host1 to host2 in layer 3
     _topology = new Topology(ImmutableSortedSet.of(Edge.of("host1", "int1", "host2", "int2")));
+  }
+
+  @Test
+  public void testGetIpsecEdges() {
+    MutableValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
+        ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+
+    IpsecPeerConfigId peerId1 = new IpsecPeerConfigId("peer1", "host1");
+    IpsecPeerConfigId peerId2 = new IpsecPeerConfigId("peer2", "host1");
+    IpsecPeerConfigId peerId3 = new IpsecPeerConfigId("peer3", "host2");
+    IpsecPeerConfigId peerId4 = new IpsecPeerConfigId("peer4", "host2");
+
+    ipsecTopology.putEdgeValue(
+        peerId1,
+        peerId3,
+        IpsecSession.builder().setNegotiatedIpsecP2Proposal(new IpsecPhase2Proposal()).build());
+    // non-established edge
+    ipsecTopology.putEdgeValue(peerId2, peerId4, IpsecSession.builder().build());
+
+    IpsecStaticPeerConfig peer1 =
+        IpsecStaticPeerConfig.builder()
+            .setSourceInterface("int11")
+            .setTunnelInterface("tunnel11")
+            .build();
+    IpsecStaticPeerConfig peer2 =
+        IpsecStaticPeerConfig.builder()
+            .setSourceInterface("int12")
+            .setTunnelInterface("tunnel12")
+            .build();
+    IpsecStaticPeerConfig peer3 =
+        IpsecStaticPeerConfig.builder()
+            .setSourceInterface("int21")
+            .setTunnelInterface("tunnel21")
+            .build();
+    IpsecStaticPeerConfig peer4 =
+        IpsecStaticPeerConfig.builder()
+            .setSourceInterface("int22")
+            .setTunnelInterface("tunnel22")
+            .build();
+
+    _host1.setIpsecPeerConfigs(ImmutableSortedMap.of("peer1", peer1, "peer2", peer2));
+    _host2.setIpsecPeerConfigs(ImmutableSortedMap.of("peer3", peer3, "peer4", peer4));
+
+    Multiset<Row> rows = getIpsecEdges(ipsecTopology, _configurations);
+
+    // only one edge should be present
+    assertThat(
+        rows,
+        containsInAnyOrder(
+            ImmutableList.of(
+                allOf(
+                    hasColumn(
+                        COL_SOURCE_INTERFACE,
+                        equalTo(new NodeInterfacePair("host1", "int11")),
+                        Schema.INTERFACE),
+                    hasColumn(
+                        COL_TUNNEL_INTERFACE,
+                        equalTo(new NodeInterfacePair("host1", "tunnel11")),
+                        Schema.INTERFACE),
+                    hasColumn(
+                        COL_REMOTE_SOURCE_INTERFACE,
+                        equalTo(new NodeInterfacePair("host2", "int21")),
+                        Schema.INTERFACE),
+                    hasColumn(
+                        COL_REMOTE_TUNNEL_INTERFACE,
+                        equalTo(new NodeInterfacePair("host2", "tunnel21")),
+                        Schema.INTERFACE)))));
   }
 
   @Test
@@ -157,20 +233,20 @@ public class EdgesAnswererTest {
   @Test
   public void testGetBgpEdges() {
     BgpProcess bgp1 = new BgpProcess();
-    bgp1.setRouterId(new Ip("1.1.1.1"));
+    bgp1.setRouterId(Ip.parse("1.1.1.1"));
     BgpActivePeerConfig peer1 =
-        BgpActivePeerConfig.builder().setLocalIp(new Ip("1.1.1.1")).setLocalAs(1L).build();
-    bgp1.getActiveNeighbors().put(new Prefix(new Ip("2.2.2.2"), 24), peer1);
+        BgpActivePeerConfig.builder().setLocalIp(Ip.parse("1.1.1.1")).setLocalAs(1L).build();
+    bgp1.getActiveNeighbors().put(Prefix.create(Ip.parse("2.2.2.2"), 24), peer1);
     BgpPeerConfigId neighborId1 =
-        new BgpPeerConfigId("host1", "vrf1", new Prefix(new Ip("2.2.2.2"), 24), false);
+        new BgpPeerConfigId("host1", "vrf1", Prefix.create(Ip.parse("2.2.2.2"), 24), false);
 
     BgpProcess bgp2 = new BgpProcess();
-    bgp2.setRouterId(new Ip("2.2.2.2"));
+    bgp2.setRouterId(Ip.parse("2.2.2.2"));
     BgpActivePeerConfig peer2 =
-        BgpActivePeerConfig.builder().setLocalIp(new Ip("2.2.2.2")).setLocalAs(2L).build();
-    bgp2.getActiveNeighbors().put(new Prefix(new Ip("1.1.1.1"), 24), peer2);
+        BgpActivePeerConfig.builder().setLocalIp(Ip.parse("2.2.2.2")).setLocalAs(2L).build();
+    bgp2.getActiveNeighbors().put(Prefix.create(Ip.parse("1.1.1.1"), 24), peer2);
     BgpPeerConfigId neighborId2 =
-        new BgpPeerConfigId("host2", "vrf2", new Prefix(new Ip("1.1.1.1"), 24), false);
+        new BgpPeerConfigId("host2", "vrf2", Prefix.create(Ip.parse("1.1.1.1"), 24), false);
 
     Vrf vrf1 = new Vrf("vrf1");
     vrf1.setBgpProcess(bgp1);
@@ -192,10 +268,10 @@ public class EdgesAnswererTest {
         contains(
             allOf(
                 hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
-                hasColumn(COL_IP, equalTo(new Ip("1.1.1.1")), Schema.IP),
+                hasColumn(COL_IP, equalTo(Ip.parse("1.1.1.1")), Schema.IP),
                 hasColumn(COL_AS_NUMBER, equalTo("1"), Schema.STRING),
                 hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
-                hasColumn(COL_REMOTE_IP, equalTo(new Ip("2.2.2.2")), Schema.IP),
+                hasColumn(COL_REMOTE_IP, equalTo(Ip.parse("2.2.2.2")), Schema.IP),
                 hasColumn(COL_REMOTE_AS_NUMBER, equalTo("2"), Schema.STRING))));
   }
 
@@ -238,12 +314,14 @@ public class EdgesAnswererTest {
   public void testGetRipEdges() {
     RipProcess rip1 = new RipProcess();
     RipProcess rip2 = new RipProcess();
-    RipNeighbor ripNeighbor1 = new RipNeighbor(new Pair<>(new Ip("1.1.1.1"), new Ip("2.2.2.2")));
-    RipNeighbor ripNeighbor2 = new RipNeighbor(new Pair<>(new Ip("2.2.2.2"), new Ip("1.1.1.1")));
+    RipNeighbor ripNeighbor1 =
+        new RipNeighbor(new Pair<>(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2")));
+    RipNeighbor ripNeighbor2 =
+        new RipNeighbor(new Pair<>(Ip.parse("2.2.2.2"), Ip.parse("1.1.1.1")));
     rip1.setRipNeighbors(
-        ImmutableSortedMap.of(new Pair<>(new Ip("1.1.1.1"), new Ip("2.2.2.2")), ripNeighbor1));
+        ImmutableSortedMap.of(new Pair<>(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2")), ripNeighbor1));
     rip2.setRipNeighbors(
-        ImmutableSortedMap.of(new Pair<>(new Ip("2.2.2.2"), new Ip("1.1.1.1")), ripNeighbor2));
+        ImmutableSortedMap.of(new Pair<>(Ip.parse("2.2.2.2"), Ip.parse("1.1.1.1")), ripNeighbor2));
     ripNeighbor1.setOwner(_host1);
     ripNeighbor2.setOwner(_host2);
     ripNeighbor1.setIface(_host1.getAllInterfaces().get("int1"));
@@ -380,14 +458,14 @@ public class EdgesAnswererTest {
                     equalTo(new NodeInterfacePair("host1", "int1")),
                     Schema.INTERFACE),
                 hasColumn(
-                    COL_IPS, equalTo(ImmutableSet.of(new Ip("1.1.1.1"))), Schema.set(Schema.IP)),
+                    COL_IPS, equalTo(ImmutableSet.of(Ip.parse("1.1.1.1"))), Schema.set(Schema.IP)),
                 hasColumn(
                     COL_REMOTE_INTERFACE,
                     equalTo(new NodeInterfacePair("host2", "int2")),
                     Schema.INTERFACE),
                 hasColumn(
                     COL_REMOTE_IPS,
-                    equalTo(ImmutableSet.of(new Ip("2.2.2.2"))),
+                    equalTo(ImmutableSet.of(Ip.parse("2.2.2.2"))),
                     Schema.set(Schema.IP)))));
   }
 
@@ -460,15 +538,15 @@ public class EdgesAnswererTest {
 
   @Test
   public void testBgpToRow() {
-    Row row = getBgpEdgeRow("host1", new Ip("1.1.1.1"), 1L, "host2", new Ip("2.2.2.2"), 2L);
+    Row row = getBgpEdgeRow("host1", Ip.parse("1.1.1.1"), 1L, "host2", Ip.parse("2.2.2.2"), 2L);
     assertThat(
         row,
         allOf(
             hasColumn(COL_NODE, equalTo(new Node("host1")), Schema.NODE),
-            hasColumn(COL_IP, equalTo(new Ip("1.1.1.1")), Schema.IP),
+            hasColumn(COL_IP, equalTo(Ip.parse("1.1.1.1")), Schema.IP),
             hasColumn(COL_AS_NUMBER, equalTo("1"), Schema.STRING),
             hasColumn(COL_REMOTE_NODE, equalTo(new Node("host2")), Schema.NODE),
-            hasColumn(COL_REMOTE_IP, equalTo(new Ip("2.2.2.2")), Schema.IP),
+            hasColumn(COL_REMOTE_IP, equalTo(Ip.parse("2.2.2.2")), Schema.IP),
             hasColumn(COL_REMOTE_AS_NUMBER, equalTo("2"), Schema.STRING)));
   }
 
@@ -512,14 +590,15 @@ public class EdgesAnswererTest {
         allOf(
             hasColumn(
                 COL_INTERFACE, equalTo(new NodeInterfacePair("host1", "int1")), Schema.INTERFACE),
-            hasColumn(COL_IPS, equalTo(ImmutableSet.of(new Ip("1.1.1.1"))), Schema.set(Schema.IP)),
+            hasColumn(
+                COL_IPS, equalTo(ImmutableSet.of(Ip.parse("1.1.1.1"))), Schema.set(Schema.IP)),
             hasColumn(
                 COL_REMOTE_INTERFACE,
                 equalTo(new NodeInterfacePair("host2", "int2")),
                 Schema.INTERFACE),
             hasColumn(
                 COL_REMOTE_IPS,
-                equalTo(ImmutableSet.of(new Ip("2.2.2.2"))),
+                equalTo(ImmutableSet.of(Ip.parse("2.2.2.2"))),
                 Schema.set(Schema.IP))));
   }
 

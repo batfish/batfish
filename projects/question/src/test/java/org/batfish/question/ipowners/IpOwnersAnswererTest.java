@@ -37,10 +37,10 @@ import org.junit.Test;
 
 /** Tests for {@link IpOwnersAnswerer} */
 public class IpOwnersAnswererTest {
-  private Ip _uniqueIp = new Ip("1.1.1.1");
-  private Ip _duplicateIp = new Ip("2.2.2.2");
-  private Ip _noOwnersIp = new Ip("3.3.3.3");
-  private Ip _secondaryUniqueIp = new Ip("4.4.4.4");
+  private Ip _uniqueIp = Ip.parse("1.1.1.1");
+  private Ip _duplicateIp = Ip.parse("2.2.2.2");
+  private Ip _noOwnersIp = Ip.parse("3.3.3.3");
+  private Ip _secondaryUniqueIp = Ip.parse("4.4.4.4");
   private ImmutableMap<Ip, Set<String>> _ownersMap;
   private Map<String, Set<Interface>> _interfaceMap;
 

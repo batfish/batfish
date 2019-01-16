@@ -17,12 +17,14 @@
         "allowedValues" : [
           "bgp",
           "eigrp",
+          "ipsec",
           "isis",
           "layer1",
           "layer2",
           "layer3",
           "ospf",
-          "rip"
+          "rip",
+          "vxlan"
         ],
         "description" : "Types of edges to include",
         "displayName" : "Edge Type",
@@ -35,6 +37,9 @@
           },
           {
             "name" : "eigrp"
+          },
+          {
+            "name" : "ipsec"
           },
           {
             "name" : "isis"
@@ -53,6 +58,9 @@
           },
           {
             "name" : "rip"
+          },
+          {
+            "name" : "vxlan"
           }
         ]
       },

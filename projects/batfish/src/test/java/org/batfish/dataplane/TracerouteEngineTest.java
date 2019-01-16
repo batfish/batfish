@@ -1,13 +1,11 @@
 package org.batfish.dataplane;
 
-import static java.util.Collections.singletonList;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasDisposition;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -16,7 +14,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.util.Set;
 import java.util.SortedMap;
@@ -34,13 +31,9 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MockFib;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
@@ -53,97 +46,6 @@ public class TracerouteEngineTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Rule public TemporaryFolder _tempFolder = new TemporaryFolder();
-
-  private static Flow makeFlow() {
-    Flow.Builder builder = new Flow.Builder();
-    builder.setSrcIp(new Ip("1.2.3.4"));
-    builder.setIngressNode("foo");
-    builder.setTag("TEST");
-    return builder.build();
-  }
-
-  private static IpAccessList makeAcl(String name, LineAction action) {
-    IpAccessListLine aclLine =
-        IpAccessListLine.builder().setAction(action).setMatchCondition(TrueExpr.INSTANCE).build();
-    return IpAccessList.builder().setName(name).setLines(singletonList(aclLine)).build();
-  }
-
-  @Test
-  public void testApplySourceNatSingleAclMatch() {
-    Flow flow = makeFlow();
-
-    SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("accept", LineAction.PERMIT));
-    nat.setPoolIpFirst(new Ip("4.5.6.7"));
-
-    Flow transformed =
-        TracerouteEngineImplContext.applySourceNat(
-            flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
-    assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
-  }
-
-  @Test
-  public void testApplySourceNatSingleAclNoMatch() {
-    Flow flow = makeFlow();
-
-    SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("reject", LineAction.DENY));
-    nat.setPoolIpFirst(new Ip("4.5.6.7"));
-
-    Flow transformed =
-        TracerouteEngineImplContext.applySourceNat(
-            flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
-    assertThat(transformed, is(flow));
-  }
-
-  @Test
-  public void testApplySourceNatFirstMatchWins() {
-    Flow flow = makeFlow();
-
-    SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("firstAccept", LineAction.PERMIT));
-    nat.setPoolIpFirst(new Ip("4.5.6.7"));
-
-    SourceNat secondNat = new SourceNat();
-    secondNat.setAcl(makeAcl("secondAccept", LineAction.PERMIT));
-    secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
-
-    Flow transformed =
-        TracerouteEngineImplContext.applySourceNat(
-            flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
-    assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
-  }
-
-  @Test
-  public void testApplySourceNatLateMatchWins() {
-    Flow flow = makeFlow();
-
-    SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("rejectAll", LineAction.DENY));
-    nat.setPoolIpFirst(new Ip("4.5.6.7"));
-
-    SourceNat secondNat = new SourceNat();
-    secondNat.setAcl(makeAcl("acceptAnyway", LineAction.PERMIT));
-    secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
-
-    Flow transformed =
-        TracerouteEngineImplContext.applySourceNat(
-            flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
-    assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.8")));
-  }
-
-  @Test
-  public void testApplySourceNatInvalidAclThrows() {
-    Flow flow = makeFlow();
-
-    SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("matchAll", LineAction.PERMIT));
-
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("missing NAT address or pool");
-    TracerouteEngineImplContext.applySourceNat(
-        flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
-  }
 
   /*
    * iface1 and iface2 are interfaces on the same node. Send traffic with dstIp=iface2's ip to
@@ -175,7 +77,7 @@ public class TracerouteEngineTest {
     // Construct flows
     Flow.Builder fb =
         Flow.builder()
-            .setDstIp(new Ip("3.3.3.3"))
+            .setDstIp(Ip.parse("3.3.3.3"))
             .setIngressNode(config.getHostname())
             .setTag("TAG");
 
@@ -223,8 +125,8 @@ public class TracerouteEngineTest {
     Flow flow =
         Flow.builder()
             .setIngressNode(source.getHostname())
-            .setSrcIp(new Ip("10.0.0.1"))
-            .setDstIp(new Ip("10.0.0.2"))
+            .setSrcIp(Ip.parse("10.0.0.1"))
+            .setDstIp(Ip.parse("10.0.0.2"))
             .setTag("tag")
             .build();
     Set<FlowTrace> traces =
@@ -257,7 +159,7 @@ public class TracerouteEngineTest {
     Interface i4 = ib.setAddress(new InterfaceAddress("4.4.4.4/24")).setProxyArp(false).build();
     Interface i5 = ib.setAddress(null).setProxyArp(true).build();
 
-    Ip arpIp = new Ip("4.4.4.4");
+    Ip arpIp = Ip.parse("4.4.4.4");
 
     String i1Name = i1.getName();
     String i4Name = i4.getName();
@@ -289,7 +191,7 @@ public class TracerouteEngineTest {
         TracerouteEngineImplContext.interfaceRepliesToArpRequestForIp(i5, vrf2Fib, arpIp));
 
     // arpIp isn't owned by the VRF, but is routable
-    arpIp = new Ip("4.4.4.0");
+    arpIp = Ip.parse("4.4.4.0");
     assertFalse(
         "ARP request for interface subnet to the same interface should fail",
         TracerouteEngineImplContext.interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp));
@@ -298,7 +200,7 @@ public class TracerouteEngineTest {
      * There are routes for arpIp through multiple interfaces, but i4 still doesn't reply because
      * there is a route for arpIp through i4 itself.
      */
-    arpIp = new Ip("4.4.4.0");
+    arpIp = Ip.parse("4.4.4.0");
     vrf2Fib =
         MockFib.builder()
             .setNextHopInterfacesByIp(
@@ -334,7 +236,7 @@ public class TracerouteEngineTest {
         Flow.builder()
             .setIngressNode(c.getHostname())
             .setTag(Flow.BASE_FLOW_TAG)
-            .setDstIp(new Ip("1.0.0.1"))
+            .setDstIp(Ip.parse("1.0.0.1"))
             .build();
     b.processFlows(ImmutableSet.of(flow), false);
     FlowHistory history = b.getHistory();
@@ -382,7 +284,7 @@ public class TracerouteEngineTest {
         Flow.builder()
             .setIngressNode(c1.getHostname())
             .setTag(Flow.BASE_FLOW_TAG)
-            .setDstIp(new Ip("1.0.0.1"))
+            .setDstIp(Ip.parse("1.0.0.1"))
             .build();
     b.processFlows(ImmutableSet.of(flow), false);
     FlowHistory history = b.getHistory();

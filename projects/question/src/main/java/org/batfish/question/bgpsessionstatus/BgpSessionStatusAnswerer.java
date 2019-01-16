@@ -1,11 +1,12 @@
 package org.batfish.question.bgpsessionstatus;
 
-import static org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.ConfiguredSessionStatus.UNIQUE_MATCH;
+import static org.batfish.datamodel.questions.ConfiguredSessionStatus.UNIQUE_MATCH;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.ESTABLISHED;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.NOT_COMPATIBLE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus.NOT_ESTABLISHED;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Streams;
 import com.google.common.graph.ValueGraph;
 import java.util.List;
@@ -31,6 +32,7 @@ import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -151,9 +153,13 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
                   Set<BgpPeerConfigId> compatibleRemotes =
                       configuredBgpTopology.adjacentNodes(neighbor);
 
-                  // Find all remote peers that established a session with this peer
+                  // Find all remote peers that established a session with this peer. Node will not
+                  // be in establishedBgpTopology at all if peer was not valid according to
+                  // BgpTopologyUtils.bgpConfigPassesSanityChecks()
                   Set<BgpPeerConfigId> establishedRemotes =
-                      establishedBgpTopology.adjacentNodes(neighbor);
+                      establishedBgpTopology.nodes().contains(neighbor)
+                          ? establishedBgpTopology.adjacentNodes(neighbor)
+                          : ImmutableSet.of();
 
                   // If no compatible neighbors exist, generate one NOT_ESTABLISHED row
                   if (compatibleRemotes.isEmpty()) {

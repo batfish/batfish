@@ -31,6 +31,7 @@ import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.TrueExpr;
+import org.batfish.z3.expr.VarIntExpr;
 
 /**
  * Transforms an {@link IpSpace} into a {@link BooleanExpr} that is true iff one of the appropriate
@@ -93,7 +94,8 @@ public class IpSpaceBooleanExprTransformer implements GenericIpSpaceVisitor<Bool
   @Override
   public BooleanExpr visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
     IpWildcard ipWildcard = ipWildcardIpSpace.getIpWildcard();
-    return matchAnyField(field -> HeaderSpaceMatchExpr.matchIpWildcard(ipWildcard, field));
+    return matchAnyField(
+        field -> HeaderSpaceMatchExpr.matchIpWildcard(ipWildcard, new VarIntExpr(field)));
   }
 
   @Override

@@ -1,11 +1,16 @@
 package org.batfish.representation.aws;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.util.LinkedList;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -17,18 +22,20 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
-import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkeHashingAlgorithm;
-import org.batfish.datamodel.IkePolicy;
-import org.batfish.datamodel.IkeProposal;
-import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.IkeKeyType;
+import org.batfish.datamodel.IkePhase1Key;
+import org.batfish.datamodel.IkePhase1Policy;
+import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
-import org.batfish.datamodel.IpsecPolicy;
-import org.batfish.datamodel.IpsecProposal;
+import org.batfish.datamodel.IpsecEncapsulationMode;
+import org.batfish.datamodel.IpsecPeerConfig;
+import org.batfish.datamodel.IpsecPhase2Policy;
+import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecProtocol;
-import org.batfish.datamodel.IpsecVpn;
+import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
@@ -60,6 +67,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+@ParametersAreNonnullByDefault
 public class VpnConnection implements AwsVpcEntity, Serializable {
 
   private static final int BGP_NEIGHBOR_DEFAULT_METRIC = 0;
@@ -119,6 +127,21 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       default:
         throw new BatfishException(
             "No conversion to ipsec protocol for string: \"" + ipsecProtocol + "\"");
+    }
+  }
+
+  @Nullable
+  private static IpsecEncapsulationMode toIpsecEncapdulationMode(
+      String ipsecEncapsulationMode, Warnings warnings) {
+    switch (ipsecEncapsulationMode) {
+      case "tunnel":
+        return IpsecEncapsulationMode.TUNNEL;
+      case "transport":
+        return IpsecEncapsulationMode.TRANSPORT;
+      default:
+        warnings.redFlag(
+            String.format("No IPsec encapsulation mode for string '%s'", ipsecEncapsulationMode));
+        return null;
     }
   }
 
@@ -190,6 +213,73 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
     }
   }
 
+  @Nonnull
+  private static IkePhase1Proposal toIkePhase1Proposal(
+      String proposalName, IpsecTunnel ipsecTunnel) {
+    IkePhase1Proposal ikePhase1Proposal = new IkePhase1Proposal(proposalName);
+    if (ipsecTunnel.getIkePreSharedKeyHash() != null) {
+      ikePhase1Proposal.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
+    }
+    ikePhase1Proposal.setHashingAlgorithm(
+        toIkeAuthenticationAlgorithm(ipsecTunnel.getIkeAuthProtocol()));
+    ikePhase1Proposal.setDiffieHellmanGroup(
+        toDiffieHellmanGroup(ipsecTunnel.getIkePerfectForwardSecrecy()));
+    ikePhase1Proposal.setEncryptionAlgorithm(
+        toEncryptionAlgorithm(ipsecTunnel.getIkeEncryptionProtocol()));
+    return ikePhase1Proposal;
+  }
+
+  @Nonnull
+  private static IkePhase1Key toIkePhase1PreSharedKey(
+      IpsecTunnel ipsecTunnel, Ip remoteIdentity, String localInterface) {
+    IkePhase1Key ikePhase1Key = new IkePhase1Key();
+    ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY);
+    ikePhase1Key.setKeyHash(ipsecTunnel.getIkePreSharedKeyHash());
+    ikePhase1Key.setRemoteIdentity(remoteIdentity.toIpSpace());
+    ikePhase1Key.setLocalInterface(localInterface);
+    return ikePhase1Key;
+  }
+
+  @Nonnull
+  private static IkePhase1Policy toIkePhase1Policy(
+      String vpnId,
+      String ikePhase1ProposalName,
+      IkePhase1Key ikePhase1Key,
+      Ip remoteIdentity,
+      String localInterface) {
+    IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(vpnId);
+    ikePhase1Policy.setIkePhase1Key(ikePhase1Key);
+    ikePhase1Policy.setIkePhase1Proposals(ImmutableList.of(ikePhase1ProposalName));
+    ikePhase1Policy.setRemoteIdentity(remoteIdentity.toIpSpace());
+    ikePhase1Policy.setLocalInterface(localInterface);
+    return ikePhase1Policy;
+  }
+
+  @Nonnull
+  private static IpsecPhase2Proposal toIpsecPhase2Proposal(
+      IpsecTunnel ipsecTunnel, Warnings warnings) {
+    IpsecPhase2Proposal ipsecPhase2Proposal = new IpsecPhase2Proposal();
+    ipsecPhase2Proposal.setAuthenticationAlgorithm(
+        toIpsecAuthenticationAlgorithm(ipsecTunnel.getIpsecAuthProtocol()));
+    ipsecPhase2Proposal.setEncryptionAlgorithm(
+        toEncryptionAlgorithm(ipsecTunnel.getIpsecEncryptionProtocol()));
+    ipsecPhase2Proposal.setProtocols(
+        ImmutableSortedSet.of(toIpsecProtocol(ipsecTunnel.getIpsecProtocol())));
+    ipsecPhase2Proposal.setIpsecEncapsulationMode(
+        toIpsecEncapdulationMode(ipsecTunnel.getIpsecMode(), warnings));
+    return ipsecPhase2Proposal;
+  }
+
+  @Nonnull
+  private static IpsecPhase2Policy toIpsecPhase2Policy(
+      IpsecTunnel ipsecTunnel, String ipsecPhase2Proposal) {
+    IpsecPhase2Policy ipsecPhase2Policy = new IpsecPhase2Policy();
+    ipsecPhase2Policy.setPfsKeyGroup(
+        toDiffieHellmanGroup(ipsecTunnel.getIpsecPerfectForwardSecrecy()));
+    ipsecPhase2Policy.setProposals(ImmutableList.of(ipsecPhase2Proposal));
+    return ipsecPhase2Policy;
+  }
+
   public void applyToVpnGateway(
       AwsConfiguration awsConfiguration, Region region, Warnings warnings) {
     if (!awsConfiguration.getConfigurationNodes().containsKey(_vpnGatewayId)) {
@@ -200,6 +290,20 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       return;
     }
     Configuration vpnGatewayCfgNode = awsConfiguration.getConfigurationNodes().get(_vpnGatewayId);
+
+    ImmutableSortedMap.Builder<String, IkePhase1Policy> ikePhase1PolicyMapBuilder =
+        ImmutableSortedMap.naturalOrder();
+    ImmutableSortedMap.Builder<String, IkePhase1Key> ikePhase1KeyMapBuilder =
+        ImmutableSortedMap.naturalOrder();
+    ImmutableSortedMap.Builder<String, IkePhase1Proposal> ikePhase1ProposalMapBuilder =
+        ImmutableSortedMap.naturalOrder();
+    ImmutableSortedMap.Builder<String, IpsecPhase2Proposal> ipsecPhase2ProposalMapBuilder =
+        ImmutableSortedMap.naturalOrder();
+    ImmutableSortedMap.Builder<String, IpsecPhase2Policy> ipsecPhase2PolicyMapBuilder =
+        ImmutableSortedMap.naturalOrder();
+    ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigMapBuilder =
+        ImmutableSortedMap.naturalOrder();
+
     for (int i = 0; i < _ipsecTunnels.size(); i++) {
       int idNum = i + 1;
       String vpnId = _vpnConnectionId + "-" + idNum;
@@ -211,63 +315,44 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
                 + "\"");
       }
       // create representation structures and add to configuration node
-      IpsecVpn ipsecVpn = new IpsecVpn(vpnId, vpnGatewayCfgNode);
-      vpnGatewayCfgNode.getIpsecVpns().put(vpnId, ipsecVpn);
-      IpsecPolicy ipsecPolicy = new IpsecPolicy(vpnId);
-      vpnGatewayCfgNode.getIpsecPolicies().put(vpnId, ipsecPolicy);
-      ipsecVpn.setIpsecPolicy(ipsecPolicy);
-      IpsecProposal ipsecProposal = new IpsecProposal(vpnId);
-      vpnGatewayCfgNode.getIpsecProposals().put(vpnId, ipsecProposal);
-      ipsecPolicy.getProposals().add(ipsecProposal);
-      IkeGateway ikeGateway = new IkeGateway(vpnId);
-      vpnGatewayCfgNode.getIkeGateways().put(vpnId, ikeGateway);
-      ipsecVpn.setIkeGateway(ikeGateway);
-      IkePolicy ikePolicy = new IkePolicy(vpnId);
-      vpnGatewayCfgNode.getIkePolicies().put(vpnId, ikePolicy);
-      ikeGateway.setIkePolicy(ikePolicy);
-      IkeProposal ikeProposal = new IkeProposal(vpnId);
-      vpnGatewayCfgNode.getIkeProposals().put(vpnId, ikeProposal);
-      ikePolicy.getProposals().put(vpnId, ikeProposal);
       String externalInterfaceName = "external" + idNum;
       InterfaceAddress externalInterfaceAddress =
           new InterfaceAddress(ipsecTunnel.getVgwOutsideAddress(), Prefix.MAX_PREFIX_LENGTH);
-      Interface externalInterface =
-          Utils.newInterface(externalInterfaceName, vpnGatewayCfgNode, externalInterfaceAddress);
+
+      Utils.newInterface(externalInterfaceName, vpnGatewayCfgNode, externalInterfaceAddress);
 
       String vpnInterfaceName = "vpn" + idNum;
       InterfaceAddress vpnInterfaceAddress =
           new InterfaceAddress(
               ipsecTunnel.getVgwInsideAddress(), ipsecTunnel.getVgwInsidePrefixLength());
-      Interface vpnInterface =
-          Utils.newInterface(vpnInterfaceName, vpnGatewayCfgNode, vpnInterfaceAddress);
+      Utils.newInterface(vpnInterfaceName, vpnGatewayCfgNode, vpnInterfaceAddress);
 
-      // Set fields within representation structures
-
-      // ipsec
-      ipsecVpn.setBindInterface(vpnInterface);
-      ipsecPolicy.setPfsKeyGroup(toDiffieHellmanGroup(ipsecTunnel.getIpsecPerfectForwardSecrecy()));
-      ipsecProposal.setAuthenticationAlgorithm(
-          toIpsecAuthenticationAlgorithm(ipsecTunnel.getIpsecAuthProtocol()));
-      ipsecProposal.setEncryptionAlgorithm(
-          toEncryptionAlgorithm(ipsecTunnel.getIpsecEncryptionProtocol()));
-      ipsecProposal.getProtocols().add(toIpsecProtocol(ipsecTunnel.getIpsecProtocol()));
-      ipsecProposal.setLifetimeSeconds(ipsecTunnel.getIpsecLifetime());
-
-      // ike
-      ikeGateway.setExternalInterface(externalInterface);
-      ikeGateway.setAddress(ipsecTunnel.getCgwOutsideAddress());
-      ikeGateway.setLocalIp(externalInterface.getAddress().getIp());
-      if (ipsecTunnel.getIkePreSharedKeyHash() != null) {
-        ikePolicy.setPreSharedKeyHash(ipsecTunnel.getIkePreSharedKeyHash());
-        ikeProposal.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
-      }
-      ikeProposal.setAuthenticationAlgorithm(
-          toIkeAuthenticationAlgorithm(ipsecTunnel.getIkeAuthProtocol()));
-      ikeProposal.setDiffieHellmanGroup(
-          toDiffieHellmanGroup(ipsecTunnel.getIkePerfectForwardSecrecy()));
-      ikeProposal.setEncryptionAlgorithm(
-          toEncryptionAlgorithm(ipsecTunnel.getIkeEncryptionProtocol()));
-      ikeProposal.setLifetimeSeconds(ipsecTunnel.getIkeLifetime());
+      // IPsec data-model
+      ikePhase1ProposalMapBuilder.put(vpnId, toIkePhase1Proposal(vpnId, ipsecTunnel));
+      IkePhase1Key ikePhase1Key =
+          toIkePhase1PreSharedKey(
+              ipsecTunnel, ipsecTunnel.getCgwOutsideAddress(), externalInterfaceName);
+      ikePhase1KeyMapBuilder.put(vpnId, ikePhase1Key);
+      ikePhase1PolicyMapBuilder.put(
+          vpnId,
+          toIkePhase1Policy(
+              vpnId,
+              vpnId,
+              ikePhase1Key,
+              ipsecTunnel.getCgwOutsideAddress(),
+              externalInterfaceName));
+      ipsecPhase2ProposalMapBuilder.put(vpnId, toIpsecPhase2Proposal(ipsecTunnel, warnings));
+      ipsecPhase2PolicyMapBuilder.put(vpnId, toIpsecPhase2Policy(ipsecTunnel, vpnId));
+      ipsecPeerConfigMapBuilder.put(
+          vpnId,
+          IpsecStaticPeerConfig.builder()
+              .setTunnelInterface(vpnInterfaceName)
+              .setIkePhase1Policy(vpnId)
+              .setIpsecPolicy(vpnId)
+              .setSourceInterface(externalInterfaceName)
+              .setLocalAddress(ipsecTunnel.getVgwOutsideAddress())
+              .setDestinationAddress(ipsecTunnel.getCgwOutsideAddress())
+              .build());
 
       // bgp (if configured)
       if (ipsecTunnel.getVgwBgpAsn() != -1) {
@@ -411,6 +496,12 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         vpnGatewayCfgNode.getDefaultVrf().getStaticRoutes().add(staticRoute);
       }
     }
+    vpnGatewayCfgNode.setIkePhase1Proposals(ikePhase1ProposalMapBuilder.build());
+    vpnGatewayCfgNode.setIkePhase1Keys(ikePhase1KeyMapBuilder.build());
+    vpnGatewayCfgNode.setIkePhase1Policies(ikePhase1PolicyMapBuilder.build());
+    vpnGatewayCfgNode.setIpsecPhase2Proposals(ipsecPhase2ProposalMapBuilder.build());
+    vpnGatewayCfgNode.setIpsecPhase2Policies(ipsecPhase2PolicyMapBuilder.build());
+    vpnGatewayCfgNode.setIpsecPeerConfigs(ipsecPeerConfigMapBuilder.build());
   }
 
   public String getCustomerGatewayId() {

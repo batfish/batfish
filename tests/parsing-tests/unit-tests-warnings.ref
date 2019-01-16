@@ -43,6 +43,20 @@
     },
     "rows" : [
       {
+        "Filename" : "arista_nat",
+        "Line" : 10,
+        "Text" : "ip nat pool pool3 1.1.1.1 1.1.1.2 prefix-length 32",
+        "Parser_Context" : "[ip_nat_pool s_ip_nat stanza cisco_configuration]",
+        "Comment" : "Subnet of NAT pool pool3 does not contain last pool IP"
+      },
+      {
+        "Filename" : "arista_nat",
+        "Line" : 9,
+        "Text" : "ip nat pool pool2 1.1.1.1 1.1.1.2 netmask 255.255.255.255",
+        "Parser_Context" : "[ip_nat_pool s_ip_nat stanza cisco_configuration]",
+        "Comment" : "Subnet of NAT pool pool2 does not contain last pool IP"
+      },
+      {
         "Filename" : "aruba_misc",
         "Line" : 90,
         "Text" : "no ip default-gateway import cell",
@@ -83,6 +97,13 @@
         "Text" : "nd-type",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
+      },
+      {
+        "Filename" : "cisco-zone",
+        "Line" : 10,
+        "Text" : "zone t1",
+        "Parser_Context" : "[s_zone stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "cisco_acl",
@@ -206,9 +227,37 @@
       {
         "Filename" : "cisco_interface",
         "Line" : 279,
+        "Text" : "zone-member t1",
+        "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_interface",
+        "Line" : 315,
         "Text" : "mode gre multipoint",
         "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_interface",
+        "Line" : 92,
+        "Text" : "ip nat source dynamic access-list def overload",
+        "Parser_Context" : "[if_ip_nat_source if_inner s_interface stanza cisco_configuration]",
+        "Comment" : "Ignored incomplete definition of Arista dynamic source nat. acl=def, pool=null"
+      },
+      {
+        "Filename" : "cisco_ip_nat",
+        "Line" : 13,
+        "Text" : "ip nat outside source static 6.6.6.6 7.7.7.7 add-route no-alias",
+        "Parser_Context" : "[ip_nat_source s_ip_nat stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "cisco_ip_nat",
+        "Line" : 4,
+        "Text" : "ip nat pool abc prefix-length 32  \n range 10.1.2.3 10.1.2.4",
+        "Parser_Context" : "[ip_nat_pool_range s_ip_nat stanza cisco_configuration]",
+        "Comment" : "Subnet of NAT pool abc does not contain last pool IP"
       },
       {
         "Filename" : "cisco_ipv6_access_list",
@@ -520,14 +569,14 @@
       },
       {
         "Filename" : "juniper-ospf",
-        "Line" : 11,
+        "Line" : 14,
         "Text" : "area-range dead:beef::/56 override-metric 100",
         "Parser_Context" : "[oa_area_range o_area o_common p_ospf3 s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "juniper-ospf",
-        "Line" : 11,
+        "Line" : 14,
         "Text" : "area-range dead:beef::/56 override-metric 100",
         "Parser_Context" : "[oa_area_range o_area o_common p_ospf3 s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"
@@ -541,7 +590,7 @@
       },
       {
         "Filename" : "juniper_isis",
-        "Line" : 8,
+        "Line" : 12,
         "Text" : "priority 65",
         "Parser_Context" : "[isil_priority isi_level is_interface p_isis s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"
@@ -555,16 +604,16 @@
       },
       {
         "Filename" : "juniper_routing_options",
-        "Line" : 8,
-        "Text" : "policy AGGREGATE_ROUTE_POLICY",
-        "Parser_Context" : "[roa_policy roa_common roa_route ro_aggregate s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Line" : 10,
+        "Text" : "confederation 11111 members 22222",
+        "Parser_Context" : "[ro_confederation s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "juniper_routing_options",
         "Line" : 9,
-        "Text" : "confederation 11111 members 22222",
-        "Parser_Context" : "[ro_confederation s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Text" : "policy AGGREGATE_ROUTE_POLICY",
+        "Parser_Context" : "[roa_policy roa_common roa_route ro_aggregate s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
@@ -583,10 +632,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 77 results",
+      "notes" : "Found 84 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 77
+      "numResults" : 84
     }
   }
 ]

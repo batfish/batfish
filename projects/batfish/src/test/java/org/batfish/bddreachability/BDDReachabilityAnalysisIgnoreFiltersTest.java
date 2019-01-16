@@ -2,6 +2,9 @@ package org.batfish.bddreachability;
 
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
+import static org.batfish.datamodel.transformation.Transformation.when;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -28,9 +31,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -52,12 +53,12 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
   private static final InterfaceAddress NODE1_ADDR = new InterfaceAddress("1.2.3.1/24");
   private static final InterfaceAddress NODE2_ADDR = new InterfaceAddress("1.2.3.2/24");
   private static final String NODE2 = "node2";
-  private static final Ip DENIED_IN_SRC_IP = new Ip("1.1.1.1");
-  private static final Ip DENIED_OUT_SRC_IP = new Ip("1.1.1.2");
+  private static final Ip DENIED_IN_SRC_IP = Ip.parse("1.1.1.1");
+  private static final Ip DENIED_OUT_SRC_IP = Ip.parse("1.1.1.2");
   private static final IngressLocation INGRESS_LOCATION =
       IngressLocation.vrf(NODE1, Configuration.DEFAULT_VRF_NAME);
-  private static final Ip NAT_MATCH_IP = new Ip("2.2.2.2");
-  private static final Ip NAT_POOL_IP = new Ip("2.2.2.3");
+  private static final Ip NAT_MATCH_IP = Ip.parse("2.2.2.2");
+  private static final Ip NAT_POOL_IP = Ip.parse("2.2.2.3");
   private static final BDD ZERO = PKT.getFactory().zero();
 
   public static @ClassRule TemporaryFolder temp = new TemporaryFolder();
@@ -75,19 +76,10 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
     Vrf vrf1 = nf.vrfBuilder().setOwner(c1).setName(Configuration.DEFAULT_VRF_NAME).build();
-    IpAccessList natAcl =
-        nf.aclBuilder()
-            .setOwner(c1)
-            .setLines(
-                ImmutableList.of(
-                    IpAccessListLine.accepting(AclLineMatchExprs.matchSrc(NAT_MATCH_IP))))
-            .build();
     IpAccessList outgoingFilter =
         nf.aclBuilder()
             .setOwner(c1)
-            .setLines(
-                ImmutableList.of(
-                    IpAccessListLine.rejecting(AclLineMatchExprs.matchSrc(DENIED_OUT_SRC_IP))))
+            .setLines(ImmutableList.of(IpAccessListLine.rejecting(matchSrc(DENIED_OUT_SRC_IP))))
             .build();
     Interface iface1 =
         nf.interfaceBuilder()
@@ -95,13 +87,10 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
             .setVrf(vrf1)
             .setActive(true)
             .setAddress(NODE1_ADDR)
-            .setSourceNats(
-                ImmutableList.of(
-                    SourceNat.builder()
-                        .setAcl(natAcl)
-                        .setPoolIpFirst(NAT_POOL_IP)
-                        .setPoolIpLast(NAT_POOL_IP)
-                        .build()))
+            .setOutgoingTransformation(
+                when(matchSrc(NAT_MATCH_IP))
+                    .apply(assignSourceIp(NAT_POOL_IP, NAT_POOL_IP))
+                    .build())
             .setOutgoingFilter(outgoingFilter)
             .build();
 
@@ -114,9 +103,7 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
     IpAccessList incomingFilter =
         nf.aclBuilder()
             .setOwner(c2)
-            .setLines(
-                ImmutableList.of(
-                    IpAccessListLine.rejecting(AclLineMatchExprs.matchSrc(DENIED_IN_SRC_IP))))
+            .setLines(ImmutableList.of(IpAccessListLine.rejecting(matchSrc(DENIED_IN_SRC_IP))))
             .build();
     nf.interfaceBuilder()
         .setOwner(c2)

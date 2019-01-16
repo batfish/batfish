@@ -410,6 +410,30 @@
         }
       },
       {
+        "File_Name" : "configs/cadant_misc",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback0",
+        "Context" : "ntp source-interface",
+        "Lines" : {
+          "filename" : "configs/cadant_misc",
+          "lines" : [
+            80
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_misc",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback0",
+        "Context" : "tacacs source-interface",
+        "Lines" : {
+          "filename" : "configs/cadant_misc",
+          "lines" : [
+            94
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/cadant_rip",
         "Struct_Type" : "ipv4/6 acl",
         "Ref_Name" : "blah-std-acl",
@@ -442,6 +466,18 @@
           "filename" : "configs/cadant_route_map",
           "lines" : [
             10
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cadant_snmp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback0",
+        "Context" : "snmp-server source-interface",
+        "Lines" : {
+          "filename" : "configs/cadant_snmp",
+          "lines" : [
+            18
           ]
         }
       },
@@ -772,6 +808,78 @@
         }
       },
       {
+        "File_Name" : "configs/cisco_domain",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback666",
+        "Context" : "domain lookup source-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_domain",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_eigrp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "FastEthernet0/1",
+        "Context" : "eigrp passive-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_eigrp",
+          "lines" : [
+            140
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_eigrp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "GigabitEthernet1/5/3",
+        "Context" : "eigrp passive-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_eigrp",
+          "lines" : [
+            23
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_eigrp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "GigabitEthernet2/5/3",
+        "Context" : "eigrp passive-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_eigrp",
+          "lines" : [
+            24
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_eigrp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Port-Channel34",
+        "Context" : "eigrp passive-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_eigrp",
+          "lines" : [
+            25
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_eigrp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Port-Channel35",
+        "Context" : "eigrp passive-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_eigrp",
+          "lines" : [
+            26
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/cisco_eigrp",
         "Struct_Type" : "route-map",
         "Ref_Name" : "BGP_TO_EIGRP",
@@ -852,6 +960,18 @@
           "filename" : "configs/cisco_eigrp",
           "lines" : [
             37
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_interface",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback1",
+        "Context" : "vxlan source-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_interface",
+          "lines" : [
+            324
           ]
         }
       },
@@ -991,11 +1111,11 @@
         "File_Name" : "configs/cisco_interface",
         "Struct_Type" : "zone security",
         "Ref_Name" : "z1",
-        "Context" : "interface zone-member",
+        "Context" : "interface zone-member security",
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [
-            294
+            280
           ]
         }
       },
@@ -1020,6 +1140,102 @@
           "filename" : "configs/cisco_ip",
           "lines" : [
             11
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ip_route",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Dialer1",
+        "Context" : "ip route next-hop interface",
+        "Lines" : {
+          "filename" : "configs/cisco_ip_route",
+          "lines" : [
+            14
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ip_route",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Dialer2",
+        "Context" : "ip route next-hop interface",
+        "Lines" : {
+          "filename" : "configs/cisco_ip_route",
+          "lines" : [
+            15
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ip_route",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "GigabitEthernet3/0/0.212",
+        "Context" : "ip route next-hop interface",
+        "Lines" : {
+          "filename" : "configs/cisco_ip_route",
+          "lines" : [
+            6
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ip_route",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback66",
+        "Context" : "ip route next-hop interface",
+        "Lines" : {
+          "filename" : "configs/cisco_ip_route",
+          "lines" : [
+            12
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ip_route",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback99",
+        "Context" : "ip route next-hop interface",
+        "Lines" : {
+          "filename" : "configs/cisco_ip_route",
+          "lines" : [
+            13
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ip_route",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "POS5/3:10",
+        "Context" : "ip route next-hop interface",
+        "Lines" : {
+          "filename" : "configs/cisco_ip_route",
+          "lines" : [
+            10
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ip_route",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Serial5/0:2",
+        "Context" : "ip route next-hop interface",
+        "Lines" : {
+          "filename" : "configs/cisco_ip_route",
+          "lines" : [
+            7
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ip_route",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Serial5/1:5",
+        "Context" : "ip route next-hop interface",
+        "Lines" : {
+          "filename" : "configs/cisco_ip_route",
+          "lines" : [
+            9
           ]
         }
       },
@@ -1117,6 +1333,18 @@
           "filename" : "configs/cisco_misc",
           "lines" : [
             42
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_ntp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback0",
+        "Context" : "ntp source-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_ntp",
+          "lines" : [
+            7
           ]
         }
       },
@@ -1594,6 +1822,42 @@
       },
       {
         "File_Name" : "configs/cisco_snmp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback0",
+        "Context" : "snmp-server source-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_snmp",
+          "lines" : [
+            87
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_snmp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Vlan1",
+        "Context" : "snmp-server source-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_snmp",
+          "lines" : [
+            89
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_snmp",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "mgmt0",
+        "Context" : "snmp-server source-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_snmp",
+          "lines" : [
+            88
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_snmp",
         "Struct_Type" : "ipv4 acl",
         "Ref_Name" : "1",
         "Context" : "snmp server community ipv4 acl",
@@ -1727,6 +1991,31 @@
         }
       },
       {
+        "File_Name" : "configs/cisco_tacacs",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback0",
+        "Context" : "ip tacacs source-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_tacacs",
+          "lines" : [
+            6,
+            7
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_tacacs",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback0",
+        "Context" : "tacacs source-interface",
+        "Lines" : {
+          "filename" : "configs/cisco_tacacs",
+          "lines" : [
+            26
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/cisco_track",
         "Struct_Type" : "interface",
         "Ref_Name" : "GigabitEthernet0/0",
@@ -1819,6 +2108,18 @@
           "filename" : "configs/foundry_bgp",
           "lines" : [
             16
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/foundry_misc",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Ethernet13/10",
+        "Context" : "ip route next-hop interface",
+        "Lines" : {
+          "filename" : "configs/foundry_misc",
+          "lines" : [
+            39
           ]
         }
       },
@@ -2080,6 +2381,114 @@
           "filename" : "configs/ios_xr_multipart",
           "lines" : [
             31
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Bundle-Ethernet101",
+        "Context" : "router ospf area interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ospf",
+          "lines" : [
+            17
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Bundle-Ethernet103",
+        "Context" : "router ospf area interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ospf",
+          "lines" : [
+            23
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Bundle-Ethernet201",
+        "Context" : "router ospf area interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ospf",
+          "lines" : [
+            27
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "HundredGigabitEthernet0/2/0/0.292",
+        "Context" : "router ospf area interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ospf",
+          "lines" : [
+            41
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "HundredGigabitEthernet0/2/0/3",
+        "Context" : "router ospf area interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ospf",
+          "lines" : [
+            43
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Loopback0",
+        "Context" : "router ospf area interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ospf",
+          "lines" : [
+            32
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "TenGigabitEthernet0/0/0/2",
+        "Context" : "router ospf area interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ospf",
+          "lines" : [
+            50
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "TenGigabitEthernet0/0/0/4",
+        "Context" : "router ospf area interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ospf",
+          "lines" : [
+            35
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ospf",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "TenGigabitEthernet0/0/0/5",
+        "Context" : "router ospf area interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ospf",
+          "lines" : [
+            38
           ]
         }
       },
@@ -2460,6 +2869,30 @@
         }
       },
       {
+        "File_Name" : "configs/ios_xr_router_static",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "GigabitEthernet0/2/1/5.290",
+        "Context" : "router static route",
+        "Lines" : {
+          "filename" : "configs/ios_xr_router_static",
+          "lines" : [
+            16
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_router_static",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "TenGigabitEthernet0/0/2/3",
+        "Context" : "router static route",
+        "Lines" : {
+          "filename" : "configs/ios_xr_router_static",
+          "lines" : [
+            7
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/ios_xr_ssh",
         "Struct_Type" : "ipv4 acl",
         "Ref_Name" : "ACL99",
@@ -2491,10 +2924,10 @@
         "Lines" : {
           "filename" : "configs/juniper_bgp",
           "lines" : [
-            9,
-            16,
-            23,
-            32
+            10,
+            20,
+            27,
+            36
           ]
         }
       },
@@ -2506,10 +2939,10 @@
         "Lines" : {
           "filename" : "configs/juniper_bgp",
           "lines" : [
-            11,
-            18,
-            25,
-            34
+            13,
+            22,
+            29,
+            38
           ]
         }
       },
@@ -2582,7 +3015,7 @@
         "Lines" : {
           "filename" : "configs/juniper_interfaces",
           "lines" : [
-            21
+            22
           ]
         }
       },
@@ -2599,18 +3032,14 @@
         }
       },
       {
-        "File_Name" : "configs/juniper_isis",
+        "File_Name" : "configs/juniper_misc",
         "Struct_Type" : "interface",
-        "Ref_Name" : "ge-0/0/0.0",
-        "Context" : "isis interface",
+        "Ref_Name" : "lo0.0",
+        "Context" : "routing-instances vtep-source-interface",
         "Lines" : {
-          "filename" : "configs/juniper_isis",
+          "filename" : "configs/juniper_misc",
           "lines" : [
-            6,
-            7,
-            8,
-            9,
-            10
+            9
           ]
         }
       },
@@ -2622,12 +3051,12 @@
         "Lines" : {
           "filename" : "configs/juniper_ospf",
           "lines" : [
-            14,
-            15,
-            16,
             17,
+            18,
             19,
-            20
+            20,
+            22,
+            23
           ]
         }
       },
@@ -2639,7 +3068,7 @@
         "Lines" : {
           "filename" : "configs/juniper_ospf",
           "lines" : [
-            12
+            15
           ]
         }
       },
@@ -2651,7 +3080,10 @@
         "Lines" : {
           "filename" : "configs/juniper_ospf",
           "lines" : [
-            3
+            3,
+            4,
+            5,
+            6
           ]
         }
       },
@@ -2663,7 +3095,7 @@
         "Lines" : {
           "filename" : "configs/juniper_ospf",
           "lines" : [
-            4
+            7
           ]
         }
       },
@@ -3149,10 +3581,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 255 results",
+      "notes" : "Found 291 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 255
+      "numResults" : 291
     }
   }
 ]

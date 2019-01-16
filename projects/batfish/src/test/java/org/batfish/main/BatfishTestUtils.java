@@ -42,7 +42,7 @@ public class BatfishTestUtils {
   }
 
   private static Cache<NetworkSnapshot, SortedMap<String, Configuration>> makeTestrigCache() {
-    return CacheBuilder.newBuilder().maximumSize(5).build();
+    return CacheBuilder.newBuilder().softValues().maximumSize(5).build();
   }
 
   private static Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>> makeEnvBgpCache() {
@@ -54,7 +54,7 @@ public class BatfishTestUtils {
   }
 
   private static Cache<NetworkSnapshot, DataPlane> makeDataPlaneCache() {
-    return CacheBuilder.newBuilder().maximumSize(2).build();
+    return CacheBuilder.newBuilder().softValues().maximumSize(2).build();
   }
 
   private static Batfish initBatfish(
@@ -164,6 +164,17 @@ public class BatfishTestUtils {
     ibdpPlugin.initialize(batfish);
   }
 
+  /** Configure common Batfish settings for tests (e.g. disable recovery, debug level logging) */
+  public static void configureBatfishTestSettings(Settings settings) {
+    settings.setLogger(new BatfishLogger("debug", false));
+    settings.setDisableUnrecognized(true);
+    settings.setHaltOnConvertError(true);
+    settings.setHaltOnParseError(true);
+    settings.setThrowOnLexerError(true);
+    settings.setThrowOnParserError(true);
+    settings.setVerboseParse(true);
+  }
+
   /**
    * Get a new Batfish instance with given configurations, tempFolder should be present for
    * non-empty configurations
@@ -184,13 +195,7 @@ public class BatfishTestUtils {
     Map<String, String> routingTablesText = testrigText.getRoutingTablesText();
 
     Settings settings = new Settings(new String[] {});
-    settings.setLogger(new BatfishLogger("debug", false));
-    settings.setDisableUnrecognized(true);
-    settings.setHaltOnConvertError(true);
-    settings.setHaltOnParseError(true);
-    settings.setThrowOnLexerError(true);
-    settings.setThrowOnParserError(true);
-    settings.setVerboseParse(true);
+    configureBatfishTestSettings(settings);
     settings.setStorageBase(tempFolder.newFolder().toPath());
     settings.setContainer("tempNetworkId");
     settings.setTestrig("tempSnapshotId");

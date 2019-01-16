@@ -68,7 +68,7 @@ public class SearchFiltersDifferentialTest {
 
   @Test
   public void testAclLineAddedRemoved() throws IOException {
-    Ip ip = new Ip("1.2.3.4");
+    Ip ip = Ip.parse("1.2.3.4");
     Configuration baseConfig = _cb.build();
     Configuration deltaConfig = _cb.build();
     _ib.setOwner(baseConfig).build();
@@ -84,6 +84,47 @@ public class SearchFiltersDifferentialTest {
         (TableAnswerElement)
             new SearchFiltersAnswerer(
                     SearchFiltersQuestion.builder().setStartLocation("enter(.*)").build(), batfish)
+                .answerDiff();
+    assertThat(
+        answer,
+        hasRows(
+            contains(
+                ImmutableList.of(
+                    allOf(
+                        hasColumn(equalTo(COL_FLOW), hasDstIp(ip), Schema.FLOW),
+                        hasColumn(
+                            equalTo(TableDiff.baseColumnName(COL_ACTION)),
+                            equalTo(LineAction.DENY.toString()),
+                            Schema.STRING),
+                        hasColumn(
+                            equalTo(TableDiff.deltaColumnName(COL_ACTION)),
+                            equalTo(LineAction.PERMIT.toString()),
+                            Schema.STRING))))));
+  }
+
+  @Test
+  public void testDenyWithExplanations() throws IOException {
+    Ip ip = Ip.parse("1.2.3.4");
+    Configuration baseConfig = _cb.build();
+    Configuration deltaConfig = _cb.build();
+    _ib.setOwner(baseConfig).build();
+    _ib.setOwner(deltaConfig).build();
+    _ab.setOwner(baseConfig).build();
+    _ab.setOwner(deltaConfig)
+        .setLines(
+            ImmutableList.of(
+                accepting().setMatchCondition(and(matchSrcInterface(IFACE), matchDst(ip))).build()))
+        .build();
+    Batfish batfish = getBatfish(baseConfig, deltaConfig);
+    TableAnswerElement answer =
+        (TableAnswerElement)
+            new SearchFiltersAnswerer(
+                    SearchFiltersQuestion.builder()
+                        .setStartLocation("enter(.*)")
+                        .setAction("deny")
+                        .setGenerateExplanations(true)
+                        .build(),
+                    batfish)
                 .answerDiff();
     assertThat(
         answer,

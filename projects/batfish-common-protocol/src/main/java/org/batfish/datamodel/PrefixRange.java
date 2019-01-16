@@ -18,7 +18,7 @@ public final class PrefixRange implements Serializable, Comparable<PrefixRange> 
     // relevant length.
     int realPrefixLength = Math.min(prefix.getPrefixLength(), lengthRange.getEnd());
     Ip realPrefixAddress = prefix.getStartIp().getNetworkAddress(realPrefixLength);
-    this._prefix = new Prefix(realPrefixAddress, prefix.getPrefixLength());
+    this._prefix = Prefix.create(realPrefixAddress, prefix.getPrefixLength());
     this._lengthRange = lengthRange;
   }
 

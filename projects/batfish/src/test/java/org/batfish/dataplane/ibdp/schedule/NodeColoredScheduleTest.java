@@ -98,26 +98,26 @@ public class NodeColoredScheduleTest {
     Configuration r1 = cb.setHostname("r1").build();
     Vrf vEdge1 = vb.setOwner(r1).build();
     ib.setOwner(r1).setVrf(vEdge1);
-    ib.setAddress(new InterfaceAddress(new Ip("1.1.1.1"), 32)).build();
-    BgpProcess r1Proc = pb.setRouterId(new Ip("1.1.1.1")).setVrf(vEdge1).build();
+    ib.setAddress(new InterfaceAddress(Ip.parse("1.1.1.1"), 32)).build();
+    BgpProcess r1Proc = pb.setRouterId(Ip.parse("1.1.1.1")).setVrf(vEdge1).build();
     nb.setRemoteAs(2L)
-        .setPeerAddress(new Ip("2.2.2.2"))
+        .setPeerAddress(Ip.parse("2.2.2.2"))
         .setBgpProcess(r1Proc)
         .setLocalAs(1L)
-        .setLocalIp(new Ip("1.1.1.1"))
+        .setLocalIp(Ip.parse("1.1.1.1"))
         .build();
 
     Configuration r2 = cb.setHostname("r2").build();
     Vrf vrf2 = vb.setOwner(r2).build();
     ib.setOwner(r2).setVrf(vrf2);
-    ib.setAddress(new InterfaceAddress(new Ip("2.2.2.2"), 32)).build();
-    BgpProcess r2Proc = pb.setRouterId(new Ip("2.2.2.2")).setVrf(vrf2).build();
+    ib.setAddress(new InterfaceAddress(Ip.parse("2.2.2.2"), 32)).build();
+    BgpProcess r2Proc = pb.setRouterId(Ip.parse("2.2.2.2")).setVrf(vrf2).build();
     nb.setRemoteAs(1L)
-        .setPeerAddress(new Ip("1.1.1.1"))
+        .setPeerAddress(Ip.parse("1.1.1.1"))
         .setBgpProcess(r2Proc)
         .setLocalAs(2L)
         .setRouteReflectorClient(true)
-        .setLocalIp(new Ip("2.2.2.2"))
+        .setLocalIp(Ip.parse("2.2.2.2"))
         .build();
 
     SortedMap<String, Configuration> configurations =

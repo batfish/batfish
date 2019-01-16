@@ -17,9 +17,10 @@ See [www.batfish.org](http://www.batfish.org) for technical information on how i
 
 ## What kinds of correctness checks does Batfish support?
 
-[![Getting to know Batfish](batfish_video.png)](https://www.youtube.com/channel/UCA-OUW_3IOt9U_s60KvmJYA/videos)
+[<img src=batfish_video.png width=370>](https://www.youtube.com/channel/UCA-OUW_3IOt9U_s60KvmJYA/videos)
+[<img src=batfish_notebook.png width=470>](https://github.com/batfish/pybatfish/tree/master/jupyter_notebooks)
 
-The [Batfish YouTube channel](https://www.youtube.com/channel/UCA-OUW_3IOt9U_s60KvmJYA/videos) (which you can subscribe to for new content) illustrates many types of checks. These checks span a range of network behaviors and device configuration attributes.
+The [Batfish YouTube channel](https://www.youtube.com/channel/UCA-OUW_3IOt9U_s60KvmJYA/videos) (subscribe!) and [Python notebooks](https://github.com/batfish/pybatfish/tree/master/jupyter_notebooks) illustrate many checks. Batfish checks span a range of network behaviors.
 #### Configuration Compliance
 * Flag undefined-but-referenced or defined-but-unreferenced structures (e.g., ACLs, route maps)
 * Configuration settings for MTUs, AAA, NTP, logging, etc. match templates
@@ -78,29 +79,16 @@ This starts the service after mapping the local data folder to the data folder w
 
 Next, you need to install [Pybatfish](https://www.github.com/batfish/pybatfish) (the Python SDK) in order to interact with the service.
 
-## Download and install Pybatfish
-First, clone the Github repository. Change to the directory where you would like to clone the repository and issue the git command below.
+## Install Pybatfish
+We highly recommend that you install Pybatfish in a Python 3 virtual environment. Details on how to set one up can be found [here](https://docs.python.org/3/library/venv.html). Once your virtual environment is setup and activated, upgrade `pip` and then install `pybatfish`.
 
-  `cd /path/to/directory/where/you/want/to/clone/repo`
-  
-  `git clone git@github.com:batfish/pybatfish.git`
+    python3 -m pip install --upgrade pip
+    python3 -m pip install --upgrade git+https://github.com/batfish/pybatfish.git
 
-Then, install Pybatfish. We highly recommend that you install Pybatfish in a Python 3 virtual environment. Details on how to set one up can be found [here](https://docs.python.org/3/library/venv.html). 
+Now, you are ready to evaluate your own network with Batfish. We encourage you to use Jupyter notebooks as your starting point, but you can use other methods that you are a comfortable with, e.g., an IDE like PyCharm or an interactive Python shell. If you choose to use Jupyter notebooks as your starting point, you need to install Jupyter in your virtual environment. Jupyter documentation can be found [here](http://jupyter.org/install) - but the commands below will get you going.
 
-Once your virtual environment is setup and activated, issue the following commands
-
-  `cd /path/to/directory/where/you/want/to/clone/repo/pybatfish`
-  
-  `pip install -e .`
-
-Now, you are ready to evaluate your own network with Batfish.We encourage you to use Jupyter notebooks as your starting point, but you can use other methods that you are a comfortable with, e.g., an IDE like PyCharm or an interactive Python shell.
-If you choose to use Jupyter notebooks as your starting point, you need to install Jupyter in your virtual environment. Jupyter documentation can be found [here](http://jupyter.org/install) - but the commands below will get you going.
-
-   `pip install --upgrade pip`
-   
-   `pip install jupyter`
-   
-   `jupyter notebook`
+    python3 -m pip install jupyter
+    jupyter notebook
 
 Our notebooks provide a quick start guide for different use cases. Beyond that, the complete documentation is available on [readthedocs](https://pybatfish.readthedocs.io/en/latest/quickstart.html). 
 

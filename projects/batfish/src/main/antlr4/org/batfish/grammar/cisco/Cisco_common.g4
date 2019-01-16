@@ -172,6 +172,11 @@ int_expr
    | RP_VARIABLE
 ;
 
+eos_vxlan_interface_name
+:
+   VXLAN DEC
+;
+
 interface_name
 :
    (
@@ -301,91 +306,214 @@ port_specifier
 port
 :
    DEC
+   | ACAP
+   | ACR_NEMA
+   | AFPOVERTCP
    | AOL
+   | ARNS
+   | ASF_RMCP
+   | ASIP_WEBADMIN
+   | AT_RTMP
+   | AURP
+   | AUTH
    | BFD
    | BFD_ECHO
+   | BFTP
+   | BGMP
    | BGP
    | BIFF
    | BOOTPC
    | BOOTPS
    | CHARGEN
    | CIFS
+   | CISCO_TDP
+   | CITADEL
    | CITRIX_ICA
+   | CLEARCASE
    | CMD
+   | COMMERCE
+   | COURIER
+   | CSNET_NS
    | CTIQBE
+   | CVX
+   | CVX_CLUSTER
+   | CVX_LICENSE
    | DAYTIME
+   | DHCP_FAILOVER2
+   | DHCPV6_CLIENT
+   | DHCPV6_SERVER
    | DISCARD
    | DNSIX
    | DOMAIN
+   | DSP
    | ECHO
+   | EFS
+   | EPP
+   | ESRO_GEN
    | EXEC
    | FINGER
    | FTP
    | FTP_DATA
+   | FTPS
+   | FTPS_DATA
+   | GODI
    | GOPHER
+   | GRE
+   | GTP_C
+   | GTP_PRIME
+   | GTP_U
    | H323
-   | HTTP
-   | HTTPS
+   | HA_CLUSTER
    | HOSTNAME
+   | HP_ALARM_MGR
+   | HTTP
+   | HTTP_ALT
+   | HTTP_MGMT
+   | HTTP_RPC_EPMAP
+   | HTTPS
    | IDENT
+   | IEEE_MMS_SSL
+   | IMAP
+   | IMAP3
    | IMAP4
+   | IMAPS
+   | IPP
+   | IPX
    | IRC
+   | IRIS_BEEP
    | ISAKMP
+   | ISCSI
+   | ISI_GL
+   | ISO_TSAP
    | KERBEROS
+   | KERBEROS_ADM
    | KLOGIN
+   | KPASSWD
    | KSHELL
+   | L2TP
+   | LA_MAINT
+   | LANZ
    | LDAP
    | LDAPS
    | LDP
-   | LPD
+   | LMP
    | LOGIN
    | LOTUSNOTES
+   | LPD
+   | MAC_SRVR_ADMIN
+   | MATIP_TYPE_A
+   | MATIP_TYPE_B
+   | MICRO_BFD
    | MICROSOFT_DS
    | MLAG
    | MOBILE_IP
+   | MONITOR
+   | MPP
+   | MS_SQL_M
+   | MS_SQL_S
+   | MSDP
+   | MSEXCH_ROUTING
+   | MSG_ICP
+   | MSP
    | MSRPC
    | NAMESERVER
+   | NAS
+   | NAT
+   | NCP
    | NETBIOS_DGM
    | NETBIOS_NS
    | NETBIOS_SS
    | NETBIOS_SSN
+   | NETRJS_1
+   | NETRJS_2
+   | NETRJS_3
+   | NETRJS_4
+   | NETWALL
+   | NETWNEWS
+   | NEW_RWHO
    | NFS
    | NNTP
+   | NNTPS
    | NON500_ISAKMP
+   | NSW_FE
    | NTP
+   | ODMR
+   | OLSR
+   | OPENVPN
    | PCANYWHERE_DATA
    | PCANYWHERE_STATUS
    | PIM_AUTO_RP
+   | PKIX_TIMESTAMP
+   | PKT_KRB_IPSEC
    | POP2
    | POP3
+   | POP3S
    | PPTP
+   | PRINT_SRV
+   | PTP_EVENT
+   | PTP_GENERAL
+   | QMTP
+   | QOTD
    | RADIUS
    | RADIUS_ACCT
+   | RE_MAIL_CK
+   | REMOTEFS
+   | REPCMD
    | RIP
+   | RJE
+   | RLP
+   | RLZDBASE
+   | RMC
+   | RMONITOR
+   | RPC2PORTMAP
    | RSH
+   | RSYNC
+   | RTELNET
    | RTSP
    | SECUREID_UDP
+   | SGMP
+   | SILC
    | SIP
    | SMTP
+   | SMUX
+   | SNAGAS
    | SNMP
    | SNMP_TRAP
    | SNMPTRAP
+   | SNPP
    | SQLNET
+   | SQLSERV
+   | SQLSRV
    | SSH
+   | SUBMISSION
    | SUNRPC
+   | SVRLOC
    | SYSLOG
+   | SYSTAT
    | TACACS
    | TACACS_DS
    | TALK
+   | TBRPF
+   | TCPMUX
+   | TCPNETHASPSRV
    | TELNET
    | TFTP
    | TIME
+   | TIMED
+   | TUNNEL
+   | UPS
    | UUCP
+   | UUCP_PATH
+   | VMNET
    | VXLAN
    | WHO
    | WHOIS
    | WWW
    | XDMCP
+   | XNS_CH
+   | XNS_MAIL
+   | XNS_TIME
+   | Z39_50
 ;
 
 prefix_set_elem

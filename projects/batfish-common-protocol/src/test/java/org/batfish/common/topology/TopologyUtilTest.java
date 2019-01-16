@@ -5,6 +5,7 @@ import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer3Topology;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
@@ -17,6 +18,7 @@ import java.util.SortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -26,6 +28,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.junit.Before;
 import org.junit.Test;
@@ -233,16 +236,16 @@ public final class TopologyUtilTest {
     Prefix p3 = Prefix.parse("10.0.0.2/31");
 
     int vlanPrefixLength = 24;
-    Ip c1Vlan1Ip = new Ip("10.10.1.1");
-    Ip c1Vlan2Ip = new Ip("10.10.2.1");
-    Ip c1Vlan3Ip = new Ip("10.10.3.1");
-    Ip c1Vlan4Ip = new Ip("10.10.4.1");
-    Ip c2Vlan1Ip = new Ip("10.10.1.2");
-    Ip c2Vlan2Ip = new Ip("10.10.2.2");
-    Ip c2Vlan3Ip = new Ip("10.10.3.2");
-    Ip c2Vlan4Ip = new Ip("10.10.4.2");
-    Ip c3i5Ip = new Ip("10.10.1.3");
-    Ip c3i6Ip = new Ip("10.10.4.3");
+    Ip c1Vlan1Ip = Ip.parse("10.10.1.1");
+    Ip c1Vlan2Ip = Ip.parse("10.10.2.1");
+    Ip c1Vlan3Ip = Ip.parse("10.10.3.1");
+    Ip c1Vlan4Ip = Ip.parse("10.10.4.1");
+    Ip c2Vlan1Ip = Ip.parse("10.10.1.2");
+    Ip c2Vlan2Ip = Ip.parse("10.10.2.2");
+    Ip c2Vlan3Ip = Ip.parse("10.10.3.2");
+    Ip c2Vlan4Ip = Ip.parse("10.10.4.2");
+    Ip c3i5Ip = Ip.parse("10.10.1.3");
+    Ip c3i6Ip = Ip.parse("10.10.4.3");
 
     Configuration c1 = _cb.setHostname(c1Name).build();
     Vrf v1 = _vb.setOwner(c1).build();
@@ -433,14 +436,80 @@ public final class TopologyUtilTest {
         computeIpInterfaceOwners(nodeInterfaces, true),
         equalTo(
             ImmutableMap.of(
-                new Ip("1.1.1.1"), ImmutableMap.of("node", ImmutableSet.of("active")))));
+                Ip.parse("1.1.1.1"), ImmutableMap.of("node", ImmutableSet.of("active")))));
 
     assertThat(
         computeIpInterfaceOwners(nodeInterfaces, false),
         equalTo(
             ImmutableMap.of(
-                new Ip("1.1.1.1"),
+                Ip.parse("1.1.1.1"),
                 ImmutableMap.of(
                     "node", ImmutableSet.of("active", "shut", "active-black", "shut-black")))));
+  }
+
+  @Test
+  public void testSynthesizeTopology_asymmetric() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = cb.build();
+    Configuration c2 = cb.build();
+    Interface i1 =
+        nf.interfaceBuilder().setOwner(c1).setAddresses(new InterfaceAddress("1.2.3.4/24")).build();
+    Interface i2 =
+        nf.interfaceBuilder().setOwner(c2).setAddresses(new InterfaceAddress("1.2.3.5/28")).build();
+    Topology t =
+        TopologyUtil.synthesizeL3Topology(
+            ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
+    assertThat(t.getEdges(), equalTo(ImmutableSet.of(new Edge(i1, i2), new Edge(i2, i1))));
+  }
+
+  @Test
+  public void testSynthesizeTopology_selfEdges() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf v1 = nf.vrfBuilder().setOwner(c).setName("v1").build();
+    Vrf v2 = nf.vrfBuilder().setOwner(c).setName("v2").build();
+    Interface.Builder builder = nf.interfaceBuilder().setOwner(c);
+    Interface i1 = builder.setAddresses(new InterfaceAddress("1.2.3.4/24")).setVrf(v1).build();
+    Interface i2 = builder.setAddresses(new InterfaceAddress("1.2.3.5/24")).setVrf(v1).build();
+    Interface i3 = builder.setAddresses(new InterfaceAddress("1.2.3.6/24")).setVrf(v2).build();
+    Topology t = TopologyUtil.synthesizeL3Topology(ImmutableMap.of(c.getHostname(), c));
+    assertThat(
+        t.getEdges(),
+        equalTo(
+            ImmutableSet.of(
+                new Edge(i1, i3), new Edge(i3, i1), new Edge(i2, i3), new Edge(i3, i2))));
+  }
+
+  @Test
+  public void testSynthesizeTopology_asymmetricPartialOverlap() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = cb.build();
+    Configuration c2 = cb.build();
+    nf.interfaceBuilder().setOwner(c1).setAddresses(new InterfaceAddress("1.2.3.4/24")).build();
+    nf.interfaceBuilder().setOwner(c2).setAddresses(new InterfaceAddress("1.2.3.17/28")).build();
+    Topology t =
+        TopologyUtil.synthesizeL3Topology(
+            ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
+    assertThat(t.getEdges(), empty());
+  }
+
+  @Test
+  public void testSynthesizeTopology_asymmetricSharedIp() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = cb.build();
+    Configuration c2 = cb.build();
+    nf.interfaceBuilder().setOwner(c1).setAddresses(new InterfaceAddress("1.2.3.4/24")).build();
+    nf.interfaceBuilder().setOwner(c2).setAddresses(new InterfaceAddress("1.2.3.4/28")).build();
+    Topology t =
+        TopologyUtil.synthesizeL3Topology(
+            ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
+    assertThat(t.getEdges(), empty());
   }
 }

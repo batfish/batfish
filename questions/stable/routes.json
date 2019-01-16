@@ -11,14 +11,14 @@
         ],
         "variables": {
             "nodes": {
-                "description": "Examine routes on nodes matching this name or regex",
+                "description": "Examine routes on nodes matching this specifier",
                 "type": "nodeSpec",
                 "value": ".*",
                 "displayName": "Nodes"
             },
             "vrfs": {
                 "description": "Examine routes on VRFs matching this name or regex",
-                "type": "javaRegex",
+                "type": "vrf",
                 "value": ".*",
                 "displayName": "VRFs"
             },
@@ -29,9 +29,9 @@
                 "displayName": "Network"
             },
             "protocols": {
-                "description": "Examine routes for protocols matching this name or regex",
-                "type": "javaRegex",
-                "value": ".*",
+                "description": "Examine routes for protocols matching this specifier",
+                "type": "routingProtocolSpec",
+                "optional": true,
                 "displayName": "Protocols"
             },
             "rib": {

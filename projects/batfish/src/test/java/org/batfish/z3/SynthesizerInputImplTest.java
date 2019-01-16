@@ -1,6 +1,5 @@
 package org.batfish.z3;
 
-import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasAclActions;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasAclConditions;
@@ -11,7 +10,6 @@ import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledNodes;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledVrfs;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasIpsByHostname;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasNeighborUnreachable;
-import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasSourceNats;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasTopologyInterfaces;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -25,7 +23,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Range;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,14 +42,10 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MockForwardingAnalysis;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.z3.expr.BooleanExpr;
-import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.visitors.IpSpaceBooleanExprTransformer;
-import org.batfish.z3.state.AclPermit;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -68,8 +61,6 @@ public class SynthesizerInputImplTest {
 
   private NetworkFactory _nf;
 
-  private SourceNat.Builder _snb;
-
   private Vrf.Builder _vb;
 
   @Before
@@ -80,7 +71,6 @@ public class SynthesizerInputImplTest {
     _ib = _nf.interfaceBuilder().setBandwidth(1E9d);
     _aclb = _nf.aclBuilder();
     _inputBuilder = SynthesizerInputImpl.builder();
-    _snb = SourceNat.builder();
   }
 
   @Test
@@ -175,11 +165,11 @@ public class SynthesizerInputImplTest {
                 ImmutableList.of(
                     IpAccessListLine.acceptingHeaderSpace(
                         HeaderSpace.builder()
-                            .setDstIps(ImmutableSet.of(new IpWildcard(new Ip("1.2.3.4"))))
+                            .setDstIps(ImmutableSet.of(new IpWildcard(Ip.parse("1.2.3.4"))))
                             .build()),
                     IpAccessListLine.acceptingHeaderSpace(
                         HeaderSpace.builder()
-                            .setDstIps(ImmutableSet.of(new IpWildcard(new Ip("5.6.7.8"))))
+                            .setDstIps(ImmutableSet.of(new IpWildcard(Ip.parse("5.6.7.8"))))
                             .build())))
             .build();
     Vrf vrf = _vb.setOwner(c).build();
@@ -208,55 +198,6 @@ public class SynthesizerInputImplTest {
                                 aclWithLines.getLines().get(0).getMatchCondition()),
                             aclLineMatchExprToBooleanExpr.toBooleanExpr(
                                 aclWithLines.getLines().get(1).getMatchCondition())))))));
-
-    Configuration srcNode = _cb.build();
-    Configuration nextHop = _cb.build();
-    Vrf srcVrf = _vb.setOwner(srcNode).build();
-    Vrf nextHopVrf = _vb.setOwner(nextHop).build();
-    Ip ip11 = new Ip("1.0.0.0");
-    Ip ip12 = new Ip("1.0.0.10");
-    Ip ip21 = new Ip("2.0.0.0");
-    Ip ip22 = new Ip("2.0.0.10");
-    IpAccessList sourceNat1Acl = _aclb.setLines(ImmutableList.of()).setOwner(srcNode).build();
-    IpAccessList sourceNat2Acl = _aclb.build();
-    SourceNat sourceNat1 =
-        _snb.setPoolIpFirst(ip11).setPoolIpLast(ip12).setAcl(sourceNat1Acl).build();
-    SourceNat sourceNat2 =
-        _snb.setPoolIpFirst(ip21).setPoolIpLast(ip22).setAcl(sourceNat2Acl).build();
-    Interface srcInterfaceZeroSourceNats =
-        _ib.setOwner(srcNode).setVrf(srcVrf).setSourceNats(ImmutableList.of()).build();
-    Interface srcInterfaceOneSourceNat = _ib.setSourceNats(ImmutableList.of(sourceNat1)).build();
-    Interface srcInterfaceTwoSourceNats =
-        _ib.setSourceNats(ImmutableList.of(sourceNat1, sourceNat2)).build();
-    Interface nextHopInterface =
-        _ib.setOwner(nextHop).setVrf(nextHopVrf).setSourceNats(ImmutableList.of()).build();
-    Edge forwardEdge1 = new Edge(srcInterfaceZeroSourceNats, nextHopInterface);
-    Edge forwardEdge2 = new Edge(srcInterfaceOneSourceNat, nextHopInterface);
-    Edge forwardEdge3 = new Edge(srcInterfaceTwoSourceNats, nextHopInterface);
-    Edge backEdge1 = new Edge(nextHopInterface, srcInterfaceZeroSourceNats);
-    Edge backEdge2 = new Edge(nextHopInterface, srcInterfaceOneSourceNat);
-    Edge backEdge3 = new Edge(nextHopInterface, srcInterfaceTwoSourceNats);
-    SynthesizerInput inputWithDataPlane =
-        _inputBuilder
-            .setConfigurations(
-                ImmutableMap.of(srcNode.getHostname(), srcNode, nextHop.getHostname(), nextHop))
-            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
-            .setTopology(
-                new Topology(
-                    ImmutableSortedSet.of(
-                        forwardEdge1, forwardEdge2, forwardEdge3, backEdge1, backEdge2, backEdge3)))
-            .build();
-    assertThat(
-        inputWithDataPlane,
-        hasAclConditions(
-            equalTo(
-                ImmutableMap.of(
-                    srcNode.getHostname(),
-                    ImmutableMap.of(
-                        sourceNat1Acl.getName(), ImmutableList.of(),
-                        sourceNat2Acl.getName(), ImmutableList.of()),
-                    nextHop.getHostname(),
-                    ImmutableMap.of()))));
   }
 
   @Test
@@ -439,9 +380,9 @@ public class SynthesizerInputImplTest {
     Configuration c = _cb.build();
     Vrf v = _vb.setOwner(c).build();
     // Enabled but not flow sink. Should not appear in enabledFlowSinks.
-    Ip ipEnabled1 = new Ip("1.1.1.1");
-    Ip ipEnabled2 = new Ip("2.2.2.2");
-    Ip ipDisabled = new Ip("3.3.3.3");
+    Ip ipEnabled1 = Ip.parse("1.1.1.1");
+    Ip ipEnabled2 = Ip.parse("2.2.2.2");
+    Ip ipDisabled = Ip.parse("3.3.3.3");
     // enabledInterface1
     _ib.setOwner(c)
         .setVrf(v)
@@ -529,97 +470,6 @@ public class SynthesizerInputImplTest {
   }
 
   @Test
-  public void testComputeSourceNats() {
-    Configuration srcNode = _cb.build();
-    Configuration nextHop = _cb.build();
-    Vrf srcVrf = _vb.setOwner(srcNode).build();
-    Vrf nextHopVrf = _vb.setOwner(nextHop).build();
-    Ip ip11 = new Ip("1.0.0.0");
-    Ip ip12 = new Ip("1.0.0.10");
-    Ip ip21 = new Ip("2.0.0.0");
-    Ip ip22 = new Ip("2.0.0.10");
-    IpAccessList sourceNat1Acl = _aclb.setLines(ImmutableList.of()).setOwner(srcNode).build();
-    IpAccessList sourceNat2Acl = _aclb.build();
-    SourceNat sourceNat1 =
-        _snb.setPoolIpFirst(ip11).setPoolIpLast(ip12).setAcl(sourceNat1Acl).build();
-    SourceNat sourceNat2 =
-        _snb.setPoolIpFirst(ip21).setPoolIpLast(ip22).setAcl(sourceNat2Acl).build();
-    Interface srcInterfaceZeroSourceNats =
-        _ib.setOwner(srcNode).setVrf(srcVrf).setSourceNats(ImmutableList.of()).build();
-    Interface srcInterfaceOneSourceNat = _ib.setSourceNats(ImmutableList.of(sourceNat1)).build();
-    Interface srcInterfaceTwoSourceNats =
-        _ib.setSourceNats(ImmutableList.of(sourceNat1, sourceNat2)).build();
-    Interface nextHopInterface =
-        _ib.setOwner(nextHop).setVrf(nextHopVrf).setSourceNats(ImmutableList.of()).build();
-    Edge forwardEdge1 = new Edge(srcInterfaceZeroSourceNats, nextHopInterface);
-    Edge forwardEdge2 = new Edge(srcInterfaceOneSourceNat, nextHopInterface);
-    Edge forwardEdge3 = new Edge(srcInterfaceTwoSourceNats, nextHopInterface);
-    Edge backEdge1 = new Edge(nextHopInterface, srcInterfaceZeroSourceNats);
-    Edge backEdge2 = new Edge(nextHopInterface, srcInterfaceOneSourceNat);
-    Edge backEdge3 = new Edge(nextHopInterface, srcInterfaceTwoSourceNats);
-    SynthesizerInput inputWithoutDataPlane =
-        _inputBuilder
-            .setConfigurations(
-                ImmutableMap.of(srcNode.getHostname(), srcNode, nextHop.getHostname(), nextHop))
-            .build();
-    SynthesizerInput inputWithDataPlane =
-        _inputBuilder
-            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
-            .setTopology(
-                new Topology(
-                    ImmutableSortedSet.of(
-                        forwardEdge1, forwardEdge2, forwardEdge3, backEdge1, backEdge2, backEdge3)))
-            .build();
-
-    assertThat(
-        inputWithDataPlane,
-        hasSourceNats(
-            hasEntry(
-                equalTo(srcNode.getHostname()),
-                hasEntry(
-                    equalTo(srcInterfaceZeroSourceNats.getName()), equalTo(ImmutableList.of())))));
-    assertThat(
-        inputWithDataPlane,
-        hasSourceNats(
-            hasEntry(
-                equalTo(srcNode.getHostname()),
-                hasEntry(
-                    equalTo(srcInterfaceOneSourceNat.getName()),
-                    equalTo(
-                        ImmutableList.of(
-                            immutableEntry(
-                                new AclPermit(srcNode.getHostname(), sourceNat1Acl.getName()),
-                                new RangeMatchExpr(
-                                    new TransformedVarIntExpr(Field.SRC_IP),
-                                    Field.SRC_IP.getSize(),
-                                    ImmutableSet.of(
-                                        Range.closed(ip11.asLong(), ip12.asLong()))))))))));
-    assertThat(
-        inputWithDataPlane,
-        hasSourceNats(
-            hasEntry(
-                equalTo(srcNode.getHostname()),
-                hasEntry(
-                    equalTo(srcInterfaceTwoSourceNats.getName()),
-                    equalTo(
-                        ImmutableList.of(
-                            immutableEntry(
-                                new AclPermit(srcNode.getHostname(), sourceNat1Acl.getName()),
-                                new RangeMatchExpr(
-                                    new TransformedVarIntExpr(Field.SRC_IP),
-                                    Field.SRC_IP.getSize(),
-                                    ImmutableSet.of(Range.closed(ip11.asLong(), ip12.asLong())))),
-                            immutableEntry(
-                                new AclPermit(srcNode.getHostname(), sourceNat2Acl.getName()),
-                                new RangeMatchExpr(
-                                    new TransformedVarIntExpr(Field.SRC_IP),
-                                    Field.SRC_IP.getSize(),
-                                    ImmutableSet.of(
-                                        Range.closed(ip21.asLong(), ip22.asLong()))))))))));
-    assertThat(inputWithoutDataPlane, hasSourceNats(nullValue()));
-  }
-
-  @Test
   public void testComputeTopologyInterfaces() {
     Configuration srcNode = _cb.build();
     Configuration nextHop = _cb.build();
@@ -688,51 +538,5 @@ public class SynthesizerInputImplTest {
         inputImpl.getAclConditions(),
         hasEntry(equalTo(config.getHostname()), hasKey(equalTo(acl1.getName()))));
     assertThat(inputImpl.getAclConditions().get(config.getHostname()).size(), equalTo(1));
-  }
-
-  /**
-   * Test that for a SourceNat with no ACL, the SynthesizerInput will have an "accept everything"
-   * ACL.
-   */
-  @Test
-  public void testSourceNatWithNoAcl() {
-    Configuration srcNode = _cb.build();
-    Configuration nextHop = _cb.build();
-    Vrf srcVrf = _vb.setOwner(srcNode).build();
-    Vrf nextHopVrf = _vb.setOwner(nextHop).build();
-    Ip ip1 = new Ip("1.0.0.0");
-    Ip ip2 = new Ip("1.0.0.10");
-    SourceNat sourceNat = _snb.setPoolIpFirst(ip1).setPoolIpLast(ip2).build();
-    Interface srcInterfaceOneSourceNat =
-        _ib.setOwner(srcNode).setVrf(srcVrf).setSourceNats(ImmutableList.of(sourceNat)).build();
-    Interface nextHopInterface =
-        _ib.setOwner(nextHop).setVrf(nextHopVrf).setSourceNats(ImmutableList.of()).build();
-    Edge forwardEdge = new Edge(srcInterfaceOneSourceNat, nextHopInterface);
-    Edge backEdge = new Edge(nextHopInterface, srcInterfaceOneSourceNat);
-    SynthesizerInput inputWithDataPlane =
-        _inputBuilder
-            .setConfigurations(
-                ImmutableMap.of(srcNode.getHostname(), srcNode, nextHop.getHostname(), nextHop))
-            .setForwardingAnalysis(MockForwardingAnalysis.builder().build())
-            .setTopology(new Topology(ImmutableSortedSet.of(forwardEdge, backEdge)))
-            .build();
-
-    // Acl for the SourceNat is DefaultSourceNatAcl
-    assertThat(
-        inputWithDataPlane,
-        hasSourceNats(
-            hasEntry(
-                equalTo(srcNode.getHostname()),
-                hasEntry(
-                    equalTo(srcInterfaceOneSourceNat.getName()),
-                    equalTo(
-                        ImmutableList.of(
-                            immutableEntry(
-                                null,
-                                new RangeMatchExpr(
-                                    new TransformedVarIntExpr(Field.SRC_IP),
-                                    Field.SRC_IP.getSize(),
-                                    ImmutableSet.of(
-                                        Range.closed(ip1.asLong(), ip2.asLong()))))))))));
   }
 }

@@ -10,6 +10,13 @@ public class IsisRib extends AbstractRib<IsisRoute> {
 
   private static final long serialVersionUID = 1L;
 
+  public static final Comparator<IsisRoute> routePreferenceComparator =
+      Comparator.comparing(IsisRoute::getAdministrativeCost)
+          .thenComparing(IsisRib::levelCost)
+          .thenComparing(IsisRoute::getOverload)
+          .thenComparing(IsisRoute::getMetric)
+          .reversed();
+
   private static int levelCost(IsisRoute isisRoute) {
     // Values returned are arbitrary, but L1 routes are preferred and must have lower cost than L2.
     switch (isisRoute.getLevel()) {
@@ -31,11 +38,7 @@ public class IsisRib extends AbstractRib<IsisRoute> {
 
   @Override
   public int comparePreference(IsisRoute lhs, IsisRoute rhs) {
-    // Flipped rhs & lhs because lower values are more preferred.
-    return Comparator.comparing(IsisRoute::getAdministrativeCost)
-        .thenComparing(IsisRib::levelCost)
-        .thenComparing(IsisRoute::getMetric)
-        .compare(rhs, lhs);
+    return routePreferenceComparator.compare(lhs, rhs);
   }
 
   @Override

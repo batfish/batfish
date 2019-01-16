@@ -23,15 +23,15 @@ import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AuthenticationKeyChain;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.IkeGateway;
-import org.batfish.datamodel.IkePolicy;
-import org.batfish.datamodel.IkeProposal;
+import org.batfish.datamodel.IkePhase1Key;
+import org.batfish.datamodel.IkePhase1Policy;
+import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpsecPolicy;
-import org.batfish.datamodel.IpsecProposal;
-import org.batfish.datamodel.IpsecVpn;
+import org.batfish.datamodel.IpsecPeerConfig;
+import org.batfish.datamodel.IpsecPhase2Policy;
+import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.Vrf;
@@ -138,15 +138,15 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       add(AsPathAccessList.class, Configuration::getAsPathAccessLists);
       add(AuthenticationKeyChain.class, Configuration::getAuthenticationKeyChains);
       add(CommunityList.class, Configuration::getCommunityLists);
-      add(IkeGateway.class, Configuration::getIkeGateways);
-      add(IkePolicy.class, Configuration::getIkePolicies);
-      add(IkeProposal.class, Configuration::getIkeProposals);
+      add(IkePhase1Key.class, Configuration::getIkePhase1Keys);
+      add(IkePhase1Policy.class, Configuration::getIkePhase1Policies);
+      add(IkePhase1Proposal.class, Configuration::getIkePhase1Proposals);
       add(Interface.class, Configuration::getAllInterfaces);
       add(Ip6AccessList.class, Configuration::getIp6AccessLists);
       add(IpAccessList.class, Configuration::getIpAccessLists);
-      add(IpsecPolicy.class, Configuration::getIpsecPolicies);
-      add(IpsecProposal.class, Configuration::getIpsecProposals);
-      add(IpsecVpn.class, Configuration::getIpsecVpns);
+      add(IpsecPhase2Policy.class, Configuration::getIpsecPhase2Policies);
+      add(IpsecPhase2Proposal.class, Configuration::getIpsecPhase2Proposals);
+      add(IpsecPeerConfig.class, Configuration::getIpsecPeerConfigs);
       add(Route6FilterList.class, Configuration::getRoute6FilterLists);
       add(RouteFilterList.class, Configuration::getRouteFilterLists);
       add(RoutingPolicy.class, Configuration::getRoutingPolicies);
@@ -243,9 +243,9 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     /**
      * Set of structure types to analyze drawn from ( AsPathAccessList, * AuthenticationKeyChain,
-     * CommunityList, IkeGateway, IkePolicy, IkeProposal, Interface, * Ip6AccessList, IpAccessList,
-     * IpsecPolicy, IpsecProposal, IpsecVpn, Route6FilterList, * RouteFilterList, RoutingPolicy,
-     * Vrf, Zone )
+     * CommunityList, IkePhase1Policy, IkePhase1Proposal, IkePhase1Key, Interface, * Ip6AccessList,
+     * IpAccessList, IpsecPhase2Policy, IpsecPhase2Proposal, IpsecPeerConfig, Route6FilterList, *
+     * RouteFilterList, RoutingPolicy, Vrf, Zone )
      *
      * <p>Default value is '[]', which denotes all types except those in excludedNamedStructTypes.
      */

@@ -109,7 +109,6 @@ public class NodJobChunkingTest {
     ib.setOwner(_dstNode)
         .setVrf(dstVrf)
         .setAddress(new InterfaceAddress(p1.getEndIp(), p1.getPrefixLength()))
-        .setSourceNats(ImmutableList.of())
         .build();
 
     Prefix p2 = Prefix.parse("2.0.0.0/31");
@@ -122,7 +121,6 @@ public class NodJobChunkingTest {
     ib.setOwner(_dstNode)
         .setVrf(dstVrf)
         .setAddress(new InterfaceAddress(p2.getEndIp(), p2.getPrefixLength()))
-        .setSourceNats(ImmutableList.of())
         .build();
 
     // For the destination
@@ -206,14 +204,14 @@ public class NodJobChunkingTest {
     assertThat(
         fieldConstraints1,
         hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, 1L));
-    assertThat(fieldConstraints1, hasEntry(Field.SRC_IP.getName(), new Ip("1.0.0.0").asLong()));
+    assertThat(fieldConstraints1, hasEntry(Field.SRC_IP.getName(), Ip.parse("1.0.0.0").asLong()));
     assertThat(
         fieldConstraints2,
         hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, 2L));
-    assertThat(fieldConstraints2, hasEntry(Field.SRC_IP.getName(), new Ip("2.0.0.0").asLong()));
+    assertThat(fieldConstraints2, hasEntry(Field.SRC_IP.getName(), Ip.parse("2.0.0.0").asLong()));
     assertThat(
         fieldConstraints3,
         hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, 0L));
-    assertThat(fieldConstraints3, hasEntry(Field.SRC_IP.getName(), new Ip("1.0.0.0").asLong()));
+    assertThat(fieldConstraints3, hasEntry(Field.SRC_IP.getName(), Ip.parse("1.0.0.0").asLong()));
   }
 }

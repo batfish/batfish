@@ -1,6 +1,11 @@
 package org.batfish.common.util;
 
+import static org.batfish.common.util.CommonUtil.initPrivateIpsByPublicIp;
+
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Streams;
 import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraph;
@@ -20,6 +25,7 @@ import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecDynamicPeerConfig;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPeerConfigId;
@@ -45,6 +51,8 @@ public class IpsecUtil {
     Map<Ip, Set<IpsecPeerConfigId>> localIpIpsecPeerConfigIds = new HashMap<>();
     MutableValueGraph<IpsecPeerConfigId, IpsecSession> graph =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+    SetMultimap<Ip, IpWildcardSetIpSpace> privateIpsByPublicIp =
+        initPrivateIpsByPublicIp(configurations);
 
     for (Configuration node : configurations.values()) {
       for (Entry<String, IpsecPeerConfig> entry : node.getIpsecPeerConfigs().entrySet()) {
@@ -72,34 +80,65 @@ public class IpsecUtil {
         continue;
       }
       Configuration initiatorOwner = configurations.get(ipsecPeerConfigId.getHostName());
-      Set<IpsecPeerConfigId> candidateIpsecPeerConfigIds =
-          localIpIpsecPeerConfigIds.get(ipsecStaticPeerConfig.getDestinationAddress());
-      if (candidateIpsecPeerConfigIds == null) {
-        continue;
-      }
-      for (IpsecPeerConfigId candidateIpsecPeerConfigId : candidateIpsecPeerConfigIds) {
 
-        IpsecPeerConfig candidateIpsecPeer =
-            networkConfigurations.getIpsecPeerConfig(candidateIpsecPeerConfigId);
-        if (candidateIpsecPeer == null) {
-          continue;
-        }
-        // skip if an IPSec peer is a crypto map based vpn and other is a tunnel interface based vpn
-        if (ipsecStaticPeerConfig.getTunnelInterface() == null
-            ^ candidateIpsecPeer.getTunnelInterface() == null) {
-          continue;
-        }
-        Configuration candidateOwner = configurations.get(candidateIpsecPeerConfigId.getHostName());
+      Ip destinationIp = ipsecStaticPeerConfig.getDestinationAddress();
 
-        IpsecSession ipsecSession =
-            getIpsecSession(
-                initiatorOwner, candidateOwner, ipsecStaticPeerConfig, candidateIpsecPeer);
+      // adding the possible IPsec peers which may peer through NAT
+      // also adding the possible IPsec peers which may peer directly (No NAT involved)
+      Streams.concat(
+              getCandidatePeersBehindNat(
+                      destinationIp, privateIpsByPublicIp, localIpIpsecPeerConfigIds)
+                  .stream(),
+              localIpIpsecPeerConfigIds.getOrDefault(destinationIp, ImmutableSet.of()).stream())
+          .forEach(
+              candidateIpsecPeerConfigId -> {
+                IpsecPeerConfig candidateIpsecPeer =
+                    networkConfigurations.getIpsecPeerConfig(candidateIpsecPeerConfigId);
+                if (candidateIpsecPeer == null) {
+                  return;
+                }
+                // skip if an IPSec peer is a crypto map based vpn and other is a tunnel interface
+                // based vpn
+                if (ipsecStaticPeerConfig.getTunnelInterface() == null
+                    ^ candidateIpsecPeer.getTunnelInterface() == null) {
+                  return;
+                }
+                Configuration candidateOwner =
+                    configurations.get(candidateIpsecPeerConfigId.getHostName());
 
-        graph.putEdgeValue(ipsecPeerConfigId, candidateIpsecPeerConfigId, ipsecSession);
-      }
+                IpsecSession ipsecSession =
+                    getIpsecSession(
+                        initiatorOwner, candidateOwner, ipsecStaticPeerConfig, candidateIpsecPeer);
+
+                graph.putEdgeValue(ipsecPeerConfigId, candidateIpsecPeerConfigId, ipsecSession);
+              });
     }
 
     return ImmutableValueGraph.copyOf(graph);
+  }
+
+  /**
+   * Returns all {@link IpsecPeerConfigId}s whose local IP is equal to any of the IPs behind
+   * destinationIp after NAT
+   */
+  @Nonnull
+  private static Set<IpsecPeerConfigId> getCandidatePeersBehindNat(
+      @Nonnull Ip destinationIp,
+      @Nonnull SetMultimap<Ip, IpWildcardSetIpSpace> privateIpsByPublicIp,
+      @Nonnull Map<Ip, Set<IpsecPeerConfigId>> localIpsAndIpsecPeers) {
+    ImmutableSet.Builder<IpsecPeerConfigId> candidateNeighbors = ImmutableSet.builder();
+    Set<IpWildcardSetIpSpace> privateIpsBehindDestIp = privateIpsByPublicIp.get(destinationIp);
+    if (privateIpsBehindDestIp == null) {
+      return candidateNeighbors.build();
+    }
+    for (IpWildcardSetIpSpace ipWildcardSetIpSpace : privateIpsBehindDestIp) {
+      for (Entry<Ip, Set<IpsecPeerConfigId>> entry : localIpsAndIpsecPeers.entrySet()) {
+        if (ipWildcardSetIpSpace.containsIp(entry.getKey(), ImmutableMap.of())) {
+          candidateNeighbors.addAll(entry.getValue());
+        }
+      }
+    }
+    return candidateNeighbors.build();
   }
 
   /**
@@ -261,9 +300,13 @@ public class IpsecUtil {
           negotiatedProposal.setEncryptionAlgorithm(initiatorProposal.getEncryptionAlgorithm());
           negotiatedProposal.setDiffieHellmanGroup(initiatorProposal.getDiffieHellmanGroup());
           negotiatedProposal.setAuthenticationMethod(initiatorProposal.getAuthenticationMethod());
-          negotiatedProposal.setLifetimeSeconds(
-              Math.min(
-                  initiatorProposal.getLifetimeSeconds(), responderProposal.getLifetimeSeconds()));
+          if (initiatorProposal.getLifetimeSeconds() != null
+              && responderProposal.getLifetimeSeconds() != null) {
+            negotiatedProposal.setLifetimeSeconds(
+                Math.min(
+                    initiatorProposal.getLifetimeSeconds(),
+                    responderProposal.getLifetimeSeconds()));
+          }
           return negotiatedProposal;
         }
       }

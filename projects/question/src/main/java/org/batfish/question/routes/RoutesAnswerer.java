@@ -32,6 +32,7 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
+import org.batfish.specifier.RoutingProtocolSpecifier;
 
 /** Answerer for {@link RoutesQuestion} */
 @ParametersAreNonnullByDefault
@@ -58,7 +59,6 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_ORIGIN_PROTOCOL = "Origin_Protocol";
 
   // Diff Only
-  static final String COL_NETWORK_PRESENCE = "Network_Presence";
   static final String COL_ROUTE_ENTRY_PRESENCE = "Entry_Presence";
 
   RoutesAnswerer(Question question, IBatfish batfish) {
@@ -73,7 +73,7 @@ public class RoutesAnswerer extends Answerer {
     DataPlane dp = _batfish.loadDataPlane();
     Set<String> matchingNodes = question.getNodes().getMatchingNodes(_batfish);
     Prefix network = question.getNetwork();
-    String protocolRegex = question.getProtocols();
+    RoutingProtocolSpecifier protocolSpec = question.getRoutingProtocolSpecifier();
     String vrfRegex = question.getVrfs();
     Map<Ip, Set<String>> ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(), true);
 
@@ -87,7 +87,7 @@ public class RoutesAnswerer extends Answerer {
                 RibProtocol.BGP,
                 matchingNodes,
                 network,
-                protocolRegex,
+                protocolSpec,
                 vrfRegex);
         break;
 
@@ -98,14 +98,14 @@ public class RoutesAnswerer extends Answerer {
                 RibProtocol.BGPMP,
                 matchingNodes,
                 network,
-                protocolRegex,
+                protocolSpec,
                 vrfRegex);
         break;
       case MAIN:
       default:
         rows =
             getMainRibRoutes(
-                dp.getRibs(), matchingNodes, network, protocolRegex, vrfRegex, ipOwners);
+                dp.getRibs(), matchingNodes, network, protocolSpec, vrfRegex, ipOwners);
     }
 
     answer.postProcessAnswer(_question, rows);
@@ -119,7 +119,7 @@ public class RoutesAnswerer extends Answerer {
 
     Set<String> matchingNodes = question.getNodes().getMatchingNodes(_batfish);
     Prefix network = question.getNetwork();
-    String protocolRegex = question.getProtocols();
+    RoutingProtocolSpecifier protocolSpec = question.getRoutingProtocolSpecifier();
     String vrfRegex = question.getVrfs();
 
     Multiset<Row> rows;
@@ -171,14 +171,14 @@ public class RoutesAnswerer extends Answerer {
         dp = _batfish.loadDataPlane();
         ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(), true);
         routesGroupedByKeyInBase =
-            groupRoutes(dp.getRibs(), matchingNodes, network, protocolRegex, vrfRegex, ipOwners);
+            groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec, ipOwners);
         _batfish.popSnapshot();
 
         _batfish.pushDeltaSnapshot();
         dp = _batfish.loadDataPlane();
         ipOwners = computeIpNodeOwners(_batfish.loadConfigurations(), true);
         routesGroupedByKeyInDelta =
-            groupRoutes(dp.getRibs(), matchingNodes, network, protocolRegex, vrfRegex, ipOwners);
+            groupRoutes(dp.getRibs(), matchingNodes, network, vrfRegex, protocolSpec, ipOwners);
         _batfish.popSnapshot();
 
         routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
@@ -248,14 +248,14 @@ public class RoutesAnswerer extends Answerer {
                 COL_PROTOCOL, Schema.STRING, "Route's Protocol", Boolean.FALSE, Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
+                COL_METRIC, Schema.INTEGER, "Route's Metric", Boolean.FALSE, Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
                 COL_ADMIN_DISTANCE,
                 Schema.INTEGER,
                 "Route's Admin distance",
                 Boolean.FALSE,
                 Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_METRIC, Schema.INTEGER, "Route's Metric", Boolean.FALSE, Boolean.TRUE));
     }
     addCommonTableColumnsAtEnd(columnBuilder);
     return new TableMetadata(columnBuilder.build(), "Display RIB routes");
@@ -286,13 +286,6 @@ public class RoutesAnswerer extends Answerer {
   static TableMetadata getDiffTableMetadata(RibProtocol rib) {
     ImmutableList.Builder<ColumnMetadata> columnBuilder = ImmutableList.builder();
     addCommonTableColumnsAtStart(columnBuilder);
-    columnBuilder.add(
-        new ColumnMetadata(
-            COL_NETWORK_PRESENCE,
-            Schema.STRING,
-            "Presence of the Route's Network (Prefix)",
-            Boolean.FALSE,
-            Boolean.TRUE));
     columnBuilder.add(
         new ColumnMetadata(
             COL_ROUTE_ENTRY_PRESENCE,
@@ -448,20 +441,6 @@ public class RoutesAnswerer extends Answerer {
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
-                COL_BASE_PREFIX + COL_ADMIN_DISTANCE,
-                Schema.INTEGER,
-                "Route's Admin distance",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
-                COL_DELTA_PREFIX + COL_ADMIN_DISTANCE,
-                Schema.INTEGER,
-                "Route's Admin distance",
-                Boolean.FALSE,
-                Boolean.TRUE));
-        columnBuilder.add(
-            new ColumnMetadata(
                 COL_BASE_PREFIX + COL_METRIC,
                 Schema.INTEGER,
                 "Route's Metric",
@@ -472,6 +451,20 @@ public class RoutesAnswerer extends Answerer {
                 COL_DELTA_PREFIX + COL_METRIC,
                 Schema.INTEGER,
                 "Route's Metric",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_BASE_PREFIX + COL_ADMIN_DISTANCE,
+                Schema.INTEGER,
+                "Route's Admin distance",
+                Boolean.FALSE,
+                Boolean.TRUE));
+        columnBuilder.add(
+            new ColumnMetadata(
+                COL_DELTA_PREFIX + COL_ADMIN_DISTANCE,
+                Schema.INTEGER,
+                "Route's Admin distance",
                 Boolean.FALSE,
                 Boolean.TRUE));
     }

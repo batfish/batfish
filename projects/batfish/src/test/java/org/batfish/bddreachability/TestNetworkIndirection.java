@@ -23,7 +23,7 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 public final class TestNetworkIndirection {
   public static final Prefix IFACE_PREFIX = Prefix.parse("1.1.0.0/32");
   public static final Prefix LINK_NETWORK = Prefix.parse("1.0.0.0/31");
-  public static final Ip IP_SPACE_IP_ADDR = new Ip("5.5.5.5");
+  public static final Ip IP_SPACE_IP_ADDR = Ip.parse("5.5.5.5");
   public static final String INDIRECT_ACL_NAME = "~Indirect_Acl~";
   public static final String INDIRECT_IPSPACE_NAME = "~Indirect_IpSpace~";
 

@@ -12,7 +12,7 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
-import org.batfish.question.bgpsessionstatus.BgpSessionAnswerer.ConfiguredSessionStatus;
+import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,7 +28,7 @@ public class BgpSessionAnswererTest {
 
   @Test
   public void testLocalIpUnknownStatically() {
-    BgpActivePeerConfig peer = _nf.bgpNeighborBuilder().setPeerAddress(new Ip("1.1.1.1")).build();
+    BgpActivePeerConfig peer = _nf.bgpNeighborBuilder().setPeerAddress(Ip.parse("1.1.1.1")).build();
     assertThat(
         getLocallyBrokenStatus(peer, BgpSessionProperties.SessionType.EBGP_SINGLEHOP),
         equalTo(ConfiguredSessionStatus.NO_LOCAL_IP));
@@ -42,14 +42,14 @@ public class BgpSessionAnswererTest {
 
   @Test
   public void testNoLocalAs() {
-    BgpActivePeerConfig peer = _nf.bgpNeighborBuilder().setLocalIp(new Ip("1.1.1.1")).build();
+    BgpActivePeerConfig peer = _nf.bgpNeighborBuilder().setLocalIp(Ip.parse("1.1.1.1")).build();
     assertStatusMatchesForAllSessionTypes(peer, ConfiguredSessionStatus.NO_LOCAL_AS);
   }
 
   @Test
   public void testNoRemoteIp() {
     BgpActivePeerConfig peer =
-        _nf.bgpNeighborBuilder().setLocalIp(new Ip("1.1.1.1")).setLocalAs(1L).build();
+        _nf.bgpNeighborBuilder().setLocalIp(Ip.parse("1.1.1.1")).setLocalAs(1L).build();
     assertStatusMatchesForAllSessionTypes(peer, ConfiguredSessionStatus.NO_REMOTE_IP);
   }
 
@@ -57,8 +57,8 @@ public class BgpSessionAnswererTest {
   public void testNoRemoteAs() {
     BgpActivePeerConfig peer =
         _nf.bgpNeighborBuilder()
-            .setPeerAddress(new Ip("1.1.1.1"))
-            .setLocalIp(new Ip("2.2.2.2"))
+            .setPeerAddress(Ip.parse("1.1.1.1"))
+            .setLocalIp(Ip.parse("2.2.2.2"))
             .setLocalAs(1L)
             .build();
     assertStatusMatchesForAllSessionTypes(peer, ConfiguredSessionStatus.NO_REMOTE_AS);
@@ -68,8 +68,8 @@ public class BgpSessionAnswererTest {
   public void testNotLocallyBroken() {
     BgpActivePeerConfig peer =
         _nf.bgpNeighborBuilder()
-            .setPeerAddress(new Ip("1.1.1.1"))
-            .setLocalIp(new Ip("2.2.2.2"))
+            .setPeerAddress(Ip.parse("1.1.1.1"))
+            .setLocalIp(Ip.parse("2.2.2.2"))
             .setLocalAs(1L)
             .setRemoteAs(1L)
             .build();
@@ -105,7 +105,7 @@ public class BgpSessionAnswererTest {
     BgpPassivePeerConfig peer =
         _nf.bgpDynamicNeighborBuilder()
             .setLocalAs(1L)
-            .setPeerPrefix(new Prefix(new Ip("1.1.1.1"), 24))
+            .setPeerPrefix(Prefix.create(Ip.parse("1.1.1.1"), 24))
             .setRemoteAs(ImmutableList.of())
             .build();
     assertThat(getLocallyBrokenStatus(peer), equalTo(ConfiguredSessionStatus.NO_REMOTE_AS));
@@ -116,7 +116,7 @@ public class BgpSessionAnswererTest {
     BgpPassivePeerConfig peer =
         _nf.bgpDynamicNeighborBuilder()
             .setLocalAs(1L)
-            .setPeerPrefix(new Prefix(new Ip("1.1.1.1"), 24))
+            .setPeerPrefix(Prefix.create(Ip.parse("1.1.1.1"), 24))
             .setRemoteAs(ImmutableList.of(1L))
             .build();
     assertThat(getLocallyBrokenStatus(peer), nullValue());

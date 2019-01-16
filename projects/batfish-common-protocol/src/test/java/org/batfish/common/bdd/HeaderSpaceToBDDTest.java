@@ -41,7 +41,7 @@ public class HeaderSpaceToBDDTest {
 
   @Test
   public void test_negate() {
-    IpSpace ip = new Ip("1.2.3.4").toIpSpace();
+    IpSpace ip = Ip.parse("1.2.3.4").toIpSpace();
     BDD ipBDD = _toBDD.toBDD(ip, _dstIpSpaceToBdd);
     assertThat(
         _toBDD.toBDD(HeaderSpace.builder().setDstIps(ip).setNegate(true).build()),
@@ -50,7 +50,7 @@ public class HeaderSpaceToBDDTest {
 
   @Test
   public void test_srcOrDstIps() {
-    Ip srcOrDstIp = new Ip("1.2.3.4");
+    Ip srcOrDstIp = Ip.parse("1.2.3.4");
     HeaderSpace headerSpace = HeaderSpace.builder().setSrcOrDstIps(srcOrDstIp.toIpSpace()).build();
     BDD bdd = _toBDD.toBDD(headerSpace);
 
@@ -59,7 +59,7 @@ public class HeaderSpaceToBDDTest {
     assertThat(bdd, equalTo(dstIpBDD.or(srcIpBDD)));
 
     // force srcIp to be srcOrDstIp
-    Ip dstIp = new Ip("1.1.1.1");
+    Ip dstIp = Ip.parse("1.1.1.1");
     headerSpace =
         HeaderSpace.builder()
             .setDstIps(dstIp.toIpSpace())
@@ -70,7 +70,7 @@ public class HeaderSpaceToBDDTest {
     assertThat(bdd, equalTo(srcIpBDD.and(dstIpBDD)));
 
     // neither can be srcOrDstIp. unsatisfiable
-    Ip srcIp = new Ip("2.2.2.2");
+    Ip srcIp = Ip.parse("2.2.2.2");
     headerSpace =
         HeaderSpace.builder()
             .setDstIps(dstIp.toIpSpace())
