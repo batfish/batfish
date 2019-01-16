@@ -166,6 +166,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -178,6 +179,7 @@ import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
@@ -201,6 +203,7 @@ import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.StaticRoute;
@@ -2819,6 +2822,190 @@ public final class FlatJuniperGrammarTest {
                     .setOriginalRoute(new ConnectedRoute(Prefix.parse("3.3.3.0/24"), "nextHop"))
                     .build());
     assertThat(result.getBooleanValue(), equalTo(false));
+  }
+
+  @Test
+  public void testJuniperPolicyStatementTermFromEvaluation() throws IOException {
+    // Configuration has policy statements
+    Configuration c = parseConfig("juniper-policy-statement-term");
+    Prefix testPrefix = Prefix.parse("1.1.1.1/28");
+    Result result;
+
+    /*
+    COMMUNITY_POLICY should accept routes with either set community, but no others
+    BGP1 matches 1, BGP2 matches 2
+      set policy-options policy-statement COMMUNITY_POLICY term T1 from community BGP1
+      set policy-options policy-statement COMMUNITY_POLICY term T1 from community BGP2
+    */
+    RoutingPolicy communityPolicy = c.getRoutingPolicies().get("COMMUNITY_POLICY");
+    BgpRoute.Builder brb = BgpRoute.builder().setAdmin(100).setNetwork(testPrefix);
+    result = communityPolicy.call(envWithRoute(c, brb.setCommunities(ImmutableSet.of(1L)).build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
+    result = communityPolicy.call(envWithRoute(c, brb.setCommunities(ImmutableSet.of(2L)).build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
+    result = communityPolicy.call(envWithRoute(c, brb.setCommunities(ImmutableSet.of(3L)).build()));
+    assertThat(result.getBooleanValue(), equalTo(false));
+
+    /*
+    FAMILY_POLICY should accept only inet6 (each set overwrites previous)
+      set policy-options policy-statement FAMILY_POLICY term T1 from family inet
+      set policy-options policy-statement FAMILY_POLICY term T1 from family inet6
+    */
+    RoutingPolicy familyPolicy = c.getRoutingPolicies().get("FAMILY_POLICY");
+    result = familyPolicy.call(envWithRoute(c, new ConnectedRoute(testPrefix, "nextHop")));
+    assertThat(result.getBooleanValue(), equalTo(false));
+    result =
+        familyPolicy.call(
+            Environment.builder(c)
+                .setVrf(Configuration.DEFAULT_VRF_NAME)
+                .setOriginalRoute6(new GeneratedRoute6(Prefix6.ZERO))
+                .build());
+    assertThat(result.getBooleanValue(), equalTo(true));
+
+    /*
+    INTERFACE_POLICY should accept routes from either set interface, but not from other networks
+      set interfaces ge-0/0/1 unit 0 family inet address 10.0.0.1/30
+      set interfaces ge-0/0/2 unit 0 family inet address 10.0.0.5/30
+      set policy-options policy-statement INTERFACE_POLICY term T1 from interface ge-0/0/1.0
+      set policy-options policy-statement INTERFACE_POLICY term T1 from interface ge-0/0/2.0
+    */
+    RoutingPolicy interfacePolicy = c.getRoutingPolicies().get("INTERFACE_POLICY");
+    result =
+        interfacePolicy.call(
+            envWithRoute(c, new ConnectedRoute(Prefix.parse("10.0.0.1/30"), "nextHop")));
+    assertThat(result.getBooleanValue(), equalTo(true));
+    result =
+        interfacePolicy.call(
+            envWithRoute(c, new ConnectedRoute(Prefix.parse("10.0.0.5/30"), "nextHop")));
+    assertThat(result.getBooleanValue(), equalTo(true));
+    result =
+        interfacePolicy.call(
+            envWithRoute(c, new ConnectedRoute(Prefix.parse("10.0.0.9/30"), "nextHop")));
+    assertThat(result.getBooleanValue(), equalTo(false));
+
+    /*
+    NETWORK_POLICY should accept routes with networks matching any prefix list or route filter line.
+    Prefix lists are all defined as PLX = [ X.X.X.0/24 ].
+      set policy-options policy-statement NETWORK_POLICY term T1 from prefix-list PL1
+      set policy-options policy-statement NETWORK_POLICY term T1 from prefix-list PL2
+      set policy-options policy-statement NETWORK_POLICY term T1 from prefix-list-filter PL3 longer
+      set policy-options policy-statement NETWORK_POLICY term T1 from prefix-list-filter PL4 longer
+      set policy-options policy-statement NETWORK_POLICY term T1 from prefix-list-filter PL5 orlonger
+      set policy-options policy-statement NETWORK_POLICY term T1 from prefix-list-filter PL6 orlonger
+      set policy-options policy-statement NETWORK_POLICY term T1 from route-filter 7.7.7.0/24 exact
+      set policy-options policy-statement NETWORK_POLICY term T1 from route-filter 8.8.8.0/24 exact
+    */
+    RoutingPolicy networkPolicy = c.getRoutingPolicies().get("NETWORK_POLICY");
+    StaticRoute.Builder srb = StaticRoute.builder().setAdministrativeCost(100);
+    // prefix-list statements should match exact length
+    result =
+        networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("1.1.1.0/24")).build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
+    result =
+        networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("2.2.2.0/24")).build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
+    result =
+        networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("1.1.1.0/25")).build()));
+    assertThat(result.getBooleanValue(), equalTo(false));
+    // prefix-list-filter longer statements should match any longer length, but not exact length
+    result =
+        networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("3.3.3.0/25")).build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
+    result =
+        networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("4.4.4.0/26")).build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
+    result =
+        networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("3.3.3.0/24")).build()));
+    assertThat(result.getBooleanValue(), equalTo(false));
+    // prefix-list-filter orlonger statements should match /24 or longer
+    result =
+        networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("5.5.5.0/24")).build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
+    result =
+        networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("5.5.5.0/25")).build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
+    result =
+        networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("6.6.6.0/26")).build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
+    // route-filter statements should match exact length
+    result =
+        networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("7.7.7.0/24")).build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
+    result =
+        networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("8.8.8.0/24")).build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
+    result =
+        networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("7.7.7.0/25")).build()));
+    assertThat(result.getBooleanValue(), equalTo(false));
+    // shorter prefix should not match for any
+    result =
+        networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("1.1.1.0/23")).build()));
+    assertThat(result.getBooleanValue(), equalTo(false));
+    result =
+        networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("3.3.3.0/23")).build()));
+    assertThat(result.getBooleanValue(), equalTo(false));
+    result =
+        networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("5.5.5.0/23")).build()));
+    assertThat(result.getBooleanValue(), equalTo(false));
+    result =
+        networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("7.7.7.0/23")).build()));
+    assertThat(result.getBooleanValue(), equalTo(false));
+    // random prefix should not match
+    result =
+        networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("9.9.9.0/24")).build()));
+    assertThat(result.getBooleanValue(), equalTo(false));
+
+    /*
+    PROTOCOL_POLICY should accept routes with either set protocol, but no others
+      set policy-options policy-statement PROTOCOL_POLICY term TERM1 from protocol direct
+      set policy-options policy-statement PROTOCOL_POLICY term TERM1 from protocol static
+    */
+    RoutingPolicy protocolPolicy = c.getRoutingPolicies().get("PROTOCOL_POLICY");
+    result = protocolPolicy.call(envWithRoute(c, new ConnectedRoute(testPrefix, "nextHop")));
+    assertThat(result.getBooleanValue(), equalTo(true));
+    result = protocolPolicy.call(envWithRoute(c, srb.build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
+    result =
+        protocolPolicy.call(
+            envWithRoute(
+                c, new LocalRoute(new InterfaceAddress(Ip.parse("1.1.1.1"), 28), "nextHop")));
+    assertThat(result.getBooleanValue(), equalTo(false));
+
+    /*
+    TAG_POLICY should accept routes with either set tag, but not from other tags
+      set policy-options policy-statement TAG_POLICY term T1 from tag 1
+      set policy-options policy-statement TAG_POLICY term T1 from tag 2
+    */
+    RoutingPolicy tagPolicy = c.getRoutingPolicies().get("TAG_POLICY");
+    srb = StaticRoute.builder().setAdministrativeCost(100).setNetwork(testPrefix);
+    result =
+        tagPolicy.call(
+            Environment.builder(c)
+                .setVrf(Configuration.DEFAULT_VRF_NAME)
+                .setOutputRoute(srb.setTag(1))
+                .build());
+    assertThat(result.getBooleanValue(), equalTo(true));
+    result =
+        tagPolicy.call(
+            Environment.builder(c)
+                .setVrf(Configuration.DEFAULT_VRF_NAME)
+                .setOutputRoute(srb.setTag(2))
+                .build());
+    assertThat(result.getBooleanValue(), equalTo(true));
+    result =
+        tagPolicy.call(
+            Environment.builder(c)
+                .setVrf(Configuration.DEFAULT_VRF_NAME)
+                .setOutputRoute(srb.setTag(3))
+                .build());
+    assertThat(result.getBooleanValue(), equalTo(false));
+  }
+
+  private static Environment envWithRoute(Configuration c, AbstractRoute route) {
+    return Environment.builder(c)
+        .setVrf(Configuration.DEFAULT_VRF_NAME)
+        .setOriginalRoute(route)
+        .build();
   }
 
   @Test

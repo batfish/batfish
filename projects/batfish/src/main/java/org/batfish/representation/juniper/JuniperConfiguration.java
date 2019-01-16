@@ -933,17 +933,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
     terms.add(policy.getDefaultTerm());
     terms.addAll(policy.getTerms().values());
     for (PsTerm term : terms) {
-      for (PsFrom from : term.getFroms()) {
-        if (from instanceof PsFromPolicyStatement) {
-          PsFromPolicyStatement fromPolicyStatement = (PsFromPolicyStatement) from;
-          String subPolicyName = fromPolicyStatement.getPolicyStatement();
+      for (PsFromPolicyStatement fromPolicyStatement : term.getFroms().getFromPolicyStatements()) {
+        String subPolicyName = fromPolicyStatement.getPolicyStatement();
+        setPolicyStatementReferent(subPolicyName);
+      }
+      for (PsFromPolicyStatementConjunction fromPolicyStatementConjunction :
+          term.getFroms().getFromPolicyStatementConjunctions()) {
+        for (String subPolicyName : fromPolicyStatementConjunction.getConjuncts()) {
           setPolicyStatementReferent(subPolicyName);
-        } else if (from instanceof PsFromPolicyStatementConjunction) {
-          PsFromPolicyStatementConjunction fromPolicyStatementConjunction =
-              (PsFromPolicyStatementConjunction) from;
-          for (String subPolicyName : fromPolicyStatementConjunction.getConjuncts()) {
-            setPolicyStatementReferent(subPolicyName);
-          }
         }
       }
     }
@@ -1916,64 +1913,42 @@ public final class JuniperConfiguration extends VendorConfiguration {
     RoutingPolicy routingPolicy = new RoutingPolicy(name, _c);
     List<Statement> statements = routingPolicy.getStatements();
     boolean hasDefaultTerm =
-        ps.getDefaultTerm().getFroms().size() > 0 || ps.getDefaultTerm().getThens().size() > 0;
+        ps.getDefaultTerm().hasAtLeastOneFrom() || ps.getDefaultTerm().getThens().size() > 0;
     List<PsTerm> terms = new ArrayList<>(ps.getTerms().values());
     if (hasDefaultTerm) {
       terms.add(ps.getDefaultTerm());
     }
     for (PsTerm term : terms) {
       List<Statement> thens = toStatements(term.getThens());
-      if (!term.getFroms().isEmpty()) {
+      if (term.hasAtLeastOneFrom()) {
         If ifStatement = new If();
         ifStatement.setComment(term.getName());
-        Conjunction conj = new Conjunction();
-        Disjunction prefixListsDisjunction = new Disjunction();
-        List<BooleanExpr> subroutines = new ArrayList<>();
-        for (PsFrom from : term.getFroms()) {
-          if (from instanceof PsFromRouteFilter) {
-            int actionLineCounter = 0;
-            PsFromRouteFilter fromRouteFilter = (PsFromRouteFilter) from;
-            String routeFilterName = fromRouteFilter.getRouteFilterName();
-            RouteFilter rf = _masterLogicalSystem.getRouteFilters().get(routeFilterName);
-            for (RouteFilterLine line : rf.getLines()) {
-              if (line.getThens().size() > 0) {
-                String lineListName = name + "_ACTION_LINE_" + actionLineCounter;
-                RouteFilterList lineSpecificList = new RouteFilterList(lineListName);
-                line.applyTo(lineSpecificList);
-                actionLineCounter++;
-                _c.getRouteFilterLists().put(lineListName, lineSpecificList);
-                If lineSpecificIfStatement = new If();
-                String lineSpecificClauseName =
-                    routeFilterName + "_ACTION_LINE_" + actionLineCounter;
-                lineSpecificIfStatement.setComment(lineSpecificClauseName);
-                MatchPrefixSet mrf =
-                    new MatchPrefixSet(
-                        DestinationNetwork.instance(), new NamedPrefixSet(lineListName));
-                lineSpecificIfStatement.setGuard(mrf);
-                lineSpecificIfStatement.getTrueStatements().addAll(toStatements(line.getThens()));
-                statements.add(lineSpecificIfStatement);
-              }
+        PsFroms froms = term.getFroms();
+
+        for (PsFromRouteFilter fromRouteFilter : froms.getFromRouteFilters()) {
+          int actionLineCounter = 0;
+          String routeFilterName = fromRouteFilter.getRouteFilterName();
+          RouteFilter rf = _masterLogicalSystem.getRouteFilters().get(routeFilterName);
+          for (RouteFilterLine line : rf.getLines()) {
+            if (line.getThens().size() > 0) {
+              String lineListName = name + "_ACTION_LINE_" + actionLineCounter;
+              RouteFilterList lineSpecificList = new RouteFilterList(lineListName);
+              line.applyTo(lineSpecificList);
+              actionLineCounter++;
+              _c.getRouteFilterLists().put(lineListName, lineSpecificList);
+              If lineSpecificIfStatement = new If();
+              String lineSpecificClauseName = routeFilterName + "_ACTION_LINE_" + actionLineCounter;
+              lineSpecificIfStatement.setComment(lineSpecificClauseName);
+              MatchPrefixSet mrf =
+                  new MatchPrefixSet(
+                      DestinationNetwork.instance(), new NamedPrefixSet(lineListName));
+              lineSpecificIfStatement.setGuard(mrf);
+              lineSpecificIfStatement.getTrueStatements().addAll(toStatements(line.getThens()));
+              statements.add(lineSpecificIfStatement);
             }
           }
-          BooleanExpr booleanExpr = from.toBooleanExpr(this, _c, _w);
-          if (from instanceof PsFromPolicyStatement
-              || from instanceof PsFromPolicyStatementConjunction) {
-            subroutines.add(booleanExpr);
-          } else if (from instanceof PsFromPrefixList) {
-            prefixListsDisjunction.getDisjuncts().add(booleanExpr);
-          } else {
-            conj.getConjuncts().add(booleanExpr);
-          }
         }
-        if (!prefixListsDisjunction.getDisjuncts().isEmpty()) {
-          conj.getConjuncts().add(prefixListsDisjunction);
-        }
-        if (!subroutines.isEmpty()) {
-          ConjunctionChain chain = new ConjunctionChain(subroutines);
-          conj.getConjuncts().add(chain);
-        }
-        BooleanExpr guard = conj.simplify();
-        ifStatement.setGuard(guard);
+        ifStatement.setGuard(toGuard(froms));
         ifStatement.getTrueStatements().addAll(thens);
         statements.add(ifStatement);
       } else {
@@ -1986,6 +1961,77 @@ public final class JuniperConfiguration extends VendorConfiguration {
         Collections.singletonList(Statements.Return.toStaticStatement()));
     statements.add(endOfPolicy);
     return routingPolicy;
+  }
+
+  private BooleanExpr toGuard(PsFroms froms) {
+    if (froms.getFromUnsupported() != null) {
+      // Unsupported line will evaluate to BooleanExprs.FALSE. Don't bother continuing
+      return froms.getFromUnsupported().toBooleanExpr(this, _c, _w);
+    }
+
+    Conjunction conj = new Conjunction();
+    List<BooleanExpr> subroutines = new ArrayList<>();
+    if (!froms.getFromAsPaths().isEmpty()) {
+      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromAsPaths())));
+    }
+    if (froms.getFromColor() != null) {
+      conj.getConjuncts().add(froms.getFromColor().toBooleanExpr(this, _c, _w));
+    }
+    if (!froms.getFromCommunities().isEmpty()) {
+      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromCommunities())));
+    }
+    if (froms.getFromFamily() != null) {
+      conj.getConjuncts().add(froms.getFromFamily().toBooleanExpr(this, _c, _w));
+    }
+    if (!froms.getFromInterfaces().isEmpty()) {
+      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromInterfaces())));
+    }
+    if (froms.getFromLocalPreference() != null) {
+      conj.getConjuncts().add(froms.getFromLocalPreference().toBooleanExpr(this, _c, _w));
+    }
+    if (froms.getFromMetric() != null) {
+      conj.getConjuncts().add(froms.getFromMetric().toBooleanExpr(this, _c, _w));
+    }
+    for (PsFromPolicyStatement from : froms.getFromPolicyStatements()) {
+      subroutines.add(from.toBooleanExpr(this, _c, _w));
+    }
+    for (PsFromPolicyStatementConjunction from : froms.getFromPolicyStatementConjunctions()) {
+      subroutines.add(from.toBooleanExpr(this, _c, _w));
+    }
+    if (!froms.getFromPrefixLists().isEmpty()
+        || !froms.getFromPrefixListFilterLongers().isEmpty()
+        || !froms.getFromPrefixListFilterOrLongers().isEmpty()
+        || !froms.getFromRouteFilters().isEmpty()) {
+      Disjunction prefixListDisjunction = new Disjunction();
+      prefixListDisjunction.getDisjuncts().addAll(toBooleanExprs(froms.getFromPrefixLists()));
+      prefixListDisjunction
+          .getDisjuncts()
+          .addAll(toBooleanExprs(froms.getFromPrefixListFilterLongers()));
+      prefixListDisjunction
+          .getDisjuncts()
+          .addAll(toBooleanExprs(froms.getFromPrefixListFilterOrLongers()));
+      prefixListDisjunction.getDisjuncts().addAll(toBooleanExprs(froms.getFromRouteFilters()));
+      conj.getConjuncts().add(prefixListDisjunction);
+    }
+    if (!froms.getFromProtocols().isEmpty()) {
+      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromProtocols())));
+    }
+    if (!froms.getFromTags().isEmpty()) {
+      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromTags())));
+    }
+
+    if (!subroutines.isEmpty()) {
+      ConjunctionChain chain = new ConjunctionChain(subroutines);
+      conj.getConjuncts().add(chain);
+    }
+    return conj.simplify();
+  }
+
+  private List<BooleanExpr> toBooleanExprs(Set<? extends PsFrom> froms) {
+    return froms
+        .stream()
+        .map(f -> f.toBooleanExpr(this, _c, _w))
+        .collect(ImmutableList.toImmutableList());
   }
 
   private List<Statement> toStatements(Set<PsThen> thens) {
