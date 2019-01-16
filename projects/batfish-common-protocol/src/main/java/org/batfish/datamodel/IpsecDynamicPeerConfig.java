@@ -49,7 +49,8 @@ public final class IpsecDynamicPeerConfig extends IpsecPeerConfig implements Ser
     @Override
     public IpsecDynamicPeerConfig build() {
       return new IpsecDynamicPeerConfig(
-          _ipsecPolicy, _sourceInterface,
+          _ipsecPolicy,
+          _sourceInterface,
           _policyAccessList,
           _localAddress,
           _tunnelInterface,

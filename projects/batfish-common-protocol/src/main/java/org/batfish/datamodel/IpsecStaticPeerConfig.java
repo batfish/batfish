@@ -62,7 +62,8 @@ public final class IpsecStaticPeerConfig extends IpsecPeerConfig implements Seri
     @Override
     public IpsecStaticPeerConfig build() {
       return new IpsecStaticPeerConfig(
-          _ipsecPolicy, _sourceInterface,
+          _ipsecPolicy,
+          _sourceInterface,
           _policyAccessList,
           _localAddress,
           _tunnelInterface,

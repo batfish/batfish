@@ -137,8 +137,7 @@ class IpsecSessionStatusAnswerer extends Answerer {
       IpsecSession ipsecSession) {
 
     ipsecSessioningInfoBuilder.setResponderHostname(ipsecPeerConfigIdNeighbor.getHostName());
-    ipsecSessioningInfoBuilder.setResponderInterface(
-        ipsecPeerConfigNeighbor.getSourceInterface());
+    ipsecSessioningInfoBuilder.setResponderInterface(ipsecPeerConfigNeighbor.getSourceInterface());
     ipsecSessioningInfoBuilder.setResponderIp(ipsecPeerConfigNeighbor.getLocalAddress());
     ipsecSessioningInfoBuilder.setResponderTunnelInterface(
         ipsecPeerConfigNeighbor.getTunnelInterface());
