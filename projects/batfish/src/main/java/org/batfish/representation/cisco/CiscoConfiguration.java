@@ -20,12 +20,10 @@ import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Key;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Proposal;
 import static org.batfish.representation.cisco.CiscoConversions.toIpAccessList;
-import static org.batfish.representation.cisco.CiscoConversions.toIpSecPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.toIpSpace;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPeerConfig;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIpsecPhase2Proposal;
-import static org.batfish.representation.cisco.CiscoConversions.toIpsecProposal;
 
 import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
@@ -37,6 +35,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -76,11 +75,8 @@ import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Proposal;
-import org.batfish.datamodel.IkePolicy;
-import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -95,8 +91,6 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
-import org.batfish.datamodel.IpsecPolicy;
-import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Mlag;
@@ -455,6 +449,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, IntegerSpace> _namedVlans;
 
+  private final Set<String> _natInside;
+
+  private final Set<String> _natOutside;
+
+  private final List<CiscoIosNat> _ciscoIosNats;
+
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
 
   private final Map<String, NetworkObject> _networkObjects;
@@ -549,6 +549,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _natPools = new TreeMap<>();
     _icmpTypeObjectGroups = new TreeMap<>();
     _namedVlans = new HashMap<>();
+    _natInside = new TreeSet<>();
+    _natOutside = new TreeSet<>();
+    _ciscoIosNats = new ArrayList<>();
     _networkObjectGroups = new TreeMap<>();
     _networkObjects = new TreeMap<>();
     _nxBgpGlobalConfiguration = new CiscoNxBgpGlobalConfiguration();
@@ -877,6 +880,18 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, IntegerSpace> getNamedVlans() {
     return _namedVlans;
+  }
+
+  public Set<String> getNatInside() {
+    return _natInside;
+  }
+
+  public Set<String> getNatOutside() {
+    return _natOutside;
+  }
+
+  public List<CiscoIosNat> getCiscoIosNats() {
+    return _ciscoIosNats;
   }
 
   private String getNewInterfaceName(Interface iface) {
@@ -2038,16 +2053,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return iface.getMtu();
   }
 
-  private static IkeProposal toIkeProposal(IsakmpPolicy isakmpPolicy) {
-    IkeProposal ikeProposal = new IkeProposal(isakmpPolicy.getName().toString());
-    ikeProposal.setDiffieHellmanGroup(isakmpPolicy.getDiffieHellmanGroup());
-    ikeProposal.setAuthenticationMethod(isakmpPolicy.getAuthenticationMethod());
-    ikeProposal.setEncryptionAlgorithm(isakmpPolicy.getEncryptionAlgorithm());
-    ikeProposal.setLifetimeSeconds(isakmpPolicy.getLifetimeSeconds());
-    ikeProposal.setAuthenticationAlgorithm(isakmpPolicy.getHashAlgorithm());
-    return ikeProposal;
-  }
-
   private org.batfish.datamodel.Interface toInterface(
       String ifaceName, Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
     org.batfish.datamodel.Interface newIface =
@@ -2246,22 +2251,85 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // Apply zone outgoing filter if necessary
     applyZoneFilter(iface, newIface, c);
 
-    List<CiscoSourceNat> origSourceNats = iface.getSourceNats();
-    if (origSourceNats != null) {
-      Transformation outgoingTransformation = null;
-      for (CiscoSourceNat srcNat : Lists.reverse(origSourceNats)) {
-        outgoingTransformation =
-            srcNat
-                .toTransformation(ipAccessLists, _natPools, outgoingTransformation)
-                .orElse(outgoingTransformation);
-      }
-      newIface.setOutgoingTransformation(outgoingTransformation);
+    /*
+     * NAT rules are specified at the top level, but are applied as incoming transformations on the
+     * outside interface (outside-to-inside) and outgoing transformations on the outside interface
+     * (inside-to-outside)
+     *
+     * Currently, only static NATs have both incoming and outgoingtransformations
+     */
+
+    List<CiscoIosNat> ciscoIosNats = firstNonNull(_ciscoIosNats, ImmutableList.of());
+    List<AristaDynamicSourceNat> aristaDynamicSourceNats =
+        firstNonNull(iface.getAristaNats(), ImmutableList.of());
+    if (!aristaDynamicSourceNats.isEmpty() && !ciscoIosNats.isEmpty()) {
+      _w.redFlag("Arista-style and IOS-style NATs should not both be present in configuration.");
+    } else if (!aristaDynamicSourceNats.isEmpty()) {
+      generateAristaDynamicSourceNats(newIface, aristaDynamicSourceNats);
+    } else if (!ciscoIosNats.isEmpty()) {
+      generateCiscoIosNatTransformations(ifaceName, newIface, ipAccessLists, c);
     }
+
     String routingPolicyName = iface.getRoutingPolicy();
     if (routingPolicyName != null) {
       newIface.setRoutingPolicy(routingPolicyName);
     }
     return newIface;
+  }
+
+  private void generateAristaDynamicSourceNats(
+      org.batfish.datamodel.Interface newIface,
+      List<AristaDynamicSourceNat> aristaDynamicSourceNats) {
+    Transformation next = null;
+    for (AristaDynamicSourceNat nat : Lists.reverse(aristaDynamicSourceNats)) {
+      next = nat.toOutgoingTransformation(_natPools, next).orElse(next);
+    }
+    newIface.setOutgoingTransformation(next);
+  }
+
+  private void generateCiscoIosNatTransformations(
+      String ifaceName,
+      org.batfish.datamodel.Interface newIface,
+      Map<String, IpAccessList> ipAccessLists,
+      Configuration c) {
+    List<CiscoIosNat> incomingNats = new ArrayList<>();
+    List<CiscoIosNat> outgoingNats = new ArrayList<>();
+
+    // Check if this is an outside interface
+    if (getNatOutside().contains(ifaceName)) {
+      incomingNats.addAll(getCiscoIosNats());
+      outgoingNats.addAll(getCiscoIosNats());
+    }
+
+    // Convert the IOS NATs to a mapping of transformations. Each field (source or destination)
+    // can be modified independently but not jointly. A single CiscoIosNat can represent an incoming
+    // NAT, an outgoing NAT, or both.
+
+    Map<CiscoIosNat, Transformation.Builder> convertedIncomingNats =
+        incomingNats
+            .stream()
+            .map(nat -> new SimpleEntry<>(nat, nat.toIncomingTransformation(_natPools)))
+            .filter(entry -> entry.getValue().isPresent())
+            .collect(Collectors.toMap(SimpleEntry::getKey, entry -> entry.getValue().get()));
+    if (!convertedIncomingNats.isEmpty()) {
+      newIface.setIncomingTransformation(
+          CiscoIosNatUtil.toIncomingTransformationChain(convertedIncomingNats));
+    }
+
+    Map<CiscoIosNat, Transformation.Builder> convertedOutgoingNats =
+        outgoingNats
+            .stream()
+            .map(
+                nat ->
+                    new SimpleEntry<>(
+                        nat,
+                        nat.toOutgoingTransformation(ipAccessLists, _natPools, getNatInside(), c)))
+            .filter(entry -> entry.getValue().isPresent())
+            .collect(Collectors.toMap(SimpleEntry::getKey, entry -> entry.getValue().get()));
+    if (!convertedOutgoingNats.isEmpty()) {
+      newIface.setOutgoingTransformation(
+          CiscoIosNatUtil.toOutgoingTransformationChain(convertedOutgoingNats));
+    }
   }
 
   private void applyZoneFilter(
@@ -3296,11 +3364,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
     }
 
-    // ISAKMP policies to IKE proposals
+    // ISAKMP policies to IKE Phase 1 proposals
     for (Entry<Integer, IsakmpPolicy> e : _isakmpPolicies.entrySet()) {
-      IkeProposal ikeProposal = toIkeProposal(e.getValue());
-      c.getIkeProposals().put(ikeProposal.getName(), ikeProposal);
-
       IkePhase1Proposal ikePhase1Proposal = toIkePhase1Proposal(e.getValue());
       c.getIkePhase1Proposals().put(ikePhase1Proposal.getName(), ikePhase1Proposal);
     }
@@ -3310,8 +3375,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     resolveKeyringIfaceNames(_interfaces, _keyrings);
     resolveIsakmpProfileIfaceNames(_interfaces, _isakmpProfiles);
     resolveTunnelIfaceNames(_interfaces);
-
-    addIkePoliciesAndGateways(c);
 
     // keyrings to IKE phase 1 keys
     ImmutableSortedMap.Builder<String, IkePhase1Key> ikePhase1KeysBuilder =
@@ -3334,7 +3397,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     ImmutableSortedMap.Builder<String, IpsecPhase2Proposal> ipsecPhase2ProposalsBuilder =
         ImmutableSortedMap.naturalOrder();
     for (Entry<String, IpsecTransformSet> e : _ipsecTransformSets.entrySet()) {
-      c.getIpsecProposals().put(e.getKey(), toIpsecProposal(e.getValue()));
       ipsecPhase2ProposalsBuilder.put(e.getKey(), toIpsecPhase2Proposal(e.getValue()));
     }
     c.setIpsecPhase2Proposals(ipsecPhase2ProposalsBuilder.build());
@@ -3343,18 +3405,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
     ImmutableSortedMap.Builder<String, IpsecPhase2Policy> ipsecPhase2PoliciesBuilder =
         ImmutableSortedMap.naturalOrder();
     for (IpsecProfile ipsecProfile : _ipsecProfiles.values()) {
-      IpsecPolicy ipsecPolicy = toIpSecPolicy(c, ipsecProfile);
-      c.getIpsecPolicies().put(ipsecPolicy.getName(), ipsecPolicy);
-      ipsecPhase2PoliciesBuilder.put(ipsecPolicy.getName(), toIpsecPhase2Policy(ipsecProfile));
+      ipsecPhase2PoliciesBuilder.put(ipsecProfile.getName(), toIpsecPhase2Policy(ipsecProfile));
     }
     c.setIpsecPhase2Policies(ipsecPhase2PoliciesBuilder.build());
 
-    // crypto-map sets
+    // crypto-map sets to IPsec Peer Configs
     for (CryptoMapSet cryptoMapSet : _cryptoMapSets.values()) {
       convertCryptoMapSet(c, cryptoMapSet, _cryptoMapSets, _w);
     }
 
-    // IPSec vpns
+    // IPsec tunnels to IPsec Peer Configs
     ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigBuilder =
         ImmutableSortedMap.naturalOrder();
     ipsecPeerConfigBuilder.putAll(c.getIpsecPeerConfigs());
@@ -3367,25 +3427,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
           _w.redFlag(String.format("No IPSec Profile set for IPSec tunnel %s", name));
           continue;
         }
-        IpsecVpn ipsecVpn = new IpsecVpn(name, c);
-        ipsecVpn.setBindInterface(c.getAllInterfaces().get(name));
-        ipsecVpn.setIpsecPolicy(c.getIpsecPolicies().get(tunnel.getIpsecProfileName()));
-        Ip source = tunnel.getSourceAddress();
-        Ip destination = tunnel.getDestination();
-        if (source == null || destination == null) {
-          _w.redFlag("Can't match IkeGateway: tunnel source or destination is not set for " + name);
-        } else {
-          for (IkeGateway ikeGateway : c.getIkeGateways().values()) {
-            if (source.equals(ikeGateway.getLocalIp())
-                && destination.equals(ikeGateway.getAddress())) {
-              ipsecVpn.setIkeGateway(ikeGateway);
-            }
-          }
-          if (ipsecVpn.getIkeGateway() == null) {
-            _w.redFlag("Can't find matching IkeGateway for " + name);
-          }
-        }
-        c.getIpsecVpns().put(ipsecVpn.getName(), ipsecVpn);
         // convert to IpsecPeerConfig
         ipsecPeerConfigBuilder.put(name, toIpsecPeerConfig(tunnel, name, this, c));
       }
@@ -3473,6 +3514,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
                   vrf.getVniSettings().put(vni, toVniSettings(_eosVxlan, vni, vlan, sourceIface)));
     }
 
+    // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined
+    // references.
+    Optional<Integer> firstRefToNull0 =
+        _structureReferences
+            .getOrDefault(CiscoStructureType.INTERFACE, ImmutableSortedMap.of())
+            .getOrDefault("Null0", ImmutableSortedMap.of())
+            .entrySet()
+            .stream()
+            .flatMap(e -> e.getValue().stream())
+            .min(Integer::compare);
+    if (firstRefToNull0.isPresent()) {
+      defineStructure(CiscoStructureType.INTERFACE, "Null0", firstRefToNull0.get());
+    }
+
     markConcreteStructure(
         CiscoStructureType.BFD_TEMPLATE, CiscoStructureUsage.INTERFACE_BFD_TEMPLATE);
 
@@ -3489,15 +3544,29 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoStructureType.INTERFACE,
         CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
+        CiscoStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE,
+        CiscoStructureUsage.EIGRP_AF_INTERFACE,
+        CiscoStructureUsage.EIGRP_PASSIVE_INTERFACE,
+        CiscoStructureUsage.FAILOVER_LAN_INTERFACE,
+        CiscoStructureUsage.FAILOVER_LINK_INTERFACE,
         CiscoStructureUsage.INTERFACE_SELF_REF,
+        CiscoStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE,
+        CiscoStructureUsage.IP_ROUTE_NHINT,
+        CiscoStructureUsage.IP_TACACS_SOURCE_INTERFACE,
+        CiscoStructureUsage.NTP_SOURCE_INTERFACE,
+        CiscoStructureUsage.OSPF_AREA_INTERFACE,
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN,
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN,
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
-        CiscoStructureUsage.SERVICE_POLICY_INTERFACE,
+        CiscoStructureUsage.ROUTER_STATIC_ROUTE,
         CiscoStructureUsage.ROUTER_VRRP_INTERFACE,
+        CiscoStructureUsage.SERVICE_POLICY_INTERFACE,
+        CiscoStructureUsage.SNMP_SERVER_SOURCE_INTERFACE,
+        CiscoStructureUsage.SNMP_SERVER_TRAP_SOURCE,
+        CiscoStructureUsage.TACACS_SOURCE_INTERFACE,
         CiscoStructureUsage.TRACK_INTERFACE,
         CiscoStructureUsage.VXLAN_SOURCE_INTERFACE);
 
@@ -3811,7 +3880,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     BumTransportMethod bumTransportMethod = BumTransportMethod.UNICAST_FLOOD_GROUP;
 
     if (bumTransportIps.isEmpty()) {
-      bumTransportIps = ImmutableSortedSet.of(vxlan.getMulticastGroup());
+      Ip multicastAddress = vxlan.getMulticastGroup();
+      bumTransportIps =
+          multicastAddress == null
+              ? ImmutableSortedSet.of()
+              : ImmutableSortedSet.of(multicastAddress);
       bumTransportMethod = BumTransportMethod.MULTICAST_GROUP;
     }
 
@@ -4128,62 +4201,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public static String computeSecurityLevelZoneName(int securityLevel) {
     return String.format("SECURITY_LEVEL_%s", securityLevel);
-  }
-
-  private void addIkePoliciesAndGateways(Configuration c) {
-    // get IKE gateways and policies from Cisco isakmp profiles and keyrings
-    for (Entry<String, IsakmpProfile> e : _isakmpProfiles.entrySet()) {
-      String name = e.getKey();
-      IsakmpProfile isakmpProfile = e.getValue();
-      IkePolicy ikePolicy = new IkePolicy(name);
-      c.getIkePolicies().put(name, ikePolicy);
-      ikePolicy.setProposals(c.getIkeProposals());
-
-      String keyringName = isakmpProfile.getKeyring();
-      if (keyringName == null) {
-        _w.redFlag(
-            String.format(
-                "Cannot get PSK hash since keyring not configured for isakmpProfile %s", name));
-      } else if (_keyrings.containsKey(keyringName)) {
-        Keyring keyring = _keyrings.get(keyringName);
-        // LocalAddress can only be Ip.AUTO if LocalInterfaceName contains an invalid interface
-        if (Objects.equals(isakmpProfile.getLocalAddress(), Ip.AUTO)) {
-          _w.redFlag(
-              String.format(
-                  "Invalid local address interface configured for ISAKMP profile %s", name));
-        } else if (keyring.match(
-            isakmpProfile.getLocalAddress(), isakmpProfile.getMatchIdentity())) {
-          ikePolicy.setPreSharedKeyHash(keyring.getKey());
-        } else {
-          _w.redFlag(
-              String.format(
-                  "The addresses of keyring %s do not match isakmpProfile %s", keyringName, name));
-        }
-      }
-
-      Ip localAddress = isakmpProfile.getLocalAddress();
-      IpWildcard remoteIdentity = isakmpProfile.getMatchIdentity();
-      if (localAddress == null || remoteIdentity == null) {
-        _w.redFlag(
-            String.format(
-                "Can't get IkeGateway: Local or remote address is not set for isakmpProfile %s",
-                name));
-      } else {
-        IkeGateway ikeGateway = new IkeGateway(e.getKey());
-        c.getIkeGateways().put(name, ikeGateway);
-        ikeGateway.setAddress(remoteIdentity.toPrefix().getStartIp());
-        Interface oldIface = getInterfaceByTunnelAddresses(localAddress, remoteIdentity.toPrefix());
-        if (oldIface != null) {
-          ikeGateway.setExternalInterface(c.getAllInterfaces().get(oldIface.getName()));
-        } else {
-          _w.redFlag(
-              String.format(
-                  "External interface not found for ikeGateway for isakmpProfile %s", name));
-        }
-        ikeGateway.setIkePolicy(ikePolicy);
-        ikeGateway.setLocalIp(isakmpProfile.getLocalAddress());
-      }
-    }
   }
 
   private boolean isAclUsedForRouting(String aclName) {

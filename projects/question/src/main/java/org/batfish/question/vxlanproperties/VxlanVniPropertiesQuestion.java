@@ -42,7 +42,8 @@ public final class VxlanVniPropertiesQuestion extends Question {
         nodes, firstNonNull(propertySpec, VxlanVniPropertySpecifier.ALL));
   }
 
-  VxlanVniPropertiesQuestion(@Nullable String nodes, VxlanVniPropertySpecifier propertySpec) {
+  public VxlanVniPropertiesQuestion(
+      @Nullable String nodes, VxlanVniPropertySpecifier propertySpec) {
     _nodes = nodes;
     _properties = propertySpec;
   }

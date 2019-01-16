@@ -155,6 +155,7 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.DispositionSpecifier;
+import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.storage.FileBasedStorageDirectoryProvider;
 import org.batfish.storage.StorageProvider;
 import org.codehaus.jettison.json.JSONArray;
@@ -601,6 +602,11 @@ public class WorkMgr extends AbstractCoordinator {
               PropertySpecifier.baseAutoComplete(
                   query,
                   Stream.of(Protocol.values()).map(Protocol::name).collect(Collectors.toSet()));
+          break;
+        }
+      case ROUTING_PROTOCOL_SPEC:
+        {
+          suggestions = RoutingProtocolSpecifier.autoComplete(query);
           break;
         }
       case STRUCTURE_NAME:

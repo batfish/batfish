@@ -1,0 +1,44 @@
+{
+    "class": "org.batfish.question.switchedvlanproperties.SwitchedVlanPropertiesQuestion",
+    "differential": false,
+    "excludeShutInterfaces": "${excludeShutInterfaces}",
+    "interfaces": "${interfaces}",
+    "nodes": "${nodes}",
+    "vlans": "${vlans}",
+    "instance": {
+        "description": "Returns configuration properties of switched VLANs",
+        "instanceName": "switchedVlanProperties",
+        "tags": [
+            "configuration",
+            "interfaces",
+            "vlan",
+            "vni"
+        ],
+        "variables": {
+            "excludeShutInterfaces": {
+                "description": "Exclude interfaces that are shutdown",
+                "type": "boolean",
+                "optional": true,
+                "displayName": "Exclude Shut Interfaces"
+            },
+            "interfaces": {
+                "description": "Include interfaces matching this specifier",
+                "type": "interfacesSpec",
+                "optional": true,
+                "displayName": "Interfaces"
+            },
+            "nodes": {
+                "description": "Include nodes matching this specifier",
+                "type": "nodeSpec",
+                "optional": true,
+                "displayName": "Nodes"
+            },
+            "vlans": {
+                "description": "Include VLANs in this space",
+                "type": "integerSpace",
+                "optional": true,
+                "displayName": "VLANs"
+            }
+        }
+    }
+}

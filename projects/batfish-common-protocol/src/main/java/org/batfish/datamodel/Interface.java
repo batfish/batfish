@@ -686,7 +686,7 @@ public final class Interface extends ComparableStructure<String> {
     }
   }
 
-  private int _accessVlan;
+  @Nullable private Integer _accessVlan;
 
   private boolean _active;
 
@@ -781,7 +781,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private boolean _spanningTreePortfast;
 
-  private Boolean _switchport;
+  private boolean _switchport;
 
   private SwitchportMode _switchportMode;
 
@@ -854,7 +854,7 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
     Interface other = (Interface) o;
-    if (_accessVlan != other._accessVlan) {
+    if (!Objects.equals(_accessVlan, other._accessVlan)) {
       return false;
     }
     if (_active != other._active) {
@@ -929,7 +929,8 @@ public final class Interface extends ComparableStructure<String> {
 
   @JsonProperty(PROP_ACCESS_VLAN)
   @JsonPropertyDescription("Number of access VLAN when switchport mode is ACCESS")
-  public int getAccessVlan() {
+  @Nullable
+  public Integer getAccessVlan() {
     return _accessVlan;
   }
 
@@ -1272,10 +1273,8 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_SWITCHPORT)
-  @JsonPropertyDescription(
-      "Whether this interface is explicitly set as a switchport. Nothing may be inferred from "
-          + "absence of this field.")
-  public Boolean getSwitchport() {
+  @JsonPropertyDescription("Whether this interface is configured as a switchport.")
+  public boolean getSwitchport() {
     return _switchport;
   }
 
@@ -1337,7 +1336,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_ACCESS_VLAN)
-  public void setAccessVlan(int vlan) {
+  public void setAccessVlan(@Nullable Integer vlan) {
     _accessVlan = vlan;
   }
 
@@ -1611,7 +1610,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_SWITCHPORT)
-  public void setSwitchport(Boolean switchport) {
+  public void setSwitchport(boolean switchport) {
     _switchport = switchport;
   }
 

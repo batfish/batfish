@@ -13,6 +13,11 @@ import static org.batfish.datamodel.AuthenticationMethod.LOCAL;
 import static org.batfish.datamodel.AuthenticationMethod.LOCAL_CASE;
 import static org.batfish.datamodel.AuthenticationMethod.NONE;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethod;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasListForKey;
 import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
@@ -29,10 +34,8 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEqui
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeGateway;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Policy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Proposal;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
@@ -41,9 +44,6 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPeerConfig;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPhase2Policy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPhase2Proposal;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPolicy;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecProposal;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecVpn;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasMlagConfig;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
@@ -71,21 +71,12 @@ import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstPorts;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
 import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasTrackActions;
-import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasAddress;
-import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasExternalInterface;
-import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasIkePolicy;
-import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasLocalIp;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Key;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Proposals;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasLocalInterface;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasRemoteIdentity;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasSelfIdentity;
-import static org.batfish.datamodel.matchers.IkePolicyMatchers.hasPresharedKeyHash;
-import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationAlgorithm;
-import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationMethod;
-import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasDiffieHellmanGroup;
-import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasEncryptionAlgorithm;
-import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasLifeTimeSeconds;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
@@ -96,11 +87,13 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPointToPoint;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
 import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
@@ -113,15 +106,9 @@ import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasPolicyAc
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasTunnelInterface;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.isIpsecDynamicPeerConfigThat;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.isIpsecStaticPeerConfigThat;
-import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasIpsecProposals;
-import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasPfsKeyGroup;
-import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
 import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedIkeP1Key;
 import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedIkeP1Proposal;
 import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedIpsecP2Proposal;
-import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasBindInterface;
-import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasIkeGatewaay;
-import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasPolicy;
 import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasLevel2;
 import static org.batfish.datamodel.matchers.LineMatchers.hasAuthenticationLoginList;
 import static org.batfish.datamodel.matchers.LineMatchers.requiresAuthentication;
@@ -156,6 +143,11 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasSnmpServer;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasVniSettings;
+import static org.batfish.datamodel.transformation.Transformation.when;
+import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
+import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
+import static org.batfish.datamodel.transformation.TransformationStep.shiftSourceIp;
 import static org.batfish.datamodel.vendor_family.VendorFamilyMatchers.hasCisco;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasAaa;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasLogging;
@@ -171,6 +163,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeSecurit
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeZonePairAclName;
+import static org.batfish.representation.cisco.CiscoIosDynamicNat.computeDynamicDestinationNatAclName;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.ICMP_TYPE_OBJECT_GROUP;
@@ -220,6 +213,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
@@ -284,7 +278,6 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
-import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -309,9 +302,11 @@ import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.eigrp.EigrpMetric;
@@ -321,16 +316,11 @@ import org.batfish.datamodel.matchers.CommunityListMatchers;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
-import org.batfish.datamodel.matchers.IkeGatewayMatchers;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
-import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2PolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2ProposalMatchers;
-import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
-import org.batfish.datamodel.matchers.IpsecProposalMatchers;
-import org.batfish.datamodel.matchers.IpsecVpnMatchers;
 import org.batfish.datamodel.matchers.MlagMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.Route6FilterListMatchers;
@@ -350,6 +340,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralCommunityHalf;
 import org.batfish.datamodel.routing_policy.expr.RangeCommunityHalf;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackInterface;
+import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -1026,6 +1017,16 @@ public class CiscoGrammarTest {
   public void testIosLoggingOnDefault() throws IOException {
     Configuration loggingOnOmitted = parseConfig("iosLoggingOnOmitted");
     assertThat(loggingOnOmitted, hasVendorFamily(hasCisco(hasLogging(isOn()))));
+  }
+
+  @Test
+  public void testIosAccessVlan() throws IOException {
+    String hostname = "ios-access-vlan";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasInterface("Ethernet1", hasAccessVlan(1)));
+    assertThat(c, hasInterface("Ethernet2", hasAccessVlan(nullValue())));
+    assertThat(c, hasInterface("Ethernet3", hasAccessVlan(nullValue())));
   }
 
   @Test
@@ -2694,29 +2695,6 @@ public class CiscoGrammarTest {
   @Test
   public void testToIpsecPolicies() throws IOException {
     Configuration c = parseConfig("ios-crypto-map");
-
-    assertThat(
-        c,
-        hasIpsecPolicy(
-            "mymap:10",
-            allOf(
-                IpsecPolicyMatchers.hasIkeGateway(IkeGatewayMatchers.hasName("ISAKMP-PROFILE")),
-                hasPfsKeyGroup(DiffieHellmanGroup.GROUP14),
-                hasIpsecProposals(
-                    contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts1")))))));
-
-    assertThat(
-        c,
-        hasIpsecPolicy(
-            "mymap:30:5",
-            hasIpsecProposals(contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts1"))))));
-
-    assertThat(
-        c,
-        hasIpsecPolicy(
-            "mymap:30:15",
-            hasIpsecProposals(contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts2"))))));
-
     // tests for IPSec phase 2 policies conversion
     assertThat(
         c,
@@ -2844,58 +2822,6 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testCryptoMapsToIpsecVpns() throws IOException {
-    Configuration c = parseConfig("ios-crypto-map");
-
-    List<IpAccessListLine> expectedAclLines =
-        ImmutableList.of(
-            IpAccessListLine.accepting()
-                .setName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0")
-                .setMatchCondition(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(new IpWildcard("1.1.1.1").toIpSpace())
-                            .setDstIps(new IpWildcard("2.2.2.2").toIpSpace())
-                            .build()))
-                .build(),
-            IpAccessListLine.accepting()
-                .setMatchCondition(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(new IpWildcard("2.2.2.2").toIpSpace())
-                            .setDstIps(new IpWildcard("1.1.1.1").toIpSpace())
-                            .build()))
-                .build());
-    assertThat(
-        c,
-        hasIpsecVpn(
-            "mymap:10:TenGigabitEthernet0/0",
-            allOf(
-                hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
-                IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:10")),
-                hasIkeGatewaay(IkeGatewayMatchers.hasName("ISAKMP-PROFILE")),
-                hasPolicy(hasLines(equalTo(expectedAclLines))))));
-    assertThat(
-        c,
-        hasIpsecVpn(
-            "mymap:30:5:TenGigabitEthernet0/0",
-            allOf(
-                hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
-                IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:30:5")),
-                hasPolicy(hasLines(equalTo(expectedAclLines))))));
-    assertThat(
-        c,
-        hasIpsecVpn(
-            "mymap:30:15:TenGigabitEthernet0/0",
-            allOf(
-                hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
-                IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:30:15")),
-                hasPolicy(hasLines(equalTo(expectedAclLines))))));
-
-    assertThat(c, hasInterface("TenGigabitEthernet0/0", isActive()));
-  }
-
-  @Test
   public void testInvalidCryptoMapDef() throws IOException {
     String hostname = "ios-crypto-map";
 
@@ -2912,58 +2838,8 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testIsakmpPolicyAruba() throws IOException {
-    Configuration c = parseConfig("arubaCrypto");
-    assertThat(
-        c,
-        hasIkeProposal(
-            "20",
-            allOf(
-                hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
-                hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
-                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA_256),
-                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP19),
-                hasLifeTimeSeconds(86400))));
-    // asserting the default values being set
-    assertThat(
-        c,
-        hasIkeProposal(
-            "30",
-            allOf(
-                hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
-                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
-                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1),
-                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
-                hasLifeTimeSeconds(86400))));
-  }
-
-  @Test
   public void testIsakmpPolicyIos() throws IOException {
     Configuration c = parseConfig("ios-crypto");
-
-    assertThat(
-        c,
-        hasIkeProposal(
-            "10",
-            allOf(
-                hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
-                hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
-                hasAuthenticationAlgorithm(IkeHashingAlgorithm.MD5),
-                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
-                hasLifeTimeSeconds(14400))));
-
-    // asserting the default values being set
-    assertThat(
-        c,
-        hasIkeProposal(
-            "20",
-            allOf(
-                hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
-                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
-                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1),
-                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
-                hasLifeTimeSeconds(86400))));
-
     // test for IKE phase1 proposals
     assertThat(
         c,
@@ -2993,29 +2869,6 @@ public class CiscoGrammarTest {
   @Test
   public void testIsakmpProfile() throws IOException {
     Configuration c = parseConfig("ios-crypto");
-    assertThat(
-        c,
-        hasIkeGateway(
-            "ISAKMP-PROFILE-ADDRESS",
-            allOf(
-                hasAddress(Ip.parse("1.2.3.4")),
-                hasExternalInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
-                hasLocalIp(Ip.parse("2.3.4.6")),
-                hasIkePolicy(
-                    hasPresharedKeyHash(CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))))));
-
-    // The interface in the local-address should also be mapped with the same local ip
-    assertThat(
-        c,
-        hasIkeGateway(
-            "ISAKMP-PROFILE-INTERFACE",
-            allOf(
-                hasAddress(Ip.parse("1.2.3.4")),
-                hasExternalInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
-                hasLocalIp(Ip.parse("2.3.4.6")),
-                hasIkePolicy(
-                    hasPresharedKeyHash(CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))))));
-
     // test for IKE phase 1 policy
     assertThat(
         c,
@@ -3191,6 +3044,27 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testEosVxlanMisconfig() throws IOException {
+    String hostname = "eos-vxlan-misconfig";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration config = batfish.loadConfigurations().get(hostname);
+
+    // Make sure that misconfigured VXLAN is still converted into VI model properly
+    assertThat(config, hasDefaultVrf(hasVniSettings(hasKey(10002))));
+    VniSettings vnisMisconfig = config.getDefaultVrf().getVniSettings().get(10002);
+
+    // No BUM IPs specified
+    assertThat(vnisMisconfig, hasBumTransportIps(emptyIterable()));
+    // No source interface so no source address
+    assertThat(vnisMisconfig, hasSourceAddress(nullValue()));
+    // Confirm default UDP port is used
+    assertThat(vnisMisconfig, hasUdpPort(equalTo(4789)));
+    // Confirm VLAN<->VNI mapping is applied
+    assertThat(vnisMisconfig, hasVlan(equalTo(2)));
+  }
+
+  @Test
   public void testEosTrunkGroup() throws IOException {
     String hostname = "eos_trunk_group";
 
@@ -3261,108 +3135,6 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testIpsecProfile() throws IOException {
-    Configuration c = parseConfig("ios-crypto-ipsec-profile");
-
-    assertThat(
-        c,
-        hasIpsecPolicy(
-            "IPSEC-PROFILE1",
-            allOf(
-                IpsecPolicyMatchers.hasIkeGateway(
-                    allOf(hasAddress(Ip.parse("1.2.3.4")), hasLocalIp(Ip.parse("2.3.4.6")))),
-                hasIpsecProposals(
-                    contains(
-                        ImmutableList.of(
-                            allOf(
-                                IpsecProposalMatchers.hasEncryptionAlgorithm(
-                                    EncryptionAlgorithm.AES_256_CBC),
-                                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                                    IpsecAuthenticationAlgorithm.HMAC_MD5_96)),
-                            allOf(
-                                IpsecProposalMatchers.hasEncryptionAlgorithm(
-                                    EncryptionAlgorithm.AES_256_CBC),
-                                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96))))),
-                hasPfsKeyGroup(DiffieHellmanGroup.GROUP14))));
-
-    // testing the Diffie Hellman groups
-    assertThat(c, hasIpsecPolicy("IPSEC-PROFILE2", hasPfsKeyGroup(DiffieHellmanGroup.GROUP15)));
-    assertThat(c, hasIpsecPolicy("IPSEC-PROFILE3", hasPfsKeyGroup(DiffieHellmanGroup.GROUP16)));
-    assertThat(c, hasIpsecPolicy("IPSEC-PROFILE4", hasPfsKeyGroup(DiffieHellmanGroup.GROUP19)));
-    assertThat(c, hasIpsecPolicy("IPSEC-PROFILE5", hasPfsKeyGroup(DiffieHellmanGroup.GROUP21)));
-    assertThat(c, hasIpsecPolicy("IPSEC-PROFILE6", hasPfsKeyGroup(DiffieHellmanGroup.GROUP5)));
-  }
-
-  @Test
-  public void testArubaIpsecTransformset() throws IOException {
-    Configuration c = parseConfig("arubaCryptoTransformSet");
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts1",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts2",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts3",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_CBC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts4",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts5",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts6",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GCM),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts7",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GCM),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-  }
-
-  @Test
   public void testIosOspfPassive() throws IOException {
     String testrigName = "ios-ospf-passive";
     String host1name = "ios-ospf-passive1";
@@ -3389,92 +3161,6 @@ public class CiscoGrammarTest {
     // in host2, default is passive which is overridden for iface1
     assertThat(c2, hasInterface(iface1Name, isOspfPassive(equalTo(false))));
     assertThat(c2, hasInterface(iface2Name, isOspfPassive(equalTo(true))));
-  }
-
-  @Test
-  public void testIpsecTransformset() throws IOException {
-    Configuration c = parseConfig("ios-crypto-transform-set");
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts1",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_CBC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts2",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts3",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts4",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GCM),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts5",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GCM),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts6",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GMAC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts7",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GMAC),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts8",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.SEAL_160),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
-    assertThat(
-        c,
-        hasIpsecProposal(
-            "ts9",
-            allOf(
-                IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.NULL),
-                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
   }
 
   @Test
@@ -3552,38 +3238,6 @@ public class CiscoGrammarTest {
                 IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
                 IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
                     IpsecEncapsulationMode.TUNNEL))));
-  }
-
-  @Test
-  public void testIpsecVpnIos() throws IOException {
-    String testrigName = "ipsec-vpn-ios";
-    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
-
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations();
-
-    assertThat(
-        configurations.values().stream().mapToLong(c -> c.getIpsecVpns().values().size()).sum(),
-        equalTo(6L));
-    configurations
-        .values()
-        .stream()
-        .flatMap(c -> c.getIpsecVpns().values().stream())
-        .forEach(iv -> assertThat(iv.getRemoteIpsecVpn(), not(nullValue())));
-    /* Two tunnels should not be established because of a password mismatch between r1 and r3 */
-    assertThat(
-        configurations
-            .values()
-            .stream()
-            .flatMap(c -> c.getAllInterfaces().values().stream())
-            .filter(i -> i.getInterfaceType().equals(InterfaceType.TUNNEL) && i.getActive())
-            .count(),
-        equalTo(4L));
   }
 
   @Test
@@ -3885,6 +3539,307 @@ public class CiscoGrammarTest {
     Configuration c = parseConfig("aristaInterface");
 
     assertThat(c, hasInterface("Ethernet3/2/1.4", hasMtu(9000)));
+  }
+
+  @Test
+  public void testAristaDefaultSwitchPort() throws IOException {
+    Configuration cUndeclared = parseConfig("eos_switchport_default_mode_undeclared");
+    Configuration cDefaultAccess = parseConfig("eos_switchport_default_mode_access");
+    Configuration cDefaultRouted = parseConfig("eos_switchport_default_mode_routed");
+
+    String l0Name = "Loopback0";
+    String e0Name = "Ethernet0/0";
+    String e1Name = "Ethernet0/1";
+    String e2Name = "Ethernet0/2";
+    String e3Name = "Ethernet0/3";
+    String e4Name = "Ethernet0/4";
+    String p0Name = "Port-Channel0";
+
+    Interface l0Undeclared = cUndeclared.getAllInterfaces().get(l0Name);
+    Interface e0Undeclared = cUndeclared.getAllInterfaces().get(e0Name);
+    Interface e1Undeclared = cUndeclared.getAllInterfaces().get(e1Name);
+    Interface e2Undeclared = cUndeclared.getAllInterfaces().get(e2Name);
+    Interface e3Undeclared = cUndeclared.getAllInterfaces().get(e3Name);
+    Interface e4Undeclared = cUndeclared.getAllInterfaces().get(e4Name);
+    Interface p0Undeclared = cUndeclared.getAllInterfaces().get(p0Name);
+
+    Interface l0DefaultAccess = cDefaultAccess.getAllInterfaces().get(l0Name);
+    Interface e0DefaultAccess = cDefaultAccess.getAllInterfaces().get(e0Name);
+    Interface e1DefaultAccess = cDefaultAccess.getAllInterfaces().get(e1Name);
+    Interface e2DefaultAccess = cDefaultAccess.getAllInterfaces().get(e2Name);
+    Interface e3DefaultAccess = cDefaultAccess.getAllInterfaces().get(e3Name);
+    Interface e4DefaultAccess = cDefaultAccess.getAllInterfaces().get(e4Name);
+    Interface p0DefaultAccess = cDefaultAccess.getAllInterfaces().get(p0Name);
+
+    Interface l0DefaultRouted = cDefaultRouted.getAllInterfaces().get(l0Name);
+    Interface e0DefaultRouted = cDefaultRouted.getAllInterfaces().get(e0Name);
+    Interface e1DefaultRouted = cDefaultRouted.getAllInterfaces().get(e1Name);
+    Interface e2DefaultRouted = cDefaultRouted.getAllInterfaces().get(e2Name);
+    Interface e3DefaultRouted = cDefaultRouted.getAllInterfaces().get(e3Name);
+    Interface e4DefaultRouted = cDefaultRouted.getAllInterfaces().get(e4Name);
+    Interface p0DefaultRouted = cDefaultRouted.getAllInterfaces().get(p0Name);
+
+    assertThat(l0Undeclared, isSwitchport(false));
+    assertThat(l0Undeclared, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e0Undeclared, isSwitchport(true));
+    assertThat(e0Undeclared, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e1Undeclared, isSwitchport(true));
+    assertThat(e1Undeclared, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e2Undeclared, isSwitchport(true));
+    assertThat(e2Undeclared, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e3Undeclared, isSwitchport(false));
+    assertThat(e3Undeclared, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e4Undeclared, isSwitchport(true));
+    assertThat(e4Undeclared, hasSwitchPortMode(SwitchportMode.TRUNK));
+    assertThat(p0Undeclared, isSwitchport(true));
+    assertThat(p0Undeclared, hasSwitchPortMode(SwitchportMode.ACCESS));
+
+    assertThat(l0DefaultAccess, isSwitchport(false));
+    assertThat(l0DefaultAccess, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e0DefaultAccess, isSwitchport(true));
+    assertThat(e0DefaultAccess, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e1DefaultAccess, isSwitchport(true));
+    assertThat(e1DefaultAccess, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e2DefaultAccess, isSwitchport(true));
+    assertThat(e2DefaultAccess, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e3DefaultAccess, isSwitchport(false));
+    assertThat(e3DefaultAccess, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e4DefaultAccess, isSwitchport(true));
+    assertThat(e4DefaultAccess, hasSwitchPortMode(SwitchportMode.TRUNK));
+    assertThat(p0DefaultAccess, isSwitchport(true));
+    assertThat(p0DefaultAccess, hasSwitchPortMode(SwitchportMode.ACCESS));
+
+    assertThat(l0DefaultRouted, isSwitchport(false));
+    assertThat(l0DefaultRouted, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e0DefaultRouted, isSwitchport(false));
+    assertThat(e0DefaultRouted, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e1DefaultRouted, isSwitchport(true));
+    assertThat(e1DefaultRouted, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e2DefaultRouted, isSwitchport(true));
+    assertThat(e2DefaultRouted, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e3DefaultRouted, isSwitchport(false));
+    assertThat(e3DefaultRouted, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e4DefaultRouted, isSwitchport(true));
+    assertThat(e4DefaultRouted, hasSwitchPortMode(SwitchportMode.TRUNK));
+    assertThat(p0DefaultRouted, isSwitchport(false));
+    assertThat(p0DefaultRouted, hasSwitchPortMode(SwitchportMode.NONE));
+  }
+
+  @Test
+  public void testAristaDynamicSourceNat() throws IOException {
+    Configuration c = parseConfig("arista-dynamic-source-nat");
+    Interface iface = c.getAllInterfaces().get("Ethernet1");
+    assertThat(iface.getIncomingTransformation(), nullValue());
+    assertThat(
+        iface.getOutgoingTransformation(),
+        equalTo(
+            when(permittedByAcl("acl1"))
+                .apply(assignSourceIp(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2")))
+                .build()));
+
+    iface = c.getAllInterfaces().get("Ethernet2");
+    assertThat(iface.getIncomingTransformation(), nullValue());
+    assertThat(
+        iface.getOutgoingTransformation(),
+        equalTo(
+            when(permittedByAcl("acl1"))
+                .apply(assignSourceIp(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2")))
+                .setOrElse(
+                    when(permittedByAcl("acl2"))
+                        .apply(assignSourceIp(Ip.parse("2.2.2.2"), Ip.parse("2.2.2.3")))
+                        .build())
+                .build()));
+
+    iface = c.getAllInterfaces().get("Ethernet3");
+    assertThat(iface.getIncomingTransformation(), nullValue());
+    assertThat(
+        iface.getOutgoingTransformation(),
+        equalTo(
+            when(permittedByAcl("acl1"))
+                // due to the subnet mask, shift the pool IPs to avoid network/bcast IPs.
+                .apply(assignSourceIp(Ip.parse("2.0.0.1"), Ip.parse("2.0.0.6")))
+                .build()));
+  }
+
+  @Test
+  public void testIosDynamicNat() throws IOException {
+    Configuration c = parseConfig("ios-nat-dynamic");
+    String insideIntf = "Ethernet1";
+    String outsideIntf = "Ethernet2";
+    Ip nat1PoolFirst = Ip.parse("3.3.3.1");
+    Ip nat1PoolLast = Ip.parse("3.3.3.254");
+    Ip nat2PoolFirst = Ip.parse("3.3.4.1");
+    Ip nat2PoolLast = Ip.parse("3.3.4.254");
+    Ip nat3PoolFirst = Ip.parse("4.4.4.1");
+    Ip nat3PoolLast = Ip.parse("4.4.4.254");
+    String nat1AclName = "10";
+    String nat2AclName = computeDynamicDestinationNatAclName("11");
+    String nat3AclName = "22";
+
+    assertThat(c, hasInterface(insideIntf, notNullValue()));
+    assertThat(c, hasInterface(outsideIntf, notNullValue()));
+
+    Interface inside = c.getAllInterfaces().get(insideIntf);
+    assertThat(inside.getIncomingTransformation(), nullValue());
+    assertThat(inside.getOutgoingTransformation(), nullValue());
+
+    MatchSrcInterface matchIface = matchSrcInterface(insideIntf);
+
+    Interface outside = c.getAllInterfaces().get(outsideIntf);
+
+    Transformation inTransformation =
+        when(permittedByAcl(nat3AclName))
+            .apply(assignSourceIp(nat3PoolFirst, nat3PoolLast))
+            .build();
+
+    assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
+
+    Transformation destTransformation =
+        when(and(matchIface, permittedByAcl(nat2AclName)))
+            .apply(assignDestinationIp(nat2PoolFirst, nat2PoolLast))
+            .build();
+
+    Transformation outTransformation =
+        when(and(matchIface, permittedByAcl(nat1AclName)))
+            .apply(assignSourceIp(nat1PoolFirst, nat1PoolLast))
+            .setAndThen(destTransformation)
+            .setOrElse(destTransformation)
+            .build();
+
+    assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
+  }
+
+  @Test
+  public void testIosStaticNat() throws IOException {
+    Configuration c = parseConfig("ios-nat-static");
+    String insideIntf = "Ethernet1";
+    String outsideIntf = "Ethernet2";
+    Prefix nat1Local = Prefix.parse("1.1.1.1/32");
+    Prefix nat3Local = Prefix.parse("1.1.3.0/24");
+    Prefix nat2Local = Prefix.parse("1.1.2.0/14");
+    Prefix nat4Local = Prefix.parse("7.7.7.7/32");
+    Prefix nat1Global = Prefix.parse("2.2.2.2/32");
+    Prefix nat2Global = Prefix.parse("2.2.2.0/14");
+    Prefix nat4Global = Prefix.parse("6.6.6.6/32");
+    Prefix nat3Global = Prefix.parse("2.2.3.0/24");
+
+    assertThat(c, hasInterface(insideIntf, notNullValue()));
+    assertThat(c, hasInterface(outsideIntf, notNullValue()));
+
+    Interface inside = c.getAllInterfaces().get(insideIntf);
+    assertThat(inside.getIncomingTransformation(), nullValue());
+    assertThat(inside.getOutgoingTransformation(), nullValue());
+
+    Interface outside = c.getAllInterfaces().get(outsideIntf);
+    assertThat(outside.getIncomingTransformation(), notNullValue());
+    assertThat(outside.getOutgoingTransformation(), notNullValue());
+
+    MatchSrcInterface matchIface = matchSrcInterface(insideIntf);
+    Transformation inDestinationTransformation =
+        when(matchDst(nat1Global))
+            .apply(shiftDestinationIp(nat1Local))
+            .setOrElse(
+                when(matchDst(nat3Global))
+                    .apply(shiftDestinationIp(nat3Local))
+                    .setOrElse(
+                        when(matchDst(nat2Global)).apply(shiftDestinationIp(nat2Local)).build())
+                    .build())
+            .build();
+
+    Transformation inTransformation =
+        when(matchSrc(nat4Global))
+            .apply(shiftSourceIp(nat4Local))
+            .setAndThen(inDestinationTransformation)
+            .setOrElse(inDestinationTransformation)
+            .build();
+
+    assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
+
+    Transformation outDestinationTransformation =
+        when(and(matchDst(nat4Local), matchIface)).apply(shiftDestinationIp(nat4Global)).build();
+
+    Transformation outTransformation =
+        when(and(matchSrc(nat1Local), matchIface))
+            .apply(shiftSourceIp(nat1Global))
+            .setAndThen(outDestinationTransformation)
+            .setOrElse(
+                when(and(matchSrc(nat3Local), matchIface))
+                    .apply(shiftSourceIp(nat3Global))
+                    .setAndThen(outDestinationTransformation)
+                    .setOrElse(
+                        when(and(matchSrc(nat2Local), matchIface))
+                            .apply(shiftSourceIp(nat2Global))
+                            .setAndThen(outDestinationTransformation)
+                            .setOrElse(outDestinationTransformation)
+                            .build())
+                    .build())
+            .build();
+
+    assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
+  }
+
+  @Test
+  public void testIosMixedNat() throws IOException {
+    Configuration c = parseConfig("ios-nat-mixed");
+    String insideIntf = "Ethernet1";
+    String outsideIntf = "Ethernet2";
+    Prefix staticNatLocal = Prefix.parse("1.1.3.0/24");
+    Prefix staticNatGlobal = Prefix.parse("2.2.3.0/24");
+    String dynamicNatAcl = "10";
+    Ip dynamicNatStart = Ip.parse("3.3.3.1");
+    Ip dynamicNatEnd = Ip.parse("3.3.3.254");
+
+    Interface outside = c.getAllInterfaces().get(outsideIntf);
+    MatchSrcInterface matchIface = matchSrcInterface(insideIntf);
+
+    // Check that the inside-to-outside transformation evaluates the static NAT first
+    Transformation outTransformation =
+        when(and(matchIface, matchSrc(staticNatLocal)))
+            .apply(shiftSourceIp(staticNatGlobal))
+            .setOrElse(
+                when(and(matchIface, permittedByAcl(dynamicNatAcl)))
+                    .apply(assignSourceIp(dynamicNatStart, dynamicNatEnd))
+                    .build())
+            .build();
+    assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
+  }
+
+  @Test
+  public void testIosSwitchportMode() throws IOException {
+    Configuration c = parseConfig("ios_switchport_mode");
+
+    Interface e0 = c.getAllInterfaces().get("Ethernet0/0");
+    Interface e1 = c.getAllInterfaces().get("Ethernet0/1");
+    Interface e2 = c.getAllInterfaces().get("Ethernet0/2");
+    Interface e3 = c.getAllInterfaces().get("Ethernet0/3");
+
+    assertThat(e0, isSwitchport(false));
+    assertThat(e0, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e1, isSwitchport(true));
+    assertThat(e1, hasSwitchPortMode(SwitchportMode.DYNAMIC_AUTO));
+    assertThat(e2, isSwitchport(true));
+    assertThat(e2, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e3, isSwitchport(true));
+    assertThat(e3, hasSwitchPortMode(SwitchportMode.TRUNK));
+  }
+
+  @Test
+  public void testNxosSwitchportMode() throws IOException {
+    Configuration c = parseConfig("nxos_switchport_mode");
+
+    Interface e0 = c.getAllInterfaces().get("Ethernet0/0");
+    Interface e1 = c.getAllInterfaces().get("Ethernet0/1");
+    Interface e2 = c.getAllInterfaces().get("Ethernet0/2");
+    Interface e3 = c.getAllInterfaces().get("Ethernet0/3");
+
+    assertThat(e0, isSwitchport(false));
+    assertThat(e0, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e1, isSwitchport(true));
+    assertThat(e1, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e2, isSwitchport(true));
+    assertThat(e2, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e3, isSwitchport(true));
+    assertThat(e3, hasSwitchPortMode(SwitchportMode.TRUNK));
   }
 
   @Test

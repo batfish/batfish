@@ -3291,6 +3291,17 @@ public final class WorkMgrTest {
   }
 
   @Test
+  public void testRoutingProtocolSpecAutocomplete() throws IOException {
+    assertThat(
+        _manager
+            .autoComplete("network", "snapshot", Type.ROUTING_PROTOCOL_SPEC, "bgp", 5)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("bgp", "ibgp", "ebgp")));
+  }
+
+  @Test
   public void testStructureNameAutocomplete() throws IOException {
     String network = "network";
     String snapshot = "snapshot";

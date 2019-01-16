@@ -289,6 +289,11 @@ ADD_PATHS
    'add-paths'
 ;
 
+ADD_ROUTE
+:
+   'add-route'
+;
+
 ADD_VLAN
 :
    'add-vlan'
@@ -8462,6 +8467,11 @@ NOPASSWORD
 NO_ADVERTISE
 :
    'no-advertise'
+;
+
+NO_ALIAS
+:
+   'no-alias'
 ;
 
 NO_BANNER

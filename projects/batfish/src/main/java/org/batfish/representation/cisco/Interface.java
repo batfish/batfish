@@ -116,13 +116,15 @@ public class Interface implements Serializable {
     return DEFAULT_INTERFACE_MTU;
   }
 
-  private int _accessVlan;
+  @Nullable private Integer _accessVlan;
 
   private boolean _active;
 
   private String _alias;
 
   @Nullable private IntegerSpace _allowedVlans;
+
+  private List<AristaDynamicSourceNat> _aristaNats;
 
   private boolean _autoState;
 
@@ -182,13 +184,11 @@ public class Interface implements Serializable {
 
   private Set<InterfaceAddress> _secondaryAddresses;
 
-  private List<CiscoSourceNat> _sourceNats;
-
   private boolean _spanningTreePortfast;
 
   private InterfaceAddress _standbyAddress;
 
-  private Boolean _switchport;
+  private boolean _switchport;
 
   private boolean _switchportAccessDynamic;
 
@@ -237,6 +237,24 @@ public class Interface implements Serializable {
     return _securityZone;
   }
 
+  /**
+   * Returns the default {@link SwitchportMode} for the given {@code vendor} to be used when a
+   * switchport is explicitly enabled, ignoring any override of the default mode.
+   */
+  public static SwitchportMode getUndeclaredDefaultSwitchportMode(ConfigurationFormat vendor) {
+    switch (vendor) {
+      case ARISTA:
+        return SwitchportMode.ACCESS;
+      case CISCO_IOS:
+        return SwitchportMode.DYNAMIC_AUTO;
+      case CISCO_NX:
+        // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/sw/5_x/nx-os/interfaces/configuration/guide/if_cli/if_access_trunk.html#pgfId-1525675
+        return SwitchportMode.ACCESS;
+      default:
+        return SwitchportMode.ACCESS;
+    }
+  }
+
   public Interface(String name, CiscoConfiguration c) {
     _active = true;
     _autoState = true;
@@ -247,35 +265,36 @@ public class Interface implements Serializable {
     _name = name;
     _nativeVlan = 1;
     _secondaryAddresses = new LinkedHashSet<>();
-    SwitchportMode defaultSwitchportMode = c.getCf().getDefaultSwitchportMode();
     ConfigurationFormat vendor = c.getVendor();
-    if (defaultSwitchportMode == null) {
-      switch (vendor) {
-        case ARISTA:
-          _switchportMode = SwitchportMode.ACCESS;
-          break;
 
-        case ALCATEL_AOS:
-        case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
-        case AWS:
-        case CADANT:
-        case CISCO_ASA:
-        case CISCO_IOS:
-        case CISCO_IOS_XR:
-        case CISCO_NX:
-        case FORCE10:
-        case FOUNDRY:
-          _switchportMode = SwitchportMode.NONE;
-          break;
+    // Proxy-ARP defaults
+    switch (vendor) {
+      case CISCO_ASA:
+      case CISCO_IOS:
+        setProxyArp(true);
+        break;
 
-          // $CASES-OMITTED$
-        default:
-          throw new BatfishException(
-              "Invalid vendor format for cisco parser: " + vendor.getVendorString());
+        // $CASES-OMITTED$
+      default:
+        break;
+    }
+
+    // Switchport defaults
+    if (vendor == ConfigurationFormat.ARISTA
+        && (name.startsWith("Ethernet") || name.startsWith("Port-Channel"))) {
+      SwitchportMode defaultSwitchportMode = c.getCf().getDefaultSwitchportMode();
+      if (defaultSwitchportMode == null) {
+        // Arista Ethernet and Port-channel default switchport mode is ACCESS
+        _switchportMode = SwitchportMode.ACCESS;
+      } else {
+        // Arista use alternate default switchport mode if declared
+        _switchportMode = defaultSwitchportMode;
       }
     } else {
-      _switchportMode = defaultSwitchportMode;
+      // Default switchport mode for non-Arista and Arista non-Ethernet/Port-Channel is NONE
+      _switchportMode = SwitchportMode.NONE;
     }
+    _switchport = _switchportMode != SwitchportMode.NONE;
     if (_switchportMode == SwitchportMode.TRUNK) {
       _allowedVlans = ALL_VLANS;
     } else if (_switchportMode == SwitchportMode.ACCESS) {
@@ -294,7 +313,8 @@ public class Interface implements Serializable {
     _allowedVlans = allowedVlans;
   }
 
-  public int getAccessVlan() {
+  @Nullable
+  public Integer getAccessVlan() {
     return _accessVlan;
   }
 
@@ -318,6 +338,10 @@ public class Interface implements Serializable {
     }
     allAddresses.addAll(_secondaryAddresses);
     return allAddresses;
+  }
+
+  public List<AristaDynamicSourceNat> getAristaNats() {
+    return _aristaNats;
   }
 
   public boolean getAutoState() {
@@ -439,10 +463,6 @@ public class Interface implements Serializable {
     return _secondaryAddresses;
   }
 
-  public List<CiscoSourceNat> getSourceNats() {
-    return _sourceNats;
-  }
-
   public boolean getSpanningTreePortfast() {
     return _spanningTreePortfast;
   }
@@ -506,6 +526,10 @@ public class Interface implements Serializable {
 
   public void setAlias(String alias) {
     _alias = alias;
+  }
+
+  public void setAristaNats(List<AristaDynamicSourceNat> aristaNats) {
+    _aristaNats = aristaNats;
   }
 
   public void setAutoState(boolean autoState) {
@@ -608,10 +632,6 @@ public class Interface implements Serializable {
     _routingPolicy = routingPolicy;
   }
 
-  public void setSourceNats(List<CiscoSourceNat> sourceNats) {
-    _sourceNats = sourceNats;
-  }
-
   public void setSpanningTreePortfast(boolean spanningTreePortfast) {
     _spanningTreePortfast = spanningTreePortfast;
   }
@@ -621,10 +641,6 @@ public class Interface implements Serializable {
   }
 
   public void setSwitchport(boolean switchport) {
-    _switchport = switchport;
-  }
-
-  public void setSwitchport(Boolean switchport) {
     _switchport = switchport;
   }
 

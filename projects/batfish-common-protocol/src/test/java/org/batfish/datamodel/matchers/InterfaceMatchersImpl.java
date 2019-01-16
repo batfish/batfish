@@ -26,6 +26,7 @@ final class InterfaceMatchersImpl {
     }
 
     @Override
+    @Nullable
     protected Integer featureValueOf(Interface actual) {
       return actual.getAccessVlan();
     }
@@ -333,6 +334,17 @@ final class InterfaceMatchersImpl {
     @Override
     protected Boolean featureValueOf(Interface actual) {
       return actual.getProxyArp();
+    }
+  }
+
+  static final class IsSwitchport extends FeatureMatcher<Interface, Boolean> {
+    IsSwitchport(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "an Interface with switchport:", "switchport");
+    }
+
+    @Override
+    protected Boolean featureValueOf(Interface actual) {
+      return actual.getSwitchport();
     }
   }
 
