@@ -7,9 +7,9 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 
+/** Represents a group of policy-statements that should be evaluated as a conjunction */
 public final class PsFromPolicyStatementConjunction extends PsFrom {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final Set<String> _conjuncts;

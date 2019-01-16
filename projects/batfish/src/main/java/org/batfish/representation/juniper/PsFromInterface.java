@@ -17,6 +17,7 @@ import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 
+/** Represents a "from interface" line in a {@link PsTerm} */
 public final class PsFromInterface extends PsFrom {
 
   private static final long serialVersionUID = 1L;
