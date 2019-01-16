@@ -7,7 +7,15 @@ DOCKER_IMAGE="batfish/ci-base:latest"
 
 cat <<EOF
 steps:
+EOF
+
+###### WAIT before starting any of the jobs.
+cat <<EOF
   - wait
+EOF
+
+###### Initial checks plus building the jar
+cat <<EOF
   - label: "Check Java formatting"
     command: ".buildkite/check_java_format.sh"
     plugins:
@@ -32,12 +40,15 @@ steps:
     plugins:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
+EOF
+
+###### WAIT for job to be build before starting any heavier tests
+cat <<EOF
   - wait
 EOF
 
-
+###### Maven tests
 cat <<EOF
-steps:
   - label: "Maven tests"
     command: "mvn -f projects/pom.xml verify -DskipTests=false"
     plugins:
@@ -69,3 +80,5 @@ steps:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
 EOF
+
+###### Ref tests
