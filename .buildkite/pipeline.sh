@@ -86,7 +86,7 @@ EOF
 # https://buildkite.com/docs/tutorials/parallel-builds#parallel-jobs
 for cmd in tests/*/commands; do
   cat <<EOF
-  - label: "${testdir} ref tests"
+  - label: "${cmd} ref tests"
     command: ".buildkite/ref_test.sh ${cmd}"
     plugins:
       - docker#${DOCKER_VERSION}:
@@ -94,3 +94,4 @@ for cmd in tests/*/commands; do
       - artifacts#v1.2.0:
           download: workspace/allinone.jar
 EOF
+done
