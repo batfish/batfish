@@ -10,7 +10,13 @@ if [ $# -lt 1 -o $# -gt 2 ]; then
   exit 1
 fi
 
+JACOCO_VERSION=0.8.2
+JACOCO_AGENT_JAR_NAME="org.jacoco.agent-${JACOCO_VERSION}-runtime.jar"
+JACOCO_AGENT_JAR="/batfish/workdir/.m2/repository/org/jacoco/org.jacoco.agent/${JACOCO_VERSION}/${JACOCO_AGENT_JAR_NAME}"
+
 CMD_FILE="$1"
+CMD_DIR=$(basename "${CMD_FILE}")
+JACOCO_FILE="${CMD_DIR}/jacoco.exec"
 
 if [ -n "${2:-}" ]; then
   COORDINATOR_ARGS="$2"
@@ -19,6 +25,7 @@ else
 fi
 
 java -enableassertions \
+     "-javaagent:${JACOCO_AGENT_JAR}=destfile=${JACOCO_FILE}" \
      -cp "${ALLINONE_JAR}" \
      "${MAIN_CLASS}" \
      -coordinatorargs="${COORDINATOR_ARGS}" -cmdfile="${CMD_FILE}"
