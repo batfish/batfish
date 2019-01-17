@@ -16,17 +16,6 @@ EOF
 
 ###### Initial checks plus building the jar
 cat <<EOF
-  - label: "Maven tests + Coverage"
-    command:
-      - mvn -f projects/pom.xml verify -DskipTests=false -Djacoco.skip=false
-      - mkdir -p workspace
-      - find projects -name jacoco.exec -type f -exec cat {} \+ > workspace/jacoco.exec
-    artifact_paths:
-      - workspace/jacoco.exec
-    plugins:
-      - docker#${DOCKER_VERSION}:
-          image: ${DOCKER_IMAGE}
-          always-pull: true
   - label: "Check Java formatting"
     command: ".buildkite/check_java_format.sh"
     plugins:
@@ -63,6 +52,17 @@ EOF
 
 ###### Maven tests
 cat <<EOF
+  - label: "Maven tests + Coverage"
+    command:
+      - mvn -f projects/pom.xml verify -DskipTests=false -Djacoco.skip=false
+      - mkdir -p workspace
+      - find projects -name jacoco.exec -type f -exec cat {} \+ > workspace/jacoco.exec
+    artifact_paths:
+      - workspace/jacoco.exec
+    plugins:
+      - docker#${DOCKER_VERSION}:
+          image: ${DOCKER_IMAGE}
+          always-pull: true
   - label: "Maven checkstyle"
     command: "mvn -f projects/pom.xml compile checkstyle:checkstyle -Dcheckstyle.skip=false"
     plugins:
