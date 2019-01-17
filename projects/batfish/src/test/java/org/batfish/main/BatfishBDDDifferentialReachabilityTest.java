@@ -720,16 +720,12 @@ public class BatfishBDDDifferentialReachabilityTest {
     batfish.popSnapshot();
 
     Set<FlowDisposition> baseFlowDispositions =
-        baseFlowTraces
-            .values()
-            .stream()
+        baseFlowTraces.values().stream()
             .flatMap(List::stream)
             .map(Trace::getDisposition)
             .collect(ImmutableSet.toImmutableSet());
     Set<FlowDisposition> deltaFlowDispositions =
-        deltaFlowTraces
-            .values()
-            .stream()
+        deltaFlowTraces.values().stream()
             .flatMap(List::stream)
             .map(Trace::getDisposition)
             .collect(ImmutableSet.toImmutableSet());

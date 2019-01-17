@@ -233,10 +233,9 @@ public class SpecifiersReachabilityTest {
     assertThat(answer, instanceOf(TableAnswerElement.class));
     Set<Flow> flows =
         ((TableAnswerElement) answer)
-            .getRowsList()
-            .stream()
-            .map(row -> row.getFlow(TracerouteAnswerer.COL_FLOW))
-            .collect(Collectors.toSet());
+            .getRowsList().stream()
+                .map(row -> row.getFlow(TracerouteAnswerer.COL_FLOW))
+                .collect(Collectors.toSet());
     assertThat(flows, not(empty()));
     assertThat(flows, Matchers.everyItem(FlowMatchers.hasDstIp(NODE1_LOOPBACK_IP)));
 
@@ -255,10 +254,9 @@ public class SpecifiersReachabilityTest {
     assertThat(answer, instanceOf(TableAnswerElement.class));
     flows =
         ((TableAnswerElement) answer)
-            .getRowsList()
-            .stream()
-            .map(row -> row.getFlow(TracerouteAnswerer.COL_FLOW))
-            .collect(Collectors.toSet());
+            .getRowsList().stream()
+                .map(row -> row.getFlow(TracerouteAnswerer.COL_FLOW))
+                .collect(Collectors.toSet());
     assertThat(flows, not(empty()));
     assertThat(flows, Matchers.everyItem(FlowMatchers.hasDstIp(not(NODE1_LOOPBACK_IP))));
   }

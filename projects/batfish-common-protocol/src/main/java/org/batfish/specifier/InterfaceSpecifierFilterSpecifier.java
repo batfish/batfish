@@ -46,9 +46,7 @@ public final class InterfaceSpecifierFilterSpecifier implements FilterSpecifier 
 
   @Override
   public Set<IpAccessList> resolve(String node, SpecifierContext ctxt) {
-    return _interfaceSpecifier
-        .resolve(ImmutableSet.of(node), ctxt)
-        .stream()
+    return _interfaceSpecifier.resolve(ImmutableSet.of(node), ctxt).stream()
         .map(
             iface ->
                 _type == Type.IN_FILTER ? iface.getIncomingFilter() : iface.getOutgoingFilter())

@@ -47,9 +47,7 @@ public class RibDelta<R extends AbstractRoute> {
    */
   public List<RouteAdvertisement<R>> getActions(@Nullable Prefix p) {
     if (p == null) {
-      return _actions
-          .values()
-          .stream()
+      return _actions.values().stream()
           .flatMap(List::stream)
           .collect(ImmutableList.toImmutableList());
     }
@@ -80,9 +78,7 @@ public class RibDelta<R extends AbstractRoute> {
    * @return List of routes
    */
   public List<R> getRoutes() {
-    return _actions
-        .values()
-        .stream()
+    return _actions.values().stream()
         .flatMap(List::stream)
         .map(RouteAdvertisement::getRoute)
         .collect(ImmutableList.toImmutableList());
@@ -164,16 +160,12 @@ public class RibDelta<R extends AbstractRoute> {
       }
       return new RibDelta<>(
           _rib,
-          _actions
-              .entrySet()
-              .stream()
+          _actions.entrySet().stream()
               .collect(
                   ImmutableMap.toImmutableMap(
                       Entry::getKey,
                       e ->
-                          e.getValue()
-                              .values()
-                              .stream()
+                          e.getValue().values().stream()
                               .collect(ImmutableList.toImmutableList()))));
     }
 

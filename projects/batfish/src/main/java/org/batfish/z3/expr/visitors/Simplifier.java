@@ -71,8 +71,7 @@ public class Simplifier
     if (oldConjuncts.stream().anyMatch(Predicates.instanceOf(AndExpr.class))) {
       return simplifyBooleanExpr(
           new AndExpr(
-              oldConjuncts
-                  .stream()
+              oldConjuncts.stream()
                   .flatMap(
                       conjunct ->
                           conjunct instanceof AndExpr
@@ -269,8 +268,7 @@ public class Simplifier
     if (oldDisjuncts.stream().anyMatch(Predicates.instanceOf(OrExpr.class))) {
       return simplifyBooleanExpr(
           new OrExpr(
-              oldDisjuncts
-                  .stream()
+              oldDisjuncts.stream()
                   .flatMap(
                       disjunct ->
                           disjunct instanceof OrExpr

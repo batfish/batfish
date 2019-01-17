@@ -47,9 +47,7 @@ public final class VxlanVniPropertiesAnswerer extends Answerer {
         .add(new ColumnMetadata(COL_NODE, Schema.STRING, "Node", true, false))
         .add(new ColumnMetadata(COL_VNI, Schema.INTEGER, "VXLAN Segment ID", true, false))
         .addAll(
-            propertySpecifier
-                .getMatchingProperties()
-                .stream()
+            propertySpecifier.getMatchingProperties().stream()
                 .map(
                     prop ->
                         new ColumnMetadata(

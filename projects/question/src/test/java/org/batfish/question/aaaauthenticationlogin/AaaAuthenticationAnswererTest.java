@@ -53,10 +53,7 @@ public class AaaAuthenticationAnswererTest {
     TableAnswerElement tableAnswerElement = AaaAuthenticationLoginAnswerer.create(question);
 
     Set<String> columnNames =
-        tableAnswerElement
-            .getMetadata()
-            .getColumnMetadata()
-            .stream()
+        tableAnswerElement.getMetadata().getColumnMetadata().stream()
             .map(ColumnMetadata::getName)
             .collect(ImmutableSet.toImmutableSet());
 

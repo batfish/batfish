@@ -151,8 +151,7 @@ public final class BDDSourceManager {
               Set<String> active = activeSources.get(config.getHostname());
               Set<String> sources = new HashSet<>();
               for (IpAccessList acl : config.getIpAccessLists().values()) {
-                referencedSources(config.getIpAccessLists(), acl)
-                    .stream()
+                referencedSources(config.getIpAccessLists(), acl).stream()
                     .filter(active::contains)
                     .forEach(sources::add);
               }
@@ -177,9 +176,7 @@ public final class BDDSourceManager {
 
     // Number of values needed to track sources in any node
     int valuesNeeded =
-        activeAndReferenced
-            .keySet()
-            .stream()
+        activeAndReferenced.keySet().stream()
             .mapToInt(
                 node ->
                     valuesRequired(activeAndReferenced.get(node), activeButNotReferenced.get(node)))
@@ -285,9 +282,7 @@ public final class BDDSourceManager {
     }
 
     String source =
-        _sourceBDDs
-            .entrySet()
-            .stream()
+        _sourceBDDs.entrySet().stream()
             .filter(entry -> bdd.imp(entry.getValue()).isOne())
             .map(Entry::getKey)
             .findFirst()

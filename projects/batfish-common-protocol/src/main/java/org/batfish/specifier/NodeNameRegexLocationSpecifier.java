@@ -36,9 +36,7 @@ public abstract class NodeNameRegexLocationSpecifier implements LocationSpecifie
 
   @Override
   public Set<Location> resolve(SpecifierContext ctxt) {
-    return ctxt.getConfigs()
-        .entrySet()
-        .stream()
+    return ctxt.getConfigs().entrySet().stream()
         .filter(entry -> _pattern.matcher(entry.getKey()).matches())
         .map(Entry::getValue)
         .flatMap(this::getNodeLocations)

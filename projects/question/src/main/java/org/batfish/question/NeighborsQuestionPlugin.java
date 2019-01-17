@@ -584,8 +584,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
           String hostname = c.getHostname();
           for (Vrf vrf : c.getVrfs().values()) {
             vedges.addAll(
-                vrf.getInterfaceNames()
-                    .stream()
+                vrf.getInterfaceNames().stream()
                     .map(ifaceName -> new EigrpInterface(hostname, ifaceName, vrf.getName()))
                     .filter(_eigrpTopology.nodes()::contains)
                     .flatMap(n -> _eigrpTopology.inEdges(n).stream())

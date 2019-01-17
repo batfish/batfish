@@ -302,9 +302,7 @@ class CiscoConversions {
     Map<Ip, String> iptoIfaceName = computeIpToIfaceNameMap(interfaces);
 
     // setting empty string as interface name if cannot find the IP
-    keyrings
-        .values()
-        .stream()
+    keyrings.values().stream()
         .filter(keyring -> keyring.getLocalAddress() != null)
         .forEach(
             keyring ->
@@ -320,9 +318,7 @@ class CiscoConversions {
       Map<String, Interface> interfaces, Map<String, IsakmpProfile> isakpProfiles) {
     Map<Ip, String> iptoIfaceName = computeIpToIfaceNameMap(interfaces);
 
-    isakpProfiles
-        .values()
-        .stream()
+    isakpProfiles.values().stream()
         .filter(isakmpProfile -> isakmpProfile.getLocalAddress() != null)
         .forEach(
             isakmpProfile ->
@@ -350,9 +346,7 @@ class CiscoConversions {
 
   static AsPathAccessList toAsPathAccessList(AsPathSet asPathSet) {
     List<AsPathAccessListLine> lines =
-        asPathSet
-            .getElements()
-            .stream()
+        asPathSet.getElements().stream()
             .map(CiscoConversions::toAsPathAccessListLine)
             .collect(ImmutableList.toImmutableList());
     return new AsPathAccessList(asPathSet.getName(), lines);
@@ -360,9 +354,7 @@ class CiscoConversions {
 
   static AsPathAccessList toAsPathAccessList(IpAsPathAccessList pathList) {
     List<AsPathAccessListLine> lines =
-        pathList
-            .getLines()
-            .stream()
+        pathList.getLines().stream()
             .map(IpAsPathAccessListLine::toAsPathAccessListLine)
             .collect(ImmutableList.toImmutableList());
     return new AsPathAccessList(pathList.getName(), lines);
@@ -371,9 +363,7 @@ class CiscoConversions {
   static CommunityList toCommunityList(NamedCommunitySet communitySet) {
     return new CommunityList(
         communitySet.getName(),
-        communitySet
-            .getElements()
-            .stream()
+        communitySet.getElements().stream()
             .map(CiscoConversions::toCommunityListLine)
             .collect(ImmutableList.toImmutableList()),
         false);
@@ -381,9 +371,7 @@ class CiscoConversions {
 
   static CommunityList toCommunityList(ExpandedCommunityList ecList) {
     List<CommunityListLine> cllList =
-        ecList
-            .getLines()
-            .stream()
+        ecList.getLines().stream()
             .map(CiscoConversions::toCommunityListLine)
             .collect(ImmutableList.toImmutableList());
     return new CommunityList(ecList.getName(), cllList, false);
@@ -391,9 +379,7 @@ class CiscoConversions {
 
   public static CommunityList toCommunityList(StandardCommunityList scList) {
     List<CommunityListLine> cllList =
-        scList
-            .getLines()
-            .stream()
+        scList.getLines().stream()
             .map(CiscoConversions::toCommunityListLine)
             .collect(ImmutableList.toImmutableList());
     return new CommunityList(scList.getName(), cllList, false);
@@ -535,9 +521,7 @@ class CiscoConversions {
   static IpAccessList toIpAccessList(
       ExtendedAccessList eaList, Map<String, ObjectGroup> objectGroups) {
     List<IpAccessListLine> lines =
-        eaList
-            .getLines()
-            .stream()
+        eaList.getLines().stream()
             .map(l -> toIpAccessListLine(l, objectGroups))
             .collect(ImmutableList.toImmutableList());
     String sourceType =
@@ -655,9 +639,7 @@ class CiscoConversions {
       Warnings w) {
 
     List<org.batfish.datamodel.Interface> referencingInterfaces =
-        c.getAllInterfaces()
-            .values()
-            .stream()
+        c.getAllInterfaces().values().stream()
             .filter(iface -> Objects.equals(iface.getCryptoMap(), cryptoMapName))
             .collect(Collectors.toList());
 
@@ -897,9 +879,7 @@ class CiscoConversions {
     eigrpExportPolicy
         .getStatements()
         .addAll(
-            proc.getRedistributionPolicies()
-                .values()
-                .stream()
+            proc.getRedistributionPolicies().values().stream()
                 .map(policy -> convertEigrpRedistributionPolicy(policy, proc, oldConfig))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList()));
@@ -1002,9 +982,7 @@ class CiscoConversions {
   static Route6FilterList toRoute6FilterList(ExtendedIpv6AccessList eaList) {
     String name = eaList.getName();
     List<Route6FilterLine> lines =
-        eaList
-            .getLines()
-            .stream()
+        eaList.getLines().stream()
             .map(CiscoConversions::toRoute6FilterLine)
             .collect(ImmutableList.toImmutableList());
     return new Route6FilterList(name, lines);
@@ -1013,9 +991,7 @@ class CiscoConversions {
   static Route6FilterList toRoute6FilterList(StandardIpv6AccessList eaList) {
     String name = eaList.getName();
     List<Route6FilterLine> lines =
-        eaList
-            .getLines()
-            .stream()
+        eaList.getLines().stream()
             .map(CiscoConversions::toRoute6FilterLine)
             .collect(ImmutableList.toImmutableList());
     return new Route6FilterList(name, lines);
@@ -1023,8 +999,7 @@ class CiscoConversions {
 
   static Route6FilterList toRoute6FilterList(Prefix6List list) {
     List<Route6FilterLine> lines =
-        list.getLines()
-            .stream()
+        list.getLines().stream()
             .map(pl -> new Route6FilterLine(pl.getAction(), pl.getPrefix(), pl.getLengthRange()))
             .collect(ImmutableList.toImmutableList());
     return new Route6FilterList(list.getName(), lines);
@@ -1032,9 +1007,7 @@ class CiscoConversions {
 
   static RouteFilterList toRouteFilterList(ExtendedAccessList eaList) {
     List<RouteFilterLine> lines =
-        eaList
-            .getLines()
-            .stream()
+        eaList.getLines().stream()
             .map(CiscoConversions::toRouteFilterLine)
             .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(eaList.getName(), lines);
@@ -1042,9 +1015,7 @@ class CiscoConversions {
 
   static RouteFilterList toRouteFilterList(StandardAccessList saList) {
     List<RouteFilterLine> lines =
-        saList
-            .getLines()
-            .stream()
+        saList.getLines().stream()
             .map(CiscoConversions::toRouteFilterLine)
             .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(saList.getName(), lines);
@@ -1053,8 +1024,7 @@ class CiscoConversions {
   static RouteFilterList toRouteFilterList(PrefixList list) {
     RouteFilterList newRouteFilterList = new RouteFilterList(list.getName());
     List<RouteFilterLine> newLines =
-        list.getLines()
-            .stream()
+        list.getLines().stream()
             .map(
                 l ->
                     new RouteFilterLine(

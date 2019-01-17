@@ -70,8 +70,7 @@ class IpsecSessionStatusAnswerer extends Answerer {
         rawAnswer(networkConfigurations, ipsecTopology, initiatorNodes, responderNodes);
     answerElement.postProcessAnswer(
         question,
-        ipsecSessionInfos
-            .stream()
+        ipsecSessionInfos.stream()
             .filter(
                 ipsecSessionInfo ->
                     question.matchesStatus(ipsecSessionInfo.getIpsecSessionStatus()))

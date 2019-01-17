@@ -103,8 +103,7 @@ public class TransformationToTransition {
   }
 
   private Transition computeSteps(List<TransformationStep> transformationSteps) {
-    return transformationSteps
-        .stream()
+    return transformationSteps.stream()
         .map(_stepToTransition::visit)
         .reduce(Composite::new)
         .orElse(Identity.INSTANCE);

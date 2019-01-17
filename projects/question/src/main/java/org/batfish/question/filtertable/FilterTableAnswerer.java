@@ -49,8 +49,7 @@ public class FilterTableAnswerer extends Answerer {
       }
 
       List<ColumnMetadata> columnMetadata =
-          innerColumns
-              .stream()
+          innerColumns.stream()
               .filter(cm -> question.getColumns().contains(cm.getName()))
               .collect(Collectors.toList());
 
@@ -92,8 +91,7 @@ public class FilterTableAnswerer extends Answerer {
    */
   @VisibleForTesting
   static Multiset<Row> filterRows(Filter filter, Multiset<Row> inputRows) {
-    return inputRows
-        .stream()
+    return inputRows.stream()
         .filter(filter::matches)
         .collect(ImmutableMultiset.toImmutableMultiset());
   }
@@ -108,8 +106,7 @@ public class FilterTableAnswerer extends Answerer {
    */
   @VisibleForTesting
   static Multiset<Row> selectColumns(Set<String> columns, Multiset<Row> inputRows) {
-    return inputRows
-        .stream()
+    return inputRows.stream()
         .map(row -> Row.builder().putAll(row, columns).build())
         .collect(ImmutableMultiset.toImmutableMultiset());
   }

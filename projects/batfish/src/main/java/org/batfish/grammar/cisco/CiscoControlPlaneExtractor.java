@@ -2115,9 +2115,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             n ->
                 new NamedCommunitySet(
                     n,
-                    ctx.community_set_elem_list()
-                        .elems
-                        .stream()
+                    ctx.community_set_elem_list().elems.stream()
                         .map(this::toCommunitySetElemExpr)
                         .collect(ImmutableList.toImmutableList())));
   }
@@ -2222,8 +2220,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterEos_vlan_id(Eos_vlan_idContext ctx) {
     _currentVlans =
-        ctx.vlan_ids
-            .stream()
+        ctx.vlan_ids.stream()
             .map(innerctx -> IntegerSpace.of(toSubRange(innerctx)))
             .reduce(IntegerSpace::union)
             .get();
@@ -2443,8 +2440,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (trackAction == null) {
       return;
     }
-    _currentInterfaces
-        .stream()
+    _currentInterfaces.stream()
         .map(i -> i.getHsrpGroups().get(_currentHsrpGroup).getTrackActions())
         .forEach(
             trackActions -> {
@@ -8295,8 +8291,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentPeerGroup.setRemoteAs(as);
     if (ctx.alt_ases != null) {
       _currentPeerGroup.setAlternateAs(
-          ctx.alt_ases
-              .stream()
+          ctx.alt_ases.stream()
               .map(CiscoControlPlaneExtractor::toAsNum)
               .collect(ImmutableSet.toImmutableSet()));
     }
@@ -9745,10 +9740,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Nullable
   private Interface getAsaInterfaceByAlias(String alias) {
-    return _configuration
-        .getInterfaces()
-        .values()
-        .stream()
+    return _configuration.getInterfaces().values().stream()
         .filter(i -> alias.equals(i.getAlias()))
         .findFirst()
         .orElse(null);
@@ -11017,9 +11009,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private RoutePolicyBoolean toRoutePolicyBoolean(
       Boolean_as_path_neighbor_is_rp_stanzaContext ctx) {
     List<SubRangeExpr> range =
-        ctx.as_range_expr()
-            .subranges
-            .stream()
+        ctx.as_range_expr().subranges.stream()
             .map(this::toSubRangeExpr)
             .collect(Collectors.toList());
     boolean exact = ctx.as_range_expr().EXACT() != null;
@@ -11029,9 +11019,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private RoutePolicyBoolean toRoutePolicyBoolean(
       Boolean_as_path_originates_from_rp_stanzaContext ctx) {
     List<SubRangeExpr> range =
-        ctx.as_range_expr()
-            .subranges
-            .stream()
+        ctx.as_range_expr().subranges.stream()
             .map(this::toSubRangeExpr)
             .collect(Collectors.toList());
     boolean exact = ctx.as_range_expr().EXACT() != null;
@@ -11041,9 +11029,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private RoutePolicyBoolean toRoutePolicyBoolean(
       Boolean_as_path_passes_through_rp_stanzaContext ctx) {
     List<SubRangeExpr> range =
-        ctx.as_range_expr()
-            .subranges
-            .stream()
+        ctx.as_range_expr().subranges.stream()
             .map(this::toSubRangeExpr)
             .collect(Collectors.toList());
     boolean exact = ctx.as_range_expr().EXACT() != null;

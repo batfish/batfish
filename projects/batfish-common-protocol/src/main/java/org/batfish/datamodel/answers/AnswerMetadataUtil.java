@@ -63,8 +63,7 @@ public final class AnswerMetadataUtil {
       @Nonnull List<ColumnAggregation> aggregations,
       @Nonnull BatfishLogger logger) {
     Map<String, Map<Aggregation, Object>> columnAggregations = new HashMap<>();
-    aggregations
-        .stream()
+    aggregations.stream()
         .map(columnAggregation -> computeColumnAggregation(table, columnAggregation, logger))
         .filter(Objects::nonNull)
         .forEach(
@@ -108,10 +107,7 @@ public final class AnswerMetadataUtil {
       // unsupported
       return null;
     }
-    return table
-        .getRows()
-        .getData()
-        .stream()
+    return table.getRows().getData().stream()
         .map(rowToInteger)
         .filter(Objects::nonNull)
         .max(Comparator.naturalOrder())
@@ -120,11 +116,7 @@ public final class AnswerMetadataUtil {
 
   @VisibleForTesting
   static Set<String> computeEmptyColumns(TableAnswerElement table) {
-    return table
-        .getMetadata()
-        .toColumnMap()
-        .keySet()
-        .stream()
+    return table.getMetadata().toColumnMap().keySet().stream()
         .filter(column -> table.getRowsList().stream().allMatch(row -> !row.hasNonNull(column)))
         .collect(ImmutableSet.toImmutableSet());
   }
@@ -133,17 +125,12 @@ public final class AnswerMetadataUtil {
   static @Nonnull Map<String, MajorIssueConfig> computeMajorIssueConfigs(TableAnswerElement table) {
     Map<String, ImmutableList.Builder<MinorIssueConfig>> majorIssueConfigs = new HashMap<>();
     // For every issue column of every row, extract the issue and use it to update the map
-    table
-        .getMetadata()
-        .getColumnMetadata()
-        .stream()
+    table.getMetadata().getColumnMetadata().stream()
         .filter(c -> c.getSchema().equals(Schema.ISSUE))
         .map(ColumnMetadata::getName)
         .flatMap(
             column ->
-                table
-                    .getRowsList()
-                    .stream()
+                table.getRowsList().stream()
                     .filter(row -> row.hasNonNull(column))
                     .map(row -> row.getIssue(column)))
         .forEach(
@@ -173,10 +160,7 @@ public final class AnswerMetadataUtil {
     int numExcludedRows =
         table.getExcludedRows().stream().map(ExcludedRows::getRowsList).mapToInt(List::size).sum();
     ImmutableList.Builder<ColumnAggregation> columnAggregationsBuilder = ImmutableList.builder();
-    table
-        .getMetadata()
-        .getColumnMetadata()
-        .stream()
+    table.getMetadata().getColumnMetadata().stream()
         .map(ColumnMetadata::getName)
         .forEach(
             column ->

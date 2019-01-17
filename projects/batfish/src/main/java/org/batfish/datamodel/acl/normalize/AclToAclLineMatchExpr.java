@@ -69,8 +69,7 @@ public final class AclToAclLineMatchExpr
   public static List<IpAccessListLine> aclLines(
       IpAccessListToBDD ipAccessListToBDD, IpAccessList acl, Map<String, IpAccessList> namedAcls) {
     AclToAclLineMatchExpr toMatchExpr = new AclToAclLineMatchExpr(ipAccessListToBDD, namedAcls);
-    return acl.getLines()
-        .stream()
+    return acl.getLines().stream()
         .map(
             ln ->
                 IpAccessListLine.builder()
@@ -142,9 +141,7 @@ public final class AclToAclLineMatchExpr
   @Override
   public AclLineMatchExpr visitAndMatchExpr(AndMatchExpr andMatchExpr) {
     return and(
-        andMatchExpr
-            .getConjuncts()
-            .stream()
+        andMatchExpr.getConjuncts().stream()
             .map(this::visit)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }
@@ -177,9 +174,7 @@ public final class AclToAclLineMatchExpr
   @Override
   public AclLineMatchExpr visitOrMatchExpr(OrMatchExpr orMatchExpr) {
     return or(
-        orMatchExpr
-            .getDisjuncts()
-            .stream()
+        orMatchExpr.getDisjuncts().stream()
             .map(this::visit)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }

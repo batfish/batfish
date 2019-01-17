@@ -87,7 +87,7 @@ public class IpsecUtil {
       // also adding the possible IPsec peers which may peer directly (No NAT involved)
       Streams.concat(
               getCandidatePeersBehindNat(
-                      destinationIp, privateIpsByPublicIp, localIpIpsecPeerConfigIds)
+                  destinationIp, privateIpsByPublicIp, localIpIpsecPeerConfigIds)
                   .stream(),
               localIpIpsecPeerConfigIds.getOrDefault(destinationIp, ImmutableSet.of()).stream())
           .forEach(
@@ -279,14 +279,12 @@ public class IpsecUtil {
       List<String> initiatorProposals,
       List<String> responderProposals) {
     List<IkePhase1Proposal> initiatorIkeProposalList =
-        initiatorProposals
-            .stream()
+        initiatorProposals.stream()
             .map(ikeProposalName -> initiatorOwner.getIkePhase1Proposals().get(ikeProposalName))
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
     List<IkePhase1Proposal> responderProposalList =
-        responderProposals
-            .stream()
+        responderProposals.stream()
             .map(ikeProposalName -> responderOwner.getIkePhase1Proposals().get(ikeProposalName))
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
@@ -327,16 +325,14 @@ public class IpsecUtil {
       List<String> initiatorProposals,
       List<String> responderProposals) {
     List<IpsecPhase2Proposal> initiatorIpsecProposalList =
-        initiatorProposals
-            .stream()
+        initiatorProposals.stream()
             .map(
                 ipsecP2ProposalName ->
                     initiatorOwner.getIpsecPhase2Proposals().get(ipsecP2ProposalName))
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
     List<IpsecPhase2Proposal> responderProposalList =
-        responderProposals
-            .stream()
+        responderProposals.stream()
             .map(
                 ipsecP2ProposalName ->
                     responderOwner.getIpsecPhase2Proposals().get(ipsecP2ProposalName))
@@ -363,14 +359,12 @@ public class IpsecUtil {
       IpsecStaticPeerConfig initiator, IpsecPeerConfig responder, Configuration responderOwner) {
     List<IkePhase1Policy> dynamicIkePhase1Policies =
         ((IpsecDynamicPeerConfig) responder)
-            .getIkePhase1Poliies()
-            .stream()
-            .map(ikePhase1Policy -> responderOwner.getIkePhase1Policies().get(ikePhase1Policy))
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+            .getIkePhase1Poliies().stream()
+                .map(ikePhase1Policy -> responderOwner.getIkePhase1Policies().get(ikePhase1Policy))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
-    return dynamicIkePhase1Policies
-        .stream()
+    return dynamicIkePhase1Policies.stream()
         .filter(
             dynamicIkeP1Policy ->
                 dynamicIkeP1Policy

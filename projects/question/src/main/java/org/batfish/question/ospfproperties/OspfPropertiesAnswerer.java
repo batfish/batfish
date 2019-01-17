@@ -49,9 +49,7 @@ public class OspfPropertiesAnswerer extends Answerer {
         .add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false))
         .add(new ColumnMetadata(COL_PROCESS_ID, Schema.STRING, "Process ID", true, false))
         .addAll(
-            propertySpecifier
-                .getMatchingProperties()
-                .stream()
+            propertySpecifier.getMatchingProperties().stream()
                 .map(
                     prop ->
                         new ColumnMetadata(

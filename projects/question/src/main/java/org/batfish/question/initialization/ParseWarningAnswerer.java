@@ -124,9 +124,7 @@ class ParseWarningAnswerer extends Answerer {
     return Row.builder(columnMetadataMap)
         .put(
             COL_FILELINES,
-            filelines
-                .entrySet()
-                .stream()
+            filelines.entrySet().stream()
                 .map(e -> new FileLines(e.getKey(), e.getValue()))
                 .collect(ImmutableList.toImmutableList()))
         .put(COL_TEXT, triplet._text)

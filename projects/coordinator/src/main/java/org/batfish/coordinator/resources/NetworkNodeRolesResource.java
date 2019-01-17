@@ -36,9 +36,7 @@ public final class NetworkNodeRolesResource {
       return false;
     }
     int uniqueSize =
-        nodeRolesDataBean
-            .roleDimensions
-            .stream()
+        nodeRolesDataBean.roleDimensions.stream()
             .map(bean -> bean.name)
             .map(String::toLowerCase)
             .collect(ImmutableSet.toImmutableSet())

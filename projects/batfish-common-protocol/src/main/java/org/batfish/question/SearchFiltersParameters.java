@@ -68,10 +68,7 @@ public final class SearchFiltersParameters {
   private static IpSpace resolveIpSpaceSpecifier(IpSpaceSpecifier specifier, SpecifierContext ctx) {
     return firstNonNull(
         AclIpSpace.union(
-            specifier
-                .resolve(ImmutableSet.of(), ctx)
-                .getEntries()
-                .stream()
+            specifier.resolve(ImmutableSet.of(), ctx).getEntries().stream()
                 .map(Entry::getIpSpace)
                 .collect(ImmutableList.toImmutableList())),
         EmptyIpSpace.INSTANCE);

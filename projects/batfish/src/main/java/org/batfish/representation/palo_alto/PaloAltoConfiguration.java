@@ -116,8 +116,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /** Gets the crypto profile by the provided name and type; creates anew if one does not exist */
   public CryptoProfile getCryptoProfileOrCreate(String name, CryptoProfile.Type cpType) {
     Optional<CryptoProfile> optCp =
-        _cryptoProfiles
-            .stream()
+        _cryptoProfiles.stream()
             .filter(p -> p.getName().equals(name) && p.getType() == cpType)
             .findAny();
 

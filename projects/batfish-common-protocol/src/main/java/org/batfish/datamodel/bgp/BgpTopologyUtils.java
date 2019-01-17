@@ -283,9 +283,7 @@ public final class BgpTopologyUtils {
         SessionType.isEbgp(BgpSessionProperties.getSessionType(src)) && !src.getEbgpMultihop();
 
     List<Trace> acceptedFlows =
-        traces
-            .get(forwardFlow)
-            .stream()
+        traces.get(forwardFlow).stream()
             .filter(trace -> !isEbgpSingleHop || trace.getHops().size() <= 2)
             .filter(
                 trace ->
@@ -317,9 +315,7 @@ public final class BgpTopologyUtils {
     /*
      * If backward traceroutes fail, do not consider the neighbor reachable
      */
-    return !traces
-        .get(backwardFlow)
-        .stream()
+    return !traces.get(backwardFlow).stream()
         .filter(
             trace ->
                 trace.getDisposition() == FlowDisposition.ACCEPTED

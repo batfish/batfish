@@ -37,8 +37,7 @@ public class ServiceObjectGroup extends ObjectGroup {
 
   public AclLineMatchExpr toAclLineMatchExpr() {
     return new OrMatchExpr(
-        _lines
-            .stream()
+        _lines.stream()
             .map(ServiceObjectGroupLine::toAclLineMatchExpr)
             .collect(ImmutableSet.toImmutableSet()));
   }

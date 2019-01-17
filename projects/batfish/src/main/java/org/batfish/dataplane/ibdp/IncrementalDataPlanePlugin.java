@@ -51,13 +51,11 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
         _engine.computeDataPlane(configurations, topology, externalAdverts);
     double averageRoutes =
         ((IncrementalDataPlane) answer._dataPlane)
-            .getNodes()
-            .values()
-            .stream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
-            .mapToInt(vr -> vr._mainRib.getRoutes().size())
-            .average()
-            .orElse(0.00d);
+            .getNodes().values().stream()
+                .flatMap(n -> n.getVirtualRouters().values().stream())
+                .mapToInt(vr -> vr._mainRib.getRoutes().size())
+                .average()
+                .orElse(0.00d);
     _logger.infof(
         "Generated data-plane for testrig:%s; iterations:%s, avg entries per node:%.2f\n",
         _batfish.getTestrigName(),
@@ -87,9 +85,7 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
     if (traces == null) {
       return ImmutableList.of();
     }
-    return traces
-        .entrySet()
-        .stream()
+    return traces.entrySet().stream()
         .flatMap(e -> Collections.nCopies(e.getValue().size(), e.getKey()).stream())
         .collect(ImmutableList.toImmutableList());
   }

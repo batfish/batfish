@@ -739,7 +739,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private int _mtu;
 
-  private int _nativeVlan;
+  @Nullable private Integer _nativeVlan;
 
   @Nullable private Long _ospfAreaName;
 
@@ -832,7 +832,6 @@ public final class Interface extends ComparableStructure<String> {
     _hsrpGroups = new TreeMap<>();
     _interfaceType = interfaceType;
     _mtu = DEFAULT_MTU;
-    _nativeVlan = 1;
     _owner = owner;
     _switchportMode = SwitchportMode.NONE;
     _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
@@ -901,7 +900,7 @@ public final class Interface extends ComparableStructure<String> {
     if (_mtu != other._mtu) {
       return false;
     }
-    if (_nativeVlan != other._nativeVlan) {
+    if (!Objects.equals(_nativeVlan, other._nativeVlan)) {
       return false;
     }
     // TODO: check OSPF settings for equality.
@@ -1122,7 +1121,8 @@ public final class Interface extends ComparableStructure<String> {
 
   @JsonProperty(PROP_NATIVE_VLAN)
   @JsonPropertyDescription("The native VLAN of this interface when switchport mode is TRUNK")
-  public int getNativeVlan() {
+  @Nullable
+  public Integer getNativeVlan() {
     return _nativeVlan;
   }
 
@@ -1496,7 +1496,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_NATIVE_VLAN)
-  public void setNativeVlan(int vlan) {
+  public void setNativeVlan(@Nullable Integer vlan) {
     _nativeVlan = vlan;
   }
 

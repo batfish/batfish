@@ -259,8 +259,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
 
     public void addRoleConsistencyQuestions(
         List<AbstractRoleConsistencyQuestion> roleConsistencyQuestions) {
-      roleConsistencyQuestions
-          .stream()
+      roleConsistencyQuestions.stream()
           .map(InferPoliciesQuestionPlugin::makeQuestionWithHints)
           .forEach(_roleConsistencyQuestions::add);
     }
@@ -307,8 +306,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
       for (String name : outliersPerPropertyName.keySet()) {
         Collection<OutlierSet<NavigableSet<String>>> outlierSets =
             outliersPerPropertyName.get(name);
-        if (outlierSets
-            .stream()
+        if (outlierSets.stream()
             .allMatch(oset -> oset.getDefinition().isEmpty() && oset.getOutliers().isEmpty())) {
           undeclared.add(name);
         }

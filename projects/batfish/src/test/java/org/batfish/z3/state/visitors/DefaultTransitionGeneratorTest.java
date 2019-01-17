@@ -875,8 +875,7 @@ public class DefaultTransitionGeneratorTest {
 
     // Just test the DropAclOut rules for Node2
     Set<RuleStatement> node2DropAclOutRules =
-        rules
-            .stream()
+        rules.stream()
             .map(BasicRuleStatement.class::cast)
             .filter(rule -> rule.getPostconditionState().equals(new NodeDropAclOut(NODE2)))
             .collect(Collectors.toSet());
