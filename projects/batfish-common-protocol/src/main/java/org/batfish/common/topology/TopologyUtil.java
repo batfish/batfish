@@ -22,6 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -49,6 +50,7 @@ public final class TopologyUtil {
   /** Returns true iff the given trunk interface allows its own native vlan. */
   private static boolean trunkWithNativeVlanAllowed(Interface i) {
     return i.getSwitchportMode() == SwitchportMode.TRUNK
+        && i.getNativeVlan() != null
         && i.getAllowedVlans().contains(i.getNativeVlan());
   }
 
@@ -65,7 +67,7 @@ public final class TopologyUtil {
       i1.getAllowedVlans().stream()
           .forEach(
               vlan -> {
-                if (i1.getNativeVlan() == vlan && trunkWithNativeVlanAllowed(i2)) {
+                if (Objects.equals(i1.getNativeVlan(), vlan) && trunkWithNativeVlanAllowed(i2)) {
                   // This frame will not be tagged by i1, and i2 accepts untagged frames.
                   edges.add(new Layer2Edge(node1, vlan, node2, vlan, null /* untagged */));
                 } else if (i2.getAllowedVlans().contains(vlan)) {

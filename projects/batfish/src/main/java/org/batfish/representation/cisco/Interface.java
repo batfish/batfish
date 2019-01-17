@@ -158,7 +158,7 @@ public class Interface implements Serializable {
 
   private final String _name;
 
-  private int _nativeVlan;
+  @Nullable private Integer _nativeVlan;
 
   private Long _ospfArea;
 
@@ -263,7 +263,6 @@ public class Interface implements Serializable {
     _hsrpGroups = new TreeMap<>();
     _isisInterfaceMode = IsisInterfaceMode.UNSET;
     _name = name;
-    _nativeVlan = 1;
     _secondaryAddresses = new LinkedHashSet<>();
     ConfigurationFormat vendor = c.getVendor();
 
@@ -405,7 +404,8 @@ public class Interface implements Serializable {
     return _name;
   }
 
-  public int getNativeVlan() {
+  @Nullable
+  public Integer getNativeVlan() {
     return _nativeVlan;
   }
 
@@ -580,7 +580,7 @@ public class Interface implements Serializable {
     _mtu = mtu;
   }
 
-  public void setNativeVlan(int vlan) {
+  public void setNativeVlan(Integer vlan) {
     _nativeVlan = vlan;
   }
 
