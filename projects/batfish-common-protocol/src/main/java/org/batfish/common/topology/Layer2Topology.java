@@ -16,10 +16,10 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 @ParametersAreNonnullByDefault
 public final class Layer2Topology {
 
-  private final Map<NodeInterfacePair, NodeInterfacePair> _representative;
+  private final Map<NodeInterfacePair, NodeInterfacePair> _ifaceToRepresentative;
 
   public Layer2Topology(@Nonnull Collection<Set<NodeInterfacePair>> domains) {
-    _representative =
+    _ifaceToRepresentative =
         domains.stream()
             .filter(not(Set::isEmpty))
             .flatMap(
@@ -31,11 +31,13 @@ public final class Layer2Topology {
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
+  /** Return whether the two interfaces are in the same broadcast domain. */
   public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
-    NodeInterfacePair r1 = _representative.get(i1);
-    return r1 != null && r1.equals(_representative.get(i2));
+    NodeInterfacePair r1 = _ifaceToRepresentative.get(i1);
+    return r1 != null && r1.equals(_ifaceToRepresentative.get(i2));
   }
 
+  /** Return whether the two interfaces are in the same broadcast domain. */
   public boolean inSameBroadcastDomain(String host1, String iface1, String host2, String iface2) {
     return inSameBroadcastDomain(
         new NodeInterfacePair(host1, iface1), new NodeInterfacePair(host2, iface2));
