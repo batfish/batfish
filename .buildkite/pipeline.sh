@@ -52,10 +52,13 @@ EOF
 
 ###### Maven tests
 cat <<EOF
-  - label: "Maven tests"
+  - label: "Maven tests + Coverage"
     command:
       - "mvn -f projects/pom.xml verify -DskipTests=false -Djacoco.skip=false"
-      - find projects -name 'jacoco*.exec'
+      - mkdir -p workspace/jacoco
+      - cp $(find projects -name 'jacoco*.exec') workspace/jacoco
+    artifact_paths:
+      - workspace/jacoco/**/*
     plugins:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
