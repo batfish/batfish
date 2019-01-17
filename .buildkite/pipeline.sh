@@ -56,7 +56,7 @@ cat <<EOF
     command:
       - mvn -f projects/pom.xml verify -DskipTests=false -Djacoco.skip=false
       - mkdir -p workspace/jacoco
-      - rsync -zarv --prune-empty-dirs --include '*/' --include 'jacoco*.exec' --exclude '*' projects/ workspace
+      - rsync -zarv --prune-empty-dirs --include '*/' --include 'jacoco*.exec' --exclude '*' projects/ workspace/jacoco
     artifact_paths:
       - workspace/jacoco/**/*
     plugins:
