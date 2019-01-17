@@ -55,10 +55,10 @@ cat <<EOF
   - label: "Maven tests + Coverage"
     command:
       - mvn -f projects/pom.xml verify -DskipTests=false -Djacoco.skip=false
-      - mkdir -p workspace/jacoco
-      - rsync -zarv --prune-empty-dirs --include '*/' --include 'jacoco*.exec' --exclude '*' projects/ workspace/jacoco
+      - mkdir -p workspace
+      - find projects -name jacoco.exec -t f -exec cat {} \+ > workspace/jacoco.exec
     artifact_paths:
-      - workspace/jacoco/**/*
+      - workspace/jacoco.exec
     plugins:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
