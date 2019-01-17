@@ -16,4 +16,6 @@ java -jar ${JACOCO_CLI_JAR} report \
      $(find workspace/ -name jacoco.exec -type f) \
      --classfiles "${TMP}/org/batfish" \
      --xml jacoco.xml
+
+export CODECOV_TOKEN="59baa5fe-139e-4aef-80a7-b40bfaa3fc67"
 bash <(curl -s https://codecov.io/bash)
