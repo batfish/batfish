@@ -37,9 +37,7 @@ public abstract class InterfaceNameRegexLocationSpecifier implements LocationSpe
 
   @Override
   public Set<Location> resolve(SpecifierContext ctxt) {
-    return ctxt.getConfigs()
-        .values()
-        .stream()
+    return ctxt.getConfigs().values().stream()
         .flatMap(node -> node.getAllInterfaces().values().stream())
         .filter(iface -> _pattern.matcher(iface.getName()).matches())
         .map(this::getLocation)

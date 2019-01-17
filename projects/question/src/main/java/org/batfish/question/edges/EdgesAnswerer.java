@@ -165,9 +165,7 @@ public class EdgesAnswerer extends Answerer {
       Set<String> includeRemoteNodes,
       Network<EigrpInterface, EigrpEdge> eigrpTopology) {
 
-    return eigrpTopology
-        .edges()
-        .stream()
+    return eigrpTopology.edges().stream()
         .filter(
             eigrpEdge ->
                 includeNodes.contains(eigrpEdge.getNode1().getHostname())
@@ -179,9 +177,7 @@ public class EdgesAnswerer extends Answerer {
   @VisibleForTesting
   static Multiset<Row> getVxlanEdges(
       Set<String> includeNodes, Set<String> includeRemoteNodes, VxlanTopology vxlanTopology) {
-    return vxlanTopology
-        .getEdges()
-        .stream()
+    return vxlanTopology.getEdges().stream()
         .filter(
             edge ->
                 includeNodes.contains(edge.getTail().getHostname())
@@ -228,9 +224,7 @@ public class EdgesAnswerer extends Answerer {
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
       Network<IsisNode, IsisEdge> isisTopology) {
-    return isisTopology
-        .edges()
-        .stream()
+    return isisTopology.edges().stream()
         .filter(Objects::nonNull)
         .filter(
             isisEdge ->
@@ -248,10 +242,7 @@ public class EdgesAnswerer extends Answerer {
     if (layer1Topology == null) {
       return HashMultiset.create();
     }
-    return layer1Topology
-        .getGraph()
-        .edges()
-        .stream()
+    return layer1Topology.getGraph().edges().stream()
         .filter(
             layer1Edge ->
                 includeNodes.contains(layer1Edge.getNode1().getHostname())
@@ -266,9 +257,7 @@ public class EdgesAnswerer extends Answerer {
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
       Topology topology) {
-    return topology
-        .getEdges()
-        .stream()
+    return topology.getEdges().stream()
         .filter(
             layer3Edge ->
                 includeNodes.contains(layer3Edge.getNode1())
@@ -350,9 +339,7 @@ public class EdgesAnswerer extends Answerer {
       Map<String, Configuration> configurations) {
     NetworkConfigurations nf = NetworkConfigurations.of(configurations);
     Multiset<Row> rows = HashMultiset.create();
-    ipsecTopology
-        .edges()
-        .stream()
+    ipsecTopology.edges().stream()
         .filter(
             // only considering endpoints with established IPsec session
             endpoint -> {
@@ -502,16 +489,12 @@ public class EdgesAnswerer extends Answerer {
     Interface interface2 =
         configurations.get(edge.getNode2()).getAllInterfaces().get(edge.getInt2());
     Set<Ip> ips1 =
-        interface1
-            .getAllAddresses()
-            .stream()
+        interface1.getAllAddresses().stream()
             .filter(Objects::nonNull)
             .map(InterfaceAddress::getIp)
             .collect(Collectors.toSet());
     Set<Ip> ips2 =
-        interface2
-            .getAllAddresses()
-            .stream()
+        interface2.getAllAddresses().stream()
             .filter(Objects::nonNull)
             .map(InterfaceAddress::getIp)
             .collect(Collectors.toSet());

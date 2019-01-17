@@ -19,10 +19,7 @@ public class RelationCollector implements VoidStatementVisitor {
   public static Map<String, State> collectRelations(SynthesizerInput input, Statement statement) {
     RelationCollector relationCollector = new RelationCollector(input);
     statement.accept(relationCollector);
-    return relationCollector
-        ._relations
-        .build()
-        .stream()
+    return relationCollector._relations.build().stream()
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 

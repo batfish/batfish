@@ -259,10 +259,7 @@ public final class SearchFiltersAnswerer extends Answerer {
     FilterSpecifier filterSpecifier = question.getFilterSpecifier();
     SpecifierContext specifierContext = _batfish.specifierContext();
     ImmutableMultimap.Builder<String, String> acls = ImmutableMultimap.builder();
-    question
-        .getNodesSpecifier()
-        .resolve(_batfish.specifierContext())
-        .stream()
+    question.getNodesSpecifier().resolve(_batfish.specifierContext()).stream()
         .map(configs::get)
         .forEach(
             config ->
@@ -297,9 +294,7 @@ public final class SearchFiltersAnswerer extends Answerer {
   @VisibleForTesting
   List<Triple<String, String, IpAccessList>> getQueryAcls(SearchFiltersQuestion question) {
     Map<String, Configuration> configs = _batfish.loadConfigurations();
-    return getSpecifiedAcls(question)
-        .entries()
-        .stream()
+    return getSpecifiedAcls(question).entries().stream()
         .map(
             entry -> {
               String hostName = entry.getKey();
@@ -317,9 +312,7 @@ public final class SearchFiltersAnswerer extends Answerer {
   static IpAccessList toMatchLineAcl(Integer lineNumber, IpAccessList acl) {
     List<IpAccessListLine> lines =
         Streams.concat(
-                acl.getLines()
-                    .subList(0, lineNumber)
-                    .stream()
+                acl.getLines().subList(0, lineNumber).stream()
                     .map(l -> l.toBuilder().setAction(LineAction.DENY).build()),
                 Stream.of(
                     acl.getLines()
@@ -338,8 +331,7 @@ public final class SearchFiltersAnswerer extends Answerer {
   static IpAccessList toDenyAcl(IpAccessList acl) {
     List<IpAccessListLine> lines =
         Streams.concat(
-                acl.getLines()
-                    .stream()
+                acl.getLines().stream()
                     .map(
                         l ->
                             l.toBuilder()

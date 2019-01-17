@@ -71,9 +71,7 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   @Override
   public List<StateParameter> castToGenericStateExprVisitorReturnType(Object o) {
     return ((List<?>) o)
-        .stream()
-        .map(i -> (StateParameter) i)
-        .collect(ImmutableList.toImmutableList());
+        .stream().map(i -> (StateParameter) i).collect(ImmutableList.toImmutableList());
   }
 
   @Override

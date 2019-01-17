@@ -2341,7 +2341,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -2373,7 +2372,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -2413,7 +2411,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -2444,7 +2441,6 @@
             ],
             "incomingFilter" : "OUTSIDE_TO_INSIDE",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -2483,7 +2479,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -2513,7 +2508,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -2551,7 +2545,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -2583,7 +2576,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -2623,7 +2615,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -2655,7 +2646,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -2695,7 +2685,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -2727,7 +2716,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -2768,7 +2756,6 @@
             ],
             "incomingFilter" : "OUTSIDE_TO_INSIDE",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -2799,7 +2786,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -2837,7 +2823,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -2869,7 +2854,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -2909,7 +2893,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -2941,7 +2924,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1600,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -2982,7 +2964,6 @@
             ],
             "incomingFilter" : "OUTSIDE_TO_INSIDE",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -3013,7 +2994,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -3051,7 +3031,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -3083,7 +3062,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1800,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -3123,7 +3101,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -3155,7 +3132,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -3195,7 +3171,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -3227,7 +3202,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -3267,7 +3241,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -3299,7 +3272,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -3340,7 +3312,6 @@
             ],
             "incomingFilter" : "blocktelnet",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -3372,7 +3343,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -3413,7 +3383,6 @@
             ],
             "incomingFilter" : "blocktelnet",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -3445,7 +3414,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -3485,7 +3453,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1800,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -3517,7 +3484,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -3557,7 +3523,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1600,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -3589,7 +3554,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -3629,7 +3593,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1700,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -3661,7 +3624,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -3701,7 +3663,6 @@
               "GigabitEthernet3/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -3733,7 +3694,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -3773,7 +3733,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -3803,7 +3762,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -3841,7 +3799,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -3871,7 +3828,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -3910,7 +3866,6 @@
             ],
             "incomingFilter" : "RESTRICT_HOST_TRAFFIC_IN",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -3941,7 +3896,6 @@
             ],
             "incomingFilter" : "filter::INPUT",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -3981,7 +3935,6 @@
             ],
             "incomingFilter" : "RESTRICT_HOST_TRAFFIC_IN",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4012,7 +3965,6 @@
             ],
             "incomingFilter" : "filter::INPUT",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4051,7 +4003,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -4084,7 +4035,6 @@
             ],
             "incomingFilter" : "blocktelnet",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -4124,7 +4074,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -4156,7 +4105,6 @@
               "GigabitEthernet3/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -4196,7 +4144,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4226,7 +4173,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4264,7 +4210,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -4296,7 +4241,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1700,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -4336,7 +4280,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -4369,7 +4312,6 @@
             ],
             "incomingFilter" : "blocktelnet",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -4409,7 +4351,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4439,7 +4380,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4477,7 +4417,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -4509,7 +4448,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -4549,7 +4487,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4580,7 +4517,6 @@
             ],
             "incomingFilter" : "OUTSIDE_TO_INSIDE",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4619,7 +4555,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4649,7 +4584,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4687,7 +4621,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -4719,7 +4652,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -4759,7 +4691,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -4791,7 +4722,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -4831,7 +4761,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -4863,7 +4792,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -4904,7 +4832,6 @@
             ],
             "incomingFilter" : "filter::INPUT",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4936,7 +4863,6 @@
             ],
             "incomingFilter" : "RESTRICT_HOST_TRAFFIC_IN",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4975,7 +4901,6 @@
             ],
             "incomingFilter" : "filter::INPUT",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -5007,7 +4932,6 @@
             ],
             "incomingFilter" : "RESTRICT_HOST_TRAFFIC_IN",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -5053,7 +4977,6 @@
                 "GigabitEthernet0/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5093,7 +5016,6 @@
                 "GigabitEthernet1/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5141,7 +5063,6 @@
                 "GigabitEthernet1/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5181,7 +5102,6 @@
                 "GigabitEthernet0/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5229,7 +5149,6 @@
                 "GigabitEthernet1/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5269,7 +5188,6 @@
                 "GigabitEthernet0/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5317,7 +5235,6 @@
                 "GigabitEthernet0/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5357,7 +5274,6 @@
                 "GigabitEthernet1/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5405,7 +5321,6 @@
                 "GigabitEthernet1/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5445,7 +5360,6 @@
                 "GigabitEthernet0/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5493,7 +5407,6 @@
                 "GigabitEthernet2/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5533,7 +5446,6 @@
                 "GigabitEthernet1/0"
               ],
               "mtu" : 1600,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5581,7 +5493,6 @@
                 "GigabitEthernet2/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5621,7 +5532,6 @@
                 "GigabitEthernet1/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5669,7 +5579,6 @@
                 "GigabitEthernet1/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5709,7 +5618,6 @@
                 "GigabitEthernet0/0"
               ],
               "mtu" : 1800,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5757,7 +5665,6 @@
                 "GigabitEthernet0/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5797,7 +5704,6 @@
                 "GigabitEthernet1/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5845,7 +5751,6 @@
                 "GigabitEthernet1/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5885,7 +5790,6 @@
                 "GigabitEthernet2/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5934,7 +5838,6 @@
               ],
               "incomingFilter" : "blocktelnet",
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -5974,7 +5877,6 @@
                 "GigabitEthernet0/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6023,7 +5925,6 @@
               ],
               "incomingFilter" : "blocktelnet",
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6063,7 +5964,6 @@
                 "GigabitEthernet1/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6111,7 +6011,6 @@
                 "GigabitEthernet1/0"
               ],
               "mtu" : 1600,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6151,7 +6050,6 @@
                 "GigabitEthernet2/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6199,7 +6097,6 @@
                 "GigabitEthernet0/0"
               ],
               "mtu" : 1800,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6239,7 +6136,6 @@
                 "GigabitEthernet1/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6287,7 +6183,6 @@
                 "GigabitEthernet3/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6327,7 +6222,6 @@
                 "GigabitEthernet1/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6375,7 +6269,6 @@
                 "GigabitEthernet2/0"
               ],
               "mtu" : 1700,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6415,7 +6308,6 @@
                 "GigabitEthernet0/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6463,7 +6355,6 @@
                 "GigabitEthernet0/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6504,7 +6395,6 @@
               ],
               "incomingFilter" : "blocktelnet",
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6552,7 +6442,6 @@
                 "GigabitEthernet1/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6592,7 +6481,6 @@
                 "GigabitEthernet3/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6640,7 +6528,6 @@
                 "GigabitEthernet1/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6681,7 +6568,6 @@
               ],
               "incomingFilter" : "blocktelnet",
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6729,7 +6615,6 @@
                 "GigabitEthernet0/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6769,7 +6654,6 @@
                 "GigabitEthernet2/0"
               ],
               "mtu" : 1700,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6817,7 +6701,6 @@
                 "GigabitEthernet0/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6857,7 +6740,6 @@
                 "GigabitEthernet1/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6905,7 +6787,6 @@
                 "GigabitEthernet1/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6945,7 +6826,6 @@
                 "GigabitEthernet0/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -6993,7 +6873,6 @@
                 "GigabitEthernet1/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -7033,7 +6912,6 @@
                 "GigabitEthernet0/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -7081,7 +6959,6 @@
                 "GigabitEthernet0/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -7121,7 +6998,6 @@
                 "GigabitEthernet1/0"
               ],
               "mtu" : 1500,
-              "nativeVlan" : 1,
               "ospfArea" : 1,
               "ospfCost" : 1,
               "ospfDeadInterval" : 0,
@@ -7208,7 +7084,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -7237,7 +7112,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -7269,7 +7143,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -7299,7 +7172,6 @@
               "Loopback0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -8429,7 +8301,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -8458,7 +8329,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -8488,7 +8358,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -8520,7 +8389,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -8550,7 +8418,6 @@
               "Loopback0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -9622,7 +9489,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -9651,7 +9517,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -9683,7 +9548,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -9715,7 +9579,6 @@
               "Loopback0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -10067,7 +9930,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -10097,7 +9959,6 @@
             ],
             "incomingFilter" : "OUTSIDE_TO_INSIDE",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -10128,7 +9989,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -10160,7 +10020,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -10192,7 +10051,6 @@
               "Loopback0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -11339,7 +11197,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -11369,7 +11226,6 @@
             ],
             "incomingFilter" : "OUTSIDE_TO_INSIDE",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -11400,7 +11256,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -11432,7 +11287,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -11464,7 +11318,6 @@
               "Loopback0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -12510,7 +12363,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -12539,7 +12391,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -12571,7 +12422,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -12604,7 +12454,6 @@
             ],
             "incomingFilter" : "blocktelnet",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -12637,7 +12486,6 @@
             ],
             "incomingFilter" : "blocktelnet",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -12669,7 +12517,6 @@
               "Loopback0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -13126,7 +12973,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -13155,7 +13001,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1800,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -13187,7 +13032,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1600,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -13219,7 +13063,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1700,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -13251,7 +13094,6 @@
               "GigabitEthernet3/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -13283,7 +13125,6 @@
               "Loopback0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -13705,7 +13546,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -13734,7 +13574,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -13764,7 +13603,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -13795,7 +13633,6 @@
             ],
             "incomingFilter" : "RESTRICT_HOST_TRAFFIC_IN",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -13826,7 +13663,6 @@
             ],
             "incomingFilter" : "RESTRICT_HOST_TRAFFIC_IN",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -13856,7 +13692,6 @@
               "Loopback0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -14666,7 +14501,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -14695,7 +14529,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -14727,7 +14560,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -14759,7 +14591,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -14789,7 +14620,6 @@
               "Loopback0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -15428,7 +15258,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -15457,7 +15286,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -15489,7 +15317,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -15521,7 +15348,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -15551,7 +15377,6 @@
               "Loopback0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -16218,7 +16043,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -16247,7 +16071,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -16279,7 +16102,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -16309,7 +16131,6 @@
               "Loopback0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -17347,7 +17168,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -17376,7 +17196,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -17406,7 +17225,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -17438,7 +17256,6 @@
               "Loopback0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -18384,7 +18201,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -18413,7 +18229,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -18445,7 +18260,6 @@
               "GigabitEthernet1/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -18477,7 +18291,6 @@
               "GigabitEthernet2/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -18507,7 +18320,6 @@
               "GigabitEthernet3/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -18537,7 +18349,6 @@
               "Loopback0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 1,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -18990,7 +18801,6 @@
             ],
             "incomingFilter" : "filter::INPUT",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -19217,7 +19027,6 @@
             ],
             "incomingFilter" : "filter::INPUT",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,

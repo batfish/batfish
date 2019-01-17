@@ -732,9 +732,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // Build areas
     newProc.setAreas(
-        newAreaBuilders
-            .entrySet()
-            .stream()
+        newAreaBuilders.entrySet().stream()
             .collect(
                 ImmutableSortedMap.toImmutableSortedMap(
                     Comparator.naturalOrder(), Entry::getKey, entry -> entry.getValue().build())));
@@ -1281,9 +1279,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     List<SubRange> vlanIds =
         Stream.concat(
-                iface
-                    .getAllowedVlanNames()
-                    .stream()
+                iface.getAllowedVlanNames().stream()
                     .map(n -> _masterLogicalSystem.getVlanNameToVlan().get(n))
                     .filter(Objects::nonNull)
                     .map(Vlan::getVlanId)
@@ -1291,7 +1287,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 iface.getAllowedVlans().stream())
             .collect(Collectors.toList());
     newIface.setAllowedVlans(IntegerSpace.unionOf(vlanIds));
-    newIface.setNativeVlan(iface.getNativeVlan());
+
+    if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
+      newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
+    }
+
     newIface.setSwitchportMode(iface.getSwitchportMode());
     SwitchportEncapsulationType swe = iface.getSwitchportTrunkEncapsulation();
     if (swe == null) {
@@ -1318,8 +1318,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     Map<String, NatPool> pools = _masterLogicalSystem.getNatSource().getPools();
 
     List<NatRuleSet> ruleSets =
-        orderedRuleSetList
-            .stream()
+        orderedRuleSetList.stream()
             .filter(
                 ruleSet -> {
                   NatPacketLocation toLocation = ruleSet.getToLocation();
@@ -1363,8 +1362,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 builder.put(
                     zoneLocation(zone.getName()),
                     matchSrcInterface(
-                        zone.getInterfaces()
-                            .stream()
+                        zone.getInterfaces().stream()
                             .map(Interface::getName)
                             .toArray(String[]::new))));
     _masterLogicalSystem
@@ -1375,10 +1373,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 builder.put(
                     routingInstanceLocation(routingInstance.getName()),
                     matchSrcInterface(
-                        routingInstance
-                            .getInterfaces()
-                            .values()
-                            .stream()
+                        routingInstance.getInterfaces().values().stream()
                             .map(Interface::getName)
                             .toArray(String[]::new))));
     return builder.build();
@@ -1554,8 +1549,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (conjunctMatchExpr == null) {
       return lines;
     } else {
-      return lines
-          .stream()
+      return lines.stream()
           .map(
               l ->
                   new IpAccessListLine(
@@ -1579,11 +1573,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (zoneName != null) {
       matchSrcInterface =
           new MatchSrcInterface(
-              _masterLogicalSystem
-                  .getZones()
-                  .get(zoneName)
-                  .getInterfaces()
-                  .stream()
+              _masterLogicalSystem.getZones().get(zoneName).getInterfaces().stream()
                   .map(Interface::getName)
                   .collect(ImmutableList.toImmutableList()));
     }
@@ -1891,8 +1881,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private List<BooleanExpr> toBooleanExprs(Set<? extends PsFrom> froms) {
-    return froms
-        .stream()
+    return froms.stream()
         .map(f -> f.toBooleanExpr(this, _c, _w))
         .collect(ImmutableList.toImmutableList());
   }
@@ -1944,9 +1933,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     ImmutableList.Builder<Configuration> outputConfigurations = ImmutableList.builder();
-    _logicalSystems
-        .keySet()
-        .stream()
+    _logicalSystems.keySet().stream()
         .map(this::toVendorIndependentConfiguration)
         .forEach(outputConfigurations::add);
     outputConfigurations.add(toVendorIndependentConfiguration());
@@ -2378,10 +2365,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         OspfProcess oproc = createOspfProcess(ri);
         vrf.setOspfProcess(oproc);
         // add discard routes for OSPF summaries
-        oproc
-            .getAreas()
-            .values()
-            .stream()
+        oproc.getAreas().values().stream()
             .flatMap(a -> a.getSummaries().entrySet().stream())
             .forEach(
                 summaryEntry ->
@@ -2394,11 +2378,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // create is-is process
       // is-is runs only if at least one interface has an ISO address, check loopback first
       Optional<IsoAddress> isoAddress =
-          _masterLogicalSystem
-              .getDefaultRoutingInstance()
-              .getInterfaces()
-              .values()
-              .stream()
+          _masterLogicalSystem.getDefaultRoutingInstance().getInterfaces().values().stream()
               .filter(i -> i.getName().startsWith(FIRST_LOOPBACK_INTERFACE_NAME))
               .map(Interface::getIsoAddress)
               .filter(Objects::nonNull)
@@ -2406,11 +2386,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // Try all the other interfaces if no ISO address on Loopback
       if (!isoAddress.isPresent()) {
         isoAddress =
-            _masterLogicalSystem
-                .getDefaultRoutingInstance()
-                .getInterfaces()
-                .values()
-                .stream()
+            _masterLogicalSystem.getDefaultRoutingInstance().getInterfaces().values().stream()
                 .map(Interface::getIsoAddress)
                 .filter(Objects::nonNull)
                 .min(Comparator.comparing(IsoAddress::toString));
@@ -2540,9 +2516,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // Get a stream of all interfaces (including Node interfaces)
     Stream.concat(
             _masterLogicalSystem.getInterfaces().values().stream(),
-            _nodeDevices
-                .values()
-                .stream()
+            _nodeDevices.values().stream()
                 .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
         .forEach(
             /*
@@ -2578,9 +2552,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
      */
     Stream.concat(
             _masterLogicalSystem.getInterfaces().values().stream(),
-            _nodeDevices
-                .values()
-                .stream()
+            _nodeDevices.values().stream()
                 .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
         .forEach(
             iface -> {
@@ -2618,9 +2590,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       Stream.concat(
               _masterLogicalSystem.getInterfaces().values().stream(),
-              _nodeDevices
-                  .values()
-                  .stream()
+              _nodeDevices.values().stream()
                   .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
           .forEach(
               iface ->
@@ -2733,9 +2703,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       Map<String, Interface> interfacesToCheck;
       Map<String, Interface> allInterfaces = routingInstance.getInterfaces();
       Map<String, Interface> loopbackInterfaces =
-          allInterfaces
-              .entrySet()
-              .stream()
+          allInterfaces.entrySet().stream()
               .filter(
                   e ->
                       e.getKey().toLowerCase().startsWith("lo")

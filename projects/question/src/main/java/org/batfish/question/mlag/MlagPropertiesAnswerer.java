@@ -51,8 +51,7 @@ public final class MlagPropertiesAnswerer extends Answerer {
   static TableAnswerElement computeAnswer(
       Set<String> nodes, Pattern mlagIdPattern, SortedMap<String, Configuration> configs) {
     ImmutableList<NodeToMlags> mlagConfigs =
-        nodes
-            .stream()
+        nodes.stream()
             .map(configs::get)
             .filter(Objects::nonNull)
             // Get matching MLAGs at each node
@@ -60,9 +59,7 @@ public final class MlagPropertiesAnswerer extends Answerer {
                 c ->
                     new NodeToMlags(
                         c.getHostname(),
-                        c.getMlags()
-                            .values()
-                            .stream()
+                        c.getMlags().values().stream()
                             .filter(mlag -> mlagIdPattern.matcher(mlag.getId()).matches())
                             .collect(Collectors.toList())))
             .filter(mc -> !mc._mlags.isEmpty())

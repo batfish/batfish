@@ -101,9 +101,7 @@ public class IpSpaceToBDDTest {
         _bddOps.or(bdd1, bdd2),
         equalTo(
             _bddOps.and(
-                Arrays.asList(_ipAddrBdd.getBitvec())
-                    .subList(0, 7)
-                    .stream()
+                Arrays.asList(_ipAddrBdd.getBitvec()).subList(0, 7).stream()
                     .map(BDD::not)
                     .collect(ImmutableList.toImmutableList()))));
   }

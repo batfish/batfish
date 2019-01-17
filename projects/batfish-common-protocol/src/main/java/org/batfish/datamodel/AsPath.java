@@ -82,8 +82,7 @@ public class AsPath implements Serializable, Comparable<AsPath> {
    */
   public AsPath removePrivateAs() {
     return AsPath.of(
-        _asSets
-            .stream()
+        _asSets.stream()
             .map(AsSet::removePrivateAs)
             .filter(asSet -> !asSet.isEmpty())
             .collect(ImmutableList.toImmutableList()));

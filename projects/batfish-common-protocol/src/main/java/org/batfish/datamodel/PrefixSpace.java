@@ -173,8 +173,7 @@ public class PrefixSpace implements Serializable {
       }
       if (_prefixRanges.stream().anyMatch(prefixRange::includesPrefixRange)) {
         _prefixRanges =
-            _prefixRanges
-                .stream()
+            _prefixRanges.stream()
                 .filter(pr -> !prefixRange.includesPrefixRange(pr))
                 .collect(ImmutableSet.toImmutableSet());
       }

@@ -102,8 +102,7 @@ public class NodeRolesData {
     if (dimension == null) {
       return getNodeRoleDimension();
     }
-    return _roleDimensions
-        .stream()
+    return _roleDimensions.stream()
         .filter(d -> d.getName().equalsIgnoreCase(dimension))
         .findFirst();
   }

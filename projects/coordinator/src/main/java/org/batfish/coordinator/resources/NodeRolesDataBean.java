@@ -25,9 +25,7 @@ public class NodeRolesDataBean {
       @Nonnull NodeRolesData nodeRolesData, @Nullable String snapshot, @Nonnull Set<String> nodes) {
     defaultDimension = nodeRolesData.getDefaultDimension();
     roleDimensions =
-        nodeRolesData
-            .getNodeRoleDimensions()
-            .stream()
+        nodeRolesData.getNodeRoleDimensions().stream()
             .map(dim -> new NodeRoleDimensionBean(dim, snapshot, nodes))
             .collect(Collectors.toSet());
   }
@@ -52,8 +50,7 @@ public class NodeRolesDataBean {
     return NodeRolesData.builder()
         .setDefaultDimension(defaultDimension)
         .setRoleDimensions(
-            roleDimensions
-                .stream()
+            roleDimensions.stream()
                 .map(NodeRoleDimensionBean::toNodeRoleDimension)
                 .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())))
         .build();

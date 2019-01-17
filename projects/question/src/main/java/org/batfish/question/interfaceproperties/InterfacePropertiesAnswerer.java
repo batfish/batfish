@@ -47,9 +47,7 @@ public class InterfacePropertiesAnswerer extends Answerer {
     return ImmutableList.<ColumnMetadata>builder()
         .add(new ColumnMetadata(COL_INTERFACE, Schema.INTERFACE, "Interface", true, false))
         .addAll(
-            propertySpecifier
-                .getMatchingProperties()
-                .stream()
+            propertySpecifier.getMatchingProperties().stream()
                 .map(
                     prop ->
                         new ColumnMetadata(

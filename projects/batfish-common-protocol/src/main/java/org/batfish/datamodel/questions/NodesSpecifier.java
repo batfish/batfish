@@ -164,8 +164,7 @@ public class NodesSpecifier {
       String namePrefix =
           finalQuery.equalsIgnoreCase("NAME:") ? "" : (parts.length == 1 ? finalQuery : parts[1]);
       List<AutocompleteSuggestion> nameSuggestions =
-          nodes
-              .stream()
+          nodes.stream()
               .filter(n -> n.startsWith(namePrefix))
               .map(n -> new AutocompleteSuggestion(n, false))
               .collect(Collectors.toList());
@@ -181,9 +180,7 @@ public class NodesSpecifier {
       if (parts.length == 3 || (parts.length == 2 && finalQuery.endsWith(":"))) {
         String roleDimension = parts[1];
         Optional<NodeRoleDimension> optDimension =
-            nodeRoleData
-                .getNodeRoleDimensions()
-                .stream()
+            nodeRoleData.getNodeRoleDimensions().stream()
                 .filter(dim -> dim.getName().equals(roleDimension))
                 .findAny();
         if (optDimension.isPresent()) {
@@ -191,9 +188,7 @@ public class NodesSpecifier {
           String roleDimensionPrefix = "ROLE:" + dimension.getName() + ":";
           String rolePrefix = finalQuery.endsWith(":") ? "" : parts[2];
           List<AutocompleteSuggestion> roleSuggestions =
-              dimension
-                  .getRoles()
-                  .stream()
+              dimension.getRoles().stream()
                   .filter(role -> role.getName().startsWith(rolePrefix))
                   .map(
                       role ->
@@ -214,9 +209,7 @@ public class NodesSpecifier {
       } else {
         String roleDimPrefix = finalQuery.equalsIgnoreCase("ROLE:") ? "" : parts[1];
         suggestions.addAll(
-            nodeRoleData
-                .getNodeRoleDimensions()
-                .stream()
+            nodeRoleData.getNodeRoleDimensions().stream()
                 .filter(dim -> dim.getName().startsWith(roleDimPrefix))
                 .map(
                     dim ->
@@ -270,8 +263,7 @@ public class NodesSpecifier {
   }
 
   public Set<String> getMatchingNodesByRole(NodeRoleDimension roleDimension, Set<String> nodes) {
-    return nodes
-        .stream()
+    return nodes.stream()
         .filter(n -> nodeNameInMatchingRole(n, roleDimension.getRoles()))
         .collect(Collectors.toSet());
   }

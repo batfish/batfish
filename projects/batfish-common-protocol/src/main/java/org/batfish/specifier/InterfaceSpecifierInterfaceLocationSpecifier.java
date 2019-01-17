@@ -35,9 +35,7 @@ public class InterfaceSpecifierInterfaceLocationSpecifier implements LocationSpe
 
   @Override
   public Set<Location> resolve(SpecifierContext ctxt) {
-    return _interfaceSpecifier
-        .resolve(ctxt.getConfigs().keySet(), ctxt)
-        .stream()
+    return _interfaceSpecifier.resolve(ctxt.getConfigs().keySet(), ctxt).stream()
         .map(iface -> new InterfaceLocation(iface.getOwner().getHostname(), iface.getName()))
         .collect(Collectors.toSet());
   }

@@ -409,9 +409,7 @@ public final class AclTracer extends Evaluator {
 
   @Override
   public Boolean visitAndMatchExpr(AndMatchExpr andMatchExpr) {
-    return andMatchExpr
-        .getConjuncts()
-        .stream()
+    return andMatchExpr.getConjuncts().stream()
         .allMatch(
             c -> {
               newTrace();
@@ -423,9 +421,7 @@ public final class AclTracer extends Evaluator {
 
   @Override
   public Boolean visitOrMatchExpr(OrMatchExpr orMatchExpr) {
-    return orMatchExpr
-        .getDisjuncts()
-        .stream()
+    return orMatchExpr.getDisjuncts().stream()
         .anyMatch(
             d -> {
               newTrace();

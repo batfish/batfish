@@ -184,10 +184,7 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
   protected BoolExpr getSolverInput(Expr answer, NodProgram program, boolean negate) {
     Map<String, BitVecExpr> variablesAsConsts = program.getNodContext().getVariablesAsConsts();
     List<BitVecExpr> vars =
-        program
-            .getNodContext()
-            .getVariableNames()
-            .stream()
+        program.getNodContext().getVariableNames().stream()
             .map(variablesAsConsts::get)
             .collect(Collectors.toList());
 
@@ -244,9 +241,7 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
         ReachabilityProgram.builder()
             .setInput(baseProgram.getInput())
             .setRules(
-                baseProgram
-                    .getRules()
-                    .stream()
+                baseProgram.getRules().stream()
                     .filter(optimizedRules::contains)
                     .collect(Collectors.toList()))
             .setQueries(baseProgram.getQueries())
@@ -257,9 +252,7 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
         ReachabilityProgram.builder()
             .setInput(queryProgram.getInput())
             .setRules(
-                queryProgram
-                    .getRules()
-                    .stream()
+                queryProgram.getRules().stream()
                     .filter(optimizedRules::contains)
                     .collect(Collectors.toList()))
             .setQueries(queryProgram.getQueries())

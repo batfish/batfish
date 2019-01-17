@@ -49,8 +49,7 @@ public class CiscoAclTest {
     IpAccessListLine line = Iterables.getOnlyElement(acl.getLines());
 
     assertThat(c.getConfigurationFormat(), equalTo(format));
-    ImmutableList.of("1.2.3.0", "1.2.3.255")
-        .stream()
+    ImmutableList.of("1.2.3.0", "1.2.3.255").stream()
         .map(Ip::parse)
         .forEach(
             ip ->
@@ -58,8 +57,7 @@ public class CiscoAclTest {
                     line,
                     hasMatchCondition(
                         isMatchHeaderSpaceThat(hasHeaderSpace(hasSrcIps(containsIp(ip)))))));
-    ImmutableList.of("4.3.0.0", "4.3.255.255")
-        .stream()
+    ImmutableList.of("4.3.0.0", "4.3.255.255").stream()
         .map(Ip::parse)
         .forEach(
             ip ->

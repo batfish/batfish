@@ -104,9 +104,7 @@ public class IpSpaceSpecifierTest {
 
     // all locations are present
     Set<Location> assignmentLocations =
-        assignment
-            .getEntries()
-            .stream()
+        assignment.getEntries().stream()
             .map(Entry::getLocations)
             .flatMap(Set::stream)
             .collect(Collectors.toSet());

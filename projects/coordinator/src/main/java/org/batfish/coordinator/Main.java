@@ -99,8 +99,7 @@ public class Main {
     }
 
     Map<String, String> questionTemplates = new HashMap<>();
-    questionTemplateDir
-        .stream()
+    questionTemplateDir.stream()
         .filter(Objects::nonNull)
         .filter(dir -> !dir.toString().isEmpty())
         .forEach((dir) -> readQuestionTemplates(dir, questionTemplates));

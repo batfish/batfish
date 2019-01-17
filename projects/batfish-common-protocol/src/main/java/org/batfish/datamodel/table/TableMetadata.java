@@ -53,8 +53,7 @@ public class TableMetadata {
     if (desc == null) {
       boolean haveKeyColumns = columnMetadata.stream().anyMatch(ColumnMetadata::getIsKey);
       desc =
-          columnMetadata
-              .stream()
+          columnMetadata.stream()
               .filter(cm -> !haveKeyColumns || cm.getIsKey())
               .map(cm -> String.format("${%s}", cm.getName()))
               .collect(Collectors.joining(" | "));
@@ -127,8 +126,7 @@ public class TableMetadata {
   /** Returns a map from column name to {@link ColumnMetadata} */
   @Nonnull
   public Map<String, ColumnMetadata> toColumnMap() {
-    return _columnMetadata
-        .stream()
+    return _columnMetadata.stream()
         .collect(ImmutableMap.toImmutableMap(ColumnMetadata::getName, cm -> cm));
   }
 }

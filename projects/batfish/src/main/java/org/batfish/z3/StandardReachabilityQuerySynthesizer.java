@@ -183,8 +183,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
   public ReachabilityProgram getReachabilityProgram(SynthesizerInput input) {
     ImmutableList.Builder<RuleStatement> rules = ImmutableList.builder();
     List<StateExpr> finalActions = computeFinalActions();
-    finalActions
-        .stream()
+    finalActions.stream()
         .map(finalAction -> new BasicRuleStatement(ImmutableSet.of(finalAction), Query.INSTANCE))
         .forEach(rules::add);
     addOriginateRules(rules);

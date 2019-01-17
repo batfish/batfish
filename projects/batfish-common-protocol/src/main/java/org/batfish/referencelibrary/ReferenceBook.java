@@ -120,8 +120,7 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
     List<String> serviceEndpointNames =
         nnServiceEndpoints.stream().map(ServiceEndpoint::getName).collect(Collectors.toList());
     List<String> serviceObjectGroupNames =
-        nnServiceObjectGroups
-            .stream()
+        nnServiceObjectGroups.stream()
             .map(ServiceObjectGroup::getName)
             .collect(Collectors.toList());
     List<String> serviceObjectNames =

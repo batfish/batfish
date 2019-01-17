@@ -132,10 +132,7 @@ public class TestFiltersAnswerer extends Answerer {
     TestFiltersQuestion question = (TestFiltersQuestion) _question;
     String node = c.getHostname();
     Set<Location> srcLocations =
-        question
-            .getStartLocationSpecifier()
-            .resolve(_batfish.specifierContext())
-            .stream()
+        question.getStartLocationSpecifier().resolve(_batfish.specifierContext()).stream()
             .filter(LocationVisitor.onNode(node)::visit)
             .collect(Collectors.toSet());
 
@@ -277,9 +274,7 @@ public class TestFiltersAnswerer extends Answerer {
           dstIpSpecifier.resolve(ImmutableSet.of(), _batfish.specifierContext());
       // Filter out empty IP assignments
       ImmutableList<Entry> nonEmptyIpSpaces =
-          dstIps
-              .getEntries()
-              .stream()
+          dstIps.getEntries().stream()
               .filter(e -> !e.getIpSpace().equals(EmptyIpSpace.INSTANCE))
               .collect(ImmutableList.toImmutableList());
       checkArgument(
@@ -311,9 +306,7 @@ public class TestFiltersAnswerer extends Answerer {
           srcIpSpecifier.resolve(ImmutableSet.of(), _batfish.specifierContext());
       // Filter out empty IP assignments
       ImmutableList<Entry> nonEmptyIpSpaces =
-          srcIps
-              .getEntries()
-              .stream()
+          srcIps.getEntries().stream()
               .filter(e -> !e.getIpSpace().equals(EmptyIpSpace.INSTANCE))
               .collect(ImmutableList.toImmutableList());
       checkArgument(
@@ -333,9 +326,7 @@ public class TestFiltersAnswerer extends Answerer {
     } else {
       // Use source location to determine header Src IP
       Optional<Entry> entry =
-          _sourceIpAssignment
-              .getEntries()
-              .stream()
+          _sourceIpAssignment.getEntries().stream()
               .filter(e -> e.getLocations().contains(srcLocation))
               .findFirst();
 

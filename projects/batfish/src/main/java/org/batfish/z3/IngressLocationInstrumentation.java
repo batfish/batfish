@@ -58,9 +58,7 @@ public final class IngressLocationInstrumentation implements GenericStatementVis
 
   public BooleanExpr getSrcIpConstraint() {
     return new OrExpr(
-        _srcIpConstraints
-            .entrySet()
-            .stream()
+        _srcIpConstraints.entrySet().stream()
             .map(
                 entry -> {
                   IngressLocation location = entry.getKey();

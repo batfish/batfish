@@ -118,9 +118,7 @@ public final class DifferentialIpAccessList {
         ImmutableMap.<String, IpAccessList>builder()
             // include all the renamed finalDenyNamedAcls
             .putAll(
-                finalDenyNamedAcls
-                    .entrySet()
-                    .stream()
+                finalDenyNamedAcls.entrySet().stream()
                     .map(
                         entry ->
                             Maps.immutableEntry(
@@ -156,9 +154,7 @@ public final class DifferentialIpAccessList {
         ImmutableMap.<String, IpSpace>builder()
             // include all the renamed denyIpSpaces
             .putAll(
-                denyNamedIpSpaces
-                    .entrySet()
-                    .stream()
+                denyNamedIpSpaces.entrySet().stream()
                     .map(
                         entry ->
                             Maps.immutableEntry(

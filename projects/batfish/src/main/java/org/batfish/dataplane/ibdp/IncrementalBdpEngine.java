@@ -834,27 +834,21 @@ class IncrementalBdpEngine {
         GlobalTracer.get().buildSpan("Compute iteration statistics").startActive()) {
       assert span != null; // avoid unused warning
       int numBgpBestPathRibRoutes =
-          nodes
-              .values()
-              .stream()
+          nodes.values().stream()
               .flatMap(n -> n.getVirtualRouters().values().stream())
               .mapToInt(vr -> vr.getBgpRib().getBestPathRoutes().size())
               .sum();
       ae.getBgpBestPathRibRoutesByIteration()
           .put(dependentRoutesIterations, numBgpBestPathRibRoutes);
       int numBgpMultipathRibRoutes =
-          nodes
-              .values()
-              .stream()
+          nodes.values().stream()
               .flatMap(n -> n.getVirtualRouters().values().stream())
               .mapToInt(vr -> vr.getBgpRib().getRoutes().size())
               .sum();
       ae.getBgpMultipathRibRoutesByIteration()
           .put(dependentRoutesIterations, numBgpMultipathRibRoutes);
       int numMainRibRoutes =
-          nodes
-              .values()
-              .stream()
+          nodes.values().stream()
               .flatMap(n -> n.getVirtualRouters().values().stream())
               .mapToInt(vr -> vr._mainRib.getRoutes().size())
               .sum();

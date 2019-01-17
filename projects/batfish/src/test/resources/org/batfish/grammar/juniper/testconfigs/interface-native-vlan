@@ -1,0 +1,9 @@
+#
+set system host-name interface-native-vlan
+#
+set interfaces ge-0/1/0 unit 0 family ethernet-switching port-mode trunk
+set interfaces ge-0/1/0 unit 0 family ethernet-switching native-vlan-id 3
+#
+set interfaces ge-0/2/0 unit 0 family ethernet-switching port-mode trunk
+#
+set interfaces ge-0/3/0 unit 0 family ethernet-switching port-mode access
