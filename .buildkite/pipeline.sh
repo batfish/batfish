@@ -108,5 +108,7 @@ for cmd in $(find tests -name commands); do
           always-pull: true
       - artifacts#v1.2.0:
           download: workspace/allinone.jar
+    artifact_paths:
+      - workspace/**/jacoco.exec
 EOF
 done

@@ -15,8 +15,7 @@ JACOCO_AGENT_JAR_NAME="org.jacoco.agent-${JACOCO_VERSION}-runtime.jar"
 JACOCO_AGENT_JAR="${HOME}/.m2/repository/org/jacoco/org.jacoco.agent/${JACOCO_VERSION}/${JACOCO_AGENT_JAR_NAME}"
 
 CMD_FILE="$1"
-CMD_DIR=$(basename "${CMD_FILE}")
-JACOCO_FILE="${CMD_DIR}/jacoco.exec"
+JACOCO_FILE="workspace/${CMD_FILE}/jacoco.exec"
 
 if [ -n "${2:-}" ]; then
   COORDINATOR_ARGS="$2"
