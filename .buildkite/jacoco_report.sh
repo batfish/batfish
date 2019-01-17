@@ -5,7 +5,7 @@ set -euxo pipefail
 # First: extract all Batfish classes from the jar
 ALLINONE_JAR="workspace/allinone.jar"
 TMP=$(mktemp -d)
-unzip "${ALLINONE_JAR}" -d "${TMP}"
+unzip -q "${ALLINONE_JAR}" -d "${TMP}"
 
 # Next: generate aggregated code coverage report
 JACOCO_VERSION=0.8.2
