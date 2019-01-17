@@ -56,9 +56,9 @@ EOF
 #    command:
 #      - mvn -f projects/pom.xml verify -DskipTests=false -Djacoco.skip=false
 #      - mkdir -p workspace
-#      - find projects -name jacoco.exec -type f -exec cat {} \+ > workspace/jacoco.exec
+#      - rsync -zarv --prune-empty-dirs --include '*/' --include 'jacoco*.exec' --exclude '*' projects/ workspace/
 #    artifact_paths:
-#      - workspace/jacoco.exec
+#      - workspace/**/jacoco.exec
 #    plugins:
 #      - docker#${DOCKER_VERSION}:
 #          image: ${DOCKER_IMAGE}
