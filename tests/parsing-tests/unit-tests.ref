@@ -49598,7 +49598,7 @@
             "                  (rs_rule",
             "                    RULE:'rule'",
             "                    name = (variable",
-            "                      text = VARIABLE:'SRC-RULE')",
+            "                      text = VARIABLE:'SRC-RULE1')",
             "                    (rsr_match",
             "                      MATCH:'match'",
             "                      (rsrm_destination_address",
@@ -49623,7 +49623,7 @@
             "                  (rs_rule",
             "                    RULE:'rule'",
             "                    name = (variable",
-            "                      text = VARIABLE:'SRC-RULE')",
+            "                      text = VARIABLE:'SRC-RULE1')",
             "                    (rsr_match",
             "                      MATCH:'match'",
             "                      (rsrm_destination_address_name",
@@ -49649,7 +49649,7 @@
             "                  (rs_rule",
             "                    RULE:'rule'",
             "                    name = (variable",
-            "                      text = VARIABLE:'SRC-RULE')",
+            "                      text = VARIABLE:'SRC-RULE1')",
             "                    (rsr_match",
             "                      MATCH:'match'",
             "                      (rsrm_source_address",
@@ -49674,7 +49674,7 @@
             "                  (rs_rule",
             "                    RULE:'rule'",
             "                    name = (variable",
-            "                      text = VARIABLE:'SRC-RULE')",
+            "                      text = VARIABLE:'SRC-RULE1')",
             "                    (rsr_match",
             "                      MATCH:'match'",
             "                      (rsrm_source_address_name",
@@ -49700,13 +49700,117 @@
             "                  (rs_rule",
             "                    RULE:'rule'",
             "                    name = (variable",
-            "                      text = VARIABLE:'SRC-RULE')",
+            "                      text = VARIABLE:'SRC-RULE1')",
             "                    (rsr_then",
             "                      THEN:'then'",
             "                      (rsrt_source_nat",
             "                        SOURCE_NAT:'source-nat'",
             "                        (rsrt_nat_off",
             "                          OFF:'off')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_security",
+            "            SECURITY:'security'",
+            "            (se_nat",
+            "              NAT:'nat'",
+            "              (sen_source",
+            "                SOURCE:'source'",
+            "                (nat_rule_set",
+            "                  RULE_SET:'rule-set'",
+            "                  name = (variable",
+            "                    text = VARIABLE:'SRC-NAT')",
+            "                  (rs_rule",
+            "                    RULE:'rule'",
+            "                    name = (variable",
+            "                      text = VARIABLE:'SRC-RULE2')",
+            "                    (rsr_match",
+            "                      MATCH:'match'",
+            "                      (rsrm_destination_address",
+            "                        DESTINATION_ADDRESS:'destination-address'",
+            "                        IP_PREFIX:'2.2.2.2/24'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_security",
+            "            SECURITY:'security'",
+            "            (se_nat",
+            "              NAT:'nat'",
+            "              (sen_source",
+            "                SOURCE:'source'",
+            "                (nat_rule_set",
+            "                  RULE_SET:'rule-set'",
+            "                  name = (variable",
+            "                    text = VARIABLE:'SRC-NAT')",
+            "                  (rs_rule",
+            "                    RULE:'rule'",
+            "                    name = (variable",
+            "                      text = VARIABLE:'SRC-RULE2')",
+            "                    (rsr_then",
+            "                      THEN:'then'",
+            "                      (rsrt_source_nat",
+            "                        SOURCE_NAT:'source-nat'",
+            "                        (rsrt_nat_interface",
+            "                          INTERFACE:'interface')))))))))))",
+            "    NEWLINE:'\\n'  <== mode:M_Interface)",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_security",
+            "            SECURITY:'security'",
+            "            (se_nat",
+            "              NAT:'nat'",
+            "              (sen_source",
+            "                SOURCE:'source'",
+            "                (nat_rule_set",
+            "                  RULE_SET:'rule-set'",
+            "                  name = (variable",
+            "                    text = VARIABLE:'SRC-NAT')",
+            "                  (rs_rule",
+            "                    RULE:'rule'",
+            "                    name = (variable",
+            "                      text = VARIABLE:'SRC-RULE3')",
+            "                    (rsr_match",
+            "                      MATCH:'match'",
+            "                      (rsrm_destination_address",
+            "                        DESTINATION_ADDRESS:'destination-address'",
+            "                        IP_PREFIX:'3.3.3.3/24'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_security",
+            "            SECURITY:'security'",
+            "            (se_nat",
+            "              NAT:'nat'",
+            "              (sen_source",
+            "                SOURCE:'source'",
+            "                (nat_rule_set",
+            "                  RULE_SET:'rule-set'",
+            "                  name = (variable",
+            "                    text = VARIABLE:'SRC-NAT')",
+            "                  (rs_rule",
+            "                    RULE:'rule'",
+            "                    name = (variable",
+            "                      text = VARIABLE:'SRC-RULE3')",
+            "                    (rsr_then",
+            "                      THEN:'then'",
+            "                      (rsrt_source_nat",
+            "                        SOURCE_NAT:'source-nat'",
+            "                        (rsrt_nat_pool",
+            "                          POOL:'pool'",
+            "                          name = (variable",
+            "                            text = VARIABLE:'POOL'))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -67662,13 +67766,13 @@
           "interface" : {
             "ge-0/0/0" : {
               "definitionLines" : [
-                27
+                33
               ],
               "numReferrers" : 1
             },
             "ge-0/0/0.0" : {
               "definitionLines" : [
-                27
+                33
               ],
               "numReferrers" : 2
             }
@@ -67677,7 +67781,7 @@
             "POOL" : {
               "definitionLines" : [
                 6,
-                17
+                23
               ],
               "numReferrers" : 0
             }
@@ -67685,15 +67789,15 @@
           "nat rule" : {
             "DST-RULE" : {
               "definitionLines" : [
-                21,
-                22,
-                23,
-                24,
-                25
+                27,
+                28,
+                29,
+                30,
+                31
               ],
               "numReferrers" : 0
             },
-            "SRC-RULE" : {
+            "SRC-RULE1" : {
               "definitionLines" : [
                 11,
                 12,
@@ -67702,17 +67806,31 @@
                 15
               ],
               "numReferrers" : 0
+            },
+            "SRC-RULE2" : {
+              "definitionLines" : [
+                17,
+                18
+              ],
+              "numReferrers" : 0
+            },
+            "SRC-RULE3" : {
+              "definitionLines" : [
+                20,
+                21
+              ],
+              "numReferrers" : 0
             }
           },
           "nat rule set" : {
             "DST-NAT" : {
               "definitionLines" : [
-                19,
-                21,
-                22,
-                23,
-                24,
-                25
+                25,
+                27,
+                28,
+                29,
+                30,
+                31
               ],
               "numReferrers" : 0
             },
@@ -67724,7 +67842,11 @@
                 12,
                 13,
                 14,
-                15
+                15,
+                17,
+                18,
+                20,
+                21
               ],
               "numReferrers" : 0
             }
@@ -71450,15 +71572,15 @@
           "interface" : {
             "ge-0/0/0" : {
               "interface" : [
-                27
+                33
               ]
             },
             "ge-0/0/0.0" : {
               "interface" : [
-                27
+                33
               ],
               "security zones security-zone interfaces" : [
-                28
+                34
               ]
             }
           }

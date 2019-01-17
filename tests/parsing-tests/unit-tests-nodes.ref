@@ -18168,6 +18168,48 @@
                     }
                   }
                 },
+                "orElse" : {
+                  "guard" : {
+                    "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                    "headerSpace" : {
+                      "dstIps" : {
+                        "class" : "org.batfish.datamodel.PrefixIpSpace",
+                        "prefix" : "2.2.2.0/24"
+                      },
+                      "negate" : false
+                    }
+                  },
+                  "orElse" : {
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "dstIps" : {
+                          "class" : "org.batfish.datamodel.PrefixIpSpace",
+                          "prefix" : "3.3.3.0/24"
+                        },
+                        "negate" : false
+                      }
+                    },
+                    "transformationSteps" : [
+                      {
+                        "class" : "org.batfish.datamodel.transformation.AssignIpAddressFromPool",
+                        "ipField" : "SOURCE",
+                        "poolEnd" : "10.10.10.254",
+                        "poolStart" : "10.10.10.1",
+                        "transformationType" : "SOURCE_NAT"
+                      }
+                    ]
+                  },
+                  "transformationSteps" : [
+                    {
+                      "class" : "org.batfish.datamodel.transformation.AssignIpAddressFromPool",
+                      "ipField" : "SOURCE",
+                      "poolEnd" : "1.0.0.1",
+                      "poolStart" : "1.0.0.1",
+                      "transformationType" : "SOURCE_NAT"
+                    }
+                  ]
+                },
                 "transformationSteps" : [
                   {
                     "class" : "org.batfish.datamodel.transformation.Noop",

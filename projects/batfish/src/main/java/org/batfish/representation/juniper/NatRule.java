@@ -11,11 +11,10 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
-import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.IpField;
-import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.Transformation;
 
 /** Represents a nat rule for Juniper */
@@ -57,24 +56,11 @@ public final class NatRule implements Serializable {
 
   /** Convert to vendor-independent {@link Transformation}. */
   public Optional<Transformation.Builder> toTransformationBuilder(
-      TransformationType type, IpField field, Map<String, NatPool> pools) {
-    Transformation.Builder builder = when(new MatchHeaderSpace(toHeaderSpace(_matches)));
-
-    if (_then instanceof NatRuleThenPool) {
-      NatPool pool = pools.get(((NatRuleThenPool) _then).getPoolName());
-      if (pool == null) {
-        // pool is undefined.
-        return Optional.empty();
-      }
-      builder.apply(
-          new AssignIpAddressFromPool(type, field, pool.getFromAddress(), pool.getToAddress()));
-    } else if (_then instanceof NatRuleThenOff) {
-      // don't transform
-      builder.apply(new Noop(type));
-    } else {
-      throw new IllegalArgumentException("Unrecognized NatRuleThen type");
-    }
-
-    return Optional.of(builder);
+      TransformationType type, IpField field, Map<String, NatPool> pools, Ip interfaceIp) {
+    return _then == null
+        ? Optional.empty()
+        : _then
+            .toTransformationStep(type, field, pools, interfaceIp)
+            .map(step -> when(new MatchHeaderSpace(toHeaderSpace(_matches))).apply(step));
   }
 }

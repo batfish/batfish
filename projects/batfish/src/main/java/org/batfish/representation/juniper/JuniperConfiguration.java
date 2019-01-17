@@ -1333,7 +1333,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
       transformation =
           ruleSet
               .toOutgoingTransformation(
-                  SOURCE_NAT, SOURCE, pools, matchFromLocationExprs, null, transformation)
+                  SOURCE_NAT,
+                  SOURCE,
+                  pools,
+                  iface.getPrimaryAddress().getIp(),
+                  matchFromLocationExprs,
+                  null,
+                  transformation)
               .orElse(transformation);
     }
     return transformation;
@@ -1418,7 +1424,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .collect(Collectors.toList())) {
       transformation =
           ruleSet
-              .toIncomingTransformation(DEST_NAT, DESTINATION, pools, null, transformation)
+              .toIncomingTransformation(
+                  DEST_NAT,
+                  DESTINATION,
+                  pools,
+                  iface.getPrimaryAddress().getIp(),
+                  null,
+                  transformation)
               .orElse(transformation);
     }
     return transformation;

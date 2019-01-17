@@ -12,6 +12,7 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.IpField;
@@ -85,6 +86,7 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
    *
    * @param matchFromLocationExprs The {@link AclLineMatchExpr} to match traffic from each {@link
    *     NatPacketLocation}.
+   * @param interfaceIp The {@link Ip} address of the interface.
    * @param andThen The next {@link Transformation} to apply after any {@link NatRule} matches.
    * @param orElse The next {@link Transformation} to apply if no {@link NatRule} matches.
    */
@@ -92,6 +94,7 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
       TransformationType type,
       IpField ipField,
       Map<String, NatPool> pools,
+      Ip interfaceIp,
       Map<NatPacketLocation, AclLineMatchExpr> matchFromLocationExprs,
       @Nullable Transformation andThen,
       @Nullable Transformation orElse) {
@@ -103,7 +106,7 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
       return Optional.empty();
     }
 
-    return rulesTransformation(type, ipField, pools, andThen, orElse)
+    return rulesTransformation(type, ipField, pools, interfaceIp, andThen, orElse)
         .map(
             rulesTransformation ->
                 when(matchFromLocation).setAndThen(rulesTransformation).setOrElse(orElse).build());
@@ -118,20 +121,23 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
       TransformationType type,
       IpField ipField,
       Map<String, NatPool> pools,
+      Ip interfaceIp,
       @Nullable Transformation andThen,
       @Nullable Transformation orElse) {
-    return rulesTransformation(type, ipField, pools, andThen, orElse);
+    return rulesTransformation(type, ipField, pools, interfaceIp, andThen, orElse);
   }
 
   private Optional<Transformation> rulesTransformation(
       TransformationType type,
       IpField ipField,
       Map<String, NatPool> pools,
+      Ip interfaceIp,
       @Nullable Transformation andThen,
       @Nullable Transformation orElse) {
     Transformation transformation = orElse;
     for (NatRule rule : Lists.reverse(_rules)) {
-      Optional<Builder> optionalBuilder = rule.toTransformationBuilder(type, ipField, pools);
+      Optional<Builder> optionalBuilder =
+          rule.toTransformationBuilder(type, ipField, pools, interfaceIp);
       if (optionalBuilder.isPresent()) {
         transformation =
             optionalBuilder.get().setAndThen(andThen).setOrElse(transformation).build();
