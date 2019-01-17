@@ -112,3 +112,19 @@ for cmd in $(find tests -name commands); do
       - workspace/**/jacoco.exec
 EOF
 done
+
+###### Code coverage
+cat <<EOF
+  - wait
+  - label: "Code coverage"
+    command:
+      - ".buildkite/jacoco_report.sh"
+    plugins:
+      - docker#${DOCKER_VERSION}:
+          image: "${DOCKER_IMAGE}"
+          always-pull: true
+      - artifacts#v1.2.0:
+          download:
+            - "workspace/**/jacoco.exec"
+            - "workspace/allinone.jar"
+EOF
