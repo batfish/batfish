@@ -11,7 +11,7 @@ JACOCO_CLI_JAR_NAME="org.jacoco.cli-${JACOCO_VERSION}-nodeps.jar"
 JACOCO_CLI_JAR="${HOME}/.m2/repository/org/jacoco/org.jacoco.cli/${JACOCO_VERSION}/${JACOCO_CLI_JAR_NAME}"
 
 java -jar ${JACOCO_CLI_JAR} report \
-     $(find -name jacoco.exec -type f workspace/) \
+     $(find workspace/ -name jacoco.exec -type f) \
      --classfiles ${ALLINONE_JAR} \
      --xml jacoco.xml
 bash <(curl -s https://codecov.io/bash)
