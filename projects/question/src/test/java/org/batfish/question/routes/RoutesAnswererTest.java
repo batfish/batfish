@@ -216,8 +216,7 @@ public class RoutesAnswererTest {
     List<ColumnMetadata> columnMetadata = getTableMetadata(RibProtocol.MAIN).getColumnMetadata();
 
     assertThat(
-        columnMetadata
-            .stream()
+        columnMetadata.stream()
             .map(ColumnMetadata::getName)
             .collect(ImmutableList.toImmutableList()),
         contains(
@@ -232,8 +231,7 @@ public class RoutesAnswererTest {
             COL_TAG));
 
     assertThat(
-        columnMetadata
-            .stream()
+        columnMetadata.stream()
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList()),
         contains(
@@ -269,8 +267,7 @@ public class RoutesAnswererTest {
     for (RibProtocol rib : Arrays.asList(RibProtocol.BGP, RibProtocol.BGPMP)) {
       List<ColumnMetadata> columnMetadata = getTableMetadata(rib).getColumnMetadata();
       assertThat(
-          columnMetadata
-              .stream()
+          columnMetadata.stream()
               .map(ColumnMetadata::getName)
               .collect(ImmutableList.toImmutableList()),
           equalTo(expected));
@@ -283,8 +280,7 @@ public class RoutesAnswererTest {
         getDiffTableMetadata(RibProtocol.MAIN).getColumnMetadata();
 
     assertThat(
-        columnMetadata
-            .stream()
+        columnMetadata.stream()
             .map(ColumnMetadata::getName)
             .collect(ImmutableList.toImmutableList()),
         contains(
@@ -306,8 +302,7 @@ public class RoutesAnswererTest {
             COL_DELTA_PREFIX + COL_TAG));
 
     assertThat(
-        columnMetadata
-            .stream()
+        columnMetadata.stream()
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList()),
         contains(
@@ -380,15 +375,13 @@ public class RoutesAnswererTest {
     for (RibProtocol rib : Arrays.asList(RibProtocol.BGP, RibProtocol.BGPMP)) {
       List<ColumnMetadata> columnMetadata = getDiffTableMetadata(rib).getColumnMetadata();
       assertThat(
-          columnMetadata
-              .stream()
+          columnMetadata.stream()
               .map(ColumnMetadata::getName)
               .collect(ImmutableList.toImmutableList()),
           equalTo(expectedBuilder.build()));
 
       assertThat(
-          columnMetadata
-              .stream()
+          columnMetadata.stream()
               .map(ColumnMetadata::getSchema)
               .collect(ImmutableList.toImmutableList()),
           equalTo(schemaBuilderList.build()));
@@ -457,10 +450,7 @@ public class RoutesAnswererTest {
 
     @Override
     public SortedMap<String, Configuration> loadConfigurations() {
-      return _configs
-          .getMap()
-          .entrySet()
-          .stream()
+      return _configs.getMap().entrySet().stream()
           .collect(toImmutableSortedMap(naturalOrder(), Entry::getKey, Entry::getValue));
     }
 

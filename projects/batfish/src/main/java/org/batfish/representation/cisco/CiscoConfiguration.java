@@ -316,9 +316,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
    * Filters out the interfaces having no primary {@link InterfaceAddress}
    */
   private static Map<String, Ip> computeInterfaceOwnedPrimaryIp(Map<String, Interface> interfaces) {
-    return interfaces
-        .entrySet()
-        .stream()
+    return interfaces.entrySet().stream()
         .filter(e -> Objects.nonNull(e.getValue().getAddress()))
         .collect(
             ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getAddress().getIp()));
@@ -834,9 +832,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
          * We found a tunnel interface with the required parameters. Now return the external
          * interface with this address.
          */
-        return _interfaces
-            .values()
-            .stream()
+        return _interfaces.values().stream()
             .filter(
                 i -> i.getAllAddresses().stream().anyMatch(p -> p.getIp().equals(sourceAddress)))
             .findFirst()
@@ -1317,10 +1313,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // 1. If there are any ipv4 summary only networks, do not export the more specific routes.
     if (ipv4af != null) {
       Stream<Prefix> summaryOnlyNetworks =
-          ipv4af
-              .getAggregateNetworks()
-              .entrySet()
-              .stream()
+          ipv4af.getAggregateNetworks().entrySet().stream()
               .filter(e -> e.getValue().getSummaryOnly())
               .map(Entry::getKey);
       If suppressLonger = suppressSummarizedPrefixes(c, vrfName, summaryOnlyNetworks);
@@ -1518,10 +1511,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // Generate BGP_NETWORK6_NETWORKS filter.
     if (ipv6af != null) {
       List<Route6FilterLine> lines =
-          ipv6af
-              .getIpv6Networks()
-              .keySet()
-              .stream()
+          ipv6af.getIpv6Networks().keySet().stream()
               .map(p6 -> new Route6FilterLine(LineAction.PERMIT, Prefix6Range.fromPrefix6(p6)))
               .collect(ImmutableList.toImmutableList());
       Route6FilterList localFilter6 =
@@ -1587,9 +1577,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // Never export routes suppressed because they are more specific than summary-only aggregate
     Stream<Prefix> summaryOnlyNetworks =
-        proc.getAggregateNetworks()
-            .entrySet()
-            .stream()
+        proc.getAggregateNetworks().entrySet().stream()
             .filter(e -> e.getValue().getSummaryOnly())
             .map(Entry::getKey);
     If suppressSummaryOnly = suppressSummarizedPrefixes(c, vrfName, summaryOnlyNetworks);
@@ -2234,9 +2222,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         newIface.setAllowedVlans(iface.getAllowedVlans());
       } else {
         newIface.setAllowedVlans(
-            iface
-                .getVlanTrunkGroups()
-                .stream()
+            iface.getVlanTrunkGroups().stream()
                 .map(_eosVlanTrunkGroups::get)
                 .map(VlanTrunkGroup::getVlans)
                 .reduce(IntegerSpace::union)
@@ -2310,8 +2296,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // NAT, an outgoing NAT, or both.
 
     Map<CiscoIosNat, Transformation.Builder> convertedIncomingNats =
-        incomingNats
-            .stream()
+        incomingNats.stream()
             .map(nat -> new SimpleEntry<>(nat, nat.toIncomingTransformation(_natPools)))
             .filter(entry -> entry.getValue().isPresent())
             .collect(Collectors.toMap(SimpleEntry::getKey, entry -> entry.getValue().get()));
@@ -2321,8 +2306,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     Map<CiscoIosNat, Transformation.Builder> convertedOutgoingNats =
-        outgoingNats
-            .stream()
+        outgoingNats.stream()
             .map(
                 nat ->
                     new SimpleEntry<>(
@@ -2367,9 +2351,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     } else if (!_sameSecurityTrafficIntra && _sameSecurityTrafficInter) {
       ifaceFilter =
           new MatchSrcInterface(
-              _interfacesBySecurityLevel
-                  .get(iface.getSecurityLevel())
-                  .stream()
+              _interfacesBySecurityLevel.get(iface.getSecurityLevel()).stream()
                   .filter(other -> !other.equals(iface))
                   .map(this::getNewInterfaceName)
                   .collect(ImmutableList.toImmutableList()),
@@ -2684,9 +2666,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // policies for redistributing routes
     ospfExportStatements.addAll(
-        proc.getRedistributionPolicies()
-            .values()
-            .stream()
+        proc.getRedistributionPolicies().values().stream()
             .map(policy -> convertOspfRedistributionPolicy(policy, proc))
             .collect(Collectors.toList()));
 
@@ -3287,9 +3267,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         });
 
     _interfacesBySecurityLevel =
-        _interfaces
-            .values()
-            .stream()
+        _interfaces.values().stream()
             .filter(iface -> iface.getSecurityLevel() != null)
             .filter(iface -> iface.getAddress() != null)
             .collect(
@@ -3471,9 +3449,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
 
           // convert eigrp processes
-          vrf.getEigrpProcesses()
-              .values()
-              .stream()
+          vrf.getEigrpProcesses().values().stream()
               .map(proc -> CiscoConversions.toEigrpProcess(proc, vrfName, c, this))
               .filter(Objects::nonNull)
               .forEach(
@@ -3521,11 +3497,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined
     // references.
     Optional<Integer> firstRefToNull0 =
-        _structureReferences
-            .getOrDefault(CiscoStructureType.INTERFACE, ImmutableSortedMap.of())
-            .getOrDefault("Null0", ImmutableSortedMap.of())
-            .entrySet()
-            .stream()
+        _structureReferences.getOrDefault(CiscoStructureType.INTERFACE, ImmutableSortedMap.of())
+            .getOrDefault("Null0", ImmutableSortedMap.of()).entrySet().stream()
             .flatMap(e -> e.getValue().stream())
             .min(Integer::compare);
     if (firstRefToNull0.isPresent()) {
@@ -3914,9 +3887,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           String inspectClassMapAclName = computeInspectClassMapAclName(inspectClassMapName);
           MatchSemantics matchSemantics = inspectClassMap.getMatchSemantics();
           List<AclLineMatchExpr> matchConditions =
-              inspectClassMap
-                  .getMatches()
-                  .stream()
+              inspectClassMap.getMatches().stream()
                   .map(
                       inspectClassMapMatch ->
                           inspectClassMapMatch.toAclLineMatchExpr(this, c, matchSemantics, _w))
@@ -4138,9 +4109,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // Allow outbound traffic from interfaces with higher security levels unconditionally
     List<IpAccessListLine> lines =
-        _interfacesBySecurityLevel
-            .keySet()
-            .stream()
+        _interfacesBySecurityLevel.keySet().stream()
             .filter(l -> l > level)
             .map(
                 l ->
@@ -4148,9 +4117,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                         .setName("Traffic from security level " + l)
                         .setMatchCondition(
                             new MatchSrcInterface(
-                                _interfacesBySecurityLevel
-                                    .get(l)
-                                    .stream()
+                                _interfacesBySecurityLevel.get(l).stream()
                                     .map(this::getNewInterfaceName)
                                     .collect(Collectors.toList())))
                         .build())
@@ -4159,9 +4126,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // Allow outbound traffic from interfaces with lower security levels if that interface has an
     // inbound ACL
     lines.addAll(
-        _interfacesBySecurityLevel
-            .keySet()
-            .stream()
+        _interfacesBySecurityLevel.keySet().stream()
             .filter(l -> l < level)
             .map(
                 l ->
@@ -4169,9 +4134,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                         .setName("Traffic from security level " + l + " with inbound filter")
                         .setMatchCondition(
                             new MatchSrcInterface(
-                                _interfacesBySecurityLevel
-                                    .get(l)
-                                    .stream()
+                                _interfacesBySecurityLevel.get(l).stream()
                                     .filter(iface -> iface.getIncomingFilter() != null)
                                     .map(this::getNewInterfaceName)
                                     .collect(Collectors.toList())))
@@ -4342,9 +4305,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private void resolveKeyringIsakmpProfileAddresses() {
     Map<String, Ip> ifaceNameToPrimaryIp = computeInterfaceOwnedPrimaryIp(_interfaces);
 
-    _keyrings
-        .values()
-        .stream()
+    _keyrings.values().stream()
         .filter(keyring -> !keyring.getLocalInterfaceName().equals(UNSET_LOCAL_INTERFACE))
         .forEach(
             keyring ->
@@ -4352,9 +4313,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     firstNonNull(
                         ifaceNameToPrimaryIp.get(keyring.getLocalInterfaceName()), Ip.AUTO)));
 
-    _isakmpProfiles
-        .values()
-        .stream()
+    _isakmpProfiles.values().stream()
         .filter(
             isakmpProfile -> !isakmpProfile.getLocalInterfaceName().equals(UNSET_LOCAL_INTERFACE))
         .forEach(

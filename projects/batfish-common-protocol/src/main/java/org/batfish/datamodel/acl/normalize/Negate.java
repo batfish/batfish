@@ -31,8 +31,7 @@ public final class Negate implements GenericAclLineMatchExprVisitor<AclLineMatch
   }
 
   private static SortedSet<AclLineMatchExpr> negate(SortedSet<AclLineMatchExpr> exprs) {
-    return exprs
-        .stream()
+    return exprs.stream()
         .map(AclLineMatchExprs::not)
         .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
   }

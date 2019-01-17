@@ -69,17 +69,13 @@ public class IpSpaceToBoolExpr implements GenericIpSpaceVisitor<BoolExpr> {
   public BoolExpr visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
     BoolExpr whitelistExpr =
         _context.mkOr(
-            ipWildcardSetIpSpace
-                .getWhitelist()
-                .stream()
+            ipWildcardSetIpSpace.getWhitelist().stream()
                 .map(this::toBoolExpr)
                 .toArray(BoolExpr[]::new));
 
     BoolExpr blacklistExpr =
         _context.mkOr(
-            ipWildcardSetIpSpace
-                .getBlacklist()
-                .stream()
+            ipWildcardSetIpSpace.getBlacklist().stream()
                 .map(this::toBoolExpr)
                 .toArray(BoolExpr[]::new));
 

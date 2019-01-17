@@ -84,9 +84,7 @@ public class IpSpacePrefixCollector implements GenericIpSpaceVisitor<Void> {
     ipWildcardSetIpSpace.getWhitelist().forEach(this::assertIpWildcardIsPrefix);
     ipWildcardSetIpSpace.getBlacklist().forEach(this::assertIpWildcardIsPrefix);
     ipWildcardSetIpSpace.getWhitelist().stream().map(IpWildcard::toPrefix).forEach(_prefixes::add);
-    ipWildcardSetIpSpace
-        .getBlacklist()
-        .stream()
+    ipWildcardSetIpSpace.getBlacklist().stream()
         .map(IpWildcard::toPrefix)
         .forEach(_notPrefixes::add);
     return null;

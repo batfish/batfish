@@ -162,8 +162,7 @@ public class FilterLineReachabilityAnswererTest {
 
     // Everything except acl0 should have a dependency on acl0
     List<Set<String>> dependencies =
-        aclSpecs
-            .stream()
+        aclSpecs.stream()
             .filter(spec -> !spec.acl.getAclName().equals("acl0"))
             .map(spec -> spec.acl.getDependencies().keySet())
             .collect(Collectors.toList());
@@ -242,8 +241,7 @@ public class FilterLineReachabilityAnswererTest {
             HeaderSpace.builder().setSrcIps(Ip.parse("1.2.3.4").toIpSpace()).build());
 
     Set<AclLineMatchExpr> matchExprs =
-        aclSpecs
-            .stream()
+        aclSpecs.stream()
             .map(spec -> spec.acl.getSanitizedAcl().getLines().get(0).getMatchCondition())
             .collect(Collectors.toSet());
     assertThat(

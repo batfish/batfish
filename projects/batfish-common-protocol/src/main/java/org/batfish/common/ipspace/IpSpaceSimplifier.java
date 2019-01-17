@@ -120,14 +120,10 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
   public IpSpace visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
     // Remove whitelisted wildcards that are covered by blacklisted wildcards
     Set<IpWildcard> whitelist =
-        ipWildcardSetIpSpace
-            .getWhitelist()
-            .stream()
+        ipWildcardSetIpSpace.getWhitelist().stream()
             .filter(
                 whitelistedIpWildcard ->
-                    ipWildcardSetIpSpace
-                        .getBlacklist()
-                        .stream()
+                    ipWildcardSetIpSpace.getBlacklist().stream()
                         .noneMatch(whitelistedIpWildcard::subsetOf))
             .collect(Collectors.toSet());
 
@@ -137,15 +133,12 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
 
     // Remove blacklisted wildcards that don't overlap with whitelisted wildcards
     Set<IpWildcard> blacklist =
-        ipWildcardSetIpSpace
-            .getBlacklist()
-            .stream()
+        ipWildcardSetIpSpace.getBlacklist().stream()
             .filter(
                 blacklistedIpWildcard -> {
                   IpSpaceMayIntersectWildcard mayIntersect =
                       new IpSpaceMayIntersectWildcard(blacklistedIpWildcard, _namedIpSpaces);
-                  return whitelist
-                      .stream()
+                  return whitelist.stream()
                       .map(IpWildcard::toIpSpace)
                       .anyMatch(mayIntersect::visit);
                 })

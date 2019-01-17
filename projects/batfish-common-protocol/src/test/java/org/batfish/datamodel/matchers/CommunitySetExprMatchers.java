@@ -244,8 +244,7 @@ public final class CommunitySetExprMatchers {
   }
 
   private static @Nonnull String toString(Set<Long> communitySet) {
-    return communitySet
-        .stream()
+    return communitySet.stream()
         .map(CommonUtil::longToCommunity)
         .collect(ImmutableSet.toImmutableSet())
         .toString();

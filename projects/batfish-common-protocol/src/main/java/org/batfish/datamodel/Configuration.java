@@ -379,9 +379,7 @@ public final class Configuration implements Serializable {
   @JsonIgnore
   @Nullable
   public Ip getCanonicalIp() {
-    return getVrfs()
-        .values()
-        .stream()
+    return getVrfs().values().stream()
         .flatMap(v -> v.getInterfaces().values().stream())
         .flatMap(i -> i.getAllAddresses().stream())
         .map(InterfaceAddress::getIp)
@@ -390,9 +388,7 @@ public final class Configuration implements Serializable {
   }
 
   public Set<String> activeInterfaces() {
-    return _interfaces
-        .values()
-        .stream()
+    return _interfaces.values().stream()
         .filter(Interface::getActive)
         .map(Interface::getName)
         .collect(ImmutableSet.toImmutableSet());
@@ -614,8 +610,7 @@ public final class Configuration implements Serializable {
     if (rp == null) {
       return Collections.emptySortedSet();
     }
-    return rp.getSources()
-        .stream()
+    return rp.getSources().stream()
         .filter(not(RoutingPolicy::isGenerated))
         .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
   }
@@ -889,9 +884,7 @@ public final class Configuration implements Serializable {
   public void simplifyRoutingPolicies() {
     NavigableMap<String, RoutingPolicy> simpleRoutingPolicies =
         new TreeMap<>(
-            _routingPolicies
-                .entrySet()
-                .stream()
+            _routingPolicies.entrySet().stream()
                 .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().simplify())));
     _routingPolicies = simpleRoutingPolicies;
   }

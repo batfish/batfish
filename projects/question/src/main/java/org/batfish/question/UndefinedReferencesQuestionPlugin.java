@@ -52,9 +52,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
       Multimap<String, String> hostnameFilenameMap =
           _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
       Set<String> includeFiles =
-          hostnameFilenameMap
-              .entries()
-              .stream()
+          hostnameFilenameMap.entries().stream()
               .filter(e -> includeNodes.contains(e.getKey()))
               .map(Entry::getValue)
               .collect(Collectors.toSet());
@@ -63,9 +61,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
       SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
           undefinedReferences =
               _batfish.loadConvertConfigurationAnswerElementOrReparse().getUndefinedReferences();
-      undefinedReferences
-          .entrySet()
-          .stream()
+      undefinedReferences.entrySet().stream()
           .filter(e -> includeFiles.contains(e.getKey()))
           .forEach(e -> rows.addAll(processEntryToRows(e)));
 

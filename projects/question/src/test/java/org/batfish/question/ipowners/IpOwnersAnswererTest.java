@@ -134,8 +134,7 @@ public class IpOwnersAnswererTest {
   @Test
   public void testColumnPresence() {
     assertThat(
-        IpOwnersAnswerer.getColumnMetadata()
-            .stream()
+        IpOwnersAnswerer.getColumnMetadata().stream()
             .map(ColumnMetadata::getName)
             .collect(Collectors.toList()),
         contains(COL_NODE, COL_VRFNAME, COL_INTERFACE_NAME, COL_IP, COL_MASK, COL_ACTIVE));

@@ -89,8 +89,7 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
       UniqueIpAssignmentsQuestion question = (UniqueIpAssignmentsQuestion) _question;
       Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
       Map<String, Configuration> configs = _batfish.loadConfigurations();
-      return nodes
-          .stream()
+      return nodes.stream()
           // convert to stream of interfaces
           .flatMap(node -> configs.get(node).getAllInterfaces().values().stream())
           // narrow to interfaces of interest
@@ -101,9 +100,7 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
           // convert to stream of Entry<Ip, NodeInterfacePair>
           .flatMap(
               iface ->
-                  iface
-                      .getAllAddresses()
-                      .stream()
+                  iface.getAllAddresses().stream()
                       .map(
                           ifaceAdrr ->
                               Maps.immutableEntry(ifaceAdrr.getIp(), new NodeInterfacePair(iface))))

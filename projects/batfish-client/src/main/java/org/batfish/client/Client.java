@@ -300,9 +300,7 @@ public class Client extends AbstractClient implements IClient {
       throw new BatfishException(errorMessage, e);
     }
     if (!variable.getValues().isEmpty()
-        && variable
-            .getValues()
-            .stream()
+        && variable.getValues().stream()
             .noneMatch(allowedValue -> allowedValue.getName().equals(value.asText()))) {
       throw new BatfishException(
           String.format(

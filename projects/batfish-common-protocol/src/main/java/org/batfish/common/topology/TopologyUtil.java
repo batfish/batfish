@@ -64,8 +64,7 @@ public final class TopologyUtil {
     if (i1.getSwitchportMode() == SwitchportMode.TRUNK
         && i2.getSwitchportMode() == SwitchportMode.TRUNK) {
       // Both sides are trunks, so add edges from n1,v to n2,v for all shared VLANs.
-      i1.getAllowedVlans()
-          .stream()
+      i1.getAllowedVlans().stream()
           .forEach(
               vlan -> {
                 if (Objects.equals(i1.getNativeVlan(), vlan) && trunkWithNativeVlanAllowed(i2)) {
@@ -94,15 +93,12 @@ public final class TopologyUtil {
   private static void computeAugmentedLayer2SelfEdges(
       @Nonnull String hostname, @Nonnull Vrf vrf, @Nonnull ImmutableSet.Builder<Layer2Edge> edges) {
     Map<Integer, ImmutableList.Builder<String>> switchportsByVlan = new HashMap<>();
-    vrf.getInterfaces()
-        .values()
-        .stream()
+    vrf.getInterfaces().values().stream()
         .filter(Interface::getActive)
         .forEach(
             i -> {
               if (i.getSwitchportMode() == SwitchportMode.TRUNK) {
-                i.getAllowedVlans()
-                    .stream()
+                i.getAllowedVlans().stream()
                     .forEach(
                         vlan ->
                             switchportsByVlan
@@ -162,8 +158,7 @@ public final class TopologyUtil {
      */
     Set<EndpointPair<Layer2Node>> newEndpoints =
         Sets.difference(closure.edges(), initialGraph.edges());
-    newEndpoints
-        .stream()
+    newEndpoints.stream()
         .filter(ne -> !ne.source().equals(ne.target()))
         .forEach(
             newEndpoint ->
@@ -177,10 +172,7 @@ public final class TopologyUtil {
       @Nonnull Map<String, Configuration> configurations) {
     /* Filter out inactive interfaces */
     return new Layer1Topology(
-        rawLayer1Topology
-            .getGraph()
-            .edges()
-            .stream()
+        rawLayer1Topology.getGraph().edges().stream()
             .filter(
                 edge -> {
                   Interface i1 = getInterface(edge.getNode1(), configurations);
@@ -216,15 +208,12 @@ public final class TopologyUtil {
   private static void computeLayer2SelfEdges(
       @Nonnull String hostname, @Nonnull Vrf vrf, @Nonnull ImmutableSet.Builder<Layer2Edge> edges) {
     Map<Integer, ImmutableList.Builder<String>> switchportsByVlan = new HashMap<>();
-    vrf.getInterfaces()
-        .values()
-        .stream()
+    vrf.getInterfaces().values().stream()
         .filter(Interface::getActive)
         .forEach(
             i -> {
               if (i.getSwitchportMode() == SwitchportMode.TRUNK) {
-                i.getAllowedVlans()
-                    .stream()
+                i.getAllowedVlans().stream()
                     .forEach(
                         vlan ->
                             switchportsByVlan
@@ -262,10 +251,7 @@ public final class TopologyUtil {
       @Nonnull Layer1Topology layer1Topology, @Nonnull Map<String, Configuration> configurations) {
     ImmutableSet.Builder<Layer2Edge> edges = ImmutableSet.builder();
     // First add layer2 edges for physical links.
-    layer1Topology
-        .getGraph()
-        .edges()
-        .stream()
+    layer1Topology.getGraph().edges().stream()
         .forEach(layer1Edge -> computeLayer2EdgesForLayer1Edge(layer1Edge, configurations, edges));
 
     // Then add edges within each node to connect switchports on the same VLAN(s).
@@ -290,8 +276,7 @@ public final class TopologyUtil {
      */
     Set<EndpointPair<Layer2Node>> newEndpoints =
         Sets.difference(closure.edges(), initialGraph.edges());
-    newEndpoints
-        .stream()
+    newEndpoints.stream()
         .filter(ne -> !ne.source().equals(ne.target()))
         .forEach(
             newEndpoint ->
@@ -375,8 +360,7 @@ public final class TopologyUtil {
 
   private static boolean matchingSubnet(
       @Nonnull Set<InterfaceAddress> addresses1, @Nonnull Set<InterfaceAddress> addresses2) {
-    return addresses1
-        .stream()
+    return addresses1.stream()
         .anyMatch(
             address1 ->
                 addresses2.stream().anyMatch(address2 -> matchingSubnet(address1, address2)));
@@ -405,10 +389,7 @@ public final class TopologyUtil {
 
   public static @Nonnull Topology toTopology(Layer3Topology layer3Topology) {
     return new Topology(
-        layer3Topology
-            .getGraph()
-            .edges()
-            .stream()
+        layer3Topology.getGraph().edges().stream()
             .map(TopologyUtil::toEdge)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }
@@ -521,8 +502,7 @@ public final class TopologyUtil {
                             candidates.add(i);
                           });
                   // collect prefixes
-                  i.getAllAddresses()
-                      .stream()
+                  i.getAllAddresses().stream()
                       .map(InterfaceAddress::getIp)
                       .forEach(
                           ip ->
@@ -578,9 +558,7 @@ public final class TopologyUtil {
             enabledInterfaces,
             Entry::getKey, /* hostname */
             nodeInterfaces ->
-                nodeInterfaces
-                    .getValue()
-                    .stream()
+                nodeInterfaces.getValue().stream()
                     .collect(
                         ImmutableMap.toImmutableMap(Interface::getName, Interface::getVrfName)));
 
@@ -592,9 +570,7 @@ public final class TopologyUtil {
                 ipInterfaceOwnersEntry.getValue(),
                 Entry::getKey, /* Hostname */
                 ipNodeInterfaceOwnersEntry ->
-                    ipNodeInterfaceOwnersEntry
-                        .getValue()
-                        .stream()
+                    ipNodeInterfaceOwnersEntry.getValue().stream()
                         .map(interfaceVrfs.get(ipNodeInterfaceOwnersEntry.getKey())::get)
                         .collect(ImmutableSet.toImmutableSet())));
   }
@@ -614,9 +590,7 @@ public final class TopologyUtil {
                 Entry::getKey, /* node */
                 nodeEntry ->
                     ImmutableSet.copyOf(
-                        nodeEntry
-                            .getValue()
-                            .stream()
+                        nodeEntry.getValue().stream()
                             .map(
                                 iface ->
                                     configs

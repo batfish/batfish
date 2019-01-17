@@ -46,17 +46,12 @@ public final class RoleRegexNodeSpecifier implements NodeSpecifier {
     Optional<NodeRoleDimension> dimension = ctxt.getNodeRoleDimension(_roleDimension);
     Set<NodeRole> roles =
         dimension.isPresent()
-            ? dimension
-                .get()
-                .getRoles()
-                .stream()
+            ? dimension.get().getRoles().stream()
                 .filter(role -> _rolePattern.matcher(role.getName()).matches())
                 .collect(ImmutableSet.toImmutableSet())
             : ImmutableSet.of();
 
-    return ctxt.getConfigs()
-        .keySet()
-        .stream()
+    return ctxt.getConfigs().keySet().stream()
         .filter(node -> roles.stream().anyMatch(role -> role.matches(node)))
         .collect(ImmutableSet.toImmutableSet());
   }

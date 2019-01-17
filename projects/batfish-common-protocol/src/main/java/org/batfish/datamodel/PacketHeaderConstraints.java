@@ -463,8 +463,7 @@ public class PacketHeaderConstraints {
     // not be empty
     if (ports != null && protocols != null) {
       IntegerSpace resolvedPorts =
-          protocols
-              .stream()
+          protocols.stream()
               .map(Protocol::getPort)
               .map(IntegerSpace::of)
               .reduce(IntegerSpace::union)
@@ -564,8 +563,7 @@ public class PacketHeaderConstraints {
 
     // Only protocols specified
     if (ports == null) {
-      return protocols
-          .stream()
+      return protocols.stream()
           .map(Protocol::getPort)
           .map(IntegerSpace::of)
           .reduce(IntegerSpace::union)
@@ -573,8 +571,7 @@ public class PacketHeaderConstraints {
     }
 
     // Intersect. Protocols are the limiting factor, but they must belong to at least one space
-    return protocols
-        .stream()
+    return protocols.stream()
         .map(Protocol::getPort)
         .map(IntegerSpace::of)
         .reduce(IntegerSpace::union)

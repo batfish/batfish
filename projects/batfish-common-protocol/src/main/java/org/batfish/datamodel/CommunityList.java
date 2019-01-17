@@ -118,8 +118,7 @@ public class CommunityList extends CommunitySetExpr {
       return _literalCommunities;
     }
     _literalCommunities =
-        _lines
-            .stream()
+        _lines.stream()
             .map(CommunityListLine::getMatchCondition)
             .map(lineMatchCondition -> lineMatchCondition.asLiteralCommunities(null))
             .flatMap(Collection::stream)
@@ -130,8 +129,7 @@ public class CommunityList extends CommunitySetExpr {
   /** Check if any line matches given community */
   private boolean computeIfMatches(long community, @Nullable Environment environment) {
     Optional<CommunityListLine> matchingLine =
-        _lines
-            .stream()
+        _lines.stream()
             .filter(line -> line.getMatchCondition().matchCommunity(environment, community))
             .findFirst();
 
@@ -146,8 +144,7 @@ public class CommunityList extends CommunitySetExpr {
       return _dynamic;
     }
     _dynamic =
-        _lines
-            .stream()
+        _lines.stream()
             .map(CommunityListLine::getMatchCondition)
             .anyMatch(CommunitySetExpr::dynamicMatchCommunity);
     return _dynamic;
@@ -198,13 +195,11 @@ public class CommunityList extends CommunitySetExpr {
   @Override
   public boolean matchCommunities(Environment environment, Set<Long> communitySetCandidate) {
     if (reducible()) {
-      return communitySetCandidate
-          .stream()
+      return communitySetCandidate.stream()
           .anyMatch(community -> matchCommunity(environment, community));
     }
     Optional<CommunityListLine> matchingLine =
-        _lines
-            .stream()
+        _lines.stream()
             .filter(
                 line ->
                     line.getMatchCondition().matchCommunities(environment, communitySetCandidate))
@@ -246,8 +241,7 @@ public class CommunityList extends CommunitySetExpr {
       return _reducible;
     }
     _reducible =
-        _lines
-            .stream()
+        _lines.stream()
             .map(CommunityListLine::getMatchCondition)
             .allMatch(CommunitySetExpr::reducible);
     return _reducible;

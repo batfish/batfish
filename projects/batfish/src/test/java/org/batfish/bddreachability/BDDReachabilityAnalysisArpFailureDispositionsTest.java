@@ -102,12 +102,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
 
   private IpSpaceAssignment srcIpSpaceAssignment() {
     Set<Location> locations =
-        _configs
-            .get(NODE1)
-            .getVrfs()
-            .get(Configuration.DEFAULT_VRF_NAME)
-            .getInterfaces()
-            .values()
+        _configs.get(NODE1).getVrfs().get(Configuration.DEFAULT_VRF_NAME).getInterfaces().values()
             .stream()
             .limit(1)
             .map(iface -> new InterfaceLocation(iface.getOwner().getHostname(), iface.getName()))

@@ -56,8 +56,7 @@ public final class ReferenceInterfaceGroupInterfaceSpecifier implements Interfac
                             + _bookName
                             + "'"));
 
-    return nodes
-        .stream()
+    return nodes.stream()
         .map(n -> ctxt.getConfigs().get(n).getAllInterfaces().values())
         .flatMap(Collection::stream)
         // we have a stream of Interfaces now

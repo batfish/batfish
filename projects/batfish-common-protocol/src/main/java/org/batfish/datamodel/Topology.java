@@ -57,9 +57,7 @@ public final class Topology implements Serializable {
   }
 
   public Set<NodeInterfacePair> getNeighbors(NodeInterfacePair iface) {
-    return getInterfaceEdges()
-        .getOrDefault(iface, ImmutableSortedSet.of())
-        .stream()
+    return getInterfaceEdges().getOrDefault(iface, ImmutableSortedSet.of()).stream()
         .filter(e -> e.getTail().equals(iface))
         .map(Edge::getHead)
         .collect(ImmutableSet.toImmutableSet());

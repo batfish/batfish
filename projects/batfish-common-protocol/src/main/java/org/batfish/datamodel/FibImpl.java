@@ -129,8 +129,7 @@ public class FibImpl implements Fib {
 
         /* Filter out any non-forwarding routes from the matches */
         Set<AbstractRoute> forwardingRoutes =
-            nextHopLongestPrefixMatchRoutes
-                .stream()
+            nextHopLongestPrefixMatchRoutes.stream()
                 .filter(r -> !r.getNonForwarding())
                 .collect(ImmutableSet.toImmutableSet());
 
@@ -219,9 +218,7 @@ public class FibImpl implements Fib {
                         routesByNextHopInterface
                             .computeIfAbsent(nextHopInterface, n -> ImmutableSet.builder())
                             .add(route)));
-    return routesByNextHopInterface
-        .entrySet()
-        .stream()
+    return routesByNextHopInterface.entrySet().stream()
         .collect(
             ImmutableMap.toImmutableMap(
                 Entry::getKey /* interfaceName */,

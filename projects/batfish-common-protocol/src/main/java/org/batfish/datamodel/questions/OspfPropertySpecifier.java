@@ -104,9 +104,7 @@ public class OspfPropertySpecifier extends PropertySpecifier {
 
   @Override
   public List<String> getMatchingProperties() {
-    return JAVA_MAP
-        .keySet()
-        .stream()
+    return JAVA_MAP.keySet().stream()
         .filter(prop -> _pattern.matcher(prop.toLowerCase()).matches())
         .collect(ImmutableList.toImmutableList());
   }
