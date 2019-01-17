@@ -12,7 +12,7 @@ fi
 
 CMD_FILE="$1"
 
-if [ -n "$2" ]; then
+if [ -n "${2:-}" ]; then
   COORDINATOR_ARGS="$2"
 else
   COORDINATOR_ARGS="-periodassignworkms 5"
