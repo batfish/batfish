@@ -86,6 +86,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpVersion;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
@@ -1607,6 +1608,16 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, KEYRING, "kunused", 0));
     assertThat(
         ccae, hasUndefinedReference(filename, KEYRING, "kundefined", ISAKMP_PROFILE_KEYRING));
+  }
+
+  @Test
+  public void testIosNativeVlan() throws IOException {
+    String hostname = "ios-native-vlan";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasInterface("Ethernet1", hasNativeVlan(nullValue())));
+    assertThat(c, hasInterface("Ethernet2", hasNativeVlan(3)));
+    assertThat(c, hasInterface("Ethernet3", hasNativeVlan(1)));
   }
 
   @Test

@@ -31,6 +31,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasIsis;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasMlagId;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasMtu;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasName;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasNativeVlan;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfArea;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfAreaName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfCost;
@@ -200,6 +201,19 @@ public final class InterfaceMatchers {
   /** Provides a matcher that matches if the provided name matches the interface's name. */
   public static HasName hasName(String expectedName) {
     return new HasName(equalTo(expectedName));
+  }
+
+  /** Provides a matcher that matches if the provided value matches the interface's Native VLAN. */
+  public static HasNativeVlan hasNativeVlan(@Nullable Integer value) {
+    return hasNativeVlan(equalTo(value));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * Native VLAN.
+   */
+  public static HasNativeVlan hasNativeVlan(Matcher<? super Integer> subMatcher) {
+    return new HasNativeVlan(subMatcher);
   }
 
   /**
