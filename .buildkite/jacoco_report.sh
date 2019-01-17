@@ -14,3 +14,4 @@ java -jar ${JACOCO_CLI_JAR} report \
      $(find -name jacoco.exec -type f workspace/) \
      --classfiles ${ALLINONE_JAR} \
      --xml jacoco.xml
+bash <(curl -s https://codecov.io/bash)
