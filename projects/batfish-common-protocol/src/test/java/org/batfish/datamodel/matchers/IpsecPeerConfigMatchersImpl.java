@@ -24,15 +24,15 @@ final class IpsecPeerConfigMatchersImpl {
     }
   }
 
-  static class HasPhysicalInterface extends FeatureMatcher<IpsecPeerConfig, String> {
+  static class HasSourceInterface extends FeatureMatcher<IpsecPeerConfig, String> {
 
-    HasPhysicalInterface(@Nonnull Matcher<? super String> subMatcher) {
-      super(subMatcher, "An IPSec peer config with PhysicalInterface:", "PhysicalInterface");
+    HasSourceInterface(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "An IPSec peer config with SourceInterface:", "SourceInterface");
     }
 
     @Override
     protected String featureValueOf(IpsecPeerConfig actual) {
-      return actual.getPhysicalInterface();
+      return actual.getSourceInterface();
     }
   }
 

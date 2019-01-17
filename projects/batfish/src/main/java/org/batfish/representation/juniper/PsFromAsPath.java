@@ -6,9 +6,9 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 
+/** Represents a "from as-path" line in a {@link PsTerm} */
 public class PsFromAsPath extends PsFrom {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private String _asPathName;

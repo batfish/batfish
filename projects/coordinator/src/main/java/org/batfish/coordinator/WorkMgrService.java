@@ -1587,9 +1587,7 @@ public class WorkMgrService {
 
       String networkId = work.getWorkItem().getContainerName();
       Optional<String> networkOpt =
-          Main.getWorkMgr()
-              .getNetworkNames()
-              .stream()
+          Main.getWorkMgr().getNetworkNames().stream()
               .filter(
                   n -> Main.getWorkMgr().getIdManager().getNetworkId(n).getId().equals(networkId))
               .findFirst();

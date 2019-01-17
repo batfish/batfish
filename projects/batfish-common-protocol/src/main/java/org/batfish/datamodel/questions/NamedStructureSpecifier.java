@@ -96,8 +96,7 @@ public class NamedStructureSpecifier extends PropertySpecifier {
   public NamedStructureSpecifier(Collection<String> structureTypes) {
     // quote and join
     _expression =
-        structureTypes
-            .stream()
+        structureTypes.stream()
             .map(String::trim)
             .map(Pattern::quote)
             .collect(Collectors.joining("|"));
@@ -117,9 +116,7 @@ public class NamedStructureSpecifier extends PropertySpecifier {
 
   @Override
   public List<String> getMatchingProperties() {
-    return JAVA_MAP
-        .keySet()
-        .stream()
+    return JAVA_MAP.keySet().stream()
         .filter(prop -> _pattern.matcher(prop).matches())
         .collect(ImmutableList.toImmutableList());
   }

@@ -130,8 +130,7 @@ public class BatfishCompressor {
 
     // get the set of prefixes for this equivalence class.
     TreeSet<Prefix> prefixSet =
-        asPositiveIpWildcards(slice.getHeaderSpace().getDstIps())
-            .stream()
+        asPositiveIpWildcards(slice.getHeaderSpace().getDstIps()).stream()
             .map(IpWildcard::toPrefix)
             .collect(Collectors.toCollection(TreeSet::new));
 

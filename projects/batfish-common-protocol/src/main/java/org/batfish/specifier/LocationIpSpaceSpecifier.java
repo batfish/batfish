@@ -54,9 +54,7 @@ public final class LocationIpSpaceSpecifier implements IpSpaceSpecifier {
     checkArgument(!locations.isEmpty(), "No such locations");
     IpSpace ipSpace =
         AclIpSpace.union(
-            InferFromLocationIpSpaceSpecifier.INSTANCE
-                .resolve(locations, ctxt)
-                .getEntries()
+            InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(locations, ctxt).getEntries()
                 .stream()
                 .map(Entry::getIpSpace)
                 .collect(Collectors.toList()));

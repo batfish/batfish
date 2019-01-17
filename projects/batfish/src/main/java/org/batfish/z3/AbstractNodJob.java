@@ -112,9 +112,7 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
 
   ReachabilityProgram instrumentReachabilityProgram(ReachabilityProgram program) {
     List<RuleStatement> rules =
-        program
-            .getRules()
-            .stream()
+        program.getRules().stream()
             .map(_ingressLocationInstrumentation::instrumentStatement)
             .map(RuleStatement.class::cast)
             .collect(ImmutableList.toImmutableList());
@@ -132,9 +130,7 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
   }
 
   protected Set<Flow> getFlows(Map<IngressLocation, Map<String, Long>> ingressLocationConstraints) {
-    return ingressLocationConstraints
-        .entrySet()
-        .stream()
+    return ingressLocationConstraints.entrySet().stream()
         .map(
             entry ->
                 createFlow(

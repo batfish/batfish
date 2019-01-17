@@ -122,11 +122,8 @@ final class ReachabilityParametersResolver {
   IpSpace resolveDestinationIpSpace() throws InvalidReachabilityParametersException {
     IpSpace destinationIpSpace =
         AclIpSpace.union(
-            _params
-                .getDestinationIpSpaceSpecifier()
-                .resolve(ImmutableSet.of(), _context)
-                .getEntries()
-                .stream()
+            _params.getDestinationIpSpaceSpecifier().resolve(ImmutableSet.of(), _context)
+                .getEntries().stream()
                 .map(Entry::getIpSpace)
                 .collect(ImmutableList.toImmutableList()));
 
@@ -165,10 +162,7 @@ final class ReachabilityParametersResolver {
   @VisibleForTesting
   IpSpaceAssignment resolveSourceIpSpaceAssignment() throws InvalidReachabilityParametersException {
     Set<Location> sourceLocations =
-        _params
-            .getSourceLocationSpecifier()
-            .resolve(_context)
-            .stream()
+        _params.getSourceLocationSpecifier().resolve(_context).stream()
             .filter(l -> isActive(l, _configs))
             .collect(ImmutableSet.toImmutableSet());
     if (sourceLocations.isEmpty()) {
@@ -178,10 +172,7 @@ final class ReachabilityParametersResolver {
     // resolve the IpSpaceSpecifier, and filter out entries with empty IpSpaces
     IpSpaceAssignment sourceIpSpaceAssignment =
         IpSpaceAssignment.of(
-            _params
-                .getSourceIpSpaceSpecifier()
-                .resolve(sourceLocations, _context)
-                .getEntries()
+            _params.getSourceIpSpaceSpecifier().resolve(sourceLocations, _context).getEntries()
                 .stream()
                 .filter(
                     entry ->

@@ -59,9 +59,7 @@ public final class IpOwners {
                 Entry::getKey, /* interface */
                 ifaceEntry ->
                     AclIpSpace.union(
-                        ifaceEntry
-                            .getValue()
-                            .stream()
+                        ifaceEntry.getValue().stream()
                             .map(Ip::toIpSpace)
                             .collect(Collectors.toList()))));
   }

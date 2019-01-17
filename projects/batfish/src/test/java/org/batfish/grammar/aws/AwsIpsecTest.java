@@ -12,7 +12,7 @@ import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasRemoteId
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasDestinationAddress;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasLocalAddress;
-import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasPhysicalInterface;
+import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasSourceInterface;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasTunnelInterface;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.isIpsecStaticPeerConfigThat;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -161,7 +161,7 @@ public class AwsIpsecTest {
                     hasDestinationAddress(Ip.parse("4.4.4.27")),
                     IpsecPeerConfigMatchers.hasIkePhase1Policy("vpn-ba2e34a8-1"),
                     IpsecPeerConfigMatchers.hasIpsecPolicy("vpn-ba2e34a8-1"),
-                    hasPhysicalInterface("external1"),
+                    hasSourceInterface("external1"),
                     hasLocalAddress(Ip.parse("1.2.3.4")),
                     hasTunnelInterface(equalTo("vpn1"))))));
   }

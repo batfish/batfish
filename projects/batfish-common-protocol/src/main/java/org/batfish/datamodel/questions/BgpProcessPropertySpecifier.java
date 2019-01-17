@@ -98,9 +98,7 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
 
   @Override
   public List<String> getMatchingProperties() {
-    return JAVA_MAP
-        .keySet()
-        .stream()
+    return JAVA_MAP.keySet().stream()
         .filter(prop -> _pattern.matcher(prop.toLowerCase()).matches())
         .collect(ImmutableList.toImmutableList());
   }
@@ -117,13 +115,9 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
    */
   @VisibleForTesting
   static boolean isRouteReflector(BgpProcess p) {
-    return p.getActiveNeighbors()
-            .values()
-            .stream()
+    return p.getActiveNeighbors().values().stream()
             .anyMatch(BgpActivePeerConfig::getRouteReflectorClient)
-        || p.getPassiveNeighbors()
-            .values()
-            .stream()
+        || p.getPassiveNeighbors().values().stream()
             .anyMatch(BgpPassivePeerConfig::getRouteReflectorClient);
   }
 }

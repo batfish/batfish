@@ -80,8 +80,7 @@ public final class HeaderSpaceToBDD {
     }
 
     return _bddOps.or(
-        ipProtocols
-            .stream()
+        ipProtocols.stream()
             .map(IpProtocol::number)
             .map(_bddPacket.getIpProtocol()::value)
             .collect(Collectors.toList()));
@@ -164,9 +163,7 @@ public final class HeaderSpaceToBDD {
             BDDOps.negateIfNonNull(
                 toBDD(headerSpace.getNotFragmentOffsets(), _bddPacket.getFragmentOffset())),
             toBDD(
-                headerSpace
-                    .getStates()
-                    .stream()
+                headerSpace.getStates().stream()
                     .map(FlowState::number)
                     .collect(Collectors.toList()),
                 _bddPacket.getState()));

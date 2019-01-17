@@ -44,9 +44,7 @@ public class TransformedVarCollector
 
   @Override
   public Set<Field> visitAndExpr(AndExpr andExpr) {
-    return andExpr
-        .getConjuncts()
-        .stream()
+    return andExpr.getConjuncts().stream()
         .map(TransformedVarCollector::collectTransformedVars)
         .flatMap(Set::stream)
         .collect(ImmutableSet.toImmutableSet());
@@ -98,9 +96,7 @@ public class TransformedVarCollector
 
   @Override
   public Set<Field> visitOrExpr(OrExpr orExpr) {
-    return orExpr
-        .getDisjuncts()
-        .stream()
+    return orExpr.getDisjuncts().stream()
         .map(TransformedVarCollector::collectTransformedVars)
         .flatMap(Set::stream)
         .collect(ImmutableSet.toImmutableSet());

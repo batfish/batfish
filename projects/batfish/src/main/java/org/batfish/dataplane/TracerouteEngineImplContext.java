@@ -285,8 +285,7 @@ class TracerouteEngineImplContext {
                         ? null
                         : resolvedNextHopIp;
                 SortedSet<String> routesForThisNextHopInterface =
-                    matchingRoutes
-                        .stream()
+                    matchingRoutes.stream()
                         .map(rc -> rc + "_fnhip:" + finalNextHopIp)
                         .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
 

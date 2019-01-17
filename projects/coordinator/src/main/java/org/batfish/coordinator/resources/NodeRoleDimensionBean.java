@@ -24,9 +24,7 @@ public class NodeRoleDimensionBean {
   public NodeRoleDimensionBean(NodeRoleDimension nrDim, String snapshot, Set<String> fromNodes) {
     this(
         nrDim.getName(),
-        nrDim
-            .getRoles()
-            .stream()
+        nrDim.getRoles().stream()
             .map(role -> new NodeRoleBean(role, fromNodes))
             .collect(Collectors.toSet()),
         snapshot,
@@ -62,8 +60,7 @@ public class NodeRoleDimensionBean {
     SortedSet<NodeRole> nodeRoles =
         roles == null
             ? ImmutableSortedSet.of()
-            : roles
-                .stream()
+            : roles.stream()
                 .map(NodeRoleBean::toNodeRole)
                 .collect(ImmutableSortedSet.toImmutableSortedSet(NodeRole::compareTo));
     return NodeRoleDimension.builder().setName(name).setRoles(nodeRoles).setType(type).build();
