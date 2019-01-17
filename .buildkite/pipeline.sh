@@ -51,49 +51,49 @@ cat <<EOF
 EOF
 
 ###### Maven tests
-#cat <<EOF
-#  - label: "Maven tests + Coverage"
-#    command:
-#      - mvn -f projects/pom.xml verify -DskipTests=false -Djacoco.skip=false
-#      - mkdir -p workspace
-#      - rsync -zarv --prune-empty-dirs --include '*/' --include 'jacoco*.exec' --exclude '*' projects/ workspace/
-#    artifact_paths:
-#      - workspace/**/jacoco.exec
-#    plugins:
-#      - docker#${DOCKER_VERSION}:
-#          image: ${DOCKER_IMAGE}
-#          always-pull: true
-#  - label: "Maven checkstyle"
-#    command: "mvn -f projects/pom.xml compile checkstyle:checkstyle -Dcheckstyle.skip=false"
-#    plugins:
-#      - docker#${DOCKER_VERSION}:
-#          image: ${DOCKER_IMAGE}
-#          always-pull: true
-#  - label: "Maven dependency analysis"
-#    command: "mvn -f projects/pom.xml verify -Dmdep.analyze.skip=false"
-#    plugins:
-#      - docker#${DOCKER_VERSION}:
-#          image: ${DOCKER_IMAGE}
-#          always-pull: true
-#  - label: "Maven findbugs"
-#    command: "mvn -f projects/pom.xml verify -Dfindbugs.skip=false"
-#    plugins:
-#      - docker#${DOCKER_VERSION}:
-#          image: ${DOCKER_IMAGE}
-#          always-pull: true
-#  - label: "Maven javadoc"
-#    command: "mvn -f projects/pom.xml verify -Dmaven.javadoc.skip=false"
-#    plugins:
-#      - docker#${DOCKER_VERSION}:
-#          image: ${DOCKER_IMAGE}
-#          always-pull: true
-#  - label: "Maven pmd"
-#    command: "mvn -f projects/pom.xml verify -Dpmd.skip=false"
-#    plugins:
-#      - docker#${DOCKER_VERSION}:
-#          image: ${DOCKER_IMAGE}
-#          always-pull: true
-#EOF
+cat <<EOF
+  - label: "Maven tests + Coverage"
+    command:
+      - mvn -f projects/pom.xml verify -DskipTests=false -Djacoco.skip=false
+      - mkdir -p workspace
+      - rsync -zarv --prune-empty-dirs --include '*/' --include 'jacoco*.exec' --exclude '*' projects/ workspace/
+    artifact_paths:
+      - workspace/**/jacoco.exec
+    plugins:
+      - docker#${DOCKER_VERSION}:
+          image: ${DOCKER_IMAGE}
+          always-pull: true
+  - label: "Maven checkstyle"
+    command: "mvn -f projects/pom.xml compile checkstyle:checkstyle -Dcheckstyle.skip=false"
+    plugins:
+      - docker#${DOCKER_VERSION}:
+          image: ${DOCKER_IMAGE}
+          always-pull: true
+  - label: "Maven dependency analysis"
+    command: "mvn -f projects/pom.xml verify -Dmdep.analyze.skip=false"
+    plugins:
+      - docker#${DOCKER_VERSION}:
+          image: ${DOCKER_IMAGE}
+          always-pull: true
+  - label: "Maven findbugs"
+    command: "mvn -f projects/pom.xml verify -Dfindbugs.skip=false"
+    plugins:
+      - docker#${DOCKER_VERSION}:
+          image: ${DOCKER_IMAGE}
+          always-pull: true
+  - label: "Maven javadoc"
+    command: "mvn -f projects/pom.xml verify -Dmaven.javadoc.skip=false"
+    plugins:
+      - docker#${DOCKER_VERSION}:
+          image: ${DOCKER_IMAGE}
+          always-pull: true
+  - label: "Maven pmd"
+    command: "mvn -f projects/pom.xml verify -Dpmd.skip=false"
+    plugins:
+      - docker#${DOCKER_VERSION}:
+          image: ${DOCKER_IMAGE}
+          always-pull: true
+EOF
 
 ###### Ref tests
 # TODO: consider parallel builds for this?
