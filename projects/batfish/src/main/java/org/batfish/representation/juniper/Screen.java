@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Represents Juniper screens */
-public class Screen implements Serializable {
+public final class Screen implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -16,7 +16,7 @@ public class Screen implements Serializable {
 
   public Screen(String name) {
     _name = name;
-    _action = ScreenActionDrop.INSTANCE;
+    _action = ScreenAction.Drop;
     _screenOptions = new ArrayList<>();
   }
 

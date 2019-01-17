@@ -1,6 +1,5 @@
 package org.batfish.representation.juniper;
 
-import com.google.common.collect.ImmutableList;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.batfish.datamodel.HeaderSpace;
@@ -19,6 +18,8 @@ public final class IpUnknownProtocol implements ScreenOption {
 
   public static final IpUnknownProtocol INSTANCE = new IpUnknownProtocol();
 
+  private static final AclLineMatchExpr ACL_LINE_MATCH_EXPR = buildAclLineMatchExpr();
+
   private IpUnknownProtocol() {}
 
   @Override
@@ -26,16 +27,19 @@ public final class IpUnknownProtocol implements ScreenOption {
     return IP_UNKNOWN_PROTOCOL;
   }
 
-  @Override
-  public AclLineMatchExpr toAclLineMatchExpr() {
+  static AclLineMatchExpr buildAclLineMatchExpr() {
     HeaderSpace headerSpace =
         HeaderSpace.builder()
             .setNotIpProtocols(
                 IntStream.range(0, LARGEST_VALID_PROTOCOL)
                     .mapToObj(IpProtocol::fromNumber)
                     .collect(Collectors.toList()))
-            .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
             .build();
     return AclLineMatchExprs.match(headerSpace);
+  }
+
+  @Override
+  public AclLineMatchExpr getAclLineMatchExpr() {
+    return ACL_LINE_MATCH_EXPR;
   }
 }

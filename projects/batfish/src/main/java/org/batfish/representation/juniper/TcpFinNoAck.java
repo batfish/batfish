@@ -8,36 +8,42 @@ import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 
-/** Represents a {@code ScreenOption} checking TCP winnuke */
-public final class TCPSynFin implements ScreenOption {
+/** Represents a {@code ScreenOption} checking TCP flags with fin set but ack unset */
+public final class TcpFinNoAck implements ScreenOption {
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private static final String TCP_SYN_FIN = "tcp syn fin";
+  private static final String TCP_FIN_NO_ACK = "tcp fin no ack";
 
-  public static final TCPSynFin INSTANCE = new TCPSynFin();
+  public static final TcpFinNoAck INSTANCE = new TcpFinNoAck();
 
-  private TCPSynFin() {}
+  private static final AclLineMatchExpr ACL_LINE_MATCH_EXPR = buildAclLineMatchExpr();
+
+  private TcpFinNoAck() {}
 
   @Override
   public String getName() {
-    return TCP_SYN_FIN;
+    return TCP_FIN_NO_ACK;
   }
 
-  @Override
-  public AclLineMatchExpr toAclLineMatchExpr() {
+  static AclLineMatchExpr buildAclLineMatchExpr() {
     HeaderSpace headerSpace =
         HeaderSpace.builder()
             .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
             .setTcpFlags(
                 ImmutableList.of(
                     TcpFlagsMatchConditions.builder()
-                        .setTcpFlags(TcpFlags.builder().setSyn(false).setFin(false).build())
-                        .setUseSyn(true)
+                        .setTcpFlags(TcpFlags.builder().setAck(false).setFin(true).build())
+                        .setUseAck(true)
                         .setUseFin(true)
                         .build()))
             .build();
     return AclLineMatchExprs.match(headerSpace);
+  }
+
+  @Override
+  public AclLineMatchExpr getAclLineMatchExpr() {
+    return ACL_LINE_MATCH_EXPR;
   }
 }

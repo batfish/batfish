@@ -6,7 +6,7 @@ set interfaces ge-0/0/0 unit 0 family inet address 1.1.1.1/24
 set security zones security-zone untrust interfaces ge-0/0/0.0
 #
 # set screen options
-set security screen ids-option IDS_OPTION_NAME alarm-without-drop
+set security screen ids-option ALARM_OPTION alarm-without-drop
 set security screen ids-option IDS_OPTION_NAME description TEXT
 set security screen ids-option IDS_OPTION_NAME icmp flood threshold 1
 set security screen ids-option IDS_OPTION_NAME icmp fragment

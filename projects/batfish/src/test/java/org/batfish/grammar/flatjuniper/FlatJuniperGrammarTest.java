@@ -239,7 +239,7 @@ import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.batfish.representation.juniper.ICMPLarge;
+import org.batfish.representation.juniper.IcmpLarge;
 import org.batfish.representation.juniper.InterfaceRange;
 import org.batfish.representation.juniper.InterfaceRangeMember;
 import org.batfish.representation.juniper.InterfaceRangeMemberRange;
@@ -260,12 +260,12 @@ import org.batfish.representation.juniper.NatRuleSet;
 import org.batfish.representation.juniper.NatRuleThenOff;
 import org.batfish.representation.juniper.NatRuleThenPool;
 import org.batfish.representation.juniper.Screen;
-import org.batfish.representation.juniper.ScreenActionAlarm;
+import org.batfish.representation.juniper.ScreenAction;
 import org.batfish.representation.juniper.ScreenOption;
-import org.batfish.representation.juniper.TCPFinNoAck;
-import org.batfish.representation.juniper.TCPNoFlag;
-import org.batfish.representation.juniper.TCPSynFin;
-import org.batfish.representation.juniper.TCPWinnuke;
+import org.batfish.representation.juniper.TcpFinNoAck;
+import org.batfish.representation.juniper.TcpNoFlag;
+import org.batfish.representation.juniper.TcpSynFin;
+import org.batfish.representation.juniper.TcpWinnuke;
 import org.batfish.representation.juniper.Zone;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -3837,21 +3837,26 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testScreenOptions() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("screen-options");
+
+    assertThat(
+        juniperConfiguration.getMasterLogicalSystem().getScreens().get("ALARM_OPTION").getAction(),
+        equalTo(ScreenAction.Alarm_Without_Drop));
+
     Screen ids = juniperConfiguration.getMasterLogicalSystem().getScreens().get("IDS_OPTION_NAME");
 
     assertThat(ids, not(nullValue()));
 
-    assertThat(ids.getAction(), equalTo(ScreenActionAlarm.INSTANCE));
+    assertThat(ids.getAction(), equalTo(ScreenAction.Drop));
     assertThat(
         ids.getScreenOptions(),
         equalTo(
             ImmutableList.of(
-                ICMPLarge.INSTANCE,
+                IcmpLarge.INSTANCE,
                 IpUnknownProtocol.INSTANCE,
-                TCPFinNoAck.INSTANCE,
-                TCPSynFin.INSTANCE,
-                TCPNoFlag.INSTANCE,
-                TCPWinnuke.INSTANCE)));
+                TcpFinNoAck.INSTANCE,
+                TcpSynFin.INSTANCE,
+                TcpNoFlag.INSTANCE,
+                TcpWinnuke.INSTANCE)));
   }
 
   @Test
@@ -3861,22 +3866,24 @@ public final class FlatJuniperGrammarTest {
     IpAccessList inAcl = config.getIpAccessLists().get("FILTER1");
     IpAccessList screenAcl = config.getIpAccessLists().get("~SCREEN~IDS_OPTION_NAME");
     IpAccessList ifaceScreenAcl = config.getIpAccessLists().get("~SCREEN~ge-0/0/0.0");
+    IpAccessList zoneScreenAcl = config.getIpAccessLists().get("~SCREEN~untrust");
     IpAccessList combinedInAcl =
         config.getIpAccessLists().get("~COMBINED_INCOMING_FILTER~ge-0/0/0.0");
 
     assertThat(inAcl, notNullValue());
     assertThat(screenAcl, notNullValue());
+    assertThat(zoneScreenAcl, notNullValue());
     assertThat(ifaceScreenAcl, notNullValue());
     assertThat(combinedInAcl, notNullValue());
 
     List<ScreenOption> supportedOptions =
         ImmutableList.of(
-            ICMPLarge.INSTANCE,
+            IcmpLarge.INSTANCE,
             IpUnknownProtocol.INSTANCE,
-            TCPFinNoAck.INSTANCE,
-            TCPSynFin.INSTANCE,
-            TCPNoFlag.INSTANCE,
-            TCPWinnuke.INSTANCE);
+            TcpFinNoAck.INSTANCE,
+            TcpSynFin.INSTANCE,
+            TcpNoFlag.INSTANCE,
+            TcpWinnuke.INSTANCE);
 
     assertThat(
         inAcl,
@@ -3905,9 +3912,22 @@ public final class FlatJuniperGrammarTest {
                             new OrMatchExpr(
                                 supportedOptions
                                     .stream()
-                                    .map(ScreenOption::toAclLineMatchExpr)
+                                    .map(ScreenOption::getAclLineMatchExpr)
                                     .collect(Collectors.toList()))),
                         IpAccessListLine.ACCEPT_ALL))
+                .build()));
+
+    assertThat(
+        zoneScreenAcl,
+        equalTo(
+            IpAccessList.builder()
+                .setName("~SCREEN~untrust")
+                .setLines(
+                    ImmutableList.of(
+                        IpAccessListLine.accepting(
+                            new AndMatchExpr(
+                                ImmutableList.of(
+                                    new PermittedByAcl("~SCREEN~IDS_OPTION_NAME", false))))))
                 .build()));
 
     assertThat(
@@ -3917,10 +3937,7 @@ public final class FlatJuniperGrammarTest {
                 .setName("~SCREEN~ge-0/0/0.0")
                 .setLines(
                     ImmutableList.of(
-                        IpAccessListLine.accepting(
-                            new AndMatchExpr(
-                                ImmutableList.of(
-                                    new PermittedByAcl("~SCREEN~IDS_OPTION_NAME", false))))))
+                        IpAccessListLine.accepting(new PermittedByAcl("~SCREEN~untrust", false))))
                 .build()));
 
     assertThat(

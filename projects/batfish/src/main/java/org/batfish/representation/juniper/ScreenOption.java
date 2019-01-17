@@ -8,6 +8,6 @@ public interface ScreenOption extends Serializable {
   /** */
   String getName();
 
-  /** Convert a screen option to ACL line expression */
-  AclLineMatchExpr toAclLineMatchExpr();
+  /** Convert a screen option to an ACL line expression that match flows this option rejects. */
+  AclLineMatchExpr getAclLineMatchExpr();
 }

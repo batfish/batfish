@@ -8,7 +8,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 
 /** Represents a {@code ScreenOption} checking large icmp packets */
-public final class ICMPLarge implements ScreenOption {
+public final class IcmpLarge implements ScreenOption {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -16,22 +16,28 @@ public final class ICMPLarge implements ScreenOption {
   private static final String ICMP_LARGE = "icmp large";
   private static final int LARGEST_ICMP_PACKET_LENGTH = 1024;
 
-  public static final ICMPLarge INSTANCE = new ICMPLarge();
+  public static final IcmpLarge INSTANCE = new IcmpLarge();
 
-  private ICMPLarge() {}
+  private static final AclLineMatchExpr ACL_LINE_MATCH_EXPR = buildAclLineMatchExpr();
+
+  private IcmpLarge() {}
 
   @Override
   public String getName() {
     return ICMP_LARGE;
   }
 
-  @Override
-  public AclLineMatchExpr toAclLineMatchExpr() {
+  static AclLineMatchExpr buildAclLineMatchExpr() {
     HeaderSpace headerSpace =
         HeaderSpace.builder()
             .setIpProtocols(ImmutableList.of(IpProtocol.ICMP))
             .setNotPacketLengths(ImmutableList.of(new SubRange(0, LARGEST_ICMP_PACKET_LENGTH)))
             .build();
     return AclLineMatchExprs.match(headerSpace);
+  }
+
+  @Override
+  public AclLineMatchExpr getAclLineMatchExpr() {
+    return ACL_LINE_MATCH_EXPR;
   }
 }

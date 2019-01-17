@@ -581,7 +581,7 @@ import org.batfish.representation.juniper.FwThenNop;
 import org.batfish.representation.juniper.GeneratedRoute;
 import org.batfish.representation.juniper.HostProtocol;
 import org.batfish.representation.juniper.HostSystemService;
-import org.batfish.representation.juniper.ICMPLarge;
+import org.batfish.representation.juniper.IcmpLarge;
 import org.batfish.representation.juniper.IkeGateway;
 import org.batfish.representation.juniper.IkePolicy;
 import org.batfish.representation.juniper.IkeProposal;
@@ -685,13 +685,13 @@ import org.batfish.representation.juniper.RouteFilter;
 import org.batfish.representation.juniper.RoutingInformationBase;
 import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.Screen;
-import org.batfish.representation.juniper.ScreenActionAlarm;
+import org.batfish.representation.juniper.ScreenAction;
 import org.batfish.representation.juniper.StaticRoute;
 import org.batfish.representation.juniper.StubSettings;
-import org.batfish.representation.juniper.TCPFinNoAck;
-import org.batfish.representation.juniper.TCPNoFlag;
-import org.batfish.representation.juniper.TCPSynFin;
-import org.batfish.representation.juniper.TCPWinnuke;
+import org.batfish.representation.juniper.TcpFinNoAck;
+import org.batfish.representation.juniper.TcpNoFlag;
+import org.batfish.representation.juniper.TcpSynFin;
+import org.batfish.representation.juniper.TcpWinnuke;
 import org.batfish.representation.juniper.Vlan;
 import org.batfish.representation.juniper.Zone;
 import org.batfish.vendor.StructureType;
@@ -2895,14 +2895,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void enterSeso_alarm(FlatJuniperParser.Seso_alarmContext ctx) {
-    _currentScreen.setAction(ScreenActionAlarm.INSTANCE);
+  public void exitSeso_alarm(FlatJuniperParser.Seso_alarmContext ctx) {
+    _currentScreen.setAction(ScreenAction.Alarm_Without_Drop);
   }
 
   @Override
   public void enterSeso_icmp(FlatJuniperParser.Seso_icmpContext ctx) {
     if (!ctx.LARGE().isEmpty()) {
-      _currentScreen.getScreenOptions().add(ICMPLarge.INSTANCE);
+      _currentScreen.getScreenOptions().add(IcmpLarge.INSTANCE);
     }
   }
 
@@ -2916,13 +2916,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterSeso_tcp(FlatJuniperParser.Seso_tcpContext ctx) {
     if (!ctx.WINNUKE().isEmpty()) {
-      _currentScreen.getScreenOptions().add(TCPWinnuke.INSTANCE);
+      _currentScreen.getScreenOptions().add(TcpWinnuke.INSTANCE);
     } else if (!ctx.TCP_NO_FLAG().isEmpty()) {
-      _currentScreen.getScreenOptions().add(TCPNoFlag.INSTANCE);
+      _currentScreen.getScreenOptions().add(TcpNoFlag.INSTANCE);
     } else if (!ctx.SYN_FIN().isEmpty()) {
-      _currentScreen.getScreenOptions().add(TCPSynFin.INSTANCE);
+      _currentScreen.getScreenOptions().add(TcpSynFin.INSTANCE);
     } else if (!ctx.FIN_NO_ACK().isEmpty()) {
-      _currentScreen.getScreenOptions().add(TCPFinNoAck.INSTANCE);
+      _currentScreen.getScreenOptions().add(TcpFinNoAck.INSTANCE);
     }
   }
 

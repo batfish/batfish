@@ -9,24 +9,25 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 
 /** Represents a {@code ScreenOption} checking no TCP flags */
-public final class TCPNoFlag implements ScreenOption {
+public final class TcpNoFlag implements ScreenOption {
 
   /** */
   private static final long serialVersionUID = 1L;
 
   private static final String TCP_NO_FLAG = "tcp no flag";
 
-  public static final TCPNoFlag INSTANCE = new TCPNoFlag();
+  public static final TcpNoFlag INSTANCE = new TcpNoFlag();
 
-  private TCPNoFlag() {}
+  private static final AclLineMatchExpr ACL_LINE_MATCH_EXPR = buildAclLineMatchExpr();
+
+  private TcpNoFlag() {}
 
   @Override
   public String getName() {
     return TCP_NO_FLAG;
   }
 
-  @Override
-  public AclLineMatchExpr toAclLineMatchExpr() {
+  static AclLineMatchExpr buildAclLineMatchExpr() {
     HeaderSpace headerSpace =
         HeaderSpace.builder()
             .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
@@ -51,5 +52,10 @@ public final class TCPNoFlag implements ScreenOption {
                         .build()))
             .build();
     return AclLineMatchExprs.match(headerSpace);
+  }
+
+  @Override
+  public AclLineMatchExpr getAclLineMatchExpr() {
+    return ACL_LINE_MATCH_EXPR;
   }
 }

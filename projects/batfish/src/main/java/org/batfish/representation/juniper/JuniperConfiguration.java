@@ -1243,9 +1243,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
     IpAccessList composedInAcl = buildIncomingFilter(iface);
-    if (composedInAcl != null) {
-      newIface.setIncomingFilter(composedInAcl);
-    }
+    newIface.setIncomingFilter(composedInAcl);
 
     newIface.setIncomingTransformation(buildIncomingTransformation(iface));
 
@@ -1400,7 +1398,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @Nullable
   @VisibleForTesting
   static IpAccessList buildScreen(@Nullable Screen screen) {
-    if (screen == null || screen.getAction() == ScreenActionAlarm.INSTANCE) {
+    if (screen == null || screen.getAction() == ScreenAction.Alarm_Without_Drop) {
       return null;
     }
 
@@ -1408,7 +1406,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         screen
             .getScreenOptions()
             .stream()
-            .map(ScreenOption::toAclLineMatchExpr)
+            .map(ScreenOption::getAclLineMatchExpr)
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
 
@@ -1426,35 +1424,51 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   @Nullable
   @VisibleForTesting
+  IpAccessList buildScreensPerZone(@Nonnull Zone zone) {
+    String aclName = ACL_NAME_SCREEN + zone.getName();
+
+    List<AclLineMatchExpr> matches =
+        zone.getScreens()
+            .stream()
+            .map(
+                screenName -> {
+                  Screen screen = _masterLogicalSystem.getScreens().get(screenName);
+                  String screenAclName = ACL_NAME_SCREEN + screenName;
+                  IpAccessList screenAcl =
+                      _c.getIpAccessLists()
+                          .computeIfAbsent(screenAclName, x -> buildScreen(screen));
+                  return screenAcl != null ? new PermittedByAcl(screenAcl.getName(), false) : null;
+                })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
+    return matches.isEmpty()
+        ? null
+        : IpAccessList.builder()
+            .setName(aclName)
+            .setLines(ImmutableList.of(IpAccessListLine.accepting(new AndMatchExpr(matches))))
+            .build();
+  }
+
+  @Nullable
+  @VisibleForTesting
   IpAccessList buildScreensPerInterface(Interface iface) {
     Zone zone = _masterLogicalSystem.getInterfaceZones().get(iface.getName());
-    if (zone != null) {
-      List<AclLineMatchExpr> matches =
-          zone.getScreens()
-              .stream()
-              .map(
-                  screenName -> {
-                    Screen screen = _masterLogicalSystem.getScreens().get(screenName);
-                    String screenAclName = ACL_NAME_SCREEN + screenName;
-                    IpAccessList screenAcl =
-                        _c.getIpAccessLists()
-                            .computeIfAbsent(screenAclName, x -> buildScreen(screen));
-                    return screenAcl != null
-                        ? new PermittedByAcl(screenAcl.getName(), false)
-                        : null;
-                  })
-              .filter(Objects::nonNull)
-              .collect(Collectors.toList());
-
-      return matches.isEmpty()
-          ? null
-          : IpAccessList.builder()
-              .setName(ACL_NAME_SCREEN + iface.getName())
-              .setLines(ImmutableList.of(IpAccessListLine.accepting(new AndMatchExpr(matches))))
-              .build();
+    if (zone == null) {
+      return null;
     }
 
-    return null;
+    // build a acl for each zone
+    String zoneAclName = ACL_NAME_SCREEN + zone.getName();
+    IpAccessList zoneAcl =
+        _c.getIpAccessLists().computeIfAbsent(zoneAclName, x -> buildScreensPerZone(zone));
+
+    return zoneAcl == null
+        ? null
+        : IpAccessList.builder()
+            .setName(ACL_NAME_SCREEN + iface.getName())
+            .setLines(ImmutableList.of(IpAccessListLine.accepting(new PermittedByAcl(zoneAclName))))
+            .build();
   }
 
   @Nullable
