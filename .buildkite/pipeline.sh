@@ -34,9 +34,9 @@ cat <<EOF
           always-pull: true
   - label: "Build"
     command:
-      - "mkdir workspace"
-      - "mvn -f projects package"
-      - "cp projects/allinone/target/allinone-bundle-*.jar workspace/allinone.jar"
+      - mkdir workspace
+      - mvn -f projects package
+      - rsync -zarv --prune-empty-dirs --include '*/' --include 'jacoco*.exec' --exclude '*' projects/ workspace
     artifact_paths:
       - workspace/allinone.jar
     plugins:
