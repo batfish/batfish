@@ -34,9 +34,9 @@ cat <<EOF
           always-pull: true
   - label: "Build"
     command:
-      - mkdir workspace
-      - mvn -f projects package
-      - rsync -zarv --prune-empty-dirs --include '*/' --include 'jacoco*.exec' --exclude '*' projects/ workspace
+      - "mkdir workspace"
+      - "mvn -f projects package"
+      - "cp projects/allinone/target/allinone-bundle-*.jar workspace/allinone.jar"
     artifact_paths:
       - workspace/allinone.jar
     plugins:
@@ -56,7 +56,7 @@ cat <<EOF
     command:
       - mvn -f projects/pom.xml verify -DskipTests=false -Djacoco.skip=false
       - mkdir -p workspace/jacoco
-      - find projects -name '*.exec' -type f -exec cp {} workspace/jacoco/{} \;
+      - rsync -zarv --prune-empty-dirs --include '*/' --include 'jacoco*.exec' --exclude '*' projects/ workspace
     artifact_paths:
       - workspace/jacoco/**/*
     plugins:
@@ -64,7 +64,7 @@ cat <<EOF
           image: ${DOCKER_IMAGE}
           always-pull: true
   - label: "Maven checkstyle"
-    command: "mvn -f projects/pom.xml verify -Dcheckstyle.skip=false"
+    command: "mvn -f projects/pom.xml compile checkstyle:checkstyle -Dcheckstyle.skip=false"
     plugins:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
