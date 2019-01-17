@@ -4,6 +4,8 @@ set -euxo pipefail
 
 # First: extract all Batfish classes from the jar
 ALLINONE_JAR="workspace/allinone.jar"
+TMP=$(mktemp -d)
+unzip "${ALLINONE_JAR}" -d "${TMP}"
 
 # Next: generate aggregated code coverage report
 JACOCO_VERSION=0.8.2
@@ -12,6 +14,6 @@ JACOCO_CLI_JAR="${HOME}/.m2/repository/org/jacoco/org.jacoco.cli/${JACOCO_VERSIO
 
 java -jar ${JACOCO_CLI_JAR} report \
      $(find workspace/ -name jacoco.exec -type f) \
-     --classfiles ${ALLINONE_JAR} \
+     --classfiles "${TMP}/org/batfish" \
      --xml jacoco.xml
 bash <(curl -s https://codecov.io/bash)
