@@ -56,7 +56,7 @@ cat <<EOF
     command:
       - mvn -f projects/pom.xml verify -DskipTests=false -Djacoco.skip=false
       - mkdir -p workspace
-      - find projects -name jacoco.exec -t f -exec cat {} \+ > workspace/jacoco.exec
+      - find projects -name jacoco.exec -type f -exec cat {} \+ > workspace/jacoco.exec
     artifact_paths:
       - workspace/jacoco.exec
     plugins:

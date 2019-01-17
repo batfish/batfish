@@ -18,5 +18,8 @@ else
   COORDINATOR_ARGS="-periodassignworkms 5"
 fi
 
-java -cp "${ALLINONE_JAR}" "${MAIN_CLASS}" -coordinatorargs="${COORDINATOR_ARGS}" -cmdfile "${CMD_FILE}"
+java -enableassertions \
+     -cp "${ALLINONE_JAR}" \
+     "${MAIN_CLASS}" \
+     -coordinatorargs="${COORDINATOR_ARGS}" -cmdfile="${CMD_FILE}"
 
