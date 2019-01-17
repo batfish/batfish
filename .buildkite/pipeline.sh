@@ -21,6 +21,7 @@ cat <<EOF
     plugins:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
+          always-pull: true
   - label: "Check Python templates"
     command:
       - "python3 -m virtualenv .venv"
@@ -30,6 +31,7 @@ cat <<EOF
     plugins:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
+          always-pull: true
   - label: "Build"
     command:
       - "mkdir workspace"
@@ -40,6 +42,7 @@ cat <<EOF
     plugins:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
+          always-pull: true
 EOF
 
 ###### WAIT for job to be build before starting any heavier tests
@@ -54,31 +57,37 @@ cat <<EOF
     plugins:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
+          always-pull: true
   - label: "Maven checkstyle"
     command: "mvn -f projects/pom.xml verify -Dcheckstyle.skip=false"
     plugins:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
+          always-pull: true
   - label: "Maven dependency analysis"
     command: "mvn -f projects/pom.xml verify -Dmdep.analyze.skip=false"
     plugins:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
+          always-pull: true
   - label: "Maven findbugs"
     command: "mvn -f projects/pom.xml verify -Dfindbugs.skip=false"
     plugins:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
+          always-pull: true
   - label: "Maven javadoc"
     command: "mvn -f projects/pom.xml verify -Dmaven.javadoc.skip=false"
     plugins:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
+          always-pull: true
   - label: "Maven pmd"
     command: "mvn -f projects/pom.xml verify -Dpmd.skip=false"
     plugins:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
+          always-pull: true
 EOF
 
 ###### Ref tests
@@ -91,6 +100,7 @@ for cmd in $(find tests -name commands); do
     plugins:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
+          always-pull: true
       - artifacts#v1.2.0:
           download: workspace/allinone.jar
 EOF
