@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-GJF_VERSION=1.6
+GJF_VERSION=1.7
 JAR_NAME="google-java-format-${GJF_VERSION}-all-deps.jar"
 JAR_SUFFIX=".m2/repository/com/google/googlejavaformat/google-java-format/${GJF_VERSION}/${JAR_NAME}"
 JAR="${HOME}/${JAR_SUFFIX}"
