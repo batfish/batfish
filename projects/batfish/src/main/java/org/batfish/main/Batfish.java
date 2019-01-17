@@ -103,7 +103,6 @@ import org.batfish.common.plugin.PluginClientType;
 import org.batfish.common.plugin.PluginConsumer;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
-import org.batfish.common.topology.Layer3Topology;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -877,9 +876,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Layer2Topology layer2Topology =
           TopologyUtil.computeLayer2Topology(layer1Topology, configurations);
       newBatch("Computing layer-3 topology", 0);
-      Layer3Topology layer3Topology =
-          TopologyUtil.computeLayer3Topology(layer2Topology, configurations);
-      return TopologyUtil.toTopology(layer3Topology);
+      return TopologyUtil.computeLayer3Topology(layer2Topology, configurations);
     }
     // guess adjacencies based on interface subnetworks
     _logger.info("*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");

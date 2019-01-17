@@ -1,15 +1,13 @@
 package org.batfish.common.topology;
 
 import static org.batfish.common.util.CommonUtil.forEachWithIndex;
+import static org.glassfish.jersey.internal.guava.Predicates.not;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
-import com.google.common.graph.EndpointPair;
-import com.google.common.graph.Graph;
-import com.google.common.graph.Graphs;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.util.Collection;
@@ -22,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -137,6 +136,8 @@ public final class TopologyUtil {
 
   private static Layer2Topology computeAugmentedLayer2Topology(
       Layer2Topology layer2Topology, Map<String, Configuration> configurations) {
+    return null;
+    /*
     ImmutableSet.Builder<Layer2Edge> augmentedEdges = ImmutableSet.builder();
     augmentedEdges.addAll(layer2Topology.getGraph().edges());
     configurations
@@ -148,16 +149,23 @@ public final class TopologyUtil {
                   .forEach(
                       vrf -> computeAugmentedLayer2SelfEdges(c.getHostname(), vrf, augmentedEdges));
             });
+    computeBroadcastDomains(augmentedEdges.build());
 
     // Now compute the transitive closure to connect interfaces across devices
-    Layer2Topology initial = new Layer2Topology(augmentedEdges.build());
+    Layer2Topology initial = new Layer2Topology(pruned);
     Graph<Layer2Node> initialGraph = initial.getGraph().asGraph();
+    long tClosure = System.currentTimeMillis();
     Graph<Layer2Node> closure = Graphs.transitiveClosure(initialGraph);
+    tClosure = System.currentTimeMillis() - tClosure;
+    System.out.println("layer3 tClosure: " + tClosure);
+    */
 
     /*
      * We must remove edges connecting existing endpoint pairs since they may clash due to missing
      * encapsulation vlan id. Also, we remove self-edges on the same interfaces by convention.
      */
+
+    /*
     Set<EndpointPair<Layer2Node>> newEndpoints =
         Sets.difference(closure.edges(), initialGraph.edges());
     newEndpoints
@@ -168,6 +176,7 @@ public final class TopologyUtil {
                 augmentedEdges.add(
                     new Layer2Edge(newEndpoint.source(), newEndpoint.target(), null)));
     return new Layer2Topology(augmentedEdges.build());
+    */
   }
 
   public static @Nonnull Layer1Topology computeLayer1Topology(
@@ -186,6 +195,73 @@ public final class TopologyUtil {
                   return i1 != null && i2 != null && i1.getActive() && i2.getActive();
                 })
             .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  private static Layer2Node find(Layer2Node n, Map<Layer2Node, Layer2Node> m) {
+    Layer2Node v = m.get(n);
+    if (n == v) {
+      return v;
+    }
+    Layer2Node v1 = find(v, m);
+    if (v != v1) {
+      m.put(n, v1);
+    }
+    return v1;
+  }
+
+  private static void union(Layer2Node n1, Layer2Node n2, Map<Layer2Node, Layer2Node> m) {
+    Layer2Node d1 = find(n1, m);
+    Layer2Node d2 = find(n2, m);
+    if (d1 != d2) {
+      Layer2Node min = d1.compareTo(d2) < 0 ? d1 : d2;
+      m.put(d1, min);
+      m.put(d2, min);
+    }
+  }
+
+  private static Layer2Topology computeLayer2Topology(
+      Set<Layer2Edge> edges, Map<String, Configuration> configurations) {
+    Map<Layer2Node, Layer2Node> domainMap = new HashMap<>();
+
+    // initially, each node is in its own domain
+    edges.stream().map(Layer2Edge::getNode1).forEach(n -> domainMap.put(n, n));
+    edges.forEach(e -> union(e.getNode1(), e.getNode2(), domainMap));
+
+    // invert to mapping from domain to nodes in the domain
+    Map<Layer2Node, Set<Layer2Node>> nodesByDomainRepresentative = new HashMap<>();
+    edges
+        .stream()
+        .map(Layer2Edge::getNode1)
+        .forEach(
+            n ->
+                nodesByDomainRepresentative
+                    .computeIfAbsent(find(n, domainMap), k -> new HashSet<>())
+                    .add(n));
+
+    // project to layer3 node broadcast domains
+    Set<Set<NodeInterfacePair>> domains =
+        nodesByDomainRepresentative
+            .values()
+            .stream()
+            .map(
+                domain ->
+                    domain
+                        .stream()
+                        .map(l2Node -> getInterface(l2Node, configurations))
+                        .filter(Objects::nonNull)
+                        .filter(TopologyUtil::isLayer3Interface)
+                        .map(
+                            iface ->
+                                new NodeInterfacePair(
+                                    iface.getOwner().getHostname(), iface.getName()))
+                        .collect(ImmutableSet.toImmutableSet()))
+            .filter(not(Set::isEmpty))
+            .collect(ImmutableSet.toImmutableSet());
+    return new Layer2Topology(domains);
+  }
+
+  private static boolean isLayer3Interface(Interface iface) {
+    return iface.getSwitchportMode() == SwitchportMode.NONE;
   }
 
   private static void computeLayer2EdgesForLayer1Edge(
@@ -228,8 +304,8 @@ public final class TopologyUtil {
                             switchportsByVlan
                                 .computeIfAbsent(vlan, n -> ImmutableList.builder())
                                 .add(i.getName()));
-              }
-              if (i.getSwitchportMode() == SwitchportMode.ACCESS && i.getAccessVlan() != null) {
+              } else if (i.getSwitchportMode() == SwitchportMode.ACCESS
+                  && i.getAccessVlan() != null) {
                 switchportsByVlan
                     .computeIfAbsent(i.getAccessVlan(), n -> ImmutableList.builder())
                     .add(i.getName());
@@ -263,7 +339,6 @@ public final class TopologyUtil {
     layer1Topology
         .getGraph()
         .edges()
-        .stream()
         .forEach(layer1Edge -> computeLayer2EdgesForLayer1Edge(layer1Edge, configurations, edges));
 
     // Then add edges within each node to connect switchports on the same VLAN(s).
@@ -276,65 +351,21 @@ public final class TopologyUtil {
                   .forEach(vrf -> computeLayer2SelfEdges(c.getHostname(), vrf, edges));
             });
 
-    // Now compute the transitive closure to connect interfaces across devices
-    Layer2Topology initial = new Layer2Topology(edges.build());
-    Graph<Layer2Node> initialGraph = initial.getGraph().asGraph();
-    Graph<Layer2Node> closure = Graphs.transitiveClosure(initialGraph);
-
-    /*
-     * We must remove edges connecting existing endpoint pairs since they may clash due to missing
-     * encapsulation vlan id. Also, we remove self-edges on the same interfaces since our network
-     * type does not allow them.
-     */
-    Set<EndpointPair<Layer2Node>> newEndpoints =
-        Sets.difference(closure.edges(), initialGraph.edges());
-    newEndpoints
-        .stream()
-        .filter(ne -> !ne.source().equals(ne.target()))
-        .forEach(
-            newEndpoint ->
-                edges.add(new Layer2Edge(newEndpoint.source(), newEndpoint.target(), null)));
-    return new Layer2Topology(edges.build());
+    return computeLayer2Topology(edges.build(), configurations);
   }
 
   /**
    * Compute the layer 3 topology from the layer-2 topology and layer-3 information contained in the
    * configurations.
    */
-  public static @Nonnull Layer3Topology computeLayer3Topology(
+  public static @Nonnull Topology computeLayer3Topology(
       @Nonnull Layer2Topology layer2Topology, @Nonnull Map<String, Configuration> configurations) {
-    /*
-     * The computation proceeds by augmenting the layer-2 topology with self-edges between Vlan/IRB
-     * interfaces and switchports on those VLANs.
-     * Then transitive closure and filtering are done as in layer-2 topology computation.
-     * Finally, the resulting edges are filtered down to those with proper layer-3 addressing,
-     * and transformed to only contain layer-2 relevant information.
-     */
-    ImmutableSet.Builder<Layer3Edge> layer3Edges = ImmutableSet.builder();
-    Layer2Topology vlanInterfaceAugmentedLayer2Topology =
-        computeAugmentedLayer2Topology(layer2Topology, configurations);
-    vlanInterfaceAugmentedLayer2Topology
-        .getGraph()
-        .edges()
-        .forEach(
-            layer2Edge -> {
-              Interface i1 = getInterface(layer2Edge.getNode1(), configurations);
-              Interface i2 = getInterface(layer2Edge.getNode2(), configurations);
-              if (i1 == null
-                  || i2 == null
-                  || (i1.getOwner().equals(i2.getOwner())
-                      && i1.getVrfName().equals(i2.getVrfName()))) {
-                return;
-              }
-              if (!i1.getAllAddresses().isEmpty() || !i2.getAllAddresses().isEmpty()) {
-                assert Boolean.TRUE;
-              }
-              if (!matchingSubnet(i1.getAllAddresses(), i2.getAllAddresses())) {
-                return;
-              }
-              layer3Edges.add(toLayer3Edge(layer2Edge));
-            });
-    return new Layer3Topology(layer3Edges.build());
+    return new Topology(
+        synthesizeL3Topology(configurations)
+            .getEdges()
+            .stream()
+            .filter(edge -> layer2Topology.inSameBroadcastDomain(edge.getHead(), edge.getTail()))
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }
 
   private static @Nullable Configuration getConfiguration(

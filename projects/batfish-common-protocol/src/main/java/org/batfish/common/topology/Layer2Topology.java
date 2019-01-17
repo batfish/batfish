@@ -1,62 +1,44 @@
 package org.batfish.common.topology;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.graph.ImmutableNetwork;
-import com.google.common.graph.MutableNetwork;
-import com.google.common.graph.NetworkBuilder;
-import java.util.SortedSet;
-import javax.annotation.Nonnull;
+import static org.glassfish.jersey.internal.guava.Predicates.not;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+
+/** Tracks which interfaces are in the same layer 2 broadcast domain. */
+@ParametersAreNonnullByDefault
 public final class Layer2Topology {
 
-  private static final String PROP_EDGES = "edges";
+  private final Map<NodeInterfacePair, NodeInterfacePair> _representative;
 
-  @JsonCreator
-  private static @Nonnull Layer2Topology create(
-      @JsonProperty(PROP_EDGES) Iterable<Layer2Edge> edges) {
-    return new Layer2Topology(edges != null ? edges : ImmutableSortedSet.of());
+  public Layer2Topology(@Nonnull Collection<Set<NodeInterfacePair>> domains) {
+    _representative =
+        domains
+            .stream()
+            .filter(not(Set::isEmpty))
+            .flatMap(
+                domain -> {
+                  NodeInterfacePair representative =
+                      domain.stream().min(NodeInterfacePair::compareTo).get();
+                  return domain.stream().map(member -> Maps.immutableEntry(member, representative));
+                })
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
-  private final ImmutableNetwork<Layer2Node, Layer2Edge> _graph;
-
-  public Layer2Topology(@Nonnull Iterable<Layer2Edge> edges) {
-    MutableNetwork<Layer2Node, Layer2Edge> graph =
-        NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
-    edges.forEach(
-        edge -> {
-          graph.addNode(edge.getNode1());
-          graph.addNode(edge.getNode2());
-          graph.addEdge(edge.getNode1(), edge.getNode2(), edge);
-        });
-    _graph = ImmutableNetwork.copyOf(graph);
+  public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
+    NodeInterfacePair r1 = _representative.get(i1);
+    return r1 != null && r1.equals(_representative.get(i2));
   }
 
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (!(obj instanceof Layer2Topology)) {
-      return false;
-    }
-    return _graph.equals(((Layer2Topology) obj)._graph);
-  }
-
-  @JsonIgnore
-  public @Nonnull ImmutableNetwork<Layer2Node, Layer2Edge> getGraph() {
-    return _graph;
-  }
-
-  @JsonProperty(PROP_EDGES)
-  private SortedSet<Layer2Edge> getJsonEdges() {
-    return ImmutableSortedSet.copyOf(_graph.edges());
-  }
-
-  @Override
-  public int hashCode() {
-    return _graph.hashCode();
+  public boolean inSameBroadcastDomain(String host1, String iface1, String host2, String iface2) {
+    return inSameBroadcastDomain(
+        new NodeInterfacePair(host1, iface1), new NodeInterfacePair(host2, iface2));
   }
 }

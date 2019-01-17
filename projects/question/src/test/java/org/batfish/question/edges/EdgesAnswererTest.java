@@ -24,7 +24,6 @@ import static org.batfish.question.edges.EdgesAnswerer.getEigrpEdges;
 import static org.batfish.question.edges.EdgesAnswerer.getIpsecEdges;
 import static org.batfish.question.edges.EdgesAnswerer.getIsisEdges;
 import static org.batfish.question.edges.EdgesAnswerer.getLayer1Edges;
-import static org.batfish.question.edges.EdgesAnswerer.getLayer2Edges;
 import static org.batfish.question.edges.EdgesAnswerer.getLayer3Edges;
 import static org.batfish.question.edges.EdgesAnswerer.getOspfEdgeRow;
 import static org.batfish.question.edges.EdgesAnswerer.getOspfEdges;
@@ -58,7 +57,6 @@ import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Edge;
-import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
@@ -412,33 +410,6 @@ public class EdgesAnswererTest {
                     COL_REMOTE_INTERFACE,
                     equalTo(new NodeInterfacePair("host2", "int2")),
                     Schema.INTERFACE))));
-  }
-
-  @Test
-  public void testGetLayer2Edges() {
-    Layer1Node layer1Node1 = new Layer1Node("host1", "int1");
-    Layer1Node layer1Node2 = new Layer1Node("host2", "int2");
-
-    Multiset<Row> rows =
-        getLayer2Edges(
-            _includeNodes,
-            _includeRemoteNodes,
-            new Layer2Topology(
-                ImmutableSortedSet.of(new Layer2Edge(layer1Node1, 1, layer1Node2, 2, 12))));
-    assertThat(
-        rows,
-        contains(
-            allOf(
-                hasColumn(
-                    COL_INTERFACE,
-                    equalTo(new NodeInterfacePair("host1", "int1")),
-                    Schema.INTERFACE),
-                hasColumn(COL_VLAN, equalTo("1"), Schema.STRING),
-                hasColumn(
-                    COL_REMOTE_INTERFACE,
-                    equalTo(new NodeInterfacePair("host2", "int2")),
-                    Schema.INTERFACE),
-                hasColumn(COL_REMOTE_VLAN, equalTo("2"), Schema.STRING))));
   }
 
   @Test
