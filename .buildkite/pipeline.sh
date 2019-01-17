@@ -54,11 +54,9 @@ EOF
 cat <<EOF
   - label: "Maven tests + Coverage"
     command:
-      - "mvn -f projects/pom.xml verify -DskipTests=false -Djacoco.skip=false"
+      - mvn -f projects/pom.xml verify -DskipTests=false -Djacoco.skip=false
       - mkdir -p workspace/jacoco
-      - find projects -name '*.exec'
-      - echo cp $(find projects -name '*.exec') workspace/jacoco
-      - cp $(find projects -name '*.exec') workspace/jacoco
+      - find projects -name '*.exec' -type f -exec cp {} workspace/jacoco \;
     artifact_paths:
       - workspace/jacoco/**/*
     plugins:
