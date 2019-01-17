@@ -57,7 +57,8 @@ cat <<EOF
       - "mvn -f projects/pom.xml verify -DskipTests=false -Djacoco.skip=false"
       - mkdir -p workspace/jacoco
       - find projects -name '*.exec'
-      - cp $(find projects -name 'jacoco*.exec') workspace/jacoco
+      - echo cp $(find projects -name '*.exec') workspace/jacoco
+      - cp $(find projects -name '*.exec') workspace/jacoco
     artifact_paths:
       - workspace/jacoco/**/*
     plugins:
