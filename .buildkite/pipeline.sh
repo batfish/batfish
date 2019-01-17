@@ -53,7 +53,9 @@ EOF
 ###### Maven tests
 cat <<EOF
   - label: "Maven tests"
-    command: "mvn -f projects/pom.xml verify -DskipTests=false"
+    command:
+      - "mvn -f projects/pom.xml verify -DskipTests=false -Djacoco.skip=false"
+      - find projects -name 'jacoco*.exec'
     plugins:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
