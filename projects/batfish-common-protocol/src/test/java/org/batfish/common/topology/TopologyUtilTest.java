@@ -32,7 +32,6 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -549,18 +548,17 @@ public final class TopologyUtilTest {
         new Layer2Topology(
             ImmutableList.of(
                 ImmutableSet.of(
-                    new NodeInterfacePair(c1Name, c1i1Name),
-                    new NodeInterfacePair(c2Name, c2i1Name)),
+                    new Layer2Node(c1Name, c1i1Name, null), new Layer2Node(c2Name, c2i1Name, null)),
                 ImmutableSet.of(
-                    new NodeInterfacePair(c1Name, vlan1Name),
-                    new NodeInterfacePair(c2Name, vlan1Name),
-                    new NodeInterfacePair(c3Name, c3i5Name)),
+                    new Layer2Node(c1Name, vlan1Name, null),
+                    new Layer2Node(c2Name, vlan1Name, null),
+                    new Layer2Node(c3Name, c3i5Name, null)),
                 ImmutableSet.of(
-                    new NodeInterfacePair(c1Name, vlan2Name),
-                    new NodeInterfacePair(c2Name, vlan2Name)),
+                    new Layer2Node(c1Name, vlan2Name, null),
+                    new Layer2Node(c2Name, vlan2Name, null)),
                 ImmutableSet.of(
-                    new NodeInterfacePair(c1Name, vlan4Name),
-                    new NodeInterfacePair(c3Name, c3i6Name))));
+                    new Layer2Node(c1Name, vlan4Name, null),
+                    new Layer2Node(c3Name, c3i6Name, null))));
 
     Topology layer3Topology = computeLayer3Topology(layer2Topology, configurations);
 

@@ -37,7 +37,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public final class TopologyUtil {
 
@@ -139,22 +138,7 @@ public final class TopologyUtil {
                     .computeIfAbsent(find(n, domainMap), k -> new HashSet<>())
                     .add(n));
 
-    // project to layer3 node broadcast domains
-    Set<Set<NodeInterfacePair>> domains =
-        nodesByDomainRepresentative.values().stream()
-            .map(
-                domain ->
-                    domain.stream()
-                        .map(l2Node -> getInterface(l2Node, configurations))
-                        .filter(Objects::nonNull)
-                        .filter(TopologyUtil::isLayer3Interface)
-                        .map(
-                            iface ->
-                                new NodeInterfacePair(
-                                    iface.getOwner().getHostname(), iface.getName()))
-                        .collect(ImmutableSet.toImmutableSet()))
-            .collect(ImmutableSet.toImmutableSet());
-    return new Layer2Topology(domains);
+    return new Layer2Topology(nodesByDomainRepresentative.values());
   }
 
   private static boolean isLayer3Interface(Interface iface) {
