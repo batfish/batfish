@@ -20,8 +20,7 @@ public final class Layer2Topology {
 
   public Layer2Topology(@Nonnull Collection<Set<NodeInterfacePair>> domains) {
     _representative =
-        domains
-            .stream()
+        domains.stream()
             .filter(not(Set::isEmpty))
             .flatMap(
                 domain -> {

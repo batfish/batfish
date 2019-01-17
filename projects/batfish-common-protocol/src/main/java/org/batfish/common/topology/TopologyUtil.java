@@ -222,8 +222,7 @@ public final class TopologyUtil {
 
     // invert to mapping from domain to nodes in the domain
     Map<Layer2Node, Set<Layer2Node>> nodesByDomainRepresentative = new HashMap<>();
-    edges
-        .stream()
+    edges.stream()
         .map(Layer2Edge::getNode1)
         .forEach(
             n ->
@@ -233,13 +232,10 @@ public final class TopologyUtil {
 
     // project to layer3 node broadcast domains
     Set<Set<NodeInterfacePair>> domains =
-        nodesByDomainRepresentative
-            .values()
-            .stream()
+        nodesByDomainRepresentative.values().stream()
             .map(
                 domain ->
-                    domain
-                        .stream()
+                    domain.stream()
                         .map(l2Node -> getInterface(l2Node, configurations))
                         .filter(Objects::nonNull)
                         .filter(TopologyUtil::isLayer3Interface)
@@ -351,9 +347,7 @@ public final class TopologyUtil {
   public static @Nonnull Topology computeLayer3Topology(
       @Nonnull Layer2Topology layer2Topology, @Nonnull Map<String, Configuration> configurations) {
     return new Topology(
-        synthesizeL3Topology(configurations)
-            .getEdges()
-            .stream()
+        synthesizeL3Topology(configurations).getEdges().stream()
             .filter(edge -> layer2Topology.inSameBroadcastDomain(edge.getHead(), edge.getTail()))
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }
