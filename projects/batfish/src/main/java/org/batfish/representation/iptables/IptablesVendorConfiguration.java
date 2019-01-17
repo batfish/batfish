@@ -75,9 +75,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
         String dbgName = configuration.getHostname() + ":" + i.getName();
 
         List<IpAccessListLine> newRules =
-            prerouting
-                .getLines()
-                .stream()
+            prerouting.getLines().stream()
                 .filter(
                     l -> {
                       String iface = _lineInInterfaces.get(l);
@@ -108,9 +106,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
         String dbgName = configuration.getHostname() + ":" + i.getName();
 
         List<IpAccessListLine> newRules =
-            postrouting
-                .getLines()
-                .stream()
+            postrouting.getLines().stream()
                 .filter(
                     l -> {
                       String iface = _lineOutInterfaces.get(l);

@@ -400,9 +400,7 @@ public final class TracerouteAnswerer extends Answerer {
           srcIpSpecifier.resolve(ImmutableSet.of(), _batfish.specifierContext());
       // Filter out empty IP assignments
       ImmutableList<Entry> nonEmptyIpSpaces =
-          srcIps
-              .getEntries()
-              .stream()
+          srcIps.getEntries().stream()
               .filter(e -> !e.getIpSpace().equals(EmptyIpSpace.INSTANCE))
               .collect(ImmutableList.toImmutableList());
       checkArgument(
@@ -420,9 +418,7 @@ public final class TracerouteAnswerer extends Answerer {
     } else {
       // Use from source location to determine header Src IP
       Optional<Entry> entry =
-          _sourceIpAssignment
-              .getEntries()
-              .stream()
+          _sourceIpAssignment.getEntries().stream()
               .filter(e -> e.getLocations().contains(srcLocation))
               .findFirst();
 

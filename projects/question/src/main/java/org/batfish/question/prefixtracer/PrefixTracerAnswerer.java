@@ -58,9 +58,7 @@ class PrefixTracerAnswerer extends Answerer {
 
     HashMultiset<Row> rows = HashMultiset.create();
 
-    prefixTracingInfo
-        .keySet()
-        .stream()
+    prefixTracingInfo.keySet().stream()
         .filter(nodesSpecifier.getRegex().asPredicate())
         .forEach(
             node -> {

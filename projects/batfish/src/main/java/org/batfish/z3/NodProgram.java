@@ -30,9 +30,7 @@ public class NodProgram {
         Arrays.stream(programs)
             .flatMap(
                 program ->
-                    program
-                        .getQueries()
-                        .stream()
+                    program.getQueries().stream()
                         .map(
                             booleanExpr ->
                                 BoolExprTransformer.toBoolExpr(
@@ -42,9 +40,7 @@ public class NodProgram {
         Arrays.stream(programs)
             .flatMap(
                 program ->
-                    program
-                        .getRules()
-                        .stream()
+                    program.getRules().stream()
                         .map(
                             booleanExpr ->
                                 BoolExprTransformer.toBoolExpr(
@@ -82,10 +78,7 @@ public class NodProgram {
     StringBuilder sb = new StringBuilder();
     _variableSizes.forEach(
         (var, size) -> sb.append(String.format("(declare-var %s (_ BitVec %d))\n", var, size)));
-    _context
-        .getRelationDeclarations()
-        .values()
-        .stream()
+    _context.getRelationDeclarations().values().stream()
         .map(
             funcDecl ->
                 funcDecl

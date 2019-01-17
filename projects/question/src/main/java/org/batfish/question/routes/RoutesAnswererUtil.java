@@ -109,9 +109,7 @@ public class RoutesAnswererUtil {
       return null;
     }
     // TODO: https://github.com/batfish/batfish/issues/1862
-    return ipOwners
-        .getOrDefault(nextHopIp, ImmutableSet.of())
-        .stream()
+    return ipOwners.getOrDefault(nextHopIp, ImmutableSet.of()).stream()
         .min(Comparator.naturalOrder())
         .orElse(null);
   }
@@ -144,8 +142,7 @@ public class RoutesAnswererUtil {
             vrfMap.forEach(
                 (vrfName, rib) -> {
                   if (compiledVrfRegex.matcher(vrfName).matches()) {
-                    rib.getRoutes()
-                        .stream()
+                    rib.getRoutes().stream()
                         .filter(
                             route ->
                                 (network == null || network.equals(route.getNetwork()))
@@ -191,8 +188,7 @@ public class RoutesAnswererUtil {
                 .forEach(
                     (vrfName, routes) -> {
                       if (compiledVrfRegex.matcher(vrfName).matches()) {
-                        routes
-                            .stream()
+                        routes.stream()
                             .filter(
                                 route ->
                                     (network == null || network.equals(route.getNetwork()))
@@ -263,9 +259,7 @@ public class RoutesAnswererUtil {
         .put(COL_LOCAL_PREF, bgpRoute.getLocalPreference())
         .put(
             COL_COMMUNITIES,
-            bgpRoute
-                .getCommunities()
-                .stream()
+            bgpRoute.getCommunities().stream()
                 .map(CommonUtil::longToCommunity)
                 .collect(toImmutableList()))
         .put(COL_ORIGIN_PROTOCOL, bgpRoute.getSrcProtocol())
@@ -501,8 +495,7 @@ public class RoutesAnswererUtil {
             vrfMap.forEach(
                 (vrfName, rib) -> {
                   if (compiledVrfRegex.matcher(vrfName).matches()) {
-                    rib.getRoutes()
-                        .stream()
+                    rib.getRoutes().stream()
                         .filter(
                             route ->
                                 (network == null || network.equals(route.getNetwork()))
@@ -565,8 +558,7 @@ public class RoutesAnswererUtil {
                 .forEach(
                     (vrfName, routes) -> {
                       if (compiledVrfRegex.matcher(vrfName).matches()) {
-                        routes
-                            .stream()
+                        routes.stream()
                             .filter(
                                 route ->
                                     (network == null || network.equals(route.getNetwork()))
@@ -595,9 +587,7 @@ public class RoutesAnswererUtil {
                                                 .setAsPath(route.getAsPath())
                                                 .setLocalPreference(route.getLocalPreference())
                                                 .setCommunities(
-                                                    route
-                                                        .getCommunities()
-                                                        .stream()
+                                                    route.getCommunities().stream()
                                                         .map(CommonUtil::longToCommunity)
                                                         .collect(toImmutableList()))
                                                 .setTag(
@@ -703,8 +693,7 @@ public class RoutesAnswererUtil {
               // second element of the pair from base and reference snapshots respectively, second
               // element is null to account for absence of this network in the reference snapshot
               List<List<RouteRowAttribute>> diffMatrix =
-                  value
-                      .stream()
+                  value.stream()
                       .map(routeRowAttribute -> Lists.newArrayList(routeRowAttribute, null))
                       .collect(Collectors.toList());
               listDiffs.add(
@@ -722,8 +711,7 @@ public class RoutesAnswererUtil {
               // second element of the pair from base and reference snapshots respectively, first
               // element is null to account for absence of this network in the base snapshot
               List<List<RouteRowAttribute>> diffMatrix =
-                  value
-                      .stream()
+                  value.stream()
                       .map(routeRowAttribute -> Lists.newArrayList(null, routeRowAttribute))
                       .collect(Collectors.toList());
               listDiffs.add(
@@ -789,9 +777,7 @@ public class RoutesAnswererUtil {
         // second element of RouteRowAttribute pairs will be null to account for absence of
         // secondary key in innerGroup2
         diffMatrix =
-            innerGroup1
-                .get(secondaryKey)
-                .stream()
+            innerGroup1.get(secondaryKey).stream()
                 .map(routeRowAttribute -> Lists.newArrayList(routeRowAttribute, null))
                 .collect(Collectors.toList());
       } else {
@@ -799,9 +785,7 @@ public class RoutesAnswererUtil {
         // first element of RouteRowAttribute pairs will be null to account for absence of secondary
         // key in innerGroup1
         diffMatrix =
-            innerGroup2
-                .get(secondaryKey)
-                .stream()
+            innerGroup2.get(secondaryKey).stream()
                 .map(routeRowAttribute -> Lists.newArrayList(null, routeRowAttribute))
                 .collect(Collectors.toList());
       }

@@ -56,15 +56,11 @@ public class TracerouteAnswererTest {
   public void testCreateMetadata() {
     TableMetadata tableMetadata = TracerouteAnswerer.createMetadata(false);
     List<String> columnNames =
-        tableMetadata
-            .getColumnMetadata()
-            .stream()
+        tableMetadata.getColumnMetadata().stream()
             .map(ColumnMetadata::getName)
             .collect(ImmutableList.toImmutableList());
     List<Schema> columnSchemas =
-        tableMetadata
-            .getColumnMetadata()
-            .stream()
+        tableMetadata.getColumnMetadata().stream()
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList());
 
@@ -74,15 +70,11 @@ public class TracerouteAnswererTest {
 
     TableMetadata diffTableMetadata = TracerouteAnswerer.createMetadata(true);
     List<String> diffColumnNames =
-        diffTableMetadata
-            .getColumnMetadata()
-            .stream()
+        diffTableMetadata.getColumnMetadata().stream()
             .map(ColumnMetadata::getName)
             .collect(ImmutableList.toImmutableList());
     List<Schema> diffColumnSchemas =
-        diffTableMetadata
-            .getColumnMetadata()
-            .stream()
+        diffTableMetadata.getColumnMetadata().stream()
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList());
 
@@ -246,23 +238,20 @@ public class TracerouteAnswererTest {
   public void testMetadata() {
     List<ColumnMetadata> columnMetadata = metadata(false).getColumnMetadata();
     assertThat(
-        columnMetadata
-            .stream()
+        columnMetadata.stream()
             .map(ColumnMetadata::getName)
             .collect(ImmutableList.toImmutableList()),
         contains(COL_FLOW, COL_TRACES, COL_TRACE_COUNT));
 
     assertThat(
-        columnMetadata
-            .stream()
+        columnMetadata.stream()
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList()),
         contains(Schema.FLOW, Schema.set(Schema.TRACE), Schema.INTEGER));
 
     List<ColumnMetadata> diffColumnMetadata = metadata(true).getColumnMetadata();
     assertThat(
-        diffColumnMetadata
-            .stream()
+        diffColumnMetadata.stream()
             .map(ColumnMetadata::getName)
             .collect(ImmutableList.toImmutableList()),
         contains(
@@ -273,8 +262,7 @@ public class TracerouteAnswererTest {
             TracerouteAnswerer.COL_DELTA_TRACE_COUNT));
 
     assertThat(
-        diffColumnMetadata
-            .stream()
+        diffColumnMetadata.stream()
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList()),
         contains(

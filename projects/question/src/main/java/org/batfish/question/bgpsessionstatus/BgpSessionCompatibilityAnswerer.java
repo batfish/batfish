@@ -78,9 +78,7 @@ public class BgpSessionCompatibilityAnswerer extends BgpSessionAnswerer {
     Set<BgpPeerConfigId> compatibleActivePeers = new TreeSet<>();
 
     Stream<Row> activePeerRows =
-        configuredBgpTopology
-            .nodes()
-            .stream()
+        configuredBgpTopology.nodes().stream()
             .map(
                 neighbor -> {
                   BgpPeerConfig bpc = getBgpPeerConfig(configurations, neighbor);
@@ -116,9 +114,7 @@ public class BgpSessionCompatibilityAnswerer extends BgpSessionAnswerer {
                 row -> row != null && matchesQuestionFilters(row, nodes, remoteNodes, question));
 
     Stream<Row> passivePeerRows =
-        configuredBgpTopology
-            .nodes()
-            .stream()
+        configuredBgpTopology.nodes().stream()
             .filter(neighbor -> nodes.contains(neighbor.getHostname()))
             .flatMap(
                 neighbor -> {
@@ -149,8 +145,7 @@ public class BgpSessionCompatibilityAnswerer extends BgpSessionAnswerer {
                   }
 
                   // Compatible neighbors exist. Generate a row for each.
-                  return remoteIds
-                      .stream()
+                  return remoteIds.stream()
                       .map(
                           remoteId ->
                               buildDynamicMatchRow(

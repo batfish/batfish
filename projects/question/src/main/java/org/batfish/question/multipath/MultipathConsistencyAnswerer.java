@@ -112,11 +112,8 @@ public class MultipathConsistencyAnswerer extends Answerer {
     IpSpace dstIps =
         firstNonNull(
             AclIpSpace.union(
-                flexibleIpSpaceSpecifierFactory
-                    .buildIpSpaceSpecifier(headerConstraints.getDstIps())
-                    .resolve(ImmutableSet.of(), ctxt)
-                    .getEntries()
-                    .stream()
+                flexibleIpSpaceSpecifierFactory.buildIpSpaceSpecifier(headerConstraints.getDstIps())
+                    .resolve(ImmutableSet.of(), ctxt).getEntries().stream()
                     .map(Entry::getIpSpace)
                     .collect(ImmutableList.toImmutableList())),
             UniverseIpSpace.INSTANCE);

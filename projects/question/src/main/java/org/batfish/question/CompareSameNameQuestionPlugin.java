@@ -168,8 +168,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       String structureClassName = structureClass.getSimpleName();
       // collect the set of all names for structures of type T, across all nodes
       Set<String> allNames =
-          hostnames
-              .stream()
+          hostnames.stream()
               .map(configurations::get)
               .map(structureMapRetriever)
               .flatMap(structureMap -> structureMap.keySet().stream())
@@ -325,8 +324,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     }
 
     private SortedSet<String> toLowerCase(Collection<String> names) {
-      return names
-          .stream()
+      return names.stream()
           .map(String::toLowerCase)
           .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
     }

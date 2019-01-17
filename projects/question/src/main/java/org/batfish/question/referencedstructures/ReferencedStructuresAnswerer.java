@@ -39,9 +39,7 @@ public class ReferencedStructuresAnswerer extends Answerer {
     Multimap<String, String> hostnameFilenameMap =
         _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
     Set<String> includeFiles =
-        hostnameFilenameMap
-            .entries()
-            .stream()
+        hostnameFilenameMap.entries().stream()
             .filter(e -> includeNodes.contains(e.getKey()))
             .map(Entry::getValue)
             .collect(Collectors.toSet());

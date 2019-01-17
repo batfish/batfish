@@ -578,9 +578,7 @@ public class PropertyChecker {
                       vp.getPropDiff());
             } else {
               Map<String, Boolean> reachVals =
-                  vp.getProp()
-                      .entrySet()
-                      .stream()
+                  vp.getProp().entrySet().stream()
                       .collect(
                           Collectors.toMap(
                               Map.Entry::getKey,

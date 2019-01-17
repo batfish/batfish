@@ -343,9 +343,7 @@ public class Driver {
       RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
       String classPath = runtimeMxBean.getClassPath();
       List<String> jvmArguments =
-          runtimeMxBean
-              .getInputArguments()
-              .stream()
+          runtimeMxBean.getInputArguments().stream()
               .filter(arg -> !arg.startsWith("-agentlib:")) // remove IntelliJ hooks
               .collect(ImmutableList.toImmutableList());
       int myPid = Integer.parseInt(runtimeMxBean.getName().split("@")[0]);

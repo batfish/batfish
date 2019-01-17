@@ -72,9 +72,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
   private NetworkAcl findMyNetworkAcl(Map<String, NetworkAcl> networkAcls) {
     List<NetworkAcl> matchingAcls =
-        networkAcls
-            .values()
-            .stream()
+        networkAcls.values().stream()
             .filter((NetworkAcl acl) -> acl.getVpcId().equals(_vpcId))
             .collect(Collectors.toList());
 
@@ -97,20 +95,16 @@ public class Subnet implements AwsVpcEntity, Serializable {
   private RouteTable findMyRouteTable(Map<String, RouteTable> routeTables) {
     // All route tables for this VPC.
     List<RouteTable> sameVpcTables =
-        routeTables
-            .values()
-            .stream()
+        routeTables.values().stream()
             .filter((RouteTable rt) -> rt.getVpcId().equals(_vpcId))
             .collect(Collectors.toList());
 
     // First we look for the unique route table with an association for this subnet.
     List<RouteTable> matchingRouteTables =
-        sameVpcTables
-            .stream()
+        sameVpcTables.stream()
             .filter(
                 (RouteTable rt) ->
-                    rt.getAssociations()
-                        .stream()
+                    rt.getAssociations().stream()
                         .anyMatch(
                             (RouteTableAssociation rtAssoc) ->
                                 _subnetId.equals(rtAssoc.getSubnetId())))
@@ -129,8 +123,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
     // If no route table has an association with this subnet, find the unique main routing table.
     List<RouteTable> mainRouteTables =
-        sameVpcTables
-            .stream()
+        sameVpcTables.stream()
             .filter(
                 (RouteTable rt) ->
                     rt.getAssociations().stream().anyMatch(RouteTableAssociation::isMain))

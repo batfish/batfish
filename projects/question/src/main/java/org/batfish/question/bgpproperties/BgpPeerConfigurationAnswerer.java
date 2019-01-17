@@ -81,9 +81,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
   public static List<ColumnMetadata> createColumnMetadata(
       BgpPeerPropertySpecifier propertySpecifier) {
     Map<String, ColumnMetadata> columnMetadatas =
-        propertySpecifier
-            .getMatchingProperties()
-            .stream()
+        propertySpecifier.getMatchingProperties().stream()
             .collect(
                 Collectors.toMap(
                     Function.identity(),
@@ -102,17 +100,14 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
 
     // Check for unknown columns (present in BgpPeerPropertySpecifier but not COLUMN_ORDER)
     List<ColumnMetadata> unknownColumns =
-        columnMetadatas
-            .entrySet()
-            .stream()
+        columnMetadatas.entrySet().stream()
             .filter(e -> !COLUMN_ORDER.contains(e.getKey()))
             .map(Entry::getValue)
             .collect(ImmutableList.toImmutableList());
 
     // List the metadatas in order, with any unknown columns tacked onto the end of the table
     return Stream.concat(
-            COLUMN_ORDER
-                .stream()
+            COLUMN_ORDER.stream()
                 .filter(prop -> columnMetadatas.containsKey(prop))
                 .map(prop -> columnMetadatas.get(prop)),
             unknownColumns.stream())

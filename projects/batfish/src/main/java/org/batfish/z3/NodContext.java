@@ -46,16 +46,13 @@ public class NodContext {
     _variableNames = computeVariableNames(variableSizes);
 
     Map<String, BitVecSort> variableSorts =
-        variableSizes
-            .entrySet()
-            .stream()
+        variableSizes.entrySet().stream()
             .collect(
                 ImmutableMap.toImmutableMap(
                     Entry::getKey,
                     variableSizeEntry -> ctx.mkBitVecSort(variableSizeEntry.getValue())));
     _variables =
-        _variableNames
-            .stream()
+        _variableNames.stream()
             .collect(
                 ImmutableMap.toImmutableMap(
                     Function.identity(),
@@ -65,8 +62,7 @@ public class NodContext {
                                 deBruijnIndex.getAndIncrement(), variableSorts.get(variableName))));
 
     _transformedVariables =
-        _variableNames
-            .stream()
+        _variableNames.stream()
             .collect(
                 ImmutableMap.toImmutableMap(
                     Function.identity(),
@@ -76,9 +72,7 @@ public class NodContext {
                                 deBruijnIndex.getAndIncrement(), variableSorts.get(variableName))));
 
     _variablesAsConsts =
-        variableSizes
-            .entrySet()
-            .stream()
+        variableSizes.entrySet().stream()
             .collect(
                 ImmutableMap.toImmutableMap(
                     Entry::getKey,
@@ -86,9 +80,7 @@ public class NodContext {
                         ctx.mkBVConst(variableSizeEntry.getKey(), variableSizeEntry.getValue())));
 
     ImmutableMap<String, VarIntExpr> varIntExprs =
-        variableSizes
-            .entrySet()
-            .stream()
+        variableSizes.entrySet().stream()
             .collect(
                 ImmutableMap.toImmutableMap(
                     Entry::getKey,

@@ -51,8 +51,7 @@ public class ReferenceLibrary {
         "book", nnBooks.stream().map(ReferenceBook::getName).collect(Collectors.toList()));
 
     _books =
-        nnBooks
-            .stream()
+        nnBooks.stream()
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
   }
 
@@ -61,9 +60,7 @@ public class ReferenceLibrary {
     Map<String, Integer> counts = new HashMap<>();
     list.forEach(e -> counts.put(e, counts.computeIfAbsent(e, v -> 0) + 1));
     List<String> duplicates =
-        counts
-            .entrySet()
-            .stream()
+        counts.entrySet().stream()
             .filter(e -> e.getValue() > 1)
             .map(e -> e.getKey())
             .collect(Collectors.toList());
@@ -86,8 +83,7 @@ public class ReferenceLibrary {
         getReferenceBook(bookName)
             .orElseThrow(() -> new NoSuchElementException("Book not found: " + bookName));
     _books =
-        _books
-            .stream()
+        _books.stream()
             .filter(b -> !b.equals(book))
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
   }
@@ -137,13 +133,10 @@ public class ReferenceLibrary {
     ReferenceLibrary originalLibrary = read(path);
 
     List<ReferenceBook> booksToKeep =
-        originalLibrary
-            ._books
-            .stream()
+        originalLibrary._books.stream()
             .filter(
                 originalBook ->
-                    !newBooks
-                        .stream()
+                    !newBooks.stream()
                         .anyMatch(newBook -> newBook.getName().equals(originalBook.getName())))
             .collect(Collectors.toList());
 

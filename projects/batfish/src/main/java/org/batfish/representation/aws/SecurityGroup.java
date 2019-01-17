@@ -76,8 +76,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
       List<IpAccessListLine> inboundRules, List<IpAccessListLine> outboundRules) {
 
     List<IpAccessListLine> reverseInboundRules =
-        inboundRules
-            .stream()
+        inboundRules.stream()
             .map(
                 ipAccessListLine -> {
                   HeaderSpace srcHeaderSpace =
@@ -98,8 +97,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
             .collect(ImmutableList.toImmutableList());
 
     List<IpAccessListLine> reverseOutboundRules =
-        outboundRules
-            .stream()
+        outboundRules.stream()
             .map(
                 ipAccessListLine -> {
                   HeaderSpace srcHeaderSpace =
@@ -156,10 +154,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
   }
 
   public void updateConfigIps(Configuration configuration) {
-    configuration
-        .getAllInterfaces()
-        .values()
-        .stream()
+    configuration.getAllInterfaces().values().stream()
         .flatMap(iface -> iface.getAllAddresses().stream())
         .map(InterfaceAddress::getIp)
         .map(IpWildcard::new)

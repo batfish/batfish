@@ -319,15 +319,13 @@ public class IncrementalDataPlanePluginTest {
     Prefix staticRoutePrefix = Prefix.parse("10.0.0.0/8");
     SortedSet<AbstractRoute> r1BdpRoutes = routes.get("r1").get(DEFAULT_VRF_NAME);
     AbstractRoute r1BdpRoute =
-        r1BdpRoutes
-            .stream()
+        r1BdpRoutes.stream()
             .filter(r -> r.getNetwork().equals(staticRoutePrefix))
             .findFirst()
             .get();
     SortedSet<Route> r1EnvironmentRoutes = environmentRoutes.get("r1").get(DEFAULT_VRF_NAME);
     Route r1EnvironmentRoute =
-        r1EnvironmentRoutes
-            .stream()
+        r1EnvironmentRoutes.stream()
             .filter(r -> r.getNetwork().equals(staticRoutePrefix))
             .findFirst()
             .get();

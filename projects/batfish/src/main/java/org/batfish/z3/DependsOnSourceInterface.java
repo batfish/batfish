@@ -62,9 +62,7 @@ public class DependsOnSourceInterface implements GenericAclLineMatchExprVisitor<
   }
 
   public Boolean dependsOnSourceInterface(IpAccessList ipAccessList) {
-    return ipAccessList
-        .getLines()
-        .stream()
+    return ipAccessList.getLines().stream()
         .map(IpAccessListLine::getMatchCondition)
         .anyMatch(expr -> expr.accept(this));
   }

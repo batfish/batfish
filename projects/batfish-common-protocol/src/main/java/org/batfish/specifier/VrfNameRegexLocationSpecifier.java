@@ -39,9 +39,7 @@ public abstract class VrfNameRegexLocationSpecifier implements LocationSpecifier
 
   @Override
   public Set<Location> resolve(SpecifierContext ctxt) {
-    return ctxt.getConfigs()
-        .values()
-        .stream()
+    return ctxt.getConfigs().values().stream()
         .flatMap(node -> node.getVrfs().values().stream())
         .filter(vrf -> _pattern.matcher(vrf.getName()).matches())
         .flatMap(this::getVrfLocations)

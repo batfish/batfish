@@ -63,9 +63,7 @@ public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceSpeci
             locations,
             firstNonNull(
                 AclIpSpace.union(
-                    addressGroup
-                        .getAddresses()
-                        .stream()
+                    addressGroup.getAddresses().stream()
                         .map(add -> new IpWildcard(add).toIpSpace())
                         .collect(Collectors.toList())),
                 EmptyIpSpace.INSTANCE))

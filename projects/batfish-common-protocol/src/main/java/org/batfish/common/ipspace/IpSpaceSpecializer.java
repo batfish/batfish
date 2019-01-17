@@ -63,9 +63,7 @@ public abstract class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpac
   public IpSpace visitAclIpSpace(AclIpSpace aclIpSpace) {
     /* Just specialize the IpSpace of each acl line. */
     List<AclIpSpaceLine> specializedLines =
-        aclIpSpace
-            .getLines()
-            .stream()
+        aclIpSpace.getLines().stream()
             .map(line -> line.toBuilder().setIpSpace(visit(line.getIpSpace())).build())
             .filter(line -> line.getIpSpace() != EmptyIpSpace.INSTANCE)
             .collect(ImmutableList.toImmutableList());
@@ -74,8 +72,7 @@ public abstract class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpac
       return EmptyIpSpace.INSTANCE;
     }
 
-    if (specializedLines
-        .stream()
+    if (specializedLines.stream()
         .allMatch(aclIpSpaceLine -> aclIpSpaceLine.getAction() == LineAction.DENY)) {
       return EmptyIpSpace.INSTANCE;
     }
@@ -102,9 +99,7 @@ public abstract class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpac
   @Override
   public IpSpace visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
     Set<IpSpace> blacklistIpSpace =
-        ipWildcardSetIpSpace
-            .getBlacklist()
-            .stream()
+        ipWildcardSetIpSpace.getBlacklist().stream()
             .map(this::specialize)
             .filter(ipSpace -> ipSpace != EmptyIpSpace.INSTANCE)
             .collect(ImmutableSet.toImmutableSet());
@@ -119,8 +114,7 @@ public abstract class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpac
      * is an IpWildcard.
      */
     Set<IpWildcard> blacklist =
-        blacklistIpSpace
-            .stream()
+        blacklistIpSpace.stream()
             .map(IpWildcardIpSpace.class::cast)
             .map(IpWildcardIpSpace::getIpWildcard)
             .collect(ImmutableSet.toImmutableSet());
@@ -138,9 +132,7 @@ public abstract class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpac
     IpSpaceSpecializer refinedSpecializer = optionalRefinedSpecializer.get();
 
     Set<IpSpace> ipSpaceWhitelist =
-        ipWildcardSetIpSpace
-            .getWhitelist()
-            .stream()
+        ipWildcardSetIpSpace.getWhitelist().stream()
             .map(refinedSpecializer::specialize)
             .filter(ipSpace -> ipSpace != EmptyIpSpace.INSTANCE)
             .collect(ImmutableSet.toImmutableSet());
@@ -158,8 +150,7 @@ public abstract class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpac
       }
     } else {
       Set<IpWildcard> ipWildcardWhitelist =
-          ipSpaceWhitelist
-              .stream()
+          ipSpaceWhitelist.stream()
               .map(IpWildcardIpSpace.class::cast)
               .map(IpWildcardIpSpace::getIpWildcard)
               .collect(Collectors.toSet());

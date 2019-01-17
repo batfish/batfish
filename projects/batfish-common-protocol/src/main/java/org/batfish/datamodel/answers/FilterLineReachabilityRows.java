@@ -88,16 +88,12 @@ public class FilterLineReachabilityRows {
     IpAccessList acl = aclSpecs.acl.getOriginalAcl();
     IpAccessListLine blockedLine = acl.getLines().get(lineNumber);
     boolean diffAction =
-        blockingLines
-            .stream()
+        blockingLines.stream()
             .anyMatch(i -> !acl.getLines().get(i).getAction().equals(blockedLine.getAction()));
 
     // All the host-acl pairs that contain this canonical acl
     List<String> flatSources =
-        aclSpecs
-            .sources
-            .entrySet()
-            .stream()
+        aclSpecs.sources.entrySet().stream()
             .map(e -> e.getKey() + ": " + String.join(", ", e.getValue()))
             .collect(Collectors.toList());
 
@@ -113,8 +109,7 @@ public class FilterLineReachabilityRows {
             .put(COL_UNREACHABLE_LINE, firstNonNull(blockedLine.getName(), blockedLine.toString()))
             .put(
                 COL_BLOCKING_LINES,
-                blockingLines
-                    .stream()
+                blockingLines.stream()
                     .map(
                         i -> {
                           IpAccessListLine l = acl.getLines().get(i);

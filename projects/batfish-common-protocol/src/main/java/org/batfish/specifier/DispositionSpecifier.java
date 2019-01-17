@@ -98,8 +98,7 @@ public final class DispositionSpecifier {
   public String value() {
     return String.join(
         ",",
-        _dispositions
-            .stream()
+        _dispositions.stream()
             .map(FlowDisposition::name)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }

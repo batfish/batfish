@@ -208,9 +208,7 @@ public class NodePropertySpecifier extends PropertySpecifier {
 
   @Override
   public List<String> getMatchingProperties() {
-    return JAVA_MAP
-        .keySet()
-        .stream()
+    return JAVA_MAP.keySet().stream()
         .filter(prop -> _pattern.matcher(prop).matches())
         .collect(ImmutableList.toImmutableList());
   }

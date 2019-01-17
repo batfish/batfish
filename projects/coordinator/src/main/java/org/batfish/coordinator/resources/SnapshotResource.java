@@ -79,9 +79,7 @@ public final class SnapshotResource {
   public Response getCompletedWork() {
     try {
       List<WorkBean> completedWork =
-          Main.getWorkMgr()
-              .getCompletedWork(_network, _snapshot)
-              .stream()
+          Main.getWorkMgr().getCompletedWork(_network, _snapshot).stream()
               .map(WorkBean::new)
               .collect(Collectors.toList());
       return Response.ok().entity(completedWork).build();

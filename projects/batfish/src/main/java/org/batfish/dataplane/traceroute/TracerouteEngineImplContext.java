@@ -456,12 +456,7 @@ public class TracerouteEngineImplContext {
           currentFib.getNextHopInterfacesByRoute(dstIp);
 
       List<RouteInfo> matchedRibRouteInfo =
-          _dataPlane
-              .getRibs()
-              .get(currentNodeName)
-              .get(vrfName)
-              .longestPrefixMatch(dstIp)
-              .stream()
+          _dataPlane.getRibs().get(currentNodeName).get(vrfName).longestPrefixMatch(dstIp).stream()
               .sorted()
               .map(rc -> new RouteInfo(rc.getProtocol(), rc.getNetwork(), rc.getNextHopIp()))
               .distinct()

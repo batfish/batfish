@@ -126,9 +126,7 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
 
     if (getAction() == RuleAction.DESTINATION_INSIDE) {
       // Expect all lines to be header space matches for NAT ACL
-      if (!natAcl
-          .getLines()
-          .stream()
+      if (!natAcl.getLines().stream()
           .map(IpAccessListLine::getMatchCondition)
           .allMatch(cond -> cond instanceof MatchHeaderSpace)) {
         return Optional.empty();
@@ -137,9 +135,7 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
       // Create reverse acl to match destination address instead of source address
       String reverseAclName = computeDynamicDestinationNatAclName(natAclName);
       List<IpAccessListLine> lines =
-          natAcl
-              .getLines()
-              .stream()
+          natAcl.getLines().stream()
               .map(
                   line -> {
                     HeaderSpace origHeader =

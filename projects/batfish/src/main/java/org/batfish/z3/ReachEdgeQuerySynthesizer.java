@@ -64,8 +64,8 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
                             _headerSpace == null
                                 ? TrueExpr.INSTANCE
                                 : AclLineMatchExprToBooleanExpr
-                                    .NO_ACLS_NO_IP_SPACES_NO_SOURCES_ORIG_HEADERSPACE.toBooleanExpr(
-                                    _headerSpace))),
+                                    .NO_ACLS_NO_IP_SPACES_NO_SOURCES_ORIG_HEADERSPACE
+                                    .toBooleanExpr(_headerSpace))),
                     new OriginateVrf(_originationNode, _ingressVrf)),
                 new BasicRuleStatement(
                     queryPreconditionPreTransformationStates.build(), Query.INSTANCE)))

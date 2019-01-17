@@ -75,8 +75,7 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
     }
 
     return _context.mkOr(
-        ipProtocols
-            .stream()
+        ipProtocols.stream()
             .map(
                 ipProtocol ->
                     _context.mkEq(_packet.getIpProtocol(), _context.mkInt(ipProtocol.number())))
