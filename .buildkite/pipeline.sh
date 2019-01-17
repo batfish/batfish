@@ -35,7 +35,7 @@ cat <<EOF
   - label: "Build"
     command:
       - "mkdir workspace"
-      - "mvn -f projects package -Dmaven.test.skip=true"
+      - "mvn -f projects package"
       - "cp projects/allinone/target/allinone-bundle-*.jar workspace/allinone.jar"
     artifact_paths:
       - workspace/allinone.jar
