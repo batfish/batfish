@@ -47,7 +47,7 @@ public class DisjunctionChainTest {
   public void testEvaluate() {
     DisjunctionChain dc =
         new DisjunctionChain(ImmutableList.of(BooleanExprs.FALSE, BooleanExprs.TRUE));
-    // Test that or is evaluated correctly
+    // Test that OR is evaluated correctly
     assertThat(
         dc.evaluate(
                 Environment.builder(new Configuration("host", ConfigurationFormat.JUNIPER))

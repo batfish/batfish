@@ -33,23 +33,23 @@ public class ConjunctionChainTest {
 
   @Test
   public void testJavaSerialization() {
-    ConjunctionChain dc = new ConjunctionChain(ImmutableList.of(BooleanExprs.TRUE));
-    assertThat(SerializationUtils.clone(dc), equalTo(dc));
+    ConjunctionChain cc = new ConjunctionChain(ImmutableList.of(BooleanExprs.TRUE));
+    assertThat(SerializationUtils.clone(cc), equalTo(cc));
   }
 
   @Test
   public void testJsonSerialization() throws IOException {
-    ConjunctionChain dc = new ConjunctionChain(ImmutableList.of(BooleanExprs.TRUE));
-    assertThat(BatfishObjectMapper.clone(dc, ConjunctionChain.class), equalTo(dc));
+    ConjunctionChain cc = new ConjunctionChain(ImmutableList.of(BooleanExprs.TRUE));
+    assertThat(BatfishObjectMapper.clone(cc, ConjunctionChain.class), equalTo(cc));
   }
 
   @Test
   public void testEvaluate() {
-    ConjunctionChain dc =
+    ConjunctionChain cc =
         new ConjunctionChain(ImmutableList.of(BooleanExprs.FALSE, BooleanExprs.TRUE));
-    // Test that or is evaluated correctly
+    // Test that AND is evaluated correctly
     assertThat(
-        dc.evaluate(
+        cc.evaluate(
                 Environment.builder(new Configuration("host", ConfigurationFormat.JUNIPER))
                     .setVrf(Configuration.DEFAULT_VRF_NAME)
                     .build())
@@ -59,7 +59,7 @@ public class ConjunctionChainTest {
 
   @Test
   public void testToString() {
-    ConjunctionChain dc = new ConjunctionChain(ImmutableList.of(BooleanExprs.TRUE));
-    assertThat(dc.toString(), equalTo("ConjunctionChain{subroutines=[StaticBooleanExpr{}]}"));
+    ConjunctionChain cc = new ConjunctionChain(ImmutableList.of(BooleanExprs.TRUE));
+    assertThat(cc.toString(), equalTo("ConjunctionChain{subroutines=[StaticBooleanExpr{}]}"));
   }
 }

@@ -20,7 +20,14 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
-/** Juniper subroutine chain */
+/**
+ * Juniper subroutine chain. Evaluates a route against a series of routing policies in order.
+ * Returns a {@link Result} with a boolean value of true if at least one of the top-level policies
+ * accepts the route.
+ *
+ * <p>See more info on chains:
+ * https://www.juniper.net/documentation/en_US/junos/topics/concept/policy-routing-policies-chain-evaluation-method.html
+ */
 @ParametersAreNonnullByDefault
 public class DisjunctionChain extends BooleanExpr {
 
@@ -37,7 +44,7 @@ public class DisjunctionChain extends BooleanExpr {
   }
 
   public DisjunctionChain(List<BooleanExpr> subroutines) {
-    _subroutines = subroutines;
+    _subroutines = ImmutableList.copyOf(subroutines);
   }
 
   @Override
@@ -59,7 +66,7 @@ public class DisjunctionChain extends BooleanExpr {
       return false;
     }
     DisjunctionChain that = (DisjunctionChain) o;
-    return _subroutines.equals(that._subroutines);
+    return Objects.equals(_subroutines, that._subroutines);
   }
 
   @Override
@@ -70,16 +77,20 @@ public class DisjunctionChain extends BooleanExpr {
   @Override
   public Result evaluate(Environment environment) {
     Result subroutineResult = new Result();
+    // By default move on to the next policy
     subroutineResult.setFallThrough(true);
     for (BooleanExpr subroutine : _subroutines) {
       subroutineResult = subroutine.evaluate(environment);
       if (subroutineResult.getExit()) {
+        // Reached an exit/terminal action. Return regardless of boolean value
         return subroutineResult;
       } else if (!subroutineResult.getFallThrough() && subroutineResult.getBooleanValue()) {
+        // Matched the route, first match that returns true lets us short-circuit
         subroutineResult.setReturn(true);
         return subroutineResult;
       }
     }
+    // Check if we are allowed to fall through to the default policy, if not, return last result
     if (!subroutineResult.getFallThrough()) {
       return subroutineResult;
     } else {
@@ -88,7 +99,7 @@ public class DisjunctionChain extends BooleanExpr {
         CallExpr callDefaultPolicy = new CallExpr(environment.getDefaultPolicy());
         return callDefaultPolicy.evaluate(environment);
       } else {
-        throw new BatfishException("Default policy not set");
+        throw new BatfishException("Default policy is not set");
       }
     }
   }
