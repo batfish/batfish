@@ -1,6 +1,6 @@
 package org.batfish.common.topology;
 
-import static org.glassfish.jersey.internal.guava.Predicates.not;
+import static com.google.common.base.Predicates.not;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;

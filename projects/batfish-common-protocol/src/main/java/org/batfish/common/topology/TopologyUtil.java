@@ -1,7 +1,6 @@
 package org.batfish.common.topology;
 
 import static org.batfish.common.util.CommonUtil.forEachWithIndex;
-import static org.glassfish.jersey.internal.guava.Predicates.not;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -244,7 +243,6 @@ public final class TopologyUtil {
                                 new NodeInterfacePair(
                                     iface.getOwner().getHostname(), iface.getName()))
                         .collect(ImmutableSet.toImmutableSet()))
-            .filter(not(Set::isEmpty))
             .collect(ImmutableSet.toImmutableSet());
     return new Layer2Topology(domains);
   }
