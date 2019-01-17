@@ -84,7 +84,7 @@ EOF
 ###### Ref tests
 # TODO: consider parallel builds for this?
 # https://buildkite.com/docs/tutorials/parallel-builds#parallel-jobs
-for cmd in tests/*/commands; do
+for cmd in $(find tests -name commands); do
   cat <<EOF
   - label: "${cmd} ref tests"
     command: ".buildkite/ref_test.sh ${cmd}"
