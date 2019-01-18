@@ -116,6 +116,7 @@
       <properties>
         <checkstyle.skip>true</checkstyle.skip>
         <findbugs.skip>true</findbugs.skip>
+        <jacoco.skip>true</jacoco.skip>
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <mdep.analyze.skip>true</mdep.analyze.skip>
         <pmd.skip>true</pmd.skip>
