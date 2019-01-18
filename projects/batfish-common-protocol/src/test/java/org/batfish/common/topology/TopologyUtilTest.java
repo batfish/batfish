@@ -208,7 +208,7 @@ public final class TopologyUtilTest {
       Interface c3i1 = _ib.setName(c3i1Name).build();
       c3i1.setSwitchport(true);
       c3i1.setSwitchportMode(SwitchportMode.TRUNK);
-      c3i1.setAllowedVlans(IntegerSpace.of(new SubRange(0, 3)));
+      c3i1.setAllowedVlans(IntegerSpace.of(new SubRange(1, 3)));
       c3i1.setNativeVlan(1);
       Interface c3i2 = _ib.setName(c3i2Name).build();
       c3i2.setSwitchport(true);
@@ -235,7 +235,7 @@ public final class TopologyUtilTest {
       Interface c3i1 = _ib.setName(c3i1Name).build();
       c3i1.setSwitchport(true);
       c3i1.setSwitchportMode(SwitchportMode.TRUNK);
-      c3i1.setAllowedVlans(IntegerSpace.of(new SubRange(0, 3)));
+      c3i1.setAllowedVlans(IntegerSpace.of(new SubRange(1, 3)));
       c3i1.setNativeVlan(1);
       Interface c3i2 = _ib.setName(c3i2Name).build();
       c3i2.setSwitchport(true);
@@ -262,7 +262,7 @@ public final class TopologyUtilTest {
       Interface c3i1 = _ib.setName(c3i1Name).build();
       c3i1.setSwitchport(true);
       c3i1.setSwitchportMode(SwitchportMode.TRUNK);
-      c3i1.setAllowedVlans(IntegerSpace.of(new SubRange(0, 3)));
+      c3i1.setAllowedVlans(IntegerSpace.of(new SubRange(1, 3)));
       c3i1.setNativeVlan(1);
       Interface c3i2 = _ib.setName(c3i2Name).build();
       c3i2.setSwitchport(true);
@@ -336,7 +336,7 @@ public final class TopologyUtilTest {
       Interface c3i2 = _ib.setName(c3i2Name).build();
       c3i2.setSwitchport(true);
       c3i2.setSwitchportMode(SwitchportMode.TRUNK);
-      c3i2.setAllowedVlans(IntegerSpace.of(new SubRange(0, 3)));
+      c3i2.setAllowedVlans(IntegerSpace.of(new SubRange(1, 3)));
       c3i2.setNativeVlan(1);
 
       Configuration c4 = _cb.setHostname(c4Name).build();
