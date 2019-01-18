@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+env
+
 set -euxo pipefail
 
 # First: extract all Batfish classes from the jar

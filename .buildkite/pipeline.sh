@@ -54,6 +54,7 @@ EOF
 cat <<EOF
   - label: "Code coverage"
     command:
+      - "env"
       - "export BUILDKITE_BRANCH"
       - ".buildkite/jacoco_report.sh"
     plugins:
