@@ -165,8 +165,7 @@ public class IpProtocolSpecifier {
     // need to remove exclamation point before matching
     String noExclamation = escaped.replaceFirst("!", "");
 
-    return PropertySpecifier.baseAutoComplete(noExclamation.trim(), COMPLETIONS)
-        .stream()
+    return PropertySpecifier.baseAutoComplete(noExclamation.trim(), COMPLETIONS).stream()
         .map(
             suggestion ->
                 new AutocompleteSuggestion(
