@@ -6027,7 +6027,183 @@
           ]
         }
       },
-      "version" : "0.36.0"
+      "version" : "0.36.0",
+      "warnings" : {
+        "junos-srx-1" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 39,
+              "Parser_Context" : "[seso_icmp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "icmp ping-death"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 40,
+              "Parser_Context" : "[seso_ip ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "ip source-route-option"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 41,
+              "Parser_Context" : "[seso_ip ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "ip tear-drop"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 42,
+              "Parser_Context" : "[seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "tcp syn-flood alarm-threshold 1024"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 43,
+              "Parser_Context" : "[seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "tcp syn-flood attack-threshold 200"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 44,
+              "Parser_Context" : "[seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "tcp syn-flood source-threshold 1024"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 45,
+              "Parser_Context" : "[seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "tcp syn-flood destination-threshold 2048"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 46,
+              "Parser_Context" : "[seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "tcp syn-flood timeout 20"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 47,
+              "Parser_Context" : "[seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "tcp land"
+            }
+          ]
+        },
+        "junos-srx-2" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 39,
+              "Parser_Context" : "[seso_icmp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "icmp ping-death"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 40,
+              "Parser_Context" : "[seso_ip ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "ip source-route-option"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 41,
+              "Parser_Context" : "[seso_ip ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "ip tear-drop"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 42,
+              "Parser_Context" : "[seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "tcp syn-flood alarm-threshold 1024"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 43,
+              "Parser_Context" : "[seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "tcp syn-flood attack-threshold 200"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 44,
+              "Parser_Context" : "[seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "tcp syn-flood source-threshold 1024"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 45,
+              "Parser_Context" : "[seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "tcp syn-flood destination-threshold 2048"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 46,
+              "Parser_Context" : "[seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "tcp syn-flood timeout 20"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 47,
+              "Parser_Context" : "[seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "tcp land"
+            }
+          ]
+        },
+        "junos-srx-3" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 40,
+              "Parser_Context" : "[seso_icmp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "icmp ping-death"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 41,
+              "Parser_Context" : "[seso_ip ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "ip source-route-option"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 42,
+              "Parser_Context" : "[seso_ip ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "ip tear-drop"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 43,
+              "Parser_Context" : "[seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "tcp syn-flood alarm-threshold 1024"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 44,
+              "Parser_Context" : "[seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "tcp syn-flood attack-threshold 200"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 45,
+              "Parser_Context" : "[seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "tcp syn-flood source-threshold 1024"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 46,
+              "Parser_Context" : "[seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "tcp syn-flood destination-threshold 2048"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 47,
+              "Parser_Context" : "[seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "tcp syn-flood timeout 20"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 48,
+              "Parser_Context" : "[seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "tcp land"
+            }
+          ]
+        }
+      }
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
