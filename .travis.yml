@@ -72,5 +72,5 @@ before_cache:
   - rm -rf $HOME/.m2/repository/org/batfish
   - rm -rf $HOME/.cache/bazel/_bazel_$USER/install
   
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
+#after_success:
+#  - bash <(curl -s https://codecov.io/bash)
