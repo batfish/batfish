@@ -41,9 +41,7 @@ public final class FwFromDestinationPrefixList extends FwFrom {
 
       headerSpaceBuilder.addDstIp(
           AclIpSpace.union(
-              destinationPrefixList
-                  .getMatchingIps()
-                  .stream()
+              destinationPrefixList.getMatchingIps().stream()
                   .map(IpWildcard::toIpSpace)
                   .collect(ImmutableList.toImmutableList())));
     } else {

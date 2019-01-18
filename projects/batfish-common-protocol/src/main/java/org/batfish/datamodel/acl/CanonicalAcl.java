@@ -113,9 +113,7 @@ public final class CanonicalAcl {
               _interfaces,
               _linesInCycles,
               _linesWithUndefinedReferences,
-              _dependencies
-                  .entrySet()
-                  .stream()
+              _dependencies.entrySet().stream()
                   .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().getLines())));
     }
     return _hashCode;

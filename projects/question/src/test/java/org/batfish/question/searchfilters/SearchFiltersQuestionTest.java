@@ -51,9 +51,7 @@ public class SearchFiltersQuestionTest {
         Arrays.asList(
             parameters.getSourceIpSpaceSpecifier(), parameters.getDestinationIpSpaceSpecifier())) {
       assertThat(
-          s.resolve(ImmutableSet.of(), MockSpecifierContext.builder().build())
-              .getEntries()
-              .stream()
+          s.resolve(ImmutableSet.of(), MockSpecifierContext.builder().build()).getEntries().stream()
               .map(Entry::getIpSpace)
               .collect(ImmutableList.toImmutableList()),
           hasItem(UniverseIpSpace.INSTANCE));

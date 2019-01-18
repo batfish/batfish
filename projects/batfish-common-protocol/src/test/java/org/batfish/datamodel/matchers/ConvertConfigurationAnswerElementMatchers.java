@@ -43,9 +43,7 @@ final class ConvertConfigurationAnswerElementMatchers {
         mismatchDescription.appendText(String.format("No warnings for host '%s'", _hostname));
         return false;
       }
-      if (warnings
-          .getRedFlagWarnings()
-          .stream()
+      if (warnings.getRedFlagWarnings().stream()
           .map(Warning::getText)
           .noneMatch(_subMatcher::matches)) {
         mismatchDescription.appendText(

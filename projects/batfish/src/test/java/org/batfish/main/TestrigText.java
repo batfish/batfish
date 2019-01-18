@@ -28,8 +28,7 @@ public class TestrigText {
           throw new BatfishException("Duplicate filenames provided in: " + filenameList);
         }
         String subfolderText = subfolder != null ? String.format("/%s", subfolder) : "";
-        return filenameList
-            .stream()
+        return filenameList.stream()
             .collect(
                 ImmutableMap.toImmutableMap(
                     Function.identity(),

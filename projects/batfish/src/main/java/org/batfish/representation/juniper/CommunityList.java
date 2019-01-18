@@ -25,8 +25,7 @@ public final class CommunityList implements Serializable {
   }
 
   public Set<Long> extractLiteralCommunities() {
-    return _lines
-        .stream()
+    return _lines.stream()
         .map(CommunityListLine::getText)
         .map(CommunityListLine::literalCommunityValue)
         .filter(notNull())

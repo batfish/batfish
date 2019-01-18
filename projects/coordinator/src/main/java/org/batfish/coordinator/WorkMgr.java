@@ -517,9 +517,7 @@ public class WorkMgr extends AbstractCoordinator {
           suggestions =
               PropertySpecifier.baseAutoComplete(
                   query,
-                  completionMetadata
-                      .getInterfaces()
-                      .stream()
+                  completionMetadata.getInterfaces().stream()
                       .map(NodeInterfacePair::toString)
                       .collect(Collectors.toSet()));
           break;
@@ -571,9 +569,7 @@ public class WorkMgr extends AbstractCoordinator {
           suggestions =
               PropertySpecifier.baseAutoComplete(
                   query,
-                  getNetworkNodeRoles(network)
-                      .getNodeRoleDimensions()
-                      .stream()
+                  getNetworkNodeRoles(network).getNodeRoleDimensions().stream()
                       .map(NodeRoleDimension::getName)
                       .collect(Collectors.toSet()));
           break;
@@ -1312,8 +1308,7 @@ public class WorkMgr extends AbstractCoordinator {
     Map<String, MinorIssueConfig> answerMinorIssues = answerIssueConfig.getMinorIssueConfigsMap();
     Map<String, MinorIssueConfig> configuredMinorIssues =
         configuredMajorIssue.getMinorIssueConfigsMap();
-    return Sets.intersection(answerMinorIssues.keySet(), configuredMinorIssues.keySet())
-        .stream()
+    return Sets.intersection(answerMinorIssues.keySet(), configuredMinorIssues.keySet()).stream()
         .allMatch(minor -> answerMinorIssues.get(minor).equals(configuredMinorIssues.get(minor)));
   }
 
@@ -1334,9 +1329,7 @@ public class WorkMgr extends AbstractCoordinator {
     TableAnswerElement oldTable = (TableAnswerElement) oldAnswer.getAnswerElements().get(0);
     TableMetadata tableMetadata = oldTable.getMetadata();
     Set<String> issueColumns =
-        tableMetadata
-            .getColumnMetadata()
-            .stream()
+        tableMetadata.getColumnMetadata().stream()
             .filter(cm -> cm.getSchema().equals(Schema.ISSUE))
             .map(ColumnMetadata::getName)
             .collect(ImmutableSet.toImmutableSet());
@@ -1376,8 +1369,7 @@ public class WorkMgr extends AbstractCoordinator {
       List<ExcludedRows> allExcludedRows,
       Set<String> issueColumns,
       Map<String, MajorIssueConfig> issueConfigs) {
-    return allExcludedRows
-        .stream()
+    return allExcludedRows.stream()
         .map(
             excludedRows ->
                 applyIssuesConfigurationToExcludedRows(excludedRows, issueColumns, issueConfigs));
@@ -1395,8 +1387,7 @@ public class WorkMgr extends AbstractCoordinator {
 
   private Stream<Row> applyIssuesConfigurationToRows(
       List<Row> rowsList, Set<String> issueColumns, Map<String, MajorIssueConfig> issueConfigs) {
-    return rowsList
-        .stream()
+    return rowsList.stream()
         .map(row -> applyRowIssuesConfiguration(row, issueColumns, issueConfigs));
   }
 
@@ -1516,8 +1507,7 @@ public class WorkMgr extends AbstractCoordinator {
         t ->
             SnapshotMetadataMgr.getSnapshotCreationTimeOrMin(
                 networkId, _idManager.getSnapshotId(t, networkId));
-    return listSnapshots(container)
-        .stream()
+    return listSnapshots(container).stream()
         .max(
             Comparator.comparing(
                 toTestrigTimestamp, Comparator.nullsFirst(Comparator.naturalOrder())));
@@ -1606,8 +1596,7 @@ public class WorkMgr extends AbstractCoordinator {
       retStringBuilder.append(entry.getFileName());
       if (Files.isDirectory(entry)) {
         String[] subdirEntryNames =
-            CommonUtil.getEntries(entry)
-                .stream()
+            CommonUtil.getEntries(entry).stream()
                 .map(subdirEntry -> subdirEntry.getFileName().toString())
                 .collect(Collectors.toList())
                 .toArray(new String[] {});
@@ -1858,8 +1847,7 @@ public class WorkMgr extends AbstractCoordinator {
   @VisibleForTesting
   static Path getSnapshotSubdir(Path srcDir) {
     SortedSet<Path> srcDirEntries =
-        CommonUtil.getEntries(srcDir)
-            .stream()
+        CommonUtil.getEntries(srcDir).stream()
             .filter(path -> !IGNORED_PATHS.contains(path.getFileName().toString()))
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
     /*
@@ -2025,8 +2013,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
 
     List<T> missing =
-        subtraction
-            .stream()
+        subtraction.stream()
             .filter(s -> !baseList.contains(s))
             .collect(ImmutableList.toImmutableList());
     checkArgument(
@@ -2164,9 +2151,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
     NetworkId networkId = _idManager.getNetworkId(network);
     SortedSet<String> analyses =
-        _idManager
-            .listAnalyses(networkId)
-            .stream()
+        _idManager.listAnalyses(networkId).stream()
             .filter(
                 aName ->
                     selectAnalysis(
@@ -2207,9 +2192,7 @@ public class WorkMgr extends AbstractCoordinator {
       containersDir.toFile().mkdirs();
     }
     SortedSet<String> authorizedContainers =
-        _idManager
-            .listNetworks()
-            .stream()
+        _idManager.listNetworks().stream()
             .filter(
                 container -> Main.getAuthorizer().isAccessibleContainer(apiKey, container, false))
             .collect(toCollection(TreeSet::new));
@@ -2237,8 +2220,7 @@ public class WorkMgr extends AbstractCoordinator {
     Set<String> questions = _idManager.listQuestions(networkId, null);
     if (!verbose) {
       questions =
-          questions
-              .stream()
+          questions.stream()
               .filter(name -> !name.startsWith("__"))
               .collect(ImmutableSet.toImmutableSet());
     }
@@ -2252,9 +2234,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
     NetworkId networkId = _idManager.getNetworkId(network);
     List<String> testrigs =
-        _idManager
-            .listSnapshots(networkId)
-            .stream()
+        _idManager.listSnapshots(networkId).stream()
             .sorted(
                 (t1, t2) -> { // reverse sorting by creation-time, name
                   SnapshotId snapshotId1 = _idManager.getSnapshotId(t1, networkId);
@@ -2627,9 +2607,7 @@ public class WorkMgr extends AbstractCoordinator {
   TableAnswerElement processAnswerTable(TableAnswerElement rawTable, AnswerRowsOptions options) {
     Map<String, ColumnMetadata> rawColumnMap = rawTable.getMetadata().toColumnMap();
     List<Row> filteredRows =
-        rawTable
-            .getRowsList()
-            .stream()
+        rawTable.getRowsList().stream()
             .filter(row -> options.getFilters().stream().allMatch(filter -> filter.matches(row)))
             .collect(ImmutableList.toImmutableList());
 
@@ -2671,9 +2649,7 @@ public class WorkMgr extends AbstractCoordinator {
     CommonUtil.forEachWithIndex(rawTable.getRowsList(), (i, row) -> rowIds.put(row, i));
     Map<String, ColumnMetadata> rawColumnMap = rawTable.getMetadata().toColumnMap();
     List<Row> filteredRows =
-        rawTable
-            .getRowsList()
-            .stream()
+        rawTable.getRowsList().stream()
             .filter(row -> options.getFilters().stream().allMatch(filter -> filter.matches(row)))
             .collect(ImmutableList.toImmutableList());
 
@@ -2939,8 +2915,7 @@ public class WorkMgr extends AbstractCoordinator {
   private void initializeNetworkNodeRolesFromEarliestSnapshot(@Nonnull String network)
       throws IOException {
     Optional<String> snapshot =
-        listSnapshotsWithMetadata(network)
-            .stream()
+        listSnapshotsWithMetadata(network).stream()
             .filter(WorkMgr::isParsed)
             .sorted(Comparator.comparing(e -> e.getMetadata().getCreationTimestamp()))
             .map(SnapshotMetadataEntry::getName)

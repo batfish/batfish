@@ -451,9 +451,7 @@ public class CommonUtil {
    * @return Any Interface that matches the condition
    */
   public static Optional<Interface> getActiveInterfaceWithName(String name, Configuration c) {
-    return c.getAllInterfaces()
-        .values()
-        .stream()
+    return c.getAllInterfaces().values().stream()
         .filter(iface -> iface.getActive() && iface.getName().equals(name))
         .findAny();
   }
@@ -466,15 +464,11 @@ public class CommonUtil {
    * @return Any Interface that matches the condition
    */
   public static Optional<Interface> getActiveInterfaceWithIp(Ip ipAddress, Configuration c) {
-    return c.getAllInterfaces()
-        .values()
-        .stream()
+    return c.getAllInterfaces().values().stream()
         .filter(
             iface ->
                 iface.getActive()
-                    && iface
-                        .getAllAddresses()
-                        .stream()
+                    && iface.getAllAddresses().stream()
                         .anyMatch(ifAddr -> Objects.equals(ifAddr.getIp(), ipAddress)))
         .findAny();
   }
@@ -591,25 +585,21 @@ public class CommonUtil {
     for (Configuration c : configurations.values()) {
       Collection<Interface> interfaces = c.getAllInterfaces().values();
       Set<InterfaceAddress> nonNattedInterfaceAddresses =
-          interfaces
-              .stream()
+          interfaces.stream()
               .filter(i -> !hasSourceNat(i.getOutgoingTransformation()))
               .flatMap(i -> i.getAllAddresses().stream())
               .collect(ImmutableSet.toImmutableSet());
       Set<IpWildcard> blacklist =
-          nonNattedInterfaceAddresses
-              .stream()
+          nonNattedInterfaceAddresses.stream()
               .map(address -> new IpWildcard(address.getIp(), Ip.ZERO))
               .collect(ImmutableSet.toImmutableSet());
       Set<IpWildcard> whitelist =
-          nonNattedInterfaceAddresses
-              .stream()
+          nonNattedInterfaceAddresses.stream()
               .map(address -> new IpWildcard(address.getPrefix()))
               .collect(ImmutableSet.toImmutableSet());
       IpWildcardSetIpSpace ipSpace =
           IpWildcardSetIpSpace.builder().including(whitelist).excluding(blacklist).build();
-      interfaces
-          .stream()
+      interfaces.stream()
           .flatMap(i -> sourceNatPoolIps(i.getOutgoingTransformation()))
           .forEach(currentPoolIp -> builder.put(currentPoolIp, ipSpace));
     }
@@ -771,8 +761,7 @@ public class CommonUtil {
           Map<K1, V1> map,
           Function<Entry<K1, V1>, K2> keyFunction,
           Function<Entry<K1, V1>, V2> valueFunction) {
-    return map.entrySet()
-        .stream()
+    return map.entrySet().stream()
         .collect(
             ImmutableSortedMap.toImmutableSortedMap(
                 Comparator.naturalOrder(), keyFunction, valueFunction));

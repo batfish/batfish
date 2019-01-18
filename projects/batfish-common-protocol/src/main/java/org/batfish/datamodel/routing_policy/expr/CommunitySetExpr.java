@@ -48,8 +48,7 @@ public abstract class CommunitySetExpr implements Serializable {
    * CommunitySetExpr} under the provided {@code environment}.
    */
   public boolean matchAnyCommunity(Environment environment, Set<Long> communityCandidates) {
-    return communityCandidates
-        .stream()
+    return communityCandidates.stream()
         .anyMatch(communityCandidate -> matchCommunity(environment, communityCandidate));
   }
 
@@ -72,8 +71,7 @@ public abstract class CommunitySetExpr implements Serializable {
    */
   public SortedSet<Long> matchedCommunities(
       @Nullable Environment environment, Set<Long> communityCandidates) {
-    return communityCandidates
-        .stream()
+    return communityCandidates.stream()
         .filter(communityCandidate -> matchCommunity(environment, communityCandidate))
         .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
   }

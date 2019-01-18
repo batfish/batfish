@@ -24,8 +24,7 @@ public class ProtocolObjectGroup extends ObjectGroup {
 
   public AclLineMatchExpr toAclLineMatchExpr() {
     return new OrMatchExpr(
-        _lines
-            .stream()
+        _lines.stream()
             .map(ProtocolObjectGroupLine::toAclLineMatchExpr)
             .collect(ImmutableSet.toImmutableSet()));
   }

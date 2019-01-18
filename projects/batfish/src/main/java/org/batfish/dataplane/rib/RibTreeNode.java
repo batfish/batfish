@@ -102,8 +102,7 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
 
   /** Returns the forwarding routes stored in this node. */
   private Set<R> getForwardingRoutes() {
-    return _routes
-        .stream()
+    return _routes.stream()
         .filter(r -> !r.getNonForwarding())
         .collect(ImmutableSet.toImmutableSet());
   }

@@ -15,9 +15,7 @@ public final class VrfNameRegexInterfaceLocationSpecifier extends VrfNameRegexLo
 
   @Override
   protected Stream<Location> getVrfLocations(Vrf vrf) {
-    return vrf.getInterfaces()
-        .values()
-        .stream()
+    return vrf.getInterfaces().values().stream()
         .map(iface -> new InterfaceLocation(iface.getOwner().getHostname(), iface.getName()));
   }
 }

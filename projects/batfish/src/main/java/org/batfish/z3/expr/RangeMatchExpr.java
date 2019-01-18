@@ -20,8 +20,7 @@ public final class RangeMatchExpr extends BooleanExpr {
     return new RangeMatchExpr(
         var,
         bits,
-        range
-            .stream()
+        range.stream()
             .map(subRange -> Range.closed((long) subRange.getStart(), (long) subRange.getEnd()))
             .collect(ImmutableSet.toImmutableSet()));
   }

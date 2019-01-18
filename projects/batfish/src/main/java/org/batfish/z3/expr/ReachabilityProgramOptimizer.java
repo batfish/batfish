@@ -93,8 +93,7 @@ public class ReachabilityProgramOptimizer {
             .get(state)
             .forEach(
                 rule ->
-                    rule.getPreconditionStates()
-                        .stream()
+                    rule.getPreconditionStates().stream()
                         .filter(preState -> !relevantStates.contains(preState))
                         .forEach(
                             preState -> {
@@ -121,8 +120,7 @@ public class ReachabilityProgramOptimizer {
 
     // start at axioms and the states they derive
     Set<RuleStatement> usableRules =
-        _rules
-            .stream()
+        _rules.stream()
             .filter(rule -> rule.getPreconditionStates().isEmpty())
             .collect(Collectors.toSet());
     Set<StateExpr> newStates =
@@ -133,14 +131,11 @@ public class ReachabilityProgramOptimizer {
       derivableStates.addAll(newStates);
 
       HashSet<StateExpr> newNewStates = new HashSet<>();
-      newStates
-          .stream()
+      newStates.stream()
           .filter(_dependentRules::containsKey)
           .forEach(
               state ->
-                  _dependentRules
-                      .get(state)
-                      .stream()
+                  _dependentRules.get(state).stream()
                       /*
                        * Don't mark a rule usable until we know all its precondition states are
                        * derivable. This may never happen, in which case this rule can be removed.

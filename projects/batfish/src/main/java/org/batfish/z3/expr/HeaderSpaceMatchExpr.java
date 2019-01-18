@@ -29,8 +29,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
 
   public static BooleanExpr matchDscp(Set<Integer> dscps) {
     return new OrExpr(
-        dscps
-            .stream()
+        dscps.stream()
             .map(
                 dscp ->
                     new EqExpr(
@@ -56,8 +55,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
 
   public static BooleanExpr matchEcn(Set<Integer> dscps) {
     return new OrExpr(
-        dscps
-            .stream()
+        dscps.stream()
             .map(
                 dscp ->
                     new EqExpr(
@@ -95,8 +93,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
   public static BooleanExpr matchIpWildcards(Set<IpWildcard> ipWildcards, Field ipField) {
     IntExpr intExpr = new VarIntExpr(ipField);
     return new OrExpr(
-        ipWildcards
-            .stream()
+        ipWildcards.stream()
             .map(ipWildcard -> matchIpWildcard(ipWildcard, intExpr))
             .collect(Collectors.toList()));
   }
@@ -139,8 +136,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
 
   public static BooleanExpr matchIpProtocol(Set<IpProtocol> ipProtocols) {
     return new OrExpr(
-        ipProtocols
-            .stream()
+        ipProtocols.stream()
             .map(IpProtocol::number)
             .map(
                 num ->
@@ -162,8 +158,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
   public static BooleanExpr matchProtocol(Set<Protocol> protocols, boolean useSrc, boolean useDst) {
     OrExpr matchesSomeProtocol =
         new OrExpr(
-            protocols
-                .stream()
+            protocols.stream()
                 .map(
                     protocol -> {
                       int protocolNumber = protocol.getIpProtocol().number();
@@ -234,8 +229,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
 
   public static BooleanExpr matchState(Set<FlowState> states) {
     return new OrExpr(
-        states
-            .stream()
+        states.stream()
             .map(
                 state ->
                     new EqExpr(
@@ -248,8 +242,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
     LitIntExpr one = new LitIntExpr(1, 1);
     LitIntExpr zero = new LitIntExpr(0, 1);
     return new OrExpr(
-        tcpFlags
-            .stream()
+        tcpFlags.stream()
             .map(
                 currentTcpFlags -> {
                   ImmutableList.Builder<BooleanExpr> matchCurrentTcpFlags = ImmutableList.builder();

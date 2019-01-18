@@ -606,15 +606,13 @@ public class EdgesAnswererTest {
   public void testTableMetadataLayer3() {
     List<ColumnMetadata> columnMetadata = getTableMetadata(EdgeType.LAYER3).getColumnMetadata();
     assertThat(
-        columnMetadata
-            .stream()
+        columnMetadata.stream()
             .map(ColumnMetadata::getName)
             .collect(ImmutableList.toImmutableList()),
         contains(COL_INTERFACE, COL_IPS, COL_REMOTE_INTERFACE, COL_REMOTE_IPS));
 
     assertThat(
-        columnMetadata
-            .stream()
+        columnMetadata.stream()
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList()),
         contains(Schema.INTERFACE, Schema.set(Schema.IP), Schema.INTERFACE, Schema.set(Schema.IP)));
@@ -624,15 +622,13 @@ public class EdgesAnswererTest {
   public void testTableMetadataLayer2() {
     List<ColumnMetadata> columnMetadata = getTableMetadata(EdgeType.LAYER2).getColumnMetadata();
     assertThat(
-        columnMetadata
-            .stream()
+        columnMetadata.stream()
             .map(ColumnMetadata::getName)
             .collect(ImmutableList.toImmutableList()),
         contains(COL_INTERFACE, COL_VLAN, COL_REMOTE_INTERFACE, COL_REMOTE_VLAN));
 
     assertThat(
-        columnMetadata
-            .stream()
+        columnMetadata.stream()
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList()),
         contains(Schema.INTERFACE, Schema.STRING, Schema.INTERFACE, Schema.STRING));
@@ -642,16 +638,14 @@ public class EdgesAnswererTest {
   public void testTableMetadataBgp() {
     List<ColumnMetadata> columnMetadata = getTableMetadata(EdgeType.BGP).getColumnMetadata();
     assertThat(
-        columnMetadata
-            .stream()
+        columnMetadata.stream()
             .map(ColumnMetadata::getName)
             .collect(ImmutableList.toImmutableList()),
         contains(
             COL_NODE, COL_IP, COL_AS_NUMBER, COL_REMOTE_NODE, COL_REMOTE_IP, COL_REMOTE_AS_NUMBER));
 
     assertThat(
-        columnMetadata
-            .stream()
+        columnMetadata.stream()
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList()),
         contains(Schema.NODE, Schema.IP, Schema.STRING, Schema.NODE, Schema.IP, Schema.STRING));
@@ -661,15 +655,13 @@ public class EdgesAnswererTest {
   public void testTableMetadataOthers() {
     List<ColumnMetadata> columnMetadata = getTableMetadata(EdgeType.OSPF).getColumnMetadata();
     assertThat(
-        columnMetadata
-            .stream()
+        columnMetadata.stream()
             .map(ColumnMetadata::getName)
             .collect(ImmutableList.toImmutableList()),
         contains(COL_INTERFACE, COL_REMOTE_INTERFACE));
 
     assertThat(
-        columnMetadata
-            .stream()
+        columnMetadata.stream()
             .map(ColumnMetadata::getSchema)
             .collect(ImmutableList.toImmutableList()),
         contains(Schema.INTERFACE, Schema.INTERFACE));

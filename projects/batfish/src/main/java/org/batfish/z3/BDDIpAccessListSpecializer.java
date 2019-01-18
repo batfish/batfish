@@ -201,8 +201,7 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
       @Nullable SortedSet<IpProtocol> ipProtocols) {
     return ipProtocols == null
         ? null
-        : ipProtocols
-            .stream()
+        : ipProtocols.stream()
             .filter(
                 ipProtocol ->
                     !_flowBDD.and(_pkt.getIpProtocol().value(ipProtocol.number())).isZero())
@@ -214,8 +213,7 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
     List<BDDInteger> varList = Arrays.asList(vars);
     return subRanges == null
         ? null
-        : subRanges
-            .stream()
+        : subRanges.stream()
             .filter(
                 subRange ->
                     /*
@@ -233,8 +231,7 @@ public final class BDDIpAccessListSpecializer extends IpAccessListSpecializer {
       @Nullable List<TcpFlagsMatchConditions> tcpFlags) {
     return tcpFlags == null
         ? null
-        : tcpFlags
-            .stream()
+        : tcpFlags.stream()
             .filter(
                 flags -> {
                   BDD flagsBDD =

@@ -230,8 +230,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
       List<PermittedByAcl> permittedByAclExprs = matchExpr.accept(permittedByAclCollector);
       if (!permittedByAclExprs.isEmpty()) {
         Set<String> referencedAcls =
-            permittedByAclExprs
-                .stream()
+            permittedByAclExprs.stream()
                 .map(PermittedByAcl::getAclName)
                 .collect(Collectors.toSet());
         if (!acls.keySet().containsAll(referencedAcls)) {
@@ -276,8 +275,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
         List<MatchSrcInterface> matchSrcInterfaceExprs =
             matchExpr.accept(matchSrcInterfaceCollector);
         Set<String> referencedInterfaces =
-            matchSrcInterfaceExprs
-                .stream()
+            matchSrcInterfaceExprs.stream()
                 .flatMap(expr -> expr.getSrcInterfaces().stream())
                 .collect(Collectors.toSet());
         if (!nodeInterfaces.containsAll(referencedInterfaces)) {
@@ -312,9 +310,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
         // Found a new cycle.
         ImmutableList<String> cycleAcls =
             ImmutableList.copyOf(
-                visited
-                    .subList(dependencyIndex, visited.size())
-                    .stream()
+                visited.subList(dependencyIndex, visited.size()).stream()
                     .map(AclNode::getName)
                     .collect(Collectors.toList()));
         cyclesFound.add(cycleAcls);
@@ -354,9 +350,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
         specifiedNodes,
         Function.identity(),
         node ->
-            filterSpecifier
-                .resolve(node, ctxt)
-                .stream()
+            filterSpecifier.resolve(node, ctxt).stream()
                 .filter(f -> !(question.getIgnoreComposites() && f.isComposite()))
                 .collect(ImmutableSet.toImmutableSet()));
   }
@@ -565,8 +559,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
 
     /* Convert every line to a BDD. */
     List<BDD> ipLineToBDDMap =
-        lines
-            .stream()
+        lines.stream()
             .map(IpAccessListLine::getMatchCondition)
             .map(matchExpr -> matchExpr.accept(ipAccessListToBDD))
             .collect(Collectors.toList());

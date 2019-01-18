@@ -36,8 +36,7 @@ public class PropertySpecifierTest {
 
     // null or empty string should yield all options
     assertThat(
-        PropertySpecifier.baseAutoComplete(null, properties)
-            .stream()
+        PropertySpecifier.baseAutoComplete(null, properties).stream()
             .map(s -> s.getText())
             .collect(Collectors.toList()),
         equalTo(ImmutableList.builder().addAll(properties).build()));
