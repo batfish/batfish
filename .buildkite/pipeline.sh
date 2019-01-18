@@ -2,6 +2,7 @@
 ### Build and quick lint
 set -euo pipefail
 
+ARTIFACTS_VERSION="v1.2.0"
 DOCKER_VERSION="v2.2.0"
 DOCKER_IMAGE="batfish/ci-base:latest"
 
@@ -45,7 +46,7 @@ cat <<EOF
           always-pull: true
 EOF
 
-###### WAIT for job to be build before starting any heavier tests
+###### WAIT for jar to be built and format checks to pass before heavier tests
 cat <<EOF
   - wait
 EOF
@@ -106,7 +107,7 @@ for cmd in $(find tests -name commands); do
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
           always-pull: true
-      - artifacts#v1.2.0:
+      - artifacts#${ARTIFACTS_VERSION}:
           download: workspace/allinone.jar
     artifact_paths:
       - workspace/**/jacoco.exec
@@ -124,7 +125,7 @@ cat <<EOF
           image: "${DOCKER_IMAGE}"
           always-pull: true
           propagate-environment: true
-      - artifacts#v1.2.0:
+      - artifacts#${ARTIFACTS_VERSION}:
           download:
             - "workspace/**/jacoco.exec"
             - "workspace/allinone.jar"
