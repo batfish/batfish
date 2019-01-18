@@ -121,12 +121,14 @@ public class NatRuleSetTest {
                     .build())
             .build();
 
+    Ip interfaceIp = Ip.ZERO;
     assertThat(
         ruleSet
             .toOutgoingTransformation(
                 DEST_NAT,
                 DESTINATION,
                 ImmutableMap.of("POOL", pool),
+                interfaceIp,
                 ImmutableMap.of(interfaceLocation(fromIface), matchFromIface),
                 andThen,
                 orElse)
@@ -138,7 +140,7 @@ public class NatRuleSetTest {
     assertThat(
         ruleSet
             .toIncomingTransformation(
-                DEST_NAT, DESTINATION, ImmutableMap.of("POOL", pool), andThen, orElse)
+                DEST_NAT, DESTINATION, ImmutableMap.of("POOL", pool), interfaceIp, andThen, orElse)
             .get(),
         equalTo(rulesTransformation));
   }
@@ -169,12 +171,14 @@ public class NatRuleSetTest {
     pool.setFromAddress(poolStart);
     pool.setToAddress(poolEnd);
 
+    Ip interfaceIp = Ip.parse("9.9.9.9");
     Transformation transformation =
         ruleSet
             .toOutgoingTransformation(
                 SOURCE_NAT,
                 IpField.SOURCE,
                 ImmutableMap.of("POOL", pool),
+                interfaceIp,
                 ImmutableMap.of(fromLocation, matchSrcInterface(fromIface)),
                 null,
                 null)

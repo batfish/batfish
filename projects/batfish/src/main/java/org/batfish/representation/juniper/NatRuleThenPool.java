@@ -1,9 +1,16 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
+import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
+import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.TransformationStep;
 
 /** A {@link NatRule} that nats using the specified pool */
 @ParametersAreNonnullByDefault
@@ -37,5 +44,17 @@ public final class NatRuleThenPool implements NatRuleThen, Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(_poolName);
+  }
+
+  @Override
+  public Optional<TransformationStep> toTransformationStep(
+      TransformationType type, IpField field, Map<String, NatPool> pools, Ip interfaceIp) {
+    NatPool pool = pools.get(_poolName);
+    if (pool == null) {
+      // pool is undefined.
+      return Optional.empty();
+    }
+    return Optional.of(
+        new AssignIpAddressFromPool(type, field, pool.getFromAddress(), pool.getToAddress()));
   }
 }

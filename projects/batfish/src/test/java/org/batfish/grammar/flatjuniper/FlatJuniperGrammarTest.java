@@ -261,6 +261,7 @@ import org.batfish.representation.juniper.NatRuleMatchSrcAddr;
 import org.batfish.representation.juniper.NatRuleMatchSrcAddrName;
 import org.batfish.representation.juniper.NatRuleMatchSrcPort;
 import org.batfish.representation.juniper.NatRuleSet;
+import org.batfish.representation.juniper.NatRuleThenInterface;
 import org.batfish.representation.juniper.NatRuleThenOff;
 import org.batfish.representation.juniper.NatRuleThenPool;
 import org.batfish.representation.juniper.Screen;
@@ -3444,7 +3445,7 @@ public final class FlatJuniperGrammarTest {
 
     // test rules
     List<NatRule> rules = ruleSet.getRules();
-    assertThat(rules, hasSize(2));
+    assertThat(rules, hasSize(3));
 
     // test rule1
     NatRule rule1 = rules.get(0);
@@ -3467,6 +3468,14 @@ public final class FlatJuniperGrammarTest {
                 new NatRuleMatchSrcAddr(Prefix.parse("2.2.2.2/24")),
                 new NatRuleMatchSrcAddrName("SA-NAME"))));
     assertThat(rule2.getThen(), equalTo(new NatRuleThenPool("POOL")));
+
+    // test rule3
+    NatRule rule3 = rules.get(2);
+    assertThat(rule3.getName(), equalTo("RULE3"));
+    assertThat(
+        rule3.getMatches(),
+        equalTo(ImmutableList.of(new NatRuleMatchSrcAddr(Prefix.parse("3.3.3.0/24")))));
+    assertThat(rule3.getThen(), equalTo(NatRuleThenInterface.INSTANCE));
   }
 
   @Test

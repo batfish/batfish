@@ -29,15 +29,18 @@ public class NatRuleTest {
     rule.getMatches().add(new NatRuleMatchDstAddr(pfx));
     rule.setThen(NatRuleThenOff.INSTANCE);
 
+    Ip interfaceIp = Ip.ZERO;
     assertThat(
-        rule.toTransformationBuilder(DEST_NAT, DESTINATION, ImmutableMap.of()).map(Builder::build),
+        rule.toTransformationBuilder(DEST_NAT, DESTINATION, ImmutableMap.of(), interfaceIp)
+            .map(Builder::build),
         equalTo(Optional.of(when(match(hs)).apply(new Noop(DEST_NAT)).build())));
 
     rule.setThen(new NatRuleThenPool("pool"));
 
     // pool is undefined
     assertThat(
-        rule.toTransformationBuilder(DEST_NAT, DESTINATION, ImmutableMap.of()).map(Builder::build),
+        rule.toTransformationBuilder(DEST_NAT, DESTINATION, ImmutableMap.of(), interfaceIp)
+            .map(Builder::build),
         equalTo(Optional.empty()));
 
     // pool is defined
@@ -49,7 +52,8 @@ public class NatRuleTest {
 
     // destination NAT
     assertThat(
-        rule.toTransformationBuilder(DEST_NAT, DESTINATION, ImmutableMap.of("pool", pool))
+        rule.toTransformationBuilder(
+                DEST_NAT, DESTINATION, ImmutableMap.of("pool", pool), interfaceIp)
             .map(Builder::build),
         equalTo(
             Optional.of(
@@ -59,7 +63,7 @@ public class NatRuleTest {
 
     // source NAT
     assertThat(
-        rule.toTransformationBuilder(SOURCE_NAT, SOURCE, ImmutableMap.of("pool", pool))
+        rule.toTransformationBuilder(SOURCE_NAT, SOURCE, ImmutableMap.of("pool", pool), interfaceIp)
             .map(Builder::build),
         equalTo(
             Optional.of(
