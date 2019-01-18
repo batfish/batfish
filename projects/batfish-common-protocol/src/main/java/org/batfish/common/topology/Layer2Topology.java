@@ -40,7 +40,7 @@ public final class Layer2Topology {
   public boolean inSameBroadcastDomain(Layer2Node n1, Layer2Node n2) {
     try {
       return _unionFind.inSameSet(n1, n2);
-    } catch(IllegalArgumentException e) {
+    } catch (IllegalArgumentException e) {
       // one or both elements missing
       return false;
     }
