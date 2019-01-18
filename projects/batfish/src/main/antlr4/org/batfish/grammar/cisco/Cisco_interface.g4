@@ -359,12 +359,9 @@ if_ip_nat_source
 :
    IP NAT SOURCE DYNAMIC ACCESS_LIST acl = variable
    (
-      OVERLOAD
-      |
-      (
-         POOL pool = variable
-      )
-   )* NEWLINE
+     OVERLOAD
+     | POOL pool = variable
+   ) NEWLINE
 ;
 
 if_ip_nbar
