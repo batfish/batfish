@@ -55,7 +55,7 @@ EOF
 cat <<EOF
   - label: "Maven tests + Coverage"
     command:
-      - mvn -f projects/pom.xml verify -DskipTests=false -Djacoco.skip=false
+      - mvn -f projects/pom.xml test -DskipTests=false -Djacoco.skip=false
       - mkdir -p workspace
       - rsync -zarv --prune-empty-dirs --include '*/' --include 'jacoco*.exec' --exclude '*' projects/ workspace/
     artifact_paths:
