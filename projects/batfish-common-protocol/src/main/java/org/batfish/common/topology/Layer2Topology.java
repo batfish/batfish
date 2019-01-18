@@ -1,6 +1,7 @@
 package org.batfish.common.topology;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -20,7 +21,16 @@ public final class Layer2Topology {
   public static Layer2Topology fromDomains(Collection<Set<Layer2Node>> domains) {
     UnionFind<Layer2Node> unionFind =
         new UnionFind<>(domains.stream().flatMap(Set::stream).collect(Collectors.toSet()));
-    domains.forEach(domain -> domain.forEach(m1 -> domain.forEach(m2 -> unionFind.union(m1, m2))));
+    domains.forEach(domain -> {
+      if (domain.isEmpty()) {
+        return;
+      }
+      Iterator<Layer2Node> it = domain.iterator();
+      Layer2Node m1 = it.next();
+      while(it.hasNext()) {
+        unionFind.union(m1, it.next());
+      }
+    });
     return new Layer2Topology(unionFind);
   }
 
