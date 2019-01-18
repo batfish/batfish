@@ -21,16 +21,17 @@ public final class Layer2Topology {
   public static Layer2Topology fromDomains(Collection<Set<Layer2Node>> domains) {
     UnionFind<Layer2Node> unionFind =
         new UnionFind<>(domains.stream().flatMap(Set::stream).collect(Collectors.toSet()));
-    domains.forEach(domain -> {
-      if (domain.isEmpty()) {
-        return;
-      }
-      Iterator<Layer2Node> it = domain.iterator();
-      Layer2Node m1 = it.next();
-      while(it.hasNext()) {
-        unionFind.union(m1, it.next());
-      }
-    });
+    domains.forEach(
+        domain -> {
+          if (domain.isEmpty()) {
+            return;
+          }
+          Iterator<Layer2Node> it = domain.iterator();
+          Layer2Node node = it.next();
+          while (it.hasNext()) {
+            unionFind.union(node, it.next());
+          }
+        });
     return new Layer2Topology(unionFind);
   }
 
