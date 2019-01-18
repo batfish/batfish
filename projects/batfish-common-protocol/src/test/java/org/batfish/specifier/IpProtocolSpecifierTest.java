@@ -96,7 +96,11 @@ public final class IpProtocolSpecifierTest {
   @Test
   public void testConstructorValidJsonNode() throws IOException {
     JsonNode jsonNode = _mapper.readTree("[\"89 (OSpf)\", \"61\", \"chaos\"]");
-    assertThat(new IpProtocolSpecifier(jsonNode).getProtocols(), equalTo(ImmutableSet.of(IpProtocol.OSPF, IpProtocol.CHAOS, IpProtocol.ANY_HOST_INTERNAL_PROTOCOL)));
+    assertThat(
+        new IpProtocolSpecifier(jsonNode).getProtocols(),
+        equalTo(
+            ImmutableSet.of(
+                IpProtocol.OSPF, IpProtocol.CHAOS, IpProtocol.ANY_HOST_INTERNAL_PROTOCOL)));
   }
 
   @Test

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
@@ -37,19 +38,16 @@ public class IpProtocolSpecifier {
 
   static {
     COMPLETIONS =
-        ImmutableSet.<String>builder()
-            .addAll(
-                Stream.of(IpProtocol.values())
-                    .map(
-                        ipProtocol -> {
-                          if (UNNAMED_PATTERN.matcher(ipProtocol.name()).find()) {
-                            // don't include UNNAMED... protocol names
-                            return String.format("%d", ipProtocol.number());
-                          }
-                          return String.format("%d (%s)", ipProtocol.number(), ipProtocol.name());
-                        })
-                    .collect(Collectors.toSet()))
-            .build();
+        Stream.of(IpProtocol.values())
+            .map(
+                ipProtocol -> {
+                  if (UNNAMED_PATTERN.matcher(ipProtocol.name()).find()) {
+                    // don't include UNNAMED... protocol names
+                    return String.format("%d", ipProtocol.number());
+                  }
+                  return String.format("%d (%s)", ipProtocol.number(), ipProtocol.name());
+                })
+            .collect(ImmutableSet.toImmutableSet());
   }
 
   private final String _text;
@@ -173,7 +171,7 @@ public class IpProtocolSpecifier {
                     suggestion.getIsPartial(),
                     suggestion.getDescription(),
                     suggestion.getRank()))
-        .collect(Collectors.toList());
+        .collect(ImmutableList.toImmutableList());
   }
 
   // create suggestion text from original array of individual protocol strings and the
@@ -210,6 +208,7 @@ public class IpProtocolSpecifier {
     return MoreObjects.toStringHelper(this)
         .add("stringValue", _text)
         .add("protocols", _protocols)
+        .omitNullValues()
         .toString();
   }
 }
