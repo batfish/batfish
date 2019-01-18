@@ -155,6 +155,7 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.DispositionSpecifier;
+import org.batfish.specifier.IpProtocolSpecifier;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.storage.FileBasedStorageDirectoryProvider;
 import org.batfish.storage.StorageProvider;
@@ -535,6 +536,11 @@ public class WorkMgr extends AbstractCoordinator {
             return null;
           }
           suggestions = PropertySpecifier.baseAutoComplete(query, completionMetadata.getIps());
+          break;
+        }
+      case IP_PROTOCOL_SPEC:
+        {
+          suggestions = IpProtocolSpecifier.autoComplete(query);
           break;
         }
       case IPSEC_SESSION_STATUS:
