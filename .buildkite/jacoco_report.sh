@@ -20,4 +20,9 @@ java -jar ${JACOCO_CLI_JAR} report \
 # Hey look it's magic numbers in plaintext. We don't care, this is a
 # non-blocking precommit check only and if used for evil does not compromise
 # project security in any way.
-bash <(curl -s https://codecov.io/bash) -t "59baa5fe-139e-4aef-80a7-b40bfaa3fc67"
+bash <(curl -s https://codecov.io/bash) -t "59baa5fe-139e-4aef-80a7-b40bfaa3fc67" \
+  -B ${BUILDKITE_BRANCH} \
+  -C ${BUILDKITE_COMMIT} \
+  -P ${BUILDKITE_PULL_REQUEST} \
+  -b ${BUILDKITE_BUILD_NUMBER} \
+  -T ${BUILDKITE_TAG}
