@@ -62935,12 +62935,6 @@
         "cisco_interface" : {
           "Parse warnings" : [
             {
-              "Comment" : "Ignored incomplete definition of Arista dynamic source nat. acl=def, pool=null",
-              "Line" : 92,
-              "Parser_Context" : "[if_ip_nat_source if_inner s_interface stanza cisco_configuration]",
-              "Text" : "ip nat source dynamic access-list def overload"
-            },
-            {
               "Comment" : "This feature is not currently supported",
               "Line" : 279,
               "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
