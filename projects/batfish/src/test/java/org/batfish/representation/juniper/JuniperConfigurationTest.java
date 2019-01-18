@@ -326,8 +326,7 @@ public class JuniperConfigurationTest {
                     ImmutableList.of(
                         IpAccessListLine.rejecting(
                             new OrMatchExpr(
-                                screenOptionList
-                                    .stream()
+                                screenOptionList.stream()
                                     .map(ScreenOption::getAclLineMatchExpr)
                                     .collect(Collectors.toList()))),
                         IpAccessListLine.ACCEPT_ALL))
@@ -396,8 +395,7 @@ public class JuniperConfigurationTest {
                     ImmutableList.of(
                         IpAccessListLine.rejecting(
                             new OrMatchExpr(
-                                screenOptionList1
-                                    .stream()
+                                screenOptionList1.stream()
                                     .map(ScreenOption::getAclLineMatchExpr)
                                     .collect(Collectors.toList()))),
                         IpAccessListLine.ACCEPT_ALL))

@@ -1399,9 +1399,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     List<AclLineMatchExpr> matches =
-        screen
-            .getScreenOptions()
-            .stream()
+        screen.getScreenOptions().stream()
             .map(ScreenOption::getAclLineMatchExpr)
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
@@ -1422,8 +1420,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @VisibleForTesting
   IpAccessList buildScreensPerZone(@Nonnull Zone zone, String aclName) {
     List<AclLineMatchExpr> matches =
-        zone.getScreens()
-            .stream()
+        zone.getScreens().stream()
             .map(
                 screenName -> {
                   Screen screen = _masterLogicalSystem.getScreens().get(screenName);

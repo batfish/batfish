@@ -4081,8 +4081,7 @@ public final class FlatJuniperGrammarTest {
                     ImmutableList.of(
                         IpAccessListLine.rejecting(
                             new OrMatchExpr(
-                                supportedOptions
-                                    .stream()
+                                supportedOptions.stream()
                                     .map(ScreenOption::getAclLineMatchExpr)
                                     .collect(Collectors.toList()))),
                         IpAccessListLine.ACCEPT_ALL))
