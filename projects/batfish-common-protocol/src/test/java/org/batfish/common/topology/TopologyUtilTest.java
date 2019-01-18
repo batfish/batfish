@@ -522,7 +522,6 @@ public final class TopologyUtilTest {
      * - ordinary l3 addressing on c3i6
      */
 
-    // all layer1 edges should make it into layer2, plus self and transitive edges for switchports
     Layer2Topology layer2Topology =
         Layer2Topology.fromDomains(
             ImmutableList.of(
