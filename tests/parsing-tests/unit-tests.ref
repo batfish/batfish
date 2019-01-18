@@ -45,6 +45,9 @@
         "arista_misc" : [
           "configs/arista_misc"
         ],
+        "arista_nat" : [
+          "configs/arista_nat"
+        ],
         "arista_ospf" : [
           "configs/arista_ospf"
         ],
@@ -823,6 +826,7 @@
         "configs/arista_interface" : "PASSED",
         "configs/arista_ip_route" : "PASSED",
         "configs/arista_misc" : "PASSED",
+        "configs/arista_nat" : "PASSED",
         "configs/arista_ospf" : "PASSED",
         "configs/arista_queue_monitor" : "PASSED",
         "configs/arista_username" : "PASSED",
@@ -1993,6 +1997,107 @@
             "          SHUTDOWN:'shutdown'",
             "          (null_rest_of_line",
             "            NEWLINE:'\\n')))))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "arista_nat" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        BOOT:'boot'",
+            "        SYSTEM:'system'",
+            "        FLASH:'flash'",
+            "        VARIABLE:'this-is-an-arista-device.swi'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'arista_nat'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (extended_access_list_stanza",
+            "      IP:'ip'",
+            "      ACCESS_LIST:'access-list'",
+            "      shortname = (variable",
+            "        VARIABLE:'acl1')",
+            "      NEWLINE:'\\n'",
+            "      (extended_access_list_tail",
+            "        ala = (access_list_action",
+            "          PERMIT:'permit')",
+            "        prot = (protocol",
+            "          IP:'ip')",
+            "        srcipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        dstipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_ip_nat",
+            "      (ip_nat_pool",
+            "        IP:'ip'",
+            "        NAT:'nat'",
+            "        POOL:'pool'",
+            "        name = (variable",
+            "          VARIABLE:'pool1')",
+            "        first = IP_ADDRESS:'1.1.1.1'",
+            "        last = IP_ADDRESS:'1.1.1.2'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_ip_nat",
+            "      (ip_nat_pool",
+            "        IP:'ip'",
+            "        NAT:'nat'",
+            "        POOL:'pool'",
+            "        name = (variable",
+            "          VARIABLE:'pool2')",
+            "        first = IP_ADDRESS:'1.1.1.1'",
+            "        last = IP_ADDRESS:'1.1.1.2'",
+            "        NETMASK:'netmask'",
+            "        mask = IP_ADDRESS:'255.255.255.255'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_ip_nat",
+            "      (ip_nat_pool",
+            "        IP:'ip'",
+            "        NAT:'nat'",
+            "        POOL:'pool'",
+            "        name = (variable",
+            "          VARIABLE:'pool3')",
+            "        first = IP_ADDRESS:'1.1.1.1'",
+            "        last = IP_ADDRESS:'1.1.1.2'",
+            "        PREFIX_LENGTH:'prefix-length'",
+            "        prefix_length = DEC:'32'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Ethernet'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'1'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_ip_address",
+            "          IP:'ip'",
+            "          ADDRESS:'address'",
+            "          prefix = IP_PREFIX:'1.1.1.1/32'",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_ip_nat_source",
+            "          IP:'ip'",
+            "          NAT:'nat'",
+            "          SOURCE:'source'",
+            "          DYNAMIC:'dynamic'",
+            "          ACCESS_LIST:'access-list'",
+            "          acl = (variable",
+            "            VARIABLE:'acl1')",
+            "          POOL:'pool'",
+            "          pool = (variable",
+            "            VARIABLE:'pool1')",
+            "          NEWLINE:'\\n'))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -62627,6 +62732,22 @@
       },
       "version" : "0.36.0",
       "warnings" : {
+        "arista_nat" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "Subnet of NAT pool pool2 does not contain last pool IP",
+              "Line" : 9,
+              "Parser_Context" : "[ip_nat_pool s_ip_nat stanza cisco_configuration]",
+              "Text" : "ip nat pool pool2 1.1.1.1 1.1.1.2 netmask 255.255.255.255"
+            },
+            {
+              "Comment" : "Subnet of NAT pool pool3 does not contain last pool IP",
+              "Line" : 10,
+              "Parser_Context" : "[ip_nat_pool s_ip_nat stanza cisco_configuration]",
+              "Text" : "ip nat pool pool3 1.1.1.1 1.1.1.2 prefix-length 32"
+            }
+          ]
+        },
         "aruba_misc" : {
           "Parse warnings" : [
             {
@@ -62814,6 +62935,12 @@
         "cisco_interface" : {
           "Parse warnings" : [
             {
+              "Comment" : "Ignored incomplete definition of Arista dynamic source nat. acl=def, pool=null",
+              "Line" : 92,
+              "Parser_Context" : "[if_ip_nat_source if_inner s_interface stanza cisco_configuration]",
+              "Text" : "ip nat source dynamic access-list def overload"
+            },
+            {
               "Comment" : "This feature is not currently supported",
               "Line" : 279,
               "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
@@ -62829,6 +62956,12 @@
         },
         "cisco_ip_nat" : {
           "Parse warnings" : [
+            {
+              "Comment" : "Subnet of NAT pool abc does not contain last pool IP",
+              "Line" : 4,
+              "Parser_Context" : "[ip_nat_pool_range s_ip_nat stanza cisco_configuration]",
+              "Text" : "ip nat pool abc prefix-length 32  \n range 10.1.2.3 10.1.2.4"
+            },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 13,
@@ -63380,6 +63513,7 @@
         "arista_ip_route" : "PASSED",
         "arista_logging" : "PASSED",
         "arista_misc" : "PASSED",
+        "arista_nat" : "PASSED",
         "arista_ospf" : "WARNINGS",
         "arista_queue_monitor" : "PASSED",
         "arista_username" : "PASSED",
@@ -63721,6 +63855,47 @@
                 26
               ],
               "numReferrers" : 1
+            }
+          }
+        },
+        "configs/arista_nat" : {
+          "extended ipv4 access-list" : {
+            "acl1" : {
+              "definitionLines" : [
+                5,
+                6
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "interface" : {
+            "Ethernet1" : {
+              "definitionLines" : [
+                12,
+                13,
+                14
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "nat pool" : {
+            "pool1" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            },
+            "pool2" : {
+              "definitionLines" : [
+                9
+              ],
+              "numReferrers" : 0
+            },
+            "pool3" : {
+              "definitionLines" : [
+                10
+              ],
+              "numReferrers" : 0
             }
           }
         },
@@ -68510,6 +68685,29 @@
             "sshabc" : {
               "management ssh ip access-group" : [
                 30
+              ]
+            }
+          }
+        },
+        "configs/arista_nat" : {
+          "interface" : {
+            "Ethernet1" : {
+              "interface" : [
+                12
+              ]
+            }
+          },
+          "ipv4 acl" : {
+            "acl1" : {
+              "ip nat source dynamic access-list" : [
+                14
+              ]
+            }
+          },
+          "nat pool" : {
+            "pool1" : {
+              "ip nat source pool" : [
+                14
               ]
             }
           }
@@ -74116,6 +74314,7 @@
         "configs/arista_interface" : "PASSED",
         "configs/arista_ip_route" : "PASSED",
         "configs/arista_misc" : "PASSED",
+        "configs/arista_nat" : "PASSED",
         "configs/arista_ospf" : "PASSED",
         "configs/arista_queue_monitor" : "PASSED",
         "configs/arista_username" : "PASSED",

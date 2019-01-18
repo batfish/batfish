@@ -32,8 +32,7 @@ public final class TypeNameRegexInterfaceSpecifier implements InterfaceSpecifier
   public Set<Interface> resolve(Set<String> nodes, SpecifierContext ctxt) {
     Map<String, Configuration> configs = ctxt.getConfigs();
 
-    return nodes
-        .stream()
+    return nodes.stream()
         .map(configs::get)
         .flatMap(config -> config.getAllInterfaces().values().stream())
         .filter(iface -> _interfaceTypes.contains(iface.getInterfaceType()))

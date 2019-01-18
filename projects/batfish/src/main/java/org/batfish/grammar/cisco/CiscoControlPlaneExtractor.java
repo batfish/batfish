@@ -1107,6 +1107,7 @@ import org.batfish.grammar.cisco.CiscoParser.Wccp_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Zp_service_policy_inspectContext;
 import org.batfish.representation.cisco.AccessListAddressSpecifier;
 import org.batfish.representation.cisco.AccessListServiceSpecifier;
+import org.batfish.representation.cisco.AristaDynamicSourceNat;
 import org.batfish.representation.cisco.AsPathSet;
 import org.batfish.representation.cisco.BgpAggregateIpv4Network;
 import org.batfish.representation.cisco.BgpAggregateIpv6Network;
@@ -1115,7 +1116,6 @@ import org.batfish.representation.cisco.BgpNetwork6;
 import org.batfish.representation.cisco.BgpPeerGroup;
 import org.batfish.representation.cisco.BgpProcess;
 import org.batfish.representation.cisco.BgpRedistributionPolicy;
-import org.batfish.representation.cisco.CiscoAristaNat;
 import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.CiscoIosDynamicNat;
 import org.batfish.representation.cisco.CiscoIosNat;
@@ -2115,9 +2115,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             n ->
                 new NamedCommunitySet(
                     n,
-                    ctx.community_set_elem_list()
-                        .elems
-                        .stream()
+                    ctx.community_set_elem_list().elems.stream()
                         .map(this::toCommunitySetElemExpr)
                         .collect(ImmutableList.toImmutableList())));
   }
@@ -2222,8 +2220,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterEos_vlan_id(Eos_vlan_idContext ctx) {
     _currentVlans =
-        ctx.vlan_ids
-            .stream()
+        ctx.vlan_ids.stream()
             .map(innerctx -> IntegerSpace.of(toSubRange(innerctx)))
             .reduce(IntegerSpace::union)
             .get();
@@ -2443,8 +2440,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (trackAction == null) {
       return;
     }
-    _currentInterfaces
-        .stream()
+    _currentInterfaces.stream()
         .map(i -> i.getHsrpGroups().get(_currentHsrpGroup).getTrackActions())
         .forEach(
             trackActions -> {
@@ -5891,22 +5887,32 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_ip_nat_source(If_ip_nat_sourceContext ctx) {
-    // Arista syntax
-    CiscoAristaNat nat = new CiscoAristaNat();
+    String acl = null;
+    String pool = null;
     if (ctx.acl != null) {
-      String acl = ctx.acl.getText();
+      acl = ctx.acl.getText();
       int aclLine = ctx.acl.getStart().getLine();
-      nat.setAclName(acl);
-      nat.setAclNameLine(aclLine);
       _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_SOURCE_ACCESS_LIST, aclLine);
     }
     if (ctx.pool != null) {
-      String pool = ctx.pool.getText();
+      pool = ctx.pool.getText();
       int poolLine = ctx.pool.getStart().getLine();
-      nat.setNatPool(pool);
-      nat.setNatPoolLine(poolLine);
       _configuration.referenceStructure(NAT_POOL, pool, IP_NAT_SOURCE_POOL, poolLine);
     }
+
+    if (acl == null || pool == null) {
+      // incomplete definition. ignore
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          String.format(
+              "Ignored incomplete definition of Arista dynamic source nat. acl=%s, pool=%s",
+              acl, pool));
+      return;
+    }
+
+    AristaDynamicSourceNat nat = new AristaDynamicSourceNat(acl, pool);
 
     for (Interface iface : _currentInterfaces) {
       if (iface.getAristaNats() == null) {
@@ -6616,24 +6622,67 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIp_nat_pool(Ip_nat_poolContext ctx) {
     String name = ctx.name.getText();
-    NatPool natPool = new NatPool();
-    _configuration.getNatPools().put(name, natPool);
-    // Just ignore ctx.prefix_length since it is only for sanity check
-    natPool.setFirst(toIp(ctx.first));
-    natPool.setLast(toIp(ctx.last));
+    Ip first = toIp(ctx.first);
+    Ip last = toIp(ctx.last);
+    if (ctx.mask != null) {
+      Prefix subnet = new IpWildcard(first, toIp(ctx.mask).inverted()).toPrefix();
+      createNatPool(name, first, last, subnet, ctx);
+    } else if (ctx.prefix_length != null) {
+      Prefix subnet = Prefix.create(first, Integer.parseInt(ctx.prefix_length.getText()));
+      createNatPool(name, first, last, subnet, ctx);
+    } else {
+      _configuration.getNatPools().put(name, new NatPool(first, last));
+    }
     defineStructure(NAT_POOL, name, ctx);
   }
 
   @Override
   public void exitIp_nat_pool_range(Ip_nat_pool_rangeContext ctx) {
     String name = ctx.name.getText();
-    NatPool natPool = new NatPool();
-    _configuration.getNatPools().put(name, natPool);
     Ip first = toIp(ctx.first);
-    natPool.setFirst(first);
     Ip last = toIp(ctx.last);
-    natPool.setLast(last);
+    if (ctx.prefix_length != null) {
+      Prefix subnet = Prefix.create(first, Integer.parseInt(ctx.prefix_length.getText()));
+      createNatPool(name, first, last, subnet, ctx);
+    } else {
+      _configuration.getNatPools().put(name, new NatPool(first, last));
+    }
     defineStructure(NAT_POOL, name, ctx);
+  }
+
+  /**
+   * Check that the pool IPs are contained in the subnet, and warn if not. Then create the pool,
+   * while excluding the network/broadcast IPs. This means that if specified first pool IP is
+   * numerically less than the first host IP in the subnet, use the first host IP instead.
+   * Similarly, if the specified last pool IP is greater than the last host IP in the subnet, use
+   * the last host IP instead.
+   */
+  private void createNatPool(String name, Ip first, Ip last, Prefix subnet, ParserRuleContext ctx) {
+    if (!subnet.containsIp(first)) {
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          String.format("Subnet of NAT pool %s does not contain first pool IP", name));
+    }
+    if (!subnet.containsIp(last)) {
+      _w.addWarning(
+          ctx,
+          getFullText(ctx),
+          _parser,
+          String.format("Subnet of NAT pool %s does not contain last pool IP", name));
+    }
+
+    Ip firstHostIp = subnet.getFirstHostIp();
+    Ip lastHostIp = subnet.getLastHostIp();
+
+    _configuration
+        .getNatPools()
+        .put(
+            name,
+            new NatPool(
+                first.asLong() < firstHostIp.asLong() ? firstHostIp : first,
+                last.asLong() > lastHostIp.asLong() ? lastHostIp : last));
   }
 
   @Override
@@ -6642,15 +6691,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String acl = ctx.acl.getText();
     int aclLine = ctx.acl.getStart().getLine();
     nat.setAclName(acl);
-    nat.setAclNameLine(aclLine);
     _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_SOURCE_ACCESS_LIST, aclLine);
     String pool = ctx.pool.getText();
     int poolLine = ctx.pool.getStart().getLine();
     nat.setNatPool(pool);
-    nat.setNatPoolLine(poolLine);
     _configuration.referenceStructure(NAT_POOL, pool, IP_NAT_SOURCE_POOL, poolLine);
     nat.setAction(RuleAction.DESTINATION_INSIDE);
-    _configuration.getNats().add(nat);
+    _configuration.getCiscoIosNats().add(nat);
   }
 
   @Override
@@ -6683,12 +6730,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String acl = ctx.acl.getText();
       int aclLine = ctx.acl.getStart().getLine();
       dynamicNat.setAclName(acl);
-      dynamicNat.setAclNameLine(aclLine);
       _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_SOURCE_ACCESS_LIST, aclLine);
       String pool = ctx.pool.getText();
       int poolLine = ctx.pool.getStart().getLine();
       dynamicNat.setNatPool(pool);
-      dynamicNat.setNatPoolLine(poolLine);
       _configuration.referenceStructure(NAT_POOL, pool, IP_NAT_SOURCE_POOL, poolLine);
       nat = dynamicNat;
     }
@@ -6702,7 +6747,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       // https://www.cisco.com/c/en/us/support/docs/ip/network-address-translation-nat/13773-2.html
       todo(ctx);
     }
-    _configuration.getNats().add(nat);
+    _configuration.getCiscoIosNats().add(nat);
   }
 
   @Override
@@ -8246,8 +8291,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentPeerGroup.setRemoteAs(as);
     if (ctx.alt_ases != null) {
       _currentPeerGroup.setAlternateAs(
-          ctx.alt_ases
-              .stream()
+          ctx.alt_ases.stream()
               .map(CiscoControlPlaneExtractor::toAsNum)
               .collect(ImmutableSet.toImmutableSet()));
     }
@@ -9696,10 +9740,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Nullable
   private Interface getAsaInterfaceByAlias(String alias) {
-    return _configuration
-        .getInterfaces()
-        .values()
-        .stream()
+    return _configuration.getInterfaces().values().stream()
         .filter(i -> alias.equals(i.getAlias()))
         .findFirst()
         .orElse(null);
@@ -10968,9 +11009,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private RoutePolicyBoolean toRoutePolicyBoolean(
       Boolean_as_path_neighbor_is_rp_stanzaContext ctx) {
     List<SubRangeExpr> range =
-        ctx.as_range_expr()
-            .subranges
-            .stream()
+        ctx.as_range_expr().subranges.stream()
             .map(this::toSubRangeExpr)
             .collect(Collectors.toList());
     boolean exact = ctx.as_range_expr().EXACT() != null;
@@ -10980,9 +11019,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private RoutePolicyBoolean toRoutePolicyBoolean(
       Boolean_as_path_originates_from_rp_stanzaContext ctx) {
     List<SubRangeExpr> range =
-        ctx.as_range_expr()
-            .subranges
-            .stream()
+        ctx.as_range_expr().subranges.stream()
             .map(this::toSubRangeExpr)
             .collect(Collectors.toList());
     boolean exact = ctx.as_range_expr().EXACT() != null;
@@ -10992,9 +11029,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private RoutePolicyBoolean toRoutePolicyBoolean(
       Boolean_as_path_passes_through_rp_stanzaContext ctx) {
     List<SubRangeExpr> range =
-        ctx.as_range_expr()
-            .subranges
-            .stream()
+        ctx.as_range_expr().subranges.stream()
             .map(this::toSubRangeExpr)
             .collect(Collectors.toList());
     boolean exact = ctx.as_range_expr().EXACT() != null;

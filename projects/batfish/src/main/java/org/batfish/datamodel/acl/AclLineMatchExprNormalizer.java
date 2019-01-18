@@ -47,9 +47,7 @@ public final class AclLineMatchExprNormalizer implements GenericAclLineMatchExpr
     AclLineMatchExprNormalizer normalizer = new AclLineMatchExprNormalizer(toBDD);
     expr.accept(normalizer);
     Set<AclLineMatchExpr> disjuncts =
-        normalizer
-            ._conjunctsBuilders
-            .stream()
+        normalizer._conjunctsBuilders.stream()
             .filter(conjunctsBuilder -> !conjunctsBuilder.unsat())
             .map(ConjunctsBuilder::build)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
@@ -61,8 +59,7 @@ public final class AclLineMatchExprNormalizer implements GenericAclLineMatchExpr
      * Add expr to each disjunct. Then remove any that are now unsat (FALSE), since A || FALSE == A.
      */
     _conjunctsBuilders.removeAll(
-        _conjunctsBuilders
-            .stream()
+        _conjunctsBuilders.stream()
             .peek(cb -> cb.add(expr))
             .filter(ConjunctsBuilder::unsat)
             .collect(Collectors.toList()));
@@ -113,16 +110,12 @@ public final class AclLineMatchExprNormalizer implements GenericAclLineMatchExpr
   @Override
   public Void visitOrMatchExpr(OrMatchExpr orMatchExpr) {
     _conjunctsBuilders =
-        orMatchExpr
-            .getDisjuncts()
-            .stream()
+        orMatchExpr.getDisjuncts().stream()
             .flatMap(
                 disjunct -> {
                   AclLineMatchExprNormalizer normalizer = new AclLineMatchExprNormalizer(this);
                   disjunct.accept(normalizer);
-                  return normalizer
-                      ._conjunctsBuilders
-                      .stream()
+                  return normalizer._conjunctsBuilders.stream()
                       .filter(conjunctsBuilder -> !conjunctsBuilder.unsat());
                 })
             .collect(Collectors.toSet());

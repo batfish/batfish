@@ -131,9 +131,7 @@ public class LogicalSystem implements Serializable {
   }
 
   private void expandInterfaceRange(InterfaceRange interfaceRange) {
-    interfaceRange
-        .getAllMembers()
-        .stream()
+    interfaceRange.getAllMembers().stream()
         .forEach(
             iname -> {
               Interface iface = _interfaces.computeIfAbsent(iname, Interface::new);

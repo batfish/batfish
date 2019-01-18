@@ -191,9 +191,7 @@ public final class AclExplainer {
       AclLineMatchExpr conjunct = entry.getKey();
       conjunctsToLines.put(
           conjunct,
-          entry
-              .getValue()
-              .stream()
+          entry.getValue().stream()
               .map(literalsToLines::get)
               .collect(ImmutableSet.toImmutableSet()));
     }

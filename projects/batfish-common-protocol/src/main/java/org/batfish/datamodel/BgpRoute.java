@@ -269,7 +269,7 @@ public class BgpRoute extends AbstractRoute {
   /* NOTE: Cisco-only attribute */
   private final int _weight;
   /* Cache the hashcode */
-  private int _hashCode = 0;
+  private transient volatile int _hashCode = 0;
 
   @JsonCreator
   private static BgpRoute jsonCreator(

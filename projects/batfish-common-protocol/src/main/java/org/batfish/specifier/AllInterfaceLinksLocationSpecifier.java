@@ -11,9 +11,7 @@ public final class AllInterfaceLinksLocationSpecifier implements LocationSpecifi
 
   @Override
   public Set<Location> resolve(SpecifierContext ctxt) {
-    return ctxt.getConfigs()
-        .values()
-        .stream()
+    return ctxt.getConfigs().values().stream()
         .flatMap(node -> node.getAllInterfaces().values().stream())
         .map(iface -> new InterfaceLinkLocation(iface.getOwner().getHostname(), iface.getName()))
         .collect(ImmutableSet.toImmutableSet());

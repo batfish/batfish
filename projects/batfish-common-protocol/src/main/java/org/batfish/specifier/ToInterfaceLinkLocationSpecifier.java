@@ -36,9 +36,7 @@ public class ToInterfaceLinkLocationSpecifier implements LocationSpecifier {
 
   @Override
   public Set<Location> resolve(SpecifierContext ctxt) {
-    return _inner
-        .resolve(ctxt)
-        .stream()
+    return _inner.resolve(ctxt).stream()
         .map(ToInterfaceLinkLocationSpecifier::toInterfaceLinkLocation)
         .collect(ImmutableSet.toImmutableSet());
   }

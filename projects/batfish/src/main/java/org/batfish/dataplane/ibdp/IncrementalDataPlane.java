@@ -133,9 +133,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   }
 
   private Map<String, Configuration> computeConfigurations() {
-    return _nodes
-        .entrySet()
-        .stream()
+    return _nodes.entrySet().stream()
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getConfiguration()));
   }
 

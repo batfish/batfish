@@ -22,9 +22,7 @@ public class IsisTopology {
       assert span != null; // avoid unused warning
 
       Set<IsisEdge> edges =
-          topology
-              .getEdges()
-              .stream()
+          topology.getEdges().stream()
               .map(edge -> IsisEdge.edgeIfCircuit(edge, configurations))
               .filter(Optional::isPresent)
               .map(Optional::get)

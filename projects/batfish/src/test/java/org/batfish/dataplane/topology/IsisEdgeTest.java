@@ -47,9 +47,7 @@ public final class IsisEdgeTest {
 
   private static Set<IsisEdge> getIsisEdges(Map<String, Configuration> configurations) {
     Topology topology = synthesizeL3Topology(configurations);
-    return topology
-        .getEdges()
-        .stream()
+    return topology.getEdges().stream()
         .map(edge -> IsisEdge.edgeIfCircuit(edge, configurations))
         .filter(Optional::isPresent)
         .map(Optional::get)

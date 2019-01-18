@@ -41,9 +41,7 @@ public final class FwFromDestinationPrefixListExcept extends FwFrom {
 
       headerSpaceBuilder.addNotDstIp(
           AclIpSpace.union(
-              destinationPrefixList
-                  .getMatchingIps()
-                  .stream()
+              destinationPrefixList.getMatchingIps().stream()
                   .map(IpWildcard::toIpSpace)
                   .collect(ImmutableList.toImmutableList())));
     } else {

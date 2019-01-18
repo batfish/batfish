@@ -275,8 +275,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
         String hostname = c.getHostname();
         for (Vrf vrf : c.getVrfs().values()) {
           eigrpEdges.addAll(
-              vrf.getInterfaceNames()
-                  .stream()
+              vrf.getInterfaceNames().stream()
                   .map(ifaceName -> new EigrpInterface(hostname, ifaceName, vrf.getName()))
                   .filter(eigrpTopology.nodes()::contains)
                   .flatMap(n -> eigrpTopology.inEdges(n).stream())
@@ -290,9 +289,7 @@ public class VIModelQuestionPlugin extends QuestionPlugin {
     private static SortedSet<IsisEdge> getIsisEdges(
         Map<String, Configuration> configs, Topology topology) {
       Network<IsisNode, IsisEdge> isisTopology = IsisTopology.initIsisTopology(configs, topology);
-      return isisTopology
-          .edges()
-          .stream()
+      return isisTopology.edges().stream()
           .filter(Objects::nonNull)
           .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
     }

@@ -67,9 +67,7 @@ public final class IntegerSpace implements Serializable {
 
   /** Return this space as a set of included {@link SubRange}s */
   public Set<SubRange> getSubRanges() {
-    return _rangeset
-        .asRanges()
-        .stream()
+    return _rangeset.asRanges().stream()
         .map(r -> new SubRange(r.lowerEndpoint(), r.upperEndpoint() - 1))
         .collect(ImmutableSet.toImmutableSet());
   }
@@ -127,10 +125,7 @@ public final class IntegerSpace implements Serializable {
   /** Intersect two integer spaces together. */
   public IntegerSpace intersection(IntegerSpace other) {
     return new IntegerSpace(
-        other
-            ._rangeset
-            .asRanges()
-            .stream()
+        other._rangeset.asRanges().stream()
             .map(_rangeset::subRangeSet) // intersect individual ranges with _rangeset
             .map(RangeSet::asRanges) // flatten each intersection result to set of ranges
             .flatMap(Set::stream) // stream for collection

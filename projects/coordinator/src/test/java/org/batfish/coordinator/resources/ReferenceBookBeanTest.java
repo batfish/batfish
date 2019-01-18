@@ -24,29 +24,25 @@ public class ReferenceBookBeanTest {
     assertThat(
         bean.addressGroups,
         equalTo(
-            book.getAddressGroups()
-                .stream()
+            book.getAddressGroups().stream()
                 .map(ag -> new AddressGroupBean(ag))
                 .collect(Collectors.toSet())));
     assertThat(
         bean.serviceEndpoints,
         equalTo(
-            book.getServiceEndpoints()
-                .stream()
+            book.getServiceEndpoints().stream()
                 .map(se -> new ServiceEndpointBean(se))
                 .collect(Collectors.toSet())));
     assertThat(
         bean.serviceObjectGroups,
         equalTo(
-            book.getServiceObjectGroups()
-                .stream()
+            book.getServiceObjectGroups().stream()
                 .map(sog -> new ServiceObjectGroupBean(sog))
                 .collect(Collectors.toSet())));
     assertThat(
         bean.serviceObjects,
         equalTo(
-            book.getServiceObjects()
-                .stream()
+            book.getServiceObjects().stream()
                 .map(so -> new ServiceObjectBean(so))
                 .collect(Collectors.toSet())));
   }

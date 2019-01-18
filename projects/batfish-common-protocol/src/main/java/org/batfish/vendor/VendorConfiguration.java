@@ -95,8 +95,7 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
         (name, byUsage) -> {
           Multiset<Integer> lines = firstNonNull(byUsage.get(usage), TreeMultiset.create());
           List<DefinedStructureInfo> matchingStructures =
-              structureTypesToCheck
-                  .stream()
+              structureTypesToCheck.stream()
                   .map(t -> _structureDefinitions.get(t.getDescription()))
                   .filter(Objects::nonNull)
                   .map(m -> m.get(name))

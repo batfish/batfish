@@ -38,18 +38,14 @@ import org.batfish.z3.expr.VoidStatementVisitor;
 public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor {
 
   private static final Set<Entry<String, Integer>> BASIC_STATE_VARIABLE_SIZES =
-      Field.COMMON_FIELDS
-          .stream()
+      Field.COMMON_FIELDS.stream()
           .map(hf -> Maps.immutableEntry(hf.getName(), hf.getSize()))
           .collect(ImmutableSet.toImmutableSet());
 
   public static Map<String, Integer> collectVariableSizes(ReachabilityProgram[] programs) {
     VariableSizeCollector variableSizeCollector = new VariableSizeCollector();
     Arrays.stream(programs).forEach(variableSizeCollector::collectVariableSizes);
-    return variableSizeCollector
-        ._variableSizes
-        .build()
-        .stream()
+    return variableSizeCollector._variableSizes.build().stream()
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 

@@ -179,9 +179,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
           not(hasEntry(equalTo(new NodeDropAclOut(otherNode)), hasKey(DropAclOut.INSTANCE))));
 
       Set<NodeInterfaceNeighborUnreachableOrExitsNetwork> neighborUnreachables =
-          edges
-              .keySet()
-              .stream()
+          edges.keySet().stream()
               .filter(NodeInterfaceNeighborUnreachableOrExitsNetwork.class::isInstance)
               .map(NodeInterfaceNeighborUnreachableOrExitsNetwork.class::cast)
               .collect(Collectors.toSet());
@@ -228,8 +226,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
       assertThat(
           "Edges at which a forbiddenTransitNode would become transited should be removed.",
-          edges
-              .stream()
+          edges.stream()
               .noneMatch(
                   edge ->
                       edge.getPreState() instanceof PreOutEdgePostNat
@@ -237,8 +234,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                           && ((PreOutEdgePostNat) edge.getPreState()).getSrcNode().equals(node)));
       assertThat(
           "Edges at which a non-forbiddenTransitNodes become transited should not be removed.",
-          edges
-              .stream()
+          edges.stream()
               .anyMatch(
                   edge ->
                       edge.getPreState() instanceof PreOutEdgePostNat
@@ -277,8 +273,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
           edgeMap.values().stream().flatMap(m -> m.values().stream()).collect(Collectors.toSet());
 
       // all edges into the query state require transit nodes transited bit to be set.
-      edges
-          .stream()
+      edges.stream()
           .filter(edge -> edge.getPostState() == Query.INSTANCE)
           .forEach(
               edge -> {
@@ -291,8 +286,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
               });
 
       // all edges from originate states initialize the transit nodes bit to zero
-      edges
-          .stream()
+      edges.stream()
           .filter(
               edge ->
                   edge.getPreState() instanceof OriginateVrf
@@ -307,8 +301,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                     edge.traverseBackward(ONE).and(transited).isZero());
               });
 
-      edges
-          .stream()
+      edges.stream()
           .filter(
               edge ->
                   edge.getPreState() instanceof PreOutEdgePostNat
@@ -376,9 +369,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertThat(dstIps, contains(Ip.parse("2.0.0.0")));
 
     Set<FlowDisposition> flowDispositions =
-        flowTraces
-            .values()
-            .stream()
+        flowTraces.values().stream()
             .flatMap(List::stream)
             .map(Trace::getDisposition)
             .collect(ImmutableSet.toImmutableSet());
@@ -433,9 +424,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertThat(dstIps, contains(Ip.parse("2.0.0.0")));
 
     Set<FlowDisposition> flowDispositions =
-        flowTraces
-            .values()
-            .stream()
+        flowTraces.values().stream()
             .flatMap(List::stream)
             .map(Trace::getDisposition)
             .collect(ImmutableSet.toImmutableSet());

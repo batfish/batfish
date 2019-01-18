@@ -47,10 +47,7 @@ public final class ShorthandFilterSpecifier implements FilterSpecifier {
         ctxt.getConfigs().containsKey(node),
         "SpecifierContext does not have configs for node: " + node);
     Configuration config = ctxt.getConfigs().get(node);
-    return config
-        .getIpAccessLists()
-        .values()
-        .stream()
+    return config.getIpAccessLists().values().stream()
         .filter(filter -> _shorthandSpecifier.matches(filter, config))
         .collect(Collectors.toSet());
   }

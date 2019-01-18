@@ -39,33 +39,27 @@ public class ReferenceBookBean {
   public ReferenceBookBean(ReferenceBook book) {
     name = book.getName();
     addressGroups =
-        book.getAddressGroups()
-            .stream()
+        book.getAddressGroups().stream()
             .map(ag -> new AddressGroupBean(ag))
             .collect(Collectors.toSet());
     filterGroups =
-        book.getFilterGroups()
-            .stream()
+        book.getFilterGroups().stream()
             .map(fg -> new FilterGroupBean(fg))
             .collect(Collectors.toSet());
     interfaceGroups =
-        book.getInterfaceGroups()
-            .stream()
+        book.getInterfaceGroups().stream()
             .map(ig -> new InterfaceGroupBean(ig))
             .collect(Collectors.toSet());
     serviceEndpoints =
-        book.getServiceEndpoints()
-            .stream()
+        book.getServiceEndpoints().stream()
             .map(se -> new ServiceEndpointBean(se))
             .collect(Collectors.toSet());
     serviceObjectGroups =
-        book.getServiceObjectGroups()
-            .stream()
+        book.getServiceObjectGroups().stream()
             .map(sog -> new ServiceObjectGroupBean(sog))
             .collect(Collectors.toSet());
     serviceObjects =
-        book.getServiceObjects()
-            .stream()
+        book.getServiceObjects().stream()
             .map(so -> new ServiceObjectBean(so))
             .collect(Collectors.toSet());
   }
@@ -100,23 +94,19 @@ public class ReferenceBookBean {
   public ReferenceBook toAddressBook() {
     return ReferenceBook.builder(name)
         .setAddressGroups(
-            firstNonNull(addressGroups, Collections.<AddressGroupBean>emptySet())
-                .stream()
+            firstNonNull(addressGroups, Collections.<AddressGroupBean>emptySet()).stream()
                 .map(agb -> agb.toAddressGroup())
                 .collect(Collectors.toList()))
         .setFilterGroups(
-            firstNonNull(filterGroups, Collections.<FilterGroupBean>emptySet())
-                .stream()
+            firstNonNull(filterGroups, Collections.<FilterGroupBean>emptySet()).stream()
                 .map(fgb -> fgb.toFilterGroup())
                 .collect(Collectors.toList()))
         .setInterfaceGroups(
-            firstNonNull(interfaceGroups, Collections.<InterfaceGroupBean>emptySet())
-                .stream()
+            firstNonNull(interfaceGroups, Collections.<InterfaceGroupBean>emptySet()).stream()
                 .map(igb -> igb.toInterfaceGroup())
                 .collect(Collectors.toList()))
         .setServiceEndpoints(
-            firstNonNull(serviceEndpoints, Collections.<ServiceEndpointBean>emptySet())
-                .stream()
+            firstNonNull(serviceEndpoints, Collections.<ServiceEndpointBean>emptySet()).stream()
                 .map(seb -> seb.toServiceEndpoint())
                 .collect(Collectors.toList()))
         .setServiceObjectGroups(
@@ -125,8 +115,7 @@ public class ReferenceBookBean {
                 .map(sogb -> sogb.toServiceObjectGroup())
                 .collect(Collectors.toList()))
         .setServiceObjects(
-            firstNonNull(serviceObjects, Collections.<ServiceObjectBean>emptySet())
-                .stream()
+            firstNonNull(serviceObjects, Collections.<ServiceObjectBean>emptySet()).stream()
                 .map(seb -> seb.toServiceObject())
                 .collect(Collectors.toList()))
         .build();

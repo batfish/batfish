@@ -23,8 +23,7 @@ public class IcmpTypeObjectGroup extends ObjectGroup {
 
   public AclLineMatchExpr toAclLineMatchExpr() {
     return new OrMatchExpr(
-        _lines
-            .stream()
+        _lines.stream()
             .map(IcmpTypeObjectGroupLine::toAclLineMatchExpr)
             .collect(ImmutableSet.toImmutableSet()));
   }

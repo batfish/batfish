@@ -138,7 +138,7 @@ public class VyosConfiguration extends VendorConfiguration {
                 + "\" from local-address: "
                 + localAddress);
       } else {
-        ipsecPeerConfigBuilder.setPhysicalInterface(externalInterface.getName());
+        ipsecPeerConfigBuilder.setSourceInterface(externalInterface.getName());
         ipsecPeerConfigBuilder.setLocalAddress(localAddress);
       }
 
@@ -318,10 +318,7 @@ public class VyosConfiguration extends VendorConfiguration {
     String name = prefixList.getName();
     RouteFilterList newList = new RouteFilterList(name);
     List<RouteFilterLine> newLines =
-        prefixList
-            .getRules()
-            .values()
-            .stream()
+        prefixList.getRules().values().stream()
             .map(l -> new RouteFilterLine(l.getAction(), l.getPrefix(), l.getLengthRange()))
             .collect(ImmutableList.toImmutableList());
     newList.setLines(newLines);

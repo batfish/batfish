@@ -51,9 +51,7 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
         .add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false))
         .add(new ColumnMetadata(COL_ROUTER_ID, Schema.IP, "Router ID", true, false))
         .addAll(
-            propertySpecifier
-                .getMatchingProperties()
-                .stream()
+            propertySpecifier.getMatchingProperties().stream()
                 .map(
                     prop ->
                         new ColumnMetadata(

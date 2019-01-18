@@ -87,8 +87,7 @@ public class JuniperConfigurationTest {
     // ACL from headerSpace filter should have one line
     IpAccessListLine headerSpaceAclLine = Iterables.getOnlyElement(headerSpaceAcl.getLines());
     // It should have a MatchHeaderSpace match condition, matching the ipAddrPrefix from above
-    ImmutableList.of("1.2.3.0", "1.2.3.255")
-        .stream()
+    ImmutableList.of("1.2.3.0", "1.2.3.255").stream()
         .map(Ip::parse)
         .forEach(
             ip ->

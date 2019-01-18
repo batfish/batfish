@@ -415,8 +415,7 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateQueryEdges(Set<FlowDisposition> actions) {
-    return actions
-        .stream()
+    return actions.stream()
         .map(
             action -> {
               switch (action) {
@@ -451,9 +450,7 @@ public final class BDDReachabilityAnalysisFactory {
 
   private Stream<Edge> generateRootEdges_OriginateInterfaceLink_PreInInterface(
       Map<StateExpr, BDD> rootBdds) {
-    return rootBdds
-        .entrySet()
-        .stream()
+    return rootBdds.entrySet().stream()
         .filter(entry -> entry.getKey() instanceof OriginateInterfaceLink)
         .map(
             entry -> {
@@ -475,9 +472,7 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRootEdges_OriginateVrf_PostInVrf(Map<StateExpr, BDD> rootBdds) {
-    return rootBdds
-        .entrySet()
-        .stream()
+    return rootBdds.entrySet().stream()
         .filter(entry -> entry.getKey() instanceof OriginateVrf)
         .map(
             entry -> {
@@ -539,15 +534,13 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private static Stream<Edge> generateRules_NodeDropNoRoute_DropNoRoute(Set<String> finalNodes) {
-    return finalNodes
-        .stream()
+    return finalNodes.stream()
         .map(node -> new Edge(new NodeDropNoRoute(node), DropNoRoute.INSTANCE));
   }
 
   private static Stream<Edge> generateRules_NodeDropNullRoute_DropNullRoute(
       Set<String> finalNodes) {
-    return finalNodes
-        .stream()
+    return finalNodes.stream()
         .map(node -> new Edge(new NodeDropNullRoute(node), DropNullRoute.INSTANCE));
   }
 
@@ -555,8 +548,7 @@ public final class BDDReachabilityAnalysisFactory {
       BiFunction<String, String, StateExpr> nodeInterfaceDispositionConstructor,
       StateExpr dispositionNode,
       Set<String> finalNodes) {
-    return finalNodes
-        .stream()
+    return finalNodes.stream()
         .map(_configs::get)
         .filter(Objects::nonNull) // remove finalNodes that don't exist on this network
         .flatMap(c -> c.getAllInterfaces().values().stream())
@@ -594,15 +586,10 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRules_PostInVrf_NodeAccept() {
-    return _vrfAcceptBDDs
-        .entrySet()
-        .stream()
+    return _vrfAcceptBDDs.entrySet().stream()
         .flatMap(
             nodeEntry ->
-                nodeEntry
-                    .getValue()
-                    .entrySet()
-                    .stream()
+                nodeEntry.getValue().entrySet().stream()
                     .map(
                         vrfEntry -> {
                           String node = nodeEntry.getKey();
@@ -617,15 +604,10 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRules_PostInVrf_NodeDropNoRoute() {
-    return _vrfNotAcceptBDDs
-        .entrySet()
-        .stream()
+    return _vrfNotAcceptBDDs.entrySet().stream()
         .flatMap(
             nodeEntry ->
-                nodeEntry
-                    .getValue()
-                    .entrySet()
-                    .stream()
+                nodeEntry.getValue().entrySet().stream()
                     .map(
                         vrfEntry -> {
                           String node = nodeEntry.getKey();
@@ -642,15 +624,10 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRules_PostInVrf_PreOutVrf() {
-    return _vrfNotAcceptBDDs
-        .entrySet()
-        .stream()
+    return _vrfNotAcceptBDDs.entrySet().stream()
         .flatMap(
             nodeEntry ->
-                nodeEntry
-                    .getValue()
-                    .entrySet()
-                    .stream()
+                nodeEntry.getValue().entrySet().stream()
                     .map(
                         vrfEntry -> {
                           String node = nodeEntry.getKey();
@@ -665,9 +642,7 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRules_PreInInterface_NodeDropAclIn() {
-    return _configs
-        .values()
-        .stream()
+    return _configs.values().stream()
         .map(Configuration::getVrfs)
         .map(Map::values)
         .flatMap(Collection::stream)
@@ -740,9 +715,7 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRules_PreInInterface_PostInVrf() {
-    return _configs
-        .values()
-        .stream()
+    return _configs.values().stream()
         .map(Configuration::getVrfs)
         .map(Map::values)
         .flatMap(Collection::stream)
@@ -771,10 +744,7 @@ public final class BDDReachabilityAnalysisFactory {
     if (_ignoreFilters) {
       return Stream.of();
     }
-    return _forwardingAnalysis
-        .getArpTrueEdge()
-        .keySet()
-        .stream()
+    return _forwardingAnalysis.getArpTrueEdge().keySet().stream()
         .flatMap(
             edge -> {
               String node1 = edge.getNode1();
@@ -804,10 +774,7 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRules_PreOutEdge_PreOutEdgePostNat() {
-    return _forwardingAnalysis
-        .getArpTrueEdge()
-        .keySet()
-        .stream()
+    return _forwardingAnalysis.getArpTrueEdge().keySet().stream()
         .flatMap(
             edge -> {
               String node1 = edge.getNode1();
@@ -839,10 +806,7 @@ public final class BDDReachabilityAnalysisFactory {
     if (_ignoreFilters) {
       return Stream.of();
     }
-    return _forwardingAnalysis
-        .getArpTrueEdge()
-        .keySet()
-        .stream()
+    return _forwardingAnalysis.getArpTrueEdge().keySet().stream()
         .flatMap(
             edge -> {
               String node1 = edge.getNode1();
@@ -868,10 +832,7 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRules_PreOutEdgePostNat_PreInInterface() {
-    return _forwardingAnalysis
-        .getArpTrueEdge()
-        .keySet()
-        .stream()
+    return _forwardingAnalysis.getArpTrueEdge().keySet().stream()
         .map(
             edge -> {
               String node1 = edge.getNode1();
@@ -898,17 +859,11 @@ public final class BDDReachabilityAnalysisFactory {
       return Stream.of();
     }
 
-    return _configs
-        .entrySet()
-        .stream()
+    return _configs.entrySet().stream()
         .flatMap(
             nodeEntry -> {
               String node = nodeEntry.getKey();
-              return nodeEntry
-                  .getValue()
-                  .getVrfs()
-                  .entrySet()
-                  .stream()
+              return nodeEntry.getValue().getVrfs().entrySet().stream()
                   .flatMap(
                       vrfEntry -> {
                         String vrf = vrfEntry.getKey();
@@ -921,11 +876,7 @@ public final class BDDReachabilityAnalysisFactory {
                             _insufficientInfoBDDs.get(node).get(vrf);
                         StateExpr preState = new PreOutVrf(node, vrf);
                         StateExpr postState = new NodeDropAclOut(node);
-                        return vrfEntry
-                            .getValue()
-                            .getInterfaces()
-                            .values()
-                            .stream()
+                        return vrfEntry.getValue().getInterfaces().values().stream()
                             .filter(iface -> iface.getOutgoingFilterName() != null)
                             .map(
                                 iface -> {
@@ -964,16 +915,10 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRules_PreOutVrf_NodeDropNullRoute() {
-    return _forwardingAnalysis
-        .getNullRoutedIps()
-        .entrySet()
-        .stream()
+    return _forwardingAnalysis.getNullRoutedIps().entrySet().stream()
         .flatMap(
             nodeEntry ->
-                nodeEntry
-                    .getValue()
-                    .entrySet()
-                    .stream()
+                nodeEntry.getValue().entrySet().stream()
                     .map(
                         vrfEntry -> {
                           String node = nodeEntry.getKey();
@@ -990,24 +935,16 @@ public final class BDDReachabilityAnalysisFactory {
   private Stream<Edge> generateRules_PreOutVrf_NodeInterfaceDisposition(
       Map<String, Map<String, Map<String, BDD>>> bddMap,
       BiFunction<String, String, StateExpr> dispositionNodeConstructor) {
-    return bddMap
-        .entrySet()
-        .stream()
+    return bddMap.entrySet().stream()
         .flatMap(
             nodeEntry -> {
               String node = nodeEntry.getKey();
               Map<String, Interface> nodeInterfaces = _configs.get(node).getAllInterfaces();
-              return nodeEntry
-                  .getValue()
-                  .entrySet()
-                  .stream()
+              return nodeEntry.getValue().entrySet().stream()
                   .flatMap(
                       vrfEntry -> {
                         String vrf = vrfEntry.getKey();
-                        return vrfEntry
-                            .getValue()
-                            .entrySet()
-                            .stream()
+                        return vrfEntry.getValue().entrySet().stream()
                             .flatMap(
                                 ifaceEntry -> {
                                   String ifaceName = ifaceEntry.getKey();
@@ -1069,9 +1006,7 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Stream<Edge> generateRules_PreOutVrf_PreOutEdge() {
-    return _arpTrueEdgeBDDs
-        .entrySet()
-        .stream()
+    return _arpTrueEdgeBDDs.entrySet().stream()
         .map(
             entry -> {
               org.batfish.datamodel.Edge edge = entry.getKey();
@@ -1322,9 +1257,7 @@ public final class BDDReachabilityAnalysisFactory {
     Map<StateExpr, BDD> rootConstraints = new HashMap<>();
     for (IpSpaceAssignment.Entry entry : srcIpSpaceAssignment.getEntries()) {
       BDD srcIpSpaceBDD = entry.getIpSpace().accept(srcIpSpaceToBDD);
-      entry
-          .getLocations()
-          .stream()
+      entry.getLocations().stream()
           .map(locationToStateExpr::visit)
           .filter(Optional::isPresent)
           .map(Optional::get)
@@ -1333,9 +1266,7 @@ public final class BDDReachabilityAnalysisFactory {
 
     // add the global initial HeaderSpace and remove unsat entries
     Map<StateExpr, BDD> finalRootConstraints =
-        rootConstraints
-            .entrySet()
-            .stream()
+        rootConstraints.entrySet().stream()
             .map(
                 entry ->
                     Maps.immutableEntry(
