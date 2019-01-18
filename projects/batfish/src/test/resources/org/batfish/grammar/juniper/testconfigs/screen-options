@@ -1,0 +1,95 @@
+#
+set system host-name screen-options
+#
+set interfaces ge-0/0/0 unit 0 family inet address 1.1.1.1/24
+#
+set security zones security-zone untrust interfaces ge-0/0/0.0
+#
+# set screen options
+set security screen ids-option ALARM_OPTION alarm-without-drop
+set security screen ids-option IDS_OPTION_NAME description TEXT
+set security screen ids-option IDS_OPTION_NAME icmp flood threshold 1
+set security screen ids-option IDS_OPTION_NAME icmp fragment
+set security screen ids-option IDS_OPTION_NAME icmp icmpv6-malformed
+set security screen ids-option IDS_OPTION_NAME icmp ip-sweep threshold 1
+set security screen ids-option IDS_OPTION_NAME icmp large
+set security screen ids-option IDS_OPTION_NAME icmp ping-death
+set security screen ids-option IDS_OPTION_NAME ip bad-option
+set security screen ids-option IDS_OPTION_NAME ip block-frag
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header AH-header
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header ESP-header
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header HIP-header
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header destination-header ILNP-nonce-option
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header destination-header home-address-option
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header destination-header line-identification-option
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header destination-header tunnel-encapsulation-limit-option
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header destination-header user-defined-option-type 0 to 10
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header fragment-header
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header hop-by-hop-header CALIPSO-option
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header hop-by-hop-header RPL-option
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header hop-by-hop-header SFM-DPD-option
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header hop-by-hop-header jumbo-payload-option
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header hop-by-hop-header quick-start-option
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header hop-by-hop-header router-alert-option
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header hop-by-hop-header user-defined-option-type 0 to 10
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header mobility-header
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header no-next-header
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header routing-header
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header shim6-header
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header user-defined-option-type 0 to 10
+set security screen ids-option IDS_OPTION_NAME ip ipv6-extension-header-limit 1
+set security screen ids-option IDS_OPTION_NAME ip ipv6-malformed-header
+set security screen ids-option IDS_OPTION_NAME ip loose-source-route-option
+set security screen ids-option IDS_OPTION_NAME ip record-route-option
+set security screen ids-option IDS_OPTION_NAME ip security-option
+set security screen ids-option IDS_OPTION_NAME ip source-route-option
+set security screen ids-option IDS_OPTION_NAME ip spoofing
+set security screen ids-option IDS_OPTION_NAME ip stream-option
+set security screen ids-option IDS_OPTION_NAME ip strict-source-route-option
+set security screen ids-option IDS_OPTION_NAME ip tear-drop
+set security screen ids-option IDS_OPTION_NAME ip timestamp-option
+set security screen ids-option IDS_OPTION_NAME ip unknown-protocol
+set security screen ids-option IDS_OPTION_NAME ip tunnel gre gre-4in4
+set security screen ids-option IDS_OPTION_NAME ip tunnel gre gre-4in6
+set security screen ids-option IDS_OPTION_NAME ip tunnel gre gre-6in4
+set security screen ids-option IDS_OPTION_NAME ip tunnel gre gre-6in6
+set security screen ids-option IDS_OPTION_NAME ip tunnel ip-in-udp teredo
+set security screen ids-option IDS_OPTION_NAME ip tunnel ipip ipip-4in4
+set security screen ids-option IDS_OPTION_NAME ip tunnel ipip ipip-4in6
+set security screen ids-option IDS_OPTION_NAME ip tunnel ipip ipip-6in4
+set security screen ids-option IDS_OPTION_NAME ip tunnel ipip ipip-6in6
+set security screen ids-option IDS_OPTION_NAME ip tunnel ipip ipip-6over4
+set security screen ids-option IDS_OPTION_NAME ip tunnel ipip ipip-6to4relay
+set security screen ids-option IDS_OPTION_NAME ip tunnel ipip isatap
+set security screen ids-option IDS_OPTION_NAME ip tunnel ipip dslite
+set security screen ids-option IDS_OPTION_NAME ip tunnel bad-inner-header
+set security screen ids-option IDS_OPTION_NAME limit-session destination-ip-based 1
+set security screen ids-option IDS_OPTION_NAME limit-session source-ip-based 1
+set security screen ids-option IDS_OPTION_NAME tcp fin-no-ack
+set security screen ids-option IDS_OPTION_NAME tcp land
+set security screen ids-option IDS_OPTION_NAME tcp port-scan threshold 1
+set security screen ids-option IDS_OPTION_NAME tcp syn-ack-ack-proxy threshold 1
+set security screen ids-option IDS_OPTION_NAME tcp syn-fin
+set security screen ids-option IDS_OPTION_NAME tcp syn-flood alarm-threshold 1
+set security screen ids-option IDS_OPTION_NAME tcp syn-flood attack-threshold 1
+set security screen ids-option IDS_OPTION_NAME tcp syn-flood destination-threshold 1
+set security screen ids-option IDS_OPTION_NAME tcp syn-flood source-threshold 1
+set security screen ids-option IDS_OPTION_NAME tcp syn-flood timeout 1 
+set security screen ids-option IDS_OPTION_NAME tcp syn-flood white-list WHITE_LIST_NAME destination-address 1.1.1.1
+set security screen ids-option IDS_OPTION_NAME tcp syn-flood white-list WHITE_LIST_NAME source-address 2.2.2.2
+set security screen ids-option IDS_OPTION_NAME tcp syn-frag
+set security screen ids-option IDS_OPTION_NAME tcp tcp-no-flag
+set security screen ids-option IDS_OPTION_NAME tcp tcp-sweep threshold 1
+set security screen ids-option IDS_OPTION_NAME tcp winnuke
+set security screen ids-option IDS_OPTION_NAME udp flood threshold 1
+set security screen ids-option IDS_OPTION_NAME udp port-scan threshold 1
+set security screen ids-option IDS_OPTION_NAME udp udp-sweep threshold 1
+#
+# apply the screen
+set security zones security-zone untrust screen IDS_OPTION_NAME
+#
+# set an incoming filter
+set firewall filter FILTER1 term TERM from source-address 1.2.3.6
+set firewall filter FILTER1 term TERM then accept
+#
+set interfaces ge-0/0/0 unit 0 family inet filter input FILTER1

@@ -4,7 +4,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 public final class Zone implements Serializable {
 
@@ -37,6 +39,8 @@ public final class Zone implements Serializable {
 
   private final Map<String, FirewallFilter> _toZonePolicies;
 
+  private final Set<String> _screens;
+
   public Zone(String name, AddressBook globalAddressBook) {
     _name = name;
     _addressBook = globalAddressBook;
@@ -46,6 +50,7 @@ public final class Zone implements Serializable {
     _interfaces = new ArrayList<>();
     _fromZonePolicies = new TreeMap<>();
     _toZonePolicies = new TreeMap<>();
+    _screens = new TreeSet<>();
   }
 
   public void attachAddressBook(AddressBook addressBook) {
@@ -73,6 +78,10 @@ public final class Zone implements Serializable {
 
   public Map<String, FirewallFilter> getFromZonePolicies() {
     return _fromZonePolicies;
+  }
+
+  public Set<String> getScreens() {
+    return _screens;
   }
 
   public FirewallFilter getInboundFilter() {

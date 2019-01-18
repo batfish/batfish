@@ -583,6 +583,11 @@ subrange
   )?
 ;
 
+threshold
+:
+  THRESHOLD value = DEC
+;
+
 variable
 :
   text = ~( APPLY_GROUPS | APPLY_GROUPS_EXCEPT | APPLY_PATH | NEWLINE |

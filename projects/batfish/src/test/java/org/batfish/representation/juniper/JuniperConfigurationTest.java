@@ -11,6 +11,7 @@ import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderS
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
 import static org.batfish.representation.juniper.JuniperConfiguration.MAX_ISIS_COST_WITHOUT_WIDE_METRICS;
+import static org.batfish.representation.juniper.JuniperConfiguration.buildScreen;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
@@ -19,12 +20,16 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.iterableWithSize;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warning;
@@ -39,8 +44,11 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.acl.PermittedByAcl;
 import org.junit.Test;
 
 public class JuniperConfigurationTest {
@@ -290,5 +298,143 @@ public class JuniperConfigurationTest {
                 routingInstanceLocation(routingInstance.getName()),
                     matchSrcInterface(
                         routingInstanceInterface1Name, routingInstanceInterface2Name))));
+  }
+
+  @Test
+  public void testBuildScreen() {
+    List<ScreenOption> screenOptionList =
+        ImmutableList.of(
+            IcmpLarge.INSTANCE,
+            IpUnknownProtocol.INSTANCE,
+            TcpFinNoAck.INSTANCE,
+            TcpSynFin.INSTANCE,
+            TcpNoFlag.INSTANCE);
+
+    Screen screen = new Screen("screen");
+    for (ScreenOption option : screenOptionList) {
+      screen.getScreenOptions().add(option);
+    }
+
+    IpAccessList screenAcl = buildScreen(screen, "~SCREEN~screen");
+
+    assertThat(
+        screenAcl,
+        equalTo(
+            IpAccessList.builder()
+                .setName("~SCREEN~screen")
+                .setLines(
+                    ImmutableList.of(
+                        IpAccessListLine.rejecting(
+                            new OrMatchExpr(
+                                screenOptionList.stream()
+                                    .map(ScreenOption::getAclLineMatchExpr)
+                                    .collect(Collectors.toList()))),
+                        IpAccessListLine.ACCEPT_ALL))
+                .build()));
+
+    Screen screen2 = new Screen("screen2");
+    IpAccessList screenAcl2 = buildScreen(screen2, "~SCREEN~screen2");
+    assertThat(screenAcl2, nullValue());
+  }
+
+  @Test
+  public void testBuildScreensPerZone() {
+    JuniperConfiguration config = createConfig();
+
+    List<ScreenOption> screenOptionList1 =
+        ImmutableList.of(IcmpLarge.INSTANCE, IpUnknownProtocol.INSTANCE, TcpFinNoAck.INSTANCE);
+
+    List<ScreenOption> screenOptionList2 = ImmutableList.of(TcpSynFin.INSTANCE, TcpNoFlag.INSTANCE);
+
+    Screen screen1 = new Screen("screen1");
+    for (ScreenOption option : screenOptionList1) {
+      screen1.getScreenOptions().add(option);
+    }
+
+    Screen screen2 = new Screen("screen2");
+    for (ScreenOption option : screenOptionList2) {
+      screen2.getScreenOptions().add(option);
+    }
+    screen2.setAction(ScreenAction.ALARM_WITHOUT_DROP);
+
+    Screen screen3 = new Screen("screen3");
+
+    config.getMasterLogicalSystem().getScreens().put("screen1", screen1);
+    config.getMasterLogicalSystem().getScreens().put("screen2", screen2);
+    config.getMasterLogicalSystem().getScreens().put("screen3", screen3);
+
+    Zone zone = new Zone("zone", null);
+    zone.getScreens().add("screen1");
+    zone.getScreens().add("screen2");
+    zone.getScreens().add("screen3");
+
+    IpAccessList screenAcl = config.buildScreensPerZone(zone, "~SCREEN_ZONE~zone");
+
+    // screenAcl should only have screen1, because screen2 has an alarm action and screen3 has not
+    // options.
+    assertThat(
+        screenAcl,
+        equalTo(
+            IpAccessList.builder()
+                .setName("~SCREEN_ZONE~zone")
+                .setLines(
+                    ImmutableList.of(
+                        IpAccessListLine.accepting(
+                            new AndMatchExpr(
+                                ImmutableList.of(new PermittedByAcl("~SCREEN~screen1", false))))))
+                .build()));
+    assertThat(config._c.getIpAccessLists().get("~SCREEN~screen1"), notNullValue());
+    assertThat(config._c.getIpAccessLists().get("~SCREEN~screen2"), nullValue());
+    assertThat(config._c.getIpAccessLists().get("~SCREEN~screen3"), nullValue());
+    assertThat(
+        config._c.getIpAccessLists().get("~SCREEN~screen1"),
+        equalTo(
+            IpAccessList.builder()
+                .setName("~SCREEN~screen1")
+                .setLines(
+                    ImmutableList.of(
+                        IpAccessListLine.rejecting(
+                            new OrMatchExpr(
+                                screenOptionList1.stream()
+                                    .map(ScreenOption::getAclLineMatchExpr)
+                                    .collect(Collectors.toList()))),
+                        IpAccessListLine.ACCEPT_ALL))
+                .build()));
+  }
+
+  @Test
+  public void testBuildScreensPerInterface() {
+    JuniperConfiguration config = createConfig();
+    Interface iface = new Interface("iface");
+
+    List<ScreenOption> screenOptionList =
+        ImmutableList.of(IcmpLarge.INSTANCE, IpUnknownProtocol.INSTANCE, TcpFinNoAck.INSTANCE);
+
+    Screen screen = new Screen("screen");
+    for (ScreenOption option : screenOptionList) {
+      screen.getScreenOptions().add(option);
+    }
+
+    config.getMasterLogicalSystem().getScreens().put("screen", screen);
+
+    Zone zone = new Zone("zone", null);
+    zone.getScreens().add("screen");
+
+    config.getMasterLogicalSystem().getInterfaceZones().put(iface.getName(), zone);
+
+    IpAccessList screenAcl = config.buildScreensPerInterface(iface);
+
+    // screenAcl should only have screen, because screen2 has an alarm action and screen3 has not
+    // options.
+    assertThat(
+        screenAcl,
+        equalTo(
+            IpAccessList.builder()
+                .setName("~SCREEN_INTERFACE~iface")
+                .setLines(
+                    ImmutableList.of(
+                        IpAccessListLine.accepting(new PermittedByAcl("~SCREEN_ZONE~zone"))))
+                .build()));
+    assertThat(config._c.getIpAccessLists().get("~SCREEN_ZONE~zone"), notNullValue());
   }
 }
