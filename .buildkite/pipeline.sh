@@ -76,7 +76,7 @@ cat <<EOF
           image: ${DOCKER_IMAGE}
           always-pull: true
   - label: "Maven findbugs"
-    command: "mvn -f projects/pom.xml verify -Dfindbugs.skip=false"
+    command: "mvn -f projects/pom.xml test-compile findbugs:findbugs -Dfindbugs.skip=false"
     plugins:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
