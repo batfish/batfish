@@ -27,50 +27,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
-// import static org.batfish.datamodel.PacketHeaderConstraints.expandProtocols;
-
 /** Tests of {@link org.batfish.datamodel.PacketHeaderConstraints} */
 @RunWith(JUnit4.class)
 public class PacketHeaderConstraintsTest {
@@ -426,42 +382,6 @@ public class PacketHeaderConstraintsTest {
         phc.resolveDstPorts(),
         equalTo(IntegerSpace.builder().including(Range.singleton(11)).build()));
   }
-  //
-  //  @Test
-  //  public void testIpProtocolExpansion() {
-  //    assertThat(expandProtocols(null), nullValue());
-  //    assertThat(expandProtocols(""), nullValue());
-  //    assertThat(expandProtocols("TCP"), contains(IpProtocol.TCP));
-  //    assertThat(expandProtocols(" TCP , UDP"), containsInAnyOrder(IpProtocol.TCP,
-  // IpProtocol.UDP));
-  //    assertThat(expandProtocols("6,17"), containsInAnyOrder(IpProtocol.TCP, IpProtocol.UDP));
-  //    assertThat(expandProtocols("6,!17"), containsInAnyOrder(IpProtocol.TCP));
-  //    assertThat(expandProtocols("TCP, !UDP"), containsInAnyOrder(IpProtocol.TCP));
-  //    assertThat(
-  //        expandProtocols("!UDP"),
-  //        equalTo(
-  //            Sets.difference(
-  //                ImmutableSet.copyOf(IpProtocol.values()), ImmutableSet.of(IpProtocol.UDP))));
-  //  }
-  //
-  //  @Test
-  //  public void testIpProtocolExpansionWrongValues() {
-  //    assertThat(expandProtocols(null), nullValue());
-  //    thrown.expect(IllegalArgumentException.class);
-  //    expandProtocols("TC!P");
-  //  }
-  //
-  //  @Test
-  //  public void testIpProtocolExpansionNoComma() {
-  //    thrown.expect(IllegalArgumentException.class);
-  //    expandProtocols("!TCP!UDP");
-  //  }
-  //
-  //  @Test
-  //  public void testIpProtocolExpansionInvalidInt() {
-  //    thrown.expect(BatfishException.class);
-  //    expandProtocols("257");
-  //  }
 
   @Test
   public void testSerialization() throws IOException {
