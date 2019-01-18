@@ -13,10 +13,7 @@ fi
 # All java files in the project
 find projects -regex '.*/src/main/.*\.java' -or -regex '.*/src/test/.*\.java' > files_to_check
 
-# On travis, print affected filenames and fail. Locally, just fix the files.
-FORMAT_ARGS="--dry-run --set-exit-if-changed"
-echo "Checking that all java files are formatted correctly"
-
 # Run the check
-java -jar ${JAR} ${FORMAT_ARGS} @files_to_check && rm files_to_check \
+echo "Checking that all java files are formatted correctly"
+java -jar ${JAR} --dry-run --set-exit-if-changed @files_to_check && rm files_to_check \
   || (echo -e "\nThe files listed above are not formatted correctly. Use $0 to fix these issues. We recommend you install the Eclipse or IntelliJ plugin for google-java-format version ${GJF_VERSION}." && exit 1)
