@@ -691,7 +691,6 @@ import org.batfish.representation.juniper.StubSettings;
 import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
-import org.batfish.representation.juniper.TcpWinnuke;
 import org.batfish.representation.juniper.Vlan;
 import org.batfish.representation.juniper.Zone;
 import org.batfish.vendor.StructureType;
@@ -2896,34 +2895,43 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSeso_alarm(FlatJuniperParser.Seso_alarmContext ctx) {
-    _currentScreen.setAction(ScreenAction.Alarm_Without_Drop);
+    _currentScreen.setAction(ScreenAction.ALARM_WITHOUT_DROP);
   }
 
   @Override
-  public void enterSeso_icmp(FlatJuniperParser.Seso_icmpContext ctx) {
+  public void exitSeso_icmp(FlatJuniperParser.Seso_icmpContext ctx) {
     if (!ctx.LARGE().isEmpty()) {
       _currentScreen.getScreenOptions().add(IcmpLarge.INSTANCE);
+    } else {
+      todo(ctx);
     }
   }
 
   @Override
-  public void enterSeso_ip(FlatJuniperParser.Seso_ipContext ctx) {
+  public void exitSeso_ip(FlatJuniperParser.Seso_ipContext ctx) {
     if (!ctx.UNKNOWN_PROTOCOL().isEmpty()) {
       _currentScreen.getScreenOptions().add(IpUnknownProtocol.INSTANCE);
+    } else {
+      todo(ctx);
     }
   }
 
   @Override
-  public void enterSeso_tcp(FlatJuniperParser.Seso_tcpContext ctx) {
-    if (!ctx.WINNUKE().isEmpty()) {
-      _currentScreen.getScreenOptions().add(TcpWinnuke.INSTANCE);
-    } else if (!ctx.TCP_NO_FLAG().isEmpty()) {
+  public void exitSeso_tcp(FlatJuniperParser.Seso_tcpContext ctx) {
+    if (!ctx.TCP_NO_FLAG().isEmpty()) {
       _currentScreen.getScreenOptions().add(TcpNoFlag.INSTANCE);
     } else if (!ctx.SYN_FIN().isEmpty()) {
       _currentScreen.getScreenOptions().add(TcpSynFin.INSTANCE);
     } else if (!ctx.FIN_NO_ACK().isEmpty()) {
       _currentScreen.getScreenOptions().add(TcpFinNoAck.INSTANCE);
+    } else {
+      todo(ctx);
     }
+  }
+
+  @Override
+  public void exitSeso_udp(FlatJuniperParser.Seso_udpContext ctx) {
+    todo(ctx);
   }
 
   @Override
@@ -3258,7 +3266,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void enterSezs_screen(FlatJuniperParser.Sezs_screenContext ctx) {
+  public void exitSezs_screen(FlatJuniperParser.Sezs_screenContext ctx) {
     String name =
         ctx.UNTRUST_SCREEN() == null ? ctx.name.getText() : ctx.UNTRUST_SCREEN().getText();
     _currentZone.getScreens().add(name);
@@ -5848,9 +5856,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return AsSet.of(toAsNum(ctx.bgp_asn()));
     } else {
       return AsSet.of(
-          ctx.as_set()
-              .items
-              .stream()
+          ctx.as_set().items.stream()
               .map(this::toAsNum)
               .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
     }

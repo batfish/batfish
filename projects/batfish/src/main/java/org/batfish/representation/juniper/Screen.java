@@ -16,7 +16,7 @@ public final class Screen implements Serializable {
 
   public Screen(String name) {
     _name = name;
-    _action = ScreenAction.Drop;
+    _action = ScreenAction.DROP;
     _screenOptions = new ArrayList<>();
   }
 

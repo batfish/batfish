@@ -265,7 +265,6 @@ import org.batfish.representation.juniper.ScreenOption;
 import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
-import org.batfish.representation.juniper.TcpWinnuke;
 import org.batfish.representation.juniper.Zone;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -3840,13 +3839,13 @@ public final class FlatJuniperGrammarTest {
 
     assertThat(
         juniperConfiguration.getMasterLogicalSystem().getScreens().get("ALARM_OPTION").getAction(),
-        equalTo(ScreenAction.Alarm_Without_Drop));
+        equalTo(ScreenAction.ALARM_WITHOUT_DROP));
 
     Screen ids = juniperConfiguration.getMasterLogicalSystem().getScreens().get("IDS_OPTION_NAME");
 
     assertThat(ids, not(nullValue()));
 
-    assertThat(ids.getAction(), equalTo(ScreenAction.Drop));
+    assertThat(ids.getAction(), equalTo(ScreenAction.DROP));
     assertThat(
         ids.getScreenOptions(),
         equalTo(
@@ -3855,8 +3854,7 @@ public final class FlatJuniperGrammarTest {
                 IpUnknownProtocol.INSTANCE,
                 TcpFinNoAck.INSTANCE,
                 TcpSynFin.INSTANCE,
-                TcpNoFlag.INSTANCE,
-                TcpWinnuke.INSTANCE)));
+                TcpNoFlag.INSTANCE)));
   }
 
   @Test
@@ -3865,8 +3863,8 @@ public final class FlatJuniperGrammarTest {
 
     IpAccessList inAcl = config.getIpAccessLists().get("FILTER1");
     IpAccessList screenAcl = config.getIpAccessLists().get("~SCREEN~IDS_OPTION_NAME");
-    IpAccessList ifaceScreenAcl = config.getIpAccessLists().get("~SCREEN~ge-0/0/0.0");
-    IpAccessList zoneScreenAcl = config.getIpAccessLists().get("~SCREEN~untrust");
+    IpAccessList ifaceScreenAcl = config.getIpAccessLists().get("~SCREEN_INTERFACE~ge-0/0/0.0");
+    IpAccessList zoneScreenAcl = config.getIpAccessLists().get("~SCREEN_ZONE~untrust");
     IpAccessList combinedInAcl =
         config.getIpAccessLists().get("~COMBINED_INCOMING_FILTER~ge-0/0/0.0");
 
@@ -3882,8 +3880,7 @@ public final class FlatJuniperGrammarTest {
             IpUnknownProtocol.INSTANCE,
             TcpFinNoAck.INSTANCE,
             TcpSynFin.INSTANCE,
-            TcpNoFlag.INSTANCE,
-            TcpWinnuke.INSTANCE);
+            TcpNoFlag.INSTANCE);
 
     assertThat(
         inAcl,
@@ -3921,7 +3918,7 @@ public final class FlatJuniperGrammarTest {
         zoneScreenAcl,
         equalTo(
             IpAccessList.builder()
-                .setName("~SCREEN~untrust")
+                .setName("~SCREEN_ZONE~untrust")
                 .setLines(
                     ImmutableList.of(
                         IpAccessListLine.accepting(
@@ -3937,7 +3934,8 @@ public final class FlatJuniperGrammarTest {
                 .setName("~SCREEN~ge-0/0/0.0")
                 .setLines(
                     ImmutableList.of(
-                        IpAccessListLine.accepting(new PermittedByAcl("~SCREEN~untrust", false))))
+                        IpAccessListLine.accepting(
+                            new PermittedByAcl("~SCREEN_ZONE~untrust", false))))
                 .build()));
 
     assertThat(
@@ -3950,7 +3948,7 @@ public final class FlatJuniperGrammarTest {
                         IpAccessListLine.accepting(
                             new AndMatchExpr(
                                 ImmutableList.of(
-                                    new PermittedByAcl("~SCREEN~ge-0/0/0.0", false),
+                                    new PermittedByAcl("~SCREEN_INTERFACE~ge-0/0/0.0", false),
                                     new PermittedByAcl("FILTER1", false))))))
                 .build()));
 

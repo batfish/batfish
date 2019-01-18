@@ -309,15 +309,14 @@ public class JuniperConfigurationTest {
             IpUnknownProtocol.INSTANCE,
             TcpFinNoAck.INSTANCE,
             TcpSynFin.INSTANCE,
-            TcpNoFlag.INSTANCE,
-            TcpWinnuke.INSTANCE);
+            TcpNoFlag.INSTANCE);
 
     Screen screen = new Screen("screen");
     for (ScreenOption option : screenOptionList) {
       screen.getScreenOptions().add(option);
     }
 
-    IpAccessList screenAcl = buildScreen(screen);
+    IpAccessList screenAcl = buildScreen(screen, "~SCREEN~screen");
 
     assertThat(
         screenAcl,
@@ -336,7 +335,7 @@ public class JuniperConfigurationTest {
                 .build()));
 
     Screen screen2 = new Screen("screen2");
-    IpAccessList screenAcl2 = buildScreen(screen2);
+    IpAccessList screenAcl2 = buildScreen(screen2, "~SCREEN~screen2");
     assertThat(screenAcl2, nullValue());
   }
 
@@ -347,8 +346,7 @@ public class JuniperConfigurationTest {
     List<ScreenOption> screenOptionList1 =
         ImmutableList.of(IcmpLarge.INSTANCE, IpUnknownProtocol.INSTANCE, TcpFinNoAck.INSTANCE);
 
-    List<ScreenOption> screenOptionList2 =
-        ImmutableList.of(TcpSynFin.INSTANCE, TcpNoFlag.INSTANCE, TcpWinnuke.INSTANCE);
+    List<ScreenOption> screenOptionList2 = ImmutableList.of(TcpSynFin.INSTANCE, TcpNoFlag.INSTANCE);
 
     Screen screen1 = new Screen("screen1");
     for (ScreenOption option : screenOptionList1) {
@@ -359,7 +357,7 @@ public class JuniperConfigurationTest {
     for (ScreenOption option : screenOptionList2) {
       screen2.getScreenOptions().add(option);
     }
-    screen2.setAction(ScreenAction.Alarm_Without_Drop);
+    screen2.setAction(ScreenAction.ALARM_WITHOUT_DROP);
 
     Screen screen3 = new Screen("screen3");
 
@@ -372,7 +370,7 @@ public class JuniperConfigurationTest {
     zone.getScreens().add("screen2");
     zone.getScreens().add("screen3");
 
-    IpAccessList screenAcl = config.buildScreensPerZone(zone);
+    IpAccessList screenAcl = config.buildScreensPerZone(zone, "~SCREEN_ZONE~zone");
 
     // screenAcl should only have screen1, because screen2 has an alarm action and screen3 has not
     // options.
@@ -380,7 +378,7 @@ public class JuniperConfigurationTest {
         screenAcl,
         equalTo(
             IpAccessList.builder()
-                .setName("~SCREEN~zone")
+                .setName("~SCREEN_ZONE~zone")
                 .setLines(
                     ImmutableList.of(
                         IpAccessListLine.accepting(
@@ -435,11 +433,11 @@ public class JuniperConfigurationTest {
         screenAcl,
         equalTo(
             IpAccessList.builder()
-                .setName("~SCREEN~iface")
+                .setName("~SCREEN_INTERFACE~iface")
                 .setLines(
                     ImmutableList.of(
-                        IpAccessListLine.accepting(new PermittedByAcl("~SCREEN~zone"))))
+                        IpAccessListLine.accepting(new PermittedByAcl("~SCREEN_ZONE~zone"))))
                 .build()));
-    assertThat(config._c.getIpAccessLists().get("~SCREEN~zone"), notNullValue());
+    assertThat(config._c.getIpAccessLists().get("~SCREEN_ZONE~zone"), notNullValue());
   }
 }

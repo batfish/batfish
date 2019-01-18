@@ -18,24 +18,20 @@ public final class IpUnknownProtocol implements ScreenOption {
 
   public static final IpUnknownProtocol INSTANCE = new IpUnknownProtocol();
 
-  private static final AclLineMatchExpr ACL_LINE_MATCH_EXPR = buildAclLineMatchExpr();
+  private static final AclLineMatchExpr ACL_LINE_MATCH_EXPR =
+      AclLineMatchExprs.match(
+          HeaderSpace.builder()
+              .setNotIpProtocols(
+                  IntStream.range(0, LARGEST_VALID_PROTOCOL)
+                      .mapToObj(IpProtocol::fromNumber)
+                      .collect(Collectors.toList()))
+              .build());
 
   private IpUnknownProtocol() {}
 
   @Override
   public String getName() {
     return IP_UNKNOWN_PROTOCOL;
-  }
-
-  static AclLineMatchExpr buildAclLineMatchExpr() {
-    HeaderSpace headerSpace =
-        HeaderSpace.builder()
-            .setNotIpProtocols(
-                IntStream.range(0, LARGEST_VALID_PROTOCOL)
-                    .mapToObj(IpProtocol::fromNumber)
-                    .collect(Collectors.toList()))
-            .build();
-    return AclLineMatchExprs.match(headerSpace);
   }
 
   @Override

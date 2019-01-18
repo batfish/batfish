@@ -145,6 +145,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public static final String ACL_NAME_SCREEN = "~SCREEN~";
 
+  public static final String ACL_NAME_SCREEN_INTERFACE = "~SCREEN_INTERFACE~";
+
+  public static final String ACL_NAME_SCREEN_ZONE = "~SCREEN_ZONE~";
+
   public static final String ACL_NAME_SECURITY_POLICY = "~SECURITY_POLICIES_TO~";
 
   private static final IpAccessList ACL_EXISTING_CONNECTION =
@@ -1397,8 +1401,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   @Nullable
   @VisibleForTesting
-  static IpAccessList buildScreen(@Nullable Screen screen) {
-    if (screen == null || screen.getAction() == ScreenAction.Alarm_Without_Drop) {
+  static IpAccessList buildScreen(@Nullable Screen screen, String aclName) {
+    if (screen == null || screen.getAction() == ScreenAction.ALARM_WITHOUT_DROP) {
       return null;
     }
 
@@ -1415,7 +1419,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     return IpAccessList.builder()
-        .setName(ACL_NAME_SCREEN + screen.getName())
+        .setName(aclName)
         .setLines(
             ImmutableList.of(
                 IpAccessListLine.rejecting(new OrMatchExpr(matches)), IpAccessListLine.ACCEPT_ALL))
@@ -1424,9 +1428,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   @Nullable
   @VisibleForTesting
-  IpAccessList buildScreensPerZone(@Nonnull Zone zone) {
-    String aclName = ACL_NAME_SCREEN + zone.getName();
-
+  IpAccessList buildScreensPerZone(@Nonnull Zone zone, String aclName) {
     List<AclLineMatchExpr> matches =
         zone.getScreens()
             .stream()
@@ -1436,7 +1438,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   String screenAclName = ACL_NAME_SCREEN + screenName;
                   IpAccessList screenAcl =
                       _c.getIpAccessLists()
-                          .computeIfAbsent(screenAclName, x -> buildScreen(screen));
+                          .computeIfAbsent(screenAclName, x -> buildScreen(screen, screenAclName));
                   return screenAcl != null ? new PermittedByAcl(screenAcl.getName(), false) : null;
                 })
             .filter(Objects::nonNull)
@@ -1459,24 +1461,26 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     // build a acl for each zone
-    String zoneAclName = ACL_NAME_SCREEN + zone.getName();
+    String zoneAclName = ACL_NAME_SCREEN_ZONE + zone.getName();
     IpAccessList zoneAcl =
-        _c.getIpAccessLists().computeIfAbsent(zoneAclName, x -> buildScreensPerZone(zone));
+        _c.getIpAccessLists()
+            .computeIfAbsent(zoneAclName, x -> buildScreensPerZone(zone, zoneAclName));
 
     return zoneAcl == null
         ? null
         : IpAccessList.builder()
-            .setName(ACL_NAME_SCREEN + iface.getName())
+            .setName(ACL_NAME_SCREEN_INTERFACE + iface.getName())
             .setLines(ImmutableList.of(IpAccessListLine.accepting(new PermittedByAcl(zoneAclName))))
             .build();
   }
 
   @Nullable
   IpAccessList buildIncomingFilter(Interface iface) {
-    String screenAclName = ACL_NAME_SCREEN + iface.getName();
+    String screenAclName = ACL_NAME_SCREEN_INTERFACE + iface.getName();
     IpAccessList screenAcl =
         _c.getIpAccessLists().computeIfAbsent(screenAclName, x -> buildScreensPerInterface(iface));
     // merge screen options to incoming filter
+    // but keep both originial filters in the config, so we can run search filter queris on them
     String inAclName = iface.getIncomingFilter();
     IpAccessList inAcl = inAclName != null ? _c.getIpAccessLists().get(inAclName) : null;
 

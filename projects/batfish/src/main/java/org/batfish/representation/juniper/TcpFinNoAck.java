@@ -18,28 +18,24 @@ public final class TcpFinNoAck implements ScreenOption {
 
   public static final TcpFinNoAck INSTANCE = new TcpFinNoAck();
 
-  private static final AclLineMatchExpr ACL_LINE_MATCH_EXPR = buildAclLineMatchExpr();
+  private static final AclLineMatchExpr ACL_LINE_MATCH_EXPR =
+      AclLineMatchExprs.match(
+          HeaderSpace.builder()
+              .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
+              .setTcpFlags(
+                  ImmutableList.of(
+                      TcpFlagsMatchConditions.builder()
+                          .setTcpFlags(TcpFlags.builder().setAck(false).setFin(true).build())
+                          .setUseAck(true)
+                          .setUseFin(true)
+                          .build()))
+              .build());
 
   private TcpFinNoAck() {}
 
   @Override
   public String getName() {
     return TCP_FIN_NO_ACK;
-  }
-
-  static AclLineMatchExpr buildAclLineMatchExpr() {
-    HeaderSpace headerSpace =
-        HeaderSpace.builder()
-            .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
-            .setTcpFlags(
-                ImmutableList.of(
-                    TcpFlagsMatchConditions.builder()
-                        .setTcpFlags(TcpFlags.builder().setAck(false).setFin(true).build())
-                        .setUseAck(true)
-                        .setUseFin(true)
-                        .build()))
-            .build();
-    return AclLineMatchExprs.match(headerSpace);
   }
 
   @Override

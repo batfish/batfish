@@ -18,22 +18,18 @@ public final class IcmpLarge implements ScreenOption {
 
   public static final IcmpLarge INSTANCE = new IcmpLarge();
 
-  private static final AclLineMatchExpr ACL_LINE_MATCH_EXPR = buildAclLineMatchExpr();
+  private static final AclLineMatchExpr ACL_LINE_MATCH_EXPR =
+      AclLineMatchExprs.match(
+          HeaderSpace.builder()
+              .setIpProtocols(ImmutableList.of(IpProtocol.ICMP))
+              .setNotPacketLengths(ImmutableList.of(new SubRange(0, LARGEST_ICMP_PACKET_LENGTH)))
+              .build());
 
   private IcmpLarge() {}
 
   @Override
   public String getName() {
     return ICMP_LARGE;
-  }
-
-  static AclLineMatchExpr buildAclLineMatchExpr() {
-    HeaderSpace headerSpace =
-        HeaderSpace.builder()
-            .setIpProtocols(ImmutableList.of(IpProtocol.ICMP))
-            .setNotPacketLengths(ImmutableList.of(new SubRange(0, LARGEST_ICMP_PACKET_LENGTH)))
-            .build();
-    return AclLineMatchExprs.match(headerSpace);
   }
 
   @Override

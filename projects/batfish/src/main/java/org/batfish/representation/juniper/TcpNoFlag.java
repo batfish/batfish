@@ -18,40 +18,36 @@ public final class TcpNoFlag implements ScreenOption {
 
   public static final TcpNoFlag INSTANCE = new TcpNoFlag();
 
-  private static final AclLineMatchExpr ACL_LINE_MATCH_EXPR = buildAclLineMatchExpr();
+  private static final AclLineMatchExpr ACL_LINE_MATCH_EXPR =
+      AclLineMatchExprs.match(
+          HeaderSpace.builder()
+              .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
+              .setTcpFlags(
+                  ImmutableList.of(
+                      TcpFlagsMatchConditions.builder()
+                          .setTcpFlags(
+                              TcpFlags.builder()
+                                  .setAck(false)
+                                  .setUrg(false)
+                                  .setPsh(false)
+                                  .setRst(false)
+                                  .setSyn(false)
+                                  .setFin(false)
+                                  .build())
+                          .setUseAck(true)
+                          .setUseUrg(true)
+                          .setUsePsh(true)
+                          .setUseRst(true)
+                          .setUseSyn(true)
+                          .setUseFin(true)
+                          .build()))
+              .build());
 
   private TcpNoFlag() {}
 
   @Override
   public String getName() {
     return TCP_NO_FLAG;
-  }
-
-  static AclLineMatchExpr buildAclLineMatchExpr() {
-    HeaderSpace headerSpace =
-        HeaderSpace.builder()
-            .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
-            .setTcpFlags(
-                ImmutableList.of(
-                    TcpFlagsMatchConditions.builder()
-                        .setTcpFlags(
-                            TcpFlags.builder()
-                                .setAck(false)
-                                .setUrg(false)
-                                .setPsh(false)
-                                .setRst(false)
-                                .setSyn(false)
-                                .setFin(false)
-                                .build())
-                        .setUseAck(true)
-                        .setUseUrg(true)
-                        .setUsePsh(true)
-                        .setUseRst(true)
-                        .setUseSyn(true)
-                        .setUseFin(true)
-                        .build()))
-            .build();
-    return AclLineMatchExprs.match(headerSpace);
   }
 
   @Override
