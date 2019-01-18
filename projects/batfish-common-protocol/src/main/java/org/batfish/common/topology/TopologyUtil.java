@@ -98,53 +98,6 @@ public final class TopologyUtil {
             .collect(ImmutableSet.toImmutableSet()));
   }
 
-  private static Layer2Node find(Layer2Node n, Map<Layer2Node, Layer2Node> m) {
-    Layer2Node v = m.get(n);
-    if (n == v) {
-      return v;
-    }
-    Layer2Node v1 = find(v, m);
-    if (v != v1) {
-      m.put(n, v1);
-    }
-    return v1;
-  }
-
-  private static void union(Layer2Node n1, Layer2Node n2, Map<Layer2Node, Layer2Node> m) {
-    Layer2Node d1 = find(n1, m);
-    Layer2Node d2 = find(n2, m);
-    if (d1 != d2) {
-      Layer2Node min = d1.compareTo(d2) < 0 ? d1 : d2;
-      m.put(d1, min);
-      m.put(d2, min);
-    }
-  }
-
-  private static Layer2Topology computeLayer2Topology(
-      Set<Layer2Edge> edges, Map<String, Configuration> configurations) {
-    Map<Layer2Node, Layer2Node> domainMap = new HashMap<>();
-
-    // initially, each node is in its own domain
-    edges.stream().map(Layer2Edge::getNode1).forEach(n -> domainMap.put(n, n));
-    edges.forEach(e -> union(e.getNode1(), e.getNode2(), domainMap));
-
-    // invert to mapping from domain to nodes in the domain
-    Map<Layer2Node, Set<Layer2Node>> nodesByDomainRepresentative = new HashMap<>();
-    edges.stream()
-        .map(Layer2Edge::getNode1)
-        .forEach(
-            n ->
-                nodesByDomainRepresentative
-                    .computeIfAbsent(find(n, domainMap), k -> new HashSet<>())
-                    .add(n));
-
-    return new Layer2Topology(nodesByDomainRepresentative.values());
-  }
-
-  private static boolean isLayer3Interface(Interface iface) {
-    return iface.getSwitchportMode() == SwitchportMode.NONE;
-  }
-
   private static void computeLayer2EdgesForLayer1Edge(
       @Nonnull Layer1Edge layer1Edge,
       @Nonnull Map<String, Configuration> configurations,
@@ -228,7 +181,7 @@ public final class TopologyUtil {
                     .values()
                     .forEach(vrf -> computeLayer2SelfEdges(c.getHostname(), vrf, edges)));
 
-    return computeLayer2Topology(edges.build(), configurations);
+    return Layer2Topology.fromEdges(edges.build());
   }
 
   /**

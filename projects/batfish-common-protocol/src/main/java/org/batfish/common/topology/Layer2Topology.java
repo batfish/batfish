@@ -1,33 +1,34 @@
 package org.batfish.common.topology;
 
-import static com.google.common.base.Predicates.not;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import java.util.Collection;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import javax.annotation.Nonnull;
+import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.jgrapht.alg.util.UnionFind;
 
 /** Tracks which interfaces are in the same layer 2 broadcast domain. */
 @ParametersAreNonnullByDefault
 public final class Layer2Topology {
 
-  private final Map<Layer2Node, Layer2Node> _ifaceToRepresentative;
+  private final UnionFind<Layer2Node> _unionFind;
 
-  public Layer2Topology(@Nonnull Collection<Set<Layer2Node>> domains) {
-    _ifaceToRepresentative =
-        domains.stream()
-            .filter(not(Set::isEmpty))
-            .flatMap(
-                domain -> {
-                  Layer2Node representative = domain.stream().min(Layer2Node::compareTo).get();
-                  return domain.stream().map(member -> Maps.immutableEntry(member, representative));
-                })
-            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+  private Layer2Topology(UnionFind<Layer2Node> unionFind) {
+    _unionFind = unionFind;
+  }
+
+  public static Layer2Topology fromDomains(Collection<Set<Layer2Node>> domains) {
+    UnionFind<Layer2Node> unionFind =
+        new UnionFind<>(domains.stream().flatMap(Set::stream).collect(Collectors.toSet()));
+    domains.forEach(domain -> domain.forEach(m1 -> domain.forEach(m2 -> unionFind.union(m1, m2))));
+    return new Layer2Topology(unionFind);
+  }
+
+  public static Layer2Topology fromEdges(Set<Layer2Edge> edges) {
+    UnionFind<Layer2Node> unionFind =
+        new UnionFind<>(edges.stream().map(Layer2Edge::getNode1).collect(Collectors.toSet()));
+    edges.forEach(e -> unionFind.union(e.getNode1(), e.getNode2()));
+    return new Layer2Topology(unionFind);
   }
 
   /** Convert a layer3 interface to a layer2 node. */
@@ -37,8 +38,12 @@ public final class Layer2Topology {
 
   /** Return whether the two interfaces are in the same broadcast domain. */
   public boolean inSameBroadcastDomain(Layer2Node n1, Layer2Node n2) {
-    Layer2Node r1 = _ifaceToRepresentative.get(n1);
-    return r1 != null && r1.equals(_ifaceToRepresentative.get(n2));
+    try {
+      return _unionFind.inSameSet(n1, n2);
+    } catch(IllegalArgumentException e) {
+      // one or both elements missing
+      return false;
+    }
   }
 
   /** Return whether the two interfaces are in the same broadcast domain. */

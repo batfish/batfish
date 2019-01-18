@@ -545,7 +545,7 @@ public final class TopologyUtilTest {
 
     // all layer1 edges should make it into layer2, plus self and transitive edges for switchports
     Layer2Topology layer2Topology =
-        new Layer2Topology(
+        Layer2Topology.fromDomains(
             ImmutableList.of(
                 ImmutableSet.of(
                     new Layer2Node(c1Name, c1i1Name, null), new Layer2Node(c2Name, c2i1Name, null)),
