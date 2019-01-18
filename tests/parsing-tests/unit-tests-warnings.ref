@@ -239,13 +239,6 @@
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_interface",
-        "Line" : 92,
-        "Text" : "ip nat source dynamic access-list def overload",
-        "Parser_Context" : "[if_ip_nat_source if_inner s_interface stanza cisco_configuration]",
-        "Comment" : "Ignored incomplete definition of Arista dynamic source nat. acl=def, pool=null"
-      },
-      {
         "Filename" : "cisco_ip_nat",
         "Line" : 13,
         "Text" : "ip nat outside source static 6.6.6.6 7.7.7.7 add-route no-alias",
@@ -632,10 +625,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 84 results",
+      "notes" : "Found 83 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 84
+      "numResults" : 83
     }
   }
 ]

@@ -7199,6 +7199,22 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "outgoingTransformation" : {
+              "guard" : {
+                "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                "aclName" : "def",
+                "defaultAccept" : false
+              },
+              "transformationSteps" : [
+                {
+                  "class" : "org.batfish.datamodel.transformation.AssignIpAddressFromPool",
+                  "ipField" : "SOURCE",
+                  "poolEnd" : "1.2.3.4",
+                  "poolStart" : "1.2.3.4",
+                  "transformationType" : "SOURCE_NAT"
+                }
+              ]
+            },
             "prefix" : "1.2.3.4/30",
             "proxyArp" : false,
             "ripEnabled" : false,
