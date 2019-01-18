@@ -1,9 +1,9 @@
 package org.batfish.common.topology;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.jgrapht.alg.util.UnionFind;
@@ -20,7 +20,8 @@ public final class Layer2Topology {
 
   public static Layer2Topology fromDomains(Collection<Set<Layer2Node>> domains) {
     UnionFind<Layer2Node> unionFind =
-        new UnionFind<>(domains.stream().flatMap(Set::stream).collect(Collectors.toSet()));
+        new UnionFind<>(
+            domains.stream().flatMap(Set::stream).collect(ImmutableSet.toImmutableSet()));
     domains.forEach(
         domain -> {
           if (domain.isEmpty()) {
@@ -37,7 +38,8 @@ public final class Layer2Topology {
 
   public static Layer2Topology fromEdges(Set<Layer2Edge> edges) {
     UnionFind<Layer2Node> unionFind =
-        new UnionFind<>(edges.stream().map(Layer2Edge::getNode1).collect(Collectors.toSet()));
+        new UnionFind<>(
+            edges.stream().map(Layer2Edge::getNode1).collect(ImmutableSet.toImmutableSet()));
     edges.forEach(e -> unionFind.union(e.getNode1(), e.getNode2()));
     return new Layer2Topology(unionFind);
   }
