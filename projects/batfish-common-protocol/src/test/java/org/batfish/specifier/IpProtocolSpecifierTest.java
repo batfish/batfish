@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.IpProtocol;
@@ -34,14 +33,6 @@ public final class IpProtocolSpecifierTest {
   }
 
   @Test
-  public void testStuff() {
-    Pattern pattern = Pattern.compile(".*0 \\(H.*\\).*");
-    Matcher matcher = pattern.matcher("0 (HOPOPT)");
-    assertThat(matcher.find(), equalTo(true));
-    assertThat(matcher.matches(), equalTo(true));
-  }
-
-  @Test
   public void testAutocomplete() {
     assertThat(
         IpProtocolSpecifier.autoComplete("os")
@@ -59,6 +50,38 @@ public final class IpProtocolSpecifierTest {
 
     // should not suggest any "UNNAMED" protocols
     assertThat(IpProtocolSpecifier.autoComplete("UNNAMED"), equalTo(ImmutableList.of()));
+
+    assertThat(
+        IpProtocolSpecifier.autoComplete("89 (o")
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("89 (OSPF)")));
+
+    assertThat(
+        IpProtocolSpecifier.autoComplete("89 (ospf), 18 (")
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("89 (ospf), 118 (STP)", "89 (ospf), 18 (MUX)")));
+
+    // trailing comma followed by a space should match with all IpProtocols
+    assertThat(
+        IpProtocolSpecifier.autoComplete("89 (ospf), ")
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet())
+            .size(),
+        equalTo(IpProtocol.values().length));
+
+    // trailing comma followed by no space should return one suggestion containing everything before
+    // the comma
+    assertThat(
+        IpProtocolSpecifier.autoComplete("89 (ospf),")
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("89 (OSPF)")));
   }
 
   @Test

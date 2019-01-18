@@ -142,13 +142,16 @@ public class IpProtocolSpecifier {
    * only the partial query after the final comma will be considered for matching against. Each
    * suggestion returned will contain everything before the final comma followed by an
    * autocompletion that matches the partial query after the final comma.
+   *
+   * <pre>
+   * Example:
+   *    query: "89 (OSPF), 18 (MUX), arp"
+   *    suggestions: ["89 (OSPF), 18 (MUX), 91 (LARP)", "89 (OSPF), 18 (MUX), 54 (NARP)"]
+   * </pre>
    */
-  // Example:
-  //    query: "89 (OSPF), 18 (MUX), arp"
-  //    suggestions: ["89 (OSPF), 18 (MUX), 91 (LARP)", "89 (OSPF), 18 (MUX), 54 (NARP)"]
   public static List<AutocompleteSuggestion> autoComplete(String query) {
     // take out any commas
-    String[] atoms = query.trim().split(",");
+    String[] atoms = query.split(",");
 
     // only want autocompletions for the query after the final comma
     String currentQuery = atoms[atoms.length - 1].trim();
