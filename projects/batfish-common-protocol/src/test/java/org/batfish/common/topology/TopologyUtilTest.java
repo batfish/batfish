@@ -151,27 +151,6 @@ public final class TopologyUtilTest {
     }
 
     {
-      /* c1i1 and c2i1 are not connected in layer1, but are connected the same ACCESS port
-       */
-      Configuration c3 = _cb.setHostname(c3Name).build();
-      Vrf v3 = _vb.setOwner(c3).build();
-      _ib.setOwner(c3).setVrf(v3);
-      Interface c3i1 = _ib.setName(c3i1Name).build();
-      c3i1.setSwitchport(true);
-      c3i1.setSwitchportMode(SwitchportMode.ACCESS);
-      c3i1.setAccessVlan(1);
-      Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2, c3Name, c3);
-      Layer1Topology layer1Topology =
-          layer1Topology(
-              c1Name, c1i1Name, c3Name, c3i1Name, //
-              c2Name, c2i1Name, c3Name, c3i1Name);
-      Layer2Topology layer2Topology = computeLayer2Topology(layer1Topology, configs);
-      assertThat(
-          "c1:i1 and c2:i1 are in the same broadcast domain",
-          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
-    }
-
-    {
       /* c1i1 and c2i1 are not connected in layer1, but are connected to ACCESS ports on the same
        * VLAN
        */
@@ -234,11 +213,11 @@ public final class TopologyUtilTest {
       c3i1.setSwitchport(true);
       c3i1.setSwitchportMode(SwitchportMode.TRUNK);
       c3i1.setAllowedVlans(IntegerSpace.of(new SubRange(0, 3)));
-      c3i1.setNativeVlan(0);
+      c3i1.setNativeVlan(1);
       Interface c3i2 = _ib.setName(c3i2Name).build();
       c3i2.setSwitchport(true);
       c3i2.setSwitchportMode(SwitchportMode.ACCESS);
-      c3i2.setAccessVlan(0);
+      c3i2.setAccessVlan(1);
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2, c3Name, c3);
       Layer1Topology layer1Topology =
           layer1Topology(
@@ -261,11 +240,11 @@ public final class TopologyUtilTest {
       c3i1.setSwitchport(true);
       c3i1.setSwitchportMode(SwitchportMode.TRUNK);
       c3i1.setAllowedVlans(IntegerSpace.of(new SubRange(0, 3)));
-      c3i1.setNativeVlan(0);
+      c3i1.setNativeVlan(1);
       Interface c3i2 = _ib.setName(c3i2Name).build();
       c3i2.setSwitchport(true);
       c3i2.setSwitchportMode(SwitchportMode.ACCESS);
-      c3i2.setAccessVlan(1);
+      c3i2.setAccessVlan(2);
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2, c3Name, c3);
       Layer1Topology layer1Topology =
           layer1Topology(
@@ -288,7 +267,7 @@ public final class TopologyUtilTest {
       c3i1.setSwitchport(true);
       c3i1.setSwitchportMode(SwitchportMode.TRUNK);
       c3i1.setAllowedVlans(IntegerSpace.of(new SubRange(0, 3)));
-      c3i1.setNativeVlan(0);
+      c3i1.setNativeVlan(1);
       Interface c3i2 = _ib.setName(c3i2Name).build();
       c3i2.setSwitchport(true);
       c3i2.setSwitchportMode(SwitchportMode.ACCESS);
