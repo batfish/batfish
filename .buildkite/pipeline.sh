@@ -52,19 +52,6 @@ EOF
 
 ###### Maven tests
 cat <<EOF
-  - label: "Code coverage"
-    command:
-      - "env"
-      - "export BUILDKITE_BRANCH"
-      - ".buildkite/jacoco_report.sh"
-    plugins:
-      - docker#${DOCKER_VERSION}:
-          image: "${DOCKER_IMAGE}"
-          always-pull: true
-          propagate-environment: true
-      - artifacts#v1.2.0:
-          download:
-            - "workspace/allinone.jar"
   - label: "Maven tests + Coverage"
     command:
       - mvn -f projects/pom.xml verify -DskipTests=false -Djacoco.skip=false
@@ -131,12 +118,12 @@ cat <<EOF
   - wait
   - label: "Code coverage"
     command:
-      - "export BUILDKITE_BRANCH"
       - ".buildkite/jacoco_report.sh"
     plugins:
       - docker#${DOCKER_VERSION}:
           image: "${DOCKER_IMAGE}"
           always-pull: true
+          propagate-environment: true
       - artifacts#v1.2.0:
           download:
             - "workspace/**/jacoco.exec"
