@@ -1,62 +1,73 @@
 package org.batfish.common.topology;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.graph.ImmutableNetwork;
-import com.google.common.graph.MutableNetwork;
-import com.google.common.graph.NetworkBuilder;
-import java.util.SortedSet;
-import javax.annotation.Nonnull;
+import com.google.common.collect.ImmutableSet;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Set;
+import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.jgrapht.alg.util.UnionFind;
 
+/** Tracks which interfaces are in the same layer 2 broadcast domain. */
+@ParametersAreNonnullByDefault
 public final class Layer2Topology {
 
-  private static final String PROP_EDGES = "edges";
+  private final UnionFind<Layer2Node> _unionFind;
 
-  @JsonCreator
-  private static @Nonnull Layer2Topology create(
-      @JsonProperty(PROP_EDGES) Iterable<Layer2Edge> edges) {
-    return new Layer2Topology(edges != null ? edges : ImmutableSortedSet.of());
+  private Layer2Topology(UnionFind<Layer2Node> unionFind) {
+    _unionFind = unionFind;
   }
 
-  private final ImmutableNetwork<Layer2Node, Layer2Edge> _graph;
-
-  public Layer2Topology(@Nonnull Iterable<Layer2Edge> edges) {
-    MutableNetwork<Layer2Node, Layer2Edge> graph =
-        NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
-    edges.forEach(
-        edge -> {
-          graph.addNode(edge.getNode1());
-          graph.addNode(edge.getNode2());
-          graph.addEdge(edge.getNode1(), edge.getNode2(), edge);
+  public static Layer2Topology fromDomains(Collection<Set<Layer2Node>> domains) {
+    UnionFind<Layer2Node> unionFind =
+        new UnionFind<>(
+            domains.stream().flatMap(Set::stream).collect(ImmutableSet.toImmutableSet()));
+    domains.forEach(
+        domain -> {
+          if (domain.isEmpty()) {
+            return;
+          }
+          Iterator<Layer2Node> it = domain.iterator();
+          Layer2Node node = it.next();
+          while (it.hasNext()) {
+            unionFind.union(node, it.next());
+          }
         });
-    _graph = ImmutableNetwork.copyOf(graph);
+    return new Layer2Topology(unionFind);
   }
 
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (!(obj instanceof Layer2Topology)) {
+  public static Layer2Topology fromEdges(Set<Layer2Edge> edges) {
+    UnionFind<Layer2Node> unionFind =
+        new UnionFind<>(
+            edges.stream().map(Layer2Edge::getNode1).collect(ImmutableSet.toImmutableSet()));
+    edges.forEach(e -> unionFind.union(e.getNode1(), e.getNode2()));
+    return new Layer2Topology(unionFind);
+  }
+
+  /** Convert a layer3 interface to a layer2 node. */
+  private static Layer2Node layer2Node(String hostName, String iface) {
+    return new Layer2Node(hostName, iface, null);
+  }
+
+  /** Return whether the two interfaces are in the same broadcast domain. */
+  public boolean inSameBroadcastDomain(Layer2Node n1, Layer2Node n2) {
+    try {
+      return _unionFind.inSameSet(n1, n2);
+    } catch (IllegalArgumentException e) {
+      // one or both elements missing
       return false;
     }
-    return _graph.equals(((Layer2Topology) obj)._graph);
   }
 
-  @JsonIgnore
-  public @Nonnull ImmutableNetwork<Layer2Node, Layer2Edge> getGraph() {
-    return _graph;
+  /** Return whether the two interfaces are in the same broadcast domain. */
+  public boolean inSameBroadcastDomain(NodeInterfacePair i1, NodeInterfacePair i2) {
+    return inSameBroadcastDomain(
+        layer2Node(i1.getHostname(), i1.getInterface()),
+        layer2Node(i2.getHostname(), i2.getInterface()));
   }
 
-  @JsonProperty(PROP_EDGES)
-  private SortedSet<Layer2Edge> getJsonEdges() {
-    return ImmutableSortedSet.copyOf(_graph.edges());
-  }
-
-  @Override
-  public int hashCode() {
-    return _graph.hashCode();
+  /** Return whether the two interfaces are in the same broadcast domain. */
+  public boolean inSameBroadcastDomain(String host1, String iface1, String host2, String iface2) {
+    return inSameBroadcastDomain(layer2Node(host1, iface1), layer2Node(host2, iface2));
   }
 }
