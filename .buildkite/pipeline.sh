@@ -61,6 +61,7 @@ cat <<EOF
       - docker#${DOCKER_VERSION}:
           image: "${DOCKER_IMAGE}"
           always-pull: true
+          propagate-environment: true
       - artifacts#v1.2.0:
           download:
             - "workspace/allinone.jar"
