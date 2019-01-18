@@ -12,11 +12,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -24,10 +22,8 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
-import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
@@ -327,7 +323,7 @@ public final class TopologyUtilTest {
     }
 
     {
-      /* c1i1 and c2i1 are not connected in layer1, and are connected to ACCESS ports with a TRUNK
+      /* c1i1 and c2i1 are not connected in layer1, and are connected to ACCESS ports with TRUNKs
        * between them. Not in the same broadcast domain, because the VLAN tagging doesn't line up
        */
       Configuration c3 = _cb.setHostname(c3Name).build();
@@ -351,12 +347,17 @@ public final class TopologyUtilTest {
       c4i1.setSwitchportMode(SwitchportMode.ACCESS);
       c4i1.setAccessVlan(2);
 
+      Interface c4i2 = _ib.setName(c4i2Name).build();
+      c4i2.setSwitchport(true);
+      c4i2.setSwitchportMode(SwitchportMode.ACCESS);
+      c4i2.setAccessVlan(2);
+
       Map<String, Configuration> configs =
           ImmutableMap.of(c1Name, c1, c2Name, c2, c3Name, c3, c4Name, c4);
       Layer1Topology layer1Topology =
           layer1Topology(
               c1Name, c1i1Name, c3Name, c3i1Name, //
-              c3Name, c3i2Name, c4Name, c4i1Name, //
+              c3Name, c3i2Name, c4Name, c4i2Name, //
               c4Name, c4i1Name, c2Name, c2i1Name);
       Layer2Topology layer2Topology = computeLayer2Topology(layer1Topology, configs);
       assertThat(
@@ -369,193 +370,72 @@ public final class TopologyUtilTest {
   public void testComputeLayer3Topology() {
     String c1Name = "c1";
     String c2Name = "c2";
-    String c3Name = "c3";
 
     String c1i1Name = "c1i1";
-    String c1i2Name = "c1i2";
-    String c1i3Name = "c1i3";
-    String c1i4Name = "c1i4";
-    String c1i5Name = "c1i5";
-    String c1i6Name = "c1i6";
     String c2i1Name = "c2i1";
-    String c2i2Name = "c2i2";
-    String c2i3Name = "c2i3";
-    String c2i4Name = "c2i4";
-    String c3i5Name = "c3i5";
-    String c3i6Name = "c3i6";
-    String vlan1Name = "Vlan1";
-    String vlan2Name = "Vlan2";
-    String vlan3Name = "Vlan3";
-    String vlan4Name = "Vlan4";
 
-    Prefix p1 = Prefix.parse("10.0.0.0/31");
-    Prefix p3 = Prefix.parse("10.0.0.2/31");
+    Layer2Node c1i1 = new Layer2Node(c1Name, c1i1Name, null);
+    Layer2Node c2i1 = new Layer2Node(c2Name, c2i1Name, null);
 
-    int vlanPrefixLength = 24;
-    Ip c1Vlan1Ip = Ip.parse("10.10.1.1");
-    Ip c1Vlan2Ip = Ip.parse("10.10.2.1");
-    Ip c1Vlan3Ip = Ip.parse("10.10.3.1");
-    Ip c1Vlan4Ip = Ip.parse("10.10.4.1");
-    Ip c2Vlan1Ip = Ip.parse("10.10.1.2");
-    Ip c2Vlan2Ip = Ip.parse("10.10.2.2");
-    Ip c2Vlan3Ip = Ip.parse("10.10.3.2");
-    Ip c2Vlan4Ip = Ip.parse("10.10.4.2");
-    Ip c3i5Ip = Ip.parse("10.10.1.3");
-    Ip c3i6Ip = Ip.parse("10.10.4.3");
+    Edge c1i1c2i1 = Edge.of(c1Name, c1i1Name, c2Name, c2i1Name);
+    Edge c2i1c1i1 = Edge.of(c2Name, c2i1Name, c1Name, c1i1Name);
 
     Configuration c1 = _cb.setHostname(c1Name).build();
     Vrf v1 = _vb.setOwner(c1).build();
-    _ib.setOwner(c1).setVrf(v1);
-    _ib.setName(c1i1Name)
-        .setAddresses(new InterfaceAddress(p1.getStartIp(), p1.getPrefixLength()))
-        .build();
-    _ib.setName(c1i2Name).setAddresses(null).build();
-    _ib.setName(c1i3Name)
-        .setAddresses(new InterfaceAddress(p3.getStartIp(), p3.getPrefixLength()))
-        .build();
-    Interface c1i4 = _ib.setName(c1i4Name).setAddresses(null).build();
-    c1i4.setSwitchport(true);
-    c1i4.setSwitchportMode(SwitchportMode.TRUNK);
-    c1i4.setAllowedVlans(IntegerSpace.of(new SubRange(0, 3)));
-    c1i4.setNativeVlan(0);
-    Interface c1i5 = _ib.setName(c1i5Name).build();
-    c1i5.setSwitchport(true);
-    c1i5.setSwitchportMode(SwitchportMode.ACCESS);
-    c1i5.setAccessVlan(1);
-    Interface c1i6 = _ib.setName(c1i6Name).build();
-    c1i6.setSwitchport(true);
-    c1i6.setSwitchportMode(SwitchportMode.TRUNK);
-    c1i6.setAllowedVlans(IntegerSpace.of(4));
-    c1i6.setNativeVlan(4);
-    Interface c1Vlan1 =
-        _ib.setName(vlan1Name)
-            .setAddresses(new InterfaceAddress(c1Vlan1Ip, vlanPrefixLength))
-            .build();
-    c1Vlan1.setInterfaceType(InterfaceType.VLAN);
-    c1Vlan1.setVlan(1);
-    Interface c1Vlan2 =
-        _ib.setName(vlan2Name)
-            .setAddresses(new InterfaceAddress(c1Vlan2Ip, vlanPrefixLength))
-            .build();
-    c1Vlan2.setInterfaceType(InterfaceType.VLAN);
-    c1Vlan2.setVlan(2);
-    Interface c1Vlan3 =
-        _ib.setName(vlan3Name)
-            .setAddresses(new InterfaceAddress(c1Vlan3Ip, vlanPrefixLength))
-            .build();
-    c1Vlan3.setInterfaceType(InterfaceType.VLAN);
-    c1Vlan3.setVlan(3);
-    Interface c1Vlan4 =
-        _ib.setName(vlan4Name)
-            .setAddresses(new InterfaceAddress(c1Vlan4Ip, vlanPrefixLength))
-            .build();
-    c1Vlan4.setInterfaceType(InterfaceType.VLAN);
-    c1Vlan4.setVlan(4);
+    _ib.setOwner(c1).setVrf(v1).setActive(true);
 
     Configuration c2 = _cb.setHostname(c2Name).build();
     Vrf v2 = _vb.setOwner(c2).build();
     _ib.setOwner(c2).setVrf(v2);
-    _ib.setName(c2i1Name)
-        .setAddresses(new InterfaceAddress(p1.getEndIp(), p1.getPrefixLength()))
-        .build();
-    _ib.setName(c2i2Name).setAddresses(null).build();
-    _ib.setName(c2i3Name)
-        .setAddresses(new InterfaceAddress(p3.getStartIp(), p3.getPrefixLength()))
-        .build();
-    Interface c2i4 = _ib.setName(c2i4Name).setAddresses(null).build();
-    c2i4.setSwitchport(true);
-    c2i4.setSwitchportMode(SwitchportMode.TRUNK);
-    c2i4.setAllowedVlans(IntegerSpace.of(new SubRange(1, 2)));
-    c2i4.setNativeVlan(0);
-    Interface c2Vlan1 =
-        _ib.setName(vlan1Name)
-            .setAddresses(new InterfaceAddress(c2Vlan1Ip, vlanPrefixLength))
-            .build();
-    c2Vlan1.setInterfaceType(InterfaceType.VLAN);
-    c2Vlan1.setVlan(1);
-    Interface c2Vlan2 =
-        _ib.setName(vlan2Name)
-            .setAddresses(new InterfaceAddress(c2Vlan2Ip, vlanPrefixLength))
-            .build();
-    c2Vlan2.setInterfaceType(InterfaceType.VLAN);
-    c2Vlan2.setVlan(2);
-    Interface c2Vlan3 =
-        _ib.setName(vlan3Name)
-            .setAddresses(new InterfaceAddress(c2Vlan3Ip, vlanPrefixLength))
-            .build();
-    c2Vlan3.setInterfaceType(InterfaceType.VLAN);
-    c2Vlan3.setVlan(3);
-    Interface c2Vlan4 =
-        _ib.setName(vlan4Name)
-            .setAddresses(new InterfaceAddress(c2Vlan4Ip, vlanPrefixLength))
-            .build();
-    c2Vlan4.setInterfaceType(InterfaceType.VLAN);
-    c2Vlan4.setVlan(4);
 
-    Configuration c3 = _cb.setHostname(c3Name).build();
-    Vrf v3 = _vb.setOwner(c3).build();
-    _ib.setOwner(c3).setVrf(v3);
-    _ib.setName(c3i5Name).setAddresses(new InterfaceAddress(c3i5Ip, vlanPrefixLength)).build();
-    _ib.setName(c3i6Name).setAddresses(new InterfaceAddress(c3i6Ip, vlanPrefixLength)).build();
+    InterfaceAddress p1Addr1 = new InterfaceAddress("1.0.0.1/24");
+    InterfaceAddress p1Addr2 = new InterfaceAddress("1.0.0.2/24");
+    InterfaceAddress p2Addr1 = new InterfaceAddress("2.0.0.1/24");
 
-    SortedMap<String, Configuration> configurations =
-        ImmutableSortedMap.of(c1Name, c1, c2Name, c2, c3Name, c3);
+    Layer2Topology sameDomain =
+        Layer2Topology.fromDomains(ImmutableList.of(ImmutableSet.of(c1i1, c2i1)));
+    Layer2Topology differentDomains =
+        Layer2Topology.fromDomains(ImmutableList.of(ImmutableSet.of(c1i1), ImmutableSet.of(c2i1)));
 
-    /*
-     * c1i1 <=> c2i1 is link with proper l3 addressing.
-     *
-     * c1i2 <=> c2i2 is link with no l3 addressing.
-     *
-     * c1i3 <=> c2i3 is link with same subnet but same IP (conflict).
-     *
-     * c1i4 <=> c2i4 is trunk connection with:
-     * - native vlan 0
-     * - allowed vlans 1,2 on both c1 and c2
-     * - allowed vlan 3 on c1 only
-     *
-     * c1i5 <=> c3i5 is link with:
-     * - access vlan 1 on c1i5
-     * - ordinary l3 addressing on c3i5
-     *
-     * c1i6 <=> c3i6 is link with:
-     * - trunking with native vlan 4 on c1
-     * - ordinary l3 addressing on c3i6
-     */
+    {
+      // c1i1 and c2i1 are in the same subnet and the same broadcast domain, so connected at layer3
+      _ib.setOwner(c1).setVrf(v1).setName(c1i1Name).setAddress(p1Addr1).build();
+      _ib.setOwner(c2).setVrf(v2).setName(c2i1Name).setAddress(p1Addr2).build();
 
-    Layer2Topology layer2Topology =
-        Layer2Topology.fromDomains(
-            ImmutableList.of(
-                ImmutableSet.of(
-                    new Layer2Node(c1Name, c1i1Name, null), new Layer2Node(c2Name, c2i1Name, null)),
-                ImmutableSet.of(
-                    new Layer2Node(c1Name, vlan1Name, null),
-                    new Layer2Node(c2Name, vlan1Name, null),
-                    new Layer2Node(c3Name, c3i5Name, null)),
-                ImmutableSet.of(
-                    new Layer2Node(c1Name, vlan2Name, null),
-                    new Layer2Node(c2Name, vlan2Name, null)),
-                ImmutableSet.of(
-                    new Layer2Node(c1Name, vlan4Name, null),
-                    new Layer2Node(c3Name, c3i6Name, null))));
+      Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
+      Topology layer3Topology = computeLayer3Topology(sameDomain, configs);
+      assertThat(layer3Topology.getEdges(), containsInAnyOrder(c1i1c2i1, c2i1c1i1));
+    }
 
-    Topology layer3Topology = computeLayer3Topology(layer2Topology, configurations);
+    {
+      // c1i1 and c2i1 are in different subnets, and different broadcast domains. not connected
+      _ib.setOwner(c1).setVrf(v1).setName(c1i1Name).setAddress(p1Addr1).build();
+      _ib.setOwner(c2).setVrf(v2).setName(c2i1Name).setAddress(p2Addr1).build();
 
-    // layer3 consists of layer2 interfaces with l3 addressing, plus Vlan/IRB interfaces
-    assertThat(
-        layer3Topology.getEdges(),
-        containsInAnyOrder(
-            Edge.of(c1Name, c1i1Name, c2Name, c2i1Name),
-            Edge.of(c2Name, c2i1Name, c1Name, c1i1Name),
-            Edge.of(c1Name, vlan1Name, c2Name, vlan1Name),
-            Edge.of(c2Name, vlan1Name, c1Name, vlan1Name),
-            Edge.of(c1Name, vlan2Name, c2Name, vlan2Name),
-            Edge.of(c2Name, vlan2Name, c1Name, vlan2Name),
-            Edge.of(c1Name, vlan1Name, c3Name, c3i5Name),
-            Edge.of(c3Name, c3i5Name, c1Name, vlan1Name),
-            Edge.of(c1Name, vlan4Name, c3Name, c3i6Name),
-            Edge.of(c3Name, c3i6Name, c1Name, vlan4Name),
-            Edge.of(c2Name, vlan1Name, c3Name, c3i5Name),
-            Edge.of(c3Name, c3i5Name, c2Name, vlan1Name)));
+      Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
+      Topology layer3Topology = computeLayer3Topology(differentDomains, configs);
+      assertThat(layer3Topology.getEdges(), empty());
+    }
+
+    {
+      // c1i1 and c2i1 are in the same broadcast domain but different subnets. not connected
+      _ib.setOwner(c1).setVrf(v1).setName(c1i1Name).setAddress(p1Addr1).build();
+      _ib.setOwner(c2).setVrf(v2).setName(c2i1Name).setAddress(p2Addr1).build();
+
+      Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
+      Topology layer3Topology = computeLayer3Topology(sameDomain, configs);
+      assertThat(layer3Topology.getEdges(), empty());
+    }
+
+    {
+      // c1i1 and c2i1 are in the same subnet but different broadcast domains. not connected
+      _ib.setOwner(c1).setVrf(v1).setName(c1i1Name).setAddress(p1Addr1).build();
+      _ib.setOwner(c2).setVrf(v2).setName(c2i1Name).setAddress(p1Addr2).build();
+
+      Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
+      Topology layer3Topology = computeLayer3Topology(differentDomains, configs);
+      assertThat(layer3Topology.getEdges(), empty());
+    }
   }
 
   /**
