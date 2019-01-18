@@ -8,12 +8,16 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.junit.Rule;
@@ -24,6 +28,8 @@ import org.junit.rules.ExpectedException;
 public final class IpProtocolSpecifierTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
+
+  private ObjectMapper _mapper = BatfishObjectMapper.mapper();
 
   @Test
   public void testPattern() {
@@ -88,10 +94,29 @@ public final class IpProtocolSpecifierTest {
   }
 
   @Test
+  public void testConstructorValidJsonNode() throws IOException {
+    JsonNode jsonNode = _mapper.readTree("[\"89 (OSpf)\", \"61\", \"chaos\"]");
+    assertThat(new IpProtocolSpecifier(jsonNode).getProtocols(), equalTo(ImmutableSet.of(IpProtocol.OSPF, IpProtocol.CHAOS, IpProtocol.ANY_HOST_INTERNAL_PROTOCOL)));
+  }
+
+  @Test
   public void testConstructorInvalid() {
     thrown.expect(IllegalArgumentException.class);
     assertThat(
         new IpProtocolSpecifier("blah, (ospf) 89, ").getProtocols(), equalTo(ImmutableSet.of()));
+  }
+
+  @Test
+  public void testConstructorInvalidJsonNode() throws IOException {
+    thrown.expect(IllegalArgumentException.class);
+    JsonNode jsonNode = _mapper.readTree("[\"blah\", \"(chaos) 61\"]");
+    new IpProtocolSpecifier(jsonNode);
+  }
+
+  @Test
+  public void testCreateEqualsConstructor() {
+    String input = "89 (OSpf), 61, chaos";
+    assertThat(IpProtocolSpecifier.create(input), equalTo(new IpProtocolSpecifier(input)));
   }
 
   @Test
