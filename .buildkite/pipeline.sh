@@ -62,7 +62,6 @@ cat <<EOF
           always-pull: true
       - artifacts#v1.2.0:
           download:
-            - "workspace/**/jacoco.exec"
             - "workspace/allinone.jar"
   - label: "Maven tests + Coverage"
     command:
