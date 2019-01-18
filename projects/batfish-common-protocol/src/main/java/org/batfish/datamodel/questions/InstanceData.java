@@ -19,11 +19,14 @@ public final class InstanceData {
 
   private String _longDescription;
 
+  private SortedSet<String> _orderedVariableNames;
+
   private SortedSet<String> _tags;
 
   private SortedMap<String, Variable> _variables;
 
   public InstanceData() {
+    _orderedVariableNames = new TreeSet<>();
     _tags = new TreeSet<>();
     _variables = new TreeMap<>();
   }
@@ -41,6 +44,11 @@ public final class InstanceData {
   @JsonProperty(BfConsts.PROP_LONG_DESCRIPTION)
   public String getLongDescription() {
     return _longDescription;
+  }
+
+  @JsonProperty(BfConsts.PROP_ORDERED_VARIABLE_NAMES)
+  public SortedSet<String> getOrderedVariableNames() {
+    return _orderedVariableNames;
   }
 
   @JsonProperty(BfConsts.PROP_TAGS)
@@ -66,6 +74,11 @@ public final class InstanceData {
   @JsonProperty(BfConsts.PROP_LONG_DESCRIPTION)
   public void setLongDescription(String longDescription) {
     _longDescription = longDescription;
+  }
+
+  @JsonProperty(BfConsts.PROP_ORDERED_VARIABLE_NAMES)
+  public void setOrderedVariableNames(SortedSet<String> orderedVariableNames) {
+    _orderedVariableNames = orderedVariableNames;
   }
 
   @JsonProperty(BfConsts.PROP_TAGS)
