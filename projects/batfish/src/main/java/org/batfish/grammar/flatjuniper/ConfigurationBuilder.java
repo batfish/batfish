@@ -419,6 +419,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_destination_portCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_source_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_source_address_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_source_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrt_nat_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrt_nat_offContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrt_nat_poolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_firewallContext;
@@ -622,6 +623,7 @@ import org.batfish.representation.juniper.NatRuleMatchSrcAddr;
 import org.batfish.representation.juniper.NatRuleMatchSrcAddrName;
 import org.batfish.representation.juniper.NatRuleMatchSrcPort;
 import org.batfish.representation.juniper.NatRuleSet;
+import org.batfish.representation.juniper.NatRuleThenInterface;
 import org.batfish.representation.juniper.NatRuleThenOff;
 import org.batfish.representation.juniper.NatRuleThenPool;
 import org.batfish.representation.juniper.NodeDevice;
@@ -5005,6 +5007,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitRsrt_nat_pool(Rsrt_nat_poolContext ctx) {
     String name = ctx.name.getText();
     _currentNatRule.setThen(new NatRuleThenPool(name));
+  }
+
+  @Override
+  public void exitRsrt_nat_interface(Rsrt_nat_interfaceContext ctx) {
+    _currentNatRule.setThen(NatRuleThenInterface.INSTANCE);
   }
 
   @Override

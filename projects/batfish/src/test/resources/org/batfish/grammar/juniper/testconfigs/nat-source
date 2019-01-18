@@ -21,3 +21,6 @@ set security nat source rule-set RULE-SET rule RULE2 match source-address 2.2.2.
 set security nat source rule-set RULE-SET rule RULE2 match source-address-name SA-NAME
 set security nat source rule-set RULE-SET rule RULE2 then source-nat pool POOL
 #
+set security nat source rule-set RULE-SET rule RULE3 match source-address 3.3.3.0/24
+set security nat source rule-set RULE-SET rule RULE3 then source-nat interface
+
