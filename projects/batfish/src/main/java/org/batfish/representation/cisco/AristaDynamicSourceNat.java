@@ -1,10 +1,10 @@
 package org.batfish.representation.cisco;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 
-import com.google.common.base.Preconditions;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
@@ -23,9 +23,9 @@ public final class AristaDynamicSourceNat implements Serializable {
   private final boolean _overload;
 
   public AristaDynamicSourceNat(String natAclName, @Nullable String natPoolName, boolean overload) {
-    Preconditions.checkArgument(
+    checkArgument(
         natPoolName != null ^ overload,
-        "Must either have a pool or be an overlaod rule (but not both).");
+        "Must either have a pool or be an overload rule (but not both).");
     _natAclName = natAclName;
     _natPoolName = natPoolName;
     _overload = overload;
