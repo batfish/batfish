@@ -24,7 +24,6 @@ cat <<EOF
           always-pull: true
   - label: "Check Python templates"
     command:
-      - git fetch -v origin refs/pull/2983/merge
       - "python3 -m virtualenv .venv"
       - ". .venv/bin/activate"
       - "python3 -m pip install pytest"
