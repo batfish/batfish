@@ -582,6 +582,7 @@ import org.batfish.representation.juniper.FwThenNop;
 import org.batfish.representation.juniper.GeneratedRoute;
 import org.batfish.representation.juniper.HostProtocol;
 import org.batfish.representation.juniper.HostSystemService;
+import org.batfish.representation.juniper.IcmpLarge;
 import org.batfish.representation.juniper.IkeGateway;
 import org.batfish.representation.juniper.IkePolicy;
 import org.batfish.representation.juniper.IkeProposal;
@@ -591,6 +592,7 @@ import org.batfish.representation.juniper.InterfaceRange;
 import org.batfish.representation.juniper.InterfaceRangeMember;
 import org.batfish.representation.juniper.InterfaceRangeMemberRange;
 import org.batfish.representation.juniper.IpBgpGroup;
+import org.batfish.representation.juniper.IpUnknownProtocol;
 import org.batfish.representation.juniper.IpsecPolicy;
 import org.batfish.representation.juniper.IpsecProposal;
 import org.batfish.representation.juniper.IpsecVpn;
@@ -682,8 +684,13 @@ import org.batfish.representation.juniper.Route6FilterLineUpTo;
 import org.batfish.representation.juniper.RouteFilter;
 import org.batfish.representation.juniper.RoutingInformationBase;
 import org.batfish.representation.juniper.RoutingInstance;
+import org.batfish.representation.juniper.Screen;
+import org.batfish.representation.juniper.ScreenAction;
 import org.batfish.representation.juniper.StaticRoute;
 import org.batfish.representation.juniper.StubSettings;
+import org.batfish.representation.juniper.TcpFinNoAck;
+import org.batfish.representation.juniper.TcpNoFlag;
+import org.batfish.representation.juniper.TcpSynFin;
 import org.batfish.representation.juniper.Vlan;
 import org.batfish.representation.juniper.Zone;
 import org.batfish.vendor.StructureType;
@@ -1857,6 +1864,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private GeneratedRoute _currentGeneratedRoute;
 
+  private Screen _currentScreen;
+
   private IkeGateway _currentIkeGateway;
 
   private IkePolicy _currentIkePolicy;
@@ -2873,6 +2882,59 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void enterSes_ids_option(FlatJuniperParser.Ses_ids_optionContext ctx) {
+    String name = ctx.name.getText();
+    _currentScreen =
+        _currentLogicalSystem.getScreens().computeIfAbsent(name, n -> new Screen(name));
+  }
+
+  @Override
+  public void exitSes_ids_option(FlatJuniperParser.Ses_ids_optionContext ctx) {
+    _currentScreen = null;
+  }
+
+  @Override
+  public void exitSeso_alarm(FlatJuniperParser.Seso_alarmContext ctx) {
+    _currentScreen.setAction(ScreenAction.ALARM_WITHOUT_DROP);
+  }
+
+  @Override
+  public void exitSeso_icmp(FlatJuniperParser.Seso_icmpContext ctx) {
+    if (!ctx.LARGE().isEmpty()) {
+      _currentScreen.getScreenOptions().add(IcmpLarge.INSTANCE);
+    } else {
+      todo(ctx);
+    }
+  }
+
+  @Override
+  public void exitSeso_ip(FlatJuniperParser.Seso_ipContext ctx) {
+    if (!ctx.UNKNOWN_PROTOCOL().isEmpty()) {
+      _currentScreen.getScreenOptions().add(IpUnknownProtocol.INSTANCE);
+    } else {
+      todo(ctx);
+    }
+  }
+
+  @Override
+  public void exitSeso_tcp(FlatJuniperParser.Seso_tcpContext ctx) {
+    if (!ctx.TCP_NO_FLAG().isEmpty()) {
+      _currentScreen.getScreenOptions().add(TcpNoFlag.INSTANCE);
+    } else if (!ctx.SYN_FIN().isEmpty()) {
+      _currentScreen.getScreenOptions().add(TcpSynFin.INSTANCE);
+    } else if (!ctx.FIN_NO_ACK().isEmpty()) {
+      _currentScreen.getScreenOptions().add(TcpFinNoAck.INSTANCE);
+    } else {
+      todo(ctx);
+    }
+  }
+
+  @Override
+  public void exitSeso_udp(FlatJuniperParser.Seso_udpContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void enterSead_address_set(Sead_address_setContext ctx) {
     String name = ctx.name.getText();
     AddressBookEntry entry =
@@ -3201,6 +3263,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         _currentZoneInterface.getName(),
         SECURITY_ZONES_SECURITY_ZONES_INTERFACE,
         getLine(ctx.interface_id().getStop()));
+  }
+
+  @Override
+  public void exitSezs_screen(FlatJuniperParser.Sezs_screenContext ctx) {
+    String name =
+        ctx.UNTRUST_SCREEN() == null ? ctx.name.getText() : ctx.UNTRUST_SCREEN().getText();
+    _currentZone.getScreens().add(name);
   }
 
   @Override
