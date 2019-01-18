@@ -162,9 +162,7 @@ public class VirtualRouterTest {
     assertThat(
         vr.getConnectedRib().getRoutes(),
         containsInAnyOrder(
-            exampleInterfaceAddresses
-                .entrySet()
-                .stream()
+            exampleInterfaceAddresses.entrySet().stream()
                 .map(e -> new ConnectedRoute(e.getValue().getPrefix(), e.getKey()))
                 .collect(Collectors.toList())
                 .toArray(new ConnectedRoute[] {})));
@@ -185,9 +183,7 @@ public class VirtualRouterTest {
     assertThat(
         vr._localRib.getRoutes(),
         containsInAnyOrder(
-            exampleInterfaceAddresses
-                .entrySet()
-                .stream()
+            exampleInterfaceAddresses.entrySet().stream()
                 .filter(e -> e.getValue().getPrefix().getPrefixLength() < Prefix.MAX_PREFIX_LENGTH)
                 .map(e -> new LocalRoute(e.getValue(), e.getKey()))
                 .collect(Collectors.toList())
@@ -327,9 +323,7 @@ public class VirtualRouterTest {
     String exportingRouterInterfaceName = "Ethernet1";
     Map<String, Node> nodes = makeIosRouters(testRouterName, exportingRouterName);
     Map<String, VirtualRouter> routers =
-        nodes
-            .entrySet()
-            .stream()
+        nodes.entrySet().stream()
             .collect(
                 ImmutableMap.toImmutableMap(
                     Entry::getKey, e -> e.getValue().getVirtualRouters().get(DEFAULT_VRF_NAME)));
@@ -427,9 +421,7 @@ public class VirtualRouterTest {
     assertThat(
         vr._ripInternalRib.getRoutes(),
         containsInAnyOrder(
-            exampleInterfaceAddresses
-                .values()
-                .stream()
+            exampleInterfaceAddresses.values().stream()
                 .map(
                     address ->
                         new RipInternalRoute(
@@ -612,9 +604,7 @@ public class VirtualRouterTest {
         ImmutableMap.of(c1.getHostname(), new Node(c1), c2.getHostname(), new Node(c2));
 
     Map<String, VirtualRouter> vrs =
-        nodes
-            .values()
-            .stream()
+        nodes.values().stream()
             .map(n -> n.getVirtualRouters().get(DEFAULT_VRF_NAME))
             .collect(
                 ImmutableMap.toImmutableMap(
@@ -716,9 +706,7 @@ public class VirtualRouterTest {
     Map<String, Node> nodes =
         ImmutableMap.of(c1.getHostname(), new Node(c1), c2.getHostname(), new Node(c2));
     Map<String, VirtualRouter> vrs =
-        nodes
-            .values()
-            .stream()
+        nodes.values().stream()
             .map(n -> n.getVirtualRouters().get(DEFAULT_VRF_NAME))
             .collect(
                 ImmutableMap.toImmutableMap(

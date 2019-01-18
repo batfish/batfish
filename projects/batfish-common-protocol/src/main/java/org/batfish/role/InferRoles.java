@@ -204,8 +204,7 @@ public final class InferRoles {
       String chosenNode = Iterables.get(nodes, new Random().nextInt(nodes.size()));
       _tokens = tokenizeName(chosenNode);
       _regex =
-          _tokens
-              .stream()
+          _tokens.stream()
               .map((p) -> p.getSecond().tokenToRegex(p.getFirst()))
               .collect(Collectors.toList());
       Pattern p = Pattern.compile(String.join("", _regex), _patternFlags);

@@ -301,9 +301,7 @@ public class VirtualRouter implements Serializable {
   /** Initialize EIGRP processes */
   private void initEigrp() {
     _virtualEigrpProcesses =
-        _vrf.getEigrpProcesses()
-            .values()
-            .stream()
+        _vrf.getEigrpProcesses().values().stream()
             .map(eigrpProcess -> new VirtualEigrpProcess(eigrpProcess, _name, _c))
             .collect(ImmutableMap.toImmutableMap(VirtualEigrpProcess::getAsn, Function.identity()));
   }
@@ -357,8 +355,7 @@ public class VirtualRouter implements Serializable {
         _ospfExternalIncomingRoutes = ImmutableSortedMap.of();
       } else {
         _ospfExternalIncomingRoutes =
-            _ospfNeighbors
-                .stream()
+            _ospfNeighbors.stream()
                 .map(OspfEdge::reverse)
                 .collect(
                     ImmutableSortedMap
@@ -382,18 +379,12 @@ public class VirtualRouter implements Serializable {
     } else {
       _bgpIncomingRoutes =
           Stream.concat(
-                  _vrf.getBgpProcess()
-                      .getActiveNeighbors()
-                      .entrySet()
-                      .stream()
+                  _vrf.getBgpProcess().getActiveNeighbors().entrySet().stream()
                       .map(
                           e ->
                               new BgpPeerConfigId(
                                   getHostname(), _vrf.getName(), e.getKey(), false)),
-                  _vrf.getBgpProcess()
-                      .getPassiveNeighbors()
-                      .entrySet()
-                      .stream()
+                  _vrf.getBgpProcess().getPassiveNeighbors().entrySet().stream()
                       .map(
                           e ->
                               new BgpPeerConfigId(getHostname(), _vrf.getName(), e.getKey(), true)))
@@ -421,8 +412,7 @@ public class VirtualRouter implements Serializable {
       _isisIncomingRoutes = ImmutableSortedMap.of();
     } else {
       _isisIncomingRoutes =
-          _vrf.getInterfaceNames()
-              .stream()
+          _vrf.getInterfaceNames().stream()
               .map(ifaceName -> new IsisNode(_c.getHostname(), ifaceName))
               .filter(isisTopology.nodes()::contains)
               .flatMap(n -> isisTopology.inEdges(n).stream())
@@ -484,8 +474,7 @@ public class VirtualRouter implements Serializable {
      * Updates from these BGP deltas into mainRib will be handled in finalizeBgp routes
      */
     if (d != null) {
-      d.getActions()
-          .stream()
+      d.getActions().stream()
           .filter(RouteAdvertisement::isWithdrawn)
           .forEach(
               r -> {
@@ -813,9 +802,7 @@ public class VirtualRouter implements Serializable {
     // Propagate received routes through all the RIBs and send out appropriate messages
     // to neighbors
     Map<BgpRib, RibDelta<BgpRoute>> deltas =
-        ribDeltas
-            .entrySet()
-            .stream()
+        ribDeltas.entrySet().stream()
             .filter(e -> e.getValue().build() != null)
             .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().build()));
     finalizeBgpRoutesAndQueueOutgoingMessages(deltas, allNodes, bgpTopology, networkConfigurations);
@@ -839,9 +826,7 @@ public class VirtualRouter implements Serializable {
                 Interface iface = _c.getAllInterfaces().get(ifaceName);
                 if (iface.getActive()) {
                   Set<Prefix> allNetworkPrefixes =
-                      iface
-                          .getAllAddresses()
-                          .stream()
+                      iface.getAllAddresses().stream()
                           .map(InterfaceAddress::getPrefix)
                           .collect(Collectors.toSet());
                   int interfaceOspfCost = iface.getOspfCost();
@@ -886,9 +871,7 @@ public class VirtualRouter implements Serializable {
       Interface iface = _vrf.getInterfaces().get(ifaceName);
       if (iface.getActive()) {
         Set<Prefix> allNetworkPrefixes =
-            iface
-                .getAllAddresses()
-                .stream()
+            iface.getAllAddresses().stream()
                 .map(InterfaceAddress::getPrefix)
                 .collect(Collectors.toSet());
         long cost = RipProcess.DEFAULT_RIP_COST;
@@ -1110,9 +1093,7 @@ public class VirtualRouter implements Serializable {
             ? 0L
             : firstNonNull(ifaceLevelSettings.getCost(), IsisRoute.DEFAULT_METRIC);
     routeBuilder.setAdmin(adminCost).setLevel(level).setMetric(metric).setProtocol(isisProtocol);
-    return iface
-        .getAllAddresses()
-        .stream()
+    return iface.getAllAddresses().stream()
         .map(
             address ->
                 routeBuilder.setNetwork(address.getPrefix()).setNextHopIp(address.getIp()).build())
@@ -1810,9 +1791,7 @@ public class VirtualRouter implements Serializable {
    * @return true if external routes changed
    */
   boolean propagateEigrpExternalRoutes(Map<String, Node> allNodes, NetworkConfigurations nc) {
-    return _virtualEigrpProcesses
-        .values()
-        .stream()
+    return _virtualEigrpProcesses.values().stream()
         .map(
             proc ->
                 proc.unstageExternalRoutes(
@@ -1836,9 +1815,7 @@ public class VirtualRouter implements Serializable {
       Network<EigrpInterface, EigrpEdge> topology,
       NetworkConfigurations nc) {
 
-    return _virtualEigrpProcesses
-        .values()
-        .stream()
+    return _virtualEigrpProcesses.values().stream()
         .map(proc -> proc.propagateInternalRoutes(nodes, topology, nc))
         .reduce(false, (a, b) -> a || b);
   }
@@ -2026,9 +2003,7 @@ public class VirtualRouter implements Serializable {
 
       // Compute a set of advertisements that can be queued on remote VR
       Set<RouteAdvertisement<BgpRoute>> exportedAdvertisements =
-          routesToExport
-              .getActions()
-              .stream()
+          routesToExport.getActions().stream()
               .map(
                   adv -> {
                     BgpRoute transformedRoute =
@@ -2370,9 +2345,7 @@ public class VirtualRouter implements Serializable {
     // Check the BGP message queues
     if (_vrf.getBgpProcess() != null) {
       processedAll =
-          _bgpIncomingRoutes
-              .values()
-              .stream()
+          _bgpIncomingRoutes.values().stream()
               .map(Queue::isEmpty)
               .noneMatch(Predicate.isEqual(false));
     }
@@ -2448,9 +2421,7 @@ public class VirtualRouter implements Serializable {
      * Export route advertisements by looking at main RIB
      */
     Set<RouteAdvertisement<BgpRoute>> exportedRoutes =
-        _mainRib
-            .getRoutes()
-            .stream()
+        _mainRib.getRoutes().stream()
             // This performs transformations and filtering using the export policy
             .map(
                 r ->
@@ -2473,9 +2444,7 @@ public class VirtualRouter implements Serializable {
      * Export neighbor-specific generated routes, these routes skip global export policy
      */
     Set<RouteAdvertisement<BgpRoute>> exportedNeighborSpecificRoutes =
-        localConfig
-            .getGeneratedRoutes()
-            .stream()
+        localConfig.getGeneratedRoutes().stream()
             .map(this::processNeighborSpecificGeneratedRoute)
             .filter(Objects::nonNull)
             .map(RouteAdvertisement::new)
@@ -2626,27 +2595,19 @@ public class VirtualRouter implements Serializable {
     return _mainRib.getRoutes().hashCode()
         + _ospfExternalType1Rib.getRoutes().hashCode()
         + _ospfExternalType2Rib.getRoutes().hashCode()
-        + _bgpIncomingRoutes
-            .values()
-            .stream()
+        + _bgpIncomingRoutes.values().stream()
             .flatMap(Queue::stream)
             .mapToInt(RouteAdvertisement::hashCode)
             .sum()
-        + _ospfExternalIncomingRoutes
-            .values()
-            .stream()
+        + _ospfExternalIncomingRoutes.values().stream()
             .flatMap(Queue::stream)
             .mapToInt(RouteAdvertisement::hashCode)
             .sum()
-        + _isisIncomingRoutes
-            .values()
-            .stream()
+        + _isisIncomingRoutes.values().stream()
             .flatMap(Queue::stream)
             .mapToInt(RouteAdvertisement::hashCode)
             .sum()
-        + _virtualEigrpProcesses
-            .values()
-            .stream()
+        + _virtualEigrpProcesses.values().stream()
             .mapToInt(VirtualEigrpProcess::computeIterationHashCode)
             .sum();
   }

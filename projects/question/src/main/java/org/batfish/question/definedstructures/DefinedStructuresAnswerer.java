@@ -48,9 +48,7 @@ public class DefinedStructuresAnswerer extends Answerer {
     Multimap<String, String> hostnameFilenameMap =
         _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
     Set<String> includeFiles =
-        hostnameFilenameMap
-            .entries()
-            .stream()
+        hostnameFilenameMap.entries().stream()
             .filter(e -> includeNodes.contains(e.getKey()))
             .map(Entry::getValue)
             .collect(Collectors.toSet());
@@ -102,8 +100,7 @@ public class DefinedStructuresAnswerer extends Answerer {
               false));
 
   private static final Map<String, ColumnMetadata> COLUMN_METADATA_MAP =
-      COLUMN_METADATA
-          .stream()
+      COLUMN_METADATA.stream()
           .collect(ImmutableMap.toImmutableMap(ColumnMetadata::getName, cm -> cm));
 
   private static final String DEFAULT_TEXT_DESC =

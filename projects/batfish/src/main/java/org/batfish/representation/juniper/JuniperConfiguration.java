@@ -733,9 +733,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // Build areas
     newProc.setAreas(
-        newAreaBuilders
-            .entrySet()
-            .stream()
+        newAreaBuilders.entrySet().stream()
             .collect(
                 ImmutableSortedMap.toImmutableSortedMap(
                     Comparator.naturalOrder(), Entry::getKey, entry -> entry.getValue().build())));
@@ -934,17 +932,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
     terms.add(policy.getDefaultTerm());
     terms.addAll(policy.getTerms().values());
     for (PsTerm term : terms) {
-      for (PsFrom from : term.getFroms()) {
-        if (from instanceof PsFromPolicyStatement) {
-          PsFromPolicyStatement fromPolicyStatement = (PsFromPolicyStatement) from;
-          String subPolicyName = fromPolicyStatement.getPolicyStatement();
+      for (PsFromPolicyStatement fromPolicyStatement : term.getFroms().getFromPolicyStatements()) {
+        String subPolicyName = fromPolicyStatement.getPolicyStatement();
+        setPolicyStatementReferent(subPolicyName);
+      }
+      for (PsFromPolicyStatementConjunction fromPolicyStatementConjunction :
+          term.getFroms().getFromPolicyStatementConjunctions()) {
+        for (String subPolicyName : fromPolicyStatementConjunction.getConjuncts()) {
           setPolicyStatementReferent(subPolicyName);
-        } else if (from instanceof PsFromPolicyStatementConjunction) {
-          PsFromPolicyStatementConjunction fromPolicyStatementConjunction =
-              (PsFromPolicyStatementConjunction) from;
-          for (String subPolicyName : fromPolicyStatementConjunction.getConjuncts()) {
-            setPolicyStatementReferent(subPolicyName);
-          }
         }
       }
     }
@@ -1129,58 +1124,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newCl;
   }
 
-  private org.batfish.datamodel.IkeGateway toIkeGateway(IkeGateway oldIkeGateway) {
-    String name = oldIkeGateway.getName();
-    org.batfish.datamodel.IkeGateway newIkeGateway = new org.batfish.datamodel.IkeGateway(name);
-
-    // address
-    newIkeGateway.setAddress(oldIkeGateway.getAddress());
-    newIkeGateway.setLocalIp(oldIkeGateway.getLocalAddress());
-
-    // external interface
-    Interface oldExternalInterface = oldIkeGateway.getExternalInterface();
-    if (oldExternalInterface != null) {
-      org.batfish.datamodel.Interface newExternalInterface =
-          _c.getAllInterfaces().get(oldExternalInterface.getName());
-      if (newExternalInterface != null) {
-        newIkeGateway.setExternalInterface(newExternalInterface);
-      }
-    } else {
-      _w.redFlag("No external interface set for ike gateway: '" + name + "'");
-    }
-
-    // ike policy
-    String ikePolicyName = oldIkeGateway.getIkePolicy();
-    org.batfish.datamodel.IkePolicy newIkePolicy = _c.getIkePolicies().get(ikePolicyName);
-    if (newIkePolicy != null) {
-      newIkeGateway.setIkePolicy(newIkePolicy);
-    }
-
-    return newIkeGateway;
-  }
-
-  private org.batfish.datamodel.IkePolicy toIkePolicy(IkePolicy oldIkePolicy) {
-    String name = oldIkePolicy.getName();
-    org.batfish.datamodel.IkePolicy newIkePolicy = new org.batfish.datamodel.IkePolicy(name);
-
-    // pre-shared-key
-    newIkePolicy.setPreSharedKeyHash(oldIkePolicy.getPreSharedKeyHash());
-
-    // ike proposals
-    oldIkePolicy
-        .getProposals()
-        .forEach(
-            ikeProposalName -> {
-              org.batfish.datamodel.IkeProposal ikeProposal =
-                  _c.getIkeProposals().get(ikeProposalName);
-              if (ikeProposal != null) {
-                newIkePolicy.getProposals().put(ikeProposalName, ikeProposal);
-              }
-            });
-
-    return newIkePolicy;
-  }
-
   /**
    * Converts {@link IkePolicy} to {@link IkePhase1Policy} and puts the used pre-shared key as a
    * {@link IkePhase1Key} in the passed-in {@code ikePhase1Keys}
@@ -1204,17 +1147,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     ikePhase1Policy.setIkePhase1Proposals(ikePhase1ProposalBuilder.build());
 
     return ikePhase1Policy;
-  }
-
-  private org.batfish.datamodel.IkeProposal toIkeProposal(IkeProposal ikeProposal) {
-    org.batfish.datamodel.IkeProposal newIkeProposal =
-        new org.batfish.datamodel.IkeProposal(ikeProposal.getName());
-    newIkeProposal.setDiffieHellmanGroup(ikeProposal.getDiffieHellmanGroup());
-    newIkeProposal.setAuthenticationMethod(ikeProposal.getAuthenticationMethod());
-    newIkeProposal.setEncryptionAlgorithm(ikeProposal.getEncryptionAlgorithm());
-    newIkeProposal.setLifetimeSeconds(ikeProposal.getLifetimeSeconds());
-    newIkeProposal.setAuthenticationAlgorithm(ikeProposal.getAuthenticationAlgorithm());
-    return newIkeProposal;
   }
 
   private IkePhase1Proposal toIkePhase1Proposal(IkeProposal ikeProposal) {
@@ -1348,9 +1280,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     List<SubRange> vlanIds =
         Stream.concat(
-                iface
-                    .getAllowedVlanNames()
-                    .stream()
+                iface.getAllowedVlanNames().stream()
                     .map(n -> _masterLogicalSystem.getVlanNameToVlan().get(n))
                     .filter(Objects::nonNull)
                     .map(Vlan::getVlanId)
@@ -1358,7 +1288,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 iface.getAllowedVlans().stream())
             .collect(Collectors.toList());
     newIface.setAllowedVlans(IntegerSpace.unionOf(vlanIds));
-    newIface.setNativeVlan(iface.getNativeVlan());
+
+    if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
+      newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
+    }
+
     newIface.setSwitchportMode(iface.getSwitchportMode());
     SwitchportEncapsulationType swe = iface.getSwitchportTrunkEncapsulation();
     if (swe == null) {
@@ -1392,8 +1326,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     Map<String, NatPool> pools = _masterLogicalSystem.getNatSource().getPools();
 
     List<NatRuleSet> ruleSets =
-        orderedRuleSetList
-            .stream()
+        orderedRuleSetList.stream()
             .filter(
                 ruleSet -> {
                   NatPacketLocation toLocation = ruleSet.getToLocation();
@@ -1437,8 +1370,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 builder.put(
                     zoneLocation(zone.getName()),
                     matchSrcInterface(
-                        zone.getInterfaces()
-                            .stream()
+                        zone.getInterfaces().stream()
                             .map(Interface::getName)
                             .toArray(String[]::new))));
     _masterLogicalSystem
@@ -1449,10 +1381,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 builder.put(
                     routingInstanceLocation(routingInstance.getName()),
                     matchSrcInterface(
-                        routingInstance
-                            .getInterfaces()
-                            .values()
-                            .stream()
+                        routingInstance.getInterfaces().values().stream()
                             .map(Interface::getName)
                             .toArray(String[]::new))));
     return builder.build();
@@ -1628,8 +1557,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (conjunctMatchExpr == null) {
       return lines;
     } else {
-      return lines
-          .stream()
+      return lines.stream()
           .map(
               l ->
                   new IpAccessListLine(
@@ -1653,39 +1581,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (zoneName != null) {
       matchSrcInterface =
           new MatchSrcInterface(
-              _masterLogicalSystem
-                  .getZones()
-                  .get(zoneName)
-                  .getInterfaces()
-                  .stream()
+              _masterLogicalSystem.getZones().get(zoneName).getInterfaces().stream()
                   .map(Interface::getName)
                   .collect(ImmutableList.toImmutableList()));
     }
 
     /* Return an ACL that is the logical AND of srcInterface filter and headerSpace filter */
     return fwTermsToIpAccessList(name, filter.getTerms().values(), matchSrcInterface);
-  }
-
-  private org.batfish.datamodel.IpsecPolicy toIpsecPolicy(IpsecPolicy oldIpsecPolicy) {
-    String name = oldIpsecPolicy.getName();
-    org.batfish.datamodel.IpsecPolicy newIpsecPolicy = new org.batfish.datamodel.IpsecPolicy(name);
-
-    // ipsec proposals
-    oldIpsecPolicy
-        .getProposals()
-        .forEach(
-            ipsecProposalName -> {
-              org.batfish.datamodel.IpsecProposal ipsecProposal =
-                  _c.getIpsecProposals().get(ipsecProposalName);
-              if (ipsecProposal != null) {
-                newIpsecPolicy.getProposals().add(ipsecProposal);
-              }
-            });
-
-    // perfect-forward-secrecy diffie-hellman key group
-    newIpsecPolicy.setPfsKeyGroup(oldIpsecPolicy.getPfsKeyGroup());
-
-    return newIpsecPolicy;
   }
 
   @Nullable
@@ -1702,7 +1604,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return null;
     }
     ipsecStaticConfigBuilder.setDestinationAddress(ikeGateway.getAddress());
-    ipsecStaticConfigBuilder.setPhysicalInterface(ikeGateway.getExternalInterface().getName());
+    ipsecStaticConfigBuilder.setSourceInterface(ikeGateway.getExternalInterface().getName());
 
     if (ikeGateway.getLocalAddress() != null) {
       ipsecStaticConfigBuilder.setLocalAddress(ikeGateway.getLocalAddress());
@@ -1731,17 +1633,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return ipsecPhase2Policy;
   }
 
-  private static org.batfish.datamodel.IpsecProposal toIpsecProposal(
-      IpsecProposal oldIpsecProposal) {
-    org.batfish.datamodel.IpsecProposal newIpsecProposal =
-        new org.batfish.datamodel.IpsecProposal(oldIpsecProposal.getName());
-    newIpsecProposal.setAuthenticationAlgorithm(oldIpsecProposal.getAuthenticationAlgorithm());
-    newIpsecProposal.setEncryptionAlgorithm(oldIpsecProposal.getEncryptionAlgorithm());
-    newIpsecProposal.setProtocols(oldIpsecProposal.getProtocols());
-
-    return newIpsecProposal;
-  }
-
   private static IpsecPhase2Proposal toIpsecPhase2Proposal(IpsecProposal oldIpsecProposal) {
     IpsecPhase2Proposal ipsecPhase2Proposal = new IpsecPhase2Proposal();
     ipsecPhase2Proposal.setAuthenticationAlgorithm(oldIpsecProposal.getAuthenticationAlgorithm());
@@ -1750,48 +1641,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     ipsecPhase2Proposal.setIpsecEncapsulationMode(oldIpsecProposal.getIpsecEncapsulationMode());
 
     return ipsecPhase2Proposal;
-  }
-
-  private org.batfish.datamodel.IpsecVpn toIpsecVpn(IpsecVpn oldIpsecVpn) {
-    String name = oldIpsecVpn.getName();
-    org.batfish.datamodel.IpsecVpn newIpsecVpn = new org.batfish.datamodel.IpsecVpn(name, _c);
-
-    // bind interface
-    Interface oldBindInterface = oldIpsecVpn.getBindInterface();
-    if (oldBindInterface != null) {
-      String bindInterfaceName = oldBindInterface.getName();
-      org.batfish.datamodel.Interface newBindInterface =
-          _c.getAllInterfaces().get(bindInterfaceName);
-      if (newBindInterface != null) {
-        newIpsecVpn.setBindInterface(newBindInterface);
-      }
-    } else {
-      _w.redFlag("No bind interface set for ipsec vpn: '" + name + "'");
-    }
-
-    // ike gateway
-    String ikeGatewayName = oldIpsecVpn.getGateway();
-    if (ikeGatewayName != null) {
-      org.batfish.datamodel.IkeGateway ikeGateway = _c.getIkeGateways().get(ikeGatewayName);
-      if (ikeGateway != null) {
-        newIpsecVpn.setIkeGateway(ikeGateway);
-      }
-    } else {
-      _w.redFlag("No ike gateway set for ipsec vpn: '" + name + "'");
-    }
-
-    // ipsec policy
-    String ipsecPolicyName = oldIpsecVpn.getIpsecPolicy();
-    if (ipsecPolicyName != null) {
-      org.batfish.datamodel.IpsecPolicy ipsecPolicy = _c.getIpsecPolicies().get(ipsecPolicyName);
-      if (ipsecPolicy != null) {
-        newIpsecVpn.setIpsecPolicy(ipsecPolicy);
-      }
-    } else {
-      _w.redFlag("No ipsec policy set for ipsec vpn: '" + name + "'");
-    }
-
-    return newIpsecVpn;
   }
 
   /** Convert address book into corresponding IpSpaces */
@@ -1924,64 +1773,42 @@ public final class JuniperConfiguration extends VendorConfiguration {
     RoutingPolicy routingPolicy = new RoutingPolicy(name, _c);
     List<Statement> statements = routingPolicy.getStatements();
     boolean hasDefaultTerm =
-        ps.getDefaultTerm().getFroms().size() > 0 || ps.getDefaultTerm().getThens().size() > 0;
+        ps.getDefaultTerm().hasAtLeastOneFrom() || ps.getDefaultTerm().getThens().size() > 0;
     List<PsTerm> terms = new ArrayList<>(ps.getTerms().values());
     if (hasDefaultTerm) {
       terms.add(ps.getDefaultTerm());
     }
     for (PsTerm term : terms) {
       List<Statement> thens = toStatements(term.getThens());
-      if (!term.getFroms().isEmpty()) {
+      if (term.hasAtLeastOneFrom()) {
         If ifStatement = new If();
         ifStatement.setComment(term.getName());
-        Conjunction conj = new Conjunction();
-        Disjunction prefixListsDisjunction = new Disjunction();
-        List<BooleanExpr> subroutines = new ArrayList<>();
-        for (PsFrom from : term.getFroms()) {
-          if (from instanceof PsFromRouteFilter) {
-            int actionLineCounter = 0;
-            PsFromRouteFilter fromRouteFilter = (PsFromRouteFilter) from;
-            String routeFilterName = fromRouteFilter.getRouteFilterName();
-            RouteFilter rf = _masterLogicalSystem.getRouteFilters().get(routeFilterName);
-            for (RouteFilterLine line : rf.getLines()) {
-              if (line.getThens().size() > 0) {
-                String lineListName = name + "_ACTION_LINE_" + actionLineCounter;
-                RouteFilterList lineSpecificList = new RouteFilterList(lineListName);
-                line.applyTo(lineSpecificList);
-                actionLineCounter++;
-                _c.getRouteFilterLists().put(lineListName, lineSpecificList);
-                If lineSpecificIfStatement = new If();
-                String lineSpecificClauseName =
-                    routeFilterName + "_ACTION_LINE_" + actionLineCounter;
-                lineSpecificIfStatement.setComment(lineSpecificClauseName);
-                MatchPrefixSet mrf =
-                    new MatchPrefixSet(
-                        DestinationNetwork.instance(), new NamedPrefixSet(lineListName));
-                lineSpecificIfStatement.setGuard(mrf);
-                lineSpecificIfStatement.getTrueStatements().addAll(toStatements(line.getThens()));
-                statements.add(lineSpecificIfStatement);
-              }
+        PsFroms froms = term.getFroms();
+
+        for (PsFromRouteFilter fromRouteFilter : froms.getFromRouteFilters()) {
+          int actionLineCounter = 0;
+          String routeFilterName = fromRouteFilter.getRouteFilterName();
+          RouteFilter rf = _masterLogicalSystem.getRouteFilters().get(routeFilterName);
+          for (RouteFilterLine line : rf.getLines()) {
+            if (line.getThens().size() > 0) {
+              String lineListName = name + "_ACTION_LINE_" + actionLineCounter;
+              RouteFilterList lineSpecificList = new RouteFilterList(lineListName);
+              line.applyTo(lineSpecificList);
+              actionLineCounter++;
+              _c.getRouteFilterLists().put(lineListName, lineSpecificList);
+              If lineSpecificIfStatement = new If();
+              String lineSpecificClauseName = routeFilterName + "_ACTION_LINE_" + actionLineCounter;
+              lineSpecificIfStatement.setComment(lineSpecificClauseName);
+              MatchPrefixSet mrf =
+                  new MatchPrefixSet(
+                      DestinationNetwork.instance(), new NamedPrefixSet(lineListName));
+              lineSpecificIfStatement.setGuard(mrf);
+              lineSpecificIfStatement.getTrueStatements().addAll(toStatements(line.getThens()));
+              statements.add(lineSpecificIfStatement);
             }
           }
-          BooleanExpr booleanExpr = from.toBooleanExpr(this, _c, _w);
-          if (from instanceof PsFromPolicyStatement
-              || from instanceof PsFromPolicyStatementConjunction) {
-            subroutines.add(booleanExpr);
-          } else if (from instanceof PsFromPrefixList) {
-            prefixListsDisjunction.getDisjuncts().add(booleanExpr);
-          } else {
-            conj.getConjuncts().add(booleanExpr);
-          }
         }
-        if (!prefixListsDisjunction.getDisjuncts().isEmpty()) {
-          conj.getConjuncts().add(prefixListsDisjunction);
-        }
-        if (!subroutines.isEmpty()) {
-          ConjunctionChain chain = new ConjunctionChain(subroutines);
-          conj.getConjuncts().add(chain);
-        }
-        BooleanExpr guard = conj.simplify();
-        ifStatement.setGuard(guard);
+        ifStatement.setGuard(toGuard(froms));
         ifStatement.getTrueStatements().addAll(thens);
         statements.add(ifStatement);
       } else {
@@ -1994,6 +1821,77 @@ public final class JuniperConfiguration extends VendorConfiguration {
         Collections.singletonList(Statements.Return.toStaticStatement()));
     statements.add(endOfPolicy);
     return routingPolicy;
+  }
+
+  private BooleanExpr toGuard(PsFroms froms) {
+    if (froms.getFromUnsupported() != null) {
+      // Unsupported line will evaluate to BooleanExprs.FALSE. Don't bother continuing
+      return froms.getFromUnsupported().toBooleanExpr(this, _c, _w);
+    }
+
+    Conjunction conj = new Conjunction();
+    List<BooleanExpr> subroutines = new ArrayList<>();
+    if (!froms.getFromAsPaths().isEmpty()) {
+      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromAsPaths())));
+    }
+    if (froms.getFromColor() != null) {
+      conj.getConjuncts().add(froms.getFromColor().toBooleanExpr(this, _c, _w));
+    }
+    if (!froms.getFromCommunities().isEmpty()) {
+      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromCommunities())));
+    }
+    if (froms.getFromFamily() != null) {
+      conj.getConjuncts().add(froms.getFromFamily().toBooleanExpr(this, _c, _w));
+    }
+    if (!froms.getFromInterfaces().isEmpty()) {
+      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromInterfaces())));
+    }
+    if (froms.getFromLocalPreference() != null) {
+      conj.getConjuncts().add(froms.getFromLocalPreference().toBooleanExpr(this, _c, _w));
+    }
+    if (froms.getFromMetric() != null) {
+      conj.getConjuncts().add(froms.getFromMetric().toBooleanExpr(this, _c, _w));
+    }
+    for (PsFromPolicyStatement from : froms.getFromPolicyStatements()) {
+      subroutines.add(from.toBooleanExpr(this, _c, _w));
+    }
+    for (PsFromPolicyStatementConjunction from : froms.getFromPolicyStatementConjunctions()) {
+      subroutines.add(from.toBooleanExpr(this, _c, _w));
+    }
+    if (!froms.getFromPrefixLists().isEmpty()
+        || !froms.getFromPrefixListFilterLongers().isEmpty()
+        || !froms.getFromPrefixListFilterOrLongers().isEmpty()
+        || !froms.getFromRouteFilters().isEmpty()) {
+      // TODO check behavior for some edge cases: https://github.com/batfish/batfish/issues/2972
+      Disjunction prefixListDisjunction = new Disjunction();
+      prefixListDisjunction.getDisjuncts().addAll(toBooleanExprs(froms.getFromPrefixLists()));
+      prefixListDisjunction
+          .getDisjuncts()
+          .addAll(toBooleanExprs(froms.getFromPrefixListFilterLongers()));
+      prefixListDisjunction
+          .getDisjuncts()
+          .addAll(toBooleanExprs(froms.getFromPrefixListFilterOrLongers()));
+      prefixListDisjunction.getDisjuncts().addAll(toBooleanExprs(froms.getFromRouteFilters()));
+      conj.getConjuncts().add(prefixListDisjunction);
+    }
+    if (!froms.getFromProtocols().isEmpty()) {
+      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromProtocols())));
+    }
+    if (!froms.getFromTags().isEmpty()) {
+      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromTags())));
+    }
+
+    if (!subroutines.isEmpty()) {
+      ConjunctionChain chain = new ConjunctionChain(subroutines);
+      conj.getConjuncts().add(chain);
+    }
+    return conj.simplify();
+  }
+
+  private List<BooleanExpr> toBooleanExprs(Set<? extends PsFrom> froms) {
+    return froms.stream()
+        .map(f -> f.toBooleanExpr(this, _c, _w))
+        .collect(ImmutableList.toImmutableList());
   }
 
   private List<Statement> toStatements(Set<PsThen> thens) {
@@ -2043,9 +1941,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     ImmutableList.Builder<Configuration> outputConfigurations = ImmutableList.builder();
-    _logicalSystems
-        .keySet()
-        .stream()
+    _logicalSystems.keySet().stream()
         .map(this::toVendorIndependentConfiguration)
         .forEach(outputConfigurations::add);
     outputConfigurations.add(toVendorIndependentConfiguration());
@@ -2332,14 +2228,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
-    // convert IKE proposals
-    _masterLogicalSystem
-        .getIkeProposals()
-        .values()
-        .forEach(
-            ikeProposal ->
-                _c.getIkeProposals().put(ikeProposal.getName(), toIkeProposal(ikeProposal)));
-
     _masterLogicalSystem
         .getIkeProposals()
         .values()
@@ -2355,21 +2243,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<String, IkePolicy> e : _masterLogicalSystem.getIkePolicies().entrySet()) {
       String name = e.getKey();
       IkePolicy oldIkePolicy = e.getValue();
-      org.batfish.datamodel.IkePolicy newPolicy = toIkePolicy(oldIkePolicy);
-      _c.getIkePolicies().put(name, newPolicy);
       // storing IKE phase 1 policy
       _c.getIkePhase1Policies().put(name, toIkePhase1Policy(oldIkePolicy, ikePhase1KeysBuilder));
     }
 
     _c.setIkePhase1Keys(ikePhase1KeysBuilder.build());
-
-    // convert ike gateways
-    for (Entry<String, IkeGateway> e : _masterLogicalSystem.getIkeGateways().entrySet()) {
-      String name = e.getKey();
-      IkeGateway oldIkeGateway = e.getValue();
-      org.batfish.datamodel.IkeGateway newIkeGateway = toIkeGateway(oldIkeGateway);
-      _c.getIkeGateways().put(name, newIkeGateway);
-    }
 
     // convert ipsec proposals
     ImmutableSortedMap.Builder<String, IpsecPhase2Proposal> ipsecPhase2ProposalsBuilder =
@@ -2378,7 +2256,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .getIpsecProposals()
         .forEach(
             (ipsecProposalName, ipsecProposal) -> {
-              _c.getIpsecProposals().put(ipsecProposalName, toIpsecProposal(ipsecProposal));
               ipsecPhase2ProposalsBuilder.put(
                   ipsecProposalName, toIpsecPhase2Proposal(ipsecProposal));
             });
@@ -2388,26 +2265,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
     ImmutableSortedMap.Builder<String, IpsecPhase2Policy> ipsecPhase2PoliciesBuilder =
         ImmutableSortedMap.naturalOrder();
     for (Entry<String, IpsecPolicy> e : _masterLogicalSystem.getIpsecPolicies().entrySet()) {
-      String name = e.getKey();
-      IpsecPolicy oldIpsecPolicy = e.getValue();
-      org.batfish.datamodel.IpsecPolicy newPolicy = toIpsecPolicy(oldIpsecPolicy);
-      _c.getIpsecPolicies().put(name, newPolicy);
-      ipsecPhase2PoliciesBuilder.put(name, toIpsecPhase2Policy(oldIpsecPolicy));
+      ipsecPhase2PoliciesBuilder.put(e.getKey(), toIpsecPhase2Policy(e.getValue()));
     }
     _c.setIpsecPhase2Policies(ipsecPhase2PoliciesBuilder.build());
 
-    // convert ipsec vpns
+    // convert Tunnels
     ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigBuilder =
         ImmutableSortedMap.naturalOrder();
     for (Entry<String, IpsecVpn> e : _masterLogicalSystem.getIpsecVpns().entrySet()) {
-      String name = e.getKey();
-      IpsecVpn oldIpsecVpn = e.getValue();
-      org.batfish.datamodel.IpsecVpn newIpsecVpn = toIpsecVpn(oldIpsecVpn);
-      _c.getIpsecVpns().put(name, newIpsecVpn);
-
-      IpsecPeerConfig ipsecPeerConfig = toIpsecPeerConfig(oldIpsecVpn);
+      IpsecPeerConfig ipsecPeerConfig = toIpsecPeerConfig(e.getValue());
       if (ipsecPeerConfig != null) {
-        ipsecPeerConfigBuilder.put(name, ipsecPeerConfig);
+        ipsecPeerConfigBuilder.put(e.getKey(), ipsecPeerConfig);
       }
     }
     _c.setIpsecPeerConfigs(ipsecPeerConfigBuilder.build());
@@ -2505,10 +2373,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         OspfProcess oproc = createOspfProcess(ri);
         vrf.setOspfProcess(oproc);
         // add discard routes for OSPF summaries
-        oproc
-            .getAreas()
-            .values()
-            .stream()
+        oproc.getAreas().values().stream()
             .flatMap(a -> a.getSummaries().entrySet().stream())
             .forEach(
                 summaryEntry ->
@@ -2521,11 +2386,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // create is-is process
       // is-is runs only if at least one interface has an ISO address, check loopback first
       Optional<IsoAddress> isoAddress =
-          _masterLogicalSystem
-              .getDefaultRoutingInstance()
-              .getInterfaces()
-              .values()
-              .stream()
+          _masterLogicalSystem.getDefaultRoutingInstance().getInterfaces().values().stream()
               .filter(i -> i.getName().startsWith(FIRST_LOOPBACK_INTERFACE_NAME))
               .map(Interface::getIsoAddress)
               .filter(Objects::nonNull)
@@ -2533,11 +2394,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // Try all the other interfaces if no ISO address on Loopback
       if (!isoAddress.isPresent()) {
         isoAddress =
-            _masterLogicalSystem
-                .getDefaultRoutingInstance()
-                .getInterfaces()
-                .values()
-                .stream()
+            _masterLogicalSystem.getDefaultRoutingInstance().getInterfaces().values().stream()
                 .map(Interface::getIsoAddress)
                 .filter(Objects::nonNull)
                 .min(Comparator.comparing(IsoAddress::toString));
@@ -2667,9 +2524,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // Get a stream of all interfaces (including Node interfaces)
     Stream.concat(
             _masterLogicalSystem.getInterfaces().values().stream(),
-            _nodeDevices
-                .values()
-                .stream()
+            _nodeDevices.values().stream()
                 .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
         .forEach(
             /*
@@ -2705,9 +2560,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
      */
     Stream.concat(
             _masterLogicalSystem.getInterfaces().values().stream(),
-            _nodeDevices
-                .values()
-                .stream()
+            _nodeDevices.values().stream()
                 .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
         .forEach(
             iface -> {
@@ -2745,9 +2598,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       Stream.concat(
               _masterLogicalSystem.getInterfaces().values().stream(),
-              _nodeDevices
-                  .values()
-                  .stream()
+              _nodeDevices.values().stream()
                   .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
           .forEach(
               iface ->
@@ -2860,9 +2711,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       Map<String, Interface> interfacesToCheck;
       Map<String, Interface> allInterfaces = routingInstance.getInterfaces();
       Map<String, Interface> loopbackInterfaces =
-          allInterfaces
-              .entrySet()
-              .stream()
+          allInterfaces.entrySet().stream()
               .filter(
                   e ->
                       e.getKey().toLowerCase().startsWith("lo")

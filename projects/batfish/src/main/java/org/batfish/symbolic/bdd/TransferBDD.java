@@ -821,10 +821,9 @@ class TransferBDD {
     if (e instanceof CommunityList) {
       Set<CommunityVar> comms =
           ((CommunityList) e)
-              .getLines()
-              .stream()
-              .map(line -> toCommunityVar(line.getMatchCondition()))
-              .collect(Collectors.toSet());
+              .getLines().stream()
+                  .map(line -> toCommunityVar(line.getMatchCondition()))
+                  .collect(Collectors.toSet());
       BDD acc = factory.one();
       for (CommunityVar comm : comms) {
         p.debug("Inline Community Set: " + comm);

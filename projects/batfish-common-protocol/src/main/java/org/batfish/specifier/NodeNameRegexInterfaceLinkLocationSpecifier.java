@@ -16,9 +16,7 @@ public final class NodeNameRegexInterfaceLinkLocationSpecifier
 
   @Override
   protected Stream<Location> getNodeLocations(Configuration node) {
-    return node.getAllInterfaces()
-        .values()
-        .stream()
+    return node.getAllInterfaces().values().stream()
         .map(iface -> new InterfaceLinkLocation(node.getHostname(), iface.getName()));
   }
 }

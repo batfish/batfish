@@ -235,10 +235,9 @@ public final class AclExplanation {
        */
       SortedSet<AclLineMatchExprWithProvenance<AclLineMatchExpr>> disjunctsWithProvenance =
           ((OrMatchExpr) nf)
-              .getDisjuncts()
-              .stream()
-              .map(AclExplanation::explainFactor)
-              .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
+              .getDisjuncts().stream()
+                  .map(AclExplanation::explainFactor)
+                  .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
       List<AclLineMatchExpr> disjuncts = new LinkedList<>();
       IdentityHashMap<AclLineMatchExpr, Set<AclLineMatchExpr>> provenance = new IdentityHashMap<>();
       for (AclLineMatchExprWithProvenance<AclLineMatchExpr> matchExprWithProvenance :

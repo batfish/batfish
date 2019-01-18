@@ -45,16 +45,12 @@ public final class DetectLoopsAnswerer extends Answerer {
      * There can be many flows exercising the same loop, so let's pick one per dstIp.
      */
     Multimap<Ip, Flow> flowsPerDst =
-        flows
-            .stream()
+        flows.stream()
             .collect(
                 Multimaps.toMultimap(Flow::getDstIp, Functions.identity(), HashMultimap::create));
 
     flows =
-        flowsPerDst
-            .asMap()
-            .values()
-            .stream()
+        flowsPerDst.asMap().values().stream()
             .flatMap(flowsWithSameDst -> flowsWithSameDst.stream().limit(1))
             .collect(Collectors.toSet());
 

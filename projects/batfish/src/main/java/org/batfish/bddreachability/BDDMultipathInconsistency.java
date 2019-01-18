@@ -43,9 +43,7 @@ public class BDDMultipathInconsistency {
         disposition1FlowBdds.keySet().equals(disposition2FlowBdds.keySet()),
         "Queries must have the same IngressLocations");
 
-    return disposition1FlowBdds
-        .entrySet()
-        .stream()
+    return disposition1FlowBdds.entrySet().stream()
         .flatMap(
             entry -> {
               IngressLocation loc = entry.getKey();

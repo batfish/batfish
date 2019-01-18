@@ -91,9 +91,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
             dp);
 
     Stream<Row> activePeerRows =
-        configuredBgpTopology
-            .nodes()
-            .stream()
+        configuredBgpTopology.nodes().stream()
             .map(
                 neighbor -> {
                   BgpPeerConfig bpc = getBgpPeerConfig(configurations, neighbor);
@@ -130,9 +128,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
                 row -> row != null && matchesQuestionFilters(row, nodes, remoteNodes, question));
 
     Stream<Row> passivePeerRows =
-        configuredBgpTopology
-            .nodes()
-            .stream()
+        configuredBgpTopology.nodes().stream()
             .flatMap(
                 neighbor -> {
                   BgpPeerConfig bpc = getBgpPeerConfig(configurations, neighbor);
@@ -169,8 +165,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
                   }
 
                   // Compatible remotes exist. Generate a row for each.
-                  return compatibleRemotes
-                      .stream()
+                  return compatibleRemotes.stream()
                       .map(
                           remoteId ->
                               buildDynamicMatchRow(

@@ -78,9 +78,7 @@ public final class TableDiff {
         "["
             + String.join(
                 ", ",
-                diffColumnMetatadata
-                    .build()
-                    .stream()
+                diffColumnMetatadata.build().stream()
                     .map(ColumnMetadata::getName)
                     .collect(Collectors.toList()))
             + "]";
@@ -163,17 +161,13 @@ public final class TableDiff {
     Map<String, ColumnMetadata> diffColumnMap = diffTable.getMetadata().toColumnMap();
 
     List<String> keyColumns =
-        inputMetadata
-            .getColumnMetadata()
-            .stream()
+        inputMetadata.getColumnMetadata().stream()
             .filter(ColumnMetadata::getIsKey)
             .map(ColumnMetadata::getName)
             .collect(Collectors.toList());
 
     List<ColumnMetadata> valueColumns =
-        inputMetadata
-            .getColumnMetadata()
-            .stream()
+        inputMetadata.getColumnMetadata().stream()
             .filter(cm -> (!cm.getIsKey() && cm.getIsValue()))
             .collect(Collectors.toList());
 

@@ -50,9 +50,7 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
         .values()
         .forEach(
             vrf ->
-                vrf.getVniSettings()
-                    .values()
-                    .stream()
+                vrf.getVniSettings().values().stream()
                     .forEach(
                         vniSettings ->
                             tryAddVlanVni(
@@ -231,9 +229,7 @@ public final class SwitchedVlanPropertiesAnswerer extends Answerer {
       tryAddInterfaceToVlan(switchedVlanInterfaces, node, iface, iface.getAccessVlan(), vlans);
     } else if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
       // Add allowed VLANs when in TRUNK mode
-      iface
-          .getAllowedVlans()
-          .stream()
+      iface.getAllowedVlans().stream()
           .forEach(
               allowedVlan ->
                   tryAddInterfaceToVlan(switchedVlanInterfaces, node, iface, allowedVlan, vlans));

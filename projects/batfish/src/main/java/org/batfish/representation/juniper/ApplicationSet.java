@@ -27,8 +27,7 @@ public class ApplicationSet implements ApplicationSetMember, Serializable {
       LineAction action,
       List<IpAccessListLine> lines,
       Warnings w) {
-    _members
-        .stream()
+    _members.stream()
         .map(ref -> ref.resolve(jc))
         .filter(Predicates.notNull())
         .forEach(member -> member.applyTo(jc, srcHeaderSpaceBuilder, action, lines, w));

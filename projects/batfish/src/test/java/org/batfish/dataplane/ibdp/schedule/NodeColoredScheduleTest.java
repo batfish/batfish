@@ -69,9 +69,7 @@ public class NodeColoredScheduleTest {
         ImmutableMap.of("r1", TestUtils.makeIosRouter("r1"), "r2", TestUtils.makeIosRouter("r2"));
 
     Map<String, Configuration> configs =
-        nodes
-            .entrySet()
-            .stream()
+        nodes.entrySet().stream()
             .collect(
                 ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getConfiguration()));
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =

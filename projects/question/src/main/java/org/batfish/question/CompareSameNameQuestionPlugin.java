@@ -168,8 +168,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       String structureClassName = structureClass.getSimpleName();
       // collect the set of all names for structures of type T, across all nodes
       Set<String> allNames =
-          hostnames
-              .stream()
+          hostnames.stream()
               .map(configurations::get)
               .map(structureMapRetriever)
               .flatMap(structureMap -> structureMap.keySet().stream())
@@ -243,9 +242,9 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     /**
      * Set of structure types to analyze drawn from ( AsPathAccessList, * AuthenticationKeyChain,
-     * CommunityList, IkeGateway, IkePolicy, IkeProposal, Interface, * Ip6AccessList, IpAccessList,
-     * IpsecPolicy, IpsecProposal, IpsecVpn, Route6FilterList, * RouteFilterList, RoutingPolicy,
-     * Vrf, Zone )
+     * CommunityList, IkePhase1Policy, IkePhase1Proposal, IkePhase1Key, Interface, * Ip6AccessList,
+     * IpAccessList, IpsecPhase2Policy, IpsecPhase2Proposal, IpsecPeerConfig, Route6FilterList, *
+     * RouteFilterList, RoutingPolicy, Vrf, Zone )
      *
      * <p>Default value is '[]', which denotes all types except those in excludedNamedStructTypes.
      */
@@ -325,8 +324,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     }
 
     private SortedSet<String> toLowerCase(Collection<String> names) {
-      return names
-          .stream()
+      return names.stream()
           .map(String::toLowerCase)
           .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
     }

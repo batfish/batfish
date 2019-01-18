@@ -107,8 +107,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
 
   public final Set<R> getRoutes(Prefix p) {
     // Collect routes that match the prefix
-    return getRoutes()
-        .stream()
+    return getRoutes().stream()
         .filter(r -> r.getNetwork().equals(p))
         .collect(ImmutableSet.toImmutableSet());
   }

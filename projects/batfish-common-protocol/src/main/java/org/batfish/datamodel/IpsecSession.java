@@ -1,8 +1,10 @@
 package org.batfish.datamodel;
 
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNullableByDefault;
 
 /** Represents the attributes of the session established between two {@link IpsecPeerConfig}s */
+@ParametersAreNullableByDefault
 public class IpsecSession {
 
   @Nullable private final IkePhase1Policy _initiatorIkeP1Policy;
@@ -20,13 +22,13 @@ public class IpsecSession {
   @Nullable private final IpsecPhase2Policy _responderIpsecP2Policy;
 
   private IpsecSession(
-      @Nullable IkePhase1Policy initiatorIkeP1Policy,
-      @Nullable IpsecPhase2Policy initiatorIpsecP2Policy,
-      @Nullable IkePhase1Proposal negotiatedIkeP1Proposal,
-      @Nullable IkePhase1Key negotiatedIkeP1Key,
-      @Nullable IpsecPhase2Proposal negotiatedIpsecP2Proposal,
-      @Nullable IkePhase1Policy responderIkeP1Policy,
-      @Nullable IpsecPhase2Policy responderIpsecP2Policy) {
+      IkePhase1Policy initiatorIkeP1Policy,
+      IpsecPhase2Policy initiatorIpsecP2Policy,
+      IkePhase1Proposal negotiatedIkeP1Proposal,
+      IkePhase1Key negotiatedIkeP1Key,
+      IpsecPhase2Proposal negotiatedIpsecP2Proposal,
+      IkePhase1Policy responderIkeP1Policy,
+      IpsecPhase2Policy responderIpsecP2Policy) {
     _initiatorIkeP1Policy = initiatorIkeP1Policy;
     _initiatorIpsecP2Policy = initiatorIpsecP2Policy;
     _negotiatedIkeP1Proposal = negotiatedIkeP1Proposal;
@@ -136,32 +138,39 @@ public class IpsecSession {
       return _negotiatedIpsecP2Proposal;
     }
 
-    public void setInitiatorIkeP1Policy(IkePhase1Policy initiatorIkeP1Policy) {
+    public Builder setInitiatorIkeP1Policy(IkePhase1Policy initiatorIkeP1Policy) {
       _initiatorIkeP1Policy = initiatorIkeP1Policy;
+      return this;
     }
 
-    public void setInitiatorIpsecP2Policy(IpsecPhase2Policy initiatorIpsecP2Policy) {
+    public Builder setInitiatorIpsecP2Policy(IpsecPhase2Policy initiatorIpsecP2Policy) {
       _initiatorIpsecP2Policy = initiatorIpsecP2Policy;
+      return this;
     }
 
-    public void setResponderIkeP1Policy(IkePhase1Policy responderIkeP1Policy) {
+    public Builder setResponderIkeP1Policy(IkePhase1Policy responderIkeP1Policy) {
       _responderIkeP1Policy = responderIkeP1Policy;
+      return this;
     }
 
-    public void setResponderIpsecP2Policy(IpsecPhase2Policy responderIpsecP2Policy) {
+    public Builder setResponderIpsecP2Policy(IpsecPhase2Policy responderIpsecP2Policy) {
       _responderIpsecP2Policy = responderIpsecP2Policy;
+      return this;
     }
 
-    public void setNegotiatedIkeP1Proposal(IkePhase1Proposal ikePhase1Proposal) {
+    public Builder setNegotiatedIkeP1Proposal(IkePhase1Proposal ikePhase1Proposal) {
       _negotiatedIkeP1Proposal = ikePhase1Proposal;
+      return this;
     }
 
-    public void setNegotiatedIkeP1Key(IkePhase1Key negotiatedIkePhase1Key) {
+    public Builder setNegotiatedIkeP1Key(IkePhase1Key negotiatedIkePhase1Key) {
       _negotiatedIkeP1Key = negotiatedIkePhase1Key;
+      return this;
     }
 
-    public void setNegotiatedIpsecP2Proposal(IpsecPhase2Proposal ipsecPhase2Proposal) {
+    public Builder setNegotiatedIpsecP2Proposal(IpsecPhase2Proposal ipsecPhase2Proposal) {
       _negotiatedIpsecP2Proposal = ipsecPhase2Proposal;
+      return this;
     }
   }
 

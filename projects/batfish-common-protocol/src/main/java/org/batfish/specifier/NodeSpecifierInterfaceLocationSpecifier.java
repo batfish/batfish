@@ -35,9 +35,7 @@ public class NodeSpecifierInterfaceLocationSpecifier implements LocationSpecifie
 
   @Override
   public Set<Location> resolve(SpecifierContext ctxt) {
-    return _nodeSpecifier
-        .resolve(ctxt)
-        .stream()
+    return _nodeSpecifier.resolve(ctxt).stream()
         .map(n -> ctxt.getConfigs().get(n).getAllInterfaces().values())
         .flatMap(Collection::stream)
         .map(iface -> new InterfaceLocation(iface.getOwner().getHostname(), iface.getName()))

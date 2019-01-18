@@ -174,9 +174,7 @@ public final class BDDReachabilityAnalysisTest {
   private List<Ip> bddIps(BDD bdd) {
     BDDInteger bddInteger = _graphFactory.getIpSpaceToBDD().getBDDInteger();
 
-    return bddInteger
-        .getValuesSatisfying(bdd, 10)
-        .stream()
+    return bddInteger.getValuesSatisfying(bdd, 10).stream()
         .map(Ip::create)
         .collect(Collectors.toList());
   }

@@ -20,9 +20,7 @@ public final class CompletionMetadataUtils {
   @VisibleForTesting
   public static Set<String> getAddressBooks(ReferenceLibrary referenceLibrary) {
     ImmutableSet.Builder<String> addressBooks = ImmutableSet.builder();
-    referenceLibrary
-        .getReferenceBooks()
-        .stream()
+    referenceLibrary.getReferenceBooks().stream()
         .map(ReferenceBook::getName)
         .forEach(addressBooks::add);
     return addressBooks.build();
@@ -35,9 +33,7 @@ public final class CompletionMetadataUtils {
         .getReferenceBooks()
         .forEach(
             referenceBook ->
-                referenceBook
-                    .getAddressGroups()
-                    .stream()
+                referenceBook.getAddressGroups().stream()
                     .map(AddressGroup::getName)
                     .forEach(addressGroups::add));
     return addressGroups.build();
@@ -59,10 +55,7 @@ public final class CompletionMetadataUtils {
         .values()
         .forEach(
             configuration ->
-                configuration
-                    .getAllInterfaces()
-                    .values()
-                    .stream()
+                configuration.getAllInterfaces().values().stream()
                     .map(NodeInterfacePair::new)
                     .forEach(interfaces::add));
     return interfaces.build();
@@ -80,9 +73,7 @@ public final class CompletionMetadataUtils {
                     .values()
                     .forEach(
                         iface ->
-                            iface
-                                .getAllAddresses()
-                                .stream()
+                            iface.getAllAddresses().stream()
                                 .map(interfaceAddress -> interfaceAddress.getIp().toString())
                                 .forEach(ips::add)));
 
@@ -101,9 +92,7 @@ public final class CompletionMetadataUtils {
                     .values()
                     .forEach(
                         iface ->
-                            iface
-                                .getAllAddresses()
-                                .stream()
+                            iface.getAllAddresses().stream()
                                 .map(interfaceAddress -> interfaceAddress.getPrefix().toString())
                                 .forEach(prefixes::add)));
     return prefixes.build();
@@ -144,10 +133,7 @@ public final class CompletionMetadataUtils {
         .values()
         .forEach(
             configuration ->
-                configuration
-                    .getAllInterfaces()
-                    .values()
-                    .stream()
+                configuration.getAllInterfaces().values().stream()
                     .map(Interface::getVrfName)
                     .forEach(vrfs::add));
     return vrfs.build();

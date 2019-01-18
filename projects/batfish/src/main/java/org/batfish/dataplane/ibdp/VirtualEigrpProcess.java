@@ -104,9 +104,7 @@ class VirtualEigrpProcess {
         _interfaces.add(new EigrpInterface(c.getHostname(), iface));
         requireNonNull(iface.getEigrp());
         Set<Prefix> allNetworkPrefixes =
-            iface
-                .getAllAddresses()
-                .stream()
+            iface.getAllAddresses().stream()
                 .map(InterfaceAddress::getPrefix)
                 .collect(Collectors.toSet());
         for (Prefix prefix : allNetworkPrefixes) {
@@ -181,9 +179,7 @@ class VirtualEigrpProcess {
    */
   int computeIterationHashCode() {
     return _externalRib.getRoutes().hashCode()
-        + _incomingRoutes
-            .values()
-            .stream()
+        + _incomingRoutes.values().stream()
             .flatMap(Queue::stream)
             .mapToInt(RouteAdvertisement::hashCode)
             .sum();
@@ -222,8 +218,7 @@ class VirtualEigrpProcess {
    */
   void initQueues(Network<EigrpInterface, EigrpEdge> eigrpTopology) {
     _incomingRoutes =
-        _interfaces
-            .stream()
+        _interfaces.stream()
             .filter(eigrpTopology.nodes()::contains)
             .flatMap(n -> eigrpTopology.inEdges(n).stream())
             .collect(toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
@@ -296,8 +291,7 @@ class VirtualEigrpProcess {
       Network<EigrpInterface, EigrpEdge> topology,
       NetworkConfigurations nc) {
 
-    return _interfaces
-        .stream()
+    return _interfaces.stream()
         .filter(topology.nodes()::contains)
         .flatMap(n -> topology.inEdges(n).stream())
         .map(

@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -39,7 +38,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
@@ -59,10 +57,7 @@ import org.batfish.datamodel.IpsecDynamicPeerConfig;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
-import org.batfish.datamodel.IpsecPolicy;
-import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
-import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -140,8 +135,8 @@ class CiscoConversions {
   }
 
   /**
-   * Converts a {@link CryptoMapEntry} to an {@link IpsecPolicy}, a list of {@link IpsecVpn}. Also
-   * converts it to an {@link IpsecPhase2Policy} and a list of {@link IpsecPeerConfig}
+   * Converts a {@link CryptoMapEntry} to an {@link IpsecPhase2Policy} and a list of {@link
+   * IpsecPeerConfig}
    */
   private static void convertCryptoMapEntry(
       final Configuration c,
@@ -159,10 +154,6 @@ class CiscoConversions {
         return;
       }
     }
-
-    IpsecPolicy ipsecPolicy = toIpsecPolicy(c, cryptoMapEntry, cryptoMapNameSeqNumber);
-
-    c.getIpsecPolicies().put(cryptoMapNameSeqNumber, ipsecPolicy);
 
     IpsecPhase2Policy ipsecPhase2Policy = toIpsecPhase2Policy(cryptoMapEntry);
     String ipsecPhase2PolicyName =
@@ -191,19 +182,11 @@ class CiscoConversions {
                     ipsecPhase2PolicyName,
                     w))
             .build());
-
-    List<IpsecVpn> ipsecVpns =
-        toIpsecVpns(c, cryptoMapEntry, cryptoMapNameSeqNumber, cryptoMapName, w);
-    ipsecVpns.forEach(
-        ipsecVpn -> {
-          ipsecVpn.setIpsecPolicy(ipsecPolicy);
-          c.getIpsecVpns().put(ipsecVpn.getName(), ipsecVpn);
-        });
   }
 
   /**
-   * Converts each crypto map entry in all crypto map sets to {@link IpsecPolicy}, {@link
-   * IpsecVpn}s, {@link IpsecPhase2Policy} and {@link IpsecPeerConfig}s
+   * Converts each crypto map entry in all crypto map sets to {@link IpsecPhase2Policy} and {@link
+   * IpsecPeerConfig}s
    */
   static void convertCryptoMapSet(
       Configuration c,
@@ -319,9 +302,7 @@ class CiscoConversions {
     Map<Ip, String> iptoIfaceName = computeIpToIfaceNameMap(interfaces);
 
     // setting empty string as interface name if cannot find the IP
-    keyrings
-        .values()
-        .stream()
+    keyrings.values().stream()
         .filter(keyring -> keyring.getLocalAddress() != null)
         .forEach(
             keyring ->
@@ -337,9 +318,7 @@ class CiscoConversions {
       Map<String, Interface> interfaces, Map<String, IsakmpProfile> isakpProfiles) {
     Map<Ip, String> iptoIfaceName = computeIpToIfaceNameMap(interfaces);
 
-    isakpProfiles
-        .values()
-        .stream()
+    isakpProfiles.values().stream()
         .filter(isakmpProfile -> isakmpProfile.getLocalAddress() != null)
         .forEach(
             isakmpProfile ->
@@ -367,9 +346,7 @@ class CiscoConversions {
 
   static AsPathAccessList toAsPathAccessList(AsPathSet asPathSet) {
     List<AsPathAccessListLine> lines =
-        asPathSet
-            .getElements()
-            .stream()
+        asPathSet.getElements().stream()
             .map(CiscoConversions::toAsPathAccessListLine)
             .collect(ImmutableList.toImmutableList());
     return new AsPathAccessList(asPathSet.getName(), lines);
@@ -377,9 +354,7 @@ class CiscoConversions {
 
   static AsPathAccessList toAsPathAccessList(IpAsPathAccessList pathList) {
     List<AsPathAccessListLine> lines =
-        pathList
-            .getLines()
-            .stream()
+        pathList.getLines().stream()
             .map(IpAsPathAccessListLine::toAsPathAccessListLine)
             .collect(ImmutableList.toImmutableList());
     return new AsPathAccessList(pathList.getName(), lines);
@@ -388,9 +363,7 @@ class CiscoConversions {
   static CommunityList toCommunityList(NamedCommunitySet communitySet) {
     return new CommunityList(
         communitySet.getName(),
-        communitySet
-            .getElements()
-            .stream()
+        communitySet.getElements().stream()
             .map(CiscoConversions::toCommunityListLine)
             .collect(ImmutableList.toImmutableList()),
         false);
@@ -398,9 +371,7 @@ class CiscoConversions {
 
   static CommunityList toCommunityList(ExpandedCommunityList ecList) {
     List<CommunityListLine> cllList =
-        ecList
-            .getLines()
-            .stream()
+        ecList.getLines().stream()
             .map(CiscoConversions::toCommunityListLine)
             .collect(ImmutableList.toImmutableList());
     return new CommunityList(ecList.getName(), cllList, false);
@@ -408,9 +379,7 @@ class CiscoConversions {
 
   public static CommunityList toCommunityList(StandardCommunityList scList) {
     List<CommunityListLine> cllList =
-        scList
-            .getLines()
-            .stream()
+        scList.getLines().stream()
             .map(CiscoConversions::toCommunityListLine)
             .collect(ImmutableList.toImmutableList());
     return new CommunityList(scList.getName(), cllList, false);
@@ -552,9 +521,7 @@ class CiscoConversions {
   static IpAccessList toIpAccessList(
       ExtendedAccessList eaList, Map<String, ObjectGroup> objectGroups) {
     List<IpAccessListLine> lines =
-        eaList
-            .getLines()
-            .stream()
+        eaList.getLines().stream()
             .map(l -> toIpAccessListLine(l, objectGroups))
             .collect(ImmutableList.toImmutableList());
     String sourceType =
@@ -638,7 +605,7 @@ class CiscoConversions {
             .setTunnelInterface(tunnelIfaceName)
             .setDestinationAddress(tunnel.getDestination())
             .setLocalAddress(tunnel.getSourceAddress())
-            .setPhysicalInterface(tunnel.getSourceInterfaceName())
+            .setSourceInterface(tunnel.getSourceInterfaceName())
             .setIpsecPolicy(tunnel.getIpsecProfileName());
 
     IpsecProfile ipsecProfile = null;
@@ -672,9 +639,7 @@ class CiscoConversions {
       Warnings w) {
 
     List<org.batfish.datamodel.Interface> referencingInterfaces =
-        c.getAllInterfaces()
-            .values()
-            .stream()
+        c.getAllInterfaces().values().stream()
             .filter(iface -> Objects.equals(iface.getCryptoMap(), cryptoMapName))
             .collect(Collectors.toList());
 
@@ -733,7 +698,7 @@ class CiscoConversions {
     }
 
     newIpsecPeerConfigBuilder
-        .setPhysicalInterface(iface.getName())
+        .setSourceInterface(iface.getName())
         .setIpsecPolicy(ipsecPhase2Policy)
         .setLocalAddress(iface.getAddress().getIp());
 
@@ -762,31 +727,6 @@ class CiscoConversions {
         }
       }
     }
-  }
-
-  /** Converts an IPSec Profile to IPSec policy */
-  static IpsecPolicy toIpSecPolicy(Configuration configuration, IpsecProfile ipsecProfile) {
-    String name = ipsecProfile.getName();
-
-    IpsecPolicy policy = new IpsecPolicy(name);
-    policy.setPfsKeyGroup(ipsecProfile.getPfsGroup());
-
-    for (String transformSetName : ipsecProfile.getTransformSets()) {
-      IpsecProposal ipsecProposalName = configuration.getIpsecProposals().get(transformSetName);
-      if (ipsecProposalName != null) {
-        policy.getProposals().add(ipsecProposalName);
-      }
-    }
-
-    String isakmpProfileName = ipsecProfile.getIsakmpProfile();
-    if (isakmpProfileName != null) {
-      IkeGateway ikeGateway = configuration.getIkeGateways().get(isakmpProfileName);
-      if (ikeGateway != null) {
-        policy.setIkeGateway(ikeGateway);
-      }
-    }
-
-    return policy;
   }
 
   /**
@@ -867,15 +807,6 @@ class CiscoConversions {
     return filteredIkePhase1Policies;
   }
 
-  static IpsecProposal toIpsecProposal(IpsecTransformSet ipsecTransformSet) {
-    IpsecProposal ipsecProposal = new IpsecProposal(ipsecTransformSet.getName());
-    ipsecProposal.setAuthenticationAlgorithm(ipsecTransformSet.getAuthenticationAlgorithm());
-    ipsecProposal.setEncryptionAlgorithm(ipsecTransformSet.getEncryptionAlgorithm());
-    ipsecProposal.setProtocols(ipsecTransformSet.getProtocols());
-
-    return ipsecProposal;
-  }
-
   static IpsecPhase2Proposal toIpsecPhase2Proposal(IpsecTransformSet ipsecTransformSet) {
     IpsecPhase2Proposal ipsecPhase2Proposal = new IpsecPhase2Proposal();
     ipsecPhase2Proposal.setAuthenticationAlgorithm(ipsecTransformSet.getAuthenticationAlgorithm());
@@ -899,117 +830,6 @@ class CiscoConversions {
     ipsecPhase2Policy.setProposals(ImmutableList.copyOf(cryptoMapEntry.getTransforms()));
     ipsecPhase2Policy.setPfsKeyGroup(cryptoMapEntry.getPfsKeyGroup());
     return ipsecPhase2Policy;
-  }
-
-  /**
-   * Converts a crypto map entry to a list of ipsec vpns(one per interface on which it is referred)
-   */
-  private static List<IpsecVpn> toIpsecVpns(
-      Configuration c,
-      CryptoMapEntry cryptoMapEntry,
-      String ipsecVpnName,
-      String cryptoMapName,
-      Warnings w) {
-
-    List<org.batfish.datamodel.Interface> referencingInterfaces =
-        c.getAllInterfaces()
-            .values()
-            .stream()
-            .filter(iface -> Objects.equals(iface.getCryptoMap(), cryptoMapName))
-            .collect(Collectors.toList());
-
-    List<IpsecVpn> ipsecVpns = new ArrayList<>();
-
-    for (org.batfish.datamodel.Interface iface : referencingInterfaces) {
-      // skipping interfaces with no ip-address
-      if (iface.getAddress() == null) {
-        w.redFlag(
-            String.format(
-                "Interface %s with declared crypto-map %s has no ip-address",
-                iface.getName(), cryptoMapName));
-        continue;
-      }
-      Ip bindingInterfaceIp = iface.getAddress().getIp();
-      IkeGateway ikeGateway = null;
-
-      if (cryptoMapEntry.getIsakmpProfile() != null) {
-        ikeGateway = c.getIkeGateways().get(cryptoMapEntry.getIsakmpProfile());
-        if (ikeGateway != null
-            && (!ikeGateway.getAddress().equals(cryptoMapEntry.getPeer())
-                || !ikeGateway.getLocalIp().equals(bindingInterfaceIp))) {
-          w.redFlag(
-              String.format(
-                  "cryptoMap %s's binding interface or peer does not match ISAKMP profile's local "
-                      + "Ip/remote Ip",
-                  cryptoMapEntry.getName()));
-          continue;
-        }
-      }
-
-      IpsecVpn ipsecVpn = new IpsecVpn(String.format("%s:%s", ipsecVpnName, iface.getName()));
-
-      if (ikeGateway != null) {
-        ipsecVpn.setIkeGateway(ikeGateway);
-      } else {
-        // getting an IKE gateway which can be used for this VPN
-        Optional<IkeGateway> filteredIkeGateway =
-            c.getIkeGateways()
-                .values()
-                .stream()
-                .filter(
-                    ikeGateway1 ->
-                        ikeGateway1.getLocalIp().equals(bindingInterfaceIp)
-                            && ikeGateway1.getAddress().equals(cryptoMapEntry.getPeer()))
-                .findFirst();
-        filteredIkeGateway.ifPresent(ipsecVpn::setIkeGateway);
-      }
-
-      ipsecVpn.setBindInterface(iface);
-      if (cryptoMapEntry.getAccessList() != null) {
-        IpAccessList cryptoAcl = c.getIpAccessLists().get(cryptoMapEntry.getAccessList());
-        if (cryptoAcl != null) {
-          IpAccessList symmetricCryptoAcl = createAclWithSymmetricalLines(cryptoAcl);
-          if (symmetricCryptoAcl != null) {
-            ipsecVpn.setPolicyAccessList(symmetricCryptoAcl);
-          } else {
-            w.redFlag(
-                String.format(
-                    "Cannot process the Access List for crypto map %s:%s",
-                    cryptoMapEntry.getName(), cryptoMapEntry.getSequenceNumber()));
-          }
-        }
-      }
-      ipsecVpns.add(ipsecVpn);
-    }
-
-    return ipsecVpns;
-  }
-
-  /** Converts a {@link CryptoMapEntry} to an {@link IpsecPolicy} */
-  private static IpsecPolicy toIpsecPolicy(
-      Configuration c, CryptoMapEntry cryptoMapEntry, String ipsecPolicyName) {
-    IpsecPolicy ipsecPolicy = new IpsecPolicy(ipsecPolicyName);
-
-    if (cryptoMapEntry.getIsakmpProfile() != null) {
-      IkeGateway ikeGateway = c.getIkeGateways().get(cryptoMapEntry.getIsakmpProfile());
-      if (ikeGateway != null) {
-        ipsecPolicy.setIkeGateway(ikeGateway);
-      }
-    }
-
-    cryptoMapEntry
-        .getTransforms()
-        .forEach(
-            transform -> {
-              IpsecProposal ipsecProposal = c.getIpsecProposals().get(transform);
-              if (ipsecProposal != null) {
-                ipsecPolicy.getProposals().add(ipsecProposal);
-              }
-            });
-
-    ipsecPolicy.setPfsKeyGroup(cryptoMapEntry.getPfsKeyGroup());
-
-    return ipsecPolicy;
   }
 
   @Nullable
@@ -1059,9 +879,7 @@ class CiscoConversions {
     eigrpExportPolicy
         .getStatements()
         .addAll(
-            proc.getRedistributionPolicies()
-                .values()
-                .stream()
+            proc.getRedistributionPolicies().values().stream()
                 .map(policy -> convertEigrpRedistributionPolicy(policy, proc, oldConfig))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList()));
@@ -1164,9 +982,7 @@ class CiscoConversions {
   static Route6FilterList toRoute6FilterList(ExtendedIpv6AccessList eaList) {
     String name = eaList.getName();
     List<Route6FilterLine> lines =
-        eaList
-            .getLines()
-            .stream()
+        eaList.getLines().stream()
             .map(CiscoConversions::toRoute6FilterLine)
             .collect(ImmutableList.toImmutableList());
     return new Route6FilterList(name, lines);
@@ -1175,9 +991,7 @@ class CiscoConversions {
   static Route6FilterList toRoute6FilterList(StandardIpv6AccessList eaList) {
     String name = eaList.getName();
     List<Route6FilterLine> lines =
-        eaList
-            .getLines()
-            .stream()
+        eaList.getLines().stream()
             .map(CiscoConversions::toRoute6FilterLine)
             .collect(ImmutableList.toImmutableList());
     return new Route6FilterList(name, lines);
@@ -1185,8 +999,7 @@ class CiscoConversions {
 
   static Route6FilterList toRoute6FilterList(Prefix6List list) {
     List<Route6FilterLine> lines =
-        list.getLines()
-            .stream()
+        list.getLines().stream()
             .map(pl -> new Route6FilterLine(pl.getAction(), pl.getPrefix(), pl.getLengthRange()))
             .collect(ImmutableList.toImmutableList());
     return new Route6FilterList(list.getName(), lines);
@@ -1194,9 +1007,7 @@ class CiscoConversions {
 
   static RouteFilterList toRouteFilterList(ExtendedAccessList eaList) {
     List<RouteFilterLine> lines =
-        eaList
-            .getLines()
-            .stream()
+        eaList.getLines().stream()
             .map(CiscoConversions::toRouteFilterLine)
             .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(eaList.getName(), lines);
@@ -1204,9 +1015,7 @@ class CiscoConversions {
 
   static RouteFilterList toRouteFilterList(StandardAccessList saList) {
     List<RouteFilterLine> lines =
-        saList
-            .getLines()
-            .stream()
+        saList.getLines().stream()
             .map(CiscoConversions::toRouteFilterLine)
             .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(saList.getName(), lines);
@@ -1215,8 +1024,7 @@ class CiscoConversions {
   static RouteFilterList toRouteFilterList(PrefixList list) {
     RouteFilterList newRouteFilterList = new RouteFilterList(list.getName());
     List<RouteFilterLine> newLines =
-        list.getLines()
-            .stream()
+        list.getLines().stream()
             .map(
                 l ->
                     new RouteFilterLine(

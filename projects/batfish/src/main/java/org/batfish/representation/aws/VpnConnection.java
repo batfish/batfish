@@ -22,15 +22,11 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
-import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
-import org.batfish.datamodel.IkePolicy;
-import org.batfish.datamodel.IkeProposal;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
@@ -38,11 +34,8 @@ import org.batfish.datamodel.IpsecEncapsulationMode;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
-import org.batfish.datamodel.IpsecPolicy;
-import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
-import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
@@ -322,65 +315,19 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
                 + "\"");
       }
       // create representation structures and add to configuration node
-      IpsecVpn ipsecVpn = new IpsecVpn(vpnId, vpnGatewayCfgNode);
-      vpnGatewayCfgNode.getIpsecVpns().put(vpnId, ipsecVpn);
-      IpsecPolicy ipsecPolicy = new IpsecPolicy(vpnId);
-      vpnGatewayCfgNode.getIpsecPolicies().put(vpnId, ipsecPolicy);
-      ipsecVpn.setIpsecPolicy(ipsecPolicy);
-      IpsecProposal ipsecProposal = new IpsecProposal(vpnId);
-      vpnGatewayCfgNode.getIpsecProposals().put(vpnId, ipsecProposal);
-      ipsecPolicy.getProposals().add(ipsecProposal);
-      IkeGateway ikeGateway = new IkeGateway(vpnId);
-      vpnGatewayCfgNode.getIkeGateways().put(vpnId, ikeGateway);
-      ipsecVpn.setIkeGateway(ikeGateway);
-      IkePolicy ikePolicy = new IkePolicy(vpnId);
-      vpnGatewayCfgNode.getIkePolicies().put(vpnId, ikePolicy);
-      ikeGateway.setIkePolicy(ikePolicy);
-      IkeProposal ikeProposal = new IkeProposal(vpnId);
-      vpnGatewayCfgNode.getIkeProposals().put(vpnId, ikeProposal);
-      ikePolicy.getProposals().put(vpnId, ikeProposal);
       String externalInterfaceName = "external" + idNum;
       InterfaceAddress externalInterfaceAddress =
           new InterfaceAddress(ipsecTunnel.getVgwOutsideAddress(), Prefix.MAX_PREFIX_LENGTH);
-      Interface externalInterface =
-          Utils.newInterface(externalInterfaceName, vpnGatewayCfgNode, externalInterfaceAddress);
+
+      Utils.newInterface(externalInterfaceName, vpnGatewayCfgNode, externalInterfaceAddress);
 
       String vpnInterfaceName = "vpn" + idNum;
       InterfaceAddress vpnInterfaceAddress =
           new InterfaceAddress(
               ipsecTunnel.getVgwInsideAddress(), ipsecTunnel.getVgwInsidePrefixLength());
-      Interface vpnInterface =
-          Utils.newInterface(vpnInterfaceName, vpnGatewayCfgNode, vpnInterfaceAddress);
+      Utils.newInterface(vpnInterfaceName, vpnGatewayCfgNode, vpnInterfaceAddress);
 
-      // Set fields within representation structures
-
-      // ipsec
-      ipsecVpn.setBindInterface(vpnInterface);
-      ipsecPolicy.setPfsKeyGroup(toDiffieHellmanGroup(ipsecTunnel.getIpsecPerfectForwardSecrecy()));
-      ipsecProposal.setAuthenticationAlgorithm(
-          toIpsecAuthenticationAlgorithm(ipsecTunnel.getIpsecAuthProtocol()));
-      ipsecProposal.setEncryptionAlgorithm(
-          toEncryptionAlgorithm(ipsecTunnel.getIpsecEncryptionProtocol()));
-      ipsecProposal.getProtocols().add(toIpsecProtocol(ipsecTunnel.getIpsecProtocol()));
-      ipsecProposal.setLifetimeSeconds(ipsecTunnel.getIpsecLifetime());
-
-      // ike
-      ikeGateway.setExternalInterface(externalInterface);
-      ikeGateway.setAddress(ipsecTunnel.getCgwOutsideAddress());
-      ikeGateway.setLocalIp(externalInterface.getAddress().getIp());
-      if (ipsecTunnel.getIkePreSharedKeyHash() != null) {
-        ikePolicy.setPreSharedKeyHash(ipsecTunnel.getIkePreSharedKeyHash());
-        ikeProposal.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
-      }
-      ikeProposal.setAuthenticationAlgorithm(
-          toIkeAuthenticationAlgorithm(ipsecTunnel.getIkeAuthProtocol()));
-      ikeProposal.setDiffieHellmanGroup(
-          toDiffieHellmanGroup(ipsecTunnel.getIkePerfectForwardSecrecy()));
-      ikeProposal.setEncryptionAlgorithm(
-          toEncryptionAlgorithm(ipsecTunnel.getIkeEncryptionProtocol()));
-      ikeProposal.setLifetimeSeconds(ipsecTunnel.getIkeLifetime());
-
-      // new IPsec model
+      // IPsec data-model
       ikePhase1ProposalMapBuilder.put(vpnId, toIkePhase1Proposal(vpnId, ipsecTunnel));
       IkePhase1Key ikePhase1Key =
           toIkePhase1PreSharedKey(
@@ -402,7 +349,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
               .setTunnelInterface(vpnInterfaceName)
               .setIkePhase1Policy(vpnId)
               .setIpsecPolicy(vpnId)
-              .setPhysicalInterface(externalInterfaceName)
+              .setSourceInterface(externalInterfaceName)
               .setLocalAddress(ipsecTunnel.getVgwOutsideAddress())
               .setDestinationAddress(ipsecTunnel.getCgwOutsideAddress())
               .build());

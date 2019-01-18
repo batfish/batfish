@@ -46,8 +46,7 @@ public final class LiteralAsList extends AsPathListExpr {
 
   @Override
   public List<Long> evaluate(Environment environment) {
-    return _list
-        .stream()
+    return _list.stream()
         .map(expr -> expr.evaluate(environment))
         .collect(ImmutableList.toImmutableList());
   }

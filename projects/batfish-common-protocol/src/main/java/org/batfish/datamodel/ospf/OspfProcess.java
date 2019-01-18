@@ -369,9 +369,7 @@ public final class OspfProcess implements Serializable {
 
   /** Initialize interface costs for all interfaces that belong to this process */
   public void initInterfaceCosts(Configuration c) {
-    _areas
-        .values()
-        .stream()
+    _areas.values().stream()
         .flatMap(a -> a.getInterfaces().stream())
         .map(interfaceName -> c.getAllInterfaces().get(interfaceName))
         .filter(Interface::getActive)

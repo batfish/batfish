@@ -1,0 +1,31 @@
+boot system flash this-is-an-arista-device.swi
+!
+hostname arista-dynamic-source-nat
+!
+ip access-list acl1
+  permit ip any any
+ip access-list acl2
+  permit ip any any
+!
+ip nat pool pool1 1.1.1.1 1.1.1.2
+! pool2: start/end are not network/bcast
+ip nat pool pool2 2.2.2.2 2.2.2.3 prefix-length 24
+! pool3: start/end are network/bcast
+ip nat pool pool3 2.0.0.0 2.0.0.7 netmask 255.255.255.248
+!
+interface Ethernet1
+  ip address 5.5.5.5/32
+  ip nat source dynamic access-list acl1 pool pool1
+!
+interface Ethernet2
+  ip address 6.6.6.6/32
+  ip nat source dynamic access-list acl1 pool pool1
+  ip nat source dynamic access-list acl2 pool pool2
+!
+interface Ethernet3
+  ip address 7.7.7.7/32
+  ip nat source dynamic access-list acl1 pool pool3
+!
+interface Ethernet4
+  ip address 8.8.8.8/32
+  ip nat source dynamic access-list acl1 overload

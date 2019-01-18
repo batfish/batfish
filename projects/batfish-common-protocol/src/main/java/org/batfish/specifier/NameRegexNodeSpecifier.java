@@ -32,9 +32,7 @@ public final class NameRegexNodeSpecifier implements NodeSpecifier {
 
   @Override
   public Set<String> resolve(SpecifierContext ctxt) {
-    return ctxt.getConfigs()
-        .keySet()
-        .stream()
+    return ctxt.getConfigs().keySet().stream()
         .filter(n -> _namePattern.matcher(n).matches())
         .collect(ImmutableSet.toImmutableSet());
   }

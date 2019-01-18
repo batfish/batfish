@@ -138,8 +138,7 @@ public class RouteFilterList implements Serializable {
    */
   @JsonIgnore
   public List<IpWildcard> getMatchingIps() {
-    return getLines()
-        .stream()
+    return getLines().stream()
         .map(
             rfLine -> {
               if (rfLine.getAction() != LineAction.PERMIT) {

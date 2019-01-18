@@ -51,9 +51,7 @@ public class CommunityVarCollector implements VoidCommunitySetExprVisitor {
      * conditions here to be literal communities, which it then converts to regexes as expected by the old implementation.
      * Actual regexes are unmodified.
      */
-    communityList
-        .getLines()
-        .stream()
+    communityList.getLines().stream()
         .map(CommunityListLine::getMatchCondition)
         .map(CommunitySetExprToRegex::convert)
         .forEach(expr -> expr.accept(this));
@@ -75,9 +73,7 @@ public class CommunityVarCollector implements VoidCommunitySetExprVisitor {
 
   @Override
   public void visitLiteralCommunitySet(LiteralCommunitySet literalCommunitySet) {
-    literalCommunitySet
-        .getCommunities()
-        .stream()
+    literalCommunitySet.getCommunities().stream()
         .map(CommunityVarConverter::toCommunityVar)
         .forEach(_builder::add);
   }

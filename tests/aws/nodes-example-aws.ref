@@ -21,7 +21,6 @@
             "bandwidth" : 1.0E12,
             "incomingFilter" : "~SECURITY_GROUP_INGRESS_ACL~",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -50,7 +49,6 @@
             "bandwidth" : 1.0E12,
             "incomingFilter" : "~SECURITY_GROUP_INGRESS_ACL~",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -239,7 +237,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -300,7 +297,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -361,7 +357,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -411,22 +406,6 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "domainName" : "demo.com",
-        "ikeGateways" : {
-          "isakmp-vpn-ba2e34a8-0" : {
-            "name" : "isakmp-vpn-ba2e34a8-0",
-            "address" : "52.27.166.152",
-            "externalInterface" : "GigabitEthernet2/0",
-            "ikePolicy" : "isakmp-vpn-ba2e34a8-0",
-            "localAddress" : "172.16.1.2"
-          },
-          "isakmp-vpn-ba2e34a8-1" : {
-            "name" : "isakmp-vpn-ba2e34a8-1",
-            "address" : "52.39.121.126",
-            "externalInterface" : "GigabitEthernet2/0",
-            "ikePolicy" : "isakmp-vpn-ba2e34a8-1",
-            "localAddress" : "172.16.1.2"
-          }
-        },
         "ikePhase1Keys" : {
           "keyring-vpn-ba2e34a8-0" : {
             "keyHash" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
@@ -509,42 +488,6 @@
             "lifetimeSeconds" : 28800
           }
         },
-        "ikePolicies" : {
-          "isakmp-vpn-ba2e34a8-0" : {
-            "name" : "isakmp-vpn-ba2e34a8-0",
-            "preSharedKeyHash" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
-            "proposals" : [
-              "200",
-              "201"
-            ]
-          },
-          "isakmp-vpn-ba2e34a8-1" : {
-            "name" : "isakmp-vpn-ba2e34a8-1",
-            "preSharedKeyHash" : "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87",
-            "proposals" : [
-              "200",
-              "201"
-            ]
-          }
-        },
-        "ikeProposals" : {
-          "200" : {
-            "name" : "200",
-            "authenticationAlgorithm" : "SHA1",
-            "authenticationMethod" : "PRE_SHARED_KEYS",
-            "diffieHellmanGroup" : "GROUP2",
-            "encryptionAlgorithm" : "AES_128_CBC",
-            "lifetimeSeconds" : 28800
-          },
-          "201" : {
-            "name" : "201",
-            "authenticationAlgorithm" : "SHA1",
-            "authenticationMethod" : "PRE_SHARED_KEYS",
-            "diffieHellmanGroup" : "GROUP2",
-            "encryptionAlgorithm" : "AES_128_CBC",
-            "lifetimeSeconds" : 28800
-          }
-        },
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
@@ -556,7 +499,6 @@
               "Ethernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -586,7 +528,6 @@
             ],
             "description" : "link to lhr-fw-01 e1/3",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 0,
             "ospfCost" : 10,
             "ospfDeadInterval" : 0,
@@ -619,7 +560,6 @@
             ],
             "description" : "link to lhr-fw-02 e1/3",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 0,
             "ospfCost" : 10,
             "ospfDeadInterval" : 0,
@@ -648,7 +588,6 @@
               "Ethernet1/2"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -679,7 +618,6 @@
             "description" : "link to lix-peer-01 e1/1",
             "incomingFilter" : "LIMIT_PEER",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -706,7 +644,6 @@
               "Ethernet1/4"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -732,7 +669,6 @@
               "Ethernet1/5"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -758,7 +694,6 @@
               "Ethernet1/6"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -784,7 +719,6 @@
               "Ethernet1/7"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -813,7 +747,6 @@
               "GigabitEthernet0/0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -844,7 +777,6 @@
             ],
             "description" : "Border Interface",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -874,7 +806,6 @@
               "Loopback0"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfArea" : 0,
             "ospfCost" : 1,
             "ospfDeadInterval" : 0,
@@ -906,7 +837,6 @@
               "Tunnel1"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -936,7 +866,6 @@
               "Tunnel2"
             ],
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -1080,7 +1009,7 @@
             "ikePhase1Policy" : "isakmp-vpn-ba2e34a8-0",
             "ipsecPolicy" : "ipsec-vpn-ba2e34a8-0",
             "localAddress" : "172.16.1.2",
-            "physicalInterface" : "GigabitEthernet2/0",
+            "sourceInterface" : "GigabitEthernet2/0",
             "tunnelInterface" : "Tunnel1"
           },
           "Tunnel2" : {
@@ -1089,7 +1018,7 @@
             "ikePhase1Policy" : "isakmp-vpn-ba2e34a8-1",
             "ipsecPolicy" : "ipsec-vpn-ba2e34a8-1",
             "localAddress" : "172.16.1.2",
-            "physicalInterface" : "GigabitEthernet2/0",
+            "sourceInterface" : "GigabitEthernet2/0",
             "tunnelInterface" : "Tunnel2"
           }
         },
@@ -1123,56 +1052,6 @@
             "protocols" : [
               "ESP"
             ]
-          }
-        },
-        "ipsecPolicies" : {
-          "ipsec-vpn-ba2e34a8-0" : {
-            "name" : "ipsec-vpn-ba2e34a8-0",
-            "pfsKeyGroup" : "GROUP2",
-            "pfsKeyGroupDynamicIke" : false,
-            "proposals" : [
-              "ipsec-prop-vpn-ba2e34a8-0"
-            ]
-          },
-          "ipsec-vpn-ba2e34a8-1" : {
-            "name" : "ipsec-vpn-ba2e34a8-1",
-            "pfsKeyGroup" : "GROUP2",
-            "pfsKeyGroupDynamicIke" : false,
-            "proposals" : [
-              "ipsec-prop-vpn-ba2e34a8-1"
-            ]
-          }
-        },
-        "ipsecProposals" : {
-          "ipsec-prop-vpn-ba2e34a8-0" : {
-            "name" : "ipsec-prop-vpn-ba2e34a8-0",
-            "authenticationAlgorithm" : "HMAC_SHA1_96",
-            "encryptionAlgorithm" : "AES_128_CBC",
-            "protocols" : [
-              "ESP"
-            ]
-          },
-          "ipsec-prop-vpn-ba2e34a8-1" : {
-            "name" : "ipsec-prop-vpn-ba2e34a8-1",
-            "authenticationAlgorithm" : "HMAC_SHA1_96",
-            "encryptionAlgorithm" : "AES_128_CBC",
-            "protocols" : [
-              "ESP"
-            ]
-          }
-        },
-        "ipsecVpns" : {
-          "Tunnel1" : {
-            "name" : "Tunnel1",
-            "bindInterface" : "Tunnel1",
-            "ikeGateway" : "isakmp-vpn-ba2e34a8-0",
-            "ipsecPolicy" : "ipsec-vpn-ba2e34a8-0"
-          },
-          "Tunnel2" : {
-            "name" : "Tunnel2",
-            "bindInterface" : "Tunnel2",
-            "ikeGateway" : "isakmp-vpn-ba2e34a8-1",
-            "ipsecPolicy" : "ipsec-vpn-ba2e34a8-1"
           }
         },
         "routeFilterLists" : {
@@ -2081,7 +1960,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -2109,7 +1987,6 @@
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-7b78771d_ingress",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -2230,7 +2107,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -2258,7 +2134,6 @@
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-7b78771d_ingress",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -2379,7 +2254,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -2407,7 +2281,6 @@
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-4db39c28_ingress",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -2540,7 +2413,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -2568,7 +2440,6 @@
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-7b78771d_ingress",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -2689,7 +2560,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -2717,7 +2587,6 @@
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-3d4f745b_ingress",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -2838,7 +2707,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -2866,7 +2734,6 @@
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-7b78771d_ingress",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -2987,7 +2854,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -3015,7 +2881,6 @@
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-3d4f745b_ingress",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -3136,7 +3001,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -3164,7 +3028,6 @@
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-4db39c28_ingress",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -3297,7 +3160,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -3325,7 +3187,6 @@
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-4db39c28_ingress",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -3458,7 +3319,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -3486,7 +3346,6 @@
             "bandwidth" : 1.0E12,
             "incomingFilter" : "acl-7b78771d_ingress",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -3608,7 +3467,6 @@
             "bandwidth" : 1.0E12,
             "incomingFilter" : "~SECURITY_GROUP_INGRESS_ACL~",
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -3796,22 +3654,6 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "domainName" : "aws",
-        "ikeGateways" : {
-          "vpn-ba2e34a8-1" : {
-            "name" : "vpn-ba2e34a8-1",
-            "address" : "147.75.69.27",
-            "externalInterface" : "external1",
-            "ikePolicy" : "vpn-ba2e34a8-1",
-            "localAddress" : "52.27.166.152"
-          },
-          "vpn-ba2e34a8-2" : {
-            "name" : "vpn-ba2e34a8-2",
-            "address" : "147.75.69.27",
-            "externalInterface" : "external2",
-            "ikePolicy" : "vpn-ba2e34a8-2",
-            "localAddress" : "52.39.121.126"
-          }
-        },
         "ikePhase1Keys" : {
           "vpn-ba2e34a8-1" : {
             "keyHash" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
@@ -3890,40 +3732,6 @@
             "hashingAlgorithm" : "SHA1"
           }
         },
-        "ikePolicies" : {
-          "vpn-ba2e34a8-1" : {
-            "name" : "vpn-ba2e34a8-1",
-            "preSharedKeyHash" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
-            "proposals" : [
-              "vpn-ba2e34a8-1"
-            ]
-          },
-          "vpn-ba2e34a8-2" : {
-            "name" : "vpn-ba2e34a8-2",
-            "preSharedKeyHash" : "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87",
-            "proposals" : [
-              "vpn-ba2e34a8-2"
-            ]
-          }
-        },
-        "ikeProposals" : {
-          "vpn-ba2e34a8-1" : {
-            "name" : "vpn-ba2e34a8-1",
-            "authenticationAlgorithm" : "SHA1",
-            "authenticationMethod" : "PRE_SHARED_KEYS",
-            "diffieHellmanGroup" : "GROUP2",
-            "encryptionAlgorithm" : "AES_128_CBC",
-            "lifetimeSeconds" : 28800
-          },
-          "vpn-ba2e34a8-2" : {
-            "name" : "vpn-ba2e34a8-2",
-            "authenticationAlgorithm" : "SHA1",
-            "authenticationMethod" : "PRE_SHARED_KEYS",
-            "diffieHellmanGroup" : "GROUP2",
-            "encryptionAlgorithm" : "AES_128_CBC",
-            "lifetimeSeconds" : 28800
-          }
-        },
         "interfaces" : {
           "external1" : {
             "name" : "external1",
@@ -3935,7 +3743,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -3962,7 +3769,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -3989,7 +3795,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4016,7 +3821,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4043,7 +3847,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4068,7 +3871,7 @@
             "ikePhase1Policy" : "vpn-ba2e34a8-1",
             "ipsecPolicy" : "vpn-ba2e34a8-1",
             "localAddress" : "52.27.166.152",
-            "physicalInterface" : "external1",
+            "sourceInterface" : "external1",
             "tunnelInterface" : "vpn1"
           },
           "vpn-ba2e34a8-2" : {
@@ -4077,7 +3880,7 @@
             "ikePhase1Policy" : "vpn-ba2e34a8-2",
             "ipsecPolicy" : "vpn-ba2e34a8-2",
             "localAddress" : "52.39.121.126",
-            "physicalInterface" : "external2",
+            "sourceInterface" : "external2",
             "tunnelInterface" : "vpn2"
           }
         },
@@ -4111,58 +3914,6 @@
             "protocols" : [
               "ESP"
             ]
-          }
-        },
-        "ipsecPolicies" : {
-          "vpn-ba2e34a8-1" : {
-            "name" : "vpn-ba2e34a8-1",
-            "pfsKeyGroup" : "GROUP2",
-            "pfsKeyGroupDynamicIke" : false,
-            "proposals" : [
-              "vpn-ba2e34a8-1"
-            ]
-          },
-          "vpn-ba2e34a8-2" : {
-            "name" : "vpn-ba2e34a8-2",
-            "pfsKeyGroup" : "GROUP2",
-            "pfsKeyGroupDynamicIke" : false,
-            "proposals" : [
-              "vpn-ba2e34a8-2"
-            ]
-          }
-        },
-        "ipsecProposals" : {
-          "vpn-ba2e34a8-1" : {
-            "name" : "vpn-ba2e34a8-1",
-            "authenticationAlgorithm" : "HMAC_SHA1_96",
-            "encryptionAlgorithm" : "AES_128_CBC",
-            "lifetimeSeconds" : 3600,
-            "protocols" : [
-              "ESP"
-            ]
-          },
-          "vpn-ba2e34a8-2" : {
-            "name" : "vpn-ba2e34a8-2",
-            "authenticationAlgorithm" : "HMAC_SHA1_96",
-            "encryptionAlgorithm" : "AES_128_CBC",
-            "lifetimeSeconds" : 3600,
-            "protocols" : [
-              "ESP"
-            ]
-          }
-        },
-        "ipsecVpns" : {
-          "vpn-ba2e34a8-1" : {
-            "name" : "vpn-ba2e34a8-1",
-            "bindInterface" : "vpn1",
-            "ikeGateway" : "vpn-ba2e34a8-1",
-            "ipsecPolicy" : "vpn-ba2e34a8-1"
-          },
-          "vpn-ba2e34a8-2" : {
-            "name" : "vpn-ba2e34a8-2",
-            "bindInterface" : "vpn2",
-            "ikeGateway" : "vpn-ba2e34a8-2",
-            "ipsecPolicy" : "vpn-ba2e34a8-2"
           }
         },
         "routeFilterLists" : {
@@ -4428,7 +4179,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4534,7 +4284,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4561,7 +4310,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4588,7 +4336,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4670,7 +4417,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4697,7 +4443,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4724,7 +4469,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4751,7 +4495,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4778,7 +4521,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4805,7 +4547,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4917,7 +4658,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4944,7 +4684,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4971,7 +4710,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
@@ -4998,7 +4736,6 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "mtu" : 1500,
-            "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
