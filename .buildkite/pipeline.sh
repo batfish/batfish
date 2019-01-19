@@ -99,7 +99,7 @@ EOF
 ###### Ensure the code still compiles with Bazel
 cat <<EOF
   - label: "Bazel compilation"
-    command: "bazel build //..."
+    command: "bazel build -- //... -projects:javadoc"
     plugins:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
