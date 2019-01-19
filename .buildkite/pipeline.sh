@@ -18,7 +18,7 @@ EOF
 ###### Initial checks plus building the jar
 cat <<EOF
   - label: "Check Java formatting"
-    command: ".buildkite/check_java_format.sh"
+    command: "tools/fix_java_format.sh --check"
     plugins:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
