@@ -96,6 +96,15 @@ cat <<EOF
           always-pull: true
 EOF
 
+###### Ensure the code still compiles with Bazel
+cat <<EOF
+  - label: "Bazel compilation"
+    command: "bazel build //..."
+    plugins:
+      - docker#${DOCKER_VERSION}:
+          image: ${DOCKER_IMAGE}
+EOF
+
 ###### Ref tests
 # TODO: consider parallel builds for this?
 # https://buildkite.com/docs/tutorials/parallel-builds#parallel-jobs
