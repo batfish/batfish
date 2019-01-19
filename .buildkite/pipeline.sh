@@ -103,6 +103,7 @@ cat <<EOF
     plugins:
       - docker#${DOCKER_VERSION}:
           image: ${DOCKER_IMAGE}
+          always-pull: true
 EOF
 
 ###### Ref tests
