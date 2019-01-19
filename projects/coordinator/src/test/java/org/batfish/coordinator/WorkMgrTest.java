@@ -3139,6 +3139,15 @@ public final class WorkMgrTest {
   }
 
   @Test
+  public void testIpProtocolSpecAutocomplete() throws IOException {
+    assertThat(
+        _manager.autoComplete("network", "snapshot", Type.IP_PROTOCOL_SPEC, "89 (O", 5).stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("89 (OSPF)")));
+  }
+
+  @Test
   public void testIpsecSessionStatusAutocomplete() throws IOException {
     assertThat(
         _manager.autoComplete("network", "snapshot", Type.IPSEC_SESSION_STATUS, "phase", 5).stream()
