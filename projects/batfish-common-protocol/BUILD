@@ -82,6 +82,7 @@ java_library(
         "@jersey_container_grizzly2//:compile",
         "@jersey_server//:compile",
         "@jettison//:compile",
+        "@jgrapht//:compile",
         "@jsonassert//:compile",
         "@jsr305//:compile",
         "@lz4//:compile",
