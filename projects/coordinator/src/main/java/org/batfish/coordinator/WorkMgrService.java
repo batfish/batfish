@@ -1649,7 +1649,7 @@ public class WorkMgrService {
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
 
-      SortedSet<String> networks = Main.getWorkMgr().listContainers(apiKey);
+      SortedSet<String> networks = Main.getWorkMgr().listNetworks(apiKey);
       return successResponse(
           new JSONObject()
               .put(CoordConsts.SVC_KEY_CONTAINER_LIST, networks)
@@ -1969,7 +1969,7 @@ public class WorkMgrService {
 
       boolean force = !Strings.isNullOrEmpty(forceStr) && Boolean.parseBoolean(forceStr);
 
-      int numCommits = Main.getWorkMgr().syncTestrigsSyncNow(networkName, pluginId, force);
+      int numCommits = Main.getWorkMgr().syncSnapshotsSyncNow(networkName, pluginId, force);
 
       return successResponse(new JSONObject().put("numCommits", numCommits));
     } catch (IllegalArgumentException | AccessControlException e) {
@@ -2023,7 +2023,7 @@ public class WorkMgrService {
               .readValue(settingsStr, new TypeReference<Map<String, String>>() {});
 
       boolean result =
-          Main.getWorkMgr().syncTestrigsUpdateSettings(networkName, pluginId, settings);
+          Main.getWorkMgr().syncSnapshotsUpdateSettings(networkName, pluginId, settings);
 
       return successResponse(new JSONObject().put("result", result));
     } catch (FileExistsException

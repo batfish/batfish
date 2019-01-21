@@ -6,11 +6,11 @@ import org.batfish.common.BatfishException;
 
 public abstract class AbstractCoordinator extends PluginConsumer implements ICoordinator {
 
-  protected final Map<String, SyncTestrigsPlugin> _testrigSyncers;
+  protected final Map<String, SyncTestrigsPlugin> _snapshotsSyncers;
 
   public AbstractCoordinator(boolean serializeToText) {
     super(serializeToText);
-    _testrigSyncers = new HashMap<>();
+    _snapshotsSyncers = new HashMap<>();
   }
 
   @Override
@@ -20,9 +20,9 @@ public abstract class AbstractCoordinator extends PluginConsumer implements ICoo
 
   @Override
   public final void registerTestrigSyncer(String name, SyncTestrigsPlugin plugin) {
-    if (_testrigSyncers.containsKey(name)) {
+    if (_snapshotsSyncers.containsKey(name)) {
       throw new BatfishException("Multiple SyncTestrigs plugins are registering for " + name);
     }
-    _testrigSyncers.put(name, plugin);
+    _snapshotsSyncers.put(name, plugin);
   }
 }
