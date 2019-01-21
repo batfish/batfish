@@ -2616,7 +2616,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
        * 1. ensure default import policies exist
        * 2. convert VS rib groups to VI rib groups on a per-protocol basis
        */
-      initDefaultImportPolicies();
+      if (!ri.getAppliedRibGroups().isEmpty()) {
+        initDefaultImportPolicies();
+      }
       vrf.setAppliedRibGroups(
           ri.getAppliedRibGroups().entrySet().stream()
               .collect(
