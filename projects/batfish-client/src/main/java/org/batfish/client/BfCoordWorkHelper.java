@@ -79,7 +79,7 @@ public class BfCoordWorkHelper {
 
   String autoComplete(
       String networkName,
-      String snapshitName,
+      String snapshotName,
       CompletionType completionType,
       String query,
       int maxSuggestions) {
@@ -91,7 +91,7 @@ public class BfCoordWorkHelper {
 
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_NETWORK_NAME, networkName);
-      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_SNAPSHOT_NAME, snapshitName);
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_SNAPSHOT_NAME, snapshotName);
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_COMPLETION_TYPE, completionType.toString());
       addTextMultiPart(multiPart, CoordConsts.SVC_KEY_QUERY, query);
       addTextMultiPart(
