@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
@@ -35,6 +36,7 @@ public final class FirewallSessionInfo implements Serializable {
     _outgoingAclName = outgoingAclName;
   }
 
+  @JsonCreator
   private static FirewallSessionInfo jsonCreator(
       @JsonProperty(PROP_SESSION_INTERFACES) @Nullable Set<String> sessionIntefaces,
       @JsonProperty(PROP_INCOMING_ACL_NAME) @Nullable String incomingAclName,
