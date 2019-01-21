@@ -1,0 +1,11 @@
+set system host-name juniper-interface-ribgroup
+#
+set routing-options interface-routes rib-group inet interface-routes-rib
+set routing-options rib-groups interface-routes-rib import-rib inet.0
+set routing-options rib-groups interface-routes-rib import-rib VRF2.inet.0
+#
+set interfaces lo0 unit 0 family inet address 1.1.1.1/32
+set interfaces ge-0/0/0 unit 0 family inet address 2.2.2.2/31
+#
+set routing-instances VRF2 interface ge-0/0/3.0
+set interfaces ge-0/0/3 unit 0 family inet address 2.2.2.8/31

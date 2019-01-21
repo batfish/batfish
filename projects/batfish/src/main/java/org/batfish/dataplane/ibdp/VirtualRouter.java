@@ -1,6 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
@@ -80,6 +81,8 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.dataplane.rib.RibGroup;
+import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpInterface;
 import org.batfish.datamodel.isis.IsisEdge;
@@ -97,6 +100,7 @@ import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNode;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.dataplane.exceptions.BgpRoutePropagationException;
@@ -186,8 +190,12 @@ public class VirtualRouter implements Serializable {
   /** The finalized RIB, a combination different protocol RIBs */
   Rib _mainRib;
 
+  private Map<String, Rib> _mainRibs;
+
   /** Keeps track of changes to the main RIB */
   private transient RibDelta.Builder<AbstractRoute> _mainRibRouteDeltaBuilder;
+
+  private final Node _node;
 
   private final String _name;
 
@@ -242,10 +250,11 @@ public class VirtualRouter implements Serializable {
   /** A {@link Vrf} that this virtual router represents */
   final Vrf _vrf;
 
-  VirtualRouter(final String name, final Configuration c) {
-    _c = c;
+  VirtualRouter(final String name, final Node node) {
+    _node = node;
+    _c = node.getConfiguration();
     _name = name;
-    _vrf = c.getVrfs().get(name);
+    _vrf = _c.getVrfs().get(name);
     initRibs();
     _bgpIncomingRoutes = new TreeMap<>();
     _prefixTracer = new PrefixTracer();
@@ -289,10 +298,45 @@ public class VirtualRouter implements Serializable {
     initConnectedRib();
     initLocalRib();
     initStaticRibs();
+    // Always import local and collected routes into your own rib
     importRib(_independentRib, _connectedRib);
     importRib(_independentRib, _localRib);
     importRib(_independentRib, _staticInterfaceRib);
     importRib(_mainRib, _independentRib);
+    // Now check whether any rib groups are applied
+    RibGroup connectedRibGroup = _vrf.getAppliedRibGroups().get(RoutingProtocol.CONNECTED);
+    importRib(_mainRib, _connectedRib);
+    if (connectedRibGroup != null) {
+      RoutingPolicy policy = _c.getRoutingPolicies().get(connectedRibGroup.getImportPolicy());
+      checkState(policy != null, "RIB group %s is missing import policy");
+      _connectedRib.getRoutes().stream()
+          .filter(
+              route ->
+                  policy
+                      .call(Environment.builder(_c).setOriginalRoute(route).setVrf(_name).build())
+                      .getBooleanValue())
+          .forEach(
+              r ->
+                  connectedRibGroup
+                      .getImportRibs()
+                      .forEach(ribId -> _node.getRib(ribId).ifPresent(rib -> rib.mergeRoute(r))));
+    }
+    RibGroup localRibGroup = _vrf.getAppliedRibGroups().get(RoutingProtocol.LOCAL);
+    if (localRibGroup != null) {
+      RoutingPolicy policy = _c.getRoutingPolicies().get(localRibGroup.getImportPolicy());
+      checkState(policy != null, "RIB group %s is missing import policy");
+      _localRib.getRoutes().stream()
+          .filter(
+              route ->
+                  policy
+                      .call(Environment.builder(_c).setOriginalRoute(route).setVrf(_name).build())
+                      .getBooleanValue())
+          .forEach(
+              r ->
+                  localRibGroup
+                      .getImportRibs()
+                      .forEach(ribId -> _node.getRib(ribId).ifPresent(rib -> rib.mergeRoute(r))));
+    }
     initIntraAreaOspfRoutes();
     initEigrp();
     initBaseRipRoutes();
@@ -1151,7 +1195,8 @@ public class VirtualRouter implements Serializable {
     _independentRib = new Rib();
 
     // Main RIB + delta builder
-    _mainRib = new Rib();
+    _mainRibs = ImmutableMap.of(RibId.DEFAULT_RIB_NAME, new Rib());
+    _mainRib = _mainRibs.get(RibId.DEFAULT_RIB_NAME);
     _mainRibRouteDeltaBuilder = new RibDelta.Builder<>(_mainRib);
 
     // BGP
@@ -2570,6 +2615,10 @@ public class VirtualRouter implements Serializable {
     return _mainRib;
   }
 
+  Map<String, Rib> getMainRibs() {
+    return _mainRibs;
+  }
+
   BgpRib getBgpRib() {
     return _bgpRib;
   }
@@ -2690,5 +2739,12 @@ public class VirtualRouter implements Serializable {
         ourConfig.getExportPolicy());
 
     return transformedOutgoingRoute;
+  }
+
+  public Optional<Rib> getRib(RibId id) {
+    if (!_name.equals(id.getVrfName())) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable(_mainRibs.get(id.getRibName()));
   }
 }
