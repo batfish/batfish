@@ -1,5 +1,7 @@
 package org.batfish.datamodel.routing_policy;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -10,7 +12,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,17 +32,20 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 /** A procedural routing policy used to transform and accept/reject IPV4/IPV6 routes */
 public class RoutingPolicy implements Serializable {
 
+  /**
+   * Builder for {@link RoutingPolicy}.
+   *
+   * <p><b>Note:</b> the resulting statements will be an immutable list.
+   */
   public static final class Builder extends NetworkFactoryBuilder<RoutingPolicy> {
 
     private String _name;
-
     private Configuration _owner;
-
-    private List<Statement> _statements;
+    private ImmutableList.Builder<Statement> _statements;
 
     public Builder(NetworkFactory networkFactory) {
       super(networkFactory, RoutingPolicy.class);
-      _statements = Collections.emptyList();
+      _statements = ImmutableList.builder();
     }
 
     @Override
@@ -51,7 +55,7 @@ public class RoutingPolicy implements Serializable {
       if (_owner != null) {
         _owner.getRoutingPolicies().put(name, routingPolicy);
       }
-      routingPolicy.setStatements(_statements);
+      routingPolicy.setStatements(_statements.build());
       return routingPolicy;
     }
 
@@ -66,28 +70,20 @@ public class RoutingPolicy implements Serializable {
     }
 
     public Builder setStatements(List<Statement> statements) {
-      _statements = statements;
+      _statements = ImmutableList.<Statement>builder().addAll(statements);
       return this;
     }
-  }
-
-  public static boolean isGenerated(String s) {
-    return s.startsWith("~");
   }
 
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_NAME = "name";
-
   private static final String PROP_STATEMENTS = "statements";
 
-  private final String _name;
-
-  private Configuration _owner;
-
-  private transient Set<String> _sources;
-
-  private List<Statement> _statements;
+  @Nonnull private final String _name;
+  @Nullable private Configuration _owner;
+  @Nullable private transient Set<String> _sources;
+  @Nonnull private List<Statement> _statements;
 
   @JsonCreator
   private RoutingPolicy(@Nullable @JsonProperty(PROP_NAME) String name) {
@@ -98,6 +94,19 @@ public class RoutingPolicy implements Serializable {
     _name = name;
     _owner = owner;
     _statements = new ArrayList<>();
+  }
+
+  /** Builder to be used with a {@link NetworkFactory} for tests */
+  public static Builder builder(@Nullable NetworkFactory nf) {
+    return new Builder(nf);
+  }
+
+  public static Builder builder() {
+    return new Builder(null);
+  }
+
+  public static boolean isGenerated(String s) {
+    return s.startsWith("~");
   }
 
   public Result call(Environment environment) {
@@ -157,17 +166,20 @@ public class RoutingPolicy implements Serializable {
     return _name;
   }
 
+  @Nullable
   @JsonIgnore
   public Configuration getOwner() {
     return _owner;
   }
 
+  @Nullable
   @JsonIgnore
   public Set<String> getSources() {
     return _sources;
   }
 
   /** Returns the list of routing-policy statements to execute */
+  @Nonnull
   @JsonProperty(PROP_STATEMENTS)
   public List<Statement> getStatements() {
     return _statements;
@@ -189,6 +201,7 @@ public class RoutingPolicy implements Serializable {
       @Nullable Prefix peerPrefix,
       String vrf,
       Direction direction) {
+    checkState(_owner != null, "Cannot evaluate routing policy without a Configuration");
     Environment environment =
         Environment.builder(_owner)
             .setVrf(vrf)
@@ -203,8 +216,9 @@ public class RoutingPolicy implements Serializable {
   }
 
   @JsonProperty(PROP_STATEMENTS)
-  public void setStatements(List<Statement> statements) {
-    _statements = statements;
+  public void setStatements(@Nullable List<Statement> statements) {
+    // Array list because of really old pattern where we do get().add() all over the place.
+    _statements = firstNonNull(statements, new ArrayList<>());
   }
 
   public RoutingPolicy simplify() {
