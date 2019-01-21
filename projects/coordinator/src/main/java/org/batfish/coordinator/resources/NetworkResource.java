@@ -30,10 +30,10 @@ import org.batfish.common.Container;
 import org.batfish.coordinator.Main;
 
 /**
- * The {@link NetworkResource} is a resource for servicing client API calls at container level.
+ * The {@link NetworkResource} is a resource for servicing client API calls at network level.
  *
- * <p>The NetworkResource provides information about a specified container, and provides the ability
- * to delete a specified container for authenticated clients.
+ * <p>The NetworkResource provides information about a specified network, and provides the ability
+ * to delete a specified network for authenticated clients.
  *
  * <p>The NetworkResource also provides the access entry for other subResources.
  */
@@ -45,7 +45,7 @@ public class NetworkResource {
   private String _name;
 
   public NetworkResource(String apiKey, String name) {
-    checkAccessToContainer(apiKey, name);
+    checkAccessToNetwork(apiKey, name);
     _name = name;
   }
 
@@ -102,15 +102,15 @@ public class NetworkResource {
     return Response.ok().build();
   }
 
-  /** Check if {@code container} exists and {@code apiKey} has access to it. */
-  private static void checkAccessToContainer(String apiKey, String container) {
-    if (!Main.getWorkMgr().checkContainerExists(container)) {
-      throw new NotFoundException(String.format("Network '%s' does not exist", container));
+  /** Check if {@code network} exists and {@code apiKey} has access to it. */
+  private static void checkAccessToNetwork(String apiKey, String network) {
+    if (!Main.getWorkMgr().checkNetworkExists(network)) {
+      throw new NotFoundException(String.format("Network '%s' does not exist", network));
     }
 
-    if (!Main.getAuthorizer().isAccessibleContainer(apiKey, container, false)) {
+    if (!Main.getAuthorizer().isAccessibleNetwork(apiKey, network, false)) {
       throw new ForbiddenException(
-          String.format("network '%s' is not accessible by the api key: %s", container, apiKey));
+          String.format("network '%s' is not accessible by the api key: %s", network, apiKey));
     }
   }
 

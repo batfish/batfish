@@ -1108,7 +1108,7 @@ public class Client extends AbstractClient implements IClient {
       return false;
     }
     String containerName = parameters.get(0);
-    boolean result = _workHelper.delContainer(containerName);
+    boolean result = _workHelper.delNetwork(containerName);
     _logger.outputf("Result of deleting network: %s\n", result);
     return true;
   }
@@ -1137,7 +1137,7 @@ public class Client extends AbstractClient implements IClient {
     }
 
     String testrigName = parameters.get(0);
-    boolean result = _workHelper.delTestrig(_currContainerName, testrigName);
+    boolean result = _workHelper.delSnapshot(_currContainerName, testrigName);
     logOutput(outWriter, "Result of deleting snapshot: " + result + "\n");
     return true;
   }
@@ -1332,7 +1332,7 @@ public class Client extends AbstractClient implements IClient {
     Command command =
         differential
             ? Command.GET_ANALYSIS_ANSWERS_DIFFERENTIAL
-            : delta ? Command.GET_ANALYSIS_ANSWERS_DELTA : Command.GET_ANALYSIS_ANSWERS;
+            : delta ? Command.GET_ANALYSIS_ANSWERS_REFERENCE : Command.GET_ANALYSIS_ANSWERS;
     if (!isValidArgument(options, parameters, 0, 1, 1, command)) {
       return false;
     }
@@ -1375,7 +1375,7 @@ public class Client extends AbstractClient implements IClient {
     Command command =
         differential
             ? Command.GET_ANSWER_DIFFERENTIAL
-            : delta ? Command.GET_ANSWER_DELTA : Command.GET_ANSWER;
+            : delta ? Command.GET_ANSWER_REFERENCE : Command.GET_ANSWER;
     if (!isValidArgument(options, parameters, 0, 1, 1, command)) {
       return false;
     }
@@ -1447,7 +1447,7 @@ public class Client extends AbstractClient implements IClient {
     String containerName = parameters.get(0);
     String testrigName = parameters.get(1);
     String configName = parameters.get(2);
-    String configContent = _workHelper.getConFiguration(containerName, testrigName, configName);
+    String configContent = _workHelper.getConfiguration(containerName, testrigName, configName);
     if (configContent != null) {
       _logger.outputf("%s\n", configContent);
       return true;
@@ -1483,7 +1483,7 @@ public class Client extends AbstractClient implements IClient {
       List<String> options,
       List<String> parameters,
       boolean delta) {
-    Command command = delta ? Command.GET_OBJECT_DELTA : Command.GET_OBJECT;
+    Command command = delta ? Command.GET_OBJECT_REFERENCE : Command.GET_OBJECT;
     if (!isValidArgument(options, parameters, 0, 1, 1, command)) {
       return false;
     }
@@ -1626,13 +1626,13 @@ public class Client extends AbstractClient implements IClient {
       if (!isValidArgument(options, parameters, 1, 1, 1, Command.INIT_NETWORK)) {
         return false;
       }
-      _currContainerName = _workHelper.initContainer(parameters.get(0), null);
+      _currContainerName = _workHelper.initNetwork(parameters.get(0), null);
     } else {
       if (!isValidArgument(options, parameters, 0, 0, 1, Command.INIT_NETWORK)) {
         return false;
       }
       String containerPrefix = parameters.isEmpty() ? DEFAULT_NETWORK_PREFIX : parameters.get(0);
-      _currContainerName = _workHelper.initContainer(null, containerPrefix);
+      _currContainerName = _workHelper.initNetwork(null, containerPrefix);
     }
     if (_currContainerName == null) {
       _logger.errorf("Could not init network\n");
@@ -1780,7 +1780,7 @@ public class Client extends AbstractClient implements IClient {
 
     // initialize the container if it hasn't been init'd before
     if (!isSetContainer(false)) {
-      _currContainerName = _workHelper.initContainer(null, DEFAULT_NETWORK_PREFIX);
+      _currContainerName = _workHelper.initNetwork(null, DEFAULT_NETWORK_PREFIX);
       if (_currContainerName == null) {
         _logger.errorf("Could not init network\n");
         return false;
@@ -1951,7 +1951,7 @@ public class Client extends AbstractClient implements IClient {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.LIST_NETWORKS)) {
       return false;
     }
-    String[] containerList = _workHelper.listContainers();
+    String[] containerList = _workHelper.listNetworks();
     _logger.outputf("Networks: %s\n", Arrays.toString(containerList));
     return true;
   }
@@ -1998,7 +1998,7 @@ public class Client extends AbstractClient implements IClient {
       }
     }
 
-    JSONArray testrigArray = _workHelper.listTestrigs(_currContainerName);
+    JSONArray testrigArray = _workHelper.listSnapshots(_currContainerName);
     if (testrigArray != null) {
       for (int index = 0; index < testrigArray.length(); index++) {
         try {
@@ -2377,15 +2377,7 @@ public class Client extends AbstractClient implements IClient {
 
   private void printUsage(Command command) {
     Pair<String, String> usage = Command.getUsageMap().get(command);
-    String deprecationReason = Command.getDeprecatedMap().get(command);
-    if (deprecationReason == null) {
-      _logger.outputf(
-          "%s %s\n\t%s\n\n", command.commandName(), usage.getFirst(), usage.getSecond());
-    } else {
-      _logger.outputf(
-          "(deprecated) %s %s\n\t%s\n\t%s\n\n",
-          command.commandName(), usage.getFirst(), usage.getSecond(), deprecationReason);
-    }
+    _logger.outputf("%s %s\n\t%s\n\n", command.commandName(), usage.getFirst(), usage.getSecond());
   }
 
   private void printWorkStatusResponse(
@@ -2444,14 +2436,6 @@ public class Client extends AbstractClient implements IClient {
       return false;
     }
 
-    // If command is deprecated, encourage user to use alternative.
-    String deprecationReason = Command.getDeprecatedMap().get(command);
-    if (deprecationReason != null) {
-      _logger.outputf(
-          "WARNING: Command %s has been deprecated and may be removed. %s\n",
-          command.commandName(), deprecationReason);
-    }
-
     List<String> options = getCommandOptions(words);
     List<String> parameters = getCommandParameters(words, options.size());
 
@@ -2478,7 +2462,6 @@ public class Client extends AbstractClient implements IClient {
         return addBatfishOption(words, options, parameters);
       case ANSWER:
         return answer(words, outWriter, options, parameters, false);
-      case ANSWER_DELTA:
       case ANSWER_REFERENCE:
         return answer(words, outWriter, options, parameters, true);
       case AUTOCOMPLETE:
@@ -2505,15 +2488,11 @@ public class Client extends AbstractClient implements IClient {
         return delAnalysisQuestions(outWriter, options, parameters);
       case DEL_BATFISH_OPTION:
         return delBatfishOption(options, parameters);
-      case DEL_CONTAINER:
-        return delNetwork(options, parameters);
       case DEL_NETWORK:
         return delNetwork(options, parameters);
       case DEL_QUESTION:
         return delQuestion(options, parameters);
       case DEL_SNAPSHOT:
-        return delSnapshot(outWriter, options, parameters);
-      case DEL_TESTRIG:
         return delSnapshot(outWriter, options, parameters);
       case DIR:
         return dir(options, parameters);
@@ -2521,28 +2500,22 @@ public class Client extends AbstractClient implements IClient {
         return echo(words);
       case GEN_DP:
         return generateDataplane(outWriter, options, parameters);
-      case GEN_DELTA_DP:
       case GEN_REFERENCE_DP:
         return generateReferenceDataplane(outWriter, options, parameters);
       case GET:
         return get(words, outWriter, options, parameters, false);
       case GET_CONFIGURATION:
         return getConfiguration(options, parameters);
-      case GET_CONTAINER:
-        return getNetwork(options, parameters);
-      case GET_DELTA:
       case GET_REFERENCE:
         return get(words, outWriter, options, parameters, true);
       case GET_ANALYSIS_ANSWERS:
         return getAnalysisAnswers(outWriter, options, parameters, false, false);
-      case GET_ANALYSIS_ANSWERS_DELTA:
       case GET_ANALYSIS_ANSWERS_REFERENCE:
         return getAnalysisAnswers(outWriter, options, parameters, true, false);
       case GET_ANALYSIS_ANSWERS_DIFFERENTIAL:
         return getAnalysisAnswers(outWriter, options, parameters, false, true);
       case GET_ANSWER:
         return getAnswer(outWriter, options, parameters, false, false);
-      case GET_ANSWER_DELTA:
       case GET_ANSWER_REFERENCE:
         return getAnswer(outWriter, options, parameters, true, false);
       case GET_ANSWER_DIFFERENTIAL:
@@ -2551,7 +2524,6 @@ public class Client extends AbstractClient implements IClient {
         return getNetwork(options, parameters);
       case GET_OBJECT:
         return getObject(outWriter, options, parameters, false);
-      case GET_OBJECT_DELTA:
       case GET_OBJECT_REFERENCE:
         return getObject(outWriter, options, parameters, false);
       case GET_QUESTION_TEMPLATES:
@@ -2562,24 +2534,16 @@ public class Client extends AbstractClient implements IClient {
         return help(options, parameters);
       case INIT_ANALYSIS:
         return initOrAddAnalysis(outWriter, options, parameters, true);
-      case INIT_CONTAINER:
-        return initNetwork(options, parameters);
-      case INIT_DELTA_SNAPSHOT:
       case INIT_REFERENCE_SNAPSHOT:
-      case INIT_DELTA_TESTRIG:
         return initSnapshot(outWriter, options, parameters, true);
       case INIT_NETWORK:
         return initNetwork(options, parameters);
       case INIT_SNAPSHOT:
         return initSnapshot(outWriter, options, parameters, false);
-      case INIT_TESTRIG:
-        return initSnapshot(outWriter, options, parameters, false);
       case KILL_WORK:
         return killWork(options, parameters);
       case LIST_ANALYSES:
         return listAnalyses(outWriter, options, parameters);
-      case LIST_CONTAINERS:
-        return listNetworks(options, parameters);
       case LIST_INCOMPLETE_WORK:
         return listIncompleteWork(options, parameters);
       case LIST_NETWORKS:
@@ -2587,8 +2551,6 @@ public class Client extends AbstractClient implements IClient {
       case LIST_QUESTIONS:
         return listQuestions(options, parameters);
       case LIST_SNAPSHOTS:
-        return listSnapshots(outWriter, options, parameters);
-      case LIST_TESTRIGS:
         return listSnapshots(outWriter, options, parameters);
       case LOAD_QUESTIONS:
         return loadQuestions(outWriter, options, parameters, _bfq);
@@ -2600,7 +2562,6 @@ public class Client extends AbstractClient implements IClient {
         return pwd(options, parameters);
       case RUN_ANALYSIS:
         return runAnalysis(outWriter, options, parameters, false, false);
-      case RUN_ANALYSIS_DELTA:
       case RUN_ANALYSIS_REFERENCE:
         return runAnalysis(outWriter, options, parameters, true, false);
       case RUN_ANALYSIS_DIFFERENTIAL:
@@ -2609,12 +2570,8 @@ public class Client extends AbstractClient implements IClient {
         return setBackgroundExecution(options, parameters);
       case SET_BATFISH_LOGLEVEL:
         return setBatfishLogLevel(options, parameters);
-      case SET_CONTAINER:
-        return setNetwork(options, parameters);
       case SET_FIXED_WORKITEM_ID:
         return setFixedWorkItemId(options, parameters);
-      case SET_DELTA_SNAPSHOT:
-      case SET_DELTA_TESTRIG:
       case SET_REFERENCE_SNAPSHOT:
         return setReferenceSnapshot(options, parameters);
       case SET_LOGLEVEL:
@@ -2625,20 +2582,14 @@ public class Client extends AbstractClient implements IClient {
         return setPrettyPrint(options, parameters);
       case SET_SNAPSHOT:
         return setSnapshot(options, parameters);
-      case SET_TESTRIG:
-        return setSnapshot(options, parameters);
       case SHOW_API_KEY:
         return showApiKey(options, parameters);
       case SHOW_BATFISH_LOGLEVEL:
         return showBatfishLogLevel(options, parameters);
       case SHOW_BATFISH_OPTIONS:
         return showBatfishOptions(options, parameters);
-      case SHOW_CONTAINER:
-        return showNetwork(options, parameters);
       case SHOW_COORDINATOR_HOST:
         return showCoordinatorHost(options, parameters);
-      case SHOW_DELTA_SNAPSHOT:
-      case SHOW_DELTA_TESTRIG:
       case SHOW_REFERENCE_SNAPSHOT:
         return showReferenceSnapshot(options, parameters);
       case SHOW_LOGLEVEL:
@@ -2647,17 +2598,11 @@ public class Client extends AbstractClient implements IClient {
         return showNetwork(options, parameters);
       case SHOW_SNAPSHOT:
         return showSnapshot(options, parameters);
-      case SHOW_TESTRIG:
-        return showSnapshot(options, parameters);
       case SHOW_VERSION:
         return showVersion(options, parameters);
       case SYNC_SNAPSHOTS_SYNC_NOW:
         return syncSnapshotsSyncNow(options, parameters);
-      case SYNC_TESTRIGS_SYNC_NOW:
-        return syncSnapshotsSyncNow(options, parameters);
       case SYNC_SNAPSHOTS_UPDATE_SETTINGS:
-        return syncSnapshotsUpdateSettings(words, options, parameters);
-      case SYNC_TESTRIGS_UPDATE_SETTINGS:
         return syncSnapshotsUpdateSettings(words, options, parameters);
       case TEST:
         return test(options, parameters);
@@ -2862,12 +2807,12 @@ public class Client extends AbstractClient implements IClient {
         System.err.println("org.batfish.client: Cannot supply both snapshotDir and snapshotId.");
         System.exit(1);
       }
-      if (!processCommand(Command.INIT_TESTRIG.commandName() + " " + _settings.getSnapshotDir())) {
+      if (!processCommand(Command.INIT_SNAPSHOT.commandName() + " " + _settings.getSnapshotDir())) {
         return;
       }
     }
     if (_settings.getSnapshotId() != null
-        && !processCommand(Command.SET_TESTRIG.commandName() + "  " + _settings.getSnapshotId())) {
+        && !processCommand(Command.SET_SNAPSHOT.commandName() + "  " + _settings.getSnapshotId())) {
       return;
     }
 
@@ -2908,7 +2853,7 @@ public class Client extends AbstractClient implements IClient {
     Command command =
         differential
             ? Command.RUN_ANALYSIS_DIFFERENTIAL
-            : delta ? Command.RUN_ANALYSIS_DELTA : Command.RUN_ANALYSIS;
+            : delta ? Command.RUN_ANALYSIS_REFERENCE : Command.RUN_ANALYSIS;
     if (!isValidArgument(options, parameters, 0, 1, 1, command)) {
       return false;
     }
@@ -3177,7 +3122,7 @@ public class Client extends AbstractClient implements IClient {
 
     String pluginId = parameters.get(0);
 
-    return _workHelper.syncTestrigsSyncNow(pluginId, _currContainerName, force);
+    return _workHelper.syncSnapshotsSyncNow(pluginId, _currContainerName, force);
   }
 
   private boolean syncSnapshotsUpdateSettings(
@@ -3211,7 +3156,7 @@ public class Client extends AbstractClient implements IClient {
       return false;
     }
 
-    return _workHelper.syncTestrigsUpdateSettings(pluginId, _currContainerName, settings);
+    return _workHelper.syncSnapshotsUpdateSettings(pluginId, _currContainerName, settings);
   }
 
   /**
@@ -3369,7 +3314,7 @@ public class Client extends AbstractClient implements IClient {
     }
     try {
       boolean result =
-          _workHelper.uploadTestrig(
+          _workHelper.uploadSnapshot(
               _currContainerName, testrigName, uploadTarget.toString(), autoAnalyze);
       return result;
     } finally {

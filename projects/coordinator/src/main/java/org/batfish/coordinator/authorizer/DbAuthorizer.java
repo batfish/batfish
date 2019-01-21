@@ -113,7 +113,7 @@ public class DbAuthorizer implements Authorizer {
     }
 
     // return if already accessible
-    if (isAccessibleContainer(apiKey, containerName, false)) {
+    if (isAccessibleNetwork(apiKey, containerName, false)) {
       return;
     }
     int numRows;
@@ -195,7 +195,7 @@ public class DbAuthorizer implements Authorizer {
   }
 
   @Override
-  public boolean isAccessibleContainer(String apiKey, String containerName, boolean logError) {
+  public boolean isAccessibleNetwork(String apiKey, String containerName, boolean logError) {
 
     String cacheKey = getPermsCacheKey(apiKey, containerName);
     if (_cachePermissions.getIfPresent(cacheKey) != null) {

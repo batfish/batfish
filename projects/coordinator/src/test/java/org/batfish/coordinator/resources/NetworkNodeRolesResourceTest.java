@@ -43,7 +43,7 @@ public final class NetworkNodeRolesResourceTest extends WorkMgrServiceV2TestBase
   }
 
   @Before
-  public void initContainerEnvironment() throws Exception {
+  public void initTestEnvironment() throws Exception {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
