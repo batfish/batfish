@@ -82,7 +82,7 @@ public final class Layer1Node implements Comparable<Layer1Node> {
     }
     return networkConfigurations
         .getInterface(_hostname, iface.getChannelGroup())
-        .map(c -> c.getActive() ? c : null)
+        .filter(Interface::getActive)
         .map(c -> new Layer1Node(_hostname, c.getName()))
         .orElse(null);
   }
