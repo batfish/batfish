@@ -202,7 +202,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-  private static final Set<String> CONTAINER_FILENAMES =
+  private static final Set<String> WELL_KNOWN_NETWORK_FILENAMES =
       ImmutableSet.of(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH, BfConsts.RELPATH_NODE_ROLES_PATH);
 
   private static final Set<String> ENV_FILENAMES =
@@ -1542,12 +1542,12 @@ public class WorkMgr extends AbstractCoordinator {
         .readValue(_storage.loadPojoTopology(networkId, snapshotId), Topology.class);
   }
 
-  public JSONObject getParsingResults(String networkNameName, String snapshotName)
+  public JSONObject getParsingResults(String networkName, String snapshotName)
       throws JsonProcessingException, JSONException {
 
     ParseVendorConfigurationAnswerElement pvcae =
         deserializeObject(
-            getdirSnapshot(networkNameName, snapshotName)
+            getdirSnapshot(networkName, snapshotName)
                 .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_PARSE_ANSWER_PATH)),
             ParseVendorConfigurationAnswerElement.class);
     JSONObject warnings = new JSONObject();
@@ -1780,7 +1780,7 @@ public class WorkMgr extends AbstractCoordinator {
         if (name.equals(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES)) {
           bgpTables = true;
         }
-      } else if (isContainerFile(subFile)) {
+      } else if (isWellKnownNetworkFile(subFile)) {
         if (name.equals(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH)) {
           referenceLibraryData = true;
           try {
@@ -2036,8 +2036,8 @@ public class WorkMgr extends AbstractCoordinator {
     return autoWorkQueue;
   }
 
-  private static boolean isContainerFile(Path path) {
-    return CONTAINER_FILENAMES.contains(path.getFileName().toString());
+  private static boolean isWellKnownNetworkFile(Path path) {
+    return WELL_KNOWN_NETWORK_FILENAMES.contains(path.getFileName().toString());
   }
 
   private static boolean isEnvFile(Path path) {
