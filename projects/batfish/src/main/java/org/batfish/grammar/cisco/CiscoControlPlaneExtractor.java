@@ -5129,7 +5129,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private void exitEigrpProcess(ParserRuleContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     EigrpProcess proc = _currentEigrpProcess;
@@ -5142,7 +5142,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
        * The result should be a process with ASN 1, but instead the result is an invalid EIGRP
        * process with null ASN.
        */
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp ASN configured");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP ASN configured");
       return;
     }
     proc.computeNetworks(_configuration.getInterfaces().values());
@@ -7367,7 +7367,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_autonomous_system(Re_autonomous_systemContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
 
@@ -7379,7 +7379,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_default_metric(Re_default_metricContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     if (ctx.NO() == null) {
@@ -7395,7 +7395,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_eigrp_router_id(Re_eigrp_router_idContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     if (ctx.NO() == null) {
@@ -7409,7 +7409,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRe_network(Re_networkContext ctx) {
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     // In process context
@@ -7422,7 +7422,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_passive_interface(Re_passive_interfaceContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     boolean passive = (ctx.NO() == null);
@@ -7436,7 +7436,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_passive_interface_default(Re_passive_interface_defaultContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     boolean passive = (ctx.NO() == null);
@@ -7447,7 +7447,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_bgp(Re_redistribute_bgpContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
@@ -7475,7 +7475,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_connected(Re_redistribute_connectedContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
@@ -7502,7 +7502,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_eigrp(Re_redistribute_eigrpContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.EIGRP;
@@ -7533,14 +7533,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.referenceStructure(
           ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_ISIS_MAP, ctx.map.getStart().getLine());
     }
-    _w.addWarning(ctx, getFullText(ctx), _parser, "ISIS redistirution in EIGRP is not implemented");
+    _w.addWarning(
+        ctx, getFullText(ctx), _parser, "ISIS redistribution in EIGRP is not implemented");
   }
 
   @Override
   public void exitRe_redistribute_ospf(Re_redistribute_ospfContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.OSPF;
@@ -7572,7 +7573,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_rip(Re_redistribute_ripContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.RIP;
@@ -7598,7 +7599,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_static(Re_redistribute_staticContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
@@ -7629,12 +7630,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitReafi_passive_interface(Reafi_passive_interfaceContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     // In interface context
     if (_currentEigrpInterface == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp interface available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP interface available");
       return;
     }
 

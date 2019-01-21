@@ -62993,7 +62993,7 @@
               "Text" : "default-metric 1 2 3 4 5"
             },
             {
-              "Comment" : "ISIS redistirution in EIGRP is not implemented",
+              "Comment" : "ISIS redistribution in EIGRP is not implemented",
               "Line" : 34,
               "Parser_Context" : "[re_redistribute_isis re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
               "Text" : "redistribute isis route-map ISIS_TO_EIGRP"
