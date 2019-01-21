@@ -68,8 +68,7 @@ public final class TracePruner {
       } else if (!_unpickedNodes.isEmpty()) {
         usedTraces.add(chooseTraceByNode());
       } else {
-        _traces
-            .stream()
+        _traces.stream()
             .filter(trace -> !_pickedTraces.contains(trace))
             .limit(maxSize - usedTraces.size())
             .forEach(usedTraces::add);
@@ -82,8 +81,7 @@ public final class TracePruner {
 
   private Trace chooseTraceByDisposition() {
     Trace t =
-        _unpickedDispositions
-            .stream()
+        _unpickedDispositions.stream()
             .flatMap(disposition -> _dispositionTraces.get(disposition).stream())
             .filter(trace -> !_pickedTraces.contains(trace))
             .findFirst()
@@ -94,8 +92,7 @@ public final class TracePruner {
 
   private Trace chooseTraceByNode() {
     Trace t =
-        _unpickedNodes
-            .stream()
+        _unpickedNodes.stream()
             .flatMap(node -> _nodeTraces.get(node).stream())
             .filter(trace -> !_pickedTraces.contains(trace))
             .findFirst()

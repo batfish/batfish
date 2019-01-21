@@ -78,8 +78,7 @@ public class ReachabilityProgram {
      */
     _rules =
         _input.getSimplify()
-            ? rules
-                .stream()
+            ? rules.stream()
                 .map(Simplifier::simplifyStatement)
                 .filter(s -> s instanceof RuleStatement)
                 .map(s -> (RuleStatement) s)

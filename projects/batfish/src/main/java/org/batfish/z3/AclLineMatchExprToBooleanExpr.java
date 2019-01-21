@@ -93,9 +93,7 @@ public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVis
   @Override
   public BooleanExpr visitAndMatchExpr(AndMatchExpr andMatchExpr) {
     return new AndExpr(
-        andMatchExpr
-            .getConjuncts()
-            .stream()
+        andMatchExpr.getConjuncts().stream()
             .map(this::toBooleanExpr)
             .collect(ImmutableList.toImmutableList()));
   }
@@ -115,9 +113,7 @@ public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVis
   @Override
   public BooleanExpr visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
     return new OrExpr(
-        matchSrcInterface
-            .getSrcInterfaces()
-            .stream()
+        matchSrcInterface.getSrcInterfaces().stream()
             .map(this::matchSrcInterfaceExpr)
             .collect(ImmutableList.toImmutableList()));
   }
@@ -138,9 +134,7 @@ public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVis
   @Override
   public BooleanExpr visitOrMatchExpr(OrMatchExpr orMatchExpr) {
     return new OrExpr(
-        orMatchExpr
-            .getDisjuncts()
-            .stream()
+        orMatchExpr.getDisjuncts().stream()
             .map(this::toBooleanExpr)
             .collect(ImmutableList.toImmutableList()));
   }

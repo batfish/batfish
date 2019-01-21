@@ -50,9 +50,7 @@ public final class NetworkNodeRoleDimensionResource {
             NodeRolesData.builder()
                 .setDefaultDimension(nodeRolesData.getDefaultDimension())
                 .setRoleDimensions(
-                    nodeRolesData
-                        .getNodeRoleDimensions()
-                        .stream()
+                    nodeRolesData.getNodeRoleDimensions().stream()
                         .filter(dim -> !dim.getName().equalsIgnoreCase(dimension.get().getName()))
                         .collect(
                             ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())))

@@ -183,6 +183,18 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasNativeVlan extends FeatureMatcher<Interface, Integer> {
+    HasNativeVlan(@Nonnull Matcher<? super Integer> subMatcher) {
+      super(subMatcher, "an Interface with nativeVlan:", "nativeVlan");
+    }
+
+    @Override
+    @Nullable
+    protected Integer featureValueOf(Interface actual) {
+      return actual.getNativeVlan();
+    }
+  }
+
   static final class HasOspfArea extends FeatureMatcher<Interface, OspfArea> {
     HasOspfArea(@Nonnull Matcher<? super OspfArea> subMatcher) {
       super(subMatcher, "an Interface with ospfArea:", "ospfArea");

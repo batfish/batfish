@@ -48,20 +48,17 @@ public class RipAndBgpTest {
     SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(Configuration.DEFAULT_VRF_NAME);
     SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
     Set<Prefix> r1Prefixes =
-        r1Routes
-            .stream()
+        r1Routes.stream()
             .filter(route -> route.getProtocol() != RoutingProtocol.LOCAL)
             .map(AbstractRoute::getNetwork)
             .collect(Collectors.toSet());
     Set<Prefix> r2Prefixes =
-        r2Routes
-            .stream()
+        r2Routes.stream()
             .filter(route -> route.getProtocol() != RoutingProtocol.LOCAL)
             .map(AbstractRoute::getNetwork)
             .collect(Collectors.toSet());
     Set<Prefix> r3Prefixes =
-        r3Routes
-            .stream()
+        r3Routes.stream()
             .filter(route -> route.getProtocol() != RoutingProtocol.LOCAL)
             .map(AbstractRoute::getNetwork)
             .collect(Collectors.toSet());

@@ -42,9 +42,7 @@ public class NodePropertiesAnswerer extends Answerer {
     return new ImmutableList.Builder<ColumnMetadata>()
         .add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false))
         .addAll(
-            propertySpecifier
-                .getMatchingProperties()
-                .stream()
+            propertySpecifier.getMatchingProperties().stream()
                 .map(
                     prop ->
                         new ColumnMetadata(

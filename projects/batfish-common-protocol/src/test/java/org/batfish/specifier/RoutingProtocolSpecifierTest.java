@@ -228,8 +228,7 @@ public final class RoutingProtocolSpecifierTest {
   @Test
   public void testAutocomplete() {
     assertThat(
-        RoutingProtocolSpecifier.autoComplete("b")
-            .stream()
+        RoutingProtocolSpecifier.autoComplete("b").stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
         equalTo(

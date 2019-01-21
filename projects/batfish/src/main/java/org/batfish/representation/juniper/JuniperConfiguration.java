@@ -14,6 +14,7 @@ import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
@@ -95,6 +96,7 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
+import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -133,11 +135,19 @@ import org.batfish.vendor.VendorConfiguration;
 
 public final class JuniperConfiguration extends VendorConfiguration {
 
+  public static final String ACL_NAME_COMBINED_INCOMING = "~COMBINED_INCOMING_FILTER~";
+
   public static final String ACL_NAME_COMBINED_OUTGOING = "~COMBINED_OUTGOING_FILTER~";
 
   public static final String ACL_NAME_EXISTING_CONNECTION = "~EXISTING_CONNECTION~";
 
   public static final String ACL_NAME_GLOBAL_POLICY = "~GLOBAL_SECURITY_POLICY~";
+
+  public static final String ACL_NAME_SCREEN = "~SCREEN~";
+
+  public static final String ACL_NAME_SCREEN_INTERFACE = "~SCREEN_INTERFACE~";
+
+  public static final String ACL_NAME_SCREEN_ZONE = "~SCREEN_ZONE~";
 
   public static final String ACL_NAME_SECURITY_POLICY = "~SECURITY_POLICIES_TO~";
 
@@ -732,9 +742,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // Build areas
     newProc.setAreas(
-        newAreaBuilders
-            .entrySet()
-            .stream()
+        newAreaBuilders.entrySet().stream()
             .collect(
                 ImmutableSortedMap.toImmutableSortedMap(
                     Comparator.naturalOrder(), Entry::getKey, entry -> entry.getValue().build())));
@@ -933,17 +941,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
     terms.add(policy.getDefaultTerm());
     terms.addAll(policy.getTerms().values());
     for (PsTerm term : terms) {
-      for (PsFrom from : term.getFroms()) {
-        if (from instanceof PsFromPolicyStatement) {
-          PsFromPolicyStatement fromPolicyStatement = (PsFromPolicyStatement) from;
-          String subPolicyName = fromPolicyStatement.getPolicyStatement();
+      for (PsFromPolicyStatement fromPolicyStatement : term.getFroms().getFromPolicyStatements()) {
+        String subPolicyName = fromPolicyStatement.getPolicyStatement();
+        setPolicyStatementReferent(subPolicyName);
+      }
+      for (PsFromPolicyStatementConjunction fromPolicyStatementConjunction :
+          term.getFroms().getFromPolicyStatementConjunctions()) {
+        for (String subPolicyName : fromPolicyStatementConjunction.getConjuncts()) {
           setPolicyStatementReferent(subPolicyName);
-        } else if (from instanceof PsFromPolicyStatementConjunction) {
-          PsFromPolicyStatementConjunction fromPolicyStatementConjunction =
-              (PsFromPolicyStatementConjunction) from;
-          for (String subPolicyName : fromPolicyStatementConjunction.getConjuncts()) {
-            setPolicyStatementReferent(subPolicyName);
-          }
         }
       }
     }
@@ -1220,12 +1225,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
         newIface.setInboundFilter(zoneInboundFilterList);
       }
     }
+
     String inAclName = iface.getIncomingFilter();
     if (inAclName != null) {
       IpAccessList inAcl = _c.getIpAccessLists().get(inAclName);
       if (inAcl != null) {
         FirewallFilter inFilter = _masterLogicalSystem.getFirewallFilters().get(inAclName);
-        newIface.setIncomingFilter(inAcl);
         if (inFilter.getRoutingPolicy()) {
           RoutingPolicy routingPolicy = _c.getRoutingPolicies().get(inAclName);
           if (routingPolicy != null) {
@@ -1236,11 +1241,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
         }
       }
     }
+    IpAccessList composedInAcl = buildIncomingFilter(iface);
+    newIface.setIncomingFilter(composedInAcl);
 
     newIface.setIncomingTransformation(buildIncomingTransformation(iface));
 
     // Assume the config will need security policies only if it has zones
-    IpAccessList securityPolicyAcl = null;
+    IpAccessList securityPolicyAcl;
     if (!_masterLogicalSystem.getZones().isEmpty()) {
       String securityPolicyAclName = ACL_NAME_SECURITY_POLICY + iface.getName();
       securityPolicyAcl = buildSecurityPolicyAcl(securityPolicyAclName, zone);
@@ -1284,9 +1291,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     List<SubRange> vlanIds =
         Stream.concat(
-                iface
-                    .getAllowedVlanNames()
-                    .stream()
+                iface.getAllowedVlanNames().stream()
                     .map(n -> _masterLogicalSystem.getVlanNameToVlan().get(n))
                     .filter(Objects::nonNull)
                     .map(Vlan::getVlanId)
@@ -1294,7 +1299,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 iface.getAllowedVlans().stream())
             .collect(Collectors.toList());
     newIface.setAllowedVlans(IntegerSpace.unionOf(vlanIds));
-    newIface.setNativeVlan(iface.getNativeVlan());
+
+    if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
+      newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
+    }
+
     newIface.setSwitchportMode(iface.getSwitchportMode());
     SwitchportEncapsulationType swe = iface.getSwitchportTrunkEncapsulation();
     if (swe == null) {
@@ -1321,8 +1330,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     Map<String, NatPool> pools = _masterLogicalSystem.getNatSource().getPools();
 
     List<NatRuleSet> ruleSets =
-        orderedRuleSetList
-            .stream()
+        orderedRuleSetList.stream()
             .filter(
                 ruleSet -> {
                   NatPacketLocation toLocation = ruleSet.getToLocation();
@@ -1337,7 +1345,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
       transformation =
           ruleSet
               .toOutgoingTransformation(
-                  SOURCE_NAT, SOURCE, pools, matchFromLocationExprs, null, transformation)
+                  SOURCE_NAT,
+                  SOURCE,
+                  pools,
+                  iface.getPrimaryAddress().getIp(),
+                  matchFromLocationExprs,
+                  null,
+                  transformation)
               .orElse(transformation);
     }
     return transformation;
@@ -1366,8 +1380,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 builder.put(
                     zoneLocation(zone.getName()),
                     matchSrcInterface(
-                        zone.getInterfaces()
-                            .stream()
+                        zone.getInterfaces().stream()
                             .map(Interface::getName)
                             .toArray(String[]::new))));
     _masterLogicalSystem
@@ -1378,13 +1391,115 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 builder.put(
                     routingInstanceLocation(routingInstance.getName()),
                     matchSrcInterface(
-                        routingInstance
-                            .getInterfaces()
-                            .values()
-                            .stream()
+                        routingInstance.getInterfaces().values().stream()
                             .map(Interface::getName)
                             .toArray(String[]::new))));
     return builder.build();
+  }
+
+  @Nullable
+  @VisibleForTesting
+  static IpAccessList buildScreen(@Nullable Screen screen, String aclName) {
+    if (screen == null || screen.getAction() == ScreenAction.ALARM_WITHOUT_DROP) {
+      return null;
+    }
+
+    List<AclLineMatchExpr> matches =
+        screen.getScreenOptions().stream()
+            .map(ScreenOption::getAclLineMatchExpr)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
+    if (matches.isEmpty()) {
+      return null;
+    }
+
+    return IpAccessList.builder()
+        .setName(aclName)
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.rejecting(new OrMatchExpr(matches)), IpAccessListLine.ACCEPT_ALL))
+        .build();
+  }
+
+  @Nullable
+  @VisibleForTesting
+  IpAccessList buildScreensPerZone(@Nonnull Zone zone, String aclName) {
+    List<AclLineMatchExpr> matches =
+        zone.getScreens().stream()
+            .map(
+                screenName -> {
+                  Screen screen = _masterLogicalSystem.getScreens().get(screenName);
+                  String screenAclName = ACL_NAME_SCREEN + screenName;
+                  IpAccessList screenAcl =
+                      _c.getIpAccessLists()
+                          .computeIfAbsent(screenAclName, x -> buildScreen(screen, screenAclName));
+                  return screenAcl != null ? new PermittedByAcl(screenAcl.getName(), false) : null;
+                })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
+    return matches.isEmpty()
+        ? null
+        : IpAccessList.builder()
+            .setName(aclName)
+            .setLines(ImmutableList.of(IpAccessListLine.accepting(new AndMatchExpr(matches))))
+            .build();
+  }
+
+  @Nullable
+  @VisibleForTesting
+  IpAccessList buildScreensPerInterface(Interface iface) {
+    Zone zone = _masterLogicalSystem.getInterfaceZones().get(iface.getName());
+    if (zone == null) {
+      return null;
+    }
+
+    // build a acl for each zone
+    String zoneAclName = ACL_NAME_SCREEN_ZONE + zone.getName();
+    IpAccessList zoneAcl =
+        _c.getIpAccessLists()
+            .computeIfAbsent(zoneAclName, x -> buildScreensPerZone(zone, zoneAclName));
+
+    return zoneAcl == null
+        ? null
+        : IpAccessList.builder()
+            .setName(ACL_NAME_SCREEN_INTERFACE + iface.getName())
+            .setLines(ImmutableList.of(IpAccessListLine.accepting(new PermittedByAcl(zoneAclName))))
+            .build();
+  }
+
+  @Nullable
+  IpAccessList buildIncomingFilter(Interface iface) {
+    String screenAclName = ACL_NAME_SCREEN_INTERFACE + iface.getName();
+    IpAccessList screenAcl =
+        _c.getIpAccessLists().computeIfAbsent(screenAclName, x -> buildScreensPerInterface(iface));
+    // merge screen options to incoming filter
+    // but keep both originial filters in the config, so we can run search filter queris on them
+    String inAclName = iface.getIncomingFilter();
+    IpAccessList inAcl = inAclName != null ? _c.getIpAccessLists().get(inAclName) : null;
+
+    Set<AclLineMatchExpr> aclConjunctList;
+    if (screenAcl == null) {
+      return inAcl;
+    } else if (inAcl == null) {
+      aclConjunctList = ImmutableSet.of(new PermittedByAcl(screenAcl.getName(), false));
+    } else {
+      aclConjunctList =
+          ImmutableSet.of(
+              new PermittedByAcl(screenAcl.getName(), false), new PermittedByAcl(inAclName, false));
+    }
+
+    String combinedAclName = ACL_NAME_COMBINED_INCOMING + iface.getName();
+    IpAccessList combinedAcl =
+        IpAccessList.builder()
+            .setName(combinedAclName)
+            .setLines(
+                ImmutableList.of(IpAccessListLine.accepting(new AndMatchExpr(aclConjunctList))))
+            .build();
+
+    _c.getIpAccessLists().put(combinedAclName, combinedAcl);
+    return combinedAcl;
   }
 
   private Transformation buildIncomingTransformation(Interface iface) {
@@ -1426,7 +1541,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .collect(Collectors.toList())) {
       transformation =
           ruleSet
-              .toIncomingTransformation(DEST_NAT, DESTINATION, pools, null, transformation)
+              .toIncomingTransformation(
+                  DEST_NAT,
+                  DESTINATION,
+                  pools,
+                  iface.getPrimaryAddress().getIp(),
+                  null,
+                  transformation)
               .orElse(transformation);
     }
     return transformation;
@@ -1557,8 +1678,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (conjunctMatchExpr == null) {
       return lines;
     } else {
-      return lines
-          .stream()
+      return lines.stream()
           .map(
               l ->
                   new IpAccessListLine(
@@ -1582,11 +1702,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (zoneName != null) {
       matchSrcInterface =
           new MatchSrcInterface(
-              _masterLogicalSystem
-                  .getZones()
-                  .get(zoneName)
-                  .getInterfaces()
-                  .stream()
+              _masterLogicalSystem.getZones().get(zoneName).getInterfaces().stream()
                   .map(Interface::getName)
                   .collect(ImmutableList.toImmutableList()));
     }
@@ -1609,7 +1725,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return null;
     }
     ipsecStaticConfigBuilder.setDestinationAddress(ikeGateway.getAddress());
-    ipsecStaticConfigBuilder.setPhysicalInterface(ikeGateway.getExternalInterface().getName());
+    ipsecStaticConfigBuilder.setSourceInterface(ikeGateway.getExternalInterface().getName());
 
     if (ikeGateway.getLocalAddress() != null) {
       ipsecStaticConfigBuilder.setLocalAddress(ikeGateway.getLocalAddress());
@@ -1778,64 +1894,42 @@ public final class JuniperConfiguration extends VendorConfiguration {
     RoutingPolicy routingPolicy = new RoutingPolicy(name, _c);
     List<Statement> statements = routingPolicy.getStatements();
     boolean hasDefaultTerm =
-        ps.getDefaultTerm().getFroms().size() > 0 || ps.getDefaultTerm().getThens().size() > 0;
+        ps.getDefaultTerm().hasAtLeastOneFrom() || ps.getDefaultTerm().getThens().size() > 0;
     List<PsTerm> terms = new ArrayList<>(ps.getTerms().values());
     if (hasDefaultTerm) {
       terms.add(ps.getDefaultTerm());
     }
     for (PsTerm term : terms) {
       List<Statement> thens = toStatements(term.getThens());
-      if (!term.getFroms().isEmpty()) {
+      if (term.hasAtLeastOneFrom()) {
         If ifStatement = new If();
         ifStatement.setComment(term.getName());
-        Conjunction conj = new Conjunction();
-        Disjunction prefixListsDisjunction = new Disjunction();
-        List<BooleanExpr> subroutines = new ArrayList<>();
-        for (PsFrom from : term.getFroms()) {
-          if (from instanceof PsFromRouteFilter) {
-            int actionLineCounter = 0;
-            PsFromRouteFilter fromRouteFilter = (PsFromRouteFilter) from;
-            String routeFilterName = fromRouteFilter.getRouteFilterName();
-            RouteFilter rf = _masterLogicalSystem.getRouteFilters().get(routeFilterName);
-            for (RouteFilterLine line : rf.getLines()) {
-              if (line.getThens().size() > 0) {
-                String lineListName = name + "_ACTION_LINE_" + actionLineCounter;
-                RouteFilterList lineSpecificList = new RouteFilterList(lineListName);
-                line.applyTo(lineSpecificList);
-                actionLineCounter++;
-                _c.getRouteFilterLists().put(lineListName, lineSpecificList);
-                If lineSpecificIfStatement = new If();
-                String lineSpecificClauseName =
-                    routeFilterName + "_ACTION_LINE_" + actionLineCounter;
-                lineSpecificIfStatement.setComment(lineSpecificClauseName);
-                MatchPrefixSet mrf =
-                    new MatchPrefixSet(
-                        DestinationNetwork.instance(), new NamedPrefixSet(lineListName));
-                lineSpecificIfStatement.setGuard(mrf);
-                lineSpecificIfStatement.getTrueStatements().addAll(toStatements(line.getThens()));
-                statements.add(lineSpecificIfStatement);
-              }
+        PsFroms froms = term.getFroms();
+
+        for (PsFromRouteFilter fromRouteFilter : froms.getFromRouteFilters()) {
+          int actionLineCounter = 0;
+          String routeFilterName = fromRouteFilter.getRouteFilterName();
+          RouteFilter rf = _masterLogicalSystem.getRouteFilters().get(routeFilterName);
+          for (RouteFilterLine line : rf.getLines()) {
+            if (line.getThens().size() > 0) {
+              String lineListName = name + "_ACTION_LINE_" + actionLineCounter;
+              RouteFilterList lineSpecificList = new RouteFilterList(lineListName);
+              line.applyTo(lineSpecificList);
+              actionLineCounter++;
+              _c.getRouteFilterLists().put(lineListName, lineSpecificList);
+              If lineSpecificIfStatement = new If();
+              String lineSpecificClauseName = routeFilterName + "_ACTION_LINE_" + actionLineCounter;
+              lineSpecificIfStatement.setComment(lineSpecificClauseName);
+              MatchPrefixSet mrf =
+                  new MatchPrefixSet(
+                      DestinationNetwork.instance(), new NamedPrefixSet(lineListName));
+              lineSpecificIfStatement.setGuard(mrf);
+              lineSpecificIfStatement.getTrueStatements().addAll(toStatements(line.getThens()));
+              statements.add(lineSpecificIfStatement);
             }
           }
-          BooleanExpr booleanExpr = from.toBooleanExpr(this, _c, _w);
-          if (from instanceof PsFromPolicyStatement
-              || from instanceof PsFromPolicyStatementConjunction) {
-            subroutines.add(booleanExpr);
-          } else if (from instanceof PsFromPrefixList) {
-            prefixListsDisjunction.getDisjuncts().add(booleanExpr);
-          } else {
-            conj.getConjuncts().add(booleanExpr);
-          }
         }
-        if (!prefixListsDisjunction.getDisjuncts().isEmpty()) {
-          conj.getConjuncts().add(prefixListsDisjunction);
-        }
-        if (!subroutines.isEmpty()) {
-          ConjunctionChain chain = new ConjunctionChain(subroutines);
-          conj.getConjuncts().add(chain);
-        }
-        BooleanExpr guard = conj.simplify();
-        ifStatement.setGuard(guard);
+        ifStatement.setGuard(toGuard(froms));
         ifStatement.getTrueStatements().addAll(thens);
         statements.add(ifStatement);
       } else {
@@ -1848,6 +1942,77 @@ public final class JuniperConfiguration extends VendorConfiguration {
         Collections.singletonList(Statements.Return.toStaticStatement()));
     statements.add(endOfPolicy);
     return routingPolicy;
+  }
+
+  private BooleanExpr toGuard(PsFroms froms) {
+    if (froms.getFromUnsupported() != null) {
+      // Unsupported line will evaluate to BooleanExprs.FALSE. Don't bother continuing
+      return froms.getFromUnsupported().toBooleanExpr(this, _c, _w);
+    }
+
+    Conjunction conj = new Conjunction();
+    List<BooleanExpr> subroutines = new ArrayList<>();
+    if (!froms.getFromAsPaths().isEmpty()) {
+      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromAsPaths())));
+    }
+    if (froms.getFromColor() != null) {
+      conj.getConjuncts().add(froms.getFromColor().toBooleanExpr(this, _c, _w));
+    }
+    if (!froms.getFromCommunities().isEmpty()) {
+      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromCommunities())));
+    }
+    if (froms.getFromFamily() != null) {
+      conj.getConjuncts().add(froms.getFromFamily().toBooleanExpr(this, _c, _w));
+    }
+    if (!froms.getFromInterfaces().isEmpty()) {
+      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromInterfaces())));
+    }
+    if (froms.getFromLocalPreference() != null) {
+      conj.getConjuncts().add(froms.getFromLocalPreference().toBooleanExpr(this, _c, _w));
+    }
+    if (froms.getFromMetric() != null) {
+      conj.getConjuncts().add(froms.getFromMetric().toBooleanExpr(this, _c, _w));
+    }
+    for (PsFromPolicyStatement from : froms.getFromPolicyStatements()) {
+      subroutines.add(from.toBooleanExpr(this, _c, _w));
+    }
+    for (PsFromPolicyStatementConjunction from : froms.getFromPolicyStatementConjunctions()) {
+      subroutines.add(from.toBooleanExpr(this, _c, _w));
+    }
+    if (!froms.getFromPrefixLists().isEmpty()
+        || !froms.getFromPrefixListFilterLongers().isEmpty()
+        || !froms.getFromPrefixListFilterOrLongers().isEmpty()
+        || !froms.getFromRouteFilters().isEmpty()) {
+      // TODO check behavior for some edge cases: https://github.com/batfish/batfish/issues/2972
+      Disjunction prefixListDisjunction = new Disjunction();
+      prefixListDisjunction.getDisjuncts().addAll(toBooleanExprs(froms.getFromPrefixLists()));
+      prefixListDisjunction
+          .getDisjuncts()
+          .addAll(toBooleanExprs(froms.getFromPrefixListFilterLongers()));
+      prefixListDisjunction
+          .getDisjuncts()
+          .addAll(toBooleanExprs(froms.getFromPrefixListFilterOrLongers()));
+      prefixListDisjunction.getDisjuncts().addAll(toBooleanExprs(froms.getFromRouteFilters()));
+      conj.getConjuncts().add(prefixListDisjunction);
+    }
+    if (!froms.getFromProtocols().isEmpty()) {
+      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromProtocols())));
+    }
+    if (!froms.getFromTags().isEmpty()) {
+      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromTags())));
+    }
+
+    if (!subroutines.isEmpty()) {
+      ConjunctionChain chain = new ConjunctionChain(subroutines);
+      conj.getConjuncts().add(chain);
+    }
+    return conj.simplify();
+  }
+
+  private List<BooleanExpr> toBooleanExprs(Set<? extends PsFrom> froms) {
+    return froms.stream()
+        .map(f -> f.toBooleanExpr(this, _c, _w))
+        .collect(ImmutableList.toImmutableList());
   }
 
   private List<Statement> toStatements(Set<PsThen> thens) {
@@ -1897,9 +2062,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     ImmutableList.Builder<Configuration> outputConfigurations = ImmutableList.builder();
-    _logicalSystems
-        .keySet()
-        .stream()
+    _logicalSystems.keySet().stream()
         .map(this::toVendorIndependentConfiguration)
         .forEach(outputConfigurations::add);
     outputConfigurations.add(toVendorIndependentConfiguration());
@@ -2331,10 +2494,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         OspfProcess oproc = createOspfProcess(ri);
         vrf.setOspfProcess(oproc);
         // add discard routes for OSPF summaries
-        oproc
-            .getAreas()
-            .values()
-            .stream()
+        oproc.getAreas().values().stream()
             .flatMap(a -> a.getSummaries().entrySet().stream())
             .forEach(
                 summaryEntry ->
@@ -2347,11 +2507,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // create is-is process
       // is-is runs only if at least one interface has an ISO address, check loopback first
       Optional<IsoAddress> isoAddress =
-          _masterLogicalSystem
-              .getDefaultRoutingInstance()
-              .getInterfaces()
-              .values()
-              .stream()
+          _masterLogicalSystem.getDefaultRoutingInstance().getInterfaces().values().stream()
               .filter(i -> i.getName().startsWith(FIRST_LOOPBACK_INTERFACE_NAME))
               .map(Interface::getIsoAddress)
               .filter(Objects::nonNull)
@@ -2359,11 +2515,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // Try all the other interfaces if no ISO address on Loopback
       if (!isoAddress.isPresent()) {
         isoAddress =
-            _masterLogicalSystem
-                .getDefaultRoutingInstance()
-                .getInterfaces()
-                .values()
-                .stream()
+            _masterLogicalSystem.getDefaultRoutingInstance().getInterfaces().values().stream()
                 .map(Interface::getIsoAddress)
                 .filter(Objects::nonNull)
                 .min(Comparator.comparing(IsoAddress::toString));
@@ -2493,9 +2645,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // Get a stream of all interfaces (including Node interfaces)
     Stream.concat(
             _masterLogicalSystem.getInterfaces().values().stream(),
-            _nodeDevices
-                .values()
-                .stream()
+            _nodeDevices.values().stream()
                 .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
         .forEach(
             /*
@@ -2531,9 +2681,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
      */
     Stream.concat(
             _masterLogicalSystem.getInterfaces().values().stream(),
-            _nodeDevices
-                .values()
-                .stream()
+            _nodeDevices.values().stream()
                 .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
         .forEach(
             iface -> {
@@ -2571,9 +2719,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       Stream.concat(
               _masterLogicalSystem.getInterfaces().values().stream(),
-              _nodeDevices
-                  .values()
-                  .stream()
+              _nodeDevices.values().stream()
                   .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
           .forEach(
               iface ->
@@ -2686,9 +2832,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       Map<String, Interface> interfacesToCheck;
       Map<String, Interface> allInterfaces = routingInstance.getInterfaces();
       Map<String, Interface> loopbackInterfaces =
-          allInterfaces
-              .entrySet()
-              .stream()
+          allInterfaces.entrySet().stream()
               .filter(
                   e ->
                       e.getKey().toLowerCase().startsWith("lo")

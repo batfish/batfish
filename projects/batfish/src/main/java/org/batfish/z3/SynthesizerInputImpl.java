@@ -379,18 +379,12 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Set<String> computeNodesWithSrcInterfaceConstraints() {
-    return _configurations
-        .entrySet()
-        .stream()
+    return _configurations.entrySet().stream()
         .filter(
             entry -> {
               DependsOnSourceInterface dependsOnSourceInterface =
                   new DependsOnSourceInterface(entry.getValue().getIpAccessLists());
-              return entry
-                  .getValue()
-                  .getIpAccessLists()
-                  .values()
-                  .stream()
+              return entry.getValue().getIpAccessLists().values().stream()
                   .anyMatch(dependsOnSourceInterface::dependsOnSourceInterface);
             })
         .map(Entry::getKey)
@@ -403,8 +397,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
      * if we originate at a Vrf for example).
      */
     int numValues =
-        _nodesWithSrcInterfaceConstraints
-                .stream()
+        _nodesWithSrcInterfaceConstraints.stream()
                 .mapToInt(node -> _nodeInterfaces.get(node).size())
                 .max()
                 .orElse(0)
@@ -414,8 +407,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Map<String, List<String>> computeNodeInterfaces() {
-    return _enabledNodes
-        .stream()
+    return _enabledNodes.stream()
         .collect(
             ImmutableMap.toImmutableMap(
                 Function.identity(),
@@ -448,10 +440,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                 enabledAclsByHostnameEntry.getValue(),
                 Entry::getKey,
                 enabledAclsByAclNameEntry ->
-                    enabledAclsByAclNameEntry
-                        .getValue()
-                        .getLines()
-                        .stream()
+                    enabledAclsByAclNameEntry.getValue().getLines().stream()
                         .map(IpAccessListLine::getAction)
                         .collect(ImmutableList.toImmutableList())));
   }
@@ -466,9 +455,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
               e.getValue(),
               Entry::getKey, /* Acl name */
               e2 ->
-                  e2.getValue()
-                      .getLines()
-                      .stream()
+                  e2.getValue().getLines().stream()
                       .map(IpAccessListLine::getMatchCondition)
                       .map(_aclLineMatchExprToBooleanExprs.get(node)::toBooleanExpr)
                       .collect(ImmutableList.toImmutableList()));
@@ -548,9 +535,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private Map<String, Map<String, IpAccessList>> computeEnabledAcls(
       @Nullable Map<String, Set<String>> enabledAcls) {
-    return _configurations
-        .entrySet()
-        .stream()
+    return _configurations.entrySet().stream()
         .filter(e -> !_disabledNodes.contains(e.getKey()))
         .collect(
             ImmutableMap.toImmutableMap(
@@ -559,10 +544,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                   String h = e.getKey();
                   IpAccessListSpecializer ipAccessListSpecializer =
                       _ipAccessListSpecializers == null ? null : _ipAccessListSpecializers.get(h);
-                  return e.getValue()
-                      .getIpAccessLists()
-                      .entrySet()
-                      .stream()
+                  return e.getValue().getIpAccessLists().entrySet().stream()
                       .filter(
                           e2 ->
                               enabledAcls == null
@@ -578,8 +560,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Set<Edge> computeEnabledEdges() {
-    return _edges
-        .stream()
+    return _edges.stream()
         .filter(
             e -> {
               Set<String> enabledInterfaces1 = _enabledInterfaces.get(e.getNode1());
@@ -597,10 +578,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         _enabledInterfacesByNodeVrf,
         Entry::getKey,
         enabledInterfacesByNodeVrfEntry ->
-            enabledInterfacesByNodeVrfEntry
-                .getValue()
-                .entrySet()
-                .stream()
+            enabledInterfacesByNodeVrfEntry.getValue().entrySet().stream()
                 .flatMap(
                     enabledInterfacesByVrfEntry -> enabledInterfacesByVrfEntry.getValue().stream())
                 .collect(ImmutableSet.toImmutableSet()));
@@ -618,11 +596,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
               enabledVrfsEntry.getValue(),
               Function.identity(),
               vrfName ->
-                  c.getVrfs()
-                      .get(vrfName)
-                      .getInterfaces()
-                      .entrySet()
-                      .stream()
+                  c.getVrfs().get(vrfName).getInterfaces().entrySet().stream()
                       .filter(
                           interfaceEntry ->
                               disabledInterfaces == null
@@ -644,11 +618,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         Function.identity(),
         hostname -> {
           Set<String> disabledVrfs = _disabledVrfs.get(hostname);
-          return _configurations
-              .get(hostname)
-              .getVrfs()
-              .keySet()
-              .stream()
+          return _configurations.get(hostname).getVrfs().keySet().stream()
               .filter(vrfName -> disabledVrfs == null || !disabledVrfs.contains(vrfName))
               .collect(ImmutableSet.toImmutableSet());
         });
@@ -660,9 +630,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         Entry::getKey,
         enabledInterfacesEntry -> {
           Configuration c = _configurations.get(enabledInterfacesEntry.getKey());
-          return enabledInterfacesEntry
-              .getValue()
-              .stream()
+          return enabledInterfacesEntry.getValue().stream()
               .filter(
                   ifaceName -> c.getAllInterfaces().get(ifaceName).getIncomingFilterName() != null)
               .collect(
@@ -682,8 +650,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
               Set<String> enabledInterfaceNames = entry.getValue();
               Map<String, Interface> nodeInterfaces =
                   _configurations.get(hostname).getAllInterfaces();
-              return enabledInterfaceNames
-                  .stream()
+              return enabledInterfaceNames.stream()
                   .map(nodeInterfaces::get)
                   .collect(ImmutableSet.toImmutableSet());
             });
@@ -781,9 +748,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         Entry::getKey,
         enabledInterfacesEntry -> {
           Configuration c = _configurations.get(enabledInterfacesEntry.getKey());
-          return enabledInterfacesEntry
-              .getValue()
-              .stream()
+          return enabledInterfacesEntry.getValue().stream()
               .filter(
                   ifaceName -> c.getAllInterfaces().get(ifaceName).getOutgoingFilterName() != null)
               .collect(
@@ -798,11 +763,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         _configurations,
         Entry::getKey,
         nodeEntry ->
-            nodeEntry
-                .getValue()
-                .getAllInterfaces()
-                .entrySet()
-                .stream()
+            nodeEntry.getValue().getAllInterfaces().entrySet().stream()
                 .filter(ifaceEntry -> ifaceEntry.getValue().getOutgoingTransformation() != null)
                 .collect(
                     ImmutableMap.toImmutableMap(

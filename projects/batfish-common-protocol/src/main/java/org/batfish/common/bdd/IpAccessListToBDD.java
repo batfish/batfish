@@ -121,9 +121,7 @@ public class IpAccessListToBDD implements GenericAclLineMatchExprVisitor<BDD> {
   @Override
   public BDD visitAndMatchExpr(AndMatchExpr andMatchExpr) {
     return _bddOps.and(
-        andMatchExpr
-            .getConjuncts()
-            .stream()
+        andMatchExpr.getConjuncts().stream()
             .map(this::visit)
             .collect(ImmutableList.toImmutableList()));
   }
@@ -141,9 +139,7 @@ public class IpAccessListToBDD implements GenericAclLineMatchExprVisitor<BDD> {
   @Override
   public BDD visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
     return _bddOps.or(
-        matchSrcInterface
-            .getSrcInterfaces()
-            .stream()
+        matchSrcInterface.getSrcInterfaces().stream()
             .map(_bddSrcManager::getSourceInterfaceBDD)
             .collect(Collectors.toList()));
   }
@@ -161,9 +157,7 @@ public class IpAccessListToBDD implements GenericAclLineMatchExprVisitor<BDD> {
   @Override
   public BDD visitOrMatchExpr(OrMatchExpr orMatchExpr) {
     return _bddOps.or(
-        orMatchExpr
-            .getDisjuncts()
-            .stream()
+        orMatchExpr.getDisjuncts().stream()
             .map(this::visit)
             .collect(ImmutableList.toImmutableList()));
   }

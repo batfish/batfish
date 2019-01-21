@@ -41,8 +41,7 @@ public class BoolExprTransformer
   public static String getNodName(Set<Type> vectorizedParameters, StateExpr stateExpr) {
     StringBuilder name = new StringBuilder();
     name.append(String.format("S_%s", stateExpr.getClass().getSimpleName()));
-    Parameterizer.getParameters(stateExpr)
-        .stream()
+    Parameterizer.getParameters(stateExpr).stream()
         .filter(parameter -> !vectorizedParameters.contains(parameter.getType()))
         .forEach(parameter -> name.append(String.format("_%s", parameter.getId())));
     return name.toString();
@@ -78,9 +77,7 @@ public class BoolExprTransformer
     _input = input;
     _nodContext = nodContext;
     _fields =
-        _nodContext
-            .getVariableNames()
-            .stream()
+        _nodContext.getVariableNames().stream()
             .map(
                 varName ->
                     new Field(varName, _nodContext.getVariables().get(varName).getSortSize()))
@@ -98,8 +95,7 @@ public class BoolExprTransformer
             .getContext()
             .mkApp(
                 _nodContext.getRelationDeclarations().get(getNodName(_input, stateExpr)),
-                _fields
-                    .stream()
+                _fields.stream()
                     .map(
                         field ->
                             transformedFields.contains(field)
@@ -113,9 +109,7 @@ public class BoolExprTransformer
     return _nodContext
         .getContext()
         .mkAnd(
-            andExpr
-                .getConjuncts()
-                .stream()
+            andExpr.getConjuncts().stream()
                 .map(conjunct -> toBoolExpr(conjunct, _input, _nodContext))
                 .toArray(BoolExpr[]::new));
   }
@@ -135,9 +129,7 @@ public class BoolExprTransformer
                     basicRuleStatement.getPreconditionStateIndependentConstraints(),
                     _input,
                     _nodContext));
-    basicRuleStatement
-        .getPreconditionStates()
-        .stream()
+    basicRuleStatement.getPreconditionStates().stream()
         .map(preconditionState -> transformStateExpr(preconditionState, ImmutableSet.of()))
         .forEach(preconditions::add);
     return ctx.mkImplies(
@@ -203,9 +195,7 @@ public class BoolExprTransformer
     return _nodContext
         .getContext()
         .mkOr(
-            orExpr
-                .getDisjuncts()
-                .stream()
+            orExpr.getDisjuncts().stream()
                 .map(disjunct -> toBoolExpr(disjunct, _input, _nodContext))
                 .toArray(BoolExpr[]::new));
   }

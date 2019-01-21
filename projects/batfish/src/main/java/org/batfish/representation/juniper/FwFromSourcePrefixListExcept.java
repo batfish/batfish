@@ -41,9 +41,7 @@ public class FwFromSourcePrefixListExcept extends FwFrom {
 
       headerSpaceBuilder.addNotSrcIp(
           AclIpSpace.union(
-              sourcePrefixList
-                  .getMatchingIps()
-                  .stream()
+              sourcePrefixList.getMatchingIps().stream()
                   .map(IpWildcard::toIpSpace)
                   .collect(ImmutableList.toImmutableList())));
     } else {

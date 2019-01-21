@@ -26,8 +26,7 @@ public class RoutePolicyCommunitySetInline extends RoutePolicyCommunitySet {
   public CommunitySetExpr toCommunitySetExpr(CiscoConfiguration cc, Configuration c, Warnings w) {
     return new CommunityList(
         "",
-        _elements
-            .stream()
+        _elements.stream()
             .map(CommunitySetElem::toCommunitySetExpr)
             .map(CommunityListLine::accepting)
             .collect(ImmutableList.toImmutableList()),

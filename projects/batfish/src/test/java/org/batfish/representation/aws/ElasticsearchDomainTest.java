@@ -110,9 +110,7 @@ public class ElasticsearchDomainTest {
 
     // check that  IPs are unique for all the interfaces
     List<Ip> ipsAsList =
-        configurations
-            .values()
-            .stream()
+        configurations.values().stream()
             .map(Configuration::getAllInterfaces)
             .map(Map::values)
             .flatMap(Collection::stream)

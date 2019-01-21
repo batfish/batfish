@@ -125,9 +125,7 @@ public class FileAuthorizer implements Authorizer {
   }
 
   private static boolean accessAllowed(String apiKey, String container, Permissions permissions) {
-    return permissions
-        .perms
-        .stream()
+    return permissions.perms.stream()
         .anyMatch(p -> apiKey.equals(p.apikey) && container.equals(p.container));
   }
 

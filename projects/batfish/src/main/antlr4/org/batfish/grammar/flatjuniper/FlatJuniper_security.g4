@@ -409,6 +409,7 @@ s_security
       | se_nat
       | se_null
       | se_policies
+      | se_screen
       | se_zones
    )
 ;
@@ -480,7 +481,6 @@ se_null
       | APPLICATION_TRACKING
       | FLOW
       | LOG
-      | SCREEN
    ) null_filler
 ;
 
@@ -492,6 +492,15 @@ se_policies
       | sep_from_zone
       | sep_global
    )
+;
+
+se_screen
+:
+    SCREEN
+    (
+        ses_ids_option
+        | ses_null
+    )
 ;
 
 se_zones
@@ -1172,6 +1181,301 @@ sepctxptp_tunnel
 sepctxptpt_ipsec_vpn
 :
    IPSEC_VPN name = variable
+;
+
+ses_ids_option
+:
+   IDS_OPTION name = variable
+   (
+      seso_alarm
+      | seso_description
+      | seso_icmp
+      | seso_ip
+      | seso_tcp
+      | seso_udp
+      | seso_limit_session
+   )+
+;
+
+ses_null
+:
+   ( TRACEOPTIONS | TRAP ) null_filler
+;
+
+seso_alarm
+:
+   ALARM_WITHOUT_DROP
+;
+
+seso_description
+:
+   DESCRIPTION string
+;
+
+seso_icmp
+:
+   ICMP
+   (
+      sesoi_flood
+      | FRAGMENT
+      | ICMPV6_MALFORMED
+      | sesoi_ip_sweep
+      | LARGE
+      | PING_DEATH
+   )+
+;
+
+seso_ip
+:
+   IP
+   (
+      BAD_OPTION
+      | BLOCK_FRAG
+      | sesop_ipv6_extension_header
+      | sesop_ipv6_extension_header_limit
+      | IPV6_MALFORMED_HEADER
+      | LOOSE_SOURCE_ROUTE_OPTION
+      | RECORD_ROUTE_OPTION
+      | SECURITY_OPTION
+      | SOURCE_ROUTE_OPTION
+      | SPOOFING
+      | STREAM_OPTION
+      | STRICT_SOURCE_ROUTE_OPTION
+      | TEAR_DROP
+      | TIMESTAMP_OPTION
+      | UNKNOWN_PROTOCOL
+      | sesop_tunnel
+   )+
+;
+
+seso_limit_session
+:
+   LIMIT_SESSION
+   (
+      DESTINATION_IP_BASED DEC
+      | SOURCE_IP_BASED DEC
+   )+
+;
+
+seso_tcp
+:
+   TCP
+   (
+      FIN_NO_ACK
+      | LAND
+      | sesot_port_scan
+      | sesot_syn_ack_ack_proxy
+      | SYN_FIN
+      | sesot_syn_flood
+      | SYN_FRAG
+      | TCP_NO_FLAG
+      | sesot_tcp_sweep
+      | WINNUKE
+   )+
+;
+
+seso_udp
+:
+   UDP
+   (
+      sesou_flood
+      | sesou_port_scan
+      | sesou_udp_sweep
+   )
+;
+
+sesoi_flood
+:
+   FLOOD threshold
+;
+
+sesoi_ip_sweep
+:
+   IP_SWEEP threshold
+;
+
+sesop_ipv6_extension_header
+:
+   IPV6_EXTENSION_HEADER
+   (
+       AH_HEADER
+       | ESP_HEADER
+       | HIP_HEADER
+       | sesop6_dst_header
+       | FRAGMENT_HEADER
+       | sesop6_hop_header
+       | MOBILITY_HEADER
+       | NO_NEXT_HEADER
+       | ROUTING_HEADER
+       | SHIM6_HEADER
+       | sesop6_user_option
+   )+
+;
+
+sesop_ipv6_extension_header_limit
+:
+   IPV6_EXTENSION_HEADER_LIMIT limit=DEC
+;
+
+sesop_tunnel
+:
+   TUNNEL
+   (
+      sesopt_gre
+      | sesopt_ip_in_udp
+      | sesopt_ipip
+      | BAD_INNER_HEADER
+   )+
+;
+
+sesop6_dst_header
+:
+   DESTINATION_HEADER
+   (
+      ILNP_NONCE_OPTION
+      | HOME_ADDRESS_OPTION
+      | LINE_IDENTIFICATION_OPTION
+      | TUNNEL_ENCAPSULATION_LIMIT_OPTION
+      | sesop6_user_option
+   )+
+;
+
+sesop6_hop_header
+:
+   HOP_BY_HOP_HEADER
+   (
+      CALIPSO_OPTION
+      | RPL_OPTION
+      | SFM_DPD_OPTION
+      | JUMBO_PAYLOAD_OPTION
+      | QUICK_START_OPTION
+      | ROUTER_ALERT_OPTION
+      | sesop6_user_option
+   )+
+;
+
+sesop6_user_option
+:
+   USER_DEFINED_OPTION_TYPE type_low=DEC (TO type_high=DEC)?
+;
+
+sesot_port_scan
+:
+   PORT_SCAN threshold
+;
+
+sesot_syn_ack_ack_proxy
+:
+   SYN_ACK_ACK_PROXY threshold
+;
+
+sesot_syn_flood
+:
+   SYN_FLOOD
+   (
+      sesots_alarm_thred
+      | sesots_attack_thred
+      | sesots_dst_thred
+      | sesots_src_thred
+      | sesots_timeout
+      | sesots_whitelist
+  )
+;
+
+sesot_tcp_sweep
+:
+   TCP_SWEEP threshold
+;
+
+sesots_alarm_thred
+:
+   ALARM_THRESHOLD number=DEC
+;
+
+sesots_attack_thred
+:
+   ATTACK_THRESHOLD number=DEC
+;
+
+sesots_dst_thred
+:
+   DESTINATION_THRESHOLD number=DEC
+;
+
+sesots_src_thred
+:
+   SOURCE_THRESHOLD number=DEC
+;
+
+sesots_timeout
+:
+   TIMEOUT seconds=DEC
+;
+
+sesots_whitelist
+:
+   WHITE_LIST name=variable
+   (
+      sesotsw_dst
+      | sesotsw_src
+   )*
+;
+
+sesotsw_dst
+:
+   DESTINATION_ADDRESS address=IP_ADDRESS
+;
+
+sesotsw_src
+:
+   SOURCE_ADDRESS address=IP_ADDRESS
+;
+
+sesou_flood
+:
+   FLOOD threshold
+;
+
+sesou_port_scan
+:
+   PORT_SCAN threshold
+;
+
+sesou_udp_sweep
+:
+   UDP_SWEEP threshold
+;
+
+
+sesopt_gre
+:
+   GRE
+   (
+      GRE_4IN4
+      | GRE_4IN6
+      | GRE_6IN4
+      | GRE_6IN6
+   )+
+;
+
+sesopt_ip_in_udp
+:
+   IP_IN_UDP TEREDO
+;
+
+sesopt_ipip
+:
+   IPIP
+   (
+      IPIP_4IN4
+      | IPIP_4IN6
+      | IPIP_6IN4
+      | IPIP_6IN6
+      | IPIP_6OVER4
+      | IPIP_6TO4RELAY
+      | ISATAP
+      | DSLITE
+   )+
 ;
 
 sez_security_zone

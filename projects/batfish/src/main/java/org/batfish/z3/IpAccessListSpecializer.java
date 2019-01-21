@@ -79,8 +79,7 @@ public abstract class IpAccessListSpecializer
     List<IpAccessListLine> originalLines = ipAccessList.getLines();
 
     List<IpAccessListLine> specializedLines =
-        originalLines
-            .stream()
+        originalLines.stream()
             .limit(lineNum)
             .map(originalLine -> specialize(originalLine).orElse(FALSE_LINE))
             .collect(Collectors.toList());
@@ -104,9 +103,7 @@ public abstract class IpAccessListSpecializer
   @Override
   public final AclLineMatchExpr visitAndMatchExpr(AndMatchExpr andMatchExpr) {
     List<AclLineMatchExpr> conjuncts =
-        andMatchExpr
-            .getConjuncts()
-            .stream()
+        andMatchExpr.getConjuncts().stream()
             .map(expr -> expr.accept(this))
             .filter(expr -> expr != TrueExpr.INSTANCE)
             .collect(ImmutableList.toImmutableList());
@@ -204,9 +201,7 @@ public abstract class IpAccessListSpecializer
   @Override
   public final AclLineMatchExpr visitOrMatchExpr(OrMatchExpr orMatchExpr) {
     SortedSet<AclLineMatchExpr> disjuncts =
-        orMatchExpr
-            .getDisjuncts()
-            .stream()
+        orMatchExpr.getDisjuncts().stream()
             .map(expr -> expr.accept(this))
             .filter(expr -> expr != FalseExpr.INSTANCE)
             .collect(

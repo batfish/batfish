@@ -194,8 +194,7 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
       parentChildren.remove(parentChildren.size() - 1);
       // Copy error nodes to parent so we don't lose unrecognized lines.
       if (ctx.children != null) {
-        ctx.children
-            .stream()
+        ctx.children.stream()
             .filter(c -> c instanceof ErrorNode)
             .forEach(c -> parent.addErrorNode((ErrorNode) c));
       }

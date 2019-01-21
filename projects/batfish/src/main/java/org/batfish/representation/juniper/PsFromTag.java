@@ -7,9 +7,9 @@ import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 
+/** Represents a "from tag" line in a {@link PsTerm} */
 public class PsFromTag extends PsFrom {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final int _tag;

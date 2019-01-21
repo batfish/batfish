@@ -86,6 +86,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpVersion;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
@@ -101,8 +102,8 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasDestinationAddress;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasLocalAddress;
-import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasPhysicalInterface;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasPolicyAccessList;
+import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasSourceInterface;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasTunnelInterface;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.isIpsecDynamicPeerConfigThat;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.isIpsecStaticPeerConfigThat;
@@ -1610,6 +1611,16 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosNativeVlan() throws IOException {
+    String hostname = "ios-native-vlan";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasInterface("Ethernet1", hasNativeVlan(nullValue())));
+    assertThat(c, hasInterface("Ethernet2", hasNativeVlan(3)));
+    assertThat(c, hasInterface("Ethernet3", hasNativeVlan(1)));
+  }
+
+  @Test
   public void testIosNeighborDefaultOriginate() throws IOException {
     String testrigName = "ios-default-originate";
     Batfish batfish =
@@ -2551,8 +2562,7 @@ public class CiscoGrammarTest {
     // check that private AS is present in path in received 1.1.1.1/32 advert on r2
     SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(DEFAULT_VRF_NAME);
     boolean r2HasPrivate =
-        r2Routes
-            .stream()
+        r2Routes.stream()
             .filter(r -> r.getNetwork().equals(r1Loopback))
             .flatMap(r -> ((BgpRoute) r).getAsPath().getAsSets().stream())
             .flatMap(asSet -> asSet.getAsns().stream())
@@ -2561,8 +2571,7 @@ public class CiscoGrammarTest {
 
     // check that private AS is absent from path in received 1.1.1.1/32 advert on r3
     boolean r3HasPrivate =
-        r3Routes
-            .stream()
+        r3Routes.stream()
             .filter(a -> a.getNetwork().equals(r1Loopback))
             .flatMap(r -> ((BgpRoute) r).getAsPath().getAsSets().stream())
             .flatMap(asSet -> asSet.getAsns().stream())
@@ -2763,7 +2772,7 @@ public class CiscoGrammarTest {
                     hasDestinationAddress(Ip.parse("3.4.5.6")),
                     IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE-MATCHED"),
                     IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:20~"),
-                    hasPhysicalInterface("TenGigabitEthernet0/0"),
+                    hasSourceInterface("TenGigabitEthernet0/0"),
                     hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
                     hasLocalAddress(Ip.parse("2.3.4.6"))))));
     assertThat(
@@ -2775,7 +2784,7 @@ public class CiscoGrammarTest {
                     hasDestinationAddress(Ip.parse("1.2.3.4")),
                     IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
                     IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:10~"),
-                    hasPhysicalInterface("TenGigabitEthernet0/0"),
+                    hasSourceInterface("TenGigabitEthernet0/0"),
                     hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
                     hasLocalAddress(Ip.parse("2.3.4.6"))))));
 
@@ -2788,7 +2797,7 @@ public class CiscoGrammarTest {
                     IpsecPeerConfigMatchers.hasIkePhase1Policies(
                         equalTo(ImmutableList.of("ISAKMP-PROFILE", "ISAKMP-PROFILE-MATCHED"))),
                     IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:30:15~"),
-                    hasPhysicalInterface("TenGigabitEthernet0/0"),
+                    hasSourceInterface("TenGigabitEthernet0/0"),
                     hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
                     hasLocalAddress(Ip.parse("2.3.4.6")),
                     hasTunnelInterface(nullValue())))));
@@ -2802,7 +2811,7 @@ public class CiscoGrammarTest {
                     IpsecPeerConfigMatchers.hasIkePhase1Policies(
                         equalTo(ImmutableList.of("ISAKMP-PROFILE", "ISAKMP-PROFILE-MATCHED"))),
                     IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:30:5~"),
-                    hasPhysicalInterface("TenGigabitEthernet0/0"),
+                    hasSourceInterface("TenGigabitEthernet0/0"),
                     hasPolicyAccessList(hasLines(equalTo(expectedAclLines))),
                     hasLocalAddress(Ip.parse("2.3.4.6")),
                     hasTunnelInterface(nullValue())))));
@@ -2816,7 +2825,7 @@ public class CiscoGrammarTest {
                     hasDestinationAddress(Ip.parse("1.2.3.4")),
                     IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
                     IpsecPeerConfigMatchers.hasIpsecPolicy("IPSEC-PROFILE1"),
-                    hasPhysicalInterface("TenGigabitEthernet0/0"),
+                    hasSourceInterface("TenGigabitEthernet0/0"),
                     hasLocalAddress(Ip.parse("2.3.4.6")),
                     hasTunnelInterface(equalTo("Tunnel1"))))));
   }
@@ -3658,6 +3667,16 @@ public class CiscoGrammarTest {
             when(permittedByAcl("acl1"))
                 // due to the subnet mask, shift the pool IPs to avoid network/bcast IPs.
                 .apply(assignSourceIp(Ip.parse("2.0.0.1"), Ip.parse("2.0.0.6")))
+                .build()));
+
+    iface = c.getAllInterfaces().get("Ethernet4");
+    assertThat(iface.getIncomingTransformation(), nullValue());
+    assertThat(
+        iface.getOutgoingTransformation(),
+        equalTo(
+            when(permittedByAcl("acl1"))
+                // overload rule, so use the interface IP
+                .apply(assignSourceIp(Ip.parse("8.8.8.8"), Ip.parse("8.8.8.8")))
                 .build()));
   }
 

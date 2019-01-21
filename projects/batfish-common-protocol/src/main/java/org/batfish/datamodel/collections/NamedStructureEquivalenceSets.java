@@ -61,8 +61,7 @@ public class NamedStructureEquivalenceSets<T> {
         eqSetsWithSameHash.add(new NamedStructureEquivalenceSet<>(hostname, structure));
       } else {
         Optional<NamedStructureEquivalenceSet<T>> potentialMatchingSet =
-            eqSetsWithSameHash
-                .stream()
+            eqSetsWithSameHash.stream()
                 .filter(
                     s -> checkJsonStringEquals(structureJson, writeObject(s.getNamedStructure())))
                 .findAny();
@@ -87,9 +86,7 @@ public class NamedStructureEquivalenceSets<T> {
         String structureName = e.getKey();
         Map<Integer, Set<NamedStructureEquivalenceSet<T>>> structuresByHash = e.getValue();
         SortedSet<NamedStructureEquivalenceSet<T>> newSet =
-            structuresByHash
-                .values()
-                .stream()
+            structuresByHash.values().stream()
                 .flatMap(ss -> ss.stream())
                 .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
         builder.put(structureName, newSet);
@@ -132,9 +129,7 @@ public class NamedStructureEquivalenceSets<T> {
   /** Remove structures with only one equivalence class, since they indicate nothing of note */
   public void clean() {
     _sameNamedStructures =
-        _sameNamedStructures
-            .entrySet()
-            .stream()
+        _sameNamedStructures.entrySet().stream()
             .filter(e -> e.getValue().size() != 1)
             .collect(
                 ImmutableSortedMap.toImmutableSortedMap(

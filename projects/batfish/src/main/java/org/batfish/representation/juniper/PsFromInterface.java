@@ -17,6 +17,7 @@ import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 
+/** Represents a "from interface" line in a {@link PsTerm} */
 public final class PsFromInterface extends PsFrom {
 
   private static final long serialVersionUID = 1L;
@@ -47,10 +48,7 @@ public final class PsFromInterface extends PsFrom {
                 DestinationNetwork.instance(),
                 new ExplicitPrefixSet(
                     new PrefixSpace(
-                        c.getAllInterfaces()
-                            .get(_name)
-                            .getAllAddresses()
-                            .stream()
+                        c.getAllInterfaces().get(_name).getAllAddresses().stream()
                             .map(InterfaceAddress::getPrefix)
                             .map(PrefixRange::fromPrefix)
                             .collect(ImmutableSet.toImmutableSet()))))));

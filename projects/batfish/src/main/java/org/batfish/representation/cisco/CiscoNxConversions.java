@@ -73,9 +73,7 @@ final class CiscoNxConversions {
     // Otherwise, Router ID is defined based on the interfaces in the VRF that have IP addresses.
     // NX-OS does use shutdown interfaces to configure router-id.
     Map<String, Interface> interfaceMap =
-        vrf.getInterfaces()
-            .entrySet()
-            .stream()
+        vrf.getInterfaces().entrySet().stream()
             .filter(e -> e.getValue().getAddress() != null)
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
     if (interfaceMap.isEmpty()) {
@@ -99,8 +97,7 @@ final class CiscoNxConversions {
     // enforce determinism by always choosing the smallest loopback IP.
     Collection<Interface> interfaces = interfaceMap.values();
     Optional<Ip> lowestLoopback =
-        interfaces
-            .stream()
+        interfaces.stream()
             .filter(i -> i.getName().startsWith("Loopback"))
             .map(Interface::getAddress)
             .map(InterfaceAddress::getIp)
@@ -116,8 +113,7 @@ final class CiscoNxConversions {
     // addresses with IP address are present in the vrf. NX-OS is non-deterministic, by we will
     // enforce determinism by always choosing the smallest interface IP.
     Optional<Ip> lowestIp =
-        interfaces
-            .stream()
+        interfaces.stream()
             .map(Interface::getAddress)
             .map(InterfaceAddress::getIp)
             .min(Comparator.naturalOrder());
@@ -158,10 +154,7 @@ final class CiscoNxConversions {
       CiscoNxBgpGlobalConfiguration bgpConfig,
       CiscoNxBgpVrfConfiguration nxBgpVrf,
       Warnings warnings) {
-    return nxBgpVrf
-        .getNeighbors()
-        .entrySet()
-        .stream()
+    return nxBgpVrf.getNeighbors().entrySet().stream()
         .peek(e -> e.getValue().doInherit(bgpConfig, warnings))
         .filter(e -> isActive(getTextDesc(e.getKey(), vrf), e.getValue(), warnings))
         .collect(
@@ -189,10 +182,7 @@ final class CiscoNxConversions {
       CiscoNxBgpGlobalConfiguration bgpConfig,
       CiscoNxBgpVrfConfiguration nxBgpVrf,
       Warnings warnings) {
-    return nxBgpVrf
-        .getPassiveNeighbors()
-        .entrySet()
-        .stream()
+    return nxBgpVrf.getPassiveNeighbors().entrySet().stream()
         .peek(e -> e.getValue().doInherit(bgpConfig, warnings))
         .filter(e -> isActive(getTextDesc(e.getKey(), vrf), e.getValue(), warnings))
         .collect(
@@ -243,9 +233,7 @@ final class CiscoNxConversions {
       return Ip.AUTO;
     }
     Optional<Ip> firstMatchingInterfaceAddress =
-        vrf.getInterfaces()
-            .values()
-            .stream()
+        vrf.getInterfaces().values().stream()
             .flatMap(i -> i.getAllAddresses().stream())
             .filter(ia -> ia != null && ia.getPrefix().containsIp(prefix.getStartIp()))
             .map(InterfaceAddress::getIp)

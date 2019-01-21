@@ -32,10 +32,7 @@ public class ReferenceAddressGroupIpSpaceSpecifierTest {
         new ReferenceAddressGroupIpSpaceSpecifier("group1", "book1");
     IpSpace resolvedSpace =
         AclIpSpace.union(
-            specifier
-                .resolve(ImmutableSet.of(), ctxt)
-                .getEntries()
-                .stream()
+            specifier.resolve(ImmutableSet.of(), ctxt).getEntries().stream()
                 .map(e -> e.getIpSpace())
                 .collect(Collectors.toSet()));
 

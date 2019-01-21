@@ -46,17 +46,12 @@ public abstract class NodeRoleRegexLocationSpecifier implements LocationSpecifie
     Optional<NodeRoleDimension> dimension = ctxt.getNodeRoleDimension(_roleDimension);
     Set<NodeRole> matchingRoles =
         dimension.isPresent()
-            ? dimension
-                .get()
-                .getRoles()
-                .stream()
+            ? dimension.get().getRoles().stream()
                 .filter(role -> _rolePattern.matcher(role.getName()).matches())
                 .collect(ImmutableSet.toImmutableSet())
             : ImmutableSet.of();
 
-    return ctxt.getConfigs()
-        .values()
-        .stream()
+    return ctxt.getConfigs().values().stream()
         .filter(node -> matchingRoles.stream().anyMatch(role -> role.matches(node.getHostname())))
         .flatMap(this::getNodeLocations)
         .collect(ImmutableSet.toImmutableSet());

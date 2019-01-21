@@ -44,6 +44,7 @@ public class Variable {
     INTERFACES_SPEC("interfacesSpec", true),
     IP("ip", true),
     IP_PROTOCOL("ipProtocol", true),
+    IP_PROTOCOL_SPEC("ipProtocolSpec", true),
     IP_WILDCARD("ipWildcard", true),
     IPSEC_SESSION_STATUS("ipsecSessionStatus", true),
     JAVA_REGEX("javaRegex", true),
@@ -161,8 +162,7 @@ public class Variable {
   @JsonProperty(BfConsts.PROP_ALLOWED_VALUES)
   @Deprecated
   public SortedSet<String> getAllowedValues() {
-    return _values
-        .stream()
+    return _values.stream()
         .map(AllowedValue::getName)
         .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
   }
@@ -223,8 +223,7 @@ public class Variable {
   public void setAllowedValues(SortedSet<String> allowedValues) {
     if (_values.isEmpty()) {
       _values =
-          allowedValues
-              .stream()
+          allowedValues.stream()
               .map(v -> new AllowedValue(v, null))
               .collect(ImmutableList.toImmutableList());
     }

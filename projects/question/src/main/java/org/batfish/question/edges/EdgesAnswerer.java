@@ -3,6 +3,7 @@ package org.batfish.question.edges;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.Network;
@@ -18,7 +19,6 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Edge;
-import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -88,9 +88,9 @@ public class EdgesAnswerer extends Answerer {
   static final String COL_REMOTE_VLAN = "Remote_VLAN";
 
   // IPsec only
-  static final String COL_PHYSICAL_INTERFACE = "Physical_Interface";
+  static final String COL_SOURCE_INTERFACE = "Source_Interface";
   static final String COL_TUNNEL_INTERFACE = "Tunnel_Interface";
-  static final String COL_REMOTE_PHYSICAL_INTERFACE = "Remote_Physical_Interface";
+  static final String COL_REMOTE_SOURCE_INTERFACE = "Remote_Source_Interface";
   static final String COL_REMOTE_TUNNEL_INTERFACE = "Remote_Tunnel_Interface";
 
   EdgesAnswerer(Question question, IBatfish batfish) {
@@ -151,8 +151,8 @@ public class EdgesAnswerer extends Answerer {
         Layer1Topology layer1Topology = _batfish.getLayer1Topology();
         return getLayer1Edges(includeNodes, includeRemoteNodes, layer1Topology);
       case LAYER2:
-        Layer2Topology layer2Topology = _batfish.getLayer2Topology();
-        return getLayer2Edges(includeNodes, includeRemoteNodes, layer2Topology);
+        // Unsupported until we decide how to present layer2 topology.
+        return ImmutableMultiset.of();
       case LAYER3:
       default:
         return getLayer3Edges(configurations, includeNodes, includeRemoteNodes, topology);
@@ -165,9 +165,7 @@ public class EdgesAnswerer extends Answerer {
       Set<String> includeRemoteNodes,
       Network<EigrpInterface, EigrpEdge> eigrpTopology) {
 
-    return eigrpTopology
-        .edges()
-        .stream()
+    return eigrpTopology.edges().stream()
         .filter(
             eigrpEdge ->
                 includeNodes.contains(eigrpEdge.getNode1().getHostname())
@@ -179,9 +177,7 @@ public class EdgesAnswerer extends Answerer {
   @VisibleForTesting
   static Multiset<Row> getVxlanEdges(
       Set<String> includeNodes, Set<String> includeRemoteNodes, VxlanTopology vxlanTopology) {
-    return vxlanTopology
-        .getEdges()
-        .stream()
+    return vxlanTopology.getEdges().stream()
         .filter(
             edge ->
                 includeNodes.contains(edge.getTail().getHostname())
@@ -228,9 +224,7 @@ public class EdgesAnswerer extends Answerer {
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
       Network<IsisNode, IsisEdge> isisTopology) {
-    return isisTopology
-        .edges()
-        .stream()
+    return isisTopology.edges().stream()
         .filter(Objects::nonNull)
         .filter(
             isisEdge ->
@@ -248,10 +242,7 @@ public class EdgesAnswerer extends Answerer {
     if (layer1Topology == null) {
       return HashMultiset.create();
     }
-    return layer1Topology
-        .getGraph()
-        .edges()
-        .stream()
+    return layer1Topology.getGraph().edges().stream()
         .filter(
             layer1Edge ->
                 includeNodes.contains(layer1Edge.getNode1().getHostname())
@@ -261,34 +252,12 @@ public class EdgesAnswerer extends Answerer {
   }
 
   @VisibleForTesting
-  static Multiset<Row> getLayer2Edges(
-      Set<String> includeNodes,
-      Set<String> includeRemoteNodes,
-      @Nullable Layer2Topology layer2Topology) {
-    if (layer2Topology == null) {
-      return HashMultiset.create();
-    }
-    return layer2Topology
-        .getGraph()
-        .edges()
-        .stream()
-        .filter(
-            layer2Edge ->
-                includeNodes.contains(layer2Edge.getNode1().getHostname())
-                    && includeRemoteNodes.contains(layer2Edge.getNode2().getHostname()))
-        .map(EdgesAnswerer::layer2EdgeToRow)
-        .collect(Collectors.toCollection(HashMultiset::create));
-  }
-
-  @VisibleForTesting
   static Multiset<Row> getLayer3Edges(
       Map<String, Configuration> configurations,
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
       Topology topology) {
-    return topology
-        .getEdges()
-        .stream()
+    return topology.getEdges().stream()
         .filter(
             layer3Edge ->
                 includeNodes.contains(layer3Edge.getNode1())
@@ -370,9 +339,7 @@ public class EdgesAnswerer extends Answerer {
       Map<String, Configuration> configurations) {
     NetworkConfigurations nf = NetworkConfigurations.of(configurations);
     Multiset<Row> rows = HashMultiset.create();
-    ipsecTopology
-        .edges()
-        .stream()
+    ipsecTopology.edges().stream()
         .filter(
             // only considering endpoints with established IPsec session
             endpoint -> {
@@ -405,16 +372,16 @@ public class EdgesAnswerer extends Answerer {
       IpsecPeerConfig ipsecPeerConfigV) {
     RowBuilder row = Row.builder();
     row.put(
-            COL_PHYSICAL_INTERFACE,
-            new NodeInterfacePair(nodeU, ipsecPeerConfigU.getPhysicalInterface()))
+            COL_SOURCE_INTERFACE,
+            new NodeInterfacePair(nodeU, ipsecPeerConfigU.getSourceInterface()))
         .put(
             COL_TUNNEL_INTERFACE,
             ipsecPeerConfigU.getTunnelInterface() == null
                 ? null
                 : new NodeInterfacePair(nodeU, ipsecPeerConfigU.getTunnelInterface()))
         .put(
-            COL_REMOTE_PHYSICAL_INTERFACE,
-            new NodeInterfacePair(nodeV, ipsecPeerConfigV.getPhysicalInterface()))
+            COL_REMOTE_SOURCE_INTERFACE,
+            new NodeInterfacePair(nodeV, ipsecPeerConfigV.getSourceInterface()))
         .put(
             COL_REMOTE_TUNNEL_INTERFACE,
             ipsecPeerConfigV.getTunnelInterface() == null
@@ -522,16 +489,12 @@ public class EdgesAnswerer extends Answerer {
     Interface interface2 =
         configurations.get(edge.getNode2()).getAllInterfaces().get(edge.getInt2());
     Set<Ip> ips1 =
-        interface1
-            .getAllAddresses()
-            .stream()
+        interface1.getAllAddresses().stream()
             .filter(Objects::nonNull)
             .map(InterfaceAddress::getIp)
             .collect(Collectors.toSet());
     Set<Ip> ips2 =
-        interface2
-            .getAllAddresses()
-            .stream()
+        interface2.getAllAddresses().stream()
             .filter(Objects::nonNull)
             .map(InterfaceAddress::getIp)
             .collect(Collectors.toSet());
@@ -727,9 +690,9 @@ public class EdgesAnswerer extends Answerer {
       case IPSEC:
         columnBuilder.add(
             new ColumnMetadata(
-                COL_PHYSICAL_INTERFACE,
+                COL_SOURCE_INTERFACE,
                 Schema.INTERFACE,
-                "Physical interface used in the IPsec session",
+                "Source interface used in the IPsec session",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
@@ -742,9 +705,9 @@ public class EdgesAnswerer extends Answerer {
 
         columnBuilder.add(
             new ColumnMetadata(
-                COL_REMOTE_PHYSICAL_INTERFACE,
+                COL_REMOTE_SOURCE_INTERFACE,
                 Schema.INTERFACE,
-                "Remote physical interface used in the IPsec session",
+                "Remote source interface used in the IPsec session",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(

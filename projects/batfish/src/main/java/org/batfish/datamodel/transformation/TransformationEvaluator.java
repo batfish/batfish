@@ -72,9 +72,7 @@ public class TransformationEvaluator {
     }
 
     private List<Step<?>> getTraceSteps() {
-      return _flowDiffs
-          .entrySet()
-          .stream()
+      return _flowDiffs.entrySet().stream()
           .map(
               entry -> {
                 ImmutableSortedSet<FlowDiff> flowDiffs = entry.getValue().build();
@@ -179,8 +177,7 @@ public class TransformationEvaluator {
       if (_aclEvaluator.visit(node.getGuard())) {
         StepEvaluator stepEvaluator = new StepEvaluator();
         boolean transformed =
-            node.getTransformationSteps()
-                .stream()
+            node.getTransformationSteps().stream()
                 .map(stepEvaluator::visit)
                 .reduce(Boolean::logicalOr)
                 .orElse(false);

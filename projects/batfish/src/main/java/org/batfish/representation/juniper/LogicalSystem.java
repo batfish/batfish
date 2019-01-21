@@ -63,6 +63,8 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, IpsecVpn> _ipsecVpns;
 
+  private final Map<String, Screen> _screens;
+
   private final JuniperFamily _jf;
 
   private final String _name;
@@ -105,6 +107,7 @@ public class LogicalSystem implements Serializable {
     _defaultRoutingInstance = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
     _dnsServers = new TreeSet<>();
     _filters = new TreeMap<>();
+    _screens = new TreeMap<>();
     _ikeGateways = new TreeMap<>();
     _ikePolicies = new TreeMap<>();
     _ikeProposals = new TreeMap<>();
@@ -128,9 +131,7 @@ public class LogicalSystem implements Serializable {
   }
 
   private void expandInterfaceRange(InterfaceRange interfaceRange) {
-    interfaceRange
-        .getAllMembers()
-        .stream()
+    interfaceRange.getAllMembers().stream()
         .forEach(
             iname -> {
               Interface iface = _interfaces.computeIfAbsent(iname, Interface::new);
@@ -204,6 +205,10 @@ public class LogicalSystem implements Serializable {
 
   public String getHostname() {
     return _defaultRoutingInstance.getHostname();
+  }
+
+  public Map<String, Screen> getScreens() {
+    return _screens;
   }
 
   public Map<String, IkeGateway> getIkeGateways() {

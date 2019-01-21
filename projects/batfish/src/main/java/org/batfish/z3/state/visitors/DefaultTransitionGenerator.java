@@ -139,9 +139,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitAccept(Accept.State accept) {
     // ProjectNodeAccept
-    _input
-        .getEnabledNodes()
-        .stream()
+    _input.getEnabledNodes().stream()
         .map(hostname -> new BasicRuleStatement(new NodeAccept(hostname), Accept.INSTANCE))
         .forEach(_rules::add);
   }
@@ -167,17 +165,11 @@ public class DefaultTransitionGenerator implements StateVisitor {
                     }));
 
     // MatchNoLines
-    _input
-        .getAclActions()
-        .entrySet()
-        .stream()
+    _input.getAclActions().entrySet().stream()
         .flatMap(
             aclActionsEntryByNode -> {
               String hostname = aclActionsEntryByNode.getKey();
-              return aclActionsEntryByNode
-                  .getValue()
-                  .entrySet()
-                  .stream()
+              return aclActionsEntryByNode.getValue().entrySet().stream()
                   .map(
                       aclActionsEntryByAclName -> {
                         String acl = aclActionsEntryByAclName.getKey();
@@ -220,24 +212,16 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitAclLineMatch(AclLineMatch.State aclLineMatch) {
     // MatchCurrentAndDontMatchPrevious
-    _input
-        .getAclConditions()
-        .entrySet()
-        .stream()
+    _input.getAclConditions().entrySet().stream()
         .flatMap(
             aclConditionsEntryByNode -> {
               String hostname = aclConditionsEntryByNode.getKey();
-              return aclConditionsEntryByNode
-                  .getValue()
-                  .entrySet()
-                  .stream()
+              return aclConditionsEntryByNode.getValue().entrySet().stream()
                   .flatMap(
                       aclConditionsEntryByAclName -> {
                         String acl = aclConditionsEntryByAclName.getKey();
                         AtomicInteger lineNumber = new AtomicInteger(0);
-                        return aclConditionsEntryByAclName
-                            .getValue()
-                            .stream()
+                        return aclConditionsEntryByAclName.getValue().stream()
                             .map(
                                 lineCriteria -> {
                                   int line = lineNumber.getAndIncrement();
@@ -258,22 +242,16 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   @Override
   public void visitAclLineNoMatch(AclLineNoMatch.State aclLineNoMatch) {
-    _input
-        .getAclConditions()
-        .entrySet()
-        .stream()
+    _input.getAclConditions().entrySet().stream()
         .flatMap(
             e -> {
               String hostname = e.getKey();
-              return e.getValue()
-                  .entrySet()
-                  .stream()
+              return e.getValue().entrySet().stream()
                   .flatMap(
                       e2 -> {
                         String acl = e2.getKey();
                         AtomicInteger lineNumber = new AtomicInteger(0);
-                        return e2.getValue()
-                            .stream()
+                        return e2.getValue().stream()
                             .map(
                                 lineCriteria -> {
                                   int line = lineNumber.getAndIncrement();
@@ -321,9 +299,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitDrop(Drop.State drop) {
     // ProjectNodeDrop
-    _input
-        .getEnabledNodes()
-        .stream()
+    _input.getEnabledNodes().stream()
         .map(hostname -> new BasicRuleStatement(new NodeDrop(hostname), Drop.INSTANCE))
         .forEach(_rules::add);
   }
@@ -352,9 +328,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitDropAclIn(DropAclIn.State dropAclIn) {
     // ProjectNodeDropAclIn
-    _input
-        .getEnabledNodes()
-        .stream()
+    _input.getEnabledNodes().stream()
         .map(hostname -> new BasicRuleStatement(new NodeDropAclIn(hostname), DropAclIn.INSTANCE))
         .forEach(_rules::add);
   }
@@ -362,9 +336,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitDropAclOut(DropAclOut.State dropAclOut) {
     // ProjectNodeDropAclOut
-    _input
-        .getEnabledNodes()
-        .stream()
+    _input.getEnabledNodes().stream()
         .map(hostname -> new BasicRuleStatement(new NodeDropAclOut(hostname), DropAclOut.INSTANCE))
         .forEach(_rules::add);
   }
@@ -372,9 +344,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitDropNoRoute(DropNoRoute.State dropNoRoute) {
     // ProjectNodeDropNoRoute
-    _input
-        .getEnabledNodes()
-        .stream()
+    _input.getEnabledNodes().stream()
         .map(
             hostname -> new BasicRuleStatement(new NodeDropNoRoute(hostname), DropNoRoute.INSTANCE))
         .forEach(_rules::add);
@@ -383,9 +353,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitDropNullRoute(DropNullRoute.State dropNullRoute) {
     // ProjectNodeDropNullRoute
-    _input
-        .getEnabledNodes()
-        .stream()
+    _input.getEnabledNodes().stream()
         .map(
             hostname ->
                 new BasicRuleStatement(new NodeDropNullRoute(hostname), DropNullRoute.INSTANCE))
@@ -458,25 +426,19 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitNodeDrop(NodeDrop.State nodeDrop) {
     // CopyNodeDropAcl
-    _input
-        .getEnabledNodes()
-        .stream()
+    _input.getEnabledNodes().stream()
         .map(hostname -> new BasicRuleStatement(new NodeDropAcl(hostname), new NodeDrop(hostname)))
         .forEach(_rules::add);
 
     // CopyNodeDropNoRoute
-    _input
-        .getEnabledNodes()
-        .stream()
+    _input.getEnabledNodes().stream()
         .map(
             hostname ->
                 new BasicRuleStatement(new NodeDropNoRoute(hostname), new NodeDrop(hostname)))
         .forEach(_rules::add);
 
     // CopyNodeDropNullRoute
-    _input
-        .getEnabledNodes()
-        .stream()
+    _input.getEnabledNodes().stream()
         .map(
             hostname ->
                 new BasicRuleStatement(new NodeDropNullRoute(hostname), new NodeDrop(hostname)))
@@ -486,18 +448,14 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitNodeDropAcl(NodeDropAcl.State nodeDropAcl) {
     // CopyNodeDropAclIn
-    _input
-        .getEnabledNodes()
-        .stream()
+    _input.getEnabledNodes().stream()
         .map(
             hostname ->
                 new BasicRuleStatement(new NodeDropAclIn(hostname), new NodeDropAcl(hostname)))
         .forEach(_rules::add);
 
     // CopyNodeDropAclOut
-    _input
-        .getEnabledNodes()
-        .stream()
+    _input.getEnabledNodes().stream()
         .map(
             hostname ->
                 new BasicRuleStatement(new NodeDropAclOut(hostname), new NodeDropAcl(hostname)))
@@ -507,17 +465,12 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitNodeDropAclIn(NodeDropAclIn.State nodeDropAclIn) {
     // FailIncomingAcl
-    _input
-        .getTraversableInterfaces()
-        .entrySet()
-        .stream()
+    _input.getTraversableInterfaces().entrySet().stream()
         .flatMap(
             topologyInterfacesEntry -> {
               String hostname = topologyInterfacesEntry.getKey();
               Map<String, String> incomingAcls = _input.getIncomingAcls().get(hostname);
-              return topologyInterfacesEntry
-                  .getValue()
-                  .stream()
+              return topologyInterfacesEntry.getValue().stream()
                   .filter(ifaceName -> incomingAcls.get(ifaceName) != null)
                   .map(
                       ifaceName -> {
@@ -708,17 +661,12 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitPostInInterface(PostInInterface.State postInInterface) {
     // PassIncomingAcl
-    _input
-        .getEnabledInterfaces()
-        .entrySet()
-        .stream()
+    _input.getEnabledInterfaces().entrySet().stream()
         .flatMap(
             topologyInterfacesEntry -> {
               String hostname = topologyInterfacesEntry.getKey();
               Map<String, String> incomingAcls = _input.getIncomingAcls().get(hostname);
-              return topologyInterfacesEntry
-                  .getValue()
-                  .stream()
+              return topologyInterfacesEntry.getValue().stream()
                   .map(
                       ifaceName -> {
                         String inAcl = incomingAcls.get(ifaceName);
@@ -740,16 +688,11 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitPostInVrf(PostInVrf.State postInVrf) {
     // Project OriginateVrf
-    _input
-        .getEnabledVrfs()
-        .entrySet()
-        .stream()
+    _input.getEnabledVrfs().entrySet().stream()
         .flatMap(
             enabledVrfsByHostnameEntry -> {
               String hostname = enabledVrfsByHostnameEntry.getKey();
-              return enabledVrfsByHostnameEntry
-                  .getValue()
-                  .stream()
+              return enabledVrfsByHostnameEntry.getValue().stream()
                   .map(
                       vrfName ->
                           new BasicRuleStatement(
@@ -763,23 +706,15 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .forEach(_rules::add);
 
     // PostInInterfaceCorrespondingVrf
-    _input
-        .getEnabledInterfacesByNodeVrf()
-        .entrySet()
-        .stream()
+    _input.getEnabledInterfacesByNodeVrf().entrySet().stream()
         .flatMap(
             enabledInterfacesByNodeEntry -> {
               String hostname = enabledInterfacesByNodeEntry.getKey();
-              return enabledInterfacesByNodeEntry
-                  .getValue()
-                  .entrySet()
-                  .stream()
+              return enabledInterfacesByNodeEntry.getValue().entrySet().stream()
                   .flatMap(
                       enabledInterfacesByVrfEntry -> {
                         String vrfName = enabledInterfacesByVrfEntry.getKey();
-                        return enabledInterfacesByVrfEntry
-                            .getValue()
-                            .stream()
+                        return enabledInterfacesByVrfEntry.getValue().stream()
                             .map(
                                 ifaceName ->
                                     new BasicRuleStatement(
@@ -793,9 +728,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitPostOutEdge(PostOutEdge.State postOutEdgePostAclOut) {
     // PassOutgoingAcl
-    _input
-        .getEnabledEdges()
-        .stream()
+    _input.getEnabledEdges().stream()
         /*
          * Don't generate PostOutEdge rules edges where node1 is a nonTransitNode, because
          * PostOutEdge is where the node1 becomes transited.
@@ -851,16 +784,11 @@ public class DefaultTransitionGenerator implements StateVisitor {
   @Override
   public void visitPreInInterface(PreInInterface.State preInInterface) {
     // OriginateInterfaceLink
-    _input
-        .getEnabledInterfaces()
-        .entrySet()
-        .stream()
+    _input.getEnabledInterfaces().entrySet().stream()
         .flatMap(
             enabledInterfacesByHostnameEntry -> {
               String hostname = enabledInterfacesByHostnameEntry.getKey();
-              return enabledInterfacesByHostnameEntry
-                  .getValue()
-                  .stream()
+              return enabledInterfacesByHostnameEntry.getValue().stream()
                   .map(
                       iface ->
                           new BasicRuleStatement(
@@ -874,9 +802,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .forEach(_rules::add);
 
     // PostOutNeighbor
-    _input
-        .getEnabledEdges()
-        .stream()
+    _input.getEnabledEdges().stream()
         .map(
             edge ->
                 new BasicRuleStatement(
@@ -951,9 +877,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   @Override
   public void visitPreOutEdgePostNat(PreOutEdgePostNat.State preOutEdgePostNat) {
-    _input
-        .getEnabledEdges()
-        .stream()
+    _input.getEnabledEdges().stream()
         .flatMap(
             edge -> {
               String node1 = edge.getNode1();
@@ -965,18 +889,18 @@ public class DefaultTransitionGenerator implements StateVisitor {
               StateExpr postState = new PreOutEdgePostNat(node1, iface1, node2, iface2);
 
               return TransformationTransitionGenerator.generateTransitions(
-                      node1,
-                      iface1,
-                      node2,
-                      iface2,
-                      "OUTGOING",
-                      _input.getAclLineMatchExprToBooleanExprs().get(node1),
-                      preState,
-                      postState,
-                      _input
-                          .getOutgoingTransformations()
-                          .getOrDefault(node1, ImmutableMap.of())
-                          .get(iface1))
+                  node1,
+                  iface1,
+                  node2,
+                  iface2,
+                  "OUTGOING",
+                  _input.getAclLineMatchExprToBooleanExprs().get(node1),
+                  preState,
+                  postState,
+                  _input
+                      .getOutgoingTransformations()
+                      .getOrDefault(node1, ImmutableMap.of())
+                      .get(iface1))
                   .stream();
             })
         .forEach(_rules::add);
