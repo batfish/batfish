@@ -68085,7 +68085,20 @@
             }
           }
         },
-        "configs/juniper_rib_groups" : { },
+        "configs/juniper_rib_groups" : {
+          "rib-group" : {
+            "interface-routes-rib" : {
+              "definitionLines" : [
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/juniper_route_filter" : {
           "policy-statement" : {
             "route-filter-test-v4" : {
@@ -71818,6 +71831,16 @@
             "reth0.3" : {
               "interface" : [
                 8
+              ]
+            }
+          }
+        },
+        "configs/juniper_rib_groups" : {
+          "rib-group" : {
+            "interface-routes-rib" : {
+              "routing-options interface-routes" : [
+                3,
+                4
               ]
             }
           }

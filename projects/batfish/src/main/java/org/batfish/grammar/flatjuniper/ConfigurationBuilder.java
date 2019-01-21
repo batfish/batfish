@@ -25,6 +25,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE;
 import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureType.RIB_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_PROFILE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ADDRESS_BOOK_ATTACH_ZONE;
@@ -50,6 +51,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_POLIC
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_INCOMING_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_OUTGOING_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_ROUTING_OPTIONS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_SELF_REFERENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_POLICY_IPSEC_PROPOSAL;
@@ -2813,8 +2815,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterRo_rib_groups(Ro_rib_groupsContext ctx) {
-    String name = ctx.name.getText();
+    String name = unquote(ctx.name.getText());
     _currentRibGroup = _currentLogicalSystem.getRibGroups().computeIfAbsent(name, RibGroup::new);
+    defineStructure(RIB_GROUP, name, ctx);
   }
 
   @Override
@@ -4923,8 +4926,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitRoi_rib_group(Roi_rib_groupContext ctx) {
+    String groupName = unquote(ctx.name.getText());
+    _configuration.referenceStructure(
+        RIB_GROUP, groupName, INTERFACE_ROUTING_OPTIONS, ctx.name.getStart().getLine());
     if (ctx.INET() != null) {
-      String groupName = ctx.name.getText();
       _currentRoutingInstance.applyRibGroup(RoutingProtocol.CONNECTED, groupName);
       _currentRoutingInstance.applyRibGroup(RoutingProtocol.LOCAL, groupName);
     }
