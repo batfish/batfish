@@ -28,7 +28,7 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
 
   private Builder getNodeRoleDimensionTarget(String network, String dimension) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_CONTAINERS)
+        .path(CoordConstsV2.RSC_NETWORKS)
         .path(network)
         .path(CoordConstsV2.RSC_NODE_ROLES)
         .path(dimension)
@@ -38,7 +38,7 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
   }
 
   @Before
-  public void initContainerEnvironment() throws Exception {
+  public void initTestEnvironment() throws Exception {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 

@@ -24,26 +24,26 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 public class ReferenceLibraryResource {
 
   private BatfishLogger _logger = Main.getLogger();
-  private String _container;
+  private String _network;
 
-  public ReferenceLibraryResource(String container) {
-    _container = container;
+  public ReferenceLibraryResource(String network) {
+    _network = network;
   }
 
   /** Adds a new {@link ReferenceBook} to the network's {@link ReferenceLibrary} */
   @POST
   public Response addReferenceBook(ReferenceBookBean referenceBookBean) {
-    _logger.infof("WMS2: addReferenceBook '%s'\n", _container);
+    _logger.infof("WMS2: addReferenceBook '%s'\n", _network);
     if (referenceBookBean.name == null) {
       throw new BadRequestException("ReferenceBook must have a name");
     }
     try {
-      ReferenceLibrary library = Main.getWorkMgr().getReferenceLibrary(_container);
+      ReferenceLibrary library = Main.getWorkMgr().getReferenceLibrary(_network);
       if (library.getReferenceBook(referenceBookBean.name).isPresent()) {
         throw new BadRequestException("Duplicate bookname: " + referenceBookBean.name);
       }
       ReferenceLibrary.mergeReferenceBooks(
-          Main.getWorkMgr().getReferenceLibraryPath(_container),
+          Main.getWorkMgr().getReferenceLibraryPath(_network),
           ImmutableSortedSet.of(referenceBookBean.toAddressBook()));
       return Response.ok().build();
     } catch (IOException e) {
@@ -54,15 +54,15 @@ public class ReferenceLibraryResource {
   /** Relocate the request to {@link ReferenceBookResource}. */
   @Path("/{book}")
   public ReferenceBookResource getReferenceBookResource(@PathParam("book") String book) {
-    return new ReferenceBookResource(_container, book);
+    return new ReferenceBookResource(_network, book);
   }
 
-  /** Returns information about reference library in the container */
+  /** Returns information about reference library in the network */
   @GET
   public ReferenceLibraryBean getReferenceLibrary() {
-    _logger.infof("WMS2: getReferenceLibrary '%s'\n", _container);
+    _logger.infof("WMS2: getReferenceLibrary '%s'\n", _network);
     try {
-      return new ReferenceLibraryBean(Main.getWorkMgr().getReferenceLibrary(_container));
+      return new ReferenceLibraryBean(Main.getWorkMgr().getReferenceLibrary(_network));
     } catch (IOException e) {
       throw new InternalServerErrorException("ReferenceLibrary resource is corrupted");
     }

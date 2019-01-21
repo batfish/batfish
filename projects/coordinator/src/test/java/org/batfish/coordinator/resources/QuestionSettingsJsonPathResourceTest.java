@@ -6,7 +6,7 @@ import static org.batfish.common.CoordConsts.DEFAULT_API_KEY;
 import static org.batfish.common.CoordConsts.SVC_CFG_WORK_MGR2;
 import static org.batfish.common.CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY;
 import static org.batfish.common.CoordConstsV2.HTTP_HEADER_BATFISH_VERSION;
-import static org.batfish.common.CoordConstsV2.RSC_CONTAINERS;
+import static org.batfish.common.CoordConstsV2.RSC_NETWORKS;
 import static org.batfish.common.CoordConstsV2.RSC_QUESTIONS;
 import static org.batfish.common.CoordConstsV2.RSC_SETTINGS;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -89,7 +89,7 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
 
   private Builder getQuestionSettingsJsonPathTarget(String questionClass, String jsonPath) {
     return target(SVC_CFG_WORK_MGR2)
-        .path(RSC_CONTAINERS)
+        .path(RSC_NETWORKS)
         .path(NETWORK)
         .path(RSC_SETTINGS)
         .path(RSC_QUESTIONS)
@@ -101,7 +101,7 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
   }
 
   @Before
-  public void initContainerEnvironment() throws Exception {
+  public void initTestEnvironment() throws Exception {
     _idManager =
         new LocalIdManager() {
           @Override

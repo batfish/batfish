@@ -34,7 +34,7 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
 
   private Builder getTarget(String network, String key) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_CONTAINERS)
+        .path(CoordConstsV2.RSC_NETWORKS)
         .path(network)
         .path(CoordConstsV2.RSC_OBJECTS)
         .queryParam(QP_KEY, key)
@@ -44,7 +44,7 @@ public final class NetworkObjectsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Before
-  public void initContainerEnvironment() throws Exception {
+  public void initNetworkEnvironment() throws Exception {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 

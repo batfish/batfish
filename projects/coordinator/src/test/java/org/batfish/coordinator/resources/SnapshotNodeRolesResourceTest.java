@@ -38,7 +38,7 @@ public final class SnapshotNodeRolesResourceTest extends WorkMgrServiceV2TestBas
   }
 
   @Before
-  public void initContainerEnvironment() throws Exception {
+  public void initTestEnvironment() throws Exception {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 

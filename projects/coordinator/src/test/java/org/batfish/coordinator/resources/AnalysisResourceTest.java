@@ -27,7 +27,7 @@ public final class AnalysisResourceTest extends WorkMgrServiceV2TestBase {
 
   private Builder getTarget(String network, String analysis) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_CONTAINERS)
+        .path(CoordConstsV2.RSC_NETWORKS)
         .path(network)
         .path(CoordConstsV2.RSC_ANALYSES)
         .path(analysis)
@@ -37,7 +37,7 @@ public final class AnalysisResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Before
-  public void initContainerEnvironment() throws Exception {
+  public void initTestEnvironment() throws Exception {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
