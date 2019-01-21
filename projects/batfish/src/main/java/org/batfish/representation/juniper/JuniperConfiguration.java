@@ -1869,8 +1869,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 // Construct a policy chain based on defined import policies
                 new If(
                     new DisjunctionChain(policyCalls),
-                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-                    ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
+                    ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+                    ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))))
         .build();
     return new org.batfish.datamodel.dataplane.rib.RibGroup(
         rg.getName(), importRibs, policyName, exportRib);
