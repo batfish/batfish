@@ -1842,6 +1842,32 @@ multicast_routing_stanza
    )*
 ;
 
+n_option
+:
+   DNS
+   | INACTIVE
+   | NO_PROXY_ARP
+   | ROUTE_LOOKUP
+   | UNIDIRECTIONAL
+;
+
+n_pat_pool
+:
+   PAT_POOL pat_obj = variable?
+   (
+       BLOCK_ALLOCATION
+       | EXTENDED
+       | (FLAT INCLUDE_RESERVE?)
+       | INTERFACE
+       | ROUND_ROBIN
+   )*
+;
+
+n_paren
+:
+   PAREN_LEFT real_if = variable COMMA mapped_if = variable PAREN_RIGHT
+;
+
 no_aaa_group_server_stanza
 :
    NO AAA GROUP SERVER null_rest_of_line
@@ -2837,6 +2863,31 @@ s_name
    NAME variable variable null_rest_of_line
 ;
 
+s_nat
+:
+   NAT n_paren? AFTER_AUTO? SOURCE (DYNAMIC | STATIC)
+   real_src = variable
+   (
+      (mapped_src = variable mapped_src_iface = INTERFACE?)
+      | mapped_src_iface = INTERFACE
+      | n_pat_pool
+   )
+   (
+      DESTINATION STATIC
+      (
+         mapped_dst = variable
+         | mapped_dst_iface = INTERFACE
+      )
+      real_dst = variable
+   )?
+   (SERVICE svc_obj1 = variable svc_obj2 = variable)?
+   n_option*
+   (
+      description_line
+      | NEWLINE
+   )
+;
+
 s_no_access_list_extended
 :
    NO ACCESS_LIST ACL_NUM_EXTENDED NEWLINE
@@ -3717,6 +3768,7 @@ stanza
    | s_mpls_traffic_eng
    | s_mtu
    | s_name
+   | s_nat
    | s_netdestination
    | s_netdestination6
    | s_netservice

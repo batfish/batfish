@@ -267,6 +267,16 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.TACACS_SOURCE
 import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_SOURCE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_MAPPED_INTERFACE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_INTERFACE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.VXLAN_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.VXLAN_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_GROUP_LIST;
@@ -317,7 +327,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.DscpType;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.IcmpCode;
@@ -734,6 +743,8 @@ import org.batfish.grammar.cisco.CiscoParser.Match_source_protocol_rm_stanzaCont
 import org.batfish.grammar.cisco.CiscoParser.Match_tag_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_paths_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_peers_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.N_optionContext;
+import org.batfish.grammar.cisco.CiscoParser.N_parenContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_block_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_block_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Neighbor_flat_rb_stanzaContext;
@@ -987,6 +998,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_loggingContext;
 import org.batfish.grammar.cisco.CiscoParser.S_mac_access_listContext;
 import org.batfish.grammar.cisco.CiscoParser.S_mac_access_list_extendedContext;
 import org.batfish.grammar.cisco.CiscoParser.S_mtuContext;
+import org.batfish.grammar.cisco.CiscoParser.S_natContext;
 import org.batfish.grammar.cisco.CiscoParser.S_no_access_list_extendedContext;
 import org.batfish.grammar.cisco.CiscoParser.S_no_access_list_standardContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ntpContext;
@@ -1116,6 +1128,7 @@ import org.batfish.representation.cisco.BgpNetwork6;
 import org.batfish.representation.cisco.BgpPeerGroup;
 import org.batfish.representation.cisco.BgpProcess;
 import org.batfish.representation.cisco.BgpRedistributionPolicy;
+import org.batfish.representation.cisco.CiscoAsaNat;
 import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.CiscoIosDynamicNat;
 import org.batfish.representation.cisco.CiscoIosNat;
@@ -3096,14 +3109,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitOn_fqdn(On_fqdnContext ctx) {
-    _currentNetworkObject.setIpSpace(EmptyIpSpace.INSTANCE);
+    _currentNetworkObject.setFqdn(ctx.fqdn.getText());
     _w.redFlag("Unknown how to resolve domain name to IP address: " + getFullText(ctx));
   }
 
   @Override
   public void exitOn_host(On_hostContext ctx) {
     if (ctx.address != null) {
-      _currentNetworkObject.setIpSpace(Ip.parse(ctx.address.getText()).toIpSpace());
+      _currentNetworkObject.setHost(Ip.parse(ctx.address.getText()));
     } else {
       // IPv6
       _w.redFlag("Unimplemented network object line: " + getFullText(ctx));
@@ -3112,14 +3125,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitOn_range(On_rangeContext ctx) {
-    _w.redFlag("Unimplemented network object line: " + getFullText(ctx));
+    _currentNetworkObject.setRange(Ip.parse(ctx.start.getText()), Ip.parse(ctx.end.getText()));
+    _w.redFlag("Network object 'range' is not supported for access lists: " + getFullText(ctx));
   }
 
   @Override
   public void exitOn_subnet(On_subnetContext ctx) {
     if (ctx.address != null) {
-      _currentNetworkObject.setIpSpace(
-          Prefix.create(Ip.parse(ctx.address.getText()), Ip.parse(ctx.mask.getText())).toIpSpace());
+      _currentNetworkObject.setSubnet(
+          Prefix.create(Ip.parse(ctx.address.getText()), Ip.parse(ctx.mask.getText())));
     } else {
       // IPv6
       _w.redFlag("Unimplemented network object line: " + getFullText(ctx));
@@ -8992,6 +9006,113 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitS_nat(S_natContext ctx) {
+    CiscoAsaNat nat = new CiscoAsaNat();
+
+    nat.setDynamic(ctx.DYNAMIC() != null);
+
+    N_parenContext parenCtx = ctx.n_paren();
+    int line = ctx.getStart().getLine();
+    if (parenCtx != null) {
+      String inside = parenCtx.real_if.getText();
+      if (!inside.equals("any")) {
+        nat.setInsideInterface(inside);
+        _configuration.referenceStructure(INTERFACE, inside, TWICE_NAT_REAL_INTERFACE, line);
+      }
+      String outside = parenCtx.mapped_if.getText();
+      if (!outside.equals("any")) {
+        nat.setOutsideInterface(outside);
+        _configuration.referenceStructure(INTERFACE, outside, TWICE_NAT_MAPPED_INTERFACE, line);
+      }
+    }
+
+    AccessListAddressSpecifier addressSpecifier =
+        referenceNetworkObjectOrGroup(
+            ctx.real_src.getText(),
+            TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT,
+            TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP,
+            line);
+    nat.setRealSource(addressSpecifier);
+
+    if (ctx.mapped_src != null) {
+      addressSpecifier =
+          referenceNetworkObjectOrGroup(
+              ctx.mapped_src.getText(),
+              TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
+              TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
+              line);
+      nat.setMappedSource(addressSpecifier);
+    }
+    if (ctx.mapped_src_iface != null) {
+      // Match outside/mapped interface. Interface must be specified.
+      // For dynamic NAT/PAT, this can be in lieu of or in addition to a mapped source object.
+      todo(ctx);
+      return;
+    }
+    if (ctx.n_pat_pool() != null) {
+      // PAT pool
+      todo(ctx);
+      return;
+    }
+
+    // Optional static destination NAT
+    if (ctx.DESTINATION() != null) {
+      nat.setTwice(true);
+      if (ctx.mapped_dst.getText() != null) {
+        addressSpecifier =
+            referenceNetworkObjectOrGroup(
+                ctx.mapped_dst.getText(),
+                TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT,
+                TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT_GROUP,
+                line);
+        nat.setMappedDestination(addressSpecifier);
+      } else {
+        // Match inside/real interface. Interface must be specified.
+        todo(ctx);
+        return;
+      }
+      addressSpecifier =
+          referenceNetworkObjectOrGroup(
+              ctx.real_dst.getText(),
+              TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT,
+              TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT_GROUP,
+              line);
+      nat.setRealDestination(addressSpecifier);
+    } else {
+      nat.setTwice(false);
+    }
+
+    // Optional service object specifiers
+    if (ctx.SERVICE() != null) {
+      // Specifies static port translation for static NAT or dynamic source + static destination NAT
+      todo(ctx);
+      return;
+    }
+
+    boolean afterAuto = ctx.AFTER_AUTO() != null;
+    if (afterAuto) {
+      nat.setSection(CiscoAsaNat.Section.AFTER);
+    } else {
+      nat.setSection(CiscoAsaNat.Section.BEFORE);
+    }
+
+    // Check options. INACTIVE means rule is ignored. Other options are not handled.
+    for (N_optionContext optionCtx : ctx.n_option()) {
+      if (optionCtx.INACTIVE() != null) {
+        nat.setInactive(true);
+      } else {
+        todo(ctx);
+        return;
+      }
+    }
+
+    // Twice NATs are sorted by section and sequentially
+    nat.setLine(_configuration.getCiscoAsaNats().size() + 1);
+
+    _configuration.getCiscoAsaNats().add(nat);
+  }
+
+  @Override
   public void exitS_no_access_list_extended(S_no_access_list_extendedContext ctx) {
     String name = ctx.ACL_NUM_EXTENDED().getText();
     _configuration.getExtendedAcls().remove(name);
@@ -9837,6 +9958,37 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private void pushPeer(BgpPeerGroup pg) {
     _peerGroupStack.add(_currentPeerGroup);
     _currentPeerGroup = pg;
+  }
+
+  /**
+   * Determine if this is a reference to a network object or a network object group. They are not
+   * supposed to be ambiguous and must already be defined. Also matches "any" as all addresses.
+   *
+   * @param name Name of network object or network object group
+   * @param objectStructure Name of structure to reference if this is a network object
+   * @param groupStructure Name of structure to reference if this is a network object group
+   * @param line Line number in configuration
+   * @return Address specifier for this reference
+   */
+  private AccessListAddressSpecifier referenceNetworkObjectOrGroup(
+      String name,
+      CiscoStructureUsage objectStructure,
+      CiscoStructureUsage groupStructure,
+      int line) {
+    if (name.equals("any")) {
+      return new WildcardAddressSpecifier(IpWildcard.ANY);
+    }
+    if (_configuration.getNetworkObjectGroups().containsKey(name)) {
+      _configuration.referenceStructure(NETWORK_OBJECT_GROUP, name, groupStructure, line);
+      return new NetworkObjectGroupAddressSpecifier(name);
+    }
+    // Assume this is an defined or undefined reference to a network object
+    _configuration.referenceStructure(NETWORK_OBJECT, name, objectStructure, line);
+    if (_configuration.getNetworkObjects().containsKey(name)) {
+      return new NetworkObjectAddressSpecifier(name);
+    }
+    _w.redFlag("Undefined network object or network object-group " + name);
+    return null;
   }
 
   private void resetPeerGroups() {

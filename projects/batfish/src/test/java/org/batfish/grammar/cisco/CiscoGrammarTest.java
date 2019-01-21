@@ -237,8 +237,10 @@ import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -283,6 +285,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecEncapsulationMode;
@@ -341,12 +344,19 @@ import org.batfish.datamodel.routing_policy.expr.LiteralCommunityHalf;
 import org.batfish.datamodel.routing_policy.expr.RangeCommunityHalf;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackInterface;
+import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.cisco.CiscoAsaNat;
+import org.batfish.representation.cisco.CiscoAsaNat.Section;
 import org.batfish.representation.cisco.CiscoConfiguration;
+import org.batfish.representation.cisco.NetworkObjectAddressSpecifier;
+import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
+import org.batfish.representation.cisco.WildcardAddressSpecifier;
 import org.batfish.representation.cisco.eos.AristaEosVxlan;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -4069,5 +4079,272 @@ public class CiscoGrammarTest {
                             .setNextHopInterface("ifname")
                             .setAdministrativeCost(3)
                             .build())))));
+  }
+
+  @Test
+  public void testAsaNatOrder() {
+    String hostname = "asa-nat-twice-mixed";
+    CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_ASA);
+
+    List<CiscoAsaNat> nats = config.getCiscoAsaNats();
+    assertThat(nats, hasSize(4));
+
+    // CiscoAsaNats are comparable
+    Collections.sort(nats);
+
+    // Check that Twice NATs are sorted by section and then line
+    assertThat(nats.get(0).getSection(), equalTo(Section.BEFORE));
+    assertThat(nats.get(1).getSection(), equalTo(Section.BEFORE));
+    assertThat(nats.get(2).getSection(), equalTo(Section.AFTER));
+    assertThat(nats.get(3).getSection(), equalTo(Section.AFTER));
+
+    assertThat(nats.get(0).getLine(), equalTo(2));
+    assertThat(nats.get(1).getLine(), equalTo(3));
+    assertThat(nats.get(2).getLine(), equalTo(1));
+    assertThat(nats.get(3).getLine(), equalTo(4));
+  }
+
+  @Test
+  public void testAsaTwiceNatDynamic() {
+    // Test vendor-specific parsing of ASA dynamic twice NATs
+    String hostname = "asa-nat-twice-dynamic";
+    CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_ASA);
+
+    MatchHeaderSpace matchSourceSubnet =
+        matchSrc(
+            new IpSpaceReference("source-subnet", "Match network object-group: 'source-subnet'"));
+    MatchHeaderSpace matchSourceGroup =
+        matchSrc(
+            new IpSpaceReference("source-group", "Match network object-group: 'source-group'"));
+    AssignIpAddressFromPool assignSourceRange =
+        assignSourceIp(Ip.parse("2.2.2.2"), Ip.parse("2.2.2.10"));
+    Prefix mappedDestination = Prefix.parse("3.3.3.3/32");
+    Prefix realDestination = Prefix.parse("4.4.4.4/32");
+
+    List<CiscoAsaNat> nats = config.getCiscoAsaNats();
+    assertThat(nats, hasSize(2));
+
+    // dynamic source NAT, host -> range
+    CiscoAsaNat nat = config.getCiscoAsaNats().get(0);
+    Optional<Transformation.Builder> builder =
+        nat.toTransformationTest(true, config.getNetworkObjects());
+    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    Transformation twice = builder.get().build();
+    assertThat(
+        twice,
+        equalTo(
+            when(and(matchSrcInterface("inside"), matchSourceSubnet))
+                .apply(assignSourceRange)
+                .build()));
+
+    // dynamic source NAT and static destination NAT
+    nat = config.getCiscoAsaNats().get(1);
+    builder = nat.toTransformationTest(true, config.getNetworkObjects());
+    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    twice = builder.get().build();
+    assertThat(
+        twice,
+        equalTo(
+            when(and(
+                    and(matchSrcInterface("inside"), matchSourceGroup),
+                    matchDst(mappedDestination)))
+                .apply(ImmutableList.of(assignSourceRange, shiftDestinationIp(realDestination)))
+                .build()));
+  }
+
+  @Test
+  public void testAsaTwiceNatStatic() {
+    // Test vendor-specific parsing of ASA static twice NATs
+    String hostname = "asa-nat-twice-static";
+    CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_ASA);
+
+    List<CiscoAsaNat> nats = config.getCiscoAsaNats();
+    assertThat(nats, hasSize(7));
+
+    CiscoAsaNat nat = nats.get(0);
+    assertThat(nat.getDynamic(), equalTo(false));
+    assertThat(nat.getInsideInterface(), equalTo("inside"));
+    assertThat(
+        nat.getMappedDestination(), equalTo(new NetworkObjectAddressSpecifier("dest-mapped")));
+    assertThat(nat.getMappedSource(), equalTo(new NetworkObjectAddressSpecifier("source-mapped")));
+    assertThat(nat.getOutsideInterface(), equalTo("outside"));
+    assertThat(nat.getRealDestination(), equalTo(new NetworkObjectAddressSpecifier("dest-real")));
+    assertThat(nat.getRealSource(), equalTo(new NetworkObjectAddressSpecifier("source-real")));
+    assertThat(nat.getTwice(), equalTo(true));
+
+    nat = nats.get(1);
+    assertThat(nat.getDynamic(), equalTo(false));
+    assertThat(nat.getInsideInterface(), equalTo("inside"));
+    assertThat(nat.getMappedSource(), equalTo(new NetworkObjectAddressSpecifier("source-mapped")));
+    assertThat(nat.getOutsideInterface(), equalTo("outside"));
+    assertThat(nat.getRealSource(), equalTo(new NetworkObjectAddressSpecifier("source-real")));
+    assertThat(nat.getTwice(), equalTo(false));
+
+    nat = nats.get(2);
+    assertThat(nat.getDynamic(), equalTo(false));
+    assertThat(nat.getTwice(), equalTo(false));
+    assertThat(nat.getInsideInterface(), nullValue());
+    assertThat(nat.getOutsideInterface(), nullValue());
+    assertThat(
+        nat.getRealSource(), equalTo(new NetworkObjectGroupAddressSpecifier("source-real-group")));
+    assertThat(
+        nat.getMappedSource(),
+        equalTo(new NetworkObjectGroupAddressSpecifier("source-mapped-group")));
+
+    nat = nats.get(3);
+    MatcherAssert.assertThat("NAT is active", nat.getInactive());
+    assertThat(nat.getInsideInterface(), equalTo("inside"));
+    assertThat(nat.getOutsideInterface(), nullValue());
+
+    nat = nats.get(4);
+    assertThat(nat.getInsideInterface(), nullValue());
+    assertThat(nat.getOutsideInterface(), equalTo("outside"));
+
+    nat = nats.get(5);
+    assertThat(nat.getInsideInterface(), equalTo("outside"));
+    assertThat(nat.getOutsideInterface(), equalTo("inside"));
+    assertThat(nat.getRealSource(), equalTo(new WildcardAddressSpecifier(IpWildcard.ANY)));
+    assertThat(nat.getMappedSource(), equalTo(new WildcardAddressSpecifier(IpWildcard.ANY)));
+
+    nat = nats.get(6);
+    assertThat(
+        nat.getRealSource(), equalTo(new NetworkObjectAddressSpecifier("source-real-subnet")));
+    assertThat(
+        nat.getMappedSource(), equalTo(new NetworkObjectAddressSpecifier("source-mapped-subnet")));
+  }
+
+  @Test
+  public void testAsaTwiceNatStaticSource() {
+    // Test ASA twice NAT with source only
+    String hostname = "asa-nat-twice-static";
+    CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_ASA);
+
+    Prefix realSourceHost = Prefix.parse("1.1.1.1/32");
+    Prefix mappedSourceHost = Prefix.parse("2.2.2.2/32");
+    Prefix realSourceSubnet = Prefix.parse("5.5.5.0/24");
+    Prefix mappedSourceSubnet = Prefix.parse("6.6.6.0/24");
+
+    // Host source NAT outgoing
+    CiscoAsaNat nat = config.getCiscoAsaNats().get(1);
+    Optional<Transformation.Builder> builder =
+        nat.toTransformationTest(true, config.getNetworkObjects());
+    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    Transformation twice = builder.get().build();
+    assertThat(
+        twice,
+        equalTo(
+            when(and(matchSrcInterface("inside"), matchSrc(realSourceHost)))
+                .apply(shiftSourceIp(mappedSourceHost))
+                .build()));
+
+    // Host source NAT incoming
+    builder = nat.toTransformationTest(false, config.getNetworkObjects());
+    MatcherAssert.assertThat("No incoming transformation", builder.isPresent());
+    twice = builder.get().build();
+    assertThat(
+        twice,
+        equalTo(
+            when(matchDst(mappedSourceHost)).apply(shiftDestinationIp(realSourceHost)).build()));
+
+    // Identity NAT
+    nat = config.getCiscoAsaNats().get(5);
+    builder = nat.toTransformationTest(true, config.getNetworkObjects());
+    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    twice = builder.get().build();
+    assertThat(
+        twice,
+        equalTo(
+            when(and(matchSrcInterface("outside"), matchSrc(Prefix.ZERO)))
+                .apply(shiftSourceIp(Prefix.ZERO))
+                .build()));
+
+    // Subnet source NAT
+    nat = config.getCiscoAsaNats().get(6);
+    builder = nat.toTransformationTest(true, config.getNetworkObjects());
+    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    twice = builder.get().build();
+    assertThat(
+        twice,
+        equalTo(
+            when(and(matchSrcInterface("inside"), matchSrc(realSourceSubnet)))
+                .apply(shiftSourceIp(mappedSourceSubnet))
+                .build()));
+  }
+
+  @Test
+  public void testAsaTwiceNatStaticSourceAndDestination() {
+    // Test ASA twice NAT with source and destination
+    String hostname = "asa-nat-twice-static";
+    CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_ASA);
+
+    Prefix realSource = Prefix.parse("1.1.1.1/32");
+    Prefix mappedSource = Prefix.parse("2.2.2.2/32");
+    Prefix mappedDestination = Prefix.parse("3.3.3.3/32");
+    Prefix realDestination = Prefix.parse("4.4.4.4/32");
+
+    CiscoAsaNat nat = config.getCiscoAsaNats().get(0);
+    Optional<Transformation.Builder> builder =
+        nat.toTransformationTest(true, config.getNetworkObjects());
+    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    Transformation twice = builder.get().build();
+    assertThat(
+        twice,
+        equalTo(
+            when(and(
+                    and(matchSrcInterface("inside"), matchSrc(realSource)),
+                    matchDst(mappedDestination)))
+                .apply(
+                    ImmutableList.of(
+                        shiftSourceIp(mappedSource), shiftDestinationIp(realDestination)))
+                .build()));
+
+    builder = nat.toTransformationTest(false, config.getNetworkObjects());
+    MatcherAssert.assertThat("No incoming transformation", builder.isPresent());
+    twice = builder.get().build();
+    assertThat(
+        twice,
+        equalTo(
+            when(and(matchDst(mappedSource), matchSrc(realDestination)))
+                .apply(
+                    ImmutableList.of(
+                        shiftDestinationIp(realSource), shiftSourceIp(mappedDestination)))
+                .build()));
+  }
+
+  @Test
+  public void testAsaTwiceNatReferrers() throws IOException {
+    String hostname = "asa-nat-twice-static";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // check expected references
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "inside", 6));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "outside", 6));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "dest-mapped", 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "dest-real", 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "source-mapped", 3));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "source-mapped-subnet", 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "source-real", 3));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "source-real-subnet", 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, "source-mapped-group", 2));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, "source-real-group", 2));
+
+    assertThat(ccae, not(hasUndefinedReference(filename, INTERFACE, "inside")));
+    assertThat(ccae, not(hasUndefinedReference(filename, INTERFACE, "outside")));
+    assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT, "dest-mapped")));
+    assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT, "dest-real")));
+    assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT, "source-mapped")));
+    assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT, "source-mapped-subnet")));
+    assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT, "source-real")));
+    assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT, "source-real-subnet")));
+    assertThat(
+        ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, "source-mapped-group")));
+    assertThat(
+        ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, "source-real-group")));
+    assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT, "undef-source-mapped"));
+    assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT, "undef-source-real"));
   }
 }

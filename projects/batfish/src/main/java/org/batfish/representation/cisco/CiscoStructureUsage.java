@@ -215,6 +215,18 @@ public enum CiscoStructureUsage implements StructureUsage {
   TRACK_INTERFACE("track interface"),
   TUNNEL_PROTECTION_IPSEC_PROFILE("interface TunnelX tunnel protection ipsec profile"),
   TUNNEL_SOURCE("tunnel source"),
+  TWICE_NAT_MAPPED_INTERFACE("twice nat mapped interface"),
+  TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT("twice nat mapped destination network object"),
+  TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT_GROUP(
+      "twice nat mapped destination network object group"),
+  TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT("twice nat mapped source network object"),
+  TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP("twice nat mapped source network object group"),
+  TWICE_NAT_REAL_INTERFACE("twice nat real interface"),
+  TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT("twice nat real destination network object"),
+  TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT_GROUP(
+      "twice nat real destination network object group"),
+  TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT("twice nat real source network object"),
+  TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP("twice nat real source network object group"),
   WCCP_GROUP_LIST("ip wccp group-list"),
   WCCP_REDIRECT_LIST("ip wccp redirect-list"),
   WCCP_SERVICE_LIST("ip wccp service-list"),
