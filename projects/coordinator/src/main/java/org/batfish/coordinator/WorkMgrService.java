@@ -1471,11 +1471,6 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_PREFIX) String networkPrefix) {
-    return initNetworkHelper(apiKey, clientVersion, networkName, networkPrefix);
-  }
-
-  private JSONArray initNetworkHelper(
-      String apiKey, String clientVersion, String networkName, String networkPrefix) {
     try {
       _logger.infof("WMS:initNetwork %s\n", networkPrefix);
 
@@ -1637,10 +1632,6 @@ public class WorkMgrService {
   public JSONArray listNetworks(
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion) {
-    return listNetworksHelper(apiKey, clientVersion);
-  }
-
-  private JSONArray listNetworksHelper(String apiKey, String clientVersion) {
     _logger.infof("WMS:listNetworks %s\n", apiKey);
     try {
       checkStringParam(apiKey, "API key");
@@ -1788,11 +1779,6 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName) {
-    return listSnapshotsHelper(apiKey, clientVersion, networkName);
-  }
-
-  @Deprecated
-  private JSONArray listSnapshotsHelper(String apiKey, String clientVersion, String networkName) {
     try {
       _logger.infof("WMS:listSnapshots %s %s\n", apiKey, networkName);
 
