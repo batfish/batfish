@@ -214,7 +214,7 @@ public class WorkMgr extends AbstractCoordinator {
           BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES,
           BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
 
-  private static final int MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES = 10;
+  private static final int MAX_SHOWN_SNAPSHOT_INFO_SUBDIR_ENTRIES = 10;
 
   private final IdManager _idManager;
 
@@ -1596,16 +1596,16 @@ public class WorkMgr extends AbstractCoordinator {
                 .collect(Collectors.toList())
                 .toArray(new String[] {});
         retStringBuilder.append("/\n");
-        // now append a maximum of MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES
+        // now append a maximum of MAX_SHOWN_SNAPSHOT_INFO_SUBDIR_ENTRIES
         for (int index = 0;
-            index < subdirEntryNames.length && index < MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES;
+            index < subdirEntryNames.length && index < MAX_SHOWN_SNAPSHOT_INFO_SUBDIR_ENTRIES;
             index++) {
           retStringBuilder.append("  " + subdirEntryNames[index] + "\n");
         }
         if (subdirEntryNames.length > 10) {
           retStringBuilder.append(
               "  ...... "
-                  + (subdirEntryNames.length - MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES)
+                  + (subdirEntryNames.length - MAX_SHOWN_SNAPSHOT_INFO_SUBDIR_ENTRIES)
                   + " more entries\n");
         }
       } else {
@@ -2412,7 +2412,7 @@ public class WorkMgr extends AbstractCoordinator {
   public int syncSnapshotsSyncNow(String networkName, String pluginId, boolean force) {
     if (!_snapshotsSyncers.containsKey(pluginId)) {
       throw new BatfishException(
-          "PluginId " + pluginId + " not found." + " (Are SyncTestrigs plugins loaded?)");
+          "PluginId " + pluginId + " not found." + " (Are SyncSnapshots plugins loaded?)");
     }
     return _snapshotsSyncers.get(pluginId).syncNow(networkName, force);
   }
@@ -2861,10 +2861,7 @@ public class WorkMgr extends AbstractCoordinator {
     return _idManager;
   }
 
-  /**
-   * Fetch testrig metadata for network and snapshot. Returns {@code null} if network or snapshot
-   * does not exist.
-   */
+  /** Fetch metadata for snapshot. Returns {@code null} if network or snapshot does not exist. */
   public @Nullable SnapshotMetadata getSnapshotMetadata(String network, String snapshot)
       throws IOException {
     if (!_idManager.hasNetworkId(network)) {
