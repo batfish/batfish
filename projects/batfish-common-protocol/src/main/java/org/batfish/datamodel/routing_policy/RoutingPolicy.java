@@ -217,8 +217,7 @@ public class RoutingPolicy implements Serializable {
 
   @JsonProperty(PROP_STATEMENTS)
   public void setStatements(@Nullable List<Statement> statements) {
-    // Array list because of really old pattern where we do get().add() all over the place.
-    _statements = firstNonNull(statements, new ArrayList<>());
+    _statements = firstNonNull(statements, ImmutableList.of());
   }
 
   public RoutingPolicy simplify() {
