@@ -1717,7 +1717,7 @@ public class WorkMgr extends AbstractCoordinator {
   public String initNetwork(@Nullable String network, @Nullable String networkPrefix) {
     String newNetworkName =
         isNullOrEmpty(network) ? networkPrefix + "_" + UUID.randomUUID() : network;
-    if (_idManager.hasNetworkId(newNetworkName)) {
+    if (checkNetworkExists(newNetworkName)) {
       throw new BatfishException(String.format("Network '%s' already exists!", newNetworkName));
     }
     NetworkId networkId = _idManager.generateNetworkId();
@@ -2520,11 +2520,11 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-  public boolean checkNetworkExists(String containerName) {
-    if (!_idManager.hasNetworkId(containerName)) {
+  public boolean checkNetworkExists(String networkName) {
+    if (!_idManager.hasNetworkId(networkName)) {
       return false;
     }
-    NetworkId id = _idManager.getNetworkId(containerName);
+    NetworkId id = _idManager.getNetworkId(networkName);
     return _storage.checkNetworkExists(id);
   }
 
