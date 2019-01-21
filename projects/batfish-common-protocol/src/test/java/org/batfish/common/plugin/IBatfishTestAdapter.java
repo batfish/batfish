@@ -20,6 +20,7 @@ import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyProvider;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
@@ -219,6 +220,11 @@ public class IBatfishTestAdapter implements IBatfish {
       @Override
       public IpOwners getIpOwners(NetworkSnapshot snapshot) {
         return new IpOwners(loadConfigurations(snapshot));
+      }
+
+      @Override
+      public Layer1Topology getLayer1LogicalTopology(NetworkSnapshot networkSnapshot) {
+        return TopologyUtil.computeLayer1LogicalTopology(getLayer1Topology(), loadConfigurations());
       }
 
       @Override

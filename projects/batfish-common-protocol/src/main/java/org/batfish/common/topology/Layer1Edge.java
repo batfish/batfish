@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.batfish.datamodel.NetworkConfigurations;
 
 public final class Layer1Edge implements Comparable<Layer1Edge> {
 
@@ -72,6 +74,15 @@ public final class Layer1Edge implements Comparable<Layer1Edge> {
   @Override
   public int hashCode() {
     return Objects.hash(_node1, _node2);
+  }
+
+  public @Nullable Layer1Edge toLogicalEdge(NetworkConfigurations networkConfigurations) {
+    Layer1Node node1 = _node1.toLogicalNode(networkConfigurations);
+    Layer1Node node2 = _node2.toLogicalNode(networkConfigurations);
+    if (node1 == null || node2 == null) {
+      return null;
+    }
+    return new Layer1Edge(node1, node2);
   }
 
   @Override

@@ -865,12 +865,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
       _logger.infof(
           "Testrig:%s in container:%s has layer-1 topology file",
           getTestrigName(), getContainerName());
-      newBatch("Processing layer-1 topology", 0);
-      Layer1Topology layer1Topology =
-          TopologyUtil.computeLayer1Topology(rawLayer1Topology, configurations);
+      newBatch("Processing layer-1 physical topology", 0);
+      Layer1Topology layer1PhysicalTopology =
+          TopologyUtil.computeLayer1PhysicalTopology(rawLayer1Topology, configurations);
+      newBatch("Computing layer-1 logical topology", 0);
+      Layer1Topology layer1LogicalTopology =
+          TopologyUtil.computeLayer1LogicalTopology(layer1PhysicalTopology, configurations);
       newBatch("Computing layer-2 topology", 0);
       Layer2Topology layer2Topology =
-          TopologyUtil.computeLayer2Topology(layer1Topology, configurations);
+          TopologyUtil.computeLayer2Topology(layer1LogicalTopology, configurations);
       newBatch("Computing layer-3 topology", 0);
       return TopologyUtil.computeLayer3Topology(layer2Topology, configurations);
     }

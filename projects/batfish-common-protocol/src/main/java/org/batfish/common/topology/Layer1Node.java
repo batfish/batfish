@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.NetworkConfigurations;
 
 public final class Layer1Node implements Comparable<Layer1Node> {
 
@@ -71,5 +73,17 @@ public final class Layer1Node implements Comparable<Layer1Node> {
         .add(PROP_HOSTNAME, _hostname)
         .add(PROP_INTERFACE_NAME, _interfaceName)
         .toString();
+  }
+
+  public @Nonnull Layer1Node toLogicalNode(NetworkConfigurations networkConfigurations) {
+    Interface iface = networkConfigurations.getInterface(_hostname, _interfaceName).get();
+    if (iface.getChannelGroup() == null) {
+      return this;
+    }
+    return networkConfigurations
+        .getInterface(_hostname, iface.getChannelGroup())
+        .map(c -> c.getActive() ? c : null)
+        .map(c -> new Layer1Node(_hostname, c.getName()))
+        .orElse(null);
   }
 }

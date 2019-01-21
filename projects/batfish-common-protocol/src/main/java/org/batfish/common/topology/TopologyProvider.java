@@ -18,6 +18,13 @@ public interface TopologyProvider {
   @Nonnull
   IpOwners getIpOwners(NetworkSnapshot snapshot);
 
+  /**
+   * Return the {@link Layer1Topology} with respect to logical layer-1 edges for a given {@link
+   * NetworkSnapshot}.
+   */
+  @Nonnull
+  Layer1Topology getLayer1LogicalTopology(NetworkSnapshot networkSnapshot);
+
   /** Return the {@link VxlanTopology} for a given {@link NetworkSnapshot}. */
   @Nonnull
   VxlanTopology getVxlanTopology(NetworkSnapshot snapshot);
