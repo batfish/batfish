@@ -106,7 +106,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     _spanContext = spanContext;
   }
 
-  private static final Pattern WHITESPACE_ONLY = Pattern.compile("^\\s*$", Pattern.MULTILINE);
+  private static final Pattern WHITESPACE_ONLY = Pattern.compile("^\\s*$");
 
   /**
    * Detects and returns the {@link ConfigurationFormat format} of the given text using the given

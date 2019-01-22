@@ -43,20 +43,40 @@ public class ParseVendorConfigurationJobTest {
     assertThat(result.getFailureCause(), not(equalTo(null)));
   }
 
-  // Tests that empty files are detected as empty even if another format is provided.
+  // Tests that empty files are detected as empty, even when another format is provided.
   @Test
   public void testDetectFormatEmpty() {
-    String fileText = "   \n\n\t\n\n   ";
+    String[] empties = {
+      "", "\n", "\t", " ", "\r\n", "   \r\n\r\n\t\n\n   ",
+    };
+    Settings settings = new Settings();
+    Settings ignored = new Settings();
+    ignored.setIgnoreFilesWithStrings(ImmutableList.of("\n"));
+    for (String empty : empties) {
+      assertThat(
+          detectFormat(empty, settings, ConfigurationFormat.UNKNOWN),
+          equalTo(ConfigurationFormat.EMPTY));
+    }
+  }
+
+  // Tests that empty files are detected as empty, even if content is ignored.
+  @Test
+  public void testDetectFormatEmptyBeatsIgnored() {
     Settings settings = new Settings();
     settings.setIgnoreFilesWithStrings(ImmutableList.of("\n"));
     assertThat(
-        detectFormat(fileText, settings, ConfigurationFormat.UNKNOWN),
+        detectFormat("\n", settings, ConfigurationFormat.UNKNOWN),
         equalTo(ConfigurationFormat.EMPTY));
     assertThat(
-        detectFormat(fileText, settings, ConfigurationFormat.ARISTA),
+        detectFormat("\n\n\n", settings, ConfigurationFormat.UNKNOWN),
         equalTo(ConfigurationFormat.EMPTY));
+  }
+
+  // Tests that empty files are detected as empty, even if format is given.
+  @Test
+  public void testDetectFormatEmptyBeatsFormat() {
     assertThat(
-        detectFormat(fileText, settings, ConfigurationFormat.F5),
+        detectFormat("", new Settings(), ConfigurationFormat.HOST),
         equalTo(ConfigurationFormat.EMPTY));
   }
 
