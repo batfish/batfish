@@ -11,6 +11,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 
 public final class AclLineMatchExprs {
 
@@ -96,6 +97,11 @@ public final class AclLineMatchExprs {
 
   public static MatchHeaderSpace matchSrcPrefix(String prefix) {
     return matchSrc(Prefix.parse(prefix).toIpSpace());
+  }
+
+  public static MatchHeaderSpace matchSrcPort(int port) {
+    return match(
+        HeaderSpace.builder().setSrcPorts(ImmutableList.of(new SubRange(port, port))).build());
   }
 
   public static MatchSrcInterface matchSrcInterface(String... iface) {

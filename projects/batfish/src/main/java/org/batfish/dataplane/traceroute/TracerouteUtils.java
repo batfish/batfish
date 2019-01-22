@@ -11,6 +11,7 @@ import com.google.common.annotations.VisibleForTesting;
 import java.util.Map;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FilterResult;
@@ -40,7 +41,8 @@ import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 final class TracerouteUtils {
 
   /**
-   * Does a basic validation of input to {@link TracerouteEngineImplContext#buildFlows()}
+   * Does a basic validation of input to {@link
+   * TracerouteEngineImplContext#buildTracesAndReturnFlows()}
    *
    * @param configurations {@link Map} of {@link Configuration}s
    * @param flow {@link Flow} for which input validation is to be done
@@ -170,5 +172,29 @@ final class TracerouteUtils {
     return flowDiffs.isEmpty()
         ? new TransformationStep(detail, StepAction.PERMITTED)
         : new TransformationStep(detail, StepAction.TRANSFORMED);
+  }
+
+  /**
+   * Creates a return {@link Flow} for the input {@param forwardFlow}. Swaps the source/destination
+   * IPs/ports, and sets the ingress node/vrf/interface.
+   */
+  static Flow returnFlow(
+      Flow forwardFlow,
+      String returnIngressNode,
+      @Nullable String returnIngressVrf,
+      @Nullable String returnIngressIface) {
+    checkArgument(
+        returnIngressVrf == null ^ returnIngressIface == null,
+        "Either returnIngressVrf or returnIngressIface required, but not both");
+    return forwardFlow
+        .toBuilder()
+        .setDstIp(forwardFlow.getSrcIp())
+        .setDstPort(forwardFlow.getSrcPort())
+        .setSrcIp(forwardFlow.getDstIp())
+        .setSrcPort(forwardFlow.getDstPort())
+        .setIngressNode(returnIngressNode)
+        .setIngressVrf(returnIngressVrf)
+        .setIngressInterface(returnIngressIface)
+        .build();
   }
 }

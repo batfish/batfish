@@ -50,11 +50,13 @@ public final class DispositionSpecifier {
           .add(NULL_ROUTED)
           .build();
 
+  public static final Set<FlowDisposition> SUCCESS_DISPOSITIONS =
+      ImmutableSet.of(ACCEPTED, DELIVERED_TO_SUBNET, EXITS_NETWORK);
+
   private static final Map<String, Set<FlowDisposition>> _expansions =
-      ImmutableMap.<String, Set<FlowDisposition>>builder()
-          .put(SUCCESS, ImmutableSet.of(ACCEPTED, DELIVERED_TO_SUBNET, EXITS_NETWORK))
-          .put(FAILURE, FAILURE_DISPOSITIONS)
-          .build();
+      ImmutableMap.of(
+          SUCCESS, SUCCESS_DISPOSITIONS, //
+          FAILURE, FAILURE_DISPOSITIONS);
   private static final Map<String, Set<FlowDisposition>> _map = getMap();
 
   private static Map<String, Set<FlowDisposition>> getMap() {

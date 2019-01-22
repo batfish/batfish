@@ -10,11 +10,21 @@ import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
+import static org.batfish.datamodel.IpAccessListLine.ACCEPT_ALL;
 import static org.batfish.datamodel.IpAccessListLine.accepting;
+import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressVrf;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
+import static org.batfish.datamodel.matchers.TraceAndReturnFlowMatchers.hasReturnFlow;
+import static org.batfish.datamodel.matchers.TraceAndReturnFlowMatchers.hasTrace;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
 import static org.batfish.datamodel.transformation.Noop.NOOP_SOURCE_NAT;
@@ -23,6 +33,7 @@ import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -72,6 +83,7 @@ import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
+import org.batfish.datamodel.flow.TraceAndReturnFlow;
 import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.matchers.TraceMatchers;
@@ -1038,5 +1050,182 @@ public class TracerouteEngineImplTest {
     assertThat(steps.get(0).getAction(), equalTo(StepAction.RECEIVED));
     assertThat(steps.get(1).getAction(), equalTo(StepAction.FORWARDED));
     assertThat(steps.get(2).getAction(), equalTo(StepAction.DENIED));
+  }
+
+  /**
+   * Tests that {@link TracerouteEngineImpl#buildTracesAndReturnFlows} returns the expected return
+   * flow for different dispositions.
+   */
+  @Test
+  public void testReturnFlow() throws IOException {
+    // Construct network
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = cb.build();
+    Vrf.Builder vb = nf.vrfBuilder().setOwner(c1);
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(c1);
+
+    Vrf vrf1 = vb.build();
+    Vrf vrf2 = vb.build();
+
+    IpAccessList denySrcPort1234 =
+        nf.aclBuilder()
+            .setOwner(c1)
+            .setLines(ImmutableList.of(rejecting(matchSrcPort(1234)), ACCEPT_ALL))
+            .build();
+    IpAccessList denySrcPort1235 =
+        nf.aclBuilder()
+            .setOwner(c1)
+            .setLines(ImmutableList.of(rejecting(matchSrcPort(1235)), ACCEPT_ALL))
+            .build();
+    Interface i1 = ib.setVrf(vrf1).setAddress(new InterfaceAddress("1.1.1.1/24")).build();
+    Interface i2 =
+        ib.setVrf(vrf2)
+            .setAddress(new InterfaceAddress("2.2.2.2/24"))
+            .setIncomingFilter(denySrcPort1234)
+            .build();
+    Ip poolIp = Ip.parse("9.9.9.9");
+    Interface i3 =
+        ib.setVrf(vrf2)
+            .setAddress(new InterfaceAddress("3.3.3.3/24"))
+            .setOutgoingFilter(denySrcPort1235)
+            .setOutgoingTransformation(always().apply(assignSourceIp(poolIp, poolIp)).build())
+            .build();
+    ib.setOutgoingFilter(null);
+
+    // for neighbor unreachable: unreachable loopback IP is in a connected subnet
+    Ip unreachableLoopbackIp = Ip.parse("100.0.0.0");
+    ib.setVrf(vrf2).setAddress(new InterfaceAddress("100.0.0.1/31")).build();
+
+    // static routes for EXITS_NETWORK and INSUFFICIENT_INFO
+    StaticRoute.Builder srb =
+        StaticRoute.builder().setAdministrativeCost(1).setNextHopInterface(i3.getName());
+    StaticRoute exitRoute = srb.setNetwork(Prefix.parse("10.0.0.2/32")).build();
+    StaticRoute insufficientInfoRoute =
+        srb.setNetwork(Prefix.parse("10.0.0.1/32")).setNextHopIp(unreachableLoopbackIp).build();
+    vrf2.setStaticRoutes(ImmutableSortedSet.of(insufficientInfoRoute, exitRoute));
+
+    // create a config that owns the unreachableLoopbackIp on a loopback interface
+    Configuration c2 = cb.build();
+    Vrf vrf3 = vb.setOwner(c2).build();
+    ib.setOwner(c2)
+        .setVrf(vrf3)
+        .setAddress(new InterfaceAddress(unreachableLoopbackIp, 32))
+        .build();
+
+    // Compute data plane
+    SortedMap<String, Configuration> configs =
+        ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
+    batfish.computeDataPlane(false);
+
+    // Construct flows
+    Flow.Builder fb =
+        Flow.builder()
+            .setDstIp(Ip.parse("3.3.3.3"))
+            .setSrcIp(Ip.parse("5.5.5.5"))
+            .setIngressNode(c1.getHostname())
+            .setTag("TAG");
+
+    Flow acceptFlow = fb.setIngressInterface(i2.getName()).build();
+    Flow noRouteFlow = fb.setIngressInterface(i1.getName()).build();
+
+    Flow deliveredFlow = fb.setIngressInterface(i2.getName()).setDstIp(Ip.parse("3.3.3.2")).build();
+    Flow deniedInFlow = fb.setSrcPort(1234).build();
+    Flow deniedOutFlow = fb.setSrcPort(1235).build();
+    fb.setSrcPort(0);
+    Flow exitFlow = fb.setDstIp(exitRoute.getNetwork().getStartIp()).build();
+    Flow insufficientInfoFlow =
+        fb.setDstIp(insufficientInfoRoute.getNetwork().getStartIp()).build();
+    Flow neighborUnreachableFlow = fb.setDstIp(unreachableLoopbackIp).build();
+
+    // Compute flow traces
+    SortedMap<Flow, List<TraceAndReturnFlow>> traces =
+        batfish
+            .getTracerouteEngine()
+            .buildTracesAndReturnFlows(
+                ImmutableSet.of(
+                    acceptFlow,
+                    deliveredFlow,
+                    deniedInFlow,
+                    deniedOutFlow,
+                    exitFlow,
+                    insufficientInfoFlow,
+                    neighborUnreachableFlow,
+                    noRouteFlow),
+                false);
+
+    assertThat(
+        traces,
+        hasEntry(
+            equalTo(acceptFlow),
+            contains(
+                allOf(
+                    hasTrace(hasDisposition(ACCEPTED)),
+                    hasReturnFlow(
+                        allOf(
+                            hasDstIp(acceptFlow.getSrcIp()),
+                            hasSrcIp(acceptFlow.getDstIp()),
+                            hasIngressNode(c1.getHostname()),
+                            hasIngressVrf(vrf2.getName()),
+                            hasIngressInterface(nullValue())))))));
+    assertThat(
+        traces,
+        hasEntry(
+            equalTo(deniedInFlow),
+            contains(allOf(hasTrace(hasDisposition(DENIED_IN)), hasReturnFlow(nullValue())))));
+    assertThat(
+        traces,
+        hasEntry(
+            equalTo(deniedOutFlow),
+            contains(allOf(hasTrace(hasDisposition(DENIED_OUT)), hasReturnFlow(nullValue())))));
+    assertThat(
+        traces,
+        hasEntry(
+            equalTo(deliveredFlow),
+            contains(
+                allOf(
+                    hasTrace(hasDisposition(DELIVERED_TO_SUBNET)),
+                    hasReturnFlow(
+                        allOf(
+                            // forward flow went through the source NAT
+                            hasDstIp(poolIp),
+                            hasSrcIp(deliveredFlow.getDstIp()),
+                            hasIngressNode(c1.getHostname()),
+                            hasIngressVrf(nullValue()),
+                            hasIngressInterface(i3.getName())))))));
+    assertThat(
+        traces,
+        hasEntry(
+            equalTo(exitFlow),
+            contains(
+                allOf(
+                    hasTrace(hasDisposition(EXITS_NETWORK)),
+                    hasReturnFlow(
+                        allOf(
+                            hasDstIp(poolIp),
+                            hasSrcIp(exitFlow.getDstIp()),
+                            hasIngressNode(c1.getHostname()),
+                            hasIngressVrf(nullValue()),
+                            hasIngressInterface(i3.getName())))))));
+    assertThat(
+        traces,
+        hasEntry(
+            equalTo(insufficientInfoFlow),
+            contains(
+                allOf(hasTrace(hasDisposition(INSUFFICIENT_INFO)), hasReturnFlow(nullValue())))));
+    assertThat(
+        traces,
+        hasEntry(
+            equalTo(neighborUnreachableFlow),
+            contains(
+                allOf(
+                    hasTrace(hasDisposition(NEIGHBOR_UNREACHABLE)), hasReturnFlow(nullValue())))));
+    assertThat(
+        traces,
+        hasEntry(
+            equalTo(noRouteFlow),
+            contains(allOf(hasTrace(hasDisposition(NO_ROUTE)), hasReturnFlow(nullValue())))));
   }
 }

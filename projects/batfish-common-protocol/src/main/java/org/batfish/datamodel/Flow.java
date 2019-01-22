@@ -319,11 +319,6 @@ public final class Flow implements Comparable<Flow>, Serializable {
       return this;
     }
 
-    public Builder setSrcPort(Integer srcPort) {
-      _srcPort = srcPort;
-      return this;
-    }
-
     public Builder setState(FlowState state) {
       _state = state;
       return this;
