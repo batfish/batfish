@@ -63,7 +63,7 @@ public class ConfigurationTest {
 
     // Generated route
     GeneratedRoute gr =
-        new GeneratedRoute.Builder()
+        GeneratedRoute.builder()
             .setNetwork(generatedRoutePrefix)
             .setAttributePolicy(
                 c.getRoutingPolicies()
