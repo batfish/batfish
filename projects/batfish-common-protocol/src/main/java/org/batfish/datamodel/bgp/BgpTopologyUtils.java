@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.common.plugin.ITracerouteEngine;
+import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -31,7 +31,6 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
@@ -47,7 +46,7 @@ public final class BgpTopologyUtils {
   /**
    * Compute the BGP topology -- a network of {@link BgpPeerConfig}s connected by {@link
    * BgpSessionProperties}s. See {@link #initBgpTopology(Map, Map, boolean, boolean,
-   * ITracerouteEngine, DataPlane)} for more details.
+   * TracerouteEngine)} for more details.
    *
    * @param configurations configuration keyed by hostname
    * @param ipOwners Ip owners (see {@link
@@ -61,7 +60,7 @@ public final class BgpTopologyUtils {
       Map<String, Configuration> configurations,
       Map<Ip, Set<String>> ipOwners,
       boolean keepInvalid) {
-    return initBgpTopology(configurations, ipOwners, keepInvalid, false, null, null);
+    return initBgpTopology(configurations, ipOwners, keepInvalid, false, null);
   }
 
   /**
@@ -78,8 +77,7 @@ public final class BgpTopologyUtils {
    *     reachable and sessions can be established correctly. <b>Note:</b> this is different from
    *     {@code keepInvalid=false}, which only does filters invalid neighbors at the control-plane
    *     level
-   * @param tracerouteEngine an instance of {@link ITracerouteEngine} for doing reachability checks.
-   * @param dp (partially) computed dataplane.
+   * @param tracerouteEngine an instance of {@link TracerouteEngine} for doing reachability checks.
    * @return A graph ({@link Network}) representing all BGP peerings.
    */
   public static ValueGraph<BgpPeerConfigId, BgpSessionProperties> initBgpTopology(
@@ -87,8 +85,7 @@ public final class BgpTopologyUtils {
       Map<Ip, Set<String>> ipOwners,
       boolean keepInvalid,
       boolean checkReachability,
-      @Nullable ITracerouteEngine tracerouteEngine,
-      @Nullable DataPlane dp) {
+      @Nullable TracerouteEngine tracerouteEngine) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("BgpTopologyUtils.initBgpTopology").startActive()) {
       assert span != null; // avoid unused warning
@@ -173,7 +170,7 @@ public final class BgpTopologyUtils {
            */
           if (checkReachability) {
             if (isReachableBgpNeighbor(
-                neighborId, candidateNeighborId, neighbor, tracerouteEngine, dp)) {
+                neighborId, candidateNeighborId, neighbor, tracerouteEngine)) {
               graph.putEdgeValue(
                   neighborId,
                   candidateNeighborId,
@@ -249,15 +246,15 @@ public final class BgpTopologyUtils {
       BgpPeerConfigId initiator,
       BgpPeerConfigId listener,
       BgpActivePeerConfig src,
-      @Nullable ITracerouteEngine tracerouteEngine,
-      @Nullable DataPlane dp) {
+      @Nullable TracerouteEngine tracerouteEngine) {
     Ip srcAddress = src.getLocalIp();
     Ip dstAddress = src.getPeerAddress();
     if (dstAddress == null) {
       return false;
     }
-    if (tracerouteEngine == null || dp == null) {
-      throw new BatfishException("Cannot compute neighbor reachability without a dataplane");
+    if (tracerouteEngine == null) {
+      throw new BatfishException(
+          "Cannot compute neighbor reachability without a traceroute engine");
     }
 
     /*
@@ -277,7 +274,7 @@ public final class BgpTopologyUtils {
 
     // Execute the "initiate connection" traceroute
     SortedMap<Flow, List<Trace>> traces =
-        tracerouteEngine.buildFlows(dp, ImmutableSet.of(forwardFlow), dp.getFibs(), false);
+        tracerouteEngine.buildFlows(ImmutableSet.of(forwardFlow), false);
 
     boolean isEbgpSingleHop =
         SessionType.isEbgp(BgpSessionProperties.getSessionType(src)) && !src.getEbgpMultihop();
@@ -310,7 +307,7 @@ public final class BgpTopologyUtils {
     fb.setSrcPort(forwardFlow.getDstPort());
     fb.setDstPort(forwardFlow.getSrcPort());
     Flow backwardFlow = fb.build();
-    traces = tracerouteEngine.buildFlows(dp, ImmutableSet.of(backwardFlow), dp.getFibs(), false);
+    traces = tracerouteEngine.buildFlows(ImmutableSet.of(backwardFlow), false);
 
     /*
      * If backward traceroutes fail, do not consider the neighbor reachable

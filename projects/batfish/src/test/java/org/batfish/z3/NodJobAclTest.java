@@ -23,10 +23,9 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Status;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.batfish.common.plugin.DataPlanePlugin;
+import java.util.stream.Collectors;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -192,9 +191,10 @@ public class NodJobAclTest {
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), Ip.parse("1.1.1.1").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
-    DataPlanePlugin dpPlugin = batfish.getDataPlanePlugin();
-    dpPlugin.processFlows(flows, dataPlane, false);
-    List<FlowTrace> flowTraces = dpPlugin.getHistoryFlowTraces(dataPlane);
+    Set<FlowTrace> flowTraces =
+        batfish.getTracerouteEngine().processFlows(flows, false).values().stream()
+            .flatMap(Set::stream)
+            .collect(Collectors.toSet());
     assertThat(flowTraces, hasSize(2));
     assertThat(
         flowTraces,
@@ -333,9 +333,10 @@ public class NodJobAclTest {
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), Ip.parse("1.1.1.1").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
-    DataPlanePlugin dpPlugin = batfish.getDataPlanePlugin();
-    dpPlugin.processFlows(flows, dataPlane, false);
-    List<FlowTrace> flowTraces = dpPlugin.getHistoryFlowTraces(dataPlane);
+    Set<FlowTrace> flowTraces =
+        batfish.getTracerouteEngine().processFlows(flows, false).values().stream()
+            .flatMap(Set::stream)
+            .collect(Collectors.toSet());
     assertThat(flowTraces, hasSize(1));
     assertThat(
         flowTraces,

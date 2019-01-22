@@ -1012,7 +1012,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.GeneratedRoute toGeneratedRoute(GeneratedRoute route) {
     org.batfish.datamodel.GeneratedRoute.Builder newRoute =
-        new org.batfish.datamodel.GeneratedRoute.Builder();
+        org.batfish.datamodel.GeneratedRoute.builder();
 
     newRoute.setGenerationPolicy(computeGenerationPolicy(route));
     newRoute.setAdmin(route.getPreference());
@@ -1033,7 +1033,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.GeneratedRoute toAggregateRoute(AggregateRoute route) {
     org.batfish.datamodel.GeneratedRoute.Builder newRoute =
-        new org.batfish.datamodel.GeneratedRoute.Builder();
+        org.batfish.datamodel.GeneratedRoute.builder();
 
     newRoute.setGenerationPolicy(computeGenerationPolicy(route));
     newRoute.setAdmin(route.getPreference());
@@ -1154,7 +1154,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         new org.batfish.datamodel.RouteFilterLine(
             LineAction.PERMIT, prefix, new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH)));
     org.batfish.datamodel.GeneratedRoute.Builder newRoute =
-        new org.batfish.datamodel.GeneratedRoute.Builder();
+        org.batfish.datamodel.GeneratedRoute.builder();
     newRoute.setNetwork(prefix);
     newRoute.setAdmin(
         RoutingProtocol.OSPF_IA.getDefaultAdministrativeCost(ConfigurationFormat.JUNIPER));
@@ -1846,11 +1846,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   @Nonnull
   private static org.batfish.datamodel.dataplane.rib.RibGroup toRibGroup(
-      RibGroup rg, RoutingProtocol protocol, Configuration c, Warnings w) {
+      RibGroup rg, RoutingProtocol protocol, Configuration c, String vrfName, Warnings w) {
     ImmutableList<RibId> importRibs =
         rg.getImportRibs().stream()
             .map(rib -> toRibId(c.getHostname(), rib, w))
             .filter(Objects::nonNull)
+            // Filter out the primary rib for this rib group, since it's special and bypasses the
+            // policy
+            .filter(
+                rib ->
+                    !(rib.getRibName().equals(RibId.DEFAULT_RIB_NAME)
+                        && rib.getVrfName().equals(vrfName)))
             .collect(ImmutableList.toImmutableList());
 
     RibId exportRib =
@@ -2629,6 +2635,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                               _masterLogicalSystem.getRibGroups().get(rgEntry.getValue()),
                               rgEntry.getKey(),
                               _c,
+                              riName,
                               _w))));
 
       // create ospf process
