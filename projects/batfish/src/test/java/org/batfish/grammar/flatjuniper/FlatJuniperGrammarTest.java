@@ -198,11 +198,13 @@ import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
@@ -741,7 +743,12 @@ public final class FlatJuniperGrammarTest {
     // p1
     RoutingPolicy p1 = c.getRoutingPolicies().get("p1");
     BgpRoute.Builder b1 =
-        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+        BgpRoute.builder()
+            .setNetwork(cr.getNetwork())
+            .setCommunities(ImmutableSet.of(5L))
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
     p1.process(cr, b1, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
     BgpRoute br1 = b1.build();
 
@@ -756,7 +763,12 @@ public final class FlatJuniperGrammarTest {
     // p2
     RoutingPolicy p2 = c.getRoutingPolicies().get("p2");
     BgpRoute.Builder b2 =
-        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+        BgpRoute.builder()
+            .setNetwork(cr.getNetwork())
+            .setCommunities(ImmutableSet.of(5L))
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
     p2.process(cr, b2, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
     BgpRoute br2 = b2.build();
 
@@ -765,7 +777,12 @@ public final class FlatJuniperGrammarTest {
     // p3
     RoutingPolicy p3 = c.getRoutingPolicies().get("p3");
     BgpRoute.Builder b3 =
-        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+        BgpRoute.builder()
+            .setNetwork(cr.getNetwork())
+            .setCommunities(ImmutableSet.of(5L))
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
     p3.process(cr, b3, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
     BgpRoute br3 = b3.build();
 
@@ -781,7 +798,12 @@ public final class FlatJuniperGrammarTest {
     // p4
     RoutingPolicy p4 = c.getRoutingPolicies().get("p4");
     BgpRoute.Builder b4 =
-        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+        BgpRoute.builder()
+            .setNetwork(cr.getNetwork())
+            .setCommunities(ImmutableSet.of(5L))
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
     p4.process(cr, b4, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
     BgpRoute br4 = b4.build();
 
@@ -797,7 +819,12 @@ public final class FlatJuniperGrammarTest {
     // p5
     RoutingPolicy p5 = c.getRoutingPolicies().get("p5");
     BgpRoute.Builder b5 =
-        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+        BgpRoute.builder()
+            .setNetwork(cr.getNetwork())
+            .setCommunities(ImmutableSet.of(5L))
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
     p5.process(cr, b5, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
     BgpRoute br5 = b5.build();
 
@@ -806,7 +833,12 @@ public final class FlatJuniperGrammarTest {
     // p6
     RoutingPolicy p6 = c.getRoutingPolicies().get("p6");
     BgpRoute.Builder b6 =
-        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+        BgpRoute.builder()
+            .setNetwork(cr.getNetwork())
+            .setCommunities(ImmutableSet.of(5L))
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
     p6.process(cr, b6, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
     BgpRoute br6 = b6.build();
 
@@ -2685,7 +2717,13 @@ public final class FlatJuniperGrammarTest {
       set policy-options policy-statement COMMUNITY_POLICY term T1 from community BGP2
     */
     RoutingPolicy communityPolicy = c.getRoutingPolicies().get("COMMUNITY_POLICY");
-    BgpRoute.Builder brb = BgpRoute.builder().setAdmin(100).setNetwork(testPrefix);
+    BgpRoute.Builder brb =
+        BgpRoute.builder()
+            .setAdmin(100)
+            .setNetwork(testPrefix)
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
     result = communityPolicy.call(envWithRoute(c, brb.setCommunities(ImmutableSet.of(1L)).build()));
     assertThat(result.getBooleanValue(), equalTo(true));
     result = communityPolicy.call(envWithRoute(c, brb.setCommunities(ImmutableSet.of(2L)).build()));

@@ -67,4 +67,9 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
     OspfIntraAreaRoute castRhs = (OspfIntraAreaRoute) rhs;
     return Long.compare(_area, castRhs._area);
   }
+
+  @Override
+  public AbstractRouteBuilder<?, ?> toBuilder() {
+    throw new UnsupportedOperationException();
+  }
 }
