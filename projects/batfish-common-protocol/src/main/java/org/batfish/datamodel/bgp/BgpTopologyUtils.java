@@ -274,7 +274,7 @@ public final class BgpTopologyUtils {
 
     // Execute the "initiate connection" traceroute
     SortedMap<Flow, List<Trace>> traces =
-        tracerouteEngine.buildFlows(ImmutableSet.of(forwardFlow), false);
+        tracerouteEngine.computeTraces(ImmutableSet.of(forwardFlow), false);
 
     boolean isEbgpSingleHop =
         SessionType.isEbgp(BgpSessionProperties.getSessionType(src)) && !src.getEbgpMultihop();
@@ -307,7 +307,7 @@ public final class BgpTopologyUtils {
     fb.setSrcPort(forwardFlow.getDstPort());
     fb.setDstPort(forwardFlow.getSrcPort());
     Flow backwardFlow = fb.build();
-    traces = tracerouteEngine.buildFlows(ImmutableSet.of(backwardFlow), false);
+    traces = tracerouteEngine.computeTraces(ImmutableSet.of(backwardFlow), false);
 
     /*
      * If backward traceroutes fail, do not consider the neighbor reachable

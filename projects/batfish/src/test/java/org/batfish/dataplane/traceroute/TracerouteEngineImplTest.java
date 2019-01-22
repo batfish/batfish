@@ -83,7 +83,7 @@ import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
-import org.batfish.datamodel.flow.TraceAndReturnFlow;
+import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.matchers.TraceMatchers;
@@ -148,7 +148,7 @@ public class TracerouteEngineImplTest {
 
     // Compute flow traces
     SortedMap<Flow, List<Trace>> traces =
-        batfish.getTracerouteEngine().buildFlows(ImmutableSet.of(flow1, flow2), false);
+        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow1, flow2), false);
 
     assertThat(traces, hasEntry(equalTo(flow1), contains(hasDisposition(NO_ROUTE))));
     assertThat(traces, hasEntry(equalTo(flow2), contains(hasDisposition(ACCEPTED))));
@@ -190,7 +190,7 @@ public class TracerouteEngineImplTest {
             .setTag("tag")
             .build();
     List<Trace> traces =
-        batfish.getTracerouteEngine().buildFlows(ImmutableSet.of(flow), false).get(flow);
+        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false).get(flow);
 
     /*
      *  Since the 'other' neighbor should not respond to ARP:
@@ -341,7 +341,7 @@ public class TracerouteEngineImplTest {
         ImmutableSet.of(Flow.builder().setTag("tag").setIngressNode("missingNode").build());
 
     _thrown.expect(IllegalArgumentException.class);
-    batfish.getTracerouteEngine().buildFlows(flows, false);
+    batfish.getTracerouteEngine().computeTraces(flows, false);
   }
 
   /*
@@ -403,9 +403,9 @@ public class TracerouteEngineImplTest {
             .setSrcIp(Ip.parse("6.6.6.6"))
             .build();
     SortedMap<Flow, List<Trace>> flowTraces =
-        batfish.getTracerouteEngine().buildFlows(ImmutableSet.of(flow), false);
+        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
     assertThat(flowTraces.get(flow), contains(TraceMatchers.hasDisposition(DENIED_IN)));
-    flowTraces = batfish.getTracerouteEngine().buildFlows(ImmutableSet.of(flow), true);
+    flowTraces = batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), true);
     assertThat(flowTraces.get(flow), contains(TraceMatchers.hasDisposition(LOOP)));
   }
 
@@ -524,7 +524,7 @@ public class TracerouteEngineImplTest {
             .setDstIp(Ip.parse("20.6.6.6"))
             .build();
     SortedMap<Flow, List<Trace>> flowTraces =
-        batfish.getTracerouteEngine().buildFlows(ImmutableSet.of(flow), false);
+        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
     List<Trace> traceList = flowTraces.get(flow);
     assertThat(traceList, contains(TraceMatchers.hasDisposition(EXITS_NETWORK)));
     assertThat(traceList, hasSize(1));
@@ -573,7 +573,7 @@ public class TracerouteEngineImplTest {
             .setSrcIp(Ip.parse("10.1.1.1"))
             .setDstIp(Ip.parse("20.6.6.6"))
             .build();
-    flowTraces = batfish.getTracerouteEngine().buildFlows(ImmutableSet.of(flow2), false);
+    flowTraces = batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow2), false);
     assertThat(flowTraces.get(flow2), contains(TraceMatchers.hasDisposition(DENIED_OUT)));
 
     traceList = flowTraces.get(flow2);
@@ -591,7 +591,7 @@ public class TracerouteEngineImplTest {
     step2 = (FilterStep) steps.get(2);
     assertThat(step2.getAction(), equalTo(StepAction.DENIED));
 
-    flowTraces = batfish.getTracerouteEngine().buildFlows(ImmutableSet.of(flow2), true);
+    flowTraces = batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow2), true);
     assertThat(flowTraces.get(flow2), contains(TraceMatchers.hasDisposition(EXITS_NETWORK)));
   }
 
@@ -647,7 +647,7 @@ public class TracerouteEngineImplTest {
             .setDstIp(Ip.parse("20.6.6.6"))
             .build();
     SortedMap<Flow, List<Trace>> flowTraces =
-        batfish.getTracerouteEngine().buildFlows(ImmutableSet.of(flow), false);
+        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
     List<Trace> traceList = flowTraces.get(flow);
     assertThat(traceList, contains(TraceMatchers.hasDisposition(EXITS_NETWORK)));
     assertThat(traceList, hasSize(1));
@@ -712,7 +712,7 @@ public class TracerouteEngineImplTest {
             .setDstIp(ip21)
             .build();
     SortedMap<Flow, List<Trace>> flowTraces =
-        batfish.getTracerouteEngine().buildFlows(ImmutableSet.of(flow), false);
+        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
     List<Trace> traces = flowTraces.get(flow);
     assertThat(traces, hasSize(1));
 
@@ -741,7 +741,7 @@ public class TracerouteEngineImplTest {
             .setSrcIp(ip21)
             .setDstIp(ip22)
             .build();
-    flowTraces = batfish.getTracerouteEngine().buildFlows(ImmutableSet.of(flow), false);
+    flowTraces = batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
     traces = flowTraces.get(flow);
     assertThat(traces, hasSize(1));
 
@@ -771,7 +771,7 @@ public class TracerouteEngineImplTest {
             .setSrcIp(ip21)
             .setDstIp(ip33)
             .build();
-    flowTraces = batfish.getTracerouteEngine().buildFlows(ImmutableSet.of(flow), false);
+    flowTraces = batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
     traces = flowTraces.get(flow);
     assertThat(traces, hasSize(1));
 
@@ -792,7 +792,7 @@ public class TracerouteEngineImplTest {
             .setSrcIp(ip21)
             .setDstIp(ip41)
             .build();
-    flowTraces = batfish.getTracerouteEngine().buildFlows(ImmutableSet.of(flow), false);
+    flowTraces = batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
     traces = flowTraces.get(flow);
     assertThat(traces, hasSize(1));
 
@@ -822,7 +822,7 @@ public class TracerouteEngineImplTest {
             .setSrcIp(ip22)
             .setDstIp(ip41)
             .build();
-    flowTraces = batfish.getTracerouteEngine().buildFlows(ImmutableSet.of(flow), false);
+    flowTraces = batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
     traces = flowTraces.get(flow);
     assertThat(traces, hasSize(1));
 
@@ -853,7 +853,7 @@ public class TracerouteEngineImplTest {
             .setSrcIp(ip33)
             .setDstIp(ip41)
             .build();
-    flowTraces = batfish.getTracerouteEngine().buildFlows(ImmutableSet.of(flow), false);
+    flowTraces = batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
     traces = flowTraces.get(flow);
     assertThat(traces, hasSize(1));
 
@@ -912,7 +912,7 @@ public class TracerouteEngineImplTest {
             .setDstIp(Ip.parse("20.6.6.6"))
             .build();
     SortedMap<Flow, List<Trace>> flowTraces =
-        batfish.getTracerouteEngine().buildFlows(ImmutableSet.of(flow), false);
+        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
     List<Trace> traceList = flowTraces.get(flow);
     assertThat(traceList, contains(TraceMatchers.hasDisposition(EXITS_NETWORK)));
     assertThat(traceList, hasSize(1));
@@ -941,7 +941,7 @@ public class TracerouteEngineImplTest {
             .setSrcIp(Ip.parse("20.0.0.1"))
             .setDstIp(Ip.parse("20.6.6.6"))
             .build();
-    flowTraces = batfish.getTracerouteEngine().buildFlows(ImmutableSet.of(flow), false);
+    flowTraces = batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
     traceList = flowTraces.get(flow);
     assertThat(traceList, contains(TraceMatchers.hasDisposition(DENIED_IN)));
     assertThat(traceList, hasSize(1));
@@ -1004,7 +1004,7 @@ public class TracerouteEngineImplTest {
             .setDstIp(Ip.parse("20.6.6.6"))
             .build();
     SortedMap<Flow, List<Trace>> flowTraces =
-        batfish.getTracerouteEngine().buildFlows(ImmutableSet.of(flow), false);
+        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
     List<Trace> traceList = flowTraces.get(flow);
     assertThat(traceList, contains(TraceMatchers.hasDisposition(EXITS_NETWORK)));
     assertThat(traceList, hasSize(1));
@@ -1033,7 +1033,7 @@ public class TracerouteEngineImplTest {
             .setSrcIp(Ip.parse("20.0.0.1"))
             .setDstIp(Ip.parse("20.6.6.6"))
             .build();
-    flowTraces = batfish.getTracerouteEngine().buildFlows(ImmutableSet.of(flow), false);
+    flowTraces = batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
     traceList = flowTraces.get(flow);
     assertThat(traceList, contains(TraceMatchers.hasDisposition(DENIED_OUT)));
     assertThat(traceList, hasSize(1));
@@ -1053,8 +1053,8 @@ public class TracerouteEngineImplTest {
   }
 
   /**
-   * Tests that {@link TracerouteEngineImpl#buildTracesAndReturnFlows} returns the expected return
-   * flow for different dispositions.
+   * Tests that {@link TracerouteEngineImpl#computeTracesAndReverseFlows} returns the expected
+   * return flow for different dispositions.
    */
   @Test
   public void testReturnFlow() throws IOException {
@@ -1141,10 +1141,10 @@ public class TracerouteEngineImplTest {
     Flow neighborUnreachableFlow = fb.setDstIp(unreachableLoopbackIp).build();
 
     // Compute flow traces
-    SortedMap<Flow, List<TraceAndReturnFlow>> traces =
+    SortedMap<Flow, List<TraceAndReverseFlow>> traces =
         batfish
             .getTracerouteEngine()
-            .buildTracesAndReturnFlows(
+            .computeTracesAndReverseFlows(
                 ImmutableSet.of(
                     acceptFlow,
                     deliveredFlow,

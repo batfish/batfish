@@ -2508,7 +2508,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreFilters) {
-    return getTracerouteEngine().buildFlows(flows, ignoreFilters);
+    return getTracerouteEngine().computeTraces(flows, ignoreFilters);
   }
 
   @Override
