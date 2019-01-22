@@ -55,8 +55,10 @@ public final class Node implements Serializable {
     if (!_c.getHostname().equals(ribId.getHostname())) {
       return Optional.empty();
     }
-
-    return Optional.ofNullable(
-        _virtualRouters.get(ribId.getVrfName()).getMainRibs().get(ribId.getRibName()));
+    VirtualRouter vr = _virtualRouters.get(ribId.getVrfName());
+    if (vr == null) {
+      return Optional.empty();
+    }
+    return vr.getRib(ribId);
   }
 }

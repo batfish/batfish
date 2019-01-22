@@ -4200,7 +4200,7 @@ public final class FlatJuniperGrammarTest {
             new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0"),
             new LocalRoute(new InterfaceAddress("2.2.2.4/31"), "ge-0/0/1.0"),
             new LocalRoute(new InterfaceAddress("2.2.2.6/31"), "ge-0/0/2.0"),
-            // allowed by RIB_IN_1
+            // allowed by RIB_IN
             new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0"),
             new ConnectedRoute(Prefix.parse("2.2.2.4/31"), "ge-0/0/1.0"),
             // Present normally

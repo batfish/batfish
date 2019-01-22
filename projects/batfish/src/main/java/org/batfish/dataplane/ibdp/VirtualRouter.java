@@ -58,6 +58,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibImpl;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -298,7 +299,7 @@ public class VirtualRouter implements Serializable {
     initConnectedRib();
     initLocalRib();
     initStaticRibs();
-    // Always import local and collected routes into your own rib
+    // Always import local and connected routes into your own rib
     importRib(_independentRib, _connectedRib);
     importRib(_independentRib, _localRib);
     importRib(_independentRib, _staticInterfaceRib);
@@ -307,39 +308,32 @@ public class VirtualRouter implements Serializable {
     RibGroup connectedRibGroup = _vrf.getAppliedRibGroups().get(RoutingProtocol.CONNECTED);
     importRib(_mainRib, _connectedRib);
     if (connectedRibGroup != null) {
-      RoutingPolicy policy = _c.getRoutingPolicies().get(connectedRibGroup.getImportPolicy());
-      checkState(policy != null, "RIB group %s is missing import policy");
-      _connectedRib.getRoutes().stream()
-          .filter(
-              route ->
-                  policy
-                      .call(Environment.builder(_c).setOriginalRoute(route).setVrf(_name).build())
-                      .getBooleanValue())
-          .forEach(
-              r ->
-                  connectedRibGroup
-                      .getImportRibs()
-                      .forEach(ribId -> _node.getRib(ribId).ifPresent(rib -> rib.mergeRoute(r))));
+      applyRibGroup(connectedRibGroup, _connectedRib);
     }
     RibGroup localRibGroup = _vrf.getAppliedRibGroups().get(RoutingProtocol.LOCAL);
     if (localRibGroup != null) {
-      RoutingPolicy policy = _c.getRoutingPolicies().get(localRibGroup.getImportPolicy());
-      checkState(policy != null, "RIB group %s is missing import policy");
-      _localRib.getRoutes().stream()
-          .filter(
-              route ->
-                  policy
-                      .call(Environment.builder(_c).setOriginalRoute(route).setVrf(_name).build())
-                      .getBooleanValue())
-          .forEach(
-              r ->
-                  localRibGroup
-                      .getImportRibs()
-                      .forEach(ribId -> _node.getRib(ribId).ifPresent(rib -> rib.mergeRoute(r))));
+      applyRibGroup(localRibGroup, _localRib);
     }
     initIntraAreaOspfRoutes();
     initEigrp();
     initBaseRipRoutes();
+  }
+
+  /** Apply a rib group to a given source rib */
+  private void applyRibGroup(RibGroup ribGroup, GenericRib<? extends AbstractRoute> sourceRib) {
+    RoutingPolicy policy = _c.getRoutingPolicies().get(ribGroup.getImportPolicy());
+    checkState(policy != null, "RIB group %s is missing import policy", ribGroup.getName());
+    sourceRib.getRoutes().stream()
+        .filter(
+            route ->
+                policy
+                    .call(Environment.builder(_c).setOriginalRoute(route).setVrf(_name).build())
+                    .getBooleanValue())
+        .forEach(
+            r ->
+                ribGroup
+                    .getImportRibs()
+                    .forEach(ribId -> _node.getRib(ribId).ifPresent(rib -> rib.mergeRoute(r))));
   }
 
   /** Initialize EIGRP processes */
