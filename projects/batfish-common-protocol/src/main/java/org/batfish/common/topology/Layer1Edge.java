@@ -76,6 +76,11 @@ public final class Layer1Edge implements Comparable<Layer1Edge> {
     return Objects.hash(_node1, _node2);
   }
 
+  /**
+   * Maps a layer-1 physical edge to a layer-1 logical edge by mapping its constituent layer-1
+   * physical edge to its corresponding logical edge, if possible. Returns the new layer-1 logical
+   * edge if both nodes can be successfully mapped, or else {@code null}.
+   */
   public @Nullable Layer1Edge toLogicalEdge(NetworkConfigurations networkConfigurations) {
     Layer1Node node1 = _node1.toLogicalNode(networkConfigurations);
     Layer1Node node2 = _node2.toLogicalNode(networkConfigurations);

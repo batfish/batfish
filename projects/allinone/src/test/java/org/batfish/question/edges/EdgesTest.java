@@ -70,6 +70,9 @@ public final class EdgesTest {
     String c2i1aName = "c2i1a";
     String c2i1bName = "c2i1b";
 
+    // A pair of physical interfaces on first node is connected to a pair of physical interfaces on
+    // second node. On each node, the pair is aggregated into a port-channel in the layer-1 logical
+    // topology.
     Configuration c1 = _cb.setHostname(c1Name).build();
     Vrf v1 = _vb.setOwner(c1).build();
     _ib.setOwner(c1).setVrf(v1);
@@ -130,6 +133,8 @@ public final class EdgesTest {
                     })
                 .answer();
 
+    // Each node should have an edge to the other node via the port-channel in the layer-1 logical
+    // topology.
     assertThat(
         answer.getRowsList(),
         containsInAnyOrder(

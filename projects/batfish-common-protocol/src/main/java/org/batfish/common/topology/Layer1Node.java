@@ -75,6 +75,12 @@ public final class Layer1Node implements Comparable<Layer1Node> {
         .toString();
   }
 
+  /**
+   * Maps a layer-1 physical node to a layer-1 logical node. If a physical node is a member of an
+   * aggregate interface, returns the node for the aggregate interface. If that aggregate interface
+   * is missing or off, returns {@code null}. If physical node is not member of an aggregate
+   * interface, the physical node is treated as a logical node and returned.
+   */
   public @Nonnull Layer1Node toLogicalNode(NetworkConfigurations networkConfigurations) {
     Interface iface = networkConfigurations.getInterface(_hostname, _interfaceName).get();
     if (iface.getChannelGroup() == null) {
