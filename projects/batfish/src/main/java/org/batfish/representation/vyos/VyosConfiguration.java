@@ -177,8 +177,7 @@ public class VyosConfiguration extends VendorConfiguration {
 
         // convert contained ike proposals to IKE phase 1 proposals
         for (Entry<Integer, IkeProposal> ikeProposalEntry : ikeGroup.getProposals().entrySet()) {
-          String newIkeProposalName =
-              ikeGroupName + ":" + Integer.toString(ikeProposalEntry.getKey());
+          String newIkeProposalName = ikeGroupName + ":" + ikeProposalEntry.getKey();
           IkeProposal ikeProposal = ikeProposalEntry.getValue();
           IkePhase1Proposal ikePhase1Proposal = new IkePhase1Proposal(newIkeProposalName);
           ikePhase1Proposal.setDiffieHellmanGroup(ikeProposal.getDhGroup());
@@ -217,8 +216,7 @@ public class VyosConfiguration extends VendorConfiguration {
 
         // convert contained esp proposals
         for (Entry<Integer, EspProposal> espProposalEntry : espGroup.getProposals().entrySet()) {
-          String newIpsecProposalName =
-              espGroupName + ":" + Integer.toString(espProposalEntry.getKey());
+          String newIpsecProposalName = espGroupName + ":" + espProposalEntry.getKey();
           EspProposal espProposal = espProposalEntry.getValue();
           IpsecPhase2Proposal ipsecPhase2Proposal = new IpsecPhase2Proposal();
           ipsecPhase2Proposal.setProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP));
