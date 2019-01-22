@@ -107,8 +107,6 @@ public interface IBatfish extends IPluginConsumer {
 
   String getFlowTag();
 
-  FlowHistory getHistory();
-
   /** Get the configuration of the major issue type {@code majorIssueType} if its present */
   MajorIssueConfig getMajorIssueConfig(String majorIssueType);
 
@@ -120,6 +118,10 @@ public interface IBatfish extends IPluginConsumer {
 
   @Nonnull
   NetworkSnapshot getNetworkSnapshot();
+
+  FlowHistory flowHistory(Set<Flow> flows, boolean ignoreFilters);
+
+  FlowHistory differentialFlowHistory(Set<Flow> flows, boolean ignoreFilters);
 
   NodeRolesData getNodeRolesData();
 
@@ -183,7 +185,7 @@ public interface IBatfish extends IPluginConsumer {
 
   Set<BgpAdvertisement> loadExternalBgpAnnouncements(Map<String, Configuration> configurations);
 
-  void processFlows(Set<Flow> flows, boolean ignoreFilters);
+  TracerouteEngine getTracerouteEngine();
 
   void pushBaseSnapshot();
 

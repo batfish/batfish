@@ -83,12 +83,7 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
     DataPlane dp = _batfish.loadDataPlane();
     establishedBgpTopology =
         BgpTopologyUtils.initBgpTopology(
-            configurations,
-            ipOwners,
-            false,
-            true,
-            _batfish.getDataPlanePlugin().getTracerouteEngine(),
-            dp);
+            configurations, ipOwners, false, true, _batfish.getTracerouteEngine(), dp);
 
     Stream<Row> activePeerRows =
         configuredBgpTopology.nodes().stream()

@@ -101,6 +101,7 @@ import org.batfish.common.plugin.ExternalBgpAdvertisementPlugin;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.PluginClientType;
 import org.batfish.common.plugin.PluginConsumer;
+import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyProvider;
@@ -174,6 +175,7 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
+import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.ParseTreePrettyPrinter;
@@ -1248,28 +1250,27 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public FlowHistory getHistory() {
-    FlowHistory flowHistory = new FlowHistory();
-    if (_settings.getDiffQuestion()) {
-      String flowTag = getDifferentialFlowTag();
-      String baseEnvTag = getFlowTag(_baseTestrigSettings);
-      String deltaEnvTag = getFlowTag(_deltaTestrigSettings);
-      pushBaseSnapshot();
-      Environment baseEnv = getEnvironment();
-      populateFlowHistory(flowHistory, baseEnvTag, baseEnv, flowTag);
-      popSnapshot();
-      pushDeltaSnapshot();
-      Environment deltaEnv = getEnvironment();
-      populateFlowHistory(flowHistory, deltaEnvTag, deltaEnv, flowTag);
-      popSnapshot();
-    } else {
-      String flowTag = getFlowTag();
-      String envTag = flowTag;
-      Environment env = getEnvironment();
-      populateFlowHistory(flowHistory, envTag, env, flowTag);
-    }
-    _logger.debug(flowHistory.toString());
-    return flowHistory;
+  public FlowHistory flowHistory(Set<Flow> flows, boolean ignoreFilters) {
+    String envTag = getFlowTag();
+    Environment env = getEnvironment();
+    Map<Flow, Set<FlowTrace>> traces = getTracerouteEngine().processFlows(flows, ignoreFilters);
+    return FlowHistory.forTraces(envTag, env, traces);
+  }
+
+  @Override
+  public FlowHistory differentialFlowHistory(Set<Flow> flows, boolean ignoreFilters) {
+    pushBaseSnapshot();
+    Environment baseEnv = getEnvironment();
+    Map<Flow, Set<FlowTrace>> baseTraces = getTracerouteEngine().processFlows(flows, ignoreFilters);
+    popSnapshot();
+    pushDeltaSnapshot();
+    Environment deltaEnv = getEnvironment();
+    Map<Flow, Set<FlowTrace>> deltaTraces = getTracerouteEngine().processFlows(flows, false);
+    popSnapshot();
+    String baseEnvTag = getFlowTag(_baseTestrigSettings);
+    String deltaEnvTag = getFlowTag(_deltaTestrigSettings);
+    return FlowHistory.forDifferentialTraces(
+        baseEnvTag, baseEnv, baseTraces, deltaEnvTag, deltaEnv, deltaTraces);
   }
 
   @Nonnull
@@ -2321,17 +2322,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
-    pushBaseSnapshot();
-    DataPlane baseDataPlane = loadDataPlane();
-    getDataPlanePlugin().processFlows(flows, baseDataPlane, false);
-    popSnapshot();
-    pushDeltaSnapshot();
-    DataPlane deltaDataPlane = loadDataPlane();
-    getDataPlanePlugin().processFlows(flows, deltaDataPlane, false);
-    popSnapshot();
-
-    AnswerElement answerElement = getHistory();
-    return answerElement;
+    return differentialFlowHistory(flows, false);
   }
 
   @Override
@@ -2356,21 +2347,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .addAll(portChannel.getChannelGroupMembers())
             .add(ifaceName)
             .build());
-  }
-
-  private void populateFlowHistory(
-      FlowHistory flowHistory, String envTag, Environment environment, String flowTag) {
-    DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
-    List<Flow> flows = dataPlanePlugin.getHistoryFlows(loadDataPlane());
-    List<FlowTrace> flowTraces = dataPlanePlugin.getHistoryFlowTraces(loadDataPlane());
-    int numEntries = flows.size();
-    for (int i = 0; i < numEntries; i++) {
-      Flow flow = flows.get(i);
-      if (flow.getTag().equals(flowTag)) {
-        FlowTrace flowTrace = flowTraces.get(i);
-        flowHistory.addFlowTrace(flow, envTag, environment, flowTrace);
-      }
-    }
   }
 
   private void postProcessAggregatedInterfaces(Map<String, Configuration> configurations) {
@@ -2523,12 +2499,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return advertSet;
   }
 
-  @Override
-  public void processFlows(Set<Flow> flows, boolean ignoreFilters) {
-    DataPlane dp = loadDataPlane();
-    getDataPlanePlugin().processFlows(flows, dp, ignoreFilters);
-  }
-
   /**
    * Builds the {@link Trace}s for a {@link Set} of {@link Flow}s
    *
@@ -2538,8 +2508,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreFilters) {
-    DataPlane dp = loadDataPlane();
-    return getDataPlanePlugin().buildFlows(flows, dp, ignoreFilters);
+    return getTracerouteEngine().buildFlows(flows, ignoreFilters);
+  }
+
+  @Override
+  public TracerouteEngine getTracerouteEngine() {
+    return new TracerouteEngineImpl(loadDataPlane());
   }
 
   /** Function that processes an interface blacklist across all configurations */
@@ -2568,7 +2542,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @VisibleForTesting
   static void processManagementInterfaces(Map<String, Configuration> configurations) {
-    configurations.values().stream()
+    configurations
+        .values()
         .forEach(
             configuration -> {
               for (Interface iface : configuration.getAllInterfaces().values()) {
@@ -2838,15 +2813,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
-    pushBaseSnapshot();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
-    popSnapshot();
-    pushDeltaSnapshot();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
-    popSnapshot();
-
-    AnswerElement answerElement = getHistory();
-    return answerElement;
+    return differentialFlowHistory(flows, false);
   }
 
   @Override
@@ -3460,12 +3427,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // run jobs and get resulting flows
     Set<Flow> flows = computeNodOutput(jobs);
-
-    DataPlane dp = loadDataPlane();
-    getDataPlanePlugin().processFlows(flows, dp, false);
-
-    AnswerElement answerElement = getHistory();
-    return answerElement;
+    return flowHistory(flows, false);
   }
 
   /** Performs a difference reachFilters analysis (both increased and decreased reachability). */
@@ -3799,13 +3761,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 })
             .collect(ImmutableSet.toImmutableSet());
 
-    DataPlane dp = loadDataPlane();
-    if (_settings.debugFlagEnabled("oldtraceroute")) {
-      getDataPlanePlugin().processFlows(flows, dp, ignoreFilters);
-      return getHistory();
-    } else {
-      return new TraceWrapperAsAnswerElement(buildFlows(flows, ignoreFilters));
-    }
+    return _settings.debugFlagEnabled("oldtraceroute")
+        ? flowHistory(flows, ignoreFilters)
+        : new TraceWrapperAsAnswerElement(buildFlows(flows, ignoreFilters));
   }
 
   @Override

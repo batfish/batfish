@@ -65,6 +65,7 @@ import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
+import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -472,7 +473,7 @@ public class IncrementalDataPlanePluginTest {
     // the neighbor should be reachable because it is only one hop away from the initiator
     assertTrue(
         BgpTopologyUtils.isReachableBgpNeighbor(
-            initiator, listener, source, dataPlanePlugin.getTracerouteEngine(), dp));
+            initiator, listener, source, new TracerouteEngineImpl(dp)));
   }
 
   @Test
@@ -501,7 +502,7 @@ public class IncrementalDataPlanePluginTest {
     // the neighbor should be not be reachable because it is two hops away from the initiator
     assertFalse(
         BgpTopologyUtils.isReachableBgpNeighbor(
-            initiator, listener, source, dataPlanePlugin.getTracerouteEngine(), dp));
+            initiator, listener, source, new TracerouteEngineImpl(dp)));
   }
 
   @Test
@@ -530,7 +531,7 @@ public class IncrementalDataPlanePluginTest {
     // the neighbor should be reachable because multi-hops are allowed
     assertTrue(
         BgpTopologyUtils.isReachableBgpNeighbor(
-            initiator, listener, source, dataPlanePlugin.getTracerouteEngine(), dp));
+            initiator, listener, source, new TracerouteEngineImpl(dp)));
   }
 
   @Test
@@ -561,7 +562,7 @@ public class IncrementalDataPlanePluginTest {
     // denied in on node 3
     assertFalse(
         BgpTopologyUtils.isReachableBgpNeighbor(
-            initiator, listener, source, dataPlanePlugin.getTracerouteEngine(), dp));
+            initiator, listener, source, new TracerouteEngineImpl(dp)));
   }
 
   /**

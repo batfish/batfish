@@ -116,14 +116,8 @@ public class DifferentialReachabilityAnswerer extends Answerer {
     Multiset<Row> rows;
     TableAnswerElement table;
     if (_batfish.debugFlagEnabled("oldtraceroute")) {
-      _batfish.pushBaseSnapshot();
-      _batfish.processFlows(flows, parameters.getIgnoreFilters());
-      _batfish.popSnapshot();
-      _batfish.pushDeltaSnapshot();
-      _batfish.processFlows(flows, parameters.getIgnoreFilters());
-      _batfish.popSnapshot();
-
-      FlowHistory flowHistory = _batfish.getHistory();
+      FlowHistory flowHistory =
+          _batfish.differentialFlowHistory(flows, parameters.getIgnoreFilters());
       rows = flowHistoryToRows(flowHistory);
       table = new TableAnswerElement(createMetadata());
     } else {

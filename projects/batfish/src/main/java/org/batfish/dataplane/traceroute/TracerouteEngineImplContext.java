@@ -66,8 +66,8 @@ import org.batfish.datamodel.transformation.TransformationEvaluator.Transformati
 
 /**
  * Class containing an implementation of {@link
- * org.batfish.dataplane.TracerouteEngineImpl#buildFlows(DataPlane, Set, Map, boolean)} and the
- * context (data) needed for it
+ * org.batfish.dataplane.TracerouteEngineImpl#buildFlows(Set, boolean)} and the context (data)
+ * needed for it
  */
 public class TracerouteEngineImplContext {
   /** Used for loop detection */
