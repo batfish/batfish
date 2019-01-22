@@ -3,8 +3,8 @@ package org.batfish.datamodel.matchers;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
-import org.batfish.datamodel.matchers.TraceAndReturnFlowMatchersImpl.HasReverseFlow;
-import org.batfish.datamodel.matchers.TraceAndReturnFlowMatchersImpl.HasTrace;
+import org.batfish.datamodel.matchers.TraceAndReverseFlowMatchersImpl.HasReverseFlow;
+import org.batfish.datamodel.matchers.TraceAndReverseFlowMatchersImpl.HasTrace;
 import org.hamcrest.Matcher;
 
 /** {@link Matcher Matchers} for {@link TraceAndReverseFlow}. */

@@ -6,8 +6,8 @@ import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
-final class TraceAndReturnFlowMatchersImpl {
-  private TraceAndReturnFlowMatchersImpl() {}
+final class TraceAndReverseFlowMatchersImpl {
+  private TraceAndReverseFlowMatchersImpl() {}
 
   static final class HasReverseFlow extends FeatureMatcher<TraceAndReverseFlow, Flow> {
     HasReverseFlow(Matcher<? super Flow> subMatcher) {
