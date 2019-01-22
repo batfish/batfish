@@ -71,10 +71,12 @@ public class HostConfiguration extends VendorConfiguration {
   /** */
   private static final long serialVersionUID = 1L;
 
-  public static HostConfiguration fromJson(String text, Warnings warnings) throws IOException {
+  public static HostConfiguration fromJson(String filename, String text, Warnings warnings)
+      throws IOException {
     HostConfiguration hostConfiguration =
         BatfishObjectMapper.mapper().readValue(text, HostConfiguration.class);
-    hostConfiguration._w = warnings;
+    hostConfiguration.setWarnings(warnings);
+    hostConfiguration.setFilename(filename);
     return hostConfiguration;
   }
 

@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
@@ -1009,6 +1010,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public void setHaltOnParseError(boolean haltOnParseError) {
     _config.setProperty(BfConsts.ARG_HALT_ON_PARSE_ERROR, haltOnParseError);
+  }
+
+  public void setIgnoreFilesWithStrings(@Nonnull List<String> ignored) {
+    _config.setProperty(BfConsts.ARG_IGNORE_FILES_WITH_STRINGS, ignored);
   }
 
   public void setInitInfo(boolean initInfo) {
