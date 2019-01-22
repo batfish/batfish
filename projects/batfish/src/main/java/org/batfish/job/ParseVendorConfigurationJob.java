@@ -53,15 +53,14 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     if (matcher.find()) {
       int delimiterIndex = matcher.start(1);
       char delimiter = fileText.charAt(delimiterIndex);
-      String delimiterText =
-          (delimiter == '^' ? "\\^" : ("[" + Character.toString(delimiter) + "]"));
+      String delimiterText = (delimiter == '^' ? "\\^" : ("[" + delimiter + "]"));
       Pattern finalDelimiterPattern = Pattern.compile("(?m)[" + delimiterText + "][\r\n]");
       Matcher finalDelimiterMatcher = finalDelimiterPattern.matcher(fileText);
       if (finalDelimiterMatcher.find(delimiterIndex + 1)) {
         int finalDelimiterIndex = finalDelimiterMatcher.start();
         String beforeDelimiter = fileText.substring(0, delimiterIndex);
         String betweenDelimiters = fileText.substring(delimiterIndex + 1, finalDelimiterIndex);
-        String afterDelimiter = fileText.substring(finalDelimiterIndex + 1, fileText.length());
+        String afterDelimiter = fileText.substring(finalDelimiterIndex + 1);
         String newFileText = beforeDelimiter + "^C" + betweenDelimiters + "^C" + afterDelimiter;
         return newFileText;
       } else {

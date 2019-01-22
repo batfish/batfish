@@ -214,7 +214,7 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
       for (int pos = bits - 1; pos >= 0; pos--) {
         long mask = 1L << pos;
         long bit = num & mask;
-        numStringBuilder.append(Integer.toString((bit != 0) ? 1 : 0));
+        numStringBuilder.append((bit != 0) ? 1 : 0);
       }
       numString = numStringBuilder.toString();
     }
