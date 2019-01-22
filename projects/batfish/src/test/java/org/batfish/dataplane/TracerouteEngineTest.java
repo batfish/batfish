@@ -86,8 +86,7 @@ public class TracerouteEngineTest {
 
     // Compute flow traces
     SortedMap<Flow, Set<FlowTrace>> flowTraces =
-        TracerouteEngineImpl.getInstance()
-            .processFlows(dp, ImmutableSet.of(flow1, flow2), dp.getFibs(), false);
+        new TracerouteEngineImpl(dp).processFlows(ImmutableSet.of(flow1, flow2), false);
 
     assertThat(flowTraces, hasEntry(equalTo(flow1), contains(hasDisposition(NO_ROUTE))));
     assertThat(flowTraces, hasEntry(equalTo(flow2), contains(hasDisposition(ACCEPTED))));
@@ -130,9 +129,7 @@ public class TracerouteEngineTest {
             .setTag("tag")
             .build();
     Set<FlowTrace> traces =
-        TracerouteEngineImpl.getInstance()
-            .processFlows(dp, ImmutableSet.of(flow), dp.getFibs(), false)
-            .get(flow);
+        new TracerouteEngineImpl(dp).processFlows(ImmutableSet.of(flow), false).get(flow);
 
     /*
      *  Since the 'other' neighbor should not respond to ARP:
@@ -238,8 +235,7 @@ public class TracerouteEngineTest {
             .setTag(Flow.BASE_FLOW_TAG)
             .setDstIp(Ip.parse("1.0.0.1"))
             .build();
-    b.processFlows(ImmutableSet.of(flow), false);
-    FlowHistory history = b.getHistory();
+    FlowHistory history = b.flowHistory(ImmutableSet.of(flow), false);
     FlowHistoryInfo info = history.getTraces().get(flow.toString());
     FlowTrace trace = info.getPaths().get(Flow.BASE_FLOW_TAG).iterator().next();
 
@@ -286,8 +282,7 @@ public class TracerouteEngineTest {
             .setTag(Flow.BASE_FLOW_TAG)
             .setDstIp(Ip.parse("1.0.0.1"))
             .build();
-    b.processFlows(ImmutableSet.of(flow), false);
-    FlowHistory history = b.getHistory();
+    FlowHistory history = b.flowHistory(ImmutableSet.of(flow), false);
     FlowHistoryInfo info = history.getTraces().get(flow.toString());
     FlowTrace trace = info.getPaths().get(Flow.BASE_FLOW_TAG).iterator().next();
 
@@ -306,11 +301,9 @@ public class TracerouteEngineTest {
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c1.getHostname(), c1), _tempFolder);
     batfish.computeDataPlane(false);
     DataPlane dp = batfish.loadDataPlane();
-    TracerouteEngineImpl.getInstance()
+    new TracerouteEngineImpl(dp)
         .processFlows(
-            dp,
             ImmutableSet.of(Flow.builder().setTag("tag").setIngressNode("missingNode").build()),
-            dp.getFibs(),
             false);
   }
 }
