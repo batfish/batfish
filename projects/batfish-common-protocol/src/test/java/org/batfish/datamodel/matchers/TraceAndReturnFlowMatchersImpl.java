@@ -6,31 +6,28 @@ import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
-/** */
-public final class TraceAndReturnFlowMatchersImpl {
+final class TraceAndReturnFlowMatchersImpl {
   private TraceAndReturnFlowMatchersImpl() {}
 
-  /** */
-  public static final class HasReturnFlow extends FeatureMatcher<TraceAndReverseFlow, Flow> {
-    HasReturnFlow(Matcher<? super Flow> subMatcher) {
-      super(subMatcher, "a TraceAndReturnFlow with returnFlow", "returnFlow");
+  static final class HasReverseFlow extends FeatureMatcher<TraceAndReverseFlow, Flow> {
+    HasReverseFlow(Matcher<? super Flow> subMatcher) {
+      super(subMatcher, "a TraceAndReverseFlow with returnFlow", "returnFlow");
     }
 
     @Override
     protected Flow featureValueOf(TraceAndReverseFlow traceAndReverseFlow) {
       return traceAndReverseFlow.getReverseFlow();
     }
+  }
 
-    /** */
-    public static final class HasTrace extends FeatureMatcher<TraceAndReverseFlow, Trace> {
-      HasTrace(Matcher<? super Trace> subMatcher) {
-        super(subMatcher, "a TraceAndReturnFlow with trace", "trace");
-      }
+  static final class HasTrace extends FeatureMatcher<TraceAndReverseFlow, Trace> {
+    HasTrace(Matcher<? super Trace> subMatcher) {
+      super(subMatcher, "a TraceAndReverseFlow with trace", "trace");
+    }
 
-      @Override
-      protected Trace featureValueOf(TraceAndReverseFlow traceAndReverseFlow) {
-        return traceAndReverseFlow.getTrace();
-      }
+    @Override
+    protected Trace featureValueOf(TraceAndReverseFlow traceAndReverseFlow) {
+      return traceAndReverseFlow.getTrace();
     }
   }
 }

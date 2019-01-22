@@ -23,8 +23,8 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressVrf;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
-import static org.batfish.datamodel.matchers.TraceAndReturnFlowMatchers.hasReturnFlow;
-import static org.batfish.datamodel.matchers.TraceAndReturnFlowMatchers.hasTrace;
+import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasReverseFlow;
+import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasTrace;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
 import static org.batfish.datamodel.transformation.Noop.NOOP_SOURCE_NAT;
@@ -1163,7 +1163,7 @@ public class TracerouteEngineImplTest {
             contains(
                 allOf(
                     hasTrace(hasDisposition(ACCEPTED)),
-                    hasReturnFlow(
+                    hasReverseFlow(
                         allOf(
                             hasDstIp(acceptFlow.getSrcIp()),
                             hasSrcIp(acceptFlow.getDstIp()),
@@ -1174,12 +1174,12 @@ public class TracerouteEngineImplTest {
         traces,
         hasEntry(
             equalTo(deniedInFlow),
-            contains(allOf(hasTrace(hasDisposition(DENIED_IN)), hasReturnFlow(nullValue())))));
+            contains(allOf(hasTrace(hasDisposition(DENIED_IN)), hasReverseFlow(nullValue())))));
     assertThat(
         traces,
         hasEntry(
             equalTo(deniedOutFlow),
-            contains(allOf(hasTrace(hasDisposition(DENIED_OUT)), hasReturnFlow(nullValue())))));
+            contains(allOf(hasTrace(hasDisposition(DENIED_OUT)), hasReverseFlow(nullValue())))));
     assertThat(
         traces,
         hasEntry(
@@ -1187,7 +1187,7 @@ public class TracerouteEngineImplTest {
             contains(
                 allOf(
                     hasTrace(hasDisposition(DELIVERED_TO_SUBNET)),
-                    hasReturnFlow(
+                    hasReverseFlow(
                         allOf(
                             // forward flow went through the source NAT
                             hasDstIp(poolIp),
@@ -1202,7 +1202,7 @@ public class TracerouteEngineImplTest {
             contains(
                 allOf(
                     hasTrace(hasDisposition(EXITS_NETWORK)),
-                    hasReturnFlow(
+                    hasReverseFlow(
                         allOf(
                             hasDstIp(poolIp),
                             hasSrcIp(exitFlow.getDstIp()),
@@ -1214,18 +1214,18 @@ public class TracerouteEngineImplTest {
         hasEntry(
             equalTo(insufficientInfoFlow),
             contains(
-                allOf(hasTrace(hasDisposition(INSUFFICIENT_INFO)), hasReturnFlow(nullValue())))));
+                allOf(hasTrace(hasDisposition(INSUFFICIENT_INFO)), hasReverseFlow(nullValue())))));
     assertThat(
         traces,
         hasEntry(
             equalTo(neighborUnreachableFlow),
             contains(
                 allOf(
-                    hasTrace(hasDisposition(NEIGHBOR_UNREACHABLE)), hasReturnFlow(nullValue())))));
+                    hasTrace(hasDisposition(NEIGHBOR_UNREACHABLE)), hasReverseFlow(nullValue())))));
     assertThat(
         traces,
         hasEntry(
             equalTo(noRouteFlow),
-            contains(allOf(hasTrace(hasDisposition(NO_ROUTE)), hasReturnFlow(nullValue())))));
+            contains(allOf(hasTrace(hasDisposition(NO_ROUTE)), hasReverseFlow(nullValue())))));
   }
 }
