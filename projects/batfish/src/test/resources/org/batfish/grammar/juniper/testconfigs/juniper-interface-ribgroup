@@ -1,7 +1,10 @@
 set system host-name juniper-interface-ribgroup
 #
+# setup a rib group named interface-routes-rib for ipv4 routes
 set routing-options interface-routes rib-group inet interface-routes-rib
+# merge connected/local routes into default RIB, always required
 set routing-options rib-groups interface-routes-rib import-rib inet.0
+# merge connected/local routes into default RIB on VRF2
 set routing-options rib-groups interface-routes-rib import-rib VRF2.inet.0
 #
 set interfaces lo0 unit 0 family inet address 1.1.1.1/32

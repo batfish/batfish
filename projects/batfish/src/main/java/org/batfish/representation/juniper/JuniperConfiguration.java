@@ -1846,11 +1846,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   @Nonnull
   private static org.batfish.datamodel.dataplane.rib.RibGroup toRibGroup(
-      RibGroup rg, RoutingProtocol protocol, Configuration c, Warnings w) {
+      RibGroup rg, RoutingProtocol protocol, Configuration c, String vrfName, Warnings w) {
     ImmutableList<RibId> importRibs =
         rg.getImportRibs().stream()
             .map(rib -> toRibId(c.getHostname(), rib, w))
             .filter(Objects::nonNull)
+            // Filter out the primary rib for this rib group, since it's special and bypasses the
+            // policy
+            .filter(
+                rib ->
+                    !(rib.getRibName().equals(RibId.DEFAULT_RIB_NAME)
+                        && rib.getVrfName().equals(vrfName)))
             .collect(ImmutableList.toImmutableList());
 
     RibId exportRib =
@@ -2629,6 +2635,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                               _masterLogicalSystem.getRibGroups().get(rgEntry.getValue()),
                               rgEntry.getKey(),
                               _c,
+                              riName,
                               _w))));
 
       // create ospf process
