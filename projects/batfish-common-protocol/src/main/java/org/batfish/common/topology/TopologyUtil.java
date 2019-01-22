@@ -31,6 +31,7 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
@@ -38,7 +39,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.Interface.DependencyType;
 
 public final class TopologyUtil {
 
@@ -130,7 +130,7 @@ public final class TopologyUtil {
     Layer1Node node2 = layer1MappedEdge.getNode2();
     Interface i1 = getInterface(node1, configurations);
     Interface i2 = getInterface(node2, configurations);
-    // Exit early if either interface is missing or neither participating in layer-2 nor layer-3
+    // Exit early if either interface is missing or participating in neither layer-2 nor layer-3
     // protocols.
     if (i1 == null
         || i2 == null
@@ -222,21 +222,28 @@ public final class TopologyUtil {
 
   private static Map<Layer1Node, Set<Layer1Node>> computeParentChildrenMap(
       Map<String, Configuration> configurations) {
+    // parent -> set of children
     Map<Layer1Node, ImmutableSet.Builder<Layer1Node>> builderMap = new HashMap<>();
+
+    // Map each parent interface that is the target of a bind dependency to the set of its child
+    // interfaces (e.g. Juniper units).
     configurations.forEach(
         (hostname, c) ->
             c.getAllInterfaces()
                 .forEach(
                     (iName, i) ->
+                        // i is a potential child interface
                         i.getDependencies().stream()
-                            .filter(d -> d.getType() == DependencyType.BIND)
+                            .filter(dependency -> dependency.getType() == DependencyType.BIND)
                             .forEach(
-                                d ->
+                                bindDependency ->
                                     builderMap
                                         .computeIfAbsent(
-                                            new Layer1Node(hostname, d.getInterfaceName()),
+                                            new Layer1Node(
+                                                hostname, bindDependency.getInterfaceName()),
                                             n -> ImmutableSet.builder())
                                         .add(new Layer1Node(hostname, iName)))));
+    // finalize and freeze
     return CommonUtil.toImmutableMap(builderMap, Entry::getKey, e -> e.getValue().build());
   }
 

@@ -1,5 +1,9 @@
 #
 set system host-name r1
 #
-### not layer-3 adjacent to r2, but in same broadcast domain
+### not layer-3 adjacent to r2:ge-0/0/0.0, but in same broadcast domain
 set interfaces ge-0/0/0 unit 0 family inet address 1.0.0.0/31
+#
+### layer-3 adjacent to r2:ge-0/0/1.0, in same broadcast domain
+set interfaces ge-0/0/1 unit 0 family inet address 2.0.0.0/31
+#

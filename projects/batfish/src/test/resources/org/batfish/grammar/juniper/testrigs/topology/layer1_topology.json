@@ -19,6 +19,26 @@
         "hostname": "r1",
         "interfaceName": "ge-0/0/0"
       }
+    },
+    {
+      "node1": {
+        "hostname": "r1",
+        "interfaceName": "ge-0/0/1"
+      },
+      "node2": {
+        "hostname": "r2",
+        "interfaceName": "ge-0/0/1"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "r2",
+        "interfaceName": "ge-0/0/1"
+      },
+      "node2": {
+        "hostname": "r1",
+        "interfaceName": "ge-0/0/1"
+      }
     }  
   ]
 }

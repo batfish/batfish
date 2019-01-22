@@ -169,6 +169,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DiffieHellmanGroup;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowState;
@@ -203,6 +204,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -651,10 +653,20 @@ public final class FlatJuniperGrammarTest {
             _folder);
 
     Layer2Topology layer2Topology = batfish.getLayer2Topology();
+    Topology layer3Topology = batfish.getEnvironmentTopology();
 
+    // check layer-2 adjacencies
     assertThat(
         layer2Topology.inSameBroadcastDomain("r1", "ge-0/0/0.0", "r2", "ge-0/0/0.0"),
         equalTo(true));
+    assertThat(
+        layer2Topology.inSameBroadcastDomain("r1", "ge-0/0/1.0", "r2", "ge-0/0/1.0"),
+        equalTo(true));
+
+    // check layer-3 adjacencies
+    assertThat(
+        layer3Topology.getEdges(), not(hasItem(Edge.of("r1", "ge-0/0/0.0", "r2", "ge-0/0/0.0"))));
+    assertThat(layer3Topology.getEdges(), hasItem(Edge.of("r1", "ge-0/0/1.0", "r2", "ge-0/0/1.0")));
   }
 
   @Test
