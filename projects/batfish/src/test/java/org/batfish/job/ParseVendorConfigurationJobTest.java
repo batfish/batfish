@@ -1,9 +1,11 @@
 package org.batfish.job;
 
+import static org.batfish.job.ParseVendorConfigurationJob.detectFormat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
@@ -11,6 +13,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.junit.Test;
 
+/** Tests of {@link ParseVendorConfigurationJob}. */
 public class ParseVendorConfigurationJobTest {
   private static final String HOST_TESTCONFIGS_PREFIX = "org/batfish/grammar/host/testconfigs/";
 
@@ -21,7 +24,8 @@ public class ParseVendorConfigurationJobTest {
             "filename",
             new Warnings(),
             ConfigurationFormat.HOST,
-            ImmutableMultimap.of())
+            ImmutableMultimap.of(),
+            null)
         .call();
   }
 
@@ -37,5 +41,39 @@ public class ParseVendorConfigurationJobTest {
     ParseVendorConfigurationResult result = parseHost(HOST_TESTCONFIGS_PREFIX + "hostInvalid.json");
     // Confirm a bad host file does not cause a crash but results in failure cause
     assertThat(result.getFailureCause(), not(equalTo(null)));
+  }
+
+  // Tests that empty files are detected as empty even if another format is provided.
+  @Test
+  public void testDetectFormatEmpty() {
+    String fileText = "   \n\n\t\n\n   ";
+    Settings settings = new Settings();
+    settings.setIgnoreFilesWithStrings(ImmutableList.of("\n"));
+    assertThat(
+        detectFormat(fileText, settings, ConfigurationFormat.UNKNOWN),
+        equalTo(ConfigurationFormat.EMPTY));
+    assertThat(
+        detectFormat(fileText, settings, ConfigurationFormat.ARISTA),
+        equalTo(ConfigurationFormat.EMPTY));
+    assertThat(
+        detectFormat(fileText, settings, ConfigurationFormat.F5),
+        equalTo(ConfigurationFormat.EMPTY));
+  }
+
+  // Tests that files with ignored content are ignored even if another format is provided.
+  @Test
+  public void testDetectFormatIgnored() {
+    String fileText = "!RANCID-CONTENT-TYPE: cisco-nx\n\n\nfoo\nbar\n";
+    Settings settings = new Settings();
+    // Nothing ignored, is Cisco NX-OS.
+    assertThat(
+        detectFormat(fileText, settings, ConfigurationFormat.UNKNOWN),
+        equalTo(ConfigurationFormat.CISCO_NX));
+
+    // "foo" ignored, file is ignored.
+    settings.setIgnoreFilesWithStrings(ImmutableList.of("\n"));
+    assertThat(
+        detectFormat(fileText, settings, ConfigurationFormat.UNKNOWN),
+        equalTo(ConfigurationFormat.IGNORED));
   }
 }

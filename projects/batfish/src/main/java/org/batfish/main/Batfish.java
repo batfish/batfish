@@ -36,6 +36,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
+import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
 import java.io.File;
 import java.io.IOException;
@@ -2155,9 +2156,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       String filename =
           _settings.getActiveTestrigSettings().getInputPath().relativize(currentFile).toString();
+      @Nullable
+      SpanContext parseVendorConfigurationSpanContext =
+          GlobalTracer.get().activeSpan() == null
+              ? null
+              : GlobalTracer.get().activeSpan().context();
+
       ParseVendorConfigurationJob job =
           new ParseVendorConfigurationJob(
-              _settings, fileText, filename, warnings, configurationFormat, duplicateHostnames);
+              _settings,
+              fileText,
+              filename,
+              warnings,
+              configurationFormat,
+              duplicateHostnames,
+              parseVendorConfigurationSpanContext);
       jobs.add(job);
     }
     BatfishJobExecutor.runJobsInExecutor(
