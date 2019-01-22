@@ -7,7 +7,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.IpOwners;
+import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.TopologyProvider;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 
 /** */
@@ -17,12 +19,14 @@ public final class TopologyProviderImpl implements TopologyProvider {
 
   private final IBatfish _batfish;
   private final Cache<NetworkSnapshot, IpOwners> _ipOwners;
+  private final Cache<NetworkSnapshot, Layer1Topology> _layer1LogicalTopologies;
   private final Cache<NetworkSnapshot, VxlanTopology> _vxlanTopologies;
 
   /** Create a new topology provider for a given instance of {@link IBatfish} */
   public TopologyProviderImpl(IBatfish batfish) {
     _batfish = batfish;
     _ipOwners = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
+    _layer1LogicalTopologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
     _vxlanTopologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
   }
 
@@ -43,6 +47,20 @@ public final class TopologyProviderImpl implements TopologyProvider {
           snapshot, () -> new VxlanTopology(_batfish.loadConfigurations(snapshot)));
     } catch (ExecutionException e) {
       return new VxlanTopology(_batfish.loadConfigurations(snapshot));
+    }
+  }
+
+  @Override
+  public Layer1Topology getLayer1LogicalTopology(NetworkSnapshot networkSnapshot) {
+    try {
+      return _layer1LogicalTopologies.get(
+          networkSnapshot,
+          () ->
+              TopologyUtil.computeLayer1LogicalTopology(
+                  _batfish.getLayer1Topology(), _batfish.loadConfigurations(networkSnapshot)));
+    } catch (ExecutionException e) {
+      return TopologyUtil.computeLayer1LogicalTopology(
+          _batfish.getLayer1Topology(), _batfish.loadConfigurations(networkSnapshot));
     }
   }
 }

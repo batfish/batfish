@@ -33,6 +33,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
@@ -83,7 +84,7 @@ public final class TopologyUtil {
     }
   }
 
-  public static @Nonnull Layer1Topology computeLayer1Topology(
+  public static @Nonnull Layer1Topology computeLayer1PhysicalTopology(
       @Nonnull Layer1Topology rawLayer1Topology,
       @Nonnull Map<String, Configuration> configurations) {
     /* Filter out inactive interfaces */
@@ -542,5 +543,14 @@ public final class TopologyUtil {
       }
     }
     return new Topology(edges.build());
+  }
+
+  public static Layer1Topology computeLayer1LogicalTopology(
+      Layer1Topology layer1PhysicalTopology, Map<String, Configuration> configurations) {
+    return new Layer1Topology(
+        layer1PhysicalTopology.getGraph().edges().stream()
+            .map(pEdge -> pEdge.toLogicalEdge(NetworkConfigurations.of(configurations)))
+            .filter(Objects::nonNull)
+            .collect(ImmutableSet.toImmutableSet()));
   }
 }
