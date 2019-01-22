@@ -157,6 +157,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.WellKnownCommunity;
+import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
@@ -636,6 +637,24 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         c,
         hasDefaultVrf(hasBgpProcess(hasPassiveNeighbor(Prefix.parse("10.1.1.0/24"), anything()))));
+  }
+
+  @Test
+  public void testParentChildTopology() throws IOException {
+    String resourcePrefix = "org/batfish/grammar/juniper/testrigs/topology";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setLayer1TopologyText(resourcePrefix)
+                .setConfigurationText(resourcePrefix, "r1", "r2")
+                .build(),
+            _folder);
+
+    Layer2Topology layer2Topology = batfish.getLayer2Topology();
+
+    assertThat(
+        layer2Topology.inSameBroadcastDomain("r1", "ge-0/0/0.0", "r2", "ge-0/0/0.0"),
+        equalTo(true));
   }
 
   @Test
