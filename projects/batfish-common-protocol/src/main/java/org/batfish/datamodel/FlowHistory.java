@@ -62,6 +62,32 @@ public class FlowHistory extends AnswerElement {
     _traces = new TreeMap<>();
   }
 
+  public static FlowHistory forDifferentialTraces(
+      String baseEnvTag,
+      Environment baseEnv,
+      Map<Flow, Set<FlowTrace>> baseTraces,
+      String deltaEnvTag,
+      Environment deltaEnv,
+      Map<Flow, Set<FlowTrace>> deltaTraces) {
+    FlowHistory flowHistory = new FlowHistory();
+    baseTraces.forEach(
+        (flow, traces) ->
+            traces.forEach(trace -> flowHistory.addFlowTrace(flow, baseEnvTag, baseEnv, trace)));
+    deltaTraces.forEach(
+        (flow, traces) ->
+            traces.forEach(trace -> flowHistory.addFlowTrace(flow, deltaEnvTag, deltaEnv, trace)));
+    return flowHistory;
+  }
+
+  public static FlowHistory forTraces(
+      String envTag, Environment env, Map<Flow, Set<FlowTrace>> traces) {
+    FlowHistory flowHistory = new FlowHistory();
+    traces.forEach(
+        (flow, flowTraces) ->
+            flowTraces.forEach(trace -> flowHistory.addFlowTrace(flow, envTag, env, trace)));
+    return flowHistory;
+  }
+
   public void addFlowTrace(Flow flow, String envTag, Environment environment, FlowTrace trace) {
     String flowText = flow.toString();
     if (!_traces.containsKey(flowText)) {

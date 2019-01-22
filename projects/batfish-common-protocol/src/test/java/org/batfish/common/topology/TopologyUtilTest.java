@@ -57,7 +57,56 @@ public final class TopologyUtilTest {
   }
 
   @Test
-  public void testComputeLayer1Topology() {
+  public void testComputeLayer1LogicalTopologyAggregate() {
+    String c1Name = "c1";
+    String c2Name = "c2";
+    String c1a1Name = "c1a1";
+    String c1i1aName = "c1i1a";
+    String c1i1bName = "c1i1b";
+    String c2a1Name = "c2a1";
+    String c2i1aName = "c2i1a";
+    String c2i1bName = "c2i1b";
+
+    Configuration c1 = _cb.setHostname(c1Name).build();
+    Vrf v1 = _vb.setOwner(c1).build();
+    _ib.setOwner(c1).setVrf(v1);
+    _ib.setName(c1i1aName).build().setChannelGroup(c1a1Name);
+    _ib.setName(c1i1bName).build().setChannelGroup(c1a1Name);
+    _ib.setName(c1a1Name).build();
+
+    Configuration c2 = _cb.setHostname(c2Name).build();
+    Vrf v2 = _vb.setOwner(c2).build();
+    _ib.setOwner(c2).setVrf(v2);
+    _ib.setName(c2a1Name).build();
+    _ib.setName(c2i1aName).build().setChannelGroup(c2a1Name);
+    _ib.setName(c2i1bName).build().setChannelGroup(c2a1Name);
+
+    Map<String, Configuration> configurations = ImmutableMap.of(c1Name, c1, c2Name, c2);
+    Layer1Topology layer1PhysicalTopology =
+        new Layer1Topology(
+            ImmutableSet.of(
+                new Layer1Edge(
+                    new Layer1Node(c1Name, c1i1aName), new Layer1Node(c2Name, c2i1aName)),
+                new Layer1Edge(
+                    new Layer1Node(c2Name, c2i1aName), new Layer1Node(c1Name, c1i1aName)),
+                new Layer1Edge(
+                    new Layer1Node(c1Name, c1i1bName), new Layer1Node(c2Name, c2i1bName)),
+                new Layer1Edge(
+                    new Layer1Node(c2Name, c2i1bName), new Layer1Node(c1Name, c1i1bName))));
+
+    // Test that physical interface edges where the interfaces are members of aggregates get
+    // aggregated in the layer-1 logical topology.
+    assertThat(
+        TopologyUtil.computeLayer1LogicalTopology(layer1PhysicalTopology, configurations)
+            .getGraph()
+            .edges(),
+        containsInAnyOrder(
+            new Layer1Edge(new Layer1Node(c1Name, c1a1Name), new Layer1Node(c2Name, c2a1Name)),
+            new Layer1Edge(new Layer1Node(c2Name, c2a1Name), new Layer1Node(c1Name, c1a1Name))));
+  }
+
+  @Test
+  public void testComputeLayer1PhysicalTopology() {
     String c1Name = "c1";
     String c2Name = "c2";
     String c1i1Name = "c1i1";
@@ -89,7 +138,9 @@ public final class TopologyUtilTest {
 
     // inactive c2i2 should break c1i2<=>c2i2 link
     assertThat(
-        TopologyUtil.computeLayer1Topology(rawLayer1Topology, configurations).getGraph().edges(),
+        TopologyUtil.computeLayer1PhysicalTopology(rawLayer1Topology, configurations)
+            .getGraph()
+            .edges(),
         containsInAnyOrder(
             new Layer1Edge(new Layer1Node(c1Name, c1i1Name), new Layer1Node(c2Name, c2i1Name)),
             new Layer1Edge(new Layer1Node(c2Name, c2i1Name), new Layer1Node(c1Name, c1i1Name))));

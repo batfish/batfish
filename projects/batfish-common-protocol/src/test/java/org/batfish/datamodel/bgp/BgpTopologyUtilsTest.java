@@ -103,7 +103,7 @@ public class BgpTopologyUtilsTest {
         ImmutableMap.of(ip1, ImmutableSet.of("node1"), ip2, ImmutableSet.of("node2"));
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        initBgpTopology(_configs, ipOwners, true, false, null, null);
+        initBgpTopology(_configs, ipOwners, true, false, null);
     assertThat(bgpTopology.edges(), hasSize(1));
     EndpointPair<BgpPeerConfigId> edge = bgpTopology.edges().iterator().next();
     assertThat(edge.source().getHostname(), equalTo("node1"));
@@ -154,7 +154,7 @@ public class BgpTopologyUtilsTest {
             ImmutableSet.of("node3"));
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        initBgpTopology(_configs, ipOwners, true, false, null, null);
+        initBgpTopology(_configs, ipOwners, true, false, null);
     assertThat(bgpTopology.edges(), hasSize(1));
     EndpointPair<BgpPeerConfigId> edge = bgpTopology.edges().iterator().next();
     assertThat(edge.source().getHostname(), equalTo("node1"));

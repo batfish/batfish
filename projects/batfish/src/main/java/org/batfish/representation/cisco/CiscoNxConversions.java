@@ -362,7 +362,7 @@ final class CiscoNxConversions {
       localOrCommonOrigination.add(new CallExpr(defaultRouteExportPolicy.getName()));
 
       GeneratedRoute defaultRoute =
-          new GeneratedRoute.Builder()
+          GeneratedRoute.builder()
               .setNetwork(Prefix.ZERO)
               .setAdmin(MAX_ADMINISTRATIVE_COST)
               .setGenerationPolicy(naf4.getDefaultOriginateMap())

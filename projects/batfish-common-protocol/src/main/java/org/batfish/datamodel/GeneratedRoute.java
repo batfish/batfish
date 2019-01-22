@@ -1,33 +1,37 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.Collections;
+import java.util.Comparator;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.CommonUtil;
 
 /** A generated/aggregate IPV4 route. */
+@ParametersAreNonnullByDefault
 public final class GeneratedRoute extends AbstractRoute {
 
+  /** A {@link GeneratedRoute} builder */
   public static class Builder extends AbstractRouteBuilder<Builder, GeneratedRoute> {
 
-    private AsPath _asPath;
-    private String _attributePolicy;
-    private SortedSet<Long> _communities;
+    @Nullable private AsPath _asPath;
+    @Nullable private String _attributePolicy;
+    @Nullable private Set<Long> _communities;
     private boolean _discard;
-    private String _generationPolicy;
-    private String _nextHopInterface;
+    @Nullable private String _generationPolicy;
+    @Nullable private String _nextHopInterface;
 
-    public Builder() {
-      _asPath = AsPath.empty();
-    }
+    private Builder() {}
 
     @Override
     public GeneratedRoute build() {
@@ -35,13 +39,13 @@ public final class GeneratedRoute extends AbstractRoute {
           getNetwork(),
           getAdmin(),
           getNextHopIp(),
-          _asPath,
+          firstNonNull(_asPath, AsPath.empty()),
           _attributePolicy,
-          _communities,
+          ImmutableSortedSet.copyOf(firstNonNull(_communities, ImmutableSet.of())),
           _discard,
           _generationPolicy,
           getMetric(),
-          _nextHopInterface,
+          firstNonNull(_nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
           getNonForwarding(),
           getNonRouting());
     }
@@ -66,18 +70,18 @@ public final class GeneratedRoute extends AbstractRoute {
           .setNextHopInterface(route.getNextHopInterface());
     }
 
-    public Builder setAsPath(@Nonnull AsPath asPath) {
+    public Builder setAsPath(@Nullable AsPath asPath) {
       _asPath = asPath;
       return this;
     }
 
-    public Builder setAttributePolicy(String attributePolicy) {
+    public Builder setAttributePolicy(@Nullable String attributePolicy) {
       _attributePolicy = attributePolicy;
       return this;
     }
 
-    public Builder setCommunities(Set<Long> communities) {
-      _communities = ImmutableSortedSet.copyOf(communities);
+    public Builder setCommunities(@Nullable Set<Long> communities) {
+      _communities = communities;
       return this;
     }
 
@@ -86,15 +90,19 @@ public final class GeneratedRoute extends AbstractRoute {
       return this;
     }
 
-    public Builder setGenerationPolicy(String generationPolicy) {
+    public Builder setGenerationPolicy(@Nullable String generationPolicy) {
       _generationPolicy = generationPolicy;
       return this;
     }
 
-    public Builder setNextHopInterface(String nextHopInterface) {
+    public Builder setNextHopInterface(@Nullable String nextHopInterface) {
       _nextHopInterface = nextHopInterface;
       return this;
     }
+  }
+
+  public static Builder builder() {
+    return new Builder();
   }
 
   private static final String PROP_AS_PATH = "asPath";
@@ -116,48 +124,44 @@ public final class GeneratedRoute extends AbstractRoute {
   private static final long serialVersionUID = 1L;
 
   private final AsPath _asPath;
-
-  private final String _attributePolicy;
-
-  private SortedSet<String> _attributePolicySources;
-
+  @Nullable private final String _attributePolicy;
   @Nonnull private final SortedSet<Long> _communities;
-
   private final boolean _discard;
-
-  private final String _generationPolicy;
-
-  private SortedSet<String> _generationPolicySources;
-
+  @Nullable private final String _generationPolicy;
   private final Long _metric;
-
   private final String _nextHopInterface;
-
   private final Ip _nextHopIp;
+  // Non-final fields, not properties of the route. Should not impact equality or hashcode.
+  private SortedSet<String> _attributePolicySources;
+  private SortedSet<String> _generationPolicySources;
+  // Cache the hashcode
+  private transient volatile int _hashcode = 0;
 
   @JsonCreator
   private static GeneratedRoute jsonCreator(
-      @JsonProperty(PROP_NETWORK) Prefix network,
+      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,
-      @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @JsonProperty(PROP_AS_PATH) AsPath asPath,
-      @JsonProperty(PROP_ATTRIBUTE_POLICY) String attributePolicy,
-      @JsonProperty(PROP_COMMUNITIES) SortedSet<Long> communities,
+      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @Nullable @JsonProperty(PROP_AS_PATH) AsPath asPath,
+      @Nullable @JsonProperty(PROP_ATTRIBUTE_POLICY) String attributePolicy,
+      @Nullable @JsonProperty(PROP_COMMUNITIES) SortedSet<Long> communities,
       @JsonProperty(PROP_DISCARD) boolean discard,
-      @JsonProperty(PROP_GENERATION_POLICY) String generationPolicy,
-      @JsonProperty(PROP_METRIC) Long metric,
-      @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface) {
+      @Nullable @JsonProperty(PROP_GENERATION_POLICY) String generationPolicy,
+      @Nullable @JsonProperty(PROP_METRIC) Long metric,
+      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface) {
+    checkArgument(network != null, "GeneratedRoute missing %s", PROP_NETWORK);
+    checkArgument(metric != null, "GeneratedRoute missing %s", PROP_METRIC);
     return new GeneratedRoute(
         network,
         administrativeCost,
-        nextHopIp,
-        asPath,
+        firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP),
+        firstNonNull(asPath, AsPath.empty()),
         attributePolicy,
-        communities,
+        firstNonNull(communities, ImmutableSortedSet.of()),
         discard,
         generationPolicy,
         metric,
-        nextHopInterface,
+        firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
         false,
         false);
   }
@@ -167,10 +171,10 @@ public final class GeneratedRoute extends AbstractRoute {
       int administrativeCost,
       Ip nextHopIp,
       AsPath asPath,
-      String attributePolicy,
+      @Nullable String attributePolicy,
       SortedSet<Long> communities,
       boolean discard,
-      String generationPolicy,
+      @Nullable String generationPolicy,
       Long metric,
       String nextHopInterface,
       boolean nonForwarding,
@@ -178,35 +182,69 @@ public final class GeneratedRoute extends AbstractRoute {
     super(network, administrativeCost, nonRouting, nonForwarding);
     _asPath = asPath;
     _attributePolicy = attributePolicy;
-    _attributePolicySources = Collections.emptySortedSet();
+    _attributePolicySources = ImmutableSortedSet.of();
     _communities = firstNonNull(communities, ImmutableSortedSet.of());
     _discard = discard;
     _generationPolicy = generationPolicy;
-    _generationPolicySources = Collections.emptySortedSet();
+    _generationPolicySources = ImmutableSortedSet.of();
     _metric = metric;
     _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
     _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (o == this) {
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
       return true;
-    } else if (!(o instanceof GeneratedRoute)) {
+    }
+    if (!(o instanceof GeneratedRoute)) {
       return false;
     }
-    GeneratedRoute rhs = (GeneratedRoute) o;
-    return _network.equals(rhs._network);
+    GeneratedRoute that = (GeneratedRoute) o;
+    return Objects.equals(_network, that._network)
+        && _admin == that._admin
+        && getNonRouting() == that.getNonRouting()
+        && getNonForwarding() == that.getNonForwarding()
+        && _discard == that._discard
+        && Objects.equals(_asPath, that._asPath)
+        && Objects.equals(_attributePolicy, that._attributePolicy)
+        && Objects.equals(_communities, that._communities)
+        && Objects.equals(_generationPolicy, that._generationPolicy)
+        && Objects.equals(_metric, that._metric)
+        && Objects.equals(_nextHopInterface, that._nextHopInterface)
+        && Objects.equals(_nextHopIp, that._nextHopIp);
   }
 
+  @Override
+  public int hashCode() {
+    if (_hashcode == 0) {
+      _hashcode =
+          Objects.hash(
+              _network,
+              _admin,
+              getNonRouting(),
+              getNonForwarding(),
+              _asPath,
+              _attributePolicy,
+              _communities,
+              _discard,
+              _generationPolicy,
+              _metric,
+              _nextHopInterface,
+              _nextHopIp);
+    }
+    return _hashcode;
+  }
+
+  /** A BGP AS-path attribute to associate with this generated route */
   @JsonProperty(PROP_AS_PATH)
-  @JsonPropertyDescription("A BGP AS-path attribute to associate with this generated route")
   public AsPath getAsPath() {
     return _asPath;
   }
 
+  /** The name of the policy that sets attributes of this route */
+  @Nullable
   @JsonProperty(PROP_ATTRIBUTE_POLICY)
-  @JsonPropertyDescription("The name of the policy that sets attributes of this route")
   public String getAttributePolicy() {
     return _attributePolicy;
   }
@@ -216,22 +254,22 @@ public final class GeneratedRoute extends AbstractRoute {
     return _attributePolicySources;
   }
 
+  /** The communities attached to this route */
   @Nonnull
   @JsonProperty(PROP_COMMUNITIES)
-  @JsonPropertyDescription("The communities attached to this route")
   public SortedSet<Long> getCommunities() {
     return _communities;
   }
 
+  /** Whether this route is route is meant to discard all matching packets */
   @JsonProperty(PROP_DISCARD)
-  @JsonPropertyDescription("Whether this route is route is meant to discard all matching packets")
   public boolean getDiscard() {
     return _discard;
   }
 
+  /** The name of the policy that will generate this route if another route matches it */
+  @Nullable
   @JsonProperty(PROP_GENERATION_POLICY)
-  @JsonPropertyDescription(
-      "The name of the policy that will generate this route if another route matches it")
   public String getGenerationPolicy() {
     return _generationPolicy;
   }
@@ -273,66 +311,17 @@ public final class GeneratedRoute extends AbstractRoute {
   }
 
   @Override
-  public int hashCode() {
-    return _network.hashCode();
-  }
-
-  @Override
   public int routeCompare(@Nonnull AbstractRoute rhs) {
     if (getClass() != rhs.getClass()) {
       return 0;
     }
     GeneratedRoute castRhs = (GeneratedRoute) rhs;
-
-    int ret;
-    if (_asPath == null) {
-      if (castRhs._asPath != null) {
-        ret = -1;
-      } else {
-        ret = 0;
-      }
-    } else if (castRhs._asPath == null) {
-      ret = 1;
-    } else {
-      ret = _asPath.compareTo(castRhs._asPath);
-    }
-    if (ret != 0) {
-      return ret;
-    }
-    if (_attributePolicy == null) {
-      if (castRhs._attributePolicy != null) {
-        ret = -1;
-      } else {
-        ret = 0;
-      }
-    } else if (castRhs._attributePolicy == null) {
-      ret = 1;
-    } else {
-      ret = _attributePolicy.compareTo(castRhs._attributePolicy);
-    }
-    if (ret != 0) {
-      return ret;
-    }
-    ret = CommonUtil.compareCollection(_communities, castRhs._communities);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = Boolean.compare(_discard, castRhs._discard);
-    if (ret != 0) {
-      return ret;
-    }
-    if (_generationPolicy == null) {
-      if (castRhs._generationPolicy != null) {
-        ret = -1;
-      } else {
-        ret = 0;
-      }
-    } else if (castRhs._generationPolicy == null) {
-      ret = 1;
-    } else {
-      ret = _generationPolicy.compareTo(castRhs._generationPolicy);
-    }
-    return ret;
+    return Comparator.comparing(GeneratedRoute::getAsPath)
+        .thenComparing(GeneratedRoute::getAttributePolicy, Comparator.nullsLast(String::compareTo))
+        .thenComparing(GeneratedRoute::getCommunities, CommonUtil::compareCollection)
+        .thenComparing(GeneratedRoute::getDiscard)
+        .thenComparing(GeneratedRoute::getGenerationPolicy, Comparator.nullsLast(String::compareTo))
+        .compare(this, castRhs);
   }
 
   @JsonProperty(PROP_ATTRIBUTE_POLICY_SOURCES)
