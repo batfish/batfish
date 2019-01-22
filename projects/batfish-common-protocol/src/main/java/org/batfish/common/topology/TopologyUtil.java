@@ -130,12 +130,8 @@ public final class TopologyUtil {
     Layer1Node node2 = layer1MappedEdge.getNode2();
     Interface i1 = getInterface(node1, configurations);
     Interface i2 = getInterface(node2, configurations);
-    // Exit early if either interface is missing or participating in neither layer-2 nor layer-3
-    // protocols.
-    if (i1 == null
-        || i2 == null
-        || (!i1.getSwitchport() && i1.getAddress() == null && i1.getIsis() == null)
-        || (!i2.getSwitchport() && i2.getAddress() == null && i2.getIsis() == null)) {
+    // Exit early if either interface is missing
+    if (i1 == null || i2 == null) {
       return;
     }
     if (i1.getSwitchportMode() == SwitchportMode.TRUNK
