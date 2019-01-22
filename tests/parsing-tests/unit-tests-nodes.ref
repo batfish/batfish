@@ -19118,11 +19118,6 @@
                   {
                     "hostname" : "juniper_rib_groups",
                     "ribname" : "default",
-                    "vrfname" : "default"
-                  },
-                  {
-                    "hostname" : "juniper_rib_groups",
-                    "ribname" : "default",
                     "vrfname" : "VRF2"
                   }
                 ]
@@ -19136,11 +19131,6 @@
                 "importPolicies" : "~RIB_GROUP_IMPORT_POLICY_interface-routes-rib_LOCAL",
                 "name" : "interface-routes-rib",
                 "ribIds" : [
-                  {
-                    "hostname" : "juniper_rib_groups",
-                    "ribname" : "default",
-                    "vrfname" : "default"
-                  },
                   {
                     "hostname" : "juniper_rib_groups",
                     "ribname" : "default",
