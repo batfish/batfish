@@ -14,11 +14,9 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.flow.Trace;
-import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.question.loop.LoopNetwork;
 import org.junit.Rule;
 import org.junit.Test;
@@ -49,9 +47,8 @@ public class BatfishBDDDetectLoopsTest {
     Set<Flow> flows = _batfish.bddLoopDetection();
     assertThat(flows, hasSize(2));
 
-    DataPlane dp = _batfish.loadDataPlane();
     SortedMap<Flow, List<Trace>> flowTraces =
-        TracerouteEngineImpl.getInstance().buildFlows(dp, flows, dp.getFibs(), false);
+        _batfish.getTracerouteEngine().buildFlows(flows, false);
     Set<FlowDisposition> dispositions =
         flowTraces.values().stream()
             .flatMap(Collection::stream)

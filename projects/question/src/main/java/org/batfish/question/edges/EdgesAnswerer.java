@@ -124,7 +124,7 @@ public class EdgesAnswerer extends Answerer {
     switch (edgeType) {
       case BGP:
         ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-            BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false, false, null, null);
+            BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false, false, null);
         return getBgpEdges(configurations, includeNodes, includeRemoteNodes, bgpTopology);
       case EIGRP:
         Network<EigrpInterface, EigrpEdge> eigrpTopology =

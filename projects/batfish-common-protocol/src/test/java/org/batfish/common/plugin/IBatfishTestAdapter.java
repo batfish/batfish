@@ -151,11 +151,6 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public FlowHistory getHistory() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public MajorIssueConfig getMajorIssueConfig(String majorIssue) {
     throw new UnsupportedOperationException();
   }
@@ -327,7 +322,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void processFlows(Set<Flow> flows, boolean ignoreFilters) {
+  public TracerouteEngine getTracerouteEngine() {
     throw new UnsupportedOperationException();
   }
 
@@ -481,5 +476,15 @@ public class IBatfishTestAdapter implements IBatfish {
   public NetworkSnapshot getNetworkSnapshot() {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public FlowHistory flowHistory(Set<Flow> flows, boolean ignoreFilters) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public FlowHistory differentialFlowHistory(Set<Flow> flows, boolean ignoreFilters) {
+    throw new UnsupportedOperationException();
   }
 }

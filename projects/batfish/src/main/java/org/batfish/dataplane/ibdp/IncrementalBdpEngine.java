@@ -192,8 +192,7 @@ class IncrementalBdpEngine {
                   ipOwners,
                   false,
                   true,
-                  TracerouteEngineImpl.getInstance(),
-                  partialDataplane);
+                  new TracerouteEngineImpl(partialDataplane));
 
           boolean isOscillating =
               computeNonMonotonicPortionOfDataPlane(
