@@ -185,6 +185,7 @@ public interface IBatfish extends IPluginConsumer {
 
   Set<BgpAdvertisement> loadExternalBgpAnnouncements(Map<String, Configuration> configurations);
 
+  /** @return a {@link TracerouteEngine} for the current snapshot. */
   TracerouteEngine getTracerouteEngine();
 
   void pushBaseSnapshot();
