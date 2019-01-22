@@ -1343,7 +1343,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         RoutingPolicy generatedPolicy = generateAggregateRoutePolicy(c, vrfName, prefix);
 
         GeneratedRoute.Builder gr =
-            new GeneratedRoute.Builder()
+            GeneratedRoute.builder()
                 .setNetwork(prefix)
                 .setAdmin(CISCO_AGGREGATE_ROUTE_ADMIN_COST)
                 .setGenerationPolicy(generatedPolicy.getName())
@@ -1607,7 +1607,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       RoutingPolicy generatedPolicy = generateAggregateRoutePolicy(c, vrfName, prefix);
 
       GeneratedRoute.Builder gr =
-          new GeneratedRoute.Builder()
+          GeneratedRoute.builder()
               .setNetwork(prefix)
               .setAdmin(CISCO_AGGREGATE_ROUTE_ADMIN_COST)
               .setGenerationPolicy(generatedPolicy.getName())
@@ -1915,7 +1915,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .getDisjuncts()
             .add(new CallExpr(defaultRouteExportPolicy.getName()));
 
-        defaultRoute = new GeneratedRoute.Builder();
+        defaultRoute = GeneratedRoute.builder();
         defaultRoute.setNetwork(Prefix.ZERO);
         defaultRoute.setAdmin(MAX_ADMINISTRATIVE_COST);
         defaultRoute6 = new GeneratedRoute6.Builder();
@@ -2628,7 +2628,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         RoutingPolicy ospfDefaultGenerationPolicy =
             c.getRoutingPolicies().get(defaultOriginateMapName);
         if (ospfDefaultGenerationPolicy != null) {
-          GeneratedRoute.Builder route = new GeneratedRoute.Builder();
+          GeneratedRoute.Builder route = GeneratedRoute.builder();
           route.setNetwork(Prefix.ZERO);
           route.setAdmin(MAX_ADMINISTRATIVE_COST);
           route.setGenerationPolicy(defaultOriginateMapName);
@@ -2637,7 +2637,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       } else if (proc.getDefaultInformationOriginateAlways()) {
         useAggregateDefaultOnly = true;
         // add generated aggregate with no precondition
-        GeneratedRoute.Builder route = new GeneratedRoute.Builder();
+        GeneratedRoute.Builder route = GeneratedRoute.builder();
         route.setNetwork(Prefix.ZERO);
         route.setAdmin(MAX_ADMINISTRATIVE_COST);
         newProcess.addGeneratedRoute(route.build());
@@ -2751,7 +2751,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         RoutingPolicy ripDefaultGenerationPolicy =
             c.getRoutingPolicies().get(defaultOriginateMapName);
         if (ripDefaultGenerationPolicy != null) {
-          GeneratedRoute.Builder route = new GeneratedRoute.Builder();
+          GeneratedRoute.Builder route = GeneratedRoute.builder();
           route.setNetwork(Prefix.ZERO);
           route.setAdmin(MAX_ADMINISTRATIVE_COST);
           route.setGenerationPolicy(defaultOriginateMapName);
@@ -2759,7 +2759,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         }
       } else {
         // add generated aggregate with no precondition
-        GeneratedRoute.Builder route = new GeneratedRoute.Builder();
+        GeneratedRoute.Builder route = GeneratedRoute.builder();
         route.setNetwork(Prefix.ZERO);
         route.setAdmin(MAX_ADMINISTRATIVE_COST);
         newProcess.getGeneratedRoutes().add(route.build());
