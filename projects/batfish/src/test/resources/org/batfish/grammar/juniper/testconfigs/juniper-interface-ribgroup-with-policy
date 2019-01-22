@@ -30,7 +30,7 @@ set policy-options policy-statement RIB_IN term TERM1 from route-filter 2.2.2.4/
 set policy-options policy-statement RIB_IN term TERM1 then accept
 #
 # This line has no effect, as this filter should not be reached (accepted above)
-set policy-options policy-statement RIB_IN term TERM1 from route-filter 2.2.2.4/31 exact
+set policy-options policy-statement RIB_IN_2 term TERM1 from route-filter 2.2.2.4/31 exact
 set policy-options policy-statement RIB_IN_2 term TERM1 from route-filter 2.2.2.6/31 exact
 set policy-options policy-statement RIB_IN_2 term TERM1 then reject
 #
