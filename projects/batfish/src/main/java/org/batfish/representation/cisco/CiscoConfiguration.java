@@ -2759,7 +2759,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         }
       } else {
         // add generated aggregate with no precondition
-        GeneratedRoute.Builder route = new GeneratedRoute.Builder();
+        GeneratedRoute.Builder route = GeneratedRoute.builder();
         route.setNetwork(Prefix.ZERO);
         route.setAdmin(MAX_ADMINISTRATIVE_COST);
         newProcess.getGeneratedRoutes().add(route.build());

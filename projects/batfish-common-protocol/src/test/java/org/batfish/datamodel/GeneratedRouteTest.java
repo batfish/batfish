@@ -58,7 +58,7 @@ public class GeneratedRouteTest {
             .build();
     for (int i = 0; i < ordered.size(); i++) {
       for (int j = 0; j < ordered.size(); j++) {
-        assertThat(ordered.get(i).compareTo(ordered.get(j)), equalTo((int) Math.signum(i - j)));
+        assertThat(ordered.get(i).compareTo(ordered.get(j)), equalTo(Integer.signum(i - j)));
       }
     }
   }

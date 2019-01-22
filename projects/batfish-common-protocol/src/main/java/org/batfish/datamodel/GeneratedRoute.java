@@ -31,7 +31,7 @@ public final class GeneratedRoute extends AbstractRoute {
     @Nullable private String _generationPolicy;
     @Nullable private String _nextHopInterface;
 
-    public Builder() {}
+    private Builder() {}
 
     @Override
     public GeneratedRoute build() {
