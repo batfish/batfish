@@ -31,9 +31,7 @@ public final class GeneratedRoute extends AbstractRoute {
     @Nullable private String _generationPolicy;
     @Nullable private String _nextHopInterface;
 
-    public Builder() {
-      _asPath = AsPath.empty();
-    }
+    public Builder() {}
 
     @Override
     public GeneratedRoute build() {
@@ -101,6 +99,10 @@ public final class GeneratedRoute extends AbstractRoute {
       _nextHopInterface = nextHopInterface;
       return this;
     }
+  }
+
+  public static Builder builder() {
+    return new Builder();
   }
 
   private static final String PROP_AS_PATH = "asPath";

@@ -431,7 +431,7 @@ public class IncrementalDataPlanePluginTest {
 
     // Create generated route
     Prefix genRoutePrefix = Prefix.parse("1.1.1.1/32");
-    Builder grb = new Builder();
+    Builder grb = GeneratedRoute.builder();
     GeneratedRoute route = grb.setNetwork(genRoutePrefix).setDiscard(true).build();
     vrf.setGeneratedRoutes(ImmutableSortedSet.of(route));
 
