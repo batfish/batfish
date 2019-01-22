@@ -423,8 +423,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       }
 
       ParserRuleContext tree;
-      try (ActiveSpan parseSpan =
-          GlobalTracer.get().buildSpan("Parsing " + _filename).startActive()) {
+      try (ActiveSpan parseSpan = GlobalTracer.get().buildSpan("Parsing").startActive()) {
         assert parseSpan != null; // avoid unused warning
         _logger.info("\tParsing...");
         tree = Batfish.parse(combinedParser, _logger, _settings);
@@ -443,7 +442,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       }
 
       try (ActiveSpan postProcessSpan =
-          GlobalTracer.get().buildSpan("Post-processing " + _filename).startActive()) {
+          GlobalTracer.get().buildSpan("Post-processing").startActive()) {
         assert postProcessSpan != null; // avoid unused warning
         _logger.info("\tPost-processing...");
         extractor.processParseTree(tree);
