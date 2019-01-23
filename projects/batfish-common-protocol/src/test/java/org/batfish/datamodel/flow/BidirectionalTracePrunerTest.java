@@ -3,7 +3,7 @@ package org.batfish.datamodel.flow;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
 import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
-import static org.batfish.datamodel.flow.BidirectionalTracePruner.BIDIRECTIONAL_TRACE_PRUNER;
+import static org.batfish.datamodel.flow.BidirectionalTracePruner.prune;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
@@ -43,8 +43,7 @@ public class BidirectionalTracePrunerTest {
     BidirectionalTrace bTrace4 = new BidirectionalTrace(FLOW2, trace1, FLOW1, trace1);
     BidirectionalTrace bTrace5 = new BidirectionalTrace(FLOW3, trace1, FLOW1, trace1);
     Collection<BidirectionalTrace> pruned =
-        BIDIRECTIONAL_TRACE_PRUNER.prune(
-            ImmutableList.of(bTrace1, bTrace2, bTrace3, bTrace4, bTrace5), 3);
+        prune(ImmutableList.of(bTrace1, bTrace2, bTrace3, bTrace4, bTrace5), 3);
     assertThat(pruned, containsInAnyOrder(bTrace1, bTrace4, bTrace5));
   }
 
@@ -61,8 +60,7 @@ public class BidirectionalTracePrunerTest {
     BidirectionalTrace bTrace4 = new BidirectionalTrace(FLOW1, trace1, FLOW2, trace1);
     BidirectionalTrace bTrace5 = new BidirectionalTrace(FLOW1, trace1, FLOW3, trace1);
     Collection<BidirectionalTrace> pruned =
-        BIDIRECTIONAL_TRACE_PRUNER.prune(
-            ImmutableList.of(bTrace1, bTrace2, bTrace3, bTrace4, bTrace5), 3);
+        prune(ImmutableList.of(bTrace1, bTrace2, bTrace3, bTrace4, bTrace5), 3);
     assertThat(pruned, containsInAnyOrder(bTrace1, bTrace4, bTrace5));
   }
 
@@ -80,8 +78,7 @@ public class BidirectionalTracePrunerTest {
     BidirectionalTrace bTrace4 = new BidirectionalTrace(FLOW1, trace3, FLOW1, trace1);
     BidirectionalTrace bTrace5 = new BidirectionalTrace(FLOW1, trace4, FLOW1, trace1);
     Collection<BidirectionalTrace> pruned =
-        BIDIRECTIONAL_TRACE_PRUNER.prune(
-            ImmutableList.of(bTrace1, bTrace2, bTrace3, bTrace4, bTrace5), 3);
+        prune(ImmutableList.of(bTrace1, bTrace2, bTrace3, bTrace4, bTrace5), 3);
     assertThat(pruned, containsInAnyOrder(bTrace1, bTrace4, bTrace5));
   }
 
@@ -99,8 +96,7 @@ public class BidirectionalTracePrunerTest {
     BidirectionalTrace bTrace4 = new BidirectionalTrace(FLOW1, trace2, FLOW1, trace3);
     BidirectionalTrace bTrace5 = new BidirectionalTrace(FLOW1, trace1, FLOW1, trace4);
     Collection<BidirectionalTrace> pruned =
-        BIDIRECTIONAL_TRACE_PRUNER.prune(
-            ImmutableList.of(bTrace1, bTrace2, bTrace3, bTrace4, bTrace5), 3);
+        prune(ImmutableList.of(bTrace1, bTrace2, bTrace3, bTrace4, bTrace5), 3);
     assertThat(pruned, containsInAnyOrder(bTrace1, bTrace4, bTrace5));
   }
 
@@ -117,8 +113,7 @@ public class BidirectionalTracePrunerTest {
     BidirectionalTrace bTrace4 = new BidirectionalTrace(FLOW1, trace2, FLOW1, trace1);
     BidirectionalTrace bTrace5 = new BidirectionalTrace(FLOW1, trace3, FLOW1, trace1);
     Collection<BidirectionalTrace> pruned =
-        BIDIRECTIONAL_TRACE_PRUNER.prune(
-            ImmutableList.of(bTrace1, bTrace2, bTrace3, bTrace4, bTrace5), 3);
+        prune(ImmutableList.of(bTrace1, bTrace2, bTrace3, bTrace4, bTrace5), 3);
     assertThat(pruned, containsInAnyOrder(bTrace1, bTrace4, bTrace5));
   }
 
@@ -135,8 +130,7 @@ public class BidirectionalTracePrunerTest {
     BidirectionalTrace bTrace4 = new BidirectionalTrace(FLOW1, trace1, FLOW1, trace2);
     BidirectionalTrace bTrace5 = new BidirectionalTrace(FLOW1, trace1, FLOW1, trace3);
     Collection<BidirectionalTrace> pruned =
-        BIDIRECTIONAL_TRACE_PRUNER.prune(
-            ImmutableList.of(bTrace1, bTrace2, bTrace3, bTrace4, bTrace5), 3);
+        prune(ImmutableList.of(bTrace1, bTrace2, bTrace3, bTrace4, bTrace5), 3);
     assertThat(pruned, containsInAnyOrder(bTrace1, bTrace4, bTrace5));
   }
 }
