@@ -83,6 +83,8 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Route6FilterList;
@@ -117,14 +119,19 @@ import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.DisjunctionChain;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLength;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.PrefixExpr;
+import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
@@ -295,6 +302,27 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (IpBgpGroup ig : routingInstance.getIpBgpGroups().values()) {
       ig.cascadeInheritance();
     }
+
+    /*
+     * For new BGP advertisements, i.e. those that are created from non-BGP
+     * routes, an origin code must be set. By default, Juniper sets the origin
+     * code to IGP.
+     */
+    If setOriginForNonBgp =
+        new If(
+            new Disjunction(
+                ImmutableList.of(
+                    new MatchProtocol(RoutingProtocol.BGP),
+                    new MatchProtocol(RoutingProtocol.IBGP))),
+            ImmutableList.of(),
+            ImmutableList.of(new SetOrigin(new LiteralOrigin(OriginType.IGP, null))));
+
+    /*
+     * Juniper allows setting BGP communities for static routes. Rather than add communities to VI
+     * routes, add statements to peer export policies that set the appropriate communities.
+     */
+    List<If> staticRouteCommunitySetters = getStaticRouteCommunitySetters(routingInstance);
+
     for (Entry<Prefix, IpBgpGroup> e : routingInstance.getIpBgpGroups().entrySet()) {
       Prefix prefix = e.getKey();
       IpBgpGroup ig = e.getValue();
@@ -422,20 +450,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       peerExportPolicy.getStatements().add(new SetDefaultPolicy(DEFAULT_BGP_EXPORT_POLICY_NAME));
       applyLocalRoutePolicy(routingInstance, peerExportPolicy);
 
-      /*
-       * For new BGP advertisements, i.e. those that are created from non-BGP
-       * routes, an origin code must be set. By default, Juniper sets the origin
-       * code to IGP.
-       */
-      If setOriginForNonBgp = new If();
-      Disjunction isBgp = new Disjunction();
-      isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.BGP));
-      isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.IBGP));
-      setOriginForNonBgp.setGuard(isBgp);
-      setOriginForNonBgp
-          .getFalseStatements()
-          .add(new SetOrigin(new LiteralOrigin(OriginType.IGP, null)));
+      // Add route modifier statements
       peerExportPolicy.getStatements().add(setOriginForNonBgp);
+      peerExportPolicy.getStatements().addAll(staticRouteCommunitySetters);
+
       List<BooleanExpr> exportPolicyCalls = new ArrayList<>();
       ig.getExportPolicies()
           .forEach(
@@ -547,6 +565,34 @@ public final class JuniperConfiguration extends VendorConfiguration {
     proc.setMultipathEquivalentAsPathMatchMode(multipathEquivalentAsPathMatchMode);
 
     return proc;
+  }
+
+  /**
+   * For each static route in the given {@link RoutingInstance} that has at least one community set,
+   * creates an {@link If} that matches that route (specifically, matches static routes with that
+   * route's destination network), and sets communities for matching exported routes.
+   */
+  @Nonnull
+  private static List<If> getStaticRouteCommunitySetters(@Nonnull RoutingInstance ri) {
+    MatchProtocol matchStatic = new MatchProtocol(RoutingProtocol.STATIC);
+    return ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getStaticRoutes().values()
+        .stream()
+        .filter(route -> !route.getCommunities().isEmpty())
+        .map(
+            route -> {
+              // Create matcher that matches routes that share this route's destination network
+              PrefixExpr destNetworkMatcher = DestinationNetwork.instance();
+              PrefixSetExpr destNetwork =
+                  new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(route.getPrefix())));
+              MatchPrefixSet networkMatcher = new MatchPrefixSet(destNetworkMatcher, destNetwork);
+
+              // When a matching static route is exported, set its communities
+              return new If(
+                  new Conjunction(ImmutableList.of(matchStatic, networkMatcher)),
+                  ImmutableList.of(
+                      new SetCommunity(new LiteralCommunitySet(route.getCommunities()))));
+            })
+        .collect(ImmutableList.toImmutableList());
   }
 
   public static String computePeerExportPolicyName(Prefix remoteAddress) {
