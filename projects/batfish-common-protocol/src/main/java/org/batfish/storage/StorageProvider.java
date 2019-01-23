@@ -89,15 +89,6 @@ public interface StorageProvider {
   SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot);
 
   /**
-   * Returns the old-style combined layer-1 through layer-3 topology provided in the given snapshot
-   *
-   * @param network The name of the network
-   * @param snapshot The name of the snapshot
-   */
-  @Nullable
-  Topology loadLegacyTopology(NetworkId network, SnapshotId snapshot);
-
-  /**
    * Returns the layer-1 topology of the network provided in the given snapshot
    *
    * @param network The name of the network
