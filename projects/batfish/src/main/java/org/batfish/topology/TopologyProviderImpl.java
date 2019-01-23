@@ -2,9 +2,12 @@ package org.batfish.topology;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import io.opentracing.ActiveSpan;
+import io.opentracing.util.GlobalTracer;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
@@ -48,24 +51,94 @@ public final class TopologyProviderImpl implements TopologyProvider {
     _vxlanTopologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
   }
 
+  private @Nonnull IpOwners computeIpOwners(NetworkSnapshot snapshot) {
+    try (ActiveSpan span =
+        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeIpOwners").startActive()) {
+      assert span != null; // avoid unused warning
+      return new IpOwners(_batfish.loadConfigurations(snapshot));
+    }
+  }
+
+  private @Nonnull Layer1Topology computeLayer1LogicalTopology(NetworkSnapshot networkSnapshot) {
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("TopologyProviderImpl::computeLayer1LogicalTopology")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      return TopologyUtil.computeLayer1LogicalTopology(
+          getLayer1PhysicalTopology(networkSnapshot), _batfish.loadConfigurations(networkSnapshot));
+    }
+  }
+
+  private @Nonnull Layer1Topology computeLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("TopologyProviderImpl::computeLayer1PhysicalTopology")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      return TopologyUtil.computeLayer1PhysicalTopology(
+          getRawLayer1PhysicalTopology(networkSnapshot).get(),
+          _batfish.loadConfigurations(networkSnapshot));
+    }
+  }
+
+  private @Nonnull Layer2Topology computeLayer2Topology(NetworkSnapshot networkSnapshot) {
+    try (ActiveSpan span =
+        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeLayer2Topology").startActive()) {
+      assert span != null; // avoid unused warning
+      return TopologyUtil.computeLayer2Topology(
+          getLayer1LogicalTopology(networkSnapshot), _batfish.loadConfigurations(networkSnapshot));
+    }
+  }
+
   private Topology computeLayer3Topology(NetworkSnapshot networkSnapshot) {
-    Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
-    Topology topology = getRawLayer3Topology(networkSnapshot);
-    topology.prune(
-        _batfish.getEdgeBlacklist(networkSnapshot),
-        _batfish.getNodeBlacklist(networkSnapshot),
-        _batfish.getInterfaceBlacklist(networkSnapshot));
-    topology.pruneFailedIpsecSessionEdges(
-        IpsecUtil.initIpsecTopology(configurations), configurations);
-    return topology;
+    try (ActiveSpan span =
+        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeLayer3Topology").startActive()) {
+      assert span != null; // avoid unused warning
+      Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
+      Topology topology = getRawLayer3Topology(networkSnapshot);
+      topology.prune(
+          _batfish.getEdgeBlacklist(networkSnapshot),
+          _batfish.getNodeBlacklist(networkSnapshot),
+          _batfish.getInterfaceBlacklist(networkSnapshot));
+      topology.pruneFailedIpsecSessionEdges(
+          IpsecUtil.initIpsecTopology(configurations), configurations);
+      return topology;
+    }
+  }
+
+  private @Nonnull Optional<Layer1Topology> computeRawLayer1PhysicalTopology(
+      NetworkSnapshot networkSnapshot) {
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("TopologyProviderImpl::computeRawLayer1PhysicalTopology")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      return Optional.ofNullable(_batfish.loadRawLayer1PhysicalTopology(networkSnapshot));
+    }
   }
 
   private Topology computeRawLayer3Topology(NetworkSnapshot networkSnapshot) {
-    Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
-    if (!getRawLayer1PhysicalTopology(networkSnapshot).isPresent()) {
-      return TopologyUtil.synthesizeL3Topology(configurations);
-    } else {
-      return TopologyUtil.computeLayer3Topology(getLayer2Topology(networkSnapshot), configurations);
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan("TopologyProviderImpl::computeRawLayer3Topology")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+      Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
+      if (!getRawLayer1PhysicalTopology(networkSnapshot).isPresent()) {
+        return TopologyUtil.synthesizeL3Topology(configurations);
+      } else {
+        return TopologyUtil.computeLayer3Topology(
+            getLayer2Topology(networkSnapshot), configurations);
+      }
+    }
+  }
+
+  private @Nonnull VxlanTopology computeVxlanTopology(NetworkSnapshot snapshot) {
+    try (ActiveSpan span =
+        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeVxlanTopology").startActive()) {
+      assert span != null; // avoid unused warning
+      return new VxlanTopology(_batfish.loadConfigurations(snapshot));
     }
   }
 
@@ -73,9 +146,9 @@ public final class TopologyProviderImpl implements TopologyProvider {
   @Override
   public IpOwners getIpOwners(NetworkSnapshot snapshot) {
     try {
-      return _ipOwners.get(snapshot, () -> new IpOwners(_batfish.loadConfigurations(snapshot)));
+      return _ipOwners.get(snapshot, () -> computeIpOwners(snapshot));
     } catch (ExecutionException e) {
-      return new IpOwners(_batfish.loadConfigurations(snapshot));
+      return computeIpOwners(snapshot);
     }
   }
 
@@ -83,14 +156,9 @@ public final class TopologyProviderImpl implements TopologyProvider {
   public Layer1Topology getLayer1LogicalTopology(NetworkSnapshot networkSnapshot) {
     try {
       return _layer1LogicalTopologies.get(
-          networkSnapshot,
-          () ->
-              TopologyUtil.computeLayer1LogicalTopology(
-                  getLayer1PhysicalTopology(networkSnapshot),
-                  _batfish.loadConfigurations(networkSnapshot)));
+          networkSnapshot, () -> computeLayer1LogicalTopology(networkSnapshot));
     } catch (ExecutionException e) {
-      return TopologyUtil.computeLayer1LogicalTopology(
-          getLayer1PhysicalTopology(networkSnapshot), _batfish.loadConfigurations(networkSnapshot));
+      return computeLayer1LogicalTopology(networkSnapshot);
     }
   }
 
@@ -98,30 +166,18 @@ public final class TopologyProviderImpl implements TopologyProvider {
   public Layer1Topology getLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
     try {
       return _layer1PhysicalTopologies.get(
-          networkSnapshot,
-          () ->
-              TopologyUtil.computeLayer1PhysicalTopology(
-                  getRawLayer1PhysicalTopology(networkSnapshot).get(),
-                  _batfish.loadConfigurations(networkSnapshot)));
+          networkSnapshot, () -> computeLayer1PhysicalTopology(networkSnapshot));
     } catch (ExecutionException e) {
-      return TopologyUtil.computeLayer1PhysicalTopology(
-          getRawLayer1PhysicalTopology(networkSnapshot).get(),
-          _batfish.loadConfigurations(networkSnapshot));
+      return computeLayer1PhysicalTopology(networkSnapshot);
     }
   }
 
   @Override
   public Layer2Topology getLayer2Topology(NetworkSnapshot networkSnapshot) {
     try {
-      return _layer2Topologies.get(
-          networkSnapshot,
-          () ->
-              TopologyUtil.computeLayer2Topology(
-                  getLayer1LogicalTopology(networkSnapshot),
-                  _batfish.loadConfigurations(networkSnapshot)));
+      return _layer2Topologies.get(networkSnapshot, () -> computeLayer2Topology(networkSnapshot));
     } catch (ExecutionException e) {
-      return TopologyUtil.computeLayer2Topology(
-          getLayer1LogicalTopology(networkSnapshot), _batfish.loadConfigurations(networkSnapshot));
+      return computeLayer2Topology(networkSnapshot);
     }
   }
 
@@ -138,10 +194,9 @@ public final class TopologyProviderImpl implements TopologyProvider {
   public Optional<Layer1Topology> getRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
     try {
       return _rawLayer1PhysicalTopologies.get(
-          networkSnapshot,
-          () -> Optional.ofNullable(_batfish.loadRawLayer1PhysicalTopology(networkSnapshot)));
+          networkSnapshot, () -> computeRawLayer1PhysicalTopology(networkSnapshot));
     } catch (ExecutionException e) {
-      return Optional.ofNullable(_batfish.loadRawLayer1PhysicalTopology(networkSnapshot));
+      return computeRawLayer1PhysicalTopology(networkSnapshot);
     }
   }
 
@@ -158,10 +213,9 @@ public final class TopologyProviderImpl implements TopologyProvider {
   @Override
   public VxlanTopology getVxlanTopology(NetworkSnapshot snapshot) {
     try {
-      return _vxlanTopologies.get(
-          snapshot, () -> new VxlanTopology(_batfish.loadConfigurations(snapshot)));
+      return _vxlanTopologies.get(snapshot, () -> computeVxlanTopology(snapshot));
     } catch (ExecutionException e) {
-      return new VxlanTopology(_batfish.loadConfigurations(snapshot));
+      return computeVxlanTopology(snapshot);
     }
   }
 }
