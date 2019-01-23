@@ -23,7 +23,7 @@ public class RoutingInformationBase implements Serializable {
   private final String _name;
   private final Map<Prefix, StaticRoute> _staticRoutes;
 
-  public RoutingInformationBase(String name) {
+  public RoutingInformationBase(@Nonnull String name) {
     _name = name;
     _aggregateRoutes = new TreeMap<>();
     _generatedRoutes = new TreeMap<>();
