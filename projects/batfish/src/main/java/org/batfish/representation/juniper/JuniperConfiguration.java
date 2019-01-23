@@ -308,14 +308,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
      * routes, an origin code must be set. By default, Juniper sets the origin
      * code to IGP.
      */
-    If setOriginForNonBgp = new If();
-    Disjunction isBgp = new Disjunction();
-    isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.BGP));
-    isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.IBGP));
-    setOriginForNonBgp.setGuard(isBgp);
-    setOriginForNonBgp
-        .getFalseStatements()
-        .add(new SetOrigin(new LiteralOrigin(OriginType.IGP, null)));
+    If setOriginForNonBgp =
+        new If(
+            new Disjunction(
+                ImmutableList.of(
+                    new MatchProtocol(RoutingProtocol.BGP),
+                    new MatchProtocol(RoutingProtocol.IBGP))),
+            ImmutableList.of(),
+            ImmutableList.of(new SetOrigin(new LiteralOrigin(OriginType.IGP, null))));
 
     /*
      * Juniper allows setting BGP communities for static routes. Rather than add communities to VI
@@ -580,20 +580,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .filter(route -> !route.getCommunities().isEmpty())
         .map(
             route -> {
-              // Create guard that matches static routes with this route's network
+              // Create matcher that matches routes that share this route's destination network
               PrefixExpr destNetworkMatcher = DestinationNetwork.instance();
               PrefixSetExpr destNetwork =
                   new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(route.getPrefix())));
               MatchPrefixSet networkMatcher = new MatchPrefixSet(destNetworkMatcher, destNetwork);
-              Conjunction guard = new Conjunction(ImmutableList.of(matchStatic, networkMatcher));
 
-              // When the guard is matched, set the matching route's communities
-              If staticRouteConditional = new If();
-              staticRouteConditional.setGuard(guard);
-              SetCommunity communityStatement =
-                  new SetCommunity(new LiteralCommunitySet(route.getCommunities()));
-              staticRouteConditional.setTrueStatements(ImmutableList.of(communityStatement));
-              return staticRouteConditional;
+              // When a matching static route is exported, set its communities
+              return new If(
+                  new Conjunction(ImmutableList.of(matchStatic, networkMatcher)),
+                  ImmutableList.of(
+                      new SetCommunity(new LiteralCommunitySet(route.getCommunities()))));
             })
         .collect(ImmutableList.toImmutableList());
   }
