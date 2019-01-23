@@ -48,7 +48,7 @@ public class BatfishBDDDetectLoopsTest {
     assertThat(flows, hasSize(2));
 
     SortedMap<Flow, List<Trace>> flowTraces =
-        _batfish.getTracerouteEngine().buildFlows(flows, false);
+        _batfish.getTracerouteEngine().computeTraces(flows, false);
     Set<FlowDisposition> dispositions =
         flowTraces.values().stream()
             .flatMap(Collection::stream)

@@ -6,7 +6,9 @@ import static org.batfish.dataplane.traceroute.TracerouteUtils.applyFilter;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createEnterSrcIfaceStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.isArpSuccessful;
+import static org.batfish.dataplane.traceroute.TracerouteUtils.returnFlow;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.validateInputs;
+import static org.batfish.specifier.DispositionSpecifier.SUCCESS_DISPOSITIONS;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -59,6 +61,7 @@ import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
+import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationEvaluator;
@@ -66,7 +69,7 @@ import org.batfish.datamodel.transformation.TransformationEvaluator.Transformati
 
 /**
  * Class containing an implementation of {@link
- * org.batfish.dataplane.TracerouteEngineImpl#buildFlows(Set, boolean)} and the context (data)
+ * org.batfish.dataplane.TracerouteEngineImpl#computeTraces(Set, boolean)} and the context (data)
  * needed for it
  */
 public class TracerouteEngineImplContext {
@@ -107,7 +110,7 @@ public class TracerouteEngineImplContext {
     private final Map<String, IpAccessList> _aclDefinitions;
     private final Node _currentNode;
     private String _filterOutNotes;
-    private final List<Trace> _flowTraces;
+    private final List<TraceAndReverseFlow> _flowTraces;
     private final List<Hop> _hopsSoFar;
     private final NavigableMap<String, IpSpace> _namedIpSpaces;
     private final Flow _originalFlow;
@@ -116,7 +119,7 @@ public class TracerouteEngineImplContext {
     private TransmissionContext(
         Map<String, IpAccessList> aclDefinitions,
         Node currentNode,
-        List<Trace> flowTraces,
+        List<TraceAndReverseFlow> flowTraces,
         List<Hop> hopsSoFar,
         NavigableMap<String, IpSpace> namedIpSpaces,
         Flow originalFlow,
@@ -258,7 +261,17 @@ public class TracerouteEngineImplContext {
 
       transmissionContext._hopsSoFar.add(terminalHop);
       Trace trace = new Trace(disposition, transmissionContext._hopsSoFar);
-      transmissionContext._flowTraces.add(trace);
+
+      /* This trace ends in an ARP failure, which could be considered either a success
+       * or a failure. Only create return flow when it's a success.
+       */
+      Flow returnFlow =
+          SUCCESS_DISPOSITIONS.contains(disposition)
+              ? returnFlow(
+                  transmissionContext._transformedFlow, currentNodeName, null, nextHopInterfaceName)
+              : null;
+
+      transmissionContext._flowTraces.add(new TraceAndReverseFlow(trace, returnFlow));
 
       return false;
     }
@@ -271,14 +284,14 @@ public class TracerouteEngineImplContext {
    *
    * @return {@link SortedMap} of {@link Flow} to a {@link List} of {@link Trace}s
    */
-  public SortedMap<Flow, List<Trace>> buildFlows() {
-    Map<Flow, List<Trace>> flowTraces = new ConcurrentHashMap<>();
+  public SortedMap<Flow, List<TraceAndReverseFlow>> buildTracesAndReturnFlows() {
+    Map<Flow, List<TraceAndReverseFlow>> traces = new ConcurrentHashMap<>();
     _flows
         .parallelStream()
         .forEach(
             flow -> {
-              List<Trace> currentFlowTraces =
-                  flowTraces.computeIfAbsent(flow, k -> new ArrayList<>());
+              List<TraceAndReverseFlow> currentTraces =
+                  traces.computeIfAbsent(flow, k -> new ArrayList<>());
               validateInputs(_configurations, flow);
               String ingressNodeName = flow.getIngressNode();
               List<Hop> hops = new ArrayList<>();
@@ -289,7 +302,7 @@ public class TracerouteEngineImplContext {
                     new TransmissionContext(
                         Maps.newHashMap(),
                         new Node(ingressNodeName),
-                        currentFlowTraces,
+                        currentTraces,
                         hops,
                         Maps.newTreeMap(),
                         flow,
@@ -301,7 +314,7 @@ public class TracerouteEngineImplContext {
                     new TransmissionContext(
                         Maps.newHashMap(),
                         new Node(flow.getIngressNode()),
-                        currentFlowTraces,
+                        currentTraces,
                         hops,
                         Maps.newTreeMap(),
                         flow,
@@ -309,7 +322,7 @@ public class TracerouteEngineImplContext {
                 processHop(ingressNodeName, null, transmissionContext, flow, breadcrumbs);
               }
             });
-    return new TreeMap<>(flowTraces);
+    return new TreeMap<>(traces);
   }
 
   private void processHop(
@@ -363,7 +376,7 @@ public class TracerouteEngineImplContext {
                       .addAll(transmissionContext._hopsSoFar)
                       .add(deniedOutHop)
                       .build());
-          transmissionContext._flowTraces.add(trace);
+          transmissionContext._flowTraces.add(new TraceAndReverseFlow(trace, null));
           return;
         }
       }
@@ -409,7 +422,7 @@ public class TracerouteEngineImplContext {
       Hop loopHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
       transmissionContext._hopsSoFar.add(loopHop);
       Trace trace = new Trace(FlowDisposition.LOOP, transmissionContext._hopsSoFar);
-      transmissionContext._flowTraces.add(trace);
+      transmissionContext._flowTraces.add(new TraceAndReverseFlow(trace, null));
       return;
     }
 
@@ -431,7 +444,8 @@ public class TracerouteEngineImplContext {
         Hop acceptedHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
         transmissionContext._hopsSoFar.add(acceptedHop);
         Trace trace = new Trace(FlowDisposition.ACCEPTED, transmissionContext._hopsSoFar);
-        transmissionContext._flowTraces.add(trace);
+        Flow returnFlow = returnFlow(currentFlow, currentNodeName, vrfName, null);
+        transmissionContext._flowTraces.add(new TraceAndReverseFlow(trace, returnFlow));
         return;
       }
 
@@ -448,7 +462,7 @@ public class TracerouteEngineImplContext {
         Hop noRouteHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
         transmissionContext._hopsSoFar.add(noRouteHop);
         Trace trace = new Trace(FlowDisposition.NO_ROUTE, transmissionContext._hopsSoFar);
-        transmissionContext._flowTraces.add(trace);
+        transmissionContext._flowTraces.add(new TraceAndReverseFlow(trace, null));
         return;
       }
 
@@ -528,7 +542,7 @@ public class TracerouteEngineImplContext {
                                 .addAll(transmissionContext._hopsSoFar)
                                 .add(nullRoutedHop)
                                 .build());
-                    transmissionContext._flowTraces.add(trace);
+                    transmissionContext._flowTraces.add(new TraceAndReverseFlow(trace, null));
                     return;
                   }
 
@@ -563,7 +577,7 @@ public class TracerouteEngineImplContext {
                                   .addAll(transmissionContext._hopsSoFar)
                                   .add(deniedOutHop)
                                   .build());
-                      transmissionContext._flowTraces.add(trace);
+                      transmissionContext._flowTraces.add(new TraceAndReverseFlow(trace, null));
                       return;
                     }
                   }
@@ -618,7 +632,8 @@ public class TracerouteEngineImplContext {
                                   .addAll(clonedTransmissionContext._hopsSoFar)
                                   .add(deniedOutHop)
                                   .build());
-                      clonedTransmissionContext._flowTraces.add(trace);
+                      clonedTransmissionContext._flowTraces.add(
+                          new TraceAndReverseFlow(trace, null));
                       return;
                     }
                   }
@@ -684,7 +699,13 @@ public class TracerouteEngineImplContext {
     transmissionContext._hopsSoFar.add(terminalHop);
     trace = new Trace(disposition, transmissionContext._hopsSoFar);
 
-    transmissionContext._flowTraces.add(trace);
+    Flow returnFlow =
+        SUCCESS_DISPOSITIONS.contains(disposition)
+            ? returnFlow(
+                transmissionContext._transformedFlow, currentNodeName, null, outInterface.getName())
+            : null;
+
+    transmissionContext._flowTraces.add(new TraceAndReverseFlow(trace, returnFlow));
   }
 
   /**

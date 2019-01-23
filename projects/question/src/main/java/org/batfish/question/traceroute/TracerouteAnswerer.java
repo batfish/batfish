@@ -112,7 +112,7 @@ public final class TracerouteAnswerer extends Answerer {
       table = new TableAnswerElement(createMetadata(false));
     } else {
       SortedMap<Flow, List<Trace>> flowTraces =
-          _batfish.getTracerouteEngine().buildFlows(flows, question.getIgnoreFilters());
+          _batfish.getTracerouteEngine().computeTraces(flows, question.getIgnoreFilters());
       rows = flowTracesToRows(flowTraces, question.getMaxTraces());
       table = new TableAnswerElement(metadata(false));
     }
