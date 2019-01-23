@@ -63,9 +63,10 @@ public interface TopologyProvider {
 
   /**
    * Return the raw layer-3 {@link Topology} for a given {@link NetworkSnapshot}. The layer-3
-   * topology is constructed from by inferring layer-3 adjacencies via the layer-3 information in
-   * the configurations, and pruning edges not in the same broadcast domain according to the layer-2
-   * topology. No pruning occurs if raw layer-1 topology is not provided in snapshot.
+   * topology is constructed by inferring layer-3 adjacencies via the layer-3 information in the
+   * configurations, and pruning edges not in the same broadcast domain according to the layer-2
+   * topology. No pruning of edges in different layer-2 broadcast domains occurs if raw layer-1
+   * topology is not provided in snapshot.
    */
   @Nonnull
   Topology getRawLayer3Topology(NetworkSnapshot networkSnapshot);
