@@ -1,6 +1,7 @@
 package org.batfish.specifier;
 
-import com.google.common.base.Preconditions;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Objects;
@@ -23,7 +24,7 @@ public final class TypeNameRegexInterfaceSpecifier implements InterfaceSpecifier
         Stream.of(InterfaceType.values())
             .filter(type -> typeNameRegex.matcher(type.name()).matches())
             .collect(ImmutableSet.toImmutableSet());
-    Preconditions.checkArgument(
+    checkArgument(
         !_interfaceTypes.isEmpty(),
         String.format("Interface type regex %s matches no types", typeNameRegex.pattern()));
   }

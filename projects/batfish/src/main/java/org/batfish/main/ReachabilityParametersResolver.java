@@ -1,11 +1,11 @@
 package org.batfish.main;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
@@ -192,7 +192,7 @@ final class ReachabilityParametersResolver {
      * but ReachabilityParameters use a more expressive representation. Until we update compression,
      * we can't use it.
      */
-    Preconditions.checkArgument(!_params.getUseCompression(), "Compression is currently disabled.");
+    checkArgument(!_params.getUseCompression(), "Compression is currently disabled.");
     boolean useCompression = false;
     HeaderSpace compressionHeaderSpace = null;
 
