@@ -21,11 +21,11 @@ import javax.annotation.Nullable;
  * @param <T> The type of objects being pruned.
  */
 public class Pruner<T> {
-  private static class Property<T> {
-    private final Function<T, Object> _extractor;
-    private final Map<Object, List<T>> _objectsByPropertyValue;
+  private static class Property<T, P> {
+    private final Function<T, P> _extractor;
+    private final Map<P, List<T>> _objectsByPropertyValue;
 
-    Property(Function<T, Object> extractor, List<T> objects) {
+    Property(Function<T, P> extractor, List<T> objects) {
       _extractor = extractor;
 
       _objectsByPropertyValue = new HashMap<>();
@@ -45,12 +45,12 @@ public class Pruner<T> {
       if (_objectsByPropertyValue.isEmpty()) {
         return null;
       }
-      List<Object> valuesToRemove = new ArrayList<>();
+      List<P> valuesToRemove = new ArrayList<>();
       T selected = null;
-      Iterator<Entry<Object, List<T>>> iter = _objectsByPropertyValue.entrySet().iterator();
+      Iterator<Entry<P, List<T>>> iter = _objectsByPropertyValue.entrySet().iterator();
       while (selected == null && iter.hasNext()) {
-        Entry<Object, List<T>> entry = iter.next();
-        Object propertyValue = entry.getKey();
+        Entry<P, List<T>> entry = iter.next();
+        P propertyValue = entry.getKey();
         for (T obj : entry.getValue()) {
           if (!selectedObjects.contains(obj)) {
             selected = obj;
@@ -68,9 +68,9 @@ public class Pruner<T> {
   }
 
   // Properties in order of decreasing importance.
-  private final List<Function<T, Object>> _propertyExtractors;
+  private final List<Function<T, ?>> _propertyExtractors;
 
-  private Pruner(List<Function<T, Object>> propertyExtractors) {
+  private Pruner(List<Function<T, ?>> propertyExtractors) {
     Preconditions.checkArgument(!propertyExtractors.isEmpty(), "Must define at least one property");
     _propertyExtractors = ImmutableList.copyOf(propertyExtractors);
   }
@@ -81,7 +81,7 @@ public class Pruner<T> {
     }
 
     Set<T> selectedObjects = new HashSet<>();
-    List<Property<T>> properties =
+    List<Property<T, ?>> properties =
         _propertyExtractors.stream()
             .map(propertyExtractor -> new Property<>(propertyExtractor, objects))
             .collect(ImmutableList.toImmutableList());
@@ -89,7 +89,7 @@ public class Pruner<T> {
     boolean done = false;
     while (selectedObjects.size() < maxSize && !done) {
       done = true;
-      for (Property<T> property : properties) {
+      for (Property<T, ?> property : properties) {
         T picked = property.pick(selectedObjects);
         if (picked != null) {
           selectedObjects.add(picked);
@@ -113,10 +113,18 @@ public class Pruner<T> {
 
   /** @param <T> The type of objects being pruned. */
   public static class Builder<T> {
-    private final ImmutableList.Builder<Function<T, Object>> _propertyExtractors =
+    private final ImmutableList.Builder<Function<T, ?>> _propertyExtractors =
         ImmutableList.builder();
 
-    public <U> Builder<T> addProperty(Function<T, U> extractor) {
+    /**
+     * Add a new property for the {@link Pruner}. The property will have higher priority in picking
+     * objects than all properties added later.
+     *
+     * @param extractor A function to extract the property value from an object. This method is
+     *     required to be deterministic wrt {@link Object#equals(Object)}.
+     * @param <P> The property type.
+     */
+    public <P> Builder<T> addProperty(Function<T, P> extractor) {
       _propertyExtractors.add(extractor::apply);
       return this;
     }
