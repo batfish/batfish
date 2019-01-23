@@ -49,7 +49,6 @@ public class CiscoNxosTest {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     Batfish batfish = getBatfishForTextConfigs(_folder, names);
-    batfish.getSettings().setEnableCiscoNxParser(true);
     return batfish.loadConfigurations();
   }
 
@@ -60,7 +59,6 @@ public class CiscoNxosTest {
             .map(s -> Paths.get(TESTRIGS_PREFIX, testrig, "configs", s).toString())
             .toArray(String[]::new);
     Batfish batfish = getBatfishForTextConfigs(_folder, names);
-    batfish.getSettings().setEnableCiscoNxParser(true);
     return batfish;
   }
 
