@@ -26,7 +26,7 @@ public class GeneratedRouteHelperTest {
 
   @Before
   public void setup() {
-    _builder = new Builder();
+    _builder = GeneratedRoute.builder();
   }
 
   @Test

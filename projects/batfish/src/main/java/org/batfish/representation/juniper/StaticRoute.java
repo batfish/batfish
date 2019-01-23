@@ -3,6 +3,8 @@ package org.batfish.representation.juniper;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -14,6 +16,8 @@ public class StaticRoute implements Serializable {
 
   /* https://www.juniper.net/documentation/en_US/junos/topics/reference/general/routing-protocols-default-route-preference-values.html */
   private static final int DEFAULT_ADMIN_DISTANCE = 5;
+
+  private Set<Long> _communities;
 
   private int _distance;
 
@@ -34,10 +38,15 @@ public class StaticRoute implements Serializable {
   private Boolean _noInstall;
 
   public StaticRoute(Prefix prefix) {
+    _communities = new TreeSet<>();
     _prefix = prefix;
     _policies = new ArrayList<>();
     // default admin costs for static routes in Juniper
     _distance = DEFAULT_ADMIN_DISTANCE;
+  }
+
+  public Set<Long> getCommunities() {
+    return _communities;
   }
 
   public int getDistance() {

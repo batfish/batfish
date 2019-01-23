@@ -30,7 +30,7 @@ public class RipRib extends AbstractRib<RipRoute> {
         // Only RIP internal supported, and all routes have equal cost
         return 0;
       default:
-        throw new BatfishException("Invalid rip protocol: '" + protocol + "'");
+        throw new BatfishException("Invalid RIP protocol: '" + protocol + "'");
     }
   }
 }

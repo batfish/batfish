@@ -24,7 +24,6 @@ import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
@@ -80,15 +79,9 @@ public class BgpSessionStatusAnswerer extends BgpSessionAnswerer {
         BgpTopologyUtils.initBgpTopology(configurations, ipOwners, true);
 
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedBgpTopology;
-    DataPlane dp = _batfish.loadDataPlane();
     establishedBgpTopology =
         BgpTopologyUtils.initBgpTopology(
-            configurations,
-            ipOwners,
-            false,
-            true,
-            _batfish.getDataPlanePlugin().getTracerouteEngine(),
-            dp);
+            configurations, ipOwners, false, true, _batfish.getTracerouteEngine());
 
     Stream<Row> activePeerRows =
         configuredBgpTopology.nodes().stream()

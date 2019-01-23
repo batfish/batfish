@@ -934,7 +934,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       if (!_remoteBgpNeighborsInitialized) {
         Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
         _bgpTopology =
-            BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false, false, null, null);
+            BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false, false, null);
         _remoteBgpNeighborsInitialized = true;
       }
     }

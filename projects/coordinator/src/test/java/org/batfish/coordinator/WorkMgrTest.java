@@ -564,15 +564,15 @@ public final class WorkMgrTest {
     _manager.initNetwork("container", null);
 
     // empty should be returned if no testrigs exist
-    assertThat(_manager.getLatestTestrig("container"), equalTo(Optional.empty()));
+    assertThat(_manager.getLatestSnapshot("container"), equalTo(Optional.empty()));
 
     // create testrig1, which should be returned
     createSnapshotWithMetadata("container", "testrig1");
-    assertThat(_manager.getLatestTestrig("container"), equalTo(Optional.of("testrig1")));
+    assertThat(_manager.getLatestSnapshot("container"), equalTo(Optional.of("testrig1")));
 
     // create a second testrig, which should be returned
     createSnapshotWithMetadata("container", "testrig2");
-    assertThat(_manager.getLatestTestrig("container"), equalTo(Optional.of("testrig2")));
+    assertThat(_manager.getLatestSnapshot("container"), equalTo(Optional.of("testrig2")));
   }
 
   @Test
@@ -732,7 +732,7 @@ public final class WorkMgrTest {
             snapshotBaseName, snapshotNewName, null, null, null, null, null, null, null));
 
     // Confirm the forked snapshot exists
-    assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
+    assertThat(_manager.getLatestSnapshot(networkName), equalTo(Optional.of(snapshotNewName)));
   }
 
   @Test
@@ -756,7 +756,7 @@ public final class WorkMgrTest {
     SnapshotId snapshotId1 = _idManager.getSnapshotId(snapshotNewName1, networkId);
 
     // Confirm the forked snapshot exists
-    assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName1)));
+    assertThat(_manager.getLatestSnapshot(networkName), equalTo(Optional.of(snapshotNewName1)));
     // Confirm the blacklists are correct
     assertThat(
         _storage.loadInterfaceBlacklist(networkId, snapshotId1),
@@ -774,7 +774,7 @@ public final class WorkMgrTest {
     SnapshotId snapshotId2 = _idManager.getSnapshotId(snapshotNewName2, networkId);
 
     // Confirm the forked snapshot exists
-    assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName2)));
+    assertThat(_manager.getLatestSnapshot(networkName), equalTo(Optional.of(snapshotNewName2)));
     // Confirm the blacklists are empty
     assertThat(_storage.loadInterfaceBlacklist(networkId, snapshotId2), iterableWithSize(0));
     assertThat(_storage.loadEdgeBlacklist(networkId, snapshotId2), iterableWithSize(0));
@@ -820,7 +820,7 @@ public final class WorkMgrTest {
             snapshotBaseName, snapshotNewName, null, null, null, null, null, null, zipFile));
 
     // Confirm the forked snapshot exists
-    assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
+    assertThat(_manager.getLatestSnapshot(networkName), equalTo(Optional.of(snapshotNewName)));
 
     // Confirm the new file exists in the forked snapshot, with the right contents
     String readFileContents = readSnapshotConfig(networkName, snapshotNewName, fileName);
@@ -849,7 +849,7 @@ public final class WorkMgrTest {
             snapshotBaseName, snapshotNewName, null, null, null, null, null, null, zipFile));
 
     // Confirm the forked snapshot exists
-    assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotNewName)));
+    assertThat(_manager.getLatestSnapshot(networkName), equalTo(Optional.of(snapshotNewName)));
 
     // Confirm the file was overwritten with the new contents
     String readFileContents = readSnapshotConfig(networkName, snapshotNewName, fileName);
@@ -1556,7 +1556,7 @@ public final class WorkMgrTest {
     _manager.initSnapshot(networkName, snapshotName, srcDir, false);
 
     // Confirm the new snapshot exists
-    assertThat(_manager.getLatestTestrig(networkName), equalTo(Optional.of(snapshotName)));
+    assertThat(_manager.getLatestSnapshot(networkName), equalTo(Optional.of(snapshotName)));
   }
 
   @Test

@@ -55,8 +55,7 @@ public final class DetectLoopsAnswerer extends Answerer {
             .collect(Collectors.toSet());
 
     if (_batfish.debugFlagEnabled("oldtraceroute")) {
-      _batfish.processFlows(flows, false);
-      FlowHistory flowHistory = _batfish.getHistory();
+      FlowHistory flowHistory = _batfish.flowHistory(flows, false);
       Multiset<Row> rows = flowHistoryToRows(flowHistory);
       TableAnswerElement table = new TableAnswerElement(createMetadata(false));
       table.postProcessAnswer(_question, rows);

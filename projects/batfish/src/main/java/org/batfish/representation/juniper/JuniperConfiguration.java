@@ -10,6 +10,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BO
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
+import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4_UNICAST;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -42,6 +43,7 @@ import org.apache.commons.collections4.list.TreeList;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AuthenticationKey;
@@ -81,6 +83,8 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Route6FilterList;
@@ -100,6 +104,7 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
@@ -114,14 +119,19 @@ import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.DisjunctionChain;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLength;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.PrefixExpr;
+import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
@@ -171,6 +181,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private static final String DEFAULT_BGP_EXPORT_POLICY_NAME = "~DEFAULT_BGP_EXPORT_POLICY~";
 
   private static final String DEFAULT_BGP_IMPORT_POLICY_NAME = "~DEFAULT_BGP_IMPORT_POLICY~";
+
+  private static final String DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY_NAME =
+      "~DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY~";
+
+  private static final Map<RoutingProtocol, String> DEFAULT_IMPORT_POLICIES =
+      ImmutableMap.<RoutingProtocol, String>builder()
+          .put(RoutingProtocol.CONNECTED, DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY_NAME)
+          .put(RoutingProtocol.LOCAL, DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY_NAME)
+          .put(RoutingProtocol.AGGREGATE, DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY_NAME)
+          .put(RoutingProtocol.STATIC, DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY_NAME)
+          .put(RoutingProtocol.BGP, DEFAULT_BGP_IMPORT_POLICY_NAME)
+          .put(RoutingProtocol.IBGP, DEFAULT_BGP_IMPORT_POLICY_NAME)
+          .build();
 
   @VisibleForTesting static final int DEFAULT_ISIS_COST = 10;
 
@@ -279,6 +302,27 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (IpBgpGroup ig : routingInstance.getIpBgpGroups().values()) {
       ig.cascadeInheritance();
     }
+
+    /*
+     * For new BGP advertisements, i.e. those that are created from non-BGP
+     * routes, an origin code must be set. By default, Juniper sets the origin
+     * code to IGP.
+     */
+    If setOriginForNonBgp =
+        new If(
+            new Disjunction(
+                ImmutableList.of(
+                    new MatchProtocol(RoutingProtocol.BGP),
+                    new MatchProtocol(RoutingProtocol.IBGP))),
+            ImmutableList.of(),
+            ImmutableList.of(new SetOrigin(new LiteralOrigin(OriginType.IGP, null))));
+
+    /*
+     * Juniper allows setting BGP communities for static routes. Rather than add communities to VI
+     * routes, add statements to peer export policies that set the appropriate communities.
+     */
+    List<If> staticRouteCommunitySetters = getStaticRouteCommunitySetters(routingInstance);
+
     for (Entry<Prefix, IpBgpGroup> e : routingInstance.getIpBgpGroups().entrySet()) {
       Prefix prefix = e.getKey();
       IpBgpGroup ig = e.getValue();
@@ -406,20 +450,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       peerExportPolicy.getStatements().add(new SetDefaultPolicy(DEFAULT_BGP_EXPORT_POLICY_NAME));
       applyLocalRoutePolicy(routingInstance, peerExportPolicy);
 
-      /*
-       * For new BGP advertisements, i.e. those that are created from non-BGP
-       * routes, an origin code must be set. By default, Juniper sets the origin
-       * code to IGP.
-       */
-      If setOriginForNonBgp = new If();
-      Disjunction isBgp = new Disjunction();
-      isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.BGP));
-      isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.IBGP));
-      setOriginForNonBgp.setGuard(isBgp);
-      setOriginForNonBgp
-          .getFalseStatements()
-          .add(new SetOrigin(new LiteralOrigin(OriginType.IGP, null)));
+      // Add route modifier statements
       peerExportPolicy.getStatements().add(setOriginForNonBgp);
+      peerExportPolicy.getStatements().addAll(staticRouteCommunitySetters);
+
       List<BooleanExpr> exportPolicyCalls = new ArrayList<>();
       ig.getExportPolicies()
           .forEach(
@@ -531,6 +565,34 @@ public final class JuniperConfiguration extends VendorConfiguration {
     proc.setMultipathEquivalentAsPathMatchMode(multipathEquivalentAsPathMatchMode);
 
     return proc;
+  }
+
+  /**
+   * For each static route in the given {@link RoutingInstance} that has at least one community set,
+   * creates an {@link If} that matches that route (specifically, matches static routes with that
+   * route's destination network), and sets communities for matching exported routes.
+   */
+  @Nonnull
+  private static List<If> getStaticRouteCommunitySetters(@Nonnull RoutingInstance ri) {
+    MatchProtocol matchStatic = new MatchProtocol(RoutingProtocol.STATIC);
+    return ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getStaticRoutes().values()
+        .stream()
+        .filter(route -> !route.getCommunities().isEmpty())
+        .map(
+            route -> {
+              // Create matcher that matches routes that share this route's destination network
+              PrefixExpr destNetworkMatcher = DestinationNetwork.instance();
+              PrefixSetExpr destNetwork =
+                  new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(route.getPrefix())));
+              MatchPrefixSet networkMatcher = new MatchPrefixSet(destNetworkMatcher, destNetwork);
+
+              // When a matching static route is exported, set its communities
+              return new If(
+                  new Conjunction(ImmutableList.of(matchStatic, networkMatcher)),
+                  ImmutableList.of(
+                      new SetCommunity(new LiteralCommunitySet(route.getCommunities()))));
+            })
+        .collect(ImmutableList.toImmutableList());
   }
 
   public static String computePeerExportPolicyName(Prefix remoteAddress) {
@@ -829,6 +891,28 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return _allStandardCommunities;
   }
 
+  /**
+   * Generate a {@link RoutingPolicy} for use when importing routes from pseudo-protocols (direct,
+   * static, aggregate, generated)
+   */
+  @VisibleForTesting
+  static RoutingPolicy generateDefaultPseudoProtocolImportPolicy(@Nonnull Configuration c) {
+    return RoutingPolicy.builder()
+        .setOwner(c)
+        .setName(DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY_NAME)
+        .setStatements(
+            ImmutableList.of(
+                new If(
+                    new Disjunction(
+                        new MatchProtocol(RoutingProtocol.CONNECTED),
+                        new MatchProtocol(RoutingProtocol.LOCAL),
+                        new MatchProtocol(RoutingProtocol.STATIC),
+                        new MatchProtocol(RoutingProtocol.AGGREGATE)),
+                    ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+                    ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))))
+        .build();
+  }
+
   public Map<String, NodeDevice> getNodeDevices() {
     return _nodeDevices;
   }
@@ -864,6 +948,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
     RoutingPolicy defaultBgpImportPolicy = new RoutingPolicy(DEFAULT_BGP_IMPORT_POLICY_NAME, _c);
     _c.getRoutingPolicies().put(DEFAULT_BGP_IMPORT_POLICY_NAME, defaultBgpImportPolicy);
     PsThenAccept.INSTANCE.applyTo(defaultBgpImportPolicy.getStatements(), this, _c, _w);
+  }
+
+  /**
+   * Initialize default pseudo-protocol import policy (if it does not exist) in the
+   * vendor-independent {@link Configuration}.
+   *
+   * @return the name of the initialized policy
+   */
+  private void initDefaultPseudoProtocolImportPolicy() {
+    if (_c.getRoutingPolicies().containsKey(DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY_NAME)) {
+      return;
+    }
+    generateDefaultPseudoProtocolImportPolicy(_c);
   }
 
   private void initFirstLoopbackInterface() {
@@ -961,7 +1058,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.GeneratedRoute toGeneratedRoute(GeneratedRoute route) {
     org.batfish.datamodel.GeneratedRoute.Builder newRoute =
-        new org.batfish.datamodel.GeneratedRoute.Builder();
+        org.batfish.datamodel.GeneratedRoute.builder();
 
     newRoute.setGenerationPolicy(computeGenerationPolicy(route));
     newRoute.setAdmin(route.getPreference());
@@ -982,7 +1079,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.GeneratedRoute toAggregateRoute(AggregateRoute route) {
     org.batfish.datamodel.GeneratedRoute.Builder newRoute =
-        new org.batfish.datamodel.GeneratedRoute.Builder();
+        org.batfish.datamodel.GeneratedRoute.builder();
 
     newRoute.setGenerationPolicy(computeGenerationPolicy(route));
     newRoute.setAdmin(route.getPreference());
@@ -1103,7 +1200,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         new org.batfish.datamodel.RouteFilterLine(
             LineAction.PERMIT, prefix, new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH)));
     org.batfish.datamodel.GeneratedRoute.Builder newRoute =
-        new org.batfish.datamodel.GeneratedRoute.Builder();
+        org.batfish.datamodel.GeneratedRoute.builder();
     newRoute.setNetwork(prefix);
     newRoute.setAdmin(
         RoutingProtocol.OSPF_IA.getDefaultAdministrativeCost(ConfigurationFormat.JUNIPER));
@@ -1793,6 +1890,83 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return ipSpaces;
   }
 
+  @Nonnull
+  private static org.batfish.datamodel.dataplane.rib.RibGroup toRibGroup(
+      RibGroup rg, RoutingProtocol protocol, Configuration c, String vrfName, Warnings w) {
+    ImmutableList<RibId> importRibs =
+        rg.getImportRibs().stream()
+            .map(rib -> toRibId(c.getHostname(), rib, w))
+            .filter(Objects::nonNull)
+            // Filter out the primary rib for this rib group, since it's special and bypasses the
+            // policy
+            .filter(
+                rib ->
+                    !(rib.getRibName().equals(RibId.DEFAULT_RIB_NAME)
+                        && rib.getVrfName().equals(vrfName)))
+            .collect(ImmutableList.toImmutableList());
+
+    RibId exportRib =
+        rg.getExportRib() != null ? toRibId(c.getHostname(), rg.getExportRib(), w) : null;
+    List<BooleanExpr> policyCalls =
+        rg.getImportPolicies().stream().map(CallExpr::new).collect(ImmutableList.toImmutableList());
+
+    String policyName = generateRibGroupImportPolicyName(rg, protocol);
+    RoutingPolicy.builder()
+        .setOwner(c)
+        .setName(policyName)
+        .setStatements(
+            ImmutableList.of(
+                // Add default policy
+                new SetDefaultPolicy(DEFAULT_IMPORT_POLICIES.get(protocol)),
+                // Construct a policy chain based on defined import policies
+                new If(
+                    new DisjunctionChain(policyCalls),
+                    ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+                    ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))))
+        .build();
+    return new org.batfish.datamodel.dataplane.rib.RibGroup(
+        rg.getName(), importRibs, policyName, exportRib);
+  }
+
+  private static String generateRibGroupImportPolicyName(RibGroup rg, RoutingProtocol protocol) {
+    return String.format("~RIB_GROUP_IMPORT_POLICY_%s_%s", rg.getName(), protocol);
+  }
+
+  @VisibleForTesting
+  @Nullable
+  static RibId toRibId(String hostname, String rib, @Nullable Warnings w) {
+    String[] parts = rib.split("\\.");
+    if (parts.length < 2 || parts.length > 3) {
+      throw new VendorConversionException(String.format("Invalid RIB identifier %s", rib));
+    }
+    String vrfName;
+    String addressFamily;
+    String ribNumber;
+    if (parts.length == 3) {
+      vrfName = parts[0];
+      addressFamily = parts[1];
+      ribNumber = parts[2];
+    } else { // length == 2
+      vrfName = Configuration.DEFAULT_VRF_NAME;
+      addressFamily = parts[0];
+      ribNumber = parts[1];
+    }
+
+    String ribName = addressFamily + "." + ribNumber;
+    // Normalize the common case into vendor-independent language
+    if (ribName.equals(RIB_IPV4_UNICAST)) {
+      ribName = RibId.DEFAULT_RIB_NAME;
+    }
+
+    // We only support IPv4 unicast
+    if (!addressFamily.equals("inet") && w != null) {
+      w.unimplemented(
+          String.format("Rib name conversion: %s address family is not supported", addressFamily));
+      return null;
+    }
+    return new RibId(hostname, vrfName, ribName);
+  }
+
   private RoutingPolicy toRoutingPolicy(FirewallFilter filter) {
     String name = filter.getName();
     RoutingPolicy routingPolicy = new RoutingPolicy(name, _c);
@@ -2467,15 +2641,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
 
       // static routes
-      for (StaticRoute route :
-          ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getStaticRoutes().values()) {
+      for (StaticRoute route : ri.getRibs().get(RIB_IPV4_UNICAST).getStaticRoutes().values()) {
         org.batfish.datamodel.StaticRoute newStaticRoute = toStaticRoute(route);
         vrf.getStaticRoutes().add(newStaticRoute);
       }
 
       // aggregate routes
       for (AggregateRoute route :
-          ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getAggregateRoutes().values()) {
+          ri.getRibs().get(RIB_IPV4_UNICAST).getAggregateRoutes().values()) {
         route.inheritUnsetFields(ri.getAggregateRouteDefaults());
         org.batfish.datamodel.GeneratedRoute newAggregateRoute = toAggregateRoute(route);
         vrf.getGeneratedRoutes().add(newAggregateRoute);
@@ -2483,11 +2656,33 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       // generated routes
       for (GeneratedRoute route :
-          ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getGeneratedRoutes().values()) {
+          ri.getRibs().get(RIB_IPV4_UNICAST).getGeneratedRoutes().values()) {
         route.inheritUnsetFields(ri.getGeneratedRouteDefaults());
         org.batfish.datamodel.GeneratedRoute newGeneratedRoute = toGeneratedRoute(route);
         vrf.getGeneratedRoutes().add(newGeneratedRoute);
       }
+
+      /*
+       * RIB groups applied to each protocol.
+       *
+       * 1. ensure default import policies exist
+       * 2. convert VS rib groups to VI rib groups on a per-protocol basis
+       */
+      if (!ri.getAppliedRibGroups().isEmpty()) {
+        initDefaultImportPolicies();
+      }
+      vrf.setAppliedRibGroups(
+          ri.getAppliedRibGroups().entrySet().stream()
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      Entry::getKey, // protocol
+                      rgEntry ->
+                          toRibGroup(
+                              _masterLogicalSystem.getRibGroups().get(rgEntry.getValue()),
+                              rgEntry.getKey(),
+                              _c,
+                              riName,
+                              _w))));
 
       // create ospf process
       if (ri.getOspfAreas().size() > 0) {
@@ -2639,6 +2834,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _c.computeRoutingPolicySources(_w);
 
     return _c;
+  }
+
+  /** Initialize default protocol-specific import policies */
+  private void initDefaultImportPolicies() {
+    initDefaultBgpImportPolicy();
+    initDefaultPseudoProtocolImportPolicy();
   }
 
   private void convertInterfaces() {

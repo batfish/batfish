@@ -20,6 +20,7 @@ import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyProvider;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
@@ -151,11 +152,6 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public FlowHistory getHistory() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public MajorIssueConfig getMajorIssueConfig(String majorIssue) {
     throw new UnsupportedOperationException();
   }
@@ -219,6 +215,11 @@ public class IBatfishTestAdapter implements IBatfish {
       @Override
       public IpOwners getIpOwners(NetworkSnapshot snapshot) {
         return new IpOwners(loadConfigurations(snapshot));
+      }
+
+      @Override
+      public Layer1Topology getLayer1LogicalTopology(NetworkSnapshot networkSnapshot) {
+        return TopologyUtil.computeLayer1LogicalTopology(getLayer1Topology(), loadConfigurations());
       }
 
       @Override
@@ -327,7 +328,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void processFlows(Set<Flow> flows, boolean ignoreFilters) {
+  public TracerouteEngine getTracerouteEngine() {
     throw new UnsupportedOperationException();
   }
 
@@ -481,5 +482,15 @@ public class IBatfishTestAdapter implements IBatfish {
   public NetworkSnapshot getNetworkSnapshot() {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public FlowHistory flowHistory(Set<Flow> flows, boolean ignoreFilters) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public FlowHistory differentialFlowHistory(Set<Flow> flows, boolean ignoreFilters) {
+    throw new UnsupportedOperationException();
   }
 }

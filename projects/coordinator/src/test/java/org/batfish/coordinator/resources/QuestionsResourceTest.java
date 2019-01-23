@@ -36,7 +36,7 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
 
   private Builder getQuestionTargetAdHoc(String network, String question) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_CONTAINERS)
+        .path(CoordConstsV2.RSC_NETWORKS)
         .path(network)
         .path(CoordConstsV2.RSC_QUESTIONS)
         .path(question)
@@ -47,7 +47,7 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
 
   private Builder getQuestionTargetAnalysis(String network, String question, String analysis) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_CONTAINERS)
+        .path(CoordConstsV2.RSC_NETWORKS)
         .path(network)
         .path(CoordConstsV2.RSC_ANALYSES)
         .path(analysis)
@@ -60,7 +60,7 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
 
   private Builder getTargetAdHoc(String network) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_CONTAINERS)
+        .path(CoordConstsV2.RSC_NETWORKS)
         .path(network)
         .path(CoordConstsV2.RSC_QUESTIONS)
         .request()
@@ -70,7 +70,7 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
 
   private Builder getTargetAnalysis(String network, String analysis) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_CONTAINERS)
+        .path(CoordConstsV2.RSC_NETWORKS)
         .path(network)
         .path(CoordConstsV2.RSC_ANALYSES)
         .path(analysis)
@@ -81,7 +81,7 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Before
-  public void initContainerEnvironment() throws Exception {
+  public void initTestEnvironment() throws Exception {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 

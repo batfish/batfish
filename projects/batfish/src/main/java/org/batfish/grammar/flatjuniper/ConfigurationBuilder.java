@@ -25,6 +25,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE;
 import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureType.RIB_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_PROFILE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ADDRESS_BOOK_ATTACH_ZONE;
@@ -50,6 +51,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_POLIC
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_INCOMING_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_OUTGOING_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_ROUTING_OPTIONS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_SELF_REFERENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_POLICY_IPSEC_PROPOSAL;
@@ -378,6 +380,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vtep_source_interfac
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_autonomous_systemContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_confederationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_ribContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_rib_groupsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_router_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_staticContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_activeContext;
@@ -400,9 +403,14 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_routeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roi_rib_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roifie_lanContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roifie_point_to_pointContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_export_ribContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_import_policyContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_import_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_routeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_discardContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_next_hopContext;
@@ -667,6 +675,7 @@ import org.batfish.representation.juniper.PsThenNextPolicy;
 import org.batfish.representation.juniper.PsThenOrigin;
 import org.batfish.representation.juniper.PsThenPreference;
 import org.batfish.representation.juniper.PsThenReject;
+import org.batfish.representation.juniper.RibGroup;
 import org.batfish.representation.juniper.Route4FilterLine;
 import org.batfish.representation.juniper.Route4FilterLineAddressMask;
 import org.batfish.representation.juniper.Route4FilterLineExact;
@@ -1914,6 +1923,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private RoutingInformationBase _currentRib;
 
+  private RibGroup _currentRibGroup;
+
   private Route6FilterLine _currentRoute6FilterLine;
 
   private Prefix6 _currentRoute6FilterPrefix;
@@ -2801,6 +2812,33 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     Map<String, RoutingInformationBase> ribs = _currentRoutingInstance.getRibs();
     _currentRib = ribs.computeIfAbsent(name, RoutingInformationBase::new);
+  }
+
+  @Override
+  public void enterRo_rib_groups(Ro_rib_groupsContext ctx) {
+    String name = unquote(ctx.name.getText());
+    _currentRibGroup = _currentLogicalSystem.getRibGroups().computeIfAbsent(name, RibGroup::new);
+    defineStructure(RIB_GROUP, name, ctx);
+  }
+
+  @Override
+  public void exitRo_rib_groups(Ro_rib_groupsContext ctx) {
+    _currentRibGroup = null;
+  }
+
+  @Override
+  public void exitRor_export_rib(Ror_export_ribContext ctx) {
+    _currentRibGroup.setExportRib(ctx.rib.getText());
+  }
+
+  @Override
+  public void exitRor_import_rib(Ror_import_ribContext ctx) {
+    _currentRibGroup.addImportRib(ctx.rib.getText());
+  }
+
+  @Override
+  public void exitRor_import_policy(Ror_import_policyContext ctx) {
+    _currentRibGroup.addImportPolicy(ctx.name.getText());
   }
 
   @Override
@@ -4885,6 +4923,25 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitRoifie_point_to_point(Roifie_point_to_pointContext ctx) {
     _currentRoutingInstance.setExportLocalRoutesPointToPoint(true);
+  }
+
+  @Override
+  public void exitRoi_rib_group(Roi_rib_groupContext ctx) {
+    String groupName = unquote(ctx.name.getText());
+    _configuration.referenceStructure(
+        RIB_GROUP, groupName, INTERFACE_ROUTING_OPTIONS, ctx.name.getStart().getLine());
+    if (ctx.INET() != null) {
+      _currentRoutingInstance.applyRibGroup(RoutingProtocol.CONNECTED, groupName);
+      _currentRoutingInstance.applyRibGroup(RoutingProtocol.LOCAL, groupName);
+    }
+    if (ctx.INET6() != null) {
+      todo(ctx);
+    }
+  }
+
+  @Override
+  public void exitRosr_community(Rosr_communityContext ctx) {
+    _currentStaticRoute.getCommunities().add(toCommunityLong(ctx.standard_community()));
   }
 
   @Override

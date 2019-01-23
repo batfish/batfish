@@ -58,13 +58,12 @@ public final class TracerouteAnswerer extends Answerer {
     Multiset<Row> rows;
     TableAnswerElement table;
     if (_batfish.debugFlagEnabled("oldtraceroute")) {
-      _batfish.processFlows(flows, question.getIgnoreFilters());
-      FlowHistory flowHistory = _batfish.getHistory();
+      FlowHistory flowHistory = _batfish.flowHistory(flows, question.getIgnoreFilters());
       rows = flowHistoryToRows(flowHistory, false);
       table = new TableAnswerElement(createMetadata(false));
     } else {
       SortedMap<Flow, List<Trace>> flowTraces =
-          _batfish.buildFlows(flows, question.getIgnoreFilters());
+          _batfish.getTracerouteEngine().computeTraces(flows, question.getIgnoreFilters());
       rows = flowTracesToRows(flowTraces, question.getMaxTraces());
       table = new TableAnswerElement(metadata(false));
     }
@@ -80,15 +79,8 @@ public final class TracerouteAnswerer extends Answerer {
     Multiset<Row> rows;
     TableAnswerElement table;
     if (_batfish.debugFlagEnabled("oldtraceroute")) {
-      _batfish.pushBaseSnapshot();
-      _batfish.processFlows(flows, ignoreFilters);
-      _batfish.popSnapshot();
-
-      _batfish.pushDeltaSnapshot();
-      _batfish.processFlows(flows, ignoreFilters);
-      _batfish.popSnapshot();
-
-      FlowHistory flowHistory = _batfish.getHistory();
+      FlowHistory flowHistory =
+          _batfish.differentialFlowHistory(flows, question.getIgnoreFilters());
       rows = flowHistoryToRows(flowHistory, true);
       table = new TableAnswerElement(createMetadata(true));
     } else {

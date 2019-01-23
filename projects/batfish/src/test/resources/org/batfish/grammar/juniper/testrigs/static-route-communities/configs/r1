@@ -1,0 +1,16 @@
+set system host-name r1
+#
+set interfaces ge-0/0/0 unit 0 family inet address 10.10.10.1/30
+#
+set routing-options autonomous-system 100
+#
+set protocols bgp group EBGP-GROUP type external
+set protocols bgp group EBGP-GROUP import EBGP-IMPORT
+set protocols bgp group EBGP-GROUP peer-as 101
+set protocols bgp group EBGP-GROUP neighbor 10.10.10.2
+#
+# Reject routes with community 100:1001
+set policy-options community COMM1 members 100:1001
+set policy-options policy-statement EBGP-IMPORT term TERM01 from community COMM1
+set policy-options policy-statement EBGP-IMPORT term TERM01 then reject
+set policy-options policy-statement EBGP-IMPORT term DEFAULT then accept

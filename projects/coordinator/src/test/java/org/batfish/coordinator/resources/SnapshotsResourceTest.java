@@ -31,7 +31,7 @@ public final class SnapshotsResourceTest extends WorkMgrServiceV2TestBase {
 
   private Builder getTarget(String network, boolean verbose) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_CONTAINERS)
+        .path(CoordConstsV2.RSC_NETWORKS)
         .path(network)
         .path(CoordConstsV2.RSC_SNAPSHOTS)
         .queryParam(CoordConstsV2.QP_VERBOSE, verbose)
