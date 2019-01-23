@@ -249,6 +249,11 @@ public class IBatfishTestAdapter implements IBatfish {
           NetworkSnapshot networkSnapshot) {
         throw new UnsupportedOperationException();
       }
+
+      @Override
+      public Topology getRawLayer3Topology(NetworkSnapshot networkSnapshot) {
+        throw new UnsupportedOperationException();
+      }
     };
   }
 

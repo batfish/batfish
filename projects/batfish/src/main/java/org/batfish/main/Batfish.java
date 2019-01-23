@@ -834,13 +834,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeEnvironmentRoutingTables(inputPath, outputPath);
   }
 
-  Topology computeEnvironmentTopology(Map<String, Configuration> configurations) {
-    _logger.resetTimer();
-    Topology topology = computeTestrigTopology(configurations);
-    _logger.printElapsedTime();
-    return topology;
-  }
-
   public Set<Flow> computeNodOutput(List<NodJob> jobs) {
     _logger.info("\n*** EXECUTING NOD JOBS ***\n");
     _logger.resetTimer();
@@ -854,16 +847,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public Layer1Topology loadRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
     return _storage.loadLayer1Topology(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
-  }
-
-  @VisibleForTesting
-  Topology computeTestrigTopology(Map<String, Configuration> configurations) {
-    Topology legacyTopology =
-        _storage.loadLegacyTopology(_settings.getContainer(), _testrigSettings.getName());
-    if (legacyTopology != null) {
-      return legacyTopology;
-    }
-    return _topologyProvider.getLayer3Topology(getNetworkSnapshot());
   }
 
   private Map<String, Configuration> convertConfigurations(
@@ -2998,7 +2981,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path inputPath = _testrigSettings.getSerializeVendorPath();
       answer.append(serializeIndependentConfigs(inputPath));
       // TODO: compute topology on initialization in cleaner way
-      initializeTopology();
+      initializeTopology(getNetworkSnapshot());
       updateSnapshotNodeRoles();
       action = true;
     }
@@ -3037,22 +3020,24 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answer;
   }
 
-  private void initializeTopology() {
+  /** Initialize topologies, commit {raw, raw pojo, pruned} layer-3 topologies to storage. */
+  @VisibleForTesting
+  void initializeTopology(NetworkSnapshot networkSnapshot) {
     Map<String, Configuration> configurations = loadConfigurations();
-    Topology testrigTopology = computeTestrigTopology(configurations);
-    serializeAsJson(_testrigSettings.getTopologyPath(), testrigTopology, "testrig topology");
-    checkTopology(configurations, testrigTopology);
+    Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(networkSnapshot);
+    serializeAsJson(_testrigSettings.getTopologyPath(), rawLayer3Topology, "raw layer-3 topology");
+    checkTopology(configurations, rawLayer3Topology);
     org.batfish.datamodel.pojo.Topology pojoTopology =
         org.batfish.datamodel.pojo.Topology.create(
-            _settings.getSnapshotName(), configurations, testrigTopology);
-    serializeAsJson(_testrigSettings.getPojoTopologyPath(), pojoTopology, "testrig pojo topology");
-    Topology envTopology = _topologyProvider.getLayer3Topology(getNetworkSnapshot());
-    NetworkSnapshot networkSnapshot = getNetworkSnapshot();
+            _settings.getSnapshotName(), configurations, rawLayer3Topology);
+    serializeAsJson(
+        _testrigSettings.getPojoTopologyPath(), pojoTopology, "raw layer-3 pojo topology");
+    Topology layer3Topology = _topologyProvider.getLayer3Topology(getNetworkSnapshot());
     try {
       _storage.storeTopology(
-          envTopology, networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
+          layer3Topology, networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
     } catch (IOException e) {
-      throw new BatfishException("Could not serialize environment topology", e);
+      throw new BatfishException("Could not serialize layer-3 topology", e);
     }
   }
 
