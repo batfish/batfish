@@ -410,6 +410,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_export_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_import_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_import_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_routeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_discardContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_next_hopContext;
@@ -4936,6 +4937,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (ctx.INET6() != null) {
       todo(ctx);
     }
+  }
+
+  @Override
+  public void exitRosr_community(Rosr_communityContext ctx) {
+    _currentStaticRoute.getCommunities().add(toCommunityLong(ctx.standard_community()));
   }
 
   @Override
