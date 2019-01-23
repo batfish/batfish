@@ -22,8 +22,7 @@ public class WildcardPruner extends FlatJuniperParserBaseListener {
   @Override
   public void enterFlat_juniper_configuration(Flat_juniper_configurationContext ctx) {
     _configurationContext = ctx;
-    _newConfigurationLines = new ArrayList<>();
-    _newConfigurationLines.addAll(ctx.children);
+    _newConfigurationLines = new ArrayList<>(ctx.children);
   }
 
   @Override
