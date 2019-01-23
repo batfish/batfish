@@ -1,6 +1,7 @@
 package org.batfish.common.util;
 
-import com.google.common.base.Preconditions;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
@@ -68,7 +69,7 @@ public class Pruner<T> {
   private final List<Function<T, ?>> _propertyExtractors;
 
   private Pruner(List<Function<T, ?>> propertyExtractors) {
-    Preconditions.checkArgument(!propertyExtractors.isEmpty(), "Must define at least one property");
+    checkArgument(!propertyExtractors.isEmpty(), "Must define at least one property");
     _propertyExtractors = ImmutableList.copyOf(propertyExtractors);
   }
 
