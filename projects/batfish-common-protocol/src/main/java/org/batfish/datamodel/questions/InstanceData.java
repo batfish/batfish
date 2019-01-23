@@ -1,5 +1,7 @@
 package org.batfish.datamodel.questions;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.util.SortedMap;
@@ -80,7 +82,7 @@ public final class InstanceData {
 
   @JsonProperty(BfConsts.PROP_ORDERED_VARIABLE_NAMES)
   public void setOrderedVariableNames(@Nullable ImmutableList<String> orderedVariableNames) {
-    _orderedVariableNames = orderedVariableNames;
+    _orderedVariableNames = firstNonNull(orderedVariableNames, ImmutableList.of());
   }
 
   @JsonProperty(BfConsts.PROP_TAGS)
