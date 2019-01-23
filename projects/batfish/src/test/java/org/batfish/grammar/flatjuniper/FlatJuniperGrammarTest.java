@@ -160,6 +160,8 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.WellKnownCommunity;
+import org.batfish.common.topology.Layer1Edge;
+import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
@@ -656,8 +658,17 @@ public final class FlatJuniperGrammarTest {
                 .build(),
             _folder);
 
-    Layer2Topology layer2Topology = batfish.getLayer2Topology();
-    Topology layer3Topology = batfish.getEnvironmentTopology();
+    Layer1Topology layer1LogicalTopology =
+        batfish.getTopologyProvider().getLayer1LogicalTopology(batfish.getNetworkSnapshot());
+    Layer2Topology layer2Topology =
+        batfish.getTopologyProvider().getLayer2Topology(batfish.getNetworkSnapshot());
+    Topology layer3Topology =
+        batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot());
+
+    // check layer-1 logical adjacencies
+    assertThat(
+        layer1LogicalTopology.getGraph().edges(),
+        hasItem(new Layer1Edge("r1", "ae0", "r2", "ae0")));
 
     // check layer-2 adjacencies
     assertThat(
@@ -666,11 +677,13 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         layer2Topology.inSameBroadcastDomain("r1", "ge-0/0/1.0", "r2", "ge-0/0/1.0"),
         equalTo(true));
+    assertThat(layer2Topology.inSameBroadcastDomain("r1", "ae0.0", "r2", "ae0.0"), equalTo(true));
 
     // check layer-3 adjacencies
     assertThat(
         layer3Topology.getEdges(), not(hasItem(Edge.of("r1", "ge-0/0/0.0", "r2", "ge-0/0/0.0"))));
     assertThat(layer3Topology.getEdges(), hasItem(Edge.of("r1", "ge-0/0/1.0", "r2", "ge-0/0/1.0")));
+    assertThat(layer3Topology.getEdges(), hasItem(Edge.of("r1", "ae0.0", "r2", "ae0.0")));
   }
 
   @Test

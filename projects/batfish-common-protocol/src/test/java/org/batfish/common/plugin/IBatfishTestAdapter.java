@@ -25,6 +25,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.Ip;
@@ -39,6 +40,7 @@ import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Environment;
@@ -225,6 +227,27 @@ public class IBatfishTestAdapter implements IBatfish {
       @Override
       public VxlanTopology getVxlanTopology(NetworkSnapshot snapshot) {
         return new VxlanTopology(loadConfigurations(snapshot));
+      }
+
+      @Override
+      public Layer1Topology getLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Layer2Topology getLayer2Topology(NetworkSnapshot networkSnapshot) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Topology getLayer3Topology(NetworkSnapshot networkSnapshot) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Optional<Layer1Topology> getRawLayer1PhysicalTopology(
+          NetworkSnapshot networkSnapshot) {
+        throw new UnsupportedOperationException();
       }
     };
   }
@@ -491,6 +514,26 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public FlowHistory differentialFlowHistory(Set<Flow> flows, boolean ignoreFilters) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Layer1Topology loadRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public SortedSet<Edge> getEdgeBlacklist(NetworkSnapshot networkSnapshot) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public SortedSet<NodeInterfacePair> getInterfaceBlacklist(NetworkSnapshot networkSnapshot) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public SortedSet<String> getNodeBlacklist(NetworkSnapshot networkSnapshot) {
     throw new UnsupportedOperationException();
   }
 }

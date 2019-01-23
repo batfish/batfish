@@ -186,18 +186,19 @@ public final class TopologyUtil {
   }
 
   /**
-   * Compute the layer-2 topology via the {@code level1Topology} and switching information contained
-   * in the {@code configurations}.
+   * Compute the layer-2 topology via the {@code layer1LogicalTopology} and switching information
+   * contained in the {@code configurations}.
    */
   public static @Nonnull Layer2Topology computeLayer2Topology(
-      @Nonnull Layer1Topology layer1Topology, @Nonnull Map<String, Configuration> configurations) {
+      @Nonnull Layer1Topology layer1LogicalTopology,
+      @Nonnull Map<String, Configuration> configurations) {
     ImmutableSet.Builder<Layer2Edge> edges = ImmutableSet.builder();
 
     // Compute mapping from parent interface -> child interfaces
     Map<Layer1Node, Set<Layer1Node>> parentChildrenMap = computeParentChildrenMap(configurations);
 
     // First add layer2 edges for physical links.
-    layer1Topology
+    layer1LogicalTopology
         .getGraph()
         .edges()
         .forEach(

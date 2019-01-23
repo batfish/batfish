@@ -1,8 +1,10 @@
 package org.batfish.common.topology;
 
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 
 /**
@@ -30,6 +32,35 @@ public interface TopologyProvider {
    */
   @Nonnull
   Layer1Topology getLayer1LogicalTopology(NetworkSnapshot networkSnapshot);
+
+  /**
+   * Return the {@link Layer1Topology} with respect to physical layer-1 edges for a given {@link
+   * NetworkSnapshot}. The physical layer-1 topology is constructed from the raw physical layer-1
+   * edges input by the user by trimming the edges whose nodes do not correspond to active physical
+   * interfaces.
+   */
+  @Nonnull
+  Layer1Topology getLayer1PhysicalTopology(NetworkSnapshot networkSnapshot);
+
+  /**
+   * Return the {@link Layer2Topology} for a given {@link NetworkSnapshot}. The layer-2 topology is
+   * constructed from the layer-1 logical topology and switching information in the configurations.
+   */
+  @Nonnull
+  Layer2Topology getLayer2Topology(NetworkSnapshot networkSnapshot);
+
+  /**
+   * Return the {@link Topology} for a given {@link NetworkSnapshot}. The layer-3 topology is
+   * constructed from by inferring layer-3 adjacencies via the layer-3 information in the
+   * configurations, and pruning edges not in the same broadcast domain according to the layer-2
+   * topology. No pruning occurs if raw layer-1 topology is not provided in snapshot.
+   */
+  @Nonnull
+  Topology getLayer3Topology(NetworkSnapshot networkSnapshot);
+
+  /** Return the raw {@link Layer1Topology} provided by the user in the snapshot. */
+  @Nonnull
+  Optional<Layer1Topology> getRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot);
 
   /** Return the {@link VxlanTopology} for a given {@link NetworkSnapshot}. */
   @Nonnull
