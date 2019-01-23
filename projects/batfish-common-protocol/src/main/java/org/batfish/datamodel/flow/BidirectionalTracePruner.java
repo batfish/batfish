@@ -1,6 +1,7 @@
 package org.batfish.datamodel.flow;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.batfish.common.util.Pruner;
@@ -15,7 +16,9 @@ import org.batfish.datamodel.pojo.Node;
  * variability of intermediate hops.
  */
 public final class BidirectionalTracePruner {
-  public static final Pruner<BidirectionalTrace> BIDIRECTIONAL_TRACE_PRUNER =
+  private BidirectionalTracePruner() {}
+
+  private static final Pruner<BidirectionalTrace> INSTANCE =
       Pruner.<BidirectionalTrace>builder()
           .addProperty(BidirectionalTrace::getForwardFlow)
           .addProperty(BidirectionalTrace::getReverseFlow)
@@ -24,6 +27,11 @@ public final class BidirectionalTracePruner {
           .addProperty(BidirectionalTracePruner::forwardHops)
           .addProperty(BidirectionalTracePruner::reverseHops)
           .build();
+
+  public static Collection<BidirectionalTrace> prune(
+      List<BidirectionalTrace> objects, int maxSize) {
+    return INSTANCE.prune(objects, maxSize);
+  }
 
   private static FlowDisposition forwardDisposition(BidirectionalTrace trace) {
     return trace.getForwardTrace().getDisposition();
