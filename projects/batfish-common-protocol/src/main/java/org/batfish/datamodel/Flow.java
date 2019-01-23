@@ -319,11 +319,6 @@ public final class Flow implements Comparable<Flow>, Serializable {
       return this;
     }
 
-    public Builder setSrcPort(Integer srcPort) {
-      _srcPort = srcPort;
-      return this;
-    }
-
     public Builder setState(FlowState state) {
       _state = state;
       return this;
@@ -822,8 +817,8 @@ public final class Flow implements Comparable<Flow>, Serializable {
       tcpFlagsStr = tcpFlagsStr();
     }
     if (icmp) {
-      icmpCodeStr = " icmpCode:" + Integer.toString(_icmpCode);
-      icmpTypeStr = " icmpType:" + Integer.toString(_icmpType);
+      icmpCodeStr = " icmpCode:" + _icmpCode;
+      icmpTypeStr = " icmpType:" + _icmpType;
     }
     String dscpStr = (_dscp != 0) ? " dscp:" + _dscp : "";
     String ecnStr = (_ecn != 0) ? " ecn:" + _ecn : "";
@@ -874,8 +869,8 @@ public final class Flow implements Comparable<Flow>, Serializable {
       tcpFlagsStr = tcpFlagsStr();
     }
     if (icmp) {
-      icmpCodeStr = " icmpCode:" + Integer.toString(_icmpCode);
-      icmpTypeStr = " icmpType:" + Integer.toString(_icmpType);
+      icmpCodeStr = " icmpCode:" + _icmpCode;
+      icmpTypeStr = " icmpType:" + _icmpType;
     }
     return "Flow<ingressNode:"
         + _ingressNode

@@ -118,7 +118,7 @@ public class WorkMgrServiceTest {
   @Test
   public void getEmptyNetwork() {
     initNetwork();
-    Response response = _service.getNetwork("100", "0.0.0", null, _networkName);
+    Response response = _service.getNetwork("100", "0.0.0", _networkName);
     String networkJson = response.getEntity().toString();
     assertThat(networkJson, equalTo("{\"name\":\"myNetwork\"}"));
   }
@@ -127,7 +127,7 @@ public class WorkMgrServiceTest {
   public void getNonExistNetwork() {
     String networkName = "non-existing-folder";
     initNetwork();
-    Response response = _service.getNetwork("100", "0.0.0", null, networkName);
+    Response response = _service.getNetwork("100", "0.0.0", networkName);
     String actualMessage = response.getEntity().toString();
     String expected = "Network '" + networkName + "' not found";
     assertThat(actualMessage, equalTo(expected));
@@ -136,7 +136,7 @@ public class WorkMgrServiceTest {
   @Test
   public void getNetworkWithBadVersion() {
     initNetwork();
-    Response response = _service.getNetwork("100", "invalid version", null, _networkName);
+    Response response = _service.getNetwork("100", "invalid version", _networkName);
     String actualMessage = response.getEntity().toString();
     String expected = "Illegal version 'invalid version' for Client";
     assertThat(actualMessage, equalTo(expected));
@@ -146,7 +146,7 @@ public class WorkMgrServiceTest {
   public void getNonEmptyNetwork() throws Exception {
     initNetwork();
     initSnapshot();
-    Response response = _service.getNetwork("100", "0.0.0", null, _networkName);
+    Response response = _service.getNetwork("100", "0.0.0", _networkName);
     Container network =
         BatfishObjectMapper.mapper().readValue(response.getEntity().toString(), Container.class);
     Container expected =
@@ -167,7 +167,6 @@ public class WorkMgrServiceTest {
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
         Version.getVersion(),
-        null,
         _networkName,
         "new",
         analysisName,
@@ -181,7 +180,6 @@ public class WorkMgrServiceTest {
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
         Version.getVersion(),
-        null,
         _networkName,
         "",
         analysisName,
@@ -193,7 +191,6 @@ public class WorkMgrServiceTest {
         _service.configureAnalysis(
             CoordConsts.DEFAULT_API_KEY,
             Version.getVersion(),
-            null,
             _networkName,
             "",
             "analysis",
@@ -220,7 +217,6 @@ public class WorkMgrServiceTest {
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
         Version.getVersion(),
-        null,
         _networkName,
         "new",
         analysisName,
@@ -258,12 +254,8 @@ public class WorkMgrServiceTest {
         _service.getAnalysisAnswer(
             CoordConsts.DEFAULT_API_KEY,
             Version.getVersion(),
-            null,
             _networkName,
-            null,
             _snapshotName,
-            null,
-            null,
             null,
             analysisName,
             questionName,
@@ -273,12 +265,8 @@ public class WorkMgrServiceTest {
         _service.getAnalysisAnswer(
             CoordConsts.DEFAULT_API_KEY,
             Version.getVersion(),
-            null,
             _networkName,
-            null,
             _snapshotName,
-            null,
-            null,
             null,
             analysisName,
             question2Name,
@@ -370,7 +358,7 @@ public class WorkMgrServiceTest {
   @Test
   public void getEmptyContainer() {
     initNetwork();
-    Response response = _service.getNetwork("100", "0.0.0", _networkName, null);
+    Response response = _service.getNetwork("100", "0.0.0", _networkName);
     String networkJson = response.getEntity().toString();
     assertThat(networkJson, equalTo("{\"name\":\"myNetwork\"}"));
   }
@@ -379,7 +367,7 @@ public class WorkMgrServiceTest {
   public void getNonExistContainer() {
     String networkName = "non-existing-folder";
     initNetwork();
-    Response response = _service.getNetwork("100", "0.0.0", networkName, null);
+    Response response = _service.getNetwork("100", "0.0.0", networkName);
     String actualMessage = response.getEntity().toString();
     String expected = "Network '" + networkName + "' not found";
     assertThat(actualMessage, equalTo(expected));
@@ -388,7 +376,7 @@ public class WorkMgrServiceTest {
   @Test
   public void getContainerWithBadVersion() {
     initNetwork();
-    Response response = _service.getNetwork("100", "invalid version", _networkName, null);
+    Response response = _service.getNetwork("100", "invalid version", _networkName);
     String actualMessage = response.getEntity().toString();
     String expected = "Illegal version 'invalid version' for Client";
     assertThat(actualMessage, equalTo(expected));
@@ -402,7 +390,7 @@ public class WorkMgrServiceTest {
   public void getNonEmptyContainer() throws Exception {
     initNetwork();
     initSnapshot();
-    Response response = _service.getNetwork("100", "0.0.0", _networkName, null);
+    Response response = _service.getNetwork("100", "0.0.0", _networkName);
     String entityStr = response.getEntity().toString();
     Container network = BatfishObjectMapper.mapper().readValue(entityStr, Container.class);
     Container expected =
@@ -424,7 +412,6 @@ public class WorkMgrServiceTest {
         CoordConsts.DEFAULT_API_KEY,
         Version.getVersion(),
         _networkName,
-        null,
         "new",
         analysisName,
         new FileInputStream(analysisFile),
@@ -438,7 +425,6 @@ public class WorkMgrServiceTest {
         CoordConsts.DEFAULT_API_KEY,
         Version.getVersion(),
         _networkName,
-        null,
         "",
         analysisName,
         null,
@@ -450,7 +436,6 @@ public class WorkMgrServiceTest {
             CoordConsts.DEFAULT_API_KEY,
             Version.getVersion(),
             _networkName,
-            null,
             "",
             "analysis",
             null,
@@ -477,7 +462,6 @@ public class WorkMgrServiceTest {
         CoordConsts.DEFAULT_API_KEY,
         Version.getVersion(),
         _networkName,
-        null,
         "new",
         analysisName,
         new FileInputStream(analysisFile),
@@ -513,11 +497,7 @@ public class WorkMgrServiceTest {
             CoordConsts.DEFAULT_API_KEY,
             Version.getVersion(),
             _networkName,
-            null,
             _snapshotName,
-            null,
-            null,
-            null,
             null,
             analysisName,
             questionName,
@@ -528,11 +508,7 @@ public class WorkMgrServiceTest {
             CoordConsts.DEFAULT_API_KEY,
             Version.getVersion(),
             _networkName,
-            null,
             _snapshotName,
-            null,
-            null,
-            null,
             null,
             analysisName,
             question2Name,
@@ -566,7 +542,6 @@ public class WorkMgrServiceTest {
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
         Version.getVersion(),
-        null,
         _networkName,
         "new",
         analysisName,
@@ -600,7 +575,6 @@ public class WorkMgrServiceTest {
             Version.getVersion(),
             _networkName,
             _snapshotName,
-            null,
             null,
             analysisName,
             analysisQuestionsStr,
@@ -649,7 +623,6 @@ public class WorkMgrServiceTest {
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
         Version.getVersion(),
-        null,
         _networkName,
         "new",
         analysisName,
@@ -689,7 +662,6 @@ public class WorkMgrServiceTest {
             _networkName,
             _snapshotName,
             null,
-            null,
             analysisName,
             analysisAnswersOptionsStr,
             null);
@@ -727,7 +699,6 @@ public class WorkMgrServiceTest {
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
         Version.getVersion(),
-        null,
         _networkName,
         "new",
         analysisName,
@@ -761,7 +732,6 @@ public class WorkMgrServiceTest {
             Version.getVersion(),
             _networkName,
             _snapshotName,
-            null,
             null,
             analysisName,
             questionName,
@@ -814,7 +784,6 @@ public class WorkMgrServiceTest {
             _snapshotName,
             null,
             null,
-            null,
             question,
             null);
 
@@ -864,7 +833,6 @@ public class WorkMgrServiceTest {
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
         Version.getVersion(),
-        null,
         _networkName,
         "new",
         analysis,
@@ -1028,7 +996,6 @@ public class WorkMgrServiceTest {
     _service.configureAnalysis(
         CoordConsts.DEFAULT_API_KEY,
         Version.getVersion(),
-        null,
         _networkName,
         "new",
         analysis,
@@ -1169,7 +1136,7 @@ public class WorkMgrServiceTest {
           }
 
           @Override
-          public boolean isAccessibleContainer(
+          public boolean isAccessibleNetwork(
               String apiKey, String containerName, boolean logError) {
             networkArg.complete(containerName);
             return true;

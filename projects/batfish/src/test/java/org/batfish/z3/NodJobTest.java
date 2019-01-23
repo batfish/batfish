@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import org.batfish.common.plugin.DataPlanePlugin;
+import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -62,7 +62,7 @@ import org.junit.rules.TemporaryFolder;
 
 public class NodJobTest {
 
-  private DataPlanePlugin _dataPlanePlugin;
+  private TracerouteEngine _tracerouteEngine;
   private SortedMap<String, Configuration> _configs;
   private DataPlane _dataPlane;
   private Configuration _dstNode;
@@ -170,8 +170,8 @@ public class NodJobTest {
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
     Batfish batfish = BatfishTestUtils.getBatfish(_configs, tmp);
-    _dataPlanePlugin = batfish.getDataPlanePlugin();
     batfish.computeDataPlane(false);
+    _tracerouteEngine = batfish.getTracerouteEngine();
     _dataPlane = batfish.loadDataPlane();
   }
 
@@ -217,8 +217,8 @@ public class NodJobTest {
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), Ip.parse("1.0.0.10").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
-    _dataPlanePlugin.processFlows(flows, _dataPlane, false);
-    List<FlowTrace> flowTraces = _dataPlanePlugin.getHistoryFlowTraces(_dataPlane);
+
+    List<FlowTrace> flowTraces = getFlowTraces(flows);
 
     flowTraces.forEach(
         trace -> {
@@ -229,6 +229,12 @@ public class NodJobTest {
           assertThat(hop.getTransformedFlow(), notNullValue());
           assertThat(hop.getTransformedFlow().getSrcIp(), equalTo(Ip.parse("1.0.0.10")));
         });
+  }
+
+  private List<FlowTrace> getFlowTraces(Set<Flow> flows) {
+    return _tracerouteEngine.processFlows(flows, false).values().stream()
+        .flatMap(Set::stream)
+        .collect(ImmutableList.toImmutableList());
   }
 
   /**
@@ -281,8 +287,7 @@ public class NodJobTest {
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), Ip.parse("3.0.0.1").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
-    _dataPlanePlugin.processFlows(flows, _dataPlane, false);
-    List<FlowTrace> flowTraces = _dataPlanePlugin.getHistoryFlowTraces(_dataPlane);
+    List<FlowTrace> flowTraces = getFlowTraces(flows);
 
     flowTraces.forEach(
         trace -> {

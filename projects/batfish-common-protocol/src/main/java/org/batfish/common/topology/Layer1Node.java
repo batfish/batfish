@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.NetworkConfigurations;
 
 public final class Layer1Node implements Comparable<Layer1Node> {
 
@@ -71,5 +73,23 @@ public final class Layer1Node implements Comparable<Layer1Node> {
         .add(PROP_HOSTNAME, _hostname)
         .add(PROP_INTERFACE_NAME, _interfaceName)
         .toString();
+  }
+
+  /**
+   * Maps a layer-1 physical node to a layer-1 logical node. If a physical node is a member of an
+   * aggregate interface, returns the node for the aggregate interface. If that aggregate interface
+   * is missing or off, returns {@code null}. If physical node is not member of an aggregate
+   * interface, the physical node is treated as a logical node and returned.
+   */
+  public @Nonnull Layer1Node toLogicalNode(NetworkConfigurations networkConfigurations) {
+    Interface iface = networkConfigurations.getInterface(_hostname, _interfaceName).get();
+    if (iface.getChannelGroup() == null) {
+      return this;
+    }
+    return networkConfigurations
+        .getInterface(_hostname, iface.getChannelGroup())
+        .filter(Interface::getActive)
+        .map(c -> new Layer1Node(_hostname, c.getName()))
+        .orElse(null);
   }
 }

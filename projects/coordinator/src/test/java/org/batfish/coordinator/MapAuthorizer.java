@@ -26,7 +26,7 @@ public class MapAuthorizer implements Authorizer {
   }
 
   @Override
-  public boolean isAccessibleContainer(String apiKey, String containerName, boolean logError) {
+  public boolean isAccessibleNetwork(String apiKey, String containerName, boolean logError) {
     List<String> list = _permissionMap.get(apiKey);
     return list != null && list.contains(containerName);
   }

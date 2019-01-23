@@ -236,7 +236,7 @@
         "Line" : 34,
         "Text" : "redistribute isis route-map ISIS_TO_EIGRP",
         "Parser_Context" : "[re_redistribute_isis re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
-        "Comment" : "ISIS redistirution in EIGRP is not implemented"
+        "Comment" : "ISIS redistribution in EIGRP is not implemented"
       },
       {
         "Filename" : "cisco_eigrp",
@@ -635,6 +635,13 @@
         "Line" : 4,
         "Text" : "as-path-group AS_PATH_GROUP",
         "Parser_Context" : "[popsf_as_path_group pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "juniper_rib_groups",
+        "Line" : 4,
+        "Text" : "rib-group inet6 interface-routes-rib",
+        "Parser_Context" : "[roi_rib_group ro_interface_routes s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {

@@ -105,15 +105,15 @@ public class DbAuthorizerTest {
     _authorizer.authorizeContainer(KEY1, contName);
 
     // Test only KEY1 can access container
-    assertThat(_authorizer.isAccessibleContainer(KEY1, contName, false), is(true));
-    assertThat(_authorizer.isAccessibleContainer(KEY2, contName, false), is(false));
-    assertThat(_authorizer.isAccessibleContainer(KEY3, contName, false), is(false));
+    assertThat(_authorizer.isAccessibleNetwork(KEY1, contName, false), is(true));
+    assertThat(_authorizer.isAccessibleNetwork(KEY2, contName, false), is(false));
+    assertThat(_authorizer.isAccessibleNetwork(KEY3, contName, false), is(false));
 
     // Test only the right container accessible by key1
-    assertThat(_authorizer.isAccessibleContainer(KEY1, "gibberish", false), is(false));
+    assertThat(_authorizer.isAccessibleNetwork(KEY1, "gibberish", false), is(false));
 
     // Test for case sensitivity as well
-    assertThat(_authorizer.isAccessibleContainer(KEY1.toUpperCase(), contName, false), is(false));
-    assertThat(_authorizer.isAccessibleContainer(KEY1, contName.toUpperCase(), false), is(false));
+    assertThat(_authorizer.isAccessibleNetwork(KEY1.toUpperCase(), contName, false), is(false));
+    assertThat(_authorizer.isAccessibleNetwork(KEY1, contName.toUpperCase(), false), is(false));
   }
 }

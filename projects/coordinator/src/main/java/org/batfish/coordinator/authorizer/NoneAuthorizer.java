@@ -8,7 +8,7 @@ public final class NoneAuthorizer implements Authorizer {
   public void authorizeContainer(String apiKey, String containerName) {}
 
   @Override
-  public boolean isAccessibleContainer(String apiKey, String containerName, boolean logError) {
+  public boolean isAccessibleNetwork(String apiKey, String containerName, boolean logError) {
     return true;
   }
 
