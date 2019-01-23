@@ -91,10 +91,7 @@ public class BatfishTestUtils {
             null,
             new TestFileBasedIdResolver(settings.getStorageBase()));
     if (!configurations.isEmpty()) {
-      Batfish.serializeAsJson(
-          settings.getBaseTestrigSettings().getSerializeTopologyPath(),
-          batfish.computeEnvironmentTopology(configurations),
-          "environment topology");
+      batfish.initializeTopology(batfish.getNetworkSnapshot());
     }
     registerDataPlanePlugins(batfish);
     return batfish;
@@ -113,6 +110,11 @@ public class BatfishTestUtils {
 
     settings.setStorageBase(tempFolder.newFolder().toPath());
     settings.setContainer("tempNetworkId");
+    NetworkSnapshot networkSnapshot =
+        new NetworkSnapshot(new NetworkId("tempNetworkId"), new SnapshotId("tempSnapshotId"));
+    NetworkSnapshot referenceNetworkSnapshot =
+        new NetworkSnapshot(
+            new NetworkId("tempNetworkId"), new SnapshotId("tempReferenceSnapshotId"));
     if (!baseConfigs.isEmpty()) {
       settings.setTestrig("tempSnapshotId");
       settings.setSnapshotName("tempSnapshot");
@@ -120,13 +122,8 @@ public class BatfishTestUtils {
       Batfish.initTestrigSettings(settings);
       settings.getBaseTestrigSettings().getOutputPath().toFile().mkdirs();
       settings.getDeltaTestrigSettings().getOutputPath().toFile().mkdirs();
-      testrigs.put(
-          new NetworkSnapshot(new NetworkId("tempNetworkId"), new SnapshotId("tempSnapshotId")),
-          baseConfigs);
-      testrigs.put(
-          new NetworkSnapshot(
-              new NetworkId("tempNetworkId"), new SnapshotId("tempReferenceSnapshotId")),
-          deltaConfigs);
+      testrigs.put(networkSnapshot, baseConfigs);
+      testrigs.put(referenceNetworkSnapshot, deltaConfigs);
       settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
     }
     Batfish batfish =
@@ -142,17 +139,11 @@ public class BatfishTestUtils {
             new TestFileBasedIdResolver(settings.getStorageBase()));
     batfish.getSettings().setDiffQuestion(true);
     if (!baseConfigs.isEmpty()) {
-      Batfish.serializeAsJson(
-          settings.getBaseTestrigSettings().getSerializeTopologyPath(),
-          batfish.computeEnvironmentTopology(baseConfigs),
-          "environment topology");
+      batfish.initializeTopology(networkSnapshot);
     }
     if (!deltaConfigs.isEmpty()) {
       batfish.pushDeltaSnapshot();
-      Batfish.serializeAsJson(
-          settings.getDeltaTestrigSettings().getSerializeTopologyPath(),
-          batfish.computeEnvironmentTopology(deltaConfigs),
-          "environment topology");
+      batfish.initializeTopology(referenceNetworkSnapshot);
       batfish.popSnapshot();
     }
     registerDataPlanePlugins(batfish);
@@ -191,7 +182,6 @@ public class BatfishTestUtils {
     Map<String, String> hostsText = testrigText.getHostsText();
     Map<String, String> iptablesFilesText = testrigText.getIptablesFilesText();
     String layer1TopologyText = testrigText.getLayer1TopologyText();
-    String legacyTopologyText = testrigText.getLegacyTopologyText();
     Map<String, String> routingTablesText = testrigText.getRoutingTablesText();
 
     Settings settings = new Settings(new String[] {});
@@ -214,11 +204,6 @@ public class BatfishTestUtils {
     if (layer1TopologyText != null) {
       writeTemporaryTestrigFiles(
           ImmutableMap.of(BfConsts.RELPATH_L1_TOPOLOGY_PATH, layer1TopologyText), testrigPath);
-    }
-    if (legacyTopologyText != null) {
-      writeTemporaryTestrigFiles(
-          ImmutableMap.of(BfConsts.RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH, legacyTopologyText),
-          testrigPath);
     }
     writeTemporaryTestrigFiles(
         routingTablesText, settings.getBaseTestrigSettings().getEnvironmentRoutingTablesPath());
