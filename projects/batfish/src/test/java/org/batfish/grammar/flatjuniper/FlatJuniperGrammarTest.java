@@ -1,5 +1,6 @@
 package org.batfish.grammar.flatjuniper;
 
+import static org.batfish.common.util.CommonUtil.communityStringToLong;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
 import static org.batfish.datamodel.AuthenticationMethod.PASSWORD;
@@ -20,6 +21,7 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathIbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasPassiveNeighbor;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Policy;
@@ -125,6 +127,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -601,6 +604,45 @@ public final class FlatJuniperGrammarTest {
     assertThat(c1, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborPrefix, hasLocalAs(1L)))));
     assertThat(c2, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborPrefix, hasLocalAs(1L)))));
     assertThat(c3, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborPrefix, hasLocalAs(1L)))));
+  }
+
+  @Test
+  public void testStaticRouteCommunities() throws IOException {
+    /*
+    Setup: r1 has a BGP import policy that rejects routes with community 100:1001.
+    r2 exports:
+    - static route 10.20.20.0/24 with community 100:1001
+    - static route 10.20.20.0/23 with community 100:1002
+    - static route 10.20.22.0/24, no communities
+    r1 should reject first route, but install the others in its RIB.
+     */
+    String testrigName = "static-route-communities";
+    String c1Name = "r1";
+    String c2Name = "r2";
+    Long acceptedCommunity = communityStringToLong("100:1002");
+
+    List<String> configurationNames = ImmutableList.of(c1Name, c2Name);
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    batfish.computeDataPlane(false);
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> r1Routes =
+        dp.getRibs().get(c1Name).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+
+    assertThat(r1Routes, not(hasItem(hasPrefix(Prefix.parse("10.20.20.0/24")))));
+    assertThat(
+        r1Routes,
+        hasItem(
+            allOf(
+                hasPrefix(Prefix.parse("10.20.20.0/23")),
+                hasCommunities(contains(acceptedCommunity)))));
+    assertThat(
+        r1Routes,
+        hasItem(allOf(hasPrefix(Prefix.parse("10.20.22.0/24")), hasCommunities(empty()))));
   }
 
   @Test
