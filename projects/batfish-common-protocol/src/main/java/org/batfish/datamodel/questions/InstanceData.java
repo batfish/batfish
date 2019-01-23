@@ -1,6 +1,7 @@
 package org.batfish.datamodel.questions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -19,14 +20,14 @@ public final class InstanceData {
 
   private String _longDescription;
 
-  private SortedSet<String> _orderedVariableNames;
+  private ImmutableList<String> _orderedVariableNames;
 
   private SortedSet<String> _tags;
 
   private SortedMap<String, Variable> _variables;
 
   public InstanceData() {
-    _orderedVariableNames = new TreeSet<>();
+    _orderedVariableNames = ImmutableList.of();
     _tags = new TreeSet<>();
     _variables = new TreeMap<>();
   }
@@ -47,7 +48,7 @@ public final class InstanceData {
   }
 
   @JsonProperty(BfConsts.PROP_ORDERED_VARIABLE_NAMES)
-  public SortedSet<String> getOrderedVariableNames() {
+  public ImmutableList<String> getOrderedVariableNames() {
     return _orderedVariableNames;
   }
 
@@ -77,7 +78,7 @@ public final class InstanceData {
   }
 
   @JsonProperty(BfConsts.PROP_ORDERED_VARIABLE_NAMES)
-  public void setOrderedVariableNames(SortedSet<String> orderedVariableNames) {
+  public void setOrderedVariableNames(ImmutableList<String> orderedVariableNames) {
     _orderedVariableNames = orderedVariableNames;
   }
 
