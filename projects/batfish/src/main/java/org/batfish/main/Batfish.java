@@ -1260,7 +1260,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   @Nonnull
-  public SortedSet<Edge> getEdgeBlacklist(NetworkSnapshot networkSnapshot) {
+  public SortedSet<Edge> getEdgeBlacklist(@Nonnull NetworkSnapshot networkSnapshot) {
     SortedSet<Edge> blacklistEdges =
         _storage.loadEdgeBlacklist(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
     if (blacklistEdges == null) {
@@ -1271,7 +1271,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   @Nonnull
-  public SortedSet<NodeInterfacePair> getInterfaceBlacklist(NetworkSnapshot networkSnapshot) {
+  public SortedSet<NodeInterfacePair> getInterfaceBlacklist(
+      @Nonnull NetworkSnapshot networkSnapshot) {
     SortedSet<NodeInterfacePair> blacklistInterfaces =
         _storage.loadInterfaceBlacklist(
             networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
@@ -1283,7 +1284,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   @Nonnull
-  public SortedSet<String> getNodeBlacklist(NetworkSnapshot networkSnapshot) {
+  public SortedSet<String> getNodeBlacklist(@Nonnull NetworkSnapshot networkSnapshot) {
     SortedSet<String> blacklistNodes =
         _storage.loadNodeBlacklist(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
     if (blacklistNodes == null) {
@@ -3036,7 +3037,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answer;
   }
 
-  public void initializeTopology() {
+  private void initializeTopology() {
     Map<String, Configuration> configurations = loadConfigurations();
     Topology testrigTopology = computeTestrigTopology(configurations);
     serializeAsJson(_testrigSettings.getTopologyPath(), testrigTopology, "testrig topology");

@@ -38,7 +38,8 @@ public final class TopologyProviderImpl implements TopologyProvider {
     _ipOwners = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
     _layer1LogicalTopologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
     _layer1PhysicalTopologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
-    _layer2Topologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
+    _layer2Topologies =
+        CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).softValues().build();
     _layer3Topologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
     _rawLayer1PhysicalTopologies =
         CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();

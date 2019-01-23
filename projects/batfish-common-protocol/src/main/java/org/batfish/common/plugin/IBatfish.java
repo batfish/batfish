@@ -267,13 +267,13 @@ public interface IBatfish extends IPluginConsumer {
 
   /** Returns edge blacklist for given snapshot or empty set if absent. */
   @Nonnull
-  SortedSet<Edge> getEdgeBlacklist(NetworkSnapshot networkSnapshot);
+  SortedSet<Edge> getEdgeBlacklist(@Nonnull NetworkSnapshot networkSnapshot);
 
   /** Returns interface blacklist for given snapshot or empty set if absent. */
   @Nonnull
-  SortedSet<NodeInterfacePair> getInterfaceBlacklist(NetworkSnapshot networkSnapshot);
+  SortedSet<NodeInterfacePair> getInterfaceBlacklist(@Nonnull NetworkSnapshot networkSnapshot);
 
   /** Returns node blacklist for given snapshot or empty set if absent. */
   @Nonnull
-  SortedSet<String> getNodeBlacklist(NetworkSnapshot networkSnapshot);
+  SortedSet<String> getNodeBlacklist(@Nonnull NetworkSnapshot networkSnapshot);
 }
