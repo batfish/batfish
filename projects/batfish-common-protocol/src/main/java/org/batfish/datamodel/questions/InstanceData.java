@@ -6,6 +6,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.common.BfConsts;
 
 /**
@@ -78,7 +79,7 @@ public final class InstanceData {
   }
 
   @JsonProperty(BfConsts.PROP_ORDERED_VARIABLE_NAMES)
-  public void setOrderedVariableNames(ImmutableList<String> orderedVariableNames) {
+  public void setOrderedVariableNames(@Nullable ImmutableList<String> orderedVariableNames) {
     _orderedVariableNames = orderedVariableNames;
   }
 
