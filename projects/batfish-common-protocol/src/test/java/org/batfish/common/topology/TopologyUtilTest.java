@@ -1,5 +1,6 @@
 package org.batfish.common.topology;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.topology.TopologyUtil.computeIpInterfaceOwners;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer3Topology;
@@ -8,7 +9,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -147,7 +147,7 @@ public final class TopologyUtilTest {
   }
 
   private static Layer1Topology layer1Topology(String... names) {
-    Preconditions.checkArgument(names.length % 4 == 0);
+    checkArgument(names.length % 4 == 0);
     Set<Layer1Edge> edges = new HashSet<>();
     for (int i = 0; i < names.length; i += 4) {
       String h1 = names[i];
