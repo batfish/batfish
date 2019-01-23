@@ -1,14 +1,14 @@
 package org.batfish.common.util;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ListMultimap;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
@@ -23,21 +23,17 @@ import javax.annotation.Nullable;
 public class Pruner<T> {
   private static class Property<T, P> {
     private final Function<T, P> _extractor;
-    private final Map<P, List<T>> _objectsByPropertyValue;
+    private final ListMultimap<P, T> _objectsByPropertyValue;
 
     Property(Function<T, P> extractor, List<T> objects) {
       _extractor = extractor;
 
-      _objectsByPropertyValue = new HashMap<>();
-      objects.forEach(
-          obj ->
-              _objectsByPropertyValue
-                  .computeIfAbsent(_extractor.apply(obj), k -> new ArrayList<>())
-                  .add(obj));
+      _objectsByPropertyValue = ArrayListMultimap.create();
+      objects.forEach(obj -> _objectsByPropertyValue.put(_extractor.apply(obj), obj));
     }
 
     void picked(T obj) {
-      _objectsByPropertyValue.remove(_extractor.apply(obj));
+      _objectsByPropertyValue.removeAll(_extractor.apply(obj));
     }
 
     @Nullable
@@ -47,9 +43,10 @@ public class Pruner<T> {
       }
       List<P> valuesToRemove = new ArrayList<>();
       T selected = null;
-      Iterator<Entry<P, List<T>>> iter = _objectsByPropertyValue.entrySet().iterator();
+      Iterator<Entry<P, Collection<T>>> iter =
+          _objectsByPropertyValue.asMap().entrySet().iterator();
       while (selected == null && iter.hasNext()) {
-        Entry<P, List<T>> entry = iter.next();
+        Entry<P, Collection<T>> entry = iter.next();
         P propertyValue = entry.getKey();
         for (T obj : entry.getValue()) {
           if (!selectedObjects.contains(obj)) {
@@ -62,7 +59,7 @@ public class Pruner<T> {
          */
         valuesToRemove.add(propertyValue);
       }
-      valuesToRemove.forEach(_objectsByPropertyValue::remove);
+      valuesToRemove.forEach(_objectsByPropertyValue::removeAll);
       return selected;
     }
   }
