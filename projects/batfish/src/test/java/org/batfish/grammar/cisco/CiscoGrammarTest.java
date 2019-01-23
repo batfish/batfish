@@ -4122,12 +4122,12 @@ public class CiscoGrammarTest {
     Prefix realDestination = Prefix.parse("4.4.4.4/32");
 
     List<CiscoAsaNat> nats = config.getCiscoAsaNats();
-    assertThat(nats, hasSize(2));
+    assertThat(nats, hasSize(4));
 
     // dynamic source NAT, host -> range
     CiscoAsaNat nat = config.getCiscoAsaNats().get(0);
     Optional<Transformation.Builder> builder =
-        nat.toTransformationTest(true, config.getNetworkObjects());
+        nat.toTransformationTest(true, config.getNetworkObjects(), new Warnings());
     MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
     Transformation twice = builder.get().build();
     assertThat(
@@ -4139,7 +4139,7 @@ public class CiscoGrammarTest {
 
     // dynamic source NAT and static destination NAT
     nat = config.getCiscoAsaNats().get(1);
-    builder = nat.toTransformationTest(true, config.getNetworkObjects());
+    builder = nat.toTransformationTest(true, config.getNetworkObjects(), new Warnings());
     MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
     twice = builder.get().build();
     assertThat(
@@ -4148,6 +4148,25 @@ public class CiscoGrammarTest {
             when(and(
                     and(matchSrcInterface("inside"), matchSourceGroup),
                     matchDst(mappedDestination)))
+                .apply(ImmutableList.of(assignSourceRange, shiftDestinationIp(realDestination)))
+                .build()));
+
+    // dynamic source NAT, host -> range, no interfaces specified
+    nat = config.getCiscoAsaNats().get(2);
+    builder = nat.toTransformationTest(true, config.getNetworkObjects(), new Warnings());
+    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    twice = builder.get().build();
+    assertThat(twice, equalTo(when(matchSourceGroup).apply(assignSourceRange).build()));
+
+    // dynamic source NAT and static destination NAT, no interface specified
+    nat = config.getCiscoAsaNats().get(3);
+    builder = nat.toTransformationTest(true, config.getNetworkObjects(), new Warnings());
+    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    twice = builder.get().build();
+    assertThat(
+        twice,
+        equalTo(
+            when(and(matchSourceSubnet, matchDst(mappedDestination)))
                 .apply(ImmutableList.of(assignSourceRange, shiftDestinationIp(realDestination)))
                 .build()));
   }
@@ -4159,7 +4178,7 @@ public class CiscoGrammarTest {
     CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_ASA);
 
     List<CiscoAsaNat> nats = config.getCiscoAsaNats();
-    assertThat(nats, hasSize(7));
+    assertThat(nats, hasSize(9));
 
     CiscoAsaNat nat = nats.get(0);
     assertThat(nat.getDynamic(), equalTo(false));
@@ -4221,13 +4240,15 @@ public class CiscoGrammarTest {
 
     Prefix realSourceHost = Prefix.parse("1.1.1.1/32");
     Prefix mappedSourceHost = Prefix.parse("2.2.2.2/32");
+    Prefix mappedDestHost = Prefix.parse("3.3.3.3/32");
+    Prefix realDestHost = Prefix.parse("4.4.4.4/32");
     Prefix realSourceSubnet = Prefix.parse("5.5.5.0/24");
     Prefix mappedSourceSubnet = Prefix.parse("6.6.6.0/24");
 
     // Host source NAT outgoing
     CiscoAsaNat nat = config.getCiscoAsaNats().get(1);
     Optional<Transformation.Builder> builder =
-        nat.toTransformationTest(true, config.getNetworkObjects());
+        nat.toTransformationTest(true, config.getNetworkObjects(), new Warnings());
     MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
     Transformation twice = builder.get().build();
     assertThat(
@@ -4238,7 +4259,7 @@ public class CiscoGrammarTest {
                 .build()));
 
     // Host source NAT incoming
-    builder = nat.toTransformationTest(false, config.getNetworkObjects());
+    builder = nat.toTransformationTest(false, config.getNetworkObjects(), new Warnings());
     MatcherAssert.assertThat("No incoming transformation", builder.isPresent());
     twice = builder.get().build();
     assertThat(
@@ -4248,7 +4269,7 @@ public class CiscoGrammarTest {
 
     // Identity NAT
     nat = config.getCiscoAsaNats().get(5);
-    builder = nat.toTransformationTest(true, config.getNetworkObjects());
+    builder = nat.toTransformationTest(true, config.getNetworkObjects(), new Warnings());
     MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
     twice = builder.get().build();
     assertThat(
@@ -4260,7 +4281,7 @@ public class CiscoGrammarTest {
 
     // Subnet source NAT
     nat = config.getCiscoAsaNats().get(6);
-    builder = nat.toTransformationTest(true, config.getNetworkObjects());
+    builder = nat.toTransformationTest(true, config.getNetworkObjects(), new Warnings());
     MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
     twice = builder.get().build();
     assertThat(
@@ -4268,6 +4289,52 @@ public class CiscoGrammarTest {
         equalTo(
             when(and(matchSrcInterface("inside"), matchSrc(realSourceSubnet)))
                 .apply(shiftSourceIp(mappedSourceSubnet))
+                .build()));
+
+    // Source NAT with no interfaces specified
+    nat = config.getCiscoAsaNats().get(7);
+    builder = nat.toTransformationTest(true, config.getNetworkObjects(), new Warnings());
+    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    twice = builder.get().build();
+    assertThat(
+        twice,
+        equalTo(
+            when(and(matchSrc(realSourceSubnet)))
+                .apply(shiftSourceIp(mappedSourceSubnet))
+                .build()));
+    builder = nat.toTransformationTest(false, config.getNetworkObjects(), new Warnings());
+    MatcherAssert.assertThat("No incoming transformation", builder.isPresent());
+    twice = builder.get().build();
+    assertThat(
+        twice,
+        equalTo(
+            when(matchDst(mappedSourceSubnet))
+                .apply(shiftDestinationIp(realSourceSubnet))
+                .build()));
+
+    // Source + destination NAT with no interfaces specified
+    nat = config.getCiscoAsaNats().get(8);
+    builder = nat.toTransformationTest(true, config.getNetworkObjects(), new Warnings());
+    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    twice = builder.get().build();
+    assertThat(
+        twice,
+        equalTo(
+            when(and(matchDst(mappedDestHost), matchSrc(realSourceSubnet)))
+                .apply(
+                    ImmutableList.of(
+                        shiftSourceIp(mappedSourceSubnet), shiftDestinationIp(realDestHost)))
+                .build()));
+    builder = nat.toTransformationTest(false, config.getNetworkObjects(), new Warnings());
+    MatcherAssert.assertThat("No incoming transformation", builder.isPresent());
+    twice = builder.get().build();
+    assertThat(
+        twice,
+        equalTo(
+            when(and(matchSrc(realDestHost), matchDst(mappedSourceSubnet)))
+                .apply(
+                    ImmutableList.of(
+                        shiftDestinationIp(realSourceSubnet), shiftSourceIp(mappedDestHost)))
                 .build()));
   }
 
@@ -4284,7 +4351,7 @@ public class CiscoGrammarTest {
 
     CiscoAsaNat nat = config.getCiscoAsaNats().get(0);
     Optional<Transformation.Builder> builder =
-        nat.toTransformationTest(true, config.getNetworkObjects());
+        nat.toTransformationTest(true, config.getNetworkObjects(), new Warnings());
     MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
     Transformation twice = builder.get().build();
     assertThat(
@@ -4298,7 +4365,7 @@ public class CiscoGrammarTest {
                         shiftSourceIp(mappedSource), shiftDestinationIp(realDestination)))
                 .build()));
 
-    builder = nat.toTransformationTest(false, config.getNetworkObjects());
+    builder = nat.toTransformationTest(false, config.getNetworkObjects(), new Warnings());
     MatcherAssert.assertThat("No incoming transformation", builder.isPresent());
     twice = builder.get().build();
     assertThat(
@@ -4323,12 +4390,12 @@ public class CiscoGrammarTest {
     // check expected references
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "inside", 6));
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "outside", 6));
-    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "dest-mapped", 1));
-    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "dest-real", 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "dest-mapped", 2));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "dest-real", 2));
     assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "source-mapped", 3));
-    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "source-mapped-subnet", 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "source-mapped-subnet", 3));
     assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "source-real", 3));
-    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "source-real-subnet", 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "source-real-subnet", 3));
     assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, "source-mapped-group", 2));
     assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, "source-real-group", 2));
 

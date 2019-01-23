@@ -40,4 +40,6 @@ nat (inside,any) source static undef-source-real source-mapped-group inactive
 nat (any,outside) source static source-real-group undef-source-mapped
 nat (outside,inside) source static any any
 nat (inside,outside) source static source-real-subnet source-mapped-subnet
+nat source static source-real-subnet source-mapped-subnet
+nat source static source-real-subnet source-mapped-subnet destination static dest-mapped dest-real
 !

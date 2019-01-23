@@ -3181,7 +3181,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                         new IpSpaceMetadata(
                             name, CiscoStructureType.NETWORK_OBJECT_GROUP.getDescription())));
     _networkObjects.forEach(
-        (name, networkObject) -> c.getIpSpaces().put(name, networkObject.getIpSpace()));
+        (name, networkObject) -> c.getIpSpaces().put(name, networkObject.toIpSpace()));
     _networkObjects
         .keySet()
         .forEach(

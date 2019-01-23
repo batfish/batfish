@@ -613,7 +613,7 @@ on_host
 
 on_nat
 :
-   NAT n_paren? (DYNAMIC | STATIC) null_rest_of_line // todo
+   NAT asa_nat_ifaces? (DYNAMIC | STATIC) null_rest_of_line // todo
 ;
 
 on_range

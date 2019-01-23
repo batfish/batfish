@@ -8,8 +8,10 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import com.google.common.collect.Iterables;
 import java.util.Map;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
@@ -29,25 +31,38 @@ final class CiscoAsaNatUtil {
       AccessListAddressSpecifier realSource,
       AccessListAddressSpecifier mappedSource,
       String insideInterface,
-      Map<String, NetworkObject> networkObjects) {
+      Map<String, NetworkObject> networkObjects,
+      Warnings w) {
 
     boolean anyMapped = mappedSource.toIpSpace().equals(IpWildcard.ANY.toIpSpace());
     if (anyMapped) {
       // Invalid
+      w.redFlag("Cannot assign from 'any' IP address.");
       return null;
     }
     // realSource is expected to be a wildcard, network object, or group
     AclLineMatchExpr matchExpr = matchSrc(realSource.toIpSpace());
 
     if (!(mappedSource instanceof NetworkObjectAddressSpecifier)) {
-      // Network object groups not supported for mappedSource
+      /*
+       * Network object groups not supported for mappedSource
+       * A valid network object group here would consist of one or more ranges and hosts.
+       * The correct behavior is to treat the ranges and hosts as a sequence of address pools and
+       * PAT fallback addresses.
+       */
+      w.redFlag("No support for assigning addresses from network object groups");
       return null;
     }
 
     NetworkObject mappedSourceObj =
         networkObjects.get(((NetworkObjectAddressSpecifier) mappedSource).getName());
-    if (mappedSourceObj.getRangeStart() == null) {
-      // Range is required for NAT. Hosts are for PAT.
+    if (mappedSourceObj instanceof HostNetworkObject) {
+      w.redFlag("PAT is not supported.");
+      return null;
+    }
+    if (!(mappedSourceObj instanceof RangeNetworkObject)) {
+      // Invalid network object, must be a host or a range
+      w.redFlag("Invalid network object for assigning addresses " + mappedSourceObj.getName());
       return null;
     }
     if (insideInterface != null) {
@@ -59,7 +74,7 @@ final class CiscoAsaNatUtil {
       matchExpr = and(matchExpr, matchSrcInterface(insideInterface));
     }
     return Transformation.when(matchExpr)
-        .apply(assignSourceIp(mappedSourceObj.getRangeStart(), mappedSourceObj.getRangeEnd()));
+        .apply(assignSourceIp(mappedSourceObj.getStart(), mappedSourceObj.getEnd()));
   }
 
   private static MatchHeaderSpace matchField(Prefix prefix, IpField field) {
@@ -74,19 +89,21 @@ final class CiscoAsaNatUtil {
   }
 
   static Optional<Transformation.Builder> secondTransformation(
-      AccessListAddressSpecifier shiftDestination,
-      AccessListAddressSpecifier matchDestination,
+      @Nullable AccessListAddressSpecifier shiftDestination,
+      @Nullable AccessListAddressSpecifier matchDestination,
       Transformation first,
       Map<String, NetworkObject> networkObjects,
-      IpField field) {
+      IpField field,
+      Warnings w) {
 
     if (shiftDestination == null || matchDestination == null) {
       // Invalid reference or not supported
+      w.redFlag("Invalid match or shift destination.");
       return Optional.empty();
     }
 
     Transformation.Builder secondBuilder =
-        staticTransformation(matchDestination, shiftDestination, null, networkObjects, field);
+        staticTransformation(matchDestination, shiftDestination, null, networkObjects, field, w);
     if (secondBuilder == null) {
       return Optional.empty();
     }
@@ -112,19 +129,26 @@ final class CiscoAsaNatUtil {
   static Transformation.Builder staticTransformation(
       AccessListAddressSpecifier matchAddress,
       AccessListAddressSpecifier shiftAddress,
-      String insideInterface,
+      @Nullable String insideInterface,
       Map<String, NetworkObject> networkObjects,
-      IpField field) {
-
-    if (matchAddress == null || shiftAddress == null) {
-      // Invalid reference or unsupported
-      return null;
-    }
+      IpField field,
+      Warnings w) {
 
     boolean anyMatch = matchAddress.toIpSpace().equals(IpWildcard.ANY.toIpSpace());
     boolean anyShift = shiftAddress.toIpSpace().equals(IpWildcard.ANY.toIpSpace());
     Prefix matchPrefix;
     Prefix shiftPrefix;
+    /*
+     * There are valid cases which are not supported here
+     * 1) Ranges do not map to prefixes but are valid. There is currently no support for
+     *    matching a range or shifting into it.
+     * 2) Prefixes of unequal length are valid but not always recommended.
+     *    See https://www.cisco.com/c/en/us/td/docs/security/asa/asa910/configuration/firewall/asa-910-firewall-config/nat-basics.html#ID-2090-00000869
+     * 3) Network object groups are not supported. A simple network object group might involve
+     *    matching and shifting to and from prefixes, but if there are ranges in the object group
+     *    or any of the prefixes in the matching group do not align with a prefix in the shift
+     *    object group, then range matching/shifting is required.
+     */
     if (anyMatch && anyShift) {
       // Identity NAT matching all traffic
       matchPrefix = Prefix.ZERO;
@@ -132,52 +156,46 @@ final class CiscoAsaNatUtil {
     } else if (anyMatch ^ anyShift) {
       // these uses might result in unpredictable behavior.
       // https://www.cisco.com/c/en/us/td/docs/security/asa/asa-command-reference/I-R/cmdref2/n.html
+      w.redFlag(
+          "Matching 'any' and shifting to an object or object group, or vice versa, is not supported.");
       return null;
     } else {
       // both matchAddress and shiftAddress are specified and are objects or object groups
       if (!(matchAddress instanceof NetworkObjectAddressSpecifier)
           && !(shiftAddress instanceof NetworkObjectAddressSpecifier)) {
         // Network object groups not supported
+        w.redFlag("Network object groups not supported for static transformations.");
         return null;
       }
       NetworkObject matchObject =
           networkObjects.get(((NetworkObjectAddressSpecifier) matchAddress).getName());
       NetworkObject shiftObject =
           networkObjects.get(((NetworkObjectAddressSpecifier) shiftAddress).getName());
-      if (matchObject == null || shiftObject == null) {
+      if (matchObject == null) {
+        w.redFlag(
+            "Undefined references for object group "
+                + ((NetworkObjectAddressSpecifier) matchAddress).getName()
+                + ".");
+        return null;
+      }
+      if (shiftObject == null) {
         // Invalid reference
+        w.redFlag(
+            "Undefined references for object group "
+                + ((NetworkObjectAddressSpecifier) shiftObject).getName()
+                + ".");
         return null;
       }
 
-      // matchAddress object is translated into a single prefix for matching
-      if (matchObject.getSubnet() != null) {
-        matchPrefix = matchObject.getSubnet();
-      } else if (matchObject.getHost() != null) {
-        matchPrefix = Prefix.create(matchObject.getHost(), Prefix.MAX_PREFIX_LENGTH);
-      } else {
-        // Object (groups) support hosts, ranges, and subnets. Ranges are not supported.
+      matchPrefix = matchObject.getPrefix();
+      shiftPrefix = shiftObject.getPrefix();
+      if (matchPrefix == null
+          || shiftPrefix == null
+          || matchPrefix.getPrefixLength() != shiftPrefix.getPrefixLength()) {
+        w.redFlag(
+            "Matching and shifting objects do not have prefixes of equal length, which is not supported.");
         return null;
       }
-
-      // shiftAddress object is translated into a single prefix for translation
-      if (shiftObject.getSubnet() != null) {
-        shiftPrefix = shiftObject.getSubnet();
-      } else if (shiftObject.getHost() != null) {
-        shiftPrefix = Prefix.create(shiftObject.getHost(), Prefix.MAX_PREFIX_LENGTH);
-      } else {
-        // Object (groups) support hosts, ranges, and subnets. Ranges are not supported.
-        return null;
-      }
-
-      /*
-       * ASA allows length mismatch for NAT specified via network objects. Only the mappings between
-       * the lowest matching addresses and the lowest shift addresses are bidirectional. Other flows
-       * are possible: either unidirectional or can only be initiated in one direction.
-       * See https://www.cisco.com/c/en/us/td/docs/security/asa/asa910/configuration/firewall/asa-910-firewall-config/nat-basics.html#ID-2090-00000869
-       */
-      int maxLength = Math.max(shiftPrefix.getPrefixLength(), matchPrefix.getPrefixLength());
-      shiftPrefix = Prefix.create(shiftPrefix.getStartIp(), maxLength);
-      matchPrefix = Prefix.create(matchPrefix.getStartIp(), maxLength);
     }
     AclLineMatchExpr matchExpr = matchField(matchPrefix, field);
     if (insideInterface != null) {
