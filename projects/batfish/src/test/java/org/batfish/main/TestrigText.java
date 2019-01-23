@@ -53,8 +53,6 @@ public class TestrigText {
 
     private String _layer1TopologyText;
 
-    private String _legacyTopologyText;
-
     private Map<String, String> _routingTablesText;
 
     public TestrigText build() {
@@ -65,7 +63,6 @@ public class TestrigText {
       testrigText.setHostsText(_hostsText);
       testrigText.setIptablesFilesText(_iptablesFilesText);
       testrigText.setLayer1TopologyText(_layer1TopologyText);
-      testrigText.setLegacyTopologyText(_legacyTopologyText);
       testrigText.setRoutingTablesText(_routingTablesText);
       return testrigText;
     }
@@ -140,18 +137,6 @@ public class TestrigText {
       return this;
     }
 
-    public Builder setLegacyTopologyText(@Nonnull String testrigResourcePrefix) {
-      _legacyTopologyText =
-          readTestrigResources(
-                  testrigResourcePrefix,
-                  null,
-                  ImmutableList.of(BfConsts.RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH))
-              .values()
-              .iterator()
-              .next();
-      return this;
-    }
-
     public Builder setRoutingTablesText(Map<String, String> routingTablesText) {
       _routingTablesText = routingTablesText;
       return this;
@@ -181,8 +166,6 @@ public class TestrigText {
 
   private String _layer1TopologyText;
 
-  private String _legacyTopologyText;
-
   private Map<String, String> _routingTablesText;
 
   public Map<String, String> getAwsText() {
@@ -207,10 +190,6 @@ public class TestrigText {
 
   public @Nullable String getLayer1TopologyText() {
     return _layer1TopologyText;
-  }
-
-  public @Nullable String getLegacyTopologyText() {
-    return _legacyTopologyText;
   }
 
   public Map<String, String> getRoutingTablesText() {
@@ -239,10 +218,6 @@ public class TestrigText {
 
   public void setLayer1TopologyText(@Nullable String layer1TopologyText) {
     _layer1TopologyText = layer1TopologyText;
-  }
-
-  public void setLegacyTopologyText(@Nullable String legacyTopologyText) {
-    _legacyTopologyText = legacyTopologyText;
   }
 
   public void setRoutingTablesText(Map<String, String> routingTablesText) {
