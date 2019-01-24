@@ -16,6 +16,3 @@ set interfaces ge-0/0/2 ether-options 802.3ad ae0
 ### wired to r2:ge-0/0/3, member of aggregate
 set interfaces ge-0/0/3 ether-options 802.3ad ae0
 #
-### Tagged l3 interfaces
-#set interfaces ge-0/0/4 unit 0 family inet address   
-#

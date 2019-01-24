@@ -154,6 +154,7 @@ public final class TopologyUtil {
         || i2.getSwitchportMode() == SwitchportMode.TRUNK) {
       addLayer2TrunkEdges(i1, i2, edges, node1, node2);
     } else if (i1.getEncapsulationVlan() != null || i2.getEncapsulationVlan() != null) {
+      // Both interfaces are tagged Layer3 interfaces
       tryAddLayer2TaggedNonTrunkEdge(i1, i2, edges, node1, node2);
     } else {
       Integer node1VlanId =
@@ -172,7 +173,6 @@ public final class TopologyUtil {
     if (i1Tag == null || i2Tag == null || !i1Tag.equals(i2Tag)) {
       return;
     }
-    // TODO: remove node-level tags?
     edges.add(new Layer2Edge(node1, null, node2, null, i1Tag));
   }
 
