@@ -1,0 +1,19 @@
+set system host-name juniper-interface-ribgroup-with-transformation
+#
+# Define rib group
+set routing-options rib-groups interface-routes-rib import-rib inet.0
+set routing-options rib-groups interface-routes-rib import-rib VRF2.inet.0
+set routing-options rib-groups interface-routes-rib import-policy RIB_IN
+# apply to interface routes
+set routing-options interface-routes rib-group inet interface-routes-rib
+#
+set interfaces lo0 unit 0 family inet address 1.1.1.1/32
+set interfaces ge-0/0/0 unit 0 family inet address 2.2.2.2/31
+#
+set routing-instances VRF2 instance-type virtual-router
+#
+set policy-options policy-statement RIB_IN term TERM1 from route-filter 2.2.2.2/31 exact
+# Override the admin cost on the route
+set policy-options policy-statement RIB_IN term TERM1 then preference 123
+set policy-options policy-statement RIB_IN term TERM1 then accept
+#

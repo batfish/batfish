@@ -42,6 +42,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
@@ -100,7 +101,6 @@ import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNode;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
-import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.dataplane.exceptions.BgpRoutePropagationException;
@@ -323,11 +323,13 @@ public class VirtualRouter implements Serializable {
     RoutingPolicy policy = _c.getRoutingPolicies().get(ribGroup.getImportPolicy());
     checkState(policy != null, "RIB group %s is missing import policy", ribGroup.getName());
     sourceRib.getRoutes().stream()
-        .filter(
-            route ->
-                policy
-                    .call(Environment.builder(_c).setOriginalRoute(route).setVrf(_name).build())
-                    .getBooleanValue())
+        .map(
+            route -> {
+              AbstractRouteBuilder<?, ?> builder = route.toBuilder();
+              boolean accept = policy.process(route, builder, null, _name, Direction.IN);
+              return accept ? builder.build() : null;
+            })
+        .filter(Objects::nonNull)
         .forEach(
             r ->
                 ribGroup

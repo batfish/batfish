@@ -1,7 +1,6 @@
 package org.batfish.datamodel.flow;
 
 import com.google.common.collect.ImmutableList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.batfish.common.util.Pruner;
@@ -28,8 +27,7 @@ public final class BidirectionalTracePruner {
           .addProperty(BidirectionalTracePruner::reverseHops)
           .build();
 
-  public static Collection<BidirectionalTrace> prune(
-      List<BidirectionalTrace> objects, int maxSize) {
+  public static List<BidirectionalTrace> prune(List<BidirectionalTrace> objects, int maxSize) {
     return INSTANCE.prune(objects, maxSize);
   }
 
