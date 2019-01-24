@@ -4358,4 +4358,30 @@ public final class FlatJuniperGrammarTest {
             new ConnectedRoute(Prefix.parse("2.2.2.8/31"), "ge-0/0/3.0"),
             new LocalRoute(new InterfaceAddress("2.2.2.8/31"), "ge-0/0/3.0")));
   }
+
+  @Test
+  public void testInterfaceRibGroupWithTransformation() throws IOException {
+    String hostname = "juniper-interface-ribgroup-with-transformation";
+    Configuration c = parseConfig(hostname);
+    Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
+    batfish.computeDataPlane(false);
+    DataPlane dp = batfish.loadDataPlane();
+
+    ImmutableMap<String, Set<AbstractRoute>> routes =
+        dp.getRibs().get(hostname).entrySet().stream()
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getRoutes()));
+
+    assertThat(
+        routes.get(Configuration.DEFAULT_VRF_NAME),
+        containsInAnyOrder(
+            new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "lo0.0"),
+            new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0", 0),
+            new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0")));
+    assertThat(
+        routes.get("VRF2"),
+        containsInAnyOrder(
+            new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "lo0.0"),
+            new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0"),
+            new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0", 123)));
+  }
 }
