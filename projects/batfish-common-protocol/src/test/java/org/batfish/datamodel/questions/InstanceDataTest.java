@@ -4,7 +4,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.testing.EqualsTester;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -43,6 +46,29 @@ public class InstanceDataTest {
     assertThat(instanceData.getOrderedVariableNames(), equalTo(ImmutableList.of("r", "a", "d")));
   }
 
+  @Test
+  public void testEquals() throws IOException {
+    EqualsTester equalsTester = new EqualsTester();
+    equalsTester
+        .addEqualityGroup(new InstanceData(), new InstanceData())
+        .addEqualityGroup(new Object());
+    InstanceData instanceData = new InstanceData();
+    instanceData.setInstanceName("instanceName");
+    equalsTester.addEqualityGroup(BatfishObjectMapper.clone(instanceData, InstanceData.class));
+    instanceData.setDescription("The description");
+    equalsTester.addEqualityGroup(BatfishObjectMapper.clone(instanceData, InstanceData.class));
+    instanceData.setLongDescription("The long description");
+    equalsTester.addEqualityGroup(BatfishObjectMapper.clone(instanceData, InstanceData.class));
+    instanceData.setOrderedVariableNames(ImmutableList.of("b", "a"));
+    equalsTester.addEqualityGroup(BatfishObjectMapper.clone(instanceData, InstanceData.class));
+    instanceData.setTags(new TreeSet<>(Arrays.asList("tag1", "tag2")));
+    equalsTester.addEqualityGroup(BatfishObjectMapper.clone(instanceData, InstanceData.class));
+    TreeMap<String, Variable> variables = new TreeMap<>();
+    instanceData.setVariables(ImmutableSortedMap.of("v", new Variable()));
+    equalsTester.addEqualityGroup(BatfishObjectMapper.clone(instanceData, InstanceData.class));
+    equalsTester.testEquals();
+  }
+
   /**
    * Test that translating an InstanceData object to JSON and using that JSON to create a new
    * InstanceData object produces an object equal to the original instance
@@ -53,9 +79,9 @@ public class InstanceDataTest {
     instanceData.setInstanceName("instanceName");
     instanceData.setDescription("The description");
     instanceData.setLongDescription("The long description");
-    instanceData.setOrderedVariableNames(ImmutableList.of());
-    instanceData.setTags(new TreeSet<>());
-    instanceData.setVariables(new TreeMap<>());
+    instanceData.setOrderedVariableNames(ImmutableList.of("b", "a"));
+    instanceData.setTags(new TreeSet<>(Arrays.asList("tag1", "tag2")));
+    instanceData.setVariables(ImmutableSortedMap.of("v", new Variable()));
     assertThat(BatfishObjectMapper.clone(instanceData, InstanceData.class), equalTo(instanceData));
   }
 }
