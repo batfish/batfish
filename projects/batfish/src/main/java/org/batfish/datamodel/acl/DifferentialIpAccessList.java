@@ -1,10 +1,10 @@
 package org.batfish.datamodel.acl;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -73,10 +73,10 @@ public final class DifferentialIpAccessList {
       Map<String, IpAccessList> permitNamedAcls,
       Map<String, IpSpace> permitNamedIpSpaces) {
 
-    Preconditions.checkArgument(
+    checkArgument(
         denyNamedAcls.getOrDefault(denyAcl.getName(), denyAcl).equals(denyAcl),
         "denyNamedAcls contains a different ACL with the same name as denyAcl");
-    Preconditions.checkArgument(
+    checkArgument(
         permitNamedAcls.getOrDefault(permitAcl.getName(), permitAcl).equals(permitAcl),
         "permitNamedAcls contains a different ACL with the same name as permitAcl");
 

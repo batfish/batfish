@@ -52,6 +52,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   SECURITY_ZONES_SECURITY_ZONES_INTERFACE("security zones security-zone interfaces"),
   SNMP_COMMUNITY_PREFIX_LIST("snmp community prefix-list"),
   STATIC_ROUTE_NEXT_HOP_INTERFACE("static route next-hop"),
+  VLAN_L3_INTERFACE("vlan l3-interface"),
   VTEP_SOURCE_INTERFACE("routing-instances vtep-source-interface");
 
   private final String _description;

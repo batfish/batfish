@@ -68,11 +68,6 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public Topology loadLegacyTopology(NetworkId network, SnapshotId snapshot) {
-    throw new UnsupportedOperationException("no implementation for generated method");
-  }
-
-  @Override
   public Layer1Topology loadLayer1Topology(NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }

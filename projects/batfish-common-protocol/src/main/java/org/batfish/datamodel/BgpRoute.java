@@ -25,11 +25,11 @@ import org.batfish.common.util.CommonUtil;
  * present only in BGP advertisements on the wire)
  */
 @ParametersAreNonnullByDefault
-public class BgpRoute extends AbstractRoute {
+public final class BgpRoute extends AbstractRoute {
 
   /** Builder for {@link BgpRoute} */
   @ParametersAreNonnullByDefault
-  public static class Builder extends AbstractRouteBuilder<Builder, BgpRoute> {
+  public static final class Builder extends AbstractRouteBuilder<Builder, BgpRoute> {
 
     @Nonnull private AsPath _asPath;
     @Nonnull private ImmutableSortedSet.Builder<Long> _clusterList;
@@ -52,6 +52,9 @@ public class BgpRoute extends AbstractRoute {
 
     @Override
     public BgpRoute build() {
+      checkArgument(_originatorIp != null, "Missing %s", PROP_ORIGINATOR_IP);
+      checkArgument(_originType != null, "Missing %s", PROP_ORIGIN_TYPE);
+      checkArgument(_protocol != null, "Missing %s", PROP_PROTOCOL);
       return new BgpRoute(
           getNetwork(),
           getNextHopIp(),
@@ -325,8 +328,7 @@ public class BgpRoute extends AbstractRoute {
       long med,
       Ip originatorIp,
       @Nullable SortedSet<Long> clusterList,
-      @JsonProperty(PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT)
-          boolean receivedFromRouteReflectorClient,
+      boolean receivedFromRouteReflectorClient,
       OriginType originType,
       RoutingProtocol protocol,
       @Nullable Ip receivedFromIp,
@@ -368,6 +370,8 @@ public class BgpRoute extends AbstractRoute {
     BgpRoute other = (BgpRoute) o;
     return Objects.equals(_network, other._network)
         && _admin == other._admin
+        && getNonRouting() == other.getNonRouting()
+        && getNonForwarding() == other.getNonForwarding()
         && _discard == other._discard
         && _localPreference == other._localPreference
         && _med == other._med
@@ -512,5 +516,28 @@ public class BgpRoute extends AbstractRoute {
       return 0;
     }
     return COMPARATOR.compare(this, (BgpRoute) rhs);
+  }
+
+  @Override
+  public Builder toBuilder() {
+    return builder()
+        .setNetwork(getNetwork())
+        .setAdmin(getAdministrativeCost())
+        .setNonRouting(getNonRouting())
+        .setNonForwarding(getNonForwarding())
+        .setAsPath(_asPath)
+        .setClusterList(_clusterList)
+        .setCommunities(_communities)
+        .setDiscard(_discard)
+        .setLocalPreference(_localPreference)
+        .setMetric(_med)
+        .setNextHopIp(_nextHopIp)
+        .setOriginatorIp(_originatorIp)
+        .setOriginType(_originType)
+        .setProtocol(_protocol)
+        .setReceivedFromIp(_receivedFromIp)
+        .setReceivedFromRouteReflectorClient(_receivedFromRouteReflectorClient)
+        .setSrcProtocol(_srcProtocol)
+        .setWeight(_weight);
   }
 }

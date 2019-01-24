@@ -268,10 +268,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getBoolean(BfConsts.ARG_DISABLE_UNRECOGNIZED);
   }
 
-  public boolean getEnableCiscoNxParser() {
-    return _config.getBoolean(BfConsts.ARG_ENABLE_CISCO_NX_PARSER);
-  }
-
   public boolean getExitOnFirstError() {
     return _config.getBoolean(ARG_EXIT_ON_FIRST_ERROR);
   }
@@ -550,9 +546,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_DEBUG_FLAGS, ImmutableList.of());
     setDefaultProperty(BfConsts.ARG_DIFFERENTIAL, false);
     setDefaultProperty(BfConsts.ARG_DISABLE_UNRECOGNIZED, false);
-    setDefaultProperty(
-        BfConsts.ARG_ENABLE_CISCO_NX_PARSER,
-        true); // TODO: enable CiscoNxParser by default and remove this flag.
     setDefaultProperty(ARG_DISABLE_Z3_SIMPLIFICATION, false);
     setDefaultProperty(ARG_EXIT_ON_FIRST_ERROR, false);
     setDefaultProperty(ARG_FLATTEN, false);
@@ -684,10 +677,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         BfConsts.ARG_DISABLE_UNRECOGNIZED, "disable parser recognition of unrecognized stanzas");
 
     addBooleanOption(ARG_DISABLE_Z3_SIMPLIFICATION, "disable z3 simplification");
-
-    addBooleanOption(
-        BfConsts.ARG_ENABLE_CISCO_NX_PARSER,
-        "use the rewritten BGP parser for Cisco NX-OS devices");
 
     addBooleanOption(
         ARG_EXIT_ON_FIRST_ERROR,
@@ -860,7 +849,14 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     // deprecated and ignored
     for (String deprecatedStringArg :
         new String[] {
-          "deltaenv", "env", "gsidregex", "gsinputrole", "gsremoteas", "outputenv", "venv"
+          "deltaenv",
+          "enable_cisco_nx_parser",
+          "env",
+          "gsidregex",
+          "gsinputrole",
+          "gsremoteas",
+          "outputenv",
+          "venv"
         }) {
       addOption(deprecatedStringArg, DEPRECATED_ARG_DESC, "ignored");
     }
@@ -908,7 +904,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(BfConsts.ARG_DIFF_ACTIVE);
     getBooleanOptionValue(BfConsts.ARG_DIFFERENTIAL);
     getBooleanOptionValue(BfConsts.ARG_DISABLE_UNRECOGNIZED);
-    getBooleanOptionValue(BfConsts.ARG_ENABLE_CISCO_NX_PARSER);
     getBooleanOptionValue(ARG_EXIT_ON_FIRST_ERROR);
     getBooleanOptionValue(ARG_FLATTEN);
     getPathOptionValue(ARG_FLATTEN_DESTINATION);
@@ -998,10 +993,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   @Override
   public void setDisableUnrecognized(boolean b) {
     _config.setProperty(BfConsts.ARG_DISABLE_UNRECOGNIZED, b);
-  }
-
-  public void setEnableCiscoNxParser(boolean b) {
-    _config.setProperty(BfConsts.ARG_ENABLE_CISCO_NX_PARSER, b);
   }
 
   public void setHaltOnConvertError(boolean haltOnConvertError) {

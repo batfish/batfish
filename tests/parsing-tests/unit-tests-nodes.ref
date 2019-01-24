@@ -1807,8 +1807,33 @@
           }
         }
       },
+      "asa_nat" : {
+        "configurationFormat" : "CISCO_ASA",
+        "name" : "asa_nat",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "asa_nat",
+            "lines" : {
+              "serial" : {
+                "name" : "serial",
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "SERIAL"
+              }
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "asa_object_groups" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_ASA",
         "name" : "asa_object_groups",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -1859,8 +1884,13 @@
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "asa_object_groups",
-            "logging" : {
-              "on" : true
+            "lines" : {
+              "serial" : {
+                "name" : "serial",
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "SERIAL"
+              }
             }
           }
         },
@@ -17557,31 +17587,6 @@
             "type" : "LOGICAL",
             "vrf" : "default"
           },
-          "irb" : {
-            "name" : "irb",
-            "active" : true,
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "irb"
-            ],
-            "mtu" : 1500,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
           "irb.5" : {
             "name" : "irb.5",
             "active" : true,
@@ -17609,7 +17614,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "LOGICAL",
+            "type" : "VLAN",
             "vrf" : "default",
             "vrrpGroups" : {
               "5" : {
@@ -17830,7 +17835,6 @@
               "ge-4/0/0.0",
               "ge-5/0/0",
               "ge-5/0/0.0",
-              "irb",
               "irb.5",
               "vme",
               "vme.0",
@@ -18796,31 +18800,6 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
-          "irb" : {
-            "name" : "irb",
-            "active" : true,
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "irb"
-            ],
-            "mtu" : 1500,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
           "irb.10" : {
             "name" : "irb.10",
             "active" : true,
@@ -18846,7 +18825,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "LOGICAL",
+            "type" : "VLAN",
             "vrf" : "default"
           },
           "irb.20" : {
@@ -18874,7 +18853,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "LOGICAL",
+            "type" : "VLAN",
             "vrf" : "default"
           }
         },
@@ -18915,7 +18894,6 @@
           "default" : {
             "name" : "default",
             "interfaces" : [
-              "irb",
               "irb.10",
               "irb.20"
             ]
@@ -28261,31 +28239,6 @@
             "type" : "LOGICAL",
             "vrf" : "default"
           },
-          "irb" : {
-            "name" : "irb",
-            "active" : true,
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "irb"
-            ],
-            "mtu" : 1500,
-            "ospfDeadInterval" : 0,
-            "ospfEnabled" : false,
-            "ospfHelloMultiplier" : 0,
-            "ospfPassive" : false,
-            "ospfPointToPoint" : false,
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
           "irb.100" : {
             "name" : "irb.100",
             "active" : true,
@@ -28312,7 +28265,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "LOGICAL",
+            "type" : "VLAN",
             "vrf" : "default"
           },
           "lo0" : {
@@ -29807,7 +29760,6 @@
             "interfaces" : [
               "fxp0",
               "fxp0.0",
-              "irb",
               "irb.100",
               "lo0",
               "lo0.0",

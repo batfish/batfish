@@ -3,6 +3,7 @@ package org.batfish.common.topology;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
@@ -30,6 +31,7 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
@@ -102,11 +104,34 @@ public final class TopologyUtil {
   private static void computeLayer2EdgesForLayer1Edge(
       @Nonnull Layer1Edge layer1Edge,
       @Nonnull Map<String, Configuration> configurations,
-      @Nonnull ImmutableSet.Builder<Layer2Edge> edges) {
+      @Nonnull ImmutableSet.Builder<Layer2Edge> edges,
+      Map<Layer1Node, Set<Layer1Node>> parentChildrenMap) {
     Layer1Node node1 = layer1Edge.getNode1();
     Layer1Node node2 = layer1Edge.getNode2();
+
+    // Map each layer1-node to a set of layer-1 nodes corresponding to its children. Attempt to
+    // construct a layer-2 edge between each child in the cross product of the child sets.
+    parentChildrenMap
+        .getOrDefault(node1, ImmutableSet.of(node1))
+        .forEach(
+            node1Child ->
+                parentChildrenMap
+                    .getOrDefault(node2, ImmutableSet.of(node2))
+                    .forEach(
+                        node2Child ->
+                            tryComputeLayer2EdgesForLayer1ChildEdge(
+                                new Layer1Edge(node1Child, node2Child), configurations, edges)));
+  }
+
+  private static void tryComputeLayer2EdgesForLayer1ChildEdge(
+      Layer1Edge layer1MappedEdge,
+      Map<String, Configuration> configurations,
+      Builder<Layer2Edge> edges) {
+    Layer1Node node1 = layer1MappedEdge.getNode1();
+    Layer1Node node2 = layer1MappedEdge.getNode2();
     Interface i1 = getInterface(node1, configurations);
     Interface i2 = getInterface(node2, configurations);
+    // Exit early if either interface is missing
     if (i1 == null || i2 == null) {
       return;
     }
@@ -161,17 +186,25 @@ public final class TopologyUtil {
   }
 
   /**
-   * Compute the layer-2 topology via the {@code level1Topology} and switching information contained
-   * in the {@code configurations}.
+   * Compute the layer-2 topology via the {@code layer1LogicalTopology} and switching information
+   * contained in the {@code configurations}.
    */
   public static @Nonnull Layer2Topology computeLayer2Topology(
-      @Nonnull Layer1Topology layer1Topology, @Nonnull Map<String, Configuration> configurations) {
+      @Nonnull Layer1Topology layer1LogicalTopology,
+      @Nonnull Map<String, Configuration> configurations) {
     ImmutableSet.Builder<Layer2Edge> edges = ImmutableSet.builder();
+
+    // Compute mapping from parent interface -> child interfaces
+    Map<Layer1Node, Set<Layer1Node>> parentChildrenMap = computeParentChildrenMap(configurations);
+
     // First add layer2 edges for physical links.
-    layer1Topology
+    layer1LogicalTopology
         .getGraph()
         .edges()
-        .forEach(layer1Edge -> computeLayer2EdgesForLayer1Edge(layer1Edge, configurations, edges));
+        .forEach(
+            layer1Edge ->
+                computeLayer2EdgesForLayer1Edge(
+                    layer1Edge, configurations, edges, parentChildrenMap));
 
     // Then add edges within each node to connect switchports on the same VLAN(s).
     configurations
@@ -183,6 +216,33 @@ public final class TopologyUtil {
                     .forEach(vrf -> computeLayer2SelfEdges(c.getHostname(), vrf, edges)));
 
     return Layer2Topology.fromEdges(edges.build());
+  }
+
+  private static Map<Layer1Node, Set<Layer1Node>> computeParentChildrenMap(
+      Map<String, Configuration> configurations) {
+    // parent -> set of children
+    Map<Layer1Node, ImmutableSet.Builder<Layer1Node>> builderMap = new HashMap<>();
+
+    // Map each parent interface that is the target of a bind dependency to the set of its child
+    // interfaces (e.g. Juniper units).
+    configurations.forEach(
+        (hostname, c) ->
+            c.getAllInterfaces()
+                .forEach(
+                    (iName, i) ->
+                        // i is a potential child interface
+                        i.getDependencies().stream()
+                            .filter(dependency -> dependency.getType() == DependencyType.BIND)
+                            .forEach(
+                                bindDependency ->
+                                    builderMap
+                                        .computeIfAbsent(
+                                            new Layer1Node(
+                                                hostname, bindDependency.getInterfaceName()),
+                                            n -> ImmutableSet.builder())
+                                        .add(new Layer1Node(hostname, iName)))));
+    // finalize and freeze
+    return CommonUtil.toImmutableMap(builderMap, Entry::getKey, e -> e.getValue().build());
   }
 
   /**

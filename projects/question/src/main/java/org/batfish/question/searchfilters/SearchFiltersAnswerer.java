@@ -1,11 +1,11 @@
 package org.batfish.question.searchfilters;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_NODE;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
@@ -279,8 +279,7 @@ public final class SearchFiltersAnswerer extends Answerer {
       case MATCH_LINE:
         // for each ACL, construct a new ACL that accepts if and only if the specified line matches
         Integer lineNumber = question.getLineNumber();
-        Preconditions.checkState(
-            lineNumber != null, "Cannot perform a match line query without a line number");
+        checkState(lineNumber != null, "Cannot perform a match line query without a line number");
         return originalAcl.getLines().size() > lineNumber
             ? Optional.of(toMatchLineAcl(lineNumber, originalAcl))
             : Optional.empty();

@@ -8,7 +8,6 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.transformation.TransformationUtil.visitTransformationSteps;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -1452,8 +1451,8 @@ public final class BDDReachabilityAnalysisFactory {
 
   /** Merge two edges with or. */
   static Edge or(Edge edge1, Edge edge2) {
-    Preconditions.checkArgument(edge1.getPreState().equals(edge2.getPreState()));
-    Preconditions.checkArgument(edge1.getPostState().equals(edge2.getPostState()));
+    checkArgument(edge1.getPreState().equals(edge2.getPreState()));
+    checkArgument(edge1.getPostState().equals(edge2.getPostState()));
     return new Edge(
         edge1.getPreState(),
         edge2.getPostState(),

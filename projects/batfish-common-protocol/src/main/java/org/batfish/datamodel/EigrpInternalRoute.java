@@ -69,6 +69,11 @@ public class EigrpInternalRoute extends EigrpRoute {
   }
 
   @Override
+  public AbstractRouteBuilder<?, ?> toBuilder() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public final int hashCode() {
     return Objects.hash(_admin, _metric.hashCode(), _network, _nextHopIp, _nextHopInterface);
   }

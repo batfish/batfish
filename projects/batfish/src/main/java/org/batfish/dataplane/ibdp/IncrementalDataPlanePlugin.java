@@ -27,7 +27,8 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   @Override
   public ComputeDataPlaneResult computeDataPlane(boolean differentialContext) {
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Topology topology = _batfish.getEnvironmentTopology();
+    Topology topology =
+        _batfish.getTopologyProvider().getLayer3Topology(_batfish.getNetworkSnapshot());
     return computeDataPlane(differentialContext, configurations, topology);
   }
 

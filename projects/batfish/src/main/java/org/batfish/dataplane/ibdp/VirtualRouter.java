@@ -36,7 +36,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -1385,15 +1384,13 @@ public class VirtualRouter implements Serializable {
         } else {
           // Merge into staging rib, note delta
           ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
-          if (!remoteRouteAdvert.isWithdrawn()) {
-            _bgpRib.addBackupRoute(transformedIncomingRoute);
-            _prefixTracer.installed(
-                transformedIncomingRoute.getNetwork(),
-                remoteConfigId.getHostname(),
-                remoteBgpConfig.getLocalIp(),
-                remoteConfigId.getVrfName(),
-                importPolicyName);
-          }
+          _bgpRib.addBackupRoute(transformedIncomingRoute);
+          _prefixTracer.installed(
+              transformedIncomingRoute.getNetwork(),
+              remoteConfigId.getHostname(),
+              remoteBgpConfig.getLocalIp(),
+              remoteConfigId.getVrfName(),
+              importPolicyName);
         }
       }
     }
@@ -2380,31 +2377,12 @@ public class VirtualRouter implements Serializable {
    * @return true if all queues are empty.
    */
   boolean hasProcessedAllMessages() {
-    boolean processedAll = true;
-    // Check the BGP message queues
-    if (_vrf.getBgpProcess() != null) {
-      processedAll =
-          _bgpIncomingRoutes.values().stream()
-              .map(Queue::isEmpty)
-              .noneMatch(Predicate.isEqual(false));
-    }
-    // Check the OSPF external message queues
-    if (_vrf.getOspfProcess() != null) {
-      for (Queue<RouteAdvertisement<OspfExternalRoute>> queue :
-          _ospfExternalIncomingRoutes.values()) {
-        if (!queue.isEmpty()) {
-          return false;
-        }
-      }
-    }
-    if (_vrf.getIsisProcess() != null) {
-      for (Queue<RouteAdvertisement<IsisRoute>> queue : _isisIncomingRoutes.values()) {
-        if (!queue.isEmpty()) {
-          return false;
-        }
-      }
-    }
-    return processedAll;
+    return (_vrf.getBgpProcess() == null
+            || _bgpIncomingRoutes.values().stream().allMatch(Queue::isEmpty))
+        && (_vrf.getOspfProcess() == null
+            || _ospfExternalIncomingRoutes.values().stream().allMatch(Queue::isEmpty))
+        && (_vrf.getIsisProcess() == null
+            || _isisIncomingRoutes.values().stream().allMatch(Queue::isEmpty));
   }
 
   /**

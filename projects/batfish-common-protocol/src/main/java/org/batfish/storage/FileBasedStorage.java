@@ -252,29 +252,6 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nullable Topology loadLegacyTopology(NetworkId network, SnapshotId snapshot) {
-    Path path =
-        _d.getSnapshotDir(network, snapshot)
-            .resolve(
-                Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH));
-    if (!Files.exists(path)) {
-      return null;
-    }
-    AtomicInteger counter = _newBatch.apply("Reading legacy topology", 1);
-    String topologyFileText = CommonUtil.readFile(path);
-    try {
-      return BatfishObjectMapper.mapper().readValue(topologyFileText, Topology.class);
-    } catch (IOException e) {
-      _logger.warnf(
-          "Unexpected exception caught while loading legacy testrig topology for snapshot %s: %s",
-          snapshot, Throwables.getStackTraceAsString(e));
-      return null;
-    } finally {
-      counter.incrementAndGet();
-    }
-  }
-
-  @Override
   public @Nullable Layer1Topology loadLayer1Topology(NetworkId network, SnapshotId snapshot) {
     Path path =
         _d.getSnapshotDir(network, snapshot)

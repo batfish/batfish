@@ -1,9 +1,9 @@
 package org.batfish.bddreachability;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
@@ -266,8 +266,7 @@ public class BDDReachabilityAnalysis {
 
   @VisibleForTesting
   static IngressLocation toIngressLocation(StateExpr stateExpr) {
-    Preconditions.checkArgument(
-        stateExpr instanceof OriginateVrf || stateExpr instanceof OriginateInterfaceLink);
+    checkArgument(stateExpr instanceof OriginateVrf || stateExpr instanceof OriginateInterfaceLink);
 
     if (stateExpr instanceof OriginateVrf) {
       OriginateVrf originateVrf = (OriginateVrf) stateExpr;

@@ -211,22 +211,7 @@ public class BatfishTest {
         BatfishTestUtils.getBatfishFromTestrigText(testrigTextBuilder.build(), _folder);
 
     assertThat(
-        batfish.computeTestrigTopology(batfish.loadConfigurations()).getEdges(),
-        containsInAnyOrder(Edge.of("c1", "i1", "c2", "i2"), Edge.of("c2", "i2", "c1", "i1")));
-  }
-
-  @Test
-  public void testInitTestrigWithLegacyTopology() throws IOException {
-    String testrigResourcePrefix = "org/batfish/common/topology/testrigs/legacy";
-    TestrigText.Builder testrigTextBuilder =
-        TestrigText.builder()
-            .setLegacyTopologyText("org/batfish/common/topology/testrigs/legacy")
-            .setHostsText(testrigResourcePrefix, ImmutableSet.of("c1.json", "c2.json"));
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(testrigTextBuilder.build(), _folder);
-
-    assertThat(
-        batfish.computeTestrigTopology(batfish.loadConfigurations()).getEdges(),
+        batfish.getTopologyProvider().getRawLayer3Topology(batfish.getNetworkSnapshot()).getEdges(),
         containsInAnyOrder(Edge.of("c1", "i1", "c2", "i2"), Edge.of("c2", "i2", "c1", "i1")));
   }
 
