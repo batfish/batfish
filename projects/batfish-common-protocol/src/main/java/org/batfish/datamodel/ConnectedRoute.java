@@ -50,12 +50,16 @@ public class ConnectedRoute extends AbstractRoute {
       return false;
     }
     ConnectedRoute rhs = (ConnectedRoute) o;
-    return _network.equals(rhs._network) && _nextHopInterface.equals(rhs._nextHopInterface);
+    return _network.equals(rhs._network)
+        && _admin == rhs._admin
+        && getNonRouting() == rhs.getNonRouting()
+        && getNonForwarding() == rhs.getNonForwarding()
+        && _nextHopInterface.equals(rhs._nextHopInterface);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_network, _admin, _nextHopInterface);
+    return Objects.hash(_network, _admin, getNonRouting(), getNonForwarding(), _nextHopInterface);
   }
 
   @Override

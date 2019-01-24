@@ -36,6 +36,7 @@ public class ConnectedRouteTest {
         .addEqualityGroup(cr, cr)
         .addEqualityGroup(new ConnectedRoute(Prefix.parse("1.1.2.0/24"), "Ethernet0"))
         .addEqualityGroup(new ConnectedRoute(Prefix.parse("1.1.2.0/24"), "Ethernet1"))
+        .addEqualityGroup(new ConnectedRoute(Prefix.parse("1.1.2.0/24"), "Ethernet1", 123))
         .addEqualityGroup(new Object())
         .testEquals();
   }

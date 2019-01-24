@@ -35,7 +35,11 @@ public class LocalRouteTest {
     new EqualsTester()
         .addEqualityGroup(lr, lr)
         .addEqualityGroup(new LocalRoute(new InterfaceAddress("1.1.2.1/24"), "Ethernet0"))
-        .addEqualityGroup(new LocalRoute(new InterfaceAddress("1.1.2.1/24"), "Ethernet1"))
+        .addEqualityGroup(
+            new LocalRoute(new InterfaceAddress("1.1.2.1/24"), "Ethernet1"),
+            new LocalRoute(Prefix.parse("1.1.2.1/32"), "Ethernet1", 24, 0))
+        .addEqualityGroup(new LocalRoute(Prefix.parse("1.1.2.1/32"), "Ethernet1", 24, 123))
+        .addEqualityGroup(new LocalRoute(Prefix.parse("1.1.2.1/32"), "Ethernet1", 25, 123))
         .addEqualityGroup(new Object())
         .testEquals();
   }

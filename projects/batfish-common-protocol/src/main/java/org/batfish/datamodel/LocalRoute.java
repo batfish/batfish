@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -32,7 +33,8 @@ public class LocalRoute extends AbstractRoute {
         0);
   }
 
-  private LocalRoute(Prefix network, String nextHopInterface, int sourcePrefixLength, int admin) {
+  @VisibleForTesting
+  LocalRoute(Prefix network, String nextHopInterface, int sourcePrefixLength, int admin) {
     super(network, admin, false, false);
     _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
     _sourcePrefixLength = sourcePrefixLength;
@@ -62,6 +64,8 @@ public class LocalRoute extends AbstractRoute {
     LocalRoute rhs = (LocalRoute) o;
     return _network.equals(rhs._network)
         && _admin == rhs._admin
+        && getNonRouting() == rhs.getNonRouting()
+        && getNonForwarding() == rhs.getNonForwarding()
         && _nextHopInterface.equals(rhs._nextHopInterface)
         && _sourcePrefixLength == rhs._sourcePrefixLength;
   }
