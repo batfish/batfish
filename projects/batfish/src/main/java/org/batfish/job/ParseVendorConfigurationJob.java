@@ -42,7 +42,7 @@ import org.batfish.vendor.VendorConfiguration;
 
 public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigurationResult> {
 
-  private static Pattern BANNER_PATTERN =
+  private static final Pattern BANNER_PATTERN =
       Pattern.compile("(?m)banner[ \t][ \t]*[^ \r\n\t][^ \r\n\t]*[ \t][ \t]*([^ \r\n\t])[ \r\n]");
 
   private static String preprocessBanner(String fileText, ConfigurationFormat format) {
