@@ -3,7 +3,6 @@ package org.batfish.dataplane.protocols;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
@@ -40,15 +39,15 @@ import org.junit.Test;
  */
 public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
 
-  private static final NetworkFactory _nf = new NetworkFactory();
-  private static BgpActivePeerConfig _fromNeighbor;
-  private static BgpPeerConfig _toNeighbor;
-  private static BgpSessionProperties _sessionProperties;
-  private static Vrf _fromVrf;
-  private static Vrf _toVrf;
+  private final NetworkFactory _nf = new NetworkFactory();
+  private BgpActivePeerConfig _fromNeighbor;
+  private BgpPeerConfig _toNeighbor;
+  private BgpSessionProperties _sessionProperties;
+  private Vrf _fromVrf;
+  private Vrf _toVrf;
 
-  private static GeneratedRoute.Builder _baseAggRouteBuilder;
-  private static BgpRoute.Builder _baseBgpRouteBuilder;
+  private GeneratedRoute.Builder _baseAggRouteBuilder;
+  private BgpRoute.Builder _baseBgpRouteBuilder;
 
   /** AS for both source and dest peers if IBGP, or only source peer if EBGP */
   private static final Long AS1 = 1L;
@@ -85,7 +84,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    *
    * @param ibgp Whether to make the peer relationship IBGP
    */
-  public void setUpPeers(boolean ibgp) {
+  private void setUpPeers(boolean ibgp) {
     Configuration c1 =
         _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Configuration c2 =
@@ -233,8 +232,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     setUpPeers(true);
     BgpRoute.Builder transformedAggregateRoute = runTransformBgpRouteOnExport(aggRoute);
     BgpRoute.Builder transformedBgpRoute = runTransformBgpRouteOnExport(bgpRoute);
-    assertThat(transformedAggregateRoute, hasProperty("asPath", equalTo(asPathContainingDestPeer)));
-    assertThat(transformedBgpRoute, hasProperty("asPath", equalTo(asPathContainingDestPeer)));
+    assertThat(transformedAggregateRoute.getAsPath(), equalTo(asPathContainingDestPeer));
+    assertThat(transformedBgpRoute.getAsPath(), equalTo(asPathContainingDestPeer));
 
     // EBGP: Routes shouldn't get exported
     setUpPeers(false);
