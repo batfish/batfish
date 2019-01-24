@@ -92,7 +92,7 @@ public class LogicalSystem implements Serializable {
 
   private NavigableSet<String> _tacplusServers;
 
-  private final Map<String, Vlan> _vlanNameToVlan;
+  private final Map<String, Vlan> _namedVlans;
 
   private final Map<String, Zone> _zones;
 
@@ -130,7 +130,7 @@ public class LogicalSystem implements Serializable {
     _routingInstances.put(Configuration.DEFAULT_VRF_NAME, _defaultRoutingInstance);
     _syslogHosts = new TreeSet<>();
     _tacplusServers = new TreeSet<>();
-    _vlanNameToVlan = new TreeMap<>();
+    _namedVlans = new TreeMap<>();
     _zones = new TreeMap<>();
   }
 
@@ -335,8 +335,8 @@ public class LogicalSystem implements Serializable {
     return _tacplusServers;
   }
 
-  public Map<String, Vlan> getVlanNameToVlan() {
-    return _vlanNameToVlan;
+  public Map<String, Vlan> getNamedVlans() {
+    return _namedVlans;
   }
 
   public Map<String, Zone> getZones() {
