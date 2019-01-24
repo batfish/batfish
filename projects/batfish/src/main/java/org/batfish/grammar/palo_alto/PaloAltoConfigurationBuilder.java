@@ -7,6 +7,8 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHAL
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.RULE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
@@ -20,6 +22,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVIC
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
 
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -51,11 +54,20 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_encryption_algoContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_hashContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_lifetimeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_sharedContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_vsysContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_zoneContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_descriptionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_fqdnContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_ip_netmaskContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_ip_rangeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_descriptionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_dynamicContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_staticContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_default_gatewayContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ip_addressContext;
@@ -103,6 +115,8 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_layer3Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_list_itemContext;
+import org.batfish.representation.palo_alto.AddressGroup;
+import org.batfish.representation.palo_alto.AddressObject;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.Interface;
@@ -121,6 +135,10 @@ import org.batfish.vendor.StructureType;
 
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private PaloAltoConfiguration _configuration;
+
+  private AddressGroup _currentAddressGroup;
+
+  private AddressObject _currentAddressObject;
 
   private CryptoProfile _currentCrytoProfile;
 
@@ -402,6 +420,37 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void enterS_address(S_addressContext ctx) {
+    String name = ctx.name.getText();
+    if (_currentVsys.getAddressGroups().get(name) != null) {
+      // making an arbitrary choice here to ignore the earlier occurrence; simplifies other code
+      _w.redFlag(
+          "Cannot have an address object and group with the same name '"
+              + name
+              + "'. Ignoring the group definition.");
+      _currentVsys.getAddressGroups().remove(name);
+    }
+    _currentAddressObject =
+        _currentVsys.getAddressObjects().computeIfAbsent(name, AddressObject::new);
+    defineStructure(ADDRESS_OBJECT, name, ctx);
+  }
+
+  @Override
+  public void enterS_address_group(S_address_groupContext ctx) {
+    String name = ctx.name.getText();
+    if (_currentVsys.getAddressObjects().get(name) != null) {
+      // making an arbitrary choice here to ignore the earlier occurrence; simplifies other code
+      _w.redFlag(
+          "Cannot have an address object and group with the same name '"
+              + name
+              + "'. Ignoring the object definition.");
+      _currentVsys.getAddressObjects().remove(name);
+    }
+    _currentAddressGroup = _currentVsys.getAddressGroups().computeIfAbsent(name, AddressGroup::new);
+    defineStructure(ADDRESS_GROUP, name, ctx);
+  }
+
+  @Override
   public void enterS_zone(S_zoneContext ctx) {
     String name = getText(ctx.name);
     _currentZone = _currentVsys.getZones().computeIfAbsent(name, n -> new Zone(n, _currentVsys));
@@ -414,6 +463,48 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitS_zone(S_zoneContext ctx) {
     _currentZone = null;
+  }
+
+  @Override
+  public void exitSa_description(Sa_descriptionContext ctx) {
+    _currentAddressObject.setDescription(ctx.description.getText());
+  }
+
+  @Override
+  public void exitSa_fqdn(Sa_fqdnContext ctx) {
+    _w.redFlag("FQDN in address objects is not currently supported: " + getFullText(ctx));
+  }
+
+  @Override
+  public void exitSa_ip_netmask(Sa_ip_netmaskContext ctx) {
+    if (ctx.IP_ADDRESS() != null) {
+      _currentAddressObject.setIpRange(Ip.parse(ctx.IP_ADDRESS().getText()));
+    } else if (ctx.IP_PREFIX() != null) {
+      _currentAddressObject.setIpRange(Prefix.parse(ctx.IP_ADDRESS().getText()));
+    } else {
+      _w.redFlag("Cannot understand what follows 'ip-netmask' in " + getFullText(ctx));
+    }
+  }
+
+  @Override
+  public void exitSa_ip_range(Sa_ip_rangeContext ctx) {
+    _currentAddressObject.setIpRange(Ip.parse(ctx.from.getText()), Ip.parse(ctx.to.getText()));
+  }
+
+  @Override
+  public void exitSag_description(Sag_descriptionContext ctx) {
+    _currentAddressGroup.setDescription(ctx.description.getText());
+  }
+
+  @Override
+  public void exitSag_dynamic(Sag_dynamicContext ctx) {
+    _w.redFlag("Dynamic address groups are not currently supported: " + getFullText(ctx));
+  }
+
+  @Override
+  public void exitSag_static(Sag_staticContext ctx) {
+    _currentAddressGroup.setMembers(
+        ctx.object.stream().map(v -> v.getText()).collect(ImmutableList.toImmutableList()));
   }
 
   @Override

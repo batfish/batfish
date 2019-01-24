@@ -3,6 +3,8 @@ package org.batfish.representation.palo_alto;
 import org.batfish.vendor.StructureType;
 
 public enum PaloAltoStructureType implements StructureType {
+  ADDRESS_GROUP("address-group"),
+  ADDRESS_OBJECT("address object"),
   GLOBAL_PROTECT_APP_CRYPTO_PROFILE("global-protect-app-crypto-profile"),
   IKE_CRYPTO_PROFILE("ike-crypto-profile"),
   IPSEC_CRYPTO_PROFILE("ipsec-crypto-profile"),
