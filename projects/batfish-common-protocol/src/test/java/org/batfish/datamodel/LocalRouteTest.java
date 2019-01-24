@@ -31,9 +31,21 @@ public class LocalRouteTest {
 
   @Test
   public void testEquals() {
-    LocalRoute lr = new LocalRoute(new InterfaceAddress("1.1.1.1/24"), "Ethernet0");
+    LocalRoute.Builder lr =
+        LocalRoute.builder()
+            .setNetwork(Prefix.parse("1.1.1.1/32"))
+            .setSourcePrefixLength(24)
+            .setNextHopInterface("Ethernet0");
     new EqualsTester()
-        .addEqualityGroup(lr, lr)
+        /*
+         * Note: connected routes by definition are routing and forwarding so setting these values in the
+         * builder has no effect
+         */
+        .addEqualityGroup(
+            new LocalRoute(new InterfaceAddress("1.1.1.1/24"), "Ethernet0"),
+            lr.build(),
+            lr.setNonRouting(true).build(),
+            lr.setNonForwarding(false).build())
         .addEqualityGroup(new LocalRoute(new InterfaceAddress("1.1.2.1/24"), "Ethernet0"))
         .addEqualityGroup(
             new LocalRoute(new InterfaceAddress("1.1.2.1/24"), "Ethernet1"),

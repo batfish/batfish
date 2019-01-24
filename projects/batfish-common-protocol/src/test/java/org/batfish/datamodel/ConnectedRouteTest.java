@@ -31,9 +31,20 @@ public class ConnectedRouteTest {
 
   @Test
   public void testEquals() {
-    ConnectedRoute cr = new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Ethernet0");
+    ConnectedRoute.Builder cr =
+        ConnectedRoute.builder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHopInterface("Ethernet0");
     new EqualsTester()
-        .addEqualityGroup(cr, cr)
+        /*
+         * Note: connected routes by definition are routing and forwarding so setting these values in the
+         * builder has no effect
+         */
+        .addEqualityGroup(
+            cr.build(),
+            cr.build(),
+            cr.setNonRouting(true).build(),
+            cr.setNonForwarding(true).build())
         .addEqualityGroup(new ConnectedRoute(Prefix.parse("1.1.2.0/24"), "Ethernet0"))
         .addEqualityGroup(new ConnectedRoute(Prefix.parse("1.1.2.0/24"), "Ethernet1"))
         .addEqualityGroup(new ConnectedRoute(Prefix.parse("1.1.2.0/24"), "Ethernet1", 123))
