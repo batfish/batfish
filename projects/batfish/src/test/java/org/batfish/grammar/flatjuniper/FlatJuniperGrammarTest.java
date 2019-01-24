@@ -189,7 +189,9 @@ import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -2142,6 +2144,31 @@ public final class FlatJuniperGrammarTest {
             .get(filename)
             .getOrDefault(VLAN.getDescription(), Collections.emptySortedMap()),
         allOf(hasKey("VLAN_TEST"), hasKey("VLAN_TEST_UNUSED")));
+  }
+
+  @Test
+  public void testIrbInterfaces() throws IOException {
+    String hostname = "irb-interfaces";
+    Configuration c = parseConfig(hostname);
+
+    // No parent 'irb' interface should be created
+    assertThat(c.getAllInterfaces(), not(hasKey("irb")));
+
+    // irb.0 should be created
+    assertThat(c.getAllInterfaces(), hasKey("irb.0"));
+
+    Interface irb0 = c.getAllInterfaces().get("irb.0");
+
+    // irb.0 should not have bind dependency to "irb", since it is not a real parent interface
+    assertThat(
+        irb0.getDependencies(),
+        not(hasItem(equalTo(new Interface.Dependency("irb", DependencyType.BIND)))));
+
+    // verify interface type
+    assertThat(irb0.getInterfaceType(), equalTo(InterfaceType.VLAN));
+
+    // verify vlan assignment
+    assertThat(irb0.getVlan(), equalTo(5));
   }
 
   @Test

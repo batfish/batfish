@@ -74,6 +74,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_ZONES_SECURITY_ZONES_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_L3_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VTEP_SOURCE_INTERFACE;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -532,6 +533,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_alternativeCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_atomContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.VariableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_l3_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Wildcard_addressContext;
 import org.batfish.representation.juniper.AddressAddressBookEntry;
@@ -1949,7 +1951,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private VrrpGroup _currentVrrpGroup;
 
-  private String _currentVlanName;
+  private Vlan _currentNamedVlan;
 
   private Zone _currentZone;
 
@@ -3420,8 +3422,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterS_vlans_named(S_vlans_namedContext ctx) {
-    _currentVlanName = ctx.name.getText();
-    defineStructure(VLAN, _currentVlanName, ctx);
+    String name = unquote(ctx.name.getText());
+    _currentNamedVlan = _currentLogicalSystem.getNamedVlans().computeIfAbsent(name, Vlan::new);
+    defineStructure(VLAN, name, ctx);
   }
 
   @Override
@@ -5088,7 +5091,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitS_vlans_named(S_vlans_namedContext ctx) {
-    _currentVlanName = null;
+    _currentNamedVlan = null;
   }
 
   @Override
@@ -5677,8 +5680,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitVlt_vlan_id(Vlt_vlan_idContext ctx) {
-    Vlan vlan = new Vlan(toInt(ctx.id));
-    _currentLogicalSystem.getVlanNameToVlan().put(_currentVlanName, vlan);
+    int vlan = toInt(ctx.id);
+    _currentNamedVlan.setVlanId(vlan);
+  }
+
+  @Override
+  public void exitVlt_l3_interface(Vlt_l3_interfaceContext ctx) {
+    String name = ctx.interface_id().getText();
+    _configuration.referenceStructure(
+        INTERFACE, name, VLAN_L3_INTERFACE, getLine(ctx.interface_id().getStart()));
+    _currentNamedVlan.setL3Interface(name);
   }
 
   @Nullable
