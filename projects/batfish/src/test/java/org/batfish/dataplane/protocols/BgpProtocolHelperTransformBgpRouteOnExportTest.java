@@ -20,8 +20,6 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
-import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
@@ -56,7 +54,6 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
 
   private static final Ip DEST_IP = Ip.parse("3.3.3.3");
   private static final Prefix DEST_NETWORK = Prefix.parse("4.4.4.0/24");
-  private static final String NEXT_HOP_INTERFACE = "iface";
   private static final Ip ORIGINATOR_IP = Ip.parse("1.1.1.1");
   private static final Ip SOURCE_IP = Ip.parse("2.2.2.2");
 
@@ -89,8 +86,6 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
         _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Configuration c2 =
         _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    Interface nextHopIface = new Interface(NEXT_HOP_INTERFACE, c2);
-    nextHopIface.setAddress(new InterfaceAddress(DEST_IP, 30));
     _fromNeighbor = _nf.bgpNeighborBuilder().setLocalAs(AS1).setRemoteAs(ibgp ? AS1 : AS2).build();
     _toNeighbor = _nf.bgpNeighborBuilder().setLocalAs(ibgp ? AS1 : AS2).setRemoteAs(AS1).build();
     _sessionProperties = BgpSessionProperties.from(_fromNeighbor, _toNeighbor);
