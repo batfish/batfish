@@ -1,0 +1,7 @@
+#
+set system host-name irb-interfaces
+#
+set interfaces irb unit 0 family inet address 1.0.0.0/31
+set vlans V l3-interface irb.0
+set vlans V vlan-id 5
+#

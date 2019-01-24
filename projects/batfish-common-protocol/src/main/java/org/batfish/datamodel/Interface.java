@@ -669,6 +669,8 @@ public final class Interface extends ComparableStructure<String> {
       return InterfaceType.AGGREGATED;
     } else if (name.startsWith("lo")) {
       return InterfaceType.LOOPBACK;
+    } else if (name.startsWith("irb")) {
+      return InterfaceType.VLAN;
     } else if (name.contains(".")) {
       return InterfaceType.LOGICAL;
     } else {
