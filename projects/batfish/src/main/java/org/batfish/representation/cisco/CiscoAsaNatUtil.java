@@ -77,6 +77,16 @@ final class CiscoAsaNatUtil {
         .apply(assignSourceIp(mappedSourceObj.getStart(), mappedSourceObj.getEnd()));
   }
 
+  private static Prefix getNetworkObjectPrefix(NetworkObject object) {
+    if (object instanceof HostNetworkObject) {
+      return ((HostNetworkObject) object).getPrefix();
+    }
+    if (object instanceof SubnetNetworkObject) {
+      return ((SubnetNetworkObject) object).getPrefix();
+    }
+    return null;
+  }
+
   private static MatchHeaderSpace matchField(Prefix prefix, IpField field) {
     switch (field) {
       case DESTINATION:
@@ -187,8 +197,8 @@ final class CiscoAsaNatUtil {
         return null;
       }
 
-      matchPrefix = matchObject.getPrefix();
-      shiftPrefix = shiftObject.getPrefix();
+      matchPrefix = getNetworkObjectPrefix(matchObject);
+      shiftPrefix = getNetworkObjectPrefix(shiftObject);
       if (matchPrefix == null
           || shiftPrefix == null
           || matchPrefix.getPrefixLength() != shiftPrefix.getPrefixLength()) {

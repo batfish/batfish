@@ -47,7 +47,7 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
   /**
    * If this NAT has an optional destination transformation, it is configured with 'any' address, a
    * network object, a network object-group, or 'interface' as the translated mapping of
-   * destinations for inside-to-outside flows. Interface NAT is not supported Value is null if this
+   * destinations for inside-to-outside flows. Interface NAT is not supported. Value is null if this
    * NAT does not have a destination transformation or if interface NAT was configured.
    */
   private AccessListAddressSpecifier _mappedDestination;

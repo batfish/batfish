@@ -37,7 +37,6 @@ public final class SubnetNetworkObject implements Serializable, NetworkObject {
     return _info.getName();
   }
 
-  @Override
   public Prefix getPrefix() {
     return _subnet;
   }

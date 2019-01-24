@@ -5,7 +5,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.Prefix;
 
 /** Represents a network object that contains an FQDN */
 @ParametersAreNonnullByDefault
@@ -29,11 +28,6 @@ public final class FqdnNetworkObject implements Serializable, NetworkObject {
   @Override
   public String getName() {
     return _info.getName();
-  }
-
-  @Override
-  public Prefix getPrefix() {
-    return null;
   }
 
   @Override
