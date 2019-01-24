@@ -163,6 +163,9 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.WellKnownCommunity;
+import org.batfish.common.topology.Layer1Edge;
+import org.batfish.common.topology.Layer1Topology;
+import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
@@ -175,6 +178,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DiffieHellmanGroup;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowState;
@@ -185,7 +189,9 @@ import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -201,14 +207,17 @@ import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -685,6 +694,45 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testParentChildTopology() throws IOException {
+    String resourcePrefix = "org/batfish/grammar/juniper/testrigs/topology";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setLayer1TopologyText(resourcePrefix)
+                .setConfigurationText(resourcePrefix, "r1", "r2")
+                .build(),
+            _folder);
+
+    Layer1Topology layer1LogicalTopology =
+        batfish.getTopologyProvider().getLayer1LogicalTopology(batfish.getNetworkSnapshot());
+    Layer2Topology layer2Topology =
+        batfish.getTopologyProvider().getLayer2Topology(batfish.getNetworkSnapshot());
+    Topology layer3Topology =
+        batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot());
+
+    // check layer-1 logical adjacencies
+    assertThat(
+        layer1LogicalTopology.getGraph().edges(),
+        hasItem(new Layer1Edge("r1", "ae0", "r2", "ae0")));
+
+    // check layer-2 adjacencies
+    assertThat(
+        layer2Topology.inSameBroadcastDomain("r1", "ge-0/0/0.0", "r2", "ge-0/0/0.0"),
+        equalTo(true));
+    assertThat(
+        layer2Topology.inSameBroadcastDomain("r1", "ge-0/0/1.0", "r2", "ge-0/0/1.0"),
+        equalTo(true));
+    assertThat(layer2Topology.inSameBroadcastDomain("r1", "ae0.0", "r2", "ae0.0"), equalTo(true));
+
+    // check layer-3 adjacencies
+    assertThat(
+        layer3Topology.getEdges(), not(hasItem(Edge.of("r1", "ge-0/0/0.0", "r2", "ge-0/0/0.0"))));
+    assertThat(layer3Topology.getEdges(), hasItem(Edge.of("r1", "ge-0/0/1.0", "r2", "ge-0/0/1.0")));
+    assertThat(layer3Topology.getEdges(), hasItem(Edge.of("r1", "ae0.0", "r2", "ae0.0")));
+  }
+
+  @Test
   public void testBgpClusterId() throws IOException {
     String testrigName = "rr";
     String configName = "rr";
@@ -783,7 +831,12 @@ public final class FlatJuniperGrammarTest {
     // p1
     RoutingPolicy p1 = c.getRoutingPolicies().get("p1");
     BgpRoute.Builder b1 =
-        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+        BgpRoute.builder()
+            .setNetwork(cr.getNetwork())
+            .setCommunities(ImmutableSet.of(5L))
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
     p1.process(cr, b1, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
     BgpRoute br1 = b1.build();
 
@@ -798,7 +851,12 @@ public final class FlatJuniperGrammarTest {
     // p2
     RoutingPolicy p2 = c.getRoutingPolicies().get("p2");
     BgpRoute.Builder b2 =
-        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+        BgpRoute.builder()
+            .setNetwork(cr.getNetwork())
+            .setCommunities(ImmutableSet.of(5L))
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
     p2.process(cr, b2, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
     BgpRoute br2 = b2.build();
 
@@ -807,7 +865,12 @@ public final class FlatJuniperGrammarTest {
     // p3
     RoutingPolicy p3 = c.getRoutingPolicies().get("p3");
     BgpRoute.Builder b3 =
-        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+        BgpRoute.builder()
+            .setNetwork(cr.getNetwork())
+            .setCommunities(ImmutableSet.of(5L))
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
     p3.process(cr, b3, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
     BgpRoute br3 = b3.build();
 
@@ -823,7 +886,12 @@ public final class FlatJuniperGrammarTest {
     // p4
     RoutingPolicy p4 = c.getRoutingPolicies().get("p4");
     BgpRoute.Builder b4 =
-        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+        BgpRoute.builder()
+            .setNetwork(cr.getNetwork())
+            .setCommunities(ImmutableSet.of(5L))
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
     p4.process(cr, b4, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
     BgpRoute br4 = b4.build();
 
@@ -839,7 +907,12 @@ public final class FlatJuniperGrammarTest {
     // p5
     RoutingPolicy p5 = c.getRoutingPolicies().get("p5");
     BgpRoute.Builder b5 =
-        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+        BgpRoute.builder()
+            .setNetwork(cr.getNetwork())
+            .setCommunities(ImmutableSet.of(5L))
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
     p5.process(cr, b5, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
     BgpRoute br5 = b5.build();
 
@@ -848,7 +921,12 @@ public final class FlatJuniperGrammarTest {
     // p6
     RoutingPolicy p6 = c.getRoutingPolicies().get("p6");
     BgpRoute.Builder b6 =
-        BgpRoute.builder().setNetwork(cr.getNetwork()).setCommunities(ImmutableSet.of(5L));
+        BgpRoute.builder()
+            .setNetwork(cr.getNetwork())
+            .setCommunities(ImmutableSet.of(5L))
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
     p6.process(cr, b6, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
     BgpRoute br6 = b6.build();
 
@@ -2101,6 +2179,31 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testIrbInterfaces() throws IOException {
+    String hostname = "irb-interfaces";
+    Configuration c = parseConfig(hostname);
+
+    // No parent 'irb' interface should be created
+    assertThat(c.getAllInterfaces(), not(hasKey("irb")));
+
+    // irb.0 should be created
+    assertThat(c.getAllInterfaces(), hasKey("irb.0"));
+
+    Interface irb0 = c.getAllInterfaces().get("irb.0");
+
+    // irb.0 should not have bind dependency to "irb", since it is not a real parent interface
+    assertThat(
+        irb0.getDependencies(),
+        not(hasItem(equalTo(new Interface.Dependency("irb", DependencyType.BIND)))));
+
+    // verify interface type
+    assertThat(irb0.getInterfaceType(), equalTo(InterfaceType.VLAN));
+
+    // verify vlan assignment
+    assertThat(irb0.getVlan(), equalTo(5));
+  }
+
+  @Test
   public void testIpProtocol() throws IOException {
     String hostname = "firewall-filter-ip-protocol";
     Configuration c = parseConfig(hostname);
@@ -2727,7 +2830,13 @@ public final class FlatJuniperGrammarTest {
       set policy-options policy-statement COMMUNITY_POLICY term T1 from community BGP2
     */
     RoutingPolicy communityPolicy = c.getRoutingPolicies().get("COMMUNITY_POLICY");
-    BgpRoute.Builder brb = BgpRoute.builder().setAdmin(100).setNetwork(testPrefix);
+    BgpRoute.Builder brb =
+        BgpRoute.builder()
+            .setAdmin(100)
+            .setNetwork(testPrefix)
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
     result = communityPolicy.call(envWithRoute(c, brb.setCommunities(ImmutableSet.of(1L)).build()));
     assertThat(result.getBooleanValue(), equalTo(true));
     result = communityPolicy.call(envWithRoute(c, brb.setCommunities(ImmutableSet.of(2L)).build()));

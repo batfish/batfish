@@ -52,6 +52,8 @@ public final class Interface extends ComparableStructure<String> {
 
     @Nullable private EigrpInterfaceSettings _eigrp;
 
+    @Nullable private Integer _encapsulationVlan;
+
     private Map<Integer, HsrpGroup> _hsrpGroups;
 
     private String _hsrpVersion;
@@ -121,6 +123,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setDeclaredNames(_declaredNames);
       iface.setDependencies(_dependencies);
       iface.setEigrp(_eigrp);
+      iface.setEncapsulationVlan(_encapsulationVlan);
       iface.setHsrpGroups(_hsrpGroups);
       iface.setHsrpVersion(_hsrpVersion);
       iface.setIncomingFilter(_incomingFilter);
@@ -237,6 +240,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setEigrp(@Nullable EigrpInterfaceSettings eigrp) {
       _eigrp = eigrp;
+      return this;
+    }
+
+    public @Nonnull Builder setEncapsulationVlan(@Nullable Integer encapsulationVlan) {
+      _encapsulationVlan = encapsulationVlan;
       return this;
     }
 
@@ -440,6 +448,8 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_DHCP_RELAY_ADDRESSES = "dhcpRelayAddresses";
 
   private static final String PROP_EIGRP = "eigrp";
+
+  private static final String PROP_ENCAPSULATION_VLAN = "encapsulationVlan";
 
   private static final String PROP_HSRP_GROUPS = "hsrpGroups";
 
@@ -669,6 +679,8 @@ public final class Interface extends ComparableStructure<String> {
       return InterfaceType.AGGREGATED;
     } else if (name.startsWith("lo")) {
       return InterfaceType.LOOPBACK;
+    } else if (name.startsWith("irb")) {
+      return InterfaceType.VLAN;
     } else if (name.contains(".")) {
       return InterfaceType.LOGICAL;
     } else {
@@ -718,6 +730,8 @@ public final class Interface extends ComparableStructure<String> {
   private List<Ip> _dhcpRelayAddresses;
 
   @Nullable private EigrpInterfaceSettings _eigrp;
+
+  @Nullable private Integer _encapsulationVlan;
 
   private Map<Integer, HsrpGroup> _hsrpGroups;
 
@@ -896,6 +910,10 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
 
+    if (!Objects.equals(_encapsulationVlan, other._encapsulationVlan)) {
+      return false;
+    }
+
     // TODO: check ISIS settings for equality.
     if (_mtu != other._mtu) {
       return false;
@@ -1019,6 +1037,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_EIGRP)
   public @Nullable EigrpInterfaceSettings getEigrp() {
     return _eigrp;
+  }
+
+  @JsonProperty(PROP_ENCAPSULATION_VLAN)
+  public @Nullable Integer getEncapsulationVlan() {
+    return _encapsulationVlan;
   }
 
   /** Mapping: hsrpGroupID -&gt; HsrpGroup */
@@ -1420,6 +1443,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_EIGRP)
   public void setEigrp(@Nullable EigrpInterfaceSettings eigrp) {
     _eigrp = eigrp;
+  }
+
+  @JsonProperty(PROP_ENCAPSULATION_VLAN)
+  public void setEncapsulationVlan(@Nullable Integer encapsulationVlan) {
+    _encapsulationVlan = encapsulationVlan;
   }
 
   @JsonProperty(PROP_HSRP_GROUPS)

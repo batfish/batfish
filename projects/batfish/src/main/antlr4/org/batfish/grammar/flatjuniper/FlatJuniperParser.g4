@@ -122,17 +122,14 @@ s_vlans
 
 s_vlans_named
 :
-   name = variable s_vlans_tail
-;
-
-s_vlans_tail
-:
-//    intentional blank
-
-   | vlt_description
-   | vlt_filter
-   | vlt_l3_interface
-   | vlt_vlan_id
+  name = variable
+  (
+    apply
+    | vlt_description
+    | vlt_filter
+    | vlt_l3_interface
+    | vlt_vlan_id
+  )
 ;
 
 set_line

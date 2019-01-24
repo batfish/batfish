@@ -36,12 +36,14 @@ public final class Layer2Edge implements Comparable<Layer2Edge> {
 
   public Layer2Edge(
       @Nonnull Layer1Node node1,
-      @Nullable Integer node1VlanId,
+      @Nullable Integer node1SwitchportVlanId,
       @Nonnull Layer1Node node2,
-      @Nullable Integer node2VlanId,
+      @Nullable Integer node2SwitchportVlanId,
       @Nullable Integer encapsulatedVlanId) {
     this(
-        new Layer2Node(node1, node1VlanId), new Layer2Node(node2, node2VlanId), encapsulatedVlanId);
+        new Layer2Node(node1, node1SwitchportVlanId),
+        new Layer2Node(node2, node2SwitchportVlanId),
+        encapsulatedVlanId);
   }
 
   public Layer2Edge(
@@ -54,14 +56,14 @@ public final class Layer2Edge implements Comparable<Layer2Edge> {
   public Layer2Edge(
       @Nonnull String node1Hostname,
       @Nonnull String node1InterfaceName,
-      @Nullable Integer node1VlanId,
+      @Nullable Integer node1SwitchportVlanId,
       @Nonnull String node2Hostname,
       @Nonnull String node2InterfaceName,
-      @Nullable Integer node2VlanId,
+      @Nullable Integer node2SwitchportVlanId,
       @Nullable Integer encapsulatedVlanId) {
     this(
-        new Layer2Node(node1Hostname, node1InterfaceName, node1VlanId),
-        new Layer2Node(node2Hostname, node2InterfaceName, node2VlanId),
+        new Layer2Node(node1Hostname, node1InterfaceName, node1SwitchportVlanId),
+        new Layer2Node(node2Hostname, node2InterfaceName, node2SwitchportVlanId),
         encapsulatedVlanId);
   }
 

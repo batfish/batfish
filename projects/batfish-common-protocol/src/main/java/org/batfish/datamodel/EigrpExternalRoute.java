@@ -95,6 +95,11 @@ public class EigrpExternalRoute extends EigrpRoute {
   }
 
   @Override
+  public AbstractRouteBuilder<?, ?> toBuilder() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public final int hashCode() {
     return hash(
         _admin, _destinationAsn, _metric.hashCode(), _network, _nextHopIp, _nextHopInterface);

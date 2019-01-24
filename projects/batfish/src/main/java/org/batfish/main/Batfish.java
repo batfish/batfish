@@ -109,7 +109,6 @@ import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.IpsecUtil;
 import org.batfish.config.Settings;
 import org.batfish.config.TestrigSettings;
 import org.batfish.datamodel.AbstractRoute;
@@ -835,16 +834,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeEnvironmentRoutingTables(inputPath, outputPath);
   }
 
-  Topology computeEnvironmentTopology(Map<String, Configuration> configurations) {
-    _logger.resetTimer();
-    Topology topology = computeTestrigTopology(configurations);
-    topology.prune(getEdgeBlacklist(), getNodeBlacklist(), getInterfaceBlacklist());
-    topology.pruneFailedIpsecSessionEdges(
-        IpsecUtil.initIpsecTopology(configurations), configurations);
-    _logger.printElapsedTime();
-    return topology;
-  }
-
   public Set<Flow> computeNodOutput(List<NodJob> jobs) {
     _logger.info("\n*** EXECUTING NOD JOBS ***\n");
     _logger.resetTimer();
@@ -855,34 +844,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return flows;
   }
 
-  @VisibleForTesting
-  Topology computeTestrigTopology(Map<String, Configuration> configurations) {
-    Topology legacyTopology =
-        _storage.loadLegacyTopology(_settings.getContainer(), _testrigSettings.getName());
-    if (legacyTopology != null) {
-      return legacyTopology;
-    }
-    Layer1Topology rawLayer1Topology =
-        _storage.loadLayer1Topology(_settings.getContainer(), _testrigSettings.getName());
-    if (rawLayer1Topology != null) {
-      _logger.infof(
-          "Testrig:%s in container:%s has layer-1 topology file",
-          getTestrigName(), getContainerName());
-      newBatch("Processing layer-1 physical topology", 0);
-      Layer1Topology layer1PhysicalTopology =
-          TopologyUtil.computeLayer1PhysicalTopology(rawLayer1Topology, configurations);
-      newBatch("Computing layer-1 logical topology", 0);
-      Layer1Topology layer1LogicalTopology =
-          TopologyUtil.computeLayer1LogicalTopology(layer1PhysicalTopology, configurations);
-      newBatch("Computing layer-2 topology", 0);
-      Layer2Topology layer2Topology =
-          TopologyUtil.computeLayer2Topology(layer1LogicalTopology, configurations);
-      newBatch("Computing layer-3 topology", 0);
-      return TopologyUtil.computeLayer3Topology(layer2Topology, configurations);
-    }
-    // guess adjacencies based on interface subnetworks
-    _logger.info("*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
-    return TopologyUtil.synthesizeL3Topology(configurations);
+  @Override
+  public Layer1Topology loadRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
+    return _storage.loadLayer1Topology(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
   }
 
   private Map<String, Configuration> convertConfigurations(
@@ -1277,34 +1241,54 @@ public class Batfish extends PluginConsumer implements IBatfish {
         baseEnvTag, baseEnv, baseTraces, deltaEnvTag, deltaEnv, deltaTraces);
   }
 
+  @Override
   @Nonnull
-  private SortedSet<Edge> getEdgeBlacklist() {
+  public SortedSet<Edge> getEdgeBlacklist(@Nonnull NetworkSnapshot networkSnapshot) {
     SortedSet<Edge> blacklistEdges =
-        _storage.loadEdgeBlacklist(_settings.getContainer(), _settings.getTestrig());
+        _storage.loadEdgeBlacklist(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
     if (blacklistEdges == null) {
       return Collections.emptySortedSet();
     }
     return blacklistEdges;
   }
 
+  @Override
   @Nonnull
-  private SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
+  public SortedSet<NodeInterfacePair> getInterfaceBlacklist(
+      @Nonnull NetworkSnapshot networkSnapshot) {
     SortedSet<NodeInterfacePair> blacklistInterfaces =
-        _storage.loadInterfaceBlacklist(_settings.getContainer(), _settings.getTestrig());
+        _storage.loadInterfaceBlacklist(
+            networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
     if (blacklistInterfaces == null) {
       return Collections.emptySortedSet();
     }
     return blacklistInterfaces;
   }
 
+  @Override
   @Nonnull
-  private SortedSet<String> getNodeBlacklist() {
+  public SortedSet<String> getNodeBlacklist(@Nonnull NetworkSnapshot networkSnapshot) {
     SortedSet<String> blacklistNodes =
-        _storage.loadNodeBlacklist(_settings.getContainer(), _settings.getTestrig());
+        _storage.loadNodeBlacklist(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
     if (blacklistNodes == null) {
       return Collections.emptySortedSet();
     }
     return blacklistNodes;
+  }
+
+  @Nonnull
+  private SortedSet<Edge> getEdgeBlacklist() {
+    return getEdgeBlacklist(getNetworkSnapshot());
+  }
+
+  @Nonnull
+  private SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
+    return getInterfaceBlacklist(getNetworkSnapshot());
+  }
+
+  @Nonnull
+  private SortedSet<String> getNodeBlacklist() {
+    return getNodeBlacklist(getNetworkSnapshot());
   }
 
   @Override
@@ -2996,6 +2980,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (_settings.getSerializeIndependent()) {
       Path inputPath = _testrigSettings.getSerializeVendorPath();
       answer.append(serializeIndependentConfigs(inputPath));
+      // TODO: compute topology on initialization in cleaner way
+      initializeTopology(getNetworkSnapshot());
+      updateSnapshotNodeRoles();
       action = true;
     }
 
@@ -3031,6 +3018,27 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throw new CleanBatfishException("No task performed! Run with -help flag to see usage\n");
     }
     return answer;
+  }
+
+  /** Initialize topologies, commit {raw, raw pojo, pruned} layer-3 topologies to storage. */
+  @VisibleForTesting
+  void initializeTopology(NetworkSnapshot networkSnapshot) {
+    Map<String, Configuration> configurations = loadConfigurations();
+    Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(networkSnapshot);
+    serializeAsJson(_testrigSettings.getTopologyPath(), rawLayer3Topology, "raw layer-3 topology");
+    checkTopology(configurations, rawLayer3Topology);
+    org.batfish.datamodel.pojo.Topology pojoTopology =
+        org.batfish.datamodel.pojo.Topology.create(
+            _settings.getSnapshotName(), configurations, rawLayer3Topology);
+    serializeAsJson(
+        _testrigSettings.getPojoTopologyPath(), pojoTopology, "raw layer-3 pojo topology");
+    Topology layer3Topology = _topologyProvider.getLayer3Topology(getNetworkSnapshot());
+    try {
+      _storage.storeTopology(
+          layer3Topology, networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
+    } catch (IOException e) {
+      throw new BatfishException("Could not serialize layer-3 topology", e);
+    }
   }
 
   public static void serializeAsJson(Path outputPath, Object object, String objectName) {
@@ -3197,22 +3205,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       answer.addAnswerElement(answerElement);
     }
     Map<String, Configuration> configurations = getConfigurations(vendorConfigPath, answerElement);
-    Topology testrigTopology = computeTestrigTopology(configurations);
-    serializeAsJson(_testrigSettings.getTopologyPath(), testrigTopology, "testrig topology");
-    checkTopology(configurations, testrigTopology);
-    org.batfish.datamodel.pojo.Topology pojoTopology =
-        org.batfish.datamodel.pojo.Topology.create(
-            _settings.getSnapshotName(), configurations, testrigTopology);
-    serializeAsJson(_testrigSettings.getPojoTopologyPath(), pojoTopology, "testrig pojo topology");
     _storage.storeConfigurations(
         configurations, answerElement, _settings.getContainer(), _testrigSettings.getName());
-
     postProcessSnapshot(configurations);
-    Topology envTopology = computeEnvironmentTopology(configurations);
-    serializeAsJson(
-        _testrigSettings.getSerializeTopologyPath(), envTopology, "environment topology");
-
-    updateSnapshotNodeRoles();
     return answer;
   }
 
@@ -3222,8 +3217,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SnapshotId snapshotId = _settings.getTestrig();
     NodeRolesId snapshotNodeRolesId = _idResolver.getSnapshotNodeRolesId(networkId, snapshotId);
     Set<String> nodeNames = loadConfigurations().keySet();
-    Topology envTopology = getEnvironmentTopology();
-    SortedSet<NodeRoleDimension> autoRoles = new InferRoles(nodeNames, envTopology).inferRoles();
+    Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(getNetworkSnapshot());
+    SortedSet<NodeRoleDimension> autoRoles =
+        new InferRoles(nodeNames, rawLayer3Topology).inferRoles();
     NodeRolesData.Builder snapshotNodeRoles = NodeRolesData.builder();
     try {
       if (!autoRoles.isEmpty()) {

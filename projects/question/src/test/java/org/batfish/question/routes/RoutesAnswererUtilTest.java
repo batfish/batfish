@@ -207,6 +207,7 @@ public class RoutesAnswererUtilTest {
                 .setNextHopIp(ip)
                 .setCommunities(ImmutableSortedSet.of(65537L))
                 .setProtocol(RoutingProtocol.BGP)
+                .setOriginatorIp(Ip.parse("1.1.1.2"))
                 .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
                 .setTag(1)
                 .build()));
@@ -443,6 +444,7 @@ public class RoutesAnswererUtilTest {
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopIp(Ip.parse("1.1.1.2"))
             .setOriginType(OriginType.IGP)
+            .setOriginatorIp(Ip.parse("1.1.1.2"))
             .setProtocol(RoutingProtocol.BGP)
             .setLocalPreference(1L)
             .setAdmin(10)
@@ -457,6 +459,7 @@ public class RoutesAnswererUtilTest {
             .setAdmin(10)
             .setMetric(20L)
             .setOriginType(OriginType.IGP)
+            .setOriginatorIp(Ip.parse("1.1.1.2"))
             .setProtocol(RoutingProtocol.BGP)
             .setLocalPreference(1L)
             .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))

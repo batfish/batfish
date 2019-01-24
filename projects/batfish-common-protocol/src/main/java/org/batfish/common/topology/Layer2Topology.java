@@ -66,7 +66,7 @@ public final class Layer2Topology {
         layer2Node(i2.getHostname(), i2.getInterface()));
   }
 
-  /** Return whether the two interfaces are in the same broadcast domain. */
+  /** Return whether two non-switchport interfaces are in the same broadcast domain. */
   public boolean inSameBroadcastDomain(String host1, String iface1, String host2, String iface2) {
     return inSameBroadcastDomain(layer2Node(host1, iface1), layer2Node(host2, iface2));
   }

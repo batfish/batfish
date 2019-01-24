@@ -72,7 +72,8 @@ public class HostTest {
   public void testNatIpsecVpnsNotShared() throws IOException {
     Batfish batfish = getBatfishForConfigs("host1-not-shared.json");
     batfish.loadConfigurations();
-    Topology environmentTopology = batfish.getEnvironmentTopology();
+    Topology environmentTopology =
+        batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot());
 
     /*
      * NAT settings on host1 (not-shared version) should result in edges between tunnel interfaces and AWS VPNs being pruned
@@ -98,8 +99,8 @@ public class HostTest {
   @Test
   public void testNatIpsecVpnsShared() throws IOException {
     Batfish batfish = getBatfishForConfigs("host1-shared.json");
-    batfish.loadConfigurations();
-    Topology environmentTopology = batfish.getEnvironmentTopology();
+    Topology environmentTopology =
+        batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot());
 
     /*
      * NAT settings on host1 (not-shared version) should result in edges between tunnel interfaces and AWS VPNs not being pruned
