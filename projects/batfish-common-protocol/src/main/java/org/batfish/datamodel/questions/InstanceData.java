@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+import java.util.List;
 import java.util.Objects;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -25,7 +26,7 @@ public final class InstanceData {
 
   private String _longDescription;
 
-  private @Nonnull ImmutableList<String> _orderedVariableNames;
+  private @Nonnull List<String> _orderedVariableNames;
 
   private SortedSet<String> _tags;
 
@@ -54,7 +55,7 @@ public final class InstanceData {
 
   @JsonProperty(BfConsts.PROP_ORDERED_VARIABLE_NAMES)
   @Nonnull
-  public ImmutableList<String> getOrderedVariableNames() {
+  public List<String> getOrderedVariableNames() {
     return _orderedVariableNames;
   }
 
