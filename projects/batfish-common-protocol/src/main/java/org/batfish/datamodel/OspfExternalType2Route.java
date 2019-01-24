@@ -92,4 +92,9 @@ public class OspfExternalType2Route extends OspfExternalRoute {
     OspfExternalType2Route castRhs = (OspfExternalType2Route) rhs;
     return Long.compare(getCostToAdvertiser(), castRhs.getCostToAdvertiser());
   }
+
+  @Override
+  public AbstractRouteBuilder<?, ?> toBuilder() {
+    throw new UnsupportedOperationException();
+  }
 }

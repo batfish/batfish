@@ -68,6 +68,11 @@ public class OspfExternalType1Route extends OspfExternalRoute {
   }
 
   @Override
+  public AbstractRouteBuilder<?, ?> toBuilder() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;

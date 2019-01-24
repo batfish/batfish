@@ -68,4 +68,9 @@ public class RipInternalRoute extends RipRoute {
     }
     return 0;
   }
+
+  @Override
+  public AbstractRouteBuilder<?, ?> toBuilder() {
+    throw new UnsupportedOperationException();
+  }
 }
