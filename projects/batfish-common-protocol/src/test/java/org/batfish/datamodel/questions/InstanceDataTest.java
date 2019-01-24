@@ -8,7 +8,6 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
@@ -63,7 +62,6 @@ public class InstanceDataTest {
     equalsTester.addEqualityGroup(BatfishObjectMapper.clone(instanceData, InstanceData.class));
     instanceData.setTags(new TreeSet<>(Arrays.asList("tag1", "tag2")));
     equalsTester.addEqualityGroup(BatfishObjectMapper.clone(instanceData, InstanceData.class));
-    TreeMap<String, Variable> variables = new TreeMap<>();
     instanceData.setVariables(ImmutableSortedMap.of("v", new Variable()));
     equalsTester.addEqualityGroup(BatfishObjectMapper.clone(instanceData, InstanceData.class));
     equalsTester.testEquals();
