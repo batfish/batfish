@@ -53,8 +53,6 @@ public class BgpProtocolHelper {
 
     boolean remoteRouteIsBgp =
         remoteRouteProtocol == RoutingProtocol.IBGP || remoteRouteProtocol == RoutingProtocol.BGP;
-    RoutingProtocol targetProtocol =
-        sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
 
     // Set originatorIP
     Ip originatorIp;
@@ -70,18 +68,20 @@ public class BgpProtocolHelper {
     transformedOutgoingRouteBuilder.setReceivedFromRouteReflectorClient(
         !sessionProperties.isEbgp() && toNeighbor.getRouteReflectorClient());
 
-    // Outgoing asPath and communities
+    // Outgoing asPath and communities (for both Generated and BGP routes)
     AsPath originalAsPath = null;
     SortedSet<Long> originalCommunities = null;
     List<AsSet> transformedAsSets = new ArrayList<>();
     if (sessionProperties.isEbgp()) {
       transformedAsSets.add(AsSet.of(fromNeighbor.getLocalAs()));
     }
-    if (remoteRouteIsBgp) {
+    if (route instanceof BgpRoute) {
+      // Includes all routes with protocols BGP and IBGP, plus some with protocol AGGREGATE
       BgpRoute bgpRemoteRoute = (BgpRoute) route;
       originalAsPath = bgpRemoteRoute.getAsPath();
       originalCommunities = bgpRemoteRoute.getCommunities();
-    } else if (remoteRouteProtocol == RoutingProtocol.AGGREGATE) {
+    } else if (route instanceof GeneratedRoute) {
+      // Includes all other AGGREGATE routes
       GeneratedRoute gr = (GeneratedRoute) route;
       originalAsPath = gr.getAsPath();
       originalCommunities = gr.getCommunities();
@@ -171,7 +171,8 @@ public class BgpProtocolHelper {
     }
 
     // Outgoing protocol
-    transformedOutgoingRouteBuilder.setProtocol(targetProtocol);
+    transformedOutgoingRouteBuilder.setProtocol(
+        sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP);
     transformedOutgoingRouteBuilder.setNetwork(route.getNetwork());
 
     // Outgoing metric
