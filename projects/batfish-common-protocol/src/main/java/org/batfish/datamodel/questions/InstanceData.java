@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+import java.util.Objects;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -95,5 +96,28 @@ public final class InstanceData {
   @JsonProperty(BfConsts.PROP_VARIABLES)
   public void setVariables(SortedMap<String, Variable> variables) {
     _variables = variables;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    InstanceData that = (InstanceData) o;
+    return Objects.equals(_description, that._description)
+        && Objects.equals(_instanceName, that._instanceName)
+        && Objects.equals(_longDescription, that._longDescription)
+        && Objects.equals(_orderedVariableNames, that._orderedVariableNames)
+        && Objects.equals(_tags, that._tags)
+        && Objects.equals(_variables, that._variables);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _description, _instanceName, _longDescription, _orderedVariableNames, _tags, _variables);
   }
 }
