@@ -92,7 +92,7 @@ public final class TracerouteAnswererHelper {
               .filter(e -> !e.getIpSpace().equals(EmptyIpSpace.INSTANCE))
               .collect(ImmutableList.toImmutableList());
       checkArgument(
-          nonEmptyIpSpaces.size() > 0, "At least one source IP is required, could not resolve any");
+          !nonEmptyIpSpaces.isEmpty(), "At least one source IP is required, could not resolve any");
       checkArgument(
           nonEmptyIpSpaces.size() == 1,
           "Specified source IP %s resolves to more than one location/IP: %s",

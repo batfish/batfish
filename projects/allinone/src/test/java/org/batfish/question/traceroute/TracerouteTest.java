@@ -51,8 +51,6 @@ import org.junit.rules.TemporaryFolder;
 
 /** End-to-end tests of {@link TracerouteQuestion}. */
 public class TracerouteTest {
-  private static final String TAG = "tag";
-
   private static final String NODE1 = "node1";
   private static final String NODE2 = "node2";
   private static final String TESTRIGS_PREFIX = "org/batfish/allinone/testrigs/";
