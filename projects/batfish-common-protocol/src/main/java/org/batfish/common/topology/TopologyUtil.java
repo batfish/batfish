@@ -33,6 +33,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkConfigurations;
@@ -57,6 +58,8 @@ public final class TopologyUtil {
       ImmutableSet.Builder<Layer2Edge> edges,
       Layer1Node node1,
       Layer1Node node2) {
+    Integer i1Tag = i1.getEncapsulationVlan();
+    Integer i2Tag = i2.getEncapsulationVlan();
     if (i1.getSwitchportMode() == SwitchportMode.TRUNK
         && i2.getSwitchportMode() == SwitchportMode.TRUNK) {
       // Both sides are trunks, so add edges from n1,v to n2,v for all shared VLANs.
@@ -71,15 +74,27 @@ public final class TopologyUtil {
                   edges.add(new Layer2Edge(node1, vlan, node2, vlan, vlan));
                 }
               });
+    } else if (i1Tag != null) {
+      // i1 is a tagged layer-3 interface, and the other side is a trunk. The only possible edge is
+      // i2 receiving frames for a non-native allowed vlan.
+      if (!i1Tag.equals(i2.getNativeVlan()) && i2.getAllowedVlans().contains(i1Tag)) {
+        edges.add(new Layer2Edge(node1, null, node2, i1Tag, i1Tag));
+      }
+    } else if (i2Tag != null) {
+      // i1 is a trunk, and the other side is a tagged layer-3 interface. The only possible edge is
+      // i2 receiving frames for from a non-native allowed vlan of i1.
+      if (!i2Tag.equals(i1.getNativeVlan()) && i1.getAllowedVlans().contains(i2Tag)) {
+        edges.add(new Layer2Edge(node1, i2Tag, node2, null, i2Tag));
+      }
     } else if (trunkWithNativeVlanAllowed(i1)) {
-      // i1 is a trunk, but the other side is not. The only edge that will come up is i2 receiving
-      // untagged packets.
+      // i1 is a trunk, but the other side is not and does not use tags. The only edge that will
+      // come up is i2 receiving untagged packets.
       Integer node2VlanId =
           i2.getSwitchportMode() == SwitchportMode.ACCESS ? i2.getAccessVlan() : null;
       edges.add(new Layer2Edge(node1, i1.getNativeVlan(), node2, node2VlanId, null));
     } else if (trunkWithNativeVlanAllowed(i2)) {
-      // i1 is not a trunk, but the other side is. The only edge that will come up is the other
-      // side receiving untagged packets and treating them as native VLAN.
+      // i1 is not a trunk and does not use tags, but the other side is a trunk. The only edge that
+      // will come up is the other side receiving untagged packets and treating them as native VLAN.
       Integer node1VlanId =
           i1.getSwitchportMode() == SwitchportMode.ACCESS ? i1.getAccessVlan() : null;
       edges.add(new Layer2Edge(node1, node1VlanId, node2, i2.getNativeVlan(), null));
@@ -138,6 +153,8 @@ public final class TopologyUtil {
     if (i1.getSwitchportMode() == SwitchportMode.TRUNK
         || i2.getSwitchportMode() == SwitchportMode.TRUNK) {
       addLayer2TrunkEdges(i1, i2, edges, node1, node2);
+    } else if (i1.getEncapsulationVlan() != null || i2.getEncapsulationVlan() != null) {
+      tryAddLayer2TaggedNonTrunkEdge(i1, i2, edges, node1, node2);
     } else {
       Integer node1VlanId =
           i1.getSwitchportMode() == SwitchportMode.ACCESS ? i1.getAccessVlan() : null;
@@ -147,9 +164,21 @@ public final class TopologyUtil {
     }
   }
 
+  private static void tryAddLayer2TaggedNonTrunkEdge(
+      Interface i1, Interface i2, Builder<Layer2Edge> edges, Layer1Node node1, Layer1Node node2) {
+    Integer i1Tag = i1.getEncapsulationVlan();
+    Integer i2Tag = i2.getEncapsulationVlan();
+    // precondition: i1Tag != null || i2Tag != null
+    if (i1Tag == null || i2Tag == null || !i1Tag.equals(i2Tag)) {
+      return;
+    }
+    // TODO: remove node-level tags?
+    edges.add(new Layer2Edge(node1, null, node2, null, i1Tag));
+  }
+
   private static void computeLayer2SelfEdges(
       @Nonnull String hostname, @Nonnull Vrf vrf, @Nonnull ImmutableSet.Builder<Layer2Edge> edges) {
-    Map<Integer, ImmutableList.Builder<String>> switchportsByVlan = new HashMap<>();
+    Map<Integer, ImmutableList.Builder<String>> switchportsByVlanBuilder = new HashMap<>();
     vrf.getInterfaces().values().stream()
         .filter(Interface::getActive)
         .forEach(
@@ -158,19 +187,21 @@ public final class TopologyUtil {
                 i.getAllowedVlans().stream()
                     .forEach(
                         vlan ->
-                            switchportsByVlan
+                            switchportsByVlanBuilder
                                 .computeIfAbsent(vlan, n -> ImmutableList.builder())
                                 .add(i.getName()));
               } else if (i.getSwitchportMode() == SwitchportMode.ACCESS
                   && i.getAccessVlan() != null) {
-                switchportsByVlan
+                switchportsByVlanBuilder
                     .computeIfAbsent(i.getAccessVlan(), n -> ImmutableList.builder())
                     .add(i.getName());
               }
             });
+    Map<Integer, List<String>> switchportsByVlan =
+        CommonUtil.toImmutableMap(
+            switchportsByVlanBuilder, Entry::getKey, e -> e.getValue().build());
     switchportsByVlan.forEach(
-        (vlanId, interfaceNamesBuilder) -> {
-          List<String> interfaceNames = interfaceNamesBuilder.build();
+        (vlanId, interfaceNames) -> {
           CommonUtil.forEachWithIndex(
               interfaceNames,
               (i, i1Name) -> {
@@ -183,6 +214,24 @@ public final class TopologyUtil {
                 }
               });
         });
+    vrf.getInterfaces().values().stream()
+        .filter(i -> i.getInterfaceType() == InterfaceType.VLAN)
+        .forEach(
+            irbInterface -> {
+              String irbName = irbInterface.getName();
+              int vlanId = irbInterface.getVlan();
+              switchportsByVlan
+                  .getOrDefault(vlanId, ImmutableList.of())
+                  .forEach(
+                      switchportName -> {
+                        edges.add(
+                            new Layer2Edge(
+                                hostname, irbName, null, hostname, switchportName, vlanId, null));
+                        edges.add(
+                            new Layer2Edge(
+                                hostname, switchportName, vlanId, hostname, irbName, null, null));
+                      });
+            });
   }
 
   /**
