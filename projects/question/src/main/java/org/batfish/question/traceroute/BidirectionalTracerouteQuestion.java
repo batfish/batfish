@@ -31,12 +31,12 @@ public final class BidirectionalTracerouteQuestion extends Question {
   private final int _maxTraces;
 
   @JsonCreator
-  private static TracerouteQuestion create(
+  private static BidirectionalTracerouteQuestion create(
       @JsonProperty(PROP_IGNORE_FILTERS) boolean ignoreFilters,
       @JsonProperty(PROP_SOURCE_LOCATION) @Nullable String sourceLocationStr,
       @JsonProperty(PROP_HEADER_CONSTRAINTS) @Nullable PacketHeaderConstraints headerConstraints,
       @JsonProperty(PROP_MAX_TRACES) @Nullable Integer maxTraces) {
-    return new TracerouteQuestion(
+    return new BidirectionalTracerouteQuestion(
         sourceLocationStr,
         firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained()),
         ignoreFilters,
