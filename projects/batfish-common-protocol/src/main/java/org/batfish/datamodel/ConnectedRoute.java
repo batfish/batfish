@@ -16,7 +16,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * adjacencies.
  */
 @ParametersAreNonnullByDefault
-public class ConnectedRoute extends AbstractRoute {
+public final class ConnectedRoute extends AbstractRoute {
 
   private static final long serialVersionUID = 1L;
 
@@ -107,7 +107,7 @@ public class ConnectedRoute extends AbstractRoute {
   }
 
   /** Builder for {@link ConnectedRoute} */
-  public static class Builder extends AbstractRouteBuilder<Builder, ConnectedRoute> {
+  public static final class Builder extends AbstractRouteBuilder<Builder, ConnectedRoute> {
     @Nullable private String _nextHopInterface;
 
     @Nonnull

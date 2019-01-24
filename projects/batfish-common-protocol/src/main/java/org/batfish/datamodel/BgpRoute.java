@@ -25,11 +25,11 @@ import org.batfish.common.util.CommonUtil;
  * present only in BGP advertisements on the wire)
  */
 @ParametersAreNonnullByDefault
-public class BgpRoute extends AbstractRoute {
+public final class BgpRoute extends AbstractRoute {
 
   /** Builder for {@link BgpRoute} */
   @ParametersAreNonnullByDefault
-  public static class Builder extends AbstractRouteBuilder<Builder, BgpRoute> {
+  public static final class Builder extends AbstractRouteBuilder<Builder, BgpRoute> {
 
     @Nonnull private AsPath _asPath;
     @Nonnull private ImmutableSortedSet.Builder<Long> _clusterList;
@@ -519,7 +519,7 @@ public class BgpRoute extends AbstractRoute {
   }
 
   @Override
-  public AbstractRouteBuilder<?, ?> toBuilder() {
+  public Builder toBuilder() {
     return builder()
         .setNetwork(getNetwork())
         .setAdmin(getAdministrativeCost())

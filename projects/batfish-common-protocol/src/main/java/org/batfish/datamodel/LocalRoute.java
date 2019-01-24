@@ -17,7 +17,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * They are {@link Prefix#MAX_PREFIX_LENGTH} routes to the interface's IP address.
  */
 @ParametersAreNonnullByDefault
-public class LocalRoute extends AbstractRoute {
+public final class LocalRoute extends AbstractRoute {
 
   private static final long serialVersionUID = 1L;
   private static final String PROP_SOURCE_PREFIX_LENGTH = "sourcePrefixLength";
@@ -36,7 +36,7 @@ public class LocalRoute extends AbstractRoute {
   @VisibleForTesting
   LocalRoute(Prefix network, String nextHopInterface, int sourcePrefixLength, int admin) {
     super(network, admin, false, false);
-    _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
+    _nextHopInterface = nextHopInterface;
     _sourcePrefixLength = sourcePrefixLength;
   }
 
@@ -72,7 +72,13 @@ public class LocalRoute extends AbstractRoute {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_network, _admin, _nextHopInterface, _sourcePrefixLength);
+    return Objects.hash(
+        _network,
+        _admin,
+        getNonRouting(),
+        getNonForwarding(),
+        _nextHopInterface,
+        _sourcePrefixLength);
   }
 
   @Override
@@ -129,7 +135,7 @@ public class LocalRoute extends AbstractRoute {
   }
 
   /** Builder for {@link org.batfish.datamodel.LocalRoute} */
-  public static class Builder extends AbstractRouteBuilder<Builder, LocalRoute> {
+  public static final class Builder extends AbstractRouteBuilder<Builder, LocalRoute> {
 
     @Nullable private String _nextHopInterface;
     @Nullable private Integer _sourcePrefixLength;
@@ -137,6 +143,7 @@ public class LocalRoute extends AbstractRoute {
     @Nonnull
     @Override
     public LocalRoute build() {
+      checkArgument(getNetwork() != null, "LocalRoute missing %s", PROP_NETWORK);
       checkArgument(
           _sourcePrefixLength != null, "LocalRoute missing %s", PROP_SOURCE_PREFIX_LENGTH);
       return new LocalRoute(
