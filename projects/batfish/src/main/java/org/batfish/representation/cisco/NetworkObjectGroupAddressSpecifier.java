@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
@@ -21,6 +22,27 @@ public class NetworkObjectGroupAddressSpecifier implements AccessListAddressSpec
 
   public NetworkObjectGroupAddressSpecifier(String name) {
     _name = name;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof NetworkObjectGroupAddressSpecifier)) {
+      return false;
+    }
+    NetworkObjectGroupAddressSpecifier that = (NetworkObjectGroupAddressSpecifier) o;
+    return Objects.equals(_name, that._name);
+  }
+
+  public String getName() {
+    return _name;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_name);
   }
 
   @Override

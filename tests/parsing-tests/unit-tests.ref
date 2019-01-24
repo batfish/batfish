@@ -117,6 +117,9 @@
         "asa_interface" : [
           "configs/asa_interface"
         ],
+        "asa_nat" : [
+          "configs/asa_nat"
+        ],
         "asa_object_groups" : [
           "configs/asa_object_groups"
         ],
@@ -853,6 +856,7 @@
         "configs/asa_acl" : "PASSED",
         "configs/asa_banner" : "PASSED",
         "configs/asa_interface" : "PASSED",
+        "configs/asa_nat" : "PASSED",
         "configs/asa_object_groups" : "PASSED",
         "configs/asa_ospf" : "PASSED",
         "configs/asa_ssh" : "PASSED",
@@ -7458,9 +7462,192 @@
             "  EOF:<EOF>)"
           ]
         },
+        "asa_nat" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        ASA:'ASA'",
+            "        VARIABLE:'Version'",
+            "        FLOAT:'9.9'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'asa_nat'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_asa_twice_nat",
+            "      NAT:'nat'",
+            "      (asa_nat_ifaces",
+            "        PAREN_LEFT:'('",
+            "        real_if = (variable",
+            "          ANY:'any')",
+            "        COMMA:','",
+            "        mapped_if = (variable",
+            "          ANY:'any')",
+            "        PAREN_RIGHT:')')",
+            "      SOURCE:'source'",
+            "      (asa_twice_nat_dynamic",
+            "        DYNAMIC:'dynamic'",
+            "        real_src = (variable",
+            "          VARIABLE:'source-net')",
+            "        (asa_nat_pat_pool",
+            "          PAT_POOL:'pat-pool'",
+            "          pat_obj = (variable",
+            "            POOL:'pool')",
+            "          BLOCK_ALLOCATION:'block-allocation'",
+            "          ROUND_ROBIN:'round-robin'))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_asa_twice_nat",
+            "      NAT:'nat'",
+            "      (asa_nat_ifaces",
+            "        PAREN_LEFT:'('",
+            "        real_if = (variable",
+            "          INSIDE:'inside')",
+            "        COMMA:','",
+            "        mapped_if = (variable",
+            "          OUTSIDE:'outside')",
+            "        PAREN_RIGHT:')')",
+            "      SOURCE:'source'",
+            "      (asa_twice_nat_dynamic",
+            "        DYNAMIC:'dynamic'",
+            "        real_src = (variable",
+            "          VARIABLE:'net1')",
+            "        mapped_src = (variable",
+            "          VARIABLE:'net2')",
+            "        mapped_src_iface = INTERFACE:'interface')",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_asa_twice_nat",
+            "      NAT:'nat'",
+            "      (asa_nat_ifaces",
+            "        PAREN_LEFT:'('",
+            "        real_if = (variable",
+            "          INSIDE:'inside')",
+            "        COMMA:','",
+            "        mapped_if = (variable",
+            "          OUTSIDE:'outside')",
+            "        PAREN_RIGHT:')')",
+            "      SOURCE:'source'",
+            "      (asa_twice_nat_dynamic",
+            "        DYNAMIC:'dynamic'",
+            "        real_src = (variable",
+            "          VARIABLE:'net1')",
+            "        mapped_src = (variable",
+            "          INTERFACE:'interface'))",
+            "      (asa_twice_nat_destination",
+            "        DESTINATION:'destination'",
+            "        STATIC:'static'",
+            "        mapped_dst = (variable",
+            "          INTERFACE:'interface')",
+            "        real_dst = (variable",
+            "          VARIABLE:'net2'))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_asa_twice_nat",
+            "      NAT:'nat'",
+            "      (asa_nat_ifaces",
+            "        PAREN_LEFT:'('",
+            "        real_if = (variable",
+            "          INSIDE:'inside')",
+            "        COMMA:','",
+            "        mapped_if = (variable",
+            "          OUTSIDE:'outside')",
+            "        PAREN_RIGHT:')')",
+            "      SOURCE:'source'",
+            "      (asa_twice_nat_static",
+            "        STATIC:'static'",
+            "        real_src = (variable",
+            "          VARIABLE:'net1')",
+            "        mapped_src = (variable",
+            "          VARIABLE:'net2'))",
+            "      (asa_nat_optional_args",
+            "        ROUTE_LOOKUP:'route-lookup')",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_asa_twice_nat",
+            "      NAT:'nat'",
+            "      SOURCE:'source'",
+            "      (asa_twice_nat_dynamic",
+            "        DYNAMIC:'dynamic'",
+            "        real_src = (variable",
+            "          VARIABLE:'source-net')",
+            "        (asa_nat_pat_pool",
+            "          PAT_POOL:'pat-pool'",
+            "          pat_obj = (variable",
+            "            POOL:'pool')",
+            "          EXTENDED:'extended'",
+            "          FLAT:'flat'",
+            "          INCLUDE_RESERVE:'include-reserve'))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_asa_twice_nat",
+            "      NAT:'nat'",
+            "      SOURCE:'source'",
+            "      (asa_twice_nat_static",
+            "        STATIC:'static'",
+            "        real_src = (variable",
+            "          VARIABLE:'net1')",
+            "        mapped_src = (variable",
+            "          VARIABLE:'net2'))",
+            "      (asa_twice_nat_destination",
+            "        DESTINATION:'destination'",
+            "        STATIC:'static'",
+            "        mapped_dst = (variable",
+            "          VARIABLE:'net3')",
+            "        real_dst = (variable",
+            "          VARIABLE:'net4'))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_asa_twice_nat",
+            "      NAT:'nat'",
+            "      SOURCE:'source'",
+            "      (asa_twice_nat_static",
+            "        STATIC:'static'",
+            "        real_src = (variable",
+            "          VARIABLE:'net1')",
+            "        mapped_src = (variable",
+            "          VARIABLE:'net2'))",
+            "      (asa_nat_optional_args",
+            "        DNS:'dns')",
+            "      (asa_nat_optional_args",
+            "        NO_PROXY_ARP:'no-proxy-arp')",
+            "      (asa_nat_optional_args",
+            "        UNIDIRECTIONAL:'unidirectional')",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_asa_twice_nat",
+            "      NAT:'nat'",
+            "      SOURCE:'source'",
+            "      (asa_twice_nat_static",
+            "        STATIC:'static'",
+            "        real_src = (variable",
+            "          VARIABLE:'net1')",
+            "        mapped_src = (variable",
+            "          VARIABLE:'net2'))",
+            "      (asa_twice_nat_service",
+            "        SERVICE:'service'",
+            "        svc_obj1 = (variable",
+            "          VARIABLE:'service1')",
+            "        svc_obj2 = (variable",
+            "          VARIABLE:'service2'))",
+            "      NEWLINE:'\\n'))",
+            "  EOF:<EOF>)"
+          ]
+        },
         "asa_object_groups" : {
           "sentences" : [
             "(cisco_configuration",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        ASA:'ASA'",
+            "        VARIABLE:'Version'",
+            "        FLOAT:'9.9'",
+            "        NEWLINE:'\\n')))",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -21694,7 +21881,7 @@
             "        CACHE:'cache'",
             "        (null_rest_of_line",
             "          TIMEOUT:'timeout'",
-            "          VARIABLE:'inactive'",
+            "          INACTIVE:'inactive'",
             "          DEC:'280'",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
@@ -21704,7 +21891,7 @@
             "      (null_rest_of_line",
             "        CACHE:'cache'",
             "        TIMEOUT:'timeout'",
-            "        VARIABLE:'inactive'",
+            "        INACTIVE:'inactive'",
             "        DEC:'60'",
             "        NEWLINE:'\\n')))",
             "  (stanza",
@@ -63005,6 +63192,104 @@
             }
           ]
         },
+        "asa_nat" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 6,
+              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Text" : "nat (any,any) source dynamic source-net pat-pool pool block-allocation round-robin"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 7,
+              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Text" : "nat (inside,outside) source dynamic net1 net2 interface"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 9,
+              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Text" : "nat (inside,outside) source static net1 net2 route-lookup"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 10,
+              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Text" : "nat source dynamic source-net pat-pool pool extended flat include-reserve"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 12,
+              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Text" : "nat source static net1 net2 dns no-proxy-arp unidirectional"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 13,
+              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Text" : "nat source static net1 net2 service service1 service2"
+            }
+          ],
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net1"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group interface"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group interface"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net2"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net1"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net2"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net1"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net2"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net3"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net4"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net1"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net2"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net1"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net2"
+            }
+          ]
+        },
         "bgp_default_originate_policy" : {
           "Red flags" : [
             {
@@ -63772,6 +64057,7 @@
         "asa_acl" : "PASSED",
         "asa_banner" : "PASSED",
         "asa_interface" : "PASSED",
+        "asa_nat" : "PASSED",
         "asa_object_groups" : "PASSED",
         "asa_ospf" : "PASSED",
         "asa_ssh" : "PASSED",
@@ -64258,11 +64544,12 @@
             }
           }
         },
+        "configs/asa_nat" : { },
         "configs/asa_object_groups" : {
           "extended ipv4 access-list" : {
             "ALLOW_SERVER02" : {
               "definitionLines" : [
-                5
+                8
               ],
               "numReferrers" : 0
             }
@@ -64270,8 +64557,8 @@
           "object network" : {
             "server02" : {
               "definitionLines" : [
-                3,
-                4
+                6,
+                7
               ],
               "numReferrers" : 1
             }
@@ -69053,11 +69340,69 @@
             }
           }
         },
+        "configs/asa_nat" : {
+          "interface" : {
+            "inside" : {
+              "twice nat real interface" : [
+                7,
+                8,
+                9
+              ]
+            },
+            "outside" : {
+              "twice nat mapped interface" : [
+                7,
+                8,
+                9
+              ]
+            }
+          },
+          "object network" : {
+            "interface" : {
+              "twice nat mapped destination network object" : [
+                8
+              ],
+              "twice nat mapped source network object" : [
+                8
+              ]
+            },
+            "net1" : {
+              "twice nat real source network object" : [
+                8,
+                9,
+                11,
+                12,
+                13
+              ]
+            },
+            "net2" : {
+              "twice nat mapped source network object" : [
+                9,
+                11,
+                12,
+                13
+              ],
+              "twice nat real destination network object" : [
+                8
+              ]
+            },
+            "net3" : {
+              "twice nat mapped destination network object" : [
+                11
+              ]
+            },
+            "net4" : {
+              "twice nat real destination network object" : [
+                11
+              ]
+            }
+          }
+        },
         "configs/asa_object_groups" : {
           "object network" : {
             "server02" : {
               "extended access-list network object" : [
-                5
+                8
               ]
             }
           }
@@ -72376,6 +72721,64 @@
             }
           }
         },
+        "configs/asa_nat" : {
+          "interface" : {
+            "inside" : {
+              "twice nat real interface" : [
+                7,
+                8,
+                9
+              ]
+            },
+            "outside" : {
+              "twice nat mapped interface" : [
+                7,
+                8,
+                9
+              ]
+            }
+          },
+          "object network" : {
+            "interface" : {
+              "twice nat mapped destination network object" : [
+                8
+              ],
+              "twice nat mapped source network object" : [
+                8
+              ]
+            },
+            "net1" : {
+              "twice nat real source network object" : [
+                8,
+                9,
+                11,
+                12,
+                13
+              ]
+            },
+            "net2" : {
+              "twice nat mapped source network object" : [
+                9,
+                11,
+                12,
+                13
+              ],
+              "twice nat real destination network object" : [
+                8
+              ]
+            },
+            "net3" : {
+              "twice nat mapped destination network object" : [
+                11
+              ]
+            },
+            "net4" : {
+              "twice nat real destination network object" : [
+                11
+              ]
+            }
+          }
+        },
         "configs/bgp_address_family" : {
           "interface" : {
             "Loopback0" : {
@@ -74626,6 +75029,7 @@
         "configs/asa_acl" : "PASSED",
         "configs/asa_banner" : "PASSED",
         "configs/asa_interface" : "PASSED",
+        "configs/asa_nat" : "PASSED",
         "configs/asa_object_groups" : "PASSED",
         "configs/asa_ospf" : "PASSED",
         "configs/asa_ssh" : "PASSED",
