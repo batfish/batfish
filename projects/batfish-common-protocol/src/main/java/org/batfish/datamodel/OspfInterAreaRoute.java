@@ -68,4 +68,9 @@ public class OspfInterAreaRoute extends OspfInternalRoute {
     OspfInterAreaRoute castRhs = (OspfInterAreaRoute) rhs;
     return Comparator.comparing(OspfInterAreaRoute::getArea).compare(this, castRhs);
   }
+
+  @Override
+  public AbstractRouteBuilder<?, ?> toBuilder() {
+    throw new UnsupportedOperationException();
+  }
 }
