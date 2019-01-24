@@ -30,6 +30,7 @@ import static org.batfish.datamodel.questions.ConfiguredSessionStatus.UNIQUE_MAT
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.ACCESS_VLAN;
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.ALLOWED_VLANS;
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.AUTO_STATE_VLAN;
+import static org.batfish.datamodel.questions.InterfacePropertySpecifier.ENCAPSULATION_VLAN;
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.NATIVE_VLAN;
 import static org.batfish.datamodel.questions.IpsecSessionStatus.IKE_PHASE1_FAILED;
 import static org.batfish.datamodel.questions.IpsecSessionStatus.IKE_PHASE1_KEY_MISMATCH;
@@ -3116,7 +3117,9 @@ public final class WorkMgrTest {
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of(ACCESS_VLAN, ALLOWED_VLANS, AUTO_STATE_VLAN, NATIVE_VLAN)));
+        equalTo(
+            ImmutableSet.of(
+                ACCESS_VLAN, ALLOWED_VLANS, AUTO_STATE_VLAN, ENCAPSULATION_VLAN, NATIVE_VLAN)));
   }
 
   @Test

@@ -21,7 +21,10 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.SubRange;
@@ -415,6 +418,163 @@ public final class TopologyUtilTest {
           "c1:i1 and c2:i1 are not in the same broadcast domain",
           !layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
     }
+  }
+
+  @Test
+  public void testComputeLayer2TopologyTaggedLayer3ToTaggedLayer3() {
+    String n1Name = "n1";
+    String n2Name = "n2";
+    String i1Name = "i1";
+    String i1aName = "i1a";
+    String i1bName = "i1b";
+    int i1aVlan = 10;
+    int i1bVlan = 20;
+
+    // Nodes
+    Configuration n1 = _cb.setHostname(n1Name).build();
+    Configuration n2 = _cb.setHostname(n2Name).build();
+
+    // Vrfs
+    Vrf v1 = _vb.setOwner(n1).build();
+    Vrf v2 = _vb.setOwner(n2).build();
+
+    // Interfaces
+    _ib.setActive(true);
+    // n1 interfaces
+    _ib.setOwner(n1).setVrf(v1);
+    _ib.setName(i1Name).setDependencies(ImmutableList.of()).setEncapsulationVlan(null).build();
+    _ib.setDependencies(ImmutableList.of(new Dependency(i1Name, DependencyType.BIND)));
+    _ib.setName(i1aName).setEncapsulationVlan(i1aVlan).build();
+    _ib.setName(i1bName).setEncapsulationVlan(i1bVlan).build();
+    // n2 interfaces
+    _ib.setOwner(n2).setVrf(v2);
+    _ib.setName(i1Name).setDependencies(ImmutableList.of()).setEncapsulationVlan(null).build();
+    _ib.setDependencies(ImmutableList.of(new Dependency(i1Name, DependencyType.BIND)));
+    _ib.setName(i1aName).setEncapsulationVlan(i1aVlan).build();
+    _ib.setName(i1bName).setEncapsulationVlan(i1bVlan).build();
+
+    // Layer1
+    Layer1Topology layer1LogicalTopology =
+        layer1Topology(
+            n1Name, i1Name, n2Name, i1Name //
+            );
+
+    // Layer2
+    Layer2Topology layer2Topology =
+        computeLayer2Topology(layer1LogicalTopology, ImmutableMap.of(n1Name, n1, n2Name, n2));
+
+    assertThat(
+        "n1:i1a and n2:i1a are in the same broadcast domain",
+        layer2Topology.inSameBroadcastDomain(n1Name, i1aName, n2Name, i1aName));
+    assertThat(
+        "n1:i1b and n2:i1b are in the same broadcast domain",
+        layer2Topology.inSameBroadcastDomain(n1Name, i1bName, n2Name, i1bName));
+    assertThat(
+        "n1:i1a and n2:i1b are NOT in the same broadcast domain",
+        !layer2Topology.inSameBroadcastDomain(n1Name, i1aName, n2Name, i1bName));
+  }
+
+  @Test
+  public void testComputeLayer2TopologyTaggedLayer3ToTrunk() {
+    // n1:iTagged <=> n2:iTrunkParent
+
+    // n1:iTagged children:
+    // - n1:ia - tag is 10
+    // - n1:ib - tag is 20
+    // - n1:ic - tag is 30
+
+    // n2:iTrunkParent child is n2:iTrunk
+    // n2:iTrunk:
+    // - native 20
+    // - allowed: 10,20
+    // n2 has three IRB interfaces:
+    // - n2:ia - vlan 10
+    // - n2:ib - vlan 20
+    // - n2:ic - vlan 30
+
+    // we expect:
+    // D(n1:ia)=D(n2:ia) // tags match (10=10)
+    // D(n1:ib)!=D(n2:ib) // trunk does not send tag on native vlan
+    // D(n1:ic)!=D(n2:ic) // trunk does not allow traffic with this tag
+
+    String n1Name = "n1";
+    String n2Name = "n2";
+    String iTaggedName = "iTagged";
+    String iTrunkParentName = "iTrunkParent";
+    String iTrunkName = "iTrunk";
+    String iaName = "ia";
+    String ibName = "ib";
+    String icName = "ic";
+    int iaVlan = 10;
+    int ibVlan = 20;
+    int icVlan = 30;
+
+    // Nodes
+    Configuration n1 = _cb.setHostname(n1Name).build();
+    Configuration n2 = _cb.setHostname(n2Name).build();
+
+    // Vrfs
+    Vrf v1 = _vb.setOwner(n1).build();
+    Vrf v2 = _vb.setOwner(n2).build();
+
+    // Interfaces
+    _ib.setActive(true);
+    // n1 interfaces
+    _ib.setOwner(n1).setVrf(v1);
+    // parent interface that multiplexes based on tags
+    _ib.setName(iTaggedName).setDependencies(ImmutableList.of()).setEncapsulationVlan(null).build();
+    _ib.setDependencies(ImmutableList.of(new Dependency(iTaggedName, DependencyType.BIND)));
+    _ib.setName(iaName).setEncapsulationVlan(iaVlan).build();
+    _ib.setName(ibName).setEncapsulationVlan(ibVlan).build();
+    _ib.setName(icName).setEncapsulationVlan(icVlan).build();
+    // n2 interfaces
+    _ib.setOwner(n2).setVrf(v2);
+    _ib.setDependencies(ImmutableList.of()).setEncapsulationVlan(null);
+    Interface vlanA = _ib.setName(iaName).build();
+    vlanA.setInterfaceType(InterfaceType.VLAN);
+    vlanA.setVlan(iaVlan);
+    Interface vlanB = _ib.setName(ibName).build();
+    vlanB.setInterfaceType(InterfaceType.VLAN);
+    vlanB.setVlan(ibVlan);
+    Interface vlanC = _ib.setName(icName).build();
+    vlanC.setInterfaceType(InterfaceType.VLAN);
+    vlanC.setVlan(icVlan);
+    _ib.setName(iTrunkParentName).build();
+    Interface trunk =
+        _ib.setName(iTrunkName)
+            .setDependencies(
+                ImmutableList.of(new Dependency(iTrunkParentName, DependencyType.BIND)))
+            .build();
+    trunk.setNativeVlan(ibVlan);
+    trunk.setAllowedVlans(IntegerSpace.builder().including(iaVlan).including(ibVlan).build());
+    trunk.setSwitchport(true);
+    trunk.setSwitchportMode(SwitchportMode.TRUNK);
+
+    // Layer1
+    Layer1Topology layer1LogicalTopology =
+        layer1Topology(
+            n1Name, iTaggedName, n2Name, iTrunkParentName //
+            );
+
+    // Layer2
+    Layer2Topology layer2Topology =
+        computeLayer2Topology(layer1LogicalTopology, ImmutableMap.of(n1Name, n1, n2Name, n2));
+
+    assertThat(
+        "n1:ia and n2:ia are in the same broadcast domain",
+        layer2Topology.inSameBroadcastDomain(n1Name, iaName, n2Name, iaName));
+    assertThat(
+        "n1:ib and n2:ib are NOT in the same broadcast domain",
+        !layer2Topology.inSameBroadcastDomain(n1Name, ibName, n2Name, ibName));
+    assertThat(
+        "n1:ic and n2:ic are NOT in the same broadcast domain",
+        !layer2Topology.inSameBroadcastDomain(n1Name, icName, n2Name, icName));
+    assertThat(
+        "n1:ia and n2:ib are NOT in the same broadcast domain",
+        !layer2Topology.inSameBroadcastDomain(n1Name, iaName, n2Name, ibName));
+    assertThat(
+        "n1:ia and n2:ic are NOT in the same broadcast domain",
+        !layer2Topology.inSameBroadcastDomain(n1Name, iaName, n2Name, icName));
   }
 
   @Test

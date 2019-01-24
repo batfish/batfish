@@ -473,12 +473,12 @@ public class EdgesAnswerer extends Answerer {
             COL_INTERFACE,
             new NodeInterfacePair(
                 layer2Edge.getNode1().getHostname(), layer2Edge.getNode1().getInterfaceName()))
-        .put(COL_VLAN, layer2Edge.getNode1().getVlanId())
+        .put(COL_VLAN, layer2Edge.getNode1().getSwitchportVlanId())
         .put(
             COL_REMOTE_INTERFACE,
             new NodeInterfacePair(
                 layer2Edge.getNode2().getHostname(), layer2Edge.getNode2().getInterfaceName()))
-        .put(COL_REMOTE_VLAN, layer2Edge.getNode2().getVlanId());
+        .put(COL_REMOTE_VLAN, layer2Edge.getNode2().getSwitchportVlanId());
 
     return row.build();
   }
