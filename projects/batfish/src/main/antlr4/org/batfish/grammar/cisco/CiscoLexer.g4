@@ -559,6 +559,11 @@ AFPOVERTCP
    'afpovertcp'
 ;
 
+AFTER_AUTO
+:
+   'after-auto'
+;
+
 AGE
 :
    'age'
@@ -1604,6 +1609,11 @@ BLACKLIST_TIME
 BLOCK
 :
    'block'
+;
+
+BLOCK_ALLOCATION
+:
+   'block-allocation'
 ;
 
 BLOGGERD
@@ -4792,6 +4802,11 @@ FLASH_OVERRIDE
    'flash-override'
 ;
 
+FLAT
+:
+   'flat'
+;
+
 FLOATING_CONN
 :
    'floating-conn'
@@ -5877,6 +5892,11 @@ IN
    'in'
 ;
 
+INACTIVE
+:
+   'inactive'
+;
+
 INACTIVITY_TIMER
 :
    'inactivity-timer'
@@ -5895,6 +5915,11 @@ INBOUND
 INCLUDE
 :
    'include'
+;
+
+INCLUDE_RESERVE
+:
+   'include-reserve'
 ;
 
 INCLUDE_STUB
@@ -8494,6 +8519,11 @@ NO_PREPEND
    'no-prepend'
 ;
 
+NO_PROXY_ARP
+:
+   'no-proxy-arp'
+;
+
 NO_REDISTRIBUTION
 :
    'no-redistribution'
@@ -9122,6 +9152,11 @@ PASSWORD_STORAGE
 PASSWD
 :
    'passwd'
+;
+
+PAT_POOL
+:
+   'pat-pool'
 ;
 
 PAT_XLATE
@@ -10726,6 +10761,11 @@ ROTARY
    'rotary'
 ;
 
+ROUND_ROBIN
+:
+   'round-robin'
+;
+
 ROUTE
 :
    'route'
@@ -10734,6 +10774,11 @@ ROUTE
 ROUTE_CACHE
 :
    'route-cache'
+;
+
+ROUTE_LOOKUP
+:
+   'route-lookup'
 ;
 
 ROUTE_MAP
@@ -13221,6 +13266,11 @@ UNAUTHORIZED_DEVICE_PROFILE
 UNICAST_ROUTING
 :
    'unicast-routing'
+;
+
+UNIDIRECTIONAL
+:
+   'unidirectional'
 ;
 
 UNIQUE

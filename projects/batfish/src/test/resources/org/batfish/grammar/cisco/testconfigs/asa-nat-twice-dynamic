@@ -1,0 +1,23 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-nat-twice-dynamic
+!
+object network source-subnet
+ subnet 1.1.1.0 255.255.255.0
+object network source-range
+ range 2.2.2.2 2.2.2.10
+object network dest-mapped
+ host 3.3.3.3
+object network dest-real
+ host 4.4.4.4
+!
+object-group network source-group
+ network-object object source-subnet
+ network-object host 10.10.10.10
+!
+nat (inside,outside) source dynamic source-subnet source-range
+nat (inside,outside) source dynamic source-group source-range destination static dest-mapped dest-real
+nat source dynamic source-group source-range
+nat source dynamic source-subnet source-range destination static dest-mapped dest-real
+!

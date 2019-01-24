@@ -1807,8 +1807,33 @@
           }
         }
       },
+      "asa_nat" : {
+        "configurationFormat" : "CISCO_ASA",
+        "name" : "asa_nat",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "asa_nat",
+            "lines" : {
+              "serial" : {
+                "name" : "serial",
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "SERIAL"
+              }
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "asa_object_groups" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_ASA",
         "name" : "asa_object_groups",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -1859,8 +1884,13 @@
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "asa_object_groups",
-            "logging" : {
-              "on" : true
+            "lines" : {
+              "serial" : {
+                "name" : "serial",
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "SERIAL"
+              }
             }
           }
         },

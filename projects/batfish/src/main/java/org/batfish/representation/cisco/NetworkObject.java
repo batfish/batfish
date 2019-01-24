@@ -1,39 +1,31 @@
 package org.batfish.representation.cisco;
 
-import java.io.Serializable;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 
-public final class NetworkObject implements Serializable {
-  /** */
-  private static final long serialVersionUID = 1L;
+public interface NetworkObject {
 
-  private String _description;
+  String getDescription();
 
-  private String _name;
+  /**
+   * @return The highest (or only) {@link Ip} which matches this network object, or null if this
+   *     object is not supported
+   */
+  Ip getEnd();
 
-  private IpSpace _ipSpace;
+  /**
+   * @return The lowest (or only) {@link Ip} which matches this network object, or null if this
+   *     object is not supported
+   */
+  Ip getStart();
 
-  public NetworkObject(String name) {
-    _name = name;
-  }
+  String getName();
 
-  public String getDescription() {
-    return _description;
-  }
+  void setInfo(NetworkObjectInfo info);
 
-  public String getName() {
-    return _name;
-  }
-
-  public IpSpace getIpSpace() {
-    return _ipSpace;
-  }
-
-  public void setDescription(String description) {
-    _description = description;
-  }
-
-  public void setIpSpace(IpSpace ipSpace) {
-    _ipSpace = ipSpace;
-  }
+  /**
+   * @return An {@link IpSpace} which matches this network object, or an EmptyIpSpace if this object
+   *     is not supported
+   */
+  IpSpace toIpSpace();
 }
