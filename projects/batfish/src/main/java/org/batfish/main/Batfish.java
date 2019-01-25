@@ -1077,7 +1077,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         readConfigurationFiles(inputPath, BfConsts.RELPATH_CONFIGURATIONS_DIR);
     Map<Path, String> outputConfigurationData = new TreeMap<>();
     Path outputConfigDir = outputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
-    CommonUtil.createDirectories(outputConfigDir);
+    createDirectories(outputConfigDir);
     _logger.info("\n*** FLATTENING TEST RIG ***\n");
     _logger.resetTimer();
     List<FlattenVendorConfigurationJob> jobs = new ArrayList<>();
@@ -1507,7 +1507,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void prepareToAnswerQuestions(boolean dp, boolean differentialContext) {
     if (!outputExists(_testrigSettings)) {
-      CommonUtil.createDirectories(_testrigSettings.getOutputPath());
+      createDirectories(_testrigSettings.getOutputPath());
     }
     if (!environmentBgpTablesExist(_testrigSettings)) {
       computeEnvironmentBgpTables();
@@ -3182,7 +3182,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // now, serialize
     _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
     _logger.resetTimer();
-    CommonUtil.createDirectories(outputPath);
+    createDirectories(outputPath);
 
     Map<Path, VendorConfiguration> output = new TreeMap<>();
     nonOverlayHostConfigurations.forEach(
@@ -3232,13 +3232,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  /**
+   * Parses configuration files for networking devices from the uploaded user data and produces
+   * {@link VendorConfiguration vendor-specific configurations} serialized to the given output path.
+   *
+   * <p>This function should be named better, but it's called by the {@link
+   * #serializeVendorConfigs(Path, Path)}, so leaving as-is for now.
+   */
   private void serializeNetworkConfigs(
-      Path testRigPath,
+      Path userUploadPath,
       Path outputPath,
       ParseVendorConfigurationAnswerElement answerElement,
       SortedMap<String, VendorConfiguration> overlayHostConfigurations) {
     Map<Path, String> configurationData =
-        readConfigurationFiles(testRigPath, BfConsts.RELPATH_CONFIGURATIONS_DIR);
+        readConfigurationFiles(userUploadPath, BfConsts.RELPATH_CONFIGURATIONS_DIR);
     Map<String, VendorConfiguration> vendorConfigurations;
     try (ActiveSpan parseNetworkConfigsSpan =
         GlobalTracer.get().buildSpan("Parse network configs").startActive()) {
@@ -3250,11 +3257,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throw new BatfishException("Exiting due to parser errors");
     }
     _logger.infof(
-        "Testrig:%s in container:%s has total number of network configs:%d",
+        "Snapshot %s in network %s has total number of network configs:%d",
         getTestrigName(), getContainerName(), vendorConfigurations.size());
     _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
     _logger.resetTimer();
-    CommonUtil.createDirectories(outputPath);
+    createDirectories(outputPath);
     Map<Path, VendorConfiguration> output = new TreeMap<>();
     vendorConfigurations.forEach(
         (name, vc) -> {
@@ -3312,7 +3319,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   /**
    * Parses configuration files from the uploaded user data and produces {@link VendorConfiguration
-   * vendor-specific configurations} serialized to then given output path.
+   * vendor-specific configurations} serialized to the given output path.
    *
    * <p>This function should be named better, but it's called by the {@code -sv} argument to Batfish
    * so leaving as-is for now.
@@ -4158,5 +4165,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public @Nullable Answerer createAnswerer(@Nonnull Question question) {
     BiFunction<Question, IBatfish, Answerer> creator = _answererCreators.get(question.getName());
     return creator != null ? creator.apply(question, this) : null;
+  }
+
+  /**
+   * A shallow wrapper for {@link Files#createDirectories} that throws a {@link BatfishException}
+   * instead of {@link IOException}.
+   *
+   * @throws BatfishException if there is an error creating directories.
+   */
+  private static void createDirectories(Path path) {
+    try {
+      Files.createDirectories(path);
+    } catch (IOException e) {
+      throw new BatfishException(
+          "Could not create directories leading up to and including '" + path + "'", e);
+    }
   }
 }

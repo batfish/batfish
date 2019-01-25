@@ -282,15 +282,6 @@ public class CommonUtil {
     }
   }
 
-  public static void createDirectories(Path path) {
-    try {
-      Files.createDirectories(path);
-    } catch (IOException e) {
-      throw new BatfishException(
-          "Could not create directories leading up to and including '" + path + "'", e);
-    }
-  }
-
   /**
    * Returns a {@link ClientBuilder} with supplied settings
    *
