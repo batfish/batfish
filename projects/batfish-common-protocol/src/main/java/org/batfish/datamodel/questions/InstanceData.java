@@ -1,6 +1,6 @@
 package org.batfish.datamodel.questions;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
@@ -84,9 +84,16 @@ public final class InstanceData {
     _longDescription = longDescription;
   }
 
+  /**
+   * Set ordered variables names by the iteration order of orderedVariableNames
+   *
+   * @throws IllegalArgumentException if orderedVariableNames is null
+   */
   @JsonProperty(BfConsts.PROP_ORDERED_VARIABLE_NAMES)
-  public void setOrderedVariableNames(@Nullable ImmutableList<String> orderedVariableNames) {
-    _orderedVariableNames = firstNonNull(orderedVariableNames, ImmutableList.of());
+  public void setOrderedVariableNames(@Nullable Iterable<String> orderedVariableNames) {
+    checkArgument(
+        orderedVariableNames != null, "%s cannot be null", BfConsts.PROP_ORDERED_VARIABLE_NAMES);
+    _orderedVariableNames = ImmutableList.copyOf(orderedVariableNames);
   }
 
   @JsonProperty(BfConsts.PROP_TAGS)
