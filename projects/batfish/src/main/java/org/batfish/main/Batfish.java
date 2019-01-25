@@ -19,6 +19,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
+import static org.batfish.main.BatfishParsing.readFiles;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -42,7 +43,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.DirectoryStream;
-import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -356,31 +356,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } else {
       throw new CleanBatfishException("Must supply argument to -" + BfConsts.ARG_TESTRIG);
     }
-  }
-
-  /**
-   * Returns a sorted list of {@link Path paths} contains all files under the directory indicated by
-   * {@code configsPath}. Directories under {@code configsPath} are recursively expanded but not
-   * included in the returned list.
-   *
-   * <p>Temporary files(files start with {@code .} are omitted from the returned list.
-   *
-   * <p>This method follows all symbolic links.
-   */
-  static List<Path> listAllFiles(Path configsPath) {
-    List<Path> configFilePaths;
-    try (Stream<Path> allFiles = Files.walk(configsPath, FileVisitOption.FOLLOW_LINKS)) {
-      configFilePaths =
-          allFiles
-              .filter(
-                  path ->
-                      !path.getFileName().toString().startsWith(".") && Files.isRegularFile(path))
-              .sorted()
-              .collect(Collectors.toList());
-    } catch (IOException e) {
-      throw new BatfishException("Failed to walk path: " + configsPath, e);
-    }
-    return configFilePaths;
   }
 
   public static void logWarnings(BatfishLogger logger, Warnings warnings) {
@@ -1073,8 +1048,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public void flatten(Path inputPath, Path outputPath) {
+    _logger.info("\n*** READING FILES TO FLATTEN ***\n");
     Map<Path, String> configurationData =
-        readConfigurationFiles(inputPath, BfConsts.RELPATH_CONFIGURATIONS_DIR);
+        readFiles(inputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger);
+
     Map<Path, String> outputConfigurationData = new TreeMap<>();
     Path outputConfigDir = outputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
     createDirectories(outputConfigDir);
@@ -1174,7 +1151,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (Files.exists(inputPath.getParent()) && !Files.exists(inputPath)) {
       return new TreeMap<>();
     }
-    SortedMap<Path, String> inputData = readFiles(inputPath, "Environment BGP Tables");
+    _logger.info("\n*** READING Environment BGP Tables ***\n");
+    SortedMap<Path, String> inputData = readFiles(inputPath, _logger);
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
         parseEnvironmentBgpTables(inputData, answerElement);
     return bgpTables;
@@ -1185,7 +1163,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (Files.exists(inputPath.getParent()) && !Files.exists(inputPath)) {
       return new TreeMap<>();
     }
-    SortedMap<Path, String> inputData = readFiles(inputPath, "Environment Routing Tables");
+    _logger.info("\n*** READING Environment Routing Tables ***\n");
+    SortedMap<Path, String> inputData = readFiles(inputPath, _logger);
     SortedMap<String, RoutesByVrf> routingTables =
         parseEnvironmentRoutingTables(inputData, answerElement);
     return routingTables;
@@ -2568,25 +2547,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _testrigSettings = _deltaTestrigSettings;
   }
 
-  private SortedMap<Path, String> readConfigurationFiles(Path testRigPath, String configsType) {
-    _logger.infof("\n*** READING %s FILES ***\n", configsType);
-    _logger.resetTimer();
-    SortedMap<Path, String> configurationData = new TreeMap<>();
-    Path configsPath = testRigPath.resolve(configsType);
-    List<Path> configFilePaths = listAllFiles(configsPath);
-    AtomicInteger completed =
-        newBatch("Reading network configuration files", configFilePaths.size());
-    for (Path file : configFilePaths) {
-      _logger.debugf("Reading: \"%s\"\n", file);
-      String fileTextRaw = CommonUtil.readFile(file.toAbsolutePath());
-      String fileText = fileTextRaw + ((fileTextRaw.length() != 0) ? "\n" : "");
-      configurationData.put(file, fileText);
-      completed.incrementAndGet();
-    }
-    _logger.printElapsedTime();
-    return configurationData;
-  }
-
   @Nullable
   @Override
   public String readExternalBgpAnnouncementsFile() {
@@ -2598,30 +2558,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } else {
       return null;
     }
-  }
-
-  private SortedMap<Path, String> readFiles(Path directory, String description) {
-    _logger.infof("\n*** READING FILES: %s ***\n", description);
-    _logger.resetTimer();
-    SortedMap<Path, String> fileData = new TreeMap<>();
-    List<Path> filePaths;
-    try (Stream<Path> paths = CommonUtil.list(directory)) {
-      filePaths =
-          paths
-              .filter(path -> !path.getFileName().toString().startsWith("."))
-              .sorted()
-              .collect(Collectors.toList());
-    }
-    AtomicInteger completed = newBatch("Reading files: " + description, filePaths.size());
-    for (Path file : filePaths) {
-      _logger.debugf("Reading: \"%s\"\n", file);
-      String fileTextRaw = CommonUtil.readFile(file.toAbsolutePath());
-      String fileText = fileTextRaw + ((fileTextRaw.length() != 0) ? "\n" : "");
-      fileData.put(file, fileText);
-      completed.incrementAndGet();
-    }
-    _logger.printElapsedTime();
-    return fileData;
   }
 
   /**
@@ -3051,8 +2987,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void serializeAwsConfigs(
       Path testRigPath, Path outputPath, ParseVendorConfigurationAnswerElement pvcae) {
+    _logger.info("\n*** READING AWS CONFIGS ***\n");
     Map<Path, String> configurationData =
-        readConfigurationFiles(testRigPath, BfConsts.RELPATH_AWS_CONFIGS_DIR);
+        readFiles(testRigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR), _logger);
     AwsConfiguration config;
     try (ActiveSpan parseAwsConfigsSpan =
         GlobalTracer.get().buildSpan("Parse AWS configs").startActive()) {
@@ -3134,8 +3071,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private SortedMap<String, VendorConfiguration> serializeHostConfigs(
       Path testRigPath, Path outputPath, ParseVendorConfigurationAnswerElement answerElement) {
-    SortedMap<Path, String> configurationData =
-        readConfigurationFiles(testRigPath, BfConsts.RELPATH_HOST_CONFIGS_DIR);
+    _logger.info("\n*** READING HOST CONFIGS ***\n");
+    Map<Path, String> configurationData =
+        readFiles(testRigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR), _logger);
     // read the host files
     SortedMap<String, VendorConfiguration> allHostConfigurations;
     try (ActiveSpan parseHostConfigsSpan =
@@ -3244,8 +3182,74 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path outputPath,
       ParseVendorConfigurationAnswerElement answerElement,
       SortedMap<String, VendorConfiguration> overlayHostConfigurations) {
+    if (!overlayHostConfigurations.isEmpty()) {
+      // TODO: support caching/reuse with overlays.
+      serializeNetworkConfigsOld(
+          userUploadPath, outputPath, answerElement, overlayHostConfigurations);
+      return;
+    }
+
+    _logger.info("\n*** READING DEVICE CONFIGURATION FILES ***\n");
     Map<Path, String> configurationData =
-        readConfigurationFiles(userUploadPath, BfConsts.RELPATH_CONFIGURATIONS_DIR);
+        readFiles(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger);
+    Map<String, VendorConfiguration> vendorConfigurations;
+    try (ActiveSpan parseNetworkConfigsSpan =
+        GlobalTracer.get().buildSpan("Parse network configs").startActive()) {
+      assert parseNetworkConfigsSpan != null; // avoid unused warning
+      vendorConfigurations =
+          parseVendorConfigurations(configurationData, answerElement, ConfigurationFormat.UNKNOWN);
+    }
+    if (vendorConfigurations == null) {
+      throw new BatfishException("Exiting due to parser errors");
+    }
+    _logger.infof(
+        "Snapshot %s in network %s has total number of network configs:%d",
+        getTestrigName(), getContainerName(), vendorConfigurations.size());
+    _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
+    _logger.resetTimer();
+    createDirectories(outputPath);
+    Map<Path, VendorConfiguration> output = new TreeMap<>();
+    vendorConfigurations.forEach(
+        (name, vc) -> {
+          if (name.contains(File.separator)) {
+            // iptables will get a hostname like configs/iptables-save if they
+            // are not set up correctly using host files
+            _logger.errorf("Cannot serialize configuration with hostname %s\n", name);
+            answerElement.addRedFlagWarning(
+                name,
+                new Warning(
+                    "Cannot serialize network config. Bad hostname " + name.replace("\\", "/"),
+                    "MISCELLANEOUS"));
+          } else {
+            // apply overlay if it exists
+            VendorConfiguration overlayConfig = overlayHostConfigurations.get(name);
+            if (overlayConfig != null) {
+              vc.setOverlayConfiguration(overlayConfig);
+              overlayHostConfigurations.remove(name);
+            }
+
+            Path currentOutputPath = outputPath.resolve(name);
+            output.put(currentOutputPath, vc);
+          }
+        });
+
+    // warn about unused overlays
+    overlayHostConfigurations.forEach(
+        (name, overlay) ->
+            answerElement.getParseStatus().put(overlay.getFilename(), ParseStatus.ORPHANED));
+
+    serializeObjects(output);
+    _logger.printElapsedTime();
+  }
+
+  private void serializeNetworkConfigsOld(
+      Path userUploadPath,
+      Path outputPath,
+      ParseVendorConfigurationAnswerElement answerElement,
+      SortedMap<String, VendorConfiguration> overlayHostConfigurations) {
+    _logger.info("\n*** READING DEVICE CONFIGURATION FILES ***\n");
+    Map<Path, String> configurationData =
+        readFiles(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger);
     Map<String, VendorConfiguration> vendorConfigurations;
     try (ActiveSpan parseNetworkConfigsSpan =
         GlobalTracer.get().buildSpan("Parse network configs").startActive()) {
