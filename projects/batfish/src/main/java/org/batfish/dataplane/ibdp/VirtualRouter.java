@@ -179,11 +179,11 @@ public class VirtualRouter implements Serializable {
 
   transient IsisLevelRib _isisL2Rib;
 
-  transient IsisLevelRib _isisL1StagingRib;
+  private transient IsisLevelRib _isisL1StagingRib;
 
-  transient IsisLevelRib _isisL2StagingRib;
+  private transient IsisLevelRib _isisL2StagingRib;
 
-  transient IsisRib _isisRib;
+  private transient IsisRib _isisRib;
 
   transient LocalRib _localRib;
 
@@ -195,9 +195,9 @@ public class VirtualRouter implements Serializable {
   /** Keeps track of changes to the main RIB */
   private transient RibDelta.Builder<AbstractRoute> _mainRibRouteDeltaBuilder;
 
-  private final Node _node;
+  @Nonnull private final Node _node;
 
-  private final String _name;
+  @Nonnull private final String _name;
 
   transient OspfExternalType1Rib _ospfExternalType1Rib;
 
@@ -250,7 +250,7 @@ public class VirtualRouter implements Serializable {
   /** A {@link Vrf} that this virtual router represents */
   final Vrf _vrf;
 
-  VirtualRouter(final String name, final Node node) {
+  VirtualRouter(@Nonnull final String name, @Nonnull final Node node) {
     _node = node;
     _c = node.getConfiguration();
     _name = name;
@@ -319,7 +319,8 @@ public class VirtualRouter implements Serializable {
   }
 
   /** Apply a rib group to a given source rib */
-  private void applyRibGroup(RibGroup ribGroup, GenericRib<? extends AbstractRoute> sourceRib) {
+  private void applyRibGroup(
+      @Nonnull RibGroup ribGroup, @Nonnull GenericRib<? extends AbstractRoute> sourceRib) {
     RoutingPolicy policy = _c.getRoutingPolicies().get(ribGroup.getImportPolicy());
     checkState(policy != null, "RIB group %s is missing import policy", ribGroup.getName());
     sourceRib.getRoutes().stream()
@@ -515,10 +516,7 @@ public class VirtualRouter implements Serializable {
     if (d != null) {
       d.getActions().stream()
           .filter(RouteAdvertisement::isWithdrawn)
-          .forEach(
-              r -> {
-                _bgpDeltaBuilder.from(_bgpAggDeps.deleteRoute(r.getRoute(), _bgpRib));
-              });
+          .forEach(r -> _bgpDeltaBuilder.from(_bgpAggDeps.deleteRoute(r.getRoute(), _bgpRib)));
     }
   }
 
@@ -930,7 +928,7 @@ public class VirtualRouter implements Serializable {
   /**
    * This function creates BGP routes from generated routes that go into the BGP RIB, but cannot be
    * imported into the main RIB. The purpose of these routes is to prevent the local router from
-   * accepting advertisements less desirable than the local generated ones for a given network.
+   * accepting advertisements less desirable than the locally generated ones for a given network.
    */
   void initBgpAggregateRoutes() {
     // first import aggregates
@@ -1030,8 +1028,7 @@ public class VirtualRouter implements Serializable {
     outputRouteBuilder.setArea(OspfRoute.NO_AREA);
     outputRouteBuilder.setLsaMetric(outputRouteBuilder.getMetric());
     outputRouteBuilder.setNonRouting(true);
-    OspfExternalRoute outputRoute = outputRouteBuilder.build();
-    return outputRoute;
+    return outputRouteBuilder.build();
   }
 
   /**
