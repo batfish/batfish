@@ -15,7 +15,7 @@ s_address
         | sa_ip_netmask
         | sa_ip_range
         | sa_null
-    )
+    )? // a line without the tail, which just defined the address object, is legal
 ;
 
 sa_description

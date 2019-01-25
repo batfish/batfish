@@ -22,7 +22,6 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVIC
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_INTERFACE;
 
-import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -503,8 +502,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSag_static(Sag_staticContext ctx) {
-    _currentAddressGroup.setMembers(
-        ctx.object.stream().map(v -> v.getText()).collect(ImmutableList.toImmutableList()));
+    String objectName = ctx.name.getText();
+    if (!_currentVsys.getAddressObjects().containsKey(objectName)) {
+      _w.redFlag(
+          String.format(
+              "Cannot add non-existent address object '%s' to group '%s' in '%s'",
+              objectName, _currentAddressGroup.getName(), getFullText(ctx)));
+    }
+    _currentAddressGroup.getMembers().add(objectName);
   }
 
   @Override

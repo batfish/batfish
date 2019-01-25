@@ -14,7 +14,7 @@ s_address_group
         | sag_dynamic
         | sag_null
         | sag_static
-    )? // TODO: test if line without the tail (which just defines the group) is legal
+    )? // a line without the tail (which just defines the group) is legal
 ;
 
 sag_description
@@ -36,8 +36,5 @@ sag_null
 
 sag_static
 :
-    STATIC
-    (
-        object += variable //TODO: check if a list without brackets is legal
-    )*
+    STATIC name = variable
 ;

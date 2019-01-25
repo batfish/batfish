@@ -1,14 +1,14 @@
 package org.batfish.representation.palo_alto;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Set;
 
 public final class AddressGroup implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private String _description;
 
-  private List<String> _members;
+  private Set<String> _members;
 
   private final String _name;
 
@@ -20,7 +20,7 @@ public final class AddressGroup implements Serializable {
     return _description;
   }
 
-  public List<String> getMembers() {
+  public Set<String> getMembers() {
     return _members;
   }
 
@@ -30,9 +30,5 @@ public final class AddressGroup implements Serializable {
 
   public void setDescription(String description) {
     _description = description;
-  }
-
-  public void setMembers(List<String> members) {
-    _members = members;
   }
 }

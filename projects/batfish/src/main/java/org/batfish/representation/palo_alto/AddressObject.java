@@ -1,17 +1,18 @@
 package org.batfish.representation.palo_alto;
 
 import java.io.Serializable;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 
 public final class AddressObject implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private String _description;
+  @Nullable private String _description;
 
-  private Ip _ipFrom;
+  @Nullable private Ip _ipFrom;
 
-  private Ip _ipTo;
+  @Nullable private Ip _ipTo;
 
   private final String _name;
 
@@ -19,14 +20,17 @@ public final class AddressObject implements Serializable {
     _name = name;
   }
 
+  @Nullable
   public String getDescription() {
     return _description;
   }
 
+  @Nullable
   public Ip getIpFrom() {
     return _ipFrom;
   }
 
+  @Nullable
   public Ip getIpTo() {
     return _ipTo;
   }
@@ -35,7 +39,7 @@ public final class AddressObject implements Serializable {
     return _name;
   }
 
-  public void setDescription(String description) {
+  public void setDescription(@Nullable String description) {
     _description = description;
   }
 
