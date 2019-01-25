@@ -24,7 +24,7 @@ public class InstanceDataTest {
   @Test
   public void testGetOrderedVariableNamesMissing() throws IOException {
     InstanceData instanceData = BatfishObjectMapper.mapper().readValue("{}", InstanceData.class);
-    assertThat(instanceData.getOrderedVariableNames(), empty()));
+    assertThat(instanceData.getOrderedVariableNames(), empty());
   }
 
   /**
@@ -54,23 +54,23 @@ public class InstanceDataTest {
   @Test
   public void testEquals() throws IOException {
     InstanceData instanceData = new InstanceData();
-    InstanceData initialInstance = InstanceDataTest.clone(instanceData);
+    InstanceData initialInstance = clone(instanceData);
     EqualsTester equalsTester = new EqualsTester();
     equalsTester.addEqualityGroup(initialInstance, initialInstance).addEqualityGroup(new Object());
     instanceData.setInstanceName("instanceName");
-    equalsTester.addEqualityGroup(InstanceDataTest.clone(instanceData));
+    equalsTester.addEqualityGroup(clone(instanceData));
     instanceData.setDescription("The description");
-    equalsTester.addEqualityGroup(InstanceDataTest.clone(instanceData));
+    equalsTester.addEqualityGroup(clone(instanceData));
     instanceData.setLongDescription("The long description");
-    equalsTester.addEqualityGroup(InstanceDataTest.clone(instanceData));
+    equalsTester.addEqualityGroup(clone(instanceData));
     instanceData.setOrderedVariableNames(ImmutableList.of("b", "a"));
-    equalsTester.addEqualityGroup(InstanceDataTest.clone(instanceData));
+    equalsTester.addEqualityGroup(clone(instanceData));
     instanceData.setTags(new TreeSet<>(Arrays.asList("tag1", "tag2")));
-    equalsTester.addEqualityGroup(InstanceDataTest.clone(instanceData));
+    equalsTester.addEqualityGroup(clone(instanceData));
     Variable variable = new Variable();
     variable.setType(Type.INTEGER);
     instanceData.setVariables(ImmutableSortedMap.of("v", variable));
-    equalsTester.addEqualityGroup(InstanceDataTest.clone(instanceData));
+    equalsTester.addEqualityGroup(clone(instanceData));
     equalsTester.testEquals();
   }
 
@@ -87,6 +87,6 @@ public class InstanceDataTest {
     instanceData.setOrderedVariableNames(ImmutableList.of("b", "a"));
     instanceData.setTags(new TreeSet<>(Arrays.asList("tag1", "tag2")));
     instanceData.setVariables(ImmutableSortedMap.of("v", new Variable()));
-    assertThat(InstanceDataTest.clone(instanceData), equalTo(instanceData));
+    assertThat(clone(instanceData), equalTo(instanceData));
   }
 }
