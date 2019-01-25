@@ -2223,10 +2223,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.StaticRoute toStaticRoute(StaticRoute route) {
-    Ip nextHopIp = route.getNextHopIp();
-    if (nextHopIp == null) {
-      nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
-    }
+    Ip nextHopIp = firstNonNull(route.getNextHopIp(), Route.UNSET_ROUTE_NEXT_HOP_IP);
     String nextHopInterface =
         route.getDrop()
             ? org.batfish.datamodel.Interface.NULL_INTERFACE_NAME
