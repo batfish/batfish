@@ -333,6 +333,19 @@ roa_preference
    PREFERENCE preference = DEC
 ;
 
+roa_route
+:
+  ROUTE
+  (
+    prefix = IP_PREFIX
+    | prefix6 = IPV6_PREFIX
+  )
+  (
+    apply
+    | roa_common
+  )
+;
+
 roa_tag
 :
    TAG tag = DEC
@@ -371,19 +384,6 @@ rob_station_address
 rob_station_port
 :
    STATION_PORT DEC
-;
-
-roa_route
-:
-  ROUTE
-  (
-    prefix = IP_PREFIX
-    | prefix6 = IPV6_PREFIX
-  )
-  (
-    apply
-    | roa_common
-  )
 ;
 
 rof_export
