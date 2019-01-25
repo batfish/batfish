@@ -238,7 +238,7 @@ public class Variable {
         _minElements,
         _minLength,
         _optional,
-        _type,
+        _type.ordinal(),
         _value,
         _values);
   }
