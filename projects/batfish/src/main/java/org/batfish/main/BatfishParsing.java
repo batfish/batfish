@@ -7,9 +7,7 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.List;
 import java.util.SortedMap;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -17,37 +15,18 @@ import org.batfish.common.util.CommonUtil;
 
 class BatfishParsing {
   /**
-   * Returns a sorted list of {@link Path paths} contains all files under the directory indicated by
-   * {@code configsPath}. Directories under {@code configsPath} are recursively expanded but not
-   * included in the returned list.
+   * Reads the files in the given directory (recursively) and returns a map from each file's {@link
+   * Path} to its contents.
    *
-   * <p>Temporary files(files start with {@code .} are omitted from the returned list.
+   * <p>Temporary files (files start with {@code .} are omitted from the returned list.
    *
    * <p>This method follows all symbolic links.
    */
-  static List<Path> listAllFiles(Path configsPath) {
-    List<Path> configFilePaths;
-    try (Stream<Path> allFiles = Files.walk(configsPath, FileVisitOption.FOLLOW_LINKS)) {
-      configFilePaths =
-          allFiles
-              .filter(
-                  path ->
-                      !path.getFileName().toString().startsWith(".") && Files.isRegularFile(path))
-              .sorted()
-              .collect(Collectors.toList());
-    } catch (IOException e) {
-      throw new BatfishException("Failed to walk path: " + configsPath, e);
-    }
-    return configFilePaths;
-  }
-
-  /**
-   * Reads the files in the given directory (recursively) and returns a map from each file's {@link
-   * Path} to its contents.
-   */
-  static SortedMap<Path, String> readFiles(Path directory, BatfishLogger logger) {
-    try (Stream<Path> paths = CommonUtil.list(directory)) {
+  static SortedMap<Path, String> readAllFiles(Path directory, BatfishLogger logger) {
+    try (Stream<Path> paths = Files.walk(directory, FileVisitOption.FOLLOW_LINKS)) {
       return paths
+          .filter(Files::isRegularFile)
+          .filter(path -> !path.getFileName().toString().startsWith("."))
           .map(
               path -> {
                 logger.debugf("Reading: \"%s\"\n", path);
@@ -61,6 +40,8 @@ class BatfishParsing {
           .collect(
               ImmutableSortedMap.toImmutableSortedMap(
                   Ordering.natural(), SimpleEntry::getKey, SimpleEntry::getValue));
+    } catch (IOException e) {
+      throw new BatfishException("Failed to walk path: " + directory, e);
     }
   }
 

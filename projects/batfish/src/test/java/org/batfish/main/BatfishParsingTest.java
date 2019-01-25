@@ -1,18 +1,19 @@
 package org.batfish.main;
 
-import static org.batfish.main.BatfishParsing.listAllFiles;
+import static org.batfish.main.BatfishParsing.readAllFiles;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.junit.Assert.assertThat;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BatfishLogger;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -24,17 +25,19 @@ public class BatfishParsingTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
+  private static BatfishLogger LOGGER = new BatfishLogger(BatfishLogger.LEVELSTR_INFO, false);
+
   @Test
   public void testNoFileUnderPath() throws IOException {
     Path emptyFolder = _folder.newFolder("emptyFolder").toPath();
-    List<Path> result = listAllFiles(emptyFolder);
-    assertThat(result, empty());
+    Map<Path, String> result = readAllFiles(emptyFolder, LOGGER);
+    assertThat(result, anEmptyMap());
   }
 
   @Test
   public void testReadNestedPath() throws IOException {
     Path nestedFolder = _folder.newFolder("nestedDirectory").toPath();
-    List<Path> expected = new ArrayList<>();
+    Set<Path> expected = new HashSet<>();
     expected.add(nestedFolder.resolve("b-test.cfg"));
     expected.add(nestedFolder.resolve("d-test.cfg"));
     expected.add(nestedFolder.resolve("aDirectory").resolve("e-test.cfg"));
@@ -44,8 +47,7 @@ public class BatfishParsingTest {
       path.getParent().toFile().mkdir();
       assertThat(path.toFile().createNewFile(), is(true));
     }
-    List<Path> actual = listAllFiles(nestedFolder);
-    Collections.sort(expected);
+    Set<Path> actual = readAllFiles(nestedFolder, LOGGER).keySet();
     assertThat(expected, equalTo(actual));
   }
 
@@ -55,14 +57,14 @@ public class BatfishParsingTest {
     File file = startWithDot.resolve(".cfg").toFile();
     file.getParentFile().mkdir();
     assertThat(file.createNewFile(), is(true));
-    List<Path> result = listAllFiles(startWithDot);
-    assertThat(result, is(empty()));
+    Map<Path, String> result = readAllFiles(startWithDot, LOGGER);
+    assertThat(result, anEmptyMap());
   }
 
   @Test
   public void testReadUnNestedPath() throws IOException {
     Path unNestedFolder = _folder.newFolder("unNestedDirectory").toPath();
-    List<Path> expected = new ArrayList<>();
+    Set<Path> expected = new HashSet<>();
     expected.add(unNestedFolder.resolve("test1.cfg"));
     expected.add(unNestedFolder.resolve("test2.cfg"));
     expected.add(unNestedFolder.resolve("test3.cfg"));
@@ -70,8 +72,7 @@ public class BatfishParsingTest {
       path.getParent().toFile().mkdir();
       assertThat(path.toFile().createNewFile(), is(true));
     }
-    List<Path> actual = listAllFiles(unNestedFolder);
-    Collections.sort(expected);
+    Set<Path> actual = readAllFiles(unNestedFolder, LOGGER).keySet();
     assertThat(expected, equalTo(actual));
   }
 
@@ -80,6 +81,6 @@ public class BatfishParsingTest {
     Path nonExistPath = _folder.getRoot().toPath().resolve("nonExistent");
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Failed to walk path: " + nonExistPath);
-    listAllFiles(nonExistPath);
+    readAllFiles(nonExistPath, LOGGER);
   }
 }

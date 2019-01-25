@@ -19,7 +19,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
-import static org.batfish.main.BatfishParsing.readFiles;
+import static org.batfish.main.BatfishParsing.readAllFiles;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -1050,7 +1050,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public void flatten(Path inputPath, Path outputPath) {
     _logger.info("\n*** READING FILES TO FLATTEN ***\n");
     Map<Path, String> configurationData =
-        readFiles(inputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger);
+        readAllFiles(inputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger);
 
     Map<Path, String> outputConfigurationData = new TreeMap<>();
     Path outputConfigDir = outputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
@@ -1152,7 +1152,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return new TreeMap<>();
     }
     _logger.info("\n*** READING Environment BGP Tables ***\n");
-    SortedMap<Path, String> inputData = readFiles(inputPath, _logger);
+    SortedMap<Path, String> inputData = readAllFiles(inputPath, _logger);
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
         parseEnvironmentBgpTables(inputData, answerElement);
     return bgpTables;
@@ -1164,7 +1164,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return new TreeMap<>();
     }
     _logger.info("\n*** READING Environment Routing Tables ***\n");
-    SortedMap<Path, String> inputData = readFiles(inputPath, _logger);
+    SortedMap<Path, String> inputData = readAllFiles(inputPath, _logger);
     SortedMap<String, RoutesByVrf> routingTables =
         parseEnvironmentRoutingTables(inputData, answerElement);
     return routingTables;
@@ -2989,7 +2989,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path testRigPath, Path outputPath, ParseVendorConfigurationAnswerElement pvcae) {
     _logger.info("\n*** READING AWS CONFIGS ***\n");
     Map<Path, String> configurationData =
-        readFiles(testRigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR), _logger);
+        readAllFiles(testRigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR), _logger);
     AwsConfiguration config;
     try (ActiveSpan parseAwsConfigsSpan =
         GlobalTracer.get().buildSpan("Parse AWS configs").startActive()) {
@@ -3073,7 +3073,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Path testRigPath, Path outputPath, ParseVendorConfigurationAnswerElement answerElement) {
     _logger.info("\n*** READING HOST CONFIGS ***\n");
     Map<Path, String> configurationData =
-        readFiles(testRigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR), _logger);
+        readAllFiles(testRigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR), _logger);
     // read the host files
     SortedMap<String, VendorConfiguration> allHostConfigurations;
     try (ActiveSpan parseHostConfigsSpan =
@@ -3191,7 +3191,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     _logger.info("\n*** READING DEVICE CONFIGURATION FILES ***\n");
     Map<Path, String> configurationData =
-        readFiles(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger);
+        readAllFiles(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger);
     Map<String, VendorConfiguration> vendorConfigurations;
     try (ActiveSpan parseNetworkConfigsSpan =
         GlobalTracer.get().buildSpan("Parse network configs").startActive()) {
@@ -3249,7 +3249,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       SortedMap<String, VendorConfiguration> overlayHostConfigurations) {
     _logger.info("\n*** READING DEVICE CONFIGURATION FILES ***\n");
     Map<Path, String> configurationData =
-        readFiles(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger);
+        readAllFiles(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger);
     Map<String, VendorConfiguration> vendorConfigurations;
     try (ActiveSpan parseNetworkConfigsSpan =
         GlobalTracer.get().buildSpan("Parse network configs").startActive()) {
