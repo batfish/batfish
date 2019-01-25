@@ -2223,24 +2223,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.StaticRoute toStaticRoute(StaticRoute route) {
-    Ip nextHopIp = firstNonNull(route.getNextHopIp(), Route.UNSET_ROUTE_NEXT_HOP_IP);
     String nextHopInterface =
         route.getDrop()
             ? org.batfish.datamodel.Interface.NULL_INTERFACE_NAME
             : route.getNextHopInterface();
-    int tag = route.getTag() != null ? route.getTag() : -1;
 
-    org.batfish.datamodel.StaticRoute newStaticRoute =
-        org.batfish.datamodel.StaticRoute.builder()
-            .setNetwork(route.getPrefix())
-            .setNextHopIp(nextHopIp)
-            .setNextHopInterface(nextHopInterface)
-            .setAdministrativeCost(route.getDistance())
-            .setMetric(route.getMetric())
-            .setTag(tag)
-            .setNonForwarding(firstNonNull(route.getNoInstall(), Boolean.FALSE))
-            .build();
-    return newStaticRoute;
+    return org.batfish.datamodel.StaticRoute.builder()
+        .setNetwork(route.getPrefix())
+        .setNextHopIp(firstNonNull(route.getNextHopIp(), Route.UNSET_ROUTE_NEXT_HOP_IP))
+        .setNextHopInterface(nextHopInterface)
+        .setAdministrativeCost(route.getDistance())
+        .setMetric(route.getMetric())
+        .setTag(firstNonNull(route.getTag(), -1))
+        .setNonForwarding(firstNonNull(route.getNoInstall(), Boolean.FALSE))
+        .build();
   }
 
   @Override
