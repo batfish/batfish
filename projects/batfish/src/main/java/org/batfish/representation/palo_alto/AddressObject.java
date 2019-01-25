@@ -23,6 +23,14 @@ public final class AddressObject implements Serializable {
     return _description;
   }
 
+  public Ip getIpFrom() {
+    return _ipFrom;
+  }
+
+  public Ip getIpTo() {
+    return _ipTo;
+  }
+
   public String getName() {
     return _name;
   }
@@ -31,16 +39,19 @@ public final class AddressObject implements Serializable {
     _description = description;
   }
 
+  /** Set Ip to and from values to {@code address} */
   public void setIpRange(Ip address) {
     _ipFrom = address;
     _ipTo = address;
   }
 
+  /** Set Ip to and from values using {@code prefix} */
   public void setIpRange(Prefix prefix) {
     _ipFrom = prefix.getStartIp();
     _ipTo = prefix.getEndIp();
   }
 
+  /** Set Ip to and from values to provided values */
   public void setIpRange(Ip from, Ip to) {
     _ipFrom = from;
     _ipTo = to;
