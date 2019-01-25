@@ -100,10 +100,11 @@ def test_ordered_variable_names_includes_all_instance_variables(question, questi
     instance = question['instance']
     orderedVariableNames = instance.get('orderedVariableNames', [])
     if orderedVariableNames:
-        variableNames = instance.get('variables', {})
-        assert len(orderedVariableNames) == len(variableNames)
-        for orderedVariableName in orderedVariableNames:
-            assert orderedVariableName in variableNames
+        setOfOrderedVariableNames = frozenset(orderedVariableNames)
+        # ordered variable names should not contain duplicates
+        assert len(setOfOrderedVariableNames) == len(orderedVariableNames)
+        setOfVariableNames = frozenset(instance.get('variables', {}).keys())
+        assert setOfOrderedVariableNames == setOfVariableNames
 
 
 def test_indented_with_spaces(question_text, question_path):
