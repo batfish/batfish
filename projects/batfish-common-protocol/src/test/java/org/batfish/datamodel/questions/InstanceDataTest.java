@@ -47,27 +47,30 @@ public class InstanceDataTest {
     assertThat(instanceData.getOrderedVariableNames(), equalTo(ImmutableList.of("r", "a", "d")));
   }
 
+  private static InstanceData clone(InstanceData instanceData) throws IOException {
+    return BatfishObjectMapper.clone(instanceData, InstanceData.class);
+  }
+
   @Test
   public void testEquals() throws IOException {
-    EqualsTester equalsTester = new EqualsTester();
-    equalsTester
-        .addEqualityGroup(new InstanceData(), new InstanceData())
-        .addEqualityGroup(new Object());
     InstanceData instanceData = new InstanceData();
+    InstanceData initialInstance = InstanceDataTest.clone(instanceData);
+    EqualsTester equalsTester = new EqualsTester();
+    equalsTester.addEqualityGroup(initialInstance, initialInstance).addEqualityGroup(new Object());
     instanceData.setInstanceName("instanceName");
-    equalsTester.addEqualityGroup(BatfishObjectMapper.clone(instanceData, InstanceData.class));
+    equalsTester.addEqualityGroup(InstanceDataTest.clone(instanceData));
     instanceData.setDescription("The description");
-    equalsTester.addEqualityGroup(BatfishObjectMapper.clone(instanceData, InstanceData.class));
+    equalsTester.addEqualityGroup(InstanceDataTest.clone(instanceData));
     instanceData.setLongDescription("The long description");
-    equalsTester.addEqualityGroup(BatfishObjectMapper.clone(instanceData, InstanceData.class));
+    equalsTester.addEqualityGroup(InstanceDataTest.clone(instanceData));
     instanceData.setOrderedVariableNames(ImmutableList.of("b", "a"));
-    equalsTester.addEqualityGroup(BatfishObjectMapper.clone(instanceData, InstanceData.class));
+    equalsTester.addEqualityGroup(InstanceDataTest.clone(instanceData));
     instanceData.setTags(new TreeSet<>(Arrays.asList("tag1", "tag2")));
-    equalsTester.addEqualityGroup(BatfishObjectMapper.clone(instanceData, InstanceData.class));
+    equalsTester.addEqualityGroup(InstanceDataTest.clone(instanceData));
     Variable variable = new Variable();
     variable.setType(Type.INTEGER);
     instanceData.setVariables(ImmutableSortedMap.of("v", variable));
-    equalsTester.addEqualityGroup(BatfishObjectMapper.clone(instanceData, InstanceData.class));
+    equalsTester.addEqualityGroup(InstanceDataTest.clone(instanceData));
     equalsTester.testEquals();
   }
 
@@ -84,6 +87,6 @@ public class InstanceDataTest {
     instanceData.setOrderedVariableNames(ImmutableList.of("b", "a"));
     instanceData.setTags(new TreeSet<>(Arrays.asList("tag1", "tag2")));
     instanceData.setVariables(ImmutableSortedMap.of("v", new Variable()));
-    assertThat(BatfishObjectMapper.clone(instanceData, InstanceData.class), equalTo(instanceData));
+    assertThat(InstanceDataTest.clone(instanceData), equalTo(instanceData));
   }
 }
