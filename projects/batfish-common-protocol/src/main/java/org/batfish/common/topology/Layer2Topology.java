@@ -18,6 +18,10 @@ public final class Layer2Topology {
     _unionFind = unionFind;
   }
 
+  public UnionFind<Layer2Node> getBroadcastDomains() {
+    return _unionFind;
+  }
+
   public static Layer2Topology fromDomains(Collection<Set<Layer2Node>> domains) {
     UnionFind<Layer2Node> unionFind =
         new UnionFind<>(

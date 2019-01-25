@@ -705,9 +705,9 @@ public final class FlatJuniperGrammarTest {
             _folder);
 
     Layer1Topology layer1LogicalTopology =
-        batfish.getTopologyProvider().getLayer1LogicalTopology(batfish.getNetworkSnapshot());
+        batfish.getTopologyProvider().getLayer1LogicalTopology(batfish.getNetworkSnapshot()).get();
     Layer2Topology layer2Topology =
-        batfish.getTopologyProvider().getLayer2Topology(batfish.getNetworkSnapshot());
+        batfish.getTopologyProvider().getLayer2Topology(batfish.getNetworkSnapshot()).get();
     Topology layer3Topology =
         batfish.getTopologyProvider().getLayer3Topology(batfish.getNetworkSnapshot());
 
