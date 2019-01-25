@@ -179,11 +179,11 @@ public class VirtualRouter implements Serializable {
 
   transient IsisLevelRib _isisL2Rib;
 
-  transient IsisLevelRib _isisL1StagingRib;
+  private transient IsisLevelRib _isisL1StagingRib;
 
-  transient IsisLevelRib _isisL2StagingRib;
+  private transient IsisLevelRib _isisL2StagingRib;
 
-  transient IsisRib _isisRib;
+  private transient IsisRib _isisRib;
 
   transient LocalRib _localRib;
 
