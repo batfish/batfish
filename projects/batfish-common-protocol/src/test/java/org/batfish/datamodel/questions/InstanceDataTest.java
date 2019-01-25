@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.TreeSet;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.questions.Variable.Type;
 import org.junit.Test;
 
 /** Tests of {@link InstanceData} */
@@ -63,7 +64,9 @@ public class InstanceDataTest {
     equalsTester.addEqualityGroup(BatfishObjectMapper.clone(instanceData, InstanceData.class));
     instanceData.setTags(new TreeSet<>(Arrays.asList("tag1", "tag2")));
     equalsTester.addEqualityGroup(BatfishObjectMapper.clone(instanceData, InstanceData.class));
-    instanceData.setVariables(ImmutableSortedMap.of("v", new Variable()));
+    Variable variable = new Variable();
+    variable.setType(Type.INTEGER);
+    instanceData.setVariables(ImmutableSortedMap.of("v", variable));
     equalsTester.addEqualityGroup(BatfishObjectMapper.clone(instanceData, InstanceData.class));
     equalsTester.testEquals();
   }
