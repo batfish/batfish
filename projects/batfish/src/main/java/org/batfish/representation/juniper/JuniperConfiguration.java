@@ -46,6 +46,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AuthenticationKey;
 import org.batfish.datamodel.AuthenticationKeyChain;
@@ -2234,7 +2235,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .setNextHopInterface(nextHopInterface)
         .setAdministrativeCost(route.getDistance())
         .setMetric(route.getMetric())
-        .setTag(firstNonNull(route.getTag(), -1))
+        .setTag(firstNonNull(route.getTag(), AbstractRoute.NO_TAG))
         .setNonForwarding(firstNonNull(route.getNoInstall(), Boolean.FALSE))
         .build();
   }
