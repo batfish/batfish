@@ -3,6 +3,7 @@ package org.batfish.common.topology;
 import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -16,10 +17,6 @@ public final class Layer2Topology {
 
   private Layer2Topology(UnionFind<Layer2Node> unionFind) {
     _unionFind = unionFind;
-  }
-
-  public UnionFind<Layer2Node> getBroadcastDomains() {
-    return _unionFind;
   }
 
   public static Layer2Topology fromDomains(Collection<Set<Layer2Node>> domains) {
@@ -46,6 +43,38 @@ public final class Layer2Topology {
             edges.stream().map(Layer2Edge::getNode1).collect(ImmutableSet.toImmutableSet()));
     edges.forEach(e -> unionFind.union(e.getNode1(), e.getNode2()));
     return new Layer2Topology(unionFind);
+  }
+
+  /**
+   * Return the representative of the broadcast domain of {@code layer2Node}, or {@link
+   * Optional#empty} if not represented in the layer-2 topology.
+   */
+  public Optional<Layer2Node> getBroadcastDomainRepresentative(Layer2Node layer2Node) {
+    try {
+      return Optional.of(_unionFind.find(layer2Node));
+    } catch (IllegalArgumentException e) {
+      return Optional.empty();
+    }
+  }
+
+  /**
+   * Return the representative of the broadcast domain of {@code nodeInterfacePair}, or {@link
+   * Optional#empty} if not represented in the layer-2 topology.
+   */
+  public Optional<Layer2Node> getBroadcastDomainRepresentative(
+      NodeInterfacePair nodeInterfacePair) {
+    return getBroadcastDomainRepresentative(
+        nodeInterfacePair.getHostname(), nodeInterfacePair.getInterface());
+  }
+
+  /**
+   * Return the representative of the broadcast domain of the interface represented by {@code
+   * hostname} and {@code interfaceName}, or {@link Optional#empty} if not represented in the
+   * layer-2 topology.
+   */
+  public Optional<Layer2Node> getBroadcastDomainRepresentative(
+      String hostname, String interfaceName) {
+    return getBroadcastDomainRepresentative(new Layer2Node(hostname, interfaceName, null));
   }
 
   /** Convert a layer3 interface to a layer2 node. */
