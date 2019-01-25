@@ -3310,12 +3310,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
             });
   }
 
-  Answer serializeVendorConfigs(Path testRigPath, Path outputPath) {
+  /**
+   * Parses configuration files from the uploaded user data and produces {@link VendorConfiguration
+   * vendor-specific configurations} serialized to then given output path.
+   *
+   * <p>This function should be named better, but it's called by the {@code -sv} argument to Batfish
+   * so leaving as-is for now.
+   */
+  private Answer serializeVendorConfigs(Path userUploadPath, Path outputPath) {
     Answer answer = new Answer();
     boolean configsFound = false;
 
-    // look for network configs
-    Path networkConfigsPath = testRigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
     ParseVendorConfigurationAnswerElement answerElement =
         new ParseVendorConfigurationAnswerElement();
     answerElement.setVersion(Version.getVersion());
@@ -3323,28 +3328,28 @@ public class Batfish extends PluginConsumer implements IBatfish {
       answer.addAnswerElement(answerElement);
     }
 
-    // look for host configs and overlay configs
+    // look for host configs and overlay configs in the `hosts/` subfolder.
     SortedMap<String, VendorConfiguration> overlayHostConfigurations = new TreeMap<>();
-    Path hostConfigsPath = testRigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR);
-    if (Files.exists(hostConfigsPath)) {
-      overlayHostConfigurations = serializeHostConfigs(testRigPath, outputPath, answerElement);
+    if (Files.exists(userUploadPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR))) {
+      overlayHostConfigurations = serializeHostConfigs(userUploadPath, outputPath, answerElement);
       configsFound = true;
     }
 
-    if (Files.exists(networkConfigsPath)) {
-      serializeNetworkConfigs(testRigPath, outputPath, answerElement, overlayHostConfigurations);
+    // look for network configs in the `configs/` subfolder.
+    if (Files.exists(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR))) {
+      serializeNetworkConfigs(userUploadPath, outputPath, answerElement, overlayHostConfigurations);
       configsFound = true;
     }
 
-    // look for AWS VPC configs
-    Path awsVpcConfigsPath = testRigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR);
-    if (Files.exists(awsVpcConfigsPath)) {
-      serializeAwsConfigs(testRigPath, outputPath, answerElement);
+    // look for AWS VPC configs in the `aws_configs/` subfolder.
+    if (Files.exists(userUploadPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR))) {
+      serializeAwsConfigs(userUploadPath, outputPath, answerElement);
       configsFound = true;
     }
 
     if (!configsFound) {
-      throw new BatfishException("No valid configurations found in snapshot path " + testRigPath);
+      throw new BatfishException(
+          "No valid configurations found in snapshot path " + userUploadPath);
     }
 
     // serialize warnings
