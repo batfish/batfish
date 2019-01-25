@@ -24,7 +24,7 @@ public class InstanceDataTest {
   @Test
   public void testGetOrderedVariableNamesMissing() throws IOException {
     InstanceData instanceData = BatfishObjectMapper.mapper().readValue("{}", InstanceData.class);
-    assertThat(instanceData.getOrderedVariableNames(), equalTo(ImmutableList.of()));
+    assertThat(instanceData.getOrderedVariableNames(), empty()));
   }
 
   /**
