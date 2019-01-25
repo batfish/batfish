@@ -6996,6 +6996,32 @@ M_Interface_IP_ADDRESS
    popMode
 ;
 
+M_Interface_IPV6_ADDRESS
+:
+   (
+      (
+         '::'
+         (
+            (
+               F_HexDigit+ ':'
+            )* F_HexDigit+
+         )?
+      )
+      |
+      (
+         F_HexDigit+
+         ':' ':'?
+      )+
+   )
+   (
+      F_HexDigit+
+   )?
+   (
+      F_Digit+ '.' F_Digit+ '.' F_Digit+ '.' F_Digit+
+   )? -> type (IPV6_ADDRESS),
+   popMode
+;
+
 M_Interface_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
