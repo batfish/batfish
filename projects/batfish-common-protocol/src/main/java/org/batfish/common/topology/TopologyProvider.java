@@ -36,7 +36,7 @@ public interface TopologyProvider {
   Optional<Layer1Topology> getLayer1LogicalTopology(NetworkSnapshot networkSnapshot);
 
   /**
-   * Return the {@link Layer1Topology} with respect to layer-1 physical edges for a given {@link
+   * Computes the {@link Layer1Topology} with respect to layer-1 physical edges for a given {@link
    * NetworkSnapshot}. The layer-1 physical topology is constructed from the raw layer-1 physical
    * edges input by the user by trimming the edges whose nodes do not correspond to active physical
    * interfaces.
@@ -48,8 +48,9 @@ public interface TopologyProvider {
   Optional<Layer1Topology> getLayer1PhysicalTopology(NetworkSnapshot networkSnapshot);
 
   /**
-   * Return the {@link Layer2Topology} for a given {@link NetworkSnapshot}. The layer-2 topology is
-   * constructed from the layer-1 logical topology and switching information in the configurations.
+   * Computes the {@link Layer2Topology} for a given {@link NetworkSnapshot}. The layer-2 topology
+   * is constructed from the layer-1 logical topology and switching information in the
+   * configurations.
    *
    * @return computed topology, or {@link Optional#empty()} if layer-1 logical topology is absent.
    */
