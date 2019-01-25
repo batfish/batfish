@@ -85,7 +85,7 @@ public abstract class AbstractRouteBuilder<
     return _tag;
   }
 
-  public final S setTag(int tag) {
+  public final S setTag(@Nullable Integer tag) {
     _tag = firstNonNull(tag, Route.UNSET_ROUTE_TAG);
     return getThis();
   }
