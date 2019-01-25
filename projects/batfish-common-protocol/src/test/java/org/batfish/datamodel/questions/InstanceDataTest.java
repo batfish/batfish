@@ -1,6 +1,7 @@
 package org.batfish.datamodel.questions;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
@@ -33,7 +34,7 @@ public class InstanceDataTest {
   public void testGetOrderedVariableNamesEmptyList() throws IOException {
     InstanceData instanceData =
         BatfishObjectMapper.mapper().readValue("{\"orderedVariableNames\":[]}", InstanceData.class);
-    assertThat(instanceData.getOrderedVariableNames(), equalTo(ImmutableList.of()));
+    assertThat(instanceData.getOrderedVariableNames(), empty());
   }
 
   /** Test that getOrderedVariableNames returns orderedVariableNames in the correct order */
