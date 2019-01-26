@@ -4033,12 +4033,16 @@ public final class FlatJuniperGrammarTest {
                         StaticRoute.builder()
                             .setNetwork(Prefix.parse("1.0.0.0/8"))
                             .setNextHopIp(Ip.parse("10.0.0.1"))
-                            .setNextHopInterface("ge-0/0/0.0")
                             .setAdministrativeCost(5)
                             .build(),
                         StaticRoute.builder()
                             .setNetwork(Prefix.parse("3.0.0.0/8"))
                             .setNonForwarding(true)
+                            .setAdministrativeCost(5)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("4.0.0.0/8"))
+                            .setNextHopInterface("ge-0/0/0.0")
                             .setAdministrativeCost(5)
                             .build()))),
             hasVrf(
