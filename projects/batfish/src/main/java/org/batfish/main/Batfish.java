@@ -3183,12 +3183,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ParseVendorConfigurationAnswerElement answerElement,
       SortedMap<String, VendorConfiguration> overlayHostConfigurations) {
     _logger.info("\n*** READING DEVICE CONFIGURATION FILES ***\n");
-    Map<Path, String> configurationData =
-        readAllFiles(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger);
+
     Map<String, VendorConfiguration> vendorConfigurations;
     try (ActiveSpan parseNetworkConfigsSpan =
         GlobalTracer.get().buildSpan("Parse network configs").startActive()) {
       assert parseNetworkConfigsSpan != null; // avoid unused warning
+      Map<Path, String> configurationData =
+          readAllFiles(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger);
       vendorConfigurations =
           parseVendorConfigurations(configurationData, answerElement, ConfigurationFormat.UNKNOWN);
     }
@@ -3198,6 +3199,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.infof(
         "Snapshot %s in network %s has total number of network configs:%d",
         getTestrigName(), getContainerName(), vendorConfigurations.size());
+
     _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
     _logger.resetTimer();
     createDirectories(outputPath);
