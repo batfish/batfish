@@ -95,6 +95,18 @@ def test_types(question):
             assert 'value' not in data or isinstance(data['value'], int)
 
 
+def test_ordered_variable_names_includes_all_instance_variables(question, question_text):
+    """Tests that orderedVariableNames, if present, includes all instance variables."""
+    instance = question['instance']
+    ordered_variable_names = instance.get('orderedVariableNames', [])
+    if ordered_variable_names:
+        set_of_ordered_variable_names = frozenset(ordered_variable_names)
+        # ordered variable names should not contain duplicates
+        assert len(set_of_ordered_variable_names) == len(ordered_variable_names)
+        set_of_variable_names = frozenset(instance.get('variables', {}).keys())
+        assert set_of_ordered_variable_names == set_of_variable_names
+
+
 def test_indented_with_spaces(question_text, question_path):
     """Tests that JSON is indented with spaces, and not tabs."""
     if '\t' in question_text:

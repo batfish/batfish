@@ -13,11 +13,15 @@ import static org.hamcrest.Matchers.equalTo;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.node.BooleanNode;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
+import org.batfish.datamodel.questions.Variable.Type;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -25,6 +29,40 @@ import org.junit.rules.ExpectedException;
 public final class VariableTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  private static Variable clone(Variable variable) throws IOException {
+    return BatfishObjectMapper.clone(variable, Variable.class);
+  }
+
+  @Test
+  public void testEquals() throws IOException {
+    Variable variable = new Variable();
+    variable.setType(Type.INTEGER);
+    Variable initialInstance = clone(variable);
+    EqualsTester equalsTester = new EqualsTester();
+    equalsTester.addEqualityGroup(initialInstance, initialInstance).addEqualityGroup(new Object());
+    variable.setDescription("description");
+    equalsTester.addEqualityGroup(clone(variable));
+    variable.setDisplayName("display name");
+    equalsTester.addEqualityGroup(clone(variable));
+    variable.setFields(ImmutableMap.of("f", new Field()));
+    equalsTester.addEqualityGroup(clone(variable));
+    variable.setLongDescription("long description");
+    equalsTester.addEqualityGroup(clone(variable));
+    variable.setMinElements(1);
+    equalsTester.addEqualityGroup(clone(variable));
+    variable.setMinLength(1);
+    equalsTester.addEqualityGroup(clone(variable));
+    variable.setOptional(true);
+    equalsTester.addEqualityGroup(clone(variable));
+    variable.setType(Type.BOOLEAN);
+    equalsTester.addEqualityGroup(clone(variable));
+    variable.setValue(BooleanNode.TRUE);
+    equalsTester.addEqualityGroup(clone(variable));
+    variable.setValues(ImmutableList.of());
+    equalsTester.addEqualityGroup(clone(variable));
+    equalsTester.testEquals();
+  }
 
   @Test
   public void testSerializationFields()
