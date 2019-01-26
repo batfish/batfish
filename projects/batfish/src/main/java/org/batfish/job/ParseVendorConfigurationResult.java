@@ -34,10 +34,12 @@ public class ParseVendorConfigurationResult
       long elapsedTime,
       BatfishLoggerHistory history,
       String filename,
+      Warnings warnings,
       @Nonnull Throwable failureCause) {
     super(elapsedTime, history, failureCause);
     _filename = filename;
     _status = ParseStatus.FAILED;
+    _warnings = warnings;
   }
 
   public ParseVendorConfigurationResult(
