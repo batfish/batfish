@@ -41,7 +41,7 @@ sa_ip_netmask
 
 sa_ip_range
 :
-    IP_RANGE from = IP_ADDRESS DASH to = IP_ADDRESS
+    IP_RANGE ip_range
 ;
 
 sa_null

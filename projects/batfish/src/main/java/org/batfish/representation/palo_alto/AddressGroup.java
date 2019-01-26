@@ -1,7 +1,11 @@
 package org.batfish.representation.palo_alto;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.IpSpace;
 
 public final class AddressGroup implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -14,6 +18,15 @@ public final class AddressGroup implements Serializable {
 
   public AddressGroup(String name) {
     _name = name;
+  }
+
+  /** Returns the union of IpSpace of all members */
+  public IpSpace getIpSpace(Map<String, AddressObject> addressObjects) {
+    return AclIpSpace.union(
+        _members
+            .stream()
+            .map(m -> addressObjects.containsKey(m) ? addressObjects.get(m).getIpSpace() : null)
+            .collect(Collectors.toList()));
   }
 
   public String getDescription() {

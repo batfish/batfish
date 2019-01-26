@@ -2,6 +2,8 @@ package org.batfish.representation.palo_alto;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
@@ -32,6 +34,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -116,7 +119,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /** Gets the crypto profile by the provided name and type; creates anew if one does not exist */
   public CryptoProfile getCryptoProfileOrCreate(String name, CryptoProfile.Type cpType) {
     Optional<CryptoProfile> optCp =
-        _cryptoProfiles.stream()
+        _cryptoProfiles
+            .stream()
             .filter(p -> p.getName().equals(name) && p.getType() == cpType)
             .findAny();
 
@@ -249,6 +253,23 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     for (Vsys vsys : _virtualSystems.values()) {
       loggingServers.addAll(vsys.getSyslogServerAddresses());
       String vsysName = vsys.getName();
+
+      // convert address objects and groups to ip spaces
+      vsys.getAddressObjects()
+          .forEach(
+              (name, addressObject) -> {
+                _c.getIpSpaces().put(name, addressObject.getIpSpace());
+                _c.getIpSpaceMetadata()
+                    .put(name, new IpSpaceMetadata(name, ADDRESS_OBJECT.getDescription()));
+              });
+
+      vsys.getAddressGroups()
+          .forEach(
+              (name, addressGroup) -> {
+                _c.getIpSpaces().put(name, addressGroup.getIpSpace(vsys.getAddressObjects()));
+                _c.getIpSpaceMetadata()
+                    .put(name, new IpSpaceMetadata(name, ADDRESS_GROUP.getDescription()));
+              });
 
       // Convert PAN zones and create their corresponding outgoing ACLs
       for (Entry<String, Zone> zoneEntry : vsys.getZones().entrySet()) {
@@ -502,6 +523,14 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     // Count and mark simple structure usages and identify undefined references
+    markConcreteStructure(
+        PaloAltoStructureType.ADDRESS_GROUP,
+        PaloAltoStructureUsage.RULE_DESTINATION,
+        PaloAltoStructureUsage.RULE_SOURCE);
+    markConcreteStructure(
+        PaloAltoStructureType.ADDRESS_OBJECT,
+        PaloAltoStructureUsage.RULE_DESTINATION,
+        PaloAltoStructureUsage.RULE_SOURCE);
     markConcreteStructure(PaloAltoStructureType.GLOBAL_PROTECT_APP_CRYPTO_PROFILE);
     markConcreteStructure(PaloAltoStructureType.IKE_CRYPTO_PROFILE);
     markConcreteStructure(PaloAltoStructureType.IPSEC_CRYPTO_PROFILE);

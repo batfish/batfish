@@ -296,6 +296,11 @@ IP_NETMASK
     'ip-netmask'
 ;
 
+IP_RANGE
+:
+    'ip-range'
+;
+
 IPSEC_CRYPTO_PROFILES
 :
     'ipsec-crypto-profiles'
@@ -666,11 +671,6 @@ IP_ADDRESS
 IP_PREFIX
 :
     F_IpAddress '/' F_PrefixLength
-;
-
-IP_RANGE
-:
-    F_IpAddress '-' F_IpAddress
 ;
 
 LINE_COMMENT
