@@ -45,8 +45,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private static final String ARG_FLATTEN_DESTINATION = "flattendst";
 
-  private static final String ARG_FLATTEN_ON_THE_FLY = "flattenonthefly";
-
   private static final String ARG_HELP = "help";
 
   private static final String ARG_HISTOGRAM = "histogram";
@@ -186,10 +184,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public boolean debugFlagEnabled(String flag) {
     return getDebugFlags().contains(flag);
-  }
-
-  public boolean flattenOnTheFly() {
-    return _config.getBoolean(ARG_FLATTEN_ON_THE_FLY);
   }
 
   public TestrigSettings getActiveTestrigSettings() {
@@ -550,7 +544,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_EXIT_ON_FIRST_ERROR, false);
     setDefaultProperty(ARG_FLATTEN, false);
     setDefaultProperty(ARG_FLATTEN_DESTINATION, null);
-    setDefaultProperty(ARG_FLATTEN_ON_THE_FLY, true);
     setDefaultProperty(BfConsts.ARG_HALT_ON_CONVERT_ERROR, false);
     setDefaultProperty(BfConsts.ARG_HALT_ON_PARSE_ERROR, false);
     setDefaultProperty(ARG_HELP, false);
@@ -689,11 +682,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         "output path to test rig in which flat juniper (and all other) configurations will be "
             + "placed",
         ARGNAME_PATH);
-
-    addBooleanOption(
-        ARG_FLATTEN_ON_THE_FLY,
-        "flatten hierarchical juniper configuration files on-the-fly (line number references will "
-            + "be spurious)");
 
     addBooleanOption(
         BfConsts.COMMAND_INIT_INFO, "include parse/convert initialization info in answer");
@@ -852,6 +840,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
           "deltaenv",
           "enable_cisco_nx_parser",
           "env",
+          "flattenonthefly",
           "gsidregex",
           "gsinputrole",
           "gsremoteas",
@@ -907,7 +896,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(ARG_EXIT_ON_FIRST_ERROR);
     getBooleanOptionValue(ARG_FLATTEN);
     getPathOptionValue(ARG_FLATTEN_DESTINATION);
-    getBooleanOptionValue(ARG_FLATTEN_ON_THE_FLY);
     getBooleanOptionValue(BfConsts.ARG_HALT_ON_CONVERT_ERROR);
     getBooleanOptionValue(BfConsts.ARG_HALT_ON_PARSE_ERROR);
     getBooleanOptionValue(ARG_HISTOGRAM);
