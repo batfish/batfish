@@ -1,0 +1,13 @@
+set deviceconfig system hostname address-objects
+
+# empty address group
+set address-group group0
+
+#define address objects
+set address addr1
+set address addr2
+
+set address-group group1 description group1-desc
+set address-group group1 static addr1
+set address-group group1 static addr2
+set address-group group1 static addr3

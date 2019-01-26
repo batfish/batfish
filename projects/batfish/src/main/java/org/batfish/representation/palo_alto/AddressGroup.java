@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpSpace;
 
 /** Represents a Palo Alto address group */
@@ -23,12 +24,17 @@ public final class AddressGroup implements Serializable {
     _members = new TreeSet<>();
   }
 
-  /** Returns the union of IpSpace of all members */
+  /**
+   * Returns the union of IpSpace of all members. Returns {@link EmptyIpSpace} if there are no
+   * members
+   */
   public IpSpace getIpSpace(Map<String, AddressObject> addressObjects) {
-    return AclIpSpace.union(
-        _members.stream()
-            .map(m -> addressObjects.containsKey(m) ? addressObjects.get(m).getIpSpace() : null)
-            .collect(Collectors.toList()));
+    IpSpace space =
+        AclIpSpace.union(
+            _members.stream()
+                .map(m -> addressObjects.containsKey(m) ? addressObjects.get(m).getIpSpace() : null)
+                .collect(Collectors.toList()));
+    return space == null ? EmptyIpSpace.INSTANCE : space;
   }
 
   public String getDescription() {

@@ -50,6 +50,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -59,9 +60,11 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DiffieHellmanGroup;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IkeHashingAlgorithm;
@@ -77,12 +80,15 @@ import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.representation.palo_alto.AddressGroup;
+import org.batfish.representation.palo_alto.AddressObject;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
 import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
+import org.batfish.representation.palo_alto.Vsys;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -151,6 +157,63 @@ public class PaloAltoGrammarTest {
     fb.setSrcPort(sourcePort);
     fb.setTag("test");
     return fb.build();
+  }
+
+  @Test
+  public void testAddressGroups() throws IOException {
+    PaloAltoConfiguration c = parsePaloAltoConfig("address-groups");
+
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, AddressGroup> addressGroups = vsys.getAddressGroups();
+    Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
+
+    // there are two address groups defined in the file, including the empty one
+    assertThat(addressGroups.keySet(), equalTo(ImmutableSet.of("group0", "group1")));
+
+    // the ip space of the empty group is empty
+    assertThat(addressGroups.get("group0").getMembers(), equalTo(ImmutableSet.of()));
+    assertThat(
+        addressGroups.get("group0").getIpSpace(vsys.getAddressObjects()),
+        equalTo(EmptyIpSpace.INSTANCE));
+
+    // we parsed the description properly
+    assertThat(addressGroups.get("group1").getDescription(), equalTo("group1-desc"));
+
+    // addr3 should have been discarded as a member
+    assertThat(
+        addressGroups.get("group1").getMembers(), equalTo(ImmutableSet.of("addr1", "addr2")));
+
+    assertThat(
+        addressGroups.get("group1").getIpSpace(vsys.getAddressObjects()),
+        equalTo(
+            AclIpSpace.union(
+                addressObjects.get("addr1").getIpSpace(),
+                addressObjects.get("addr2").getIpSpace())));
+  }
+
+  @Test
+  public void testAddressObjects() throws IOException {
+    PaloAltoConfiguration c = parsePaloAltoConfig("address-objects");
+
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+
+    // there are three address objects defined in the file, including the empty one
+    assertThat(
+        vsys.getAddressObjects().keySet(), equalTo(ImmutableSet.of("addr1", "addr2", "addr3")));
+
+    // check that we parsed description and prefix right
+    assertThat(
+        vsys.getAddressObjects().get("addr1").getIpSpace(),
+        equalTo(Prefix.parse("10.1.1.1/24").toIpSpace()));
+    assertThat(vsys.getAddressObjects().get("addr1").getDescription(), equalTo("addr1-desc"));
+
+    // check that we parse the IP address right
+    assertThat(
+        vsys.getAddressObjects().get("addr2").getIpSpace(),
+        equalTo(Ip.parse("10.1.1.2").toIpSpace()));
+
+    // check that we parse the IP address right
+    assertThat(vsys.getAddressObjects().get("addr3").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
   }
 
   @Test

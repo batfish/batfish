@@ -434,6 +434,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     String name = ctx.name.getText();
     if (_currentVsys.getAddressGroups().get(name) != null) {
       // making an arbitrary choice here to ignore the earlier occurrence; simplifies other code
+      // TODO FIX THIS
       _w.redFlag(
           "Cannot have an address object and group with the same name '"
               + name
@@ -458,6 +459,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     String name = ctx.name.getText();
     if (_currentVsys.getAddressObjects().get(name) != null) {
       // making an arbitrary choice here to ignore the earlier occurrence; simplifies other code
+      // TODO FIX THIS
       _w.redFlag(
           "Cannot have an address object and group with the same name '"
               + name
@@ -506,7 +508,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     if (ctx.IP_ADDRESS() != null) {
       _currentAddressObject.setIpSpace(Ip.parse(ctx.IP_ADDRESS().getText()).toIpSpace());
     } else if (ctx.IP_PREFIX() != null) {
-      _currentAddressObject.setIpSpace(Prefix.parse(ctx.IP_ADDRESS().getText()).toIpSpace());
+      _currentAddressObject.setIpSpace(Prefix.parse(ctx.IP_PREFIX().getText()).toIpSpace());
     } else {
       _w.redFlag("Cannot understand what follows 'ip-netmask' in " + getFullText(ctx));
     }
@@ -535,8 +537,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
           String.format(
               "Cannot add non-existent address object '%s' to group '%s' in '%s'",
               objectName, _currentAddressGroup.getName(), getFullText(ctx)));
+    } else {
+      _currentAddressGroup.getMembers().add(objectName);
     }
-    _currentAddressGroup.getMembers().add(objectName);
   }
 
   @Override
