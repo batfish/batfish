@@ -290,10 +290,17 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       assert parseSpan != null; // avoid unused warning
       _logger.info("\tParsing...");
       tree = BatfishParsing.parse(combinedParser, _logger, _settings);
+
       if (_settings.getPrintParseTree()) {
         _ptSentences =
             ParseTreePrettyPrinter.getParseTreeSentences(
                 tree, combinedParser, _settings.getPrintParseTreeLineNums());
+      }
+      if (!combinedParser.getErrors().isEmpty()) {
+        throw new BatfishException(
+            String.format(
+                "Configuration file: '%s' contains unrecognized lines:\n%s",
+                _filename, String.join("\n", combinedParser.getErrors())));
       }
     }
 
@@ -302,12 +309,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       assert postProcessSpan != null; // avoid unused warning
       _logger.info("\tPost-processing...");
       extractor.processParseTree(tree);
-      if (!combinedParser.getErrors().isEmpty()) {
-        throw new BatfishException(
-            String.format(
-                "Configuration file: '%s' contains unrecognized lines:\n%s",
-                _filename, String.join("\n", combinedParser.getErrors())));
-      }
       _logger.info("OK\n");
     } finally {
       Batfish.logWarnings(_logger, _warnings);
