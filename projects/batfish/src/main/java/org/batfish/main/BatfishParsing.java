@@ -7,14 +7,53 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.stream.Stream;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.GrammarSettings;
+import org.batfish.grammar.ParseTreePrettyPrinter;
 
 /** A utility class for the parsing-related code in {@link Batfish}. */
-class BatfishParsing {
+public class BatfishParsing {
+  /**
+   * Returns the parse tree for the given parser, logging to the given logger and using the given
+   * settings to control the parse tree printing, if applicable.
+   */
+  public static ParserRuleContext parse(
+      BatfishCombinedParser<?, ?> parser, BatfishLogger logger, GrammarSettings settings) {
+    ParserRuleContext tree;
+    try {
+      tree = parser.parse();
+    } catch (BatfishException e) {
+      throw new ParserBatfishException("Parser error", e);
+    }
+    List<String> errors = parser.getErrors();
+    int numErrors = errors.size();
+    if (numErrors > 0) {
+      logger.error(numErrors + " ERROR(S)\n");
+      for (int i = 0; i < numErrors; i++) {
+        String prefix = "ERROR " + (i + 1) + ": ";
+        String msg = errors.get(i);
+        String prefixedMsg = CommonUtil.applyPrefix(prefix, msg);
+        logger.error(prefixedMsg + "\n");
+      }
+      throw new ParserBatfishException("Parser error(s)");
+    } else if (!settings.getPrintParseTree()) {
+      logger.info("OK\n");
+    } else {
+      logger.info("OK, PRINTING PARSE TREE:\n");
+      logger.info(
+          ParseTreePrettyPrinter.print(tree, parser, settings.getPrintParseTreeLineNums())
+              + "\n\n");
+    }
+    return tree;
+  }
+
   /**
    * Reads the files in the given directory (recursively) and returns a map from each file's {@link
    * Path} to its contents.

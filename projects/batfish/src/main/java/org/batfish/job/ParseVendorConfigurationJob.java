@@ -38,6 +38,7 @@ import org.batfish.grammar.mrv.MrvControlPlaneExtractor;
 import org.batfish.grammar.palo_alto.PaloAltoCombinedParser;
 import org.batfish.grammar.palo_alto.PaloAltoControlPlaneExtractor;
 import org.batfish.main.Batfish;
+import org.batfish.main.BatfishParsing;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -288,7 +289,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     try (ActiveSpan parseSpan = GlobalTracer.get().buildSpan("Parsing").startActive()) {
       assert parseSpan != null; // avoid unused warning
       _logger.info("\tParsing...");
-      tree = Batfish.parse(combinedParser, _logger, _settings);
+      tree = BatfishParsing.parse(combinedParser, _logger, _settings);
       if (_settings.getPrintParseTree()) {
         _ptSentences =
             ParseTreePrettyPrinter.getParseTreeSentences(

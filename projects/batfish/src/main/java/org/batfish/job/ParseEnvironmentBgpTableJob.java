@@ -16,6 +16,7 @@ import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.BgpTableFormatDetector;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.main.Batfish;
+import org.batfish.main.BatfishParsing;
 import org.batfish.main.ParserBatfishException;
 
 public class ParseEnvironmentBgpTableJob extends BatfishJob<ParseEnvironmentBgpTableResult> {
@@ -105,7 +106,7 @@ public class ParseEnvironmentBgpTableJob extends BatfishJob<ParseEnvironmentBgpT
       _logger.info("\tParsing...");
       BatfishCombinedParser<?, ?> combinedParser = plugin.parser(_fileText, _settings);
       extractor = plugin.extractor(_hostname, _fileText, combinedParser, _warnings);
-      tree = Batfish.parse(combinedParser, _logger, _settings);
+      tree = BatfishParsing.parse(combinedParser, _logger, _settings);
       if (_settings.getPrintParseTree()) {
         _ptSentences =
             ParseTreePrettyPrinter.getParseTreeSentences(

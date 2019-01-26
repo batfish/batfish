@@ -76,6 +76,7 @@ import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
+import org.batfish.main.BatfishParsing;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
@@ -112,7 +113,8 @@ public class PaloAltoGrammarTest {
     PaloAltoControlPlaneExtractor extractor =
         new PaloAltoControlPlaneExtractor(src, parser, new Warnings());
     ParserRuleContext tree =
-        Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+        BatfishParsing.parse(
+            parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(tree);
     return (PaloAltoConfiguration) extractor.getVendorConfiguration();
   }

@@ -21,6 +21,7 @@ import org.batfish.grammar.routing_table.ios.IosRoutingTableExtractor;
 import org.batfish.grammar.routing_table.nxos.NxosRoutingTableCombinedParser;
 import org.batfish.grammar.routing_table.nxos.NxosRoutingTableExtractor;
 import org.batfish.main.Batfish;
+import org.batfish.main.BatfishParsing;
 import org.batfish.main.ParserBatfishException;
 
 public class ParseEnvironmentRoutingTableJob
@@ -124,7 +125,7 @@ public class ParseEnvironmentRoutingTableJob
 
     try {
       _logger.info("\tParsing...");
-      tree = Batfish.parse(combinedParser, _logger, _settings);
+      tree = BatfishParsing.parse(combinedParser, _logger, _settings);
       if (_settings.getPrintParseTree()) {
         _ptSentences =
             ParseTreePrettyPrinter.getParseTreeSentences(

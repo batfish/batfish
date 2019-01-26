@@ -176,9 +176,7 @@ import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.dataplane.TracerouteEngineImpl;
-import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableFormat;
-import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
 import org.batfish.grammar.juniper.JuniperFlattener;
@@ -315,7 +313,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       case PALO_ALTO_NESTED:
         {
           JuniperCombinedParser parser = new JuniperCombinedParser(input, settings);
-          ParserRuleContext tree = parse(parser, logger, settings);
+          ParserRuleContext tree = BatfishParsing.parse(parser, logger, settings);
           JuniperFlattener flattener = new JuniperFlattener(header);
           ParseTreeWalker walker = new ParseTreeWalker();
           walker.walk(flattener, tree);
@@ -325,7 +323,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       case VYOS:
         {
           VyosCombinedParser parser = new VyosCombinedParser(input, settings);
-          ParserRuleContext tree = parse(parser, logger, settings);
+          ParserRuleContext tree = BatfishParsing.parse(parser, logger, settings);
           VyosFlattener flattener = new VyosFlattener(header);
           ParseTreeWalker walker = new ParseTreeWalker();
           walker.walk(flattener, tree);
@@ -372,36 +370,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private static String logWarningsHelper(Warning warning) {
     return "   " + warning.getTag() + ": " + warning.getText() + "\n";
-  }
-
-  public static ParserRuleContext parse(
-      BatfishCombinedParser<?, ?> parser, BatfishLogger logger, Settings settings) {
-    ParserRuleContext tree;
-    try {
-      tree = parser.parse();
-    } catch (BatfishException e) {
-      throw new ParserBatfishException("Parser error", e);
-    }
-    List<String> errors = parser.getErrors();
-    int numErrors = errors.size();
-    if (numErrors > 0) {
-      logger.error(numErrors + " ERROR(S)\n");
-      for (int i = 0; i < numErrors; i++) {
-        String prefix = "ERROR " + (i + 1) + ": ";
-        String msg = errors.get(i);
-        String prefixedMsg = CommonUtil.applyPrefix(prefix, msg);
-        logger.error(prefixedMsg + "\n");
-      }
-      throw new ParserBatfishException("Parser error(s)");
-    } else if (!settings.getPrintParseTree()) {
-      logger.info("OK\n");
-    } else {
-      logger.info("OK, PRINTING PARSE TREE:\n");
-      logger.info(
-          ParseTreePrettyPrinter.print(tree, parser, settings.getPrintParseTreeLineNums())
-              + "\n\n");
-    }
-    return tree;
   }
 
   private final Map<String, BiFunction<Question, IBatfish, Answerer>> _answererCreators;
@@ -1992,15 +1960,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     _storage.storeAnswerMetadata(
         AnswerMetadataUtil.computeAnswerMetadata(answer, _logger), baseAnswerId);
-  }
-
-  private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
-    return parse(parser, _logger, _settings);
-  }
-
-  public ParserRuleContext parse(BatfishCombinedParser<?, ?> parser, String filename) {
-    _logger.infof("Parsing: \"%s\"...", filename);
-    return parse(parser);
   }
 
   @VisibleForTesting
