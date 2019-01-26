@@ -10,7 +10,6 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethods;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.isNonForwarding;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasAllowLocalAsIn;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasClusterId;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
@@ -4026,14 +4025,36 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testStaticRoutes() throws IOException {
     Configuration c = parseConfig("static-routes");
-
-    assertThat(c, hasDefaultVrf(hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("1.0.0.0/8"))))));
-    assertThat(c, hasVrf("ri2", hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("2.0.0.0/8"))))));
     assertThat(
         c,
-        hasDefaultVrf(
-            hasStaticRoutes(
-                hasItem(allOf(hasPrefix(Prefix.parse("3.0.0.0/8")), isNonForwarding(true))))));
+        allOf(
+            hasDefaultVrf(
+                hasStaticRoutes(
+                    containsInAnyOrder(
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("1.0.0.0/8"))
+                            .setNextHopIp(Ip.parse("10.0.0.1"))
+                            .setAdministrativeCost(5)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("3.0.0.0/8"))
+                            .setNonForwarding(true)
+                            .setAdministrativeCost(5)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("4.0.0.0/8"))
+                            .setNextHopInterface("ge-0/0/0.0")
+                            .setAdministrativeCost(5)
+                            .build()))),
+            hasVrf(
+                "ri2",
+                hasStaticRoutes(
+                    contains(
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("2.0.0.0/8"))
+                            .setNextHopIp(Ip.parse("10.0.0.2"))
+                            .setAdministrativeCost(5)
+                            .build())))));
   }
 
   @Test
