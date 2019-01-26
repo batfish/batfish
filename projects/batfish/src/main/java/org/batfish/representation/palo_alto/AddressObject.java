@@ -5,10 +5,11 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpSpace;
 
+/** Represents a Palo Alto address object */
 public final class AddressObject implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  @Nullable private String _description;
+  private String _description;
 
   private IpSpace _ipSpace;
 
@@ -33,7 +34,7 @@ public final class AddressObject implements Serializable {
     return _name;
   }
 
-  public void setDescription(@Nullable String description) {
+  public void setDescription(String description) {
     _description = description;
   }
 
