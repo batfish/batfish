@@ -13,6 +13,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
 
+/** A utility class for the parsing-related code in {@link Batfish}. */
 class BatfishParsing {
   /**
    * Reads the files in the given directory (recursively) and returns a map from each file's {@link
