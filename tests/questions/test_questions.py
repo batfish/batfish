@@ -98,13 +98,13 @@ def test_types(question):
 def test_ordered_variable_names_includes_all_instance_variables(question, question_text):
     """Tests that orderedVariableNames, if present, includes all instance variables."""
     instance = question['instance']
-    orderedVariableNames = instance.get('orderedVariableNames', [])
-    if orderedVariableNames:
-        setOfOrderedVariableNames = frozenset(orderedVariableNames)
+    ordered_variable_names = instance.get('orderedVariableNames', [])
+    if ordered_variable_names:
+        set_of_ordered_variable_names = frozenset(ordered_variable_names)
         # ordered variable names should not contain duplicates
-        assert len(setOfOrderedVariableNames) == len(orderedVariableNames)
-        setOfVariableNames = frozenset(instance.get('variables', {}).keys())
-        assert setOfOrderedVariableNames == setOfVariableNames
+        assert len(set_of_ordered_variable_names) == len(ordered_variable_names)
+        set_of_variable_names = frozenset(instance.get('variables', {}).keys())
+        assert set_of_ordered_variable_names == set_of_variable_names
 
 
 def test_indented_with_spaces(question_text, question_path):
