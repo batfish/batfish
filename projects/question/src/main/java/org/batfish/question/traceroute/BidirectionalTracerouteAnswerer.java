@@ -3,10 +3,10 @@ package org.batfish.question.traceroute;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.flow.BidirectionalTracePruner.prune;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multiset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -58,9 +58,22 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
     String tag = _batfish.getFlowTag();
     Set<Flow> flows = _helper.getFlows(tag);
     TracerouteEngine tracerouteEngine = _batfish.getTracerouteEngine();
+    List<BidirectionalTrace> bidirectionalTraces =
+        computeBidirectionalTraces(flows, tracerouteEngine, _ignoreFilters);
+    ImmutableMultiset<Row> rows =
+        prune(bidirectionalTraces, _maxTraces).stream()
+            .map(BidirectionalTracerouteAnswerer::toRow)
+            .collect(ImmutableMultiset.toImmutableMultiset());
+    TableAnswerElement table = new TableAnswerElement(metadata());
+    table.postProcessAnswer(_question, rows);
+    return table;
+  }
 
+  @VisibleForTesting
+  static List<BidirectionalTrace> computeBidirectionalTraces(
+      Set<Flow> flows, TracerouteEngine tracerouteEngine, boolean ignoreFilters) {
     SortedMap<Flow, List<TraceAndReverseFlow>> forwardTraces =
-        tracerouteEngine.computeTracesAndReverseFlows(flows, _ignoreFilters);
+        tracerouteEngine.computeTracesAndReverseFlows(flows, ignoreFilters);
 
     Map<Flow, Set<Optional<Flow>>> forwardFlowToReverseFlows =
         toImmutableMap(
@@ -80,29 +93,8 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
             .collect(ImmutableSet.toImmutableSet());
 
     SortedMap<Flow, List<Trace>> reverseTraces =
-        tracerouteEngine.computeTraces(reverseFlows, _ignoreFilters);
+        tracerouteEngine.computeTraces(reverseFlows, ignoreFilters);
 
-    Multiset<Row> rows = toRows(forwardTraces, reverseTraces, _maxTraces);
-    TableAnswerElement table = new TableAnswerElement(metadata());
-    table.postProcessAnswer(_question, rows);
-    return table;
-  }
-
-  /** Create metadata for the new traceroute v2 answer */
-  public static TableMetadata metadata() {
-    List<ColumnMetadata> columnMetadata =
-        ImmutableList.of(
-            new ColumnMetadata(COL_FORWARD_FLOW, Schema.FLOW, "The forward flow.", true, false),
-            new ColumnMetadata(COL_FORWARD_TRACE, Schema.TRACE, "The forward trace.", false, true),
-            new ColumnMetadata(COL_REVERSE_FLOW, Schema.FLOW, "The reverse flow.", false, true),
-            new ColumnMetadata(COL_REVERSE_TRACE, Schema.TRACE, "The reverse trace.", false, true));
-    return new TableMetadata(
-        columnMetadata, String.format("Bidirectional paths for flow ${%s}", COL_FORWARD_FLOW));
-  }
-
-  static List<BidirectionalTrace> computeBidirectionalTraces(
-      SortedMap<Flow, List<TraceAndReverseFlow>> forwardTraces,
-      SortedMap<Flow, List<Trace>> reverseTraces) {
     List<BidirectionalTrace> result = new ArrayList<>();
     forwardTraces.forEach(
         (forwardFlow, forwardTraceAndReverseFlows) ->
@@ -124,6 +116,18 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
     return result;
   }
 
+  /** Create metadata for the new traceroute v2 answer */
+  public static TableMetadata metadata() {
+    List<ColumnMetadata> columnMetadata =
+        ImmutableList.of(
+            new ColumnMetadata(COL_FORWARD_FLOW, Schema.FLOW, "The forward flow.", true, false),
+            new ColumnMetadata(COL_FORWARD_TRACE, Schema.TRACE, "The forward trace.", false, true),
+            new ColumnMetadata(COL_REVERSE_FLOW, Schema.FLOW, "The reverse flow.", false, true),
+            new ColumnMetadata(COL_REVERSE_TRACE, Schema.TRACE, "The reverse trace.", false, true));
+    return new TableMetadata(
+        columnMetadata, String.format("Bidirectional paths for flow ${%s}", COL_FORWARD_FLOW));
+  }
+
   private static Row toRow(BidirectionalTrace trace) {
     return Row.of(
         COL_FORWARD_FLOW,
@@ -134,14 +138,5 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
         trace.getReverseFlow(),
         COL_REVERSE_TRACE,
         trace.getReverseTrace());
-  }
-
-  private static ImmutableMultiset<Row> toRows(
-      SortedMap<Flow, List<TraceAndReverseFlow>> forwardTraces,
-      SortedMap<Flow, List<Trace>> reverseTraces,
-      int maxTraces) {
-    return prune(computeBidirectionalTraces(forwardTraces, reverseTraces), maxTraces).stream()
-        .map(BidirectionalTracerouteAnswerer::toRow)
-        .collect(ImmutableMultiset.toImmutableMultiset());
   }
 }

@@ -32,7 +32,10 @@ import org.batfish.specifier.LocationSpecifierFactory;
 import org.batfish.specifier.LocationVisitor;
 import org.batfish.specifier.SpecifierContext;
 
-/** Helper for {@link TracerouteAnswerer} and {@link BidirectionalTracerouteAnswerer}. */
+/**
+ * Helper for {@link TracerouteAnswerer} and {@link BidirectionalTracerouteAnswerer}. Processes
+ * question parameters and constructs {@link Flow Flows} for the backend engine.
+ */
 public final class TracerouteAnswererHelper {
   private final IpSpaceRepresentative _ipSpaceRepresentative;
   private final PacketHeaderConstraints _packetHeaderConstraints;

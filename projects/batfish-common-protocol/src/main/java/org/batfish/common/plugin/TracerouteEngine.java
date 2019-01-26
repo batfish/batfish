@@ -1,8 +1,11 @@
 package org.batfish.common.plugin;
 
+import com.google.common.collect.ImmutableList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.flow.Trace;
@@ -16,13 +19,21 @@ public interface TracerouteEngine {
   SortedMap<Flow, Set<FlowTrace>> processFlows(Set<Flow> flows, boolean ignoreFilters);
 
   /**
-   * Computes the {@link Trace Traces} for a {@link Set} of {@link Flow Flows}
+   * Builds the {@link Trace}s for a {@link Set} of {@link Flow}s
    *
-   * @param flows {@link Set} of {@link Flow} for which {@link Trace Traces} are to be found
+   * @param flows {@link Set} of {@link Flow} for which {@link Trace}s are to be found
    * @param ignoreFilters if true, will ignore ACLs
-   * @return {@link SortedMap} of {@link Flow Flows} to {@link List} of {@link Trace Traces}
+   * @return {@link SortedMap} of {@link Flow}s to {@link List} of {@link Trace}s
    */
-  SortedMap<Flow, List<Trace>> computeTraces(Set<Flow> flows, boolean ignoreFilters);
+  default SortedMap<Flow, List<Trace>> computeTraces(Set<Flow> flows, boolean ignoreFilters) {
+    return CommonUtil.toImmutableSortedMap(
+        computeTracesAndReverseFlows(flows, ignoreFilters),
+        Entry::getKey,
+        entry ->
+            entry.getValue().stream()
+                .map(TraceAndReverseFlow::getTrace)
+                .collect(ImmutableList.toImmutableList()));
+  }
 
   /**
    * Computes {@link Trace Traces} with reverse-direction {@link Flow Flows} for a {@link Set} of
