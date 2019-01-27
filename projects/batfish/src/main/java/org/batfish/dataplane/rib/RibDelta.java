@@ -3,14 +3,18 @@ package org.batfish.dataplane.rib;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
+import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
@@ -20,22 +24,14 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
  *
  * @param <R> route type
  */
-public class RibDelta<R extends AbstractRoute> {
+@ParametersAreNonnullByDefault
+public final class RibDelta<R extends AbstractRoute> {
 
-  private ImmutableMap<Prefix, ImmutableList<RouteAdvertisement<R>>> _actions;
-  /** The "owner"/parent RIB */
-  @Nullable private AbstractRib<R> _rib;
+  /** Sorted for deterministic iteration order */
+  private SortedMap<Prefix, List<RouteAdvertisement<R>>> _actions;
 
-  private RibDelta(
-      @Nullable AbstractRib<R> rib, Map<Prefix, ImmutableList<RouteAdvertisement<R>>> actions) {
-    this._actions = ImmutableMap.copyOf(actions);
-    this._rib = rib;
-  }
-
-  /** Get the owner RIB of this RibDelta */
-  @Nullable
-  public AbstractRib<R> getRib() {
-    return _rib;
+  private RibDelta(Map<Prefix, List<RouteAdvertisement<R>>> actions) {
+    _actions = ImmutableSortedMap.copyOf(actions);
   }
 
   /**
@@ -45,7 +41,8 @@ public class RibDelta<R extends AbstractRoute> {
    *     are returned
    * @return a list of {@link RouteAdvertisement}
    */
-  public List<RouteAdvertisement<R>> getActions(@Nullable Prefix p) {
+  @Nonnull
+  private List<RouteAdvertisement<R>> getActions(@Nullable Prefix p) {
     if (p == null) {
       return _actions.values().stream()
           .flatMap(List::stream)
@@ -59,6 +56,7 @@ public class RibDelta<R extends AbstractRoute> {
    *
    * @return a set of {@link Prefix}
    */
+  @Nonnull
   public Set<Prefix> getPrefixes() {
     return _actions.keySet();
   }
@@ -68,8 +66,18 @@ public class RibDelta<R extends AbstractRoute> {
    *
    * @return a list of {@link RouteAdvertisement}
    */
+  @Nonnull
   public List<RouteAdvertisement<R>> getActions() {
     return getActions(null);
+  }
+
+  private Map<Prefix, List<RouteAdvertisement<R>>> getActionMap() {
+    return _actions;
+  }
+
+  /** Check whether this delta is empty (has no outstanding actions) */
+  public boolean isEmpty() {
+    return _actions.isEmpty();
   }
 
   /**
@@ -77,6 +85,7 @@ public class RibDelta<R extends AbstractRoute> {
    *
    * @return List of routes
    */
+  @Nonnull
   public List<R> getRoutes() {
     return _actions.values().stream()
         .flatMap(List::stream)
@@ -84,16 +93,15 @@ public class RibDelta<R extends AbstractRoute> {
         .collect(ImmutableList.toImmutableList());
   }
 
-  public static class Builder<R extends AbstractRoute> {
+  /** Builder for {@link RibDelta} */
+  @ParametersAreNonnullByDefault
+  public static final class Builder<R extends AbstractRoute> {
 
     private Map<Prefix, LinkedHashMap<R, RouteAdvertisement<R>>> _actions;
 
-    private AbstractRib<R> _rib;
-
     /** Initialize a new RibDelta builder */
-    public Builder(@Nullable AbstractRib<R> rib) {
+    private Builder() {
       _actions = new LinkedHashMap<>();
-      _rib = rib;
     }
 
     /**
@@ -101,7 +109,7 @@ public class RibDelta<R extends AbstractRoute> {
      *
      * @param route that was added
      */
-    public Builder<R> add(@Nonnull R route) {
+    public Builder<R> add(R route) {
       LinkedHashMap<R, RouteAdvertisement<R>> l =
           _actions.computeIfAbsent(route.getNetwork(), p -> new LinkedHashMap<>(10, 1, true));
       l.put(route, new RouteAdvertisement<>(route));
@@ -113,7 +121,7 @@ public class RibDelta<R extends AbstractRoute> {
      *
      * @param routes a collection of routes
      */
-    public Builder<R> add(@Nonnull Collection<? extends R> routes) {
+    public Builder<R> add(Collection<? extends R> routes) {
       for (R route : routes) {
         LinkedHashMap<R, RouteAdvertisement<R>> l =
             _actions.computeIfAbsent(route.getNetwork(), p -> new LinkedHashMap<>(10, 1, true));
@@ -161,23 +169,21 @@ public class RibDelta<R extends AbstractRoute> {
     }
 
     /**
-     * Create a new RIB delta. Returns {@code null} if no changes were made
+     * Create a new RIB delta.
      *
      * @return A new {@link RibDelta}
      */
-    @Nullable
+    @Nonnull
     public RibDelta<R> build() {
-      if (_actions.isEmpty()) {
-        return null;
-      }
       return new RibDelta<>(
-          _rib,
           _actions.entrySet().stream()
               .collect(
                   ImmutableMap.toImmutableMap(
                       Entry::getKey,
                       e ->
                           e.getValue().values().stream()
+                              // TODO: uncomment after all route types properly implement equality
+                              // .distinct()
                               .collect(ImmutableList.toImmutableList()))));
     }
 
@@ -190,6 +196,7 @@ public class RibDelta<R extends AbstractRoute> {
     }
 
     /** Process all added and removed routes from a given delta */
+    @Nonnull
     public <T extends R> Builder<R> from(@Nullable RibDelta<T> delta) {
       if (delta != null) {
         for (RouteAdvertisement<T> a : delta.getActions()) {
@@ -209,6 +216,17 @@ public class RibDelta<R extends AbstractRoute> {
     }
   }
 
+  @Nonnull
+  public static <T extends AbstractRoute> Builder<T> builder() {
+    return new Builder<>();
+  }
+
+  /** Return an empty RIB delta */
+  @Nonnull
+  public static <T extends AbstractRoute> RibDelta<T> empty() {
+    return RibDelta.<T>builder().build();
+  }
+
   /**
    * Apply a {@link RibDelta} to a given RIB
    *
@@ -219,57 +237,49 @@ public class RibDelta<R extends AbstractRoute> {
    * @return the {@link RibDelta} that results from modifying {@code importingRib}
    */
   @VisibleForTesting
-  @Nullable
+  @Nonnull
   public static <U extends AbstractRoute, T extends U> RibDelta<U> importRibDelta(
-      @Nonnull AbstractRib<U> importingRib, @Nullable RibDelta<T> delta) {
-    if (delta == null) {
-      return null;
+      @Nonnull AbstractRib<U> importingRib, @Nonnull RibDelta<T> delta) {
+    if (delta.isEmpty()) {
+      return RibDelta.<U>builder().build();
     }
-    Builder<U> builder = new Builder<>(importingRib);
-    List<RouteAdvertisement<T>> aa = delta.getActions();
-    for (RouteAdvertisement<T> routeAdvertisement : aa) {
-      if (routeAdvertisement.isWithdrawn()) {
-        builder.from(
-            importingRib.removeRouteGetDelta(
-                routeAdvertisement.getRoute(), routeAdvertisement.getReason()));
-      } else {
-        RibDelta<U> tmp = importingRib.mergeRouteGetDelta(routeAdvertisement.getRoute());
-        builder.from(tmp);
-      }
-    }
+    Builder<U> builder = RibDelta.builder();
+    delta
+        .getActionMap()
+        .forEach(
+            (prefix, actions) ->
+                actions.stream()
+                    // TODO: uncomment after all route types properly implement equality
+                    // .distinct()
+                    .forEachOrdered(
+                        tRouteAdvertisement -> {
+                          if (tRouteAdvertisement.isWithdrawn()) {
+                            builder.from(
+                                importingRib.removeRouteGetDelta(
+                                    tRouteAdvertisement.getRoute(),
+                                    tRouteAdvertisement.getReason()));
+                          } else {
+                            builder.from(
+                                importingRib.mergeRouteGetDelta(tRouteAdvertisement.getRoute()));
+                          }
+                        }));
     return builder.build();
   }
 
-  /**
-   * Apply a {@link RibDelta} to a given RIB, but only for a particular {@link Prefix} {@code p}
-   *
-   * @param importingRib the RIB to apply the delta to
-   * @param delta the delta to apply
-   * @param <U> Type of route in the RIB
-   * @param <T> type of route in the delta (must be more specific than {@link U}
-   * @return the {@link RibDelta} that results from modifying {@code importingRib}
-   */
-  @VisibleForTesting
-  @Nullable
-  public static <U extends AbstractRoute, T extends U> RibDelta<U> importRibDelta(
-      @Nonnull AbstractRib<U> importingRib, @Nullable RibDelta<T> delta, Prefix p) {
-    if (delta == null || delta.getActions(p) == null) {
-      return null;
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
     }
-    Builder<U> builder = new Builder<>(importingRib);
-    List<RouteAdvertisement<T>> actions = delta.getActions(p);
-    if (actions == null) {
-      return null;
+    if (!(o instanceof RibDelta<?>)) {
+      return false;
     }
-    for (RouteAdvertisement<T> routeAdvertisement : actions) {
-      if (!routeAdvertisement.isWithdrawn()) {
-        builder.from(importingRib.mergeRouteGetDelta(routeAdvertisement.getRoute()));
-      } else {
-        builder.from(
-            importingRib.removeRouteGetDelta(
-                routeAdvertisement.getRoute(), routeAdvertisement.getReason()));
-      }
-    }
-    return builder.build();
+    RibDelta<?> ribDelta = (RibDelta<?>) o;
+    return Objects.equals(_actions, ribDelta._actions);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_actions);
   }
 }

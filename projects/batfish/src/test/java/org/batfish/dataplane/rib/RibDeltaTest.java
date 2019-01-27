@@ -1,11 +1,9 @@
 package org.batfish.dataplane.rib;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.nullValue;
 
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpRoute;
@@ -24,18 +22,19 @@ import org.junit.Test;
 /** Tests for {@link RibDelta} */
 public class RibDeltaTest {
 
+  private static final int PREFIX_LENGTH = 24;
   private RibDelta.Builder<AbstractRoute> _builder;
 
   @Before
   public void setupNewBuilder() {
-    _builder = new Builder<>(null);
+    _builder = RibDelta.builder();
   }
 
   /** Check that empty {@link Builder} produces a null delta */
   @Test
   public void testBuildEmptyDelta() {
     RibDelta<AbstractRoute> delta = _builder.build();
-    assertThat(delta, is(nullValue()));
+    assertThat(delta, equalTo(RibDelta.empty()));
   }
 
   /** Check {@link Builder} route addition and that duplicate adds get squashed */
@@ -43,7 +42,7 @@ public class RibDeltaTest {
   public void testBuilderAddRoute() {
     StaticRoute route1 =
         StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.0"), 24))
+            .setNetwork(Prefix.create(Ip.parse("1.1.1.0"), PREFIX_LENGTH))
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
@@ -53,7 +52,7 @@ public class RibDeltaTest {
     // Route 2 & 3 should be equal
     StaticRoute route2 =
         StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("2.1.1.0"), 24))
+            .setNetwork(Prefix.create(Ip.parse("2.1.1.0"), PREFIX_LENGTH))
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
@@ -62,7 +61,7 @@ public class RibDeltaTest {
             .build();
     StaticRoute route3 =
         StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("2.1.1.0"), 24))
+            .setNetwork(Prefix.create(Ip.parse("2.1.1.0"), PREFIX_LENGTH))
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
@@ -74,13 +73,11 @@ public class RibDeltaTest {
 
     // Ensure routes are added in order
     RibDelta<AbstractRoute> delta = _builder.build();
-    assert delta != null;
     assertThat(delta.getRoutes(), contains(route1, route2));
 
     // Test that re-adding a route does not change resulting set
     _builder.add(route3);
     delta = _builder.build();
-    assert delta != null;
     assertThat(delta.getRoutes(), contains(route1, route2));
   }
 
@@ -89,7 +86,7 @@ public class RibDeltaTest {
   public void testBuilderRemoveRoute() {
     StaticRoute route1 =
         StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.0"), 24))
+            .setNetwork(Prefix.create(Ip.parse("1.1.1.0"), PREFIX_LENGTH))
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
@@ -99,7 +96,7 @@ public class RibDeltaTest {
     // Route 2 & 3 should be equal
     StaticRoute route2 =
         StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("2.1.1.0"), 24))
+            .setNetwork(Prefix.create(Ip.parse("2.1.1.0"), PREFIX_LENGTH))
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
@@ -108,7 +105,7 @@ public class RibDeltaTest {
             .build();
     StaticRoute route3 =
         StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("2.1.1.0"), 24))
+            .setNetwork(Prefix.create(Ip.parse("2.1.1.0"), PREFIX_LENGTH))
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
@@ -120,13 +117,11 @@ public class RibDeltaTest {
 
     // Ensure routes are added in order
     RibDelta<AbstractRoute> delta = _builder.build();
-    assert delta != null;
     assertThat(delta.getRoutes(), contains(route1, route2));
 
     // Test that re-removing a route does not change resulting set
     _builder.remove(route3, Reason.WITHDRAW);
     delta = _builder.build();
-    assert delta != null;
     assertThat(delta.getRoutes(), contains(route1, route2));
   }
 
@@ -142,7 +137,7 @@ public class RibDeltaTest {
             MultipathEquivalentAsPathMatchMode.EXACT_PATH);
     BgpRoute.Builder routeBuilder = new BgpRoute.Builder();
     routeBuilder
-        .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
+        .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))
         .setProtocol(RoutingProtocol.IBGP)
         .setOriginType(OriginType.IGP)
         .setOriginatorIp(Ip.parse("7.7.7.7"))
@@ -153,12 +148,11 @@ public class RibDeltaTest {
     routeBuilder.setLocalPreference(oldGoodRoute.getLocalPreference() + 1);
     BgpRoute newGoodRoute = routeBuilder.build();
 
-    RibDelta.Builder<BgpRoute> builder = new Builder<>(rib);
+    RibDelta.Builder<BgpRoute> builder = RibDelta.builder();
     builder.from(rib.mergeRouteGetDelta(oldGoodRoute));
     builder.from(rib.mergeRouteGetDelta(newGoodRoute));
 
     RibDelta<BgpRoute> delta = builder.build();
-    assert delta != null;
     assertThat(delta.getActions(), hasSize(2));
     // Route withdrawn
     assertThat(
@@ -180,7 +174,7 @@ public class RibDeltaTest {
             MultipathEquivalentAsPathMatchMode.EXACT_PATH);
     BgpRoute r1 =
         new BgpRoute.Builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
+            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))
             .setProtocol(RoutingProtocol.IBGP)
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.parse("7.7.7.7"))
@@ -188,7 +182,7 @@ public class RibDeltaTest {
             .build();
     BgpRoute r2 =
         new BgpRoute.Builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
+            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))
             .setProtocol(RoutingProtocol.BGP)
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.parse("7.7.7.7"))
@@ -197,7 +191,8 @@ public class RibDeltaTest {
 
     // Setup
     rib.mergeRoute(r1);
-    RibDelta<BgpRoute> delta = new Builder<>(rib).add(r2).remove(r1, Reason.WITHDRAW).build();
+    RibDelta<BgpRoute> delta =
+        RibDelta.<BgpRoute>builder().add(r2).remove(r1, Reason.WITHDRAW).build();
     // Test
     RibDelta.importRibDelta(rib, delta);
     // r1 remains due to different protocol
