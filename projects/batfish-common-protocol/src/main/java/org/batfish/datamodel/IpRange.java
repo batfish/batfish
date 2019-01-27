@@ -14,7 +14,7 @@ public final class IpRange {
 
   /**
    * Returns an {@link IpSpace} representing the space of all IPs whose magnitude is larger than
-   * that of {@@code operaand}.
+   * that of {@code operaand}.
    */
   public static @Nonnull IpSpace greaterThanOrEqualTo(Ip operand) {
     return new IpSpaceSimplifier(ImmutableMap.of())
