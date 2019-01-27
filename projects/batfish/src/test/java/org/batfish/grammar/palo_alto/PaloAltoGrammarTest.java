@@ -8,6 +8,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
@@ -176,19 +177,61 @@ public class PaloAltoGrammarTest {
         addressGroups.get("group0").getIpSpace(vsys.getAddressObjects()),
         equalTo(EmptyIpSpace.INSTANCE));
 
-    // we parsed the description properly
+    // we parsed the description, addr3 should have been discarded
     assertThat(addressGroups.get("group1").getDescription(), equalTo("group1-desc"));
-
-    // addr3 should have been discarded as a member
     assertThat(
         addressGroups.get("group1").getMembers(), equalTo(ImmutableSet.of("addr1", "addr2")));
-
     assertThat(
         addressGroups.get("group1").getIpSpace(vsys.getAddressObjects()),
         equalTo(
             AclIpSpace.union(
                 addressObjects.get("addr1").getIpSpace(),
                 addressObjects.get("addr2").getIpSpace())));
+
+    // check that ip spaces were inserted properly
+    Configuration viConfig = c.toVendorIndependentConfigurations().get(0);
+    assertThat(
+        viConfig,
+        hasIpSpace("group0", equalTo(addressGroups.get("group0").getIpSpace(addressObjects))));
+    assertThat(
+        viConfig,
+        hasIpSpace("group1", equalTo(addressGroups.get("group1").getIpSpace(addressObjects))));
+  }
+
+  @Test
+  public void testAddressObjectGroupInheritance() throws IOException {
+    String hostname = "address-object-group-inheritance";
+    Configuration c = parseConfig(hostname);
+
+    String if1name = "ethernet1/1";
+    String if2name = "ethernet1/2";
+
+    // rule1: literal 11.11.11.11 should not be allowed but 10.10.10.10 should be
+    Flow rule1Permitted = createFlow("10.10.10.10", "33.33.33.33");
+    Flow rule1Denied = createFlow("11.11.11.11", "33.33.33.33");
+
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(rule1Permitted, if2name, c))));
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(rule1Denied, if2name, c))));
+
+    // rule2: literal 22.22.22.22 should not be allowed but 10.10.10.10 should be
+    Flow rule2Permitted = createFlow("44.44.44.44", "10.10.10.10");
+    Flow rule2Denied = createFlow("44.44.44.44", "22.22.22.22");
+
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(rule2Permitted, if2name, c))));
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(rule2Denied, if2name, c))));
+  }
+
+  @Test
+  public void testAddressObjectGroupNameConflict() throws IOException {
+    PaloAltoConfiguration c = parsePaloAltoConfig("address-object-group-name-conflict");
+
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+
+    // the address object definition should win for addr1
+    assertThat(vsys.getAddressObjects().keySet(), equalTo(ImmutableSet.of("addr1")));
+
+    // the address group definition should win for group1
+    assertThat(vsys.getAddressGroups().keySet(), equalTo(ImmutableSet.of("group1")));
   }
 
   @Test
@@ -196,6 +239,7 @@ public class PaloAltoGrammarTest {
     PaloAltoConfiguration c = parsePaloAltoConfig("address-objects");
 
     Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
 
     // there are three address objects defined in the file, including the empty one
     assertThat(
@@ -203,17 +247,20 @@ public class PaloAltoGrammarTest {
 
     // check that we parsed description and prefix right
     assertThat(
-        vsys.getAddressObjects().get("addr1").getIpSpace(),
-        equalTo(Prefix.parse("10.1.1.1/24").toIpSpace()));
-    assertThat(vsys.getAddressObjects().get("addr1").getDescription(), equalTo("addr1-desc"));
+        addressObjects.get("addr1").getIpSpace(), equalTo(Prefix.parse("10.1.1.1/24").toIpSpace()));
+    assertThat(addressObjects.get("addr1").getDescription(), equalTo("addr1-desc"));
 
     // check that we parse the IP address right
-    assertThat(
-        vsys.getAddressObjects().get("addr2").getIpSpace(),
-        equalTo(Ip.parse("10.1.1.2").toIpSpace()));
+    assertThat(addressObjects.get("addr2").getIpSpace(), equalTo(Ip.parse("10.1.1.2").toIpSpace()));
 
     // check that we parse the IP address right
-    assertThat(vsys.getAddressObjects().get("addr3").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
+    assertThat(addressObjects.get("addr3").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
+
+    // check that ip spaces were inserted properly
+    Configuration viConfig = c.toVendorIndependentConfigurations().get(0);
+    assertThat(viConfig, hasIpSpace("addr1", equalTo(addressObjects.get("addr1").getIpSpace())));
+    assertThat(viConfig, hasIpSpace("addr2", equalTo(addressObjects.get("addr2").getIpSpace())));
+    assertThat(viConfig, hasIpSpace("addr3", equalTo(addressObjects.get("addr3").getIpSpace())));
   }
 
   @Test

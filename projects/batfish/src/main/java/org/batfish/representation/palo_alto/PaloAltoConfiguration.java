@@ -36,6 +36,8 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -277,7 +279,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         _c.getZones().put(zoneName, toZone(zoneName, zone));
 
         String aclName = computeOutgoingFilterName(zoneName);
-        _c.getIpAccessLists().put(aclName, generateOutgoingFilter(aclName, zone));
+        _c.getIpAccessLists().put(aclName, generateOutgoingFilter(aclName, zone, vsys));
       }
 
       // Services
@@ -299,7 +301,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /** Generate outgoing IpAccessList for the specified zone */
-  private IpAccessList generateOutgoingFilter(String name, Zone toZone) {
+  private IpAccessList generateOutgoingFilter(String name, Zone toZone, Vsys vsys) {
     List<IpAccessListLine> lines = new TreeList<>();
     SortedMap<String, Rule> rules = toZone.getVsys().getRules();
 
@@ -307,7 +309,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       if (!rule.getDisabled()
           && (rule.getTo().contains(toZone.getName())
               || rule.getTo().contains(CATCHALL_ZONE_NAME))) {
-        lines.add(toIpAccessListLine(rule));
+        lines.add(toIpAccessListLine(rule, vsys));
       }
     }
 
@@ -322,7 +324,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /** Convert specified firewall rule into an IpAccessListLine */
-  private IpAccessListLine toIpAccessListLine(Rule rule) {
+  private IpAccessListLine toIpAccessListLine(Rule rule, Vsys vsys) {
     List<AclLineMatchExpr> conjuncts = new TreeList<>();
     IpAccessListLine.Builder ipAccessListLineBuilder =
         IpAccessListLine.builder().setName(rule.getName());
@@ -337,11 +339,17 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
     // Construct headerspace match expression
     HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
-    for (IpSpace source : rule.getSource()) {
-      headerSpaceBuilder.addSrcIp(source);
+    for (RuleEndpoint source : rule.getSource()) {
+      IpSpace ipSpace = ruleEndpointToIpSpace(source, vsys);
+      if (ipSpace != null) {
+        headerSpaceBuilder.addSrcIp(ipSpace);
+      }
     }
-    for (IpSpace destination : rule.getDestination()) {
-      headerSpaceBuilder.addDstIp(destination);
+    for (RuleEndpoint destination : rule.getDestination()) {
+      IpSpace ipSpace = ruleEndpointToIpSpace(destination, vsys);
+      if (ipSpace != null) {
+        headerSpaceBuilder.addDstIp(ipSpace);
+      }
     }
     conjuncts.add(new MatchHeaderSpace(headerSpaceBuilder.build()));
 
@@ -383,6 +391,30 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         .setName(rule.getName())
         .setMatchCondition(new AndMatchExpr(conjuncts))
         .build();
+  }
+
+  /** Converts {@link RuleEndpoint} to {@code IpSpace} */
+  private IpSpace ruleEndpointToIpSpace(RuleEndpoint endpoint, Vsys vsys) {
+    switch (endpoint.getType()) {
+      case Any:
+        return UniverseIpSpace.INSTANCE;
+      case IP_ADDRESS:
+        return Ip.parse(endpoint.getValue()).toIpSpace();
+      case IP_PREFIX:
+        return Prefix.parse(endpoint.getValue()).toIpSpace();
+      case IP_RANGE:
+        _w.redFlag("IP range is not currently implemented");
+        return null;
+      case ADDRESS_OBJECT:
+        return vsys.getAddressObjects().get(endpoint.getValue()).getIpSpace();
+      case ADDRESS_GROUP:
+        return vsys.getAddressGroups()
+            .get(endpoint.getValue())
+            .getIpSpace(vsys.getAddressObjects());
+      default:
+        _w.redFlag("Could not convert RuleEndpoint to IpSpace: " + endpoint);
+        return null;
+    }
   }
 
   /** Convert Palo Alto specific interface into vendor independent model interface */
@@ -529,7 +561,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     markConcreteStructure(
         PaloAltoStructureType.ADDRESS_OBJECT,
         PaloAltoStructureUsage.RULE_DESTINATION,
-        PaloAltoStructureUsage.RULE_SOURCE);
+        PaloAltoStructureUsage.RULE_SOURCE,
+        PaloAltoStructureUsage.ADDRESS_GROUP_STATIC);
     markConcreteStructure(PaloAltoStructureType.GLOBAL_PROTECT_APP_CRYPTO_PROFILE);
     markConcreteStructure(PaloAltoStructureType.IKE_CRYPTO_PROFILE);
     markConcreteStructure(PaloAltoStructureType.IPSEC_CRYPTO_PROFILE);

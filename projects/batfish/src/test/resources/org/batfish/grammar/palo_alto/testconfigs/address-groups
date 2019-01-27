@@ -4,8 +4,8 @@ set deviceconfig system hostname address-objects
 set address-group group0
 
 #define address objects
-set address addr1
-set address addr2
+set address addr1 ip-netmask 1.1.1.1
+set address addr2 ip-netmask 2.2.2.2
 
 set address-group group1 description group1-desc
 set address-group group1 static addr1

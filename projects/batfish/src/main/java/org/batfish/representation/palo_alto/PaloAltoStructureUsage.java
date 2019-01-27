@@ -3,6 +3,7 @@ package org.batfish.representation.palo_alto;
 import org.batfish.vendor.StructureUsage;
 
 public enum PaloAltoStructureUsage implements StructureUsage {
+  ADDRESS_GROUP_STATIC("address-group static"),
   RULE_DESTINATION("rulebase security rules destination"),
   RULE_FROM_ZONE("rulebase security rules from"),
   RULE_SELF_REF("rulebase security rules"),
