@@ -114,6 +114,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Ssl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_layer3Context;
+import org.batfish.grammar.palo_alto.PaloAltoParser.VariableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_list_itemContext;
 import org.batfish.representation.palo_alto.AddressGroup;
 import org.batfish.representation.palo_alto.AddressObject;
@@ -544,19 +545,21 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     if (_currentAddressGroup == null) {
       return;
     }
-    String objectName = ctx.name.getText();
-    if (!_currentVsys.getAddressObjects().containsKey(objectName)) {
-      _w.redFlag(
-          String.format(
-              "Cannot add non-existent address object '%s' to group '%s' in '%s'",
-              objectName, _currentAddressGroup.getName(), getFullText(ctx)));
-    } else {
-      _currentAddressGroup.getMembers().add(objectName);
+    for (VariableContext var : ctx.variable()) {
+      String objectName = var.getText();
+      if (!_currentVsys.getAddressObjects().containsKey(objectName)) {
+        _w.redFlag(
+            String.format(
+                "Cannot add non-existent address object '%s' to group '%s' in '%s'",
+                objectName, _currentAddressGroup.getName(), getFullText(ctx)));
+      } else {
+        _currentAddressGroup.getMembers().add(objectName);
 
-      // Use constructed name so same-named defs across vsys are unique
-      String uniqueName = computeObjectName(_currentVsys.getName(), objectName);
-      _configuration.referenceStructure(
-          ADDRESS_OBJECT, uniqueName, ADDRESS_GROUP_STATIC, getLine(ctx.name.start));
+        // Use constructed name so same-named defs across vsys are unique
+        String uniqueName = computeObjectName(_currentVsys.getName(), objectName);
+        _configuration.referenceStructure(
+            ADDRESS_OBJECT, uniqueName, ADDRESS_GROUP_STATIC, getLine(var.start));
+      }
     }
   }
 

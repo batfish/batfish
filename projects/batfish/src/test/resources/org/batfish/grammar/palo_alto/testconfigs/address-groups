@@ -11,3 +11,6 @@ set address-group group1 description group1-desc
 set address-group group1 static addr1
 set address-group group1 static addr2
 set address-group group1 static addr3
+
+# defined on the same line
+set address-group group2 static [ addr1 addr2 ]

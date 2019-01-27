@@ -36,5 +36,16 @@ sag_null
 
 sag_static
 :
-    STATIC name = variable
+    STATIC
+    (
+        variable
+        |
+        (
+            OPEN_BRACKET
+            (
+                variable
+            )*
+            CLOSE_BRACKET
+        )
+    )
 ;

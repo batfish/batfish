@@ -169,7 +169,7 @@ public class PaloAltoGrammarTest {
     Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
 
     // there are two address groups defined in the file, including the empty one
-    assertThat(addressGroups.keySet(), equalTo(ImmutableSet.of("group0", "group1")));
+    assertThat(addressGroups.keySet(), equalTo(ImmutableSet.of("group0", "group1", "group2")));
 
     // the ip space of the empty group is empty
     assertThat(addressGroups.get("group0").getMembers(), equalTo(ImmutableSet.of()));
@@ -187,6 +187,10 @@ public class PaloAltoGrammarTest {
             AclIpSpace.union(
                 addressObjects.get("addr1").getIpSpace(),
                 addressObjects.get("addr2").getIpSpace())));
+
+    // check that we parse multiple address objects on the same line correctly
+    assertThat(
+        addressGroups.get("group2").getMembers(), equalTo(ImmutableSet.of("addr1", "addr2")));
 
     // check that ip spaces were inserted properly
     Configuration viConfig = c.toVendorIndependentConfigurations().get(0);
