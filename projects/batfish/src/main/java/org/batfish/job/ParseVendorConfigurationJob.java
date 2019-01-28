@@ -333,7 +333,14 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     return vc;
   }
 
-  private ParseResult parse() {
+  /**
+   * Parses the given file and returns a {@link ParseResult} for this job.
+   *
+   * <p>The returned {@link ParseResult} will always have a valid {@link ParseResult#getStatus()}.
+   * It may also contain a {@link ParseResult#getConfig() parsed vendor-specific configuration} or a
+   * {@link ParseResult#getFailureCause() failure cause}.
+   */
+  public ParseResult parse() {
     ConfigurationFormat format = detectFormat(_fileText, _settings, _format);
 
     // Handle specially some cases that will not produce a vendor configuration file.
@@ -399,6 +406,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             result.getConfig(),
             result.getWarnings(),
             result.getParseTreeSentences(),
+            result.getStatus(),
             _duplicateHostnames);
       } else if (result.getFailureCause() != null) {
         return new ParseVendorConfigurationResult(
@@ -406,6 +414,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             _logger.getHistory(),
             _filename,
             result.getWarnings(),
+            result.getParseTreeSentences(),
             result.getFailureCause());
       } else {
         return new ParseVendorConfigurationResult(

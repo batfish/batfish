@@ -28,17 +28,18 @@ public class ParseVendorConfigurationResult
 
   private VendorConfiguration _vc;
 
-  private Warnings _warnings;
+  @Nonnull private final Warnings _warnings;
 
   public ParseVendorConfigurationResult(
       long elapsedTime,
       BatfishLoggerHistory history,
       String filename,
-      Warnings warnings,
+      @Nonnull Warnings warnings,
+      @Nonnull ParseTreeSentences parseTree,
       @Nonnull Throwable failureCause) {
     super(elapsedTime, history, failureCause);
     _filename = filename;
-    _parseTree = new ParseTreeSentences();
+    _parseTree = parseTree;
     _status = ParseStatus.FAILED;
     _warnings = warnings;
   }
@@ -48,16 +49,16 @@ public class ParseVendorConfigurationResult
       BatfishLoggerHistory history,
       String filename,
       VendorConfiguration vc,
-      Warnings warnings,
+      @Nonnull Warnings warnings,
       @Nonnull ParseTreeSentences parseTree,
+      @Nonnull ParseStatus status,
       @Nonnull Multimap<String, String> duplicateHostnames) {
     super(elapsedTime, history);
     _filename = filename;
     _parseTree = parseTree;
     _vc = vc;
     _warnings = warnings;
-    // parse status is determined from other fields
-    _status = null;
+    _status = status;
     _duplicateHostnames = duplicateHostnames;
   }
 
@@ -65,8 +66,8 @@ public class ParseVendorConfigurationResult
       long elapsedTime,
       BatfishLoggerHistory history,
       String filename,
-      Warnings warnings,
-      ParseStatus status) {
+      @Nonnull Warnings warnings,
+      @Nonnull ParseStatus status) {
     super(elapsedTime, history);
     _filename = filename;
     _parseTree = new ParseTreeSentences();
