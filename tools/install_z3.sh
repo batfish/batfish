@@ -144,7 +144,6 @@ install_z3_ubuntu() {
   Z3_CACHE_DIR="${HOME}/.batfish_z3_cache"
   BINDIR="${INSTALL_PREFIX}/bin"
   INCLUDEDIR="${INSTALL_PREFIX}/include"
-  JAVADIR="${INSTALL_PREFIX}/share/java"
   LIBDIR="${INSTALL_PREFIX}/lib"
   OLD_PWD="${PWD}"
   OLD_UMASK="$(umask)"
@@ -187,9 +186,7 @@ install_z3_ubuntu() {
   cd "${Z3_DIR}"
   umask 0022
   echo "Installing Z3 to ${INSTALL_PREFIX}"
-  mkdir -p "${LIBDIR}" "${BINDIR}" "${INCLUDEDIR}" "${JAVADIR}"
-  cp "bin/libz3.so" "bin/libz3java.so" "${LIBDIR}/"
-  cp "bin/com.microsoft.z3.jar" "${JAVADIR}/"
+  cp "lib/libz3.so" "lib/libz3java.so" "${LIBDIR}/"
   cp "bin/z3" "${BINDIR}/"
   cp include/* "${INCLUDEDIR}/"
   strip "${LIBDIR}/libz3.so"
