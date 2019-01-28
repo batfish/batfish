@@ -141,7 +141,7 @@ public class VirtualRouter implements Serializable {
   /** Incoming messages into this router from each BGP neighbor */
   transient SortedMap<BgpEdgeId, Queue<RouteAdvertisement<BgpRoute>>> _bgpIncomingRoutes;
 
-  /** Combined BGP (both iBGP and eBGP) */
+  /** Combined BGP (both iBGP and eBGP) RIB */
   BgpRib _bgpRib;
 
   /** Builder for constructing {@link RibDelta} as pertains to the multipath BGP RIB */
@@ -931,6 +931,9 @@ public class VirtualRouter implements Serializable {
    * accepting advertisements less desirable than the locally generated ones for a given network.
    */
   void initBgpAggregateRoutes() {
+    if (_vrf.getBgpProcess() == null) {
+      return;
+    }
     // first import aggregates
     switch (_c.getConfigurationFormat()) {
       case JUNIPER:
@@ -1301,15 +1304,15 @@ public class VirtualRouter implements Serializable {
    * Process BGP messages from neighbors, return a list of delta changes to the RIBs
    *
    * @param bgpTopology the bgp peering relationships
-   * @return List of {@link RibDelta objects}
+   * @return Map from a {@link BgpRib} to {@link RibDelta} objects
    */
-  @Nullable
+  @Nonnull
   Map<BgpRib, RibDelta<BgpRoute>> processBgpMessages(
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology, NetworkConfigurations nc) {
 
     // If we have no BGP process, nothing to do
     if (_vrf.getBgpProcess() == null) {
-      return null;
+      return ImmutableMap.of();
     }
 
     // Keep track of changes to the RIBs using delta builders, keyed by RIB type
@@ -2215,6 +2218,10 @@ public class VirtualRouter implements Serializable {
       final Map<String, Node> allNodes,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
       NetworkConfigurations networkConfigurations) {
+
+    if (_vrf.getBgpProcess() == null) {
+      return;
+    }
 
     RibDelta<BgpRoute> ebgpStagingDelta = stagingDeltas.get(_ebgpStagingRib);
     RibDelta<BgpRoute> ibgpStagingDelta = stagingDeltas.get(_ibgpStagingRib);
