@@ -4,7 +4,7 @@ set -euo pipefail
 
 BATFISH_ARTIFACTS_PLUGIN_VERSION="${BATFISH_ARTIFACTS_PLUGIN_VERSION:-v1.2.0}"
 BATFISH_DOCKER_PLUGIN_VERSION="${BATFISH_DOCKER_PLUGIN_VERSION:-v2.2.0}"
-BATFISH_DOCKER_IMAGE="${BATFISH_DOCKER_IMAGE:-batfish/ci-base:latest}"
+BATFISH_DOCKER_CI_BASE_IMAGE="${BATFISH_DOCKER_CI_BASE_IMAGE:-batfish/ci-base:latest}"
 
 cat <<EOF
 steps:
@@ -21,7 +21,7 @@ cat <<EOF
     command: "tools/fix_java_format.sh --check"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
-          image: ${BATFISH_DOCKER_IMAGE}
+          image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
   - label: "Check Python templates"
     command:
@@ -31,7 +31,7 @@ cat <<EOF
       - "cd tests && pytest"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
-          image: ${BATFISH_DOCKER_IMAGE}
+          image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
   - label: "Build"
     command:
@@ -42,7 +42,7 @@ cat <<EOF
       - workspace/allinone.jar
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
-          image: ${BATFISH_DOCKER_IMAGE}
+          image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
 EOF
 
@@ -62,37 +62,37 @@ cat <<EOF
       - workspace/**/jacoco.exec
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
-          image: ${BATFISH_DOCKER_IMAGE}
+          image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
   - label: "Maven checkstyle"
     command: "mvn -f projects/pom.xml compile checkstyle:checkstyle -Dcheckstyle.skip=false"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
-          image: ${BATFISH_DOCKER_IMAGE}
+          image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
   - label: "Maven dependency analysis"
     command: "mvn -f projects/pom.xml verify -Dmdep.analyze.skip=false"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
-          image: ${BATFISH_DOCKER_IMAGE}
+          image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
   - label: "Maven findbugs"
     command: "mvn -f projects/pom.xml verify -Dfindbugs.skip=false"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
-          image: ${BATFISH_DOCKER_IMAGE}
+          image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
   - label: "Maven javadoc"
     command: "mvn -f projects/pom.xml verify -Dmaven.javadoc.skip=false"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
-          image: ${BATFISH_DOCKER_IMAGE}
+          image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
   - label: "Maven pmd"
     command: "mvn -f projects/pom.xml verify -Dpmd.skip=false"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
-          image: ${BATFISH_DOCKER_IMAGE}
+          image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
 EOF
 
@@ -102,7 +102,7 @@ cat <<EOF
     command: "bazel build -- //... -projects:javadoc"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
-          image: ${BATFISH_DOCKER_IMAGE}
+          image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
 EOF
 
@@ -115,7 +115,7 @@ for cmd in $(find tests -name commands); do
     command: ".buildkite/ref_test.sh ${cmd}"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
-          image: ${BATFISH_DOCKER_IMAGE}
+          image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
       - artifacts#${BATFISH_ARTIFACTS_PLUGIN_VERSION}:
           download: workspace/allinone.jar
@@ -132,7 +132,7 @@ cat <<EOF
       - ".buildkite/jacoco_report.sh"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
-          image: "${BATFISH_DOCKER_IMAGE}"
+          image: "${BATFISH_DOCKER_CI_BASE_IMAGE}"
           always-pull: true
           propagate-environment: true
       - artifacts#${BATFISH_ARTIFACTS_PLUGIN_VERSION}:
