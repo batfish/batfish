@@ -22,14 +22,14 @@ public class StaticRouteTest {
         StaticRoute.builder()
             .setNextHopIp(Ip.parse("192.168.1.1"))
             .setNetwork(Prefix.ZERO)
-            .setNextHopInterface("192.168.1.2")
+            .setNextHopInterface("Ethernet0")
             .setAdministrativeCost(1)
             .setTag(0)
             .setMetric(123)
             .build();
     assertThat(sr.getNextHopIp(), equalTo(Ip.parse("192.168.1.1")));
     assertThat(sr.getNetwork(), equalTo(Prefix.ZERO));
-    assertThat(sr.getNextHopInterface(), equalTo("192.168.1.2"));
+    assertThat(sr.getNextHopInterface(), equalTo("Ethernet0"));
     assertThat(sr.getAdministrativeCost(), equalTo(1));
     assertThat(sr.getTag(), equalTo(0));
     assertThat(sr.getMetric(), equalTo(123L));
@@ -79,7 +79,7 @@ public class StaticRouteTest {
         StaticRoute.builder()
             .setNextHopIp(Ip.parse("192.168.1.1"))
             .setNetwork(Prefix.ZERO)
-            .setNextHopInterface("192.168.1.2")
+            .setNextHopInterface("Ethernet0")
             .setAdministrativeCost(1)
             .setTag(0)
             .setMetric(123)
@@ -112,7 +112,7 @@ public class StaticRouteTest {
         StaticRoute.builder()
             .setNextHopIp(Ip.parse("192.168.1.1"))
             .setNetwork(Prefix.ZERO)
-            .setNextHopInterface("192.168.1.2")
+            .setNextHopInterface("Ethernet0")
             .setAdministrativeCost(1)
             .setTag(0)
             .setMetric(123)
@@ -127,7 +127,7 @@ public class StaticRouteTest {
         StaticRoute.builder()
             .setNextHopIp(Ip.parse("192.168.1.1"))
             .setNetwork(Prefix.ZERO)
-            .setNextHopInterface("192.168.1.2")
+            .setNextHopInterface("Ethernet0")
             .setAdministrativeCost(1)
             .setTag(0)
             .setMetric(123)

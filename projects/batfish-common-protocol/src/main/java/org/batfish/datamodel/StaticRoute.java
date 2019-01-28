@@ -70,11 +70,11 @@ public class StaticRoute extends AbstractRoute {
       return false;
     }
     StaticRoute rhs = (StaticRoute) o;
-    return _admin == rhs._admin
+    return Objects.equals(_network, rhs._network)
+        && _admin == rhs._admin
         && getNonForwarding() == rhs.getNonForwarding()
         && getNonRouting() == rhs.getNonRouting()
-        && Objects.equals(_network, rhs._network)
-        && Objects.equals(_metric, rhs._metric)
+        && _metric == rhs._metric
         && Objects.equals(_nextHopIp, rhs._nextHopIp)
         && Objects.equals(_nextHopInterface, rhs._nextHopInterface)
         && _tag == rhs._tag;
@@ -85,11 +85,11 @@ public class StaticRoute extends AbstractRoute {
     if (_hashcode == 0) {
       _hashcode =
           Objects.hash(
+              _network,
               _admin,
               getNonForwarding(),
               getNonRouting(),
               _metric,
-              _network,
               _nextHopInterface,
               _nextHopIp,
               _tag);
