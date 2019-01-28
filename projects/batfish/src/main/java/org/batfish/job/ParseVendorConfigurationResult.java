@@ -125,13 +125,11 @@ public class ParseVendorConfigurationResult
       if (!_parseTree.isEmpty()) {
         answerElement.getParseTrees().put(hostname, _parseTree);
       }
-    } else {
-      if (_status == ParseStatus.FAILED) {
-        assert _failureCause != null; // status == FAILED, failureCause must be non-null
-        answerElement
-            .getErrors()
-            .put(_filename, ((BatfishException) _failureCause).getBatfishStackTrace());
-      }
+    } else if (_status == ParseStatus.FAILED) {
+      assert _failureCause != null; // status == FAILED, failureCause must be non-null
+      answerElement
+          .getErrors()
+          .put(_filename, ((BatfishException) _failureCause).getBatfishStackTrace());
     }
   }
 
