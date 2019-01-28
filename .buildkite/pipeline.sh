@@ -2,9 +2,9 @@
 ### Build and quick lint
 set -euo pipefail
 
-ARTIFACTS_VERSION="v1.2.0"
-DOCKER_VERSION="v2.2.0"
-DOCKER_IMAGE="batfish/ci-base:latest"
+ARTIFACTS_VERSION="${ARTIFACTS_VERSION:-v1.2.0}"
+DOCKER_VERSION="${DOCKER_VERSION:-v2.2.0}"
+DOCKER_IMAGE="${DOCKER_IMAGE:-batfish/ci-base:latest}"
 
 cat <<EOF
 steps:
