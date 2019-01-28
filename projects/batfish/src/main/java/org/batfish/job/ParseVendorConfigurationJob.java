@@ -155,6 +155,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
    *
    * @throws BatfishException if the given file is for an unsupported or unhandled format
    */
+  @SuppressWarnings("fallthrough")
   private VendorConfiguration parseFile(ConfigurationFormat format) {
     BatfishCombinedParser<?, ?> combinedParser = null;
     ControlPlaneExtractor extractor = null;
@@ -332,7 +333,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     return vc;
   }
 
-  @SuppressWarnings("fallthrough")
   @Override
   public ParseVendorConfigurationResult call() {
     try (ActiveSpan span =
