@@ -17,7 +17,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_groups_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
-import org.batfish.main.PartialGroupMatchException;
 import org.batfish.main.UndefinedGroupBatfishException;
 
 public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
