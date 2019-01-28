@@ -34,7 +34,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
 import io.opentracing.SpanContext;
@@ -2064,22 +2063,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return routingTables;
   }
 
-  private SortedMap<String, VendorConfiguration> parseVendorConfigurations(
-      Map<Path, String> configurationData,
-      ParseVendorConfigurationAnswerElement answerElement,
-      ConfigurationFormat seedFormat) {
-    _logger.info("\n*** PARSING VENDOR CONFIGURATION FILES ***\n");
-    _logger.resetTimer();
-    SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
-    List<ParseVendorConfigurationJob> jobs = new ArrayList<>();
+  /** Returns a list of {@link ParseVendorConfigurationJob} to parse each file. */
+  private List<ParseVendorConfigurationJob> makeParseVendorConfigurationsJobs(
+      Map<Path, String> configurationData, ConfigurationFormat seedFormat) {
+    ImmutableList.Builder<ParseVendorConfigurationJob> jobs =
+        ImmutableList.builderWithExpectedSize(configurationData.size());
     for (Entry<Path, String> vendorFile : configurationData.entrySet()) {
       Path currentFile = vendorFile.getKey();
-      String fileText = vendorFile.getValue();
-
-      Warnings warnings = buildWarnings(_settings);
-
-      Multimap<String, String> duplicateHostnames = HashMultimap.create();
-
       String filename =
           _settings.getActiveTestrigSettings().getInputPath().relativize(currentFile).toString();
       @Nullable
@@ -2091,14 +2081,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ParseVendorConfigurationJob job =
           new ParseVendorConfigurationJob(
               _settings,
-              fileText,
+              vendorFile.getValue(),
               filename,
-              warnings,
+              buildWarnings(_settings),
               seedFormat,
-              duplicateHostnames,
+              HashMultimap.create(),
               parseVendorConfigurationSpanContext);
       jobs.add(job);
     }
+    return jobs.build();
+  }
+
+  private SortedMap<String, VendorConfiguration> parseVendorConfigurations(
+      Map<Path, String> configurationData,
+      ParseVendorConfigurationAnswerElement answerElement,
+      ConfigurationFormat seedFormat) {
+    _logger.info("\n*** PARSING VENDOR CONFIGURATION FILES ***\n");
+    _logger.resetTimer();
+    SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
+    List<ParseVendorConfigurationJob> jobs =
+        makeParseVendorConfigurationsJobs(configurationData, seedFormat);
     BatfishJobExecutor.runJobsInExecutor(
         _settings,
         _logger,
