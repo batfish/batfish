@@ -16,7 +16,7 @@ matrix:
 
 before_install:
   - rm -rf $HOME/.cache/bazel/_bazel_$USER/install
-  - .travis/fix_java_format.sh
+  - tools/fix_java_format.sh --check
   - |
     if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
       OS=darwin
@@ -72,5 +72,5 @@ before_cache:
   - rm -rf $HOME/.m2/repository/org/batfish
   - rm -rf $HOME/.cache/bazel/_bazel_$USER/install
   
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
+#after_success:
+#  - bash <(curl -s https://codecov.io/bash)

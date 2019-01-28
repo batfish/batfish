@@ -3,7 +3,10 @@ package org.batfish.dataplane.protocols;
 import static java.util.Objects.requireNonNull;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.Set;
+import java.util.SortedSet;
 import javax.annotation.Nullable;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.datamodel.AbstractRoute;
@@ -51,8 +54,6 @@ public class BgpProtocolHelper {
 
     boolean remoteRouteIsBgp =
         remoteRouteProtocol == RoutingProtocol.IBGP || remoteRouteProtocol == RoutingProtocol.BGP;
-    RoutingProtocol targetProtocol =
-        sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
 
     // Set originatorIP
     Ip originatorIp;
@@ -68,24 +69,44 @@ public class BgpProtocolHelper {
     transformedOutgoingRouteBuilder.setReceivedFromRouteReflectorClient(
         !sessionProperties.isEbgp() && toNeighbor.getRouteReflectorClient());
 
-    // clusterList, receivedFromRouteReflectorClient, (originType
-    // for bgp remote route)
+    // Extract original route's asPath and communities if it had them
+    AsPath originalAsPath = AsPath.empty();
+    SortedSet<Long> originalCommunities = ImmutableSortedSet.of();
+    if (route instanceof BgpRoute) {
+      // Includes all routes with protocols BGP and IBGP, plus some with protocol AGGREGATE
+      BgpRoute bgpRemoteRoute = (BgpRoute) route;
+      originalAsPath = bgpRemoteRoute.getAsPath();
+      originalCommunities = bgpRemoteRoute.getCommunities();
+    } else if (route instanceof GeneratedRoute) {
+      // Includes all other AGGREGATE routes
+      GeneratedRoute gr = (GeneratedRoute) route;
+      originalAsPath = gr.getAsPath();
+      originalCommunities = gr.getCommunities();
+    }
+    // Do not export route if it has NO_ADVERTISE community, or if its AS path contains the remote
+    // peer's AS and local peer has not set getAllowRemoteOut
+    if (originalCommunities.contains(WellKnownCommunity.NO_ADVERTISE)
+        || (sessionProperties.isEbgp()
+            && originalAsPath.containsAs(toNeighbor.getLocalAs())
+            && !fromNeighbor.getAllowRemoteAsOut())) {
+      return null;
+    }
+    // Set transformed route's AS path and communities
+    ImmutableList.Builder<AsSet> transformedAsSets = new Builder<>();
+    if (sessionProperties.isEbgp()) {
+      transformedAsSets.add(AsSet.of(fromNeighbor.getLocalAs()));
+    }
+    transformedAsSets.addAll(originalAsPath.getAsSets());
+    transformedOutgoingRouteBuilder.setAsPath(AsPath.of(transformedAsSets.build()));
+    if (fromNeighbor.getSendCommunity()) {
+      transformedOutgoingRouteBuilder.addCommunities(originalCommunities);
+    }
+
+    // clusterList, receivedFromRouteReflectorClient, (originType for bgp remote route)
     if (remoteRouteIsBgp) {
       BgpRoute bgpRemoteRoute = (BgpRoute) route;
 
-      if (bgpRemoteRoute.getCommunities().contains(WellKnownCommunity.NO_ADVERTISE)) {
-        // do not export
-        return null;
-      }
-
       transformedOutgoingRouteBuilder.setOriginType(bgpRemoteRoute.getOriginType());
-      if (sessionProperties.isEbgp()
-          && bgpRemoteRoute.getAsPath().containsAs(toNeighbor.getLocalAs())
-          && !fromNeighbor.getAllowRemoteAsOut()) {
-        // skip routes containing peer's AS unless
-        // disable-peer-as-check (getAllowRemoteAsOut) is set
-        return null;
-      }
       /*
        * route reflection: reflect everything received from
        * clients to clients and non-clients. reflect everything
@@ -143,26 +164,9 @@ public class BgpProtocolHelper {
       }
     }
 
-    // Outgoing asPath
-    // Outgoing communities
-    if (remoteRouteIsBgp) {
-      BgpRoute bgpRemoteRoute = (BgpRoute) route;
-      transformedOutgoingRouteBuilder.setAsPath(bgpRemoteRoute.getAsPath());
-      if (fromNeighbor.getSendCommunity()) {
-        transformedOutgoingRouteBuilder.addCommunities(bgpRemoteRoute.getCommunities());
-      }
-    }
-    if (sessionProperties.isEbgp()) {
-      transformedOutgoingRouteBuilder.setAsPath(
-          AsPath.of(
-              ImmutableList.<AsSet>builder()
-                  .add(AsSet.of(fromNeighbor.getLocalAs()))
-                  .addAll(transformedOutgoingRouteBuilder.getAsPath().getAsSets())
-                  .build()));
-    }
-
     // Outgoing protocol
-    transformedOutgoingRouteBuilder.setProtocol(targetProtocol);
+    transformedOutgoingRouteBuilder.setProtocol(
+        sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP);
     transformedOutgoingRouteBuilder.setNetwork(route.getNetwork());
 
     // Outgoing metric

@@ -29,14 +29,14 @@ public class ReferenceLibraryResourceTest extends WorkMgrServiceV2TestBase {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Before
-  public void initContainerEnvironment() throws Exception {
+  public void initTestEnvironment() throws Exception {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
-  private Builder getReferenceLibraryTarget(String container) {
+  private Builder getReferenceLibraryTarget(String network) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
-        .path(CoordConstsV2.RSC_CONTAINERS)
-        .path(container)
+        .path(CoordConstsV2.RSC_NETWORKS)
+        .path(network)
         .path(CoordConstsV2.RSC_REFERENCE_LIBRARY)
         .request()
         .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
@@ -45,34 +45,34 @@ public class ReferenceLibraryResourceTest extends WorkMgrServiceV2TestBase {
 
   @Test
   public void addReferenceBook() throws IOException {
-    String container = "someContainer";
-    Main.getWorkMgr().initNetwork(container, null);
+    String network = "someNetwork";
+    Main.getWorkMgr().initNetwork(network, null);
 
     // add book1
     ReferenceBookBean book = new ReferenceBookBean(ReferenceBook.builder("book1").build());
     Response response =
-        getReferenceLibraryTarget(container).post(Entity.entity(book, MediaType.APPLICATION_JSON));
+        getReferenceLibraryTarget(network).post(Entity.entity(book, MediaType.APPLICATION_JSON));
 
     // test: book1 should have been added
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    ReferenceLibrary library = Main.getWorkMgr().getReferenceLibrary(container);
+    ReferenceLibrary library = Main.getWorkMgr().getReferenceLibrary(network);
     assertThat(library.getReferenceBook("book1").isPresent(), equalTo(true));
 
     // test: another addition of book1 should fail
     Response response2 =
-        getReferenceLibraryTarget(container).post(Entity.entity(book, MediaType.APPLICATION_JSON));
+        getReferenceLibraryTarget(network).post(Entity.entity(book, MediaType.APPLICATION_JSON));
     assertThat(response2.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
   }
 
   /** Test that we get back the reference library */
   @Test
   public void getReferenceLibrary() {
-    String container = "someContainer";
-    Main.getWorkMgr().initNetwork(container, null);
+    String network = "someNetwork";
+    Main.getWorkMgr().initNetwork(network, null);
 
     // we only check that the right type of object is returned at the expected URL target
     // we rely on ReferenceLibraryBean to have created the object with the right content
-    Response response = getReferenceLibraryTarget(container).get();
+    Response response = getReferenceLibraryTarget(network).get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
         response.readEntity(ReferenceLibraryBean.class),

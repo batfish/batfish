@@ -1,6 +1,7 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
@@ -63,6 +64,8 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, IpsecVpn> _ipsecVpns;
 
+  private final Map<String, Screen> _screens;
+
   private final JuniperFamily _jf;
 
   private final String _name;
@@ -79,6 +82,8 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, PrefixList> _prefixLists;
 
+  @Nonnull private final Map<String, RibGroup> _ribGroups;
+
   private final Map<String, RouteFilter> _routeFilters;
 
   private final Map<String, RoutingInstance> _routingInstances;
@@ -87,7 +92,7 @@ public class LogicalSystem implements Serializable {
 
   private NavigableSet<String> _tacplusServers;
 
-  private final Map<String, Vlan> _vlanNameToVlan;
+  private final Map<String, Vlan> _namedVlans;
 
   private final Map<String, Zone> _zones;
 
@@ -105,6 +110,7 @@ public class LogicalSystem implements Serializable {
     _defaultRoutingInstance = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
     _dnsServers = new TreeSet<>();
     _filters = new TreeMap<>();
+    _screens = new TreeMap<>();
     _ikeGateways = new TreeMap<>();
     _ikePolicies = new TreeMap<>();
     _ikeProposals = new TreeMap<>();
@@ -118,12 +124,13 @@ public class LogicalSystem implements Serializable {
     _ntpServers = new TreeSet<>();
     _prefixLists = new TreeMap<>();
     _policyStatements = new TreeMap<>();
+    _ribGroups = new HashMap<>();
     _routeFilters = new TreeMap<>();
     _routingInstances = new TreeMap<>();
     _routingInstances.put(Configuration.DEFAULT_VRF_NAME, _defaultRoutingInstance);
     _syslogHosts = new TreeSet<>();
     _tacplusServers = new TreeSet<>();
-    _vlanNameToVlan = new TreeMap<>();
+    _namedVlans = new TreeMap<>();
     _zones = new TreeMap<>();
   }
 
@@ -202,6 +209,10 @@ public class LogicalSystem implements Serializable {
 
   public String getHostname() {
     return _defaultRoutingInstance.getHostname();
+  }
+
+  public Map<String, Screen> getScreens() {
+    return _screens;
   }
 
   public Map<String, IkeGateway> getIkeGateways() {
@@ -303,6 +314,11 @@ public class LogicalSystem implements Serializable {
     return _prefixLists;
   }
 
+  @Nonnull
+  public Map<String, RibGroup> getRibGroups() {
+    return _ribGroups;
+  }
+
   public Map<String, RouteFilter> getRouteFilters() {
     return _routeFilters;
   }
@@ -319,8 +335,8 @@ public class LogicalSystem implements Serializable {
     return _tacplusServers;
   }
 
-  public Map<String, Vlan> getVlanNameToVlan() {
-    return _vlanNameToVlan;
+  public Map<String, Vlan> getNamedVlans() {
+    return _namedVlans;
   }
 
   public Map<String, Zone> getZones() {

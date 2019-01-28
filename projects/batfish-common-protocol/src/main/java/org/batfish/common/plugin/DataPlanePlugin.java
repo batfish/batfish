@@ -1,18 +1,13 @@
 package org.batfish.common.plugin;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
-import org.batfish.datamodel.flow.Trace;
 
 /**
  * Abstract class that defines the behavior expected for a Batfish plugin that implements data plane
@@ -61,17 +56,6 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
     dataPlanePluginInitialize();
   }
 
-  /**
-   * Builds the {@link Trace}s for a {@link Set} of {@link Flow}s
-   *
-   * @param flows {@link Set} of {@link Flow} for which {@link Trace}s are to be found
-   * @param dataPlane {@link DataPlane} for this network snapshot
-   * @param ignoreFilters if true, will ignore filters/ACLs encountered in the network
-   * @return {@link SortedMap} of {@link Flow} to {@link List} of {@link Trace}s
-   */
-  public abstract SortedMap<Flow, List<Trace>> buildFlows(
-      Set<Flow> flows, DataPlane dataPlane, boolean ignoreFilters);
-
   public abstract ComputeDataPlaneResult computeDataPlane(boolean differentialContext);
 
   public abstract ComputeDataPlaneResult computeDataPlane(
@@ -79,16 +63,8 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
 
   protected void dataPlanePluginInitialize() {}
 
-  public abstract List<Flow> getHistoryFlows(DataPlane dataPlane);
-
-  public abstract List<FlowTrace> getHistoryFlowTraces(DataPlane dataPlane);
-
-  public abstract ITracerouteEngine getTracerouteEngine();
-
   public abstract SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
       DataPlane dataPlane);
-
-  public abstract void processFlows(Set<Flow> flows, DataPlane dataPlane, boolean ignoreFilters);
 
   /** Return the name of this plugin */
   public abstract String getName();

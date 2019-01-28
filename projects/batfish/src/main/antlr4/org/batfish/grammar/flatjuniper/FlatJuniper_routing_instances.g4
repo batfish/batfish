@@ -340,7 +340,10 @@ roa_route
     prefix = IP_PREFIX
     | prefix6 = IPV6_PREFIX
   )
-  roa_common
+  (
+    apply
+    | roa_common
+  )
 ;
 
 roa_tag
@@ -382,19 +385,6 @@ rob_station_port
 :
    STATION_PORT DEC
 ;
-roa_route
-:
-  ROUTE
-  (
-    prefix = IP_PREFIX
-    | prefix6 = IPV6_PREFIX
-  )
-  (
-    apply
-    | roa_common
-  )
-;
-
 
 rof_export
 :
@@ -480,11 +470,7 @@ roi_family
 
 roi_rib_group
 :
-   RIB_GROUP
-   (
-      roir_inet
-      | roir_null
-   )
+   RIB_GROUP (INET | INET6) name = variable
 ;
 
 roif_inet
@@ -517,16 +503,6 @@ roifie_lan
 roifie_point_to_point
 :
    POINT_TO_POINT
-;
-
-roir_inet
-:
-   INET name = variable
-;
-
-roir_null
-:
-   INET6 null_filler
 ;
 
 ror_export_rib

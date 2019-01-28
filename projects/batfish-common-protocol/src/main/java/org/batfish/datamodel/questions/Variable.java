@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -44,6 +45,7 @@ public class Variable {
     INTERFACES_SPEC("interfacesSpec", true),
     IP("ip", true),
     IP_PROTOCOL("ipProtocol", true),
+    IP_PROTOCOL_SPEC("ipProtocolSpec", true),
     IP_WILDCARD("ipWildcard", true),
     IPSEC_SESSION_STATUS("ipsecSessionStatus", true),
     JAVA_REGEX("javaRegex", true),
@@ -204,6 +206,42 @@ public class Variable {
   @JsonProperty(BfConsts.PROP_TYPE)
   public Variable.Type getType() {
     return _type;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Variable variable = (Variable) o;
+    return _optional == variable._optional
+        && Objects.equals(_description, variable._description)
+        && Objects.equals(_displayName, variable._displayName)
+        && Objects.equals(_fields, variable._fields)
+        && Objects.equals(_longDescription, variable._longDescription)
+        && Objects.equals(_minElements, variable._minElements)
+        && Objects.equals(_minLength, variable._minLength)
+        && _type == variable._type
+        && Objects.equals(_value, variable._value)
+        && Objects.equals(_values, variable._values);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _description,
+        _displayName,
+        _fields,
+        _longDescription,
+        _minElements,
+        _minLength,
+        _optional,
+        _type.ordinal(),
+        _value,
+        _values);
   }
 
   @JsonProperty(BfConsts.PROP_VALUE)

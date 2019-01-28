@@ -1,6 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
@@ -35,13 +36,13 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
@@ -57,6 +58,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibImpl;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -80,6 +82,8 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.dataplane.rib.RibGroup;
+import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpInterface;
 import org.batfish.datamodel.isis.IsisEdge;
@@ -137,7 +141,7 @@ public class VirtualRouter implements Serializable {
   /** Incoming messages into this router from each BGP neighbor */
   transient SortedMap<BgpEdgeId, Queue<RouteAdvertisement<BgpRoute>>> _bgpIncomingRoutes;
 
-  /** Combined BGP (both iBGP and eBGP) */
+  /** Combined BGP (both iBGP and eBGP) RIB */
   BgpRib _bgpRib;
 
   /** Builder for constructing {@link RibDelta} as pertains to the multipath BGP RIB */
@@ -175,21 +179,25 @@ public class VirtualRouter implements Serializable {
 
   transient IsisLevelRib _isisL2Rib;
 
-  transient IsisLevelRib _isisL1StagingRib;
+  private transient IsisLevelRib _isisL1StagingRib;
 
-  transient IsisLevelRib _isisL2StagingRib;
+  private transient IsisLevelRib _isisL2StagingRib;
 
-  transient IsisRib _isisRib;
+  private transient IsisRib _isisRib;
 
   transient LocalRib _localRib;
 
   /** The finalized RIB, a combination different protocol RIBs */
   Rib _mainRib;
 
+  private Map<String, Rib> _mainRibs;
+
   /** Keeps track of changes to the main RIB */
   private transient RibDelta.Builder<AbstractRoute> _mainRibRouteDeltaBuilder;
 
-  private final String _name;
+  @Nonnull private final Node _node;
+
+  @Nonnull private final String _name;
 
   transient OspfExternalType1Rib _ospfExternalType1Rib;
 
@@ -242,10 +250,11 @@ public class VirtualRouter implements Serializable {
   /** A {@link Vrf} that this virtual router represents */
   final Vrf _vrf;
 
-  VirtualRouter(final String name, final Configuration c) {
-    _c = c;
+  VirtualRouter(@Nonnull final String name, @Nonnull final Node node) {
+    _node = node;
+    _c = node.getConfiguration();
     _name = name;
-    _vrf = c.getVrfs().get(name);
+    _vrf = _c.getVrfs().get(name);
     initRibs();
     _bgpIncomingRoutes = new TreeMap<>();
     _prefixTracer = new PrefixTracer();
@@ -289,13 +298,44 @@ public class VirtualRouter implements Serializable {
     initConnectedRib();
     initLocalRib();
     initStaticRibs();
+    // Always import local and connected routes into your own rib
     importRib(_independentRib, _connectedRib);
     importRib(_independentRib, _localRib);
     importRib(_independentRib, _staticInterfaceRib);
     importRib(_mainRib, _independentRib);
+    // Now check whether any rib groups are applied
+    RibGroup connectedRibGroup = _vrf.getAppliedRibGroups().get(RoutingProtocol.CONNECTED);
+    importRib(_mainRib, _connectedRib);
+    if (connectedRibGroup != null) {
+      applyRibGroup(connectedRibGroup, _connectedRib);
+    }
+    RibGroup localRibGroup = _vrf.getAppliedRibGroups().get(RoutingProtocol.LOCAL);
+    if (localRibGroup != null) {
+      applyRibGroup(localRibGroup, _localRib);
+    }
     initIntraAreaOspfRoutes();
     initEigrp();
     initBaseRipRoutes();
+  }
+
+  /** Apply a rib group to a given source rib */
+  private void applyRibGroup(
+      @Nonnull RibGroup ribGroup, @Nonnull GenericRib<? extends AbstractRoute> sourceRib) {
+    RoutingPolicy policy = _c.getRoutingPolicies().get(ribGroup.getImportPolicy());
+    checkState(policy != null, "RIB group %s is missing import policy", ribGroup.getName());
+    sourceRib.getRoutes().stream()
+        .map(
+            route -> {
+              AbstractRouteBuilder<?, ?> builder = route.toBuilder();
+              boolean accept = policy.process(route, builder, null, _name, Direction.IN);
+              return accept ? builder.build() : null;
+            })
+        .filter(Objects::nonNull)
+        .forEach(
+            r ->
+                ribGroup
+                    .getImportRibs()
+                    .forEach(ribId -> _node.getRib(ribId).ifPresent(rib -> rib.mergeRoute(r))));
   }
 
   /** Initialize EIGRP processes */
@@ -476,10 +516,7 @@ public class VirtualRouter implements Serializable {
     if (d != null) {
       d.getActions().stream()
           .filter(RouteAdvertisement::isWithdrawn)
-          .forEach(
-              r -> {
-                _bgpDeltaBuilder.from(_bgpAggDeps.deleteRoute(r.getRoute(), _bgpRib));
-              });
+          .forEach(r -> _bgpDeltaBuilder.from(_bgpAggDeps.deleteRoute(r.getRoute(), _bgpRib)));
     }
   }
 
@@ -891,9 +928,12 @@ public class VirtualRouter implements Serializable {
   /**
    * This function creates BGP routes from generated routes that go into the BGP RIB, but cannot be
    * imported into the main RIB. The purpose of these routes is to prevent the local router from
-   * accepting advertisements less desirable than the local generated ones for a given network.
+   * accepting advertisements less desirable than the locally generated ones for a given network.
    */
   void initBgpAggregateRoutes() {
+    if (_vrf.getBgpProcess() == null) {
+      return;
+    }
     // first import aggregates
     switch (_c.getConfigurationFormat()) {
       case JUNIPER:
@@ -991,8 +1031,7 @@ public class VirtualRouter implements Serializable {
     outputRouteBuilder.setArea(OspfRoute.NO_AREA);
     outputRouteBuilder.setLsaMetric(outputRouteBuilder.getMetric());
     outputRouteBuilder.setNonRouting(true);
-    OspfExternalRoute outputRoute = outputRouteBuilder.build();
-    return outputRoute;
+    return outputRouteBuilder.build();
   }
 
   /**
@@ -1151,7 +1190,8 @@ public class VirtualRouter implements Serializable {
     _independentRib = new Rib();
 
     // Main RIB + delta builder
-    _mainRib = new Rib();
+    _mainRibs = ImmutableMap.of(RibId.DEFAULT_RIB_NAME, new Rib());
+    _mainRib = _mainRibs.get(RibId.DEFAULT_RIB_NAME);
     _mainRibRouteDeltaBuilder = new RibDelta.Builder<>(_mainRib);
 
     // BGP
@@ -1264,15 +1304,15 @@ public class VirtualRouter implements Serializable {
    * Process BGP messages from neighbors, return a list of delta changes to the RIBs
    *
    * @param bgpTopology the bgp peering relationships
-   * @return List of {@link RibDelta objects}
+   * @return Map from a {@link BgpRib} to {@link RibDelta} objects
    */
-  @Nullable
+  @Nonnull
   Map<BgpRib, RibDelta<BgpRoute>> processBgpMessages(
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology, NetworkConfigurations nc) {
 
     // If we have no BGP process, nothing to do
     if (_vrf.getBgpProcess() == null) {
-      return null;
+      return ImmutableMap.of();
     }
 
     // Keep track of changes to the RIBs using delta builders, keyed by RIB type
@@ -1346,15 +1386,13 @@ public class VirtualRouter implements Serializable {
         } else {
           // Merge into staging rib, note delta
           ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
-          if (!remoteRouteAdvert.isWithdrawn()) {
-            _bgpRib.addBackupRoute(transformedIncomingRoute);
-            _prefixTracer.installed(
-                transformedIncomingRoute.getNetwork(),
-                remoteConfigId.getHostname(),
-                remoteBgpConfig.getLocalIp(),
-                remoteConfigId.getVrfName(),
-                importPolicyName);
-          }
+          _bgpRib.addBackupRoute(transformedIncomingRoute);
+          _prefixTracer.installed(
+              transformedIncomingRoute.getNetwork(),
+              remoteConfigId.getHostname(),
+              remoteBgpConfig.getLocalIp(),
+              remoteConfigId.getVrfName(),
+              importPolicyName);
         }
       }
     }
@@ -2181,6 +2219,10 @@ public class VirtualRouter implements Serializable {
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
       NetworkConfigurations networkConfigurations) {
 
+    if (_vrf.getBgpProcess() == null) {
+      return;
+    }
+
     RibDelta<BgpRoute> ebgpStagingDelta = stagingDeltas.get(_ebgpStagingRib);
     RibDelta<BgpRoute> ibgpStagingDelta = stagingDeltas.get(_ibgpStagingRib);
 
@@ -2341,31 +2383,12 @@ public class VirtualRouter implements Serializable {
    * @return true if all queues are empty.
    */
   boolean hasProcessedAllMessages() {
-    boolean processedAll = true;
-    // Check the BGP message queues
-    if (_vrf.getBgpProcess() != null) {
-      processedAll =
-          _bgpIncomingRoutes.values().stream()
-              .map(Queue::isEmpty)
-              .noneMatch(Predicate.isEqual(false));
-    }
-    // Check the OSPF external message queues
-    if (_vrf.getOspfProcess() != null) {
-      for (Queue<RouteAdvertisement<OspfExternalRoute>> queue :
-          _ospfExternalIncomingRoutes.values()) {
-        if (!queue.isEmpty()) {
-          return false;
-        }
-      }
-    }
-    if (_vrf.getIsisProcess() != null) {
-      for (Queue<RouteAdvertisement<IsisRoute>> queue : _isisIncomingRoutes.values()) {
-        if (!queue.isEmpty()) {
-          return false;
-        }
-      }
-    }
-    return processedAll;
+    return (_vrf.getBgpProcess() == null
+            || _bgpIncomingRoutes.values().stream().allMatch(Queue::isEmpty))
+        && (_vrf.getOspfProcess() == null
+            || _ospfExternalIncomingRoutes.values().stream().allMatch(Queue::isEmpty))
+        && (_vrf.getIsisProcess() == null
+            || _isisIncomingRoutes.values().stream().allMatch(Queue::isEmpty));
   }
 
   /**
@@ -2570,6 +2593,10 @@ public class VirtualRouter implements Serializable {
     return _mainRib;
   }
 
+  Map<String, Rib> getMainRibs() {
+    return _mainRibs;
+  }
+
   BgpRib getBgpRib() {
     return _bgpRib;
   }
@@ -2690,5 +2717,12 @@ public class VirtualRouter implements Serializable {
         ourConfig.getExportPolicy());
 
     return transformedOutgoingRoute;
+  }
+
+  public Optional<Rib> getRib(RibId id) {
+    if (!_name.equals(id.getVrfName())) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable(_mainRibs.get(id.getRibName()));
   }
 }

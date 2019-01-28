@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
@@ -43,8 +44,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   private static final String ARG_FLATTEN = "flatten";
 
   private static final String ARG_FLATTEN_DESTINATION = "flattendst";
-
-  private static final String ARG_FLATTEN_ON_THE_FLY = "flattenonthefly";
 
   private static final String ARG_HELP = "help";
 
@@ -187,10 +186,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return getDebugFlags().contains(flag);
   }
 
-  public boolean flattenOnTheFly() {
-    return _config.getBoolean(ARG_FLATTEN_ON_THE_FLY);
-  }
-
   public TestrigSettings getActiveTestrigSettings() {
     return _activeTestrigSettings;
   }
@@ -265,10 +260,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   @Override
   public boolean getDisableUnrecognized() {
     return _config.getBoolean(BfConsts.ARG_DISABLE_UNRECOGNIZED);
-  }
-
-  public boolean getEnableCiscoNxParser() {
-    return _config.getBoolean(BfConsts.ARG_ENABLE_CISCO_NX_PARSER);
   }
 
   public boolean getExitOnFirstError() {
@@ -549,14 +540,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_DEBUG_FLAGS, ImmutableList.of());
     setDefaultProperty(BfConsts.ARG_DIFFERENTIAL, false);
     setDefaultProperty(BfConsts.ARG_DISABLE_UNRECOGNIZED, false);
-    setDefaultProperty(
-        BfConsts.ARG_ENABLE_CISCO_NX_PARSER,
-        true); // TODO: enable CiscoNxParser by default and remove this flag.
     setDefaultProperty(ARG_DISABLE_Z3_SIMPLIFICATION, false);
     setDefaultProperty(ARG_EXIT_ON_FIRST_ERROR, false);
     setDefaultProperty(ARG_FLATTEN, false);
     setDefaultProperty(ARG_FLATTEN_DESTINATION, null);
-    setDefaultProperty(ARG_FLATTEN_ON_THE_FLY, true);
     setDefaultProperty(BfConsts.ARG_HALT_ON_CONVERT_ERROR, false);
     setDefaultProperty(BfConsts.ARG_HALT_ON_PARSE_ERROR, false);
     setDefaultProperty(ARG_HELP, false);
@@ -685,10 +672,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addBooleanOption(ARG_DISABLE_Z3_SIMPLIFICATION, "disable z3 simplification");
 
     addBooleanOption(
-        BfConsts.ARG_ENABLE_CISCO_NX_PARSER,
-        "use the rewritten BGP parser for Cisco NX-OS devices");
-
-    addBooleanOption(
         ARG_EXIT_ON_FIRST_ERROR,
         "exit on first parse error (otherwise will exit on last parse error)");
 
@@ -699,11 +682,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         "output path to test rig in which flat juniper (and all other) configurations will be "
             + "placed",
         ARGNAME_PATH);
-
-    addBooleanOption(
-        ARG_FLATTEN_ON_THE_FLY,
-        "flatten hierarchical juniper configuration files on-the-fly (line number references will "
-            + "be spurious)");
 
     addBooleanOption(
         BfConsts.COMMAND_INIT_INFO, "include parse/convert initialization info in answer");
@@ -859,7 +837,15 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     // deprecated and ignored
     for (String deprecatedStringArg :
         new String[] {
-          "deltaenv", "env", "gsidregex", "gsinputrole", "gsremoteas", "outputenv", "venv"
+          "deltaenv",
+          "enable_cisco_nx_parser",
+          "env",
+          "flattenonthefly",
+          "gsidregex",
+          "gsinputrole",
+          "gsremoteas",
+          "outputenv",
+          "venv"
         }) {
       addOption(deprecatedStringArg, DEPRECATED_ARG_DESC, "ignored");
     }
@@ -907,11 +893,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(BfConsts.ARG_DIFF_ACTIVE);
     getBooleanOptionValue(BfConsts.ARG_DIFFERENTIAL);
     getBooleanOptionValue(BfConsts.ARG_DISABLE_UNRECOGNIZED);
-    getBooleanOptionValue(BfConsts.ARG_ENABLE_CISCO_NX_PARSER);
     getBooleanOptionValue(ARG_EXIT_ON_FIRST_ERROR);
     getBooleanOptionValue(ARG_FLATTEN);
     getPathOptionValue(ARG_FLATTEN_DESTINATION);
-    getBooleanOptionValue(ARG_FLATTEN_ON_THE_FLY);
     getBooleanOptionValue(BfConsts.ARG_HALT_ON_CONVERT_ERROR);
     getBooleanOptionValue(BfConsts.ARG_HALT_ON_PARSE_ERROR);
     getBooleanOptionValue(ARG_HISTOGRAM);
@@ -999,16 +983,16 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _config.setProperty(BfConsts.ARG_DISABLE_UNRECOGNIZED, b);
   }
 
-  public void setEnableCiscoNxParser(boolean b) {
-    _config.setProperty(BfConsts.ARG_ENABLE_CISCO_NX_PARSER, b);
-  }
-
   public void setHaltOnConvertError(boolean haltOnConvertError) {
     _config.setProperty(BfConsts.ARG_HALT_ON_CONVERT_ERROR, haltOnConvertError);
   }
 
   public void setHaltOnParseError(boolean haltOnParseError) {
     _config.setProperty(BfConsts.ARG_HALT_ON_PARSE_ERROR, haltOnParseError);
+  }
+
+  public void setIgnoreFilesWithStrings(@Nonnull List<String> ignored) {
+    _config.setProperty(BfConsts.ARG_IGNORE_FILES_WITH_STRINGS, ignored);
   }
 
   public void setInitInfo(boolean initInfo) {

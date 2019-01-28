@@ -127,6 +127,125 @@
         }
       },
       {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "inside",
+        "Context" : "twice nat real interface",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            7,
+            8,
+            9
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "outside",
+        "Context" : "twice nat mapped interface",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            7,
+            8,
+            9
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "object network",
+        "Ref_Name" : "interface",
+        "Context" : "twice nat mapped destination network object",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            8
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "object network",
+        "Ref_Name" : "interface",
+        "Context" : "twice nat mapped source network object",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            8
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "object network",
+        "Ref_Name" : "net1",
+        "Context" : "twice nat real source network object",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            8,
+            9,
+            11,
+            12,
+            13
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "object network",
+        "Ref_Name" : "net2",
+        "Context" : "twice nat mapped source network object",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            9,
+            11,
+            12,
+            13
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "object network",
+        "Ref_Name" : "net2",
+        "Context" : "twice nat real destination network object",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            8
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "object network",
+        "Ref_Name" : "net3",
+        "Context" : "twice nat mapped destination network object",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            11
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/asa_nat",
+        "Struct_Type" : "object network",
+        "Ref_Name" : "net4",
+        "Context" : "twice nat real destination network object",
+        "Lines" : {
+          "filename" : "configs/asa_nat",
+          "lines" : [
+            11
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/bgp_address_family",
         "Struct_Type" : "interface",
         "Ref_Name" : "Loopback0",
@@ -3581,10 +3700,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 291 results",
+      "notes" : "Found 300 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 291
+      "numResults" : 300
     }
   }
 ]

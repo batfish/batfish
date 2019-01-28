@@ -20,10 +20,12 @@ import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyProvider;
+import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.Ip;
@@ -38,6 +40,7 @@ import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Environment;
@@ -151,11 +154,6 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public FlowHistory getHistory() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public MajorIssueConfig getMajorIssueConfig(String majorIssue) {
     throw new UnsupportedOperationException();
   }
@@ -222,8 +220,40 @@ public class IBatfishTestAdapter implements IBatfish {
       }
 
       @Override
+      public Optional<Layer1Topology> getLayer1LogicalTopology(NetworkSnapshot networkSnapshot) {
+        return Optional.of(
+            TopologyUtil.computeLayer1LogicalTopology(getLayer1Topology(), loadConfigurations()));
+      }
+
+      @Override
       public VxlanTopology getVxlanTopology(NetworkSnapshot snapshot) {
         return new VxlanTopology(loadConfigurations(snapshot));
+      }
+
+      @Override
+      public Optional<Layer1Topology> getLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Optional<Layer2Topology> getLayer2Topology(NetworkSnapshot networkSnapshot) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Topology getLayer3Topology(NetworkSnapshot networkSnapshot) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Optional<Layer1Topology> getRawLayer1PhysicalTopology(
+          NetworkSnapshot networkSnapshot) {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public Topology getRawLayer3Topology(NetworkSnapshot networkSnapshot) {
+        throw new UnsupportedOperationException();
       }
     };
   }
@@ -327,7 +357,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void processFlows(Set<Flow> flows, boolean ignoreFilters) {
+  public TracerouteEngine getTracerouteEngine() {
     throw new UnsupportedOperationException();
   }
 
@@ -481,5 +511,35 @@ public class IBatfishTestAdapter implements IBatfish {
   public NetworkSnapshot getNetworkSnapshot() {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  @Override
+  public FlowHistory flowHistory(Set<Flow> flows, boolean ignoreFilters) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public FlowHistory differentialFlowHistory(Set<Flow> flows, boolean ignoreFilters) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Layer1Topology loadRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public SortedSet<Edge> getEdgeBlacklist(NetworkSnapshot networkSnapshot) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public SortedSet<NodeInterfacePair> getInterfaceBlacklist(NetworkSnapshot networkSnapshot) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public SortedSet<String> getNodeBlacklist(NetworkSnapshot networkSnapshot) {
+    throw new UnsupportedOperationException();
   }
 }

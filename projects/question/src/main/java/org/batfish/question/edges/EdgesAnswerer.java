@@ -3,6 +3,7 @@ package org.batfish.question.edges;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.Network;
@@ -18,7 +19,6 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Edge;
-import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -124,7 +124,7 @@ public class EdgesAnswerer extends Answerer {
     switch (edgeType) {
       case BGP:
         ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-            BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false, false, null, null);
+            BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false, false, null);
         return getBgpEdges(configurations, includeNodes, includeRemoteNodes, bgpTopology);
       case EIGRP:
         Network<EigrpInterface, EigrpEdge> eigrpTopology =
@@ -148,11 +148,16 @@ public class EdgesAnswerer extends Answerer {
             _batfish.getTopologyProvider().getVxlanTopology(_batfish.getNetworkSnapshot());
         return getVxlanEdges(includeNodes, includeRemoteNodes, vxlanTopology);
       case LAYER1:
-        Layer1Topology layer1Topology = _batfish.getLayer1Topology();
-        return getLayer1Edges(includeNodes, includeRemoteNodes, layer1Topology);
+        return _batfish
+            .getTopologyProvider()
+            .getLayer1LogicalTopology(_batfish.getNetworkSnapshot())
+            .map(
+                layer1LogicalTopology ->
+                    getLayer1Edges(includeNodes, includeRemoteNodes, layer1LogicalTopology))
+            .orElse(ImmutableMultiset.of());
       case LAYER2:
-        Layer2Topology layer2Topology = _batfish.getLayer2Topology();
-        return getLayer2Edges(includeNodes, includeRemoteNodes, layer2Topology);
+        // Unsupported until we decide how to present layer2 topology.
+        return ImmutableMultiset.of();
       case LAYER3:
       default:
         return getLayer3Edges(configurations, includeNodes, includeRemoteNodes, topology);
@@ -248,23 +253,6 @@ public class EdgesAnswerer extends Answerer {
                 includeNodes.contains(layer1Edge.getNode1().getHostname())
                     && includeRemoteNodes.contains(layer1Edge.getNode2().getHostname()))
         .map(EdgesAnswerer::layer1EdgeToRow)
-        .collect(Collectors.toCollection(HashMultiset::create));
-  }
-
-  @VisibleForTesting
-  static Multiset<Row> getLayer2Edges(
-      Set<String> includeNodes,
-      Set<String> includeRemoteNodes,
-      @Nullable Layer2Topology layer2Topology) {
-    if (layer2Topology == null) {
-      return HashMultiset.create();
-    }
-    return layer2Topology.getGraph().edges().stream()
-        .filter(
-            layer2Edge ->
-                includeNodes.contains(layer2Edge.getNode1().getHostname())
-                    && includeRemoteNodes.contains(layer2Edge.getNode2().getHostname()))
-        .map(EdgesAnswerer::layer2EdgeToRow)
         .collect(Collectors.toCollection(HashMultiset::create));
   }
 
@@ -489,12 +477,12 @@ public class EdgesAnswerer extends Answerer {
             COL_INTERFACE,
             new NodeInterfacePair(
                 layer2Edge.getNode1().getHostname(), layer2Edge.getNode1().getInterfaceName()))
-        .put(COL_VLAN, layer2Edge.getNode1().getVlanId())
+        .put(COL_VLAN, layer2Edge.getNode1().getSwitchportVlanId())
         .put(
             COL_REMOTE_INTERFACE,
             new NodeInterfacePair(
                 layer2Edge.getNode2().getHostname(), layer2Edge.getNode2().getInterfaceName()))
-        .put(COL_REMOTE_VLAN, layer2Edge.getNode2().getVlanId());
+        .put(COL_REMOTE_VLAN, layer2Edge.getNode2().getSwitchportVlanId());
 
     return row.build();
   }

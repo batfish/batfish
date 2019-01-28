@@ -51,8 +51,7 @@ public class MultipathConsistencyAnswerer extends Answerer {
     MultipathConsistencyParameters parameters = parameters();
     Set<Flow> flows = _batfish.bddMultipathConsistency(parameters);
     if (_batfish.debugFlagEnabled("oldtraceroute")) {
-      _batfish.processFlows(flows, false);
-      FlowHistory flowHistory = _batfish.getHistory();
+      FlowHistory flowHistory = _batfish.flowHistory(flows, false);
       Multiset<Row> rows = flowHistoryToRows(flowHistory);
       TableAnswerElement table = new TableAnswerElement(createMetadata(false));
       table.postProcessAnswer(_question, rows);

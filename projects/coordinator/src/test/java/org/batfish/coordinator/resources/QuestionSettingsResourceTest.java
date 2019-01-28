@@ -5,7 +5,7 @@ import static org.batfish.common.CoordConsts.DEFAULT_API_KEY;
 import static org.batfish.common.CoordConsts.SVC_CFG_WORK_MGR2;
 import static org.batfish.common.CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY;
 import static org.batfish.common.CoordConstsV2.HTTP_HEADER_BATFISH_VERSION;
-import static org.batfish.common.CoordConstsV2.RSC_CONTAINERS;
+import static org.batfish.common.CoordConstsV2.RSC_NETWORKS;
 import static org.batfish.common.CoordConstsV2.RSC_QUESTIONS;
 import static org.batfish.common.CoordConstsV2.RSC_SETTINGS;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -78,7 +78,7 @@ public final class QuestionSettingsResourceTest extends WorkMgrServiceV2TestBase
 
   private Builder getQuestionSettingsTarget(String questionClass) {
     return target(SVC_CFG_WORK_MGR2)
-        .path(RSC_CONTAINERS)
+        .path(RSC_NETWORKS)
         .path(NETWORK)
         .path(RSC_SETTINGS)
         .path(RSC_QUESTIONS)
@@ -89,7 +89,7 @@ public final class QuestionSettingsResourceTest extends WorkMgrServiceV2TestBase
   }
 
   @Before
-  public void initContainerEnvironment() throws Exception {
+  public void initTestEnvironment() throws Exception {
     _idManager =
         new LocalIdManager() {
           @Override

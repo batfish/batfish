@@ -1,6 +1,7 @@
 package org.batfish.common.bdd;
 
-import com.google.common.base.Preconditions;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -165,8 +166,7 @@ public class IpAccessListToBDD implements GenericAclLineMatchExprVisitor<BDD> {
   @Override
   public BDD visitPermittedByAcl(PermittedByAcl permittedByAcl) {
     String name = permittedByAcl.getAclName();
-    Preconditions.checkArgument(
-        _aclEnv.containsKey(name), "Undefined PermittedByAcl reference: %s", name);
+    checkArgument(_aclEnv.containsKey(name), "Undefined PermittedByAcl reference: %s", name);
     try {
       return _aclEnv.get(name).get();
     } catch (NonRecursiveSupplierException e) {

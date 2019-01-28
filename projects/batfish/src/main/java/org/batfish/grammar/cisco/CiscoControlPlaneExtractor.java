@@ -267,6 +267,16 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.TACACS_SOURCE
 import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_SOURCE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_MAPPED_INTERFACE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_INTERFACE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.VXLAN_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.VXLAN_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_GROUP_LIST;
@@ -317,7 +327,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.DscpType;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.IcmpCode;
@@ -460,6 +469,11 @@ import org.batfish.grammar.cisco.CiscoParser.As_path_set_inlineContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Asa_ag_globalContext;
 import org.batfish.grammar.cisco.CiscoParser.Asa_ag_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.Asa_nat_ifacesContext;
+import org.batfish.grammar.cisco.CiscoParser.Asa_nat_optional_argsContext;
+import org.batfish.grammar.cisco.CiscoParser.Asa_twice_nat_destinationContext;
+import org.batfish.grammar.cisco.CiscoParser.Asa_twice_nat_dynamicContext;
+import org.batfish.grammar.cisco.CiscoParser.Asa_twice_nat_staticContext;
 import org.batfish.grammar.cisco.CiscoParser.Auto_summary_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Banner_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_address_familyContext;
@@ -961,6 +975,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rs_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.Rs_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.S_aaaContext;
 import org.batfish.grammar.cisco.CiscoParser.S_access_lineContext;
+import org.batfish.grammar.cisco.CiscoParser.S_asa_twice_natContext;
 import org.batfish.grammar.cisco.CiscoParser.S_bfd_templateContext;
 import org.batfish.grammar.cisco.CiscoParser.S_cableContext;
 import org.batfish.grammar.cisco.CiscoParser.S_class_mapContext;
@@ -1116,6 +1131,7 @@ import org.batfish.representation.cisco.BgpNetwork6;
 import org.batfish.representation.cisco.BgpPeerGroup;
 import org.batfish.representation.cisco.BgpProcess;
 import org.batfish.representation.cisco.BgpRedistributionPolicy;
+import org.batfish.representation.cisco.CiscoAsaNat;
 import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.CiscoIosDynamicNat;
 import org.batfish.representation.cisco.CiscoIosNat;
@@ -1139,6 +1155,8 @@ import org.batfish.representation.cisco.ExtendedAccessList;
 import org.batfish.representation.cisco.ExtendedAccessListLine;
 import org.batfish.representation.cisco.ExtendedIpv6AccessList;
 import org.batfish.representation.cisco.ExtendedIpv6AccessListLine;
+import org.batfish.representation.cisco.FqdnNetworkObject;
+import org.batfish.representation.cisco.HostNetworkObject;
 import org.batfish.representation.cisco.HsrpGroup;
 import org.batfish.representation.cisco.IcmpServiceObjectGroupLine;
 import org.batfish.representation.cisco.IcmpTypeGroupReferenceLine;
@@ -1175,6 +1193,7 @@ import org.batfish.representation.cisco.NetworkObject;
 import org.batfish.representation.cisco.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco.NetworkObjectGroup;
 import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
+import org.batfish.representation.cisco.NetworkObjectInfo;
 import org.batfish.representation.cisco.NssaSettings;
 import org.batfish.representation.cisco.OspfNetwork;
 import org.batfish.representation.cisco.OspfProcess;
@@ -1190,6 +1209,7 @@ import org.batfish.representation.cisco.ProtocolObjectGroupProtocolLine;
 import org.batfish.representation.cisco.ProtocolObjectGroupReferenceLine;
 import org.batfish.representation.cisco.ProtocolOrServiceObjectGroupServiceSpecifier;
 import org.batfish.representation.cisco.RangeCommunitySetElemHalf;
+import org.batfish.representation.cisco.RangeNetworkObject;
 import org.batfish.representation.cisco.RipProcess;
 import org.batfish.representation.cisco.RouteMap;
 import org.batfish.representation.cisco.RouteMapClause;
@@ -1289,6 +1309,7 @@ import org.batfish.representation.cisco.StandardIpv6AccessList;
 import org.batfish.representation.cisco.StandardIpv6AccessListLine;
 import org.batfish.representation.cisco.StaticRoute;
 import org.batfish.representation.cisco.StubSettings;
+import org.batfish.representation.cisco.SubnetNetworkObject;
 import org.batfish.representation.cisco.TcpServiceObjectGroupLine;
 import org.batfish.representation.cisco.TcpUdpServiceObjectGroupLine;
 import org.batfish.representation.cisco.Tunnel;
@@ -1581,7 +1602,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private final Warnings _w;
 
-  private NetworkObject _currentNetworkObject;
+  private NetworkObjectInfo _currentNetworkObjectInfo;
 
   private NetworkObjectGroup _currentNetworkObjectGroup;
 
@@ -2731,14 +2752,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterO_network(O_networkContext ctx) {
-    _currentNetworkObject =
-        _configuration.getNetworkObjects().computeIfAbsent(ctx.name.getText(), NetworkObject::new);
+    _currentNetworkObjectInfo = new NetworkObjectInfo(ctx.name.getText());
     defineStructure(NETWORK_OBJECT, ctx.name.getText(), ctx);
   }
 
   @Override
   public void exitO_network(O_networkContext ctx) {
-    _currentNetworkObject = null;
+    if (_currentNetworkObjectInfo == null) {
+      return;
+    }
+    NetworkObject obj = _configuration.getNetworkObjects().get(_currentNetworkObjectInfo.getName());
+    if (obj == null) {
+      return;
+    }
+    obj.setInfo(_currentNetworkObjectInfo);
+    _currentNetworkObjectInfo = null;
   }
 
   @Override
@@ -3091,19 +3119,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitOn_description(On_descriptionContext ctx) {
-    _currentNetworkObject.setDescription(getDescription(ctx.description_line()));
+    _currentNetworkObjectInfo.setDescription(getDescription(ctx.description_line()));
   }
 
   @Override
   public void exitOn_fqdn(On_fqdnContext ctx) {
-    _currentNetworkObject.setIpSpace(EmptyIpSpace.INSTANCE);
+    _configuration
+        .getNetworkObjects()
+        .put(_currentNetworkObjectInfo.getName(), new FqdnNetworkObject());
     _w.redFlag("Unknown how to resolve domain name to IP address: " + getFullText(ctx));
   }
 
   @Override
   public void exitOn_host(On_hostContext ctx) {
     if (ctx.address != null) {
-      _currentNetworkObject.setIpSpace(Ip.parse(ctx.address.getText()).toIpSpace());
+      _configuration
+          .getNetworkObjects()
+          .put(
+              _currentNetworkObjectInfo.getName(),
+              new HostNetworkObject(Ip.parse(ctx.address.getText())));
     } else {
       // IPv6
       _w.redFlag("Unimplemented network object line: " + getFullText(ctx));
@@ -3112,14 +3146,23 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitOn_range(On_rangeContext ctx) {
-    _w.redFlag("Unimplemented network object line: " + getFullText(ctx));
+    _configuration
+        .getNetworkObjects()
+        .put(
+            _currentNetworkObjectInfo.getName(),
+            new RangeNetworkObject(Ip.parse(ctx.start.getText()), Ip.parse(ctx.end.getText())));
+    _w.redFlag("Network object 'range' is not supported for access lists: " + getFullText(ctx));
   }
 
   @Override
   public void exitOn_subnet(On_subnetContext ctx) {
     if (ctx.address != null) {
-      _currentNetworkObject.setIpSpace(
-          Prefix.create(Ip.parse(ctx.address.getText()), Ip.parse(ctx.mask.getText())).toIpSpace());
+      _configuration
+          .getNetworkObjects()
+          .put(
+              _currentNetworkObjectInfo.getName(),
+              new SubnetNetworkObject(
+                  Prefix.create(Ip.parse(ctx.address.getText()), Ip.parse(ctx.mask.getText()))));
     } else {
       // IPv6
       _w.redFlag("Unimplemented network object line: " + getFullText(ctx));
@@ -5129,7 +5172,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private void exitEigrpProcess(ParserRuleContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     EigrpProcess proc = _currentEigrpProcess;
@@ -5142,7 +5185,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
        * The result should be a process with ASN 1, but instead the result is an invalid EIGRP
        * process with null ASN.
        */
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp ASN configured");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP ASN configured");
       return;
     }
     proc.computeNetworks(_configuration.getInterfaces().values());
@@ -7367,7 +7410,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_autonomous_system(Re_autonomous_systemContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
 
@@ -7379,7 +7422,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_default_metric(Re_default_metricContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     if (ctx.NO() == null) {
@@ -7395,7 +7438,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_eigrp_router_id(Re_eigrp_router_idContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     if (ctx.NO() == null) {
@@ -7409,7 +7452,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRe_network(Re_networkContext ctx) {
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     // In process context
@@ -7422,7 +7465,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_passive_interface(Re_passive_interfaceContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     boolean passive = (ctx.NO() == null);
@@ -7436,7 +7479,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_passive_interface_default(Re_passive_interface_defaultContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     boolean passive = (ctx.NO() == null);
@@ -7447,7 +7490,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_bgp(Re_redistribute_bgpContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
@@ -7475,7 +7518,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_connected(Re_redistribute_connectedContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
@@ -7502,7 +7545,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_eigrp(Re_redistribute_eigrpContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.EIGRP;
@@ -7533,14 +7576,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.referenceStructure(
           ROUTE_MAP, mapname, EIGRP_REDISTRIBUTE_ISIS_MAP, ctx.map.getStart().getLine());
     }
-    _w.addWarning(ctx, getFullText(ctx), _parser, "ISIS redistirution in EIGRP is not implemented");
+    _w.addWarning(
+        ctx, getFullText(ctx), _parser, "ISIS redistribution in EIGRP is not implemented");
   }
 
   @Override
   public void exitRe_redistribute_ospf(Re_redistribute_ospfContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.OSPF;
@@ -7572,7 +7616,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_rip(Re_redistribute_ripContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.RIP;
@@ -7598,7 +7642,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRe_redistribute_static(Re_redistribute_staticContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
@@ -7629,12 +7673,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitReafi_passive_interface(Reafi_passive_interfaceContext ctx) {
     // In process context
     if (_currentEigrpProcess == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp process available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP process available");
       return;
     }
     // In interface context
     if (_currentEigrpInterface == null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "No eigrp interface available");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No EIGRP interface available");
       return;
     }
 
@@ -8992,6 +9036,126 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitS_asa_twice_nat(S_asa_twice_natContext ctx) {
+    CiscoAsaNat nat = new CiscoAsaNat();
+
+    Asa_nat_ifacesContext ifacesCtx = ctx.asa_nat_ifaces();
+    int line = ctx.getStart().getLine();
+    if (ifacesCtx != null) {
+      String inside = ifacesCtx.real_if.getText();
+      if (!inside.equals("any")) {
+        nat.setInsideInterface(inside);
+        _configuration.referenceStructure(INTERFACE, inside, TWICE_NAT_REAL_INTERFACE, line);
+      }
+      String outside = ifacesCtx.mapped_if.getText();
+      if (!outside.equals("any")) {
+        nat.setOutsideInterface(outside);
+        _configuration.referenceStructure(INTERFACE, outside, TWICE_NAT_MAPPED_INTERFACE, line);
+      }
+    }
+
+    Asa_twice_nat_dynamicContext dynamicContext = ctx.asa_twice_nat_dynamic();
+    Asa_twice_nat_staticContext staticContext = ctx.asa_twice_nat_static();
+    String realSource;
+    String mappedSource;
+    if (dynamicContext != null) {
+      if (dynamicContext.mapped_src_iface != null) {
+        // Match outside/mapped interface. Interface must be specified.
+        // This can be in lieu of or in addition to a mapped source object.
+        todo(ctx);
+        return;
+      }
+      if (dynamicContext.asa_nat_pat_pool() != null) {
+        // PAT pool
+        todo(ctx);
+        return;
+      }
+
+      nat.setDynamic(true);
+      realSource = dynamicContext.real_src.getText();
+      mappedSource = dynamicContext.mapped_src.getText();
+    } else {
+      nat.setDynamic(false);
+      realSource = staticContext.real_src.getText();
+      mappedSource = staticContext.mapped_src.getText();
+    }
+
+    AccessListAddressSpecifier addressSpecifier =
+        referenceNetworkObjectOrGroup(
+            realSource,
+            TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT,
+            TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP,
+            line);
+    nat.setRealSource(addressSpecifier);
+
+    addressSpecifier =
+        referenceNetworkObjectOrGroup(
+            mappedSource,
+            TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
+            TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
+            line);
+    nat.setMappedSource(addressSpecifier);
+
+    // Optional static destination NAT
+    Asa_twice_nat_destinationContext destinationContext = ctx.asa_twice_nat_destination();
+    if (destinationContext != null) {
+      nat.setTwice(true);
+      if (destinationContext.mapped_dst.getText() != null) {
+        addressSpecifier =
+            referenceNetworkObjectOrGroup(
+                destinationContext.mapped_dst.getText(),
+                TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT,
+                TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT_GROUP,
+                line);
+        nat.setMappedDestination(addressSpecifier);
+      } else {
+        // Match inside/real interface. Interface must be specified.
+        todo(ctx);
+        return;
+      }
+      addressSpecifier =
+          referenceNetworkObjectOrGroup(
+              destinationContext.real_dst.getText(),
+              TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT,
+              TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT_GROUP,
+              line);
+      nat.setRealDestination(addressSpecifier);
+    } else {
+      nat.setTwice(false);
+    }
+
+    // Optional service object specifiers
+    if (ctx.asa_twice_nat_service() != null) {
+      // Specifies static port translation for static NAT or dynamic source + static destination NAT
+      todo(ctx);
+      return;
+    }
+
+    // Choose section for this NAT
+    boolean afterAuto = ctx.AFTER_AUTO() != null;
+    if (afterAuto) {
+      nat.setSection(CiscoAsaNat.Section.AFTER);
+    } else {
+      nat.setSection(CiscoAsaNat.Section.BEFORE);
+    }
+
+    // Check options. INACTIVE means rule is ignored. Other options are not handled.
+    for (Asa_nat_optional_argsContext optionCtx : ctx.asa_nat_optional_args()) {
+      if (optionCtx.INACTIVE() != null) {
+        nat.setInactive(true);
+      } else {
+        todo(ctx);
+        return;
+      }
+    }
+
+    // Twice NATs are sorted by section and sequentially
+    nat.setLine(_configuration.getCiscoAsaNats().size() + 1);
+
+    _configuration.getCiscoAsaNats().add(nat);
+  }
+
+  @Override
   public void exitS_no_access_list_extended(S_no_access_list_extendedContext ctx) {
     String name = ctx.ACL_NUM_EXTENDED().getText();
     _configuration.getExtendedAcls().remove(name);
@@ -9837,6 +10001,37 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private void pushPeer(BgpPeerGroup pg) {
     _peerGroupStack.add(_currentPeerGroup);
     _currentPeerGroup = pg;
+  }
+
+  /**
+   * Determine if this is a reference to a network object or a network object group. They are not
+   * supposed to be ambiguous and must already be defined. Also matches "any" as all addresses.
+   *
+   * @param name Name of network object or network object group
+   * @param objectStructure Name of structure to reference if this is a network object
+   * @param groupStructure Name of structure to reference if this is a network object group
+   * @param line Line number in configuration
+   * @return Address specifier for this reference
+   */
+  private AccessListAddressSpecifier referenceNetworkObjectOrGroup(
+      String name,
+      CiscoStructureUsage objectStructure,
+      CiscoStructureUsage groupStructure,
+      int line) {
+    if (name.equals("any")) {
+      return new WildcardAddressSpecifier(IpWildcard.ANY);
+    }
+    if (_configuration.getNetworkObjectGroups().containsKey(name)) {
+      _configuration.referenceStructure(NETWORK_OBJECT_GROUP, name, groupStructure, line);
+      return new NetworkObjectGroupAddressSpecifier(name);
+    }
+    // Assume this is an defined or undefined reference to a network object
+    _configuration.referenceStructure(NETWORK_OBJECT, name, objectStructure, line);
+    if (_configuration.getNetworkObjects().containsKey(name)) {
+      return new NetworkObjectAddressSpecifier(name);
+    }
+    _w.redFlag("Undefined network object or network object-group " + name);
+    return null;
   }
 
   private void resetPeerGroups() {

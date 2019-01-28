@@ -131,6 +131,11 @@ public class StaticRoute extends AbstractRoute {
     return 0;
   }
 
+  @Override
+  public AbstractRouteBuilder<?, ?> toBuilder() {
+    throw new UnsupportedOperationException();
+  }
+
   /** Builder for {@link StaticRoute} */
   public static final class Builder extends AbstractRouteBuilder<Builder, StaticRoute> {
 

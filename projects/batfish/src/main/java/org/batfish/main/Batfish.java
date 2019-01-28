@@ -36,6 +36,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
+import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
 import java.io.File;
 import java.io.IOException;
@@ -101,14 +102,13 @@ import org.batfish.common.plugin.ExternalBgpAdvertisementPlugin;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.PluginClientType;
 import org.batfish.common.plugin.PluginConsumer;
+import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
-import org.batfish.common.topology.Layer3Topology;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.IpsecUtil;
 import org.batfish.config.Settings;
 import org.batfish.config.TestrigSettings;
 import org.batfish.datamodel.AbstractRoute;
@@ -175,6 +175,7 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
+import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.ParseTreePrettyPrinter;
@@ -833,16 +834,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     serializeEnvironmentRoutingTables(inputPath, outputPath);
   }
 
-  Topology computeEnvironmentTopology(Map<String, Configuration> configurations) {
-    _logger.resetTimer();
-    Topology topology = computeTestrigTopology(configurations);
-    topology.prune(getEdgeBlacklist(), getNodeBlacklist(), getInterfaceBlacklist());
-    topology.pruneFailedIpsecSessionEdges(
-        IpsecUtil.initIpsecTopology(configurations), configurations);
-    _logger.printElapsedTime();
-    return topology;
-  }
-
   public Set<Flow> computeNodOutput(List<NodJob> jobs) {
     _logger.info("\n*** EXECUTING NOD JOBS ***\n");
     _logger.resetTimer();
@@ -853,33 +844,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return flows;
   }
 
-  @VisibleForTesting
-  Topology computeTestrigTopology(Map<String, Configuration> configurations) {
-    Topology legacyTopology =
-        _storage.loadLegacyTopology(_settings.getContainer(), _testrigSettings.getName());
-    if (legacyTopology != null) {
-      return legacyTopology;
-    }
-    Layer1Topology rawLayer1Topology =
-        _storage.loadLayer1Topology(_settings.getContainer(), _testrigSettings.getName());
-    if (rawLayer1Topology != null) {
-      _logger.infof(
-          "Testrig:%s in container:%s has layer-1 topology file",
-          getTestrigName(), getContainerName());
-      newBatch("Processing layer-1 topology", 0);
-      Layer1Topology layer1Topology =
-          TopologyUtil.computeLayer1Topology(rawLayer1Topology, configurations);
-      newBatch("Computing layer-2 topology", 0);
-      Layer2Topology layer2Topology =
-          TopologyUtil.computeLayer2Topology(layer1Topology, configurations);
-      newBatch("Computing layer-3 topology", 0);
-      Layer3Topology layer3Topology =
-          TopologyUtil.computeLayer3Topology(layer2Topology, configurations);
-      return TopologyUtil.toTopology(layer3Topology);
-    }
-    // guess adjacencies based on interface subnetworks
-    _logger.info("*** (GUESSING TOPOLOGY IN ABSENCE OF EXPLICIT FILE) ***\n");
-    return TopologyUtil.synthesizeL3Topology(configurations);
+  @Override
+  public Layer1Topology loadRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
+    return _storage.loadLayer1Topology(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
   }
 
   private Map<String, Configuration> convertConfigurations(
@@ -1251,58 +1218,77 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public FlowHistory getHistory() {
-    FlowHistory flowHistory = new FlowHistory();
-    if (_settings.getDiffQuestion()) {
-      String flowTag = getDifferentialFlowTag();
-      String baseEnvTag = getFlowTag(_baseTestrigSettings);
-      String deltaEnvTag = getFlowTag(_deltaTestrigSettings);
-      pushBaseSnapshot();
-      Environment baseEnv = getEnvironment();
-      populateFlowHistory(flowHistory, baseEnvTag, baseEnv, flowTag);
-      popSnapshot();
-      pushDeltaSnapshot();
-      Environment deltaEnv = getEnvironment();
-      populateFlowHistory(flowHistory, deltaEnvTag, deltaEnv, flowTag);
-      popSnapshot();
-    } else {
-      String flowTag = getFlowTag();
-      String envTag = flowTag;
-      Environment env = getEnvironment();
-      populateFlowHistory(flowHistory, envTag, env, flowTag);
-    }
-    _logger.debug(flowHistory.toString());
-    return flowHistory;
+  public FlowHistory flowHistory(Set<Flow> flows, boolean ignoreFilters) {
+    String envTag = getFlowTag();
+    Environment env = getEnvironment();
+    Map<Flow, Set<FlowTrace>> traces = getTracerouteEngine().processFlows(flows, ignoreFilters);
+    return FlowHistory.forTraces(envTag, env, traces);
   }
 
+  @Override
+  public FlowHistory differentialFlowHistory(Set<Flow> flows, boolean ignoreFilters) {
+    pushBaseSnapshot();
+    Environment baseEnv = getEnvironment();
+    Map<Flow, Set<FlowTrace>> baseTraces = getTracerouteEngine().processFlows(flows, ignoreFilters);
+    popSnapshot();
+    pushDeltaSnapshot();
+    Environment deltaEnv = getEnvironment();
+    Map<Flow, Set<FlowTrace>> deltaTraces = getTracerouteEngine().processFlows(flows, false);
+    popSnapshot();
+    String baseEnvTag = getFlowTag(_baseTestrigSettings);
+    String deltaEnvTag = getFlowTag(_deltaTestrigSettings);
+    return FlowHistory.forDifferentialTraces(
+        baseEnvTag, baseEnv, baseTraces, deltaEnvTag, deltaEnv, deltaTraces);
+  }
+
+  @Override
   @Nonnull
-  private SortedSet<Edge> getEdgeBlacklist() {
+  public SortedSet<Edge> getEdgeBlacklist(@Nonnull NetworkSnapshot networkSnapshot) {
     SortedSet<Edge> blacklistEdges =
-        _storage.loadEdgeBlacklist(_settings.getContainer(), _settings.getTestrig());
+        _storage.loadEdgeBlacklist(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
     if (blacklistEdges == null) {
       return Collections.emptySortedSet();
     }
     return blacklistEdges;
   }
 
+  @Override
   @Nonnull
-  private SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
+  public SortedSet<NodeInterfacePair> getInterfaceBlacklist(
+      @Nonnull NetworkSnapshot networkSnapshot) {
     SortedSet<NodeInterfacePair> blacklistInterfaces =
-        _storage.loadInterfaceBlacklist(_settings.getContainer(), _settings.getTestrig());
+        _storage.loadInterfaceBlacklist(
+            networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
     if (blacklistInterfaces == null) {
       return Collections.emptySortedSet();
     }
     return blacklistInterfaces;
   }
 
+  @Override
   @Nonnull
-  private SortedSet<String> getNodeBlacklist() {
+  public SortedSet<String> getNodeBlacklist(@Nonnull NetworkSnapshot networkSnapshot) {
     SortedSet<String> blacklistNodes =
-        _storage.loadNodeBlacklist(_settings.getContainer(), _settings.getTestrig());
+        _storage.loadNodeBlacklist(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
     if (blacklistNodes == null) {
       return Collections.emptySortedSet();
     }
     return blacklistNodes;
+  }
+
+  @Nonnull
+  private SortedSet<Edge> getEdgeBlacklist() {
+    return getEdgeBlacklist(getNetworkSnapshot());
+  }
+
+  @Nonnull
+  private SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
+    return getInterfaceBlacklist(getNetworkSnapshot());
+  }
+
+  @Nonnull
+  private SortedSet<String> getNodeBlacklist() {
+    return getNodeBlacklist(getNetworkSnapshot());
   }
 
   @Override
@@ -2158,9 +2144,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       String filename =
           _settings.getActiveTestrigSettings().getInputPath().relativize(currentFile).toString();
+      @Nullable
+      SpanContext parseVendorConfigurationSpanContext =
+          GlobalTracer.get().activeSpan() == null
+              ? null
+              : GlobalTracer.get().activeSpan().context();
+
       ParseVendorConfigurationJob job =
           new ParseVendorConfigurationJob(
-              _settings, fileText, filename, warnings, configurationFormat, duplicateHostnames);
+              _settings,
+              fileText,
+              filename,
+              warnings,
+              configurationFormat,
+              duplicateHostnames,
+              parseVendorConfigurationSpanContext);
       jobs.add(job);
     }
     BatfishJobExecutor.runJobsInExecutor(
@@ -2324,17 +2322,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
-    pushBaseSnapshot();
-    DataPlane baseDataPlane = loadDataPlane();
-    getDataPlanePlugin().processFlows(flows, baseDataPlane, false);
-    popSnapshot();
-    pushDeltaSnapshot();
-    DataPlane deltaDataPlane = loadDataPlane();
-    getDataPlanePlugin().processFlows(flows, deltaDataPlane, false);
-    popSnapshot();
-
-    AnswerElement answerElement = getHistory();
-    return answerElement;
+    return differentialFlowHistory(flows, false);
   }
 
   @Override
@@ -2359,21 +2347,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .addAll(portChannel.getChannelGroupMembers())
             .add(ifaceName)
             .build());
-  }
-
-  private void populateFlowHistory(
-      FlowHistory flowHistory, String envTag, Environment environment, String flowTag) {
-    DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
-    List<Flow> flows = dataPlanePlugin.getHistoryFlows(loadDataPlane());
-    List<FlowTrace> flowTraces = dataPlanePlugin.getHistoryFlowTraces(loadDataPlane());
-    int numEntries = flows.size();
-    for (int i = 0; i < numEntries; i++) {
-      Flow flow = flows.get(i);
-      if (flow.getTag().equals(flowTag)) {
-        FlowTrace flowTrace = flowTraces.get(i);
-        flowHistory.addFlowTrace(flow, envTag, environment, flowTrace);
-      }
-    }
   }
 
   private void postProcessAggregatedInterfaces(Map<String, Configuration> configurations) {
@@ -2526,12 +2499,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return advertSet;
   }
 
-  @Override
-  public void processFlows(Set<Flow> flows, boolean ignoreFilters) {
-    DataPlane dp = loadDataPlane();
-    getDataPlanePlugin().processFlows(flows, dp, ignoreFilters);
-  }
-
   /**
    * Builds the {@link Trace}s for a {@link Set} of {@link Flow}s
    *
@@ -2541,8 +2508,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreFilters) {
-    DataPlane dp = loadDataPlane();
-    return getDataPlanePlugin().buildFlows(flows, dp, ignoreFilters);
+    return getTracerouteEngine().computeTraces(flows, ignoreFilters);
+  }
+
+  @Override
+  public TracerouteEngine getTracerouteEngine() {
+    return new TracerouteEngineImpl(loadDataPlane());
   }
 
   /** Function that processes an interface blacklist across all configurations */
@@ -2571,7 +2542,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @VisibleForTesting
   static void processManagementInterfaces(Map<String, Configuration> configurations) {
-    configurations.values().stream()
+    configurations
+        .values()
         .forEach(
             configuration -> {
               for (Interface iface : configuration.getAllInterfaces().values()) {
@@ -2841,15 +2813,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
-    pushBaseSnapshot();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
-    popSnapshot();
-    pushDeltaSnapshot();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
-    popSnapshot();
-
-    AnswerElement answerElement = getHistory();
-    return answerElement;
+    return differentialFlowHistory(flows, false);
   }
 
   @Override
@@ -3016,6 +2980,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (_settings.getSerializeIndependent()) {
       Path inputPath = _testrigSettings.getSerializeVendorPath();
       answer.append(serializeIndependentConfigs(inputPath));
+      // TODO: compute topology on initialization in cleaner way
+      initializeTopology(getNetworkSnapshot());
+      updateSnapshotNodeRoles();
       action = true;
     }
 
@@ -3051,6 +3018,27 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throw new CleanBatfishException("No task performed! Run with -help flag to see usage\n");
     }
     return answer;
+  }
+
+  /** Initialize topologies, commit {raw, raw pojo, pruned} layer-3 topologies to storage. */
+  @VisibleForTesting
+  void initializeTopology(NetworkSnapshot networkSnapshot) {
+    Map<String, Configuration> configurations = loadConfigurations();
+    Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(networkSnapshot);
+    serializeAsJson(_testrigSettings.getTopologyPath(), rawLayer3Topology, "raw layer-3 topology");
+    checkTopology(configurations, rawLayer3Topology);
+    org.batfish.datamodel.pojo.Topology pojoTopology =
+        org.batfish.datamodel.pojo.Topology.create(
+            _settings.getSnapshotName(), configurations, rawLayer3Topology);
+    serializeAsJson(
+        _testrigSettings.getPojoTopologyPath(), pojoTopology, "raw layer-3 pojo topology");
+    Topology layer3Topology = _topologyProvider.getLayer3Topology(getNetworkSnapshot());
+    try {
+      _storage.storeTopology(
+          layer3Topology, networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
+    } catch (IOException e) {
+      throw new BatfishException("Could not serialize layer-3 topology", e);
+    }
   }
 
   public static void serializeAsJson(Path outputPath, Object object, String objectName) {
@@ -3217,22 +3205,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       answer.addAnswerElement(answerElement);
     }
     Map<String, Configuration> configurations = getConfigurations(vendorConfigPath, answerElement);
-    Topology testrigTopology = computeTestrigTopology(configurations);
-    serializeAsJson(_testrigSettings.getTopologyPath(), testrigTopology, "testrig topology");
-    checkTopology(configurations, testrigTopology);
-    org.batfish.datamodel.pojo.Topology pojoTopology =
-        org.batfish.datamodel.pojo.Topology.create(
-            _settings.getSnapshotName(), configurations, testrigTopology);
-    serializeAsJson(_testrigSettings.getPojoTopologyPath(), pojoTopology, "testrig pojo topology");
     _storage.storeConfigurations(
         configurations, answerElement, _settings.getContainer(), _testrigSettings.getName());
-
     postProcessSnapshot(configurations);
-    Topology envTopology = computeEnvironmentTopology(configurations);
-    serializeAsJson(
-        _testrigSettings.getSerializeTopologyPath(), envTopology, "environment topology");
-
-    updateSnapshotNodeRoles();
     return answer;
   }
 
@@ -3242,8 +3217,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SnapshotId snapshotId = _settings.getTestrig();
     NodeRolesId snapshotNodeRolesId = _idResolver.getSnapshotNodeRolesId(networkId, snapshotId);
     Set<String> nodeNames = loadConfigurations().keySet();
-    Topology envTopology = getEnvironmentTopology();
-    SortedSet<NodeRoleDimension> autoRoles = new InferRoles(nodeNames, envTopology).inferRoles();
+    Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(getNetworkSnapshot());
+    SortedSet<NodeRoleDimension> autoRoles =
+        new InferRoles(nodeNames, rawLayer3Topology).inferRoles();
     NodeRolesData.Builder snapshotNodeRoles = NodeRolesData.builder();
     try {
       if (!autoRoles.isEmpty()) {
@@ -3463,12 +3439,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // run jobs and get resulting flows
     Set<Flow> flows = computeNodOutput(jobs);
-
-    DataPlane dp = loadDataPlane();
-    getDataPlanePlugin().processFlows(flows, dp, false);
-
-    AnswerElement answerElement = getHistory();
-    return answerElement;
+    return flowHistory(flows, false);
   }
 
   /** Performs a difference reachFilters analysis (both increased and decreased reachability). */
@@ -3802,13 +3773,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 })
             .collect(ImmutableSet.toImmutableSet());
 
-    DataPlane dp = loadDataPlane();
-    if (_settings.debugFlagEnabled("oldtraceroute")) {
-      getDataPlanePlugin().processFlows(flows, dp, ignoreFilters);
-      return getHistory();
-    } else {
-      return new TraceWrapperAsAnswerElement(buildFlows(flows, ignoreFilters));
-    }
+    return _settings.debugFlagEnabled("oldtraceroute")
+        ? flowHistory(flows, ignoreFilters)
+        : new TraceWrapperAsAnswerElement(buildFlows(flows, ignoreFilters));
   }
 
   @Override

@@ -21,6 +21,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.Ip;
@@ -35,6 +36,7 @@ import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Environment;
@@ -107,8 +109,6 @@ public interface IBatfish extends IPluginConsumer {
 
   String getFlowTag();
 
-  FlowHistory getHistory();
-
   /** Get the configuration of the major issue type {@code majorIssueType} if its present */
   MajorIssueConfig getMajorIssueConfig(String majorIssueType);
 
@@ -120,6 +120,10 @@ public interface IBatfish extends IPluginConsumer {
 
   @Nonnull
   NetworkSnapshot getNetworkSnapshot();
+
+  FlowHistory flowHistory(Set<Flow> flows, boolean ignoreFilters);
+
+  FlowHistory differentialFlowHistory(Set<Flow> flows, boolean ignoreFilters);
 
   NodeRolesData getNodeRolesData();
 
@@ -183,7 +187,8 @@ public interface IBatfish extends IPluginConsumer {
 
   Set<BgpAdvertisement> loadExternalBgpAnnouncements(Map<String, Configuration> configurations);
 
-  void processFlows(Set<Flow> flows, boolean ignoreFilters);
+  /** @return a {@link TracerouteEngine} for the current snapshot. */
+  TracerouteEngine getTracerouteEngine();
 
   void pushBaseSnapshot();
 
@@ -252,4 +257,23 @@ public interface IBatfish extends IPluginConsumer {
 
   @Nullable
   String loadQuestionSettings(@Nonnull Question question);
+
+  /**
+   * Return the raw layer-1 physical topology provided by the user in the snapshot, or {@code null}
+   * if absent.
+   */
+  @Nullable
+  Layer1Topology loadRawLayer1PhysicalTopology(@Nonnull NetworkSnapshot networkSnapshot);
+
+  /** Returns edge blacklist for given snapshot or empty set if absent. */
+  @Nonnull
+  SortedSet<Edge> getEdgeBlacklist(@Nonnull NetworkSnapshot networkSnapshot);
+
+  /** Returns interface blacklist for given snapshot or empty set if absent. */
+  @Nonnull
+  SortedSet<NodeInterfacePair> getInterfaceBlacklist(@Nonnull NetworkSnapshot networkSnapshot);
+
+  /** Returns node blacklist for given snapshot or empty set if absent. */
+  @Nonnull
+  SortedSet<String> getNodeBlacklist(@Nonnull NetworkSnapshot networkSnapshot);
 }

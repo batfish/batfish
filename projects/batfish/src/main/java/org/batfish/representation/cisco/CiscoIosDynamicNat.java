@@ -27,7 +27,7 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 
-/** Representation of a Ciscio IOS dynamic NAT. */
+/** Representation of a Cisco IOS dynamic NAT. */
 public final class CiscoIosDynamicNat extends CiscoIosNat {
   private static final long serialVersionUID = 1L;
 

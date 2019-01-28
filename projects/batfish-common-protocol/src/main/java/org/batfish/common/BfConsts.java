@@ -49,7 +49,6 @@ public class BfConsts {
   public static final String ARG_DIFF_ACTIVE = "diffactive";
   public static final String ARG_DIFFERENTIAL = "differential";
   public static final String ARG_DISABLE_UNRECOGNIZED = "disableunrecognized";
-  public static final String ARG_ENABLE_CISCO_NX_PARSER = "enable_cisco_nx_parser";
   public static final String ARG_HALT_ON_CONVERT_ERROR = "haltonconverterror";
   public static final String ARG_HALT_ON_PARSE_ERROR = "haltonparseerror";
   public static final String ARG_IGNORE_FILES_WITH_STRINGS = "ignorefileswithstrings";
@@ -119,6 +118,7 @@ public class BfConsts {
   public static final String PROP_NUM_EXCLUDED_ROWS = "numExcludedRows";
   public static final String PROP_NUM_ROWS = "numRows";
   public static final String PROP_OPTIONAL = "optional";
+  public static final String PROP_ORDERED_VARIABLE_NAMES = "orderedVariableNames";
   public static final String PROP_QUESTION = "question";
   public static final String PROP_RESULTS = "results";
   public static final String PROP_REVERSED = "reversed";
@@ -179,7 +179,6 @@ public class BfConsts {
   public static final String RELPATH_SERIALIZED_ENVIRONMENT_ROUTING_TABLES = "rt_processed";
   public static final String RELPATH_SNAPSHOTS_DIR = "snapshots";
   public static final String RELPATH_SYNC_TESTRIGS_DIR = "testrig_sync";
-  public static final String RELPATH_TESTRIG_LEGACY_TOPOLOGY_PATH = "topology.net";
   public static final String RELPATH_TESTRIG_TOPOLOGY_PATH = "testrig_topology";
   public static final String RELPATH_VALIDATE_SNAPSHOT_ANSWER = "venv_answer";
   public static final String RELPATH_COMPRESSED_CONFIG_DIR = "compressed_configs";

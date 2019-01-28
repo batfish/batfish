@@ -10,10 +10,12 @@ import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BO
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
+import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4_UNICAST;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
@@ -21,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -41,7 +44,9 @@ import org.apache.commons.collections4.list.TreeList;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AuthenticationKey;
 import org.batfish.datamodel.AuthenticationKeyChain;
@@ -81,6 +86,8 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Route6FilterList;
@@ -96,9 +103,11 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
+import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
@@ -113,14 +122,19 @@ import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.DisjunctionChain;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLength;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.PrefixExpr;
+import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
@@ -134,11 +148,19 @@ import org.batfish.vendor.VendorConfiguration;
 
 public final class JuniperConfiguration extends VendorConfiguration {
 
+  public static final String ACL_NAME_COMBINED_INCOMING = "~COMBINED_INCOMING_FILTER~";
+
   public static final String ACL_NAME_COMBINED_OUTGOING = "~COMBINED_OUTGOING_FILTER~";
 
   public static final String ACL_NAME_EXISTING_CONNECTION = "~EXISTING_CONNECTION~";
 
   public static final String ACL_NAME_GLOBAL_POLICY = "~GLOBAL_SECURITY_POLICY~";
+
+  public static final String ACL_NAME_SCREEN = "~SCREEN~";
+
+  public static final String ACL_NAME_SCREEN_INTERFACE = "~SCREEN_INTERFACE~";
+
+  public static final String ACL_NAME_SCREEN_ZONE = "~SCREEN_ZONE~";
 
   public static final String ACL_NAME_SECURITY_POLICY = "~SECURITY_POLICIES_TO~";
 
@@ -162,6 +184,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private static final String DEFAULT_BGP_EXPORT_POLICY_NAME = "~DEFAULT_BGP_EXPORT_POLICY~";
 
   private static final String DEFAULT_BGP_IMPORT_POLICY_NAME = "~DEFAULT_BGP_IMPORT_POLICY~";
+
+  private static final String DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY_NAME =
+      "~DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY~";
+
+  private static final Map<RoutingProtocol, String> DEFAULT_IMPORT_POLICIES =
+      ImmutableMap.<RoutingProtocol, String>builder()
+          .put(RoutingProtocol.CONNECTED, DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY_NAME)
+          .put(RoutingProtocol.LOCAL, DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY_NAME)
+          .put(RoutingProtocol.AGGREGATE, DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY_NAME)
+          .put(RoutingProtocol.STATIC, DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY_NAME)
+          .put(RoutingProtocol.BGP, DEFAULT_BGP_IMPORT_POLICY_NAME)
+          .put(RoutingProtocol.IBGP, DEFAULT_BGP_IMPORT_POLICY_NAME)
+          .build();
 
   @VisibleForTesting static final int DEFAULT_ISIS_COST = 10;
 
@@ -270,6 +305,27 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (IpBgpGroup ig : routingInstance.getIpBgpGroups().values()) {
       ig.cascadeInheritance();
     }
+
+    /*
+     * For new BGP advertisements, i.e. those that are created from non-BGP
+     * routes, an origin code must be set. By default, Juniper sets the origin
+     * code to IGP.
+     */
+    If setOriginForNonBgp =
+        new If(
+            new Disjunction(
+                ImmutableList.of(
+                    new MatchProtocol(RoutingProtocol.BGP),
+                    new MatchProtocol(RoutingProtocol.IBGP))),
+            ImmutableList.of(),
+            ImmutableList.of(new SetOrigin(new LiteralOrigin(OriginType.IGP, null))));
+
+    /*
+     * Juniper allows setting BGP communities for static routes. Rather than add communities to VI
+     * routes, add statements to peer export policies that set the appropriate communities.
+     */
+    List<If> staticRouteCommunitySetters = getStaticRouteCommunitySetters(routingInstance);
+
     for (Entry<Prefix, IpBgpGroup> e : routingInstance.getIpBgpGroups().entrySet()) {
       Prefix prefix = e.getKey();
       IpBgpGroup ig = e.getValue();
@@ -389,6 +445,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
           .getFalseStatements()
           .add(Statements.ExitReject.toStaticStatement());
 
+      // Apply rib groups
+      if (ig.getRibGroup() != null) {
+        neighbor.setAppliedRibGroup(
+            toRibGroup(
+                _masterLogicalSystem.getRibGroups().get(ig.getRibGroup()),
+                ig.getType() == BgpGroupType.INTERNAL ? RoutingProtocol.IBGP : RoutingProtocol.BGP,
+                _c,
+                routingInstance.getName(),
+                _w));
+      }
+
       // export policies
       String peerExportPolicyName = computePeerExportPolicyName(ig.getRemoteAddress());
       neighbor.setExportPolicy(peerExportPolicyName);
@@ -397,20 +464,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       peerExportPolicy.getStatements().add(new SetDefaultPolicy(DEFAULT_BGP_EXPORT_POLICY_NAME));
       applyLocalRoutePolicy(routingInstance, peerExportPolicy);
 
-      /*
-       * For new BGP advertisements, i.e. those that are created from non-BGP
-       * routes, an origin code must be set. By default, Juniper sets the origin
-       * code to IGP.
-       */
-      If setOriginForNonBgp = new If();
-      Disjunction isBgp = new Disjunction();
-      isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.BGP));
-      isBgp.getDisjuncts().add(new MatchProtocol(RoutingProtocol.IBGP));
-      setOriginForNonBgp.setGuard(isBgp);
-      setOriginForNonBgp
-          .getFalseStatements()
-          .add(new SetOrigin(new LiteralOrigin(OriginType.IGP, null)));
+      // Add route modifier statements
       peerExportPolicy.getStatements().add(setOriginForNonBgp);
+      peerExportPolicy.getStatements().addAll(staticRouteCommunitySetters);
+
       List<BooleanExpr> exportPolicyCalls = new ArrayList<>();
       ig.getExportPolicies()
           .forEach(
@@ -522,6 +579,34 @@ public final class JuniperConfiguration extends VendorConfiguration {
     proc.setMultipathEquivalentAsPathMatchMode(multipathEquivalentAsPathMatchMode);
 
     return proc;
+  }
+
+  /**
+   * For each static route in the given {@link RoutingInstance} that has at least one community set,
+   * creates an {@link If} that matches that route (specifically, matches static routes with that
+   * route's destination network), and sets communities for matching exported routes.
+   */
+  @Nonnull
+  private static List<If> getStaticRouteCommunitySetters(@Nonnull RoutingInstance ri) {
+    MatchProtocol matchStatic = new MatchProtocol(RoutingProtocol.STATIC);
+    return ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getStaticRoutes().values()
+        .stream()
+        .filter(route -> !route.getCommunities().isEmpty())
+        .map(
+            route -> {
+              // Create matcher that matches routes that share this route's destination network
+              PrefixExpr destNetworkMatcher = DestinationNetwork.instance();
+              PrefixSetExpr destNetwork =
+                  new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(route.getPrefix())));
+              MatchPrefixSet networkMatcher = new MatchPrefixSet(destNetworkMatcher, destNetwork);
+
+              // When a matching static route is exported, set its communities
+              return new If(
+                  new Conjunction(ImmutableList.of(matchStatic, networkMatcher)),
+                  ImmutableList.of(
+                      new SetCommunity(new LiteralCommunitySet(route.getCommunities()))));
+            })
+        .collect(ImmutableList.toImmutableList());
   }
 
   public static String computePeerExportPolicyName(Prefix remoteAddress) {
@@ -820,6 +905,28 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return _allStandardCommunities;
   }
 
+  /**
+   * Generate a {@link RoutingPolicy} for use when importing routes from pseudo-protocols (direct,
+   * static, aggregate, generated)
+   */
+  @VisibleForTesting
+  static RoutingPolicy generateDefaultPseudoProtocolImportPolicy(@Nonnull Configuration c) {
+    return RoutingPolicy.builder()
+        .setOwner(c)
+        .setName(DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY_NAME)
+        .setStatements(
+            ImmutableList.of(
+                new If(
+                    new Disjunction(
+                        new MatchProtocol(RoutingProtocol.CONNECTED),
+                        new MatchProtocol(RoutingProtocol.LOCAL),
+                        new MatchProtocol(RoutingProtocol.STATIC),
+                        new MatchProtocol(RoutingProtocol.AGGREGATE)),
+                    ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+                    ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))))
+        .build();
+  }
+
   public Map<String, NodeDevice> getNodeDevices() {
     return _nodeDevices;
   }
@@ -855,6 +962,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
     RoutingPolicy defaultBgpImportPolicy = new RoutingPolicy(DEFAULT_BGP_IMPORT_POLICY_NAME, _c);
     _c.getRoutingPolicies().put(DEFAULT_BGP_IMPORT_POLICY_NAME, defaultBgpImportPolicy);
     PsThenAccept.INSTANCE.applyTo(defaultBgpImportPolicy.getStatements(), this, _c, _w);
+  }
+
+  /**
+   * Initialize default pseudo-protocol import policy (if it does not exist) in the
+   * vendor-independent {@link Configuration}.
+   *
+   * @return the name of the initialized policy
+   */
+  private void initDefaultPseudoProtocolImportPolicy() {
+    if (_c.getRoutingPolicies().containsKey(DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY_NAME)) {
+      return;
+    }
+    generateDefaultPseudoProtocolImportPolicy(_c);
   }
 
   private void initFirstLoopbackInterface() {
@@ -952,7 +1072,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.GeneratedRoute toGeneratedRoute(GeneratedRoute route) {
     org.batfish.datamodel.GeneratedRoute.Builder newRoute =
-        new org.batfish.datamodel.GeneratedRoute.Builder();
+        org.batfish.datamodel.GeneratedRoute.builder();
 
     newRoute.setGenerationPolicy(computeGenerationPolicy(route));
     newRoute.setAdmin(route.getPreference());
@@ -973,7 +1093,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.GeneratedRoute toAggregateRoute(AggregateRoute route) {
     org.batfish.datamodel.GeneratedRoute.Builder newRoute =
-        new org.batfish.datamodel.GeneratedRoute.Builder();
+        org.batfish.datamodel.GeneratedRoute.builder();
 
     newRoute.setGenerationPolicy(computeGenerationPolicy(route));
     newRoute.setAdmin(route.getPreference());
@@ -1094,7 +1214,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         new org.batfish.datamodel.RouteFilterLine(
             LineAction.PERMIT, prefix, new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH)));
     org.batfish.datamodel.GeneratedRoute.Builder newRoute =
-        new org.batfish.datamodel.GeneratedRoute.Builder();
+        org.batfish.datamodel.GeneratedRoute.builder();
     newRoute.setNetwork(prefix);
     newRoute.setAdmin(
         RoutingProtocol.OSPF_IA.getDefaultAdministrativeCost(ConfigurationFormat.JUNIPER));
@@ -1216,12 +1336,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
         newIface.setInboundFilter(zoneInboundFilterList);
       }
     }
+
     String inAclName = iface.getIncomingFilter();
     if (inAclName != null) {
       IpAccessList inAcl = _c.getIpAccessLists().get(inAclName);
       if (inAcl != null) {
         FirewallFilter inFilter = _masterLogicalSystem.getFirewallFilters().get(inAclName);
-        newIface.setIncomingFilter(inAcl);
         if (inFilter.getRoutingPolicy()) {
           RoutingPolicy routingPolicy = _c.getRoutingPolicies().get(inAclName);
           if (routingPolicy != null) {
@@ -1232,11 +1352,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
         }
       }
     }
+    IpAccessList composedInAcl = buildIncomingFilter(iface);
+    newIface.setIncomingFilter(composedInAcl);
 
     newIface.setIncomingTransformation(buildIncomingTransformation(iface));
 
     // Assume the config will need security policies only if it has zones
-    IpAccessList securityPolicyAcl = null;
+    IpAccessList securityPolicyAcl;
     if (!_masterLogicalSystem.getZones().isEmpty()) {
       String securityPolicyAclName = ACL_NAME_SECURITY_POLICY + iface.getName();
       securityPolicyAcl = buildSecurityPolicyAcl(securityPolicyAclName, zone);
@@ -1273,21 +1395,22 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newIface.setAllAddresses(iface.getAllAddresses());
     newIface.setActive(iface.getActive());
     if (iface.getSwitchportMode() == SwitchportMode.ACCESS && iface.getAccessVlan() != null) {
-      Vlan vlan = _masterLogicalSystem.getVlanNameToVlan().get(iface.getAccessVlan());
+      Vlan vlan = _masterLogicalSystem.getNamedVlans().get(iface.getAccessVlan());
       if (vlan != null) {
         newIface.setAccessVlan(vlan.getVlanId());
       }
     }
-    List<SubRange> vlanIds =
-        Stream.concat(
-                iface.getAllowedVlanNames().stream()
-                    .map(n -> _masterLogicalSystem.getVlanNameToVlan().get(n))
-                    .filter(Objects::nonNull)
-                    .map(Vlan::getVlanId)
-                    .map(SubRange::new),
-                iface.getAllowedVlans().stream())
-            .collect(Collectors.toList());
-    newIface.setAllowedVlans(IntegerSpace.unionOf(vlanIds));
+    IntegerSpace.Builder vlanIdsBuilder = IntegerSpace.builder();
+    Stream.concat(
+            iface.getAllowedVlanNames().stream()
+                .map(_masterLogicalSystem.getNamedVlans()::get)
+                .filter(Objects::nonNull) // named vlan must exist
+                .map(Vlan::getVlanId)
+                .filter(Objects::nonNull) // named vlan must have assigned numeric id
+                .map(SubRange::new),
+            iface.getAllowedVlans().stream())
+        .forEach(vlanIdsBuilder::including);
+    newIface.setAllowedVlans(vlanIdsBuilder.build());
 
     if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
       newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
@@ -1341,7 +1464,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
       transformation =
           ruleSet
               .toOutgoingTransformation(
-                  SOURCE_NAT, SOURCE, pools, matchFromLocationExprs, null, transformation)
+                  SOURCE_NAT,
+                  SOURCE,
+                  pools,
+                  iface.getPrimaryAddress().getIp(),
+                  matchFromLocationExprs,
+                  null,
+                  transformation)
               .orElse(transformation);
     }
     return transformation;
@@ -1387,6 +1516,111 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return builder.build();
   }
 
+  @Nullable
+  @VisibleForTesting
+  static IpAccessList buildScreen(@Nullable Screen screen, String aclName) {
+    if (screen == null || screen.getAction() == ScreenAction.ALARM_WITHOUT_DROP) {
+      return null;
+    }
+
+    List<AclLineMatchExpr> matches =
+        screen.getScreenOptions().stream()
+            .map(ScreenOption::getAclLineMatchExpr)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
+    if (matches.isEmpty()) {
+      return null;
+    }
+
+    return IpAccessList.builder()
+        .setName(aclName)
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.rejecting(new OrMatchExpr(matches)), IpAccessListLine.ACCEPT_ALL))
+        .build();
+  }
+
+  @Nullable
+  @VisibleForTesting
+  IpAccessList buildScreensPerZone(@Nonnull Zone zone, String aclName) {
+    List<AclLineMatchExpr> matches =
+        zone.getScreens().stream()
+            .map(
+                screenName -> {
+                  Screen screen = _masterLogicalSystem.getScreens().get(screenName);
+                  String screenAclName = ACL_NAME_SCREEN + screenName;
+                  IpAccessList screenAcl =
+                      _c.getIpAccessLists()
+                          .computeIfAbsent(screenAclName, x -> buildScreen(screen, screenAclName));
+                  return screenAcl != null ? new PermittedByAcl(screenAcl.getName(), false) : null;
+                })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
+    return matches.isEmpty()
+        ? null
+        : IpAccessList.builder()
+            .setName(aclName)
+            .setLines(ImmutableList.of(IpAccessListLine.accepting(new AndMatchExpr(matches))))
+            .build();
+  }
+
+  @Nullable
+  @VisibleForTesting
+  IpAccessList buildScreensPerInterface(Interface iface) {
+    Zone zone = _masterLogicalSystem.getInterfaceZones().get(iface.getName());
+    if (zone == null) {
+      return null;
+    }
+
+    // build a acl for each zone
+    String zoneAclName = ACL_NAME_SCREEN_ZONE + zone.getName();
+    IpAccessList zoneAcl =
+        _c.getIpAccessLists()
+            .computeIfAbsent(zoneAclName, x -> buildScreensPerZone(zone, zoneAclName));
+
+    return zoneAcl == null
+        ? null
+        : IpAccessList.builder()
+            .setName(ACL_NAME_SCREEN_INTERFACE + iface.getName())
+            .setLines(ImmutableList.of(IpAccessListLine.accepting(new PermittedByAcl(zoneAclName))))
+            .build();
+  }
+
+  @Nullable
+  IpAccessList buildIncomingFilter(Interface iface) {
+    String screenAclName = ACL_NAME_SCREEN_INTERFACE + iface.getName();
+    IpAccessList screenAcl =
+        _c.getIpAccessLists().computeIfAbsent(screenAclName, x -> buildScreensPerInterface(iface));
+    // merge screen options to incoming filter
+    // but keep both originial filters in the config, so we can run search filter queris on them
+    String inAclName = iface.getIncomingFilter();
+    IpAccessList inAcl = inAclName != null ? _c.getIpAccessLists().get(inAclName) : null;
+
+    Set<AclLineMatchExpr> aclConjunctList;
+    if (screenAcl == null) {
+      return inAcl;
+    } else if (inAcl == null) {
+      aclConjunctList = ImmutableSet.of(new PermittedByAcl(screenAcl.getName(), false));
+    } else {
+      aclConjunctList =
+          ImmutableSet.of(
+              new PermittedByAcl(screenAcl.getName(), false), new PermittedByAcl(inAclName, false));
+    }
+
+    String combinedAclName = ACL_NAME_COMBINED_INCOMING + iface.getName();
+    IpAccessList combinedAcl =
+        IpAccessList.builder()
+            .setName(combinedAclName)
+            .setLines(
+                ImmutableList.of(IpAccessListLine.accepting(new AndMatchExpr(aclConjunctList))))
+            .build();
+
+    _c.getIpAccessLists().put(combinedAclName, combinedAcl);
+    return combinedAcl;
+  }
+
   private Transformation buildIncomingTransformation(Interface iface) {
     Nat dnat = _masterLogicalSystem.getNatDestination();
     if (dnat == null) {
@@ -1426,7 +1660,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .collect(Collectors.toList())) {
       transformation =
           ruleSet
-              .toIncomingTransformation(DEST_NAT, DESTINATION, pools, null, transformation)
+              .toIncomingTransformation(
+                  DEST_NAT,
+                  DESTINATION,
+                  pools,
+                  iface.getPrimaryAddress().getIp(),
+                  null,
+                  transformation)
               .orElse(transformation);
     }
     return transformation;
@@ -1672,6 +1912,83 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return ipSpaces;
   }
 
+  @Nonnull
+  private static org.batfish.datamodel.dataplane.rib.RibGroup toRibGroup(
+      RibGroup rg, RoutingProtocol protocol, Configuration c, String vrfName, Warnings w) {
+    ImmutableList<RibId> importRibs =
+        rg.getImportRibs().stream()
+            .map(rib -> toRibId(c.getHostname(), rib, w))
+            .filter(Objects::nonNull)
+            // Filter out the primary rib for this rib group, since it's special and bypasses the
+            // policy
+            .filter(
+                rib ->
+                    !(rib.getRibName().equals(RibId.DEFAULT_RIB_NAME)
+                        && rib.getVrfName().equals(vrfName)))
+            .collect(ImmutableList.toImmutableList());
+
+    RibId exportRib =
+        rg.getExportRib() != null ? toRibId(c.getHostname(), rg.getExportRib(), w) : null;
+    List<BooleanExpr> policyCalls =
+        rg.getImportPolicies().stream().map(CallExpr::new).collect(ImmutableList.toImmutableList());
+
+    String policyName = generateRibGroupImportPolicyName(rg, protocol);
+    RoutingPolicy.builder()
+        .setOwner(c)
+        .setName(policyName)
+        .setStatements(
+            ImmutableList.of(
+                // Add default policy
+                new SetDefaultPolicy(DEFAULT_IMPORT_POLICIES.get(protocol)),
+                // Construct a policy chain based on defined import policies
+                new If(
+                    new DisjunctionChain(policyCalls),
+                    ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+                    ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))))
+        .build();
+    return new org.batfish.datamodel.dataplane.rib.RibGroup(
+        rg.getName(), importRibs, policyName, exportRib);
+  }
+
+  private static String generateRibGroupImportPolicyName(RibGroup rg, RoutingProtocol protocol) {
+    return String.format("~RIB_GROUP_IMPORT_POLICY_%s_%s", rg.getName(), protocol);
+  }
+
+  @VisibleForTesting
+  @Nullable
+  static RibId toRibId(String hostname, String rib, @Nullable Warnings w) {
+    String[] parts = rib.split("\\.");
+    if (parts.length < 2 || parts.length > 3) {
+      throw new VendorConversionException(String.format("Invalid RIB identifier %s", rib));
+    }
+    String vrfName;
+    String addressFamily;
+    String ribNumber;
+    if (parts.length == 3) {
+      vrfName = parts[0];
+      addressFamily = parts[1];
+      ribNumber = parts[2];
+    } else { // length == 2
+      vrfName = Configuration.DEFAULT_VRF_NAME;
+      addressFamily = parts[0];
+      ribNumber = parts[1];
+    }
+
+    String ribName = addressFamily + "." + ribNumber;
+    // Normalize the common case into vendor-independent language
+    if (ribName.equals(RIB_IPV4_UNICAST)) {
+      ribName = RibId.DEFAULT_RIB_NAME;
+    }
+
+    // We only support IPv4 unicast
+    if (!addressFamily.equals("inet") && w != null) {
+      w.unimplemented(
+          String.format("Rib name conversion: %s address family is not supported", addressFamily));
+      return null;
+    }
+    return new RibId(hostname, vrfName, ribName);
+  }
+
   private RoutingPolicy toRoutingPolicy(FirewallFilter filter) {
     String name = filter.getName();
     RoutingPolicy routingPolicy = new RoutingPolicy(name, _c);
@@ -1915,27 +2232,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.StaticRoute toStaticRoute(StaticRoute route) {
-    Ip nextHopIp = route.getNextHopIp();
-    if (nextHopIp == null) {
-      nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
-    }
     String nextHopInterface =
         route.getDrop()
             ? org.batfish.datamodel.Interface.NULL_INTERFACE_NAME
             : route.getNextHopInterface();
-    int tag = route.getTag() != null ? route.getTag() : -1;
 
-    org.batfish.datamodel.StaticRoute newStaticRoute =
-        org.batfish.datamodel.StaticRoute.builder()
-            .setNetwork(route.getPrefix())
-            .setNextHopIp(nextHopIp)
-            .setNextHopInterface(nextHopInterface)
-            .setAdministrativeCost(route.getDistance())
-            .setMetric(route.getMetric())
-            .setTag(tag)
-            .setNonForwarding(firstNonNull(route.getNoInstall(), Boolean.FALSE))
-            .build();
-    return newStaticRoute;
+    return org.batfish.datamodel.StaticRoute.builder()
+        .setNetwork(route.getPrefix())
+        .setNextHopIp(firstNonNull(route.getNextHopIp(), Route.UNSET_ROUTE_NEXT_HOP_IP))
+        .setNextHopInterface(nextHopInterface)
+        .setAdministrativeCost(route.getDistance())
+        .setMetric(route.getMetric())
+        .setTag(firstNonNull(route.getTag(), AbstractRoute.NO_TAG))
+        .setNonForwarding(firstNonNull(route.getNoInstall(), Boolean.FALSE))
+        .build();
   }
 
   @Override
@@ -2034,8 +2344,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem.getRoutingInstances().putAll(ls.getRoutingInstances());
     // TODO: something with syslog hosts?
     // TODO: something with tacplus servers?
-    _masterLogicalSystem.getVlanNameToVlan().clear();
-    _masterLogicalSystem.getVlanNameToVlan().putAll(ls.getVlanNameToVlan());
+    _masterLogicalSystem.getNamedVlans().clear();
+    _masterLogicalSystem.getNamedVlans().putAll(ls.getNamedVlans());
     _masterLogicalSystem.getZones().clear();
     _masterLogicalSystem.getZones().putAll(ls.getZones());
 
@@ -2346,15 +2656,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
 
       // static routes
-      for (StaticRoute route :
-          ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getStaticRoutes().values()) {
+      for (StaticRoute route : ri.getRibs().get(RIB_IPV4_UNICAST).getStaticRoutes().values()) {
         org.batfish.datamodel.StaticRoute newStaticRoute = toStaticRoute(route);
         vrf.getStaticRoutes().add(newStaticRoute);
       }
 
       // aggregate routes
       for (AggregateRoute route :
-          ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getAggregateRoutes().values()) {
+          ri.getRibs().get(RIB_IPV4_UNICAST).getAggregateRoutes().values()) {
         route.inheritUnsetFields(ri.getAggregateRouteDefaults());
         org.batfish.datamodel.GeneratedRoute newAggregateRoute = toAggregateRoute(route);
         vrf.getGeneratedRoutes().add(newAggregateRoute);
@@ -2362,11 +2671,33 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       // generated routes
       for (GeneratedRoute route :
-          ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getGeneratedRoutes().values()) {
+          ri.getRibs().get(RIB_IPV4_UNICAST).getGeneratedRoutes().values()) {
         route.inheritUnsetFields(ri.getGeneratedRouteDefaults());
         org.batfish.datamodel.GeneratedRoute newGeneratedRoute = toGeneratedRoute(route);
         vrf.getGeneratedRoutes().add(newGeneratedRoute);
       }
+
+      /*
+       * RIB groups applied to each protocol.
+       *
+       * 1. ensure default import policies exist
+       * 2. convert VS rib groups to VI rib groups on a per-protocol basis
+       */
+      if (!ri.getAppliedRibGroups().isEmpty()) {
+        initDefaultImportPolicies();
+      }
+      vrf.setAppliedRibGroups(
+          ri.getAppliedRibGroups().entrySet().stream()
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      Entry::getKey, // protocol
+                      rgEntry ->
+                          toRibGroup(
+                              _masterLogicalSystem.getRibGroups().get(rgEntry.getValue()),
+                              rgEntry.getKey(),
+                              _c,
+                              riName,
+                              _w))));
 
       // create ospf process
       if (ri.getOspfAreas().size() > 0) {
@@ -2520,7 +2851,33 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return _c;
   }
 
+  /** Initialize default protocol-specific import policies */
+  private void initDefaultImportPolicies() {
+    initDefaultBgpImportPolicy();
+    initDefaultPseudoProtocolImportPolicy();
+  }
+
   private void convertInterfaces() {
+    // Set IRB vlan IDs by resolving l3-interface from named VLANs.
+    // If more than one named vlan refers to a given l3-interface, we just keep the first assignment
+    // and warn.
+    Map<String, Integer> irbVlanIds = new HashMap<>();
+    for (Vlan vlan : _masterLogicalSystem.getNamedVlans().values()) {
+      Integer vlanId = vlan.getVlanId();
+      String l3Interface = vlan.getL3Interface();
+      if (l3Interface == null || vlanId == null) {
+        continue;
+      }
+      if (irbVlanIds.containsKey(l3Interface)) {
+        _w.redFlag(
+            String.format(
+                "Cannot assign '%s' as the l3-interface of vlan '%s' since it is already assigned to vlan '%s'",
+                l3Interface, vlanId, irbVlanIds.get(l3Interface)));
+        continue;
+      }
+      irbVlanIds.put(l3Interface, vlanId);
+    }
+
     // Get a stream of all interfaces (including Node interfaces)
     Stream.concat(
             _masterLogicalSystem.getInterfaces().values().stream(),
@@ -2548,8 +2905,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
                       unit -> {
                         unit.inheritUnsetFields();
                         org.batfish.datamodel.Interface newUnitInterface = toInterface(unit);
-                        newUnitInterface.addDependency(
-                            new Dependency(newParentIface.getName(), DependencyType.BIND));
+                        String name = newUnitInterface.getName();
+                        // set IRB VLAN ID if assigned
+                        newUnitInterface.setVlan(irbVlanIds.get(name));
+
+                        // Don't create bind dependency for 'irb.XXX' interfcaes, since there isn't
+                        // really an 'irb' interface
+                        if (!name.startsWith("irb")) {
+                          newUnitInterface.addDependency(
+                              new Dependency(newParentIface.getName(), DependencyType.BIND));
+                        }
                         resolveInterfacePointers(unit.getName(), unit, newUnitInterface);
                       });
             });
@@ -2619,11 +2984,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
   /** Ensure that the interface is placed in VI {@link Configuration} and {@link Vrf} */
   private void resolveInterfacePointers(
       String ifaceName, Interface iface, org.batfish.datamodel.Interface viIface) {
-    _c.getAllInterfaces().put(ifaceName, viIface);
     Vrf vrf = viIface.getVrf();
     String vrfName = vrf.getName();
-    vrf.getInterfaces().put(ifaceName, viIface);
     _masterLogicalSystem.getRoutingInstances().get(vrfName).getInterfaces().put(ifaceName, iface);
+    if (ifaceName.equals("irb")) {
+      // there is no 'irb' interface; it is just a namespace with no inheritable parameters
+      return;
+    }
+    _c.getAllInterfaces().put(ifaceName, viIface);
+    vrf.getInterfaces().put(ifaceName, viIface);
   }
 
   private org.batfish.datamodel.Zone toZone(Zone zone) {

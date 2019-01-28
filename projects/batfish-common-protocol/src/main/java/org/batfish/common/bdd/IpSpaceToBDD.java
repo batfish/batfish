@@ -1,8 +1,8 @@
 package org.batfish.common.bdd;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -159,8 +159,7 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   @Override
   public BDD visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
     String name = ipSpaceReference.getName();
-    Preconditions.checkArgument(
-        _namedIpSpaceBDDs.containsKey(name), "Undefined IpSpace reference: %s", name);
+    checkArgument(_namedIpSpaceBDDs.containsKey(name), "Undefined IpSpace reference: %s", name);
     try {
       return _namedIpSpaceBDDs.get(name).get();
     } catch (NonRecursiveSupplierException e) {

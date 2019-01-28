@@ -40,6 +40,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String DECLARED_NAMES = "Declared_Names";
   public static final String DESCRIPTION = "Description";
   public static final String DHCP_RELAY_ADDRESSES = "DHCP_Relay_Addresses";
+  public static final String ENCAPSULATION_VLAN = "Encapsulation_VLAN";
   public static final String HSRP_GROUPS = "HSRP_Groups";
   public static final String HSRP_VERSION = "HSRP_Version";
   public static final String INCOMING_FILTER_NAME = "Incoming_Filter_Name";
@@ -94,6 +95,9 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               DHCP_RELAY_ADDRESSES,
               new PropertyDescriptor<>(Interface::getDhcpRelayAddresses, Schema.list(Schema.IP)))
+          .put(
+              ENCAPSULATION_VLAN,
+              new PropertyDescriptor<>(Interface::getEncapsulationVlan, Schema.INTEGER))
           .put(
               HSRP_GROUPS,
               new PropertyDescriptor<>(Interface::getHsrpGroups, Schema.set(Schema.STRING)))

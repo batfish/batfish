@@ -17,7 +17,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_groups_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
-import org.batfish.main.PartialGroupMatchException;
 import org.batfish.main.UndefinedGroupBatfishException;
 
 public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
@@ -103,8 +102,7 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
   @Override
   public void enterFlat_juniper_configuration(Flat_juniper_configurationContext ctx) {
     _configurationContext = ctx;
-    _newConfigurationLines = new ArrayList<>();
-    _newConfigurationLines.addAll(ctx.children);
+    _newConfigurationLines = new ArrayList<>(ctx.children);
   }
 
   @Override

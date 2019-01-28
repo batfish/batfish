@@ -6,8 +6,8 @@ import static org.batfish.common.CoordConsts.DEFAULT_API_KEY;
 import static org.batfish.common.CoordConsts.SVC_CFG_WORK_MGR2;
 import static org.batfish.common.CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY;
 import static org.batfish.common.CoordConstsV2.HTTP_HEADER_BATFISH_VERSION;
-import static org.batfish.common.CoordConstsV2.RSC_CONTAINERS;
 import static org.batfish.common.CoordConstsV2.RSC_ISSUES;
+import static org.batfish.common.CoordConstsV2.RSC_NETWORKS;
 import static org.batfish.common.CoordConstsV2.RSC_SETTINGS;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
@@ -32,7 +32,7 @@ public class IssueConfigResourceTest extends WorkMgrServiceV2TestBase {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Before
-  public void initContainerEnvironment() throws Exception {
+  public void initTestEnvironment() throws Exception {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
@@ -48,7 +48,7 @@ public class IssueConfigResourceTest extends WorkMgrServiceV2TestBase {
 
   private Builder getIssueConfigTarget(String network, String major, String minor) {
     return target(SVC_CFG_WORK_MGR2)
-        .path(RSC_CONTAINERS)
+        .path(RSC_NETWORKS)
         .path(network)
         .path(RSC_SETTINGS)
         .path(RSC_ISSUES)
@@ -61,7 +61,7 @@ public class IssueConfigResourceTest extends WorkMgrServiceV2TestBase {
 
   private Builder getIssueSettingsTarget(String network) {
     return target(SVC_CFG_WORK_MGR2)
-        .path(RSC_CONTAINERS)
+        .path(RSC_NETWORKS)
         .path(network)
         .path(RSC_SETTINGS)
         .path(RSC_ISSUES)
