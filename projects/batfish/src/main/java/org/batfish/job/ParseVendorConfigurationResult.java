@@ -94,6 +94,7 @@ public class ParseVendorConfigurationResult
       BatfishLogger logger,
       ParseVendorConfigurationAnswerElement answerElement) {
     appendHistory(logger);
+    answerElement.getParseStatus().put(_filename, _status);
     if (_vc != null) {
       String hostname = _vc.getHostname();
       if (vendorConfigurations.containsKey(hostname)) {
@@ -124,10 +125,7 @@ public class ParseVendorConfigurationResult
       if (!_parseTree.isEmpty()) {
         answerElement.getParseTrees().put(hostname, _parseTree);
       }
-      answerElement.getParseStatus().put(_filename, _status);
-
     } else {
-      answerElement.getParseStatus().put(_filename, _status);
       if (_status == ParseStatus.FAILED) {
         assert _failureCause != null; // status == FAILED, failureCause must be non-null
         answerElement
