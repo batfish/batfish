@@ -75,8 +75,8 @@ public class StaticRoute extends AbstractRoute {
         && getNonForwarding() == rhs.getNonForwarding()
         && getNonRouting() == rhs.getNonRouting()
         && _metric == rhs._metric
-        && Objects.equals(_nextHopIp, rhs._nextHopIp)
         && Objects.equals(_nextHopInterface, rhs._nextHopInterface)
+        && Objects.equals(_nextHopIp, rhs._nextHopIp)
         && _tag == rhs._tag;
   }
 
@@ -149,8 +149,8 @@ public class StaticRoute extends AbstractRoute {
         .setNonRouting(getNonRouting())
         .setNonForwarding(getNonForwarding())
         .setMetric(_metric)
-        .setNextHopIp(_nextHopIp)
         .setNextHopInterface(_nextHopInterface)
+        .setNextHopIp(_nextHopIp)
         .setTag(_tag);
   }
 
