@@ -22,7 +22,7 @@ public class ParseVendorConfigurationResult
 
   private final String _filename;
 
-  private ParseTreeSentences _parseTree;
+  @Nonnull private ParseTreeSentences _parseTree;
 
   private final ParseStatus _status;
 
@@ -38,6 +38,7 @@ public class ParseVendorConfigurationResult
       @Nonnull Throwable failureCause) {
     super(elapsedTime, history, failureCause);
     _filename = filename;
+    _parseTree = new ParseTreeSentences();
     _status = ParseStatus.FAILED;
     _warnings = warnings;
   }
@@ -48,7 +49,7 @@ public class ParseVendorConfigurationResult
       String filename,
       VendorConfiguration vc,
       Warnings warnings,
-      ParseTreeSentences parseTree,
+      @Nonnull ParseTreeSentences parseTree,
       @Nonnull Multimap<String, String> duplicateHostnames) {
     super(elapsedTime, history);
     _filename = filename;
@@ -68,6 +69,7 @@ public class ParseVendorConfigurationResult
       ParseStatus status) {
     super(elapsedTime, history);
     _filename = filename;
+    _parseTree = new ParseTreeSentences();
     _status = status;
     _warnings = warnings;
   }

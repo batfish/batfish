@@ -333,6 +333,50 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     return vc;
   }
 
+  private ParseResult parse() {
+    ConfigurationFormat format = detectFormat(_fileText, _settings, _format);
+
+    // Handle specially some cases that will not produce a vendor configuration file.
+    if (format == ConfigurationFormat.EMPTY) {
+      _warnings.redFlag("Empty file: '" + _filename + "'\n");
+      return new ParseResult(null, null, _ptSentences, ParseStatus.EMPTY, _warnings);
+    } else if (format == ConfigurationFormat.IGNORED) {
+      _warnings.redFlag("Ignored file: " + _filename + "\n");
+      return new ParseResult(null, null, _ptSentences, ParseStatus.IGNORED, _warnings);
+    } else if (format == ConfigurationFormat.UNKNOWN) {
+      _warnings.redFlag("Unable to detect format for file: '" + _filename + "'\n");
+      return new ParseResult(null, null, _ptSentences, ParseStatus.UNKNOWN, _warnings);
+    } else if (UNIMPLEMENTED_FORMATS.contains(format)) {
+      String unsupportedError =
+          "Unsupported configuration format: '" + format + "' for file: '" + _filename + "'\n";
+      if (!_settings.ignoreUnsupported()) {
+        return new ParseResult(
+            null,
+            new BatfishException(unsupportedError),
+            _ptSentences,
+            ParseStatus.FAILED,
+            _warnings);
+      }
+      _warnings.redFlag(unsupportedError);
+      return new ParseResult(null, null, _ptSentences, ParseStatus.UNSUPPORTED, _warnings);
+    }
+
+    try {
+      // Actually parse the file.
+      VendorConfiguration vc = parseFile(format);
+      ParseStatus status =
+          vc.getUnrecognized() ? ParseStatus.PARTIALLY_UNRECOGNIZED : ParseStatus.PASSED;
+      return new ParseResult(vc, null, _ptSentences, status, _warnings);
+    } catch (Exception e) {
+      return new ParseResult(
+          null,
+          new BatfishException("Error parsing configuration file: '" + _filename + "'"),
+          _ptSentences,
+          ParseStatus.FAILED,
+          _warnings);
+    }
+  }
+
   @Override
   public ParseVendorConfigurationResult call() {
     try (ActiveSpan span =
@@ -342,74 +386,30 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             .startActive()) {
       assert span != null; // avoid unused warning
 
-      long startTime = System.currentTimeMillis();
       _logger.infof("Processing: '%s'\n", _filename);
+      long startTime = System.currentTimeMillis();
+      ParseResult result = parse();
+      long elapsed = System.currentTimeMillis() - startTime;
 
-      ConfigurationFormat format = detectFormat(_fileText, _settings, _format);
-
-      // Handle specially some cases that will not produce a vendor configuration file.
-      if (format == ConfigurationFormat.EMPTY) {
-        _warnings.redFlag("Empty file: '" + _filename + "'\n");
+      if (result.getConfig() != null) {
         return new ParseVendorConfigurationResult(
-            System.currentTimeMillis() - startTime,
+            elapsed,
             _logger.getHistory(),
             _filename,
-            _warnings,
-            ParseStatus.EMPTY);
-      } else if (format == ConfigurationFormat.IGNORED) {
-        _warnings.redFlag("Ignored file: " + _filename + "\n");
-        return new ParseVendorConfigurationResult(
-            System.currentTimeMillis() - startTime,
-            _logger.getHistory(),
-            _filename,
-            _warnings,
-            ParseStatus.IGNORED);
-      } else if (format == ConfigurationFormat.UNKNOWN) {
-        _warnings.redFlag("Unable to detect format for file: '" + _filename + "'\n");
-        return new ParseVendorConfigurationResult(
-            System.currentTimeMillis() - startTime,
-            _logger.getHistory(),
-            _filename,
-            _warnings,
-            ParseStatus.UNKNOWN);
-      } else if (UNIMPLEMENTED_FORMATS.contains(format)) {
-        String unsupportedError =
-            "Unsupported configuration format: '" + format + "' for file: '" + _filename + "'\n";
-        if (!_settings.ignoreUnsupported()) {
-          return new ParseVendorConfigurationResult(
-              System.currentTimeMillis() - startTime,
-              _logger.getHistory(),
-              _filename,
-              _warnings,
-              new BatfishException(unsupportedError));
-        }
-        _warnings.redFlag(unsupportedError);
-        return new ParseVendorConfigurationResult(
-            System.currentTimeMillis() - startTime,
-            _logger.getHistory(),
-            _filename,
-            _warnings,
-            ParseStatus.UNSUPPORTED);
-      }
-
-      try {
-        // Actually parse the file.
-        VendorConfiguration vc = parseFile(format);
-        return new ParseVendorConfigurationResult(
-            System.currentTimeMillis() - startTime,
-            _logger.getHistory(),
-            _filename,
-            vc,
-            _warnings,
-            _ptSentences,
+            result.getConfig(),
+            result.getWarnings(),
+            result.getParseTreeSentences(),
             _duplicateHostnames);
-      } catch (Exception e) {
+      } else if (result.getFailureCause() != null) {
         return new ParseVendorConfigurationResult(
-            System.currentTimeMillis() - startTime,
+            elapsed,
             _logger.getHistory(),
             _filename,
-            _warnings,
-            new BatfishException("Error parsing configuration file: '" + _filename + "'"));
+            result.getWarnings(),
+            result.getFailureCause());
+      } else {
+        return new ParseVendorConfigurationResult(
+            elapsed, _logger.getHistory(), _filename, result.getWarnings(), result.getStatus());
       }
     }
   }
