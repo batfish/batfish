@@ -68,20 +68,26 @@ public final class IpProtocolSpecifierTest {
         equalTo(ImmutableSet.of("89 (ospf), 118 (STP)", "89 (ospf), 18 (MUX)")));
 
     // trailing comma followed by a space should match with all IpProtocols
+    String trailingCommaQuery = "89 (ospf), ";
     assertThat(
-        IpProtocolSpecifier.autoComplete("89 (ospf), ").stream()
-            .map(AutocompleteSuggestion::getText)
-            .collect(Collectors.toSet())
-            .size(),
-        equalTo(IpProtocol.values().length));
-
-    // trailing comma followed by no space should return one suggestion containing everything before
-    // the comma
-    assertThat(
-        IpProtocolSpecifier.autoComplete("89 (ospf),").stream()
+        IpProtocolSpecifier.autoComplete(trailingCommaQuery).stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of("89 (OSPF)")));
+        equalTo(
+            IpProtocolSpecifier.COMPLETIONS.stream()
+                .map(suggestion -> trailingCommaQuery + suggestion)
+                .collect(Collectors.toSet())));
+
+    // trailing comma followed by no space should match with all IpProtocols
+    String noTrailingCommaQuery = "89 (ospf),";
+    assertThat(
+        IpProtocolSpecifier.autoComplete(noTrailingCommaQuery).stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(
+            IpProtocolSpecifier.COMPLETIONS.stream()
+                .map(suggestion -> noTrailingCommaQuery + " " + suggestion)
+                .collect(Collectors.toSet())));
   }
 
   @Test

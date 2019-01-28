@@ -34,7 +34,7 @@ public class IpProtocolSpecifier {
 
   private static final Pattern UNNAMED_PATTERN = Pattern.compile("UNNAMED.*");
 
-  private static final Set<String> COMPLETIONS;
+  @VisibleForTesting static final Set<String> COMPLETIONS;
 
   static {
     COMPLETIONS =
@@ -148,6 +148,11 @@ public class IpProtocolSpecifier {
    * </pre>
    */
   public static List<AutocompleteSuggestion> autoComplete(String query) {
+    // if query ends with a comma, add a space to trigger new search suggestions
+    if (query.endsWith(",")) {
+      query += " ";
+    }
+
     // take out any commas
     String[] atoms = query.split(",");
 
