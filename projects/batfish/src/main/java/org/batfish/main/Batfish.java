@@ -2067,7 +2067,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private SortedMap<String, VendorConfiguration> parseVendorConfigurations(
       Map<Path, String> configurationData,
       ParseVendorConfigurationAnswerElement answerElement,
-      ConfigurationFormat configurationFormat) {
+      ConfigurationFormat seedFormat) {
     _logger.info("\n*** PARSING VENDOR CONFIGURATION FILES ***\n");
     _logger.resetTimer();
     SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
@@ -2094,7 +2094,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               fileText,
               filename,
               warnings,
-              configurationFormat,
+              seedFormat,
               duplicateHostnames,
               parseVendorConfigurationSpanContext);
       jobs.add(job);
