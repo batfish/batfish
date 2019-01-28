@@ -135,7 +135,7 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
   private static final String getFpModuleName() {
     int major = Version.getMajor();
     int minor = Version.getMinor();
-    if (major >= 4 || (major == 4 && minor >= 8)) {
+    if (major > 4 || (major == 4 && minor >= 8)) {
       return "fp";
     } else {
       return "fixedpoint";
