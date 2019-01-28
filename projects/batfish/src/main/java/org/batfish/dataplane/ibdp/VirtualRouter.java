@@ -277,7 +277,12 @@ public class VirtualRouter implements Serializable {
     for (RouteAdvertisement<D> r : delta.getActions()) {
       // REPLACE does not make sense across routers, update with WITHDRAW
       Reason reason = r.getReason() == Reason.REPLACE ? Reason.WITHDRAW : r.getReason();
-      queue.add(new RouteAdvertisement<>(r.getRoute(), r.isWithdrawn(), reason));
+      queue.add(
+          RouteAdvertisement.<R>builder()
+              .setRoute(r.getRoute())
+              .setReason(reason)
+              .setWithdraw(r.isWithdrawn())
+              .build());
     }
   }
 
@@ -2055,11 +2060,15 @@ public class VirtualRouter implements Serializable {
                             session);
                     return transformedRoute == null
                         ? null
-                        : new RouteAdvertisement<>(
-                            // REPLACE does not make sense across routers, update with WITHDRAW
-                            transformedRoute,
-                            adv.isWithdrawn(),
-                            adv.getReason() == Reason.REPLACE ? Reason.WITHDRAW : adv.getReason());
+                        // REPLACE does not make sense across routers, update with WITHDRAW
+                        : RouteAdvertisement.<BgpRoute>builder()
+                            .setReason(
+                                adv.getReason() == Reason.REPLACE
+                                    ? Reason.WITHDRAW
+                                    : adv.getReason())
+                            .setWithdraw(adv.isWithdrawn())
+                            .setRoute(transformedRoute)
+                            .build();
                   })
               .filter(Objects::nonNull)
               .collect(ImmutableSet.toImmutableSet());
