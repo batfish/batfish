@@ -11,6 +11,7 @@ import com.microsoft.z3.Fixedpoint;
 import com.microsoft.z3.FuncDecl;
 import com.microsoft.z3.Params;
 import com.microsoft.z3.Status;
+import com.microsoft.z3.Version;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -131,6 +132,16 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
     return flowBuilder.build();
   }
 
+  private static final String getFpModuleName() {
+    int major = Version.getMajor();
+    int minor = Version.getMinor();
+    if (major > 4 || (major == 4 && minor >= 8)) {
+      return "fp";
+    } else {
+      return "fixedpoint";
+    }
+  }
+
   public Z3ContextJob(Settings settings) {
     super(settings);
   }
@@ -209,12 +220,13 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
   }
 
   protected Fixedpoint mkFixedpoint(NodProgram program, boolean printAnswer) {
+    String fpModuleName = getFpModuleName();
     Context ctx = program.getNodContext().getContext();
     Params p = ctx.mkParams();
     p.add("timeout", _settings.getZ3timeout());
-    p.add("fixedpoint.engine", "datalog");
-    p.add("fixedpoint.datalog.default_relation", "doc");
-    p.add("fixedpoint.print_answer", printAnswer);
+    p.add(String.format("%s.engine", fpModuleName), "datalog");
+    p.add(String.format("%s.datalog.default_relation", fpModuleName), "doc");
+    p.add(String.format("%s.print_answer", fpModuleName), printAnswer);
     Fixedpoint fix = ctx.mkFixedpoint();
     fix.setParameters(p);
     for (FuncDecl relationDeclaration :
