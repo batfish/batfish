@@ -2,11 +2,11 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.common.collect.ImmutableList;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+/** Utility class to create an {@link IpSpace} including all IPs between two given IPs. */
 @ParametersAreNonnullByDefault
 public final class IpRange {
 
@@ -14,13 +14,13 @@ public final class IpRange {
    * Adds all prefixes contained in the IP range between {@code lowIp} and {@code highIp}
    * (inclusive) to the given {@link Prefix} list.
    */
-  private static void collectPrefixes(Ip lowIp, Ip highIp, List<Prefix> prefixes) {
+  private static void collectPrefixes(Ip lowIp, Ip highIp, ImmutableList.Builder<Prefix> prefixes) {
     long low = lowIp.asLong();
     long high = highIp.asLong();
 
     // If IPs are the same, just add /32 prefix
     if (low == high) {
-      prefixes.add(Prefix.create(lowIp, 32));
+      prefixes.add(Prefix.create(lowIp, Prefix.MAX_PREFIX_LENGTH));
       return;
     }
 
@@ -34,7 +34,7 @@ public final class IpRange {
     long ip1BitsAfterCursor = low & mask;
     long ip2BitsAfterCursor = high & mask;
     if (ip1BitsAfterCursor == 0 && ip2BitsAfterCursor == mask) {
-      prefixes.add(Prefix.create(lowIp, 31 - cursor));
+      prefixes.add(Prefix.create(lowIp, Prefix.MAX_PREFIX_LENGTH - 1 - cursor));
     } else {
       // Upper bound in first recursion is lowIp with everything after the cursor replaced with 1s;
       // lower bound in second recursion is highIp with everything after the cursor replaced with 0s
@@ -53,12 +53,11 @@ public final class IpRange {
         "Invalid range: low IP must be <= high IP, but received low=%s and high=%s",
         low,
         high);
-
-    List<Prefix> prefixes = new ArrayList<>();
+    ImmutableList.Builder<Prefix> prefixes = ImmutableList.builder();
     collectPrefixes(low, high, prefixes);
-    AclIpSpace.Builder ipSpaceBuilder = AclIpSpace.builder();
-    prefixes.forEach(p -> ipSpaceBuilder.thenPermitting(new PrefixIpSpace(p)));
-    return ipSpaceBuilder.build();
+    return AclIpSpace.builder()
+        .thenPermitting(prefixes.build().stream().map(Prefix::toIpSpace))
+        .build();
   }
 
   private IpRange() {}
