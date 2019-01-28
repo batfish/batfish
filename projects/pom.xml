@@ -89,7 +89,7 @@
     <slf4j.version>1.7.25</slf4j.version>
     <sqlite-jdbc.version>3.25.2</sqlite-jdbc.version>
     <xstream.version>1.4.7</xstream.version>
-    <z3.version>2018-01-12-450f3c9b459d128135abb5bbd4fa0508fe26bfae</z3.version>
+    <z3.version>2019-01-26-be61a26452735dfe62b14ddb4804ca5df0526dcf</z3.version>
 
     <!--
       Annotation paths for Eclipse. The Eclipse workspace must first have the M2_REPO classpath variable configured.
