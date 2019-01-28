@@ -1,4 +1,4 @@
-package org.batfish.main;
+package org.batfish.grammar.flatjuniper;
 
 public class PartialGroupMatchException extends RuntimeException {
 
