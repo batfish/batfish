@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -9,8 +10,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /** A static route */
+@ParametersAreNonnullByDefault
 public class StaticRoute extends AbstractRoute {
 
   static final long DEFAULT_STATIC_ROUTE_METRIC = 0L;
@@ -21,6 +24,8 @@ public class StaticRoute extends AbstractRoute {
   @Nonnull private final String _nextHopInterface;
   @Nonnull private final Ip _nextHopIp;
   private final int _tag;
+
+  private transient volatile int _hashcode = 0;
 
   @JsonCreator
   private static StaticRoute jsonCreator(
@@ -58,20 +63,38 @@ public class StaticRoute extends AbstractRoute {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (o == this) {
       return true;
     } else if (!(o instanceof StaticRoute)) {
       return false;
     }
     StaticRoute rhs = (StaticRoute) o;
-    return _admin == rhs._admin
-        && _tag == rhs._tag
+    return Objects.equals(_network, rhs._network)
+        && _admin == rhs._admin
         && getNonForwarding() == rhs.getNonForwarding()
         && getNonRouting() == rhs.getNonRouting()
-        && Objects.equals(_network, rhs._network)
+        && _metric == rhs._metric
+        && Objects.equals(_nextHopInterface, rhs._nextHopInterface)
         && Objects.equals(_nextHopIp, rhs._nextHopIp)
-        && Objects.equals(_nextHopInterface, rhs._nextHopInterface);
+        && _tag == rhs._tag;
+  }
+
+  @Override
+  public int hashCode() {
+    if (_hashcode == 0) {
+      _hashcode =
+          Objects.hash(
+              _network,
+              _admin,
+              getNonForwarding(),
+              getNonRouting(),
+              _metric,
+              _nextHopInterface,
+              _nextHopIp,
+              _tag);
+    }
+    return _hashcode;
   }
 
   @Override
@@ -114,43 +137,45 @@ public class StaticRoute extends AbstractRoute {
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(
-        _admin,
-        getNonForwarding(),
-        getNonRouting(),
-        _metric,
-        _network,
-        _nextHopInterface,
-        _nextHopIp,
-        _tag);
-  }
-
-  @Override
-  public int routeCompare(@Nonnull AbstractRoute rhs) {
+  public int routeCompare(AbstractRoute rhs) {
     return 0;
   }
 
   @Override
-  public AbstractRouteBuilder<?, ?> toBuilder() {
-    throw new UnsupportedOperationException();
+  public Builder toBuilder() {
+    return builder()
+        .setNetwork(getNetwork())
+        .setAdmin(getAdministrativeCost())
+        .setNonRouting(getNonRouting())
+        .setNonForwarding(getNonForwarding())
+        .setMetric(_metric)
+        .setNextHopInterface(_nextHopInterface)
+        .setNextHopIp(_nextHopIp)
+        .setTag(_tag);
   }
 
   /** Builder for {@link StaticRoute} */
+  @ParametersAreNonnullByDefault
   public static final class Builder extends AbstractRouteBuilder<Builder, StaticRoute> {
 
-    private int _administrativeCost = Route.UNSET_ROUTE_ADMIN;
     private String _nextHopInterface = Route.UNSET_NEXT_HOP_INTERFACE;
 
-    private Builder() {}
+    private Builder() {
+      // Tmp hack until parent builder is fixed and doesn't default to primitives
+      setAdmin(Route.UNSET_ROUTE_ADMIN);
+    }
 
     @Override
     public StaticRoute build() {
+      checkArgument(
+          getAdmin() != Route.UNSET_ROUTE_ADMIN,
+          "Static route cannot have unset %s",
+          PROP_ADMINISTRATIVE_COST);
       return new StaticRoute(
           getNetwork(),
           getNextHopIp(),
           _nextHopInterface,
-          _administrativeCost,
+          getAdmin(),
           getMetric(),
           getTag(),
           getNonForwarding(),
@@ -163,11 +188,12 @@ public class StaticRoute extends AbstractRoute {
     }
 
     public Builder setAdministrativeCost(int administrativeCost) {
-      _administrativeCost = administrativeCost;
+      // Call method on parent builder. Keep backwards-compatible API.
+      setAdmin(administrativeCost);
       return this;
     }
 
-    public Builder setNextHopInterface(String nextHopInterface) {
+    public Builder setNextHopInterface(@Nullable String nextHopInterface) {
       _nextHopInterface = nextHopInterface;
       return this;
     }
