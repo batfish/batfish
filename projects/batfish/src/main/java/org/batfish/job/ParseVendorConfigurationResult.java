@@ -124,11 +124,7 @@ public class ParseVendorConfigurationResult
       if (!_parseTree.isEmpty()) {
         answerElement.getParseTrees().put(hostname, _parseTree);
       }
-      if (_vc.getUnrecognized()) {
-        answerElement.getParseStatus().put(_filename, ParseStatus.PARTIALLY_UNRECOGNIZED);
-      } else {
-        answerElement.getParseStatus().put(_filename, ParseStatus.PASSED);
-      }
+      answerElement.getParseStatus().put(_filename, _status);
 
     } else {
       answerElement.getParseStatus().put(_filename, _status);
