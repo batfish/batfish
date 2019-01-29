@@ -572,9 +572,16 @@ public class VirtualRouterTest {
     VirtualRouter.queueDelta(q, builder.build());
 
     // Check queuing order.
-    // Note: contains compains about generics, do manual remove/check
+    // Note: contains complains about generics, do manual remove/check
     assertThat(q.remove(), equalTo(new RouteAdvertisement<>(sr1)));
-    assertThat(q.remove(), equalTo(new RouteAdvertisement<>(sr2, true, Reason.WITHDRAW)));
+    assertThat(
+        q.remove(),
+        equalTo(
+            RouteAdvertisement.builder()
+                .setRoute(sr2)
+                .setWithdraw(true)
+                .setReason(Reason.WITHDRAW)
+                .build()));
     assertThat(q, empty());
   }
 
