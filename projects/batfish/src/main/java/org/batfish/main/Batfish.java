@@ -6,6 +6,7 @@ import static com.google.common.base.Verify.verify;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
+import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.common.util.CompletionMetadataUtils.getAddressBooks;
 import static org.batfish.common.util.CompletionMetadataUtils.getAddressGroups;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
@@ -429,7 +430,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return tree;
   }
 
-  private final Map<String, BiFunction<Question, IBatfish, Answerer>> _answererCreators;
+  private final Map<String, AnswererCreator> _answererCreators;
 
   private TestrigSettings _baseTestrigSettings;
 
@@ -1113,7 +1114,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Deprecated
   @Override
   public Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators() {
-    return _answererCreators;
+    return toImmutableMap(_answererCreators, Entry::getKey, entry -> entry.getValue()::create);
   }
 
   public TestrigSettings getBaseTestrigSettings() {
@@ -2821,11 +2822,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String questionName,
       String questionClassName,
       BiFunction<Question, IBatfish, Answerer> answererCreator) {
-    checkArgument(
-        !_answererCreators.containsKey(questionName),
-        "questionName %s already exists",
-        questionName);
-    _answererCreators.put(questionName, answererCreator);
+    if (_answererCreators.containsKey(questionName)) {
+      // Error: questionName collision.
+      String oldQuestionClassName = _answererCreators.get(questionClassName).getQuestionClassName();
+      throw new IllegalArgumentException(
+          String.format(
+              "questionName %s already exists.\n"
+                  + "  old questionClassName: %s\n"
+                  + "  new questionClassName: %s",
+              questionName, oldQuestionClassName, questionClassName));
+    }
+    _answererCreators.put(questionName, new AnswererCreator(questionClassName, answererCreator));
   }
 
   @Override
@@ -4155,7 +4162,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public @Nullable Answerer createAnswerer(@Nonnull Question question) {
-    BiFunction<Question, IBatfish, Answerer> creator = _answererCreators.get(question.getName());
-    return creator != null ? creator.apply(question, this) : null;
+    AnswererCreator creator = _answererCreators.get(question.getName());
+    return creator != null ? creator.create(question, this) : null;
   }
 }
