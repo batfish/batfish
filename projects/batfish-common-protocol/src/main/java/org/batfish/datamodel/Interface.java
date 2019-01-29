@@ -58,7 +58,7 @@ public final class Interface extends ComparableStructure<String> {
 
     private String _hsrpVersion;
 
-    private FirewallSessionInfo _firewallSessionInfo;
+    private FirewallSessionInterfaceInfo _firewallSessionInterfaceInfo;
 
     private IpAccessList _incomingFilter;
 
@@ -128,7 +128,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setEncapsulationVlan(_encapsulationVlan);
       iface.setHsrpGroups(_hsrpGroups);
       iface.setHsrpVersion(_hsrpVersion);
-      iface.setFirewallSessionInfo(_firewallSessionInfo);
+      iface.setFirewallSessionInterfaceInfo(_firewallSessionInterfaceInfo);
       iface.setIncomingFilter(_incomingFilter);
       iface.setIncomingTransformation(_incomingTransformation);
       iface.setIsis(_isis);
@@ -251,8 +251,9 @@ public final class Interface extends ComparableStructure<String> {
       return this;
     }
 
-    public Builder setFirewallSessionInfo(@Nullable FirewallSessionInfo firewallSessionInfo) {
-      _firewallSessionInfo = firewallSessionInfo;
+    public Builder setFirewallSessionInterfaceInfo(
+        @Nullable FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
+      _firewallSessionInterfaceInfo = firewallSessionInterfaceInfo;
       return this;
     }
 
@@ -459,7 +460,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_ENCAPSULATION_VLAN = "encapsulationVlan";
 
-  private static final String PROP_FIREWALL_SESSION_INFO = "firewallSessionInfo";
+  private static final String PROP_FIREWALL_SESSION_INTERFACE_INFO = "firewallSessionInterfaceInfo";
 
   private static final String PROP_HSRP_GROUPS = "hsrpGroups";
 
@@ -743,7 +744,7 @@ public final class Interface extends ComparableStructure<String> {
 
   @Nullable private Integer _encapsulationVlan;
 
-  @Nullable private FirewallSessionInfo _firewallSessionInfo;
+  @Nullable private FirewallSessionInterfaceInfo _firewallSessionInterfaceInfo;
 
   private Map<Integer, HsrpGroup> _hsrpGroups;
 
@@ -1054,6 +1055,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_ENCAPSULATION_VLAN)
   public @Nullable Integer getEncapsulationVlan() {
     return _encapsulationVlan;
+  }
+
+  @JsonProperty(PROP_FIREWALL_SESSION_INTERFACE_INFO)
+  public @Nullable FirewallSessionInterfaceInfo getFirewallSessionInterfaceInfo() {
+    return _firewallSessionInterfaceInfo;
   }
 
   /** Mapping: hsrpGroupID -&gt; HsrpGroup */
@@ -1462,9 +1468,10 @@ public final class Interface extends ComparableStructure<String> {
     _encapsulationVlan = encapsulationVlan;
   }
 
-  @JsonProperty(PROP_FIREWALL_SESSION_INFO)
-  public void setFirewallSessionInfo(@Nullable FirewallSessionInfo firewallSessionInfo) {
-    _firewallSessionInfo = firewallSessionInfo;
+  @JsonProperty(PROP_FIREWALL_SESSION_INTERFACE_INFO)
+  public void setFirewallSessionInterfaceInfo(
+      @Nullable FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
+    _firewallSessionInterfaceInfo = firewallSessionInterfaceInfo;
   }
 
   @JsonProperty(PROP_HSRP_GROUPS)

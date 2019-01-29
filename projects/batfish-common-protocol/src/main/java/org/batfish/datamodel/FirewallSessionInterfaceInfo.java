@@ -16,7 +16,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * sessions are needed for bidirectional traceroute and reachability, specifically for return flows.
  */
 @ParametersAreNonnullByDefault
-public final class FirewallSessionInfo implements Serializable {
+public final class FirewallSessionInterfaceInfo implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_SESSION_INTERFACES = "sessionInterfaces";
@@ -27,7 +27,7 @@ public final class FirewallSessionInfo implements Serializable {
   private final @Nullable String _incomingAclName;
   private final @Nullable String _outgoingAclName;
 
-  public FirewallSessionInfo(
+  public FirewallSessionInterfaceInfo(
       Iterable<String> sessionInterfaces,
       @Nullable String incomingAclName,
       @Nullable String outgoingAclName) {
@@ -37,12 +37,12 @@ public final class FirewallSessionInfo implements Serializable {
   }
 
   @JsonCreator
-  private static FirewallSessionInfo jsonCreator(
+  private static FirewallSessionInterfaceInfo jsonCreator(
       @JsonProperty(PROP_SESSION_INTERFACES) @Nullable Set<String> sessionIntefaces,
       @JsonProperty(PROP_INCOMING_ACL_NAME) @Nullable String incomingAclName,
       @JsonProperty(PROP_OUTGOING_ACL_NAME) @Nullable String outgoingAclName) {
     checkNotNull(sessionIntefaces, PROP_SESSION_INTERFACES + " cannot be null");
-    return new FirewallSessionInfo(sessionIntefaces, incomingAclName, outgoingAclName);
+    return new FirewallSessionInterfaceInfo(sessionIntefaces, incomingAclName, outgoingAclName);
   }
 
   /** The set of interfaces through which return flows can enter. */
