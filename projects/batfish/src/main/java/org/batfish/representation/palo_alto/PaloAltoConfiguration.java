@@ -33,6 +33,7 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
@@ -403,8 +404,8 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       case IP_PREFIX:
         return Prefix.parse(endpoint.getValue()).toIpSpace();
       case IP_RANGE:
-        _w.redFlag("IP range is not currently implemented");
-        return null;
+        String[] ips = endpoint.getValue().split("-");
+        return IpRange.range(Ip.parse(ips[0]), Ip.parse(ips[1]));
       case ADDRESS_OBJECT:
         return vsys.getAddressObjects().get(endpoint.getValue()).getIpSpace();
       case ADDRESS_GROUP:

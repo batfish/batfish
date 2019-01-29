@@ -72,6 +72,7 @@ import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -239,15 +240,36 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testAddressObjectGroupReferenceInRule() throws IOException {
+    String hostname = "address-object-group-inheritance";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    String objectName = computeObjectName(DEFAULT_VSYS_NAME, "11.11.11.11");
+    String groupName = computeObjectName(DEFAULT_VSYS_NAME, "22.22.22.22");
+
+    assertThat(
+        ccae, hasNumReferrers(filename, PaloAltoStructureType.ADDRESS_OBJECT, objectName, 2));
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ADDRESS_GROUP, groupName, 1));
+  }
+
+  @Test
   public void testAddressObjects() throws IOException {
     PaloAltoConfiguration c = parsePaloAltoConfig("address-objects");
 
     Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
     Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
 
-    // there are three address objects defined in the file, including the empty one
+    // there are four address objects defined in the file, including the empty one
     assertThat(
-        vsys.getAddressObjects().keySet(), equalTo(ImmutableSet.of("addr1", "addr2", "addr3")));
+        vsys.getAddressObjects().keySet(),
+        equalTo(ImmutableSet.of("addr0", "addr1", "addr2", "addr3")));
+
+    // check that we parse the name-only object right
+    assertThat(addressObjects.get("addr0").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
 
     // check that we parsed description and prefix right
     assertThat(
@@ -257,14 +279,44 @@ public class PaloAltoGrammarTest {
     // check that we parse the IP address right
     assertThat(addressObjects.get("addr2").getIpSpace(), equalTo(Ip.parse("10.1.1.2").toIpSpace()));
 
-    // check that we parse the IP address right
-    assertThat(addressObjects.get("addr3").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
+    // check that we parse the IP range right
+    assertThat(
+        addressObjects.get("addr3").getIpSpace(),
+        equalTo(IpRange.range(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2"))));
 
     // check that ip spaces were inserted properly
     Configuration viConfig = c.toVendorIndependentConfigurations().get(0);
+    assertThat(viConfig, hasIpSpace("addr0", equalTo(addressObjects.get("addr0").getIpSpace())));
     assertThat(viConfig, hasIpSpace("addr1", equalTo(addressObjects.get("addr1").getIpSpace())));
     assertThat(viConfig, hasIpSpace("addr2", equalTo(addressObjects.get("addr2").getIpSpace())));
     assertThat(viConfig, hasIpSpace("addr3", equalTo(addressObjects.get("addr3").getIpSpace())));
+  }
+
+  @Test
+  public void testAddressObjectReference() throws IOException {
+    // addr1 is not referenced
+    String hostname1 = "address-objects";
+    String filename1 = "configs/" + hostname1;
+
+    // addr1 is referenced by two groups
+    String hostname2 = "address-groups";
+    String filename2 = "configs/" + hostname2;
+
+    String name = computeObjectName(DEFAULT_VSYS_NAME, "addr1");
+
+    // Confirm reference count is correct for used structure
+    Batfish batfish1 = getBatfishForConfigurationNames(hostname1);
+    ConvertConfigurationAnswerElement ccae1 =
+        batfish1.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ccae1, hasNumReferrers(filename1, PaloAltoStructureType.ADDRESS_OBJECT, name, 0));
+
+    Batfish batfish2 = getBatfishForConfigurationNames(hostname2);
+    ConvertConfigurationAnswerElement ccae2 =
+        batfish2.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm reference count is correct for used structure
+    assertThat(ccae2, hasNumReferrers(filename2, PaloAltoStructureType.ADDRESS_OBJECT, name, 2));
   }
 
   @Test
@@ -607,6 +659,22 @@ public class PaloAltoGrammarTest {
     // Confirm unzoned flows are rejected by default
     assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(noZoneToZ1, if3name, c))));
     assertThat(c, hasInterface(if3name, hasOutgoingFilter(rejects(z1ToNoZone, if1name, c))));
+  }
+
+  @Test
+  public void testRulebaseIprange() throws IOException {
+    String hostname = "rulebase-iprange";
+    Configuration c = parseConfig(hostname);
+
+    String if1name = "ethernet1/1";
+    String if2name = "ethernet1/2";
+
+    // rule1: 11.11.11.11 should be allowed but 11.11.11.13 shouldn't be
+    Flow rule1Permitted = createFlow("11.11.11.11", "33.33.33.33");
+    Flow rule1Denied = createFlow("11.11.11.13", "33.33.33.33");
+
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(rule1Permitted, if2name, c))));
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(rule1Denied, if2name, c))));
   }
 
   @Test

@@ -43,6 +43,7 @@ import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
@@ -324,8 +325,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     } else if (ctx.IP_PREFIX() != null) {
       return new RuleEndpoint(RuleEndpoint.Type.IP_PREFIX, text);
     } else if (ctx.ip_range() != null) {
-      _w.redFlag("IP range is not currently supported: " + getFullText(ctx));
-      return null;
+      return new RuleEndpoint(RuleEndpoint.Type.IP_RANGE, text);
     }
     _w.redFlag("Unhandled source/destination item conversion: " + getFullText(ctx));
     return null;
@@ -524,7 +524,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     if (_currentAddressObject == null) {
       return;
     }
-    _w.redFlag("IP range is not currently supported " + getFullText(ctx));
+    _currentAddressObject.setIpSpace(
+        IpRange.range(
+            Ip.parse(ctx.ip_range().from.getText()), Ip.parse(ctx.ip_range().to.getText())));
   }
 
   @Override
