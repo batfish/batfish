@@ -1591,4 +1591,147 @@ public class ForwardingAnalysisImplTest {
     assertThat(
         "INTERFACE1 should not be full", fa.hasMissingDevicesOnInterface(CONFIG1, INTERFACE1));
   }
+
+  @Test
+  public void testDispositionWithTopology() {
+    Prefix prefix = Prefix.parse("1.0.0.0/24");
+    IpSpace ipSpace = prefix.toIpSpace();
+    Ip ip1 = Ip.parse("1.0.0.1");
+    Ip ip2 = Ip.parse("1.0.0.2");
+
+    Configuration c1 = _cb.setHostname("c1").build();
+    Configuration c2 = _cb.setHostname("c2").build();
+    Vrf v1 = _vb.setName("v1").setOwner(c1).build();
+    Vrf v2 = _vb.setName("v2").setOwner(c2).build();
+    _ib.setActive(true);
+    Interface i1 =
+        _ib.setAddresses(new InterfaceAddress("1.0.0.1/24"))
+            .setName("i1")
+            .setOwner(c1)
+            .setVrf(v1)
+            .build();
+    Interface i2 =
+        _ib.setAddresses(new InterfaceAddress("1.0.0.2/24"))
+            .setName("i2")
+            .setOwner(c2)
+            .setVrf(v2)
+            .build();
+
+    StaticRoute route1 =
+        StaticRoute.builder()
+            .setNetwork(prefix)
+            .setNextHopInterface(i1.getName())
+            .setAdministrativeCost(1)
+            .build();
+
+    StaticRoute route2 =
+        StaticRoute.builder()
+            .setNextHopInterface(i2.getName())
+            .setNetwork(prefix)
+            .setAdministrativeCost(1)
+            .build();
+
+    v1.setStaticRoutes(ImmutableSortedSet.of(route1));
+    v2.setStaticRoutes(ImmutableSortedSet.of(route2));
+
+    MockRib rib1 =
+        MockRib.builder()
+            .setRoutes(ImmutableSet.of(route1))
+            .setRoutableIps(ipSpace)
+            .setMatchingIps(ImmutableMap.of(prefix, ipSpace))
+            .build();
+
+    MockRib rib2 =
+        MockRib.builder()
+            .setRoutes(ImmutableSet.of(route2))
+            .setRoutableIps(ipSpace)
+            .setMatchingIps(ImmutableMap.of(prefix, ipSpace))
+            .build();
+
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
+        ImmutableSortedMap.of(
+            c1.getHostname(),
+            ImmutableSortedMap.of(v1.getName(), rib1),
+            c2.getHostname(),
+            ImmutableSortedMap.of(v2.getName(), rib2));
+
+    MockFib fib1 =
+        MockFib.builder()
+            .setNextHopInterfaces(
+                ImmutableMap.of(
+                    route1,
+                    ImmutableMap.of(
+                        i1.getName(),
+                        ImmutableMap.of(Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(route1)))))
+            .setRoutesByNextHopInterface(ImmutableMap.of(i1.getName(), ImmutableSet.of(route1)))
+            .build();
+
+    MockFib fib2 =
+        MockFib.builder()
+            .setNextHopInterfaces(
+                ImmutableMap.of(
+                    route2,
+                    ImmutableMap.of(
+                        i2.getName(),
+                        ImmutableMap.of(Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(route2)))))
+            .setRoutesByNextHopInterface(ImmutableMap.of(i2.getName(), ImmutableSet.of(route2)))
+            .build();
+
+    Map<String, Map<String, Fib>> fibs =
+        ImmutableMap.of(
+            c1.getHostname(), ImmutableMap.of(v1.getName(), fib1),
+            c2.getHostname(), ImmutableMap.of(v2.getName(), fib2));
+
+    ForwardingAnalysis analysis =
+        new ForwardingAnalysisImpl(
+            ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2),
+            ribs,
+            fibs,
+            new Topology(ImmutableSortedSet.of()));
+
+    assertThat(
+        analysis
+            .getDeliveredToSubnet()
+            .get(c1.getHostname())
+            .get(v1.getName())
+            .get(i1.getName())
+            .containsIp(ip1, c1.getIpSpaces()),
+        equalTo(false));
+
+    assertThat(
+        analysis
+            .getNeighborUnreachable()
+            .get(c1.getHostname())
+            .get(v1.getName())
+            .get(i1.getName())
+            .containsIp(ip1, c1.getIpSpaces()),
+        equalTo(true));
+
+    assertThat(
+        analysis
+            .getDeliveredToSubnet()
+            .get(c1.getHostname())
+            .get(v1.getName())
+            .get(i1.getName())
+            .containsIp(ip2, c1.getIpSpaces()),
+        equalTo(false));
+
+    assertThat(
+        analysis
+            .getNeighborUnreachable()
+            .get(c1.getHostname())
+            .get(v1.getName())
+            .get(i1.getName())
+            .containsIp(ip2, c1.getIpSpaces()),
+        equalTo(true));
+
+    assertThat(
+        analysis
+            .getInsufficientInfo()
+            .get(c1.getHostname())
+            .get(v1.getName())
+            .get(i1.getName())
+            .containsIp(ip2, c1.getIpSpaces()),
+        equalTo(false));
+  }
 }
