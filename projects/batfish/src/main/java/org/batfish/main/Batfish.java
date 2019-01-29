@@ -2821,6 +2821,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String questionName,
       String questionClassName,
       BiFunction<Question, IBatfish, Answerer> answererCreator) {
+    checkArgument(
+        !_answererCreators.containsKey(questionName),
+        "questionName %s already exists",
+        questionName);
     _answererCreators.put(questionName, answererCreator);
   }
 
