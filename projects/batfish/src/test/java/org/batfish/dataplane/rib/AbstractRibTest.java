@@ -2,6 +2,7 @@ package org.batfish.dataplane.rib;
 
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -9,9 +10,6 @@ import static org.hamcrest.Matchers.emptyIterableOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.Iterables;
@@ -59,8 +57,8 @@ public class AbstractRibTest {
   @Test
   public void testRibConstructor() {
     // Assertions: Ensure that a new rib is empty upon construction
-    assertThat(_rib.getRoutes(), is(emptyIterableOf(StaticRoute.class)));
-    assertThat(_rib.containsRoute(_mostGeneralRoute), is(false));
+    assertThat(_rib.getRoutes(), emptyIterableOf(StaticRoute.class));
+    assertThat(_rib.containsRoute(_mostGeneralRoute), equalTo(false));
   }
 
   @Test
@@ -72,7 +70,7 @@ public class AbstractRibTest {
     // Check routes size
     assertThat(_rib.getRoutes(), hasSize(1));
     // Check that containsRoute works as expected for this simple case
-    assertThat(_rib.containsRoute(_mostGeneralRoute), is(true));
+    assertThat(_rib.containsRoute(_mostGeneralRoute), equalTo(true));
     assertThat(
         _rib.containsRoute(
             StaticRoute.builder()
@@ -83,7 +81,7 @@ public class AbstractRibTest {
                 .setMetric(0L)
                 .setTag(0)
                 .build()),
-        is(false));
+        equalTo(false));
   }
 
   /** Inserts overlapping routes into the RIB and returns a (manually) ordered list of them */
@@ -131,9 +129,9 @@ public class AbstractRibTest {
 
     // Assertions
     // Ensure only one route is stored
-    assertThat(_rib.getRoutes().size(), is(1));
+    assertThat(_rib.getRoutes().size(), equalTo(1));
     // Check that containsRoute works as expected for this simple case
-    assertThat(_rib.containsRoute(route), is(true));
+    assertThat(_rib.containsRoute(route), equalTo(true));
   }
 
   /**
@@ -170,8 +168,8 @@ public class AbstractRibTest {
     // Check that both routes exist
     Set<StaticRoute> collectedRoutes = _rib.getRoutes();
     assertThat(collectedRoutes, hasSize(2));
-    assertThat(_rib.containsRoute(r1), is(true));
-    assertThat(_rib.containsRoute(r2), is(true));
+    assertThat(_rib.containsRoute(r1), equalTo(true));
+    assertThat(_rib.containsRoute(r2), equalTo(true));
     // Also check route collection via getRoutes()
     assertThat(collectedRoutes, hasItem(r1));
     assertThat(collectedRoutes, hasItem(r2));
@@ -189,9 +187,9 @@ public class AbstractRibTest {
     // Assertions
     Set<StaticRoute> collectedRoutes = _rib.getRoutes();
     assertThat(collectedRoutes, hasSize(routes.size()));
-    assertThat(_rib.containsRoute(_mostGeneralRoute), is(false));
+    assertThat(_rib.containsRoute(_mostGeneralRoute), equalTo(false));
     for (StaticRoute r : routes) {
-      assertThat(_rib.containsRoute(r), is(true));
+      assertThat(_rib.containsRoute(r), equalTo(true));
       assertThat(collectedRoutes, hasItem(r));
     }
   }
@@ -199,10 +197,8 @@ public class AbstractRibTest {
   /** Ensure that empty RIB doesn't have any prefix matches */
   @Test
   public void testLongestPrefixMatchWhenEmpty() {
-    assertThat(
-        _rib.longestPrefixMatch(Ip.parse("1.1.1.1")), is(emptyIterableOf(StaticRoute.class)));
-    assertThat(
-        _rib.longestPrefixMatch(Ip.parse("0.0.0.0")), is(emptyIterableOf(StaticRoute.class)));
+    assertThat(_rib.longestPrefixMatch(Ip.parse("1.1.1.1")), emptyIterableOf(StaticRoute.class));
+    assertThat(_rib.longestPrefixMatch(Ip.parse("0.0.0.0")), emptyIterableOf(StaticRoute.class));
   }
 
   /**
@@ -223,7 +219,7 @@ public class AbstractRibTest {
     assertThat(match, contains(routes.get(1)));
 
     match = _rib.longestPrefixMatch(Ip.parse("11.1.1.1"));
-    assertThat(match, is(emptyIterableOf(StaticRoute.class)));
+    assertThat(match, emptyIterableOf(StaticRoute.class));
   }
 
   /**
@@ -367,7 +363,7 @@ public class AbstractRibTest {
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
 
     Set<StaticRoute> routes = _rib.getRoutes();
-    assertThat(_rib.getRoutes(), is(routes));
+    assertThat(_rib.getRoutes(), sameInstance(routes));
   }
 
   /** Test that correct delta is returned when adding a new route. */
@@ -383,17 +379,15 @@ public class AbstractRibTest {
 
     // First merge old route
     RibDelta<RipInternalRoute> delta = rib.mergeRouteGetDelta(oldRoute);
-    assertThat(delta, is(notNullValue()));
     assertThat(delta.getActions().get(0), equalTo(new RouteAdvertisement<>(oldRoute)));
     assertThat(delta.getRoutes(), hasItem(oldRoute));
 
-    // Try re-merging, should get null, because RIB has not changed
+    // Try re-merging, should get empty delta, because RIB has not changed
     delta = rib.mergeRouteGetDelta(oldRoute);
-    assertThat(delta, is(nullValue()));
+    assertThat(delta.getActions(), empty());
 
     // Now replace with a newer route, check that one route removed, one added
     delta = rib.mergeRouteGetDelta(newRoute);
-    assertThat(delta, is(notNullValue()));
     assertThat(delta.getRoutes(), hasItem(oldRoute));
     assertThat(delta.getRoutes(), hasItem(newRoute));
   }
@@ -406,7 +400,7 @@ public class AbstractRibTest {
   public void testRemoveRoute() {
     StaticRoute r =
         StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
+            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
@@ -422,18 +416,16 @@ public class AbstractRibTest {
     // Check only route r remains
     assertThat(_rib.getRoutes(), contains(r));
     assertThat(_rib.getRoutes(), not(contains(_mostGeneralRoute)));
-    assertThat(d, is(notNullValue()));
     assertThat(
         d.getActions().contains(new RouteAdvertisement<>(_mostGeneralRoute, true, Reason.WITHDRAW)),
-        is(true));
+        equalTo(true));
 
     // Remove route r
     d = _rib.removeRouteGetDelta(r);
     assertThat(_rib.getRoutes(), not(contains(r)));
     assertThat(_rib.getRoutes(), emptyIterableOf(StaticRoute.class));
-    assertThat(d, is(notNullValue()));
     assertThat(
-        d.getActions().contains(new RouteAdvertisement<>(r, true, Reason.WITHDRAW)), is(true));
+        d.getActions().contains(new RouteAdvertisement<>(r, true, Reason.WITHDRAW)), equalTo(true));
   }
 
   /**

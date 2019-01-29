@@ -156,4 +156,7 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
         + getNextHopInterface()
         + ">";
   }
+
+  /** Return a {@link AbstractRouteBuilder} pre-populated with the values for this route. */
+  public abstract AbstractRouteBuilder<?, ?> toBuilder();
 }

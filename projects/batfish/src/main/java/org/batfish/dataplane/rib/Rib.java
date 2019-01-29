@@ -3,7 +3,6 @@ package org.batfish.dataplane.rib;
 import java.io.Serializable;
 import java.util.Comparator;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
 
 /**
@@ -28,12 +27,12 @@ public class Rib extends AbstractRib<AbstractRoute> implements Serializable {
   }
 
   @Override
-  @Nullable
+  @Nonnull
   public RibDelta<AbstractRoute> mergeRouteGetDelta(AbstractRoute route) {
     if (!route.getNonRouting()) {
       return super.mergeRouteGetDelta(route);
     } else {
-      return null;
+      return RibDelta.empty();
     }
   }
 }

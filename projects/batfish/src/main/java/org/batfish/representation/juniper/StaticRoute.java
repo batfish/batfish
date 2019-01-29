@@ -91,7 +91,7 @@ public class StaticRoute implements Serializable {
   }
 
   public void setDrop(boolean drop) {
-    _drop = true;
+    _drop = drop;
   }
 
   public void setMetric(int metric) {

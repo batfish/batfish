@@ -36,6 +36,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.AS_PATH_G
 import static org.batfish.representation.juniper.JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_ALLOW;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_EXPORT_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_FAMILY_INET_UNICAST_RIB_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_NEIGHBOR;
 import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP;
@@ -74,6 +75,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_ZONES_SECURITY_ZONES_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_L3_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VTEP_SOURCE_INTERFACE;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -179,6 +181,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_remove_privateContext
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.BandwidthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiu_loopsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiu_rib_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bgp_asnContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_numberContext;
@@ -532,6 +535,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_alternativeCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_atomContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.VariableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_l3_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Wildcard_addressContext;
 import org.batfish.representation.juniper.AddressAddressBookEntry;
@@ -1746,7 +1750,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.DIRECT() != null) {
       return RoutingProtocol.CONNECTED;
     } else if (ctx.ISIS() != null) {
-      return RoutingProtocol.ISIS;
+      return RoutingProtocol.ISIS_ANY;
     } else if (ctx.EVPN() != null) {
       return RoutingProtocol.EVPN;
     } else if (ctx.LDP() != null) {
@@ -1949,7 +1953,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private VrrpGroup _currentVrrpGroup;
 
-  private String _currentVlanName;
+  private Vlan _currentNamedVlan;
 
   private Zone _currentZone;
 
@@ -3420,8 +3424,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterS_vlans_named(S_vlans_namedContext ctx) {
-    _currentVlanName = ctx.name.getText();
-    defineStructure(VLAN, _currentVlanName, ctx);
+    String name = unquote(ctx.name.getText());
+    _currentNamedVlan = _currentLogicalSystem.getNamedVlans().computeIfAbsent(name, Vlan::new);
+    defineStructure(VLAN, name, ctx);
   }
 
   @Override
@@ -3585,6 +3590,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitBfiu_loops(Bfiu_loopsContext ctx) {
     _currentBgpGroup.setLoops(toInt(ctx.DEC()));
+  }
+
+  @Override
+  public void enterBfiu_rib_group(Bfiu_rib_groupContext ctx) {
+    String groupName = unquote(ctx.name.getText());
+    _configuration.referenceStructure(
+        RIB_GROUP, groupName, BGP_FAMILY_INET_UNICAST_RIB_GROUP, ctx.name.getStart().getLine());
+    _currentBgpGroup.setRibGroup(groupName);
   }
 
   @Override
@@ -5088,7 +5101,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitS_vlans_named(S_vlans_namedContext ctx) {
-    _currentVlanName = null;
+    _currentNamedVlan = null;
   }
 
   @Override
@@ -5677,8 +5690,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitVlt_vlan_id(Vlt_vlan_idContext ctx) {
-    Vlan vlan = new Vlan(toInt(ctx.id));
-    _currentLogicalSystem.getVlanNameToVlan().put(_currentVlanName, vlan);
+    int vlan = toInt(ctx.id);
+    _currentNamedVlan.setVlanId(vlan);
+  }
+
+  @Override
+  public void exitVlt_l3_interface(Vlt_l3_interfaceContext ctx) {
+    String name = ctx.interface_id().getText();
+    _configuration.referenceStructure(
+        INTERFACE, name, VLAN_L3_INTERFACE, getLine(ctx.interface_id().getStart()));
+    _currentNamedVlan.setL3Interface(name);
   }
 
   @Nullable

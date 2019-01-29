@@ -451,6 +451,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Set<String> _natOutside;
 
+  private final List<CiscoAsaNat> _ciscoAsaNats;
+
   private final List<CiscoIosNat> _ciscoIosNats;
 
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
@@ -549,6 +551,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _namedVlans = new HashMap<>();
     _natInside = new TreeSet<>();
     _natOutside = new TreeSet<>();
+    _ciscoAsaNats = new ArrayList<>();
     _ciscoIosNats = new ArrayList<>();
     _networkObjectGroups = new TreeMap<>();
     _networkObjects = new TreeMap<>();
@@ -884,6 +887,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Set<String> getNatOutside() {
     return _natOutside;
+  }
+
+  public List<CiscoAsaNat> getCiscoAsaNats() {
+    return _ciscoAsaNats;
   }
 
   public List<CiscoIosNat> getCiscoIosNats() {
@@ -2246,7 +2253,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
      * outside interface (outside-to-inside) and outgoing transformations on the outside interface
      * (inside-to-outside)
      *
-     * Currently, only static NATs have both incoming and outgoingtransformations
+     * Currently, only static NATs have both incoming and outgoing transformations
      */
 
     List<CiscoIosNat> ciscoIosNats = firstNonNull(_ciscoIosNats, ImmutableList.of());
@@ -3174,7 +3181,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                         new IpSpaceMetadata(
                             name, CiscoStructureType.NETWORK_OBJECT_GROUP.getDescription())));
     _networkObjects.forEach(
-        (name, networkObject) -> c.getIpSpaces().put(name, networkObject.getIpSpace()));
+        (name, networkObject) -> c.getIpSpaces().put(name, networkObject.toIpSpace()));
     _networkObjects
         .keySet()
         .forEach(
@@ -3546,6 +3553,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.SNMP_SERVER_TRAP_SOURCE,
         CiscoStructureUsage.TACACS_SOURCE_INTERFACE,
         CiscoStructureUsage.TRACK_INTERFACE,
+        CiscoStructureUsage.TWICE_NAT_MAPPED_INTERFACE,
+        CiscoStructureUsage.TWICE_NAT_REAL_INTERFACE,
         CiscoStructureUsage.VXLAN_SOURCE_INTERFACE);
 
     // mark references to ACLs that may not appear in data model
@@ -3752,7 +3761,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoStructureType.NETWORK_OBJECT_GROUP,
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP,
-        CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT);
+        CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT,
+        CiscoStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT_GROUP,
+        CiscoStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
+        CiscoStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT_GROUP,
+        CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP);
     markConcreteStructure(
         CiscoStructureType.PROTOCOL_OBJECT_GROUP,
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP,
@@ -3774,7 +3787,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoStructureType.NETWORK_OBJECT,
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT,
-        CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT);
+        CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT,
+        CiscoStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT,
+        CiscoStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
+        CiscoStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT,
+        CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT);
     markConcreteStructure(
         CiscoStructureType.SERVICE_OBJECT,
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT,

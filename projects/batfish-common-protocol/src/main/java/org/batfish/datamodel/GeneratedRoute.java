@@ -324,6 +324,11 @@ public final class GeneratedRoute extends AbstractRoute {
         .compare(this, castRhs);
   }
 
+  @Override
+  public AbstractRouteBuilder<?, ?> toBuilder() {
+    throw new UnsupportedOperationException();
+  }
+
   @JsonProperty(PROP_ATTRIBUTE_POLICY_SOURCES)
   public void setAttributePolicySources(SortedSet<String> attributePolicySources) {
     _attributePolicySources = attributePolicySources;

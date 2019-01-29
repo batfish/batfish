@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -45,6 +46,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AuthenticationKey;
 import org.batfish.datamodel.AuthenticationKeyChain;
@@ -441,6 +443,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
       peerImportPolicyConditional
           .getFalseStatements()
           .add(Statements.ExitReject.toStaticStatement());
+
+      // Apply rib groups
+      if (ig.getRibGroup() != null) {
+        neighbor.setAppliedRibGroup(
+            toRibGroup(
+                _masterLogicalSystem.getRibGroups().get(ig.getRibGroup()),
+                ig.getType() == BgpGroupType.INTERNAL ? RoutingProtocol.IBGP : RoutingProtocol.BGP,
+                _c,
+                routingInstance.getName(),
+                _w));
+      }
 
       // export policies
       String peerExportPolicyName = computePeerExportPolicyName(ig.getRemoteAddress());
@@ -1381,21 +1394,22 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newIface.setAllAddresses(iface.getAllAddresses());
     newIface.setActive(iface.getActive());
     if (iface.getSwitchportMode() == SwitchportMode.ACCESS && iface.getAccessVlan() != null) {
-      Vlan vlan = _masterLogicalSystem.getVlanNameToVlan().get(iface.getAccessVlan());
+      Vlan vlan = _masterLogicalSystem.getNamedVlans().get(iface.getAccessVlan());
       if (vlan != null) {
         newIface.setAccessVlan(vlan.getVlanId());
       }
     }
-    List<SubRange> vlanIds =
-        Stream.concat(
-                iface.getAllowedVlanNames().stream()
-                    .map(n -> _masterLogicalSystem.getVlanNameToVlan().get(n))
-                    .filter(Objects::nonNull)
-                    .map(Vlan::getVlanId)
-                    .map(SubRange::new),
-                iface.getAllowedVlans().stream())
-            .collect(Collectors.toList());
-    newIface.setAllowedVlans(IntegerSpace.unionOf(vlanIds));
+    IntegerSpace.Builder vlanIdsBuilder = IntegerSpace.builder();
+    Stream.concat(
+            iface.getAllowedVlanNames().stream()
+                .map(_masterLogicalSystem.getNamedVlans()::get)
+                .filter(Objects::nonNull) // named vlan must exist
+                .map(Vlan::getVlanId)
+                .filter(Objects::nonNull) // named vlan must have assigned numeric id
+                .map(SubRange::new),
+            iface.getAllowedVlans().stream())
+        .forEach(vlanIdsBuilder::including);
+    newIface.setAllowedVlans(vlanIdsBuilder.build());
 
     if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
       newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
@@ -2210,27 +2224,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.StaticRoute toStaticRoute(StaticRoute route) {
-    Ip nextHopIp = route.getNextHopIp();
-    if (nextHopIp == null) {
-      nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
-    }
     String nextHopInterface =
         route.getDrop()
             ? org.batfish.datamodel.Interface.NULL_INTERFACE_NAME
             : route.getNextHopInterface();
-    int tag = route.getTag() != null ? route.getTag() : -1;
 
-    org.batfish.datamodel.StaticRoute newStaticRoute =
-        org.batfish.datamodel.StaticRoute.builder()
-            .setNetwork(route.getPrefix())
-            .setNextHopIp(nextHopIp)
-            .setNextHopInterface(nextHopInterface)
-            .setAdministrativeCost(route.getDistance())
-            .setMetric(route.getMetric())
-            .setTag(tag)
-            .setNonForwarding(firstNonNull(route.getNoInstall(), Boolean.FALSE))
-            .build();
-    return newStaticRoute;
+    return org.batfish.datamodel.StaticRoute.builder()
+        .setNetwork(route.getPrefix())
+        .setNextHopIp(firstNonNull(route.getNextHopIp(), Route.UNSET_ROUTE_NEXT_HOP_IP))
+        .setNextHopInterface(nextHopInterface)
+        .setAdministrativeCost(route.getDistance())
+        .setMetric(route.getMetric())
+        .setTag(firstNonNull(route.getTag(), AbstractRoute.NO_TAG))
+        .setNonForwarding(firstNonNull(route.getNoInstall(), Boolean.FALSE))
+        .build();
   }
 
   @Override
@@ -2329,8 +2336,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem.getRoutingInstances().putAll(ls.getRoutingInstances());
     // TODO: something with syslog hosts?
     // TODO: something with tacplus servers?
-    _masterLogicalSystem.getVlanNameToVlan().clear();
-    _masterLogicalSystem.getVlanNameToVlan().putAll(ls.getVlanNameToVlan());
+    _masterLogicalSystem.getNamedVlans().clear();
+    _masterLogicalSystem.getNamedVlans().putAll(ls.getNamedVlans());
     _masterLogicalSystem.getZones().clear();
     _masterLogicalSystem.getZones().putAll(ls.getZones());
 
@@ -2843,6 +2850,26 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private void convertInterfaces() {
+    // Set IRB vlan IDs by resolving l3-interface from named VLANs.
+    // If more than one named vlan refers to a given l3-interface, we just keep the first assignment
+    // and warn.
+    Map<String, Integer> irbVlanIds = new HashMap<>();
+    for (Vlan vlan : _masterLogicalSystem.getNamedVlans().values()) {
+      Integer vlanId = vlan.getVlanId();
+      String l3Interface = vlan.getL3Interface();
+      if (l3Interface == null || vlanId == null) {
+        continue;
+      }
+      if (irbVlanIds.containsKey(l3Interface)) {
+        _w.redFlag(
+            String.format(
+                "Cannot assign '%s' as the l3-interface of vlan '%s' since it is already assigned to vlan '%s'",
+                l3Interface, vlanId, irbVlanIds.get(l3Interface)));
+        continue;
+      }
+      irbVlanIds.put(l3Interface, vlanId);
+    }
+
     // Get a stream of all interfaces (including Node interfaces)
     Stream.concat(
             _masterLogicalSystem.getInterfaces().values().stream(),
@@ -2870,8 +2897,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
                       unit -> {
                         unit.inheritUnsetFields();
                         org.batfish.datamodel.Interface newUnitInterface = toInterface(unit);
-                        newUnitInterface.addDependency(
-                            new Dependency(newParentIface.getName(), DependencyType.BIND));
+                        String name = newUnitInterface.getName();
+                        // set IRB VLAN ID if assigned
+                        newUnitInterface.setVlan(irbVlanIds.get(name));
+
+                        // Don't create bind dependency for 'irb.XXX' interfcaes, since there isn't
+                        // really an 'irb' interface
+                        if (!name.startsWith("irb")) {
+                          newUnitInterface.addDependency(
+                              new Dependency(newParentIface.getName(), DependencyType.BIND));
+                        }
                         resolveInterfacePointers(unit.getName(), unit, newUnitInterface);
                       });
             });
@@ -2941,11 +2976,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
   /** Ensure that the interface is placed in VI {@link Configuration} and {@link Vrf} */
   private void resolveInterfacePointers(
       String ifaceName, Interface iface, org.batfish.datamodel.Interface viIface) {
-    _c.getAllInterfaces().put(ifaceName, viIface);
     Vrf vrf = viIface.getVrf();
     String vrfName = vrf.getName();
-    vrf.getInterfaces().put(ifaceName, viIface);
     _masterLogicalSystem.getRoutingInstances().get(vrfName).getInterfaces().put(ifaceName, iface);
+    if (ifaceName.equals("irb")) {
+      // there is no 'irb' interface; it is just a namespace with no inheritable parameters
+      return;
+    }
+    _c.getAllInterfaces().put(ifaceName, viIface);
+    vrf.getInterfaces().put(ifaceName, viIface);
   }
 
   private org.batfish.datamodel.Zone toZone(Zone zone) {

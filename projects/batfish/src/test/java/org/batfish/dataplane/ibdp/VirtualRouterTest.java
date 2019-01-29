@@ -34,7 +34,6 @@ import java.util.Queue;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
@@ -59,6 +58,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.RipRoute;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
@@ -74,7 +74,6 @@ import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.dataplane.rib.RibDelta;
-import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.junit.Test;
@@ -161,11 +160,10 @@ public class VirtualRouterTest {
     // Assert that all interface prefixes have been processed
     assertThat(
         vr.getConnectedRib().getRoutes(),
-        containsInAnyOrder(
+        equalTo(
             exampleInterfaceAddresses.entrySet().stream()
                 .map(e -> new ConnectedRoute(e.getValue().getPrefix(), e.getKey()))
-                .collect(Collectors.toList())
-                .toArray(new ConnectedRoute[] {})));
+                .collect(ImmutableSet.toImmutableSet())));
   }
 
   /** Check that initialization of Local RIB is as expected */
@@ -182,12 +180,11 @@ public class VirtualRouterTest {
     // Assert that all interface prefixes have been processed
     assertThat(
         vr._localRib.getRoutes(),
-        containsInAnyOrder(
+        equalTo(
             exampleInterfaceAddresses.entrySet().stream()
                 .filter(e -> e.getValue().getPrefix().getPrefixLength() < Prefix.MAX_PREFIX_LENGTH)
                 .map(e -> new LocalRoute(e.getValue(), e.getKey()))
-                .collect(Collectors.toList())
-                .toArray(new LocalRoute[] {})));
+                .collect(ImmutableSet.toImmutableSet())));
   }
 
   /** Check that VRF static routes are put into appropriate RIBs upon initialization. */
@@ -420,18 +417,17 @@ public class VirtualRouterTest {
 
     assertThat(
         vr._ripInternalRib.getRoutes(),
-        containsInAnyOrder(
+        equalTo(
             exampleInterfaceAddresses.values().stream()
                 .map(
                     address ->
                         new RipInternalRoute(
                             address.getPrefix(),
-                            null,
+                            Route.UNSET_ROUTE_NEXT_HOP_IP,
                             RoutingProtocol.RIP.getDefaultAdministrativeCost(
                                 vr.getConfiguration().getConfigurationFormat()),
                             RipProcess.DEFAULT_RIP_COST))
-                .collect(Collectors.toList())
-                .toArray(new RipInternalRoute[] {})));
+                .collect(ImmutableSet.toImmutableSet())));
     vr._ripInternalRib.getRoutes();
   }
 
@@ -505,17 +501,17 @@ public class VirtualRouterTest {
     Queue<RouteAdvertisement<AbstractRoute>> q = new ConcurrentLinkedQueue<>();
 
     // Test queueing empty deltas
-    VirtualRouter.queueDelta(q, null);
+    VirtualRouter.queueDelta(q, RibDelta.empty());
     assertThat(q, empty());
 
-    RibDelta<AbstractRoute> delta = new RibDelta.Builder<>(null).build();
+    RibDelta<AbstractRoute> delta = RibDelta.builder().build();
     VirtualRouter.queueDelta(q, delta);
     assertThat(q, empty());
 
     // Test queueing non-empty delta
     StaticRoute sr1 =
         StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
+            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
@@ -524,14 +520,14 @@ public class VirtualRouterTest {
             .build();
     StaticRoute sr2 =
         StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
+            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(100)
             .setMetric(0L)
             .setTag(1)
             .build();
-    RibDelta.Builder<AbstractRoute> builder = new Builder<>(null).add(sr1);
+    RibDelta.Builder<AbstractRoute> builder = RibDelta.builder().add(sr1);
 
     // Add one route
     VirtualRouter.queueDelta(q, builder.build());
@@ -549,7 +545,7 @@ public class VirtualRouterTest {
     Queue<RouteAdvertisement<AbstractRoute>> q = new ConcurrentLinkedQueue<>();
     StaticRoute sr1 =
         StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
+            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(1)
@@ -558,23 +554,30 @@ public class VirtualRouterTest {
             .build();
     StaticRoute sr2 =
         StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
+            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH))
             .setNextHopIp(Ip.ZERO)
             .setNextHopInterface(null)
             .setAdministrativeCost(100)
             .setMetric(0L)
             .setTag(1)
             .build();
-    RibDelta.Builder<AbstractRoute> builder = new Builder<>(null);
+    RibDelta.Builder<AbstractRoute> builder = RibDelta.builder();
 
     // Test queueing empty deltas
     builder.add(sr1).remove(sr2, Reason.WITHDRAW);
     VirtualRouter.queueDelta(q, builder.build());
 
     // Check queuing order.
-    // Note: contains compains about generics, do manual remove/check
+    // Note: contains complains about generics, do manual remove/check
     assertThat(q.remove(), equalTo(new RouteAdvertisement<>(sr1)));
-    assertThat(q.remove(), equalTo(new RouteAdvertisement<>(sr2, true, Reason.WITHDRAW)));
+    assertThat(
+        q.remove(),
+        equalTo(
+            RouteAdvertisement.builder()
+                .setRoute(sr2)
+                .setWithdraw(true)
+                .setReason(Reason.WITHDRAW)
+                .build()));
     assertThat(q, empty());
   }
 

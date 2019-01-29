@@ -148,9 +148,13 @@ public class EdgesAnswerer extends Answerer {
             _batfish.getTopologyProvider().getVxlanTopology(_batfish.getNetworkSnapshot());
         return getVxlanEdges(includeNodes, includeRemoteNodes, vxlanTopology);
       case LAYER1:
-        Layer1Topology layer1LogicalTopology =
-            _batfish.getTopologyProvider().getLayer1LogicalTopology(_batfish.getNetworkSnapshot());
-        return getLayer1Edges(includeNodes, includeRemoteNodes, layer1LogicalTopology);
+        return _batfish
+            .getTopologyProvider()
+            .getLayer1LogicalTopology(_batfish.getNetworkSnapshot())
+            .map(
+                layer1LogicalTopology ->
+                    getLayer1Edges(includeNodes, includeRemoteNodes, layer1LogicalTopology))
+            .orElse(ImmutableMultiset.of());
       case LAYER2:
         // Unsupported until we decide how to present layer2 topology.
         return ImmutableMultiset.of();
@@ -473,12 +477,12 @@ public class EdgesAnswerer extends Answerer {
             COL_INTERFACE,
             new NodeInterfacePair(
                 layer2Edge.getNode1().getHostname(), layer2Edge.getNode1().getInterfaceName()))
-        .put(COL_VLAN, layer2Edge.getNode1().getVlanId())
+        .put(COL_VLAN, layer2Edge.getNode1().getSwitchportVlanId())
         .put(
             COL_REMOTE_INTERFACE,
             new NodeInterfacePair(
                 layer2Edge.getNode2().getHostname(), layer2Edge.getNode2().getInterfaceName()))
-        .put(COL_REMOTE_VLAN, layer2Edge.getNode2().getVlanId());
+        .put(COL_REMOTE_VLAN, layer2Edge.getNode2().getSwitchportVlanId());
 
     return row.build();
   }

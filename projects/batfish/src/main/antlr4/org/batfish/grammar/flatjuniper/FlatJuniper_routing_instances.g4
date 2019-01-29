@@ -340,7 +340,10 @@ roa_route
     prefix = IP_PREFIX
     | prefix6 = IPV6_PREFIX
   )
-  roa_common
+  (
+    apply
+    | roa_common
+  )
 ;
 
 roa_tag
@@ -382,19 +385,6 @@ rob_station_port
 :
    STATION_PORT DEC
 ;
-roa_route
-:
-  ROUTE
-  (
-    prefix = IP_PREFIX
-    | prefix6 = IPV6_PREFIX
-  )
-  (
-    apply
-    | roa_common
-  )
-;
-
 
 rof_export
 :

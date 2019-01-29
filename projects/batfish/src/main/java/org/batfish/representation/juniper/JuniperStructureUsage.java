@@ -13,6 +13,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   BGP_EXPORT_POLICY("bgp export policy-statement"),
   BGP_IMPORT_POLICY("bgp import policy-statement"),
   BGP_NEIGHBOR("bgp group neighbor"),
+  BGP_FAMILY_INET_UNICAST_RIB_GROUP("bgp family inet unicast rib-group"),
   DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP("dhcp relay group active-server-group"),
   FIREWALL_FILTER_DESTINATION_PREFIX_LIST("firewall filter destination prefix-list"),
   FIREWALL_FILTER_PREFIX_LIST("firewall filter prefix-list"),
@@ -52,6 +53,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   SECURITY_ZONES_SECURITY_ZONES_INTERFACE("security zones security-zone interfaces"),
   SNMP_COMMUNITY_PREFIX_LIST("snmp community prefix-list"),
   STATIC_ROUTE_NEXT_HOP_INTERFACE("static route next-hop"),
+  VLAN_L3_INTERFACE("vlan l3-interface"),
   VTEP_SOURCE_INTERFACE("routing-instances vtep-source-interface");
 
   private final String _description;

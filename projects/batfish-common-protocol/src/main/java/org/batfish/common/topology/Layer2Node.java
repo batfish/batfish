@@ -18,40 +18,41 @@ public final class Layer2Node implements Comparable<Layer2Node> {
 
   private static final String PROP_INTERFACE_NAME = "interfaceName";
 
-  private static final String PROP_VLAN_ID = "vlanId";
+  private static final String PROP_SWITCHPORT_VLAN_ID = "switchportVlanId";
 
   @JsonCreator
   private static @Nonnull Layer2Node create(
       @JsonProperty(PROP_HOSTNAME) String hostname,
       @JsonProperty(PROP_INTERFACE_NAME) String interfaceName,
-      @JsonProperty(PROP_VLAN_ID) Integer vlanId) {
-    return new Layer2Node(requireNonNull(hostname), requireNonNull(interfaceName), vlanId);
+      @JsonProperty(PROP_SWITCHPORT_VLAN_ID) Integer switchportVlanId) {
+    return new Layer2Node(
+        requireNonNull(hostname), requireNonNull(interfaceName), switchportVlanId);
   }
 
   private final String _hostname;
 
   private final String _interfaceName;
 
-  private final Integer _vlanId;
+  private final Integer _switchportVlanId;
 
   public Layer2Node(@Nonnull Layer1Node layer1Node, @Nullable Integer vlanId) {
     _hostname = layer1Node.getHostname();
     _interfaceName = layer1Node.getInterfaceName();
-    _vlanId = vlanId;
+    _switchportVlanId = vlanId;
   }
 
   public Layer2Node(
       @Nonnull String hostname, @Nonnull String interfaceName, @Nullable Integer vlanId) {
     _hostname = hostname;
     _interfaceName = interfaceName;
-    _vlanId = vlanId;
+    _switchportVlanId = vlanId;
   }
 
   @Override
   public int compareTo(Layer2Node o) {
     return Comparator.comparing(Layer2Node::getHostname)
         .thenComparing(Layer2Node::getInterfaceName)
-        .thenComparing(Layer2Node::getVlanId, nullsFirst(naturalOrder()))
+        .thenComparing(Layer2Node::getSwitchportVlanId, nullsFirst(naturalOrder()))
         .compare(this, o);
   }
 
@@ -66,7 +67,7 @@ public final class Layer2Node implements Comparable<Layer2Node> {
     Layer2Node rhs = (Layer2Node) obj;
     return _hostname.equals(rhs._hostname)
         && _interfaceName.equals(rhs._interfaceName)
-        && Objects.equals(_vlanId, rhs._vlanId);
+        && Objects.equals(_switchportVlanId, rhs._switchportVlanId);
   }
 
   @JsonProperty(PROP_HOSTNAME)
@@ -79,14 +80,14 @@ public final class Layer2Node implements Comparable<Layer2Node> {
     return _interfaceName;
   }
 
-  @JsonProperty(PROP_VLAN_ID)
-  public @Nullable Integer getVlanId() {
-    return _vlanId;
+  @JsonProperty(PROP_SWITCHPORT_VLAN_ID)
+  public @Nullable Integer getSwitchportVlanId() {
+    return _switchportVlanId;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_hostname, _interfaceName, _vlanId);
+    return Objects.hash(_hostname, _interfaceName, _switchportVlanId);
   }
 
   @Override
@@ -95,7 +96,7 @@ public final class Layer2Node implements Comparable<Layer2Node> {
         .omitNullValues()
         .add(PROP_HOSTNAME, _hostname)
         .add(PROP_INTERFACE_NAME, _interfaceName)
-        .add(PROP_VLAN_ID, _vlanId)
+        .add(PROP_SWITCHPORT_VLAN_ID, _switchportVlanId)
         .toString();
   }
 }

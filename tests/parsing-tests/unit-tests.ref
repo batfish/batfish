@@ -117,6 +117,9 @@
         "asa_interface" : [
           "configs/asa_interface"
         ],
+        "asa_nat" : [
+          "configs/asa_nat"
+        ],
         "asa_object_groups" : [
           "configs/asa_object_groups"
         ],
@@ -853,6 +856,7 @@
         "configs/asa_acl" : "PASSED",
         "configs/asa_banner" : "PASSED",
         "configs/asa_interface" : "PASSED",
+        "configs/asa_nat" : "PASSED",
         "configs/asa_object_groups" : "PASSED",
         "configs/asa_ospf" : "PASSED",
         "configs/asa_ssh" : "PASSED",
@@ -7458,9 +7462,192 @@
             "  EOF:<EOF>)"
           ]
         },
+        "asa_nat" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        ASA:'ASA'",
+            "        VARIABLE:'Version'",
+            "        FLOAT:'9.9'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'asa_nat'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_asa_twice_nat",
+            "      NAT:'nat'",
+            "      (asa_nat_ifaces",
+            "        PAREN_LEFT:'('",
+            "        real_if = (variable",
+            "          ANY:'any')",
+            "        COMMA:','",
+            "        mapped_if = (variable",
+            "          ANY:'any')",
+            "        PAREN_RIGHT:')')",
+            "      SOURCE:'source'",
+            "      (asa_twice_nat_dynamic",
+            "        DYNAMIC:'dynamic'",
+            "        real_src = (variable",
+            "          VARIABLE:'source-net')",
+            "        (asa_nat_pat_pool",
+            "          PAT_POOL:'pat-pool'",
+            "          pat_obj = (variable",
+            "            POOL:'pool')",
+            "          BLOCK_ALLOCATION:'block-allocation'",
+            "          ROUND_ROBIN:'round-robin'))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_asa_twice_nat",
+            "      NAT:'nat'",
+            "      (asa_nat_ifaces",
+            "        PAREN_LEFT:'('",
+            "        real_if = (variable",
+            "          INSIDE:'inside')",
+            "        COMMA:','",
+            "        mapped_if = (variable",
+            "          OUTSIDE:'outside')",
+            "        PAREN_RIGHT:')')",
+            "      SOURCE:'source'",
+            "      (asa_twice_nat_dynamic",
+            "        DYNAMIC:'dynamic'",
+            "        real_src = (variable",
+            "          VARIABLE:'net1')",
+            "        mapped_src = (variable",
+            "          VARIABLE:'net2')",
+            "        mapped_src_iface = INTERFACE:'interface')",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_asa_twice_nat",
+            "      NAT:'nat'",
+            "      (asa_nat_ifaces",
+            "        PAREN_LEFT:'('",
+            "        real_if = (variable",
+            "          INSIDE:'inside')",
+            "        COMMA:','",
+            "        mapped_if = (variable",
+            "          OUTSIDE:'outside')",
+            "        PAREN_RIGHT:')')",
+            "      SOURCE:'source'",
+            "      (asa_twice_nat_dynamic",
+            "        DYNAMIC:'dynamic'",
+            "        real_src = (variable",
+            "          VARIABLE:'net1')",
+            "        mapped_src = (variable",
+            "          INTERFACE:'interface'))",
+            "      (asa_twice_nat_destination",
+            "        DESTINATION:'destination'",
+            "        STATIC:'static'",
+            "        mapped_dst = (variable",
+            "          INTERFACE:'interface')",
+            "        real_dst = (variable",
+            "          VARIABLE:'net2'))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_asa_twice_nat",
+            "      NAT:'nat'",
+            "      (asa_nat_ifaces",
+            "        PAREN_LEFT:'('",
+            "        real_if = (variable",
+            "          INSIDE:'inside')",
+            "        COMMA:','",
+            "        mapped_if = (variable",
+            "          OUTSIDE:'outside')",
+            "        PAREN_RIGHT:')')",
+            "      SOURCE:'source'",
+            "      (asa_twice_nat_static",
+            "        STATIC:'static'",
+            "        real_src = (variable",
+            "          VARIABLE:'net1')",
+            "        mapped_src = (variable",
+            "          VARIABLE:'net2'))",
+            "      (asa_nat_optional_args",
+            "        ROUTE_LOOKUP:'route-lookup')",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_asa_twice_nat",
+            "      NAT:'nat'",
+            "      SOURCE:'source'",
+            "      (asa_twice_nat_dynamic",
+            "        DYNAMIC:'dynamic'",
+            "        real_src = (variable",
+            "          VARIABLE:'source-net')",
+            "        (asa_nat_pat_pool",
+            "          PAT_POOL:'pat-pool'",
+            "          pat_obj = (variable",
+            "            POOL:'pool')",
+            "          EXTENDED:'extended'",
+            "          FLAT:'flat'",
+            "          INCLUDE_RESERVE:'include-reserve'))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_asa_twice_nat",
+            "      NAT:'nat'",
+            "      SOURCE:'source'",
+            "      (asa_twice_nat_static",
+            "        STATIC:'static'",
+            "        real_src = (variable",
+            "          VARIABLE:'net1')",
+            "        mapped_src = (variable",
+            "          VARIABLE:'net2'))",
+            "      (asa_twice_nat_destination",
+            "        DESTINATION:'destination'",
+            "        STATIC:'static'",
+            "        mapped_dst = (variable",
+            "          VARIABLE:'net3')",
+            "        real_dst = (variable",
+            "          VARIABLE:'net4'))",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_asa_twice_nat",
+            "      NAT:'nat'",
+            "      SOURCE:'source'",
+            "      (asa_twice_nat_static",
+            "        STATIC:'static'",
+            "        real_src = (variable",
+            "          VARIABLE:'net1')",
+            "        mapped_src = (variable",
+            "          VARIABLE:'net2'))",
+            "      (asa_nat_optional_args",
+            "        DNS:'dns')",
+            "      (asa_nat_optional_args",
+            "        NO_PROXY_ARP:'no-proxy-arp')",
+            "      (asa_nat_optional_args",
+            "        UNIDIRECTIONAL:'unidirectional')",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_asa_twice_nat",
+            "      NAT:'nat'",
+            "      SOURCE:'source'",
+            "      (asa_twice_nat_static",
+            "        STATIC:'static'",
+            "        real_src = (variable",
+            "          VARIABLE:'net1')",
+            "        mapped_src = (variable",
+            "          VARIABLE:'net2'))",
+            "      (asa_twice_nat_service",
+            "        SERVICE:'service'",
+            "        svc_obj1 = (variable",
+            "          VARIABLE:'service1')",
+            "        svc_obj2 = (variable",
+            "          VARIABLE:'service2'))",
+            "      NEWLINE:'\\n'))",
+            "  EOF:<EOF>)"
+          ]
+        },
         "asa_object_groups" : {
           "sentences" : [
             "(cisco_configuration",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        ASA:'ASA'",
+            "        VARIABLE:'Version'",
+            "        FLOAT:'9.9'",
+            "        NEWLINE:'\\n')))",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -21694,7 +21881,7 @@
             "        CACHE:'cache'",
             "        (null_rest_of_line",
             "          TIMEOUT:'timeout'",
-            "          VARIABLE:'inactive'",
+            "          INACTIVE:'inactive'",
             "          DEC:'280'",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
@@ -21704,7 +21891,7 @@
             "      (null_rest_of_line",
             "        CACHE:'cache'",
             "        TIMEOUT:'timeout'",
-            "        VARIABLE:'inactive'",
+            "        INACTIVE:'inactive'",
             "        DEC:'60'",
             "        NEWLINE:'\\n')))",
             "  (stanza",
@@ -48102,7 +48289,7 @@
             "                PERIOD:'.'",
             "                DEC:'0'",
             "                NEXT_HOP:'next-hop'",
-            "                IP_ADDRESS:'11.11.11.11'))))))",
+            "                IP_ADDRESS:'11.11.11.11'  <== mode:M_Interface))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -49086,7 +49273,7 @@
             "            (s_vlans_named",
             "              name = (variable",
             "                text = VARIABLE:'unused-vlan')",
-            "              (s_vlans_tail))))))",
+            "              (apply))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -49098,10 +49285,9 @@
             "            (s_vlans_named",
             "              name = (variable",
             "                text = VARIABLE:'unused-vlan')",
-            "              (s_vlans_tail",
-            "                (vlt_vlan_id",
-            "                  VLAN_ID:'vlan-id'",
-            "                  id = DEC:'2000')))))))",
+            "              (vlt_vlan_id",
+            "                VLAN_ID:'vlan-id'",
+            "                id = DEC:'2000'))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -50978,7 +51164,7 @@
             "                    (popst_common",
             "                      (popst_next_hop_self",
             "                        NEXT_HOP:'next-hop'",
-            "                        SELF:'self'))))))))))",
+            "                        SELF:'self'  <== mode:M_Interface))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -51316,6 +51502,406 @@
             "                EXPORT_RIB:'export-rib'",
             "                rib = (variable",
             "                  text = VARIABLE:'RIB_OUT.inet.14')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'",
+            "            (ro_rib_groups",
+            "              RIB_GROUPS:'rib-groups'",
+            "              name = (variable",
+            "                text = VARIABLE:'bgp-rib-group')",
+            "              (ror_import_rib",
+            "                IMPORT_RIB:'import-rib'",
+            "                rib = (variable",
+            "                  text = VARIABLE:'inet.0')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'",
+            "            (ro_rib_groups",
+            "              RIB_GROUPS:'rib-groups'",
+            "              name = (variable",
+            "                text = VARIABLE:'bgp-rib-group')",
+            "              (ror_import_rib",
+            "                IMPORT_RIB:'import-rib'",
+            "                rib = (variable",
+            "                  text = VARIABLE:'VRF2.inet.0')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_bgp",
+            "              BGP:'bgp'",
+            "              (b_common",
+            "                (b_family",
+            "                  FAMILY:'family'",
+            "                  (bf_inet",
+            "                    INET:'inet'",
+            "                    (bfi_unicast",
+            "                      UNICAST:'unicast'",
+            "                      (bfiu_rib_group",
+            "                        RIB_GROUP:'rib-group'",
+            "                        name = (variable",
+            "                          text = VARIABLE:'bgp-rib-group')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_bgp",
+            "              BGP:'bgp'",
+            "              (b_group",
+            "                GROUP:'group'",
+            "                name = (variable",
+            "                  text = VARIABLE:'BGP_GROUP'  <== mode:M_VarOrWildcard)",
+            "                (b_common",
+            "                  (b_family",
+            "                    FAMILY:'family'",
+            "                    (bf_inet",
+            "                      INET:'inet'",
+            "                      (bfi_unicast",
+            "                        UNICAST:'unicast'",
+            "                        (bfiu_rib_group",
+            "                          RIB_GROUP:'rib-group'",
+            "                          name = (variable",
+            "                            text = VARIABLE:'bgp-rib-group'))))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_bgp",
+            "              BGP:'bgp'",
+            "              (b_group",
+            "                GROUP:'group'",
+            "                name = (variable",
+            "                  text = VARIABLE:'BGP_GROUP'  <== mode:M_VarOrWildcard)",
+            "                (b_neighbor",
+            "                  NEIGHBOR:'neighbor'",
+            "                  IP_ADDRESS:'1.1.1.1'",
+            "                  (b_common",
+            "                    (b_family",
+            "                      FAMILY:'family'",
+            "                      (bf_inet",
+            "                        INET:'inet'",
+            "                        (bfi_unicast",
+            "                          UNICAST:'unicast'",
+            "                          (bfiu_rib_group",
+            "                            RIB_GROUP:'rib-group'",
+            "                            name = (variable",
+            "                              text = VARIABLE:'bgp-rib-group')))))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_logical_systems",
+            "          LOGICAL_SYSTEMS:'logical-systems'",
+            "          name = (variable",
+            "            text = VARIABLE:'LOGICALSYSTEM')",
+            "          (s_logical_systems_tail",
+            "            (statement",
+            "              (s_common",
+            "                (s_protocols",
+            "                  PROTOCOLS:'protocols'",
+            "                  (p_bgp",
+            "                    BGP:'bgp'",
+            "                    (b_common",
+            "                      (b_family",
+            "                        FAMILY:'family'",
+            "                        (bf_inet",
+            "                          INET:'inet'",
+            "                          (bfi_unicast",
+            "                            UNICAST:'unicast'",
+            "                            (bfiu_rib_group",
+            "                              RIB_GROUP:'rib-group'",
+            "                              name = (variable",
+            "                                text = VARIABLE:'bgp-rib-group'))))))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_logical_systems",
+            "          LOGICAL_SYSTEMS:'logical-systems'",
+            "          name = (variable",
+            "            text = VARIABLE:'LOGICALSYSTEM')",
+            "          (s_logical_systems_tail",
+            "            (statement",
+            "              (s_common",
+            "                (s_protocols",
+            "                  PROTOCOLS:'protocols'",
+            "                  (p_bgp",
+            "                    BGP:'bgp'",
+            "                    (b_group",
+            "                      GROUP:'group'",
+            "                      name = (variable",
+            "                        text = VARIABLE:'BGP_GROUP'  <== mode:M_VarOrWildcard)",
+            "                      (b_common",
+            "                        (b_family",
+            "                          FAMILY:'family'",
+            "                          (bf_inet",
+            "                            INET:'inet'",
+            "                            (bfi_unicast",
+            "                              UNICAST:'unicast'",
+            "                              (bfiu_rib_group",
+            "                                RIB_GROUP:'rib-group'",
+            "                                name = (variable",
+            "                                  text = VARIABLE:'bgp-rib-group')))))))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_logical_systems",
+            "          LOGICAL_SYSTEMS:'logical-systems'",
+            "          name = (variable",
+            "            text = VARIABLE:'LOGICALSYSTEM')",
+            "          (s_logical_systems_tail",
+            "            (statement",
+            "              (s_common",
+            "                (s_protocols",
+            "                  PROTOCOLS:'protocols'",
+            "                  (p_bgp",
+            "                    BGP:'bgp'",
+            "                    (b_group",
+            "                      GROUP:'group'",
+            "                      name = (variable",
+            "                        text = VARIABLE:'BGP_GROUP'  <== mode:M_VarOrWildcard)",
+            "                      (b_neighbor",
+            "                        NEIGHBOR:'neighbor'",
+            "                        IP_ADDRESS:'1.1.1.1'",
+            "                        (b_common",
+            "                          (b_family",
+            "                            FAMILY:'family'",
+            "                            (bf_inet",
+            "                              INET:'inet'",
+            "                              (bfi_unicast",
+            "                                UNICAST:'unicast'",
+            "                                (bfiu_rib_group",
+            "                                  RIB_GROUP:'rib-group'",
+            "                                  name = (variable",
+            "                                    text = VARIABLE:'bgp-rib-group'))))))))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_logical_systems",
+            "          LOGICAL_SYSTEMS:'logical-systems'",
+            "          name = (variable",
+            "            text = VARIABLE:'LOGICALSYSTEM')",
+            "          (s_logical_systems_tail",
+            "            (statement",
+            "              (s_common",
+            "                (s_routing_instances",
+            "                  ROUTING_INSTANCES:'routing-instances'",
+            "                  (ri_named_routing_instance",
+            "                    name = (variable",
+            "                      text = VARIABLE:'ROUTING_INSTANCE_NAME')",
+            "                    (ri_protocols",
+            "                      (s_protocols",
+            "                        PROTOCOLS:'protocols'",
+            "                        (p_bgp",
+            "                          BGP:'bgp'",
+            "                          (b_common",
+            "                            (b_family",
+            "                              FAMILY:'family'",
+            "                              (bf_inet",
+            "                                INET:'inet'",
+            "                                (bfi_unicast",
+            "                                  UNICAST:'unicast'",
+            "                                  (bfiu_rib_group",
+            "                                    RIB_GROUP:'rib-group'",
+            "                                    name = (variable",
+            "                                      text = VARIABLE:'bgp-rib-group')))))))))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_logical_systems",
+            "          LOGICAL_SYSTEMS:'logical-systems'",
+            "          name = (variable",
+            "            text = VARIABLE:'LOGICALSYSTEM')",
+            "          (s_logical_systems_tail",
+            "            (statement",
+            "              (s_common",
+            "                (s_routing_instances",
+            "                  ROUTING_INSTANCES:'routing-instances'",
+            "                  (ri_named_routing_instance",
+            "                    name = (variable",
+            "                      text = VARIABLE:'ROUTING_INSTANCE_NAME')",
+            "                    (ri_protocols",
+            "                      (s_protocols",
+            "                        PROTOCOLS:'protocols'",
+            "                        (p_bgp",
+            "                          BGP:'bgp'",
+            "                          (b_group",
+            "                            GROUP:'group'",
+            "                            name = (variable",
+            "                              text = VARIABLE:'BGP_GROUP'  <== mode:M_VarOrWildcard)",
+            "                            (b_common",
+            "                              (b_family",
+            "                                FAMILY:'family'",
+            "                                (bf_inet",
+            "                                  INET:'inet'",
+            "                                  (bfi_unicast",
+            "                                    UNICAST:'unicast'",
+            "                                    (bfiu_rib_group",
+            "                                      RIB_GROUP:'rib-group'",
+            "                                      name = (variable",
+            "                                        text = VARIABLE:'bgp-rib-group'))))))))))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_logical_systems",
+            "          LOGICAL_SYSTEMS:'logical-systems'",
+            "          name = (variable",
+            "            text = VARIABLE:'LOGICALSYSTEM')",
+            "          (s_logical_systems_tail",
+            "            (statement",
+            "              (s_common",
+            "                (s_routing_instances",
+            "                  ROUTING_INSTANCES:'routing-instances'",
+            "                  (ri_named_routing_instance",
+            "                    name = (variable",
+            "                      text = VARIABLE:'ROUTING_INSTANCE_NAME')",
+            "                    (ri_protocols",
+            "                      (s_protocols",
+            "                        PROTOCOLS:'protocols'",
+            "                        (p_bgp",
+            "                          BGP:'bgp'",
+            "                          (b_group",
+            "                            GROUP:'group'",
+            "                            name = (variable",
+            "                              text = VARIABLE:'BGP_GROUP'  <== mode:M_VarOrWildcard)",
+            "                            (b_neighbor",
+            "                              NEIGHBOR:'neighbor'",
+            "                              IP_ADDRESS:'1.1.1.1'",
+            "                              (b_common",
+            "                                (b_family",
+            "                                  FAMILY:'family'",
+            "                                  (bf_inet",
+            "                                    INET:'inet'",
+            "                                    (bfi_unicast",
+            "                                      UNICAST:'unicast'",
+            "                                      (bfiu_rib_group",
+            "                                        RIB_GROUP:'rib-group'",
+            "                                        name = (variable",
+            "                                          text = VARIABLE:'bgp-rib-group')))))))))))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_instances",
+            "            ROUTING_INSTANCES:'routing-instances'",
+            "            (ri_named_routing_instance",
+            "              name = (variable",
+            "                text = VARIABLE:'ROUTING_INSTANCE_NAME')",
+            "              (ri_protocols",
+            "                (s_protocols",
+            "                  PROTOCOLS:'protocols'",
+            "                  (p_bgp",
+            "                    BGP:'bgp'",
+            "                    (b_common",
+            "                      (b_family",
+            "                        FAMILY:'family'",
+            "                        (bf_inet",
+            "                          INET:'inet'",
+            "                          (bfi_unicast",
+            "                            UNICAST:'unicast'",
+            "                            (bfiu_rib_group",
+            "                              RIB_GROUP:'rib-group'",
+            "                              name = (variable",
+            "                                text = VARIABLE:'bgp-rib-group'))))))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_instances",
+            "            ROUTING_INSTANCES:'routing-instances'",
+            "            (ri_named_routing_instance",
+            "              name = (variable",
+            "                text = VARIABLE:'ROUTING_INSTANCE_NAME')",
+            "              (ri_protocols",
+            "                (s_protocols",
+            "                  PROTOCOLS:'protocols'",
+            "                  (p_bgp",
+            "                    BGP:'bgp'",
+            "                    (b_group",
+            "                      GROUP:'group'",
+            "                      name = (variable",
+            "                        text = VARIABLE:'BGP_GROUP'  <== mode:M_VarOrWildcard)",
+            "                      (b_common",
+            "                        (b_family",
+            "                          FAMILY:'family'",
+            "                          (bf_inet",
+            "                            INET:'inet'",
+            "                            (bfi_unicast",
+            "                              UNICAST:'unicast'",
+            "                              (bfiu_rib_group",
+            "                                RIB_GROUP:'rib-group'",
+            "                                name = (variable",
+            "                                  text = VARIABLE:'bgp-rib-group')))))))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_instances",
+            "            ROUTING_INSTANCES:'routing-instances'",
+            "            (ri_named_routing_instance",
+            "              name = (variable",
+            "                text = VARIABLE:'ROUTING_INSTANCE_NAME')",
+            "              (ri_protocols",
+            "                (s_protocols",
+            "                  PROTOCOLS:'protocols'",
+            "                  (p_bgp",
+            "                    BGP:'bgp'",
+            "                    (b_group",
+            "                      GROUP:'group'",
+            "                      name = (variable",
+            "                        text = VARIABLE:'BGP_GROUP'  <== mode:M_VarOrWildcard)",
+            "                      (b_neighbor",
+            "                        NEIGHBOR:'neighbor'",
+            "                        IP_ADDRESS:'1.1.1.1'",
+            "                        (b_common",
+            "                          (b_family",
+            "                            FAMILY:'family'",
+            "                            (bf_inet",
+            "                              INET:'inet'",
+            "                              (bfi_unicast",
+            "                                UNICAST:'unicast'",
+            "                                (bfiu_rib_group",
+            "                                  RIB_GROUP:'rib-group'",
+            "                                  name = (variable",
+            "                                    text = VARIABLE:'bgp-rib-group'))))))))))))))))",
             "    NEWLINE:'\\n\\n')",
             "  EOF:<EOF>)"
           ]
@@ -54623,10 +55209,9 @@
             "            (s_vlans_named",
             "              name = (variable",
             "                text = VARIABLE:'VLAN30')",
-            "              (s_vlans_tail",
-            "                (vlt_vlan_id",
-            "                  VLAN_ID:'vlan-id'",
-            "                  id = DEC:'30')))))))",
+            "              (vlt_vlan_id",
+            "                VLAN_ID:'vlan-id'",
+            "                id = DEC:'30'))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -54638,13 +55223,12 @@
             "            (s_vlans_named",
             "              name = (variable",
             "                text = VARIABLE:'VLAN30')",
-            "              (s_vlans_tail",
-            "                (vlt_l3_interface",
-            "                  L3_INTERFACE:'l3-interface'",
-            "                  (interface_id",
-            "                    name = INTERFACE_NAME:'vlan'  <== mode:M_Interface",
-            "                    PERIOD:'.'",
-            "                    unit = DEC:'30'))))))))",
+            "              (vlt_l3_interface",
+            "                L3_INTERFACE:'l3-interface'",
+            "                (interface_id",
+            "                  name = INTERFACE_NAME:'vlan'  <== mode:M_Interface",
+            "                  PERIOD:'.'",
+            "                  unit = DEC:'30')))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -54656,10 +55240,9 @@
             "            (s_vlans_named",
             "              name = (variable",
             "                text = VARIABLE:'VLAN40')",
-            "              (s_vlans_tail",
-            "                (vlt_vlan_id",
-            "                  VLAN_ID:'vlan-id'",
-            "                  id = DEC:'40')))))))",
+            "              (vlt_vlan_id",
+            "                VLAN_ID:'vlan-id'",
+            "                id = DEC:'40'))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -54671,13 +55254,12 @@
             "            (s_vlans_named",
             "              name = (variable",
             "                text = VARIABLE:'VLAN40')",
-            "              (s_vlans_tail",
-            "                (vlt_l3_interface",
-            "                  L3_INTERFACE:'l3-interface'",
-            "                  (interface_id",
-            "                    name = INTERFACE_NAME:'vlan'  <== mode:M_Interface",
-            "                    PERIOD:'.'",
-            "                    unit = DEC:'40'))))))))",
+            "              (vlt_l3_interface",
+            "                L3_INTERFACE:'l3-interface'",
+            "                (interface_id",
+            "                  name = INTERFACE_NAME:'vlan'  <== mode:M_Interface",
+            "                  PERIOD:'.'",
+            "                  unit = DEC:'40')))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -63010,6 +63592,104 @@
             }
           ]
         },
+        "asa_nat" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 6,
+              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Text" : "nat (any,any) source dynamic source-net pat-pool pool block-allocation round-robin"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 7,
+              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Text" : "nat (inside,outside) source dynamic net1 net2 interface"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 9,
+              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Text" : "nat (inside,outside) source static net1 net2 route-lookup"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 10,
+              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Text" : "nat source dynamic source-net pat-pool pool extended flat include-reserve"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 12,
+              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Text" : "nat source static net1 net2 dns no-proxy-arp unidirectional"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 13,
+              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Text" : "nat source static net1 net2 service service1 service2"
+            }
+          ],
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net1"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group interface"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group interface"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net2"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net1"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net2"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net1"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net2"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net3"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net4"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net1"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net2"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net1"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group net2"
+            }
+          ]
+        },
         "bgp_default_originate_policy" : {
           "Red flags" : [
             {
@@ -63777,6 +64457,7 @@
         "asa_acl" : "PASSED",
         "asa_banner" : "PASSED",
         "asa_interface" : "PASSED",
+        "asa_nat" : "PASSED",
         "asa_object_groups" : "PASSED",
         "asa_ospf" : "PASSED",
         "asa_ssh" : "PASSED",
@@ -63943,7 +64624,7 @@
         "juniper_passwords" : "PASSED",
         "juniper_policy_statement" : "PASSED",
         "juniper_relay" : "PASSED",
-        "juniper_rib_groups" : "PASSED",
+        "juniper_rib_groups" : "WARNINGS",
         "juniper_route_filter" : "PASSED",
         "juniper_routing_options" : "PASSED",
         "juniper_routing_policy" : "PASSED",
@@ -64263,11 +64944,12 @@
             }
           }
         },
+        "configs/asa_nat" : { },
         "configs/asa_object_groups" : {
           "extended ipv4 access-list" : {
             "ALLOW_SERVER02" : {
               "definitionLines" : [
-                5
+                8
               ],
               "numReferrers" : 0
             }
@@ -64275,8 +64957,8 @@
           "object network" : {
             "server02" : {
               "definitionLines" : [
-                3,
-                4
+                6,
+                7
               ],
               "numReferrers" : 1
             }
@@ -68086,7 +68768,42 @@
           }
         },
         "configs/juniper_rib_groups" : {
+          "bgp group" : {
+            "BGP_GROUP" : {
+              "definitionLines" : [
+                15,
+                16,
+                18,
+                19,
+                21,
+                22,
+                24,
+                25
+              ],
+              "numReferrers" : 4
+            }
+          },
+          "logical-system" : {
+            "LOGICALSYSTEM" : {
+              "definitionLines" : [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22
+              ],
+              "numReferrers" : 0
+            }
+          },
           "rib-group" : {
+            "bgp-rib-group" : {
+              "definitionLines" : [
+                11,
+                12
+              ],
+              "numReferrers" : 0
+            },
             "interface-routes-rib" : {
               "definitionLines" : [
                 5,
@@ -69058,11 +69775,69 @@
             }
           }
         },
+        "configs/asa_nat" : {
+          "interface" : {
+            "inside" : {
+              "twice nat real interface" : [
+                7,
+                8,
+                9
+              ]
+            },
+            "outside" : {
+              "twice nat mapped interface" : [
+                7,
+                8,
+                9
+              ]
+            }
+          },
+          "object network" : {
+            "interface" : {
+              "twice nat mapped destination network object" : [
+                8
+              ],
+              "twice nat mapped source network object" : [
+                8
+              ]
+            },
+            "net1" : {
+              "twice nat real source network object" : [
+                8,
+                9,
+                11,
+                12,
+                13
+              ]
+            },
+            "net2" : {
+              "twice nat mapped source network object" : [
+                9,
+                11,
+                12,
+                13
+              ],
+              "twice nat real destination network object" : [
+                8
+              ]
+            },
+            "net3" : {
+              "twice nat mapped destination network object" : [
+                11
+              ]
+            },
+            "net4" : {
+              "twice nat real destination network object" : [
+                11
+              ]
+            }
+          }
+        },
         "configs/asa_object_groups" : {
           "object network" : {
             "server02" : {
               "extended access-list network object" : [
-                5
+                8
               ]
             }
           }
@@ -71836,7 +72611,33 @@
           }
         },
         "configs/juniper_rib_groups" : {
+          "bgp group" : {
+            "BGP_GROUP" : {
+              "bgp group neighbor" : [
+                16,
+                19,
+                22,
+                25
+              ]
+            }
+          },
           "rib-group" : {
+            "bgp-rib-group" : {
+              "bgp family inet unicast rib-group" : [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25
+              ]
+            },
             "interface-routes-rib" : {
               "routing-options interface-routes" : [
                 3,
@@ -71914,6 +72715,16 @@
         },
         "configs/juniper_vlan" : {
           "interface" : {
+            "vlan.30" : {
+              "vlan l3-interface" : [
+                6
+              ]
+            },
+            "vlan.40" : {
+              "vlan l3-interface" : [
+                8
+              ]
+            },
             "xe-0/0/0" : {
               "interface" : [
                 10,
@@ -72367,6 +73178,64 @@
             "some-interface-policy" : {
               "service-policy interface policy" : [
                 8
+              ]
+            }
+          }
+        },
+        "configs/asa_nat" : {
+          "interface" : {
+            "inside" : {
+              "twice nat real interface" : [
+                7,
+                8,
+                9
+              ]
+            },
+            "outside" : {
+              "twice nat mapped interface" : [
+                7,
+                8,
+                9
+              ]
+            }
+          },
+          "object network" : {
+            "interface" : {
+              "twice nat mapped destination network object" : [
+                8
+              ],
+              "twice nat mapped source network object" : [
+                8
+              ]
+            },
+            "net1" : {
+              "twice nat real source network object" : [
+                8,
+                9,
+                11,
+                12,
+                13
+              ]
+            },
+            "net2" : {
+              "twice nat mapped source network object" : [
+                9,
+                11,
+                12,
+                13
+              ],
+              "twice nat real destination network object" : [
+                8
+              ]
+            },
+            "net3" : {
+              "twice nat mapped destination network object" : [
+                11
+              ]
+            },
+            "net4" : {
+              "twice nat real destination network object" : [
+                11
               ]
             }
           }
@@ -74463,6 +75332,78 @@
             }
           ]
         },
+        "juniper_rib_groups" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
+            }
+          ]
+        },
+        "juniper_rib_groups~logical_system~logicalsystem" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
+            }
+          ]
+        },
         "juniper_security" : {
           "Red flags" : [
             {
@@ -74621,6 +75562,7 @@
         "configs/asa_acl" : "PASSED",
         "configs/asa_banner" : "PASSED",
         "configs/asa_interface" : "PASSED",
+        "configs/asa_nat" : "PASSED",
         "configs/asa_object_groups" : "PASSED",
         "configs/asa_ospf" : "PASSED",
         "configs/asa_ssh" : "PASSED",

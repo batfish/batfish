@@ -220,8 +220,9 @@ public class IBatfishTestAdapter implements IBatfish {
       }
 
       @Override
-      public Layer1Topology getLayer1LogicalTopology(NetworkSnapshot networkSnapshot) {
-        return TopologyUtil.computeLayer1LogicalTopology(getLayer1Topology(), loadConfigurations());
+      public Optional<Layer1Topology> getLayer1LogicalTopology(NetworkSnapshot networkSnapshot) {
+        return Optional.of(
+            TopologyUtil.computeLayer1LogicalTopology(getLayer1Topology(), loadConfigurations()));
       }
 
       @Override
@@ -230,12 +231,12 @@ public class IBatfishTestAdapter implements IBatfish {
       }
 
       @Override
-      public Layer1Topology getLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
+      public Optional<Layer1Topology> getLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
         throw new UnsupportedOperationException();
       }
 
       @Override
-      public Layer2Topology getLayer2Topology(NetworkSnapshot networkSnapshot) {
+      public Optional<Layer2Topology> getLayer2Topology(NetworkSnapshot networkSnapshot) {
         throw new UnsupportedOperationException();
       }
 

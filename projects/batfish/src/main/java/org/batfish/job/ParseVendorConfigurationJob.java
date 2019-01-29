@@ -42,7 +42,7 @@ import org.batfish.vendor.VendorConfiguration;
 
 public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigurationResult> {
 
-  private static Pattern BANNER_PATTERN =
+  private static final Pattern BANNER_PATTERN =
       Pattern.compile("(?m)banner[ \t][ \t]*[^ \r\n\t][^ \r\n\t]*[ \t][ \t]*([^ \r\n\t])[ \r\n]");
 
   private static String preprocessBanner(String fileText, ConfigurationFormat format) {
@@ -230,29 +230,18 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                 _duplicateHostnames);
 
           case VYOS:
-            if (_settings.flattenOnTheFly()) {
-              _warnings.pedantic(
-                  String.format(
-                      "Flattening: '%s' on-the-fly; line-numbers reported for this file will be spurious\n",
-                      _filename));
-              _fileText =
-                  Batfish.flatten(
-                          _fileText,
-                          _logger,
-                          _settings,
-                          ConfigurationFormat.VYOS,
-                          VendorConfigurationFormatDetector.BATFISH_FLATTENED_VYOS_HEADER)
-                      .getFlattenedConfigurationText();
-            } else {
-              return new ParseVendorConfigurationResult(
-                  System.currentTimeMillis() - startTime,
-                  _logger.getHistory(),
-                  _filename,
-                  new BatfishException(
-                      String.format(
-                          "Vyos configurations must be flattened prior to this stage: '%s'",
-                          _filename)));
-            }
+            _warnings.pedantic(
+                String.format(
+                    "Flattening: '%s' on-the-fly; line-numbers reported for this file will be spurious\n",
+                    _filename));
+            _fileText =
+                Batfish.flatten(
+                        _fileText,
+                        _logger,
+                        _settings,
+                        ConfigurationFormat.VYOS,
+                        VendorConfigurationFormatDetector.BATFISH_FLATTENED_VYOS_HEADER)
+                    .getFlattenedConfigurationText();
             // fall through
           case FLAT_VYOS:
             FlatVyosCombinedParser flatVyosParser =
@@ -262,38 +251,23 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             break;
 
           case JUNIPER:
-            if (_settings.flattenOnTheFly()) {
-              _warnings.pedantic(
-                  String.format(
-                      "Flattening: '%s' on-the-fly; line-numbers reported for this file will be spurious\n",
-                      _filename));
-              try {
-                Flattener flattener =
-                    Batfish.flatten(
-                        _fileText,
-                        _logger,
-                        _settings,
-                        ConfigurationFormat.JUNIPER,
-                        VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
-                _fileText = flattener.getFlattenedConfigurationText();
-                lineMap = flattener.getOriginalLineMap();
-              } catch (BatfishException e) {
-                return new ParseVendorConfigurationResult(
-                    System.currentTimeMillis() - startTime,
-                    _logger.getHistory(),
-                    _filename,
-                    new BatfishException(
-                        String.format("Error flattening configuration file: '%s'", _filename), e));
-              }
-            } else {
+            try {
+              Flattener flattener =
+                  Batfish.flatten(
+                      _fileText,
+                      _logger,
+                      _settings,
+                      ConfigurationFormat.JUNIPER,
+                      VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
+              _fileText = flattener.getFlattenedConfigurationText();
+              lineMap = flattener.getOriginalLineMap();
+            } catch (BatfishException e) {
               return new ParseVendorConfigurationResult(
                   System.currentTimeMillis() - startTime,
                   _logger.getHistory(),
                   _filename,
                   new BatfishException(
-                      String.format(
-                          "Juniper configurations must be flattened prior to this stage: '%s'",
-                          _filename)));
+                      String.format("Error flattening configuration file: '%s'", _filename), e));
             }
             // fall through
           case FLAT_JUNIPER:
@@ -319,38 +293,23 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             break;
 
           case PALO_ALTO_NESTED:
-            if (_settings.flattenOnTheFly()) {
-              _warnings.pedantic(
-                  String.format(
-                      "Flattening: '%s' on-the-fly; line-numbers reported for this file will be spurious\n",
-                      _filename));
-              try {
-                Flattener flattener =
-                    Batfish.flatten(
-                        _fileText,
-                        _logger,
-                        _settings,
-                        ConfigurationFormat.PALO_ALTO_NESTED,
-                        VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
-                _fileText = flattener.getFlattenedConfigurationText();
-                lineMap = flattener.getOriginalLineMap();
-              } catch (BatfishException e) {
-                return new ParseVendorConfigurationResult(
-                    System.currentTimeMillis() - startTime,
-                    _logger.getHistory(),
-                    _filename,
-                    new BatfishException(
-                        String.format("Error flattening configuration file: '%s'", _filename), e));
-              }
-            } else {
+            try {
+              Flattener flattener =
+                  Batfish.flatten(
+                      _fileText,
+                      _logger,
+                      _settings,
+                      ConfigurationFormat.PALO_ALTO_NESTED,
+                      VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
+              _fileText = flattener.getFlattenedConfigurationText();
+              lineMap = flattener.getOriginalLineMap();
+            } catch (BatfishException e) {
               return new ParseVendorConfigurationResult(
                   System.currentTimeMillis() - startTime,
                   _logger.getHistory(),
                   _filename,
                   new BatfishException(
-                      String.format(
-                          "Palo Alto nested configurations must be flattened prior to this stage: '%s'",
-                          _filename)));
+                      String.format("Error flattening configuration file: '%s'", _filename), e));
             }
             // fall through
           case PALO_ALTO:
