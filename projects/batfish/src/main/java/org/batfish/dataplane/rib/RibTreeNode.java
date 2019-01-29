@@ -5,8 +5,8 @@ import static org.batfish.dataplane.rib.RouteAdvertisement.Reason.REPLACE;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
@@ -182,7 +182,7 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
    * @param rightBranch whether we should recurse down the right side of the tree
    * @return True if a route has been inserted into the tree
    */
-  @Nullable
+  @Nonnull
   private RibDelta<R> mergeHelper(
       RibTreeNode<R> parent,
       R route,
@@ -206,7 +206,7 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
       node._routes.add(route);
       // don't forget to assign new node object to parent node
       assignChild(parent, node, rightBranch);
-      return new RibDelta.Builder<>(_owner).add(route).build();
+      return RibDelta.<R>builder().add(route).build();
     }
 
     // Node exists, get some helper data out of the current node we are examining
@@ -256,7 +256,7 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
       node._routes.add(route);
       assignChild(parent, node, rightBranch);
       assignChild(node, oldNode, currentNodeAddressBit);
-      return new RibDelta.Builder<>(_owner).add(route).build();
+      return RibDelta.<R>builder().add(route).build();
     }
 
     /*
@@ -278,10 +278,10 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
     // child and old node become siblings, children of the newly inserted node
     assignChild(node, child, currentAddressBit);
     assignChild(node, oldNode, !currentAddressBit);
-    return new RibDelta.Builder<>(_owner).add(route).build();
+    return RibDelta.<R>builder().add(route).build();
   }
 
-  @Nullable
+  @Nonnull
   RibDelta<R> mergeRoute(
       R route, long routeBits, int routePrefixLength, int firstUnmatchedBitIndex) {
     /*
@@ -294,7 +294,7 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
       // No routes with this prefix, so just add it. No comparison necessary
       if (_routes.isEmpty()) {
         _routes.add(route);
-        return new RibDelta.Builder<>(_owner).add(route).build();
+        return RibDelta.<R>builder().add(route).build();
       }
 
       /*
@@ -306,18 +306,18 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
       R oldRoute = _routes.iterator().next();
       int preferenceComparison = _owner.comparePreference(route, oldRoute);
       if (preferenceComparison < 0) { // less preferable, so route doesn't get added
-        return null;
+        return RibDelta.empty();
       }
       if (preferenceComparison == 0) { // equal preference, so add for multipath routing
         if (_routes.contains(route)) {
           // route is already here, so nothing to do
-          return null;
+          return RibDelta.empty();
         }
         // Otherwise add the route
         if (_routes.add(route)) {
-          return new RibDelta.Builder<>(_owner).add(route).build();
+          return RibDelta.<R>builder().add(route).build();
         } else {
-          return null;
+          return RibDelta.empty();
         }
       }
       // Last case, preferenceComparison > 0
@@ -325,7 +325,7 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
        * Better than all pre-existing routes for this prefix, so
        * replace them with this one.
        */
-      RibDelta<R> delta = new Builder<>(_owner).remove(_routes, REPLACE).add(route).build();
+      RibDelta<R> delta = RibDelta.<R>builder().remove(_routes, REPLACE).add(route).build();
       _routes.clear();
       _routes.add(route);
       return delta;
@@ -344,20 +344,20 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
     return _prefix.toString();
   }
 
-  @Nullable
+  @Nonnull
   RibDelta<R> removeRoute(
       R route, long bits, int prefixLength, int firstUnmatchedBitIndex, Reason reason) {
     RibTreeNode<R> node = findRouteNode(bits, prefixLength, firstUnmatchedBitIndex);
     if (node == null) {
-      // No effect, return null
-      return null;
+      // No effect, return empty
+      return RibDelta.empty();
     }
-    Builder<R> b = new Builder<>(_owner);
+    Builder<R> b = RibDelta.builder();
     if (node._routes.remove(route)) {
       b.remove(route, reason);
       if (node._routes.isEmpty() && _owner._backupRoutes != null) {
         SortedSet<? extends R> backups =
-            _owner._backupRoutes.getOrDefault(route.getNetwork(), Collections.emptySortedSet());
+            _owner._backupRoutes.getOrDefault(route.getNetwork(), ImmutableSortedSet.of());
         if (!backups.isEmpty()) {
           node._routes.add(backups.first());
           b.add(backups.first());
@@ -400,7 +400,7 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
     if (node == null) {
       return null;
     }
-    RibDelta<R> delta = new Builder<>(_owner).remove(node._routes, REPLACE).build();
+    RibDelta<R> delta = RibDelta.<R>builder().remove(node._routes, REPLACE).build();
     node._routes.clear();
     return delta;
   }

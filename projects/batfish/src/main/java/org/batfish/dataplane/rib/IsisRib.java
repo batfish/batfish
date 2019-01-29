@@ -1,7 +1,7 @@
 package org.batfish.dataplane.rib;
 
 import java.util.Comparator;
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.IsisRoute;
 
@@ -42,10 +42,10 @@ public class IsisRib extends AbstractRib<IsisRoute> {
   }
 
   @Override
-  @Nullable
+  @Nonnull
   public RibDelta<IsisRoute> mergeRouteGetDelta(IsisRoute route) {
     if (route.getAttach() && !_l1Only) {
-      return null;
+      return RibDelta.empty();
     }
     return super.mergeRouteGetDelta(route);
   }
