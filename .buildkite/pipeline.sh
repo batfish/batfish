@@ -64,20 +64,8 @@ cat <<EOF
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
-  - label: "Maven checkstyle"
-    command: "mvn -f projects/pom.xml verify -Dcheckstyle.skip=false"
-    plugins:
-      - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
-          image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
-          always-pull: true
-  - label: "Maven dependency analysis"
-    command: "mvn -f projects/pom.xml verify -Dmdep.analyze.skip=false"
-    plugins:
-      - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
-          image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
-          always-pull: true
-  - label: "Maven findbugs"
-    command: "mvn -f projects/pom.xml verify -Dfindbugs.skip=false"
+  - label: "Maven checkstyle, findbugs, dependency"
+    command: "mvn -f projects/pom.xml verify -Dcheckstyle.skip=false -Dmdep.analyze.skip=false -Dfindbugs.skip=false"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
