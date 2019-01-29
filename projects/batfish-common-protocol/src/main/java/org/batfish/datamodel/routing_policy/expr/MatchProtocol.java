@@ -8,9 +8,8 @@ import static org.batfish.datamodel.RoutingProtocol.ISIS_L2;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.EnumSet;
 import java.util.Objects;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -20,10 +19,12 @@ import org.batfish.datamodel.routing_policy.Result;
 
 /** Match the route's routing protocol */
 @ParametersAreNonnullByDefault
-public class MatchProtocol extends BooleanExpr {
+public final class MatchProtocol extends BooleanExpr {
 
   private static final String PROP_PROTOCOL = "protocol";
   private static final long serialVersionUID = 1L;
+  private static final EnumSet<RoutingProtocol> ISIS_EXPANSION =
+      EnumSet.of(ISIS_L1, ISIS_L2, ISIS_EL1, ISIS_EL2);
 
   /** TODO: ideally, this should be a list of protocols, treated as a disjunction (match any) */
   @Nonnull private final RoutingProtocol _protocol;
@@ -40,7 +41,7 @@ public class MatchProtocol extends BooleanExpr {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }
@@ -61,9 +62,7 @@ public class MatchProtocol extends BooleanExpr {
     Result result = new Result();
     // Workaround: Treat ISIS_ANY as a special value
     if (_protocol == RoutingProtocol.ISIS_ANY) {
-      result.setBooleanValue(
-          Stream.of(ISIS_L1, ISIS_L2, ISIS_EL1, ISIS_EL2)
-              .anyMatch(Predicate.isEqual(environment.getOriginalRoute().getProtocol())));
+      result.setBooleanValue(ISIS_EXPANSION.contains(environment.getOriginalRoute().getProtocol()));
     } else {
       result.setBooleanValue(environment.getOriginalRoute().getProtocol().equals(_protocol));
     }
