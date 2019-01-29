@@ -346,13 +346,13 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     // Handle specially some cases that will not produce a vendor configuration file.
     if (format == ConfigurationFormat.EMPTY) {
       _warnings.redFlag("Empty file: '" + _filename + "'\n");
-      return new ParseResult(null, null, _ptSentences, ParseStatus.EMPTY, _warnings);
+      return new ParseResult(null, null, _filename, _ptSentences, ParseStatus.EMPTY, _warnings);
     } else if (format == ConfigurationFormat.IGNORED) {
       _warnings.redFlag("Ignored file: " + _filename + "\n");
-      return new ParseResult(null, null, _ptSentences, ParseStatus.IGNORED, _warnings);
+      return new ParseResult(null, null, _filename, _ptSentences, ParseStatus.IGNORED, _warnings);
     } else if (format == ConfigurationFormat.UNKNOWN) {
       _warnings.redFlag("Unable to detect format for file: '" + _filename + "'\n");
-      return new ParseResult(null, null, _ptSentences, ParseStatus.UNKNOWN, _warnings);
+      return new ParseResult(null, null, _filename, _ptSentences, ParseStatus.UNKNOWN, _warnings);
     } else if (UNIMPLEMENTED_FORMATS.contains(format)) {
       String unsupportedError =
           "Unsupported configuration format: '" + format + "' for file: '" + _filename + "'\n";
@@ -360,12 +360,14 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         return new ParseResult(
             null,
             new BatfishException(unsupportedError),
+            _filename,
             _ptSentences,
             ParseStatus.FAILED,
             _warnings);
       }
       _warnings.redFlag(unsupportedError);
-      return new ParseResult(null, null, _ptSentences, ParseStatus.UNSUPPORTED, _warnings);
+      return new ParseResult(
+          null, null, _filename, _ptSentences, ParseStatus.UNSUPPORTED, _warnings);
     }
 
     try {
@@ -373,11 +375,12 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       VendorConfiguration vc = parseFile(format);
       ParseStatus status =
           vc.getUnrecognized() ? ParseStatus.PARTIALLY_UNRECOGNIZED : ParseStatus.PASSED;
-      return new ParseResult(vc, null, _ptSentences, status, _warnings);
+      return new ParseResult(vc, null, _filename, _ptSentences, status, _warnings);
     } catch (Exception e) {
       return new ParseResult(
           null,
           new BatfishException("Error parsing configuration file: '" + _filename + "'"),
+          _filename,
           _ptSentences,
           ParseStatus.FAILED,
           _warnings);
