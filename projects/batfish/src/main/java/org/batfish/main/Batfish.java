@@ -196,6 +196,7 @@ import org.batfish.job.ConvertConfigurationJob;
 import org.batfish.job.FlattenVendorConfigurationJob;
 import org.batfish.job.ParseEnvironmentBgpTableJob;
 import org.batfish.job.ParseEnvironmentRoutingTableJob;
+import org.batfish.job.ParseResult;
 import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
@@ -3139,6 +3140,62 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * #serializeVendorConfigs(Path, Path)}, so leaving as-is for now.
    */
   private void serializeNetworkConfigs(
+      Path userUploadPath,
+      Path outputPath,
+      ParseVendorConfigurationAnswerElement answerElement,
+      SortedMap<String, VendorConfiguration> overlayHostConfigurations) {
+    if (!overlayHostConfigurations.isEmpty()) {
+      // Not able to cache with overlays.
+      oldSerializeNetworkConfigs(
+          userUploadPath, outputPath, answerElement, overlayHostConfigurations);
+      return;
+    }
+
+    _logger.info("\n*** READING DEVICE CONFIGURATION FILES ***\n");
+
+    List<ParseResult> parseResults;
+    try (ActiveSpan parseNetworkConfigsSpan =
+        GlobalTracer.get().buildSpan("Parse network configs").startActive()) {
+      assert parseNetworkConfigsSpan != null; // avoid unused warning
+      Map<Path, String> configurationData =
+          readAllFiles(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger);
+      List<ParseVendorConfigurationJob> jobs =
+          makeParseVendorConfigurationsJobs(configurationData, ConfigurationFormat.UNKNOWN);
+      parseResults =
+          jobs.stream()
+              .map(ParseVendorConfigurationJob::parse)
+              .collect(ImmutableList.toImmutableList());
+    }
+    _logger.infof(
+        "Snapshot %s in network %s has total number of network configs:%d",
+        getTestrigName(), getContainerName(), parseResults.size());
+
+    _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
+    _logger.resetTimer();
+    createDirectories(outputPath);
+    Map<Path, VendorConfiguration> output = new TreeMap<>();
+    vendorConfigurations.forEach(
+        (name, vc) -> {
+          if (name.contains(File.separator)) {
+            // iptables will get a hostname like configs/iptables-save if they
+            // are not set up correctly using host files
+            _logger.errorf("Cannot serialize configuration with hostname %s\n", name);
+            answerElement.addRedFlagWarning(
+                name,
+                new Warning(
+                    "Cannot serialize network config. Bad hostname " + name.replace("\\", "/"),
+                    "MISCELLANEOUS"));
+          } else {
+            Path currentOutputPath = outputPath.resolve(name);
+            output.put(currentOutputPath, vc);
+          }
+        });
+
+    serializeObjects(output);
+    _logger.printElapsedTime();
+  }
+
+  private void oldSerializeNetworkConfigs(
       Path userUploadPath,
       Path outputPath,
       ParseVendorConfigurationAnswerElement answerElement,

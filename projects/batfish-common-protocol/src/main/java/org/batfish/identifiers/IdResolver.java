@@ -1,5 +1,7 @@
 package org.batfish.identifiers;
 
+import com.google.common.hash.Hashing;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -52,6 +54,17 @@ public interface IdResolver {
   /** Retrieve the current {@link NodeRolesId} for {@code networkId}. */
   @Nonnull
   NodeRolesId getNetworkNodeRolesId(NetworkId networkId);
+
+  /** Retrieve the current {@link ParseResultId} for the given input. */
+  @Nonnull
+  default ParseResultId getParseResultId(String filename, String data) {
+    return new ParseResultId(Hashing.murmur3_128()
+        .newHasher(filename.length() + data.length())
+        .putString(filename, StandardCharsets.UTF_8)
+        .putString(data, StandardCharsets.UTF_8)
+        .hash()
+        .toString());
+  }
 
   /**
    * Retrieve the {@link QuestionId} assigned to {@code question} under {@code networkId} and {@code
