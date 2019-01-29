@@ -516,7 +516,7 @@ class IncrementalBdpEngine {
       assert span != null; // avoid unused warning
 
       AtomicInteger propagateCrossVRF =
-          _newBatch.apply(iterationLabel + ": Leaking roues across VRFs", nodes.size());
+          _newBatch.apply(iterationLabel + ": Leaking routes across VRFs", nodes.size());
       nodes
           .values()
           .parallelStream()

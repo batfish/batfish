@@ -155,7 +155,7 @@ public class VirtualRouter implements Serializable {
 
   /**
    * Queues containing routes that are coming in from other VRFs (as a result of explicitly
-   * configured leaking or applied RIB groups.
+   * configured leaking or applied RIB groups).
    */
   private transient SortedMap<CrossVrfEdgeId, Queue<RouteAdvertisement<AbstractRoute>>>
       _crossVrfIncomingRoutes;
@@ -273,6 +273,7 @@ public class VirtualRouter implements Serializable {
 
   private void initCrossVrfQueues() {
     // TODO: also handle non-default RIBs
+    // https://github.com/batfish/batfish/issues/3050
     _crossVrfIncomingRoutes =
         _node.getVirtualRouters().keySet().stream()
             .filter(n -> !_name.equals(n))
@@ -2779,10 +2780,13 @@ public class VirtualRouter implements Serializable {
   }
 
   private void enqueueCrossVrfRoutes(
-      @Nonnull CrossVrfEdgeId from,
+      @Nonnull CrossVrfEdgeId remoteVrfToOurRib,
       @Nonnull Collection<RouteAdvertisement<AbstractRoute>> routes,
       @Nullable String policyName) {
-    checkState(_crossVrfIncomingRoutes.containsKey(from), "No queue allocated for VRF %s", from);
+    checkState(
+        _crossVrfIncomingRoutes.containsKey(remoteVrfToOurRib),
+        "No queue allocated for VRF %s",
+        remoteVrfToOurRib);
 
     Collection<RouteAdvertisement<AbstractRoute>> filteredRoutes = routes;
     if (policyName != null) {
@@ -2801,7 +2805,7 @@ public class VirtualRouter implements Serializable {
               .filter(Objects::nonNull)
               .collect(ImmutableList.toImmutableList());
     }
-    _crossVrfIncomingRoutes.get(from).addAll(filteredRoutes);
+    _crossVrfIncomingRoutes.get(remoteVrfToOurRib).addAll(filteredRoutes);
   }
 
   void processCrossVrfRoutes() {
@@ -2810,6 +2814,7 @@ public class VirtualRouter implements Serializable {
           while (queue.peek() != null) {
             RouteAdvertisement<AbstractRoute> ra = queue.remove();
             // TODO: handle non-default main RIBs based on RIB specified in edgeID
+            // https://github.com/batfish/batfish/issues/3050
             if (ra.isWithdrawn()) {
               _mainRibRouteDeltaBuilder.from(_mainRib.removeRouteGetDelta(ra.getRoute()));
             } else {

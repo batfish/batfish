@@ -2,6 +2,7 @@ package org.batfish.dataplane;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasItem;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
@@ -56,7 +57,7 @@ public class BgpRibGroupsTest {
 
   * EBGP on all nodes, 2 peers setup at r1
   * r1 has "vrf2", without any BGP process running.
-  * r1 will leak route from default VRF2 to VRF2 using a rib group applied to the peering with R2 only
+  * r1 will leak route from default VRF to VRF2 using a rib group applied to the peering with R2 only
   * r2 & r3 will both advertise a different route into bgp
   * r2's static route should be in the VRF2's RIB
   * r3's static route should NOT be in the VRF2's RIB
@@ -125,22 +126,6 @@ public class BgpRibGroupsTest {
                 Statements.ReturnTrue.toStaticStatement()))
         .setOwner(c1)
         .build();
-    nf.routingPolicyBuilder()
-        .setName(EXPORT_ALL)
-        .setStatements(
-            ImmutableList.of(
-                new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)),
-                Statements.ReturnTrue.toStaticStatement()))
-        .setOwner(c2)
-        .build();
-    nf.routingPolicyBuilder()
-        .setName(EXPORT_ALL)
-        .setStatements(
-            ImmutableList.of(
-                new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)),
-                Statements.ReturnTrue.toStaticStatement()))
-        .setOwner(c3)
-        .build();
 
     // R1
     Vrf c1v1 = nf.vrfBuilder().setOwner(c1).setName(Configuration.DEFAULT_VRF_NAME).build();
@@ -180,6 +165,7 @@ public class BgpRibGroupsTest {
         .setRemoteAs(3L)
         .setPeerAddress(Ip.parse("1.1.1.5"))
         .setLocalIp(Ip.parse("1.1.1.4"))
+        .setExportPolicy(EXPORT_ALL)
         .build();
 
     // R2
@@ -221,8 +207,8 @@ public class BgpRibGroupsTest {
 
     nf.interfaceBuilder()
         .setAddress(new InterfaceAddress("1.1.1.5/31"))
-        .setOwner(c2)
-        .setVrf(v2)
+        .setOwner(c3)
+        .setVrf(v3)
         .build();
 
     BgpProcess bgpProc3 =
@@ -247,6 +233,7 @@ public class BgpRibGroupsTest {
     batfish.computeDataPlane(false);
     DataPlane dp = batfish.loadDataPlane();
 
+    // Only 2.2.2.0/24 in VRF2
     Set<AbstractRoute> vrf2Routes = dp.getRibs().get("r1").get(VRF_2).getRoutes();
     assertThat(
         vrf2Routes,
@@ -261,6 +248,26 @@ public class BgpRibGroupsTest {
                 .setLocalPreference(100)
                 .setReceivedFromIp(Ip.parse("1.1.1.3"))
                 .setNextHopIp(Ip.parse("1.1.1.3"))
+                .setSrcProtocol(RoutingProtocol.BGP)
+                .build()));
+
+    // 3.3.3.0/24 as expected in default VRF
+    Set<AbstractRoute> defaultVrfRoutes =
+        dp.getRibs().get("r1").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+    assertThat(
+        defaultVrfRoutes,
+        hasItem(
+            BgpRoute.builder()
+                .setNetwork(Prefix.parse("3.3.3.0/24"))
+                .setAdmin(
+                    RoutingProtocol.BGP.getDefaultAdministrativeCost(ConfigurationFormat.JUNIPER))
+                .setAsPath(AsPath.ofSingletonAsSets(3L))
+                .setOriginatorIp(Ip.parse("3.3.3.3"))
+                .setOriginType(OriginType.IGP)
+                .setProtocol(RoutingProtocol.BGP)
+                .setLocalPreference(100)
+                .setReceivedFromIp(Ip.parse("1.1.1.5"))
+                .setNextHopIp(Ip.parse("1.1.1.5"))
                 .setSrcProtocol(RoutingProtocol.BGP)
                 .build()));
   }
