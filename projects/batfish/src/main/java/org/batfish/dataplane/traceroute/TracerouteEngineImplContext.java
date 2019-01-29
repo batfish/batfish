@@ -146,21 +146,6 @@ public class TracerouteEngineImplContext {
       _transformedFlow = transformedFlow;
     }
 
-    private TransmissionContext branch() {
-      TransmissionContext transmissionContext =
-          new TransmissionContext(
-              _aclDefinitions,
-              _currentNode,
-              _flowTraces,
-              _hopsSoFar,
-              _lastHopNodeAndOutgoingInterface,
-              _newSessions,
-              _namedIpSpaces,
-              _originalFlow,
-              _transformedFlow);
-      return transmissionContext;
-    }
-
     /** Creates a new TransmissionContext for the specified last-hop node and outgoing interface. */
     private TransmissionContext from(String node, String iface) {
       TransmissionContext transmissionContext =
@@ -733,7 +718,7 @@ public class TracerouteEngineImplContext {
 
     Ip origSrcIp = inputFlow.getSrcIp();
     if (!origSrcIp.equals(currentFlow.getSrcIp())) {
-      transformationStepsBuilder.add(TransformationStep.assignDestinationIp(origDstIp, origDstIp));
+      transformationStepsBuilder.add(TransformationStep.assignDestinationIp(origSrcIp, origSrcIp));
     }
 
     List<TransformationStep> transformationSteps = transformationStepsBuilder.build();
