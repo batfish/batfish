@@ -1,7 +1,7 @@
 package org.batfish.dataplane.protocols;
 
 import java.util.Optional;
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.isis.IsisLevel;
@@ -33,12 +33,10 @@ public class IsisProtocolHelper {
             .build());
   }
 
-  public static @Nullable RibDelta<IsisRoute> setOverloadOnAllRoutes(
-      @Nullable RibDelta<IsisRoute> delta) {
-    if (delta == null) {
-      return null;
-    }
-    RibDelta.Builder<IsisRoute> deltaWithOverloadTrue = new RibDelta.Builder<>(null);
+  @Nonnull
+  public static RibDelta<IsisRoute> setOverloadOnAllRoutes(@Nonnull RibDelta<IsisRoute> delta) {
+
+    RibDelta.Builder<IsisRoute> deltaWithOverloadTrue = RibDelta.builder();
     delta
         .getActions()
         .forEach(

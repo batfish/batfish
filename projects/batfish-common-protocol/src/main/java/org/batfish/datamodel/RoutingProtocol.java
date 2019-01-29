@@ -16,7 +16,7 @@ public enum RoutingProtocol {
   EVPN("evpn"),
   IBGP("ibgp"),
   IGP("igp"),
-  ISIS("isis"),
+  ISIS_ANY("isis"),
   ISIS_EL1("isisEL1"),
   ISIS_EL2("isisEL2"),
   ISIS_L1("isisL1"),
@@ -655,7 +655,7 @@ public enum RoutingProtocol {
 
       case EGP:
       case IGP:
-      case ISIS:
+      case ISIS_ANY:
       case LDP:
       case LOCAL:
       case MSDP:
@@ -758,7 +758,7 @@ public enum RoutingProtocol {
       case EIGRP_EX:
       case IBGP:
       case IGP:
-      case ISIS:
+      case ISIS_ANY:
       case ISIS_EL1:
       case ISIS_EL2:
       case ISIS_L1:

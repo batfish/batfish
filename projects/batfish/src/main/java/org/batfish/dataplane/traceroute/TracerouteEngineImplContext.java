@@ -109,7 +109,6 @@ public class TracerouteEngineImplContext {
   private static class TransmissionContext {
     private final Map<String, IpAccessList> _aclDefinitions;
     private final Node _currentNode;
-    private String _filterOutNotes;
     private final List<TraceAndReverseFlow> _flowTraces;
     private final List<Hop> _hopsSoFar;
     private final NavigableMap<String, IpSpace> _namedIpSpaces;
@@ -143,7 +142,6 @@ public class TracerouteEngineImplContext {
               _namedIpSpaces,
               _originalFlow,
               _transformedFlow);
-      transmissionContext._filterOutNotes = _filterOutNotes;
       return transmissionContext;
     }
   }
