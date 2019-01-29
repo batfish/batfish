@@ -1236,7 +1236,7 @@ public class TracerouteEngineImplTest {
   }
 
   @Test
-  public void testNewSessions() throws IOException {
+  public void testNewSessionsSingleHop() throws IOException {
     // Construct network
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -1262,6 +1262,16 @@ public class TracerouteEngineImplTest {
     ib.setName(i3Name)
         .setAddress(new InterfaceAddress("1.1.3.1/24"))
         .setFirewallSessionInterfaceInfo(null)
+        .build();
+
+    String i4Name = "iface4";
+    Ip poolIp = Ip.parse("4.4.4.4");
+    ib.setName(i4Name)
+        .setAddress(new InterfaceAddress("1.1.4.1/24"))
+        .setOutgoingTransformation(always().apply(assignSourceIp(poolIp, poolIp)).build())
+        .setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(
+                ImmutableSet.of(i4Name), incomingAclName, outgoingAclName))
         .build();
 
     // Compute data plane
@@ -1354,6 +1364,149 @@ public class TracerouteEngineImplTest {
                           .setTag("TAG")
                           .build()),
                   hasNewFirewallSessions(empty()))));
+    }
+
+    // When exiting i4, make a new session with a transformation
+    {
+      Ip srcIp = Ip.parse("1.1.1.2");
+      Ip dstIp = Ip.parse("1.1.4.2");
+      int dstPort = 100;
+      int srcPort = 200;
+      IpProtocol ipProtocol = IpProtocol.TCP;
+      Flow flow =
+          Flow.builder()
+              .setIngressNode(c1.getHostname())
+              .setIngressInterface(i1Name)
+              .setIpProtocol(ipProtocol)
+              .setSrcIp(srcIp)
+              .setSrcPort(srcPort)
+              .setDstIp(dstIp)
+              .setDstPort(dstPort)
+              .setTag("TAG")
+              .build();
+      List<TraceAndReverseFlow> traces =
+          tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
+      assertThat(
+          traces,
+          contains(
+              allOf(
+                  hasTrace(hasDisposition(DELIVERED_TO_SUBNET)),
+                  hasReverseFlow(
+                      Flow.builder()
+                          .setIngressNode(c1.getHostname())
+                          .setIngressInterface(i4Name)
+                          .setIpProtocol(ipProtocol)
+                          .setSrcIp(dstIp)
+                          .setSrcPort(dstPort)
+                          .setDstIp(poolIp)
+                          .setDstPort(srcPort)
+                          .setTag("TAG")
+                          .build()),
+                  hasNewFirewallSessions(
+                      contains(
+                          new FirewallSessionTraceInfo(
+                              c1.getHostname(),
+                              i1Name,
+                              null,
+                              ImmutableSet.of(i4Name),
+                              match5Tuple(dstIp, dstPort, poolIp, srcPort, ipProtocol),
+                              always().apply(assignDestinationIp(dstIp, dstIp)).build()))))));
+    }
+  }
+
+  @Test
+  public void testNewSessionsMultiHop() throws IOException {
+    // Construct network
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = cb.build();
+    Vrf vrf1 = nf.vrfBuilder().setOwner(c1).build();
+
+    String c1i1Name = "c1i1";
+    nf.interfaceBuilder()
+        .setName(c1i1Name)
+        .setOwner(c1)
+        .setVrf(vrf1)
+        .setAddress(new InterfaceAddress("1.1.1.2/24"))
+        .build();
+    vrf1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("1.1.2.0/24"))
+                .setNextHopIp(Ip.parse("1.1.1.1"))
+                .setNextHopInterface(c1i1Name)
+                .setAdministrativeCost(1)
+                .build()));
+
+    Configuration c2 = cb.build();
+    Vrf vrf2 = nf.vrfBuilder().setOwner(c2).build();
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(c2).setVrf(vrf2);
+
+    String c2i1Name = "c2i1";
+    ib.setName(c2i1Name).setAddress(new InterfaceAddress("1.1.1.1/24")).build();
+
+    String c2i2Name = "c2i2";
+    ib.setName(c2i2Name)
+        .setAddress(new InterfaceAddress("1.1.2.1/24"))
+        .setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(ImmutableSet.of(c2i2Name), null, null))
+        .build();
+
+    // Compute data plane
+    SortedMap<String, Configuration> configs =
+        ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
+    batfish.computeDataPlane(false);
+    TracerouteEngine tracerouteEngine = batfish.getTracerouteEngine();
+
+    /* c1:i1 -> c2:i1 -> c2:i1. The session created for return traffic has outgoing interface=c2i1
+     * and next hop node/interface c1:i1.
+     */
+    {
+      Ip srcIp = Ip.parse("1.1.1.2");
+      Ip dstIp = Ip.parse("1.1.2.2");
+      int dstPort = 100;
+      int srcPort = 200;
+      IpProtocol ipProtocol = IpProtocol.TCP;
+      Flow flow =
+          Flow.builder()
+              .setIngressNode(c1.getHostname())
+              .setIngressVrf(vrf1.getName())
+              .setIpProtocol(ipProtocol)
+              .setSrcIp(srcIp)
+              .setSrcPort(srcPort)
+              .setDstIp(dstIp)
+              .setDstPort(dstPort)
+              .setTag("TAG")
+              .build();
+      List<TraceAndReverseFlow> traces =
+          tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
+      assertThat(
+          traces,
+          contains(
+              allOf(
+                  hasTrace(hasDisposition(DELIVERED_TO_SUBNET)),
+                  hasReverseFlow(
+                      Flow.builder()
+                          .setIngressNode(c2.getHostname())
+                          .setIngressInterface(c2i2Name)
+                          .setIpProtocol(ipProtocol)
+                          .setSrcIp(dstIp)
+                          .setSrcPort(dstPort)
+                          .setDstIp(srcIp)
+                          .setDstPort(srcPort)
+                          .setTag("TAG")
+                          .build()),
+                  hasNewFirewallSessions(
+                      contains(
+                          new FirewallSessionTraceInfo(
+                              c2.getHostname(),
+                              c2i1Name,
+                              new NodeInterfacePair(c1.getHostname(), c1i1Name),
+                              ImmutableSet.of(c2i2Name),
+                              match5Tuple(dstIp, dstPort, srcIp, srcPort, ipProtocol),
+                              null))))));
     }
   }
 }
