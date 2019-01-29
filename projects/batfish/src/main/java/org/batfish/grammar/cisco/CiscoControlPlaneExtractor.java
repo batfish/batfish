@@ -3350,7 +3350,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String sourceTag = ctx.source_tag.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_ISIS_MAP, ctx.getStart().getLine());
-    _currentBgpNxVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.ISIS, name, sourceTag);
+    _currentBgpNxVrfAddressFamily.setRedistributionPolicy(
+        RoutingProtocol.ISIS_ANY, name, sourceTag);
   }
 
   @Override
