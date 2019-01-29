@@ -77,7 +77,7 @@ public final class RibDelta<R extends AbstractRoute> {
 
   /** Check whether this delta is empty (has no outstanding actions) */
   public boolean isEmpty() {
-    return _actions.isEmpty();
+    return _actions.values().stream().allMatch(List::isEmpty);
   }
 
   /**
@@ -197,20 +197,18 @@ public final class RibDelta<R extends AbstractRoute> {
 
     /** Process all added and removed routes from a given delta */
     @Nonnull
-    public <T extends R> Builder<R> from(@Nullable RibDelta<T> delta) {
-      if (delta != null) {
-        for (RouteAdvertisement<T> a : delta.getActions()) {
-          LinkedHashMap<R, RouteAdvertisement<R>> l =
-              _actions.computeIfAbsent(
-                  a.getRoute().getNetwork(), p -> new LinkedHashMap<>(10, 1, true));
-          l.put(
-              a.getRoute(),
-              RouteAdvertisement.<R>builder()
-                  .setRoute(a.getRoute())
-                  .setWithdraw(a.isWithdrawn())
-                  .setReason(a.getReason())
-                  .build());
-        }
+    public <T extends R> Builder<R> from(@Nonnull RibDelta<T> delta) {
+      for (RouteAdvertisement<T> a : delta.getActions()) {
+        LinkedHashMap<R, RouteAdvertisement<R>> l =
+            _actions.computeIfAbsent(
+                a.getRoute().getNetwork(), p -> new LinkedHashMap<>(10, 1, true));
+        l.put(
+            a.getRoute(),
+            RouteAdvertisement.<R>builder()
+                .setRoute(a.getRoute())
+                .setWithdraw(a.isWithdrawn())
+                .setReason(a.getReason())
+                .build());
       }
       return this;
     }

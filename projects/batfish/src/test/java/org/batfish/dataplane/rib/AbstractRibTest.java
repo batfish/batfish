@@ -2,6 +2,7 @@ package org.batfish.dataplane.rib;
 
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -9,8 +10,6 @@ import static org.hamcrest.Matchers.emptyIterableOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.Iterables;
@@ -364,7 +363,7 @@ public class AbstractRibTest {
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
 
     Set<StaticRoute> routes = _rib.getRoutes();
-    assertThat(_rib.getRoutes(), is(routes));
+    assertThat(_rib.getRoutes(), sameInstance(routes));
   }
 
   /** Test that correct delta is returned when adding a new route. */
@@ -380,18 +379,15 @@ public class AbstractRibTest {
 
     // First merge old route
     RibDelta<RipInternalRoute> delta = rib.mergeRouteGetDelta(oldRoute);
-    assertThat(delta, notNullValue());
     assertThat(delta.getActions().get(0), equalTo(new RouteAdvertisement<>(oldRoute)));
     assertThat(delta.getRoutes(), hasItem(oldRoute));
 
     // Try re-merging, should get empty delta, because RIB has not changed
     delta = rib.mergeRouteGetDelta(oldRoute);
-    assertThat(delta, notNullValue());
     assertThat(delta.getActions(), empty());
 
     // Now replace with a newer route, check that one route removed, one added
     delta = rib.mergeRouteGetDelta(newRoute);
-    assertThat(delta, notNullValue());
     assertThat(delta.getRoutes(), hasItem(oldRoute));
     assertThat(delta.getRoutes(), hasItem(newRoute));
   }
@@ -420,7 +416,6 @@ public class AbstractRibTest {
     // Check only route r remains
     assertThat(_rib.getRoutes(), contains(r));
     assertThat(_rib.getRoutes(), not(contains(_mostGeneralRoute)));
-    assertThat(d, notNullValue());
     assertThat(
         d.getActions().contains(new RouteAdvertisement<>(_mostGeneralRoute, true, Reason.WITHDRAW)),
         equalTo(true));
@@ -429,7 +424,6 @@ public class AbstractRibTest {
     d = _rib.removeRouteGetDelta(r);
     assertThat(_rib.getRoutes(), not(contains(r)));
     assertThat(_rib.getRoutes(), emptyIterableOf(StaticRoute.class));
-    assertThat(d, notNullValue());
     assertThat(
         d.getActions().contains(new RouteAdvertisement<>(r, true, Reason.WITHDRAW)), equalTo(true));
   }

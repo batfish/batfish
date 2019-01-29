@@ -270,10 +270,6 @@ public class VirtualRouter implements Serializable {
    */
   static <R extends AbstractRoute, D extends R> void queueDelta(
       Queue<RouteAdvertisement<R>> queue, @Nonnull RibDelta<D> delta) {
-    if (delta.isEmpty()) {
-      // Nothing to do
-      return;
-    }
     for (RouteAdvertisement<D> r : delta.getActions()) {
       // REPLACE does not make sense across routers, update with WITHDRAW
       Reason reason = r.getReason() == Reason.REPLACE ? Reason.WITHDRAW : r.getReason();
