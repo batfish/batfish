@@ -2783,10 +2783,10 @@ public class VirtualRouter implements Serializable {
       @Nonnull CrossVrfEdgeId remoteVrfToOurRib,
       @Nonnull Collection<RouteAdvertisement<AbstractRoute>> routes,
       @Nullable String policyName) {
-    checkState(
-        _crossVrfIncomingRoutes.containsKey(remoteVrfToOurRib),
-        "No queue allocated for VRF %s",
-        remoteVrfToOurRib);
+    if (!_crossVrfIncomingRoutes.containsKey(remoteVrfToOurRib)) {
+      // We either messed up royally or https://github.com/batfish/batfish/issues/3050
+      return;
+    }
 
     Collection<RouteAdvertisement<AbstractRoute>> filteredRoutes = routes;
     if (policyName != null) {
