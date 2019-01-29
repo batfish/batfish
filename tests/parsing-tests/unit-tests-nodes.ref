@@ -18141,6 +18141,11 @@
             "declaredNames" : [
               "ge-0/0/0.0"
             ],
+            "firewallSessionInterfaceInfo" : {
+              "sessionInterfaces" : [
+                "ge-0/0/0.0"
+              ]
+            },
             "incomingTransformation" : {
               "guard" : {
                 "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
