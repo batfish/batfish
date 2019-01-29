@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
@@ -43,6 +44,25 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
       @JsonProperty(PROP_OUTGOING_ACL_NAME) @Nullable String outgoingAclName) {
     checkNotNull(sessionIntefaces, PROP_SESSION_INTERFACES + " cannot be null");
     return new FirewallSessionInterfaceInfo(sessionIntefaces, incomingAclName, outgoingAclName);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof FirewallSessionInterfaceInfo)) {
+      return false;
+    }
+    FirewallSessionInterfaceInfo that = (FirewallSessionInterfaceInfo) o;
+    return Objects.equals(_sessionInterfaces, that._sessionInterfaces)
+        && Objects.equals(_incomingAclName, that._incomingAclName)
+        && Objects.equals(_outgoingAclName, that._outgoingAclName);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_sessionInterfaces, _incomingAclName, _outgoingAclName);
   }
 
   /** The set of interfaces through which return flows can enter. */

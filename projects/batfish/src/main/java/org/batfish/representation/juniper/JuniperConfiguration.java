@@ -1335,6 +1335,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
         IpAccessList zoneInboundFilterList = _c.getIpAccessLists().get(zoneInboundFilterName);
         newIface.setInboundFilter(zoneInboundFilterList);
       }
+
+      // create session info
+      newIface.setFirewallSessionInterfaceInfo(
+          new FirewallSessionInterfaceInfo(
+              zone.getInterfaces().stream().map(Interface::getName).collect(Collectors.toList()),
+              iface.getIncomingFilter(),
+              iface.getOutgoingFilter()));
     }
 
     String inAclName = iface.getIncomingFilter();
@@ -1425,13 +1432,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newIface.setBandwidth(iface.getBandwidth());
     // treat all non-broadcast interfaces as point to point
     newIface.setOspfPointToPoint(iface.getOspfInterfaceType() != OspfInterfaceType.BROADCAST);
-
-    // create session info
-    newIface.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(
-            zone.getInterfaces().stream().map(Interface::getName).collect(Collectors.toList()),
-            inAclName,
-            outAclName));
 
     return newIface;
   }
