@@ -8,7 +8,7 @@ import org.junit.Test;
 public final class FirewallSessionInterfaceInfoTest {
 
   @Test
-  public void equals() {
+  public void testEquals() {
     ImmutableSet<String> ifaces = ImmutableSet.of("A");
     new EqualsTester()
         .addEqualityGroup(

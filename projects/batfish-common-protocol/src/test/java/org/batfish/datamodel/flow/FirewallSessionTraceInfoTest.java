@@ -13,7 +13,7 @@ import org.junit.Test;
 public final class FirewallSessionTraceInfoTest {
 
   @Test
-  public void equals() {
+  public void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
             new FirewallSessionTraceInfo("A", "B", null, ImmutableSet.of(), TRUE, null),
