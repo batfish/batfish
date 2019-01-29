@@ -1410,7 +1410,7 @@ public class TracerouteEngineImplTest {
                               null,
                               ImmutableSet.of(i4Name),
                               match5Tuple(dstIp, dstPort, poolIp, srcPort, ipProtocol),
-                              always().apply(assignDestinationIp(dstIp, dstIp)).build()))))));
+                              always().apply(assignDestinationIp(srcIp, srcIp)).build()))))));
     }
   }
 
