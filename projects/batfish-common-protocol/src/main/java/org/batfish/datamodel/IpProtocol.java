@@ -64,7 +64,7 @@ public enum IpProtocol {
   IL(40),
   /** Denotes any IP protocol, not a value defined by IANA */
   IP(256),
-  IPComp(108),
+  IPCOMP(108),
   IPCU(71),
   IPINIP(4),
   IPIP(94),
