@@ -65,7 +65,7 @@ cat <<EOF
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
   - label: "Maven checkstyle"
-    command: "mvn -f projects/pom.xml compile checkstyle:checkstyle -Dcheckstyle.skip=false"
+    command: "mvn -f projects/pom.xml verify -Dcheckstyle.skip=false"
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
