@@ -6,10 +6,8 @@ import static org.hamcrest.Matchers.emptyIterableOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasKey;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
 
 import java.util.Map;
 import org.batfish.datamodel.AbstractRoute;
@@ -36,7 +34,7 @@ public class RibTest {
             .setNonRouting(true)
             .build();
 
-    assertThat(rib.mergeRouteGetDelta(route), is(nullValue()));
+    assertThat(rib.mergeRouteGetDelta(route), equalTo(RibDelta.empty()));
     assertThat(rib.mergeRoute(route), equalTo(false));
   }
 

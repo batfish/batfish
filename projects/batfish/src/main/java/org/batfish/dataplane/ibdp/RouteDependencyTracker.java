@@ -10,7 +10,6 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.dataplane.rib.AbstractRib;
 import org.batfish.dataplane.rib.RibDelta;
-import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 public class RouteDependencyTracker<R extends AbstractRoute, D extends AbstractRoute> {
@@ -50,7 +49,7 @@ public class RouteDependencyTracker<R extends AbstractRoute, D extends AbstractR
       // Nothing to process
       return null;
     }
-    RibDelta.Builder<R> b = new Builder<>(rib);
+    RibDelta.Builder<R> b = RibDelta.builder();
     for (R depRoute : dependents) {
       b.from(rib.removeRouteGetDelta(depRoute, Reason.WITHDRAW));
     }

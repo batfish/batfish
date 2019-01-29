@@ -122,21 +122,21 @@ public class BgpRib extends AbstractRib<BgpRoute> {
     }
   }
 
-  @Nullable
+  @Nonnull
   @Override
   public RibDelta<BgpRoute> mergeRouteGetDelta(BgpRoute route) {
     RibDelta<BgpRoute> delta = super.mergeRouteGetDelta(route);
-    if (delta != null) {
+    if (!delta.isEmpty()) {
       delta.getPrefixes().forEach(this::selectBestPath);
     }
     return delta;
   }
 
-  @Nullable
+  @Nonnull
   @Override
   public RibDelta<BgpRoute> removeRouteGetDelta(BgpRoute route, Reason reason) {
     RibDelta<BgpRoute> delta = super.removeRouteGetDelta(route, reason);
-    if (delta != null) {
+    if (!delta.isEmpty()) {
       delta.getPrefixes().forEach(this::selectBestPath);
     }
     return delta;
