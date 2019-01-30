@@ -95,6 +95,56 @@ def test_types(question):
             assert 'value' not in data or isinstance(data['value'], int)
 
 
+NO_ORDERED_VARIABLE_NAMES_QUESTIONS = {
+    'questions/stable/aaaAuthenticationLogin.json',
+    'questions/stable/definedStructures.json',
+    'questions/stable/edges.json',
+    'questions/stable/fileParseStatus.json',
+    'questions/stable/ipOwners.json',
+    'questions/stable/ipsecSessionStatus.json',
+    'questions/stable/parseWarning.json',
+    'questions/stable/referencedStructures.json',
+    'questions/stable/routes.json',
+    'questions/stable/testFilters.json',
+    'questions/stable/undefinedReferences.json',
+    'questions/stable/unusedStructures.json',
+    'questions/stable/viConversionStatus.json',
+    'questions/stable/viConversionWarning.json',
+    'questions/experimental/bgpPeerConfiguration.json',
+    'questions/experimental/bgpProcessConfiguration.json',
+    'questions/experimental/bgpSessionCompatibility.json',
+    'questions/experimental/bgpSessionStatus.json',
+    'questions/experimental/bidirectionalTraceroute.json',
+    'questions/experimental/detectLoops.json',
+    'questions/experimental/differentialReachability.json',
+    'questions/experimental/filterLineReachability.json',
+    'questions/experimental/filterTable.json',
+    'questions/experimental/interfaceMtu.json',
+    'questions/experimental/interfaceProperties.json',
+    'questions/experimental/loopbackMultipathConsistency.json',
+    'questions/experimental/mlagProperties.json',
+    'questions/experimental/multipathConsistency.json',
+    'questions/experimental/namedStructures.json',
+    'questions/experimental/neighbors.json',
+    'questions/experimental/nodeProperties.json',
+    'questions/experimental/nodes.json',
+    'questions/experimental/ospfProperties.json',
+    'questions/experimental/prefixTracer.json',
+    'questions/experimental/reachability.json',
+    'questions/experimental/resolveFilterSpecifier.json',
+    'questions/experimental/resolveInterfaceSpecifier.json',
+    'questions/experimental/resolveIpSpecifier.json',
+    'questions/experimental/resolveIpsOfLocationSpecifier.json',
+    'questions/experimental/resolveLocationSpecifier.json',
+    'questions/experimental/resolveNodeSpecifier.json',
+    'questions/experimental/searchFilters.json',
+    'questions/experimental/subnetMultipathConsistency.json',
+    'questions/experimental/switchedVlanProperties.json',
+    'questions/experimental/traceroute.json',
+    'questions/experimental/viModel.json',
+    'questions/experimental/vxlanVniProperties.json'
+}
+
 def test_ordered_variable_names_is_valid(question, question_text):
     """Tests that orderedVariableNames is present and includes all instance variables."""
     instance = question['instance']
