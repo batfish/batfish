@@ -145,11 +145,16 @@ NO_ORDERED_VARIABLE_NAMES_QUESTIONS = {
     'questions/experimental/vxlanVniProperties.json'
 }
 
-def test_ordered_variable_names_is_valid(question, question_text):
-    """Tests that orderedVariableNames is present and includes all instance variables."""
+def test_ordered_variable_names_is_valid(question, question_path):
+    """Tests that if orderedVariableNames is present, it includes all instance variables."""
     instance = question['instance']
     ordered_variable_names = instance.get('orderedVariableNames', [])
-    assert ordered_variable_names
+
+    if not ordered_variable_names:
+        assert question_path in NO_ORDERED_VARIABLE_NAMES_QUESTIONS
+        pytest.skip('Whitelisted question with no orderedVariableNames')
+
+    assert question_path not in NO_ORDERED_VARIABLE_NAMES_QUESTIONS
     set_of_ordered_variable_names = frozenset(ordered_variable_names)
     # ordered variable names should not contain duplicates
     assert len(set_of_ordered_variable_names) == len(ordered_variable_names)
