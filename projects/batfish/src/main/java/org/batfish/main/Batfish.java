@@ -41,6 +41,7 @@ import com.google.common.hash.Hashing;
 import io.opentracing.ActiveSpan;
 import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -3199,9 +3200,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .hash()
             .toString();
     long startTime = System.currentTimeMillis();
+    boolean cached = false;
     ParseResult result;
     try (InputStream in = _storage.loadNetworkObject(getContainerName(), id)) {
       result = SerializationUtils.deserialize(in);
+      cached = true;
     } catch (FileNotFoundException e) {
       result = job.parse();
     } catch (IOException e) {
@@ -3209,6 +3212,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
           "Error deserializing cached parse result for %s: %s",
           filename, Throwables.getStackTraceAsString(e));
       result = job.parse();
+    }
+    if (!cached) {
+      try {
+        byte[] serialized = SerializationUtils.serialize(result);
+        _storage.storeNetworkObject(new ByteArrayInputStream(serialized), getContainerName(), id);
+      } catch (IOException e) {
+        _logger.warnf(
+            "Error caching parse result for %s: %s", filename, Throwables.getStackTraceAsString(e));
+      }
     }
     long elapsed = System.currentTimeMillis() - startTime;
     return job.fromResult(result, elapsed);
@@ -3250,6 +3262,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       List<ParseVendorConfigurationJob> jobs =
           makeParseVendorConfigurationsJobs(keyedConfigText, ConfigurationFormat.UNKNOWN);
       parseResults = jobs.stream().map(this::getOrParse).collect(ImmutableList.toImmutableList());
+    }
+
+    if (_settings.getHaltOnParseError()
+        && parseResults.stream().anyMatch(r -> r.getFailureCause() != null)) {
+      throw new BatfishException("Exiting due to parser errors");
     }
 
     _logger.infof(
