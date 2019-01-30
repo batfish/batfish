@@ -179,6 +179,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EncryptionAlgorithm;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.GeneratedRoute;
@@ -4428,5 +4429,33 @@ public final class FlatJuniperGrammarTest {
             .getAppliedRibGroup()
             .getName(),
         equalTo("RIB_GROUP_2"));
+  }
+
+  /** Throws the creation of {@link FirewallSessionInterfaceInfo} objects for juniper devices. */
+  @Test
+  public void testFirewallSession() throws IOException {
+    Configuration c = parseConfig("firewall-session-info");
+
+    String i0Name = "ge-0/0/0.0";
+    String i1Name = "ge-0/0/0.1";
+    String i2Name = "ge-0/0/0.2";
+    String i3Name = "ge-0/0/0.3";
+
+    assertThat(
+        c.getAllInterfaces().get(i0Name).getFirewallSessionInterfaceInfo(),
+        equalTo(
+            new FirewallSessionInterfaceInfo(
+                ImmutableList.of(i0Name, i1Name), "FILTER1", "FILTER2")));
+
+    assertThat(
+        c.getAllInterfaces().get(i1Name).getFirewallSessionInterfaceInfo(),
+        equalTo(new FirewallSessionInterfaceInfo(ImmutableList.of(i0Name, i1Name), null, null)));
+
+    assertThat(
+        c.getAllInterfaces().get(i2Name).getFirewallSessionInterfaceInfo(),
+        equalTo(new FirewallSessionInterfaceInfo(ImmutableList.of(i2Name), null, null)));
+
+    // ge-0/0/0.3 is not part of any zoone, so no firewall session interface info.
+    assertThat(c.getAllInterfaces().get(i3Name).getFirewallSessionInterfaceInfo(), nullValue());
   }
 }

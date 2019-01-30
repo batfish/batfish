@@ -1,10 +1,13 @@
 package org.batfish.dataplane.traceroute;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.match5Tuple;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.EGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.PRE_SOURCE_NAT_FILTER;
 import static org.batfish.datamodel.flow.StepAction.DENIED;
+import static org.batfish.datamodel.transformation.Transformation.always;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createEnterSrcIfaceStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createFilterStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
@@ -17,8 +20,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -38,6 +43,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
@@ -52,6 +58,7 @@ import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 import org.batfish.datamodel.flow.FilterStep;
 import org.batfish.datamodel.flow.FilterStep.FilterType;
+import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
@@ -69,6 +76,7 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationEvaluator;
 import org.batfish.datamodel.transformation.TransformationEvaluator.TransformationResult;
+import org.batfish.datamodel.transformation.TransformationStep;
 
 /**
  * Class containing an implementation of {@link
@@ -114,6 +122,8 @@ public class TracerouteEngineImplContext {
     private final Node _currentNode;
     private final List<TraceAndReverseFlow> _flowTraces;
     private final List<Hop> _hopsSoFar;
+    private final NodeInterfacePair _lastHopNodeAndOutgoingInterface;
+    private final Set<FirewallSessionTraceInfo> _newSessions;
     private final NavigableMap<String, IpSpace> _namedIpSpaces;
     private final Flow _originalFlow;
     private final Flow _transformedFlow;
@@ -123,6 +133,8 @@ public class TracerouteEngineImplContext {
         Node currentNode,
         List<TraceAndReverseFlow> flowTraces,
         List<Hop> hopsSoFar,
+        @Nullable NodeInterfacePair lastHopNodeAndOutgoingInterface,
+        Set<FirewallSessionTraceInfo> newSessions,
         NavigableMap<String, IpSpace> namedIpSpaces,
         Flow originalFlow,
         Flow transformedFlow) {
@@ -130,18 +142,24 @@ public class TracerouteEngineImplContext {
       _currentNode = currentNode;
       _flowTraces = flowTraces;
       _hopsSoFar = new ArrayList<>(hopsSoFar);
+      _lastHopNodeAndOutgoingInterface = lastHopNodeAndOutgoingInterface;
+      _newSessions = new HashSet<>(newSessions);
       _namedIpSpaces = namedIpSpaces;
       _originalFlow = originalFlow;
       _transformedFlow = transformedFlow;
     }
 
-    private TransmissionContext branch(String node) {
+    /** Creates a new TransmissionContext for the specified last-hop node and outgoing interface. */
+    private TransmissionContext branch(
+        NodeInterfacePair lastHopNodeAndOutgoingInterface, String currentHop) {
       TransmissionContext transmissionContext =
           new TransmissionContext(
               _aclDefinitions,
-              new Node(node),
+              new Node(currentHop),
               _flowTraces,
               _hopsSoFar,
+              lastHopNodeAndOutgoingInterface,
+              _newSessions,
               _namedIpSpaces,
               _originalFlow,
               _transformedFlow);
@@ -199,17 +217,18 @@ public class TracerouteEngineImplContext {
     Hop hop = new Hop(new Node(currentNodeName), steps);
     transmissionContext._hopsSoFar.add(hop);
     for (Edge edge : edges) {
-      if (!edge.getNode1().equals(currentNodeName)) {
+      String fromNode = edge.getNode1();
+      if (!fromNode.equals(currentNodeName)) {
         continue;
       }
-      if (isArpSuccessful(
-          finalNextHopIp != null ? finalNextHopIp : dstIp,
-          _forwardingAnalysis,
-          _configurations.get(edge.getNode2()),
-          edge.getInt2())) {
+      String fromIface = edge.getInt1();
+      String toNode = edge.getNode2();
+      String toIface = edge.getInt2();
+      Ip arpIp = finalNextHopIp != null ? finalNextHopIp : dstIp;
+      if (isArpSuccessful(arpIp, _forwardingAnalysis, _configurations.get(toNode), toIface)) {
         processHop(
-            edge.getInt2(),
-            transmissionContext.branch(edge.getNode2()),
+            toIface,
+            transmissionContext.branch(new NodeInterfacePair(fromNode, fromIface), toNode),
             transmissionContext._transformedFlow,
             breadcrumbs);
       }
@@ -266,7 +285,8 @@ public class TracerouteEngineImplContext {
                   transmissionContext._transformedFlow, currentNodeName, null, nextHopInterfaceName)
               : null;
 
-      transmissionContext._flowTraces.add(new TraceAndReverseFlow(trace, returnFlow));
+      transmissionContext._flowTraces.add(
+          new TraceAndReverseFlow(trace, returnFlow, transmissionContext._newSessions));
 
       return false;
     }
@@ -299,6 +319,8 @@ public class TracerouteEngineImplContext {
                         new Node(ingressNodeName),
                         currentTraces,
                         hops,
+                        null,
+                        Sets.newHashSet(),
                         Maps.newTreeMap(),
                         flow,
                         flow);
@@ -310,6 +332,8 @@ public class TracerouteEngineImplContext {
                         new Node(flow.getIngressNode()),
                         currentTraces,
                         hops,
+                        null,
+                        Sets.newHashSet(),
                         Maps.newTreeMap(),
                         flow,
                         flow);
@@ -402,7 +426,8 @@ public class TracerouteEngineImplContext {
       Hop loopHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
       transmissionContext._hopsSoFar.add(loopHop);
       Trace trace = new Trace(FlowDisposition.LOOP, transmissionContext._hopsSoFar);
-      transmissionContext._flowTraces.add(new TraceAndReverseFlow(trace, null));
+      transmissionContext._flowTraces.add(
+          new TraceAndReverseFlow(trace, null, transmissionContext._newSessions));
       return;
     }
 
@@ -425,7 +450,8 @@ public class TracerouteEngineImplContext {
         transmissionContext._hopsSoFar.add(acceptedHop);
         Trace trace = new Trace(FlowDisposition.ACCEPTED, transmissionContext._hopsSoFar);
         Flow returnFlow = returnFlow(currentFlow, currentNodeName, vrfName, null);
-        transmissionContext._flowTraces.add(new TraceAndReverseFlow(trace, returnFlow));
+        transmissionContext._flowTraces.add(
+            new TraceAndReverseFlow(trace, returnFlow, transmissionContext._newSessions));
         return;
       }
 
@@ -442,7 +468,8 @@ public class TracerouteEngineImplContext {
         Hop noRouteHop = new Hop(new Node(currentNodeName), ImmutableList.copyOf(steps));
         transmissionContext._hopsSoFar.add(noRouteHop);
         Trace trace = new Trace(FlowDisposition.NO_ROUTE, transmissionContext._hopsSoFar);
-        transmissionContext._flowTraces.add(new TraceAndReverseFlow(trace, null));
+        transmissionContext._flowTraces.add(
+            new TraceAndReverseFlow(trace, null, transmissionContext._newSessions));
         return;
       }
 
@@ -520,7 +547,8 @@ public class TracerouteEngineImplContext {
                                 .addAll(transmissionContext._hopsSoFar)
                                 .add(nullRoutedHop)
                                 .build());
-                    transmissionContext._flowTraces.add(new TraceAndReverseFlow(trace, null));
+                    transmissionContext._flowTraces.add(
+                        new TraceAndReverseFlow(trace, null, transmissionContext._newSessions));
                     return;
                   }
 
@@ -565,6 +593,8 @@ public class TracerouteEngineImplContext {
                           new Node(currentNodeName),
                           transmissionContext._flowTraces,
                           transmissionContext._hopsSoFar,
+                          transmissionContext._lastHopNodeAndOutgoingInterface,
+                          transmissionContext._newSessions,
                           namedIpSpaces,
                           currentFlow,
                           newTransformedFlow);
@@ -581,6 +611,25 @@ public class TracerouteEngineImplContext {
                           clonedSteps)
                       == DENIED) {
                     return;
+                  }
+
+                  // setup session if necessary
+                  FirewallSessionInterfaceInfo firewallSessionInterfaceInfo =
+                      outgoingInterface.getFirewallSessionInterfaceInfo();
+                  if (firewallSessionInterfaceInfo != null) {
+                    clonedTransmissionContext._newSessions.add(
+                        new FirewallSessionTraceInfo(
+                            currentNodeName,
+                            inputIfaceName,
+                            clonedTransmissionContext._lastHopNodeAndOutgoingInterface,
+                            firewallSessionInterfaceInfo.getSessionInterfaces(),
+                            match5Tuple(
+                                newTransformedFlow.getDstIp(),
+                                newTransformedFlow.getDstPort(),
+                                newTransformedFlow.getSrcIp(),
+                                newTransformedFlow.getSrcPort(),
+                                newTransformedFlow.getIpProtocol()),
+                            sessionTransformation(inputFlow, newTransformedFlow)));
                   }
 
                   if (edges == null || edges.isEmpty()) {
@@ -646,6 +695,25 @@ public class TracerouteEngineImplContext {
   }
 
   @Nullable
+  private static Transformation sessionTransformation(Flow inputFlow, Flow currentFlow) {
+    ImmutableList.Builder<TransformationStep> transformationStepsBuilder = ImmutableList.builder();
+
+    Ip origDstIp = inputFlow.getDstIp();
+    if (!origDstIp.equals(currentFlow.getDstIp())) {
+      transformationStepsBuilder.add(assignSourceIp(origDstIp, origDstIp));
+    }
+
+    Ip origSrcIp = inputFlow.getSrcIp();
+    if (!origSrcIp.equals(currentFlow.getSrcIp())) {
+      transformationStepsBuilder.add(TransformationStep.assignDestinationIp(origSrcIp, origSrcIp));
+    }
+
+    List<TransformationStep> transformationSteps = transformationStepsBuilder.build();
+
+    return transformationSteps.isEmpty() ? null : always().apply(transformationSteps).build();
+  }
+
+  @Nullable
   private static Flow hopFlow(Flow originalFlow, @Nullable Flow transformedFlow) {
     if (originalFlow == transformedFlow) {
       return null;
@@ -688,7 +756,8 @@ public class TracerouteEngineImplContext {
                 transmissionContext._transformedFlow, currentNodeName, null, outInterface.getName())
             : null;
 
-    transmissionContext._flowTraces.add(new TraceAndReverseFlow(trace, returnFlow));
+    transmissionContext._flowTraces.add(
+        new TraceAndReverseFlow(trace, returnFlow, transmissionContext._newSessions));
   }
 
   /**

@@ -1,0 +1,26 @@
+#
+#
+set system host-name firewall-session-info
+#
+set firewall filter FILTER1 term TERM from source-address 1.2.3.6
+set firewall filter FILTER1 term TERM then accept
+set firewall filter FILTER2 term TERM from source-address 1.2.3.6
+set firewall filter FILTER2 term TERM from source-address 1.2.3.5
+set firewall filter FILTER2 term TERM then accept
+#
+set interfaces ge-0/0/0 unit 0 family inet address 1.0.0.1/24
+set interfaces ge-0/0/0 unit 0 family inet filter input FILTER1
+set interfaces ge-0/0/0 unit 0 family inet filter output FILTER2
+set interfaces ge-0/0/0 unit 1 family inet address 1.0.1.1/24
+set interfaces ge-0/0/0 unit 2 family inet address 1.0.2.1/24
+set interfaces ge-0/0/0 unit 3 family inet address 1.0.3.1/24
+#
+set security zones security-zone ZONE1 interfaces ge-0/0/0.0
+set security zones security-zone ZONE1 interfaces ge-0/0/0.1
+set security zones security-zone ZONE2 interfaces ge-0/0/0.2
+#
+set routing-instances RI instance-type virtual-router
+set routing-instances RI interface ge-0/0/0.0
+set routing-instances RI interface ge-0/0/0.1
+set routing-instances RI interface ge-0/0/0.2
+set routing-instances RI interface ge-0/0/0.3
