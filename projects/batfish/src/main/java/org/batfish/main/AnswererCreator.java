@@ -8,21 +8,20 @@ import org.batfish.datamodel.questions.Question;
 
 /** Functions that create {@link Answerer Answerers} for {@link Question Questions}. */
 @ParametersAreNonnullByDefault
-public final class AnswererCreator {
+final class AnswererCreator {
   private final String _questionClassName;
   private final BiFunction<Question, IBatfish, Answerer> _creator;
 
-  public AnswererCreator(
-      String questionClassName, BiFunction<Question, IBatfish, Answerer> creator) {
+  AnswererCreator(String questionClassName, BiFunction<Question, IBatfish, Answerer> creator) {
     _questionClassName = questionClassName;
     _creator = creator;
   }
 
-  public String getQuestionClassName() {
+  String getQuestionClassName() {
     return _questionClassName;
   }
 
-  public Answerer create(Question question, IBatfish batfish) {
+  Answerer create(Question question, IBatfish batfish) {
     return _creator.apply(question, batfish);
   }
 }

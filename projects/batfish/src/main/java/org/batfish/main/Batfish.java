@@ -2822,7 +2822,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String questionName,
       String questionClassName,
       BiFunction<Question, IBatfish, Answerer> answererCreator) {
-    if (_answererCreators.containsKey(questionName)) {
+    AnswererCreator oldAnswererCreator =
+        _answererCreators.putIfAbsent(
+            questionName, new AnswererCreator(questionClassName, answererCreator));
+    if (oldAnswererCreator != null) {
       // Error: questionName collision.
       String oldQuestionClassName = _answererCreators.get(questionClassName).getQuestionClassName();
       throw new IllegalArgumentException(
@@ -2832,7 +2835,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   + "  new questionClassName: %s",
               questionName, oldQuestionClassName, questionClassName));
     }
-    _answererCreators.put(questionName, new AnswererCreator(questionClassName, answererCreator));
   }
 
   @Override
