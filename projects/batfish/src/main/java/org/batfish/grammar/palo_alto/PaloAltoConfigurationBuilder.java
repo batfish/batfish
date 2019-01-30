@@ -7,14 +7,19 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHAL
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.RULE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ADDRESS_GROUP_STATIC;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SERVICE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_DESTINATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_FROM_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_SELF_REF;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_SOURCE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULE_TO_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVICE_GROUP_MEMBER;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
@@ -38,11 +43,10 @@ import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_authenticationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_dh_groupContext;
@@ -51,11 +55,20 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_encryption_algoContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_hashContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_lifetimeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_address_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_sharedContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_vsysContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_zoneContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_descriptionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_fqdnContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_ip_netmaskContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sa_ip_rangeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_descriptionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_dynamicContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_staticContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_default_gatewayContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ip_addressContext;
@@ -102,13 +115,17 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Ssl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_layer3Context;
+import org.batfish.grammar.palo_alto.PaloAltoParser.VariableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_list_itemContext;
+import org.batfish.representation.palo_alto.AddressGroup;
+import org.batfish.representation.palo_alto.AddressObject;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
 import org.batfish.representation.palo_alto.Rule;
+import org.batfish.representation.palo_alto.RuleEndpoint;
 import org.batfish.representation.palo_alto.Service;
 import org.batfish.representation.palo_alto.ServiceGroup;
 import org.batfish.representation.palo_alto.ServiceOrServiceGroupReference;
@@ -121,6 +138,10 @@ import org.batfish.vendor.StructureType;
 
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private PaloAltoConfiguration _configuration;
+
+  private AddressGroup _currentAddressGroup;
+
+  private AddressObject _currentAddressObject;
 
   private CryptoProfile _currentCrytoProfile;
 
@@ -290,13 +311,21 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   /** Convert source or destination list item into an appropriate IpSpace */
-  private @Nullable IpSpace toIpSpace(Src_or_dst_list_itemContext ctx) {
-    if (ctx.ANY() != null) {
-      return UniverseIpSpace.INSTANCE;
+  private @Nullable RuleEndpoint toRuleEndpoint(Src_or_dst_list_itemContext ctx) {
+    String text = ctx.getText();
+    // check for address group and object names first
+    if (_currentVsys.getAddressObjects().containsKey(text)) {
+      return new RuleEndpoint(RuleEndpoint.Type.ADDRESS_OBJECT, text);
+    } else if (_currentVsys.getAddressGroups().containsKey(text)) {
+      return new RuleEndpoint(RuleEndpoint.Type.ADDRESS_GROUP, text);
+    } else if (ctx.ANY() != null) {
+      return new RuleEndpoint(RuleEndpoint.Type.Any, text);
     } else if (ctx.IP_ADDRESS() != null) {
-      return Ip.parse(ctx.IP_ADDRESS().getText()).toIpSpace();
+      return new RuleEndpoint(RuleEndpoint.Type.IP_ADDRESS, text);
     } else if (ctx.IP_PREFIX() != null) {
-      return Prefix.parse(ctx.IP_PREFIX().getText()).toIpSpace();
+      return new RuleEndpoint(RuleEndpoint.Type.IP_PREFIX, text);
+    } else if (ctx.IP_RANGE() != null) {
+      return new RuleEndpoint(RuleEndpoint.Type.IP_RANGE, text);
     }
     _w.redFlag("Unhandled source/destination item conversion: " + getFullText(ctx));
     return null;
@@ -402,6 +431,52 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void enterS_address(S_addressContext ctx) {
+    String name = ctx.name.getText();
+    if (_currentVsys.getAddressGroups().get(name) != null) {
+      _w.redFlag(
+          String.format(
+              "Cannot have an address object and group with the same name '%s'. Ignoring the object definition.",
+              name));
+    } else {
+      _currentAddressObject =
+          _currentVsys.getAddressObjects().computeIfAbsent(name, AddressObject::new);
+
+      // Use constructed name so same-named defs across vsys are unique
+      String uniqueName = computeObjectName(_currentVsys.getName(), name);
+      defineStructure(ADDRESS_OBJECT, uniqueName, ctx);
+    }
+  }
+
+  @Override
+  public void exitS_address(S_addressContext ctx) {
+    _currentAddressObject = null;
+  }
+
+  @Override
+  public void enterS_address_group(S_address_groupContext ctx) {
+    String name = ctx.name.getText();
+    if (_currentVsys.getAddressObjects().get(name) != null) {
+      _w.redFlag(
+          String.format(
+              "Cannot have an address object and group with the same name '%s'. Ignoring the group definition.",
+              name));
+    } else {
+      _currentAddressGroup =
+          _currentVsys.getAddressGroups().computeIfAbsent(name, AddressGroup::new);
+
+      // Use constructed name so same-named defs across vsys are unique
+      String uniqueName = computeObjectName(_currentVsys.getName(), name);
+      defineStructure(ADDRESS_GROUP, uniqueName, ctx);
+    }
+  }
+
+  @Override
+  public void exitS_address_group(S_address_groupContext ctx) {
+    _currentAddressGroup = null;
+  }
+
+  @Override
   public void enterS_zone(S_zoneContext ctx) {
     String name = getText(ctx.name);
     _currentZone = _currentVsys.getZones().computeIfAbsent(name, n -> new Zone(n, _currentVsys));
@@ -414,6 +489,89 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitS_zone(S_zoneContext ctx) {
     _currentZone = null;
+  }
+
+  @Override
+  public void exitSa_description(Sa_descriptionContext ctx) {
+    if (_currentAddressObject == null) {
+      return;
+    }
+    _currentAddressObject.setDescription(ctx.description.getText());
+  }
+
+  @Override
+  public void exitSa_fqdn(Sa_fqdnContext ctx) {
+    _w.redFlag("FQDN in address objects is not currently supported: " + getFullText(ctx));
+  }
+
+  @Override
+  public void exitSa_ip_netmask(Sa_ip_netmaskContext ctx) {
+    if (_currentAddressObject == null) {
+      return;
+    }
+    if (ctx.IP_ADDRESS() != null) {
+      _currentAddressObject.setIpSpace(Ip.parse(ctx.IP_ADDRESS().getText()).toIpSpace());
+    } else if (ctx.IP_PREFIX() != null) {
+      _currentAddressObject.setIpSpace(Prefix.parse(ctx.IP_PREFIX().getText()).toIpSpace());
+    } else {
+      _w.redFlag("Cannot understand what follows 'ip-netmask' in " + getFullText(ctx));
+    }
+  }
+
+  @Override
+  public void exitSa_ip_range(Sa_ip_rangeContext ctx) {
+    if (_currentAddressObject == null) {
+      return;
+    }
+    String[] ips = ctx.IP_RANGE().getText().split("-");
+    _currentAddressObject.setIpSpace(IpRange.range(Ip.parse(ips[0]), Ip.parse(ips[1])));
+  }
+
+  @Override
+  public void exitSag_description(Sag_descriptionContext ctx) {
+    if (_currentAddressGroup == null) {
+      return;
+    }
+    _currentAddressGroup.setDescription(ctx.description.getText());
+  }
+
+  @Override
+  public void exitSag_dynamic(Sag_dynamicContext ctx) {
+    _w.redFlag("Dynamic address groups are not currently supported: " + getFullText(ctx));
+  }
+
+  @Override
+  public void exitSag_static(Sag_staticContext ctx) {
+    if (_currentAddressGroup == null) {
+      return;
+    }
+    for (VariableContext var : ctx.variable()) {
+      String objectName = var.getText();
+      if (!_currentVsys.getAddressObjects().containsKey(objectName)
+          && !_currentVsys.getAddressGroups().containsKey(objectName)) {
+        _w.redFlag(
+            String.format(
+                "Cannot add non-existent address object or group '%s' to group '%s' in '%s'",
+                objectName, _currentAddressGroup.getName(), getFullText(ctx)));
+      } else if (objectName.equals(_currentAddressGroup.getName())) {
+        _w.redFlag(
+            String.format(
+                "The address group '%s' cannot contain itself: '%s'",
+                objectName, getFullText(ctx)));
+      } else {
+        _currentAddressGroup.getMembers().add(objectName);
+
+        // Use constructed name so same-named defs across vsys are unique
+        String uniqueName = computeObjectName(_currentVsys.getName(), objectName);
+        _configuration.referenceStructure(
+            _currentVsys.getAddressObjects().containsKey(objectName)
+                ? ADDRESS_OBJECT
+                : ADDRESS_GROUP,
+            uniqueName,
+            ADDRESS_GROUP_STATIC,
+            getLine(var.start));
+      }
+    }
   }
 
   @Override
@@ -657,9 +815,21 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSrs_destination(Srs_destinationContext ctx) {
     for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
-      IpSpace destinationIpSpace = toIpSpace(var);
-      if (destinationIpSpace != null) {
-        _currentRule.getDestination().add(destinationIpSpace);
+      RuleEndpoint destination = toRuleEndpoint(var);
+      if (destination != null) {
+        _currentRule.getDestination().add(destination);
+
+        if (destination.getType() == RuleEndpoint.Type.ADDRESS_OBJECT) {
+          // Use constructed object name so same-named refs across vsys are unique
+          String uniqueName = computeObjectName(_currentVsys.getName(), destination.getValue());
+          _configuration.referenceStructure(
+              ADDRESS_OBJECT, uniqueName, RULE_DESTINATION, getLine(var.start));
+        } else if (destination.getType() == RuleEndpoint.Type.ADDRESS_GROUP) {
+          // Use constructed object name so same-named refs across vsys are unique
+          String uniqueName = computeObjectName(_currentVsys.getName(), destination.getValue());
+          _configuration.referenceStructure(
+              ADDRESS_GROUP, uniqueName, RULE_DESTINATION, getLine(var.start));
+        }
       }
     }
   }
@@ -701,9 +871,23 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSrs_source(Srs_sourceContext ctx) {
     for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
-      IpSpace sourceIpSpace = toIpSpace(var);
-      if (sourceIpSpace != null) {
-        _currentRule.getSource().add(sourceIpSpace);
+      RuleEndpoint source = toRuleEndpoint(var);
+      if (source != null) {
+        _currentRule.getSource().add(source);
+
+        if (source.getType() == RuleEndpoint.Type.ADDRESS_OBJECT) {
+
+          // Use constructed object name so same-named refs across vsys are unique
+          String uniqueName = computeObjectName(_currentVsys.getName(), source.getValue());
+          _configuration.referenceStructure(
+              ADDRESS_OBJECT, uniqueName, RULE_SOURCE, getLine(var.start));
+        } else if (source.getType() == RuleEndpoint.Type.ADDRESS_GROUP) {
+
+          // Use constructed object name so same-named refs across vsys are unique
+          String uniqueName = computeObjectName(_currentVsys.getName(), source.getValue());
+          _configuration.referenceStructure(
+              ADDRESS_GROUP, uniqueName, RULE_SOURCE, getLine(var.start));
+        }
       }
     }
   }

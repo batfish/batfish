@@ -145,7 +145,7 @@ public class NodJobChunkingTest {
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
     Batfish batfish = BatfishTestUtils.getBatfish(_configs, tmp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     _dataPlane = batfish.loadDataPlane();
   }
 

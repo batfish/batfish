@@ -1642,7 +1642,7 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
 
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
     Set<AbstractRoute> routesOnListener =
         dp.getRibs().get("listener").get(DEFAULT_VRF_NAME).getRoutes();
@@ -2559,7 +2559,7 @@ public class CiscoGrammarTest {
     Map<Ip, Set<String>> ipOwners = TopologyUtil.computeIpNodeOwners(configurations, true);
     BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    batfish.computeDataPlane(false); // compute and cache the dataPlane
+    batfish.computeDataPlane(); // compute and cache the dataPlane
 
     // Check that 1.1.1.1/32 appears on r3
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =

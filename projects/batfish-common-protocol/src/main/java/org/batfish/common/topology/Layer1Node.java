@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkConfigurations;
 
@@ -81,7 +82,7 @@ public final class Layer1Node implements Comparable<Layer1Node> {
    * is missing or off, returns {@code null}. If physical node is not member of an aggregate
    * interface, the physical node is treated as a logical node and returned.
    */
-  public @Nonnull Layer1Node toLogicalNode(NetworkConfigurations networkConfigurations) {
+  public @Nullable Layer1Node toLogicalNode(NetworkConfigurations networkConfigurations) {
     Interface iface = networkConfigurations.getInterface(_hostname, _interfaceName).get();
     if (iface.getChannelGroup() == null) {
       return this;

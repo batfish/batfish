@@ -79,7 +79,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
 
   private Batfish initBatfish(SortedMap<String, Configuration> configs) throws IOException {
     Batfish batfish = getBatfish(configs, temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     return batfish;
   }
 

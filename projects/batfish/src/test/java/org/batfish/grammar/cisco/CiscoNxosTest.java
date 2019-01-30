@@ -96,7 +96,7 @@ public class CiscoNxosTest {
 
     Batfish batfish = getBatfishForTestrig(testrigName, hubName, listenerName);
     batfish.loadConfigurations();
-    batfish.computeDataPlane(false); // compute and cache the dataPlane
+    batfish.computeDataPlane(); // compute and cache the dataPlane
     DataPlane dp = batfish.loadDataPlane();
 
     return dp.getRibs().get(listenerName).get(Configuration.DEFAULT_VRF_NAME);

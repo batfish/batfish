@@ -760,7 +760,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         new BatfishCompressor(new BDDPacket(), this, clonedConfigs).compress(headerSpace);
     Topology topo = TopologyUtil.synthesizeL3Topology(configs);
     DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
-    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(false, configs, topo);
+    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(configs, topo);
 
     _storage.storeCompressedConfigurations(
         configs, _settings.getContainer(), _testrigSettings.getName());
@@ -768,11 +768,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public DataPlaneAnswerElement computeDataPlane(boolean differentialContext) {
+  public DataPlaneAnswerElement computeDataPlane() {
     checkSnapshotOutputReady();
-    ComputeDataPlaneResult result = getDataPlanePlugin().computeDataPlane(differentialContext);
+    ComputeDataPlaneResult result = getDataPlanePlugin().computeDataPlane();
     saveDataPlane(result._dataPlane, result._answerElement, false);
     return result._answerElement;
+  }
+
+  @Override
+  @Deprecated
+  public DataPlaneAnswerElement computeDataPlane(boolean differentialContext) {
+    return computeDataPlane();
   }
 
   /* Write the dataplane to disk and cache, and write the answer element to disk.
@@ -1492,7 +1498,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answerElement;
   }
 
-  private void prepareToAnswerQuestions(boolean dp, boolean differentialContext) {
+  private void prepareToAnswerQuestions(boolean dp) {
     if (!outputExists(_testrigSettings)) {
       createDirectories(_testrigSettings.getOutputPath());
     }
@@ -1504,7 +1510,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     if (dp) {
       if (!dataPlaneDependenciesExist(_testrigSettings)) {
-        computeDataPlane(differentialContext);
+        computeDataPlane();
       }
 
       if (!compressedDataPlaneDependenciesExist(_testrigSettings)) {
@@ -1516,12 +1522,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void prepareToAnswerQuestions(boolean diff, boolean diffActive, boolean dp) {
     if (diff || !diffActive) {
       pushBaseSnapshot();
-      prepareToAnswerQuestions(dp, false);
+      prepareToAnswerQuestions(dp);
       popSnapshot();
     }
     if (diff || diffActive) {
       pushDeltaSnapshot();
-      prepareToAnswerQuestions(dp, true);
+      prepareToAnswerQuestions(dp);
       popSnapshot();
     }
   }
@@ -2807,7 +2813,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (compressed) {
       computeCompressedDataPlane();
     } else {
-      computeDataPlane(false);
+      computeDataPlane();
     }
   }
 
@@ -2956,7 +2962,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (_settings.getDataPlane()) {
-      answer.addAnswerElement(computeDataPlane(_settings.getDiffActive()));
+      answer.addAnswerElement(computeDataPlane());
       action = true;
     }
 
