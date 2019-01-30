@@ -18,6 +18,15 @@ palo_alto_configuration
     )+ NEWLINE? EOF
 ;
 
+s_null
+:
+    (
+        MGT_CONFIG
+        | TAG
+    )
+    null_rest_of_line
+;
+
 /*
  * The distinction between config device and general config statements is needed in order to handle
  * syntax differences in filesystem-style config dumps
@@ -41,6 +50,7 @@ statement_config_devices
     | s_address_group
     | s_deviceconfig
     | s_network
+    | s_null
     | s_rulebase
     | s_service
     | s_service_group
