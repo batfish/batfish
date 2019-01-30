@@ -169,13 +169,13 @@ public class PaloAltoGrammarTest {
     Map<String, AddressGroup> addressGroups = vsys.getAddressGroups();
     Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
 
-    // there are two address groups defined in the file, including the empty one
+    // there are three address groups defined in the file, including the empty one
     assertThat(addressGroups.keySet(), equalTo(ImmutableSet.of("group0", "group1", "group2")));
 
     // the ip space of the empty group is empty
     assertThat(addressGroups.get("group0").getMembers(), equalTo(ImmutableSet.of()));
     assertThat(
-        addressGroups.get("group0").getIpSpace(vsys.getAddressObjects()),
+        addressGroups.get("group0").getIpSpace(addressObjects, addressGroups),
         equalTo(EmptyIpSpace.INSTANCE));
 
     // we parsed the description, addr3 should have been discarded
@@ -183,11 +183,11 @@ public class PaloAltoGrammarTest {
     assertThat(
         addressGroups.get("group1").getMembers(), equalTo(ImmutableSet.of("addr1", "addr2")));
     assertThat(
-        addressGroups.get("group1").getIpSpace(vsys.getAddressObjects()),
+        addressGroups.get("group1").getIpSpace(addressObjects, addressGroups),
         equalTo(
             AclIpSpace.union(
-                addressObjects.get("addr1").getIpSpace(),
-                addressObjects.get("addr2").getIpSpace())));
+                addressObjects.get("addr2").getIpSpace(),
+                addressObjects.get("addr1").getIpSpace())));
 
     // check that we parse multiple address objects on the same line correctly
     assertThat(
@@ -197,10 +197,31 @@ public class PaloAltoGrammarTest {
     Configuration viConfig = c.toVendorIndependentConfigurations().get(0);
     assertThat(
         viConfig,
-        hasIpSpace("group0", equalTo(addressGroups.get("group0").getIpSpace(addressObjects))));
+        hasIpSpace(
+            "group0",
+            equalTo(addressGroups.get("group0").getIpSpace(addressObjects, addressGroups))));
     assertThat(
         viConfig,
-        hasIpSpace("group1", equalTo(addressGroups.get("group1").getIpSpace(addressObjects))));
+        hasIpSpace(
+            "group1",
+            equalTo(addressGroups.get("group1").getIpSpace(addressObjects, addressGroups))));
+  }
+
+  @Test
+  public void testAddressGroupsNested() throws IOException {
+    PaloAltoConfiguration c = parsePaloAltoConfig("address-groups-nested");
+
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, AddressGroup> addressGroups = vsys.getAddressGroups();
+    Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
+
+    // there are three address groups defined in the file, including the empty one
+    assertThat(addressGroups.keySet(), equalTo(ImmutableSet.of("group0", "group1", "group2")));
+
+    // the ip space of the empty group is empty
+    assertThat(addressGroups.get("group1").getMembers(), equalTo(ImmutableSet.of("group0")));
+    assertThat(addressGroups.get("group0").getMembers(), equalTo(ImmutableSet.of("group2")));
+    assertThat(addressGroups.get("group2").getMembers(), equalTo(ImmutableSet.of("group0")));
   }
 
   @Test

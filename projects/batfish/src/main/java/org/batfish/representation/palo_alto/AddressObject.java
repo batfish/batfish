@@ -16,8 +16,12 @@ public final class AddressObject implements Serializable {
   private final String _name;
 
   public AddressObject(String name) {
+    this(name, EmptyIpSpace.INSTANCE);
+  }
+
+  public AddressObject(String name, IpSpace ipSpace) {
     _name = name;
-    _ipSpace = EmptyIpSpace.INSTANCE;
+    _ipSpace = ipSpace;
   }
 
   @Nullable

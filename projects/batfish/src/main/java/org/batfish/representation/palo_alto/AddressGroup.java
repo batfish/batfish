@@ -1,6 +1,9 @@
 package org.batfish.representation.palo_alto;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -25,15 +28,45 @@ public final class AddressGroup implements Serializable {
   }
 
   /**
+   * Returns all address objects that are directly or indirectly containted in this group. Accounts
+   * care of circular group references.
+   */
+  @VisibleForTesting
+  Set<String> getDescendantObjects(
+      Map<String, AddressObject> addressObjects,
+      Map<String, AddressGroup> addressGroups,
+      Set<String> alreadyTraversedGroups) {
+    if (alreadyTraversedGroups.contains(_name)) {
+      return ImmutableSet.of();
+    }
+    alreadyTraversedGroups.add(_name);
+    Set<String> descendantObjects = new HashSet<>();
+    for (String member : _members) {
+      if (addressObjects.containsKey(member)) {
+        descendantObjects.add(member);
+      } else if (addressGroups.containsKey(member)) {
+        descendantObjects.addAll(
+            addressGroups
+                .get(member)
+                .getDescendantObjects(addressObjects, addressGroups, alreadyTraversedGroups));
+      }
+    }
+    return descendantObjects;
+  }
+
+  /**
    * Returns the union of IpSpace of all members. Returns {@link EmptyIpSpace} if there are no
    * members
    */
-  public IpSpace getIpSpace(Map<String, AddressObject> addressObjects) {
+  public IpSpace getIpSpace(
+      Map<String, AddressObject> addressObjects, Map<String, AddressGroup> addressGroups) {
+    Set<String> descendantObjects =
+        getDescendantObjects(addressObjects, addressGroups, new HashSet<>());
     IpSpace space =
         AclIpSpace.union(
-            _members.stream()
-                .map(m -> addressObjects.containsKey(m) ? addressObjects.get(m).getIpSpace() : null)
-                .collect(Collectors.toList()));
+            descendantObjects.stream()
+                .map(m -> addressObjects.get(m).getIpSpace())
+                .collect(Collectors.toSet()));
     return space == null ? EmptyIpSpace.INSTANCE : space;
   }
 

@@ -324,7 +324,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       return new RuleEndpoint(RuleEndpoint.Type.IP_ADDRESS, text);
     } else if (ctx.IP_PREFIX() != null) {
       return new RuleEndpoint(RuleEndpoint.Type.IP_PREFIX, text);
-    } else if (ctx.ip_range() != null) {
+    } else if (ctx.IP_RANGE() != null) {
       return new RuleEndpoint(RuleEndpoint.Type.IP_RANGE, text);
     }
     _w.redFlag("Unhandled source/destination item conversion: " + getFullText(ctx));
@@ -438,7 +438,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
           String.format(
               "Cannot have an address object and group with the same name '%s'. Ignoring the object definition.",
               name));
-      _currentVsys.getAddressGroups().remove(name);
     } else {
       _currentAddressObject =
           _currentVsys.getAddressObjects().computeIfAbsent(name, AddressObject::new);
@@ -524,9 +523,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     if (_currentAddressObject == null) {
       return;
     }
-    _currentAddressObject.setIpSpace(
-        IpRange.range(
-            Ip.parse(ctx.ip_range().from.getText()), Ip.parse(ctx.ip_range().to.getText())));
+    String[] ips = ctx.IP_RANGE().getText().split("-");
+    _currentAddressObject.setIpSpace(IpRange.range(Ip.parse(ips[0]), Ip.parse(ips[1])));
   }
 
   @Override
@@ -549,18 +547,28 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     }
     for (VariableContext var : ctx.variable()) {
       String objectName = var.getText();
-      if (!_currentVsys.getAddressObjects().containsKey(objectName)) {
+      if (!_currentVsys.getAddressObjects().containsKey(objectName)
+          && !_currentVsys.getAddressGroups().containsKey(objectName)) {
         _w.redFlag(
             String.format(
-                "Cannot add non-existent address object '%s' to group '%s' in '%s'",
+                "Cannot add non-existent address object or group '%s' to group '%s' in '%s'",
                 objectName, _currentAddressGroup.getName(), getFullText(ctx)));
+      } else if (objectName.equals(_currentAddressGroup.getName())) {
+        _w.redFlag(
+            String.format(
+                "The address group '%s' cannot contain itself", objectName, getFullText(ctx)));
       } else {
         _currentAddressGroup.getMembers().add(objectName);
 
         // Use constructed name so same-named defs across vsys are unique
         String uniqueName = computeObjectName(_currentVsys.getName(), objectName);
         _configuration.referenceStructure(
-            ADDRESS_OBJECT, uniqueName, ADDRESS_GROUP_STATIC, getLine(var.start));
+            _currentVsys.getAddressObjects().containsKey(objectName)
+                ? ADDRESS_OBJECT
+                : ADDRESS_GROUP,
+            uniqueName,
+            ADDRESS_GROUP_STATIC,
+            getLine(var.start));
       }
     }
   }

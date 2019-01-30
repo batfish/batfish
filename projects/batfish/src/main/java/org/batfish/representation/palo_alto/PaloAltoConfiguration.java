@@ -268,7 +268,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       vsys.getAddressGroups()
           .forEach(
               (name, addressGroup) -> {
-                _c.getIpSpaces().put(name, addressGroup.getIpSpace(vsys.getAddressObjects()));
+                _c.getIpSpaces()
+                    .put(
+                        name,
+                        addressGroup.getIpSpace(vsys.getAddressObjects(), vsys.getAddressGroups()));
                 _c.getIpSpaceMetadata()
                     .put(name, new IpSpaceMetadata(name, ADDRESS_GROUP.getDescription()));
               });
@@ -411,7 +414,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       case ADDRESS_GROUP:
         return vsys.getAddressGroups()
             .get(endpoint.getValue())
-            .getIpSpace(vsys.getAddressObjects());
+            .getIpSpace(vsys.getAddressObjects(), vsys.getAddressGroups());
       default:
         _w.redFlag("Could not convert RuleEndpoint to IpSpace: " + endpoint);
         return null;

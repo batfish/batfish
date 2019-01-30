@@ -9,11 +9,6 @@ null_rest_of_line
     ~NEWLINE*
 ;
 
-ip_range
-:
-    from = IP_ADDRESS DASH to = IP_ADDRESS
-;
-
 src_or_dst_list
 :
     (
@@ -35,7 +30,7 @@ src_or_dst_list_item
         ANY
         | IP_ADDRESS
         | IP_PREFIX
-        | range = ip_range
+        | IP_RANGE
         | name = variable
     )
 ;

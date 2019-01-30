@@ -6,7 +6,7 @@ set zone z2 network layer3 ethernet1/2
 
 set rulebase security rules RULE1 from any
 set rulebase security rules RULE1 to any
-set rulebase security rules RULE1 source 11.11.11.11 - 11.11.11.12
+set rulebase security rules RULE1 source 11.11.11.11-11.11.11.12
 set rulebase security rules RULE1 destination any
 set rulebase security rules RULE1 service any
 set rulebase security rules RULE1 application any

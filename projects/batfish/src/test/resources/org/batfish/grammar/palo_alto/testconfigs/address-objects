@@ -7,4 +7,4 @@ set address addr1 description addr1-desc
 
 set address addr2 ip-netmask 10.1.1.2
 
-set address addr3 ip-range 1.1.1.1 - 1.1.1.2
+set address addr3 ip-range 1.1.1.1-1.1.1.2

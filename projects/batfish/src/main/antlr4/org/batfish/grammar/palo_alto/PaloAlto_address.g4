@@ -41,7 +41,7 @@ sa_ip_netmask
 
 sa_ip_range
 :
-    IP_RANGE ip_range
+    IP_RANGE_LITERAL IP_RANGE
 ;
 
 sa_null
