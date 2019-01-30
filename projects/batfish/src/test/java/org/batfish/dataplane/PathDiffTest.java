@@ -91,11 +91,11 @@ public class PathDiffTest {
     Batfish batfish = BatfishTestUtils.getBatfish(baseConfigs, deltaConfigs, tmp);
 
     batfish.pushBaseSnapshot();
-    batfish.computeDataPlane(true);
+    batfish.computeDataPlane();
     batfish.popSnapshot();
 
     batfish.pushDeltaSnapshot();
-    batfish.computeDataPlane(true);
+    batfish.computeDataPlane();
     batfish.popSnapshot();
 
     batfish.checkDifferentialDataPlaneQuestionDependencies();

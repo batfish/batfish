@@ -107,11 +107,11 @@ public class DifferentialReachabilityTest {
     Batfish batfish = getBatfish(baseConfigs, deltaConfigs, _folder);
 
     batfish.pushBaseSnapshot();
-    batfish.computeDataPlane(true);
+    batfish.computeDataPlane();
     batfish.popSnapshot();
 
     batfish.pushDeltaSnapshot();
-    batfish.computeDataPlane(true);
+    batfish.computeDataPlane();
     batfish.popSnapshot();
 
     return batfish;

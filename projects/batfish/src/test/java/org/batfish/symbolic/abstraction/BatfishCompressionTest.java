@@ -213,7 +213,7 @@ public class BatfishCompressionTest {
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, tmp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     return batfish.loadDataPlane();
   }
 

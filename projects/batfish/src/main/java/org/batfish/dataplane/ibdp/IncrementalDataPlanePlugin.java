@@ -25,16 +25,22 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   public IncrementalDataPlanePlugin() {}
 
   @Override
-  public ComputeDataPlaneResult computeDataPlane(boolean differentialContext) {
+  public ComputeDataPlaneResult computeDataPlane() {
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Topology topology =
         _batfish.getTopologyProvider().getLayer3Topology(_batfish.getNetworkSnapshot());
-    return computeDataPlane(differentialContext, configurations, topology);
+    return computeDataPlane(configurations, topology);
+  }
+
+  @Override
+  @Deprecated
+  public ComputeDataPlaneResult computeDataPlane(boolean differentialContext) {
+    return computeDataPlane();
   }
 
   @Override
   public ComputeDataPlaneResult computeDataPlane(
-      boolean differentialContext, Map<String, Configuration> configurations, Topology topology) {
+      Map<String, Configuration> configurations, Topology topology) {
     Set<BgpAdvertisement> externalAdverts = _batfish.loadExternalBgpAnnouncements(configurations);
     ComputeDataPlaneResult answer =
         _engine.computeDataPlane(configurations, topology, externalAdverts);
@@ -51,6 +57,13 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
         ((IncrementalBdpAnswerElement) answer._answerElement).getDependentRoutesIterations(),
         averageRoutes);
     return answer;
+  }
+
+  @Override
+  @Deprecated
+  public ComputeDataPlaneResult computeDataPlane(
+      boolean differentialContext, Map<String, Configuration> configurations, Topology topology) {
+    return computeDataPlane(configurations, topology);
   }
 
   @Override
