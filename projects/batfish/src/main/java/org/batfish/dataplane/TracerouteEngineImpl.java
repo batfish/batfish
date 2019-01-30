@@ -7,6 +7,7 @@ import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
+import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.dataplane.traceroute.TracerouteEngineImplContext;
 
@@ -27,8 +28,9 @@ public final class TracerouteEngineImpl implements TracerouteEngine {
 
   @Override
   public SortedMap<Flow, List<TraceAndReverseFlow>> computeTracesAndReverseFlows(
-      Set<Flow> flows, boolean ignoreFilters) {
-    return new TracerouteEngineImplContext(_dataPlane, flows, _dataPlane.getFibs(), ignoreFilters)
+      Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
+    return new TracerouteEngineImplContext(
+            _dataPlane, sessions, flows, _dataPlane.getFibs(), ignoreFilters)
         .buildTracesAndReturnFlows();
   }
 }
