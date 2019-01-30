@@ -39,6 +39,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
 import io.opentracing.ActiveSpan;
+import io.opentracing.References;
 import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
 import java.io.ByteArrayInputStream;
@@ -3188,42 +3189,51 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private ParseVendorConfigurationResult getOrParse(ParseVendorConfigurationJob job) {
+  private ParseVendorConfigurationResult getOrParse(
+      ParseVendorConfigurationJob job, @Nullable SpanContext span) {
     String filename = job.getFilename();
     String filetext = job.getFileText();
-    String id =
-        Hashing.murmur3_128()
-            .newHasher()
-            .putString("Cached Parse Result", UTF_8)
-            .putString(filename, UTF_8)
-            .putString(filetext, UTF_8)
-            .hash()
-            .toString();
-    long startTime = System.currentTimeMillis();
-    boolean cached = false;
-    ParseResult result;
-    try (InputStream in = _storage.loadNetworkObject(getContainerName(), id)) {
-      result = SerializationUtils.deserialize(in);
-      cached = true;
-    } catch (FileNotFoundException e) {
-      result = job.parse();
-    } catch (IOException e) {
-      _logger.warnf(
-          "Error deserializing cached parse result for %s: %s",
-          filename, Throwables.getStackTraceAsString(e));
-      result = job.parse();
-    }
-    if (!cached) {
-      try {
-        byte[] serialized = SerializationUtils.serialize(result);
-        _storage.storeNetworkObject(new ByteArrayInputStream(serialized), getContainerName(), id);
+    try (ActiveSpan parseNetworkConfigsSpan =
+        GlobalTracer.get()
+            .buildSpan("Parse " + job.getFilename())
+            .addReference(References.FOLLOWS_FROM, span)
+            .startActive()) {
+      assert parseNetworkConfigsSpan != null; // avoid unused warning
+      String id =
+          Hashing.murmur3_128()
+              .newHasher()
+              .putString("Cached Parse Result", UTF_8)
+              .putString(filename, UTF_8)
+              .putString(filetext, UTF_8)
+              .hash()
+              .toString();
+      long startTime = System.currentTimeMillis();
+      boolean cached = false;
+      ParseResult result;
+      try (InputStream in = _storage.loadNetworkObject(getContainerName(), id)) {
+        result = SerializationUtils.deserialize(in);
+        cached = true;
+      } catch (FileNotFoundException e) {
+        result = job.parse();
       } catch (IOException e) {
         _logger.warnf(
-            "Error caching parse result for %s: %s", filename, Throwables.getStackTraceAsString(e));
+            "Error deserializing cached parse result for %s: %s",
+            filename, Throwables.getStackTraceAsString(e));
+        result = job.parse();
       }
+      if (!cached) {
+        try {
+          byte[] serialized = SerializationUtils.serialize(result);
+          _storage.storeNetworkObject(new ByteArrayInputStream(serialized), getContainerName(), id);
+        } catch (IOException e) {
+          _logger.warnf(
+              "Error caching parse result for %s: %s",
+              filename, Throwables.getStackTraceAsString(e));
+        }
+      }
+      long elapsed = System.currentTimeMillis() - startTime;
+      return job.fromResult(result, elapsed);
     }
-    long elapsed = System.currentTimeMillis() - startTime;
-    return job.fromResult(result, elapsed);
   }
 
   /**
@@ -3261,7 +3271,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
                       e -> userUploadPath.relativize(e.getKey()).toString(), Entry::getValue));
       List<ParseVendorConfigurationJob> jobs =
           makeParseVendorConfigurationsJobs(keyedConfigText, ConfigurationFormat.UNKNOWN);
-      parseResults = jobs.stream().map(this::getOrParse).collect(ImmutableList.toImmutableList());
+      parseResults =
+          jobs.parallelStream()
+              .map(j -> this.getOrParse(j, parseNetworkConfigsSpan.context()))
+              .collect(ImmutableList.toImmutableList());
     }
 
     if (_settings.getHaltOnParseError()
@@ -3277,29 +3290,33 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
     parseResults.forEach(pvcr -> pvcr.applyTo(vendorConfigurations, _logger, answerElement));
 
-    _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
-    _logger.resetTimer();
-    createDirectories(outputPath);
-    Map<Path, VendorConfiguration> output = new TreeMap<>();
-    vendorConfigurations.forEach(
-        (name, vc) -> {
-          if (name.contains(File.separator)) {
-            // iptables will get a hostname like configs/iptables-save if they
-            // are not set up correctly using host files
-            _logger.errorf("Cannot serialize configuration with hostname %s\n", name);
-            answerElement.addRedFlagWarning(
-                name,
-                new Warning(
-                    "Cannot serialize network config. Bad hostname " + name.replace("\\", "/"),
-                    "MISCELLANEOUS"));
-          } else {
-            Path currentOutputPath = outputPath.resolve(name);
-            output.put(currentOutputPath, vc);
-          }
-        });
+    try (ActiveSpan serializeNetworkConfigsSpan =
+        GlobalTracer.get().buildSpan("Serialize network configs").startActive()) {
+      assert serializeNetworkConfigsSpan != null; // avoid unused warning
+      _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
+      _logger.resetTimer();
+      createDirectories(outputPath);
+      Map<Path, VendorConfiguration> output = new TreeMap<>();
+      vendorConfigurations.forEach(
+          (name, vc) -> {
+            if (name.contains(File.separator)) {
+              // iptables will get a hostname like configs/iptables-save if they
+              // are not set up correctly using host files
+              _logger.errorf("Cannot serialize configuration with hostname %s\n", name);
+              answerElement.addRedFlagWarning(
+                  name,
+                  new Warning(
+                      "Cannot serialize network config. Bad hostname " + name.replace("\\", "/"),
+                      "MISCELLANEOUS"));
+            } else {
+              Path currentOutputPath = outputPath.resolve(name);
+              output.put(currentOutputPath, vc);
+            }
+          });
 
-    serializeObjects(output);
-    _logger.printElapsedTime();
+      serializeObjects(output);
+      _logger.printElapsedTime();
+    }
   }
 
   private void oldSerializeNetworkConfigs(
@@ -3329,41 +3346,45 @@ public class Batfish extends PluginConsumer implements IBatfish {
         "Snapshot %s in network %s has total number of network configs:%d",
         getTestrigName(), getContainerName(), vendorConfigurations.size());
 
-    _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
-    _logger.resetTimer();
-    createDirectories(outputPath);
-    Map<Path, VendorConfiguration> output = new TreeMap<>();
-    vendorConfigurations.forEach(
-        (name, vc) -> {
-          if (name.contains(File.separator)) {
-            // iptables will get a hostname like configs/iptables-save if they
-            // are not set up correctly using host files
-            _logger.errorf("Cannot serialize configuration with hostname %s\n", name);
-            answerElement.addRedFlagWarning(
-                name,
-                new Warning(
-                    "Cannot serialize network config. Bad hostname " + name.replace("\\", "/"),
-                    "MISCELLANEOUS"));
-          } else {
-            // apply overlay if it exists
-            VendorConfiguration overlayConfig = overlayHostConfigurations.get(name);
-            if (overlayConfig != null) {
-              vc.setOverlayConfiguration(overlayConfig);
-              overlayHostConfigurations.remove(name);
+    try (ActiveSpan serializeNetworkConfigsSpan =
+        GlobalTracer.get().buildSpan("Serialize network configs").startActive()) {
+      assert serializeNetworkConfigsSpan != null; // avoid unused warning
+      _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
+      _logger.resetTimer();
+      createDirectories(outputPath);
+      Map<Path, VendorConfiguration> output = new TreeMap<>();
+      vendorConfigurations.forEach(
+          (name, vc) -> {
+            if (name.contains(File.separator)) {
+              // iptables will get a hostname like configs/iptables-save if they
+              // are not set up correctly using host files
+              _logger.errorf("Cannot serialize configuration with hostname %s\n", name);
+              answerElement.addRedFlagWarning(
+                  name,
+                  new Warning(
+                      "Cannot serialize network config. Bad hostname " + name.replace("\\", "/"),
+                      "MISCELLANEOUS"));
+            } else {
+              // apply overlay if it exists
+              VendorConfiguration overlayConfig = overlayHostConfigurations.get(name);
+              if (overlayConfig != null) {
+                vc.setOverlayConfiguration(overlayConfig);
+                overlayHostConfigurations.remove(name);
+              }
+
+              Path currentOutputPath = outputPath.resolve(name);
+              output.put(currentOutputPath, vc);
             }
+          });
 
-            Path currentOutputPath = outputPath.resolve(name);
-            output.put(currentOutputPath, vc);
-          }
-        });
+      // warn about unused overlays
+      overlayHostConfigurations.forEach(
+          (name, overlay) ->
+              answerElement.getParseStatus().put(overlay.getFilename(), ParseStatus.ORPHANED));
 
-    // warn about unused overlays
-    overlayHostConfigurations.forEach(
-        (name, overlay) ->
-            answerElement.getParseStatus().put(overlay.getFilename(), ParseStatus.ORPHANED));
-
-    serializeObjects(output);
-    _logger.printElapsedTime();
+      serializeObjects(output);
+      _logger.printElapsedTime();
+    }
   }
 
   public <S extends Serializable> void serializeObjects(Map<Path, S> objectsByPath) {
