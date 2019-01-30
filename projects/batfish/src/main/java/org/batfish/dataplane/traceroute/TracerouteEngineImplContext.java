@@ -11,6 +11,7 @@ import static org.batfish.datamodel.flow.StepAction.DENIED;
 import static org.batfish.datamodel.flow.StepAction.TRANSMITTED;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
+import static org.batfish.dataplane.traceroute.TracerouteUtils.buildSessionsByIngressInterface;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createEnterSrcIfaceStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createFilterStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
@@ -21,7 +22,6 @@ import static org.batfish.specifier.DispositionSpecifier.SUCCESS_DISPOSITIONS;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -196,25 +196,6 @@ public class TracerouteEngineImplContext {
     _ignoreFilters = ignoreFilters;
     _forwardingAnalysis = _dataPlane.getForwardingAnalysis();
     _sessionsByIngressInterface = buildSessionsByIngressInterface(sessions);
-  }
-
-  private static Multimap<NodeInterfacePair, FirewallSessionTraceInfo>
-      buildSessionsByIngressInterface(@Nullable Set<FirewallSessionTraceInfo> sessions) {
-    if (sessions == null) {
-      return ImmutableMultimap.of();
-    }
-
-    ImmutableMultimap.Builder<NodeInterfacePair, FirewallSessionTraceInfo> builder =
-        ImmutableMultimap.builder();
-    sessions.forEach(
-        session ->
-            session
-                .getIncomingInterfaces()
-                .forEach(
-                    incomingIface ->
-                        builder.put(
-                            new NodeInterfacePair(session.getHostname(), incomingIface), session)));
-    return builder.build();
   }
 
   private void processCurrentNextHopInterfaceEdges(
@@ -439,7 +420,7 @@ public class TracerouteEngineImplContext {
     // Loop detection
     Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, vrfName, currentFlow);
     if (breadcrumbs.contains(breadcrumb)) {
-      buildLoopTrace(breadcrumb, breadcrumbs, transmissionContext, steps);
+      buildLoopTrace(transmissionContext, steps);
       return;
     }
 
@@ -674,11 +655,7 @@ public class TracerouteEngineImplContext {
         new TraceAndReverseFlow(trace, returnFlow, transmissionContext._newSessions));
   }
 
-  private static void buildLoopTrace(
-      Breadcrumb breadcrumb,
-      Stack<Breadcrumb> breadcrumbs,
-      TransmissionContext transmissionContext,
-      List<Step<?>> steps) {
+  private static void buildLoopTrace(TransmissionContext transmissionContext, List<Step<?>> steps) {
     transmissionContext._hopsSoFar.add(
         new Hop(transmissionContext._currentNode, ImmutableList.copyOf(steps)));
     Trace trace = new Trace(FlowDisposition.LOOP, transmissionContext._hopsSoFar);
@@ -781,7 +758,7 @@ public class TracerouteEngineImplContext {
     String vrf = incomingInterface.getVrfName();
     Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, vrf, flow);
     if (breadcrumbs.contains(breadcrumb)) {
-      buildLoopTrace(breadcrumb, breadcrumbs, transmissionContext, steps);
+      buildLoopTrace(transmissionContext, steps);
       return true;
     }
 
@@ -827,22 +804,21 @@ public class TracerouteEngineImplContext {
         // Delivered to subnet/exits network/insufficient info.
         buildSessionArpFailureTrace(session.getOutgoingInterface(), transmissionContext, steps);
         return true;
-      } else {
-        steps.add(
-            buildExitOutputIfaceStep(
-                outgoingInterface.getName(), transmissionContext, TRANSMITTED));
-        transmissionContext._hopsSoFar.add(new Hop(new Node(currentNodeName), steps));
-
-        // Forward to neighbor.
-        processHop(
-            session.getNextHop().getInterface(),
-            transmissionContext.branch(
-                new NodeInterfacePair(currentNodeName, session.getOutgoingInterface()),
-                session.getNextHop().getHostname()),
-            postTransformationFlow,
-            breadcrumbs);
-        return true;
       }
+
+      steps.add(
+          buildExitOutputIfaceStep(outgoingInterface.getName(), transmissionContext, TRANSMITTED));
+      transmissionContext._hopsSoFar.add(new Hop(new Node(currentNodeName), steps));
+
+      // Forward to neighbor.
+      processHop(
+          session.getNextHop().getInterface(),
+          transmissionContext.branch(
+              new NodeInterfacePair(currentNodeName, session.getOutgoingInterface()),
+              session.getNextHop().getHostname()),
+          postTransformationFlow,
+          breadcrumbs);
+      return true;
     } finally {
       breadcrumbs.pop();
     }
