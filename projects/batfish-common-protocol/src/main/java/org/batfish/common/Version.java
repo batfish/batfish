@@ -3,8 +3,6 @@ package org.batfish.common;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
 import javax.annotation.Nullable;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
@@ -77,36 +75,9 @@ public final class Version {
     }
   }
 
-  private static volatile Instant _cachedTimestamp = null;
-
-  private static Instant computeBuildTimestamp() {
-    try {
-      Configuration config = new Configurations().properties(PROPERTIES_PATH);
-      String timestamp = config.getString("batfish_timestamp");
-      return DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ").parse(timestamp, Instant::from);
-    } catch (Exception e) {
-      return Instant.EPOCH;
-    }
-  }
-
-  /**
-   * Returns the timestamp of the current build of Batfish, or {@link Instant#EPOCH} if no timestamp
-   * could be detected.
-   */
-  public static Instant getBuildTimestamp() {
-    Instant ts = _cachedTimestamp;
-    if (ts == null) {
-      ts = computeBuildTimestamp();
-      _cachedTimestamp = ts;
-    }
-    return ts;
-  }
-
   /** Returns string indicating the current build of Batfish and Z3. */
   public static String getCompleteVersionString() {
-    return String.format(
-        "Batfish version: %s\nBatfish build timestamp: %s\nZ3 version: %s\n",
-        getVersion(), getBuildTimestamp(), getZ3Version());
+    return String.format("Batfish version: %s\nZ3 version: %s\n", getVersion(), getZ3Version());
   }
 
   /**
