@@ -213,7 +213,6 @@ public class PaloAltoGrammarTest {
 
     Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
     Map<String, AddressGroup> addressGroups = vsys.getAddressGroups();
-    Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
 
     // there are three address groups defined in the file, including the empty one
     assertThat(addressGroups.keySet(), equalTo(ImmutableSet.of("group0", "group1", "group2")));
