@@ -135,11 +135,11 @@ public class TracerouteEngineImplContext {
       _transformedFlow = transformedFlow;
     }
 
-    private TransmissionContext branch() {
+    private TransmissionContext branch(String node) {
       TransmissionContext transmissionContext =
           new TransmissionContext(
               _aclDefinitions,
-              _currentNode,
+              new Node(node),
               _flowTraces,
               _hopsSoFar,
               _namedIpSpaces,
@@ -208,9 +208,8 @@ public class TracerouteEngineImplContext {
           _configurations.get(edge.getNode2()),
           edge.getInt2())) {
         processHop(
-            edge.getNode2(),
             edge.getInt2(),
-            transmissionContext,
+            transmissionContext.branch(edge.getNode2()),
             transmissionContext._transformedFlow,
             breadcrumbs);
       }
@@ -303,8 +302,7 @@ public class TracerouteEngineImplContext {
                         Maps.newTreeMap(),
                         flow,
                         flow);
-                processHop(
-                    ingressNodeName, ingressInterfaceName, transmissionContext, flow, breadcrumbs);
+                processHop(ingressInterfaceName, transmissionContext, flow, breadcrumbs);
               } else {
                 TransmissionContext transmissionContext =
                     new TransmissionContext(
@@ -315,18 +313,18 @@ public class TracerouteEngineImplContext {
                         Maps.newTreeMap(),
                         flow,
                         flow);
-                processHop(ingressNodeName, null, transmissionContext, flow, breadcrumbs);
+                processHop(null, transmissionContext, flow, breadcrumbs);
               }
             });
     return new TreeMap<>(traces);
   }
 
   private void processHop(
-      String currentNodeName,
       @Nullable String inputIfaceName,
-      TransmissionContext oldTransmissionContext,
+      TransmissionContext transmissionContext,
       Flow inputFlow,
       Stack<Breadcrumb> breadcrumbs) {
+    String currentNodeName = transmissionContext._currentNode.getName();
     List<Step<?>> steps = new ArrayList<>();
     Configuration currentConfiguration = _configurations.get(currentNodeName);
     if (currentConfiguration == null) {
@@ -337,8 +335,6 @@ public class TracerouteEngineImplContext {
 
     Map<String, IpAccessList> aclDefinitions = currentConfiguration.getIpAccessLists();
     NavigableMap<String, IpSpace> namedIpSpaces = currentConfiguration.getIpSpaces();
-
-    TransmissionContext transmissionContext = oldTransmissionContext.branch();
 
     // trace was received on a source interface of this hop
     Flow dstNatFlow = null;
@@ -614,22 +610,22 @@ public class TracerouteEngineImplContext {
    * return null.
    */
   private @Nullable StepAction applyFilter(
-      @Nullable IpAccessList inputFilter,
+      @Nullable IpAccessList filter,
       FilterType filterType,
-      Flow inputFlow,
+      Flow flow,
       @Nullable String inputIfaceName,
       Map<String, IpAccessList> aclDefinitions,
       NavigableMap<String, IpSpace> namedIpSpaces,
       TransmissionContext transmissionContext,
       List<Step<?>> steps) {
-    if (inputFilter == null) {
+    if (filter == null) {
       return null;
     }
     FilterStep filterStep =
         createFilterStep(
-            inputFlow,
+            flow,
             inputIfaceName,
-            inputFilter,
+            filter,
             filterType,
             aclDefinitions,
             namedIpSpaces,
