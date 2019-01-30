@@ -142,7 +142,7 @@ NO_ORDERED_VARIABLE_NAMES_QUESTIONS = {
     'questions/experimental/switchedVlanProperties.json',
     'questions/experimental/traceroute.json',
     'questions/experimental/viModel.json',
-    'questions/experimental/vxlanVniProperties.json'
+    'questions/experimental/vxlanVniProperties.json',
 }
 
 def test_ordered_variable_names_is_valid(question, question_path):
