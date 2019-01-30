@@ -3,6 +3,7 @@ package org.batfish.main;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Verify.verify;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
@@ -35,11 +36,14 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.hash.Hashing;
 import io.opentracing.ActiveSpan;
 import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -198,6 +202,7 @@ import org.batfish.job.ParseEnvironmentBgpTableJob;
 import org.batfish.job.ParseEnvironmentRoutingTableJob;
 import org.batfish.job.ParseResult;
 import org.batfish.job.ParseVendorConfigurationJob;
+import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.question.SearchFiltersParameters;
@@ -2066,13 +2071,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   /** Returns a list of {@link ParseVendorConfigurationJob} to parse each file. */
   private List<ParseVendorConfigurationJob> makeParseVendorConfigurationsJobs(
-      Map<Path, String> configurationData, ConfigurationFormat seedFormat) {
-    ImmutableList.Builder<ParseVendorConfigurationJob> jobs =
-        ImmutableList.builderWithExpectedSize(configurationData.size());
-    for (Entry<Path, String> vendorFile : configurationData.entrySet()) {
-      Path currentFile = vendorFile.getKey();
-      String filename =
-          _settings.getActiveTestrigSettings().getInputPath().relativize(currentFile).toString();
+      Map<String, String> keyedFileText, ConfigurationFormat seedFormat) {
+    List<ParseVendorConfigurationJob> jobs = new ArrayList<>(keyedFileText.size());
+    for (Entry<String, String> vendorFile : keyedFileText.entrySet()) {
       @Nullable
       SpanContext parseVendorConfigurationSpanContext =
           GlobalTracer.get().activeSpan() == null
@@ -2083,18 +2084,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
           new ParseVendorConfigurationJob(
               _settings,
               vendorFile.getValue(),
-              filename,
+              vendorFile.getKey(),
               buildWarnings(_settings),
               seedFormat,
               HashMultimap.create(),
               parseVendorConfigurationSpanContext);
       jobs.add(job);
     }
-    return jobs.build();
+    return jobs;
   }
 
   private SortedMap<String, VendorConfiguration> parseVendorConfigurations(
-      Map<Path, String> configurationData,
+      Map<String, String> configurationData,
       ParseVendorConfigurationAnswerElement answerElement,
       ConfigurationFormat seedFormat) {
     _logger.info("\n*** PARSING VENDOR CONFIGURATION FILES ***\n");
@@ -3034,15 +3035,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private SortedMap<String, VendorConfiguration> serializeHostConfigs(
       Path testRigPath, Path outputPath, ParseVendorConfigurationAnswerElement answerElement) {
     _logger.info("\n*** READING HOST CONFIGS ***\n");
-    Map<Path, String> configurationData =
-        readAllFiles(testRigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR), _logger);
+    Map<String, String> keyedHostText =
+        readAllFiles(testRigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR), _logger).entrySet()
+            .stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    e -> testRigPath.relativize(e.getKey()).toString(), Entry::getValue));
     // read the host files
     SortedMap<String, VendorConfiguration> allHostConfigurations;
     try (ActiveSpan parseHostConfigsSpan =
         GlobalTracer.get().buildSpan("Parse host configs").startActive()) {
       assert parseHostConfigsSpan != null; // avoid unused warning
       allHostConfigurations =
-          parseVendorConfigurations(configurationData, answerElement, ConfigurationFormat.HOST);
+          parseVendorConfigurations(keyedHostText, answerElement, ConfigurationFormat.HOST);
     }
     if (allHostConfigurations == null) {
       throw new BatfishException("Exiting due to parser errors");
@@ -3064,14 +3069,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // read and associate iptables files for specified hosts
     SortedMap<Path, String> iptablesData = new TreeMap<>();
     readIptableFiles(testRigPath, allHostConfigurations, iptablesData, answerElement);
+    Map<String, String> keyedIptablesText =
+        iptablesData.entrySet().stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    e -> testRigPath.relativize(e.getKey()).toString(), Entry::getValue));
 
     SortedMap<String, VendorConfiguration> iptablesConfigurations =
-        parseVendorConfigurations(iptablesData, answerElement, ConfigurationFormat.IPTABLES);
+        parseVendorConfigurations(keyedIptablesText, answerElement, ConfigurationFormat.IPTABLES);
     for (VendorConfiguration vc : allHostConfigurations.values()) {
       HostConfiguration hostConfig = (HostConfiguration) vc;
       if (hostConfig.getIptablesFile() != null) {
         Path path = Paths.get(testRigPath.toString(), hostConfig.getIptablesFile());
-        String relativePathStr = _testrigSettings.getInputPath().relativize(path).toString();
+        String relativePathStr = testRigPath.relativize(path).toString();
         if (iptablesConfigurations.containsKey(relativePathStr)) {
           hostConfig.setIptablesVendorConfig(
               (IptablesVendorConfiguration) iptablesConfigurations.get(relativePathStr));
@@ -3132,6 +3142,33 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  private ParseVendorConfigurationResult getOrParse(ParseVendorConfigurationJob job) {
+    String filename = job.getFilename();
+    String filetext = job.getFileText();
+    String id =
+        Hashing.murmur3_128()
+            .newHasher()
+            .putString("Cached Parse Result", UTF_8)
+            .putString(filename, UTF_8)
+            .putString(filetext, UTF_8)
+            .hash()
+            .toString();
+    long startTime = System.currentTimeMillis();
+    ParseResult result;
+    try (InputStream in = _storage.loadNetworkObject(getContainerName(), id)) {
+      result = SerializationUtils.deserialize(in);
+    } catch (FileNotFoundException e) {
+      result = job.parse();
+    } catch (IOException e) {
+      _logger.warnf(
+          "Error deserializing cached parse result for %s: %s",
+          filename, Throwables.getStackTraceAsString(e));
+      result = job.parse();
+    }
+    long elapsed = System.currentTimeMillis() - startTime;
+    return job.fromResult(result, elapsed);
+  }
+
   /**
    * Parses configuration files for networking devices from the uploaded user data and produces
    * {@link VendorConfiguration vendor-specific configurations} serialized to the given output path.
@@ -3153,22 +3190,30 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     _logger.info("\n*** READING DEVICE CONFIGURATION FILES ***\n");
 
-    List<ParseResult> parseResults;
+    List<ParseVendorConfigurationResult> parseResults;
     try (ActiveSpan parseNetworkConfigsSpan =
         GlobalTracer.get().buildSpan("Parse network configs").startActive()) {
       assert parseNetworkConfigsSpan != null; // avoid unused warning
-      Map<Path, String> configurationData =
-          readAllFiles(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger);
+
+      // user filename (configs/foo) -> text of configs/foo
+      Map<String, String> keyedConfigText =
+          readAllFiles(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger)
+              .entrySet().stream()
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      e -> userUploadPath.relativize(e.getKey()).toString(), Entry::getValue));
       List<ParseVendorConfigurationJob> jobs =
-          makeParseVendorConfigurationsJobs(configurationData, ConfigurationFormat.UNKNOWN);
-      parseResults =
-          jobs.stream()
-              .map(ParseVendorConfigurationJob::parse)
-              .collect(ImmutableList.toImmutableList());
+          makeParseVendorConfigurationsJobs(keyedConfigText, ConfigurationFormat.UNKNOWN);
+      parseResults = jobs.stream().map(this::getOrParse).collect(ImmutableList.toImmutableList());
     }
+
     _logger.infof(
         "Snapshot %s in network %s has total number of network configs:%d",
         getTestrigName(), getContainerName(), parseResults.size());
+
+    /* Assemble answer. */
+    SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
+    parseResults.forEach(pvcr -> pvcr.applyTo(vendorConfigurations, _logger, answerElement));
 
     _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
     _logger.resetTimer();
@@ -3206,10 +3251,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try (ActiveSpan parseNetworkConfigsSpan =
         GlobalTracer.get().buildSpan("Parse network configs").startActive()) {
       assert parseNetworkConfigsSpan != null; // avoid unused warning
-      Map<Path, String> configurationData =
-          readAllFiles(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger);
+      Map<String, String> keyedConfigText =
+          readAllFiles(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger)
+              .entrySet().stream()
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      e -> userUploadPath.relativize(e.getKey()).toString(), Entry::getValue));
       vendorConfigurations =
-          parseVendorConfigurations(configurationData, answerElement, ConfigurationFormat.UNKNOWN);
+          parseVendorConfigurations(keyedConfigText, answerElement, ConfigurationFormat.UNKNOWN);
     }
     if (vendorConfigurations == null) {
       throw new BatfishException("Exiting due to parser errors");

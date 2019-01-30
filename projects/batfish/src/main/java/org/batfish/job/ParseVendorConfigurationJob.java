@@ -387,6 +387,31 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     }
   }
 
+  public ParseVendorConfigurationResult fromResult(ParseResult result, long elapsed) {
+    if (result.getConfig() != null) {
+      return new ParseVendorConfigurationResult(
+          elapsed,
+          _logger.getHistory(),
+          _filename,
+          result.getConfig(),
+          result.getWarnings(),
+          result.getParseTreeSentences(),
+          result.getStatus(),
+          _duplicateHostnames);
+    } else if (result.getFailureCause() != null) {
+      return new ParseVendorConfigurationResult(
+          elapsed,
+          _logger.getHistory(),
+          _filename,
+          result.getWarnings(),
+          result.getParseTreeSentences(),
+          result.getFailureCause());
+    } else {
+      return new ParseVendorConfigurationResult(
+          elapsed, _logger.getHistory(), _filename, result.getWarnings(), result.getStatus());
+    }
+  }
+
   @Override
   public ParseVendorConfigurationResult call() {
     try (ActiveSpan span =
@@ -399,30 +424,15 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       _logger.infof("Processing: '%s'\n", _filename);
       long startTime = System.currentTimeMillis();
       ParseResult result = parse();
-      long elapsed = System.currentTimeMillis() - startTime;
-
-      if (result.getConfig() != null) {
-        return new ParseVendorConfigurationResult(
-            elapsed,
-            _logger.getHistory(),
-            _filename,
-            result.getConfig(),
-            result.getWarnings(),
-            result.getParseTreeSentences(),
-            result.getStatus(),
-            _duplicateHostnames);
-      } else if (result.getFailureCause() != null) {
-        return new ParseVendorConfigurationResult(
-            elapsed,
-            _logger.getHistory(),
-            _filename,
-            result.getWarnings(),
-            result.getParseTreeSentences(),
-            result.getFailureCause());
-      } else {
-        return new ParseVendorConfigurationResult(
-            elapsed, _logger.getHistory(), _filename, result.getWarnings(), result.getStatus());
-      }
+      return fromResult(result, System.currentTimeMillis() - startTime);
     }
+  }
+
+  public String getFilename() {
+    return _filename;
+  }
+
+  public String getFileText() {
+    return _fileText;
   }
 }
