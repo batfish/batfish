@@ -197,6 +197,10 @@ genrule(
     ],
     cmd = """
 BATFISH_VERSION="$$(grep -1 batfish-parent $(location //projects:pom.xml) | grep version | sed 's/[<>]/|/g' | cut -f3 -d\|)"
-sed s/\$${project.version}/$${BATFISH_VERSION}/ $(location src/main/resources/org/batfish/common/common.properties) > "$@"
+BATFISH_TIMESTAMP="$$(date +%Y-%m-%dT%H:%M:%S%z)"
+sed \
+  -e s/\$${project.version}/$${BATFISH_VERSION}/ \
+  -e s/\$${maven.build.timestamp}/$${BATFISH_TIMESTAMP}/ \
+$(location src/main/resources/org/batfish/common/common.properties) > "$@"
 """,
 )
