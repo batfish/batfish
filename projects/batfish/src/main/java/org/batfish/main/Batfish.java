@@ -7,6 +7,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
+import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.common.util.CompletionMetadataUtils.getAddressBooks;
 import static org.batfish.common.util.CompletionMetadataUtils.getAddressGroups;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
@@ -179,7 +180,9 @@ import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.dataplane.TracerouteEngineImpl;
+import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableFormat;
+import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
 import org.batfish.grammar.juniper.JuniperFlattener;
@@ -377,7 +380,37 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return "   " + warning.getTag() + ": " + warning.getText() + "\n";
   }
 
-  private final Map<String, BiFunction<Question, IBatfish, Answerer>> _answererCreators;
+  public static ParserRuleContext parse(
+      BatfishCombinedParser<?, ?> parser, BatfishLogger logger, Settings settings) {
+    ParserRuleContext tree;
+    try {
+      tree = parser.parse();
+    } catch (BatfishException e) {
+      throw new ParserBatfishException("Parser error", e);
+    }
+    List<String> errors = parser.getErrors();
+    int numErrors = errors.size();
+    if (numErrors > 0) {
+      logger.error(numErrors + " ERROR(S)\n");
+      for (int i = 0; i < numErrors; i++) {
+        String prefix = "ERROR " + (i + 1) + ": ";
+        String msg = errors.get(i);
+        String prefixedMsg = CommonUtil.applyPrefix(prefix, msg);
+        logger.error(prefixedMsg + "\n");
+      }
+      throw new ParserBatfishException("Parser error(s)");
+    } else if (!settings.getPrintParseTree()) {
+      logger.info("OK\n");
+    } else {
+      logger.info("OK, PRINTING PARSE TREE:\n");
+      logger.info(
+          ParseTreePrettyPrinter.print(tree, parser, settings.getPrintParseTreeLineNums())
+              + "\n\n");
+    }
+    return tree;
+  }
+
+  private final Map<String, AnswererCreator> _answererCreators;
 
   private TestrigSettings _baseTestrigSettings;
 
@@ -1063,7 +1096,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Deprecated
   @Override
   public Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators() {
-    return _answererCreators;
+    return toImmutableMap(_answererCreators, Entry::getKey, entry -> entry.getValue()::create);
   }
 
   public TestrigSettings getBaseTestrigSettings() {
@@ -2720,7 +2753,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String questionName,
       String questionClassName,
       BiFunction<Question, IBatfish, Answerer> answererCreator) {
-    _answererCreators.put(questionName, answererCreator);
+    AnswererCreator oldAnswererCreator =
+        _answererCreators.putIfAbsent(
+            questionName, new AnswererCreator(questionClassName, answererCreator));
+    if (oldAnswererCreator != null) {
+      // Error: questionName collision.
+      String oldQuestionClassName = _answererCreators.get(questionClassName).getQuestionClassName();
+      throw new IllegalArgumentException(
+          String.format(
+              "questionName %s already exists.\n"
+                  + "  old questionClassName: %s\n"
+                  + "  new questionClassName: %s",
+              questionName, oldQuestionClassName, questionClassName));
+    }
   }
 
   @Override
@@ -4171,8 +4216,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public @Nullable Answerer createAnswerer(@Nonnull Question question) {
-    BiFunction<Question, IBatfish, Answerer> creator = _answererCreators.get(question.getName());
-    return creator != null ? creator.apply(question, this) : null;
+    AnswererCreator creator = _answererCreators.get(question.getName());
+    return creator != null ? creator.create(question, this) : null;
   }
 
   /**

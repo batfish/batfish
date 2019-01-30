@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.flow.FilterStep.FilterStepDetail;
 
 /** {@link Step} to represent the checking of a filter for a {@link org.batfish.datamodel.Flow} */
@@ -20,7 +21,19 @@ public class FilterStep extends Step<FilterStepDetail> {
     /** egress filter */
     EGRESS_FILTER,
     /** preSourceNat filter */
-    PRE_SOURCE_NAT_FILTER
+    PRE_SOURCE_NAT_FILTER;
+
+    public FlowDisposition deniedDisposition() {
+      switch (this) {
+        case INGRESS_FILTER:
+          return FlowDisposition.DENIED_IN;
+        case EGRESS_FILTER:
+        case PRE_SOURCE_NAT_FILTER:
+          return FlowDisposition.DENIED_OUT;
+        default:
+          throw new IllegalArgumentException("Unexpected FilterType: " + this);
+      }
+    }
   }
 
   /** Details of {@link Step} about applying the filter to a {@link Flow} */
