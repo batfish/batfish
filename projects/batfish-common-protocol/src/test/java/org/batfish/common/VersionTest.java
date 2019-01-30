@@ -8,6 +8,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.time.Instant;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -66,5 +67,10 @@ public class VersionTest {
   public void versionIsRealAtRuntime() {
     assertThat(Version.getVersion(), not(containsString("project.version")));
     assertThat(Version.getVersion(), not(equalTo(UNKNOWN_VERSION)));
+  }
+
+  @Test
+  public void timestampIsRealAtRuntime() {
+    assertThat(Version.getBuildTimestamp(), not(equalTo(Instant.EPOCH)));
   }
 }
