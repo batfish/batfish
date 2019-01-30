@@ -95,7 +95,7 @@ public final class BidirectionalTracerouteQuestion extends Question {
 
   @Override
   public String getName() {
-    return "traceroute";
+    return "bidirectionalTraceroute";
   }
 
   @Override
