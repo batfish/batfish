@@ -560,13 +560,14 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     // Count and mark simple structure usages and identify undefined references
     markConcreteStructure(
         PaloAltoStructureType.ADDRESS_GROUP,
+        PaloAltoStructureUsage.ADDRESS_GROUP_STATIC,
         PaloAltoStructureUsage.RULE_DESTINATION,
         PaloAltoStructureUsage.RULE_SOURCE);
     markConcreteStructure(
         PaloAltoStructureType.ADDRESS_OBJECT,
+        PaloAltoStructureUsage.ADDRESS_GROUP_STATIC,
         PaloAltoStructureUsage.RULE_DESTINATION,
-        PaloAltoStructureUsage.RULE_SOURCE,
-        PaloAltoStructureUsage.ADDRESS_GROUP_STATIC);
+        PaloAltoStructureUsage.RULE_SOURCE);
     markConcreteStructure(PaloAltoStructureType.GLOBAL_PROTECT_APP_CRYPTO_PROFILE);
     markConcreteStructure(PaloAltoStructureType.IKE_CRYPTO_PROFILE);
     markConcreteStructure(PaloAltoStructureType.IPSEC_CRYPTO_PROFILE);

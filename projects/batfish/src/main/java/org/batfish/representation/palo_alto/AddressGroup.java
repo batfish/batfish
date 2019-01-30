@@ -29,7 +29,7 @@ public final class AddressGroup implements Serializable {
 
   /**
    * Returns all address objects that are directly or indirectly containted in this group. Accounts
-   * care of circular group references.
+   * for circular group references.
    */
   @VisibleForTesting
   Set<String> getDescendantObjects(

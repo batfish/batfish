@@ -214,13 +214,25 @@ public class PaloAltoGrammarTest {
     Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
     Map<String, AddressGroup> addressGroups = vsys.getAddressGroups();
 
-    // there are three address groups defined in the file, including the empty one
-    assertThat(addressGroups.keySet(), equalTo(ImmutableSet.of("group0", "group1", "group2")));
-
-    // the ip space of the empty group is empty
     assertThat(addressGroups.get("group1").getMembers(), equalTo(ImmutableSet.of("group0")));
     assertThat(addressGroups.get("group0").getMembers(), equalTo(ImmutableSet.of("group2")));
     assertThat(addressGroups.get("group2").getMembers(), equalTo(ImmutableSet.of("group0")));
+  }
+
+  @Test
+  public void testAddressGroupsReference() throws IOException {
+    String hostname = "address-groups-nested";
+    String filename = "configs/" + hostname;
+
+    String group0 = computeObjectName(DEFAULT_VSYS_NAME, "group0");
+    String group1 = computeObjectName(DEFAULT_VSYS_NAME, "group1");
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ADDRESS_GROUP, group0, 2));
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ADDRESS_GROUP, group1, 0));
   }
 
   @Test
