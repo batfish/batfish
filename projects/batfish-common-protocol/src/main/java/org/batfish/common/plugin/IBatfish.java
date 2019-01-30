@@ -78,6 +78,11 @@ public interface IBatfish extends IPluginConsumer {
 
   void checkSnapshotOutputReady();
 
+  /** Compute the dataplane for the current {@link NetworkSnapshot} */
+  DataPlaneAnswerElement computeDataPlane();
+
+  /** @deprecated in favor of {@link #computeDataPlane()} */
+  @Deprecated
   DataPlaneAnswerElement computeDataPlane(boolean differentialContext);
 
   boolean debugFlagEnabled(String flag);

@@ -53,7 +53,7 @@ public class DynamicBgpTest {
                 .build(),
             _folder);
 
-    batfish.computeDataPlane(false); // compute and cache the dataPlane
+    batfish.computeDataPlane(); // compute and cache the dataPlane
     DataPlane dp = batfish.loadDataPlane();
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology = dp.getBgpTopology();
 
@@ -84,7 +84,7 @@ public class DynamicBgpTest {
                 .build(),
             _folder);
 
-    batfish.computeDataPlane(false); // compute and cache the dataPlane
+    batfish.computeDataPlane(); // compute and cache the dataPlane
 
     DataPlane dp = batfish.loadDataPlane();
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology = dp.getBgpTopology();
@@ -127,7 +127,7 @@ public class DynamicBgpTest {
                 .build(),
             _folder);
 
-    batfish.computeDataPlane(false); // compute and cache the dataPlane
+    batfish.computeDataPlane(); // compute and cache the dataPlane
 
     DataPlane dp = batfish.loadDataPlane();
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology = dp.getBgpTopology();

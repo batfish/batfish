@@ -40,7 +40,7 @@ public class RipAndBgpTest {
                 .setConfigurationText(testrigResourcePrefix, configurations)
                 .build(),
             _folder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(batfish.loadDataPlane());
