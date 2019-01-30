@@ -21,3 +21,34 @@ set network qos profile default class class6 priority low
 # this should be dealt with soon
 set network ike gateway
 #
+set deviceconfig setting config rematch yes
+set deviceconfig setting management hostname-type-in-syslog FQDN
+set deviceconfig setting management initcfg type dhcp-client send-hostname yes
+set deviceconfig setting management initcfg type dhcp-client send-client-id no
+set deviceconfig setting management initcfg type dhcp-client accept-dhcp-hostname no
+set deviceconfig setting management initcfg type dhcp-client accept-dhcp-domain no
+set deviceconfig setting management initcfg public-key c3NoLXJ.....
+#
+set network interface ethernet ethernet1/1 layer3 ipv6 neighbor-discovery router-advertisement enable no
+set network interface ethernet ethernet1/1 layer3 ndp-proxy enabled no
+set network interface ethernet ethernet1/1 layer3 lldp enable no
+#
+set network virtual-router default protocol bgp enable no
+set network virtual-router default protocol bgp dampening-profile default cutoff 1.25
+#
+set shared botnet configuration http dynamic-dns enabled yes
+set shared botnet configuration other-applications irc yes
+set shared botnet configuration unknown-applications unknown-tcp destinations-per-hour 10
+set shared botnet report topn 100
+set shared botnet report scheduled yes
+#
+set tag PublicNW
+#
+set mgt-config users admin phash $1$vqgaovyp$BA8m4uld.cxY2T/n9ihK2.
+set mgt-config users admin permissions role-based superuser yes
+set mgt-config users admin public-key c3NoLX...
+#
+#
+set rulebase security rules RULE1 category streaming
+set rulebase security rules RULE1 hip-profiles any
+set rulebase security rules RULE1 source-user any

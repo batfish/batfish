@@ -20,12 +20,15 @@ sr_security
     (
         srs_action
         | srs_application
+        | srs_category
         | srs_description
         | srs_destination
         | srs_disabled
         | srs_from
+        | srs_hip_profiles
         | srs_service
         | srs_source
+        | srs_source_user
         | srs_to
     )
 ;
@@ -46,6 +49,12 @@ srs_action
 srs_application
 :
     APPLICATION variable_list
+;
+
+srs_category
+:
+    CATEGORY
+    null_rest_of_line
 ;
 
 srs_description
@@ -72,6 +81,11 @@ srs_from
     FROM variable_list
 ;
 
+srs_hip_profiles
+:
+    HIP_PROFILES ANY // only support any
+;
+
 srs_service
 :
     SERVICE variable_list
@@ -80,6 +94,11 @@ srs_service
 srs_source
 :
     SOURCE src_or_dst_list
+;
+
+srs_source_user
+:
+    SOURCE_USER ANY // only support user any so far
 ;
 
 srs_to

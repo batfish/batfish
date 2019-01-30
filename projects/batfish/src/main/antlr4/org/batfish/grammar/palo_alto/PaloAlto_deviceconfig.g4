@@ -10,8 +10,15 @@ s_deviceconfig
 :
     DEVICECONFIG
     (
-        sd_system
+        sd_null
+        | sd_system
     )
+;
+
+sd_null
+:
+    SETTING
+    null_rest_of_line
 ;
 
 sd_system
