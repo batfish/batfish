@@ -439,7 +439,7 @@ public class TracerouteEngineImplContext {
     // Loop detection
     Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, vrfName, currentFlow);
     if (breadcrumbs.contains(breadcrumb)) {
-      createLoopTrace(breadcrumb, breadcrumbs, transmissionContext, steps);
+      buildLoopTrace(breadcrumb, breadcrumbs, transmissionContext, steps);
       return;
     }
 
@@ -452,7 +452,7 @@ public class TracerouteEngineImplContext {
           .getOrDefault(currentFlow.getDstIp(), ImmutableMap.of())
           .getOrDefault(currentConfiguration.getHostname(), ImmutableSet.of())
           .contains(vrfName)) {
-        createAcceptTrace(transmissionContext, steps, currentFlow, vrfName);
+        buildAcceptTrace(transmissionContext, steps, currentFlow, vrfName);
         return;
       }
 
@@ -654,7 +654,7 @@ public class TracerouteEngineImplContext {
     }
   }
 
-  private static void createAcceptTrace(
+  private static void buildAcceptTrace(
       TransmissionContext transmissionContext,
       List<Step<?>> steps,
       Flow currentFlow,
@@ -674,7 +674,7 @@ public class TracerouteEngineImplContext {
         new TraceAndReverseFlow(trace, returnFlow, transmissionContext._newSessions));
   }
 
-  private static void createLoopTrace(
+  private static void buildLoopTrace(
       Breadcrumb breadcrumb,
       Stack<Breadcrumb> breadcrumbs,
       TransmissionContext transmissionContext,
@@ -722,6 +722,10 @@ public class TracerouteEngineImplContext {
     return filterStep.getAction();
   }
 
+  /**
+   * Check this {@param flow} matches a session on this device. If so, process the flow. Returns
+   * true if the flow is matched/processed.
+   */
   private boolean processSessions(
       String currentNodeName,
       String inputIfaceName,
@@ -777,7 +781,7 @@ public class TracerouteEngineImplContext {
     String vrf = incomingInterface.getVrfName();
     Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, vrf, flow);
     if (breadcrumbs.contains(breadcrumb)) {
-      createLoopTrace(breadcrumb, breadcrumbs, transmissionContext, steps);
+      buildLoopTrace(breadcrumb, breadcrumbs, transmissionContext, steps);
       return true;
     }
 
@@ -795,7 +799,7 @@ public class TracerouteEngineImplContext {
       }
       if (session.getOutgoingInterface() == null) {
         // Accepted by this node (vrf of incoming interface).
-        createAcceptTrace(transmissionContext, steps, flow, vrf);
+        buildAcceptTrace(transmissionContext, steps, flow, vrf);
         return true;
       }
 
