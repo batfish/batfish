@@ -118,7 +118,7 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
     batfish =
         BatfishTestUtils.getBatfish(
             ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2), temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
   }
 
   BDDReachabilityAnalysis initAnalysis(

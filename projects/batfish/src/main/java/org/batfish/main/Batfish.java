@@ -6,6 +6,7 @@ import static com.google.common.base.Verify.verify;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
+import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.common.util.CompletionMetadataUtils.getAddressBooks;
 import static org.batfish.common.util.CompletionMetadataUtils.getAddressGroups;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
@@ -429,7 +430,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return tree;
   }
 
-  private final Map<String, BiFunction<Question, IBatfish, Answerer>> _answererCreators;
+  private final Map<String, AnswererCreator> _answererCreators;
 
   private TestrigSettings _baseTestrigSettings;
 
@@ -777,7 +778,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         new BatfishCompressor(new BDDPacket(), this, clonedConfigs).compress(headerSpace);
     Topology topo = TopologyUtil.synthesizeL3Topology(configs);
     DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
-    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(false, configs, topo);
+    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(configs, topo);
 
     _storage.storeCompressedConfigurations(
         configs, _settings.getContainer(), _testrigSettings.getName());
@@ -785,11 +786,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public DataPlaneAnswerElement computeDataPlane(boolean differentialContext) {
+  public DataPlaneAnswerElement computeDataPlane() {
     checkSnapshotOutputReady();
-    ComputeDataPlaneResult result = getDataPlanePlugin().computeDataPlane(differentialContext);
+    ComputeDataPlaneResult result = getDataPlanePlugin().computeDataPlane();
     saveDataPlane(result._dataPlane, result._answerElement, false);
     return result._answerElement;
+  }
+
+  @Override
+  @Deprecated
+  public DataPlaneAnswerElement computeDataPlane(boolean differentialContext) {
+    return computeDataPlane();
   }
 
   /* Write the dataplane to disk and cache, and write the answer element to disk.
@@ -1113,7 +1120,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Deprecated
   @Override
   public Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators() {
-    return _answererCreators;
+    return toImmutableMap(_answererCreators, Entry::getKey, entry -> entry.getValue()::create);
   }
 
   public TestrigSettings getBaseTestrigSettings() {
@@ -1505,7 +1512,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answerElement;
   }
 
-  private void prepareToAnswerQuestions(boolean dp, boolean differentialContext) {
+  private void prepareToAnswerQuestions(boolean dp) {
     if (!outputExists(_testrigSettings)) {
       CommonUtil.createDirectories(_testrigSettings.getOutputPath());
     }
@@ -1517,7 +1524,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     if (dp) {
       if (!dataPlaneDependenciesExist(_testrigSettings)) {
-        computeDataPlane(differentialContext);
+        computeDataPlane();
       }
 
       if (!compressedDataPlaneDependenciesExist(_testrigSettings)) {
@@ -1529,12 +1536,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void prepareToAnswerQuestions(boolean diff, boolean diffActive, boolean dp) {
     if (diff || !diffActive) {
       pushBaseSnapshot();
-      prepareToAnswerQuestions(dp, false);
+      prepareToAnswerQuestions(dp);
       popSnapshot();
     }
     if (diff || diffActive) {
       pushDeltaSnapshot();
-      prepareToAnswerQuestions(dp, true);
+      prepareToAnswerQuestions(dp);
       popSnapshot();
     }
   }
@@ -2821,7 +2828,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String questionName,
       String questionClassName,
       BiFunction<Question, IBatfish, Answerer> answererCreator) {
-    _answererCreators.put(questionName, answererCreator);
+    AnswererCreator oldAnswererCreator =
+        _answererCreators.putIfAbsent(
+            questionName, new AnswererCreator(questionClassName, answererCreator));
+    if (oldAnswererCreator != null) {
+      // Error: questionName collision.
+      String oldQuestionClassName = _answererCreators.get(questionClassName).getQuestionClassName();
+      throw new IllegalArgumentException(
+          String.format(
+              "questionName %s already exists.\n"
+                  + "  old questionClassName: %s\n"
+                  + "  new questionClassName: %s",
+              questionName, oldQuestionClassName, questionClassName));
+    }
   }
 
   @Override
@@ -2861,7 +2880,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (compressed) {
       computeCompressedDataPlane();
     } else {
-      computeDataPlane(false);
+      computeDataPlane();
     }
   }
 
@@ -3010,7 +3029,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (_settings.getDataPlane()) {
-      answer.addAnswerElement(computeDataPlane(_settings.getDiffActive()));
+      answer.addAnswerElement(computeDataPlane());
       action = true;
     }
 
@@ -4151,7 +4170,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public @Nullable Answerer createAnswerer(@Nonnull Question question) {
-    BiFunction<Question, IBatfish, Answerer> creator = _answererCreators.get(question.getName());
-    return creator != null ? creator.apply(question, this) : null;
+    AnswererCreator creator = _answererCreators.get(question.getName());
+    return creator != null ? creator.create(question, this) : null;
   }
 }

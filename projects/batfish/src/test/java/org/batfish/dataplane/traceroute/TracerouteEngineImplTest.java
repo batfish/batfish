@@ -134,7 +134,7 @@ public class TracerouteEngineImplTest {
     // Compute data plane
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(config.getHostname(), config);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     // Construct flows
     Flow.Builder fb =
@@ -181,7 +181,7 @@ public class TracerouteEngineImplTest {
             .put(other.getHostname(), other)
             .build();
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, _tempFolder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     Flow flow =
         Flow.builder()
             .setIngressNode(source.getHostname())
@@ -220,7 +220,7 @@ public class TracerouteEngineImplTest {
     Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
     // make batfish call the new traceroute engine
 
-    b.computeDataPlane(false);
+    b.computeDataPlane();
     Flow flow =
         Flow.builder()
             .setIngressNode(c.getHostname())
@@ -268,7 +268,7 @@ public class TracerouteEngineImplTest {
     Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
 
     // make batfish call the new traceroute engine
-    b.computeDataPlane(false);
+    b.computeDataPlane();
     Flow flow =
         Flow.builder()
             .setIngressNode(c1.getHostname())
@@ -304,7 +304,7 @@ public class TracerouteEngineImplTest {
             .build();
 
     Batfish b = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _tempFolder);
-    b.computeDataPlane(false);
+    b.computeDataPlane();
 
     Flow.Builder fb =
         Flow.builder()
@@ -336,7 +336,7 @@ public class TracerouteEngineImplTest {
     Configuration c1 = cb.build();
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c1.getHostname(), c1), _tempFolder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     Set<Flow> flows =
         ImmutableSet.of(Flow.builder().setTag("tag").setIngressNode("missingNode").build());
 
@@ -392,7 +392,7 @@ public class TracerouteEngineImplTest {
     Batfish batfish =
         BatfishTestUtils.getBatfish(
             ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2), _tempFolder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     Flow flow =
         Flow.builder()
             .setTag("tag")
@@ -446,7 +446,7 @@ public class TracerouteEngineImplTest {
     Flow flow = makeFlow();
 
     FilterStep step =
-        TracerouteUtils.applyFilter(
+        TracerouteUtils.createFilterStep(
             flow,
             iface1,
             filter,
@@ -461,7 +461,7 @@ public class TracerouteEngineImplTest {
     assertThat(detail.getFilter(), equalTo(filterName));
 
     step =
-        TracerouteUtils.applyFilter(
+        TracerouteUtils.createFilterStep(
             flow,
             iface2,
             filter,
@@ -513,7 +513,7 @@ public class TracerouteEngineImplTest {
 
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c1.getHostname(), c1), _tempFolder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     Flow flow =
         Flow.builder()
             .setTag("tag")
@@ -636,7 +636,7 @@ public class TracerouteEngineImplTest {
 
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c1.getHostname(), c1), _tempFolder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     Flow flow =
         Flow.builder()
@@ -700,7 +700,7 @@ public class TracerouteEngineImplTest {
 
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _tempFolder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     // Test flows matched by dest nat rules that permit but don't transform
     Flow flow =
@@ -900,7 +900,7 @@ public class TracerouteEngineImplTest {
 
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c1.getHostname(), c1), _tempFolder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     Flow flow =
         Flow.builder()
@@ -992,7 +992,7 @@ public class TracerouteEngineImplTest {
 
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c1.getHostname(), c1), _tempFolder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     Flow flow =
         Flow.builder()
@@ -1118,7 +1118,7 @@ public class TracerouteEngineImplTest {
     SortedMap<String, Configuration> configs =
         ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     // Construct flows
     Flow.Builder fb =

@@ -31,7 +31,7 @@ public class BatfishBDDDetectLoopsTest {
   private void initNetwork(boolean includeLoop) throws IOException {
     SortedMap<String, Configuration> configs = LoopNetwork.testLoopNetwork(includeLoop);
     _batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
-    _batfish.computeDataPlane(false);
+    _batfish.computeDataPlane();
   }
 
   @Test

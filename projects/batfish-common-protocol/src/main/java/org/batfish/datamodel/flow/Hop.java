@@ -27,7 +27,7 @@ public final class Hop {
 
   public Hop(Node node, List<Step<?>> steps) {
     _node = node;
-    _steps = steps;
+    _steps = ImmutableList.copyOf(steps);
   }
 
   @JsonCreator

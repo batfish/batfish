@@ -170,7 +170,7 @@ public class NodJobTest {
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
     Batfish batfish = BatfishTestUtils.getBatfish(_configs, tmp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     _tracerouteEngine = batfish.getTracerouteEngine();
     _dataPlane = batfish.loadDataPlane();
   }

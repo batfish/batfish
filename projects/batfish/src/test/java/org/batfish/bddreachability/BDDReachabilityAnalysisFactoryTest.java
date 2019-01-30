@@ -139,7 +139,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   public void testBDDFactory() throws IOException {
     TestNetworkIndirection net = new TestNetworkIndirection();
     Batfish batfish = BatfishTestUtils.getBatfish(net._configs, temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dataPlane = batfish.loadDataPlane();
 
     // Confirm factory building does not throw, even with IpSpace and ACL indirection
@@ -150,7 +150,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   public void testFinalNodes() throws IOException {
     SortedMap<String, Configuration> configs = TestNetworkSources.twoNodeNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dataPlane = batfish.loadDataPlane();
 
     assertThat(configs.size(), equalTo(2));
@@ -202,7 +202,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   public void testForbiddenTransitNodes() throws IOException {
     SortedMap<String, Configuration> configs = TestNetworkSources.twoNodeNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dataPlane = batfish.loadDataPlane();
 
     assertThat(configs.size(), equalTo(2));
@@ -249,7 +249,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   public void testRequiredTransitNodes() throws IOException {
     SortedMap<String, Configuration> configs = TestNetworkSources.twoNodeNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dataPlane = batfish.loadDataPlane();
 
     assertThat(configs.size(), equalTo(2));
@@ -345,7 +345,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   public void testGetAllBDDsLoop() throws IOException {
     SortedMap<String, Configuration> configs = LoopNetwork.testLoopNetwork(true);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     ReachabilityParameters reachabilityParameters =
         ReachabilityParameters.builder()
@@ -399,7 +399,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     configs.put(loopbackConfig.getHostname(), loopbackConfig);
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     ReachabilityParameters reachabilityParameters =
         ReachabilityParameters.builder()
@@ -454,7 +454,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     ImmutableSortedMap<String, Configuration> configs =
         ImmutableSortedMap.of(config.getHostname(), config);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
             PKT, configs, batfish.loadDataPlane().getForwardingAnalysis());
@@ -465,7 +465,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     // when interface is inactive, its Ip does not belong to the VRF
     iface.setActive(false);
     batfish = BatfishTestUtils.getBatfish(configs, temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     factory =
         new BDDReachabilityAnalysisFactory(
             PKT, configs, batfish.loadDataPlane().getForwardingAnalysis());
@@ -479,7 +479,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     iface.setActive(true);
     iface.setBlacklisted(true);
     batfish = BatfishTestUtils.getBatfish(configs, temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     factory =
         new BDDReachabilityAnalysisFactory(
             PKT, configs, batfish.loadDataPlane().getForwardingAnalysis());
@@ -575,7 +575,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of(config.getHostname(), config);
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
@@ -646,7 +646,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of(config.getHostname(), config);
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
@@ -715,7 +715,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of(config.getHostname(), config);
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
@@ -801,7 +801,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(hostname, config);
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
@@ -937,7 +937,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of(hostname, config, peername, peer);
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
@@ -1005,7 +1005,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(c1.getHostname(), c1);
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
@@ -1088,7 +1088,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
 
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
@@ -1147,7 +1147,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(hostname, config);
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
