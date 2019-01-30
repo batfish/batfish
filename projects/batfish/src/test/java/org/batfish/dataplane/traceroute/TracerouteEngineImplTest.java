@@ -1460,7 +1460,7 @@ public class TracerouteEngineImplTest {
     batfish.computeDataPlane(false);
     TracerouteEngine tracerouteEngine = batfish.getTracerouteEngine();
 
-    /* c1:i1 -> c2:i1 -> c2:i1. The session created for return traffic has outgoing interface=c2i1
+    /* c1:i1 -> c2:i1 -> c2:i2. The session created for return traffic has outgoing interface=c2i1
      * and next hop node/interface c1:i1.
      */
     {
