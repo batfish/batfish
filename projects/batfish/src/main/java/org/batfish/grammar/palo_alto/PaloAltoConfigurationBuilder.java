@@ -556,7 +556,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       } else if (objectName.equals(_currentAddressGroup.getName())) {
         _w.redFlag(
             String.format(
-                "The address group '%s' cannot contain itself", objectName, getFullText(ctx)));
+                "The address group '%s' cannot contain itself: '%s'",
+                objectName, getFullText(ctx)));
       } else {
         _currentAddressGroup.getMembers().add(objectName);
 
