@@ -8,6 +8,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
@@ -50,6 +51,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -59,15 +61,18 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DiffieHellmanGroup;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -77,12 +82,15 @@ import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.representation.palo_alto.AddressGroup;
+import org.batfish.representation.palo_alto.AddressObject;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
 import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
+import org.batfish.representation.palo_alto.Vsys;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -151,6 +159,196 @@ public class PaloAltoGrammarTest {
     fb.setSrcPort(sourcePort);
     fb.setTag("test");
     return fb.build();
+  }
+
+  @Test
+  public void testAddressGroups() throws IOException {
+    PaloAltoConfiguration c = parsePaloAltoConfig("address-groups");
+
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, AddressGroup> addressGroups = vsys.getAddressGroups();
+    Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
+
+    // there are three address groups defined in the file, including the empty one
+    assertThat(addressGroups.keySet(), equalTo(ImmutableSet.of("group0", "group1", "group2")));
+
+    // the ip space of the empty group is empty
+    assertThat(addressGroups.get("group0").getMembers(), equalTo(ImmutableSet.of()));
+    assertThat(
+        addressGroups.get("group0").getIpSpace(addressObjects, addressGroups),
+        equalTo(EmptyIpSpace.INSTANCE));
+
+    // we parsed the description, addr3 should have been discarded
+    assertThat(addressGroups.get("group1").getDescription(), equalTo("group1-desc"));
+    assertThat(
+        addressGroups.get("group1").getMembers(), equalTo(ImmutableSet.of("addr1", "addr2")));
+    assertThat(
+        addressGroups.get("group1").getIpSpace(addressObjects, addressGroups),
+        equalTo(
+            AclIpSpace.union(
+                addressObjects.get("addr2").getIpSpace(),
+                addressObjects.get("addr1").getIpSpace())));
+
+    // check that we parse multiple address objects on the same line correctly
+    assertThat(
+        addressGroups.get("group2").getMembers(), equalTo(ImmutableSet.of("addr1", "addr2")));
+
+    // check that ip spaces were inserted properly
+    Configuration viConfig = c.toVendorIndependentConfigurations().get(0);
+    assertThat(
+        viConfig,
+        hasIpSpace(
+            "group0",
+            equalTo(addressGroups.get("group0").getIpSpace(addressObjects, addressGroups))));
+    assertThat(
+        viConfig,
+        hasIpSpace(
+            "group1",
+            equalTo(addressGroups.get("group1").getIpSpace(addressObjects, addressGroups))));
+  }
+
+  @Test
+  public void testAddressGroupsNested() throws IOException {
+    PaloAltoConfiguration c = parsePaloAltoConfig("address-groups-nested");
+
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, AddressGroup> addressGroups = vsys.getAddressGroups();
+
+    assertThat(addressGroups.get("group1").getMembers(), equalTo(ImmutableSet.of("group0")));
+    assertThat(addressGroups.get("group0").getMembers(), equalTo(ImmutableSet.of("group2")));
+    assertThat(addressGroups.get("group2").getMembers(), equalTo(ImmutableSet.of("group0")));
+  }
+
+  @Test
+  public void testAddressGroupsReference() throws IOException {
+    String hostname = "address-groups-nested";
+    String filename = "configs/" + hostname;
+
+    String group0 = computeObjectName(DEFAULT_VSYS_NAME, "group0");
+    String group1 = computeObjectName(DEFAULT_VSYS_NAME, "group1");
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ADDRESS_GROUP, group0, 2));
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ADDRESS_GROUP, group1, 0));
+  }
+
+  @Test
+  public void testAddressObjectGroupInheritance() throws IOException {
+    String hostname = "address-object-group-inheritance";
+    Configuration c = parseConfig(hostname);
+
+    String if1name = "ethernet1/1";
+    String if2name = "ethernet1/2";
+
+    // rule1: literal 11.11.11.11 should not be allowed but 10.10.10.10 should be
+    Flow rule1Permitted = createFlow("10.10.10.10", "33.33.33.33");
+    Flow rule1Denied = createFlow("11.11.11.11", "33.33.33.33");
+
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(rule1Permitted, if2name, c))));
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(rule1Denied, if2name, c))));
+
+    // rule2: literal 22.22.22.22 should not be allowed but 10.10.10.10 should be
+    Flow rule2Permitted = createFlow("44.44.44.44", "10.10.10.10");
+    Flow rule2Denied = createFlow("44.44.44.44", "22.22.22.22");
+
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(rule2Permitted, if2name, c))));
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(rule2Denied, if2name, c))));
+  }
+
+  @Test
+  public void testAddressObjectGroupNameConflict() throws IOException {
+    PaloAltoConfiguration c = parsePaloAltoConfig("address-object-group-name-conflict");
+
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+
+    // the address object definition should win for addr1
+    assertThat(vsys.getAddressObjects().keySet(), equalTo(ImmutableSet.of("addr1")));
+
+    // the address group definition should win for group1
+    assertThat(vsys.getAddressGroups().keySet(), equalTo(ImmutableSet.of("group1")));
+  }
+
+  @Test
+  public void testAddressObjectGroupReferenceInRule() throws IOException {
+    String hostname = "address-object-group-inheritance";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    String objectName = computeObjectName(DEFAULT_VSYS_NAME, "11.11.11.11");
+    String groupName = computeObjectName(DEFAULT_VSYS_NAME, "22.22.22.22");
+
+    assertThat(
+        ccae, hasNumReferrers(filename, PaloAltoStructureType.ADDRESS_OBJECT, objectName, 2));
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ADDRESS_GROUP, groupName, 1));
+  }
+
+  @Test
+  public void testAddressObjects() throws IOException {
+    PaloAltoConfiguration c = parsePaloAltoConfig("address-objects");
+
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
+
+    // there are four address objects defined in the file, including the empty one
+    assertThat(
+        vsys.getAddressObjects().keySet(),
+        equalTo(ImmutableSet.of("addr0", "addr1", "addr2", "addr3")));
+
+    // check that we parse the name-only object right
+    assertThat(addressObjects.get("addr0").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
+
+    // check that we parsed description and prefix right
+    assertThat(
+        addressObjects.get("addr1").getIpSpace(), equalTo(Prefix.parse("10.1.1.1/24").toIpSpace()));
+    assertThat(addressObjects.get("addr1").getDescription(), equalTo("addr1-desc"));
+
+    // check that we parse the IP address right
+    assertThat(addressObjects.get("addr2").getIpSpace(), equalTo(Ip.parse("10.1.1.2").toIpSpace()));
+
+    // check that we parse the IP range right
+    assertThat(
+        addressObjects.get("addr3").getIpSpace(),
+        equalTo(IpRange.range(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2"))));
+
+    // check that ip spaces were inserted properly
+    Configuration viConfig = c.toVendorIndependentConfigurations().get(0);
+    assertThat(viConfig, hasIpSpace("addr0", equalTo(addressObjects.get("addr0").getIpSpace())));
+    assertThat(viConfig, hasIpSpace("addr1", equalTo(addressObjects.get("addr1").getIpSpace())));
+    assertThat(viConfig, hasIpSpace("addr2", equalTo(addressObjects.get("addr2").getIpSpace())));
+    assertThat(viConfig, hasIpSpace("addr3", equalTo(addressObjects.get("addr3").getIpSpace())));
+  }
+
+  @Test
+  public void testAddressObjectReference() throws IOException {
+    // addr1 is not referenced
+    String hostname1 = "address-objects";
+    String filename1 = "configs/" + hostname1;
+
+    // addr1 is referenced by two groups
+    String hostname2 = "address-groups";
+    String filename2 = "configs/" + hostname2;
+
+    String name = computeObjectName(DEFAULT_VSYS_NAME, "addr1");
+
+    // Confirm reference count is correct for used structure
+    Batfish batfish1 = getBatfishForConfigurationNames(hostname1);
+    ConvertConfigurationAnswerElement ccae1 =
+        batfish1.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ccae1, hasNumReferrers(filename1, PaloAltoStructureType.ADDRESS_OBJECT, name, 0));
+
+    Batfish batfish2 = getBatfishForConfigurationNames(hostname2);
+    ConvertConfigurationAnswerElement ccae2 =
+        batfish2.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm reference count is correct for used structure
+    assertThat(ccae2, hasNumReferrers(filename2, PaloAltoStructureType.ADDRESS_OBJECT, name, 2));
   }
 
   @Test
@@ -493,6 +691,22 @@ public class PaloAltoGrammarTest {
     // Confirm unzoned flows are rejected by default
     assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(noZoneToZ1, if3name, c))));
     assertThat(c, hasInterface(if3name, hasOutgoingFilter(rejects(z1ToNoZone, if1name, c))));
+  }
+
+  @Test
+  public void testRulebaseIprange() throws IOException {
+    String hostname = "rulebase-iprange";
+    Configuration c = parseConfig(hostname);
+
+    String if1name = "ethernet1/1";
+    String if2name = "ethernet1/2";
+
+    // rule1: 11.11.11.11 should be allowed but 11.11.11.13 shouldn't be
+    Flow rule1Permitted = createFlow("11.11.11.11", "33.33.33.33");
+    Flow rule1Denied = createFlow("11.11.11.13", "33.33.33.33");
+
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(rule1Permitted, if2name, c))));
+    assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(rule1Denied, if2name, c))));
   }
 
   @Test

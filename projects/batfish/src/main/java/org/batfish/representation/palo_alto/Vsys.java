@@ -9,6 +9,10 @@ import java.util.TreeSet;
 public final class Vsys implements Serializable {
   private static final long serialVersionUID = 1L;
 
+  private final SortedMap<String, AddressGroup> _addressGroups;
+
+  private final SortedMap<String, AddressObject> _addressObjects;
+
   private final String _name;
 
   private SortedMap<String, Rule> _rules;
@@ -23,11 +27,23 @@ public final class Vsys implements Serializable {
 
   public Vsys(String name) {
     _name = name;
+    _addressGroups = new TreeMap<>();
+    _addressObjects = new TreeMap<>();
     _rules = new TreeMap<>();
     _services = new TreeMap<>();
     _serviceGroups = new TreeMap<>();
     _syslogServerGroups = new TreeMap<>();
     _zones = new TreeMap<>();
+  }
+
+  /** Returns a map of address group name to {@link AddressGroup} object */
+  public SortedMap<String, AddressGroup> getAddressGroups() {
+    return _addressGroups;
+  }
+
+  /** Returns a map of address object name to {@link AddressObject} object */
+  public SortedMap<String, AddressObject> getAddressObjects() {
+    return _addressObjects;
   }
 
   /** Returns the name of this vsys. */
