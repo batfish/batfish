@@ -446,7 +446,7 @@ public class TracerouteEngineImplTest {
     Flow flow = makeFlow();
 
     FilterStep step =
-        TracerouteUtils.applyFilter(
+        TracerouteUtils.createFilterStep(
             flow,
             iface1,
             filter,
@@ -461,7 +461,7 @@ public class TracerouteEngineImplTest {
     assertThat(detail.getFilter(), equalTo(filterName));
 
     step =
-        TracerouteUtils.applyFilter(
+        TracerouteUtils.createFilterStep(
             flow,
             iface2,
             filter,

@@ -119,9 +119,9 @@ final class TracerouteUtils {
   }
 
   @VisibleForTesting
-  static FilterStep applyFilter(
+  static FilterStep createFilterStep(
       Flow currentFlow,
-      String inInterfaceName,
+      @Nullable String inInterfaceName,
       IpAccessList filter,
       FilterType filterType,
       Map<String, IpAccessList> aclDefinitions,
