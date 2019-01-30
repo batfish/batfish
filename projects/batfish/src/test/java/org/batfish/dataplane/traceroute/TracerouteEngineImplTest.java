@@ -13,6 +13,7 @@ import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.IpAccessListLine.ACCEPT_ALL;
 import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.match5Tuple;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
@@ -23,6 +24,7 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressVrf;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
+import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasNewFirewallSessions;
 import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasReverseFlow;
 import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasTrace;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
@@ -35,6 +37,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
@@ -52,8 +55,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
+import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
@@ -61,6 +66,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
@@ -76,6 +82,7 @@ import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.FilterStep;
 import org.batfish.datamodel.flow.FilterStep.FilterStepDetail;
 import org.batfish.datamodel.flow.FilterStep.FilterType;
+import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.OriginateStep;
 import org.batfish.datamodel.flow.RouteInfo;
@@ -86,7 +93,6 @@ import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
-import org.batfish.datamodel.matchers.TraceMatchers;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -197,7 +203,7 @@ public class TracerouteEngineImplTest {
      *  - There should only be one trace, ending at 'dst'.
      *  - It should be accepting.
      */
-    assertThat(traces, Matchers.contains(TraceMatchers.hasDisposition(ACCEPTED)));
+    assertThat(traces, Matchers.contains(hasDisposition(ACCEPTED)));
   }
 
   @Test
@@ -404,9 +410,9 @@ public class TracerouteEngineImplTest {
             .build();
     SortedMap<Flow, List<Trace>> flowTraces =
         batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
-    assertThat(flowTraces.get(flow), contains(TraceMatchers.hasDisposition(DENIED_IN)));
+    assertThat(flowTraces.get(flow), contains(hasDisposition(DENIED_IN)));
     flowTraces = batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), true);
-    assertThat(flowTraces.get(flow), contains(TraceMatchers.hasDisposition(LOOP)));
+    assertThat(flowTraces.get(flow), contains(hasDisposition(LOOP)));
   }
 
   @Test
@@ -526,7 +532,7 @@ public class TracerouteEngineImplTest {
     SortedMap<Flow, List<Trace>> flowTraces =
         batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
     List<Trace> traceList = flowTraces.get(flow);
-    assertThat(traceList, contains(TraceMatchers.hasDisposition(EXITS_NETWORK)));
+    assertThat(traceList, contains(hasDisposition(EXITS_NETWORK)));
     assertThat(traceList, hasSize(1));
     List<Hop> hops = traceList.get(0).getHops();
     assertThat(hops, hasSize(1));
@@ -574,7 +580,7 @@ public class TracerouteEngineImplTest {
             .setDstIp(Ip.parse("20.6.6.6"))
             .build();
     flowTraces = batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow2), false);
-    assertThat(flowTraces.get(flow2), contains(TraceMatchers.hasDisposition(DENIED_OUT)));
+    assertThat(flowTraces.get(flow2), contains(hasDisposition(DENIED_OUT)));
 
     traceList = flowTraces.get(flow2);
     assertThat(traceList, hasSize(1));
@@ -592,7 +598,7 @@ public class TracerouteEngineImplTest {
     assertThat(step2.getAction(), equalTo(StepAction.DENIED));
 
     flowTraces = batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow2), true);
-    assertThat(flowTraces.get(flow2), contains(TraceMatchers.hasDisposition(EXITS_NETWORK)));
+    assertThat(flowTraces.get(flow2), contains(hasDisposition(EXITS_NETWORK)));
   }
 
   @Test
@@ -649,7 +655,7 @@ public class TracerouteEngineImplTest {
     SortedMap<Flow, List<Trace>> flowTraces =
         batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
     List<Trace> traceList = flowTraces.get(flow);
-    assertThat(traceList, contains(TraceMatchers.hasDisposition(EXITS_NETWORK)));
+    assertThat(traceList, contains(hasDisposition(EXITS_NETWORK)));
     assertThat(traceList, hasSize(1));
     List<Hop> hops = traceList.get(0).getHops();
     assertThat(hops, hasSize(1));
@@ -914,7 +920,7 @@ public class TracerouteEngineImplTest {
     SortedMap<Flow, List<Trace>> flowTraces =
         batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
     List<Trace> traceList = flowTraces.get(flow);
-    assertThat(traceList, contains(TraceMatchers.hasDisposition(EXITS_NETWORK)));
+    assertThat(traceList, contains(hasDisposition(EXITS_NETWORK)));
     assertThat(traceList, hasSize(1));
     List<Hop> hops = traceList.get(0).getHops();
     assertThat(hops, hasSize(1));
@@ -943,7 +949,7 @@ public class TracerouteEngineImplTest {
             .build();
     flowTraces = batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
     traceList = flowTraces.get(flow);
-    assertThat(traceList, contains(TraceMatchers.hasDisposition(DENIED_IN)));
+    assertThat(traceList, contains(hasDisposition(DENIED_IN)));
     assertThat(traceList, hasSize(1));
     hops = traceList.get(0).getHops();
     assertThat(hops, hasSize(1));
@@ -1006,7 +1012,7 @@ public class TracerouteEngineImplTest {
     SortedMap<Flow, List<Trace>> flowTraces =
         batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
     List<Trace> traceList = flowTraces.get(flow);
-    assertThat(traceList, contains(TraceMatchers.hasDisposition(EXITS_NETWORK)));
+    assertThat(traceList, contains(hasDisposition(EXITS_NETWORK)));
     assertThat(traceList, hasSize(1));
     List<Hop> hops = traceList.get(0).getHops();
     assertThat(hops, hasSize(1));
@@ -1035,7 +1041,7 @@ public class TracerouteEngineImplTest {
             .build();
     flowTraces = batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
     traceList = flowTraces.get(flow);
-    assertThat(traceList, contains(TraceMatchers.hasDisposition(DENIED_OUT)));
+    assertThat(traceList, contains(hasDisposition(DENIED_OUT)));
     assertThat(traceList, hasSize(1));
     hops = traceList.get(0).getHops();
     assertThat(hops, hasSize(1));
@@ -1227,5 +1233,280 @@ public class TracerouteEngineImplTest {
         hasEntry(
             equalTo(noRouteFlow),
             contains(allOf(hasTrace(hasDisposition(NO_ROUTE)), hasReverseFlow(nullValue())))));
+  }
+
+  @Test
+  public void testNewSessionsSingleHop() throws IOException {
+    // Construct network
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = cb.build();
+    Vrf vrf1 = nf.vrfBuilder().setOwner(c1).build();
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(c1).setVrf(vrf1);
+
+    String i1Name = "iface1";
+    ib.setName(i1Name).setAddress(new InterfaceAddress("1.1.1.1/24")).build();
+
+    String i2Name = "iface2";
+    String incomingAclName = "incomingAclName";
+    String outgoingAclName = "outgoingAclName";
+    ib.setName(i2Name)
+        .setAddress(new InterfaceAddress("1.1.2.1/24"))
+        .setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(
+                ImmutableSet.of(i2Name), incomingAclName, outgoingAclName))
+        .build();
+
+    String i3Name = "iface3";
+    ib.setName(i3Name)
+        .setAddress(new InterfaceAddress("1.1.3.1/24"))
+        .setFirewallSessionInterfaceInfo(null)
+        .build();
+
+    String i4Name = "iface4";
+    Ip poolIp = Ip.parse("4.4.4.4");
+    ib.setName(i4Name)
+        .setAddress(new InterfaceAddress("1.1.4.1/24"))
+        .setOutgoingTransformation(always().apply(assignSourceIp(poolIp, poolIp)).build())
+        .setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(
+                ImmutableSet.of(i4Name), incomingAclName, outgoingAclName))
+        .build();
+
+    // Compute data plane
+    SortedMap<String, Configuration> configs = ImmutableSortedMap.of(c1.getHostname(), c1);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
+    batfish.computeDataPlane();
+    TracerouteEngine tracerouteEngine = batfish.getTracerouteEngine();
+
+    // When exiting i2, we make a new session
+    {
+      Ip srcIp = Ip.parse("1.1.1.2");
+      Ip dstIp = Ip.parse("1.1.2.2");
+      int dstPort = 100;
+      int srcPort = 200;
+      IpProtocol ipProtocol = IpProtocol.TCP;
+      Flow flow =
+          Flow.builder()
+              .setIngressNode(c1.getHostname())
+              .setIngressInterface(i1Name)
+              .setIpProtocol(ipProtocol)
+              .setSrcIp(srcIp)
+              .setSrcPort(srcPort)
+              .setDstIp(dstIp)
+              .setDstPort(dstPort)
+              .setTag("TAG")
+              .build();
+      List<TraceAndReverseFlow> traces =
+          tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
+      assertThat(
+          traces,
+          contains(
+              allOf(
+                  hasTrace(hasDisposition(DELIVERED_TO_SUBNET)),
+                  hasReverseFlow(
+                      Flow.builder()
+                          .setIngressNode(c1.getHostname())
+                          .setIngressInterface(i2Name)
+                          .setIpProtocol(ipProtocol)
+                          .setSrcIp(dstIp)
+                          .setSrcPort(dstPort)
+                          .setDstIp(srcIp)
+                          .setDstPort(srcPort)
+                          .setTag("TAG")
+                          .build()),
+                  hasNewFirewallSessions(
+                      contains(
+                          new FirewallSessionTraceInfo(
+                              c1.getHostname(),
+                              i1Name,
+                              null,
+                              ImmutableSet.of(i2Name),
+                              match5Tuple(dstIp, dstPort, srcIp, srcPort, ipProtocol),
+                              null))))));
+    }
+
+    // When exiting i3, we don't make a new session
+    {
+      Ip srcIp = Ip.parse("1.1.1.2");
+      Ip dstIp = Ip.parse("1.1.3.2");
+      int dstPort = 100;
+      int srcPort = 200;
+      IpProtocol ipProtocol = IpProtocol.TCP;
+      Flow flow =
+          Flow.builder()
+              .setIngressNode(c1.getHostname())
+              .setIngressInterface(i1Name)
+              .setIpProtocol(ipProtocol)
+              .setSrcIp(srcIp)
+              .setSrcPort(srcPort)
+              .setDstIp(dstIp)
+              .setDstPort(dstPort)
+              .setTag("TAG")
+              .build();
+      List<TraceAndReverseFlow> traces =
+          tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
+      assertThat(
+          traces,
+          contains(
+              allOf(
+                  hasTrace(hasDisposition(DELIVERED_TO_SUBNET)),
+                  hasReverseFlow(
+                      Flow.builder()
+                          .setIngressNode(c1.getHostname())
+                          .setIngressInterface(i3Name)
+                          .setIpProtocol(ipProtocol)
+                          .setSrcIp(dstIp)
+                          .setSrcPort(dstPort)
+                          .setDstIp(srcIp)
+                          .setDstPort(srcPort)
+                          .setTag("TAG")
+                          .build()),
+                  hasNewFirewallSessions(empty()))));
+    }
+
+    // When exiting i4, make a new session with a transformation
+    {
+      Ip srcIp = Ip.parse("1.1.1.2");
+      Ip dstIp = Ip.parse("1.1.4.2");
+      int dstPort = 100;
+      int srcPort = 200;
+      IpProtocol ipProtocol = IpProtocol.TCP;
+      Flow flow =
+          Flow.builder()
+              .setIngressNode(c1.getHostname())
+              .setIngressInterface(i1Name)
+              .setIpProtocol(ipProtocol)
+              .setSrcIp(srcIp)
+              .setSrcPort(srcPort)
+              .setDstIp(dstIp)
+              .setDstPort(dstPort)
+              .setTag("TAG")
+              .build();
+      List<TraceAndReverseFlow> traces =
+          tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
+      assertThat(
+          traces,
+          contains(
+              allOf(
+                  hasTrace(hasDisposition(DELIVERED_TO_SUBNET)),
+                  hasReverseFlow(
+                      Flow.builder()
+                          .setIngressNode(c1.getHostname())
+                          .setIngressInterface(i4Name)
+                          .setIpProtocol(ipProtocol)
+                          .setSrcIp(dstIp)
+                          .setSrcPort(dstPort)
+                          .setDstIp(poolIp)
+                          .setDstPort(srcPort)
+                          .setTag("TAG")
+                          .build()),
+                  hasNewFirewallSessions(
+                      contains(
+                          new FirewallSessionTraceInfo(
+                              c1.getHostname(),
+                              i1Name,
+                              null,
+                              ImmutableSet.of(i4Name),
+                              match5Tuple(dstIp, dstPort, poolIp, srcPort, ipProtocol),
+                              always().apply(assignDestinationIp(srcIp, srcIp)).build()))))));
+    }
+  }
+
+  @Test
+  public void testNewSessionsMultiHop() throws IOException {
+    // Construct network
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = cb.build();
+    Vrf vrf1 = nf.vrfBuilder().setOwner(c1).build();
+
+    String c1i1Name = "c1i1";
+    nf.interfaceBuilder()
+        .setName(c1i1Name)
+        .setOwner(c1)
+        .setVrf(vrf1)
+        .setAddress(new InterfaceAddress("1.1.1.2/24"))
+        .build();
+    vrf1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("1.1.2.0/24"))
+                .setNextHopIp(Ip.parse("1.1.1.1"))
+                .setNextHopInterface(c1i1Name)
+                .setAdministrativeCost(1)
+                .build()));
+
+    Configuration c2 = cb.build();
+    Vrf vrf2 = nf.vrfBuilder().setOwner(c2).build();
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(c2).setVrf(vrf2);
+
+    String c2i1Name = "c2i1";
+    ib.setName(c2i1Name).setAddress(new InterfaceAddress("1.1.1.1/24")).build();
+
+    String c2i2Name = "c2i2";
+    ib.setName(c2i2Name)
+        .setAddress(new InterfaceAddress("1.1.2.1/24"))
+        .setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(ImmutableSet.of(c2i2Name), null, null))
+        .build();
+
+    // Compute data plane
+    SortedMap<String, Configuration> configs =
+        ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
+    batfish.computeDataPlane();
+    TracerouteEngine tracerouteEngine = batfish.getTracerouteEngine();
+
+    /* c1:i1 -> c2:i1 -> c2:i2. The session created for return traffic has outgoing interface=c2i1
+     * and next hop node/interface c1:i1.
+     */
+    {
+      Ip srcIp = Ip.parse("1.1.1.2");
+      Ip dstIp = Ip.parse("1.1.2.2");
+      int dstPort = 100;
+      int srcPort = 200;
+      IpProtocol ipProtocol = IpProtocol.TCP;
+      Flow flow =
+          Flow.builder()
+              .setIngressNode(c1.getHostname())
+              .setIngressVrf(vrf1.getName())
+              .setIpProtocol(ipProtocol)
+              .setSrcIp(srcIp)
+              .setSrcPort(srcPort)
+              .setDstIp(dstIp)
+              .setDstPort(dstPort)
+              .setTag("TAG")
+              .build();
+      List<TraceAndReverseFlow> traces =
+          tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
+      assertThat(
+          traces,
+          contains(
+              allOf(
+                  hasTrace(hasDisposition(DELIVERED_TO_SUBNET)),
+                  hasReverseFlow(
+                      Flow.builder()
+                          .setIngressNode(c2.getHostname())
+                          .setIngressInterface(c2i2Name)
+                          .setIpProtocol(ipProtocol)
+                          .setSrcIp(dstIp)
+                          .setSrcPort(dstPort)
+                          .setDstIp(srcIp)
+                          .setDstPort(srcPort)
+                          .setTag("TAG")
+                          .build()),
+                  hasNewFirewallSessions(
+                      contains(
+                          new FirewallSessionTraceInfo(
+                              c2.getHostname(),
+                              c2i1Name,
+                              new NodeInterfacePair(c1.getHostname(), c1i1Name),
+                              ImmutableSet.of(c2i2Name),
+                              match5Tuple(dstIp, dstPort, srcIp, srcPort, ipProtocol),
+                              null))))));
+    }
   }
 }

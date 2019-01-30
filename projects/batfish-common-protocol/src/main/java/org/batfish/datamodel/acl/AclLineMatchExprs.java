@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
@@ -150,5 +151,17 @@ public final class AclLineMatchExprs {
 
   public static PermittedByAcl permittedByAcl(String aclName) {
     return new PermittedByAcl(aclName);
+  }
+
+  public static MatchHeaderSpace match5Tuple(
+      Ip srcIp, int srcPort, Ip dstIp, int dstPort, IpProtocol ipProtocol) {
+    return new MatchHeaderSpace(
+        HeaderSpace.builder()
+            .setSrcIps(srcIp.toIpSpace())
+            .setSrcPorts(ImmutableList.of(new SubRange(srcPort, srcPort)))
+            .setDstIps(dstIp.toIpSpace())
+            .setDstPorts(ImmutableList.of(new SubRange(dstPort, dstPort)))
+            .setIpProtocols(ImmutableList.of(ipProtocol))
+            .build());
   }
 }
