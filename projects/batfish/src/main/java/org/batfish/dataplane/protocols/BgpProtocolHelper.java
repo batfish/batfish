@@ -169,8 +169,8 @@ public class BgpProtocolHelper {
         sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP);
     transformedOutgoingRouteBuilder.setNetwork(route.getNetwork());
 
-    // Outgoing metric (MED) is preserved only if advertising to IBGP peer.
-    if (remoteRouteIsBgp & !sessionProperties.isEbgp()) {
+    // Outgoing metric
+    if (remoteRouteIsBgp) {
       transformedOutgoingRouteBuilder.setMetric(route.getMetric());
     }
 

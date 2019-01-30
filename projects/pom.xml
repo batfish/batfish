@@ -24,7 +24,6 @@
   <properties>
     <!-- Configuration of Maven project itself. Please keep alphabetical. -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ssZ</maven.build.timestamp.format>
 
     <!-- The versions of Apache Maven plugins used. Please keep alphabetical.-->
     <antlr4-maven-plugin.version>4.7.1</antlr4-maven-plugin.version>
@@ -42,7 +41,6 @@
     <maven-license-plugin.version>1.13</maven-license-plugin.version>
     <maven-pmd-plugin.version>3.10.0</maven-pmd-plugin.version>
     <maven-project-info-reports-plugin.version>2.9</maven-project-info-reports-plugin.version>
-    <maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
     <maven-shade-plugin.version>3.0.0</maven-shade-plugin.version>
     <maven-surefire-plugin.version>3.0.0-M1</maven-surefire-plugin.version>
 
@@ -316,12 +314,6 @@
               <version>${pmd.version}</version>
             </dependency>
           </dependencies>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-resources-plugin</artifactId>
-          <version>${maven-resources-plugin.version}</version>
         </plugin>
 
         <plugin>

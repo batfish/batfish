@@ -237,24 +237,4 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     assertThat(transformedAggregateRoute, nullValue());
     assertThat(transformedBgpRoute, nullValue());
   }
-
-  /** Test that MED is not preserved/advertised to EBGP peers. */
-  @Test
-  public void testEbgpDoesNotExportWithMEDSet() throws BgpRoutePropagationException {
-    BgpRoute bgpRoute = _baseBgpRouteBuilder.setMetric(1000).build();
-
-    setUpPeers(false);
-    BgpRoute.Builder transformedBgpRoute = runTransformBgpRouteOnExport(bgpRoute);
-    assertThat(transformedBgpRoute.getMetric(), equalTo(0L));
-  }
-
-  /** Test that MED is preserved/advertised to IBGP peers. */
-  @Test
-  public void testIbgpDoesNotExportWithMEDSet() throws BgpRoutePropagationException {
-    BgpRoute bgpRoute = _baseBgpRouteBuilder.setMetric(1000).build();
-
-    setUpPeers(true);
-    BgpRoute.Builder transformedBgpRoute = runTransformBgpRouteOnExport(bgpRoute);
-    assertThat(transformedBgpRoute.getMetric(), equalTo(1000L));
-  }
 }
