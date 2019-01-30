@@ -2,6 +2,8 @@ package org.batfish.representation.palo_alto;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
@@ -31,8 +33,12 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -250,6 +256,26 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       loggingServers.addAll(vsys.getSyslogServerAddresses());
       String vsysName = vsys.getName();
 
+      // convert address objects and groups to ip spaces
+      vsys.getAddressObjects()
+          .forEach(
+              (name, addressObject) -> {
+                _c.getIpSpaces().put(name, addressObject.getIpSpace());
+                _c.getIpSpaceMetadata()
+                    .put(name, new IpSpaceMetadata(name, ADDRESS_OBJECT.getDescription()));
+              });
+
+      vsys.getAddressGroups()
+          .forEach(
+              (name, addressGroup) -> {
+                _c.getIpSpaces()
+                    .put(
+                        name,
+                        addressGroup.getIpSpace(vsys.getAddressObjects(), vsys.getAddressGroups()));
+                _c.getIpSpaceMetadata()
+                    .put(name, new IpSpaceMetadata(name, ADDRESS_GROUP.getDescription()));
+              });
+
       // Convert PAN zones and create their corresponding outgoing ACLs
       for (Entry<String, Zone> zoneEntry : vsys.getZones().entrySet()) {
         Zone zone = zoneEntry.getValue();
@@ -257,7 +283,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         _c.getZones().put(zoneName, toZone(zoneName, zone));
 
         String aclName = computeOutgoingFilterName(zoneName);
-        _c.getIpAccessLists().put(aclName, generateOutgoingFilter(aclName, zone));
+        _c.getIpAccessLists().put(aclName, generateOutgoingFilter(aclName, zone, vsys));
       }
 
       // Services
@@ -279,7 +305,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /** Generate outgoing IpAccessList for the specified zone */
-  private IpAccessList generateOutgoingFilter(String name, Zone toZone) {
+  private IpAccessList generateOutgoingFilter(String name, Zone toZone, Vsys vsys) {
     List<IpAccessListLine> lines = new TreeList<>();
     SortedMap<String, Rule> rules = toZone.getVsys().getRules();
 
@@ -287,7 +313,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       if (!rule.getDisabled()
           && (rule.getTo().contains(toZone.getName())
               || rule.getTo().contains(CATCHALL_ZONE_NAME))) {
-        lines.add(toIpAccessListLine(rule));
+        lines.add(toIpAccessListLine(rule, vsys));
       }
     }
 
@@ -302,7 +328,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /** Convert specified firewall rule into an IpAccessListLine */
-  private IpAccessListLine toIpAccessListLine(Rule rule) {
+  private IpAccessListLine toIpAccessListLine(Rule rule, Vsys vsys) {
     List<AclLineMatchExpr> conjuncts = new TreeList<>();
     IpAccessListLine.Builder ipAccessListLineBuilder =
         IpAccessListLine.builder().setName(rule.getName());
@@ -317,11 +343,17 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
     // Construct headerspace match expression
     HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
-    for (IpSpace source : rule.getSource()) {
-      headerSpaceBuilder.addSrcIp(source);
+    for (RuleEndpoint source : rule.getSource()) {
+      IpSpace ipSpace = ruleEndpointToIpSpace(source, vsys);
+      if (ipSpace != null) {
+        headerSpaceBuilder.addSrcIp(ipSpace);
+      }
     }
-    for (IpSpace destination : rule.getDestination()) {
-      headerSpaceBuilder.addDstIp(destination);
+    for (RuleEndpoint destination : rule.getDestination()) {
+      IpSpace ipSpace = ruleEndpointToIpSpace(destination, vsys);
+      if (ipSpace != null) {
+        headerSpaceBuilder.addDstIp(ipSpace);
+      }
     }
     conjuncts.add(new MatchHeaderSpace(headerSpaceBuilder.build()));
 
@@ -363,6 +395,30 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         .setName(rule.getName())
         .setMatchCondition(new AndMatchExpr(conjuncts))
         .build();
+  }
+
+  /** Converts {@link RuleEndpoint} to {@code IpSpace} */
+  private IpSpace ruleEndpointToIpSpace(RuleEndpoint endpoint, Vsys vsys) {
+    switch (endpoint.getType()) {
+      case Any:
+        return UniverseIpSpace.INSTANCE;
+      case IP_ADDRESS:
+        return Ip.parse(endpoint.getValue()).toIpSpace();
+      case IP_PREFIX:
+        return Prefix.parse(endpoint.getValue()).toIpSpace();
+      case IP_RANGE:
+        String[] ips = endpoint.getValue().split("-");
+        return IpRange.range(Ip.parse(ips[0]), Ip.parse(ips[1]));
+      case ADDRESS_OBJECT:
+        return vsys.getAddressObjects().get(endpoint.getValue()).getIpSpace();
+      case ADDRESS_GROUP:
+        return vsys.getAddressGroups()
+            .get(endpoint.getValue())
+            .getIpSpace(vsys.getAddressObjects(), vsys.getAddressGroups());
+      default:
+        _w.redFlag("Could not convert RuleEndpoint to IpSpace: " + endpoint);
+        return null;
+    }
   }
 
   /** Convert Palo Alto specific interface into vendor independent model interface */
@@ -502,6 +558,16 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     // Count and mark simple structure usages and identify undefined references
+    markConcreteStructure(
+        PaloAltoStructureType.ADDRESS_GROUP,
+        PaloAltoStructureUsage.ADDRESS_GROUP_STATIC,
+        PaloAltoStructureUsage.RULE_DESTINATION,
+        PaloAltoStructureUsage.RULE_SOURCE);
+    markConcreteStructure(
+        PaloAltoStructureType.ADDRESS_OBJECT,
+        PaloAltoStructureUsage.ADDRESS_GROUP_STATIC,
+        PaloAltoStructureUsage.RULE_DESTINATION,
+        PaloAltoStructureUsage.RULE_SOURCE);
     markConcreteStructure(PaloAltoStructureType.GLOBAL_PROTECT_APP_CRYPTO_PROFILE);
     markConcreteStructure(PaloAltoStructureType.IKE_CRYPTO_PROFILE);
     markConcreteStructure(PaloAltoStructureType.IPSEC_CRYPTO_PROFILE);

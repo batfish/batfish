@@ -16,6 +16,16 @@ ACTION
     'action'
 ;
 
+ADDRESS
+:
+    'address'
+;
+
+ADDRESS_GROUP
+:
+    'address-group'
+;
+
 ADMIN_DIST
 :
     'admin-dist'
@@ -166,6 +176,11 @@ DROP
     'drop'
 ;
 
+DYNAMIC
+:
+    'dynamic'
+;
+
 ENCRYPTION
 :
     'encryption'
@@ -179,6 +194,11 @@ ESP
 ETHERNET
 :
     'ethernet'
+;
+
+FQDN
+:
+    'fqdn'
 ;
 
 FROM
@@ -269,6 +289,16 @@ IP
 IP_ADDRESS_LITERAL
 :
     'ip-address'
+;
+
+IP_NETMASK
+:
+    'ip-netmask'
+;
+
+IP_RANGE_LITERAL
+:
+    'ip-range'
 ;
 
 IPSEC_CRYPTO_PROFILES
@@ -516,6 +546,11 @@ SOURCE_PORT
     'source-port'
 ;
 
+STATIC
+:
+    'static'
+;
+
 STATIC_ROUTE
 :
     'static-route'
@@ -611,6 +646,11 @@ ZONE
 COMMA
 :
     ','
+;
+
+DASH
+:
+    '-'
 ;
 
 DEC
