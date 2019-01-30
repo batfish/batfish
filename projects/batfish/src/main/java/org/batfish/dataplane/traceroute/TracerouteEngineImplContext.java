@@ -1,14 +1,13 @@
 package org.batfish.dataplane.traceroute;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.match5Tuple;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.EGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.PRE_SOURCE_NAT_FILTER;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.match5Tuple;
 import static org.batfish.datamodel.flow.StepAction.DENIED;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
-import static org.batfish.dataplane.traceroute.TracerouteUtils.applyFilter;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createEnterSrcIfaceStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createFilterStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
@@ -151,7 +150,8 @@ public class TracerouteEngineImplContext {
     }
 
     /** Creates a new TransmissionContext for the specified last-hop node and outgoing interface. */
-    private TransmissionContext branch(NodeInterfacePair lastHopNodeAndOutgoingInterface, String currentHop) {
+    private TransmissionContext branch(
+        NodeInterfacePair lastHopNodeAndOutgoingInterface, String currentHop) {
       TransmissionContext transmissionContext =
           new TransmissionContext(
               _aclDefinitions,
@@ -217,17 +217,18 @@ public class TracerouteEngineImplContext {
     Hop hop = new Hop(new Node(currentNodeName), steps);
     transmissionContext._hopsSoFar.add(hop);
     for (Edge edge : edges) {
-      if (!edge.getNode1().equals(currentNodeName)) {
+      String fromNode = edge.getNode1();
+      if (!fromNode.equals(currentNodeName)) {
         continue;
       }
-      if (isArpSuccessful(
-          finalNextHopIp != null ? finalNextHopIp : dstIp,
-          _forwardingAnalysis,
-          _configurations.get(edge.getNode2()),
-          edge.getInt2())) {
+      String fromIface = edge.getInt1();
+      String toNode = edge.getNode2();
+      String toIface = edge.getInt2();
+      Ip arpIp = finalNextHopIp != null ? finalNextHopIp : dstIp;
+      if (isArpSuccessful(arpIp, _forwardingAnalysis, _configurations.get(toNode), toIface)) {
         processHop(
-            edge.getInt2(),
-            transmissionContext.branch(new NodeInterfacePair(edge.getNode1(), edge.getInt1()), edge.getNode2()),
+            toIface,
+            transmissionContext.branch(new NodeInterfacePair(fromNode, fromIface), toNode),
             transmissionContext._transformedFlow,
             breadcrumbs);
       }
