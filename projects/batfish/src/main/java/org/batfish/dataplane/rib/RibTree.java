@@ -6,7 +6,6 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
@@ -37,7 +36,7 @@ class RibTree<R extends AbstractRoute> implements Serializable {
    * @param route route to remove
    * @return {@link RibDelta} if the route was removed, otherwise {@code null};
    */
-  @Nullable
+  @Nonnull
   RibDelta<R> removeRouteGetDelta(R route, Reason reason) {
     Prefix prefix = route.getNetwork();
     int prefixLength = prefix.getPrefixLength();
@@ -92,7 +91,7 @@ class RibTree<R extends AbstractRoute> implements Serializable {
    * @return a {@link RibDelta} objects indicating which routes where added and evicted from this
    *     RIB
    */
-  @Nullable
+  @Nonnull
   RibDelta<R> mergeRoute(R route) {
     Prefix prefix = route.getNetwork();
     int prefixLength = prefix.getPrefixLength();
