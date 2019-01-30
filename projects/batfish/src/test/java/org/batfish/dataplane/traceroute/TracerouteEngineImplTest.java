@@ -1277,7 +1277,7 @@ public class TracerouteEngineImplTest {
     // Compute data plane
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(c1.getHostname(), c1);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     TracerouteEngine tracerouteEngine = batfish.getTracerouteEngine();
 
     // When exiting i2, we make a new session
@@ -1457,7 +1457,7 @@ public class TracerouteEngineImplTest {
     SortedMap<String, Configuration> configs =
         ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     TracerouteEngine tracerouteEngine = batfish.getTracerouteEngine();
 
     /* c1:i1 -> c2:i1 -> c2:i2. The session created for return traffic has outgoing interface=c2i1
