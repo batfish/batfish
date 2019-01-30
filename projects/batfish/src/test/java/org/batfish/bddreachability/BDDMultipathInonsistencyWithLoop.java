@@ -29,7 +29,7 @@ public class BDDMultipathInonsistencyWithLoop {
   public void testLoopInMultipathConsistency() throws IOException {
     Batfish batfish =
         BatfishTestUtils.getBatfish(MPIWithLoopNetwork.testMPIWithLoopNetwork(), temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     MultipathConsistencyParameters multipathConsistencyParameters =
         new MultipathConsistencyParameters(

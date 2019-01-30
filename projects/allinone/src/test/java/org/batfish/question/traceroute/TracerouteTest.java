@@ -71,7 +71,7 @@ public class TracerouteTest {
                 .build(),
             _folder);
 
-    _batfish.computeDataPlane(false);
+    _batfish.computeDataPlane();
   }
 
   /*
@@ -110,7 +110,7 @@ public class TracerouteTest {
     SortedMap<String, Configuration> configs = aclNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
     batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     PacketHeaderConstraints header = PacketHeaderConstraints.builder().setDstIp("1.1.1.1").build();
 
     TracerouteQuestion question = new TracerouteQuestion(".*", header, false, DEFAULT_MAX_TRACES);
@@ -199,7 +199,7 @@ public class TracerouteTest {
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
     batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     TracerouteQuestion question =
         new TracerouteQuestion(
@@ -287,7 +287,7 @@ public class TracerouteTest {
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
     batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     TracerouteQuestion question =
         new TracerouteQuestion(
@@ -391,7 +391,7 @@ public class TracerouteTest {
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
     batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     TracerouteQuestion question =
         new TracerouteQuestion(
@@ -531,7 +531,7 @@ public class TracerouteTest {
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
     batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     TracerouteQuestion question =
         new TracerouteQuestion(
@@ -678,7 +678,7 @@ public class TracerouteTest {
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
     batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     TracerouteQuestion question =
         new TracerouteQuestion(
@@ -762,7 +762,7 @@ public class TracerouteTest {
 
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(config.getHostname(), config), _folder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     return batfish;
   }
 
@@ -844,7 +844,7 @@ public class TracerouteTest {
                 .build()));
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     TracerouteQuestion question =
         new TracerouteQuestion(
@@ -919,7 +919,7 @@ public class TracerouteTest {
                 .build()));
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     TracerouteQuestion question =
         new TracerouteQuestion(

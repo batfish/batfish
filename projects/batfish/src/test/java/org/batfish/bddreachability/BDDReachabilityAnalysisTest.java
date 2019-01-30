@@ -112,7 +112,7 @@ public final class BDDReachabilityAnalysisTest {
     _net = new TestNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(_net._configs, temp);
 
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dataPlane = batfish.loadDataPlane();
     _graphFactory =
         new BDDReachabilityAnalysisFactory(PKT, _net._configs, dataPlane.getForwardingAnalysis());

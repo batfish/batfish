@@ -63,7 +63,7 @@ public class TracerouteAnswererHelperTest {
                 .build(),
             _folder);
 
-    _batfish.computeDataPlane(false);
+    _batfish.computeDataPlane();
   }
 
   @Test

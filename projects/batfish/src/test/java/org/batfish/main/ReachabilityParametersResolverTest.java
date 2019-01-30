@@ -60,7 +60,7 @@ public class ReachabilityParametersResolverTest {
     _inactiveInterface = nf.interfaceBuilder().setActive(false).setOwner(_node).setVrf(vrf).build();
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(_node.getHostname(), _node);
     _batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
-    _batfish.computeDataPlane(false);
+    _batfish.computeDataPlane();
     _snapshot = _batfish.getNetworkSnapshot();
   }
 

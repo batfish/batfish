@@ -135,7 +135,7 @@ public class NodJobAclTest {
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, tmp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dataPlane = batfish.loadDataPlane();
 
     /* set up synthesizer */
@@ -272,7 +272,7 @@ public class NodJobAclTest {
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, tmp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dataPlane = batfish.loadDataPlane();
 
     /* set up synthesizer */
@@ -406,7 +406,7 @@ public class NodJobAclTest {
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, tmp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dataPlane = batfish.loadDataPlane();
 
     /* set up synthesizer */
