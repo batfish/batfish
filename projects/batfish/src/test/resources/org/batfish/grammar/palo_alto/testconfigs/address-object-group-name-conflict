@@ -1,0 +1,7 @@
+set deviceconfig system hostname address-object-group-name-conflict
+
+set address addr1
+set address-group addr1
+
+set address-group group1
+set address group1

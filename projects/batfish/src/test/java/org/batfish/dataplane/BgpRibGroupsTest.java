@@ -230,7 +230,7 @@ public class BgpRibGroupsTest {
     SortedMap<String, Configuration> configs = makeTestNetwork();
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, folder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
 
     // Only 2.2.2.0/24 in VRF2

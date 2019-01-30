@@ -41,7 +41,7 @@ public class ForwardingAnalysisImplIntegrationTest {
     String vrfName = vrf.getName();
 
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     ForwardingAnalysis forwardingAnalysis = batfish.loadDataPlane().getForwardingAnalysis();
 
@@ -96,7 +96,7 @@ public class ForwardingAnalysisImplIntegrationTest {
     vrf.setStaticRoutes(ImmutableSortedSet.of(forwardingRoute, nonForwardingRoute));
 
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), temp);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     ForwardingAnalysis forwardingAnalysis = batfish.loadDataPlane().getForwardingAnalysis();
 

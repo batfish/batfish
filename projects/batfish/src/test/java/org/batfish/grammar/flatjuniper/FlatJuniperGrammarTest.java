@@ -637,7 +637,7 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
     Set<AbstractRoute> r1Routes =
         dp.getRibs().get(c1Name).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
@@ -4320,7 +4320,7 @@ public final class FlatJuniperGrammarTest {
     String hostname = "juniper-interface-ribgroup";
     Configuration c = parseConfig(hostname);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
 
     ImmutableMap<String, Set<AbstractRoute>> routes =
@@ -4348,7 +4348,7 @@ public final class FlatJuniperGrammarTest {
     String hostname = "juniper-interface-ribgroup-with-policy";
     Configuration c = parseConfig(hostname);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
 
     ImmutableMap<String, Set<AbstractRoute>> routes =
@@ -4386,7 +4386,7 @@ public final class FlatJuniperGrammarTest {
     String hostname = "juniper-interface-ribgroup-with-transformation";
     Configuration c = parseConfig(hostname);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
 
     ImmutableMap<String, Set<AbstractRoute>> routes =

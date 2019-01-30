@@ -93,8 +93,14 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public DataPlaneAnswerElement computeDataPlane(boolean differentialContext) {
+  public DataPlaneAnswerElement computeDataPlane() {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  @Deprecated
+  public DataPlaneAnswerElement computeDataPlane(boolean differentialContext) {
+    return computeDataPlane();
   }
 
   @Override

@@ -65,7 +65,7 @@ public class GetRoutesTest {
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(n1.getHostname(), n1), _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    ComputeDataPlaneResult dp = dataPlanePlugin.computeDataPlane(false);
+    ComputeDataPlaneResult dp = dataPlanePlugin.computeDataPlane();
 
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(dp._dataPlane);

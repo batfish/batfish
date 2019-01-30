@@ -71,7 +71,7 @@ public class TracerouteEngineTest {
     // Compute data plane
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(config.getHostname(), config);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
 
     // Construct flows
@@ -119,7 +119,7 @@ public class TracerouteEngineTest {
             .put(other.getHostname(), other)
             .build();
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, _tempFolder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
     Flow flow =
         Flow.builder()
@@ -228,7 +228,7 @@ public class TracerouteEngineTest {
         .build();
     SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(c.getHostname(), c);
     Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
-    b.computeDataPlane(false);
+    b.computeDataPlane();
     Flow flow =
         Flow.builder()
             .setIngressNode(c.getHostname())
@@ -275,7 +275,7 @@ public class TracerouteEngineTest {
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
-    b.computeDataPlane(false);
+    b.computeDataPlane();
     Flow flow =
         Flow.builder()
             .setIngressNode(c1.getHostname())
@@ -299,7 +299,7 @@ public class TracerouteEngineTest {
     Configuration c1 = cb.build();
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c1.getHostname(), c1), _tempFolder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
     new TracerouteEngineImpl(dp)
         .processFlows(

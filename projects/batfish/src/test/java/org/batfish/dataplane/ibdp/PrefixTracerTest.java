@@ -191,7 +191,7 @@ public class PrefixTracerTest {
 
     // Test: compute dataplane
     IncrementalDataPlane dp =
-        (IncrementalDataPlane) batfish.getDataPlanePlugin().computeDataPlane(false)._dataPlane;
+        (IncrementalDataPlane) batfish.getDataPlanePlugin().computeDataPlane()._dataPlane;
     PrefixTracer pt = dp.getPrefixTracingInfo().get("n1").get(Configuration.DEFAULT_VRF_NAME);
 
     // Assert that static was considered
@@ -216,7 +216,7 @@ public class PrefixTracerTest {
 
     // Test: compute dataplane
     IncrementalDataPlane dp =
-        (IncrementalDataPlane) batfish.getDataPlanePlugin().computeDataPlane(false)._dataPlane;
+        (IncrementalDataPlane) batfish.getDataPlanePlugin().computeDataPlane()._dataPlane;
     PrefixTracer pt = dp.getPrefixTracingInfo().get("n1").get(Configuration.DEFAULT_VRF_NAME);
 
     // Assert that static route was filtered
@@ -233,7 +233,7 @@ public class PrefixTracerTest {
   public void testSummarize() throws IOException {
     Batfish batfish = BatfishTestUtils.getBatfish(twoNodeNetwork(false), _folder);
     IncrementalDataPlane dp =
-        (IncrementalDataPlane) batfish.getDataPlanePlugin().computeDataPlane(false)._dataPlane;
+        (IncrementalDataPlane) batfish.getDataPlanePlugin().computeDataPlane()._dataPlane;
     PrefixTracer pt = dp.getPrefixTracingInfo().get("n1").get(Configuration.DEFAULT_VRF_NAME);
 
     // Test: summarize pt
@@ -247,7 +247,7 @@ public class PrefixTracerTest {
   public void testSummarizeDataplaneAccess() throws IOException {
     Batfish batfish = BatfishTestUtils.getBatfish(twoNodeNetwork(false), _folder);
     IncrementalDataPlane dp =
-        (IncrementalDataPlane) batfish.getDataPlanePlugin().computeDataPlane(false)._dataPlane;
+        (IncrementalDataPlane) batfish.getDataPlanePlugin().computeDataPlane()._dataPlane;
 
     // Test: get summary directly from data plane
     Map<Prefix, Map<String, Set<String>>> summary =
