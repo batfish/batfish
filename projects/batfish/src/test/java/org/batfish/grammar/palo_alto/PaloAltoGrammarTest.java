@@ -124,7 +124,9 @@ public class PaloAltoGrammarTest {
         BatfishParsing.parse(
             parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(tree);
-    return (PaloAltoConfiguration) extractor.getVendorConfiguration();
+    PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
+    pac.setVendor(ConfigurationFormat.PALO_ALTO);
+    return pac;
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
