@@ -460,12 +460,19 @@ public class TracerouteEngineImplContext {
               .distinct()
               .collect(ImmutableList.toImmutableList());
 
+      steps.add(
+          RoutingStep.builder()
+              .setDetail(RoutingStepDetail.builder().setRoutes(matchedRibRouteInfo).build())
+              .setAction(StepAction.FORWARDED)
+              .build());
+
       // For every interface with a route to the dst IP
       for (String nextHopInterfaceName : nextHopInterfaces) {
         TransmissionContext clonedTransmissionContext = transmissionContext.branch();
+        List<Step<?>> clonedSteps = new ArrayList<>(steps);
 
         if (nextHopInterfaceName.equals(Interface.NULL_INTERFACE_NAME)) {
-          buildNullRoutedTrace(clonedTransmissionContext, steps);
+          buildNullRoutedTrace(clonedTransmissionContext, clonedSteps);
           continue;
         }
 
@@ -481,10 +488,9 @@ public class TracerouteEngineImplContext {
                     forwardOutInterface(
                         nextHopInterface,
                         resolvedNextHopIp,
-                        matchedRibRouteInfo,
                         clonedTransmissionContext,
                         breadcrumbs,
-                        new ArrayList<>(steps)));
+                        clonedSteps));
       }
     } finally {
       breadcrumbs.pop();
@@ -560,18 +566,12 @@ public class TracerouteEngineImplContext {
   private void forwardOutInterface(
       Interface outgoingInterface,
       Ip nextHopIp,
-      List<RouteInfo> matchedRibRouteInfo,
       TransmissionContext transmissionContext,
       Stack<Breadcrumb> breadcrumbs,
       List<Step<?>> steps) {
     String currentNodeName = transmissionContext._currentNode.getName();
     String outgoingIfaceName = outgoingInterface.getName();
     NodeInterfacePair nextHopInterface = new NodeInterfacePair(currentNodeName, outgoingIfaceName);
-    steps.add(
-        RoutingStep.builder()
-            .setDetail(RoutingStepDetail.builder().setRoutes(matchedRibRouteInfo).build())
-            .setAction(StepAction.FORWARDED)
-            .build());
 
     // Apply preSourceNatOutgoingFilter
     if (applyFilter(
