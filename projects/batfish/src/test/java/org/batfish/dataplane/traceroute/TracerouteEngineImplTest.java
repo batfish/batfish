@@ -10,6 +10,7 @@ import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
+import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.IpAccessListLine.ACCEPT_ALL;
 import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
@@ -56,6 +57,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.plugin.TracerouteEngine;
@@ -161,6 +163,43 @@ public class TracerouteEngineImplTest {
 
     assertThat(traces, hasEntry(equalTo(flow1), contains(hasDisposition(NO_ROUTE))));
     assertThat(traces, hasEntry(equalTo(flow2), contains(hasDisposition(ACCEPTED))));
+  }
+
+  @Test
+  public void testNullRouted() throws IOException {
+    // Construct network
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration config = cb.build();
+    Vrf vrf = nf.vrfBuilder().setOwner(config).build();
+    Prefix prefix = Prefix.parse("1.0.0.0/8");
+    vrf.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNetwork(prefix)
+                .setAdministrativeCost(1)
+                .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
+                .build()));
+
+    // Compute data plane
+    SortedMap<String, Configuration> configs = ImmutableSortedMap.of(config.getHostname(), config);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
+    batfish.computeDataPlane();
+
+    Flow flow =
+        Flow.builder()
+            .setDstIp(prefix.getFirstHostIp())
+            .setIngressNode(config.getHostname())
+            .setIngressVrf(vrf.getName())
+            .setTag("TAG")
+            .build();
+
+    // Compute flow traces
+    Map<Flow, List<Trace>> traces =
+        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
+
+    assertThat(traces, hasEntry(equalTo(flow), contains(hasDisposition(NULL_ROUTED))));
   }
 
   @Test

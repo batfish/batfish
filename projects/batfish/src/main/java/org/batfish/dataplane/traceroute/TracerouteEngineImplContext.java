@@ -462,7 +462,14 @@ public class TracerouteEngineImplContext {
 
       // For every interface with a route to the dst IP
       for (String nextHopInterfaceName : nextHopInterfaces) {
-        Interface outgoingInterface =
+        TransmissionContext clonedTransmissionContext = transmissionContext.branch();
+
+        if (nextHopInterfaceName.equals(Interface.NULL_INTERFACE_NAME)) {
+          buildNullRoutedTrace(clonedTransmissionContext, steps);
+          continue;
+        }
+
+        Interface nextHopInterface =
             currentConfiguration.getAllInterfaces().get(nextHopInterfaceName);
 
         Multimap<Ip, AbstractRoute> resolvedNextHopIpRoutes =
@@ -472,16 +479,40 @@ public class TracerouteEngineImplContext {
             .forEach(
                 (resolvedNextHopIp, routeCandidates) ->
                     forwardOutInterface(
-                        outgoingInterface,
+                        nextHopInterface,
                         resolvedNextHopIp,
                         matchedRibRouteInfo,
-                        transmissionContext.branch(),
+                        clonedTransmissionContext,
                         breadcrumbs,
                         new ArrayList<>(steps)));
       }
     } finally {
       breadcrumbs.pop();
     }
+  }
+
+  private void buildNullRoutedTrace(TransmissionContext transmissionContext, List<Step<?>> steps) {
+    steps.add(
+        ExitOutputIfaceStep.builder()
+            .setDetail(
+                ExitOutputIfaceStepDetail.builder()
+                    .setOutputInterface(
+                        new NodeInterfacePair(
+                            transmissionContext._currentNode.getName(),
+                            Interface.NULL_INTERFACE_NAME))
+                    .build())
+            .setAction(StepAction.NULL_ROUTED)
+            .build());
+
+    Trace trace =
+        new Trace(
+            FlowDisposition.NULL_ROUTED,
+            ImmutableList.<Hop>builder()
+                .addAll(transmissionContext._hopsSoFar)
+                .add(new Hop(transmissionContext._currentNode, steps))
+                .build());
+    transmissionContext._flowTraces.accept(
+        new TraceAndReverseFlow(trace, null, transmissionContext._newSessions));
   }
 
   /** add a step for NO_ROUTE from source to output interface */
@@ -541,28 +572,6 @@ public class TracerouteEngineImplContext {
             .setDetail(RoutingStepDetail.builder().setRoutes(matchedRibRouteInfo).build())
             .setAction(StepAction.FORWARDED)
             .build());
-
-    if (outgoingIfaceName.equals(Interface.NULL_INTERFACE_NAME)) {
-      steps.add(
-          ExitOutputIfaceStep.builder()
-              .setDetail(
-                  ExitOutputIfaceStepDetail.builder()
-                      .setOutputInterface(
-                          new NodeInterfacePair(currentNodeName, Interface.NULL_INTERFACE_NAME))
-                      .build())
-              .setAction(StepAction.NULL_ROUTED)
-              .build());
-      Trace trace =
-          new Trace(
-              FlowDisposition.NULL_ROUTED,
-              ImmutableList.<Hop>builder()
-                  .addAll(transmissionContext._hopsSoFar)
-                  .add(new Hop(transmissionContext._currentNode, steps))
-                  .build());
-      transmissionContext._flowTraces.accept(
-          new TraceAndReverseFlow(trace, null, transmissionContext._newSessions));
-      return;
-    }
 
     // Apply preSourceNatOutgoingFilter
     if (applyFilter(
