@@ -154,10 +154,9 @@ def test_ordered_variable_names_is_valid(question, question_path):
     if not ordered_variable_names:
         if len(set_of_variable_names) <= 1:
             assert question_path not in NO_ORDERED_VARIABLE_NAMES_QUESTIONS
-            pytest.skip('Question with <= 1 variables does not need orderedVariableNames')
-        else:
-            assert question_path in NO_ORDERED_VARIABLE_NAMES_QUESTIONS
-            pytest.skip('Whitelisted question with no orderedVariableNames')
+            return
+        assert question_path in NO_ORDERED_VARIABLE_NAMES_QUESTIONS
+        pytest.skip('Whitelisted question with no orderedVariableNames')
 
     assert question_path not in NO_ORDERED_VARIABLE_NAMES_QUESTIONS
     set_of_ordered_variable_names = frozenset(ordered_variable_names)
