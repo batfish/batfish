@@ -149,16 +149,20 @@ def test_ordered_variable_names_is_valid(question, question_path):
     """Tests that if orderedVariableNames is present, it includes all instance variables."""
     instance = question['instance']
     ordered_variable_names = instance.get('orderedVariableNames', [])
+    set_of_variable_names = frozenset(instance.get('variables', {}).keys())
 
     if not ordered_variable_names:
-        assert question_path in NO_ORDERED_VARIABLE_NAMES_QUESTIONS
-        pytest.skip('Whitelisted question with no orderedVariableNames')
+        if len(set_of_variable_names) <= 1:
+            assert question_path not in NO_ORDERED_VARIABLE_NAMES_QUESTIONS
+            pytest.skip('Question with <= 1 variables does not need orderedVariableNames')
+        else:
+            assert question_path in NO_ORDERED_VARIABLE_NAMES_QUESTIONS
+            pytest.skip('Whitelisted question with no orderedVariableNames')
 
     assert question_path not in NO_ORDERED_VARIABLE_NAMES_QUESTIONS
     set_of_ordered_variable_names = frozenset(ordered_variable_names)
     # ordered variable names should not contain duplicates
     assert len(set_of_ordered_variable_names) == len(ordered_variable_names)
-    set_of_variable_names = frozenset(instance.get('variables', {}).keys())
     assert set_of_ordered_variable_names == set_of_variable_names
 
 
