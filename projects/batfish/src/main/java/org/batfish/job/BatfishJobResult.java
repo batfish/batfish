@@ -1,5 +1,6 @@
 package org.batfish.job;
 
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -13,12 +14,11 @@ public abstract class BatfishJobResult<OutputT, AnswerElementT extends AnswerEle
   protected final BatfishLoggerHistory _history;
 
   public BatfishJobResult(long elapsedTime, BatfishLoggerHistory history) {
-    _elapsedTime = elapsedTime;
-    _history = history;
-    _failureCause = null;
+    this(elapsedTime, history, null);
   }
 
-  public BatfishJobResult(long elapsedTime, BatfishLoggerHistory history, Throwable failureCause) {
+  public BatfishJobResult(
+      long elapsedTime, BatfishLoggerHistory history, @Nullable Throwable failureCause) {
     _elapsedTime = elapsedTime;
     _history = history;
     _failureCause = failureCause;
@@ -32,6 +32,7 @@ public abstract class BatfishJobResult<OutputT, AnswerElementT extends AnswerEle
     return _elapsedTime;
   }
 
+  @Nullable
   public final Throwable getFailureCause() {
     return _failureCause;
   }
