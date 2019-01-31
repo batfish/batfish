@@ -38,7 +38,8 @@ public class AutocompleteSuggestion {
     this(text, isPartial, description, rank, 0);
   }
 
-  public AutocompleteSuggestion(String text, boolean isPartial, String description, int rank, int insertionIndex) {
+  public AutocompleteSuggestion(
+      String text, boolean isPartial, String description, int rank, int insertionIndex) {
     _text = text;
     _isPartial = isPartial;
     _description = description;
