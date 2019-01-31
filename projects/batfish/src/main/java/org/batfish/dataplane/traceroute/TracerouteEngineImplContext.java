@@ -446,16 +446,7 @@ public class TracerouteEngineImplContext {
       Fib currentFib = _fibs.get(currentNodeName).get(vrfName);
       Set<String> nextHopInterfaces = currentFib.getNextHopInterfaces(dstIp);
       if (nextHopInterfaces.isEmpty()) {
-        // add a step for  NO_ROUTE from source to output interface
-        Builder routingStepBuilder = RoutingStep.builder();
-        routingStepBuilder
-            .setDetail(RoutingStepDetail.builder().build())
-            .setAction(StepAction.NO_ROUTE);
-        steps.add(routingStepBuilder.build());
-        transmissionContext._hopsSoFar.add(new Hop(transmissionContext._currentNode, steps));
-        Trace trace = new Trace(FlowDisposition.NO_ROUTE, transmissionContext._hopsSoFar);
-        transmissionContext._flowTraces.accept(
-            new TraceAndReverseFlow(trace, null, transmissionContext._newSessions));
+        buildNoRouteTrace(transmissionContext, steps);
         return;
       }
 
@@ -471,12 +462,12 @@ public class TracerouteEngineImplContext {
 
       // For every interface with a route to the dst IP
       for (String nextHopInterfaceName : nextHopInterfaces) {
-        Multimap<Ip, AbstractRoute> resolvedNextHopWithRoutes =
-            resolveNextHopIpRoutes(nextHopInterfaceName, nextHopInterfacesByRoute);
         Interface outgoingInterface =
             currentConfiguration.getAllInterfaces().get(nextHopInterfaceName);
 
-        resolvedNextHopWithRoutes
+        Multimap<Ip, AbstractRoute> resolvedNextHopIpRoutes =
+            resolveNextHopIpRoutes(nextHopInterfaceName, nextHopInterfacesByRoute);
+        resolvedNextHopIpRoutes
             .asMap()
             .forEach(
                 (resolvedNextHopIp, routeCandidates) ->
@@ -491,6 +482,20 @@ public class TracerouteEngineImplContext {
     } finally {
       breadcrumbs.pop();
     }
+  }
+
+  /** add a step for NO_ROUTE from source to output interface */
+  private static void buildNoRouteTrace(
+      TransmissionContext transmissionContext, List<Step<?>> steps) {
+    Builder routingStepBuilder = RoutingStep.builder();
+    routingStepBuilder
+        .setDetail(RoutingStepDetail.builder().build())
+        .setAction(StepAction.NO_ROUTE);
+    steps.add(routingStepBuilder.build());
+    transmissionContext._hopsSoFar.add(new Hop(transmissionContext._currentNode, steps));
+    Trace trace = new Trace(FlowDisposition.NO_ROUTE, transmissionContext._hopsSoFar);
+    transmissionContext._flowTraces.accept(
+        new TraceAndReverseFlow(trace, null, transmissionContext._newSessions));
   }
 
   @Nonnull
