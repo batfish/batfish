@@ -204,6 +204,19 @@ public class TracerouteEngineImplContext {
           _currentFlow,
           _flowTraces);
     }
+
+    private TransmissionContext branch() {
+      return new TransmissionContext(
+          _configurations,
+          _currentNode,
+          _ingressInterface,
+          _hopsSoFar,
+          _lastHopNodeAndOutgoingInterface,
+          _newSessions,
+          _originalFlow,
+          _currentFlow,
+          _flowTraces);
+    }
   }
 
   private final Map<String, Configuration> _configurations;
@@ -229,23 +242,24 @@ public class TracerouteEngineImplContext {
     _sessionsByIngressInterface = buildSessionsByIngressInterface(sessions);
   }
 
-  private void processCurrentNextHopInterfaceEdges(
-      String nextHopInterfaceName,
+  private void processOutgoingInterfaceEdges(
+      String outgoingInterface,
       Ip nextHopIp,
       SortedSet<Edge> edges,
       TransmissionContext transmissionContext,
       List<Step<?>> steps,
       Stack<Breadcrumb> breadcrumbs) {
+    checkArgument(!edges.isEmpty(), "No edges.");
     Ip arpIp =
         Route.UNSET_ROUTE_NEXT_HOP_IP.equals(nextHopIp)
             ? transmissionContext._currentFlow.getDstIp()
             : nextHopIp;
 
-    if (!processFlowTransmission(nextHopInterfaceName, arpIp, transmissionContext, steps)) {
+    if (!processArpFailure(outgoingInterface, arpIp, transmissionContext, steps)) {
       return;
     }
 
-    steps.add(buildExitOutputIfaceStep(nextHopInterfaceName, transmissionContext, TRANSMITTED));
+    steps.add(buildExitOutputIfaceStep(outgoingInterface, transmissionContext, TRANSMITTED));
     Hop hop = new Hop(transmissionContext._currentNode, steps);
     transmissionContext._hopsSoFar.add(hop);
 
@@ -253,6 +267,7 @@ public class TracerouteEngineImplContext {
       if (!edge.getNode1().equals(transmissionContext._currentNode.getName())) {
         continue;
       }
+      checkState(edge.getInt1().equals(outgoingInterface), "Edge is not for outgoingInterface");
       String toNode = edge.getNode2();
       String toIface = edge.getInt2();
       if (isArpSuccessful(arpIp, _forwardingAnalysis, _configurations.get(toNode), toIface)) {
@@ -277,28 +292,32 @@ public class TracerouteEngineImplContext {
   }
 
   /**
-   * Checks ARP reply for {@param finalNextHopIp}. Returns whether someone replies. If not, also
-   * constructs the trace.
+   * Checks ARP reply for {@param arpIp}. Returns whether someone replies. If not, also constructs
+   * the trace.
    */
-  private boolean processFlowTransmission(
+  private boolean processArpFailure(
       String outgoingInterfaceName,
       Ip arpIp,
       TransmissionContext transmissionContext,
       List<Step<?>> steps) {
     String currentNodeName = transmissionContext._currentNode.getName();
-    Configuration c = _configurations.get(currentNodeName);
-    Interface outgoingInterface = c.getAllInterfaces().get(outgoingInterfaceName);
+    String vrf =
+        transmissionContext
+            ._currentConfig
+            .getAllInterfaces()
+            .get(transmissionContext._ingressInterface)
+            .getVrfName();
     // halt processing and add neighbor-unreachable trace if no one would respond
     if (_forwardingAnalysis
         .getNeighborUnreachableOrExitsNetwork()
-        .get(transmissionContext._currentNode.getName())
-        .get(outgoingInterface.getVrfName())
+        .get(currentNodeName)
+        .get(vrf)
         .get(outgoingInterfaceName)
-        .containsIp(arpIp, c.getIpSpaces())) {
+        .containsIp(arpIp, transmissionContext._currentConfig.getIpSpaces())) {
       FlowDisposition disposition =
           computeDisposition(
               currentNodeName, outgoingInterfaceName, transmissionContext._currentFlow.getDstIp());
-      buildArpFailureTrace(outgoingInterface, disposition, transmissionContext, steps);
+      buildArpFailureTrace(outgoingInterfaceName, disposition, transmissionContext, steps);
       return false;
     }
     return true;
@@ -452,48 +471,54 @@ public class TracerouteEngineImplContext {
 
       // For every interface with a route to the dst IP
       for (String nextHopInterfaceName : nextHopInterfaces) {
-        TreeMultimap<Ip, AbstractRoute> resolvedNextHopWithRoutes = TreeMultimap.create();
-
-        // Loop over all matching routes that use nextHopInterfaceName as one of the next hop
-        // interfaces.
-        for (Entry<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> e :
-            nextHopInterfacesByRoute.entrySet()) {
-          Map<Ip, Set<AbstractRoute>> finalNextHops = e.getValue().get(nextHopInterfaceName);
-          if (finalNextHops == null || finalNextHops.isEmpty()) {
-            continue;
-          }
-
-          AbstractRoute routeCandidate = e.getKey();
-          Ip nextHopIp = routeCandidate.getNextHopIp();
-          if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
-            resolvedNextHopWithRoutes.put(nextHopIp, routeCandidate);
-          } else {
-            for (Ip resolvedNextHopIp : finalNextHops.keySet()) {
-              resolvedNextHopWithRoutes.put(resolvedNextHopIp, routeCandidate);
-            }
-          }
-        }
-
+        Multimap<Ip, AbstractRoute> resolvedNextHopWithRoutes =
+            resolveNextHopIpRoutes(nextHopInterfaceName, nextHopInterfacesByRoute);
         Interface outgoingInterface =
             currentConfiguration.getAllInterfaces().get(nextHopInterfaceName);
-        TransmissionContext finalTransmissionContext = transmissionContext;
+
         resolvedNextHopWithRoutes
             .asMap()
             .forEach(
-                (resolvedNextHopIp, routeCandidates) -> {
-                  List<Step<?>> clonedSteps = new ArrayList<>(steps);
-                  forwardOutInterface(
-                      outgoingInterface,
-                      resolvedNextHopIp,
-                      matchedRibRouteInfo,
-                      finalTransmissionContext,
-                      breadcrumbs,
-                      clonedSteps);
-                });
+                (resolvedNextHopIp, routeCandidates) ->
+                    forwardOutInterface(
+                        outgoingInterface,
+                        resolvedNextHopIp,
+                        matchedRibRouteInfo,
+                        transmissionContext.branch(),
+                        breadcrumbs,
+                        new ArrayList<>(steps)));
       }
     } finally {
       breadcrumbs.pop();
     }
+  }
+
+  @Nonnull
+  private static Multimap<Ip, AbstractRoute> resolveNextHopIpRoutes(
+      String nextHopInterfaceName,
+      Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute) {
+    TreeMultimap<Ip, AbstractRoute> resolvedNextHopWithRoutes = TreeMultimap.create();
+
+    // Loop over all matching routes that use nextHopInterfaceName as one of the next hop
+    // interfaces.
+    for (Entry<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> e :
+        nextHopInterfacesByRoute.entrySet()) {
+      Map<Ip, Set<AbstractRoute>> finalNextHops = e.getValue().get(nextHopInterfaceName);
+      if (finalNextHops == null || finalNextHops.isEmpty()) {
+        continue;
+      }
+
+      AbstractRoute routeCandidate = e.getKey();
+      Ip nextHopIp = routeCandidate.getNextHopIp();
+      if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
+        resolvedNextHopWithRoutes.put(nextHopIp, routeCandidate);
+      } else {
+        for (Ip resolvedNextHopIp : finalNextHops.keySet()) {
+          resolvedNextHopWithRoutes.put(resolvedNextHopIp, routeCandidate);
+        }
+      }
+    }
+    return resolvedNextHopWithRoutes;
   }
 
   private void forwardOutInterface(
@@ -588,13 +613,11 @@ public class TracerouteEngineImplContext {
     if (edges == null || edges.isEmpty()) {
       FlowDisposition disposition =
           computeDisposition(
-              currentNodeName,
-              outgoingInterface.getName(),
-              transmissionContext._currentFlow.getDstIp());
+              currentNodeName, outgoingIfaceName, transmissionContext._currentFlow.getDstIp());
 
-      buildArpFailureTrace(outgoingInterface, disposition, transmissionContext, steps);
+      buildArpFailureTrace(outgoingIfaceName, disposition, transmissionContext, steps);
     } else {
-      processCurrentNextHopInterfaceEdges(
+      processOutgoingInterfaceEdges(
           outgoingIfaceName, nextHopIp, edges, transmissionContext, steps, breadcrumbs);
     }
   }
@@ -756,7 +779,11 @@ public class TracerouteEngineImplContext {
 
       if (session.getNextHop() == null) {
         // Delivered to subnet/exits network/insufficient info.
-        buildSessionArpFailureTrace(session.getOutgoingInterface(), transmissionContext, steps);
+        buildArpFailureTrace(
+            session.getOutgoingInterface(),
+            FlowDisposition.EXITS_NETWORK,
+            transmissionContext,
+            steps);
         return true;
       }
 
@@ -775,28 +802,6 @@ public class TracerouteEngineImplContext {
     } finally {
       breadcrumbs.pop();
     }
-  }
-
-  /**
-   * We can't use {@link TracerouteEngineImplContext#buildArpFailureTrace} for sessions, because
-   * forwarding analysis disposition maps currently include routing conditions, which do not apply
-   * to sessions.
-   *
-   * <p>This ARP failure situation only arises for sessions that have an outgoing interface but no
-   * next hop. This means the user started the trace entering the outgoing interface. For now, just
-   * always call this EXITS_NETWORK. In the future we may want to apply the normal ARP error
-   * disposition logic, which would require factoring out routing-independent disposition maps in
-   * forwarding analysis.
-   */
-  private void buildSessionArpFailureTrace(
-      String outgoingInterfaceName, TransmissionContext transmissionContext, List<Step<?>> steps) {
-    Interface outgoingInterface =
-        _configurations
-            .get(transmissionContext._currentNode.getName())
-            .getAllInterfaces()
-            .get(outgoingInterfaceName);
-    buildArpFailureTrace(
-        outgoingInterface, FlowDisposition.EXITS_NETWORK, transmissionContext, steps);
   }
 
   @Nullable
@@ -828,23 +833,20 @@ public class TracerouteEngineImplContext {
   }
 
   private static void buildArpFailureTrace(
-      Interface outInterface,
+      String outInterface,
       FlowDisposition disposition,
       TransmissionContext transmissionContext,
       List<Step<?>> steps) {
     String currentNodeName = transmissionContext._currentNode.getName();
     steps.add(
         buildExitOutputIfaceStep(
-            outInterface.getName(),
-            transmissionContext,
-            getFinalActionForDisposition(disposition)));
+            outInterface, transmissionContext, getFinalActionForDisposition(disposition)));
 
     transmissionContext._hopsSoFar.add(new Hop(transmissionContext._currentNode, steps));
 
     Flow returnFlow =
         SUCCESS_DISPOSITIONS.contains(disposition)
-            ? returnFlow(
-                transmissionContext._currentFlow, currentNodeName, null, outInterface.getName())
+            ? returnFlow(transmissionContext._currentFlow, currentNodeName, null, outInterface)
             : null;
 
     Trace trace = new Trace(disposition, transmissionContext._hopsSoFar);
