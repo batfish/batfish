@@ -16,16 +16,17 @@ import org.batfish.datamodel.Flow;
 @JsonSubTypes({
   @JsonSubTypes.Type(value = EnterInputIfaceStep.class, name = "EnterInputInterface"),
   @JsonSubTypes.Type(value = ExitOutputIfaceStep.class, name = "ExitOutputInterface"),
-  @JsonSubTypes.Type(value = InboundStep.class, name = "Inbound"),
-  @JsonSubTypes.Type(value = OriginateStep.class, name = "Originate"),
   @JsonSubTypes.Type(value = FilterStep.class, name = "Filter"),
+  @JsonSubTypes.Type(value = InboundStep.class, name = "Inbound"),
+  @JsonSubTypes.Type(value = MatchSessionStep.class, name = "MatchSession"),
+  @JsonSubTypes.Type(value = OriginateStep.class, name = "Originate"),
   @JsonSubTypes.Type(value = RoutingStep.class, name = "Routing"),
+  @JsonSubTypes.Type(value = SetupSessionStep.class, name = "SetupSession"),
   @JsonSubTypes.Type(value = TransformationStep.class, name = "Transformation"),
 })
 public abstract class Step<D> {
-
-  private static final String PROP_DETAIL = "detail";
-  private static final String PROP_ACTION = "action";
+  protected static final String PROP_DETAIL = "detail";
+  protected static final String PROP_ACTION = "action";
 
   /** Metadata about the {@link Step} */
   @Nonnull private final D _detail;
