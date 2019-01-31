@@ -514,6 +514,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _topologyProvider = new TopologyProviderImpl(this);
   }
 
+  /**
+   * A shallow wrapper for {@link Files#createDirectories} that throws a {@link BatfishException}
+   * instead of {@link IOException}.
+   *
+   * @throws BatfishException if there is an error creating directories.
+   */
+  private static void createDirectories(Path path) {
+    try {
+      Files.createDirectories(path);
+    } catch (IOException e) {
+      throw new BatfishException(
+          "Could not create directories leading up to and including '" + path + "'", e);
+    }
+  }
+
   private Answer analyze() {
     try {
       Answer answer = new Answer();
@@ -1084,7 +1099,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         readConfigurationFiles(inputPath, BfConsts.RELPATH_CONFIGURATIONS_DIR);
     Map<Path, String> outputConfigurationData = new TreeMap<>();
     Path outputConfigDir = outputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
-    CommonUtil.createDirectories(outputConfigDir);
+    createDirectories(outputConfigDir);
     _logger.info("\n*** FLATTENING TEST RIG ***\n");
     _logger.resetTimer();
     List<FlattenVendorConfigurationJob> jobs = new ArrayList<>();
@@ -1514,7 +1529,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void prepareToAnswerQuestions(boolean dp) {
     if (!outputExists(_testrigSettings)) {
-      CommonUtil.createDirectories(_testrigSettings.getOutputPath());
+      createDirectories(_testrigSettings.getOutputPath());
     }
     if (!environmentBgpTablesExist(_testrigSettings)) {
       computeEnvironmentBgpTables();
@@ -3201,7 +3216,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // now, serialize
     _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
     _logger.resetTimer();
-    CommonUtil.createDirectories(outputPath);
+    createDirectories(outputPath);
 
     Map<Path, VendorConfiguration> output = new TreeMap<>();
     nonOverlayHostConfigurations.forEach(
@@ -3273,7 +3288,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         getTestrigName(), getContainerName(), vendorConfigurations.size());
     _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
     _logger.resetTimer();
-    CommonUtil.createDirectories(outputPath);
+    createDirectories(outputPath);
     Map<Path, VendorConfiguration> output = new TreeMap<>();
     vendorConfigurations.forEach(
         (name, vc) -> {
