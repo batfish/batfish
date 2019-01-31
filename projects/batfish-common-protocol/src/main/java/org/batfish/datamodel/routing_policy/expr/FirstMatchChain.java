@@ -87,7 +87,7 @@ public class FirstMatchChain extends BooleanExpr {
         return subroutineResult;
       } else if (!subroutineResult.getFallThrough()) {
         // Found first match, short-circuit here
-        subroutineResult.setReturn(false);
+        subroutineResult.setReturn(true);
         return subroutineResult;
       }
     }
