@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.io.IOException;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
@@ -65,23 +67,51 @@ public final class IpProtocolSpecifierTest {
         IpProtocolSpecifier.autoComplete("89 (ospf), 18 (").stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of("89 (ospf), 118 (STP)", "89 (ospf), 18 (MUX)")));
+        equalTo(ImmutableSet.of(" 118 (STP)", " 18 (MUX)")));
 
-    // trailing comma followed by a space should match with all IpProtocols
+    // trailing comma followed by a space should return suggestions for all protocols
     assertThat(
         IpProtocolSpecifier.autoComplete("89 (ospf), ").stream()
             .map(AutocompleteSuggestion::getText)
-            .collect(Collectors.toSet())
-            .size(),
-        equalTo(IpProtocol.values().length));
+            .collect(Collectors.toSet()),
+        equalTo(
+            IpProtocolSpecifier.COMPLETIONS.stream()
+                .map(completion -> " " + completion)
+                .collect(Collectors.toSet())));
 
-    // trailing comma followed by no space should return one suggestion containing everything before
-    // the comma
+    // trailing comma followed by no space should return suggestions for all protocols
     assertThat(
         IpProtocolSpecifier.autoComplete("89 (ospf),").stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of("89 (OSPF)")));
+        equalTo(
+            IpProtocolSpecifier.COMPLETIONS.stream()
+                .map(completion -> " " + completion)
+                .collect(Collectors.toSet())));
+  }
+
+  @Test
+  public void testAutocompleteInsertionIndex() {
+    // insertion index should be 0 if no commas present
+    List<AutocompleteSuggestion> suggestions = IpProtocolSpecifier.autoComplete("89 (o");
+    assertThat(suggestions.size(), greaterThan(0));
+    for (AutocompleteSuggestion suggestion : suggestions) {
+      assertThat(suggestion.getInsertionIndex(), equalTo(0));
+    }
+
+    // insertion index should be 1 past the last comma
+    suggestions = IpProtocolSpecifier.autoComplete("89, 61");
+    assertThat(suggestions.size(), greaterThan(0));
+    for (AutocompleteSuggestion suggestion : suggestions) {
+      assertThat(suggestion.getInsertionIndex(), equalTo(3));
+    }
+
+    // only the final comma determines the insertion index
+    suggestions = IpProtocolSpecifier.autoComplete(",, 89, abc, , , ,,76,");
+    assertThat(suggestions.size(), greaterThan(0));
+    for (AutocompleteSuggestion suggestion : suggestions) {
+      assertThat(suggestion.getInsertionIndex(), equalTo(21));
+    }
   }
 
   @Test

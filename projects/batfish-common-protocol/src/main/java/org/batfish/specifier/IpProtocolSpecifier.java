@@ -16,7 +16,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -34,7 +33,7 @@ public class IpProtocolSpecifier {
 
   private static final Pattern UNNAMED_PATTERN = Pattern.compile("UNNAMED.*");
 
-  private static final Set<String> COMPLETIONS;
+  @VisibleForTesting static final Set<String> COMPLETIONS;
 
   static {
     COMPLETIONS =
@@ -148,11 +147,11 @@ public class IpProtocolSpecifier {
    * </pre>
    */
   public static List<AutocompleteSuggestion> autoComplete(String query) {
-    // take out any commas
-    String[] atoms = query.split(",");
+    // insertion index should be directly after the final comma or 0 if there are no commas
+    int insertionIndex = query.lastIndexOf(",") + 1;
 
     // only want autocompletions for the query after the final comma
-    String currentQuery = atoms[atoms.length - 1].trim();
+    String currentQuery = query.substring(insertionIndex).trim();
 
     // escape any parentheses
     String escaped = currentQuery.replace("(", "\\(").replace(")", "\\)");
@@ -167,19 +166,12 @@ public class IpProtocolSpecifier {
         .map(
             suggestion ->
                 new AutocompleteSuggestion(
-                    createSuggestionText(atoms, startsWith + suggestion.getText()),
+                    (insertionIndex > 0 ? " " : "") + startsWith + suggestion.getText(),
                     suggestion.getIsPartial(),
                     suggestion.getDescription(),
-                    suggestion.getRank()))
+                    suggestion.getRank(),
+                    insertionIndex))
         .collect(ImmutableList.toImmutableList());
-  }
-
-  // create suggestion text from original array of individual protocol strings and the
-  // autocompletion text for the partial query after the final comma
-  private static String createSuggestionText(String[] atoms, String newSuggestion) {
-    // replace last entry with new suggestion
-    atoms[atoms.length - 1] = (atoms.length > 1 ? " " : "") + newSuggestion;
-    return String.join(",", Stream.of(atoms).collect(Collectors.toList()));
   }
 
   public Set<IpProtocol> getProtocols() {

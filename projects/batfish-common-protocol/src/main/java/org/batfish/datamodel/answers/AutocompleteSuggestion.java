@@ -21,6 +21,7 @@ public class AutocompleteSuggestion {
   public static final int DEFAULT_RANK = Integer.MAX_VALUE;
 
   @Nullable private final String _description;
+  private int _insertionIndex;
   private final boolean _isPartial;
   private int _rank;
   @Nonnull private final String _text;
@@ -34,10 +35,15 @@ public class AutocompleteSuggestion {
   }
 
   public AutocompleteSuggestion(String text, boolean isPartial, String description, int rank) {
+    this(text, isPartial, description, rank, 0);
+  }
+
+  public AutocompleteSuggestion(String text, boolean isPartial, String description, int rank, int insertionIndex) {
     _text = text;
     _isPartial = isPartial;
     _description = description;
     _rank = rank;
+    _insertionIndex = insertionIndex;
   }
 
   @Override
@@ -52,6 +58,10 @@ public class AutocompleteSuggestion {
 
   public String getDescription() {
     return _description;
+  }
+
+  public int getInsertionIndex() {
+    return _insertionIndex;
   }
 
   public boolean getIsPartial() {
@@ -70,6 +80,10 @@ public class AutocompleteSuggestion {
   public int hashCode() {
     // ignore rank and description
     return Objects.hash(_isPartial, _text);
+  }
+
+  public void setInsertionIndex(int insertionIndex) {
+    _insertionIndex = insertionIndex;
   }
 
   public void setRank(int rank) {
