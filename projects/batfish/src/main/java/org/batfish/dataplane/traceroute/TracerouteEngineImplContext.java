@@ -598,19 +598,7 @@ public class TracerouteEngineImplContext {
         outgoingInterface.getFirewallSessionInterfaceInfo();
     if (firewallSessionInterfaceInfo != null) {
       transmissionContext._newSessions.add(
-          new FirewallSessionTraceInfo(
-              currentNodeName,
-              transmissionContext._ingressInterface,
-              transmissionContext._lastHopNodeAndOutgoingInterface,
-              firewallSessionInterfaceInfo.getSessionInterfaces(),
-              match5Tuple(
-                  transformationResult.getOutputFlow().getDstIp(),
-                  transformationResult.getOutputFlow().getDstPort(),
-                  transformationResult.getOutputFlow().getSrcIp(),
-                  transformationResult.getOutputFlow().getSrcPort(),
-                  transformationResult.getOutputFlow().getIpProtocol()),
-              sessionTransformation(
-                  transmissionContext._originalFlow, transformationResult.getOutputFlow())));
+          buildFirewallSessionTraceInfo(transmissionContext, firewallSessionInterfaceInfo));
       steps.add(new SetupSessionStep());
     }
 
@@ -625,6 +613,24 @@ public class TracerouteEngineImplContext {
       processOutgoingInterfaceEdges(
           outgoingIfaceName, nextHopIp, edges, transmissionContext, steps, breadcrumbs);
     }
+  }
+
+  @Nonnull
+  private static FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
+      TransmissionContext transmissionContext,
+      @Nonnull FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
+    return new FirewallSessionTraceInfo(
+        transmissionContext._currentNode.getName(),
+        transmissionContext._ingressInterface,
+        transmissionContext._lastHopNodeAndOutgoingInterface,
+        firewallSessionInterfaceInfo.getSessionInterfaces(),
+        match5Tuple(
+            transmissionContext._currentFlow.getDstIp(),
+            transmissionContext._currentFlow.getDstPort(),
+            transmissionContext._currentFlow.getSrcIp(),
+            transmissionContext._currentFlow.getSrcPort(),
+            transmissionContext._currentFlow.getIpProtocol()),
+        sessionTransformation(transmissionContext._originalFlow, transmissionContext._currentFlow));
   }
 
   private static void buildAcceptTrace(
