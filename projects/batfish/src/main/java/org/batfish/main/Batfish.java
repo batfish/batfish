@@ -3249,7 +3249,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private ParseVendorConfigurationResult getOrParse(
-      ParseVendorConfigurationJob job, @Nullable SpanContext span) {
+      ParseVendorConfigurationJob job, @Nullable SpanContext span, GrammarSettings settings) {
     String filename = job.getFilename();
     String filetext = job.getFileText();
     try (ActiveSpan parseNetworkConfigsSpan =
@@ -3264,6 +3264,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .putString("Cached Parse Result", UTF_8)
               .putString(filename, UTF_8)
               .putString(filetext, UTF_8)
+              .putBoolean(settings.getDisableUnrecognized())
+              .putInt(settings.getMaxParserContextLines())
+              .putInt(settings.getMaxParserContextTokens())
+              .putInt(settings.getMaxParseTreePrintLength())
+              .putBoolean(settings.getPrintParseTreeLineNums())
+              .putBoolean(settings.getPrintParseTree())
+              .putBoolean(settings.getThrowOnLexerError())
+              .putBoolean(settings.getThrowOnParserError())
               .hash()
               .toString();
       long startTime = System.currentTimeMillis();
@@ -3332,7 +3340,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           makeParseVendorConfigurationsJobs(keyedConfigText, ConfigurationFormat.UNKNOWN);
       parseResults =
           jobs.parallelStream()
-              .map(j -> this.getOrParse(j, parseNetworkConfigsSpan.context()))
+              .map(j -> this.getOrParse(j, parseNetworkConfigsSpan.context(), _settings))
               .collect(ImmutableList.toImmutableList());
     }
 
