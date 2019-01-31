@@ -1,5 +1,7 @@
 package org.batfish.representation.cisco;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
@@ -51,8 +53,14 @@ public class Interface implements Serializable {
 
   private static final double TEN_GIGABIT_ETHERNET_BANDWIDTH = 10E9;
 
-  public static double getDefaultBandwidth(String name, ConfigurationFormat format) {
-    Double bandwidth = null;
+  public static double getDefaultBandwidth(
+      @Nonnull String name, @Nonnull ConfigurationFormat format) {
+    return firstNonNull(getDefaultSpeed(name, format), DEFAULT_INTERFACE_BANDWIDTH);
+  }
+
+  public static @Nullable Double getDefaultSpeed(
+      @Nonnull String name, @Nonnull ConfigurationFormat format) {
+    Double speed = null;
     if (name.startsWith("Ethernet")) {
       switch (format) {
         case ARISTA:
@@ -92,24 +100,21 @@ public class Interface implements Serializable {
           throw new BatfishException("Unuspported format: " + format);
       }
     } else if (name.startsWith("FastEthernet")) {
-      bandwidth = FAST_ETHERNET_BANDWIDTH;
+      speed = FAST_ETHERNET_BANDWIDTH;
     } else if (name.startsWith("GigabitEthernet")) {
-      bandwidth = GIGABIT_ETHERNET_BANDWIDTH;
+      speed = GIGABIT_ETHERNET_BANDWIDTH;
     } else if (name.startsWith("LongReachEthernet")) {
-      bandwidth = LONG_REACH_ETHERNET_BANDWIDTH;
+      speed = LONG_REACH_ETHERNET_BANDWIDTH;
     } else if (name.startsWith("TenGigabitEthernet")) {
-      bandwidth = TEN_GIGABIT_ETHERNET_BANDWIDTH;
+      speed = TEN_GIGABIT_ETHERNET_BANDWIDTH;
     } else if (name.startsWith("Vlan")) {
-      bandwidth = null;
+      speed = null;
     } else if (name.startsWith("Loopback")) {
-      bandwidth = LOOPBACK_BANDWIDTH;
+      speed = LOOPBACK_BANDWIDTH;
     } else if (name.startsWith("Bundle-Ethernet") || name.startsWith("Port-Channel")) {
-      bandwidth = 0D;
+      speed = 0D;
     }
-    if (bandwidth == null) {
-      bandwidth = DEFAULT_INTERFACE_BANDWIDTH;
-    }
-    return bandwidth;
+    return speed;
   }
 
   public static int getDefaultMtu() {
@@ -207,6 +212,8 @@ public class Interface implements Serializable {
   private String _securityZone;
 
   @Nullable private Integer _securityLevel;
+
+  private @Nullable Double _speed;
 
   public static double getDefaultDelay(String name, ConfigurationFormat format) {
     if (format == ConfigurationFormat.CISCO_IOS && name.startsWith("Loopback")) {
@@ -467,6 +474,10 @@ public class Interface implements Serializable {
     return _spanningTreePortfast;
   }
 
+  public @Nullable Double getSpeed() {
+    return _speed;
+  }
+
   public InterfaceAddress getStandbyAddress() {
     return _standbyAddress;
   }
@@ -634,6 +645,10 @@ public class Interface implements Serializable {
 
   public void setSpanningTreePortfast(boolean spanningTreePortfast) {
     _spanningTreePortfast = spanningTreePortfast;
+  }
+
+  public void setSpeed(@Nullable Double speed) {
+    _speed = speed;
   }
 
   public void setStandbyAddress(InterfaceAddress standbyAddress) {

@@ -2068,12 +2068,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setHsrpVersion(iface.getHsrpVersion());
     newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
-    if (iface.getBandwidth() == null) {
-      newIface.setBandwidth(
-          Interface.getDefaultBandwidth(iface.getName(), c.getConfigurationFormat()));
-    } else {
-      newIface.setBandwidth(iface.getBandwidth());
-    }
+    newIface.setSpeed(
+        firstNonNull(
+            iface.getSpeed(),
+            Interface.getDefaultSpeed(iface.getName(), c.getConfigurationFormat())));
+    newIface.setBandwidth(
+        firstNonNull(
+            iface.getBandwidth(),
+            newIface.getSpeed(),
+            Interface.getDefaultBandwidth(iface.getName(), c.getConfigurationFormat())));
     if (iface.getDhcpRelayClient()) {
       newIface.setDhcpRelayAddresses(_dhcpRelayServers);
     } else {

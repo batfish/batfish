@@ -88,6 +88,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
@@ -1529,8 +1530,11 @@ public class CiscoGrammarTest {
     Configuration c = parseConfig("ios-interface-speed");
 
     assertThat(c, hasInterface("GigabitEthernet0/0", hasBandwidth(1E9D)));
+    assertThat(c, hasInterface("GigabitEthernet0/0", hasSpeed(1E9D)));
     assertThat(c, hasInterface("GigabitEthernet0/1", hasBandwidth(1E9D)));
+    assertThat(c, hasInterface("GigabitEthernet0/1", hasSpeed(1E9D)));
     assertThat(c, hasInterface("GigabitEthernet0/2", hasBandwidth(100E6D)));
+    assertThat(c, hasInterface("GigabitEthernet0/2", hasSpeed(100E6D)));
   }
 
   @Test
@@ -2982,8 +2986,11 @@ public class CiscoGrammarTest {
     Configuration c = batfish.loadConfigurations().get(hostname);
 
     assertThat(c, hasInterface("Ethernet0", hasBandwidth(40E9D)));
+    assertThat(c, hasInterface("Ethernet0", hasSpeed(40E9D)));
     assertThat(c, hasInterface("Ethernet1", hasBandwidth(40E9D)));
+    assertThat(c, hasInterface("Ethernet1", hasSpeed(40E9D)));
     assertThat(c, hasInterface("Ethernet2", hasBandwidth(40E9D)));
+    assertThat(c, hasInterface("Ethernet2", hasSpeed(40E9D)));
     assertThat(c, hasInterface("Port-Channel1", hasBandwidth(80E9D)));
     assertThat(c, hasInterface("Port-Channel2", isActive(false)));
     assertThat(
