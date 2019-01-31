@@ -16,6 +16,16 @@ ACTION
     'action'
 ;
 
+ADDRESS
+:
+    'address'
+;
+
+ADDRESS_GROUP
+:
+    'address-group'
+;
+
 ADMIN_DIST
 :
     'admin-dist'
@@ -76,6 +86,21 @@ AUTO
     'auto'
 ;
 
+BGP
+:
+    'bgp'
+;
+
+BOTNET
+:
+    'botnet'
+;
+
+CATEGORY
+:
+    'category'
+;
+
 CLOSE_BRACKET
 :
     ']'
@@ -94,6 +119,11 @@ CONFIG
 CRYPTO_PROFILES
 :
     'crypto-profiles'
+;
+
+DAMPENING_PROFILE
+:
+    'dampening-profile'
 ;
 
 DAYS
@@ -166,6 +196,16 @@ DROP
     'drop'
 ;
 
+DYNAMIC
+:
+    'dynamic'
+;
+
+ENABLE
+:
+    'enable'
+;
+
 ENCRYPTION
 :
     'encryption'
@@ -179,6 +219,11 @@ ESP
 ETHERNET
 :
     'ethernet'
+;
+
+FQDN
+:
+    'fqdn'
 ;
 
 FROM
@@ -231,6 +276,11 @@ HASH
     'hash'
 ;
 
+HIP_PROFILES
+:
+    'hip-profiles'
+;
+
 HOSTNAME
 :
     'hostname'
@@ -271,9 +321,24 @@ IP_ADDRESS_LITERAL
     'ip-address'
 ;
 
+IP_NETMASK
+:
+    'ip-netmask'
+;
+
+IP_RANGE_LITERAL
+:
+    'ip-range'
+;
+
 IPSEC_CRYPTO_PROFILES
 :
     'ipsec-crypto-profiles'
+;
+
+IPV6
+:
+    'ipv6'
 ;
 
 LAYER3
@@ -289,6 +354,11 @@ LIFETIME
 LINK_STATUS
 :
     'link-status'
+;
+
+LLDP
+:
+    'lldp'
 ;
 
 LOG_SETTINGS
@@ -316,9 +386,19 @@ METRIC
     'metric'
 ;
 
+MGT_CONFIG
+:
+    'mgt-config'
+;
+
 MTU
 :
     'mtu'
+;
+
+NDP_PROXY
+:
+    'ndp-proxy'
 ;
 
 NETMASK
@@ -481,6 +561,11 @@ SET
     'set'
 ;
 
+SETTING
+:
+    'setting'
+;
+
 SHA1
 :
     'sha1'
@@ -514,6 +599,16 @@ SOURCE
 SOURCE_PORT
 :
     'source-port'
+;
+
+SOURCE_USER
+:
+    'source-user'
+;
+
+STATIC
+:
+    'static'
 ;
 
 STATIC_ROUTE
@@ -611,6 +706,11 @@ ZONE
 COMMA
 :
     ','
+;
+
+DASH
+:
+    '-'
 ;
 
 DEC

@@ -124,7 +124,7 @@ public class NodesQuestionPlugin extends QuestionPlugin {
         }
         for (Vrf vrf : node.getVrfs().values()) {
           if (vrf.getIsisProcess() != null) {
-            _routingProtocols.add(RoutingProtocol.ISIS);
+            _routingProtocols.add(RoutingProtocol.ISIS_ANY);
             break;
           }
         }

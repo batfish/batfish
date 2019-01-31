@@ -33,7 +33,6 @@ import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpPeerConfigId;
-import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
@@ -464,6 +463,8 @@ class IncrementalBdpEngine {
 
       computeIterationOfBgpRoutes(
           nodes, iterationLabel, allNodes, bgpTopology, networkConfigurations);
+
+      leakAcrossVrfs(nodes, iterationLabel);
     }
   }
 
@@ -478,19 +479,12 @@ class IncrementalBdpEngine {
             .buildSpan(iterationLabel + ": Init BGP generated/aggregate routes")
             .startActive()) {
       assert span != null; // avoid unused warning
-      // BGP routes
       // first let's initialize nodes-level generated/aggregate routes
       nodes
           .values()
           .parallelStream()
           .forEach(
-              n -> {
-                for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                  if (vr._vrf.getBgpProcess() != null) {
-                    vr.initBgpAggregateRoutes();
-                  }
-                }
-              });
+              n -> n.getVirtualRouters().values().forEach(VirtualRouter::initBgpAggregateRoutes));
     }
 
     try (ActiveSpan span =
@@ -504,16 +498,32 @@ class IncrementalBdpEngine {
           .forEach(
               n -> {
                 for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                  BgpProcess proc = vr._vrf.getBgpProcess();
-                  if (proc == null) {
-                    continue;
-                  }
                   Map<BgpRib, RibDelta<BgpRoute>> deltas =
-                      vr.processBgpMessages(bgpTopology, networkConfigurations);
+                      vr.processBgpMessages(bgpTopology, networkConfigurations, nodes);
                   vr.finalizeBgpRoutesAndQueueOutgoingMessages(
                       deltas, allNodes, bgpTopology, networkConfigurations);
                 }
                 propagateBgpCompleted.incrementAndGet();
+              });
+    }
+  }
+
+  private void leakAcrossVrfs(Map<String, Node> nodes, String iterationLabel) {
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan(iterationLabel + ": Leaking routes across VRFs")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+
+      AtomicInteger propagateCrossVRF =
+          _newBatch.apply(iterationLabel + ": Leaking routes across VRFs", nodes.size());
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(
+              n -> {
+                n.getVirtualRouters().values().forEach(VirtualRouter::processCrossVrfRoutes);
+                propagateCrossVRF.incrementAndGet();
               });
     }
   }
@@ -532,9 +542,7 @@ class IncrementalBdpEngine {
           .parallelStream()
           .forEach(
               n -> {
-                for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                  vr.computeFib();
-                }
+                n.getVirtualRouters().values().forEach(VirtualRouter::computeFib);
                 completed.incrementAndGet();
               });
     }

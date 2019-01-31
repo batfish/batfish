@@ -83,7 +83,7 @@ public class FibImplTest {
 
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_config.getHostname(), _config), folder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     Fib fib =
         batfish
             .loadDataPlane()
@@ -111,7 +111,7 @@ public class FibImplTest {
 
     Batfish batfish =
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_config.getHostname(), _config), folder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     Fib fib =
         batfish
             .loadDataPlane()

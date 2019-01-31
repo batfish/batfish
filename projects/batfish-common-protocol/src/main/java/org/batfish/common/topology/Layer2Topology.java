@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -41,7 +42,9 @@ public final class Layer2Topology {
   public static @Nonnull Layer2Topology fromEdges(Set<Layer2Edge> edges) {
     UnionFind<Layer2Node> unionFind =
         new UnionFind<>(
-            edges.stream().map(Layer2Edge::getNode1).collect(ImmutableSet.toImmutableSet()));
+            edges.stream()
+                .flatMap(e -> Stream.of(e.getNode1(), e.getNode2()))
+                .collect(ImmutableSet.toImmutableSet()));
     edges.forEach(e -> unionFind.union(e.getNode1(), e.getNode2()));
     return new Layer2Topology(unionFind);
   }

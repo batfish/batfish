@@ -1,9 +1,10 @@
 package org.batfish.representation.palo_alto;
 
 import java.io.Serializable;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 
 /** PAN datamodel component containing security rule configuration */
@@ -15,7 +16,7 @@ public final class Rule implements Serializable {
 
   private String _description;
 
-  private SortedSet<IpSpace> _destination;
+  private List<RuleEndpoint> _destination;
 
   private boolean _disabled;
 
@@ -23,7 +24,7 @@ public final class Rule implements Serializable {
 
   private SortedSet<ServiceOrServiceGroupReference> _service;
 
-  private SortedSet<IpSpace> _source;
+  private List<RuleEndpoint> _source;
 
   private SortedSet<String> _to;
 
@@ -32,11 +33,11 @@ public final class Rule implements Serializable {
   private final Vsys _vsys;
 
   public Rule(String name, Vsys vsys) {
-    _destination = new TreeSet<>();
+    _destination = new LinkedList<>();
     _disabled = false;
     _from = new TreeSet<>();
     _service = new TreeSet<>();
-    _source = new TreeSet<>();
+    _source = new LinkedList<>();
     _to = new TreeSet<>();
     _name = name;
     _vsys = vsys;
@@ -54,7 +55,7 @@ public final class Rule implements Serializable {
     return _description;
   }
 
-  public SortedSet<IpSpace> getDestination() {
+  public List<RuleEndpoint> getDestination() {
     return _destination;
   }
 
@@ -70,7 +71,7 @@ public final class Rule implements Serializable {
     return _service;
   }
 
-  public SortedSet<IpSpace> getSource() {
+  public List<RuleEndpoint> getSource() {
     return _source;
   }
 

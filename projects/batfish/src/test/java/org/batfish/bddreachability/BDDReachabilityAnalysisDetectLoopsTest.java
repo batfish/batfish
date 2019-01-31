@@ -85,7 +85,7 @@ public class BDDReachabilityAnalysisDetectLoopsTest {
     SortedMap<String, Configuration> configs =
         ImmutableSortedMap.of(srcNode.getHostname(), srcNode, dstNode.getHostname(), dstNode);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _temporaryFolder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
 
     BDDPacket pkt = new BDDPacket();
 

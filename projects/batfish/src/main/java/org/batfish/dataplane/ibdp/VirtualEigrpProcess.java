@@ -16,6 +16,7 @@ import java.util.SortedMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
@@ -198,7 +199,7 @@ class VirtualEigrpProcess {
   void initExports(Map<String, Node> allNodes, Set<AbstractRoute> mainRoutes) {
 
     // For each route in the previous RIB, compute an export route and add it
-    RibDelta.Builder<EigrpExternalRoute> builder = new RibDelta.Builder<>(_externalRib);
+    RibDelta.Builder<EigrpExternalRoute> builder = RibDelta.builder();
 
     for (AbstractRoute potentialExport : mainRoutes) {
       EigrpExternalRoute outputRoute = computeEigrpExportRoute(potentialExport);
@@ -231,10 +232,10 @@ class VirtualEigrpProcess {
    * @param nc All network configurations
    * @return a {@link RibDelta}
    */
-  @Nullable
+  @Nonnull
   RibDelta<EigrpExternalRoute> propagateExternalRoutes(NetworkConfigurations nc) {
 
-    RibDelta.Builder<EigrpExternalRoute> deltaBuilder = new RibDelta.Builder<>(_externalStagingRib);
+    RibDelta.Builder<EigrpExternalRoute> deltaBuilder = RibDelta.builder();
     EigrpExternalRoute.Builder routeBuilder = EigrpExternalRoute.builder();
     routeBuilder.setAdmin(_defaultExternalAdminCost).setProcessAsn(_asn);
 
@@ -350,7 +351,7 @@ class VirtualEigrpProcess {
   }
 
   private void queueOutgoingExternalRoutes(
-      Map<String, Node> allNodes, @Nullable RibDelta<EigrpExternalRoute> delta) {
+      Map<String, Node> allNodes, @Nonnull RibDelta<EigrpExternalRoute> delta) {
     // Loop over neighbors, enqueue messages
     for (EigrpEdge edge : _incomingRoutes.keySet()) {
       Queue<RouteAdvertisement<EigrpExternalRoute>> queue =
@@ -390,15 +391,15 @@ class VirtualEigrpProcess {
    */
   boolean unstageExternalRoutes(
       Map<String, Node> allNodes,
-      @Nullable RibDelta<EigrpExternalRoute> delta,
+      @Nonnull RibDelta<EigrpExternalRoute> delta,
       RibDelta.Builder<AbstractRoute> mainRibRouteDeltaBuilder,
       Rib mainRib) {
     RibDelta<EigrpExternalRoute> ribDelta = importRibDelta(_externalRib, delta);
     queueOutgoingExternalRoutes(allNodes, delta);
-    RibDelta.Builder<EigrpRoute> eigrpDeltaBuilder = new RibDelta.Builder<>(_rib);
+    RibDelta.Builder<EigrpRoute> eigrpDeltaBuilder = RibDelta.builder();
     eigrpDeltaBuilder.from(importRibDelta(_rib, ribDelta));
     mainRibRouteDeltaBuilder.from(importRibDelta(mainRib, eigrpDeltaBuilder.build()));
-    return ribDelta != null;
+    return !ribDelta.isEmpty();
   }
 
   /** Merges staged EIGRP internal routes into the "real" EIGRP-internal RIBs */

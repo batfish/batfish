@@ -871,7 +871,7 @@ public class OspfTest {
                 .setConfigurationText("org/batfish/dataplane/ibdp/ospf-edge", "A1", "A2", "FWL")
                 .build(),
             _folder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);

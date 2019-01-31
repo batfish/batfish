@@ -10,7 +10,6 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethods;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.isNonForwarding;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasAllowLocalAsIn;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasClusterId;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
@@ -180,6 +179,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EncryptionAlgorithm;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.GeneratedRoute;
@@ -637,7 +637,7 @@ public final class FlatJuniperGrammarTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
     Set<AbstractRoute> r1Routes =
         dp.getRibs().get(c1Name).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
@@ -4025,14 +4025,36 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testStaticRoutes() throws IOException {
     Configuration c = parseConfig("static-routes");
-
-    assertThat(c, hasDefaultVrf(hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("1.0.0.0/8"))))));
-    assertThat(c, hasVrf("ri2", hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("2.0.0.0/8"))))));
     assertThat(
         c,
-        hasDefaultVrf(
-            hasStaticRoutes(
-                hasItem(allOf(hasPrefix(Prefix.parse("3.0.0.0/8")), isNonForwarding(true))))));
+        allOf(
+            hasDefaultVrf(
+                hasStaticRoutes(
+                    containsInAnyOrder(
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("1.0.0.0/8"))
+                            .setNextHopIp(Ip.parse("10.0.0.1"))
+                            .setAdministrativeCost(5)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("3.0.0.0/8"))
+                            .setNonForwarding(true)
+                            .setAdministrativeCost(5)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("4.0.0.0/8"))
+                            .setNextHopInterface("ge-0/0/0.0")
+                            .setAdministrativeCost(5)
+                            .build()))),
+            hasVrf(
+                "ri2",
+                hasStaticRoutes(
+                    contains(
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("2.0.0.0/8"))
+                            .setNextHopIp(Ip.parse("10.0.0.2"))
+                            .setAdministrativeCost(5)
+                            .build())))));
   }
 
   @Test
@@ -4298,7 +4320,7 @@ public final class FlatJuniperGrammarTest {
     String hostname = "juniper-interface-ribgroup";
     Configuration c = parseConfig(hostname);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
 
     ImmutableMap<String, Set<AbstractRoute>> routes =
@@ -4326,7 +4348,7 @@ public final class FlatJuniperGrammarTest {
     String hostname = "juniper-interface-ribgroup-with-policy";
     Configuration c = parseConfig(hostname);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
 
     ImmutableMap<String, Set<AbstractRoute>> routes =
@@ -4364,7 +4386,7 @@ public final class FlatJuniperGrammarTest {
     String hostname = "juniper-interface-ribgroup-with-transformation";
     Configuration c = parseConfig(hostname);
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
-    batfish.computeDataPlane(false);
+    batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
 
     ImmutableMap<String, Set<AbstractRoute>> routes =
@@ -4407,5 +4429,33 @@ public final class FlatJuniperGrammarTest {
             .getAppliedRibGroup()
             .getName(),
         equalTo("RIB_GROUP_2"));
+  }
+
+  /** Throws the creation of {@link FirewallSessionInterfaceInfo} objects for juniper devices. */
+  @Test
+  public void testFirewallSession() throws IOException {
+    Configuration c = parseConfig("firewall-session-info");
+
+    String i0Name = "ge-0/0/0.0";
+    String i1Name = "ge-0/0/0.1";
+    String i2Name = "ge-0/0/0.2";
+    String i3Name = "ge-0/0/0.3";
+
+    assertThat(
+        c.getAllInterfaces().get(i0Name).getFirewallSessionInterfaceInfo(),
+        equalTo(
+            new FirewallSessionInterfaceInfo(
+                ImmutableList.of(i0Name, i1Name), "FILTER1", "FILTER2")));
+
+    assertThat(
+        c.getAllInterfaces().get(i1Name).getFirewallSessionInterfaceInfo(),
+        equalTo(new FirewallSessionInterfaceInfo(ImmutableList.of(i0Name, i1Name), null, null)));
+
+    assertThat(
+        c.getAllInterfaces().get(i2Name).getFirewallSessionInterfaceInfo(),
+        equalTo(new FirewallSessionInterfaceInfo(ImmutableList.of(i2Name), null, null)));
+
+    // ge-0/0/0.3 is not part of any zoone, so no firewall session interface info.
+    assertThat(c.getAllInterfaces().get(i3Name).getFirewallSessionInterfaceInfo(), nullValue());
   }
 }

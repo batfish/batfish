@@ -11,6 +11,7 @@ s_shared
     SHARED
     (
         ss_common
+        | ss_null
     )
 ;
 
@@ -28,6 +29,12 @@ ss_log_settings
     (
         ssl_syslog
     )
+;
+
+ss_null
+:
+    BOTNET
+    null_rest_of_line
 ;
 
 ssl_syslog

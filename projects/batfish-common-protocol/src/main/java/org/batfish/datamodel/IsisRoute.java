@@ -209,6 +209,10 @@ public class IsisRoute extends AbstractRoute {
         _systemId);
   }
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
   @Override
   public Builder toBuilder() {
     return new Builder()

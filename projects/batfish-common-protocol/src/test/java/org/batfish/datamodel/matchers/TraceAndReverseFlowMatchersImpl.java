@@ -1,6 +1,8 @@
 package org.batfish.datamodel.matchers;
 
+import java.util.Set;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.hamcrest.FeatureMatcher;
@@ -17,6 +19,19 @@ final class TraceAndReverseFlowMatchersImpl {
     @Override
     protected Flow featureValueOf(TraceAndReverseFlow traceAndReverseFlow) {
       return traceAndReverseFlow.getReverseFlow();
+    }
+  }
+
+  static final class HasNewFirewallSessions
+      extends FeatureMatcher<TraceAndReverseFlow, Set<FirewallSessionTraceInfo>> {
+    HasNewFirewallSessions(Matcher<? super Set<FirewallSessionTraceInfo>> subMatcher) {
+      super(subMatcher, "a TraceAndReverseFlow with newFirewallSessions", "newFirewallSessions");
+    }
+
+    @Override
+    protected Set<FirewallSessionTraceInfo> featureValueOf(
+        TraceAndReverseFlow traceAndReverseFlow) {
+      return traceAndReverseFlow.getNewFirewallSessions();
     }
   }
 

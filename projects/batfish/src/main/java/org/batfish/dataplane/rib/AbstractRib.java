@@ -7,7 +7,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
@@ -23,6 +25,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
  * @param <R> Type of route that this RIB will be storing. Required for properly comparing route
  *     preferences.
  */
+@ParametersAreNonnullByDefault
 public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib<R> {
 
   private static final long serialVersionUID = 1L;
@@ -62,10 +65,10 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
    * @param <T> type of route (must be more specific than {@link U}
    * @return a {@link RibDelta}
    */
-  @Nullable
+  @Nonnull
   public static <U extends AbstractRoute, T extends U> RibDelta<U> importRib(
       AbstractRib<U> importingRib, AbstractRib<T> exportingRib) {
-    RibDelta.Builder<U> builder = new RibDelta.Builder<>(importingRib);
+    RibDelta.Builder<U> builder = RibDelta.builder();
     for (T route : exportingRib.getRoutes()) {
       builder.from(importingRib.mergeRouteGetDelta(route));
     }
@@ -146,10 +149,10 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
    * @return {@link RibDelta} if the route was added. {@code null} if the route already existed or
    *     was discarded due to preference comparisons.
    */
-  @Nullable
+  @Nonnull
   public RibDelta<R> mergeRouteGetDelta(R route) {
     RibDelta<R> delta = _tree.mergeRoute(route);
-    if (delta != null) {
+    if (!delta.isEmpty()) {
       // A change to routes has been made
       _allRoutes = null;
       _logicalArrivalTime.put(route, _logicalClock);
@@ -167,7 +170,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
    */
   @Override
   public boolean mergeRoute(R route) {
-    return mergeRouteGetDelta(route) != null;
+    return !mergeRouteGetDelta(route).isEmpty();
   }
 
   /**
@@ -178,10 +181,10 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
    * @return a {@link RibDelta} object indicating that the route was removed or @{code null} if the
    *     route was not present in the RIB
    */
-  @Nullable
+  @Nonnull
   public RibDelta<R> removeRouteGetDelta(R route, Reason reason) {
     RibDelta<R> delta = _tree.removeRouteGetDelta(route, reason);
-    if (delta != null && delta.getActions() != null) {
+    if (!delta.isEmpty()) {
       // A change to routes has been made
       _allRoutes = null;
       delta
@@ -196,7 +199,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
     return delta;
   }
 
-  @Nullable
+  @Nonnull
   public RibDelta<R> removeRouteGetDelta(R route) {
     return removeRouteGetDelta(route, Reason.WITHDRAW);
   }
@@ -208,7 +211,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
    * @return True if the route was located and removed
    */
   public boolean removeRoute(R route) {
-    return removeRouteGetDelta(route, Reason.WITHDRAW) != null;
+    return !removeRouteGetDelta(route, Reason.WITHDRAW).isEmpty();
   }
 
   /**
@@ -223,7 +226,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
    */
   public RibDelta<R> clearRoutes(Prefix prefix) {
     RibDelta<R> d = _tree.clearRoutes(prefix);
-    if (d != null) {
+    if (!d.isEmpty()) {
       _allRoutes = null;
     }
     return d;
@@ -248,7 +251,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
    * @return True if both ribs contain identical routes
    */
   @Override
-  public boolean equals(Object other) {
+  public boolean equals(@Nullable Object other) {
     return (this == other)
         || (other instanceof AbstractRib<?> && _tree.equals(((AbstractRib<?>) other)._tree));
   }

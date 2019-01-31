@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-VERSION="2018-01-12-450f3c9b459d128135abb5bbd4fa0508fe26bfae"
+VERSION="2019-01-26-be61a26452735dfe62b14ddb4804ca5df0526dcf"
 
 install_z3() {
   MAJOR_OS="$(major_os)"
@@ -90,30 +90,45 @@ install_z3_linux() {
 install_z3_osx() {
   ## for now, just install the libs in /usr/local/lib and /Library/Java/Extensions
   INSTALL_PREFIX="/usr/local"
+  Z3_CACHE_DIR="${HOME}/.batfish_z3_cache"
+  MD5_HASH="c2cebd313acc081346e3f8f4eb3eba93"
   BINDIR="${INSTALL_PREFIX}/bin"
   EXTDIR="/Library/Java/Extensions"
   LIBDIR="${INSTALL_PREFIX}/lib"
   OLD_PWD="${PWD}"
   OLD_UMASK="$(umask)"
-  OSX_VERSION="10.13.2"
+  OSX_VERSION="10.14.2"
   Z3_REPO_URL="https://github.com/batfish/z3"
   Z3_ZIP_URL="${Z3_REPO_URL}/releases/download/z3-${VERSION}/z3-${VERSION}-x64-osx-${OSX_VERSION}.zip"
   Z3_ZIP="$(basename "${Z3_ZIP_URL}")"
+  CACHED_Z3_ZIP="${Z3_CACHE_DIR}/${Z3_ZIP}"
   Z3_DIR="$(basename "${Z3_ZIP}" .zip)"
   set -x
   echo "Creating temporary installation folder for Z3"
   WORKING="$(mktemp -d)"
   cd "${WORKING}"
   umask 0022
-  echo "Downloading Z3 from ${Z3_ZIP_URL}"
-  curl -L "${Z3_ZIP_URL}" -o "${Z3_ZIP}"
+  if [ -f "${CACHED_Z3_ZIP}" ]; then
+    CURRENT_HASH="$(md5 ${CACHED_Z3_ZIP} | grep -o '[a-z0-9][a-z0-9]*$')"
+  fi
+  if [ "${CURRENT_HASH}" = "${MD5_HASH}" ]; then
+    echo "Using cached Z3 zip stored at ${CACHED_Z3_ZIP}"
+    cp "${CACHED_Z3_ZIP}" "${WORKING}/"
+  else
+    echo "Downloading Z3 from ${Z3_ZIP_URL}"
+    wget "${Z3_ZIP_URL}"
+    mkdir -p "$(dirname "${CACHED_Z3_ZIP}")"
+    cp "${Z3_ZIP}" "${CACHED_Z3_ZIP}"
+  fi
   echo "Unpacking Z3 installation files"
   unzip "${Z3_ZIP}"
   cd "${Z3_DIR}"
   echo "Installing Z3 to ${INSTALL_PREFIX}"
   mkdir -p "${LIBDIR}" "${EXTDIR}" "${BINDIR}"
   cp "lib/libz3.dylib" "lib/libz3java.dylib" "lib/libomp.dylib" "${LIBDIR}/"
+  rm -f "${EXTDIR}/libz3.dylib"
   ln -s "${LIBDIR}/libz3.dylib" "${EXTDIR}/libz3.dylib"
+  rm -f "${EXTDIR}/libz3java.dylib"
   ln -s "${LIBDIR}/libz3java.dylib" "${EXTDIR}/libz3java.dylib"
   cp "bin/z3" "${BINDIR}/"
   umask "${OLD_UMASK}"
@@ -128,16 +143,14 @@ install_z3_ubuntu() {
   INSTALL_PREFIX="/usr"
   Z3_CACHE_DIR="${HOME}/.batfish_z3_cache"
   BINDIR="${INSTALL_PREFIX}/bin"
-  INCLUDEDIR="${INSTALL_PREFIX}/include"
-  JAVADIR="${INSTALL_PREFIX}/share/java"
   LIBDIR="${INSTALL_PREFIX}/lib"
   OLD_PWD="${PWD}"
   OLD_UMASK="$(umask)"
   declare -A MD5_HASH
   X64_1404="x64-14.04"
   X64_1604="x64-16.04"
-  MD5_HASH["${X64_1404}"]="659bb30fa712a83f1487737e28002829"
-  MD5_HASH["${X64_1604}"]="bb4348fb052277388fcd9aa392ee231e"
+  MD5_HASH["${X64_1404}"]="d3d22fa5e6e95081e504c2f577d7767a"
+  MD5_HASH["${X64_1604}"]="768fbd790c1921276f8522cfe5c421e8"
   MACHINE="$(uname -m)"
   if [ "${MACHINE}" = "x86_64" ]; then
     ARCH="x64"
@@ -172,11 +185,8 @@ install_z3_ubuntu() {
   cd "${Z3_DIR}"
   umask 0022
   echo "Installing Z3 to ${INSTALL_PREFIX}"
-  mkdir -p "${LIBDIR}" "${BINDIR}" "${INCLUDEDIR}" "${JAVADIR}"
-  cp "bin/libz3.so" "bin/libz3java.so" "${LIBDIR}/"
-  cp "bin/com.microsoft.z3.jar" "${JAVADIR}/"
+  cp "lib/libz3.so" "lib/libz3java.so" "${LIBDIR}/"
   cp "bin/z3" "${BINDIR}/"
-  cp include/* "${INCLUDEDIR}/"
   strip "${LIBDIR}/libz3.so"
   strip "${LIBDIR}/libz3java.so"
   strip "${BINDIR}/z3"

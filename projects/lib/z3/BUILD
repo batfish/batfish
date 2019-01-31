@@ -4,6 +4,6 @@ licenses(["notice"])  # MIT
 
 java_import(
     name = "z3",
-    jars = ["com.microsoft.z3-2018-01-12-450f3c9b459d128135abb5bbd4fa0508fe26bfae.jar"],
-    srcjar = "com.microsoft.z3-2018-01-12-450f3c9b459d128135abb5bbd4fa0508fe26bfae-sources.jar",
+    jars = ["com.microsoft.z3-2019-01-26-be61a26452735dfe62b14ddb4804ca5df0526dcf.jar"],
+    srcjar = "com.microsoft.z3-2019-01-26-be61a26452735dfe62b14ddb4804ca5df0526dcf-sources.jar",
 )
