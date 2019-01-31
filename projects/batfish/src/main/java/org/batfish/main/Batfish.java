@@ -3286,41 +3286,46 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.infof(
         "Testrig:%s in container:%s has total number of network configs:%d",
         getTestrigName(), getContainerName(), vendorConfigurations.size());
-    _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
-    _logger.resetTimer();
-    createDirectories(outputPath);
-    Map<Path, VendorConfiguration> output = new TreeMap<>();
-    vendorConfigurations.forEach(
-        (name, vc) -> {
-          if (name.contains(File.separator)) {
-            // iptables will get a hostname like configs/iptables-save if they
-            // are not set up correctly using host files
-            _logger.errorf("Cannot serialize configuration with hostname %s\n", name);
-            answerElement.addRedFlagWarning(
-                name,
-                new Warning(
-                    "Cannot serialize network config. Bad hostname " + name.replace("\\", "/"),
-                    "MISCELLANEOUS"));
-          } else {
-            // apply overlay if it exists
-            VendorConfiguration overlayConfig = overlayHostConfigurations.get(name);
-            if (overlayConfig != null) {
-              vc.setOverlayConfiguration(overlayConfig);
-              overlayHostConfigurations.remove(name);
+
+    try (ActiveSpan serializeNetworkConfigsSpan =
+        GlobalTracer.get().buildSpan("Serialize network configs").startActive()) {
+      assert serializeNetworkConfigsSpan != null; // avoid unused warning
+      _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
+      _logger.resetTimer();
+      createDirectories(outputPath);
+      Map<Path, VendorConfiguration> output = new TreeMap<>();
+      vendorConfigurations.forEach(
+          (name, vc) -> {
+            if (name.contains(File.separator)) {
+              // iptables will get a hostname like configs/iptables-save if they
+              // are not set up correctly using host files
+              _logger.errorf("Cannot serialize configuration with hostname %s\n", name);
+              answerElement.addRedFlagWarning(
+                  name,
+                  new Warning(
+                      "Cannot serialize network config. Bad hostname " + name.replace("\\", "/"),
+                      "MISCELLANEOUS"));
+            } else {
+              // apply overlay if it exists
+              VendorConfiguration overlayConfig = overlayHostConfigurations.get(name);
+              if (overlayConfig != null) {
+                vc.setOverlayConfiguration(overlayConfig);
+                overlayHostConfigurations.remove(name);
+              }
+
+              Path currentOutputPath = outputPath.resolve(name);
+              output.put(currentOutputPath, vc);
             }
+          });
 
-            Path currentOutputPath = outputPath.resolve(name);
-            output.put(currentOutputPath, vc);
-          }
-        });
+      // warn about unused overlays
+      overlayHostConfigurations.forEach(
+          (name, overlay) ->
+              answerElement.getParseStatus().put(overlay.getFilename(), ParseStatus.ORPHANED));
 
-    // warn about unused overlays
-    overlayHostConfigurations.forEach(
-        (name, overlay) ->
-            answerElement.getParseStatus().put(overlay.getFilename(), ParseStatus.ORPHANED));
-
-    serializeObjects(output);
-    _logger.printElapsedTime();
+      serializeObjects(output);
+      _logger.printElapsedTime();
+    }
   }
 
   public <S extends Serializable> void serializeObjects(Map<Path, S> objectsByPath) {
