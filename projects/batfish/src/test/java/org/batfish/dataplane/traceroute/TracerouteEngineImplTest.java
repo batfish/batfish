@@ -13,6 +13,7 @@ import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.IpAccessListLine.ACCEPT_ALL;
 import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match5Tuple;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
@@ -24,10 +25,12 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressVrf;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
+import static org.batfish.datamodel.matchers.HopMatchers.hasNodeName;
 import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasNewFirewallSessions;
 import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasReverseFlow;
 import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasTrace;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
+import static org.batfish.datamodel.matchers.TraceMatchers.hasHops;
 import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
 import static org.batfish.datamodel.transformation.Noop.NOOP_SOURCE_NAT;
 import static org.batfish.datamodel.transformation.Transformation.always;
@@ -383,7 +386,7 @@ public class TracerouteEngineImplTest {
     i2.setIncomingFilter(
         nf.aclBuilder()
             .setOwner(c2)
-            .setLines(ImmutableList.of(IpAccessListLine.rejecting(matchSrc(natPoolIp))))
+            .setLines(ImmutableList.of(rejecting(matchSrc(natPoolIp))))
             .build());
     i2.setOutgoingTransformation(
         always().apply(assignSourceIp(natPoolIp.getStartIp(), natPoolIp.getStartIp())).build());
@@ -443,7 +446,7 @@ public class TracerouteEngineImplTest {
                         AclLineMatchExprs.and(
                             new MatchSrcInterface(ImmutableList.of(iface1)),
                             matchSrc(Prefix.parse(prefix)))),
-                    IpAccessListLine.rejecting(
+                    rejecting(
                         AclLineMatchExprs.and(
                             new MatchSrcInterface(ImmutableList.of(iface2)),
                             matchSrc(Prefix.parse(prefix))))))
@@ -1507,6 +1510,281 @@ public class TracerouteEngineImplTest {
                               ImmutableSet.of(c2i2Name),
                               match5Tuple(dstIp, dstPort, srcIp, srcPort, ipProtocol),
                               null))))));
+    }
+  }
+
+  /** A test that uses sessions. */
+  @Test
+  public void testUseSession() throws IOException {
+    // Construct network
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = cb.build();
+    Vrf vrf1 = nf.vrfBuilder().setOwner(c1).build();
+
+    Ip ingressDenySrcIp = Ip.parse("5.5.5.5");
+    Ip egressDenySrcIp = Ip.parse("6.6.6.6");
+
+    IpAccessList sessionIngressFilter =
+        nf.aclBuilder()
+            .setOwner(c1)
+            .setLines(ImmutableList.of(rejecting(matchSrc(ingressDenySrcIp)), ACCEPT_ALL))
+            .build();
+    IpAccessList sessionEgressFilter =
+        nf.aclBuilder()
+            .setOwner(c1)
+            .setLines(ImmutableList.of(rejecting(matchSrc(egressDenySrcIp)), ACCEPT_ALL))
+            .build();
+
+    String c1i1Name = "c1i1";
+    nf.interfaceBuilder()
+        .setName(c1i1Name)
+        .setOwner(c1)
+        .setVrf(vrf1)
+        .setAddress(new InterfaceAddress("1.1.1.1/24"))
+        .setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(
+                ImmutableSet.of(c1i1Name), sessionIngressFilter.getName(), null))
+        .build();
+
+    String c1i2Name = "c1i2";
+    nf.interfaceBuilder()
+        .setName(c1i2Name)
+        .setOwner(c1)
+        .setVrf(vrf1)
+        .setAddress(new InterfaceAddress("1.1.2.1/24"))
+        .setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(
+                ImmutableSet.of(c1i2Name), null, sessionEgressFilter.getName()))
+        .build();
+
+    Configuration c2 = cb.build();
+    Vrf vrf2 = nf.vrfBuilder().setOwner(c2).build();
+    Interface.Builder ib = nf.interfaceBuilder().setOwner(c2).setVrf(vrf2);
+
+    String c2i1Name = "c2i1";
+    InterfaceAddress c2i1Addr = new InterfaceAddress("1.1.2.2/24");
+    ib.setName(c2i1Name).setAddress(c2i1Addr).build();
+
+    // Compute data plane
+    SortedMap<String, Configuration> configs =
+        ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
+    batfish.computeDataPlane();
+    TracerouteEngine tracerouteEngine = batfish.getTracerouteEngine();
+
+    Ip ip10 = Ip.parse("10.10.10.10");
+    Ip ip11 = Ip.parse("11.11.11.11");
+    Flow protoFlow =
+        Flow.builder()
+            .setIngressNode(c1.getHostname())
+            .setIngressInterface(c1i1Name)
+            .setDstIp(ip10)
+            .setSrcIp(ip11)
+            .setTag("TAG")
+            .build();
+
+    // No session. No route
+    {
+      Flow flow = protoFlow;
+      List<TraceAndReverseFlow> results =
+          tracerouteEngine
+              .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(), false)
+              .get(flow);
+      assertThat(results, contains(hasTrace(hasDisposition(NO_ROUTE))));
+    }
+
+    // Session exists with no outgoingInterface. Accepted at that node.
+    {
+      Flow flow = protoFlow;
+      FirewallSessionTraceInfo session =
+          new FirewallSessionTraceInfo(
+              c1.getHostname(), null, null, ImmutableSet.of(c1i1Name), TRUE, null);
+      List<TraceAndReverseFlow> results =
+          tracerouteEngine
+              .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), false)
+              .get(flow);
+      assertThat(
+          results,
+          contains(
+              hasTrace(
+                  allOf(
+                      hasDisposition(ACCEPTED),
+                      hasHops(contains(hasNodeName(c1.getHostname())))))));
+    }
+
+    // Session exists with outgoingInterface but no next-hop. Normal ARP-failure disposition
+    {
+      Flow flow = protoFlow;
+      FirewallSessionTraceInfo session =
+          new FirewallSessionTraceInfo(
+              c1.getHostname(), c1i2Name, null, ImmutableSet.of(c1i1Name), TRUE, null);
+      List<TraceAndReverseFlow> results =
+          tracerouteEngine
+              .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), false)
+              .get(flow);
+      /* Disposition is always exits network -- see:
+       * TracerouteEngineImplContext#buildSessionArpFailureTrace(String, TransmissionContext, List).
+       */
+      assertThat(
+          results,
+          contains(
+              hasTrace(
+                  allOf(
+                      hasDisposition(EXITS_NETWORK),
+                      hasHops(contains(hasNodeName(c1.getHostname())))))));
+    }
+
+    // Session exists, no transformation, permitted by both filters.
+    {
+      Flow flow = protoFlow;
+      FirewallSessionTraceInfo session =
+          new FirewallSessionTraceInfo(
+              c1.getHostname(),
+              c1i2Name,
+              new NodeInterfacePair(c2.getHostname(), c2i1Name),
+              ImmutableSet.of(c1i1Name),
+              TRUE,
+              null);
+      List<TraceAndReverseFlow> results =
+          tracerouteEngine
+              .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), false)
+              .get(flow);
+      // flow reaches c2.
+      assertThat(
+          results,
+          contains(
+              hasTrace(
+                  hasHops(
+                      contains(
+                          ImmutableList.of(
+                              hasNodeName(c1.getHostname()), hasNodeName(c2.getHostname())))))));
+    }
+
+    // Session exists, denied by ingress filter
+    {
+      Flow flow = protoFlow.toBuilder().setSrcIp(ingressDenySrcIp).build();
+      FirewallSessionTraceInfo session =
+          new FirewallSessionTraceInfo(
+              c1.getHostname(),
+              c1i2Name,
+              new NodeInterfacePair(c2.getHostname(), c2i1Name),
+              ImmutableSet.of(c1i1Name),
+              TRUE,
+              null);
+      List<TraceAndReverseFlow> results =
+          tracerouteEngine
+              .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), false)
+              .get(flow);
+      assertThat(results, contains(hasTrace(hasDisposition(DENIED_IN))));
+    }
+
+    // Session exists, denied by egress filter
+    {
+      Flow flow = protoFlow.toBuilder().setSrcIp(egressDenySrcIp).build();
+      FirewallSessionTraceInfo session =
+          new FirewallSessionTraceInfo(
+              c1.getHostname(),
+              c1i2Name,
+              new NodeInterfacePair(c2.getHostname(), c2i1Name),
+              ImmutableSet.of(c1i1Name),
+              TRUE,
+              null);
+      List<TraceAndReverseFlow> results =
+          tracerouteEngine
+              .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), false)
+              .get(flow);
+      assertThat(results, contains(hasTrace(hasDisposition(DENIED_OUT))));
+    }
+
+    /* Test that transformation is applied before egress filter. Original srcIp would be denied by
+     * egress filter, butt transformation changes it.
+     */
+    {
+      Flow flow = protoFlow.toBuilder().setSrcIp(egressDenySrcIp).build();
+      FirewallSessionTraceInfo session =
+          new FirewallSessionTraceInfo(
+              c1.getHostname(),
+              c1i2Name,
+              new NodeInterfacePair(c2.getHostname(), c2i1Name),
+              ImmutableSet.of(c1i1Name),
+              TRUE,
+              always().apply(assignSourceIp(ip11, ip11)).build());
+      List<TraceAndReverseFlow> results =
+          tracerouteEngine
+              .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), false)
+              .get(flow);
+      // flow reaches c2.
+      assertThat(
+          results,
+          contains(
+              hasTrace(
+                  hasHops(
+                      contains(
+                          ImmutableList.of(
+                              hasNodeName(c1.getHostname()), hasNodeName(c2.getHostname())))))));
+    }
+
+    /* Test that transformation is applied after session ingress filter. Transformed srcIp would be
+     * permitted by ingress filter, but ingress filter is applied before the transformation.
+     */
+    {
+      Flow flow = protoFlow.toBuilder().setSrcIp(ingressDenySrcIp).build();
+      FirewallSessionTraceInfo session =
+          new FirewallSessionTraceInfo(
+              c1.getHostname(),
+              c1i2Name,
+              new NodeInterfacePair(c2.getHostname(), c2i1Name),
+              ImmutableSet.of(c1i1Name),
+              TRUE,
+              always().apply(assignSourceIp(ip11, ip11)).build());
+      List<TraceAndReverseFlow> results =
+          tracerouteEngine
+              .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), false)
+              .get(flow);
+      assertThat(results, contains(hasTrace(hasDisposition(DENIED_IN))));
+    }
+
+    // Session filters respect ignoreFilters.
+    {
+      FirewallSessionTraceInfo session =
+          new FirewallSessionTraceInfo(
+              c1.getHostname(),
+              c1i2Name,
+              new NodeInterfacePair(c2.getHostname(), c2i1Name),
+              ImmutableSet.of(c1i1Name),
+              TRUE,
+              always().apply(assignSourceIp(ip11, ip11)).build());
+      Flow flow = protoFlow.toBuilder().setSrcIp(ingressDenySrcIp).build();
+      List<TraceAndReverseFlow> results =
+          tracerouteEngine
+              .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), true)
+              .get(flow);
+      // flow reaches c2.
+      assertThat(
+          results,
+          contains(
+              hasTrace(
+                  hasHops(
+                      contains(
+                          ImmutableList.of(
+                              hasNodeName(c1.getHostname()), hasNodeName(c2.getHostname())))))));
+
+      flow = protoFlow.toBuilder().setSrcIp(egressDenySrcIp).build();
+      results =
+          tracerouteEngine
+              .computeTracesAndReverseFlows(ImmutableSet.of(flow), ImmutableSet.of(session), true)
+              .get(flow);
+      // flow reaches c2.
+      assertThat(
+          results,
+          contains(
+              hasTrace(
+                  hasHops(
+                      contains(
+                          ImmutableList.of(
+                              hasNodeName(c1.getHostname()), hasNodeName(c2.getHostname())))))));
     }
   }
 }

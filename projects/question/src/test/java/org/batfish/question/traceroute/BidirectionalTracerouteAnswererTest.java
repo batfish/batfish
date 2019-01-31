@@ -27,6 +27,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.BidirectionalTrace;
+import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.junit.Test;
@@ -63,7 +64,7 @@ public final class BidirectionalTracerouteAnswererTest {
 
     @Override
     public SortedMap<Flow, List<TraceAndReverseFlow>> computeTracesAndReverseFlows(
-        Set<Flow> flows, boolean ignoreFilters) {
+        Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
       SetView<Flow> unexpectedFlows = Sets.difference(flows, _result.keySet());
       checkArgument(unexpectedFlows.isEmpty(), "unexpected Flows");
       return _result.entrySet().stream()

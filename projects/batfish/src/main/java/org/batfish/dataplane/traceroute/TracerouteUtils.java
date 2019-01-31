@@ -8,7 +8,10 @@ import static org.batfish.datamodel.flow.StepAction.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.flow.StepAction.RECEIVED;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -30,6 +33,7 @@ import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
 import org.batfish.datamodel.flow.FilterStep;
 import org.batfish.datamodel.flow.FilterStep.FilterStepDetail;
 import org.batfish.datamodel.flow.FilterStep.FilterType;
+import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
@@ -196,5 +200,24 @@ final class TracerouteUtils {
         .setIngressVrf(returnIngressVrf)
         .setIngressInterface(returnIngressIface)
         .build();
+  }
+
+  static Multimap<NodeInterfacePair, FirewallSessionTraceInfo> buildSessionsByIngressInterface(
+      @Nullable Set<FirewallSessionTraceInfo> sessions) {
+    if (sessions == null) {
+      return ImmutableMultimap.of();
+    }
+
+    ImmutableMultimap.Builder<NodeInterfacePair, FirewallSessionTraceInfo> builder =
+        ImmutableMultimap.builder();
+    sessions.forEach(
+        session ->
+            session
+                .getIncomingInterfaces()
+                .forEach(
+                    incomingIface ->
+                        builder.put(
+                            new NodeInterfacePair(session.getHostname(), incomingIface), session)));
+    return builder.build();
   }
 }
