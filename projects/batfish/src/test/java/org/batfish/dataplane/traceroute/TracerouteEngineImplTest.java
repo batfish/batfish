@@ -10,7 +10,6 @@ import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
-import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.IpAccessListLine.ACCEPT_ALL;
 import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
@@ -48,6 +47,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -57,7 +57,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.plugin.TracerouteEngine;
@@ -196,10 +195,20 @@ public class TracerouteEngineImplTest {
             .build();
 
     // Compute flow traces
-    Map<Flow, List<Trace>> traces =
-        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
+    List<Trace> traces =
+        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false).get(flow);
 
-    assertThat(traces, hasEntry(equalTo(flow), contains(hasDisposition(NULL_ROUTED))));
+    assertThat(traces, hasSize(1));
+
+    List<Hop> hops = traces.get(0).getHops();
+    assertThat(hops, hasSize(1));
+
+    List<Step<?>> steps = hops.get(0).getSteps();
+    assertThat(steps, hasSize(3));
+
+    assertTrue(OriginateStep.class.isInstance(steps.get(0)));
+    assertTrue(RoutingStep.class.isInstance(steps.get(1)));
+    assertTrue(ExitOutputIfaceStep.class.isInstance(steps.get(2)));
   }
 
   @Test
