@@ -1371,7 +1371,7 @@ public class WorkMgrService {
       }
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.errorf("WMS:getQuestionTemplates exception: %s", stackTrace);
+      _logger.errorf("WMS:getQuestionTemplates exception: %s\n", stackTrace);
       return failureResponse(e.getMessage());
     }
   }
