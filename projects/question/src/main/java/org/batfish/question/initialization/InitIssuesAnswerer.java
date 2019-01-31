@@ -1,11 +1,22 @@
 package org.batfish.question.initialization;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateErrors;
+import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateParseWarnings;
+import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateWarnings;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Multiset;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException.BatfishStackTrace;
@@ -16,12 +27,13 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
-import org.batfish.question.initialization.ParseWarningAnswerer.WarningTriplet;
+import org.batfish.question.initialization.IssueAggregation.WarningTriplet;
 
 /** Implements {@link InitIssuesQuestion}. */
 public class InitIssuesAnswerer extends Answerer {
@@ -35,6 +47,7 @@ public class InitIssuesAnswerer extends Answerer {
     Rows rows = new Rows();
 
     Map<String, Warnings> convertWarnings = ccae.getWarnings();
+    /*
     convertWarnings.forEach(
         (nodeName, nodeWarnings) -> {
           for (Warning w : nodeWarnings.getRedFlagWarnings()) {
@@ -44,33 +57,95 @@ public class InitIssuesAnswerer extends Answerer {
             rows.add(getRow(IssueType.ConvertWarningUnimplemented, nodeName, w));
           }
         });
-    ccae.getErrors()
+    */
+    aggregateDuplicateWarnings(convertWarnings)
         .forEach(
-            (nodeName, stackTrace) ->
-                rows.add(getRow(IssueType.ConvertError, nodeName, null, "", stackTrace)));
+            (type, warningMap) -> {
+              warningMap.forEach(
+                  (warning, nodes) -> {
+                    rows.add(getRow(type, nodes, warning));
+                  });
+            });
+
+    aggregateDuplicateErrors(ccae.getErrors())
+        .forEach(
+            (stackTrace, nodeNames) -> {
+              rows.add(getRow(IssueType.ConvertError, nodeNames, null, stackTrace));
+            });
 
     Map<String, Warnings> fileWarnings = pvcae.getWarnings();
-
-    fileWarnings.forEach(
-        (filename, warnings) -> {
-          for (ParseWarning w : warnings.getParseWarnings()) {
-            rows.add(getRow(IssueType.ParseWarning, filename, w));
-          }
-        });
-
-    pvcae
-        .getErrors()
+    aggregateDuplicateParseWarnings(fileWarnings)
         .forEach(
-            (fileName, stackTrace) ->
-                rows.add(getRow(IssueType.ParseError, null, fileName, "", stackTrace)));
+            (triplet, filelines) -> {
+              rows.add(getRow(IssueType.ParseWarning, triplet, filelines));
+            });
+
+    aggregateDuplicateErrors(pvcae.getErrors())
+        .forEach(
+            (stackTrace, fileNames) -> {
+              rows.add(getRow(IssueType.ParseError, null, fileNames, stackTrace));
+            });
 
     TableAnswerElement answerElement = new TableAnswerElement(TABLE_METADATA);
-    answerElement.postProcessAnswer(_question, rows.getData());
+    answerElement.postProcessAnswer(_question, aggregateNodes(rows.getData()));
     return answerElement;
   }
 
   InitIssuesAnswerer(InitIssuesQuestion question, IBatfish batfish) {
     super(question, batfish);
+  }
+
+  /** Combine rows with the same issue type, fi */
+  static Multiset<Row> aggregateNodes(Multiset<Row> rows) {
+    Multiset<Row> aggrRows = HashMultiset.create();
+    Map<List<Object>, Set<Row>> groupedRows = new HashMap<>();
+
+    for (Row row : rows) {
+      @SuppressWarnings("unchecked")
+      Set<String> nodes = (Set<String>) row.get(COL_NODES, Schema.set(Schema.STRING));
+      if (nodes == null) {
+        // Add the row as is, since we won't need to aggregate rows with null nodes
+        aggrRows.add(row);
+      } else {
+        ImmutableList.Builder<Object> listBuilder = ImmutableList.builder();
+        listBuilder.add(row.getObject(COL_ISSUE_TYPE), row.getObject(COL_ISSUE));
+        Object filelines = row.getObject(COL_FILELINES);
+        if (filelines != null) {
+          listBuilder.add(filelines);
+        }
+        Object details = row.getObject(COL_DETAILS);
+        if (details != null) {
+          listBuilder.add(details);
+        }
+        groupedRows.computeIfAbsent(listBuilder.build(), l -> new HashSet<>()).add(row);
+      }
+    }
+
+    for (Entry<List<Object>, Set<Row>> entry : groupedRows.entrySet()) {
+      ImmutableSortedSet.Builder<String> nodesBuilder = ImmutableSortedSet.naturalOrder();
+      entry
+          .getValue()
+          .forEach(
+              r -> {
+                @SuppressWarnings("unchecked")
+                Set<String> vni = (Set<String>) r.get(COL_NODES, Schema.set(Schema.STRING));
+                nodesBuilder.addAll(vni);
+              });
+      Row r = entry.getValue().iterator().next();
+      aggrRows.add(
+          Row.of(
+              COL_NODES,
+              nodesBuilder.build(),
+              COL_FILELINES,
+              r.getObject(COL_FILELINES),
+              COL_ISSUE_TYPE,
+              r.getObject(COL_ISSUE_TYPE),
+              COL_ISSUE,
+              r.getObject(COL_ISSUE),
+              COL_DETAILS,
+              r.getObject(COL_DETAILS)));
+    }
+    return aggrRows;
   }
 
   /** Remove everything before caused by */
@@ -90,56 +165,64 @@ public class InitIssuesAnswerer extends Answerer {
   }
 
   private static Row getRow(
-      IssueType issueType, String nodeName, WarningTriplet triplet, SortedSet<Integer> lines) {
+      IssueType issueType, WarningTriplet triplet, Map<String, SortedSet<Integer>> filelines) {
     return Row.builder(TABLE_METADATA.toColumnMap())
-        .put(COL_NODE, nodeName)
-        .put(COL_ISSUE_TYPE, issueType.toString())
-        .put(COL_PARSER_CONTEXT, triplet._parserContext)
+        .put(COL_NODES, filelines.keySet().stream().collect(ImmutableSet.toImmutableSet()))
         .put(
-            COL_COMMENT,
+            COL_FILELINES,
+            filelines.entrySet().stream()
+                .map(e -> new FileLines(e.getKey(), e.getValue()))
+                .collect(ImmutableList.toImmutableList()))
+        .put(COL_ISSUE_TYPE, issueType.toString())
+        .put(
+            COL_ISSUE,
             String.format(
-                "%s (lines %s: %s)",
-                firstNonNull(triplet._comment, "(details not provided)"),
-                lines.toString(),
-                triplet._text))
+                "%s (%s)", firstNonNull(triplet._comment, "(details not provided)"), triplet._text))
         .build();
   }
 
   private static Row getRow(
       IssueType issueType,
-      String nodeName,
-      String fileName,
-      String comment,
+      Set<String> nodeName,
+      Set<String> fileNames,
       BatfishStackTrace stackTrace) {
-    return Row.builder(TABLE_METADATA.toColumnMap())
-        .put(COL_NODE, nodeName)
-        .put(COL_FILE, fileName)
-        .put(COL_ISSUE_TYPE, issueType.toString())
-        // .put(COL_COMMENT, comment)
-        .put(COL_STACK_TRACE, trimStackTrace(stackTrace))
-        .build();
+    String trimmedStackTrace = trimStackTrace(stackTrace);
+    Row.RowBuilder rb =
+        Row.builder(TABLE_METADATA.toColumnMap())
+            .put(COL_ISSUE_TYPE, issueType.toString())
+            .put(COL_NODES, nodeName)
+            .put(COL_ISSUE, "Exception")
+            .put(COL_DETAILS, trimmedStackTrace);
+    if (fileNames != null) {
+      rb.put(
+          COL_FILELINES,
+          fileNames.stream()
+              .map(n -> new FileLines(n, ImmutableSortedSet.of(-1)))
+              .collect(ImmutableList.toImmutableList()));
+    }
+    return rb.build();
   }
 
-  private static Row getRow(IssueType issueType, String nodeName, Warning warning) {
+  private static Row getRow(IssueType issueType, Set<String> nodes, Warning warning) {
     return Row.builder(TABLE_METADATA.toColumnMap())
-        .put(COL_NODE, nodeName)
+        .put(COL_NODES, nodes)
         .put(COL_ISSUE_TYPE, issueType.toString())
-        .put(COL_COMMENT, /*"Conversion warning: " +*/ warning.getText())
+        .put(COL_ISSUE, warning.getText())
         .build();
   }
 
   private static Row getRow(IssueType issueType, String nodeName, ParseWarning warning) {
     return Row.builder(TABLE_METADATA.toColumnMap())
-        .put(COL_NODE, nodeName)
+        .put(COL_NODES, ImmutableSet.of(nodeName))
         .put(COL_ISSUE_TYPE, issueType.toString())
-        .put(COL_PARSER_CONTEXT, warning.getParserContext())
         .put(
-            COL_COMMENT,
+            COL_ISSUE,
             String.format(
                 "%s (line %d: %s)",
                 firstNonNull(warning.getComment(), "(details not provided)"),
                 warning.getLine(),
                 warning.getText()))
+        .put(COL_DETAILS, "Parser context: " + warning.getParserContext())
         .build();
   }
 
@@ -162,31 +245,29 @@ public class InitIssuesAnswerer extends Answerer {
     }
   }
 
-  static final String COL_NODE = "Node";
-  static final String COL_FILE = "File";
+  static final String COL_NODES = "Nodes";
+  static final String COL_FILELINES = "Source_Lines";
   static final String COL_ISSUE_TYPE = "Issue_Type";
-  static final String COL_COMMENT = "Comment";
-  static final String COL_PARSER_CONTEXT = "Parser_Context";
-  static final String COL_STACK_TRACE = "Stack_Trace";
+  static final String COL_ISSUE = "Issue";
+  static final String COL_DETAILS = "Issue_Details";
 
   private static final List<ColumnMetadata> METADATA =
       ImmutableList.of(
-          new ColumnMetadata(COL_NODE, Schema.STRING, "The node that was converted", true, false),
-          new ColumnMetadata(COL_FILE, Schema.STRING, "The file that was parsed", true, false),
+          new ColumnMetadata(
+              COL_NODES, Schema.set(Schema.STRING), "The node that was converted", true, false),
+          new ColumnMetadata(
+              COL_FILELINES,
+              Schema.list(Schema.FILE_LINES),
+              "The files and lines that caused the issue",
+              true,
+              false),
           new ColumnMetadata(
               COL_ISSUE_TYPE, Schema.STRING, "The type of issue identified", true, false),
+          new ColumnMetadata(COL_ISSUE, Schema.STRING, "The issue identified", false, true),
           new ColumnMetadata(
-              COL_COMMENT, Schema.STRING, "Comment regarding the issue", false, true),
-          new ColumnMetadata(
-              COL_PARSER_CONTEXT,
-              Schema.STRING,
-              "Parser context where the issue occurred",
-              false,
-              true),
-          new ColumnMetadata(
-              COL_STACK_TRACE, Schema.STRING, "Stack trace from the error", false, true));
+              COL_DETAILS, Schema.STRING, "Additional details about the issue", false, true));
 
-  private static final String TEXT_DESC = String.format("Placeholder ${%s}", COL_NODE);
+  private static final String TEXT_DESC = String.format("Placeholder ${%s}", COL_NODES);
 
   private static final TableMetadata TABLE_METADATA = new TableMetadata(METADATA, TEXT_DESC);
 }

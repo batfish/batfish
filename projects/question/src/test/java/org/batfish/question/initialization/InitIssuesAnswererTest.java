@@ -1,11 +1,10 @@
 package org.batfish.question.initialization;
 
-import static org.batfish.question.initialization.InitIssuesAnswerer.COL_COMMENT;
-import static org.batfish.question.initialization.InitIssuesAnswerer.COL_FILE;
+import static org.batfish.question.initialization.InitIssuesAnswerer.COL_DETAILS;
+import static org.batfish.question.initialization.InitIssuesAnswerer.COL_FILELINES;
+import static org.batfish.question.initialization.InitIssuesAnswerer.COL_ISSUE;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_ISSUE_TYPE;
-import static org.batfish.question.initialization.InitIssuesAnswerer.COL_NODE;
-import static org.batfish.question.initialization.InitIssuesAnswerer.COL_PARSER_CONTEXT;
-import static org.batfish.question.initialization.InitIssuesAnswerer.COL_STACK_TRACE;
+import static org.batfish.question.initialization.InitIssuesAnswerer.COL_NODES;
 import static org.batfish.question.initialization.InitIssuesAnswerer.trimStackTrace;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -90,17 +89,15 @@ public class InitIssuesAnswererTest {
             new Rows()
                 .add(
                     Row.of(
-                        COL_NODE,
+                        COL_NODES,
                         node,
-                        COL_FILE,
+                        COL_FILELINES,
                         null,
                         COL_ISSUE_TYPE,
                         IssueType.ConvertError.toString(),
-                        COL_STACK_TRACE,
+                        COL_DETAILS,
                         trimStackTrace(stackTrace),
-                        COL_COMMENT,
-                        null,
-                        COL_PARSER_CONTEXT,
+                        COL_ISSUE,
                         null))));
   }
 
@@ -133,31 +130,27 @@ public class InitIssuesAnswererTest {
             new Rows()
                 .add(
                     Row.of(
-                        COL_NODE,
+                        COL_NODES,
                         node,
                         COL_ISSUE_TYPE,
                         IssueType.ConvertWarningRedFlag.toString(),
-                        COL_COMMENT,
+                        COL_ISSUE,
                         String.format("%s", redFlag),
-                        COL_FILE,
+                        COL_FILELINES,
                         null,
-                        COL_PARSER_CONTEXT,
-                        null,
-                        COL_STACK_TRACE,
+                        COL_DETAILS,
                         null))
                 .add(
                     Row.of(
-                        COL_NODE,
+                        COL_NODES,
                         node,
                         COL_ISSUE_TYPE,
                         IssueType.ConvertWarningUnimplemented.toString(),
-                        COL_COMMENT,
+                        COL_ISSUE,
                         String.format("%s", unimplemented),
-                        COL_FILE,
+                        COL_FILELINES,
                         null,
-                        COL_PARSER_CONTEXT,
-                        null,
-                        COL_STACK_TRACE,
+                        COL_DETAILS,
                         null))));
   }
 
@@ -189,17 +182,15 @@ public class InitIssuesAnswererTest {
             new Rows()
                 .add(
                     Row.of(
-                        COL_NODE,
+                        COL_NODES,
                         null,
-                        COL_FILE,
+                        COL_FILELINES,
                         file,
                         COL_ISSUE_TYPE,
                         IssueType.ParseError.toString(),
-                        COL_STACK_TRACE,
+                        COL_DETAILS,
                         trimStackTrace(stackTrace),
-                        COL_COMMENT,
-                        null,
-                        COL_PARSER_CONTEXT,
+                        COL_ISSUE,
                         null))));
   }
 
@@ -233,17 +224,15 @@ public class InitIssuesAnswererTest {
             new Rows()
                 .add(
                     Row.of(
-                        COL_NODE,
+                        COL_NODES,
                         node,
                         COL_ISSUE_TYPE,
                         IssueType.ParseWarning.toString(),
-                        COL_PARSER_CONTEXT,
+                        COL_DETAILS,
                         context,
-                        COL_COMMENT,
+                        COL_ISSUE,
                         String.format("%s (line %d: %s)", comment, line, text),
-                        COL_FILE,
-                        null,
-                        COL_STACK_TRACE,
+                        COL_FILELINES,
                         null))));
   }
 
