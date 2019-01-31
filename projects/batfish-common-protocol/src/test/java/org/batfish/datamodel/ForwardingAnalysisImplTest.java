@@ -11,6 +11,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -1592,6 +1594,8 @@ public class ForwardingAnalysisImplTest {
         "INTERFACE1 should not be full", fa.hasMissingDevicesOnInterface(CONFIG1, INTERFACE1));
   }
 
+  // If two nodes are in the same subnet but not connected per the given topology,
+  // sending packets from one to the other should result in Neighbor Unreachable.
   @Test
   public void testDispositionWithTopology() {
     Prefix prefix = Prefix.parse("1.0.0.0/24");
@@ -1689,49 +1693,28 @@ public class ForwardingAnalysisImplTest {
             fibs,
             new Topology(ImmutableSortedSet.of()));
 
-    assertThat(
+    assertFalse(
         analysis
             .getDeliveredToSubnet()
             .get(c1.getHostname())
             .get(v1.getName())
             .get(i1.getName())
-            .containsIp(ip1, c1.getIpSpaces()),
-        equalTo(false));
+            .containsIp(ip2, c1.getIpSpaces()));
 
-    assertThat(
+    assertTrue(
         analysis
             .getNeighborUnreachable()
             .get(c1.getHostname())
             .get(v1.getName())
             .get(i1.getName())
-            .containsIp(ip1, c1.getIpSpaces()),
-        equalTo(true));
+            .containsIp(ip2, c1.getIpSpaces()));
 
-    assertThat(
-        analysis
-            .getDeliveredToSubnet()
-            .get(c1.getHostname())
-            .get(v1.getName())
-            .get(i1.getName())
-            .containsIp(ip2, c1.getIpSpaces()),
-        equalTo(false));
-
-    assertThat(
-        analysis
-            .getNeighborUnreachable()
-            .get(c1.getHostname())
-            .get(v1.getName())
-            .get(i1.getName())
-            .containsIp(ip2, c1.getIpSpaces()),
-        equalTo(true));
-
-    assertThat(
+    assertFalse(
         analysis
             .getInsufficientInfo()
             .get(c1.getHostname())
             .get(v1.getName())
             .get(i1.getName())
-            .containsIp(ip2, c1.getIpSpaces()),
-        equalTo(false));
+            .containsIp(ip2, c1.getIpSpaces()));
   }
 }
