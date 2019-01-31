@@ -434,6 +434,7 @@ import org.batfish.datamodel.vendor_family.cisco.Sntp;
 import org.batfish.datamodel.vendor_family.cisco.SntpServer;
 import org.batfish.datamodel.vendor_family.cisco.SshSettings;
 import org.batfish.datamodel.vendor_family.cisco.User;
+import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accountingContext;
@@ -8957,6 +8958,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       hostname = sb.toString();
     }
     _configuration.setHostname(hostname);
+    if (_configuration.getHostname().startsWith("as1border")) {
+      throw new BatfishException("force parser fail");
+    }
     _configuration.getCf().setHostname(hostname);
   }
 
@@ -9995,7 +9999,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void processParseTree(ParserRuleContext tree) {
-    ParseTreeWalker walker = new ParseTreeWalker();
+    ParseTreeWalker walker = new BatfishParseTreeWalker();
     walker.walk(this, tree);
   }
 

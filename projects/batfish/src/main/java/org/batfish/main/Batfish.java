@@ -178,6 +178,7 @@ import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.flattener.Flattener;
@@ -318,7 +319,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           JuniperCombinedParser parser = new JuniperCombinedParser(input, settings);
           ParserRuleContext tree = parse(parser, logger, settings);
           JuniperFlattener flattener = new JuniperFlattener(header);
-          ParseTreeWalker walker = new ParseTreeWalker();
+          ParseTreeWalker walker = new BatfishParseTreeWalker();
           walker.walk(flattener, tree);
           return flattener;
         }
@@ -328,7 +329,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           VyosCombinedParser parser = new VyosCombinedParser(input, settings);
           ParserRuleContext tree = parse(parser, logger, settings);
           VyosFlattener flattener = new VyosFlattener(header);
-          ParseTreeWalker walker = new ParseTreeWalker();
+          ParseTreeWalker walker = new BatfishParseTreeWalker();
           walker.walk(flattener, tree);
           return flattener;
         }
