@@ -20,7 +20,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
-import javax.annotation.Nonnull;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
@@ -121,16 +120,12 @@ public final class BidirectionalTracerouteAnswererTest {
             new BidirectionalTrace(FORWARD_FLOW, forwardTrace3, REVERSE_FLOW, reverseTrace2)));
   }
 
-  @Nonnull
-  private static FirewallSessionTraceInfo mockSession(String hostname) {
-    return new FirewallSessionTraceInfo(hostname, null, null, ImmutableSet.of(), TRUE, null);
-  }
-
   @Test
   public void testSession() {
     Trace forwardTrace = new Trace(ACCEPTED, ImmutableList.of());
     Trace reverseTrace = new Trace(NEIGHBOR_UNREACHABLE, ImmutableList.of());
-    FirewallSessionTraceInfo session = mockSession("session");
+    FirewallSessionTraceInfo session =
+        new FirewallSessionTraceInfo("session", null, null, ImmutableSet.of(), TRUE, null);
     TraceAndReverseFlow forwardTarf =
         new TraceAndReverseFlow(forwardTrace, REVERSE_FLOW, ImmutableList.of(session));
     TraceAndReverseFlow reverseTarf =
@@ -154,7 +149,8 @@ public final class BidirectionalTracerouteAnswererTest {
   public void testSessions() {
     Trace sessionForwardTrace = new Trace(ACCEPTED, ImmutableList.of());
     Trace noSessionForwardTrace = new Trace(DELIVERED_TO_SUBNET, ImmutableList.of());
-    FirewallSessionTraceInfo session = mockSession("session");
+    FirewallSessionTraceInfo session =
+        new FirewallSessionTraceInfo("session", null, null, ImmutableSet.of(), TRUE, null);
     TraceAndReverseFlow sessionForwardTarf =
         new TraceAndReverseFlow(sessionForwardTrace, REVERSE_FLOW, ImmutableList.of(session));
     TraceAndReverseFlow noSessionForwardTarf =
