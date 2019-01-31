@@ -305,7 +305,7 @@ public class TracerouteEngineImplContext {
         transmissionContext
             ._currentConfig
             .getAllInterfaces()
-            .get(transmissionContext._ingressInterface)
+            .get(outgoingInterfaceName)
             .getVrfName();
     // halt processing and add neighbor-unreachable trace if no one would respond
     if (_forwardingAnalysis
