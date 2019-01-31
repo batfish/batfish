@@ -70,12 +70,14 @@ import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
+import org.batfish.datamodel.flow.MatchSessionStep;
 import org.batfish.datamodel.flow.OriginateStep;
 import org.batfish.datamodel.flow.OriginateStep.OriginateStepDetail;
 import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.RoutingStep.Builder;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
+import org.batfish.datamodel.flow.SetupSessionStep;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
@@ -606,6 +608,7 @@ public class TracerouteEngineImplContext {
                                 newTransformedFlow.getSrcPort(),
                                 newTransformedFlow.getIpProtocol()),
                             sessionTransformation(inputFlow, newTransformedFlow)));
+                    clonedSteps.add(new SetupSessionStep());
                   }
 
                   if (edges == null || edges.isEmpty()) {
@@ -723,12 +726,13 @@ public class TracerouteEngineImplContext {
             .collect(Collectors.toList());
     checkState(matchingSessions.size() < 2, "Flow cannot match more than 1 session");
     if (matchingSessions.isEmpty()) {
+
       return false;
     }
     FirewallSessionTraceInfo session = matchingSessions.get(0);
 
     List<Step<?>> steps = new ArrayList<>();
-    // TODO step for matching a session
+    steps.add(new MatchSessionStep());
 
     Configuration config = _configurations.get(currentNodeName);
     Map<String, IpAccessList> ipAccessLists = config.getIpAccessLists();
@@ -741,16 +745,17 @@ public class TracerouteEngineImplContext {
     // apply imcoming ACL
     String incomingAclName =
         incomingInterface.getFirewallSessionInterfaceInfo().getIncomingAclName();
-    if (applyFilter(
-            ipAccessLists.get(incomingAclName),
-            FilterType.INGRESS_FILTER,
-            flow,
-            inputIfaceName,
-            ipAccessLists,
-            ipSpaces,
-            transmissionContext,
-            steps)
-        == DENIED) {
+    if (incomingAclName != null
+        && applyFilter(
+                ipAccessLists.get(incomingAclName),
+                FilterType.INGRESS_FILTER,
+                flow,
+                inputIfaceName,
+                ipAccessLists,
+                ipSpaces,
+                transmissionContext,
+                steps)
+            == DENIED) {
       return true;
     }
 
@@ -787,16 +792,17 @@ public class TracerouteEngineImplContext {
       // apply outgoing ACL
       String outgoingAclName =
           outgoingInterface.getFirewallSessionInterfaceInfo().getOutgoingAclName();
-      if (applyFilter(
-              ipAccessLists.get(outgoingAclName),
-              FilterType.EGRESS_FILTER,
-              postTransformationFlow,
-              inputIfaceName,
-              ipAccessLists,
-              ipSpaces,
-              transmissionContext,
-              steps)
-          == DENIED) {
+      if (outgoingAclName != null
+          && applyFilter(
+                  ipAccessLists.get(outgoingAclName),
+                  FilterType.EGRESS_FILTER,
+                  postTransformationFlow,
+                  inputIfaceName,
+                  ipAccessLists,
+                  ipSpaces,
+                  transmissionContext,
+                  steps)
+              == DENIED) {
         return true;
       }
 

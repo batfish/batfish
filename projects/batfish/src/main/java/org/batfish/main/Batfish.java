@@ -496,6 +496,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _topologyProvider = new TopologyProviderImpl(this);
   }
 
+  /**
+   * A shallow wrapper for {@link Files#createDirectories} that throws a {@link BatfishException}
+   * instead of {@link IOException}.
+   *
+   * @throws BatfishException if there is an error creating directories.
+   */
+  private static void createDirectories(Path path) {
+    try {
+      Files.createDirectories(path);
+    } catch (IOException e) {
+      throw new BatfishException(
+          "Could not create directories leading up to and including '" + path + "'", e);
+    }
+  }
+
   private Answer analyze() {
     try {
       Answer answer = new Answer();
@@ -4262,20 +4277,5 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public @Nullable Answerer createAnswerer(@Nonnull Question question) {
     AnswererCreator creator = _answererCreators.get(question.getName());
     return creator != null ? creator.create(question, this) : null;
-  }
-
-  /**
-   * A shallow wrapper for {@link Files#createDirectories} that throws a {@link BatfishException}
-   * instead of {@link IOException}.
-   *
-   * @throws BatfishException if there is an error creating directories.
-   */
-  private static void createDirectories(Path path) {
-    try {
-      Files.createDirectories(path);
-    } catch (IOException e) {
-      throw new BatfishException(
-          "Could not create directories leading up to and including '" + path + "'", e);
-    }
   }
 }
