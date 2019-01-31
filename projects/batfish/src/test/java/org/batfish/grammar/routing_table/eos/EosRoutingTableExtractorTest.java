@@ -28,7 +28,6 @@ import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.MockGrammarSettings;
 import org.batfish.main.Batfish;
-import org.batfish.main.BatfishParsing;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -77,7 +76,7 @@ public final class EosRoutingTableExtractorTest {
     EosRoutingTableExtractor extractor =
         new EosRoutingTableExtractor("hostname", showIpRoute, parser, warnings, batfish);
 
-    ParserRuleContext tree = BatfishParsing.parse(parser, batfish.getLogger(), new Settings());
+    ParserRuleContext tree = Batfish.parse(parser, batfish.getLogger(), new Settings());
     extractor.processParseTree(tree);
     return extractor.getRoutesByVrf();
   }

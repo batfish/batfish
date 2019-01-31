@@ -1,9 +1,11 @@
 package org.batfish.main;
 
 import static org.batfish.main.Batfish.postProcessInterfaceDependencies;
+import static org.batfish.main.Batfish.readAllFiles;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
@@ -22,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +34,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
@@ -75,6 +79,8 @@ public class BatfishTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  private static final BatfishLogger LOGGER = new BatfishLogger(BatfishLogger.LEVELSTR_INFO, false);
 
   private static final Question TEST_QUESTION =
       new TestQuestion() {
@@ -272,6 +278,13 @@ public class BatfishTest {
   }
 
   @Test
+  public void testNoFileUnderPath() throws IOException {
+    Path emptyFolder = _folder.newFolder("emptyFolder").toPath();
+    Map<Path, String> result = readAllFiles(emptyFolder, LOGGER);
+    assertThat(result, anEmptyMap());
+  }
+
+  @Test
   public void testCheckValidTopology() {
     Map<String, Configuration> configs = new HashMap<>();
     configs.put(
@@ -362,6 +375,56 @@ public class BatfishTest {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(parseErrorMessage);
     batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
+  }
+
+  @Test
+  public void testReadNestedPath() throws IOException {
+    Path nestedFolder = _folder.newFolder("nestedDirectory").toPath();
+    Set<Path> expected = new HashSet<>();
+    expected.add(nestedFolder.resolve("b-test.cfg"));
+    expected.add(nestedFolder.resolve("d-test.cfg"));
+    expected.add(nestedFolder.resolve("aDirectory").resolve("e-test.cfg"));
+    expected.add(nestedFolder.resolve("eDirectory").resolve("a-test.cfg"));
+    expected.add(nestedFolder.resolve("eDirectory").resolve("c-test.cfg"));
+    for (Path path : expected) {
+      path.getParent().toFile().mkdir();
+      assertThat(path.toFile().createNewFile(), is(true));
+    }
+    Set<Path> actual = readAllFiles(nestedFolder, LOGGER).keySet();
+    assertThat(expected, equalTo(actual));
+  }
+
+  @Test
+  public void testReadStartWithDotFile() throws IOException {
+    Path startWithDot = _folder.newFolder("startWithDot").toPath();
+    File file = startWithDot.resolve(".cfg").toFile();
+    file.getParentFile().mkdir();
+    assertThat(file.createNewFile(), is(true));
+    Map<Path, String> result = readAllFiles(startWithDot, LOGGER);
+    assertThat(result, anEmptyMap());
+  }
+
+  @Test
+  public void testReadUnNestedPath() throws IOException {
+    Path unNestedFolder = _folder.newFolder("unNestedDirectory").toPath();
+    Set<Path> expected = new HashSet<>();
+    expected.add(unNestedFolder.resolve("test1.cfg"));
+    expected.add(unNestedFolder.resolve("test2.cfg"));
+    expected.add(unNestedFolder.resolve("test3.cfg"));
+    for (Path path : expected) {
+      path.getParent().toFile().mkdir();
+      assertThat(path.toFile().createNewFile(), is(true));
+    }
+    Set<Path> actual = readAllFiles(unNestedFolder, LOGGER).keySet();
+    assertThat(expected, equalTo(actual));
+  }
+
+  @Test
+  public void testReadThrowsExceptionWithSpecificType() {
+    Path nonExistPath = _folder.getRoot().toPath().resolve("nonExistent");
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage("Failed to walk path: " + nonExistPath);
+    readAllFiles(nonExistPath, LOGGER);
   }
 
   @Test

@@ -257,7 +257,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurat
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
-import org.batfish.main.BatfishParsing;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.juniper.IcmpLarge;
@@ -348,7 +347,7 @@ public final class FlatJuniperGrammarTest {
     FlatJuniperControlPlaneExtractor extractor =
         new FlatJuniperControlPlaneExtractor(src, flatJuniperParser, new Warnings());
     ParserRuleContext tree =
-        BatfishParsing.parse(
+        Batfish.parse(
             flatJuniperParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(tree);
     return (JuniperConfiguration) extractor.getVendorConfiguration();

@@ -347,7 +347,6 @@ import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.main.Batfish;
-import org.batfish.main.BatfishParsing;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.cisco.CiscoAsaNat;
@@ -412,7 +411,7 @@ public class CiscoGrammarTest {
     CiscoControlPlaneExtractor extractor =
         new CiscoControlPlaneExtractor(src, ciscoParser, format, new Warnings());
     ParserRuleContext tree =
-        BatfishParsing.parse(
+        Batfish.parse(
             ciscoParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(tree);
     return (CiscoConfiguration) extractor.getVendorConfiguration();

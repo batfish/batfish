@@ -21,7 +21,6 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
-import static org.batfish.main.BatfishParsing.readAllFiles;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -36,6 +35,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
 import io.opentracing.ActiveSpan;
@@ -49,9 +49,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -184,6 +186,7 @@ import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableFormat;
+import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
@@ -323,7 +326,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       case PALO_ALTO_NESTED:
         {
           JuniperCombinedParser parser = new JuniperCombinedParser(input, settings);
-          ParserRuleContext tree = BatfishParsing.parse(parser, logger, settings);
+          ParserRuleContext tree = parse(parser, logger, settings);
           JuniperFlattener flattener = new JuniperFlattener(header);
           ParseTreeWalker walker = new ParseTreeWalker();
           walker.walk(flattener, tree);
@@ -333,7 +336,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       case VYOS:
         {
           VyosCombinedParser parser = new VyosCombinedParser(input, settings);
-          ParserRuleContext tree = BatfishParsing.parse(parser, logger, settings);
+          ParserRuleContext tree = parse(parser, logger, settings);
           VyosFlattener flattener = new VyosFlattener(header);
           ParseTreeWalker walker = new ParseTreeWalker();
           walker.walk(flattener, tree);
@@ -366,6 +369,37 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  /**
+   * Reads the files in the given directory (recursively) and returns a map from each file's {@link
+   * Path} to its contents.
+   *
+   * <p>Temporary files (files start with {@code .} are omitted from the returned list.
+   *
+   * <p>This method follows all symbolic links.
+   */
+  static SortedMap<Path, String> readAllFiles(Path directory, BatfishLogger logger) {
+    try (Stream<Path> paths = Files.walk(directory, FileVisitOption.FOLLOW_LINKS)) {
+      return paths
+          .filter(Files::isRegularFile)
+          .filter(path -> !path.getFileName().toString().startsWith("."))
+          .map(
+              path -> {
+                logger.debugf("Reading: \"%s\"\n", path);
+                String fileText = CommonUtil.readFile(path.toAbsolutePath());
+                if (!fileText.isEmpty()) {
+                  // Adding a trailing newline helps EOF in some parsers.
+                  fileText += '\n';
+                }
+                return new SimpleEntry<>(path, fileText);
+              })
+          .collect(
+              ImmutableSortedMap.toImmutableSortedMap(
+                  Ordering.natural(), SimpleEntry::getKey, SimpleEntry::getValue));
+    } catch (IOException e) {
+      throw new BatfishException("Failed to walk path: " + directory, e);
+    }
+  }
+
   public static void logWarnings(BatfishLogger logger, Warnings warnings) {
     for (Warning warning : warnings.getRedFlagWarnings()) {
       logger.redflag(logWarningsHelper(warning));
@@ -382,8 +416,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return "   " + warning.getTag() + ": " + warning.getText() + "\n";
   }
 
+  /**
+   * Returns the parse tree for the given parser, logging to the given logger and using the given
+   * settings to control the parse tree printing, if applicable.
+   */
   public static ParserRuleContext parse(
-      BatfishCombinedParser<?, ?> parser, BatfishLogger logger, Settings settings) {
+      BatfishCombinedParser<?, ?> parser, BatfishLogger logger, GrammarSettings settings) {
     ParserRuleContext tree;
     try {
       tree = parser.parse();
