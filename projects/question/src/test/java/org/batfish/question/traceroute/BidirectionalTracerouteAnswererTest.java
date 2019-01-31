@@ -1,32 +1,31 @@
 package org.batfish.question.traceroute;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
+import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
+import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.question.traceroute.BidirectionalTracerouteAnswerer.computeBidirectionalTraces;
+import static org.batfish.question.traceroute.MockTracerouteEngine.forFlow;
+import static org.batfish.question.traceroute.MockTracerouteEngine.forFlows;
+import static org.batfish.question.traceroute.MockTracerouteEngine.forSessions;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Ordering;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedMap;
+import javax.annotation.Nonnull;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.BidirectionalTrace;
+import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.junit.Test;
@@ -49,46 +48,20 @@ public final class BidirectionalTracerouteAnswererTest {
           .setIngressInterface("reverseIngressInterface")
           .build();
 
-  class MockTracerouteEngine implements TracerouteEngine {
-    private final Map<Flow, List<TraceAndReverseFlow>> _result;
-
-    MockTracerouteEngine(Map<Flow, List<TraceAndReverseFlow>> result) {
-      _result = result;
-    }
-
-    @Override
-    public SortedMap<Flow, Set<FlowTrace>> processFlows(Set<Flow> flows, boolean ignoreFilters) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public SortedMap<Flow, List<TraceAndReverseFlow>> computeTracesAndReverseFlows(
-        Set<Flow> flows, boolean ignoreFilters) {
-      SetView<Flow> unexpectedFlows = Sets.difference(flows, _result.keySet());
-      checkArgument(unexpectedFlows.isEmpty(), "unexpected Flows");
-      return _result.entrySet().stream()
-          .filter(entry -> flows.contains(entry.getKey()))
-          .collect(
-              ImmutableSortedMap.toImmutableSortedMap(
-                  Ordering.natural(), Entry::getKey, Entry::getValue));
-    }
-  }
-
   @Test
   public void testNoReverseFlow() {
     Trace forwardTrace = new Trace(NO_ROUTE, ImmutableList.of());
     TraceAndReverseFlow traceAndReverseFlow = new TraceAndReverseFlow(forwardTrace, null);
 
     TracerouteEngine tracerouteEngine =
-        new MockTracerouteEngine(
-            ImmutableMap.of(FORWARD_FLOW, ImmutableList.of(traceAndReverseFlow)));
+        forFlow(FORWARD_FLOW, ImmutableList.of(traceAndReverseFlow));
 
     List<BidirectionalTrace> bidirectionalTraces =
         computeBidirectionalTraces(ImmutableSet.of(FORWARD_FLOW), tracerouteEngine, false);
 
     assertThat(
         bidirectionalTraces,
-        equalTo(ImmutableList.of(new BidirectionalTrace(FORWARD_FLOW, forwardTrace, null, null))));
+        contains(new BidirectionalTrace(FORWARD_FLOW, forwardTrace, null, null)));
   }
 
   @Test
@@ -99,7 +72,7 @@ public final class BidirectionalTracerouteAnswererTest {
     TraceAndReverseFlow reverseTarf = new TraceAndReverseFlow(reverseTrace, null);
 
     TracerouteEngine tracerouteEngine =
-        new MockTracerouteEngine(
+        forFlows(
             ImmutableMap.of(
                 FORWARD_FLOW,
                 ImmutableList.of(forwardTarf),
@@ -111,9 +84,7 @@ public final class BidirectionalTracerouteAnswererTest {
 
     assertThat(
         bidirectionalTraces,
-        equalTo(
-            ImmutableList.of(
-                new BidirectionalTrace(FORWARD_FLOW, forwardTrace, REVERSE_FLOW, reverseTrace))));
+        contains(new BidirectionalTrace(FORWARD_FLOW, forwardTrace, REVERSE_FLOW, reverseTrace)));
   }
 
   @Test
@@ -130,7 +101,7 @@ public final class BidirectionalTracerouteAnswererTest {
     TraceAndReverseFlow reverseTarf2 = new TraceAndReverseFlow(reverseTrace2, FORWARD_FLOW);
 
     TracerouteEngine tracerouteEngine =
-        new MockTracerouteEngine(
+        forFlows(
             ImmutableMap.of(
                 FORWARD_FLOW,
                 ImmutableList.of(forwardTarf1, forwardTarf2, forwardTarf3),
@@ -142,12 +113,77 @@ public final class BidirectionalTracerouteAnswererTest {
 
     assertThat(
         bidirectionalTraces,
-        equalTo(
-            ImmutableList.of(
-                new BidirectionalTrace(FORWARD_FLOW, forwardTrace1, REVERSE_FLOW, reverseTrace1),
-                new BidirectionalTrace(FORWARD_FLOW, forwardTrace1, REVERSE_FLOW, reverseTrace2),
-                new BidirectionalTrace(FORWARD_FLOW, forwardTrace2, null, null),
-                new BidirectionalTrace(FORWARD_FLOW, forwardTrace3, REVERSE_FLOW, reverseTrace1),
-                new BidirectionalTrace(FORWARD_FLOW, forwardTrace3, REVERSE_FLOW, reverseTrace2))));
+        contains(
+            new BidirectionalTrace(FORWARD_FLOW, forwardTrace1, REVERSE_FLOW, reverseTrace1),
+            new BidirectionalTrace(FORWARD_FLOW, forwardTrace1, REVERSE_FLOW, reverseTrace2),
+            new BidirectionalTrace(FORWARD_FLOW, forwardTrace2, null, null),
+            new BidirectionalTrace(FORWARD_FLOW, forwardTrace3, REVERSE_FLOW, reverseTrace1),
+            new BidirectionalTrace(FORWARD_FLOW, forwardTrace3, REVERSE_FLOW, reverseTrace2)));
+  }
+
+  @Nonnull
+  private static FirewallSessionTraceInfo mockSession(String hostname) {
+    return new FirewallSessionTraceInfo(hostname, null, null, ImmutableSet.of(), TRUE, null);
+  }
+
+  @Test
+  public void testSession() {
+    Trace forwardTrace = new Trace(ACCEPTED, ImmutableList.of());
+    Trace reverseTrace = new Trace(NEIGHBOR_UNREACHABLE, ImmutableList.of());
+    FirewallSessionTraceInfo session = mockSession("session");
+    TraceAndReverseFlow forwardTarf =
+        new TraceAndReverseFlow(forwardTrace, REVERSE_FLOW, ImmutableList.of(session));
+    TraceAndReverseFlow reverseTarf =
+        new TraceAndReverseFlow(reverseTrace, null, ImmutableList.of());
+    TracerouteEngine tracerouteEngine =
+        forSessions(
+            ImmutableMap.of(
+                ImmutableSet.of(),
+                ImmutableMap.of(FORWARD_FLOW, ImmutableList.of(forwardTarf)),
+                ImmutableSet.of(session),
+                ImmutableMap.of(REVERSE_FLOW, ImmutableList.of(reverseTarf))));
+    List<BidirectionalTrace> bidirectionalTraces =
+        computeBidirectionalTraces(ImmutableSet.of(FORWARD_FLOW), tracerouteEngine, false);
+    assertThat(
+        bidirectionalTraces,
+        contains(new BidirectionalTrace(FORWARD_FLOW, forwardTrace, REVERSE_FLOW, reverseTrace)));
+  }
+
+  /** Make sure we don't mix traces and sessions. */
+  @Test
+  public void testSessions() {
+    Trace sessionForwardTrace = new Trace(ACCEPTED, ImmutableList.of());
+    Trace noSessionForwardTrace = new Trace(DELIVERED_TO_SUBNET, ImmutableList.of());
+    FirewallSessionTraceInfo session = mockSession("session");
+    TraceAndReverseFlow sessionForwardTarf =
+        new TraceAndReverseFlow(sessionForwardTrace, REVERSE_FLOW, ImmutableList.of(session));
+    TraceAndReverseFlow noSessionForwardTarf =
+        new TraceAndReverseFlow(noSessionForwardTrace, REVERSE_FLOW, ImmutableList.of());
+
+    Trace sessionReverseTrace = new Trace(DENIED_IN, ImmutableList.of());
+    Trace noSessionReverseTrace = new Trace(DENIED_OUT, ImmutableList.of());
+    TraceAndReverseFlow sessionReverseTarf =
+        new TraceAndReverseFlow(sessionReverseTrace, null, ImmutableList.of());
+    TraceAndReverseFlow noSessionReverseTarf =
+        new TraceAndReverseFlow(noSessionReverseTrace, null, ImmutableList.of());
+
+    TracerouteEngine tracerouteEngine =
+        forSessions(
+            ImmutableMap.of(
+                ImmutableSet.of(),
+                ImmutableMap.of(
+                    FORWARD_FLOW, ImmutableList.of(sessionForwardTarf, noSessionForwardTarf),
+                    REVERSE_FLOW, ImmutableList.of(noSessionReverseTarf)),
+                ImmutableSet.of(session),
+                ImmutableMap.of(REVERSE_FLOW, ImmutableList.of(sessionReverseTarf))));
+    List<BidirectionalTrace> bidirectionalTraces =
+        computeBidirectionalTraces(ImmutableSet.of(FORWARD_FLOW), tracerouteEngine, false);
+    assertThat(
+        bidirectionalTraces,
+        containsInAnyOrder(
+            new BidirectionalTrace(
+                FORWARD_FLOW, sessionForwardTrace, REVERSE_FLOW, sessionReverseTrace),
+            new BidirectionalTrace(
+                FORWARD_FLOW, noSessionForwardTrace, REVERSE_FLOW, noSessionReverseTrace)));
   }
 }

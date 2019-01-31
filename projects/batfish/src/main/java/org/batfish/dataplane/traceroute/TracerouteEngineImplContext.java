@@ -1,6 +1,7 @@
 package org.batfish.dataplane.traceroute;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match5Tuple;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.EGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.INGRESS_FILTER;
@@ -23,6 +24,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +37,7 @@ import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -52,6 +55,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Route;
+import org.batfish.datamodel.acl.Evaluator;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
@@ -62,12 +66,14 @@ import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
+import org.batfish.datamodel.flow.MatchSessionStep;
 import org.batfish.datamodel.flow.OriginateStep;
 import org.batfish.datamodel.flow.OriginateStep.OriginateStepDetail;
 import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.RoutingStep.Builder;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
+import org.batfish.datamodel.flow.SetupSessionStep;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
@@ -630,6 +636,7 @@ public class TracerouteEngineImplContext {
                                 newTransformedFlow.getSrcPort(),
                                 newTransformedFlow.getIpProtocol()),
                             sessionTransformation(inputFlow, newTransformedFlow)));
+                    steps.add(new SetupSessionStep());
                   }
 
                   if (edges == null || edges.isEmpty()) {
@@ -692,6 +699,156 @@ public class TracerouteEngineImplContext {
       transmissionContext._flowTraces.add(new TraceAndReverseFlow(trace, null));
     }
     return filterStep.getAction();
+  }
+
+  /**
+   * Check this {@param flow} matches a session on this device. If so, process the flow. Returns
+   * true if the flow is matched/processed.
+   */
+  private boolean processSessions(
+      String currentNodeName,
+      String inputIfaceName,
+      TransmissionContext transmissionContext,
+      Flow flow,
+      Stack<Breadcrumb> breadcrumbs) {
+    Collection<FirewallSessionTraceInfo> sessions =
+        _sessionsByIngressInterface.get(new NodeInterfacePair(currentNodeName, inputIfaceName));
+    if (sessions.isEmpty()) {
+      return false;
+    }
+
+    // session match expr cannot use MatchSrcInterface or ACL/IpSpace references.
+    Evaluator aclEval = new Evaluator(flow, null, ImmutableMap.of(), ImmutableMap.of());
+    List<FirewallSessionTraceInfo> matchingSessions =
+        sessions.stream()
+            .filter(session -> aclEval.visit(session.getSessionFlows()))
+            .collect(Collectors.toList());
+    checkState(matchingSessions.size() < 2, "Flow cannot match more than 1 session");
+    if (matchingSessions.isEmpty()) {
+
+      return false;
+    }
+    FirewallSessionTraceInfo session = matchingSessions.get(0);
+
+    List<Step<?>> steps = new ArrayList<>();
+    steps.add(new MatchSessionStep());
+
+    Configuration config = _configurations.get(currentNodeName);
+    Map<String, IpAccessList> ipAccessLists = config.getIpAccessLists();
+    Map<String, IpSpace> ipSpaces = config.getIpSpaces();
+    Interface incomingInterface = config.getAllInterfaces().get(inputIfaceName);
+    checkState(
+        incomingInterface.getFirewallSessionInterfaceInfo() != null,
+        "Cannot have a session entering an interface without FirewallSessionInterfaceInfo");
+
+    // apply imcoming ACL
+    String incomingAclName =
+        incomingInterface.getFirewallSessionInterfaceInfo().getIncomingAclName();
+    if (incomingAclName != null
+        && applyFilter(
+                ipAccessLists.get(incomingAclName),
+                FilterType.INGRESS_FILTER,
+                flow,
+                inputIfaceName,
+                ipAccessLists,
+                ipSpaces,
+                transmissionContext,
+                steps)
+            == DENIED) {
+      return true;
+    }
+
+    // cycle detection
+    String vrf = incomingInterface.getVrfName();
+    Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, vrf, flow);
+    if (breadcrumbs.contains(breadcrumb)) {
+      buildLoopTrace(transmissionContext, steps);
+      return true;
+    }
+
+    breadcrumbs.push(breadcrumb);
+    try {
+      // apply transformation
+      Transformation transformation = session.getTransformation();
+      Flow postTransformationFlow = flow;
+      if (transformation != null) {
+        TransformationResult result =
+            TransformationEvaluator.eval(
+                transformation, flow, inputIfaceName, ipAccessLists, ipSpaces);
+        postTransformationFlow = result.getOutputFlow();
+        steps.addAll(result.getTraceSteps());
+      }
+      if (session.getOutgoingInterface() == null) {
+        // Accepted by this node (vrf of incoming interface).
+        buildAcceptTrace(transmissionContext, steps, flow, vrf);
+        return true;
+      }
+
+      Interface outgoingInterface = config.getAllInterfaces().get(session.getOutgoingInterface());
+      checkState(
+          outgoingInterface.getFirewallSessionInterfaceInfo() != null,
+          "Cannot have a session exiting an interface without FirewallSessionInterfaceInfo");
+      // apply outgoing ACL
+      String outgoingAclName =
+          outgoingInterface.getFirewallSessionInterfaceInfo().getOutgoingAclName();
+      if (outgoingAclName != null
+          && applyFilter(
+                  ipAccessLists.get(outgoingAclName),
+                  FilterType.EGRESS_FILTER,
+                  postTransformationFlow,
+                  inputIfaceName,
+                  ipAccessLists,
+                  ipSpaces,
+                  transmissionContext,
+                  steps)
+              == DENIED) {
+        return true;
+      }
+
+      if (session.getNextHop() == null) {
+        // Delivered to subnet/exits network/insufficient info.
+        buildSessionArpFailureTrace(session.getOutgoingInterface(), transmissionContext, steps);
+        return true;
+      }
+
+      steps.add(
+          buildExitOutputIfaceStep(outgoingInterface.getName(), transmissionContext, TRANSMITTED));
+      transmissionContext._hopsSoFar.add(new Hop(new Node(currentNodeName), steps));
+
+      // Forward to neighbor.
+      processHop(
+          session.getNextHop().getInterface(),
+          transmissionContext.branch(
+              new NodeInterfacePair(currentNodeName, session.getOutgoingInterface()),
+              session.getNextHop().getHostname()),
+          postTransformationFlow,
+          breadcrumbs);
+      return true;
+    } finally {
+      breadcrumbs.pop();
+    }
+  }
+
+  /**
+   * We can't use {@link TracerouteEngineImplContext#buildArpFailureTrace} for sessions, because
+   * forwarding analysis disposition maps currently include routing conditions, which do not apply
+   * to sessions.
+   *
+   * <p>This ARP failure situation only arises for sessions that have an outgoing interface but no
+   * next hop. This means the user started the trace entering the outgoing interface. For now, just
+   * always call this EXITS_NETWORK. In the future we may want to apply the normal ARP error
+   * disposition logic, which would require factoring out routing-independent disposition maps in
+   * forwarding analysis.
+   */
+  private void buildSessionArpFailureTrace(
+      String outgoingInterfaceName, TransmissionContext transmissionContext, List<Step<?>> steps) {
+    Interface outgoingInterface =
+        _configurations
+            .get(transmissionContext._currentNode.getName())
+            .getAllInterfaces()
+            .get(outgoingInterfaceName);
+    buildArpFailureTrace(
+        outgoingInterface, FlowDisposition.EXITS_NETWORK, transmissionContext, steps);
   }
 
   @Nullable
