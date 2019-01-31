@@ -137,6 +137,7 @@ sn_virtual_router
     VIRTUAL_ROUTER name = variable
     (
         snvr_interface
+        | snvr_protocol
         | snvr_routing_table
     )
 ;
@@ -217,6 +218,7 @@ sniel3_common
     (
         sniel3_ip
         | sniel3_mtu
+        | sniel3_null
     )
 ;
 
@@ -232,6 +234,16 @@ sniel3_ip
 sniel3_mtu
 :
     MTU mtu = DEC
+;
+
+sniel3_null
+:
+    (
+        LLDP
+        | IPV6
+        | NDP_PROXY
+    )
+    null_rest_of_line
 ;
 
 sniel3_units
@@ -253,6 +265,12 @@ snvr_interface
     INTERFACE variable_list
 ;
 
+snvr_protocol
+:
+    PROTOCOL
+    snvrp_bgp
+;
+
 snvr_routing_table
 :
     ROUTING_TABLE IP STATIC_ROUTE name = variable
@@ -263,6 +281,27 @@ snvr_routing_table
         | snvrrt_metric
         | snvrrt_nexthop
     )
+;
+
+snvrp_bgp
+:
+    BGP
+    (
+        snvrp_bgp_enable
+        | snvrp_bgp_null
+    )
+;
+
+snvrp_bgp_enable
+:
+    ENABLE NO  // parse and ignore NO
+;
+
+
+snvrp_bgp_null
+:
+    DAMPENING_PROFILE
+    null_rest_of_line
 ;
 
 snvrrt_admin_dist
