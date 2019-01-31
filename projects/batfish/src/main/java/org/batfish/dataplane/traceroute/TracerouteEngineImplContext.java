@@ -608,7 +608,7 @@ public class TracerouteEngineImplContext {
                                 newTransformedFlow.getSrcPort(),
                                 newTransformedFlow.getIpProtocol()),
                             sessionTransformation(inputFlow, newTransformedFlow)));
-                    steps.add(new SetupSessionStep());
+                    clonedSteps.add(new SetupSessionStep());
                   }
 
                   if (edges == null || edges.isEmpty()) {
