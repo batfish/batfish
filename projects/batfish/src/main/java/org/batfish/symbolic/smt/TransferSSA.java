@@ -443,21 +443,21 @@ class TransferSSA {
         chainPolicies.add(be);
       }
       if (chainPolicies.isEmpty()) {
-        return fromExpr(_enc.mkTrue());
-      } else {
-        TransferResult<BoolExpr, BoolExpr> result = new TransferResult<>();
-        BoolExpr acc = _enc.mkFalse();
-        for (int i = chainPolicies.size() - 1; i >= 0; i--) {
-          BooleanExpr policyMatcher = chainPolicies.get(i);
-          TransferParam<SymbolicRoute> param =
-              pCur.setDefaultPolicy(null).setChainContext(TransferParam.ChainContext.CONJUNCTION);
-          TransferResult<BoolExpr, BoolExpr> r = compute(policyMatcher, param);
-          result = result.addChangedVariables(r);
-          acc = _enc.mkIf(r.getFallthroughValue(), acc, r.getReturnValue());
-        }
-        pCur.debug("FirstMatchChain Result: " + acc);
-        return result.setReturnValue(acc);
+        // No identity for an empty FirstMatchChain; default policy should always be set.
+        throw new BatfishException("Default policy is not set");
       }
+      TransferResult<BoolExpr, BoolExpr> result = new TransferResult<>();
+      BoolExpr acc = _enc.mkFalse();
+      for (int i = chainPolicies.size() - 1; i >= 0; i--) {
+        BooleanExpr policyMatcher = chainPolicies.get(i);
+        TransferParam<SymbolicRoute> param =
+            pCur.setDefaultPolicy(null).setChainContext(TransferParam.ChainContext.CONJUNCTION);
+        TransferResult<BoolExpr, BoolExpr> r = compute(policyMatcher, param);
+        result = result.addChangedVariables(r);
+        acc = _enc.mkIf(r.getFallthroughValue(), acc, r.getReturnValue());
+      }
+      pCur.debug("FirstMatchChain Result: " + acc);
+      return result.setReturnValue(acc);
     }
 
     if (expr instanceof Not) {

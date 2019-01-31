@@ -249,33 +249,32 @@ class TransferBDD {
 
     if (expr instanceof FirstMatchChain) {
       p.debug("FirstMatchChain");
-      FirstMatchChain d = (FirstMatchChain) expr;
-      List<BooleanExpr> chainPolicies = new ArrayList<>(d.getSubroutines());
+      FirstMatchChain chain = (FirstMatchChain) expr;
+      List<BooleanExpr> chainPolicies = new ArrayList<>(chain.getSubroutines());
       if (p.getDefaultPolicy() != null) {
         BooleanExpr be = new CallExpr(p.getDefaultPolicy().getDefaultPolicy());
         chainPolicies.add(be);
       }
       if (chainPolicies.isEmpty()) {
-        TransferReturn ret = new TransferReturn(p.getData(), factory.zero());
-        return fromExpr(ret);
-      } else {
-        TransferResult<TransferReturn, BDD> result = new TransferResult<>();
-        TransferParam<BDDRoute> record = p;
-        BDD acc = factory.zero();
-        for (int i = chainPolicies.size() - 1; i >= 0; i--) {
-          BooleanExpr policyMatcher = chainPolicies.get(i);
-          TransferParam<BDDRoute> param =
-              record
-                  .setDefaultPolicy(null)
-                  .setChainContext(TransferParam.ChainContext.CONJUNCTION)
-                  .indent();
-          TransferResult<TransferReturn, BDD> r = compute(policyMatcher, param);
-          record = record.setData(r.getReturnValue().getFirst());
-          acc = ite(r.getFallthroughValue(), acc, r.getReturnValue().getSecond());
-        }
-        TransferReturn ret = new TransferReturn(record.getData(), acc);
-        return result.setReturnValue(ret);
+        // No identity for an empty FirstMatchChain; default policy should always be set.
+        throw new BatfishException("Default policy is not set");
       }
+      TransferResult<TransferReturn, BDD> result = new TransferResult<>();
+      TransferParam<BDDRoute> record = p;
+      BDD acc = factory.zero();
+      for (int i = chainPolicies.size() - 1; i >= 0; i--) {
+        BooleanExpr policyMatcher = chainPolicies.get(i);
+        TransferParam<BDDRoute> param =
+            record
+                .setDefaultPolicy(null)
+                .setChainContext(TransferParam.ChainContext.CONJUNCTION)
+                .indent();
+        TransferResult<TransferReturn, BDD> r = compute(policyMatcher, param);
+        record = record.setData(r.getReturnValue().getFirst());
+        acc = ite(r.getFallthroughValue(), acc, r.getReturnValue().getSecond());
+      }
+      TransferReturn ret = new TransferReturn(record.getData(), acc);
+      return result.setReturnValue(ret);
     }
 
     if (expr instanceof Not) {
