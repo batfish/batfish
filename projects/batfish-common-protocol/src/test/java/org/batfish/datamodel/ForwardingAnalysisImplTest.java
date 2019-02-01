@@ -1600,7 +1600,6 @@ public class ForwardingAnalysisImplTest {
   public void testDispositionWithTopology() {
     Prefix prefix = Prefix.parse("1.0.0.0/24");
     IpSpace ipSpace = prefix.toIpSpace();
-    Ip ip1 = Ip.parse("1.0.0.1");
     Ip ip2 = Ip.parse("1.0.0.2");
 
     Configuration c1 = _cb.setHostname("c1").build();
