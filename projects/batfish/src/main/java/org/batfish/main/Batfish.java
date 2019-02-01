@@ -1496,35 +1496,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public void initBgpOriginationSpaceExplicit(Map<String, Configuration> configurations) {
-    // ProtocolDependencyAnalysis protocolDependencyAnalysis = new
-    // ProtocolDependencyAnalysis(
-    // configurations);
-    // DependencyDatabase database = protocolDependencyAnalysis
-    // .getDependencyDatabase();
-    //
-    // for (Entry<String, Configuration> e : configurations.entrySet()) {
-    // PrefixSpace ebgpExportSpace = new PrefixSpace();
-    // String name = e.getKey();
-    // Configuration node = e.getValue();
-    // BgpProcess proc = node.getBgpProcess();
-    // if (proc != null) {
-    // Set<PotentialExport> bgpExports = database.getPotentialExports(name,
-    // RoutingProtocol.BGP);
-    // for (PotentialExport export : bgpExports) {
-    // DependentRoute exportSourceRoute = export.getDependency();
-    // if (!exportSourceRoute.dependsOn(RoutingProtocol.BGP)
-    // && !exportSourceRoute.dependsOn(RoutingProtocol.IBGP)) {
-    // Prefix prefix = export.getIp();
-    // ebgpExportSpace.addPrefix(prefix);
-    // }
-    // }
-    // proc.setOriginationSpace(ebgpExportSpace);
-    // }
-    // }
-  }
-
-  @Override
   public InitInfoAnswerElement initInfo(boolean summary, boolean verboseError) {
     ParseVendorConfigurationAnswerElement parseAnswer = loadParseVendorConfigurationAnswerElement();
     InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);

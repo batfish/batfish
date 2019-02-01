@@ -50,6 +50,11 @@ public final class NetworkNodeRolesResource {
     _network = network;
   }
 
+  /**
+   * Deprecated in favor of {@link
+   * NetworkNodeRoleDimensionResource#putNodeRoleDimension(NodeRoleDimensionBean)}
+   */
+  @Deprecated
   @POST
   public Response addNodeRoleDimension(NodeRoleDimensionBean dimBean) throws IOException {
     checkClientArgument(dimBean.name != null, "Node role dimension must have a name");
