@@ -319,7 +319,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           JuniperCombinedParser parser = new JuniperCombinedParser(input, settings);
           ParserRuleContext tree = parse(parser, logger, settings);
           JuniperFlattener flattener = new JuniperFlattener(header);
-          ParseTreeWalker walker = new BatfishParseTreeWalker();
+          ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
           walker.walk(flattener, tree);
           return flattener;
         }
@@ -329,7 +329,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           VyosCombinedParser parser = new VyosCombinedParser(input, settings);
           ParserRuleContext tree = parse(parser, logger, settings);
           VyosFlattener flattener = new VyosFlattener(header);
-          ParseTreeWalker walker = new BatfishParseTreeWalker();
+          ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
           walker.walk(flattener, tree);
           return flattener;
         }

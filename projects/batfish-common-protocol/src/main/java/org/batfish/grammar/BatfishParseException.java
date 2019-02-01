@@ -11,7 +11,7 @@ public class BatfishParseException extends BatfishException {
   private final String _lineText;
 
   /**
-   * Constructs a BatfishException with a detail message
+   * Constructs a BatfishParseException with a detail message, line number, and line text
    *
    * @param msg The detail message
    * @param line The line number where the exception occurred
@@ -24,7 +24,7 @@ public class BatfishParseException extends BatfishException {
   }
 
   /**
-   * Constructs a BatfishException with a detail message and a cause
+   * Constructs a BatfishParseException with a detail message, cause, line number, and line text
    *
    * @param msg The detail message
    * @param cause The cause of this exception
