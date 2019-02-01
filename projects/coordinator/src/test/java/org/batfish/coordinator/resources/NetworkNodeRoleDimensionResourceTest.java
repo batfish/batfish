@@ -7,7 +7,9 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
@@ -124,5 +126,41 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
     assertThat(
         response.readEntity(NodeRoleDimensionBean.class).toNodeRoleDimension(),
         equalTo(nodeRoleDimension));
+  }
+
+  @Test
+  public void testPutNodeRoleDimensionMissingNetwork() throws IOException {
+    String network = "network1";
+    String dimension = "dimension1";
+
+    NodeRoleDimensionBean dimBean = new NodeRoleDimensionBean("dimension1", null, null, null);
+    Response response =
+        getNodeRoleDimensionTarget(network, dimension)
+            .put(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
+    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+  }
+
+  @Test
+  public void testPutNodeRoleDimensionSuccess() throws IOException {
+    String network = "network1";
+    String dimension = "dimension1";
+    Main.getWorkMgr().initNetwork(network, null);
+
+    NodeRoleDimensionBean dimBean = new NodeRoleDimensionBean(dimension, null, null, null);
+    Response response =
+        getNodeRoleDimensionTarget(network, dimension)
+            .put(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
+
+    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    NodeRolesData nrData = Main.getWorkMgr().getNetworkNodeRoles(network);
+    assertThat(nrData.getNodeRoleDimension(dimension).isPresent(), equalTo(true));
+
+    // put again should succeed too
+    Response response2 =
+        getNodeRoleDimensionTarget(network, dimension)
+            .post(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
+    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    NodeRolesData nrData2 = Main.getWorkMgr().getNetworkNodeRoles(network);
+    assertThat(nrData2.getNodeRoleDimension(dimension).isPresent(), equalTo(true));
   }
 }

@@ -1,16 +1,20 @@
 package org.batfish.coordinator.resources;
 
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.NoSuchElementException;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.batfish.common.BatfishLogger;
 import org.batfish.coordinator.Main;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 
 /**
@@ -65,6 +69,26 @@ public class ReferenceBookResource {
                               _bookName, _container))));
     } catch (IOException e) {
       throw new InternalServerErrorException("Reference library data is corrupted");
+    }
+  }
+
+  /**
+   * Puts a new {@link ReferenceBook} in the network's {@link ReferenceLibrary}. If one with the
+   * same name exists, it is overwritten.
+   */
+  @PUT
+  public Response putReferenceBook(ReferenceBookBean referenceBookBean) {
+    _logger.infof("WMS2: putReferenceBook '%s'\n", _container);
+    if (referenceBookBean.name == null) {
+      throw new BadRequestException("ReferenceBook must have a name");
+    }
+    try {
+      ReferenceLibrary.mergeReferenceBooks(
+          Main.getWorkMgr().getReferenceLibraryPath(_container),
+          ImmutableSortedSet.of(referenceBookBean.toAddressBook()));
+      return Response.ok().build();
+    } catch (IOException e) {
+      throw new InternalServerErrorException("ReferenceLibrary resource is corrupted");
     }
   }
 }
