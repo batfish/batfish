@@ -3773,7 +3773,7 @@ public final class FlatJuniperGrammarTest {
     FlatJuniperCombinedParser cp = new FlatJuniperCombinedParser(recoveryText, settings);
     Flat_juniper_configurationContext ctx = cp.parse();
     FlatJuniperRecoveryExtractor extractor = new FlatJuniperRecoveryExtractor();
-    ParseTreeWalker walker = new BatfishParseTreeWalker(cp);
+    ParseTreeWalker walker = new BatfishParseTreeWalker();
     walker.walk(extractor, ctx);
 
     assertThat(extractor.getNumSets(), equalTo(9));

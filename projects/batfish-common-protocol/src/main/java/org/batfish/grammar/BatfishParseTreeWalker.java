@@ -4,15 +4,10 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.RuleNode;
+import org.batfish.common.BatfishException;
 
+/** Custom ParseTreeWalker that adds some additional context when exceptions occur */
 public class BatfishParseTreeWalker extends ParseTreeWalker {
-
-  BatfishCombinedParser<BatfishParser, BatfishLexer> _parser;
-
-  public BatfishParseTreeWalker(BatfishCombinedParser<BatfishParser, BatfishLexer> parser) {
-    super();
-    _parser = parser;
-  }
 
   public BatfishParseTreeWalker() {
     super();
@@ -25,7 +20,9 @@ public class BatfishParseTreeWalker extends ParseTreeWalker {
       listener.enterEveryRule(ctx);
       ctx.enterRule(listener);
     } catch (Exception e) {
-      throwException(e, ctx);
+      throw new BatfishException(
+          String.format("Exception parsing line '%s': %s", ctx.getText(), e.getMessage()),
+          e.getCause());
     }
   }
 
@@ -36,16 +33,9 @@ public class BatfishParseTreeWalker extends ParseTreeWalker {
       ctx.exitRule(listener);
       listener.exitEveryRule(ctx);
     } catch (Exception e) {
-      throwException(e, ctx);
+      throw new BatfishException(
+          String.format("Exception parsing line '%s': %s", ctx.getText(), e.getMessage()),
+          e.getCause());
     }
-  }
-
-  private void throwException(Exception e, ParserRuleContext ctx) {
-    int line = ctx.start.getLine();
-    // Handle applying line translation if applicable (for flattened or otherwise modified files)
-    if (_parser != null) {
-      line = _parser.getLine(ctx.start);
-    }
-    throw new BatfishParseException(e.getMessage(), e.getCause(), line, ctx.getText());
   }
 }

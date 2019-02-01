@@ -8958,9 +8958,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       hostname = sb.toString();
     }
     _configuration.setHostname(hostname);
-    if (_configuration.getHostname().startsWith("as1border")) {
-      throw new BatfishException("force parser fail");
-    }
     _configuration.getCf().setHostname(hostname);
   }
 
@@ -9999,7 +9996,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void processParseTree(ParserRuleContext tree) {
-    ParseTreeWalker walker = new BatfishParseTreeWalker(_parser);
+    ParseTreeWalker walker = new BatfishParseTreeWalker();
     walker.walk(this, tree);
   }
 

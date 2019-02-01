@@ -581,6 +581,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSds_hostname(Sds_hostnameContext ctx) {
+    if (_configuration != null) {
+      throw new BatfishException("force parse fail");
+    }
     _configuration.setHostname(getText(ctx.name));
   }
 
