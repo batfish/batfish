@@ -3203,17 +3203,38 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private Answer serializeIndependentConfigs(Path vendorConfigPath) {
-    Answer answer = new Answer();
-    ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
-    answerElement.setVersion(Version.getVersion());
-    if (_settings.getVerboseParse()) {
-      answer.addAnswerElement(answerElement);
+    try (ActiveSpan span =
+        GlobalTracer.get().buildSpan("Serialize vendor-independent configs").startActive()) {
+      assert span != null; // avoid unused warning
+      Answer answer = new Answer();
+      ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
+      answerElement.setVersion(Version.getVersion());
+      if (_settings.getVerboseParse()) {
+        answer.addAnswerElement(answerElement);
+      }
+      Map<String, Configuration> configurations;
+      try (ActiveSpan convertSpan =
+          GlobalTracer.get()
+              .buildSpan("Convert vendor-specific configs to vendor-independent configs")
+              .startActive()) {
+        assert convertSpan != null; // avoid unused warning
+        configurations = getConfigurations(vendorConfigPath, answerElement);
+      }
+
+      try (ActiveSpan storeSpan =
+          GlobalTracer.get().buildSpan("Store vendor-independent configs").startActive()) {
+        assert storeSpan != null; // avoid unused warning
+        _storage.storeConfigurations(
+            configurations, answerElement, _settings.getContainer(), _testrigSettings.getName());
+      }
+
+      try (ActiveSpan ppSpan =
+          GlobalTracer.get().buildSpan("Post-process vendor-independent configs").startActive()) {
+        assert ppSpan != null; // avoid unused warning
+        postProcessSnapshot(configurations);
+      }
+      return answer;
     }
-    Map<String, Configuration> configurations = getConfigurations(vendorConfigPath, answerElement);
-    _storage.storeConfigurations(
-        configurations, answerElement, _settings.getContainer(), _testrigSettings.getName());
-    postProcessSnapshot(configurations);
-    return answer;
   }
 
   private void updateSnapshotNodeRoles() {
