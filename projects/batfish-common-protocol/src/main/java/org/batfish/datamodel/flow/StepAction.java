@@ -14,6 +14,8 @@ public enum StepAction {
   FORWARDED,
   /** Action if information is insufficient to tell the final fate of the flow */
   INSUFFICIENT_INFO,
+  /** Action if flow matches a session. */
+  MATCHED_SESSION,
   /** Action when next neighbor is unreachable at the last hop */
   NEIGHBOR_UNREACHABLE,
   /** Action when no route exists for the given dest IP on a hop */
@@ -24,6 +26,8 @@ public enum StepAction {
   ORIGINATED,
   /** Action to show the receiving of a flow at a hop */
   RECEIVED,
+  /** Action when a new session is created for a flow. */
+  SETUP_SESSION,
   /** Action to show the transformation of a flow */
   TRANSFORMED,
   /** Action to show the transmission of a flow from an output interface */

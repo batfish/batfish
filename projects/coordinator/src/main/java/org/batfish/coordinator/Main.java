@@ -127,7 +127,7 @@ public class Main {
       String key = name.toLowerCase();
       if (templates.containsKey(key) && _logger != null) {
         _logger.warnf(
-            "Found duplicate template having instance name %s, only the last one in the list of templatedirs will be loaded",
+            "Found duplicate template having instance name %s, only the last one in the list of templatedirs will be loaded\n",
             name);
       }
 

@@ -95,16 +95,58 @@ def test_types(question):
             assert 'value' not in data or isinstance(data['value'], int)
 
 
-def test_ordered_variable_names_includes_all_instance_variables(question, question_text):
-    """Tests that orderedVariableNames, if present, includes all instance variables."""
+NO_ORDERED_VARIABLE_NAMES_QUESTIONS = {
+    'questions/stable/definedStructures.json',
+    'questions/stable/edges.json',
+    'questions/stable/ipsecSessionStatus.json',
+    'questions/stable/referencedStructures.json',
+    'questions/stable/routes.json',
+    'questions/stable/testFilters.json',
+    'questions/experimental/bgpPeerConfiguration.json',
+    'questions/experimental/bgpProcessConfiguration.json',
+    'questions/experimental/bgpSessionCompatibility.json',
+    'questions/experimental/bgpSessionStatus.json',
+    'questions/experimental/bidirectionalTraceroute.json',
+    'questions/experimental/differentialReachability.json',
+    'questions/experimental/filterLineReachability.json',
+    'questions/experimental/filterTable.json',
+    'questions/experimental/interfaceMtu.json',
+    'questions/experimental/interfaceProperties.json',
+    'questions/experimental/mlagProperties.json',
+    'questions/experimental/multipathConsistency.json',
+    'questions/experimental/namedStructures.json',
+    'questions/experimental/neighbors.json',
+    'questions/experimental/nodeProperties.json',
+    'questions/experimental/nodes.json',
+    'questions/experimental/ospfProperties.json',
+    'questions/experimental/prefixTracer.json',
+    'questions/experimental/reachability.json',
+    'questions/experimental/resolveFilterSpecifier.json',
+    'questions/experimental/resolveInterfaceSpecifier.json',
+    'questions/experimental/searchFilters.json',
+    'questions/experimental/switchedVlanProperties.json',
+    'questions/experimental/traceroute.json',
+    'questions/experimental/vxlanVniProperties.json',
+}
+
+def test_ordered_variable_names_is_valid(question, question_path):
+    """Tests that if orderedVariableNames is present, it includes all instance variables."""
     instance = question['instance']
     ordered_variable_names = instance.get('orderedVariableNames', [])
-    if ordered_variable_names:
-        set_of_ordered_variable_names = frozenset(ordered_variable_names)
-        # ordered variable names should not contain duplicates
-        assert len(set_of_ordered_variable_names) == len(ordered_variable_names)
-        set_of_variable_names = frozenset(instance.get('variables', {}).keys())
-        assert set_of_ordered_variable_names == set_of_variable_names
+    set_of_variable_names = frozenset(instance.get('variables', {}).keys())
+
+    if not ordered_variable_names:
+        if len(set_of_variable_names) <= 1:
+            assert question_path not in NO_ORDERED_VARIABLE_NAMES_QUESTIONS
+            return
+        assert question_path in NO_ORDERED_VARIABLE_NAMES_QUESTIONS
+        pytest.skip('Whitelisted question with no orderedVariableNames')
+
+    assert question_path not in NO_ORDERED_VARIABLE_NAMES_QUESTIONS
+    set_of_ordered_variable_names = frozenset(ordered_variable_names)
+    # ordered variable names should not contain duplicates
+    assert len(set_of_ordered_variable_names) == len(ordered_variable_names)
+    assert set_of_ordered_variable_names == set_of_variable_names
 
 
 def test_indented_with_spaces(question_text, question_path):

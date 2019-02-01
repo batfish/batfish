@@ -43,7 +43,7 @@ public class PoolMgrService {
   @Produces(MediaType.APPLICATION_JSON)
   public JSONArray getQuestionTemplates(@QueryParam(QP_VERBOSE) boolean verbose) {
     try {
-      _logger.info("PMS:getQuestionTemplates");
+      _logger.info("PMS:getQuestionTemplates\n");
 
       Map<String, String> questionTemplates = Main.getQuestionTemplates(verbose);
 
@@ -84,7 +84,7 @@ public class PoolMgrService {
   @Produces(MediaType.APPLICATION_JSON)
   public JSONArray updatePool(@Context UriInfo ui) {
     try {
-      _logger.info("PMS:updatePool got " + ui + "\n");
+      _logger.infof("PMS:updatePool got %s\n", ui);
       MultivaluedMap<String, String> queryParams = ui.getQueryParameters();
 
       String workerVersion = null;
@@ -92,9 +92,7 @@ public class PoolMgrService {
       List<String> workersToDelete = new LinkedList<>();
 
       for (MultivaluedMap.Entry<String, List<String>> entry : queryParams.entrySet()) {
-        _logger.info(
-            String.format(
-                "PMS:updatePool: key = %s value = %s\n", entry.getKey(), entry.getValue()));
+        _logger.infof("PMS:updatePool: key = %s value = %s\n", entry.getKey(), entry.getValue());
 
         if (entry.getKey().equals(CoordConsts.SVC_KEY_ADD_WORKER)) {
           for (String worker : entry.getValue()) {
