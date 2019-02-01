@@ -1,13 +1,17 @@
 package org.batfish.coordinator.resources;
 
+import static org.batfish.common.util.HttpUtil.checkClientArgument;
+
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -75,5 +79,36 @@ public final class NetworkNodeRoleDimensionResource {
     return Response.ok()
         .entity(new NodeRoleDimensionBean(dimension.get(), null, ImmutableSet.of()))
         .build();
+  }
+
+  /**
+   * Adds the supplied node role dimension. If one of the same name already exists, it is
+   * overwritten.
+   */
+  @PUT
+  public Response putNodeRoleDimension(NodeRoleDimensionBean dimBean) throws IOException {
+    checkClientArgument(dimBean.name != null, "Node role dimension must have a name");
+    NodeRolesData nodeRolesData = Main.getWorkMgr().getNetworkNodeRoles(_network);
+    if (nodeRolesData == null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    if (!Main.getWorkMgr()
+        .putNetworkNodeRoles(
+            NodeRolesData.builder()
+                .setDefaultDimension(nodeRolesData.getDefaultDimension())
+                .setRoleDimensions(
+                    ImmutableSortedSet.<NodeRoleDimension>naturalOrder()
+                        .addAll(
+                            nodeRolesData.getNodeRoleDimensions().stream()
+                                .filter(d -> !d.getName().equalsIgnoreCase(dimBean.name))
+                                .collect(Collectors.toList()))
+                        .add(dimBean.toNodeRoleDimension())
+                        .build())
+                .build(),
+            _network)) {
+      // if network was deleted while we were working
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    return Response.ok().build();
   }
 }
