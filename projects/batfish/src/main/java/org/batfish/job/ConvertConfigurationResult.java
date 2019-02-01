@@ -79,9 +79,7 @@ public class ConvertConfigurationResult
       }
     } else {
       answerElement.getConvertStatus().put(_name, ConvertStatus.FAILED);
-      answerElement
-          .getErrors()
-          .put(_name, ((BatfishException) _failureCause).getBatfishStackTrace());
+      answerElement.getErrors().put(_name, ((BatfishException) _failureCause));
     }
   }
 

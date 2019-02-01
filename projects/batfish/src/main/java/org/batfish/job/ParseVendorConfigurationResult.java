@@ -129,9 +129,7 @@ public class ParseVendorConfigurationResult
       answerElement.getParseStatus().put(_filename, _status);
       if (_status == ParseStatus.FAILED) {
         assert _failureCause != null; // status == FAILED, failureCause must be non-null
-        answerElement
-            .getErrors()
-            .put(_filename, ((BatfishException) _failureCause).getBatfishStackTrace());
+        answerElement.getErrors().put(_filename, ((BatfishException) _failureCause));
       }
     }
   }

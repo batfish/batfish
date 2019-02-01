@@ -105,9 +105,7 @@ public class ParseEnvironmentBgpTableResult
     } else {
       answerElement.getParseStatus().put(filename, _status);
       if (_status == ParseStatus.FAILED) {
-        answerElement
-            .getErrors()
-            .put(filename, ((BatfishException) _failureCause).getBatfishStackTrace());
+        answerElement.getErrors().put(filename, ((BatfishException) _failureCause));
       }
     }
   }

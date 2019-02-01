@@ -20,7 +20,7 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
 
   private static final String PROP_VERSION = "version";
 
-  private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
+  private SortedMap<String, BatfishException> _errors;
 
   /* Map of hostname to source filenames (e.g. "configs/foo.cfg") */
   private Multimap<String, String> _fileMap;
@@ -51,7 +51,7 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
   }
 
   @Override
-  public SortedMap<String, BatfishException.BatfishStackTrace> getErrors() {
+  public SortedMap<String, BatfishException> getErrors() {
     return _errors;
   }
 
@@ -99,7 +99,7 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
     }
     for (String name : _errors.keySet()) {
       retString.append("\n  " + name + "[Parser errors]\n");
-      for (String line : _errors.get(name).getLineMap()) {
+      for (String line : _errors.get(name).getBatfishStackTrace().getLineMap()) {
         retString.append("    " + line + "\n");
       }
     }
@@ -114,7 +114,7 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
   }
 
   @Override
-  public void setErrors(SortedMap<String, BatfishException.BatfishStackTrace> errors) {
+  public void setErrors(SortedMap<String, BatfishException> errors) {
     _errors = errors;
   }
 

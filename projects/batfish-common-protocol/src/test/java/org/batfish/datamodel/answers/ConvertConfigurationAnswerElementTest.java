@@ -11,7 +11,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
-import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,7 +27,7 @@ public class ConvertConfigurationAnswerElementTest {
   @Test
   public void checkNonEmptyErrors() {
     BatfishException exception = new BatfishException("sample exception");
-    _element.getErrors().put("error", new BatfishStackTrace(exception));
+    _element.getErrors().put("error", exception);
     assertThat(_element.getErrors().size(), is(1));
   }
 
@@ -60,20 +59,19 @@ public class ConvertConfigurationAnswerElementTest {
   @Test
   public void testGetErrors() {
     BatfishException exception = new BatfishException("sample exception");
-    BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
-    _element.getErrors().put("error", stackTrace);
-    assertThat(_element.getErrors().get("error"), is(stackTrace));
+    _element.getErrors().put("error", exception);
+    assertThat(_element.getErrors().get("error"), is(exception));
   }
 
   @Test
   public void testPrettyPrint() {
     BatfishException exception = new BatfishException("sample exception");
-    BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
-    _element.getErrors().put("sampleError", stackTrace);
+    _element.getErrors().put("sampleError", exception);
     StringBuilder expected = new StringBuilder();
     expected.append("Results from converting vendor configurations\n");
     expected.append("\n  sampleError[Conversion errors]\n");
-    for (String line : _element.getErrors().get("sampleError").getLineMap()) {
+    for (String line :
+        _element.getErrors().get("sampleError").getBatfishStackTrace().getLineMap()) {
       expected.append("    " + line + "\n");
     }
     assertThat(_element.prettyPrint(), equalTo(expected.toString()));
@@ -82,10 +80,9 @@ public class ConvertConfigurationAnswerElementTest {
   @Test
   public void testSetErrors() {
     BatfishException exception = new BatfishException("sample exception");
-    BatfishStackTrace stackTrace = new BatfishStackTrace(exception);
-    SortedMap<String, BatfishStackTrace> errors = new TreeMap<>();
-    errors.put("error", stackTrace);
+    SortedMap<String, BatfishException> errors = new TreeMap<>();
+    errors.put("error", exception);
     _element.setErrors(errors);
-    assertThat(_element.getErrors().get("error"), is(stackTrace));
+    assertThat(_element.getErrors().get("error"), is(exception));
   }
 }

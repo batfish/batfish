@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import org.batfish.common.BatfishException.BatfishStackTrace;
+import org.batfish.common.BatfishException;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
@@ -18,7 +18,7 @@ public class InitInfoAnswerElement extends AnswerElement {
   private static final String PROP_PARSE_TREES = "parseTrees";
   private static final String PROP_WARNINGS = "warnings";
 
-  private SortedMap<String, List<BatfishStackTrace>> _errors;
+  private SortedMap<String, List<BatfishException>> _errors;
 
   private SortedMap<String, ParseStatus> _parseStatus;
 
@@ -34,7 +34,7 @@ public class InitInfoAnswerElement extends AnswerElement {
   }
 
   @JsonProperty(PROP_ERRORS)
-  public SortedMap<String, List<BatfishStackTrace>> getErrors() {
+  public SortedMap<String, List<BatfishException>> getErrors() {
     return _errors;
   }
 
@@ -137,8 +137,8 @@ public class InitInfoAnswerElement extends AnswerElement {
       sb.append("DETAILED ERRORS\n");
       for (String name : _errors.keySet()) {
         sb.append("  Failed to parse " + name + ":\n");
-        for (BatfishStackTrace stackTrace : _errors.get(name)) {
-          for (String line : stackTrace.getLineMap()) {
+        for (BatfishException exception : _errors.get(name)) {
+          for (String line : exception.getBatfishStackTrace().getLineMap()) {
             sb.append("    " + line + "\n");
           }
         }
@@ -186,7 +186,7 @@ public class InitInfoAnswerElement extends AnswerElement {
   }
 
   @JsonProperty(PROP_ERRORS)
-  public void setErrors(SortedMap<String, List<BatfishStackTrace>> errors) {
+  public void setErrors(SortedMap<String, List<BatfishException>> errors) {
     _errors = errors;
   }
 
