@@ -2992,7 +2992,9 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface("Ethernet2", hasBandwidth(40E9D)));
     assertThat(c, hasInterface("Ethernet2", hasSpeed(40E9D)));
     assertThat(c, hasInterface("Port-Channel1", hasBandwidth(80E9D)));
+    assertThat(c, hasInterface("Port-Channel1", hasSpeed(nullValue())));
     assertThat(c, hasInterface("Port-Channel2", isActive(false)));
+    assertThat(c, hasInterface("Port-Channel2", hasSpeed(nullValue())));
     assertThat(
         c.getAllInterfaces().get("Port-Channel1").getDependencies(),
         equalTo(

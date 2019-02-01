@@ -829,7 +829,6 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
-            "speed" : 8.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
