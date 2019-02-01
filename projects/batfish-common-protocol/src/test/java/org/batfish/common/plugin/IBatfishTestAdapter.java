@@ -265,11 +265,6 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void initBgpOriginationSpaceExplicit(Map<String, Configuration> configurations) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public InitInfoAnswerElement initInfo(boolean summary, boolean verboseError) {
     throw new UnsupportedOperationException();
   }
