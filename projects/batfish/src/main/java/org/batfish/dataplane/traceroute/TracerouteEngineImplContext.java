@@ -143,6 +143,8 @@ public class TracerouteEngineImplContext {
     // Mutable list of steps in the current hop
     private final List<Step<?>> _steps;
 
+    private final Stack<Breadcrumb> _breadcrumbs;
+
     // The current flow can change as we process the packet.
     private Flow _currentFlow;
 
@@ -161,6 +163,7 @@ public class TracerouteEngineImplContext {
       _namedIpSpaces = _currentConfig.getIpSpaces();
       _originalFlow = originalFlow;
 
+      _breadcrumbs = new Stack<>();
       _hops = new ArrayList<>();
       _steps = new ArrayList<>();
 
@@ -170,6 +173,7 @@ public class TracerouteEngineImplContext {
     private HopContext(
         Node currentNode,
         @Nullable String ingressInterface,
+        Stack<Breadcrumb> breadcrumbs,
         List<Hop> hops,
         List<Step<?>> steps,
         NodeInterfacePair lastHopNodeAndOutgoingInterface,
@@ -190,6 +194,7 @@ public class TracerouteEngineImplContext {
       _namedIpSpaces = _currentConfig.getIpSpaces();
 
       // hops and sessions are per-trace.
+      _breadcrumbs = breadcrumbs;
       _hops = new ArrayList<>(hops);
       _steps = new ArrayList<>(steps);
       _newSessions = new HashSet<>(newSessions);
@@ -201,6 +206,7 @@ public class TracerouteEngineImplContext {
       return new HopContext(
           new Node(edge.getNode2()),
           edge.getInt2(),
+          _breadcrumbs,
           _hops,
           new ArrayList<>(),
           edge.getTail(),
@@ -214,6 +220,7 @@ public class TracerouteEngineImplContext {
       return new HopContext(
           _currentNode,
           _ingressInterface,
+          _breadcrumbs,
           _hops,
           _steps,
           _lastHopNodeAndOutgoingInterface,
@@ -286,6 +293,8 @@ public class TracerouteEngineImplContext {
 
     private void processHop() {
       checkState(_steps.isEmpty(), "Steps must be empty when processHop is called");
+      checkState(
+          _hops.size() == _breadcrumbs.size(), "Must have equal number of hops and breadcrumbs");
 
       String currentNodeName = _currentNode.getName();
       String inputIfaceName = _ingressInterface;
@@ -695,7 +704,6 @@ public class TracerouteEngineImplContext {
   private final Set<Flow> _flows;
   private final ForwardingAnalysis _forwardingAnalysis;
   private final boolean _ignoreFilters;
-  private final Stack<Breadcrumb> _breadcrumbs;
 
   public TracerouteEngineImplContext(
       DataPlane dataPlane,
@@ -710,7 +718,6 @@ public class TracerouteEngineImplContext {
     _ignoreFilters = ignoreFilters;
     _forwardingAnalysis = _dataPlane.getForwardingAnalysis();
     _sessionsByIngressInterface = buildSessionsByIngressInterface(sessions);
-    _breadcrumbs = new Stack<>();
   }
 
   /**
