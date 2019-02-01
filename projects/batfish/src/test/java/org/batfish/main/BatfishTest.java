@@ -348,19 +348,19 @@ public class BatfishTest {
         answerElement.getParseStatus().get(Paths.get("iptables", "host1.iptables").toString()),
         equalTo(ParseStatus.FAILED));
     assertThat(
-        answerElement.getErrors().get("host1").getBatfishStackTrace().prettyPrint(),
-        containsString(failureMessage));
+        answerElement.getErrors().get("host1").prettyPrint(), containsString(failureMessage));
     // When host file failed, verify that error message contains both failure messages
     answerElement.getErrors().clear();
     answerElement
         .getErrors()
-        .put("host1", new BatfishException("Failed to parse host file: host1"));
+        .put(
+            "host1",
+            new BatfishException("Failed to parse host file: host1").getBatfishStackTrace());
     batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
     assertThat(
-        answerElement.getErrors().get("host1").getBatfishStackTrace().prettyPrint(),
-        containsString(failureMessage));
+        answerElement.getErrors().get("host1").prettyPrint(), containsString(failureMessage));
     assertThat(
-        answerElement.getErrors().get("host1").getBatfishStackTrace().prettyPrint(),
+        answerElement.getErrors().get("host1").prettyPrint(),
         containsString("Failed to parse host file: host1"));
     // When the haltonparseerror flag is set to true
     batfish.getSettings().setHaltOnParseError(true);

@@ -36,12 +36,4 @@ public class BatfishParseException extends BatfishException {
     _line = line;
     _lineText = lineText;
   }
-
-  public Integer getLine() {
-    return _line;
-  }
-
-  public String getLineText() {
-    return _lineText;
-  }
 }

@@ -1911,7 +1911,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       boolean verboseError) {
     if (!summary) {
       if (verboseError) {
-        SortedMap<String, List<BatfishException>> errors = initInfoAnswerElement.getErrors();
+        SortedMap<String, List<BatfishStackTrace>> errors = initInfoAnswerElement.getErrors();
         initStepAnswerElement
             .getErrors()
             .forEach(
@@ -2668,15 +2668,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
           if (answerElement.getErrors().containsKey(hostConfig.getHostname())) {
             bfc =
                 new BatfishException(
-                    failureMessage, answerElement.getErrors().get(hostConfig.getHostname()));
-            answerElement.getErrors().put(hostConfig.getHostname(), bfc);
+                    failureMessage,
+                    answerElement.getErrors().get(hostConfig.getHostname()).getException());
+            answerElement.getErrors().put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
           } else {
             bfc = new BatfishException(failureMessage);
             if (_settings.getExitOnFirstError()) {
               throw bfc;
             } else {
               failureCauses.add(bfc);
-              answerElement.getErrors().put(hostConfig.getHostname(), bfc);
+              answerElement.getErrors().put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
               answerElement.getParseStatus().put(hostConfig.getIptablesFile(), ParseStatus.FAILED);
             }
           }

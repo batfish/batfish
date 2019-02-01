@@ -11,13 +11,13 @@ public abstract class InitStepAnswerElement extends AnswerElement {
   protected static final String PROP_WARNINGS = "warnings";
 
   @JsonProperty(PROP_ERRORS)
-  public abstract SortedMap<String, BatfishException> getErrors();
+  public abstract SortedMap<String, BatfishException.BatfishStackTrace> getErrors();
 
   @JsonProperty(PROP_WARNINGS)
   public abstract SortedMap<String, Warnings> getWarnings();
 
   @JsonProperty(PROP_ERRORS)
-  public abstract void setErrors(SortedMap<String, BatfishException> errors);
+  public abstract void setErrors(SortedMap<String, BatfishException.BatfishStackTrace> errors);
 
   @JsonProperty(PROP_WARNINGS)
   public abstract void setWarnings(SortedMap<String, Warnings> warnings);

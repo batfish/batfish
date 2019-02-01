@@ -13,7 +13,7 @@ public class ParseEnvironmentBgpTablesAnswerElement extends ParseAnswerElement
   /** */
   private static final long serialVersionUID = 1L;
 
-  private SortedMap<String, BatfishException> _errors;
+  private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
 
   private SortedMap<String, ParseStatus> _parseStatus;
 
@@ -31,7 +31,7 @@ public class ParseEnvironmentBgpTablesAnswerElement extends ParseAnswerElement
   }
 
   @Override
-  public SortedMap<String, BatfishException> getErrors() {
+  public SortedMap<String, BatfishException.BatfishStackTrace> getErrors() {
     return _errors;
   }
 
@@ -55,7 +55,7 @@ public class ParseEnvironmentBgpTablesAnswerElement extends ParseAnswerElement
   }
 
   @Override
-  public void setErrors(SortedMap<String, BatfishException> errors) {
+  public void setErrors(SortedMap<String, BatfishException.BatfishStackTrace> errors) {
     _errors = errors;
   }
 

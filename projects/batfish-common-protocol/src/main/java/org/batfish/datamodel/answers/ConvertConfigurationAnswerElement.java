@@ -52,7 +52,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
           String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
       _referencedStructures;
 
-  @Nonnull private SortedMap<String, BatfishException> _errors;
+  @Nonnull private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
 
   // This is just to support legacy objects, before _convertStatus map was used
   @Nullable private Set<String> _failed;
@@ -83,7 +83,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
                   SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
               referencedstructures,
       @JsonProperty(PROP_CONVERT_STATUS) SortedMap<String, ConvertStatus> convertStatus,
-      @JsonProperty(PROP_ERRORS) SortedMap<String, BatfishException> errors,
+      @JsonProperty(PROP_ERRORS) SortedMap<String, BatfishException.BatfishStackTrace> errors,
       @JsonProperty(PROP_UNDEFINED_REFERENCES)
           SortedMap<
                   String,
@@ -131,7 +131,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   @Override
   @JsonProperty(PROP_ERRORS)
   @Nonnull
-  public SortedMap<String, BatfishException> getErrors() {
+  public SortedMap<String, BatfishException.BatfishStackTrace> getErrors() {
     return _errors;
   }
 
@@ -183,7 +183,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
     _errors.forEach(
         (name, errors) -> {
           sb.append("\n  " + name + "[Conversion errors]\n");
-          for (String line : errors.getBatfishStackTrace().getLineMap()) {
+          for (String line : errors.getLineMap()) {
             sb.append("    " + line + "\n");
           }
         });
@@ -238,7 +238,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   }
 
   @Override
-  public void setErrors(SortedMap<String, BatfishException> errors) {
+  public void setErrors(SortedMap<String, BatfishException.BatfishStackTrace> errors) {
     _errors = errors;
   }
 

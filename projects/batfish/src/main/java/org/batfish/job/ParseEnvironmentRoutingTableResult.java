@@ -105,7 +105,9 @@ public class ParseEnvironmentRoutingTableResult
     } else {
       answerElement.getParseStatus().put(filename, _status);
       if (_status == ParseStatus.FAILED) {
-        answerElement.getErrors().put(filename, ((BatfishException) _failureCause));
+        answerElement
+            .getErrors()
+            .put(filename, ((BatfishException) _failureCause).getBatfishStackTrace());
       }
     }
   }
