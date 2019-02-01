@@ -158,7 +158,7 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
     // put again should succeed too
     Response response2 =
         getNodeRoleDimensionTarget(network, dimension)
-            .post(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
+            .put(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
     assertThat(response2.getStatus(), equalTo(OK.getStatusCode()));
     NodeRolesData nrData2 = Main.getWorkMgr().getNetworkNodeRoles(network);
     assertThat(nrData2.getNodeRoleDimension(dimension).isPresent(), equalTo(true));
