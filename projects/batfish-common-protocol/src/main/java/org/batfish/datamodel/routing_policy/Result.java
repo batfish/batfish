@@ -17,7 +17,7 @@ public class Result {
   public Result() {}
 
   @VisibleForTesting
-  Result(boolean booleanValue, boolean exit, boolean fallThrough, boolean aReturn) {
+  public Result(boolean booleanValue, boolean exit, boolean fallThrough, boolean aReturn) {
     _booleanValue = booleanValue;
     _exit = exit;
     _fallThrough = fallThrough;

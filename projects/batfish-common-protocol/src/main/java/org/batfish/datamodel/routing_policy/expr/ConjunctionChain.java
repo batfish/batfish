@@ -86,7 +86,7 @@ public class ConjunctionChain extends BooleanExpr {
         return subroutineResult;
       } else if (!subroutineResult.getFallThrough() && !subroutineResult.getBooleanValue()) {
         // Found first match that returns false, short-circuit here
-        subroutineResult.setReturn(false);
+        subroutineResult.setReturn(true);
         return subroutineResult;
       }
     }
