@@ -37,6 +37,7 @@ java_library(
     deps = [
         ":question",
         "//projects/batfish-common-protocol:common",
+        "@guava//:compile",
         "@hamcrest//:compile",
         "@jsr305//:compile",
         "@junit//:compile",
