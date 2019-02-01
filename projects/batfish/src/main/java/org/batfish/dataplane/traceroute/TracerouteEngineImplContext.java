@@ -477,20 +477,6 @@ public class TracerouteEngineImplContext {
         return true;
       }
 
-      // apply transformation
-      // Accepted by this node (vrf of incoming interface).
-      // apply outgoing ACL
-      /* ARP error. Currently we can't use buildArpFailureTrace for sessions, because forwarding
-       * analysis disposition maps currently include routing conditions, which do not apply to
-       * sessions.
-       *
-       * ARP failure is only possible for sessions that have an outgoing interface but no next
-       * hop. This only happens when the user started the trace entering the outgoing interface.
-       * For now, just always call this EXITS_NETWORK. In the future we may want to apply the
-       * normal ARP error disposition logic, which would require factoring out routing-independent
-       * disposition maps in forwarding analysis.
-       */
-      // Forward to neighbor.
       _breadcrumbs.push(breadcrumb);
       try {
         // apply transformation
