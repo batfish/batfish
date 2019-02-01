@@ -2994,6 +2994,8 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface("Port-Channel1", hasBandwidth(80E9D)));
     assertThat(c, hasInterface("Port-Channel1", hasSpeed(nullValue())));
     assertThat(c, hasInterface("Port-Channel2", isActive(false)));
+    // 0 since no members
+    assertThat(c, hasInterface("Port-Channel2", hasBandwidth(0D)));
     assertThat(c, hasInterface("Port-Channel2", hasSpeed(nullValue())));
     assertThat(
         c.getAllInterfaces().get("Port-Channel1").getDependencies(),

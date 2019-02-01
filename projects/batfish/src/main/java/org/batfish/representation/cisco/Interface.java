@@ -51,19 +51,21 @@ public class Interface implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  public static double getDefaultBandwidth(
+  public static @Nullable Double getDefaultBandwidth(
       @Nonnull String name, @Nonnull ConfigurationFormat format) {
     Double defaultSpeed = getDefaultSpeed(name, format);
     if (defaultSpeed != null) {
       return defaultSpeed;
-    }
-    if (name.startsWith("Loopback")) {
+    } else if (name.startsWith("Bundle-Ethernet")) {
+      // Derived from member interfaces
+      return null;
+    } else if (name.startsWith("Loopback")) {
       return DEFAULT_LOOPBACK_BANDWIDTH;
+    } else if (name.startsWith("Port-Channel")) {
+      // Derived from member interfaces
+      return null;
     } else {
-      // Bundle-Ethernet
-      // Port-Channel
-      // Vlan
-      // ... others with no default speed
+      // Use default bandwidth for other interface types that have no speed
       return DEFAULT_INTERFACE_BANDWIDTH;
     }
   }
