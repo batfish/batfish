@@ -3359,9 +3359,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
                       e -> userUploadPath.relativize(e.getKey()).toString(), Entry::getValue));
       List<ParseVendorConfigurationJob> jobs =
           makeParseVendorConfigurationsJobs(keyedConfigText, ConfigurationFormat.UNKNOWN);
+      AtomicInteger batch = newBatch("Parse network configs", keyedConfigText.size());
       parseResults =
           jobs.parallelStream()
-              .map(j -> this.getOrParse(j, parseNetworkConfigsSpan.context(), _settings))
+              .map(
+                  j -> {
+                    ParseVendorConfigurationResult result =
+                        this.getOrParse(j, parseNetworkConfigsSpan.context(), _settings);
+                    batch.incrementAndGet();
+                    return result;
+                  })
               .collect(ImmutableList.toImmutableList());
     }
 
