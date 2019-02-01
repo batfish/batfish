@@ -47,6 +47,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -161,6 +162,53 @@ public class TracerouteEngineImplTest {
 
     assertThat(traces, hasEntry(equalTo(flow1), contains(hasDisposition(NO_ROUTE))));
     assertThat(traces, hasEntry(equalTo(flow2), contains(hasDisposition(ACCEPTED))));
+  }
+
+  @Test
+  public void testNullRouted() throws IOException {
+    // Construct network
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration config = cb.build();
+    Vrf vrf = nf.vrfBuilder().setOwner(config).build();
+    Prefix prefix = Prefix.parse("1.0.0.0/8");
+    vrf.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNetwork(prefix)
+                .setAdministrativeCost(1)
+                .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
+                .build()));
+
+    // Compute data plane
+    SortedMap<String, Configuration> configs = ImmutableSortedMap.of(config.getHostname(), config);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
+    batfish.computeDataPlane();
+
+    Flow flow =
+        Flow.builder()
+            .setDstIp(prefix.getFirstHostIp())
+            .setIngressNode(config.getHostname())
+            .setIngressVrf(vrf.getName())
+            .setTag("TAG")
+            .build();
+
+    // Compute flow traces
+    List<Trace> traces =
+        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false).get(flow);
+
+    assertThat(traces, hasSize(1));
+
+    List<Hop> hops = traces.get(0).getHops();
+    assertThat(hops, hasSize(1));
+
+    List<Step<?>> steps = hops.get(0).getSteps();
+    assertThat(steps, hasSize(3));
+
+    assertTrue(OriginateStep.class.isInstance(steps.get(0)));
+    assertTrue(RoutingStep.class.isInstance(steps.get(1)));
+    assertTrue(ExitOutputIfaceStep.class.isInstance(steps.get(2)));
   }
 
   @Test

@@ -1,6 +1,6 @@
 package org.batfish.dataplane.traceroute;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match5Tuple;
@@ -23,9 +23,7 @@ import static org.batfish.specifier.DispositionSpecifier.SUCCESS_DISPOSITIONS;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.google.common.collect.TreeMultimap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,6 +39,7 @@ import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -128,52 +127,95 @@ public class TracerouteEngineImplContext {
   }
 
   private static class TransmissionContext {
+    private final Map<String, Configuration> _configurations;
+    private final Configuration _currentConfig;
+    private final @Nullable String _ingressInterface;
     private final Map<String, IpAccessList> _aclDefinitions;
     private final Node _currentNode;
-    private final List<TraceAndReverseFlow> _flowTraces;
+    private final Consumer<TraceAndReverseFlow> _flowTraces;
     private final List<Hop> _hopsSoFar;
     private final NodeInterfacePair _lastHopNodeAndOutgoingInterface;
     private final Set<FirewallSessionTraceInfo> _newSessions;
     private final NavigableMap<String, IpSpace> _namedIpSpaces;
     private final Flow _originalFlow;
-    private final Flow _transformedFlow;
+
+    // The current flow can change as we process the packet.
+    private Flow _currentFlow;
 
     private TransmissionContext(
-        Map<String, IpAccessList> aclDefinitions,
-        Node currentNode,
-        List<TraceAndReverseFlow> flowTraces,
-        List<Hop> hopsSoFar,
-        @Nullable NodeInterfacePair lastHopNodeAndOutgoingInterface,
-        Set<FirewallSessionTraceInfo> newSessions,
-        NavigableMap<String, IpSpace> namedIpSpaces,
+        Map<String, Configuration> configurations,
+        String node,
+        @Nullable String ingressInterface,
         Flow originalFlow,
-        Flow transformedFlow) {
-      _aclDefinitions = aclDefinitions;
-      _currentNode = currentNode;
+        Consumer<TraceAndReverseFlow> flowTraces) {
+      _configurations = configurations;
+      _currentConfig = _configurations.get(node);
+      _currentNode = new Node(node);
+      _aclDefinitions = _currentConfig.getIpAccessLists();
       _flowTraces = flowTraces;
-      _hopsSoFar = new ArrayList<>(hopsSoFar);
-      _lastHopNodeAndOutgoingInterface = lastHopNodeAndOutgoingInterface;
-      _newSessions = new HashSet<>(newSessions);
-      _namedIpSpaces = namedIpSpaces;
+      _hopsSoFar = new ArrayList<>();
+      _ingressInterface = ingressInterface;
+      _lastHopNodeAndOutgoingInterface = null;
+      _newSessions = new HashSet<>();
+      _namedIpSpaces = _currentConfig.getIpSpaces();
       _originalFlow = originalFlow;
-      _transformedFlow = transformedFlow;
+      _currentFlow = originalFlow;
+    }
+
+    private TransmissionContext(
+        Map<String, Configuration> configurations,
+        Node currentNode,
+        @Nullable String ingressInterface,
+        List<Hop> hopsSoFar,
+        NodeInterfacePair lastHopNodeAndOutgoingInterface,
+        Set<FirewallSessionTraceInfo> newSessions,
+        Flow originalFlow,
+        Flow currentFlow,
+        Consumer<TraceAndReverseFlow> flowTraces) {
+      _configurations = configurations;
+      _currentNode = currentNode;
+      _ingressInterface = ingressInterface;
+      _lastHopNodeAndOutgoingInterface = lastHopNodeAndOutgoingInterface;
+      _originalFlow = originalFlow;
+      _currentFlow = currentFlow;
+      _flowTraces = flowTraces;
+
+      // essentially just cached values
+      _currentConfig = configurations.get(currentNode.getName());
+      _aclDefinitions = _currentConfig.getIpAccessLists();
+      _namedIpSpaces = _currentConfig.getIpSpaces();
+
+      // hops and sessions are per-trace.
+      _hopsSoFar = new ArrayList<>(hopsSoFar);
+      _newSessions = new HashSet<>(newSessions);
     }
 
     /** Creates a new TransmissionContext for the specified last-hop node and outgoing interface. */
-    private TransmissionContext branch(
-        NodeInterfacePair lastHopNodeAndOutgoingInterface, String currentHop) {
-      TransmissionContext transmissionContext =
-          new TransmissionContext(
-              _aclDefinitions,
-              new Node(currentHop),
-              _flowTraces,
-              _hopsSoFar,
-              lastHopNodeAndOutgoingInterface,
-              _newSessions,
-              _namedIpSpaces,
-              _originalFlow,
-              _transformedFlow);
-      return transmissionContext;
+    private TransmissionContext followEdge(Edge edge) {
+      checkArgument(edge.getNode1().equals(_currentNode.getName()));
+      return new TransmissionContext(
+          _configurations,
+          new Node(edge.getNode2()),
+          edge.getInt2(),
+          _hopsSoFar,
+          edge.getTail(),
+          _newSessions,
+          _originalFlow,
+          _currentFlow,
+          _flowTraces);
+    }
+
+    private TransmissionContext branch() {
+      return new TransmissionContext(
+          _configurations,
+          _currentNode,
+          _ingressInterface,
+          _hopsSoFar,
+          _lastHopNodeAndOutgoingInterface,
+          _newSessions,
+          _originalFlow,
+          _currentFlow,
+          _flowTraces);
     }
   }
 
@@ -200,39 +242,36 @@ public class TracerouteEngineImplContext {
     _sessionsByIngressInterface = buildSessionsByIngressInterface(sessions);
   }
 
-  private void processCurrentNextHopInterfaceEdges(
-      String currentNodeName,
-      Ip dstIp,
-      String nextHopInterfaceName,
-      @Nullable Ip finalNextHopIp,
+  private void processOutgoingInterfaceEdges(
+      String outgoingInterface,
+      Ip nextHopIp,
       SortedSet<Edge> edges,
       TransmissionContext transmissionContext,
       List<Step<?>> steps,
       Stack<Breadcrumb> breadcrumbs) {
-    if (!processFlowTransmission(
-        dstIp, nextHopInterfaceName, finalNextHopIp, transmissionContext, steps)) {
+    checkArgument(!edges.isEmpty(), "No edges.");
+    Ip arpIp =
+        Route.UNSET_ROUTE_NEXT_HOP_IP.equals(nextHopIp)
+            ? transmissionContext._currentFlow.getDstIp()
+            : nextHopIp;
+
+    if (!processArpFailure(outgoingInterface, arpIp, transmissionContext, steps)) {
       return;
     }
 
-    steps.add(buildExitOutputIfaceStep(nextHopInterfaceName, transmissionContext, TRANSMITTED));
-    Hop hop = new Hop(new Node(currentNodeName), steps);
+    steps.add(buildExitOutputIfaceStep(outgoingInterface, transmissionContext, TRANSMITTED));
+    Hop hop = new Hop(transmissionContext._currentNode, steps);
     transmissionContext._hopsSoFar.add(hop);
 
     for (Edge edge : edges) {
-      String fromNode = edge.getNode1();
-      if (!fromNode.equals(currentNodeName)) {
+      if (!edge.getNode1().equals(transmissionContext._currentNode.getName())) {
         continue;
       }
-      String fromIface = edge.getInt1();
+      checkState(edge.getInt1().equals(outgoingInterface), "Edge is not for outgoingInterface");
       String toNode = edge.getNode2();
       String toIface = edge.getInt2();
-      Ip arpIp = finalNextHopIp != null ? finalNextHopIp : dstIp;
       if (isArpSuccessful(arpIp, _forwardingAnalysis, _configurations.get(toNode), toIface)) {
-        processHop(
-            toIface,
-            transmissionContext.branch(new NodeInterfacePair(fromNode, fromIface), toNode),
-            transmissionContext._transformedFlow,
-            breadcrumbs);
+        processHop(transmissionContext.followEdge(edge), breadcrumbs);
       }
     }
   }
@@ -246,40 +285,39 @@ public class TracerouteEngineImplContext {
                 .setOutputInterface(
                     new NodeInterfacePair(transmissionContext._currentNode.getName(), outputIface))
                 .setTransformedFlow(
-                    hopFlow(
-                        transmissionContext._originalFlow, transmissionContext._transformedFlow))
+                    hopFlow(transmissionContext._originalFlow, transmissionContext._currentFlow))
                 .build())
         .setAction(action)
         .build();
   }
 
   /**
-   * Checks ARP reply for {@param finalNextHopIp}. Returns whether someone replies. If not, also
-   * constructs the trace.
+   * Checks ARP reply for {@param arpIp}. Returns whether someone replies. If not, also constructs
+   * the trace.
    */
-  private boolean processFlowTransmission(
-      Ip dstIp,
+  private boolean processArpFailure(
       String outgoingInterfaceName,
-      @Nullable Ip finalNextHopIp,
+      Ip arpIp,
       TransmissionContext transmissionContext,
       List<Step<?>> steps) {
     String currentNodeName = transmissionContext._currentNode.getName();
-    Ip arpIp = finalNextHopIp != null ? finalNextHopIp : dstIp;
-    Configuration c = _configurations.get(currentNodeName);
-    Interface outgoingInterface = c.getAllInterfaces().get(outgoingInterfaceName);
+    String vrf =
+        transmissionContext
+            ._currentConfig
+            .getAllInterfaces()
+            .get(outgoingInterfaceName)
+            .getVrfName();
     // halt processing and add neighbor-unreachable trace if no one would respond
     if (_forwardingAnalysis
         .getNeighborUnreachableOrExitsNetwork()
-        .get(transmissionContext._currentNode.getName())
-        .get(outgoingInterface.getVrfName())
+        .get(currentNodeName)
+        .get(vrf)
         .get(outgoingInterfaceName)
-        .containsIp(arpIp, c.getIpSpaces())) {
+        .containsIp(arpIp, transmissionContext._currentConfig.getIpSpaces())) {
       FlowDisposition disposition =
           computeDisposition(
-              currentNodeName,
-              outgoingInterfaceName,
-              transmissionContext._transformedFlow.getDstIp());
-      buildArpFailureTrace(outgoingInterface, disposition, transmissionContext, steps);
+              currentNodeName, outgoingInterfaceName, transmissionContext._currentFlow.getDstIp());
+      buildArpFailureTrace(outgoingInterfaceName, disposition, transmissionContext, steps);
       return false;
     }
     return true;
@@ -301,55 +339,30 @@ public class TracerouteEngineImplContext {
                   traces.computeIfAbsent(flow, k -> new ArrayList<>());
               validateInputs(_configurations, flow);
               String ingressNodeName = flow.getIngressNode();
-              List<Hop> hops = new ArrayList<>();
               Stack<Breadcrumb> breadcrumbs = new Stack<>();
               String ingressInterfaceName = flow.getIngressInterface();
-              if (ingressInterfaceName != null) {
-                TransmissionContext transmissionContext =
-                    new TransmissionContext(
-                        Maps.newHashMap(),
-                        new Node(ingressNodeName),
-                        currentTraces,
-                        hops,
-                        null,
-                        Sets.newHashSet(),
-                        Maps.newTreeMap(),
-                        flow,
-                        flow);
-                processHop(ingressInterfaceName, transmissionContext, flow, breadcrumbs);
-              } else {
-                TransmissionContext transmissionContext =
-                    new TransmissionContext(
-                        Maps.newHashMap(),
-                        new Node(flow.getIngressNode()),
-                        currentTraces,
-                        hops,
-                        null,
-                        Sets.newHashSet(),
-                        Maps.newTreeMap(),
-                        flow,
-                        flow);
-                processHop(null, transmissionContext, flow, breadcrumbs);
-              }
+              TransmissionContext transmissionContext =
+                  new TransmissionContext(
+                      _configurations,
+                      ingressNodeName,
+                      ingressInterfaceName,
+                      flow,
+                      currentTraces::add);
+              processHop(transmissionContext, breadcrumbs);
             });
     return new TreeMap<>(traces);
   }
 
-  private void processHop(
-      @Nullable String inputIfaceName,
-      TransmissionContext transmissionContext,
-      Flow inputFlow,
-      Stack<Breadcrumb> breadcrumbs) {
+  private void processHop(TransmissionContext transmissionContext, Stack<Breadcrumb> breadcrumbs) {
     String currentNodeName = transmissionContext._currentNode.getName();
+    String inputIfaceName = transmissionContext._ingressInterface;
     Configuration currentConfiguration = _configurations.get(currentNodeName);
     if (currentConfiguration == null) {
       throw new BatfishException(
           String.format(
               "Node %s is not in the network, cannot perform traceroute", currentNodeName));
     }
-    if (inputIfaceName != null
-        && processSessions(
-            currentNodeName, inputIfaceName, transmissionContext, inputFlow, breadcrumbs)) {
+    if (inputIfaceName != null && processSessions(transmissionContext, breadcrumbs)) {
       // flow was processed by a session.
       return;
     }
@@ -359,7 +372,6 @@ public class TracerouteEngineImplContext {
     NavigableMap<String, IpSpace> namedIpSpaces = currentConfiguration.getIpSpaces();
 
     // trace was received on a source interface of this hop
-    Flow dstNatFlow = null;
     if (inputIfaceName != null) {
       EnterInputIfaceStep enterIfaceStep =
           createEnterSrcIfaceStep(currentConfiguration, inputIfaceName);
@@ -369,16 +381,7 @@ public class TracerouteEngineImplContext {
       IpAccessList inputFilter =
           currentConfiguration.getAllInterfaces().get(inputIfaceName).getIncomingFilter();
       if (inputFilter != null) {
-        if (applyFilter(
-                inputFilter,
-                INGRESS_FILTER,
-                inputFlow,
-                inputIfaceName,
-                aclDefinitions,
-                namedIpSpaces,
-                transmissionContext,
-                steps)
-            == DENIED) {
+        if (applyFilter(inputFilter, INGRESS_FILTER, transmissionContext, steps) == DENIED) {
           return;
         }
       }
@@ -389,38 +392,38 @@ public class TracerouteEngineImplContext {
                   .getAllInterfaces()
                   .get(inputIfaceName)
                   .getIncomingTransformation(),
-              inputFlow,
+              transmissionContext._currentFlow,
               inputIfaceName,
               aclDefinitions,
               namedIpSpaces);
-      dstNatFlow = transformationResult.getOutputFlow();
       steps.addAll(transformationResult.getTraceSteps());
-    } else if (inputFlow.getIngressVrf() != null) {
+      transmissionContext._currentFlow = transformationResult.getOutputFlow();
+    } else if (transmissionContext._currentFlow.getIngressVrf() != null) {
       // if inputIfaceName is not set for this hop, this is the originating step
       steps.add(
           OriginateStep.builder()
               .setDetail(
                   OriginateStepDetail.builder()
-                      .setOriginatingVrf(inputFlow.getIngressVrf())
+                      .setOriginatingVrf(transmissionContext._currentFlow.getIngressVrf())
                       .build())
               .setAction(StepAction.ORIGINATED)
               .build());
     }
 
-    Flow currentFlow = firstNonNull(dstNatFlow, inputFlow);
-    Ip dstIp = currentFlow.getDstIp();
+    Ip dstIp = transmissionContext._currentFlow.getDstIp();
 
     // Figure out where the trace came from..
     String vrfName;
     if (inputIfaceName == null) {
-      vrfName = currentFlow.getIngressVrf();
+      vrfName = transmissionContext._currentFlow.getIngressVrf();
     } else {
       vrfName = currentConfiguration.getAllInterfaces().get(inputIfaceName).getVrfName();
     }
     checkNotNull(vrfName, "Missing VRF.");
 
     // Loop detection
-    Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, vrfName, currentFlow);
+    Breadcrumb breadcrumb =
+        new Breadcrumb(currentNodeName, vrfName, transmissionContext._currentFlow);
     if (breadcrumbs.contains(breadcrumb)) {
       buildLoopTrace(transmissionContext, steps);
       return;
@@ -432,10 +435,10 @@ public class TracerouteEngineImplContext {
       // Accept if the flow is destined for this vrf on this host.
       if (_dataPlane
           .getIpVrfOwners()
-          .getOrDefault(currentFlow.getDstIp(), ImmutableMap.of())
+          .getOrDefault(dstIp, ImmutableMap.of())
           .getOrDefault(currentConfiguration.getHostname(), ImmutableSet.of())
           .contains(vrfName)) {
-        buildAcceptTrace(transmissionContext, steps, currentFlow, vrfName);
+        buildAcceptTrace(transmissionContext, steps, vrfName);
         return;
       }
 
@@ -443,16 +446,7 @@ public class TracerouteEngineImplContext {
       Fib currentFib = _fibs.get(currentNodeName).get(vrfName);
       Set<String> nextHopInterfaces = currentFib.getNextHopInterfaces(dstIp);
       if (nextHopInterfaces.isEmpty()) {
-        // add a step for  NO_ROUTE from source to output interface
-        Builder routingStepBuilder = RoutingStep.builder();
-        routingStepBuilder
-            .setDetail(RoutingStepDetail.builder().build())
-            .setAction(StepAction.NO_ROUTE);
-        steps.add(routingStepBuilder.build());
-        transmissionContext._hopsSoFar.add(new Hop(transmissionContext._currentNode, steps));
-        Trace trace = new Trace(FlowDisposition.NO_ROUTE, transmissionContext._hopsSoFar);
-        transmissionContext._flowTraces.add(
-            new TraceAndReverseFlow(trace, null, transmissionContext._newSessions));
+        buildNoRouteTrace(transmissionContext, steps);
         return;
       }
 
@@ -466,183 +460,190 @@ public class TracerouteEngineImplContext {
               .distinct()
               .collect(ImmutableList.toImmutableList());
 
+      steps.add(
+          RoutingStep.builder()
+              .setDetail(RoutingStepDetail.builder().setRoutes(matchedRibRouteInfo).build())
+              .setAction(StepAction.FORWARDED)
+              .build());
+
       // For every interface with a route to the dst IP
       for (String nextHopInterfaceName : nextHopInterfaces) {
-        TreeMultimap<Ip, AbstractRoute> resolvedNextHopWithRoutes = TreeMultimap.create();
+        TransmissionContext clonedTransmissionContext = transmissionContext.branch();
+        List<Step<?>> clonedSteps = new ArrayList<>(steps);
 
-        // Loop over all matching routes that use nextHopInterfaceName as one of the next hop
-        // interfaces.
-        for (Entry<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> e :
-            nextHopInterfacesByRoute.entrySet()) {
-          Map<Ip, Set<AbstractRoute>> finalNextHops = e.getValue().get(nextHopInterfaceName);
-          if (finalNextHops == null || finalNextHops.isEmpty()) {
-            continue;
-          }
-
-          AbstractRoute routeCandidate = e.getKey();
-          Ip nextHopIp = routeCandidate.getNextHopIp();
-          if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
-            resolvedNextHopWithRoutes.put(nextHopIp, routeCandidate);
-          } else {
-            for (Ip resolvedNextHopIp : finalNextHops.keySet()) {
-              resolvedNextHopWithRoutes.put(resolvedNextHopIp, routeCandidate);
-            }
-          }
+        if (nextHopInterfaceName.equals(Interface.NULL_INTERFACE_NAME)) {
+          buildNullRoutedTrace(clonedTransmissionContext, clonedSteps);
+          continue;
         }
 
-        NodeInterfacePair nextHopInterface =
-            new NodeInterfacePair(currentNodeName, nextHopInterfaceName);
-        Interface outgoingInterface =
+        Interface nextHopInterface =
             currentConfiguration.getAllInterfaces().get(nextHopInterfaceName);
-        resolvedNextHopWithRoutes
+
+        Multimap<Ip, AbstractRoute> resolvedNextHopIpRoutes =
+            resolveNextHopIpRoutes(nextHopInterfaceName, nextHopInterfacesByRoute);
+        resolvedNextHopIpRoutes
             .asMap()
             .forEach(
-                (resolvedNextHopIp, routeCandidates) -> {
-                  // Later parts of the stack expect null instead of unset to trigger proxy arp,
-                  // etc.
-                  Ip finalNextHopIp =
-                      Route.UNSET_ROUTE_NEXT_HOP_IP.equals(resolvedNextHopIp)
-                          ? null
-                          : resolvedNextHopIp;
-
-                  List<Step<?>> clonedSteps = new ArrayList<>(steps);
-                  clonedSteps.add(
-                      RoutingStep.builder()
-                          .setDetail(
-                              RoutingStepDetail.builder().setRoutes(matchedRibRouteInfo).build())
-                          .setAction(StepAction.FORWARDED)
-                          .build());
-
-                  if (nextHopInterfaceName.equals(Interface.NULL_INTERFACE_NAME)) {
-                    clonedSteps.add(
-                        ExitOutputIfaceStep.builder()
-                            .setDetail(
-                                ExitOutputIfaceStepDetail.builder()
-                                    .setOutputInterface(
-                                        new NodeInterfacePair(
-                                            currentNodeName, Interface.NULL_INTERFACE_NAME))
-                                    .build())
-                            .setAction(StepAction.NULL_ROUTED)
-                            .build());
-                    Trace trace =
-                        new Trace(
-                            FlowDisposition.NULL_ROUTED,
-                            ImmutableList.<Hop>builder()
-                                .addAll(transmissionContext._hopsSoFar)
-                                .add(new Hop(transmissionContext._currentNode, clonedSteps))
-                                .build());
-                    transmissionContext._flowTraces.add(
-                        new TraceAndReverseFlow(trace, null, transmissionContext._newSessions));
-                    return;
-                  }
-
-                  // Apply preSourceNatOutgoingFilter
-                  if (applyFilter(
-                          outgoingInterface.getPreTransformationOutgoingFilter(),
-                          PRE_SOURCE_NAT_FILTER,
-                          currentFlow,
-                          inputIfaceName,
-                          aclDefinitions,
-                          namedIpSpaces,
-                          transmissionContext,
-                          clonedSteps)
-                      == DENIED) {
-                    return;
-                  }
-
-                  // Apply outgoing transformation
-                  Transformation transformation = outgoingInterface.getOutgoingTransformation();
-                  TransformationResult transformationResult =
-                      TransformationEvaluator.eval(
-                          transformation,
-                          currentFlow,
-                          inputIfaceName,
-                          aclDefinitions,
-                          namedIpSpaces);
-                  Flow newTransformedFlow = transformationResult.getOutputFlow();
-                  clonedSteps.addAll(transformationResult.getTraceSteps());
-
-                  SortedSet<Edge> edges =
-                      _dataPlane.getTopology().getInterfaceEdges().get(nextHopInterface);
-
-                  TransmissionContext clonedTransmissionContext =
-                      new TransmissionContext(
-                          aclDefinitions,
-                          new Node(currentNodeName),
-                          transmissionContext._flowTraces,
-                          transmissionContext._hopsSoFar,
-                          transmissionContext._lastHopNodeAndOutgoingInterface,
-                          transmissionContext._newSessions,
-                          namedIpSpaces,
-                          currentFlow,
-                          newTransformedFlow);
-
-                  // apply outgoing filter
-                  if (applyFilter(
-                          outgoingInterface.getOutgoingFilter(),
-                          EGRESS_FILTER,
-                          clonedTransmissionContext._transformedFlow,
-                          inputIfaceName,
-                          aclDefinitions,
-                          namedIpSpaces,
-                          transmissionContext,
-                          clonedSteps)
-                      == DENIED) {
-                    return;
-                  }
-
-                  // setup session if necessary
-                  FirewallSessionInterfaceInfo firewallSessionInterfaceInfo =
-                      outgoingInterface.getFirewallSessionInterfaceInfo();
-                  if (firewallSessionInterfaceInfo != null) {
-                    clonedTransmissionContext._newSessions.add(
-                        new FirewallSessionTraceInfo(
-                            currentNodeName,
-                            inputIfaceName,
-                            clonedTransmissionContext._lastHopNodeAndOutgoingInterface,
-                            firewallSessionInterfaceInfo.getSessionInterfaces(),
-                            match5Tuple(
-                                newTransformedFlow.getDstIp(),
-                                newTransformedFlow.getDstPort(),
-                                newTransformedFlow.getSrcIp(),
-                                newTransformedFlow.getSrcPort(),
-                                newTransformedFlow.getIpProtocol()),
-                            sessionTransformation(inputFlow, newTransformedFlow)));
-                    clonedSteps.add(new SetupSessionStep());
-                  }
-
-                  if (edges == null || edges.isEmpty()) {
-                    FlowDisposition disposition =
-                        computeDisposition(
-                            currentNodeName,
-                            outgoingInterface.getName(),
-                            transmissionContext._transformedFlow.getDstIp());
-
-                    buildArpFailureTrace(
-                        outgoingInterface, disposition, clonedTransmissionContext, clonedSteps);
-                  } else {
-                    processCurrentNextHopInterfaceEdges(
-                        currentNodeName,
-                        dstIp,
-                        nextHopInterfaceName,
-                        finalNextHopIp,
-                        edges,
+                (resolvedNextHopIp, routeCandidates) ->
+                    forwardOutInterface(
+                        nextHopInterface,
+                        resolvedNextHopIp,
                         clonedTransmissionContext,
-                        clonedSteps,
-                        breadcrumbs);
-                  }
-                });
+                        breadcrumbs,
+                        clonedSteps));
       }
     } finally {
       breadcrumbs.pop();
     }
   }
 
-  private static void buildAcceptTrace(
+  private void buildNullRoutedTrace(TransmissionContext transmissionContext, List<Step<?>> steps) {
+    steps.add(
+        ExitOutputIfaceStep.builder()
+            .setDetail(
+                ExitOutputIfaceStepDetail.builder()
+                    .setOutputInterface(
+                        new NodeInterfacePair(
+                            transmissionContext._currentNode.getName(),
+                            Interface.NULL_INTERFACE_NAME))
+                    .build())
+            .setAction(StepAction.NULL_ROUTED)
+            .build());
+
+    Trace trace =
+        new Trace(
+            FlowDisposition.NULL_ROUTED,
+            ImmutableList.<Hop>builder()
+                .addAll(transmissionContext._hopsSoFar)
+                .add(new Hop(transmissionContext._currentNode, steps))
+                .build());
+    transmissionContext._flowTraces.accept(
+        new TraceAndReverseFlow(trace, null, transmissionContext._newSessions));
+  }
+
+  /** add a step for NO_ROUTE from source to output interface */
+  private static void buildNoRouteTrace(
+      TransmissionContext transmissionContext, List<Step<?>> steps) {
+    Builder routingStepBuilder = RoutingStep.builder();
+    routingStepBuilder
+        .setDetail(RoutingStepDetail.builder().build())
+        .setAction(StepAction.NO_ROUTE);
+    steps.add(routingStepBuilder.build());
+    transmissionContext._hopsSoFar.add(new Hop(transmissionContext._currentNode, steps));
+    Trace trace = new Trace(FlowDisposition.NO_ROUTE, transmissionContext._hopsSoFar);
+    transmissionContext._flowTraces.accept(
+        new TraceAndReverseFlow(trace, null, transmissionContext._newSessions));
+  }
+
+  @Nonnull
+  private static Multimap<Ip, AbstractRoute> resolveNextHopIpRoutes(
+      String nextHopInterfaceName,
+      Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute) {
+    TreeMultimap<Ip, AbstractRoute> resolvedNextHopWithRoutes = TreeMultimap.create();
+
+    // Loop over all matching routes that use nextHopInterfaceName as one of the next hop
+    // interfaces.
+    for (Entry<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> e :
+        nextHopInterfacesByRoute.entrySet()) {
+      Map<Ip, Set<AbstractRoute>> finalNextHops = e.getValue().get(nextHopInterfaceName);
+      if (finalNextHops == null || finalNextHops.isEmpty()) {
+        continue;
+      }
+
+      AbstractRoute routeCandidate = e.getKey();
+      Ip nextHopIp = routeCandidate.getNextHopIp();
+      if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
+        resolvedNextHopWithRoutes.put(nextHopIp, routeCandidate);
+      } else {
+        for (Ip resolvedNextHopIp : finalNextHops.keySet()) {
+          resolvedNextHopWithRoutes.put(resolvedNextHopIp, routeCandidate);
+        }
+      }
+    }
+    return resolvedNextHopWithRoutes;
+  }
+
+  private void forwardOutInterface(
+      Interface outgoingInterface,
+      Ip nextHopIp,
       TransmissionContext transmissionContext,
-      List<Step<?>> steps,
-      Flow currentFlow,
-      String vrfName) {
+      Stack<Breadcrumb> breadcrumbs,
+      List<Step<?>> steps) {
+    String currentNodeName = transmissionContext._currentNode.getName();
+    String outgoingIfaceName = outgoingInterface.getName();
+    NodeInterfacePair nextHopInterface = new NodeInterfacePair(currentNodeName, outgoingIfaceName);
+
+    // Apply preSourceNatOutgoingFilter
+    if (applyFilter(
+            outgoingInterface.getPreTransformationOutgoingFilter(),
+            PRE_SOURCE_NAT_FILTER,
+            transmissionContext,
+            steps)
+        == DENIED) {
+      return;
+    }
+
+    // Apply outgoing transformation
+    Transformation transformation = outgoingInterface.getOutgoingTransformation();
+    TransformationResult transformationResult =
+        TransformationEvaluator.eval(
+            transformation,
+            transmissionContext._currentFlow,
+            transmissionContext._ingressInterface,
+            transmissionContext._aclDefinitions,
+            transmissionContext._namedIpSpaces);
+    steps.addAll(transformationResult.getTraceSteps());
+    transmissionContext._currentFlow = transformationResult.getOutputFlow();
+
+    // apply outgoing filter
+    if (applyFilter(
+            outgoingInterface.getOutgoingFilter(), EGRESS_FILTER, transmissionContext, steps)
+        == DENIED) {
+      return;
+    }
+
+    // setup session if necessary
+    FirewallSessionInterfaceInfo firewallSessionInterfaceInfo =
+        outgoingInterface.getFirewallSessionInterfaceInfo();
+    if (firewallSessionInterfaceInfo != null) {
+      transmissionContext._newSessions.add(
+          buildFirewallSessionTraceInfo(transmissionContext, firewallSessionInterfaceInfo));
+      steps.add(new SetupSessionStep());
+    }
+
+    SortedSet<Edge> edges = _dataPlane.getTopology().getInterfaceEdges().get(nextHopInterface);
+    if (edges == null || edges.isEmpty()) {
+      FlowDisposition disposition =
+          computeDisposition(
+              currentNodeName, outgoingIfaceName, transmissionContext._currentFlow.getDstIp());
+
+      buildArpFailureTrace(outgoingIfaceName, disposition, transmissionContext, steps);
+    } else {
+      processOutgoingInterfaceEdges(
+          outgoingIfaceName, nextHopIp, edges, transmissionContext, steps, breadcrumbs);
+    }
+  }
+
+  @Nonnull
+  private static FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
+      TransmissionContext transmissionContext,
+      @Nonnull FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
+    return new FirewallSessionTraceInfo(
+        transmissionContext._currentNode.getName(),
+        transmissionContext._ingressInterface,
+        transmissionContext._lastHopNodeAndOutgoingInterface,
+        firewallSessionInterfaceInfo.getSessionInterfaces(),
+        match5Tuple(
+            transmissionContext._currentFlow.getDstIp(),
+            transmissionContext._currentFlow.getDstPort(),
+            transmissionContext._currentFlow.getSrcIp(),
+            transmissionContext._currentFlow.getSrcPort(),
+            transmissionContext._currentFlow.getIpProtocol()),
+        sessionTransformation(transmissionContext._originalFlow, transmissionContext._currentFlow));
+  }
+
+  private static void buildAcceptTrace(
+      TransmissionContext transmissionContext, List<Step<?>> steps, String vrfName) {
     InboundStep inboundStep =
         InboundStep.builder()
             .setAction(StepAction.ACCEPTED)
@@ -653,8 +654,12 @@ public class TracerouteEngineImplContext {
         new Hop(transmissionContext._currentNode, ImmutableList.copyOf(steps)));
     Trace trace = new Trace(FlowDisposition.ACCEPTED, transmissionContext._hopsSoFar);
     Flow returnFlow =
-        returnFlow(currentFlow, transmissionContext._currentNode.getName(), vrfName, null);
-    transmissionContext._flowTraces.add(
+        returnFlow(
+            transmissionContext._currentFlow,
+            transmissionContext._currentNode.getName(),
+            vrfName,
+            null);
+    transmissionContext._flowTraces.accept(
         new TraceAndReverseFlow(trace, returnFlow, transmissionContext._newSessions));
   }
 
@@ -662,7 +667,7 @@ public class TracerouteEngineImplContext {
     transmissionContext._hopsSoFar.add(
         new Hop(transmissionContext._currentNode, ImmutableList.copyOf(steps)));
     Trace trace = new Trace(FlowDisposition.LOOP, transmissionContext._hopsSoFar);
-    transmissionContext._flowTraces.add(
+    transmissionContext._flowTraces.accept(
         new TraceAndReverseFlow(trace, null, transmissionContext._newSessions));
   }
 
@@ -674,10 +679,6 @@ public class TracerouteEngineImplContext {
   private @Nullable StepAction applyFilter(
       @Nullable IpAccessList filter,
       FilterType filterType,
-      Flow flow,
-      @Nullable String inputIfaceName,
-      Map<String, IpAccessList> aclDefinitions,
-      Map<String, IpSpace> namedIpSpaces,
       TransmissionContext transmissionContext,
       List<Step<?>> steps) {
     if (filter == null) {
@@ -685,19 +686,19 @@ public class TracerouteEngineImplContext {
     }
     FilterStep filterStep =
         createFilterStep(
-            flow,
-            inputIfaceName,
+            transmissionContext._currentFlow,
+            transmissionContext._ingressInterface,
             filter,
             filterType,
-            aclDefinitions,
-            namedIpSpaces,
+            transmissionContext._aclDefinitions,
+            transmissionContext._namedIpSpaces,
             _ignoreFilters);
     steps.add(filterStep);
     if (filterStep.getAction() == DENIED) {
       transmissionContext._hopsSoFar.add(
           new Hop(transmissionContext._currentNode, ImmutableList.copyOf(steps)));
       Trace trace = new Trace(filterType.deniedDisposition(), transmissionContext._hopsSoFar);
-      transmissionContext._flowTraces.add(new TraceAndReverseFlow(trace, null));
+      transmissionContext._flowTraces.accept(new TraceAndReverseFlow(trace, null));
     }
     return filterStep.getAction();
   }
@@ -707,11 +708,10 @@ public class TracerouteEngineImplContext {
    * true if the flow is matched/processed.
    */
   private boolean processSessions(
-      String currentNodeName,
-      String inputIfaceName,
-      TransmissionContext transmissionContext,
-      Flow flow,
-      Stack<Breadcrumb> breadcrumbs) {
+      TransmissionContext transmissionContext, Stack<Breadcrumb> breadcrumbs) {
+    String currentNodeName = transmissionContext._currentNode.getName();
+    String inputIfaceName = transmissionContext._ingressInterface;
+    Flow flow = transmissionContext._currentFlow;
     Collection<FirewallSessionTraceInfo> sessions =
         _sessionsByIngressInterface.get(new NodeInterfacePair(currentNodeName, inputIfaceName));
     if (sessions.isEmpty()) {
@@ -749,10 +749,6 @@ public class TracerouteEngineImplContext {
         && applyFilter(
                 ipAccessLists.get(incomingAclName),
                 FilterType.INGRESS_FILTER,
-                flow,
-                inputIfaceName,
-                ipAccessLists,
-                ipSpaces,
                 transmissionContext,
                 steps)
             == DENIED) {
@@ -771,17 +767,16 @@ public class TracerouteEngineImplContext {
     try {
       // apply transformation
       Transformation transformation = session.getTransformation();
-      Flow postTransformationFlow = flow;
       if (transformation != null) {
         TransformationResult result =
             TransformationEvaluator.eval(
                 transformation, flow, inputIfaceName, ipAccessLists, ipSpaces);
-        postTransformationFlow = result.getOutputFlow();
         steps.addAll(result.getTraceSteps());
+        transmissionContext._currentFlow = result.getOutputFlow();
       }
       if (session.getOutgoingInterface() == null) {
         // Accepted by this node (vrf of incoming interface).
-        buildAcceptTrace(transmissionContext, steps, flow, vrf);
+        buildAcceptTrace(transmissionContext, steps, vrf);
         return true;
       }
 
@@ -796,10 +791,6 @@ public class TracerouteEngineImplContext {
           && applyFilter(
                   ipAccessLists.get(outgoingAclName),
                   FilterType.EGRESS_FILTER,
-                  postTransformationFlow,
-                  inputIfaceName,
-                  ipAccessLists,
-                  ipSpaces,
                   transmissionContext,
                   steps)
               == DENIED) {
@@ -807,8 +798,21 @@ public class TracerouteEngineImplContext {
       }
 
       if (session.getNextHop() == null) {
-        // Delivered to subnet/exits network/insufficient info.
-        buildSessionArpFailureTrace(session.getOutgoingInterface(), transmissionContext, steps);
+        /* ARP error. Currently we can't use buildArpFailureTrace for sessions, because forwarding
+         * analysis disposition maps currently include routing conditions, which do not apply to
+         * sessions.
+         *
+         * ARP failure is only possible for sessions that have an outgoing interface but no next
+         * hop. This only happens when the user started the trace entering the outgoing interface.
+         * For now, just always call this EXITS_NETWORK. In the future we may want to apply the
+         * normal ARP error disposition logic, which would require factoring out routing-independent
+         * disposition maps in forwarding analysis.
+         */
+        buildArpFailureTrace(
+            session.getOutgoingInterface(),
+            FlowDisposition.EXITS_NETWORK,
+            transmissionContext,
+            steps);
         return true;
       }
 
@@ -818,38 +822,15 @@ public class TracerouteEngineImplContext {
 
       // Forward to neighbor.
       processHop(
-          session.getNextHop().getInterface(),
-          transmissionContext.branch(
-              new NodeInterfacePair(currentNodeName, session.getOutgoingInterface()),
-              session.getNextHop().getHostname()),
-          postTransformationFlow,
+          transmissionContext.followEdge(
+              new Edge(
+                  new NodeInterfacePair(currentNodeName, session.getOutgoingInterface()),
+                  session.getNextHop())),
           breadcrumbs);
       return true;
     } finally {
       breadcrumbs.pop();
     }
-  }
-
-  /**
-   * We can't use {@link TracerouteEngineImplContext#buildArpFailureTrace} for sessions, because
-   * forwarding analysis disposition maps currently include routing conditions, which do not apply
-   * to sessions.
-   *
-   * <p>This ARP failure situation only arises for sessions that have an outgoing interface but no
-   * next hop. This means the user started the trace entering the outgoing interface. For now, just
-   * always call this EXITS_NETWORK. In the future we may want to apply the normal ARP error
-   * disposition logic, which would require factoring out routing-independent disposition maps in
-   * forwarding analysis.
-   */
-  private void buildSessionArpFailureTrace(
-      String outgoingInterfaceName, TransmissionContext transmissionContext, List<Step<?>> steps) {
-    Interface outgoingInterface =
-        _configurations
-            .get(transmissionContext._currentNode.getName())
-            .getAllInterfaces()
-            .get(outgoingInterfaceName);
-    buildArpFailureTrace(
-        outgoingInterface, FlowDisposition.EXITS_NETWORK, transmissionContext, steps);
   }
 
   @Nullable
@@ -881,27 +862,24 @@ public class TracerouteEngineImplContext {
   }
 
   private static void buildArpFailureTrace(
-      Interface outInterface,
+      String outInterface,
       FlowDisposition disposition,
       TransmissionContext transmissionContext,
       List<Step<?>> steps) {
     String currentNodeName = transmissionContext._currentNode.getName();
     steps.add(
         buildExitOutputIfaceStep(
-            outInterface.getName(),
-            transmissionContext,
-            getFinalActionForDisposition(disposition)));
+            outInterface, transmissionContext, getFinalActionForDisposition(disposition)));
 
     transmissionContext._hopsSoFar.add(new Hop(transmissionContext._currentNode, steps));
 
     Flow returnFlow =
         SUCCESS_DISPOSITIONS.contains(disposition)
-            ? returnFlow(
-                transmissionContext._transformedFlow, currentNodeName, null, outInterface.getName())
+            ? returnFlow(transmissionContext._currentFlow, currentNodeName, null, outInterface)
             : null;
 
     Trace trace = new Trace(disposition, transmissionContext._hopsSoFar);
-    transmissionContext._flowTraces.add(
+    transmissionContext._flowTraces.accept(
         new TraceAndReverseFlow(trace, returnFlow, transmissionContext._newSessions));
   }
 
