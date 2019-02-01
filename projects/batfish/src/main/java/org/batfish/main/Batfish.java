@@ -3214,22 +3214,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private Answer serializeIndependentConfigs(Path vendorConfigPath) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("Serialize vendor-independent configs").startActive()) {
-      assert span != null; // avoid unused warning
-      Answer answer = new Answer();
-      ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
-      answerElement.setVersion(Version.getVersion());
-      if (_settings.getVerboseParse()) {
-        answer.addAnswerElement(answerElement);
-      }
-      Map<String, Configuration> configurations =
-          getConfigurations(vendorConfigPath, answerElement);
-      _storage.storeConfigurations(
-          configurations, answerElement, _settings.getContainer(), _testrigSettings.getName());
-      postProcessSnapshot(configurations);
-      return answer;
+    Answer answer = new Answer();
+    ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
+    answerElement.setVersion(Version.getVersion());
+    if (_settings.getVerboseParse()) {
+      answer.addAnswerElement(answerElement);
     }
+    Map<String, Configuration> configurations = getConfigurations(vendorConfigPath, answerElement);
+    _storage.storeConfigurations(
+        configurations, answerElement, _settings.getContainer(), _testrigSettings.getName());
+    postProcessSnapshot(configurations);
+    return answer;
   }
 
   private void updateSnapshotNodeRoles() {
@@ -3343,16 +3338,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
                       e -> userUploadPath.relativize(e.getKey()).toString(), Entry::getValue));
       List<ParseVendorConfigurationJob> jobs =
           makeParseVendorConfigurationsJobs(keyedConfigText, ConfigurationFormat.UNKNOWN);
-      AtomicInteger batch = newBatch("Parse network configs", keyedConfigText.size());
       parseResults =
           jobs.parallelStream()
-              .map(
-                  j -> {
-                    ParseVendorConfigurationResult result =
-                        this.getOrParse(j, parseNetworkConfigsSpan.context(), _settings);
-                    batch.incrementAndGet();
-                    return result;
-                  })
+              .map(j -> this.getOrParse(j, parseNetworkConfigsSpan.context(), _settings))
               .collect(ImmutableList.toImmutableList());
     }
 
