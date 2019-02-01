@@ -111,6 +111,8 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
     Response response2 =
         getReferenceBookTarget(network, bookName)
             .put(Entity.entity(book, MediaType.APPLICATION_JSON));
-    assertThat(library.getReferenceBook(bookName).isPresent(), equalTo(true));
+    assertThat(response2.getStatus(), equalTo(OK.getStatusCode()));
+    ReferenceLibrary library2 = Main.getWorkMgr().getReferenceLibrary(network);
+    assertThat(library2.getReferenceBook(bookName).isPresent(), equalTo(true));
   }
 }
