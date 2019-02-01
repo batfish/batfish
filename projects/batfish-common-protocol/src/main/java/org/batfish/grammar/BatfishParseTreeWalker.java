@@ -45,7 +45,7 @@ public class BatfishParseTreeWalker extends ParseTreeWalker {
   @VisibleForTesting
   void throwException(Exception e, ParserRuleContext ctx) {
     int line = ctx.start.getLine();
-    // Handle applying line translation if applicable (for flattned or otherwise modified files)
+    // Handle applying line translation if applicable (for flattened or otherwise modified files)
     if (_parser != null) {
       line = _parser.getLine(ctx.start);
     }
