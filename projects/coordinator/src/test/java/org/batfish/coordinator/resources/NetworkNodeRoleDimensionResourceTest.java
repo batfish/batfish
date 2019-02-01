@@ -5,6 +5,7 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import javax.ws.rs.client.Entity;
@@ -17,6 +18,7 @@ import org.batfish.common.Version;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
+import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.junit.Before;
@@ -155,12 +157,15 @@ public final class NetworkNodeRoleDimensionResourceTest extends WorkMgrServiceV2
     NodeRolesData nrData = Main.getWorkMgr().getNetworkNodeRoles(network);
     assertThat(nrData.getNodeRoleDimension(dimension).isPresent(), equalTo(true));
 
-    // put again should succeed too
+    // put again should succeed and have new content
+    NodeRole role = new NodeRole("role", ".*");
+    dimBean.roles = ImmutableSet.of(new NodeRoleBean(role, ImmutableSet.of()));
     Response response2 =
         getNodeRoleDimensionTarget(network, dimension)
             .put(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
     assertThat(response2.getStatus(), equalTo(OK.getStatusCode()));
-    NodeRolesData nrData2 = Main.getWorkMgr().getNetworkNodeRoles(network);
-    assertThat(nrData2.getNodeRoleDimension(dimension).isPresent(), equalTo(true));
+    NodeRoleDimension dim2 =
+        Main.getWorkMgr().getNetworkNodeRoles(network).getNodeRoleDimension(dimension).get();
+    assertThat(dim2.getRoles(), equalTo(ImmutableSet.of(role)));
   }
 }

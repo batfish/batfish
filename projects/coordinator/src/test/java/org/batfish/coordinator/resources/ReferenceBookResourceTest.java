@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
@@ -18,6 +19,7 @@ import org.batfish.common.Version;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
+import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.junit.Before;
@@ -91,7 +93,19 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void putReferenceBook() throws IOException {
+  public void testPutReferenceBookMissingNetwork() throws IOException {
+    String network = "network1";
+    String bookName = "book1";
+
+    ReferenceBookBean book = new ReferenceBookBean(ReferenceBook.builder(bookName).build());
+    Response response =
+        getReferenceBookTarget(network, bookName)
+            .put(Entity.entity(book, MediaType.APPLICATION_JSON));
+    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+  }
+
+  @Test
+  public void putReferenceBookSuccess() throws IOException {
     String network = "someContainer";
     String bookName = "book1";
     Main.getWorkMgr().initNetwork(network, null);
@@ -107,12 +121,15 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
     ReferenceLibrary library = Main.getWorkMgr().getReferenceLibrary(network);
     assertThat(library.getReferenceBook(bookName).isPresent(), equalTo(true));
 
-    // test: another addition of book1 should fail
+    // test: put of bookName again should succeed and the contents should be new
+    AddressGroup ag = new AddressGroup(null, "ag");
+    book.addressGroups = ImmutableSet.of(new AddressGroupBean(ag));
     Response response2 =
         getReferenceBookTarget(network, bookName)
             .put(Entity.entity(book, MediaType.APPLICATION_JSON));
     assertThat(response2.getStatus(), equalTo(OK.getStatusCode()));
-    ReferenceLibrary library2 = Main.getWorkMgr().getReferenceLibrary(network);
-    assertThat(library2.getReferenceBook(bookName).isPresent(), equalTo(true));
+    ReferenceBook book2 =
+        Main.getWorkMgr().getReferenceLibrary(network).getReferenceBook(bookName).get();
+    assertThat(book2.getAddressGroups(), equalTo(ImmutableSet.of(ag)));
   }
 }

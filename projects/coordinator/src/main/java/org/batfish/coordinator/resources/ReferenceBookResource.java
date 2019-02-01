@@ -1,9 +1,10 @@
 package org.batfish.coordinator.resources;
 
+import static org.batfish.common.util.HttpUtil.checkClientArgument;
+
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.NoSuchElementException;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
@@ -31,20 +32,20 @@ public class ReferenceBookResource {
   private BatfishLogger _logger = Main.getLogger();
 
   private String _bookName;
-  private String _container;
+  private String _network;
 
-  public ReferenceBookResource(String container, String book) {
-    _container = container;
+  public ReferenceBookResource(String network, String book) {
+    _network = network;
     _bookName = book;
   }
 
   @DELETE
   public Response delReferenceBook() {
-    _logger.infof("WMS2: delReferenceBook '%s' '%s'\n", _container, _bookName);
+    _logger.infof("WMS2: delReferenceBook '%s' '%s'\n", _network, _bookName);
     try {
-      ReferenceLibrary library = Main.getWorkMgr().getReferenceLibrary(_container);
+      ReferenceLibrary library = Main.getWorkMgr().getReferenceLibrary(_network);
       library.delAddressBook(_bookName);
-      ReferenceLibrary.write(library, Main.getWorkMgr().getReferenceLibraryPath(_container));
+      ReferenceLibrary.write(library, Main.getWorkMgr().getReferenceLibraryPath(_network));
       return Response.ok().build();
     } catch (IOException e) {
       throw new InternalServerErrorException("Reference library is corrupted");
@@ -55,18 +56,18 @@ public class ReferenceBookResource {
 
   @GET
   public ReferenceBookBean getReferenceBook() {
-    _logger.infof("WMS2: getReferenceBook: '%s' '%s'\n", _container, _bookName);
+    _logger.infof("WMS2: getReferenceBook: '%s' '%s'\n", _network, _bookName);
     try {
       return new ReferenceBookBean(
           Main.getWorkMgr()
-              .getReferenceLibrary(_container)
+              .getReferenceLibrary(_network)
               .getReferenceBook(_bookName)
               .orElseThrow(
                   () ->
                       new NotFoundException(
                           String.format(
                               "Reference book '%s' not found in container '%s'",
-                              _bookName, _container))));
+                              _bookName, _network))));
     } catch (IOException e) {
       throw new InternalServerErrorException("Reference library data is corrupted");
     }
@@ -78,13 +79,11 @@ public class ReferenceBookResource {
    */
   @PUT
   public Response putReferenceBook(ReferenceBookBean referenceBookBean) {
-    _logger.infof("WMS2: putReferenceBook '%s'\n", _container);
-    if (referenceBookBean.name == null) {
-      throw new BadRequestException("ReferenceBook must have a name");
-    }
+    _logger.infof("WMS2: putReferenceBook '%s'\n", _network);
+    checkClientArgument(referenceBookBean.name != null, "Reference book must have a name");
     try {
       ReferenceLibrary.mergeReferenceBooks(
-          Main.getWorkMgr().getReferenceLibraryPath(_container),
+          Main.getWorkMgr().getReferenceLibraryPath(_network),
           ImmutableSortedSet.of(referenceBookBean.toAddressBook()));
       return Response.ok().build();
     } catch (IOException e) {
