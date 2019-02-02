@@ -1,5 +1,6 @@
 package org.batfish.z3.expr;
 
+import javax.annotation.Nullable;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
@@ -22,15 +23,20 @@ public class TransformationExpr extends StateExpr {
 
   private final String _iface1;
 
-  private final String _node2;
+  @Nullable private final String _node2;
 
-  private final String _iface2;
+  @Nullable private final String _iface2;
 
   private final String _tag;
   private final int _id;
 
   public TransformationExpr(
-      String node1, String iface1, String node2, String iface2, String tag, int id) {
+      String node1,
+      String iface1,
+      @Nullable String node2,
+      @Nullable String iface2,
+      String tag,
+      int id) {
     _node1 = node1;
     _iface1 = iface1;
     _node2 = node2;
@@ -57,10 +63,12 @@ public class TransformationExpr extends StateExpr {
     return _iface1;
   }
 
+  @Nullable
   public String getNode2() {
     return _node2;
   }
 
+  @Nullable
   public String getIface2() {
     return _iface2;
   }

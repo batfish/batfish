@@ -1,6 +1,7 @@
 package org.batfish.z3.state.visitors;
 
 import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
+import static org.batfish.datamodel.transformation.Noop.NOOP_SOURCE_NAT;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -67,6 +68,7 @@ import org.batfish.z3.state.NodeNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
+import org.batfish.z3.state.PostInInterfacePostNat;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
@@ -1151,6 +1153,41 @@ public class DefaultTransitionGeneratorTest {
                 new PreInInterface(NODE2, INTERFACE3), new PostInInterface(NODE2, INTERFACE3))));
   }
 
+  /** Test the transitions generated for PostInInterfacePostNat for an edge with a source nat. */
+  @Test
+  public void testVisitPostInInterfacePostNat_topologyInterfaceWithNAT() {
+    SynthesizerInput input =
+        MockSynthesizerInput.builder()
+            .setAclLineMatchExprToBooleanExprs(
+                ImmutableMap.of(
+                    NODE1,
+                    new AclLineMatchExprToBooleanExpr(
+                        ImmutableMap.of(), ImmutableMap.of(), null, ImmutableMap.of())))
+            .setEnabledInterfaces(ImmutableMap.of(NODE1, ImmutableSet.of(INTERFACE1)))
+            .setIncomingTransformations(
+                ImmutableMap.of(
+                    NODE1, ImmutableMap.of(INTERFACE1, always().apply(NOOP_SOURCE_NAT).build())))
+            .build();
+    List<RuleStatement> rules =
+        DefaultTransitionGenerator.generateTransitions(
+            input, ImmutableSet.of(PostInInterfacePostNat.State.INSTANCE));
+
+    PostInInterface preState = new PostInInterface(NODE1, INTERFACE1);
+    TransformationExpr transformationExpr =
+        new TransformationExpr(NODE1, INTERFACE1, null, null, "INCOMING", 0);
+    TransformationStepExpr noopStep =
+        new TransformationStepExpr(NODE1, INTERFACE1, null, null, "INCOMING", 0, 0);
+    PostInInterfacePostNat postState = new PostInInterfacePostNat(NODE1, INTERFACE1);
+
+    RuleStatement enterRule = new BasicRuleStatement(preState, transformationExpr);
+    RuleStatement stepRule = new BasicRuleStatement(transformationExpr, noopStep);
+    RuleStatement andThenRule = new BasicRuleStatement(noopStep, postState);
+    RuleStatement orElseRule =
+        new BasicRuleStatement(FalseExpr.INSTANCE, transformationExpr, postState);
+
+    assertThat(rules, containsInAnyOrder(enterRule, stepRule, andThenRule, orElseRule));
+  }
+
   @Test
   public void testVisitPostInVrf_OriginateVrf() {
     SynthesizerInput input =
@@ -1267,42 +1304,42 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE1, INTERFACE1), new PostInVrf(NODE1, VRF1))));
+                new PostInInterfacePostNat(NODE1, INTERFACE1), new PostInVrf(NODE1, VRF1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE1, INTERFACE2), new PostInVrf(NODE1, VRF1))));
+                new PostInInterfacePostNat(NODE1, INTERFACE2), new PostInVrf(NODE1, VRF1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE1, INTERFACE3), new PostInVrf(NODE1, VRF2))));
+                new PostInInterfacePostNat(NODE1, INTERFACE3), new PostInVrf(NODE1, VRF2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE1, INTERFACE4), new PostInVrf(NODE1, VRF2))));
+                new PostInInterfacePostNat(NODE1, INTERFACE4), new PostInVrf(NODE1, VRF2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE2, INTERFACE1), new PostInVrf(NODE2, VRF1))));
+                new PostInInterfacePostNat(NODE2, INTERFACE1), new PostInVrf(NODE2, VRF1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE2, INTERFACE2), new PostInVrf(NODE2, VRF1))));
+                new PostInInterfacePostNat(NODE2, INTERFACE2), new PostInVrf(NODE2, VRF1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE2, INTERFACE3), new PostInVrf(NODE2, VRF2))));
+                new PostInInterfacePostNat(NODE2, INTERFACE3), new PostInVrf(NODE2, VRF2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE2, INTERFACE4), new PostInVrf(NODE2, VRF2))));
+                new PostInInterfacePostNat(NODE2, INTERFACE4), new PostInVrf(NODE2, VRF2))));
   }
 
   @Test

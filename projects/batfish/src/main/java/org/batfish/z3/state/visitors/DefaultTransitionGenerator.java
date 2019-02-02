@@ -69,6 +69,7 @@ import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
+import org.batfish.z3.state.PostInInterfacePostNat;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
@@ -686,6 +687,35 @@ public class DefaultTransitionGenerator implements StateVisitor {
   }
 
   @Override
+  public void visitPostInInterfacePostNat(PostInInterfacePostNat.State postInInterfacePostNat) {
+    _input.getEnabledInterfaces().entrySet().stream()
+        .flatMap(
+            topologyInterfacesEntry -> {
+              String hostname = topologyInterfacesEntry.getKey();
+
+              return topologyInterfacesEntry.getValue().stream()
+                  .map(
+                      ifaceName -> {
+                        StateExpr preState = new PostInInterface(hostname, ifaceName);
+                        StateExpr postState = new PostInInterfacePostNat(hostname, ifaceName);
+
+                        return TransformationTransitionGenerator.generateTransitions(
+                            hostname,
+                            ifaceName,
+                            "INCOMING",
+                            _input.getAclLineMatchExprToBooleanExprs().get(hostname),
+                            preState,
+                            postState,
+                            _input
+                                .getIncomingTransformations()
+                                .getOrDefault(hostname, ImmutableMap.of())
+                                .get(ifaceName));
+                      });
+            })
+        .forEach(_rules::addAll);
+  }
+
+  @Override
   public void visitPostInVrf(PostInVrf.State postInVrf) {
     // Project OriginateVrf
     _input.getEnabledVrfs().entrySet().stream()
@@ -718,7 +748,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                             .map(
                                 ifaceName ->
                                     new BasicRuleStatement(
-                                        new PostInInterface(hostname, ifaceName),
+                                        new PostInInterfacePostNat(hostname, ifaceName),
                                         new PostInVrf(hostname, vrfName)));
                       });
             })

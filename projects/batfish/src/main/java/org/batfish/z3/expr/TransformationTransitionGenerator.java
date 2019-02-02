@@ -24,7 +24,7 @@ import org.batfish.z3.AclLineMatchExprToBooleanExpr;
 import org.batfish.z3.Field;
 
 /**
- * Converts {@link Transformation Transformations} to transistions in the NOD reachability engine.
+ * Converts {@link Transformation Transformations} to transitions in the NOD reachability engine.
  */
 public final class TransformationTransitionGenerator {
   private int _ctr;
@@ -32,8 +32,8 @@ public final class TransformationTransitionGenerator {
   private final String _node1;
   private final String _iface1;
 
-  private final String _node2;
-  private final String _iface2;
+  @Nullable private final String _node2;
+  @Nullable private final String _iface2;
 
   private final String _tag; // distinguish this transformation from others on the same interface
   private final AclLineMatchExprToBooleanExpr _aclLineMatchExprToBooleanExpr;
@@ -45,8 +45,8 @@ public final class TransformationTransitionGenerator {
   private TransformationTransitionGenerator(
       String node1,
       String iface1,
-      String node2,
-      String iface2,
+      @Nullable String node2,
+      @Nullable String iface2,
       String tag,
       AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr,
       StateExpr outState) {
@@ -156,8 +156,28 @@ public final class TransformationTransitionGenerator {
   public static List<BasicRuleStatement> generateTransitions(
       String node1,
       String iface1,
-      String node2,
-      String iface2,
+      String tag,
+      AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr,
+      StateExpr preState,
+      StateExpr postState,
+      @Nullable Transformation transformation) {
+    return generateTransitions(
+        node1,
+        iface1,
+        null,
+        null,
+        tag,
+        aclLineMatchExprToBooleanExpr,
+        preState,
+        postState,
+        transformation);
+  }
+
+  public static List<BasicRuleStatement> generateTransitions(
+      String node1,
+      String iface1,
+      @Nullable String node2,
+      @Nullable String iface2,
       String tag,
       AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr,
       StateExpr preState,

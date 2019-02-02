@@ -42,6 +42,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Map<String, String>> _incomingAcls;
 
+    private Map<String, Map<String, Transformation>> _incomingTransformations;
+
     private Map<IngressLocation, BooleanExpr> _srcIpConstraints;
 
     private Map<String, Set<Ip>> _ipsByHostname;
@@ -89,6 +91,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _enabledNodes = ImmutableSet.of();
       _enabledVrfs = ImmutableMap.of();
       _incomingAcls = ImmutableMap.of();
+      _incomingTransformations = ImmutableMap.of();
       _srcIpConstraints = ImmutableMap.of();
       _ipsByHostname = ImmutableMap.of();
       _ipsByNodeVrf = ImmutableMap.of();
@@ -156,6 +159,12 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     public Builder setIncomingAcls(Map<String, Map<String, String>> incomingAcls) {
       _incomingAcls = incomingAcls;
+      return this;
+    }
+
+    public Builder setIncomingTransformations(
+        Map<String, Map<String, Transformation>> incomingTransformations) {
+      _incomingTransformations = incomingTransformations;
       return this;
     }
 
@@ -292,6 +301,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Map<String, String>> _incomingAcls;
 
+  private Map<String, Map<String, Transformation>> _incomingTransformations;
+
   private final Map<IngressLocation, BooleanExpr> _srcIpConstraints;
 
   private final Map<String, Set<Ip>> _ipsByHostname;
@@ -341,6 +352,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _enabledNodes = builder._enabledNodes;
     _enabledVrfs = builder._enabledVrfs;
     _incomingAcls = builder._incomingAcls;
+    _incomingTransformations = builder._incomingTransformations;
     _srcIpConstraints = builder._srcIpConstraints;
     _ipsByHostname = builder._ipsByHostname;
     _ipsByNodeVrf = builder._ipsByNodeVrf;
@@ -410,6 +422,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
   @Override
   public Map<String, Map<String, String>> getIncomingAcls() {
     return _incomingAcls;
+  }
+
+  @Override
+  public Map<String, Map<String, Transformation>> getIncomingTransformations() {
+    return _incomingTransformations;
   }
 
   @Override
