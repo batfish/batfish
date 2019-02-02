@@ -1,10 +1,10 @@
 package org.batfish.question.initialization;
 
-import static org.batfish.question.initialization.InitIssuesAnswerer.COL_DETAILS;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_FILELINES;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_ISSUE;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_ISSUE_TYPE;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_NODES;
+import static org.batfish.question.initialization.InitIssuesAnswerer.COL_PARSER_CONTEXT;
 import static org.batfish.question.initialization.InitIssuesAnswerer.trimStackTrace;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -13,12 +13,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -90,14 +92,14 @@ public class InitIssuesAnswererTest {
                 .add(
                     Row.of(
                         COL_NODES,
-                        node,
+                        ImmutableList.of(node),
                         COL_FILELINES,
                         null,
                         COL_ISSUE_TYPE,
                         IssueType.ConvertError.toString(),
-                        COL_DETAILS,
-                        trimStackTrace(stackTrace),
                         COL_ISSUE,
+                        trimStackTrace(stackTrace),
+                        COL_PARSER_CONTEXT,
                         null))));
   }
 
@@ -131,26 +133,26 @@ public class InitIssuesAnswererTest {
                 .add(
                     Row.of(
                         COL_NODES,
-                        node,
+                        ImmutableList.of(node),
+                        COL_FILELINES,
+                        null,
                         COL_ISSUE_TYPE,
                         IssueType.ConvertWarningRedFlag.toString(),
                         COL_ISSUE,
                         String.format("%s", redFlag),
-                        COL_FILELINES,
-                        null,
-                        COL_DETAILS,
+                        COL_PARSER_CONTEXT,
                         null))
                 .add(
                     Row.of(
                         COL_NODES,
-                        node,
+                        ImmutableList.of(node),
+                        COL_FILELINES,
+                        null,
                         COL_ISSUE_TYPE,
                         IssueType.ConvertWarningUnimplemented.toString(),
                         COL_ISSUE,
                         String.format("%s", unimplemented),
-                        COL_FILELINES,
-                        null,
-                        COL_DETAILS,
+                        COL_PARSER_CONTEXT,
                         null))));
   }
 
@@ -185,12 +187,12 @@ public class InitIssuesAnswererTest {
                         COL_NODES,
                         null,
                         COL_FILELINES,
-                        file,
+                        ImmutableList.of(new FileLines(file, ImmutableSortedSet.of())),
                         COL_ISSUE_TYPE,
                         IssueType.ParseError.toString(),
-                        COL_DETAILS,
-                        trimStackTrace(stackTrace),
                         COL_ISSUE,
+                        trimStackTrace(stackTrace),
+                        COL_PARSER_CONTEXT,
                         null))));
   }
 
@@ -225,15 +227,15 @@ public class InitIssuesAnswererTest {
                 .add(
                     Row.of(
                         COL_NODES,
-                        node,
+                        ImmutableList.of(node),
+                        COL_FILELINES,
+                        ImmutableList.of(new FileLines(node, ImmutableSortedSet.of(line))),
                         COL_ISSUE_TYPE,
                         IssueType.ParseWarning.toString(),
-                        COL_DETAILS,
-                        context,
                         COL_ISSUE,
-                        String.format("%s (line %d: %s)", comment, line, text),
-                        COL_FILELINES,
-                        null))));
+                        String.format("%s (%s)", comment, text),
+                        COL_PARSER_CONTEXT,
+                        context))));
   }
 
   private static class TestBatfishBase extends IBatfishTestAdapter {
