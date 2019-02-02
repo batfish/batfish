@@ -121,8 +121,8 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.batfish.datamodel.routing_policy.expr.DisjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLength;
@@ -435,7 +435,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 }
               });
       If peerImportPolicyConditional = new If();
-      DisjunctionChain importPolicyChain = new DisjunctionChain(importPolicyCalls);
+      FirstMatchChain importPolicyChain = new FirstMatchChain(importPolicyCalls);
       peerImportPolicyConditional.setGuard(importPolicyChain);
       peerImportPolicy.getStatements().add(peerImportPolicyConditional);
       peerImportPolicyConditional
@@ -481,7 +481,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 }
               });
       If peerExportPolicyConditional = new If();
-      DisjunctionChain exportPolicyChain = new DisjunctionChain(exportPolicyCalls);
+      FirstMatchChain exportPolicyChain = new FirstMatchChain(exportPolicyCalls);
       peerExportPolicyConditional.setGuard(exportPolicyChain);
       peerExportPolicyConditional
           .getTrueStatements()
@@ -1942,7 +1942,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 new SetDefaultPolicy(DEFAULT_IMPORT_POLICIES.get(protocol)),
                 // Construct a policy chain based on defined import policies
                 new If(
-                    new DisjunctionChain(policyCalls),
+                    new FirstMatchChain(policyCalls),
                     ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
                     ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))))
         .build();

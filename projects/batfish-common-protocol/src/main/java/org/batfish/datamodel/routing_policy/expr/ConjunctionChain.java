@@ -76,6 +76,10 @@ public class ConjunctionChain extends BooleanExpr {
 
   @Override
   public Result evaluate(Environment environment) {
+    /* TODO
+    It is unclear what result's value for _return means here, and it doesn't currently have any
+    impact in any context where ConjunctionChain is used. For now, just set it to false.
+     */
     Result subroutineResult = new Result();
     // By default move on to the next policy
     subroutineResult.setFallThrough(true);
@@ -92,12 +96,15 @@ public class ConjunctionChain extends BooleanExpr {
     }
     // Check if we are allowed to fall through to the default policy, if not, return last result
     if (!subroutineResult.getFallThrough()) {
+      subroutineResult.setReturn(false);
       return subroutineResult;
     } else {
       String defaultPolicy = environment.getDefaultPolicy();
       if (defaultPolicy != null) {
         CallExpr callDefaultPolicy = new CallExpr(environment.getDefaultPolicy());
-        return callDefaultPolicy.evaluate(environment);
+        Result defaultPolicyResult = callDefaultPolicy.evaluate(environment);
+        defaultPolicyResult.setReturn(false);
+        return defaultPolicyResult;
       } else {
         throw new BatfishException("Default policy is not set");
       }

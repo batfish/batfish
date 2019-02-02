@@ -272,6 +272,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasSpeed extends FeatureMatcher<Interface, Double> {
+    HasSpeed(@Nonnull Matcher<? super Double> subMatcher) {
+      super(subMatcher, "an Interface with speed:", "speed");
+    }
+
+    @Override
+    protected Double featureValueOf(Interface actual) {
+      return actual.getSpeed();
+    }
+  }
+
   static final class HasSwitchPortMode extends FeatureMatcher<Interface, SwitchportMode> {
     HasSwitchPortMode(@Nonnull Matcher<? super SwitchportMode> subMatcher) {
       super(subMatcher, "an Interface with switchPortMode:", "switchPortMode");
