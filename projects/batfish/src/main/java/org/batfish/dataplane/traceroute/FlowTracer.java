@@ -99,8 +99,10 @@ class FlowTracer {
   // Mutable list of hops in the current trace
   private final List<Hop> _hops;
 
+  // Mutable list of steps in the current hop
+  private final List<Step<?>> _steps;
+
   private final Stack<Breadcrumb> _breadcrumbs;
-  private final ArrayList<Step<?>> _steps;
 
   // The current flow can change as we process the packet.
   private Flow _currentFlow;
