@@ -7635,6 +7635,132 @@
             "        svc_obj2 = (variable",
             "          VARIABLE:'service2'))",
             "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_object",
+            "      OBJECT:'object'",
+            "      (o_network",
+            "        NETWORK:'network'",
+            "        name = (variable_permissive",
+            "          VARIABLE:'source-real')",
+            "        NEWLINE:'\\n'",
+            "        (on_nat",
+            "          NAT:'nat'",
+            "          (asa_nat_ifaces",
+            "            PAREN_LEFT:'('",
+            "            real_if = (variable",
+            "              INSIDE:'inside')",
+            "            COMMA:','",
+            "            mapped_if = (variable",
+            "              OUTSIDE:'outside')",
+            "            PAREN_RIGHT:')')",
+            "          (onn_dynamic",
+            "            DYNAMIC:'dynamic'",
+            "            mapped_iface = INTERFACE:'interface')",
+            "          NEWLINE:'\\n')",
+            "        (on_nat",
+            "          NAT:'nat'",
+            "          (asa_nat_ifaces",
+            "            PAREN_LEFT:'('",
+            "            real_if = (variable",
+            "              INSIDE:'inside')",
+            "            COMMA:','",
+            "            mapped_if = (variable",
+            "              OUTSIDE:'outside')",
+            "            PAREN_RIGHT:')')",
+            "          (onn_dynamic",
+            "            DYNAMIC:'dynamic'",
+            "            host_ip = IP_ADDRESS:'1.1.1.1')",
+            "          NEWLINE:'\\n')",
+            "        (on_nat",
+            "          NAT:'nat'",
+            "          (asa_nat_ifaces",
+            "            PAREN_LEFT:'('",
+            "            real_if = (variable",
+            "              INSIDE:'inside')",
+            "            COMMA:','",
+            "            mapped_if = (variable",
+            "              OUTSIDE:'outside')",
+            "            PAREN_RIGHT:')')",
+            "          (onn_dynamic",
+            "            DYNAMIC:'dynamic'",
+            "            obj = (variable",
+            "              VARIABLE:'source-mapped')",
+            "            DNS:'dns')",
+            "          NEWLINE:'\\n')",
+            "        (on_nat",
+            "          NAT:'nat'",
+            "          (asa_nat_ifaces",
+            "            PAREN_LEFT:'('",
+            "            real_if = (variable",
+            "              INSIDE:'inside')",
+            "            COMMA:','",
+            "            mapped_if = (variable",
+            "              ANY:'any')",
+            "            PAREN_RIGHT:')')",
+            "          (onn_dynamic",
+            "            DYNAMIC:'dynamic'",
+            "            obj = (variable",
+            "              VARIABLE:'source-mapped')",
+            "            mapped_iface_after = INTERFACE:'interface')",
+            "          NEWLINE:'\\n')",
+            "        (on_nat",
+            "          NAT:'nat'",
+            "          (asa_nat_ifaces",
+            "            PAREN_LEFT:'('",
+            "            real_if = (variable",
+            "              ANY:'any')",
+            "            COMMA:','",
+            "            mapped_if = (variable",
+            "              OUTSIDE:'outside')",
+            "            PAREN_RIGHT:')')",
+            "          (onn_dynamic",
+            "            DYNAMIC:'dynamic'",
+            "            (asa_nat_pat_pool",
+            "              PAT_POOL:'pat-pool'",
+            "              pat_obj = (variable",
+            "                VARIABLE:'WORD')",
+            "              INTERFACE:'interface'",
+            "              FLAT:'flat'))",
+            "          NEWLINE:'\\n')",
+            "        (on_nat",
+            "          NAT:'nat'",
+            "          (asa_nat_ifaces",
+            "            PAREN_LEFT:'('",
+            "            real_if = (variable",
+            "              ANY:'any')",
+            "            COMMA:','",
+            "            mapped_if = (variable",
+            "              ANY:'any')",
+            "            PAREN_RIGHT:')')",
+            "          (onn_static",
+            "            STATIC:'static'",
+            "            INTERFACE:'interface')",
+            "          NEWLINE:'\\n')",
+            "        (on_nat",
+            "          NAT:'nat'",
+            "          (onn_static",
+            "            STATIC:'static'",
+            "            obj = (variable",
+            "              VARIABLE:'source-mapped')",
+            "            (asa_nat_optional_args",
+            "              NO_PROXY_ARP:'no-proxy-arp')",
+            "            (asa_nat_optional_args",
+            "              ROUTE_LOOKUP:'route-lookup'))",
+            "          NEWLINE:'\\n')",
+            "        (on_nat",
+            "          NAT:'nat'",
+            "          (onn_static",
+            "            STATIC:'static'",
+            "            obj = (variable",
+            "              VARIABLE:'source-mapped')",
+            "            (asa_object_nat_service",
+            "              SERVICE:'service'",
+            "              SCTP:'sctp'",
+            "              real_port = (port",
+            "                FTP:'ftp')",
+            "              mapped_port = (port",
+            "                BGP:'bgp')))",
+            "          NEWLINE:'\\n'))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -63629,6 +63755,54 @@
               "Line" : 13,
               "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
               "Text" : "nat source static net1 net2 service service1 service2"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 16,
+              "Parser_Context" : "[on_nat o_network s_object stanza cisco_configuration]",
+              "Text" : "nat (inside,outside) dynamic interface"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 17,
+              "Parser_Context" : "[on_nat o_network s_object stanza cisco_configuration]",
+              "Text" : "nat (inside,outside) dynamic 1.1.1.1"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 18,
+              "Parser_Context" : "[on_nat o_network s_object stanza cisco_configuration]",
+              "Text" : "nat (inside,outside) dynamic source-mapped dns"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 19,
+              "Parser_Context" : "[on_nat o_network s_object stanza cisco_configuration]",
+              "Text" : "nat (inside,any) dynamic source-mapped interface"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 20,
+              "Parser_Context" : "[on_nat o_network s_object stanza cisco_configuration]",
+              "Text" : "nat (any,outside) dynamic pat-pool WORD interface flat"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 21,
+              "Parser_Context" : "[on_nat o_network s_object stanza cisco_configuration]",
+              "Text" : "nat (any,any) static interface"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 22,
+              "Parser_Context" : "[on_nat o_network s_object stanza cisco_configuration]",
+              "Text" : "nat static source-mapped no-proxy-arp route-lookup"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 23,
+              "Parser_Context" : "[on_nat o_network s_object stanza cisco_configuration]",
+              "Text" : "nat static source-mapped service sctp ftp bgp"
             }
           ],
           "Red flags" : [
@@ -63687,6 +63861,18 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Undefined network object or network object-group net2"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group source-mapped"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group source-mapped"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Undefined network object or network object-group source-mapped"
             }
           ]
         },
@@ -64944,7 +65130,24 @@
             }
           }
         },
-        "configs/asa_nat" : { },
+        "configs/asa_nat" : {
+          "object network" : {
+            "source-real" : {
+              "definitionLines" : [
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
+              ],
+              "numReferrers" : 8
+            }
+          }
+        },
         "configs/asa_object_groups" : {
           "extended ipv4 access-list" : {
             "ALLOW_SERVER02" : {
@@ -69778,6 +69981,12 @@
         "configs/asa_nat" : {
           "interface" : {
             "inside" : {
+              "object nat real interface" : [
+                16,
+                17,
+                18,
+                19
+              ],
               "twice nat real interface" : [
                 7,
                 8,
@@ -69785,6 +69994,12 @@
               ]
             },
             "outside" : {
+              "object nat mapped interface" : [
+                16,
+                17,
+                18,
+                20
+              ],
               "twice nat mapped interface" : [
                 7,
                 8,
@@ -69829,6 +70044,25 @@
             "net4" : {
               "twice nat real destination network object" : [
                 11
+              ]
+            },
+            "source-mapped" : {
+              "object nat mapped source network object" : [
+                18,
+                22,
+                23
+              ]
+            },
+            "source-real" : {
+              "object nat real source network object" : [
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
               ]
             }
           }
@@ -73185,6 +73419,12 @@
         "configs/asa_nat" : {
           "interface" : {
             "inside" : {
+              "object nat real interface" : [
+                16,
+                17,
+                18,
+                19
+              ],
               "twice nat real interface" : [
                 7,
                 8,
@@ -73192,6 +73432,12 @@
               ]
             },
             "outside" : {
+              "object nat mapped interface" : [
+                16,
+                17,
+                18,
+                20
+              ],
               "twice nat mapped interface" : [
                 7,
                 8,
@@ -73236,6 +73482,13 @@
             "net4" : {
               "twice nat real destination network object" : [
                 11
+              ]
+            },
+            "source-mapped" : {
+              "object nat mapped source network object" : [
+                18,
+                22,
+                23
               ]
             }
           }
