@@ -36,6 +36,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfArea;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfAreaName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfCost;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfPointToPoint;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSpeed;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSwitchPortMode;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVrf;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasZoneName;
@@ -255,6 +256,19 @@ public final class InterfaceMatchers {
   public static @Nonnull Matcher<Interface> hasOspfPointToPoint(
       @Nonnull Matcher<? super Boolean> subMatcher) {
     return new HasOspfPointToPoint(subMatcher);
+  }
+
+  /** Provides a matcher that matches if the interface's speed is {@code expectedSpeed}. */
+  public static @Nonnull HasSpeed hasSpeed(@Nullable Double expectedSpeed) {
+    return new HasSpeed(equalTo(expectedSpeed));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * speed.
+   */
+  public static @Nonnull HasSpeed hasSpeed(@Nonnull Matcher<? super Double> subMatcher) {
+    return new HasSpeed(subMatcher);
   }
 
   /**

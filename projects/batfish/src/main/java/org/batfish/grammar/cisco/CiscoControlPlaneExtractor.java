@@ -6219,8 +6219,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_speed_eos(If_speed_eosContext ctx) {
-    double bandwidth = toBandwidth(ctx.eos_bandwidth_specifier());
-    _currentInterfaces.forEach(i -> i.setBandwidth(bandwidth));
+    double speed = toBandwidth(ctx.eos_bandwidth_specifier());
+    _currentInterfaces.forEach(i -> i.setSpeed(speed));
   }
 
   private double toBandwidth(Eos_bandwidth_specifierContext ctx) {
@@ -6242,7 +6242,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_speed_ios(If_speed_iosContext ctx) {
     int mbits = toInteger(ctx.mbits);
-    _currentInterfaces.forEach(i -> i.setBandwidth(mbits * 1E6D));
+    double speed = mbits * 1E6D;
+    _currentInterfaces.forEach(i -> i.setSpeed(speed));
   }
 
   @Override
