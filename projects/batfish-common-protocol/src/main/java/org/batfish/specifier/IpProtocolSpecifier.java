@@ -28,14 +28,18 @@ import org.batfish.datamodel.questions.PropertySpecifier;
 public class IpProtocolSpecifier {
 
   @VisibleForTesting
-  static final Pattern NAME_AND_NUMBER_PATTERN =
-      Pattern.compile("[0-9]+ \\((.+)\\)", Pattern.CASE_INSENSITIVE);
+  static final Pattern NAME_AND_NUMBER_PATTERN;
 
-  private static final Pattern UNNAMED_PATTERN = Pattern.compile("UNNAMED.*");
+  private static final Pattern UNNAMED_PATTERN;
 
   @VisibleForTesting static final Set<String> COMPLETIONS;
 
   static {
+    NAME_AND_NUMBER_PATTERN =
+        Pattern.compile("[0-9]+ \\((.+)\\)", Pattern.CASE_INSENSITIVE);
+
+    UNNAMED_PATTERN = Pattern.compile("UNNAMED.*");
+
     COMPLETIONS =
         Stream.of(IpProtocol.values())
             .map(
