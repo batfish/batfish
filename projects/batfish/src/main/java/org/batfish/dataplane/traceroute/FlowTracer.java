@@ -9,7 +9,7 @@ import static org.batfish.datamodel.flow.FilterStep.FilterType.INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.PRE_SOURCE_NAT_FILTER;
 import static org.batfish.datamodel.flow.StepAction.DENIED;
 import static org.batfish.datamodel.flow.StepAction.TRANSMITTED;
-import static org.batfish.dataplane.traceroute.TracerouteUtils.createEnterSrcIfaceStep;
+import static org.batfish.dataplane.traceroute.TracerouteUtils.buildEnterSrcIfaceStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createFilterStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.resolveNextHopIpRoutes;
@@ -94,6 +94,7 @@ class FlowTracer {
   private final Set<FirewallSessionTraceInfo> _newSessions;
   private final NavigableMap<String, IpSpace> _namedIpSpaces;
   private final Flow _originalFlow;
+  private final String _vrfName;
 
   // Mutable list of hops in the current trace
   private final List<Hop> _hops;
@@ -128,6 +129,7 @@ class FlowTracer {
     _steps = new ArrayList<>();
 
     _currentFlow = originalFlow;
+    _vrfName = initVrfName();
   }
 
   private FlowTracer(
@@ -166,6 +168,21 @@ class FlowTracer {
     _hops = new ArrayList<>(hops);
     _steps = new ArrayList<>(steps);
     _newSessions = new HashSet<>(newSessions);
+    _vrfName = initVrfName();
+  }
+
+  private String initVrfName() {
+    String vrfName;
+    if (_ingressInterface == null) {
+      checkState(
+          _currentFlow.getIngressNode().equals(_currentConfig.getHostname()),
+          "Not ingressNode but ingressInterface is null");
+      vrfName = _currentFlow.getIngressVrf();
+    } else {
+      vrfName = _currentConfig.getAllInterfaces().get(_ingressInterface).getVrfName();
+    }
+    checkNotNull(vrfName, "Missing VRF.");
+    return vrfName;
   }
 
   /** Creates a new TransmissionContext for the specified last-hop node and outgoing interface. */
@@ -245,9 +262,9 @@ class FlowTracer {
    */
   private boolean processArpFailure(String outgoingInterfaceName, Ip arpIp) {
     String currentNodeName = _currentNode.getName();
-    String vrf = _currentConfig.getAllInterfaces().get(outgoingInterfaceName).getVrfName();
     // halt processing and add neighbor-unreachable trace if no one would respond
-    if (_tracerouteContext.receivesArpReply(currentNodeName, vrf, outgoingInterfaceName, arpIp)) {
+    if (_tracerouteContext.receivesArpReply(
+        currentNodeName, _vrfName, outgoingInterfaceName, arpIp)) {
       FlowDisposition disposition =
           _tracerouteContext.computeDisposition(
               currentNodeName, outgoingInterfaceName, _currentFlow.getDstIp());
@@ -269,12 +286,9 @@ class FlowTracer {
       return;
     }
 
-    Map<String, IpAccessList> aclDefinitions = _currentConfig.getIpAccessLists();
-    NavigableMap<String, IpSpace> namedIpSpaces = _currentConfig.getIpSpaces();
-
     // trace was received on a source interface of this hop
     if (_ingressInterface != null) {
-      _steps.add(createEnterSrcIfaceStep(_currentConfig, _ingressInterface));
+      _steps.add(buildEnterSrcIfaceStep(_currentConfig, _ingressInterface));
 
       // apply ingress filter
       IpAccessList inputFilter =
@@ -290,35 +304,32 @@ class FlowTracer {
               _currentConfig.getAllInterfaces().get(_ingressInterface).getIncomingTransformation(),
               _currentFlow,
               _ingressInterface,
-              aclDefinitions,
-              namedIpSpaces);
+              _aclDefinitions,
+              _namedIpSpaces);
       _steps.addAll(transformationResult.getTraceSteps());
       _currentFlow = transformationResult.getOutputFlow();
-    } else if (_currentFlow.getIngressVrf() != null) {
+    } else {
       // if inputIfaceName is not set for this hop, this is the originating step
-      _steps.add(
-          OriginateStep.builder()
-              .setDetail(
-                  OriginateStepDetail.builder()
-                      .setOriginatingVrf(_currentFlow.getIngressVrf())
-                      .build())
-              .setAction(StepAction.ORIGINATED)
-              .build());
+      _steps.add(buildOriginateStep());
     }
 
     Ip dstIp = _currentFlow.getDstIp();
 
-    // Figure out where the trace came from..
-    String vrfName;
-    if (_ingressInterface == null) {
-      vrfName = _currentFlow.getIngressVrf();
-    } else {
-      vrfName = _currentConfig.getAllInterfaces().get(_ingressInterface).getVrfName();
+    // Accept if the flow is destined for this vrf on this host.
+    if (_tracerouteContext.ownsIp(currentNodeName, _vrfName, dstIp)) {
+      buildAcceptTrace();
+      return;
     }
-    checkNotNull(vrfName, "Missing VRF.");
+
+    Fib fib = _tracerouteContext.getFib(currentNodeName, _vrfName);
+    Set<String> nextHopInterfaces = fib.getNextHopInterfaces(dstIp);
+    if (nextHopInterfaces.isEmpty()) {
+      buildNoRouteTrace();
+      return;
+    }
 
     // Loop detection
-    Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, vrfName, _currentFlow);
+    Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, _currentFlow);
     if (_breadcrumbs.contains(breadcrumb)) {
       buildLoopTrace();
       return;
@@ -326,31 +337,10 @@ class FlowTracer {
 
     _breadcrumbs.push(breadcrumb);
     try {
-      // Accept if the flow is destined for this vrf on this host.
-      if (_tracerouteContext.ownsIp(currentNodeName, vrfName, dstIp)) {
-        buildAcceptTrace(vrfName);
-        return;
-      }
-
-      // .. and what the next hops are based on the FIB.
-      Fib fib = _tracerouteContext.getFib(currentNodeName, vrfName);
-      Set<String> nextHopInterfaces = fib.getNextHopInterfaces(dstIp);
-      if (nextHopInterfaces.isEmpty()) {
-        buildNoRouteTrace();
-        return;
-      }
+      _steps.add(buildRoutingStep(currentNodeName, dstIp));
 
       Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute =
           fib.getNextHopInterfacesByRoute(dstIp);
-
-      List<RouteInfo> matchedRibRouteInfo =
-          _tracerouteContext.longestPrefixMatch(currentNodeName, vrfName, dstIp);
-
-      _steps.add(
-          RoutingStep.builder()
-              .setDetail(RoutingStepDetail.builder().setRoutes(matchedRibRouteInfo).build())
-              .setAction(StepAction.FORWARDED)
-              .build());
 
       // For every interface with a route to the dst IP
       for (String nextHopInterfaceName : nextHopInterfaces) {
@@ -374,6 +364,25 @@ class FlowTracer {
     } finally {
       _breadcrumbs.pop();
     }
+  }
+
+  @Nonnull
+  private OriginateStep buildOriginateStep() {
+    return OriginateStep.builder()
+        .setDetail(OriginateStepDetail.builder().setOriginatingVrf(_vrfName).build())
+        .setAction(StepAction.ORIGINATED)
+        .build();
+  }
+
+  @Nonnull
+  private RoutingStep buildRoutingStep(String currentNodeName, Ip dstIp) {
+    List<RouteInfo> matchedRibRouteInfo =
+        _tracerouteContext.longestPrefixMatch(currentNodeName, _vrfName, dstIp);
+
+    return RoutingStep.builder()
+        .setDetail(RoutingStepDetail.builder().setRoutes(matchedRibRouteInfo).build())
+        .setAction(StepAction.FORWARDED)
+        .build();
   }
 
   /**
@@ -426,8 +435,7 @@ class FlowTracer {
     }
 
     // cycle detection
-    String vrf = incomingInterface.getVrfName();
-    Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, vrf, flow);
+    Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, flow);
     if (_breadcrumbs.contains(breadcrumb)) {
       buildLoopTrace();
       return true;
@@ -446,7 +454,7 @@ class FlowTracer {
       }
       if (session.getOutgoingInterface() == null) {
         // Accepted by this node (vrf of incoming interface).
-        buildAcceptTrace(vrf);
+        buildAcceptTrace();
         return true;
       }
 
@@ -580,7 +588,7 @@ class FlowTracer {
         sessionTransformation(_originalFlow, _currentFlow));
   }
 
-  private void buildAcceptTrace(String vrfName) {
+  private void buildAcceptTrace() {
     InboundStep inboundStep =
         InboundStep.builder()
             .setAction(StepAction.ACCEPTED)
@@ -589,7 +597,7 @@ class FlowTracer {
     _steps.add(inboundStep);
     _hops.add(new Hop(_currentNode, _steps));
     Trace trace = new Trace(FlowDisposition.ACCEPTED, _hops);
-    Flow returnFlow = returnFlow(_currentFlow, _currentNode.getName(), vrfName, null);
+    Flow returnFlow = returnFlow(_currentFlow, _currentNode.getName(), _vrfName, null);
     _flowTraces.accept(new TraceAndReverseFlow(trace, returnFlow, _newSessions));
   }
 
