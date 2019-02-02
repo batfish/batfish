@@ -27,7 +27,6 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,10 +47,10 @@ public class ConjunctionChainTest {
               ImmutableList.of(
                   new If(
                       new MatchTag(IntComparator.EQ, new LiteralInt(1)),
-                      ImmutableList.of(new StaticStatement(Statements.ReturnTrue))),
+                      ImmutableList.of(Statements.ReturnTrue.toStaticStatement())),
                   new If(
                       new MatchTag(IntComparator.EQ, new LiteralInt(2)),
-                      ImmutableList.of(new StaticStatement(Statements.ReturnFalse)))))
+                      ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))))
           .build();
   private static RoutingPolicy P2 =
       RoutingPolicy.builder()
@@ -63,13 +62,13 @@ public class ConjunctionChainTest {
                           DestinationNetwork.instance(),
                           new ExplicitPrefixSet(
                               new PrefixSpace(PrefixRange.fromPrefix(NETWORK_1)))),
-                      ImmutableList.of(new StaticStatement(Statements.ReturnTrue))),
+                      ImmutableList.of(Statements.ReturnTrue.toStaticStatement())),
                   new If(
                       new MatchPrefixSet(
                           DestinationNetwork.instance(),
                           new ExplicitPrefixSet(
                               new PrefixSpace(PrefixRange.fromPrefix(NETWORK_2)))),
-                      ImmutableList.of(new StaticStatement(Statements.ReturnFalse)))))
+                      ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))))
           .build();
   private static RoutingPolicy DEFAULT_POLICY =
       RoutingPolicy.builder()
@@ -129,7 +128,7 @@ public class ConjunctionChainTest {
             Environment.builder(new Configuration("host", ConfigurationFormat.JUNIPER))
                 .setVrf(Configuration.DEFAULT_VRF_NAME)
                 .build());
-    assertThat(result, equalTo(new Result(false, false, false, true)));
+    assertThat(result, equalTo(new Result(false, false, false, false)));
 
     // result._return should not be true here because if there were more policies in the chain, it
     // should evaluate them too.
@@ -158,9 +157,7 @@ public class ConjunctionChainTest {
             P1.getName(), P1, P2.getName(), P2, DEFAULT_POLICY.getName(), DEFAULT_POLICY);
     StaticRoute.Builder srb = StaticRoute.builder().setAdmin(5).setMetric(10L);
 
-    // Route with tag 1 and NETWORK_1 should be accepted by both policies, no metric change.
-    // result._return should not be true because if there were more policies in the chain, it should
-    // evaluate them too.
+    // Route with tag 1 and NETWORK_1 should be accepted by both policies, no metric change
     Environment environment =
         buildEnvironment(
             policiesMap, DEFAULT_POLICY.getName(), srb.setTag(1).setNetwork(NETWORK_1).build());
@@ -174,7 +171,7 @@ public class ConjunctionChainTest {
             policiesMap, DEFAULT_POLICY.getName(), srb.setTag(2).setNetwork(NETWORK_1).build());
     result = conjunctionChain.evaluate(environment);
     MatcherAssert.assertThat(environment.getOutputRoute().getMetric(), equalTo(10L));
-    MatcherAssert.assertThat(result, equalTo(new Result(false, false, false, true)));
+    MatcherAssert.assertThat(result, equalTo(new Result(false, false, false, false)));
 
     // Route with tag 1 and NETWORK_2 should be rejected by second policy, no metric change
     environment =
@@ -182,7 +179,7 @@ public class ConjunctionChainTest {
             policiesMap, DEFAULT_POLICY.getName(), srb.setTag(1).setNetwork(NETWORK_2).build());
     result = conjunctionChain.evaluate(environment);
     MatcherAssert.assertThat(environment.getOutputRoute().getMetric(), equalTo(10L));
-    MatcherAssert.assertThat(result, equalTo(new Result(false, false, false, true)));
+    MatcherAssert.assertThat(result, equalTo(new Result(false, false, false, false)));
 
     // Route with tag 3 and NETWORK_3 should fall through both policies, hit default, update metric
     environment =

@@ -25,7 +25,6 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -41,7 +40,7 @@ public class FirstMatchChainTest {
               ImmutableList.of(
                   new If(
                       new MatchTag(IntComparator.EQ, new LiteralInt(1)),
-                      ImmutableList.of(new StaticStatement(Statements.ReturnTrue)))))
+                      ImmutableList.of(Statements.ReturnTrue.toStaticStatement()))))
           .build();
   private static RoutingPolicy P2 =
       RoutingPolicy.builder()
@@ -50,7 +49,7 @@ public class FirstMatchChainTest {
               ImmutableList.of(
                   new If(
                       new MatchTag(IntComparator.EQ, new LiteralInt(2)),
-                      ImmutableList.of(new StaticStatement(Statements.ReturnFalse)))))
+                      ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))))
           .build();
   private static RoutingPolicy DEFAULT_POLICY =
       RoutingPolicy.builder()
@@ -109,7 +108,7 @@ public class FirstMatchChainTest {
             Environment.builder(new Configuration("host", ConfigurationFormat.JUNIPER))
                 .setVrf(Configuration.DEFAULT_VRF_NAME)
                 .build());
-    assertThat(result, equalTo(new Result(false, false, false, true)));
+    assertThat(result, equalTo(new Result(false, false, false, false)));
 
     fmc = new FirstMatchChain(ImmutableList.of(BooleanExprs.TRUE, BooleanExprs.FALSE));
     result =
@@ -117,7 +116,7 @@ public class FirstMatchChainTest {
             Environment.builder(new Configuration("host", ConfigurationFormat.JUNIPER))
                 .setVrf(Configuration.DEFAULT_VRF_NAME)
                 .build());
-    assertThat(result, equalTo(new Result(true, false, false, true)));
+    assertThat(result, equalTo(new Result(true, false, false, false)));
   }
 
   @Test
@@ -142,13 +141,13 @@ public class FirstMatchChainTest {
         buildEnvironment(policiesMap, DEFAULT_POLICY.getName(), srb.setTag(1).build());
     Result result = policiesChain.evaluate(environment);
     assertThat(environment.getOutputRoute().getMetric(), equalTo(10L));
-    assertThat(result, equalTo(new Result(true, false, false, true)));
+    assertThat(result, equalTo(new Result(true, false, false, false)));
 
     // Route with tag 2 should be rejected by policy 2, no metric change
     environment = buildEnvironment(policiesMap, DEFAULT_POLICY.getName(), srb.setTag(2).build());
     result = policiesChain.evaluate(environment);
     assertThat(environment.getOutputRoute().getMetric(), equalTo(10L));
-    assertThat(result, equalTo(new Result(false, false, false, true)));
+    assertThat(result, equalTo(new Result(false, false, false, false)));
 
     // Route with tag 3 should fall through policies 1 and 2, hit default policy, and update metric
     environment = buildEnvironment(policiesMap, DEFAULT_POLICY.getName(), srb.setTag(3).build());

@@ -1,6 +1,5 @@
 package org.batfish.datamodel.routing_policy;
 
-import com.google.common.annotations.VisibleForTesting;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -16,7 +15,10 @@ public class Result {
 
   public Result() {}
 
-  @VisibleForTesting
+  /**
+   * Creates a Result with the given {@link #getBooleanValue() booleanValue}, {@link #getExit()
+   * exit}, {@link #getFallThrough() fallThrough}, and {@link #getReturn() return} values.
+   */
   public Result(boolean booleanValue, boolean exit, boolean fallThrough, boolean aReturn) {
     _booleanValue = booleanValue;
     _exit = exit;

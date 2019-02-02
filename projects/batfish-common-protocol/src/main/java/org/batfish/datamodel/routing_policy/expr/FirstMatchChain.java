@@ -77,31 +77,29 @@ public class FirstMatchChain extends BooleanExpr {
 
   @Override
   public Result evaluate(Environment environment) {
-    Result subroutineResult = new Result();
-    // By default move on to the next policy
-    subroutineResult.setFallThrough(true);
+    /* TODO
+    It is unclear what result's value for _return means here, and it doesn't currently have any
+    impact in any context where FirstMatchChain is used. For now, just set it to false.
+     */
     for (BooleanExpr subroutine : _subroutines) {
-      subroutineResult = subroutine.evaluate(environment);
+      Result subroutineResult = subroutine.evaluate(environment);
       if (subroutineResult.getExit()) {
         // Reached an exit/terminal action. Return regardless of boolean value
         return subroutineResult;
       } else if (!subroutineResult.getFallThrough()) {
         // Found first match, short-circuit here
-        subroutineResult.setReturn(true);
+        subroutineResult.setReturn(false);
         return subroutineResult;
       }
     }
-    // Check if we are allowed to fall through to the default policy, if not, return last result
-    if (!subroutineResult.getFallThrough()) {
-      return subroutineResult;
+    String defaultPolicy = environment.getDefaultPolicy();
+    if (defaultPolicy != null) {
+      CallExpr callDefaultPolicy = new CallExpr(environment.getDefaultPolicy());
+      Result defaultPolicyResult = callDefaultPolicy.evaluate(environment);
+      defaultPolicyResult.setReturn(false);
+      return defaultPolicyResult;
     } else {
-      String defaultPolicy = environment.getDefaultPolicy();
-      if (defaultPolicy != null) {
-        CallExpr callDefaultPolicy = new CallExpr(environment.getDefaultPolicy());
-        return callDefaultPolicy.evaluate(environment);
-      } else {
-        throw new BatfishException("Default policy is not set");
-      }
+      throw new BatfishException("Default policy is not set");
     }
   }
 
