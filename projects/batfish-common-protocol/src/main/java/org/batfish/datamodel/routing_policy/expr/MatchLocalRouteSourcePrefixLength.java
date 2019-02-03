@@ -8,6 +8,10 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
+/**
+ * Boolean expression that evaluates whether an {@link Environment} has a {@link LocalRoute} with a
+ * source prefix length within a given range of lengths to match.
+ */
 public final class MatchLocalRouteSourcePrefixLength extends BooleanExpr {
 
   private static final String PROP_MATCH_LENGTH = "matchLength";

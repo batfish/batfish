@@ -17,9 +17,12 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
+/**
+ * Boolean expression that evaluates to true if every {@link BooleanExpr} in a given list evaluates
+ * to true. Evaluates to true if the given list is empty.
+ */
 public final class Conjunction extends BooleanExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_CONJUNCTS = "conjuncts";

@@ -6,7 +6,6 @@ import org.batfish.datamodel.routing_policy.Result;
 
 public final class HasRoute6 extends BooleanExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private Prefix6SetExpr _expr;

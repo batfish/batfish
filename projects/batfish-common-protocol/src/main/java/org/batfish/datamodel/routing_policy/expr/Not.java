@@ -1,5 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Map;
@@ -9,19 +11,21 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
+/** Boolean expression that evaluates to the opposite of some given {@link BooleanExpr}. */
 public final class Not extends BooleanExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_EXPR = "expr";
-
   private BooleanExpr _expr;
 
   @JsonCreator
-  private Not() {}
+  private static Not create(@JsonProperty(PROP_EXPR) BooleanExpr expr) {
+    return new Not(expr);
+  }
 
   public Not(BooleanExpr expr) {
+    checkArgument(expr != null, "%s must be provided", PROP_EXPR);
     _expr = expr;
   }
 

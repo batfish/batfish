@@ -11,6 +11,10 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
+/**
+ * Boolean expression that tests whether an IPv4 prefix extracted from an {@link Environment} using
+ * a given {@link PrefixExpr} matches a given {@link PrefixSetExpr}.
+ */
 @ParametersAreNonnullByDefault
 public final class MatchPrefixSet extends BooleanExpr {
 
@@ -20,7 +24,6 @@ public final class MatchPrefixSet extends BooleanExpr {
   private static final String PROP_PREFIX_SET = "prefixSet";
 
   @Nonnull private PrefixExpr _prefix;
-
   @Nonnull private PrefixSetExpr _prefixSet;
 
   @JsonCreator

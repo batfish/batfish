@@ -6,12 +6,15 @@ import java.util.Objects;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
+/**
+ * Boolean expression that tests whether an {@link Environment} contains a BGP route with an AS path
+ * that matches a given {@link AsPathSetExpr}.
+ */
 public final class MatchAsPath extends BooleanExpr {
-  /** */
+
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_EXPR = "expr";
-
   private AsPathSetExpr _expr;
 
   @JsonCreator

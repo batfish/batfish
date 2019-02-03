@@ -10,16 +10,18 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
+/**
+ * Boolean expression that evaluates whether an {@link Environment}'s route's BGP tag matches a
+ * given {@link IntExpr} using a given {@link IntComparator}.
+ */
 @ParametersAreNonnullByDefault
 public final class MatchTag extends BooleanExpr {
   private static final String PROP_CMP = "cmp";
   private static final String PROP_TAG = "tag";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private IntComparator _cmp;
-
   @Nonnull private IntExpr _tag;
 
   @JsonCreator

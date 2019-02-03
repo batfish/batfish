@@ -14,11 +14,14 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
+/**
+ * Boolean expression that evaluates to true if any {@link BooleanExpr} in a given list evaluates to
+ * true. Evaluates to false if the given list is empty.
+ */
 public final class Disjunction extends BooleanExpr {
 
   private static final String PROP_DISJUNCTS = "disjuncts";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private List<BooleanExpr> _disjuncts;

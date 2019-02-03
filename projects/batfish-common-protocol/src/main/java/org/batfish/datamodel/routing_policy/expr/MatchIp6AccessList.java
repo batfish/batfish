@@ -7,7 +7,6 @@ import org.batfish.datamodel.routing_policy.Result;
 
 public final class MatchIp6AccessList extends BooleanExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private String _list;

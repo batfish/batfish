@@ -15,7 +15,6 @@ import org.batfish.datamodel.routing_policy.Result;
 public final class MatchRouteType extends BooleanExpr {
   private static final String PROP_TYPE = "type";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private RouteTypeExpr _type;

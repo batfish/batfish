@@ -7,6 +7,10 @@ import org.batfish.datamodel.EigrpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
+/**
+ * Boolean expression that evaluates whether an {@link Environment} has an EIGRP route with an ASN
+ * equal to some given ASN.
+ */
 public final class MatchProcessAsn extends BooleanExpr {
 
   private static final long serialVersionUID = 1L;

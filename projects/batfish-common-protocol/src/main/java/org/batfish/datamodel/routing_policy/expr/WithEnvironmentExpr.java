@@ -13,6 +13,13 @@ import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
+/**
+ * Boolean expression that evaluates an {@link Environment} for a given {@link BooleanExpr} as well
+ * as executing additional {@link Statement}s on it. Additional statements include {@link
+ * #getPreStatements() pre statements} to execute before evaluation, {@link #getPostStatements()
+ * post statements} to execute after evaluation, and {@link #getPostTrueStatements() post true
+ * statements} to execute after post statements if the evaluation yielded true.
+ */
 public final class WithEnvironmentExpr extends BooleanExpr {
 
   private static final String PROP_EXPR = "expr";
@@ -20,15 +27,11 @@ public final class WithEnvironmentExpr extends BooleanExpr {
   private static final String PROP_POST_TRUE_STATEMENTS = "postTrueStatements";
   private static final String PROP_PRE_STATEMENTS = "preStatements";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private BooleanExpr _expr;
-
   private List<Statement> _postStatements;
-
   private List<Statement> _postTrueStatements;
-
   private List<Statement> _preStatements;
 
   public WithEnvironmentExpr() {
@@ -73,21 +76,28 @@ public final class WithEnvironmentExpr extends BooleanExpr {
     return result;
   }
 
+  /** The {@link BooleanExpr} with which to evaluate an {@link Environment}. */
   @JsonProperty(PROP_EXPR)
   public BooleanExpr getExpr() {
     return _expr;
   }
 
+  /** List of {@link Statement}s to execute on a given {@link Environment} after evaluating it. */
   @JsonProperty(PROP_POST_STATEMENTS)
   public List<Statement> getPostStatements() {
     return _postStatements;
   }
 
+  /**
+   * List of {@link Statement}s to execute on a given {@link Environment} after the {@link
+   * #getPostStatements() post statements} iff {@link #getExpr() expr} evaluates it as true.
+   */
   @JsonProperty(PROP_POST_TRUE_STATEMENTS)
   public List<Statement> getPostTrueStatements() {
     return _postTrueStatements;
   }
 
+  /** List of {@link Statement}s to execute on a given {@link Environment} before evaluating it. */
   @JsonProperty(PROP_PRE_STATEMENTS)
   public List<Statement> getPreStatements() {
     return _preStatements;

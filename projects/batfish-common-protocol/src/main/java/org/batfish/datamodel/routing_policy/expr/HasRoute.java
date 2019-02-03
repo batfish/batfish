@@ -14,7 +14,6 @@ import org.batfish.datamodel.routing_policy.Result;
 public final class HasRoute extends BooleanExpr {
   private static final String PROP_EXPR = "expr";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private PrefixSetExpr _expr;

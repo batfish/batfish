@@ -17,7 +17,10 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-/** Match the route's routing protocol */
+/**
+ * Boolean expression that evaluates whether an {@link Environment} has a route that matches a given
+ * {@link RoutingProtocol}.
+ */
 @ParametersAreNonnullByDefault
 public final class MatchProtocol extends BooleanExpr {
 

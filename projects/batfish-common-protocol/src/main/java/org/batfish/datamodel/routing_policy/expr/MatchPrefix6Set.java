@@ -11,15 +11,18 @@ import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
+/**
+ * Boolean expression that tests whether an IPv6 prefix extracted from an {@link Environment} using
+ * a given {@link Prefix6Expr} matches a given {@link Prefix6SetExpr}.
+ */
 @ParametersAreNonnullByDefault
 public final class MatchPrefix6Set extends BooleanExpr {
   private static final String PROP_PREFIX = "prefix";
   private static final String PROP_PREFIX_SET = "prefixSet";
-  /** */
+
   private static final long serialVersionUID = 1L;
 
   @Nonnull private Prefix6Expr _prefix;
-
   @Nonnull private Prefix6SetExpr _prefixSet;
 
   @JsonCreator

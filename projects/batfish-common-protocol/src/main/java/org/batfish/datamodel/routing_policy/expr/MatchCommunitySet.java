@@ -1,5 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.SortedSet;
@@ -7,17 +9,23 @@ import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
+/**
+ * Boolean expression that tests whether an {@link Environment} contains a BGP route with a
+ * community matching a given {@link CommunitySetExpr}.
+ */
 public final class MatchCommunitySet extends BooleanExpr {
 
   private static final String PROP_EXPR = "expr";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private CommunitySetExpr _expr;
 
   @JsonCreator
-  private MatchCommunitySet() {}
+  private static MatchCommunitySet create(@JsonProperty(PROP_EXPR) CommunitySetExpr expr) {
+    checkArgument(expr != null, "%s must be provided", PROP_EXPR);
+    return new MatchCommunitySet(expr);
+  }
 
   public MatchCommunitySet(CommunitySetExpr expr) {
     _expr = expr;

@@ -6,7 +6,6 @@ import org.batfish.datamodel.routing_policy.Result;
 
 public final class MatchEntireCommunitySet extends BooleanExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private CommunitySetExpr _expr;

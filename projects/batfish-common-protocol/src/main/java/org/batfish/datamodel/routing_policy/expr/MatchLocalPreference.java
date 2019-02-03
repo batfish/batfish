@@ -15,11 +15,9 @@ public final class MatchLocalPreference extends BooleanExpr {
   private static final String PROP_COMPARATOR = "comparator";
   private static final String PROP_METRIC = "metric";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   @Nonnull private IntComparator _comparator;
-
   @Nonnull private IntExpr _metric;
 
   @JsonCreator
