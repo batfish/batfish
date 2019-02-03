@@ -88,16 +88,14 @@ public class FirstMatchChain extends BooleanExpr {
         return subroutineResult;
       } else if (!subroutineResult.getFallThrough()) {
         // Found first match, short-circuit here
-        subroutineResult.setReturn(false);
-        return subroutineResult;
+        return subroutineResult.toBuilder().setReturn(false).build();
       }
     }
     String defaultPolicy = environment.getDefaultPolicy();
     if (defaultPolicy != null) {
       CallExpr callDefaultPolicy = new CallExpr(environment.getDefaultPolicy());
       Result defaultPolicyResult = callDefaultPolicy.evaluate(environment);
-      defaultPolicyResult.setReturn(false);
-      return defaultPolicyResult;
+      return defaultPolicyResult.toBuilder().setReturn(false).build();
     } else {
       throw new BatfishException("Default policy is not set");
     }

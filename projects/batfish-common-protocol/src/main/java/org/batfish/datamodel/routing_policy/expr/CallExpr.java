@@ -71,21 +71,17 @@ public class CallExpr extends BooleanExpr {
   public Result evaluate(Environment environment) {
     RoutingPolicy policy =
         environment.getConfiguration().getRoutingPolicies().get(_calledPolicyName);
-    Result result;
     if (policy == null) {
-      result = new Result();
       environment.setError(true);
-      result.setBooleanValue(false);
-    } else {
-      boolean oldCallExprContext = environment.getCallExprContext();
-      boolean oldLocalDefaultAction = environment.getLocalDefaultAction();
-      environment.setCallExprContext(true);
-      result = policy.call(environment);
-      result.setReturn(false);
-      environment.setCallExprContext(oldCallExprContext);
-      environment.setLocalDefaultAction(oldLocalDefaultAction);
+      return new Result(false);
     }
-    return result;
+    boolean oldCallExprContext = environment.getCallExprContext();
+    boolean oldLocalDefaultAction = environment.getLocalDefaultAction();
+    environment.setCallExprContext(true);
+    Result policyResult = policy.call(environment);
+    environment.setCallExprContext(oldCallExprContext);
+    environment.setLocalDefaultAction(oldLocalDefaultAction);
+    return policyResult.toBuilder().setReturn(false).build();
   }
 
   @JsonProperty(PROP_CALLED_POLICY_NAME)

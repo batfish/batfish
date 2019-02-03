@@ -43,14 +43,12 @@ public class MatchIp6AccessList extends BooleanExpr {
 
   @Override
   public Result evaluate(Environment environment) {
-    Result result = new Result();
     Ip6AccessList list = environment.getConfiguration().getIp6AccessLists().get(_list);
     if (list != null) {
       // TODO
     } else {
       environment.setError(true);
-      result.setBooleanValue(false);
-      return result;
+      return Result.builder().setBooleanValue(false).build();
     }
     throw new UnsupportedOperationException("no implementation for generated method");
   }

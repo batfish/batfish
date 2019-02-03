@@ -61,25 +61,19 @@ public final class BooleanExprs {
 
     @Override
     public Result evaluate(Environment environment) {
-      Result result = new Result();
       switch (_type) {
         case CallExprContext:
-          result.setBooleanValue(environment.getCallExprContext());
-          break;
+          return new Result(environment.getCallExprContext());
         case CallStatementContext:
-          result.setBooleanValue(environment.getCallStatementContext());
-          break;
+          return new Result(environment.getCallStatementContext());
         case False:
-          result.setBooleanValue(false);
-          break;
+          return new Result(false);
         case True:
-          result.setBooleanValue(true);
-          break;
+          return new Result(true);
         default:
           throw new BatfishException(
               "Unhandled " + StaticBooleanExpr.class.getCanonicalName() + ": " + _type);
       }
-      return result;
     }
 
     @JsonProperty(PROP_TYPE)

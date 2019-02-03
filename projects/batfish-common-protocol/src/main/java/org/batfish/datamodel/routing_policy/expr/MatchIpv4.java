@@ -26,10 +26,7 @@ public class MatchIpv4 extends BooleanExpr {
 
   @Override
   public Result evaluate(Environment environment) {
-    boolean match = environment.getOriginalRoute() != null;
-    Result result = new Result();
-    result.setBooleanValue(match);
-    return result;
+    return new Result(environment.getOriginalRoute() != null);
   }
 
   @Override

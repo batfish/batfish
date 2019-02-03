@@ -43,14 +43,12 @@ public class MatchIpAccessList extends BooleanExpr {
 
   @Override
   public Result evaluate(Environment environment) {
-    Result result = new Result();
     IpAccessList list = environment.getConfiguration().getIpAccessLists().get(_list);
     if (list != null) {
       // TODO
     } else {
       environment.setError(true);
-      result.setBooleanValue(false);
-      return result;
+      return new Result(false);
     }
     throw new UnsupportedOperationException("no implementation for generated method");
   }

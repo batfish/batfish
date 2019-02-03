@@ -116,14 +116,13 @@ public class RoutingPolicy implements Serializable {
         return result;
       }
       if (result.getReturn()) {
-        result.setReturn(false);
-        return result;
+        return result.toBuilder().setReturn(false).build();
       }
     }
-    Result result = new Result();
-    result.setFallThrough(true);
-    result.setBooleanValue(environment.getDefaultAction());
-    return result;
+    return Result.builder()
+        .setFallThrough(true)
+        .setBooleanValue(environment.getDefaultAction())
+        .build();
   }
 
   public Set<String> computeSources(

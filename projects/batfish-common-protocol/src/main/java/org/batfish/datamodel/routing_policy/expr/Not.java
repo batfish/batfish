@@ -56,10 +56,7 @@ public class Not extends BooleanExpr {
   @Override
   public Result evaluate(Environment environment) {
     Result result = _expr.evaluate(environment);
-    if (!result.getExit()) {
-      result.setBooleanValue(!result.getBooleanValue());
-    }
-    return result;
+    return result.getExit() ? result : new Result(!result.getBooleanValue());
   }
 
   @JsonProperty(PROP_EXPR)

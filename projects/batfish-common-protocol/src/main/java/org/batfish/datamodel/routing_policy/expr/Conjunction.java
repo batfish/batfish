@@ -64,13 +64,10 @@ public final class Conjunction extends BooleanExpr {
       if (conjunctResult.getExit()) {
         return conjunctResult;
       } else if (!conjunctResult.getBooleanValue()) {
-        conjunctResult.setReturn(false);
-        return conjunctResult;
+        return conjunctResult.toBuilder().setReturn(false).build();
       }
     }
-    Result result = new Result();
-    result.setBooleanValue(true);
-    return result;
+    return new Result(true);
   }
 
   @JsonProperty(PROP_CONJUNCTS)
