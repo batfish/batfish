@@ -23,11 +23,6 @@ public final class RouteIsClassful extends BooleanExpr {
     return INSTANCE;
   }
 
-  @Override
-  public boolean equals(Object obj) {
-    return this == obj;
-  }
-
   /**
    * Returns {@code true} iff the IPv4 route is classful, i.e. the distributed prefix is exactly an
    * entire subnet in its IPv4 address class.
@@ -43,6 +38,11 @@ public final class RouteIsClassful extends BooleanExpr {
     Result ret = new Result();
     ret.setBooleanValue(classSize == network.getPrefixLength());
     return ret;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return obj instanceof RouteIsClassful;
   }
 
   @Override

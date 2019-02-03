@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -17,7 +18,7 @@ public final class MatchRouteType extends BooleanExpr {
 
   private static final long serialVersionUID = 1L;
 
-  @Nonnull private RouteTypeExpr _type;
+  @Nonnull private final RouteTypeExpr _type;
 
   @JsonCreator
   private static MatchRouteType jsonCreator(@Nullable @JsonProperty(PROP_TYPE) RouteTypeExpr type) {
@@ -27,17 +28,6 @@ public final class MatchRouteType extends BooleanExpr {
 
   public MatchRouteType(RouteTypeExpr type) {
     _type = type;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    } else if (!(obj instanceof MatchRouteType)) {
-      return false;
-    }
-    MatchRouteType other = (MatchRouteType) obj;
-    return _type.equals(other._type);
   }
 
   @Override
@@ -53,14 +43,18 @@ public final class MatchRouteType extends BooleanExpr {
   }
 
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + _type.hashCode();
-    return result;
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    } else if (!(obj instanceof MatchRouteType)) {
+      return false;
+    }
+    MatchRouteType other = (MatchRouteType) obj;
+    return Objects.equals(_type, other._type);
   }
 
-  public void setType(RouteTypeExpr type) {
-    _type = type;
+  @Override
+  public int hashCode() {
+    return Objects.hash(_type);
   }
 }

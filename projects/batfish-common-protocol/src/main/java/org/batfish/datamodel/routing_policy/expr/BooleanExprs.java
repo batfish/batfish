@@ -42,7 +42,7 @@ public final class BooleanExprs {
 
     private static final String PROP_TYPE = "type";
 
-    private StaticExpressionType _type;
+    private final StaticExpressionType _type;
 
     private StaticBooleanExpr(StaticExpressionType type) {
       _type = type;
@@ -71,11 +71,6 @@ public final class BooleanExprs {
     }
 
     @Override
-    public boolean equals(Object rhs) {
-      return rhs instanceof StaticBooleanExpr && _type == ((StaticBooleanExpr) rhs)._type;
-    }
-
-    @Override
     public Result evaluate(Environment environment) {
       Result result = new Result();
       switch (_type) {
@@ -101,6 +96,11 @@ public final class BooleanExprs {
     @JsonProperty(PROP_TYPE)
     public StaticExpressionType getType() {
       return _type;
+    }
+
+    @Override
+    public boolean equals(Object rhs) {
+      return rhs instanceof StaticBooleanExpr && _type == ((StaticBooleanExpr) rhs)._type;
     }
 
     @Override

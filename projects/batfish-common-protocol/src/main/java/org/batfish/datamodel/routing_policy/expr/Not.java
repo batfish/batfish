@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -17,10 +18,11 @@ public final class Not extends BooleanExpr {
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_EXPR = "expr";
-  private BooleanExpr _expr;
+  private final BooleanExpr _expr;
 
   @JsonCreator
   private static Not create(@JsonProperty(PROP_EXPR) BooleanExpr expr) {
+    checkArgument(expr != null, "%s must be provided", PROP_EXPR);
     return new Not(expr);
   }
 
@@ -33,28 +35,6 @@ public final class Not extends BooleanExpr {
   public Set<String> collectSources(
       Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
     return _expr.collectSources(parentSources, routingPolicies, w);
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    Not other = (Not) obj;
-    if (_expr == null) {
-      if (other._expr != null) {
-        return false;
-      }
-    } else if (!_expr.equals(other._expr)) {
-      return false;
-    }
-    return true;
   }
 
   @Override
@@ -72,16 +52,20 @@ public final class Not extends BooleanExpr {
   }
 
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((_expr == null) ? 0 : _expr.hashCode());
-    return result;
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof Not)) {
+      return false;
+    }
+    Not other = (Not) obj;
+    return Objects.equals(_expr, other._expr);
   }
 
-  @JsonProperty(PROP_EXPR)
-  public void setExpr(BooleanExpr expr) {
-    _expr = expr;
+  @Override
+  public int hashCode() {
+    return Objects.hash(_expr);
   }
 
   @Override

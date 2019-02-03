@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import java.util.SortedSet;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -19,7 +20,7 @@ public final class MatchCommunitySet extends BooleanExpr {
 
   private static final long serialVersionUID = 1L;
 
-  private CommunitySetExpr _expr;
+  private final CommunitySetExpr _expr;
 
   @JsonCreator
   private static MatchCommunitySet create(@JsonProperty(PROP_EXPR) CommunitySetExpr expr) {
@@ -29,28 +30,6 @@ public final class MatchCommunitySet extends BooleanExpr {
 
   public MatchCommunitySet(CommunitySetExpr expr) {
     _expr = expr;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    MatchCommunitySet other = (MatchCommunitySet) obj;
-    if (_expr == null) {
-      if (other._expr != null) {
-        return false;
-      }
-    } else if (!_expr.equals(other._expr)) {
-      return false;
-    }
-    return true;
   }
 
   @Override
@@ -81,15 +60,19 @@ public final class MatchCommunitySet extends BooleanExpr {
   }
 
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((_expr == null) ? 0 : _expr.hashCode());
-    return result;
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof MatchCommunitySet)) {
+      return false;
+    }
+    MatchCommunitySet other = (MatchCommunitySet) obj;
+    return Objects.equals(_expr, other._expr);
   }
 
-  @JsonProperty(PROP_EXPR)
-  public void setExpr(CommunitySetExpr expr) {
-    _expr = expr;
+  @Override
+  public int hashCode() {
+    return Objects.hash(_expr);
   }
 }

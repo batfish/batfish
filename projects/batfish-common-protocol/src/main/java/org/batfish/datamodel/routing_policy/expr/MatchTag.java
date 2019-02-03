@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -21,8 +22,8 @@ public final class MatchTag extends BooleanExpr {
 
   private static final long serialVersionUID = 1L;
 
-  @Nonnull private IntComparator _cmp;
-  @Nonnull private IntExpr _tag;
+  @Nonnull private final IntComparator _cmp;
+  @Nonnull private final IntExpr _tag;
 
   @JsonCreator
   private static MatchTag jsonCreator(
@@ -36,17 +37,6 @@ public final class MatchTag extends BooleanExpr {
   public MatchTag(IntComparator cmp, IntExpr tag) {
     _cmp = cmp;
     _tag = tag;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    } else if (!(obj instanceof MatchTag)) {
-      return false;
-    }
-    MatchTag other = (MatchTag) obj;
-    return _cmp == other._cmp && _tag.equals(other._tag);
   }
 
   @Override
@@ -76,19 +66,18 @@ public final class MatchTag extends BooleanExpr {
   }
 
   @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    } else if (!(obj instanceof MatchTag)) {
+      return false;
+    }
+    MatchTag other = (MatchTag) obj;
+    return _cmp == other._cmp && Objects.equals(_tag, other._tag);
+  }
+
+  @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + _cmp.ordinal();
-    result = prime * result + _tag.hashCode();
-    return result;
-  }
-
-  public void setCmp(IntComparator cmp) {
-    _cmp = cmp;
-  }
-
-  public void setTag(IntExpr tag) {
-    _tag = tag;
+    return Objects.hash(_cmp.ordinal(), _tag);
   }
 }

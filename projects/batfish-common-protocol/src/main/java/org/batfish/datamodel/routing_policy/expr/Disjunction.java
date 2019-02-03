@@ -49,18 +49,6 @@ public final class Disjunction extends BooleanExpr {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (!(obj instanceof Disjunction)) {
-      return false;
-    }
-    Disjunction other = (Disjunction) obj;
-    return Objects.equals(_disjuncts, other._disjuncts);
-  }
-
-  @Override
   public Result evaluate(Environment environment) {
     for (BooleanExpr disjunct : _disjuncts) {
       Result disjunctResult = disjunct.evaluate(environment);
@@ -79,14 +67,6 @@ public final class Disjunction extends BooleanExpr {
   @JsonProperty(PROP_DISJUNCTS)
   public List<BooleanExpr> getDisjuncts() {
     return _disjuncts;
-  }
-
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((_disjuncts == null) ? 0 : _disjuncts.hashCode());
-    return result;
   }
 
   @JsonProperty(PROP_DISJUNCTS)
@@ -125,6 +105,23 @@ public final class Disjunction extends BooleanExpr {
       simple._simplified = _simplified;
     }
     return _simplified;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof Disjunction)) {
+      return false;
+    }
+    Disjunction other = (Disjunction) obj;
+    return Objects.equals(_disjuncts, other._disjuncts);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_disjuncts);
   }
 
   @Override

@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -35,17 +36,6 @@ public final class MatchMetric extends BooleanExpr {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    } else if (!(obj instanceof MatchMetric)) {
-      return false;
-    }
-    MatchMetric other = (MatchMetric) obj;
-    return _comparator == other._comparator && _metric.equals(other._metric);
-  }
-
-  @Override
   public Result evaluate(Environment environment) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
@@ -63,11 +53,18 @@ public final class MatchMetric extends BooleanExpr {
   }
 
   @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    } else if (!(obj instanceof MatchMetric)) {
+      return false;
+    }
+    MatchMetric other = (MatchMetric) obj;
+    return _comparator == other._comparator && Objects.equals(_metric, other._metric);
+  }
+
+  @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + _comparator.ordinal();
-    result = prime * result + _metric.hashCode();
-    return result;
+    return Objects.hash(_comparator.ordinal(), _metric);
   }
 }

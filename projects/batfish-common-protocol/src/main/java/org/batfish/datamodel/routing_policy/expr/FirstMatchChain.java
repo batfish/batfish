@@ -36,7 +36,7 @@ public final class FirstMatchChain extends BooleanExpr {
 
   private static final String PROP_SUBROUTINES = "subroutines";
 
-  @Nonnull private List<BooleanExpr> _subroutines;
+  @Nonnull private final List<BooleanExpr> _subroutines;
 
   @JsonCreator
   private static FirstMatchChain create(
@@ -56,23 +56,6 @@ public final class FirstMatchChain extends BooleanExpr {
       childSources.addAll(policyMatcher.collectSources(parentSources, routingPolicies, w));
     }
     return childSources.build();
-  }
-
-  @Override
-  public boolean equals(@Nullable Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof FirstMatchChain)) {
-      return false;
-    }
-    FirstMatchChain that = (FirstMatchChain) o;
-    return Objects.equals(_subroutines, that._subroutines);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(_subroutines);
   }
 
   @Override
@@ -107,6 +90,23 @@ public final class FirstMatchChain extends BooleanExpr {
   @JsonProperty(PROP_SUBROUTINES)
   public List<BooleanExpr> getSubroutines() {
     return _subroutines;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof FirstMatchChain)) {
+      return false;
+    }
+    FirstMatchChain that = (FirstMatchChain) o;
+    return Objects.equals(_subroutines, that._subroutines);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_subroutines);
   }
 
   @Override

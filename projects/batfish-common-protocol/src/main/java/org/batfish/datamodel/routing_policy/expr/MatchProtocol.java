@@ -44,23 +44,6 @@ public final class MatchProtocol extends BooleanExpr {
   }
 
   @Override
-  public boolean equals(@Nullable Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof MatchProtocol)) {
-      return false;
-    }
-    MatchProtocol that = (MatchProtocol) o;
-    return _protocol == that._protocol;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(_protocol.ordinal());
-  }
-
-  @Override
   public Result evaluate(Environment environment) {
     Result result = new Result();
     // Workaround: Treat ISIS_ANY as a special value
@@ -76,6 +59,23 @@ public final class MatchProtocol extends BooleanExpr {
   @JsonProperty(PROP_PROTOCOL)
   public RoutingProtocol getProtocol() {
     return _protocol;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof MatchProtocol)) {
+      return false;
+    }
+    MatchProtocol that = (MatchProtocol) o;
+    return _protocol == that._protocol;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_protocol.ordinal());
   }
 
   @Override

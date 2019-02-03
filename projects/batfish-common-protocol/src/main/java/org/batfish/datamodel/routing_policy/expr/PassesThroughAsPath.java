@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -20,8 +21,8 @@ public final class PassesThroughAsPath extends BooleanExpr {
 
   private static final long serialVersionUID = 1L;
 
-  private boolean _exact;
-  @Nonnull private List<SubRangeExpr> _range;
+  private final boolean _exact;
+  @Nonnull private final List<SubRangeExpr> _range;
 
   @JsonCreator
   private static PassesThroughAsPath jsonCreator(
@@ -34,20 +35,6 @@ public final class PassesThroughAsPath extends BooleanExpr {
   public PassesThroughAsPath(List<SubRangeExpr> range, boolean exact) {
     _range = range;
     _exact = exact;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    } else if (!(obj instanceof PassesThroughAsPath)) {
-      return false;
-    }
-    PassesThroughAsPath other = (PassesThroughAsPath) obj;
-    if (_exact != other._exact) {
-      return false;
-    }
-    return _range.equals(other._range);
   }
 
   @Override
@@ -67,19 +54,18 @@ public final class PassesThroughAsPath extends BooleanExpr {
   }
 
   @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    } else if (!(obj instanceof PassesThroughAsPath)) {
+      return false;
+    }
+    PassesThroughAsPath other = (PassesThroughAsPath) obj;
+    return _exact == other._exact && Objects.equals(_range, other._range);
+  }
+
+  @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + (_exact ? 1231 : 1237);
-    result = prime * result + _range.hashCode();
-    return result;
-  }
-
-  public void setExact(boolean exact) {
-    _exact = exact;
-  }
-
-  public void setRange(List<SubRangeExpr> range) {
-    _range = range;
+    return Objects.hash(_exact, _range);
   }
 }

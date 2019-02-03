@@ -1,42 +1,28 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
 public final class HasRoute6 extends BooleanExpr {
 
   private static final long serialVersionUID = 1L;
+  private static final String PROP_EXPR = "expr";
 
-  private Prefix6SetExpr _expr;
+  private final Prefix6SetExpr _expr;
 
   @JsonCreator
-  private HasRoute6() {}
+  private static HasRoute6 create(@JsonProperty(PROP_EXPR) Prefix6SetExpr expr) {
+    checkArgument(expr != null, "%s must be provided", PROP_EXPR);
+    return new HasRoute6(expr);
+  }
 
   public HasRoute6(Prefix6SetExpr expr) {
     _expr = expr;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    HasRoute6 other = (HasRoute6) obj;
-    if (_expr == null) {
-      if (other._expr != null) {
-        return false;
-      }
-    } else if (!_expr.equals(other._expr)) {
-      return false;
-    }
-    return true;
   }
 
   @Override
@@ -44,19 +30,25 @@ public final class HasRoute6 extends BooleanExpr {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
+  @JsonProperty(PROP_EXPR)
   public Prefix6SetExpr getExpr() {
     return _expr;
   }
 
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((_expr == null) ? 0 : _expr.hashCode());
-    return result;
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof HasRoute6)) {
+      return false;
+    }
+    HasRoute6 other = (HasRoute6) obj;
+    return Objects.equals(_expr, other._expr);
   }
 
-  public void setExpr(Prefix6SetExpr expr) {
-    _expr = expr;
+  @Override
+  public int hashCode() {
+    return Objects.hash(_expr);
   }
 }

@@ -2,6 +2,7 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.SubRange;
@@ -27,21 +28,6 @@ public final class MatchLocalRouteSourcePrefixLength extends BooleanExpr {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    MatchLocalRouteSourcePrefixLength other = (MatchLocalRouteSourcePrefixLength) obj;
-    return _matchLength.equals(other._matchLength);
-  }
-
-  @Override
   public Result evaluate(Environment environment) {
     LocalRoute localRoute = (LocalRoute) environment.getOriginalRoute();
     Result result = new Result();
@@ -55,7 +41,19 @@ public final class MatchLocalRouteSourcePrefixLength extends BooleanExpr {
   }
 
   @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof MatchLocalRouteSourcePrefixLength)) {
+      return false;
+    }
+    MatchLocalRouteSourcePrefixLength other = (MatchLocalRouteSourcePrefixLength) obj;
+    return Objects.equals(_matchLength, other._matchLength);
+  }
+
+  @Override
   public int hashCode() {
-    return _matchLength.hashCode();
+    return Objects.hash(_matchLength);
   }
 }

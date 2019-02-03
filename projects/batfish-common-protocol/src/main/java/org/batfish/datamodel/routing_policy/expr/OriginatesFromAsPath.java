@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -37,18 +38,6 @@ public final class OriginatesFromAsPath extends BooleanExpr {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    } else if (!(obj instanceof OriginatesFromAsPath)) {
-      return false;
-    }
-
-    OriginatesFromAsPath other = (OriginatesFromAsPath) obj;
-    return _asRange.equals(other._asRange) && _exact == other._exact;
-  }
-
-  @Override
   public Result evaluate(Environment environment) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
@@ -65,11 +54,19 @@ public final class OriginatesFromAsPath extends BooleanExpr {
   }
 
   @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    } else if (!(obj instanceof OriginatesFromAsPath)) {
+      return false;
+    }
+
+    OriginatesFromAsPath other = (OriginatesFromAsPath) obj;
+    return Objects.equals(_asRange, other._asRange) && _exact == other._exact;
+  }
+
+  @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + _asRange.hashCode();
-    result = prime * result + (_exact ? 1231 : 1237);
-    return result;
+    return Objects.hash(_asRange, _exact);
   }
 }
