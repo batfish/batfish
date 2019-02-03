@@ -10,7 +10,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
-public class CallExpr extends BooleanExpr {
+public final class CallExpr extends BooleanExpr {
 
   private static final String PROP_CALLED_POLICY_NAME = "calledPolicyName";
 

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class MatchColor extends BooleanExpr {
+public final class MatchColor extends BooleanExpr {
 
   /** */
   private static final long serialVersionUID = 1L;

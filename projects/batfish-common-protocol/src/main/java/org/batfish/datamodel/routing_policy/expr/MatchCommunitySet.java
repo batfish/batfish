@@ -7,7 +7,7 @@ import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class MatchCommunitySet extends BooleanExpr {
+public final class MatchCommunitySet extends BooleanExpr {
 
   private static final String PROP_EXPR = "expr";
 

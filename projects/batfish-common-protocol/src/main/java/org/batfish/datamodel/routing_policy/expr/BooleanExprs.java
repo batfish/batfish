@@ -21,7 +21,7 @@ public final class BooleanExprs {
   public static final StaticBooleanExpr FALSE = new StaticBooleanExpr(StaticExpressionType.False);
   public static final StaticBooleanExpr TRUE = new StaticBooleanExpr(StaticExpressionType.True);
 
-  public static class StaticBooleanExpr extends BooleanExpr {
+  public static final class StaticBooleanExpr extends BooleanExpr {
     /** */
     private static final long serialVersionUID = 1L;
 

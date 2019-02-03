@@ -8,7 +8,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class MatchLocalRouteSourcePrefixLength extends BooleanExpr {
+public final class MatchLocalRouteSourcePrefixLength extends BooleanExpr {
 
   private static final String PROP_MATCH_LENGTH = "matchLength";
 

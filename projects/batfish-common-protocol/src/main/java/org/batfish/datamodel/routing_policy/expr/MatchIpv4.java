@@ -3,7 +3,7 @@ package org.batfish.datamodel.routing_policy.expr;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class MatchIpv4 extends BooleanExpr {
+public final class MatchIpv4 extends BooleanExpr {
 
   /** */
   private static final long serialVersionUID = 1L;

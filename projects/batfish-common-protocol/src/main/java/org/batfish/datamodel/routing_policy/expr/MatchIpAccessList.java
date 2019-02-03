@@ -5,7 +5,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class MatchIpAccessList extends BooleanExpr {
+public final class MatchIpAccessList extends BooleanExpr {
 
   /** */
   private static final long serialVersionUID = 1L;

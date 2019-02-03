@@ -29,7 +29,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
  * https://www.juniper.net/documentation/en_US/junos/topics/concept/policy-routing-policies-chain-evaluation-method.html
  */
 @ParametersAreNonnullByDefault
-public class ConjunctionChain extends BooleanExpr {
+public final class ConjunctionChain extends BooleanExpr {
 
   private static final long serialVersionUID = 1L;
 

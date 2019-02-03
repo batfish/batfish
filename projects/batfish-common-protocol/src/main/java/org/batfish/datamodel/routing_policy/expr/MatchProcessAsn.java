@@ -7,7 +7,7 @@ import org.batfish.datamodel.EigrpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class MatchProcessAsn extends BooleanExpr {
+public final class MatchProcessAsn extends BooleanExpr {
 
   private static final long serialVersionUID = 1L;
 

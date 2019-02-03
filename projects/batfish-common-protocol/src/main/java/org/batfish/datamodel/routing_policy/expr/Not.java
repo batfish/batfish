@@ -9,7 +9,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
-public class Not extends BooleanExpr {
+public final class Not extends BooleanExpr {
 
   /** */
   private static final long serialVersionUID = 1L;
