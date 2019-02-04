@@ -1,10 +1,10 @@
 {
   "class" : "org.batfish.question.filtertable.FilterTableQuestion",
   "columns" : [
-    "interface",
-    "mtu"
+    "Interface",
+    "MTU"
   ],
-  "filter" : "mtu > 0",
+  "filter" : "MTU > 0",
   "innerQuestion" : {
     "class" : "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
     "excludeShutInterfaces" : false,
