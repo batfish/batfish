@@ -3187,24 +3187,25 @@ public final class CiscoConfiguration extends VendorConfiguration {
             _networkObjects.get(name).setInfo(info);
           }
         });
-    _ciscoAsaNats.removeAll(
-        _ciscoAsaNats.stream()
-            .filter(nat -> nat.getSection() == Section.OBJECT)
-            .filter(
-                nat -> {
-                  String objectName =
-                      ((NetworkObjectAddressSpecifier) nat.getRealSource()).getName();
-                  if (_networkObjects.containsKey(objectName)
-                      && _networkObjects.get(objectName).getStart() != null) {
-                    nat.setRealSourceObject(_networkObjects.get(objectName));
-                    return false;
-                  } else {
-                    // This includes all FQDN network objects
-                    _w.redFlag("Invalid reference for object NAT " + objectName + ".");
-                    return true;
-                  }
-                })
-            .collect(Collectors.toList()));
+    _ciscoAsaNats.removeIf(
+        nat -> {
+          if (nat.getSection() != Section.OBJECT) {
+            return false;
+          }
+          String objectName = ((NetworkObjectAddressSpecifier) nat.getRealSource()).getName();
+          NetworkObject object = _networkObjects.get(objectName);
+          if (object == null) {
+            // Network object has a NAT but no addresses
+            _w.redFlag("Invalid reference for object NAT " + objectName + ".");
+            return true;
+          }
+          if (object.getStart() == null) {
+            // Unsupported network object type, already warned
+            return true;
+          }
+          nat.setRealSourceObject(object);
+          return false;
+        });
 
     // convert each NetworkObject and NetworkObjectGroup to IpSpace
     _networkObjectGroups.forEach(

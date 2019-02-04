@@ -63759,50 +63759,50 @@
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 16,
-              "Parser_Context" : "[on_nat o_network s_object stanza cisco_configuration]",
-              "Text" : "nat (inside,outside) dynamic interface"
+              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
+              "Text" : "dynamic interface"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 17,
-              "Parser_Context" : "[on_nat o_network s_object stanza cisco_configuration]",
-              "Text" : "nat (inside,outside) dynamic 1.1.1.1"
+              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
+              "Text" : "dynamic 1.1.1.1"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 18,
-              "Parser_Context" : "[on_nat o_network s_object stanza cisco_configuration]",
-              "Text" : "nat (inside,outside) dynamic source-mapped dns"
+              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
+              "Text" : "dynamic source-mapped dns"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 19,
-              "Parser_Context" : "[on_nat o_network s_object stanza cisco_configuration]",
-              "Text" : "nat (inside,any) dynamic source-mapped interface"
+              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
+              "Text" : "dynamic source-mapped interface"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 20,
-              "Parser_Context" : "[on_nat o_network s_object stanza cisco_configuration]",
-              "Text" : "nat (any,outside) dynamic pat-pool WORD interface flat"
+              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
+              "Text" : "dynamic pat-pool WORD interface flat"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 21,
-              "Parser_Context" : "[on_nat o_network s_object stanza cisco_configuration]",
-              "Text" : "nat (any,any) static interface"
+              "Parser_Context" : "[onn_static on_nat o_network s_object stanza cisco_configuration]",
+              "Text" : "static interface"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 22,
-              "Parser_Context" : "[on_nat o_network s_object stanza cisco_configuration]",
-              "Text" : "nat static source-mapped no-proxy-arp route-lookup"
+              "Parser_Context" : "[onn_static on_nat o_network s_object stanza cisco_configuration]",
+              "Text" : "static source-mapped no-proxy-arp route-lookup"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 23,
-              "Parser_Context" : "[on_nat o_network s_object stanza cisco_configuration]",
-              "Text" : "nat static source-mapped service sctp ftp bgp"
+              "Parser_Context" : "[onn_static on_nat o_network s_object stanza cisco_configuration]",
+              "Text" : "static source-mapped service sctp ftp bgp"
             }
           ],
           "Red flags" : [

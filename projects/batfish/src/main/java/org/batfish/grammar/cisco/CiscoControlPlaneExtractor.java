@@ -1475,6 +1475,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
 
+  @Nullable private CiscoAsaNat _currentAsaNat;
+
   private IpAsPathAccessList _currentAsPathAcl;
 
   private CiscoNxBgpVrfAddressFamilyConfiguration _currentBgpNxVrfAddressFamily;
@@ -3148,91 +3150,114 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitOn_nat(On_natContext ctx) {
+  public void enterOn_nat(On_natContext ctx) {
     CiscoAsaNat nat = new CiscoAsaNat();
-    int line = ctx.getStart().getLine();
 
     nat.setRealSource(new NetworkObjectAddressSpecifier(_currentNetworkObjectName));
     _configuration.referenceStructure(
-        NETWORK_OBJECT, _currentNetworkObjectName, OBJECT_NAT_REAL_SOURCE_NETWORK_OBJECT, line);
+        NETWORK_OBJECT,
+        _currentNetworkObjectName,
+        OBJECT_NAT_REAL_SOURCE_NETWORK_OBJECT,
+        ctx.getStart().getLine());
 
     nat.setSection(CiscoAsaNat.Section.OBJECT);
     natInterfaces(
         nat, ctx.asa_nat_ifaces(), OBJECT_NAT_REAL_INTERFACE, OBJECT_NAT_MAPPED_INTERFACE);
 
-    Onn_dynamicContext dynamicContext = ctx.onn_dynamic();
-    Onn_staticContext staticContext = ctx.onn_static();
+    _currentAsaNat = nat;
+  }
+
+  @Override
+  public void exitOnn_dynamic(Onn_dynamicContext ctx) {
+    _currentAsaNat.setDynamic(true);
+
     AccessListAddressSpecifier mappedSource;
-    if (dynamicContext != null) {
-      if (dynamicContext.mapped_iface != null || dynamicContext.mapped_iface_after != null) {
-        // Match outside/mapped interface. Interface must be specified.
-        // This can be in lieu of or in addition to a mapped source.
-        todo(ctx);
-        return;
-      }
-      if (dynamicContext.asa_nat_pat_pool() != null) {
-        // PAT pool
-        todo(ctx);
-        return;
-      }
-      nat.setDynamic(true);
-
-      if (dynamicContext.host_ip != null) {
-        // PAT
-        todo(ctx);
-        return;
-      } else {
-        mappedSource =
-            referenceNetworkObjectOrGroup(
-                dynamicContext.obj.getText(),
-                OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
-                OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
-                line);
-      }
-
-      // Not handled
-      if (dynamicContext.DNS() != null) {
-        todo(ctx);
-        return;
-      }
-
-    } else {
-      if (staticContext.INTERFACE() != null) {
-        // Match outside/mapped interface. Interface must be specified.
-        todo(ctx);
-        return;
-      }
-      nat.setDynamic(false);
-
-      if (staticContext.host_ip != null) {
-        // mappedSource will have the same prefix length as the real source, which may not be
-        // defined yet.
-        mappedSource =
-            new WildcardAddressSpecifier(new IpWildcard(Ip.parse(staticContext.host_ip.getText())));
-      } else {
-        mappedSource =
-            referenceNetworkObjectOrGroup(
-                staticContext.obj.getText(),
-                OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
-                OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
-                line);
-      }
-
-      // Optional service object specifiers
-      if (staticContext.asa_object_nat_service() != null) {
-        // Specifies static port translation for static NAT
-        todo(ctx);
-        return;
-      }
-
-      // Options are not handled
-      if (!staticContext.asa_nat_optional_args().isEmpty()) {
-        todo(ctx);
-        return;
-      }
+    if (ctx.mapped_iface != null || ctx.mapped_iface_after != null) {
+      // Match outside/mapped interface. Interface must be specified.
+      // This can be in lieu of or in addition to a mapped source.
+      _currentAsaNat = null;
+      todo(ctx);
+      return;
     }
-    nat.setMappedSource(mappedSource);
-    _configuration.getCiscoAsaNats().add(nat);
+    if (ctx.asa_nat_pat_pool() != null) {
+      // PAT pool
+      _currentAsaNat = null;
+      todo(ctx);
+      return;
+    }
+
+    if (ctx.host_ip != null) {
+      // PAT
+      _currentAsaNat = null;
+      todo(ctx);
+      return;
+    } else {
+      mappedSource =
+          referenceNetworkObjectOrGroup(
+              ctx.obj.getText(),
+              OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
+              OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
+              ctx.getStart().getLine());
+    }
+
+    // Not handled
+    if (ctx.DNS() != null) {
+      _currentAsaNat = null;
+      todo(ctx);
+      return;
+    }
+    _currentAsaNat.setMappedSource(mappedSource);
+  }
+
+  @Override
+  public void exitOnn_static(Onn_staticContext ctx) {
+    _currentAsaNat.setDynamic(false);
+
+    AccessListAddressSpecifier mappedSource;
+    if (ctx.INTERFACE() != null) {
+      // Match outside/mapped interface. Interface must be specified.
+      _currentAsaNat = null;
+      todo(ctx);
+      return;
+    }
+
+    if (ctx.host_ip != null) {
+      // mappedSource will have the same prefix length as the real source, which may not be
+      // defined yet.
+      mappedSource = new WildcardAddressSpecifier(new IpWildcard(Ip.parse(ctx.host_ip.getText())));
+    } else {
+      mappedSource =
+          referenceNetworkObjectOrGroup(
+              ctx.obj.getText(),
+              OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
+              OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
+              ctx.getStart().getLine());
+    }
+
+    // Optional service object specifiers
+    if (ctx.asa_object_nat_service() != null) {
+      // Specifies static port translation for static NAT
+      _currentAsaNat = null;
+      todo(ctx);
+      return;
+    }
+
+    // Options are not handled
+    if (!ctx.asa_nat_optional_args().isEmpty()) {
+      _currentAsaNat = null;
+      todo(ctx);
+      return;
+    }
+
+    _currentAsaNat.setMappedSource(mappedSource);
+  }
+
+  @Override
+  public void exitOn_nat(On_natContext ctx) {
+    if (_currentAsaNat != null) {
+      _configuration.getCiscoAsaNats().add(_currentAsaNat);
+    }
+    _currentAsaNat = null;
   }
 
   @Override

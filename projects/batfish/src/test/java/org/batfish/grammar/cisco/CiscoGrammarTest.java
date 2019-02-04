@@ -4109,7 +4109,7 @@ public class CiscoGrammarTest {
     CiscoAsaNat nat = config.getCiscoAsaNats().get(0);
     Optional<Transformation.Builder> builder =
         nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     Transformation object = builder.get().build();
     assertThat(
         object,
@@ -4124,7 +4124,7 @@ public class CiscoGrammarTest {
 
     nat = config.getCiscoAsaNats().get(1);
     builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     object = builder.get().build();
     assertThat(
         object,
@@ -4139,7 +4139,7 @@ public class CiscoGrammarTest {
 
     nat = config.getCiscoAsaNats().get(2);
     builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     object = builder.get().build();
     assertThat(
         object,
@@ -4154,7 +4154,7 @@ public class CiscoGrammarTest {
 
     nat = config.getCiscoAsaNats().get(3);
     builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     object = builder.get().build();
     assertThat(
         object,
@@ -4167,7 +4167,7 @@ public class CiscoGrammarTest {
 
   @Test
   public void testAsaObjectNatReferrers() throws IOException {
-    String hostname = "asa-nat-object-static";
+    String hostname = "asa-nat-object-refs";
     String filename = "configs/" + hostname;
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -4184,7 +4184,11 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "source-real-2", 1));
     assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "source-real-3", 1));
     assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "source-real-4", 1));
+    assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "source-real-invalid", 1));
 
+    assertThat(ccae, hasUndefinedReference(filename, INTERFACE, "dmz"));
+    assertThat(ccae, hasUndefinedReference(filename, INTERFACE, "mgmt"));
+    assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT, "source-mapped-undef"));
     assertThat(ccae, not(hasUndefinedReference(filename, INTERFACE, "inside")));
     assertThat(ccae, not(hasUndefinedReference(filename, INTERFACE, "outside")));
     assertThat(ccae, not(hasUndefinedReference(filename, INTERFACE, "other")));
@@ -4194,6 +4198,7 @@ public class CiscoGrammarTest {
     assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT, "source-real-2")));
     assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT, "source-real-3")));
     assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT, "source-real-4")));
+    assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT, "source-real-invalid")));
   }
 
   @Test
@@ -4213,7 +4218,7 @@ public class CiscoGrammarTest {
     CiscoAsaNat nat = config.getCiscoAsaNats().get(0);
     Optional<Transformation.Builder> builder =
         nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     Transformation object = builder.get().build();
     assertThat(
         object,
@@ -4224,7 +4229,7 @@ public class CiscoGrammarTest {
 
     // Host source NAT incoming
     builder = nat.toIncomingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No incoming transformation", builder.isPresent());
+    assertThat("No incoming transformation", builder.isPresent(), equalTo(true));
     object = builder.get().build();
     assertThat(
         object,
@@ -4232,7 +4237,7 @@ public class CiscoGrammarTest {
 
     nat = config.getCiscoAsaNats().get(1);
     builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     object = builder.get().build();
     assertThat(
         object,
@@ -4244,7 +4249,7 @@ public class CiscoGrammarTest {
     // inline IP used as subnet
     nat = config.getCiscoAsaNats().get(3);
     builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     object = builder.get().build();
     assertThat(
         object, equalTo(when(matchSrc(realSource4)).apply(shiftSourceIp(mappedSource4)).build()));
@@ -4304,7 +4309,9 @@ public class CiscoGrammarTest {
         objectNats.stream().map(CiscoAsaNat::getDynamic).collect(Collectors.toList()),
         contains(false, false, false, false, false, true));
 
-    // Check that object NATs of a particular type (static) are sorted
+    // Check that object NATs of a particular type (static) are sorted by their network objects
+    // See CiscoAsaNat.compareTo or
+    // https://www.cisco.com/c/en/us/td/docs/security/asa/asa910/configuration/firewall/asa-910-firewall-config/nat-basics.html#ID-2090-00000065
     assertThat(
         objectNats.stream()
             .filter(nat -> !nat.getDynamic())
@@ -4343,7 +4350,7 @@ public class CiscoGrammarTest {
     CiscoAsaNat nat = config.getCiscoAsaNats().get(0);
     Optional<Transformation.Builder> builder =
         nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     Transformation twice = builder.get().build();
     assertThat(
         twice,
@@ -4355,7 +4362,7 @@ public class CiscoGrammarTest {
     // dynamic source NAT and static destination NAT
     nat = config.getCiscoAsaNats().get(1);
     builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     twice = builder.get().build();
     assertThat(
         twice,
@@ -4369,14 +4376,14 @@ public class CiscoGrammarTest {
     // dynamic source NAT, host -> range, no interfaces specified
     nat = config.getCiscoAsaNats().get(2);
     builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     twice = builder.get().build();
     assertThat(twice, equalTo(when(matchSourceGroup).apply(assignSourceRange).build()));
 
     // dynamic source NAT and static destination NAT, no interface specified
     nat = config.getCiscoAsaNats().get(3);
     builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     twice = builder.get().build();
     assertThat(
         twice,
@@ -4464,7 +4471,7 @@ public class CiscoGrammarTest {
     CiscoAsaNat nat = config.getCiscoAsaNats().get(1);
     Optional<Transformation.Builder> builder =
         nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     Transformation twice = builder.get().build();
     assertThat(
         twice,
@@ -4475,7 +4482,7 @@ public class CiscoGrammarTest {
 
     // Host source NAT incoming
     builder = nat.toIncomingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No incoming transformation", builder.isPresent());
+    assertThat("No incoming transformation", builder.isPresent(), equalTo(true));
     twice = builder.get().build();
     assertThat(
         twice,
@@ -4485,7 +4492,7 @@ public class CiscoGrammarTest {
     // Identity NAT
     nat = config.getCiscoAsaNats().get(5);
     builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     twice = builder.get().build();
     assertThat(
         twice,
@@ -4497,7 +4504,7 @@ public class CiscoGrammarTest {
     // Subnet source NAT
     nat = config.getCiscoAsaNats().get(6);
     builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     twice = builder.get().build();
     assertThat(
         twice,
@@ -4509,7 +4516,7 @@ public class CiscoGrammarTest {
     // Source NAT with no interfaces specified
     nat = config.getCiscoAsaNats().get(7);
     builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     twice = builder.get().build();
     assertThat(
         twice,
@@ -4518,7 +4525,7 @@ public class CiscoGrammarTest {
                 .apply(shiftSourceIp(mappedSourceSubnet))
                 .build()));
     builder = nat.toIncomingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No incoming transformation", builder.isPresent());
+    assertThat("No incoming transformation", builder.isPresent(), equalTo(true));
     twice = builder.get().build();
     assertThat(
         twice,
@@ -4530,7 +4537,7 @@ public class CiscoGrammarTest {
     // Source + destination NAT with no interfaces specified
     nat = config.getCiscoAsaNats().get(8);
     builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     twice = builder.get().build();
     assertThat(
         twice,
@@ -4541,7 +4548,7 @@ public class CiscoGrammarTest {
                         shiftSourceIp(mappedSourceSubnet), shiftDestinationIp(realDestHost)))
                 .build()));
     builder = nat.toIncomingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No incoming transformation", builder.isPresent());
+    assertThat("No incoming transformation", builder.isPresent(), equalTo(true));
     twice = builder.get().build();
     assertThat(
         twice,
@@ -4567,7 +4574,7 @@ public class CiscoGrammarTest {
     CiscoAsaNat nat = config.getCiscoAsaNats().get(0);
     Optional<Transformation.Builder> builder =
         nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No outgoing transformation", builder.isPresent());
+    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
     Transformation twice = builder.get().build();
     assertThat(
         twice,
@@ -4581,7 +4588,7 @@ public class CiscoGrammarTest {
                 .build()));
 
     builder = nat.toIncomingTransformation(config.getNetworkObjects(), new Warnings());
-    MatcherAssert.assertThat("No incoming transformation", builder.isPresent());
+    assertThat("No incoming transformation", builder.isPresent(), equalTo(true));
     twice = builder.get().build();
     assertThat(
         twice,

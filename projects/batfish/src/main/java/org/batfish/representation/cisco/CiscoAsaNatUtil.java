@@ -87,7 +87,7 @@ final class CiscoAsaNatUtil {
       Warnings w) {
     NetworkObject object = networkObjects.get(specifier.getName());
     if (object == null) {
-      w.redFlag("Undefined references for network object " + specifier.getName() + ".");
+      // Previously warned about undefined reference
       return null;
     }
 
@@ -97,7 +97,16 @@ final class CiscoAsaNatUtil {
     if (object instanceof SubnetNetworkObject) {
       return ((SubnetNetworkObject) object).getPrefix();
     }
-    return null;
+    if (object instanceof FqdnNetworkObject) {
+      // Previously warned that these are not supported
+      return null;
+    }
+    if (object instanceof RangeNetworkObject) {
+      // These are supported for dynamic NAT but not static NAT
+      w.redFlag("Ranges are not supported for static NAT");
+      return null;
+    }
+    throw new BatfishException("Unexpected network object type");
   }
 
   private static MatchHeaderSpace matchField(Prefix prefix, IpField field) {
@@ -214,6 +223,7 @@ final class CiscoAsaNatUtil {
         return null;
       }
       if (matchPrefix == null || shiftPrefix == null) {
+        // Undefined reference or unsupported network object/group which was previously warned about
         return null;
       }
 
