@@ -54,7 +54,7 @@ public final class OriginatesFromAsPath extends BooleanExpr {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(@Nullable Object obj) {
     if (this == obj) {
       return true;
     } else if (!(obj instanceof OriginatesFromAsPath)) {
