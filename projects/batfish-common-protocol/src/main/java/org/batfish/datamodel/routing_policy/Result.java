@@ -98,7 +98,7 @@ public final class Result {
     return new Builder();
   }
 
-  public static class Builder {
+  public static final class Builder {
 
     private boolean _booleanValue;
     private boolean _exit;
