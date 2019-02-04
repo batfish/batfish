@@ -200,7 +200,8 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
         columnMetadata, String.format("Bidirectional paths for flow ${%s}", COL_FORWARD_FLOW));
   }
 
-  private static Map<BidirectionalTrace.Key, List<BidirectionalTrace>> groupTraces(
+  @VisibleForTesting
+  static Map<BidirectionalTrace.Key, List<BidirectionalTrace>> groupTraces(
       List<BidirectionalTrace> traces) {
     return traces.stream()
         .collect(Collectors.groupingBy(BidirectionalTrace::getKey, Collectors.toList()));

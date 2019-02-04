@@ -9,12 +9,16 @@ import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.question.traceroute.BidirectionalTracerouteAnswerer.computeBidirectionalTraces;
+import static org.batfish.question.traceroute.BidirectionalTracerouteAnswerer.groupTraces;
 import static org.batfish.question.traceroute.MockTracerouteEngine.forFlow;
 import static org.batfish.question.traceroute.MockTracerouteEngine.forFlows;
 import static org.batfish.question.traceroute.MockTracerouteEngine.forSessions;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -24,6 +28,7 @@ import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.BidirectionalTrace;
+import org.batfish.datamodel.flow.BidirectionalTrace.Key;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
@@ -198,5 +203,98 @@ public final class BidirectionalTracerouteAnswererTest {
                 ImmutableSet.of(),
                 REVERSE_FLOW,
                 noSessionReverseTrace)));
+  }
+
+  @Test
+  public void testGroupTraces() {
+    Trace t1 = new Trace(ACCEPTED, ImmutableList.of());
+    Trace t2 = new Trace(EXITS_NETWORK, ImmutableList.of());
+    Trace t3 = new Trace(NEIGHBOR_UNREACHABLE, ImmutableList.of());
+    Trace t4 = new Trace(DENIED_IN, ImmutableList.of());
+
+    FirewallSessionTraceInfo session1 =
+        new FirewallSessionTraceInfo("session1", null, null, ImmutableSet.of(), TRUE, null);
+    FirewallSessionTraceInfo session2 =
+        new FirewallSessionTraceInfo("session2", null, null, ImmutableSet.of(), TRUE, null);
+
+    {
+      // All BidirectionalTraces have the same key, so are in the same group.
+      BidirectionalTrace bt1 =
+          new BidirectionalTrace(FORWARD_FLOW, t1, ImmutableSet.of(), REVERSE_FLOW, t3);
+      BidirectionalTrace bt2 =
+          new BidirectionalTrace(FORWARD_FLOW, t1, ImmutableSet.of(), REVERSE_FLOW, t4);
+      BidirectionalTrace bt3 =
+          new BidirectionalTrace(FORWARD_FLOW, t2, ImmutableSet.of(), REVERSE_FLOW, t3);
+      BidirectionalTrace bt4 =
+          new BidirectionalTrace(FORWARD_FLOW, t2, ImmutableSet.of(), REVERSE_FLOW, t4);
+
+      Key key = bt1.getKey();
+      assertThat(key, equalTo(bt2.getKey()));
+      assertThat(key, equalTo(bt3.getKey()));
+      assertThat(key, equalTo(bt4.getKey()));
+
+      List<BidirectionalTrace> bts = ImmutableList.of(bt1, bt2, bt3, bt4);
+      assertThat(groupTraces(bts), hasEntry(equalTo(key), equalTo(bts)));
+    }
+
+    {
+      // Traces with different forward flows are in different groups
+      BidirectionalTrace bt1 =
+          new BidirectionalTrace(FORWARD_FLOW, t1, ImmutableSet.of(), REVERSE_FLOW, t2);
+      BidirectionalTrace bt2 =
+          new BidirectionalTrace(REVERSE_FLOW, t1, ImmutableSet.of(), REVERSE_FLOW, t2);
+
+      assertThat(bt1.getKey(), not(equalTo(bt2.getKey())));
+      assertThat(
+          groupTraces(ImmutableList.of(bt1, bt2)),
+          equalTo(
+              ImmutableMap.of(
+                  bt1.getKey(), ImmutableList.of(bt1), bt2.getKey(), ImmutableList.of(bt2))));
+    }
+
+    {
+      // Traces with different number of sessions are in different groups
+      BidirectionalTrace bt1 =
+          new BidirectionalTrace(FORWARD_FLOW, t1, ImmutableSet.of(), REVERSE_FLOW, t2);
+      BidirectionalTrace bt2 =
+          new BidirectionalTrace(FORWARD_FLOW, t1, ImmutableSet.of(session1), REVERSE_FLOW, t2);
+
+      assertThat(bt1.getKey(), not(equalTo(bt2.getKey())));
+      assertThat(
+          groupTraces(ImmutableList.of(bt1, bt2)),
+          equalTo(
+              ImmutableMap.of(
+                  bt1.getKey(), ImmutableList.of(bt1), bt2.getKey(), ImmutableList.of(bt2))));
+    }
+
+    {
+      // Traces with different sessions are in different groups
+      BidirectionalTrace bt1 =
+          new BidirectionalTrace(FORWARD_FLOW, t1, ImmutableSet.of(session1), REVERSE_FLOW, t2);
+      BidirectionalTrace bt2 =
+          new BidirectionalTrace(FORWARD_FLOW, t1, ImmutableSet.of(session2), REVERSE_FLOW, t2);
+
+      assertThat(bt1.getKey(), not(equalTo(bt2.getKey())));
+      assertThat(
+          groupTraces(ImmutableList.of(bt1, bt2)),
+          equalTo(
+              ImmutableMap.of(
+                  bt1.getKey(), ImmutableList.of(bt1), bt2.getKey(), ImmutableList.of(bt2))));
+    }
+
+    {
+      // Traces with different reverse flows are in different groups
+      BidirectionalTrace bt1 =
+          new BidirectionalTrace(FORWARD_FLOW, t1, ImmutableSet.of(), REVERSE_FLOW, t2);
+      BidirectionalTrace bt2 =
+          new BidirectionalTrace(FORWARD_FLOW, t1, ImmutableSet.of(), FORWARD_FLOW, t2);
+
+      assertThat(bt1.getKey(), not(equalTo(bt2.getKey())));
+      assertThat(
+          groupTraces(ImmutableList.of(bt1, bt2)),
+          equalTo(
+              ImmutableMap.of(
+                  bt1.getKey(), ImmutableList.of(bt1), bt2.getKey(), ImmutableList.of(bt2))));
+    }
   }
 }
