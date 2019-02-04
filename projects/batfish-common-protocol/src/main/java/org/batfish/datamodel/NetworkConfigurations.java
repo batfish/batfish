@@ -3,11 +3,15 @@ package org.batfish.datamodel;
 import static java.util.Objects.requireNonNull;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.ospf.OspfNeighborConfig;
+import org.batfish.datamodel.ospf.OspfNeighborConfigId;
+import org.batfish.datamodel.ospf.OspfProcess;
 
 /**
  * Represents a set of configurations in a network. Has helper methods to "walk the configuration
@@ -25,6 +29,11 @@ public final class NetworkConfigurations {
   @Nonnull
   public Map<String, Configuration> getMap() {
     return _configurations;
+  }
+
+  @Nonnull
+  public Collection<Configuration> all() {
+    return _configurations.values();
   }
 
   @Nonnull
@@ -74,6 +83,13 @@ public final class NetworkConfigurations {
   @Nonnull
   public Optional<Mlag> getMlagConfig(String hostname, String id) {
     return get(hostname).map(Configuration::getMlags).map(m -> m.get(id));
+  }
+
+  public Optional<OspfNeighborConfig> getOspfNeighborConfig(OspfNeighborConfigId ospfConfigId) {
+    return getVrf(ospfConfigId.getHostname(), ospfConfigId.getVrfName())
+        .map(Vrf::getOspfProcess)
+        .map(OspfProcess::getOspfNeighborConfigs)
+        .map(oc -> oc.get(ospfConfigId.getInterfaceName()));
   }
 
   /** Return a VRF identified by hostname and VRF name */

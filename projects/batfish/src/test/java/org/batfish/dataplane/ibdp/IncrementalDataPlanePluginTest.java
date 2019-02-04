@@ -63,6 +63,7 @@ import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisProcess;
+import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.dataplane.TracerouteEngineImpl;
@@ -372,7 +373,10 @@ public class IncrementalDataPlanePluginTest {
     Topology topology = new Topology(Collections.emptySortedSet());
     ComputeDataPlaneResult dp =
         engine.computeDataPlane(
-            ImmutableMap.of(c.getHostname(), c), topology, Collections.emptySet());
+            ImmutableMap.of(c.getHostname(), c),
+            topology,
+            OspfTopology.empty(),
+            Collections.emptySet());
 
     // generating fibs should not crash
     dp._dataPlane.getFibs();

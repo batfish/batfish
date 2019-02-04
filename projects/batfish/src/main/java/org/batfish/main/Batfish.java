@@ -169,6 +169,7 @@ import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.datamodel.questions.NodesSpecifier;
@@ -2906,6 +2907,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void postProcessSnapshot(Map<String, Configuration> configurations) {
     updateBlacklistedAndInactiveConfigs(configurations);
     postProcessAggregatedInterfaces(configurations);
+    OspfTopologyUtils.initNeighborConfigs(NetworkConfigurations.of(configurations));
     postProcessOspfCosts(configurations);
     computeAndStoreCompletionMetadata(configurations);
   }
