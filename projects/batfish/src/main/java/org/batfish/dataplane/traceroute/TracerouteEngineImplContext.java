@@ -1,15 +1,12 @@
 package org.batfish.dataplane.traceroute;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.buildSessionsByIngressInterface;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.validateInputs;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Ordering;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -19,10 +16,10 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -206,12 +203,11 @@ public class TracerouteEngineImplContext {
         .containsIp(arpIp, ImmutableMap.of());
   }
 
-  SortedSet<Edge> getInterfaceOutEdges(String currentNodeName, String outgoingIfaceName) {
-    NodeInterfacePair nip = new NodeInterfacePair(currentNodeName, outgoingIfaceName);
-    return firstNonNull(
-            _dataPlane.getTopology().getInterfaceEdges().get(nip), ImmutableSortedSet.<Edge>of())
-        .stream()
-        .filter(edge -> edge.getTail().equals(nip))
-        .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
+  @Nonnull
+  SortedSet<NodeInterfacePair> getInterfaceNeighbors(
+      String currentNodeName, String outgoingIfaceName) {
+    return _dataPlane
+        .getTopology()
+        .getNeighbors(new NodeInterfacePair(currentNodeName, outgoingIfaceName));
   }
 }

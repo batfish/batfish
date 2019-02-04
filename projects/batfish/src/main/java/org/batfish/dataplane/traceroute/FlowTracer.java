@@ -34,7 +34,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
@@ -186,16 +185,15 @@ class FlowTracer {
   }
 
   /** Creates a new TransmissionContext for the specified last-hop node and outgoing interface. */
-  private FlowTracer followEdge(Edge edge) {
-    checkArgument(edge.getNode1().equals(_currentNode.getName()));
+  private FlowTracer followEdge(NodeInterfacePair exitIface, NodeInterfacePair enterIface) {
     return new FlowTracer(
         _tracerouteContext,
-        new Node(edge.getNode2()),
-        edge.getInt2(),
+        new Node(enterIface.getHostname()),
+        enterIface.getInterface(),
         _breadcrumbs,
         _hops,
         new ArrayList<>(),
-        edge.getTail(),
+        exitIface,
         _newSessions,
         _originalFlow,
         _currentFlow,
@@ -218,8 +216,8 @@ class FlowTracer {
   }
 
   private void processOutgoingInterfaceEdges(
-      String outgoingInterface, Ip nextHopIp, SortedSet<Edge> edges) {
-    checkArgument(!edges.isEmpty(), "No edges.");
+      String outgoingInterface, Ip nextHopIp, SortedSet<NodeInterfacePair> neighborIfaces) {
+    checkArgument(!neighborIfaces.isEmpty(), "No neighbor interfaces.");
     Ip arpIp =
         Route.UNSET_ROUTE_NEXT_HOP_IP.equals(nextHopIp) ? _currentFlow.getDstIp() : nextHopIp;
 
@@ -231,15 +229,12 @@ class FlowTracer {
     Hop hop = new Hop(_currentNode, _steps);
     _hops.add(hop);
 
-    for (Edge edge : edges) {
-      if (!edge.getNode1().equals(_currentNode.getName())) {
-        continue;
-      }
-      checkState(edge.getInt1().equals(outgoingInterface), "Edge is not for outgoingInterface");
-      String toNode = edge.getNode2();
-      String toIface = edge.getInt2();
+    NodeInterfacePair exitIface = new NodeInterfacePair(_currentNode.getName(), outgoingInterface);
+    for (NodeInterfacePair enterIface : neighborIfaces) {
+      String toNode = enterIface.getHostname();
+      String toIface = enterIface.getInterface();
       if (_tracerouteContext.repliesToArp(toNode, toIface, arpIp)) {
-        followEdge(edge).processHop();
+        followEdge(exitIface, enterIface).processHop();
       }
     }
   }
@@ -490,9 +485,8 @@ class FlowTracer {
 
       // Forward to neighbor.
       followEdge(
-              new Edge(
-                  new NodeInterfacePair(currentNodeName, session.getOutgoingInterface()),
-                  session.getNextHop()))
+              new NodeInterfacePair(currentNodeName, session.getOutgoingInterface()),
+              session.getNextHop())
           .processHop();
       return true;
     } finally {
@@ -558,16 +552,16 @@ class FlowTracer {
 
     String currentNodeName = _currentNode.getName();
     String outgoingIfaceName = outgoingInterface.getName();
-    SortedSet<Edge> edges =
-        _tracerouteContext.getInterfaceOutEdges(currentNodeName, outgoingIfaceName);
-    if (edges == null || edges.isEmpty()) {
+    SortedSet<NodeInterfacePair> neighborIfaces =
+        _tracerouteContext.getInterfaceNeighbors(currentNodeName, outgoingIfaceName);
+    if (neighborIfaces.isEmpty()) {
       FlowDisposition disposition =
           _tracerouteContext.computeDisposition(
               currentNodeName, outgoingIfaceName, _currentFlow.getDstIp());
 
       buildArpFailureTrace(outgoingIfaceName, disposition);
     } else {
-      processOutgoingInterfaceEdges(outgoingIfaceName, nextHopIp, edges);
+      processOutgoingInterfaceEdges(outgoingIfaceName, nextHopIp, neighborIfaces);
     }
   }
 

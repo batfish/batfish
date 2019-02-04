@@ -28,7 +28,6 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -191,7 +190,7 @@ public class Graph {
       for (String router : toRemove) {
         _configurations.remove(router);
       }
-      topology.prune(null, toRemove, null);
+      topology = topology.prune(null, toRemove, null);
     }
 
     initGraph(topology);
@@ -369,8 +368,6 @@ public class Graph {
       routerIfaceMap.put(router, ifacePairs);
     }
 
-    Map<NodeInterfacePair, SortedSet<Edge>> ifaceEdges = topology.getInterfaceEdges();
-
     _neighbors = new HashMap<>();
 
     for (Entry<String, Set<NodeInterfacePair>> entry : routerIfaceMap.entrySet()) {
@@ -380,35 +377,32 @@ public class Graph {
       Set<String> neighs = new HashSet<>();
 
       for (NodeInterfacePair nip : nips) {
-        SortedSet<Edge> es = ifaceEdges.get(nip);
+        SortedSet<NodeInterfacePair> neighborIfaces = topology.getNeighbors(nip);
         Interface i1 = ifaceMap.get(nip);
-        boolean hasNoOtherEnd = (es == null && i1.getAddress() != null);
+        boolean hasNoOtherEnd = (neighborIfaces.isEmpty() && i1.getAddress() != null);
         if (hasNoOtherEnd) {
           GraphEdge ge = new GraphEdge(i1, null, router, null, false, false);
           graphEdges.add(ge);
         }
-        if (es != null) {
-          boolean hasMultipleEnds = (es.size() > 2);
+        if (!neighborIfaces.isEmpty()) {
+          boolean hasMultipleEnds = (neighborIfaces.size() > 2);
           if (hasMultipleEnds) {
             GraphEdge ge = new GraphEdge(i1, null, router, null, false, false);
             graphEdges.add(ge);
           } else {
-            for (Edge e : es) {
+            for (NodeInterfacePair neighborIface : neighborIfaces) {
               // Weird inference behavior from Batfish here with a self-loop
-              if (router.equals(e.getNode1()) && router.equals(e.getNode2())) {
+              if (router.equals(neighborIface.getHostname())) {
                 GraphEdge ge = new GraphEdge(i1, null, router, null, false, false);
                 graphEdges.add(ge);
               }
-              // Only look at the first pair
-              if (!router.equals(e.getNode2())) {
-                Interface i2 = ifaceMap.get(e.getHead());
-                String neighbor = e.getNode2();
-                GraphEdge ge1 = new GraphEdge(i1, i2, router, neighbor, false, false);
-                GraphEdge ge2 = new GraphEdge(i2, i1, neighbor, router, false, false);
-                _otherEnd.put(ge1, ge2);
-                graphEdges.add(ge1);
-                neighs.add(neighbor);
-              }
+              Interface i2 = ifaceMap.get(neighborIface);
+              String neighbor = neighborIface.getHostname();
+              GraphEdge ge1 = new GraphEdge(i1, i2, router, neighbor, false, false);
+              GraphEdge ge2 = new GraphEdge(i2, i1, neighbor, router, false, false);
+              _otherEnd.put(ge1, ge2);
+              graphEdges.add(ge1);
+              neighs.add(neighbor);
             }
           }
         }
