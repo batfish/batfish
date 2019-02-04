@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.toMap;
 import static org.batfish.symbolic.CommunityVarCollector.collectCommunityVars;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -190,7 +191,7 @@ public class Graph {
       for (String router : toRemove) {
         _configurations.remove(router);
       }
-      topology = topology.prune(null, toRemove, null);
+      topology = topology.prune(ImmutableSet.of(), toRemove, ImmutableSet.of());
     }
 
     initGraph(topology);
