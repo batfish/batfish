@@ -55,13 +55,10 @@ public final class Disjunction extends BooleanExpr {
       if (disjunctResult.getExit()) {
         return disjunctResult;
       } else if (disjunctResult.getBooleanValue()) {
-        disjunctResult.setReturn(false);
-        return disjunctResult;
+        return disjunctResult.toBuilder().setReturn(false).build();
       }
     }
-    Result result = new Result();
-    result.setBooleanValue(false);
-    return result;
+    return new Result(false);
   }
 
   @JsonProperty(PROP_DISJUNCTS)

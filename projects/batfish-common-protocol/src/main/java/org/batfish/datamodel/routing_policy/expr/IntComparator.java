@@ -11,28 +11,19 @@ public enum IntComparator {
   LT;
 
   public Result apply(int lhs, int rhs) {
-    Result result = new Result();
-    boolean b;
     switch (this) {
       case EQ:
-        b = (lhs == rhs);
-        break;
+        return new Result(lhs == rhs);
       case GE:
-        b = (lhs >= rhs);
-        break;
+        return new Result(lhs >= rhs);
       case GT:
-        b = (lhs > rhs);
-        break;
+        return new Result(lhs > rhs);
       case LE:
-        b = (lhs <= rhs);
-        break;
+        return new Result(lhs <= rhs);
       case LT:
-        b = (lhs < rhs);
-        break;
+        return new Result(lhs < rhs);
       default:
         throw new BatfishException("Invalid " + IntComparator.class.getSimpleName());
     }
-    result.setBooleanValue(b);
-    return result;
   }
 }

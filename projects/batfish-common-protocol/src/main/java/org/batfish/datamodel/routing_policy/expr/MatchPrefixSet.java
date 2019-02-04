@@ -47,10 +47,7 @@ public final class MatchPrefixSet extends BooleanExpr {
   @Override
   public Result evaluate(Environment environment) {
     Prefix prefix = _prefix.evaluate(environment);
-    boolean match = _prefixSet.matches(prefix, environment);
-    Result result = new Result();
-    result.setBooleanValue(match);
-    return result;
+    return new Result(_prefixSet.matches(prefix, environment));
   }
 
   @JsonProperty(PROP_PREFIX)

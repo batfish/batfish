@@ -34,8 +34,6 @@ public final class MatchCommunitySet extends BooleanExpr {
 
   @Override
   public Result evaluate(Environment environment) {
-    Result result = new Result();
-    boolean match = false;
     SortedSet<Long> inputCommunities = null;
     if (environment.getUseOutputAttributes()
         && environment.getOutputRoute() instanceof BgpRoute.Builder) {
@@ -47,11 +45,9 @@ public final class MatchCommunitySet extends BooleanExpr {
       BgpRoute bgpRoute = (BgpRoute) environment.getOriginalRoute();
       inputCommunities = bgpRoute.getCommunities();
     }
-    if (inputCommunities != null) {
-      match = _expr.matchAnyCommunity(environment, inputCommunities);
-    }
-    result.setBooleanValue(match);
-    return result;
+    return inputCommunities == null
+        ? new Result(false)
+        : new Result(_expr.matchAnyCommunity(environment, inputCommunities));
   }
 
   @JsonProperty(PROP_EXPR)

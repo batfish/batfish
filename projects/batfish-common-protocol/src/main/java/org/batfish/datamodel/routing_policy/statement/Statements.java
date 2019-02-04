@@ -52,30 +52,24 @@ public enum Statements {
 
     @Override
     public Result execute(Environment environment) {
-      Result result = new Result();
       switch (this._type) {
         case DefaultAction:
-          result.setExit(true);
-          result.setBooleanValue(environment.getDefaultAction());
-          break;
+          return Result.builder()
+              .setExit(true)
+              .setBooleanValue(environment.getDefaultAction())
+              .build();
 
         case DeleteAllCommunities:
           break;
 
         case ExitAccept:
-          result.setExit(true);
-          result.setBooleanValue(true);
-          break;
+          return Result.builder().setExit(true).setBooleanValue(true).build();
 
         case ExitReject:
-          result.setExit(true);
-          result.setBooleanValue(false);
-          break;
+          return Result.builder().setExit(true).setBooleanValue(false).build();
 
         case FallThrough:
-          result.setReturn(true);
-          result.setFallThrough(true);
-          break;
+          return Result.builder().setReturn(true).setFallThrough(true).build();
 
         case RemovePrivateAs:
           {
@@ -89,23 +83,19 @@ public enum Statements {
           }
 
         case Return:
-          result.setReturn(true);
-          break;
+          return Result.builder().setReturn(true).build();
 
         case ReturnFalse:
-          result.setReturn(true);
-          result.setBooleanValue(false);
-          break;
+          return Result.builder().setReturn(true).setBooleanValue(false).build();
 
         case ReturnLocalDefaultAction:
-          result.setReturn(true);
-          result.setBooleanValue(environment.getLocalDefaultAction());
-          break;
+          return Result.builder()
+              .setReturn(true)
+              .setBooleanValue(environment.getLocalDefaultAction())
+              .build();
 
         case ReturnTrue:
-          result.setReturn(true);
-          result.setBooleanValue(true);
-          break;
+          return Result.builder().setReturn(true).setBooleanValue(true).build();
 
         case SetDefaultActionAccept:
           environment.setDefaultAction(true);
@@ -153,7 +143,7 @@ public enum Statements {
         default:
           break;
       }
-      return result;
+      return new Result(false);
     }
 
     @JsonProperty(PROP_TYPE)
