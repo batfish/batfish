@@ -1515,7 +1515,7 @@ public class VirtualRouter implements Serializable {
    * our queues.
    *
    * @param allNodes map of all nodes, keyed by hostname
-   * @param ospfTopology
+   * @param ospfTopology the OSPF topology to use
    * @return a pair of {@link RibDelta}s, for Type1 and Type2 routes
    */
   @Nullable

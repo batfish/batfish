@@ -254,7 +254,7 @@ class IncrementalBdpEngine {
    * @param iterationLabel iteration label (for stats tracking)
    * @param allNodes all nodes in the network (for correct neighbor referencing)
    * @param bgpTopology the bgp peering relationships
-   * @param ospfTopology
+   * @param ospfTopology the OSPF topology to use
    */
   private void computeDependentRoutesIteration(
       Map<String, Node> nodes,
