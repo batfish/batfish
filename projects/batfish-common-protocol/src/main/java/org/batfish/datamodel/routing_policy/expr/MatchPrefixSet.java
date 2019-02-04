@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -11,6 +12,10 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
+/**
+ * Boolean expression that tests whether an IPv4 prefix extracted from an {@link Environment} using
+ * a given {@link PrefixExpr} matches a given {@link PrefixSetExpr}.
+ */
 @ParametersAreNonnullByDefault
 public final class MatchPrefixSet extends BooleanExpr {
 
@@ -19,9 +24,8 @@ public final class MatchPrefixSet extends BooleanExpr {
   private static final String PROP_PREFIX = "prefix";
   private static final String PROP_PREFIX_SET = "prefixSet";
 
-  @Nonnull private PrefixExpr _prefix;
-
-  @Nonnull private PrefixSetExpr _prefixSet;
+  @Nonnull private final PrefixExpr _prefix;
+  @Nonnull private final PrefixSetExpr _prefixSet;
 
   @JsonCreator
   private static MatchPrefixSet jsonCreator(
@@ -38,17 +42,6 @@ public final class MatchPrefixSet extends BooleanExpr {
   public MatchPrefixSet(PrefixExpr prefix, PrefixSetExpr prefixSet) {
     _prefix = prefix;
     _prefixSet = prefixSet;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    } else if (!(obj instanceof MatchPrefixSet)) {
-      return false;
-    }
-    MatchPrefixSet other = (MatchPrefixSet) obj;
-    return _prefix.equals(other._prefix) && _prefixSet.equals(other._prefixSet);
   }
 
   @Override
@@ -73,12 +66,19 @@ public final class MatchPrefixSet extends BooleanExpr {
   }
 
   @Override
+  public boolean equals(@Nullable Object obj) {
+    if (this == obj) {
+      return true;
+    } else if (!(obj instanceof MatchPrefixSet)) {
+      return false;
+    }
+    MatchPrefixSet other = (MatchPrefixSet) obj;
+    return Objects.equals(_prefix, other._prefix) && Objects.equals(_prefixSet, other._prefixSet);
+  }
+
+  @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + _prefix.hashCode();
-    result = prime * result + _prefixSet.hashCode();
-    return result;
+    return Objects.hash(_prefix, _prefixSet);
   }
 
   @Override
