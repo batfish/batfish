@@ -207,19 +207,24 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
         .collect(Collectors.groupingBy(BidirectionalTrace::getKey, Collectors.toList()));
   }
 
-  // Invariant: each trace has getKey() equal to key.
-  private static Row toRow(BidirectionalTrace.Key key, List<BidirectionalTrace> traces) {
+  @VisibleForTesting
+  static Row toRow(BidirectionalTrace.Key key, List<BidirectionalTrace> traces) {
+    // Invariant: each trace has getKey() equal to key.
+    assert traces.stream().allMatch(trace -> trace.getKey().equals(key));
+
     List<Trace> forwardTraces =
         traces.stream()
             .map(BidirectionalTrace::getForwardTrace)
-            .collect(ImmutableList.toImmutableList());
-    List<String> sessionHops =
-        key.getNewSessions().stream()
-            .map(FirewallSessionTraceInfo::getHostname)
+            .distinct()
             .collect(ImmutableList.toImmutableList());
     List<Trace> reverseTraces =
         traces.stream()
             .map(BidirectionalTrace::getReverseTrace)
+            .distinct()
+            .collect(ImmutableList.toImmutableList());
+    List<String> sessionHops =
+        key.getNewSessions().stream()
+            .map(FirewallSessionTraceInfo::getHostname)
             .collect(ImmutableList.toImmutableList());
     return Row.of(
         COL_FORWARD_FLOW,
