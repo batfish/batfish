@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.TracerouteEngine;
@@ -35,9 +36,10 @@ import org.batfish.datamodel.table.TableMetadata;
 /** {@link Answerer} for {@link BidirectionalTracerouteQuestion}. */
 public class BidirectionalTracerouteAnswerer extends Answerer {
   static final String COL_FORWARD_FLOW = "Forward_Flow";
-  static final String COL_FORWARD_TRACE = "Forward_Trace";
+  static final String COL_FORWARD_TRACES = "Forward_Traces";
+  static final String COL_NEW_SESSIONS = "New_Sessions";
   static final String COL_REVERSE_FLOW = "Reverse_Flow";
-  static final String COL_REVERSE_TRACE = "Reverse_Trace";
+  static final String COL_REVERSE_TRACES = "Reverse_Traces";
 
   private final TracerouteAnswererHelper _helper;
   private final boolean _ignoreFilters;
@@ -64,8 +66,8 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
     List<BidirectionalTrace> bidirectionalTraces =
         computeBidirectionalTraces(flows, tracerouteEngine, _ignoreFilters);
     ImmutableMultiset<Row> rows =
-        prune(bidirectionalTraces, _maxTraces).stream()
-            .map(BidirectionalTracerouteAnswerer::toRow)
+        groupTraces(prune(bidirectionalTraces, _maxTraces)).entrySet().stream()
+            .map(entry -> toRow(entry.getKey(), entry.getValue()))
             .collect(ImmutableMultiset.toImmutableMultiset());
     TableAnswerElement table = new TableAnswerElement(metadata());
     table.postProcessAnswer(_question, rows);
@@ -137,8 +139,11 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
                 forwardTraceAndReverseFlow -> {
                   Flow reverseFlow = forwardTraceAndReverseFlow.getReverseFlow();
                   Trace forwardTrace = forwardTraceAndReverseFlow.getTrace();
+                  Set<FirewallSessionTraceInfo> newSessions =
+                      forwardTraceAndReverseFlow.getNewFirewallSessions();
                   if (reverseFlow == null) {
-                    result.add(new BidirectionalTrace(forwardFlow, forwardTrace, null, null));
+                    result.add(
+                        new BidirectionalTrace(forwardFlow, forwardTrace, newSessions, null, null));
                   } else {
                     FlowAndSessions fas =
                         new FlowAndSessions(
@@ -148,7 +153,11 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
                         .map(
                             reverseTrace ->
                                 new BidirectionalTrace(
-                                    forwardFlow, forwardTrace, reverseFlow, reverseTrace))
+                                    forwardFlow,
+                                    forwardTrace,
+                                    newSessions,
+                                    reverseFlow,
+                                    reverseTrace))
                         .forEach(result::add);
                   }
                 }));
@@ -176,22 +185,51 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
     List<ColumnMetadata> columnMetadata =
         ImmutableList.of(
             new ColumnMetadata(COL_FORWARD_FLOW, Schema.FLOW, "The forward flow.", true, false),
-            new ColumnMetadata(COL_FORWARD_TRACE, Schema.TRACE, "The forward trace.", false, true),
-            new ColumnMetadata(COL_REVERSE_FLOW, Schema.FLOW, "The reverse flow.", false, true),
-            new ColumnMetadata(COL_REVERSE_TRACE, Schema.TRACE, "The reverse trace.", false, true));
+            new ColumnMetadata(
+                COL_FORWARD_TRACES, Schema.list(Schema.TRACE), "The forward traces.", false, true),
+            new ColumnMetadata(
+                COL_NEW_SESSIONS,
+                Schema.list(Schema.STRING),
+                "Sessions initialized by the forward trace.",
+                true,
+                false),
+            new ColumnMetadata(COL_REVERSE_FLOW, Schema.FLOW, "The reverse flow.", true, false),
+            new ColumnMetadata(
+                COL_REVERSE_TRACES, Schema.list(Schema.TRACE), "The reverse traces.", false, true));
     return new TableMetadata(
         columnMetadata, String.format("Bidirectional paths for flow ${%s}", COL_FORWARD_FLOW));
   }
 
-  private static Row toRow(BidirectionalTrace trace) {
+  private static Map<BidirectionalTrace.Key, List<BidirectionalTrace>> groupTraces(
+      List<BidirectionalTrace> traces) {
+    return traces.stream()
+        .collect(Collectors.groupingBy(BidirectionalTrace::getKey, Collectors.toList()));
+  }
+
+  // Invariant: each trace has getKey() equal to key.
+  private static Row toRow(BidirectionalTrace.Key key, List<BidirectionalTrace> traces) {
+    List<Trace> forwardTraces =
+        traces.stream()
+            .map(BidirectionalTrace::getForwardTrace)
+            .collect(ImmutableList.toImmutableList());
+    List<String> sessionHops =
+        key.getNewSessions().stream()
+            .map(FirewallSessionTraceInfo::getHostname)
+            .collect(ImmutableList.toImmutableList());
+    List<Trace> reverseTraces =
+        traces.stream()
+            .map(BidirectionalTrace::getReverseTrace)
+            .collect(ImmutableList.toImmutableList());
     return Row.of(
         COL_FORWARD_FLOW,
-        trace.getForwardFlow(),
-        COL_FORWARD_TRACE,
-        trace.getForwardTrace(),
+        key.getForwardFlow(),
+        COL_FORWARD_TRACES,
+        forwardTraces,
+        COL_NEW_SESSIONS,
+        sessionHops,
         COL_REVERSE_FLOW,
-        trace.getReverseFlow(),
-        COL_REVERSE_TRACE,
-        trace.getReverseTrace());
+        key.getReverseFlow(),
+        COL_REVERSE_TRACES,
+        reverseTraces);
   }
 }

@@ -60,7 +60,8 @@ public final class BidirectionalTracerouteAnswererTest {
 
     assertThat(
         bidirectionalTraces,
-        contains(new BidirectionalTrace(FORWARD_FLOW, forwardTrace, null, null)));
+        contains(
+            new BidirectionalTrace(FORWARD_FLOW, forwardTrace, ImmutableSet.of(), null, null)));
   }
 
   @Test
@@ -83,7 +84,9 @@ public final class BidirectionalTracerouteAnswererTest {
 
     assertThat(
         bidirectionalTraces,
-        contains(new BidirectionalTrace(FORWARD_FLOW, forwardTrace, REVERSE_FLOW, reverseTrace)));
+        contains(
+            new BidirectionalTrace(
+                FORWARD_FLOW, forwardTrace, ImmutableSet.of(), REVERSE_FLOW, reverseTrace)));
   }
 
   @Test
@@ -113,11 +116,15 @@ public final class BidirectionalTracerouteAnswererTest {
     assertThat(
         bidirectionalTraces,
         contains(
-            new BidirectionalTrace(FORWARD_FLOW, forwardTrace1, REVERSE_FLOW, reverseTrace1),
-            new BidirectionalTrace(FORWARD_FLOW, forwardTrace1, REVERSE_FLOW, reverseTrace2),
-            new BidirectionalTrace(FORWARD_FLOW, forwardTrace2, null, null),
-            new BidirectionalTrace(FORWARD_FLOW, forwardTrace3, REVERSE_FLOW, reverseTrace1),
-            new BidirectionalTrace(FORWARD_FLOW, forwardTrace3, REVERSE_FLOW, reverseTrace2)));
+            new BidirectionalTrace(
+                FORWARD_FLOW, forwardTrace1, ImmutableSet.of(), REVERSE_FLOW, reverseTrace1),
+            new BidirectionalTrace(
+                FORWARD_FLOW, forwardTrace1, ImmutableSet.of(), REVERSE_FLOW, reverseTrace2),
+            new BidirectionalTrace(FORWARD_FLOW, forwardTrace2, ImmutableSet.of(), null, null),
+            new BidirectionalTrace(
+                FORWARD_FLOW, forwardTrace3, ImmutableSet.of(), REVERSE_FLOW, reverseTrace1),
+            new BidirectionalTrace(
+                FORWARD_FLOW, forwardTrace3, ImmutableSet.of(), REVERSE_FLOW, reverseTrace2)));
   }
 
   @Test
@@ -141,7 +148,9 @@ public final class BidirectionalTracerouteAnswererTest {
         computeBidirectionalTraces(ImmutableSet.of(FORWARD_FLOW), tracerouteEngine, false);
     assertThat(
         bidirectionalTraces,
-        contains(new BidirectionalTrace(FORWARD_FLOW, forwardTrace, REVERSE_FLOW, reverseTrace)));
+        contains(
+            new BidirectionalTrace(
+                FORWARD_FLOW, forwardTrace, ImmutableSet.of(session), REVERSE_FLOW, reverseTrace)));
   }
 
   /** Make sure we don't mix traces and sessions. */
@@ -178,8 +187,16 @@ public final class BidirectionalTracerouteAnswererTest {
         bidirectionalTraces,
         containsInAnyOrder(
             new BidirectionalTrace(
-                FORWARD_FLOW, sessionForwardTrace, REVERSE_FLOW, sessionReverseTrace),
+                FORWARD_FLOW,
+                sessionForwardTrace,
+                ImmutableSet.of(session),
+                REVERSE_FLOW,
+                sessionReverseTrace),
             new BidirectionalTrace(
-                FORWARD_FLOW, noSessionForwardTrace, REVERSE_FLOW, noSessionReverseTrace)));
+                FORWARD_FLOW,
+                noSessionForwardTrace,
+                ImmutableSet.of(),
+                REVERSE_FLOW,
+                noSessionReverseTrace)));
   }
 }
