@@ -3,7 +3,8 @@ package org.batfish.question.initialization;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateErrors;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateParseWarnings;
-import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateWarnings;
+import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateRedflagWarnings;
+import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateUnimplementedWarnings;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -37,13 +38,15 @@ public class InitIssuesAnswerer extends Answerer {
     Rows rows = new Rows();
 
     Map<String, Warnings> convertWarnings = ccae.getWarnings();
-    aggregateDuplicateWarnings(convertWarnings)
+    aggregateDuplicateRedflagWarnings(convertWarnings)
         .forEach(
-            (type, warningMap) ->
-                warningMap.forEach(
-                    (warning, nodes) -> {
-                      rows.add(getRow(nodes, null, type, warning.getText()));
-                    }));
+            (warning, nodes) ->
+                rows.add(getRow(nodes, null, IssueType.ConvertWarningRedFlag, warning.getText())));
+    aggregateDuplicateUnimplementedWarnings(convertWarnings)
+        .forEach(
+            (warning, nodes) ->
+                rows.add(
+                    getRow(nodes, null, IssueType.ConvertWarningUnimplemented, warning.getText())));
 
     Map<String, Warnings> fileWarnings = pvcae.getWarnings();
     aggregateDuplicateParseWarnings(fileWarnings)

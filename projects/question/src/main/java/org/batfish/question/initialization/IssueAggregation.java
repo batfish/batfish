@@ -11,7 +11,6 @@ import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
-import org.batfish.question.initialization.InitIssuesAnswerer.IssueType;
 
 final class IssueAggregation {
   static class WarningTriplet {
@@ -71,26 +70,38 @@ final class IssueAggregation {
   }
 
   /**
-   * Aggregate same warnings (red flag, unimplemented) across multiple nodes.
+   * Aggregate same redflag warnings across multiple nodes.
    *
-   * <p>Produces a map of {@link IssueType} to map of {@link Warning} to nodes.
+   * <p>Produces a map of redflag {@link Warning} to nodes.
    */
   @Nonnull
   @VisibleForTesting
-  static Map<IssueType, Map<Warning, SortedSet<String>>> aggregateDuplicateWarnings(
+  static Map<Warning, SortedSet<String>> aggregateDuplicateRedflagWarnings(
       Map<String, Warnings> nodeToWarnings) {
-    Map<IssueType, Map<Warning, SortedSet<String>>> map = new HashMap<>();
+    Map<Warning, SortedSet<String>> map = new HashMap<>();
     nodeToWarnings.forEach(
         (node, warnings) -> {
           for (Warning warning : warnings.getRedFlagWarnings()) {
-            map.computeIfAbsent(IssueType.ConvertWarningRedFlag, t -> new HashMap<>())
-                .computeIfAbsent(warning, w -> new TreeSet<>())
-                .add(node);
+            map.computeIfAbsent(warning, w -> new TreeSet<>()).add(node);
           }
+        });
+    return map;
+  }
+
+  /**
+   * Aggregate same unimplemented warnings across multiple nodes.
+   *
+   * <p>Produces a map of unimplemented {@link Warning} to nodes.
+   */
+  @Nonnull
+  @VisibleForTesting
+  static Map<Warning, SortedSet<String>> aggregateDuplicateUnimplementedWarnings(
+      Map<String, Warnings> nodeToWarnings) {
+    Map<Warning, SortedSet<String>> map = new HashMap<>();
+    nodeToWarnings.forEach(
+        (node, warnings) -> {
           for (Warning warning : warnings.getUnimplementedWarnings()) {
-            map.computeIfAbsent(IssueType.ConvertWarningUnimplemented, t -> new HashMap<>())
-                .computeIfAbsent(warning, w -> new TreeSet<>())
-                .add(node);
+            map.computeIfAbsent(warning, w -> new TreeSet<>()).add(node);
           }
         });
     return map;

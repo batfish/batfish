@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.Objects;
 import com.google.common.base.Throwables;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -53,6 +54,23 @@ public class BatfishException extends RuntimeException {
     @Override
     public String prettyPrint() {
       return String.join("\n", _lines);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hashCode(_lines);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (!(obj instanceof BatfishStackTrace)) {
+        return false;
+      }
+      BatfishStackTrace rhs = (BatfishStackTrace) obj;
+      return Objects.equal(_lines, rhs._lines);
     }
   }
 
