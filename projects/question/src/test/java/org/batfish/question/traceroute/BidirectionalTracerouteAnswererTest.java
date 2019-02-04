@@ -27,7 +27,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -39,7 +38,6 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.flow.BidirectionalTrace;
-import org.batfish.datamodel.flow.BidirectionalTrace.Key;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
@@ -240,13 +238,8 @@ public final class BidirectionalTracerouteAnswererTest {
       BidirectionalTrace bt4 =
           new BidirectionalTrace(FORWARD_FLOW, t2, ImmutableSet.of(), REVERSE_FLOW, t4);
 
-      Key key = bt1.getKey();
-      assertThat(key, equalTo(bt2.getKey()));
-      assertThat(key, equalTo(bt3.getKey()));
-      assertThat(key, equalTo(bt4.getKey()));
-
       List<BidirectionalTrace> bts = ImmutableList.of(bt1, bt2, bt3, bt4);
-      assertThat(groupTraces(bts), hasEntry(equalTo(key), equalTo(bts)));
+      assertThat(groupTraces(bts), hasEntry(equalTo(bt1.getKey()), equalTo(bts)));
     }
 
     {
@@ -256,7 +249,6 @@ public final class BidirectionalTracerouteAnswererTest {
       BidirectionalTrace bt2 =
           new BidirectionalTrace(REVERSE_FLOW, t1, ImmutableSet.of(), REVERSE_FLOW, t2);
 
-      assertThat(bt1.getKey(), not(equalTo(bt2.getKey())));
       assertThat(
           groupTraces(ImmutableList.of(bt1, bt2)),
           equalTo(
@@ -271,7 +263,6 @@ public final class BidirectionalTracerouteAnswererTest {
       BidirectionalTrace bt2 =
           new BidirectionalTrace(FORWARD_FLOW, t1, ImmutableSet.of(session1), REVERSE_FLOW, t2);
 
-      assertThat(bt1.getKey(), not(equalTo(bt2.getKey())));
       assertThat(
           groupTraces(ImmutableList.of(bt1, bt2)),
           equalTo(
@@ -286,7 +277,6 @@ public final class BidirectionalTracerouteAnswererTest {
       BidirectionalTrace bt2 =
           new BidirectionalTrace(FORWARD_FLOW, t1, ImmutableSet.of(session2), REVERSE_FLOW, t2);
 
-      assertThat(bt1.getKey(), not(equalTo(bt2.getKey())));
       assertThat(
           groupTraces(ImmutableList.of(bt1, bt2)),
           equalTo(
@@ -300,8 +290,6 @@ public final class BidirectionalTracerouteAnswererTest {
           new BidirectionalTrace(FORWARD_FLOW, t1, ImmutableSet.of(), REVERSE_FLOW, t2);
       BidirectionalTrace bt2 =
           new BidirectionalTrace(FORWARD_FLOW, t1, ImmutableSet.of(), FORWARD_FLOW, t2);
-
-      assertThat(bt1.getKey(), not(equalTo(bt2.getKey())));
 
       assertThat(
           groupTraces(ImmutableList.of(bt1, bt2)),

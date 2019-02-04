@@ -17,7 +17,7 @@ public final class BidirectionalTrace {
   private final @Nullable Flow _reverseFlow;
   private final @Nullable Trace _reverseTrace;
 
-  public final class Key {
+  public static final class Key {
     private final @Nonnull Flow _forwardFlow;
     private final @Nonnull Set<FirewallSessionTraceInfo> _newSessions;
     private final @Nullable Flow _reverseFlow;
