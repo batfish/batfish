@@ -7,12 +7,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 /** Boolean expression that evaluates to the opposite of some given {@link BooleanExpr}. */
+@ParametersAreNonnullByDefault
 public final class Not extends BooleanExpr {
 
   private static final long serialVersionUID = 1L;
@@ -21,13 +24,12 @@ public final class Not extends BooleanExpr {
   private final BooleanExpr _expr;
 
   @JsonCreator
-  private static Not create(@JsonProperty(PROP_EXPR) BooleanExpr expr) {
+  private static Not create(@Nullable @JsonProperty(PROP_EXPR) BooleanExpr expr) {
     checkArgument(expr != null, "%s must be provided", PROP_EXPR);
     return new Not(expr);
   }
 
   public Not(BooleanExpr expr) {
-    checkArgument(expr != null, "%s must be provided", PROP_EXPR);
     _expr = expr;
   }
 
@@ -52,7 +54,7 @@ public final class Not extends BooleanExpr {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(@Nullable Object obj) {
     if (this == obj) {
       return true;
     }

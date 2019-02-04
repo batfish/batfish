@@ -14,11 +14,10 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
 /**
- * Boolean expression that evaluates an {@link Environment} for a given {@link BooleanExpr} as well
- * as executing additional {@link Statement}s on it. Additional statements include {@link
- * #getPreStatements() pre statements} to execute before evaluation, {@link #getPostStatements()
- * post statements} to execute after evaluation, and {@link #getPostTrueStatements() post true
- * statements} to execute after post statements if the evaluation yielded true.
+ * Boolean expression used for re-distribution policies, where route attributes need to be modified
+ * before/after executing the main policy. Contains a {@link BooleanExpr} to evaluate and {@link
+ * Statement statements} to be executed before or after evaluation, including some statements to
+ * execute only after evaluations that yield true.
  */
 public final class WithEnvironmentExpr extends BooleanExpr {
 
