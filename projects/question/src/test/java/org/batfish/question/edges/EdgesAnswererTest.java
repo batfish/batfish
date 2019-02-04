@@ -99,7 +99,6 @@ import org.junit.Test;
 public class EdgesAnswererTest {
   private Configuration _host1;
   private Configuration _host2;
-  private Topology _topology;
   private Map<String, Configuration> _configurations;
   private Set<String> _includeNodes;
   private Set<String> _includeRemoteNodes;
@@ -131,9 +130,6 @@ public class EdgesAnswererTest {
     _configurations = ImmutableSortedMap.of("host1", _host1, "host2", _host2);
     _includeNodes = ImmutableSortedSet.of("host1", "host2");
     _includeRemoteNodes = ImmutableSortedSet.of("host1", "host2");
-
-    // Sending an  edge from host1 to host2 in layer 3
-    _topology = new Topology(ImmutableSortedSet.of(Edge.of("host1", "int1", "host2", "int2")));
   }
 
   @Test
