@@ -39,11 +39,11 @@ public final class AutocompleteSuggestion {
 
   @JsonCreator
   private static @Nonnull AutocompleteSuggestion create(
-      @Nullable @JsonProperty(PROP_DESCRIPTION) String description,
-      @JsonProperty(PROP_INSERTION_INDEX) int insertionIndex,
+      @Nullable @JsonProperty(PROP_TEXT) String text,
       @JsonProperty(PROP_IS_PARTIAL) boolean isPartial,
+      @Nullable @JsonProperty(PROP_DESCRIPTION) String description,
       @JsonProperty(PROP_RANK) int rank,
-      @Nullable @JsonProperty(PROP_TEXT) String text) {
+      @JsonProperty(PROP_INSERTION_INDEX) int insertionIndex) {
     return new AutocompleteSuggestion(
         firstNonNull(text, ""), isPartial, description, rank, insertionIndex);
   }
