@@ -16,6 +16,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -24,8 +25,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import org.batfish.common.Warning;
+import org.batfish.common.Warnings;
 import org.batfish.common.util.ModelingUtils.IspInfo;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -34,9 +38,22 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.junit.Test;
 
 /** Tests for {@link ModelingUtils} */
@@ -52,12 +69,10 @@ public class ModelingUtilsTest {
             .setLocalAs(2L)
             .build();
 
-    BgpActivePeerConfig reversedPeer =
-        ModelingUtils.reverseLocalAndRemote(bgpActivePeerConfig, "routing_policy");
+    BgpActivePeerConfig reversedPeer = ModelingUtils.reverseLocalAndRemote(bgpActivePeerConfig);
     assertThat(reversedPeer.getPeerAddress(), equalTo(Ip.parse("2.2.2.2")));
     assertThat(reversedPeer.getLocalIp(), equalTo(Ip.parse("1.1.1.1")));
     assertThat(reversedPeer, allOf(hasLocalAs(1L), hasRemoteAs(2L)));
-    assertThat(reversedPeer.getExportPolicy(), equalTo("routing_policy"));
   }
 
   @Test
@@ -78,8 +93,12 @@ public class ModelingUtilsTest {
             .setLocalAs(2L)
             .build();
 
-    assertFalse(ModelingUtils.isValidBgpPeerConfig(invalidPeer, validLocalIps, null, null));
-    assertTrue(ModelingUtils.isValidBgpPeerConfig(validPeer, validLocalIps, null, null));
+    assertFalse(
+        ModelingUtils.isValidBgpPeerConfig(
+            invalidPeer, validLocalIps, ImmutableSet.of(), ImmutableSet.of()));
+    assertTrue(
+        ModelingUtils.isValidBgpPeerConfig(
+            validPeer, validLocalIps, ImmutableSet.of(), ImmutableSet.of()));
   }
 
   @Test
@@ -94,7 +113,8 @@ public class ModelingUtilsTest {
             .build();
     IspInfo ispInfo = new IspInfo(ImmutableList.of(interfaceAddress), ImmutableList.of(peer));
 
-    Configuration ispConfiguration = ModelingUtils.getIspConfigurationNode(2L, ispInfo);
+    Configuration ispConfiguration =
+        ModelingUtils.getIspConfigurationNode(2L, ispInfo, new Warnings());
 
     assertThat(
         ispConfiguration,
@@ -118,6 +138,30 @@ public class ModelingUtilsTest {
             .iterator()
             .next(),
         equalTo(peer));
+  }
+
+  @Test
+  public void testGetIspConfigurationNodeInvalid() {
+    InterfaceAddress interfaceAddress = new InterfaceAddress(Ip.parse("2.2.2.2"), 30);
+    InterfaceAddress interfaceAddress2 = new InterfaceAddress(Ip.parse("3.3.3.3"), 30);
+    BgpActivePeerConfig peer =
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(Ip.parse("1.1.1.1"))
+            .setRemoteAs(1L)
+            .setLocalIp(Ip.parse("2.2.2.2"))
+            .setLocalAs(2L)
+            .build();
+    IspInfo ispInfo =
+        new IspInfo(ImmutableList.of(interfaceAddress, interfaceAddress2), ImmutableList.of(peer));
+    Warnings warnings = new Warnings(true, true, true);
+    Configuration ispConfiguration = ModelingUtils.getIspConfigurationNode(2L, ispInfo, warnings);
+
+    assertThat(ispConfiguration, nullValue());
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        equalTo(
+            ImmutableList.of(
+                new Warning("ISP information for ASN '2' is not correct", Warnings.TAG_RED_FLAG))));
   }
 
   @Test
@@ -145,7 +189,11 @@ public class ModelingUtilsTest {
 
     Map<Long, IspInfo> inputMap = Maps.newHashMap();
     ModelingUtils.populateIspInfos(
-        configuration, ImmutableSet.of("interface"), null, null, inputMap);
+        configuration,
+        ImmutableSet.of("interface"),
+        ImmutableList.of(),
+        ImmutableList.of(),
+        inputMap);
 
     assertThat(inputMap, hasKey(1L));
 
@@ -209,15 +257,15 @@ public class ModelingUtilsTest {
                         equalTo(
                             ImmutableSortedSet.of(
                                 StaticRoute.builder()
-                                    .setNetwork(Prefix.parse("0.0.0.0/0"))
+                                    .setNetwork(Prefix.ZERO)
                                     .setNextHopInterface(ModelingUtils.INTERNET_OUT_INTERFACE)
                                     .setAdministrativeCost(1)
                                     .build()))),
                     hasBgpProcess(hasRouterId(ModelingUtils.INTERNET_OUT_ADDRESS))))));
 
-    assertThat(internet.getRoutingPolicies(), hasKey(ModelingUtils.DEFAULT_ROUTE_ROUTING_POLICY));
+    assertThat(internet.getRoutingPolicies(), hasKey(ModelingUtils.EXPORT_POLICY_ON_INTERNET));
     assertThat(
-        internet.getRoutingPolicies().get(ModelingUtils.DEFAULT_ROUTE_ROUTING_POLICY),
+        internet.getRoutingPolicies().get(ModelingUtils.EXPORT_POLICY_ON_INTERNET),
         equalTo(ModelingUtils.getDefaultRoutingPolicy()));
   }
 
@@ -249,8 +297,9 @@ public class ModelingUtilsTest {
         ModelingUtils.getInternetAndIspNodes(
             ImmutableMap.of(configuration.getHostname(), configuration),
             ImmutableList.of(new NodeInterfacePair("conf", "interface")),
-            null,
-            null);
+            ImmutableList.of(),
+            ImmutableList.of(),
+            new Warnings());
 
     assertThat(internetAndIsps, hasKey(ModelingUtils.INTERNET_HOST_NAME));
     Configuration internetNode = internetAndIsps.get(ModelingUtils.INTERNET_HOST_NAME);
@@ -262,20 +311,20 @@ public class ModelingUtilsTest {
             hasInterface(
                 "~Interface_0~",
                 hasAllAddresses(
-                    equalTo(ImmutableSet.of(new InterfaceAddress(Ip.parse("240.1.1.0"), 31))))),
+                    equalTo(ImmutableSet.of(new InterfaceAddress(Ip.parse("240.1.1.2"), 31))))),
             hasVrf(
                 DEFAULT_VRF_NAME,
                 hasBgpProcess(
                     hasNeighbors(
                         equalTo(
                             ImmutableMap.of(
-                                Prefix.parse("240.1.1.1/32"),
+                                Prefix.parse("240.1.1.3/32"),
                                 BgpActivePeerConfig.builder()
-                                    .setPeerAddress(Ip.parse("240.1.1.1"))
+                                    .setPeerAddress(Ip.parse("240.1.1.3"))
                                     .setRemoteAs(1L)
-                                    .setLocalIp(Ip.parse("240.1.1.0"))
+                                    .setLocalIp(Ip.parse("240.1.1.2"))
                                     .setLocalAs(ModelingUtils.INTERNET_AS)
-                                    .setExportPolicy(ModelingUtils.DEFAULT_ROUTE_ROUTING_POLICY)
+                                    .setExportPolicy(ModelingUtils.EXPORT_POLICY_ON_INTERNET)
                                     .build())))))));
 
     assertThat(internetAndIsps, hasKey("Isp_1"));
@@ -289,7 +338,7 @@ public class ModelingUtilsTest {
         interfaceAddresses,
         equalTo(
             ImmutableSet.of(
-                new InterfaceAddress(Ip.parse("240.1.1.1"), 31),
+                new InterfaceAddress(Ip.parse("240.1.1.3"), 31),
                 new InterfaceAddress(Ip.parse("1.1.1.1"), 24))));
 
     assertThat(
@@ -307,12 +356,38 @@ public class ModelingUtilsTest {
                                 .setLocalIp(Ip.parse("1.1.1.1"))
                                 .setLocalAs(1L)
                                 .build(),
-                            Prefix.parse("240.1.1.0/32"),
+                            Prefix.parse("240.1.1.2/32"),
                             BgpActivePeerConfig.builder()
-                                .setPeerAddress(Ip.parse("240.1.1.0"))
+                                .setPeerAddress(Ip.parse("240.1.1.2"))
                                 .setRemoteAs(ModelingUtils.INTERNET_AS)
-                                .setLocalIp(Ip.parse("240.1.1.1"))
+                                .setLocalIp(Ip.parse("240.1.1.3"))
                                 .setLocalAs(1L)
                                 .build()))))));
+  }
+
+  @Test
+  public void testGetsDefaultRoutingPolicy() {
+    NetworkFactory nf = new NetworkFactory();
+    RoutingPolicy defaultRoutingPolicy = ModelingUtils.getDefaultRoutingPolicy();
+
+    PrefixSpace prefixSpace = new PrefixSpace();
+    prefixSpace.addPrefix(Prefix.ZERO);
+    RoutingPolicy expectedRoutingPolicy =
+        nf.routingPolicyBuilder()
+            .setName(ModelingUtils.EXPORT_POLICY_ON_INTERNET)
+            .setStatements(
+                Collections.singletonList(
+                    new If(
+                        new Conjunction(
+                            ImmutableList.of(
+                                new MatchProtocol(RoutingProtocol.STATIC),
+                                new MatchPrefixSet(
+                                    DestinationNetwork.instance(),
+                                    new ExplicitPrefixSet(prefixSpace)))),
+                        ImmutableList.of(
+                            new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)),
+                            Statements.ExitAccept.toStaticStatement()))))
+            .build();
+    assertThat(defaultRoutingPolicy, equalTo(expectedRoutingPolicy));
   }
 }
