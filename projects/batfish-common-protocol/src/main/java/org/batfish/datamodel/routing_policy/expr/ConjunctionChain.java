@@ -29,13 +29,13 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
  * https://www.juniper.net/documentation/en_US/junos/topics/concept/policy-routing-policies-chain-evaluation-method.html
  */
 @ParametersAreNonnullByDefault
-public class ConjunctionChain extends BooleanExpr {
+public final class ConjunctionChain extends BooleanExpr {
 
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_SUBROUTINES = "subroutines";
 
-  @Nonnull private List<BooleanExpr> _subroutines;
+  @Nonnull private final List<BooleanExpr> _subroutines;
 
   @JsonCreator
   private static ConjunctionChain create(
@@ -55,23 +55,6 @@ public class ConjunctionChain extends BooleanExpr {
       childSources.addAll(conjunct.collectSources(parentSources, routingPolicies, w));
     }
     return childSources.build();
-  }
-
-  @Override
-  public boolean equals(@Nullable Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof ConjunctionChain)) {
-      return false;
-    }
-    ConjunctionChain that = (ConjunctionChain) o;
-    return Objects.equals(_subroutines, that._subroutines);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(_subroutines);
   }
 
   @Override
@@ -115,6 +98,23 @@ public class ConjunctionChain extends BooleanExpr {
   @JsonProperty(PROP_SUBROUTINES)
   public List<BooleanExpr> getSubroutines() {
     return _subroutines;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof ConjunctionChain)) {
+      return false;
+    }
+    ConjunctionChain that = (ConjunctionChain) o;
+    return Objects.equals(_subroutines, that._subroutines);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_subroutines);
   }
 
   @Override
