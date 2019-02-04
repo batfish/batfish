@@ -26,10 +26,8 @@ public final class MatchProcessAsn extends BooleanExpr {
 
   @Override
   public Result evaluate(Environment environment) {
-    Result result = new Result();
     EigrpRoute route = (EigrpRoute) environment.getOriginalRoute();
-    result.setBooleanValue(route.getProcessAsn() == _asn);
-    return result;
+    return new Result(route.getProcessAsn() == _asn);
   }
 
   @Override

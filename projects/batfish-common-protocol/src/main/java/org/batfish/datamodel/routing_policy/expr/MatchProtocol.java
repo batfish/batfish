@@ -45,14 +45,11 @@ public final class MatchProtocol extends BooleanExpr {
 
   @Override
   public Result evaluate(Environment environment) {
-    Result result = new Result();
     // Workaround: Treat ISIS_ANY as a special value
     if (_protocol == RoutingProtocol.ISIS_ANY) {
-      result.setBooleanValue(ISIS_EXPANSION.contains(environment.getOriginalRoute().getProtocol()));
-    } else {
-      result.setBooleanValue(environment.getOriginalRoute().getProtocol().equals(_protocol));
+      return new Result(ISIS_EXPANSION.contains(environment.getOriginalRoute().getProtocol()));
     }
-    return result;
+    return new Result(environment.getOriginalRoute().getProtocol().equals(_protocol));
   }
 
   @Nonnull

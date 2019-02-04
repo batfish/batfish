@@ -31,10 +31,7 @@ public final class MatchAsPath extends BooleanExpr {
 
   @Override
   public Result evaluate(Environment environment) {
-    boolean match = _expr.matches(environment);
-    Result result = new Result();
-    result.setBooleanValue(match);
-    return result;
+    return new Result(_expr.matches(environment));
   }
 
   @JsonProperty(PROP_EXPR)

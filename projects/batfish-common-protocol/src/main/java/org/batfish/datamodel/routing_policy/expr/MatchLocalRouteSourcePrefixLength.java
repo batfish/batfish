@@ -30,9 +30,7 @@ public final class MatchLocalRouteSourcePrefixLength extends BooleanExpr {
   @Override
   public Result evaluate(Environment environment) {
     LocalRoute localRoute = (LocalRoute) environment.getOriginalRoute();
-    Result result = new Result();
-    result.setBooleanValue(_matchLength.includes(localRoute.getSourcePrefixLength()));
-    return result;
+    return new Result(_matchLength.includes(localRoute.getSourcePrefixLength()));
   }
 
   @JsonProperty(PROP_MATCH_LENGTH)
