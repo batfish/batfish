@@ -17,7 +17,10 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-/** Match the route's routing protocol */
+/**
+ * Boolean expression that evaluates whether an {@link Environment} has a route that matches a given
+ * {@link RoutingProtocol}.
+ */
 @ParametersAreNonnullByDefault
 public final class MatchProtocol extends BooleanExpr {
 
@@ -41,6 +44,21 @@ public final class MatchProtocol extends BooleanExpr {
   }
 
   @Override
+  public Result evaluate(Environment environment) {
+    // Workaround: Treat ISIS_ANY as a special value
+    if (_protocol == RoutingProtocol.ISIS_ANY) {
+      return new Result(ISIS_EXPANSION.contains(environment.getOriginalRoute().getProtocol()));
+    }
+    return new Result(environment.getOriginalRoute().getProtocol().equals(_protocol));
+  }
+
+  @Nonnull
+  @JsonProperty(PROP_PROTOCOL)
+  public RoutingProtocol getProtocol() {
+    return _protocol;
+  }
+
+  @Override
   public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
@@ -55,21 +73,6 @@ public final class MatchProtocol extends BooleanExpr {
   @Override
   public int hashCode() {
     return Objects.hash(_protocol.ordinal());
-  }
-
-  @Override
-  public Result evaluate(Environment environment) {
-    // Workaround: Treat ISIS_ANY as a special value
-    if (_protocol == RoutingProtocol.ISIS_ANY) {
-      return new Result(ISIS_EXPANSION.contains(environment.getOriginalRoute().getProtocol()));
-    }
-    return new Result(environment.getOriginalRoute().getProtocol().equals(_protocol));
-  }
-
-  @Nonnull
-  @JsonProperty(PROP_PROTOCOL)
-  public RoutingProtocol getProtocol() {
-    return _protocol;
   }
 
   @Override

@@ -1,27 +1,21 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class MatchIpv4 extends BooleanExpr {
+/** Boolean expression that evaluates to true if the given {@link Environment} has an IPv4 route. */
+public final class MatchIpv4 extends BooleanExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
-  public MatchIpv4() {}
+  private static final MatchIpv4 INSTANCE = new MatchIpv4();
 
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    return true;
+  private MatchIpv4() {}
+
+  @JsonCreator
+  public static MatchIpv4 instance() {
+    return INSTANCE;
   }
 
   @Override
@@ -30,10 +24,12 @@ public class MatchIpv4 extends BooleanExpr {
   }
 
   @Override
+  public boolean equals(Object obj) {
+    return obj instanceof MatchIpv4;
+  }
+
+  @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + 0x12345678;
-    return result;
+    return 0;
   }
 }

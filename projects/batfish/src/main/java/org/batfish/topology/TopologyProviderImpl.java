@@ -2,6 +2,7 @@ package org.batfish.topology;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.util.Map;
@@ -107,13 +108,13 @@ public final class TopologyProviderImpl implements TopologyProvider {
       assert span != null; // avoid unused warning
       Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
       Topology topology = getRawLayer3Topology(networkSnapshot);
-      topology.prune(
-          _batfish.getEdgeBlacklist(networkSnapshot),
+      return topology.prune(
+          Sets.union(
+              IpsecUtil.computeFailedIpsecSessionEdges(
+                  topology.getEdges(), IpsecUtil.initIpsecTopology(configurations), configurations),
+              _batfish.getEdgeBlacklist(networkSnapshot)),
           _batfish.getNodeBlacklist(networkSnapshot),
           _batfish.getInterfaceBlacklist(networkSnapshot));
-      topology.pruneFailedIpsecSessionEdges(
-          IpsecUtil.initIpsecTopology(configurations), configurations);
-      return topology;
     }
   }
 

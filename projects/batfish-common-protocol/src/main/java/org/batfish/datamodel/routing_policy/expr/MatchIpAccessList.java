@@ -1,44 +1,30 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class MatchIpAccessList extends BooleanExpr {
+public final class MatchIpAccessList extends BooleanExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
+  private static final String PROP_LIST = "list";
 
-  private String _list;
+  private final String _list;
 
   @JsonCreator
-  private MatchIpAccessList() {}
+  private static MatchIpAccessList create(@JsonProperty(PROP_LIST) String list) {
+    checkArgument(list != null, "%s must be provided", PROP_LIST);
+    return new MatchIpAccessList(list);
+  }
 
   public MatchIpAccessList(String list) {
     _list = list;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    MatchIpAccessList other = (MatchIpAccessList) obj;
-    if (_list == null) {
-      if (other._list != null) {
-        return false;
-      }
-    } else if (!_list.equals(other._list)) {
-      return false;
-    }
-    return true;
   }
 
   @Override
@@ -50,22 +36,28 @@ public class MatchIpAccessList extends BooleanExpr {
       environment.setError(true);
       return new Result(false);
     }
-    throw new UnsupportedOperationException("no implementation for generated method");
+    throw new BatfishException("No implementation for MatchIpAccessList.evaluate()");
   }
 
+  @JsonProperty(PROP_LIST)
   public String getList() {
     return _list;
   }
 
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((_list == null) ? 0 : _list.hashCode());
-    return result;
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof MatchIpAccessList)) {
+      return false;
+    }
+    MatchIpAccessList other = (MatchIpAccessList) obj;
+    return Objects.equals(_list, other._list);
   }
 
-  public void setList(String list) {
-    _list = list;
+  @Override
+  public int hashCode() {
+    return Objects.hash(_list);
   }
 }

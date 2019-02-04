@@ -2,13 +2,18 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class MatchLocalRouteSourcePrefixLength extends BooleanExpr {
+/**
+ * Boolean expression that evaluates whether an {@link Environment} has a {@link LocalRoute} with a
+ * source prefix length within a given range of lengths to match.
+ */
+public final class MatchLocalRouteSourcePrefixLength extends BooleanExpr {
 
   private static final String PROP_MATCH_LENGTH = "matchLength";
 
@@ -23,21 +28,6 @@ public class MatchLocalRouteSourcePrefixLength extends BooleanExpr {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    MatchLocalRouteSourcePrefixLength other = (MatchLocalRouteSourcePrefixLength) obj;
-    return _matchLength.equals(other._matchLength);
-  }
-
-  @Override
   public Result evaluate(Environment environment) {
     LocalRoute localRoute = (LocalRoute) environment.getOriginalRoute();
     return new Result(_matchLength.includes(localRoute.getSourcePrefixLength()));
@@ -49,7 +39,19 @@ public class MatchLocalRouteSourcePrefixLength extends BooleanExpr {
   }
 
   @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof MatchLocalRouteSourcePrefixLength)) {
+      return false;
+    }
+    MatchLocalRouteSourcePrefixLength other = (MatchLocalRouteSourcePrefixLength) obj;
+    return Objects.equals(_matchLength, other._matchLength);
+  }
+
+  @Override
   public int hashCode() {
-    return _matchLength.hashCode();
+    return Objects.hash(_matchLength);
   }
 }

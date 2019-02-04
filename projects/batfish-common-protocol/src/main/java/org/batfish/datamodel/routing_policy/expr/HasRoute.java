@@ -4,9 +4,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -14,10 +16,9 @@ import org.batfish.datamodel.routing_policy.Result;
 public final class HasRoute extends BooleanExpr {
   private static final String PROP_EXPR = "expr";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
-  @Nonnull private PrefixSetExpr _expr;
+  @Nonnull private final PrefixSetExpr _expr;
 
   @JsonCreator
   private static HasRoute jsonCreator(@Nullable @JsonProperty(PROP_EXPR) PrefixSetExpr expr) {
@@ -30,22 +31,8 @@ public final class HasRoute extends BooleanExpr {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    } else if (!(obj instanceof HasRoute)) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    HasRoute other = (HasRoute) obj;
-    return _expr.equals(other._expr);
-  }
-
-  @Override
   public Result evaluate(Environment environment) {
-    throw new UnsupportedOperationException("no implementation for generated method");
+    throw new BatfishException("No implementation for HasRoute.evaluate()");
   }
 
   @JsonProperty(PROP_EXPR)
@@ -55,14 +42,18 @@ public final class HasRoute extends BooleanExpr {
   }
 
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + _expr.hashCode();
-    return result;
+  public boolean equals(@Nullable Object obj) {
+    if (this == obj) {
+      return true;
+    } else if (!(obj instanceof HasRoute)) {
+      return false;
+    }
+    HasRoute other = (HasRoute) obj;
+    return Objects.equals(_expr, other._expr);
   }
 
-  public void setExpr(PrefixSetExpr expr) {
-    _expr = expr;
+  @Override
+  public int hashCode() {
+    return Objects.hash(_expr);
   }
 }
