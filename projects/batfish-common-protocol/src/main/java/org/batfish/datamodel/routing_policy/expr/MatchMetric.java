@@ -8,6 +8,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -37,7 +38,7 @@ public final class MatchMetric extends BooleanExpr {
 
   @Override
   public Result evaluate(Environment environment) {
-    throw new UnsupportedOperationException("no implementation for generated method");
+    throw new BatfishException("No implementation for MatchMetric.evaluate()");
   }
 
   @JsonProperty(PROP_COMPARATOR)

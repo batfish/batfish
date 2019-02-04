@@ -33,7 +33,7 @@ public final class MatchRouteType extends BooleanExpr {
   @Override
   public Result evaluate(Environment environment) {
     RouteType type = _type.evaluate(environment);
-    throw new BatfishException("unimplemented: match route type: " + type.routeTypeName());
+    throw new BatfishException("Unimplemented: match route type: " + type.routeTypeName());
   }
 
   @JsonProperty(PROP_TYPE)

@@ -3,6 +3,7 @@ package org.batfish.datamodel.routing_policy.expr;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -24,7 +25,7 @@ public final class MatchColor extends BooleanExpr {
 
   @Override
   public Result evaluate(Environment environment) {
-    throw new UnsupportedOperationException("no implementation for generated method");
+    throw new BatfishException("No implementation for MatchColor.evaluate()");
   }
 
   @JsonProperty(PROP_COLOR)

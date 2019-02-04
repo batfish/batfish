@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -37,7 +38,7 @@ public final class MatchIpAccessList extends BooleanExpr {
       result.setBooleanValue(false);
       return result;
     }
-    throw new UnsupportedOperationException("no implementation for generated method");
+    throw new BatfishException("No implementation for MatchIpAccessList.evaluate()");
   }
 
   @JsonProperty(PROP_LIST)
