@@ -189,7 +189,7 @@ public final class ModelingUtils {
 
   /**
    * Adds connection between internet and each ISP by creating interface pairs (in /31 subnet) on
-   * both with connected edges. Also adds EBGP peers on both Internet and all the ISPs to peer with
+   * both with connected edges. Also adds eBGP peers on both Internet and all the ISPs to peer with
    * each other using the created Interface pairs.
    */
   private static void connectIspsToInternet(
@@ -239,7 +239,7 @@ public final class ModelingUtils {
    * ASNs to {@link IspInfo}s
    *
    * @param configuration {@link Configuration} owning given interfaces
-   * @param interfaces {@link List} of interfaces on this node having EBGP sessions with the ISP
+   * @param interfaces {@link List} of interfaces on this node having eBGP sessions with the ISP
    * @param remoteIps Expected {@link Ip}s of the ISPs (optional)
    * @param remoteAsns Expected ASNs of the ISP nodes (optional)
    * @param allIspInfos {@link Map} containing existing ASNs and corresponding {@link IspInfo}s to
@@ -280,6 +280,7 @@ public final class ModelingUtils {
     for (BgpActivePeerConfig bgpActivePeerConfig : validBgpActivePeerConfigs) {
       IspInfo ispInfo =
           allIspInfos.computeIfAbsent(bgpActivePeerConfig.getRemoteAs(), k -> new IspInfo());
+      // merging ISP's interface addresses and eBGP confs from the current configuration
       ispInfo.addInterfaceAddress(
           new InterfaceAddress(
               bgpActivePeerConfig.getPeerAddress(),
@@ -342,8 +343,8 @@ public final class ModelingUtils {
   }
 
   /**
-   * Gets the local AS of a given ISP node {@link Configuration}. Since Local AS of all EBGP peers
-   * on this node will be same, returning the Local AS of the any EBGP peer will suffice.
+   * Gets the local AS of a given ISP node {@link Configuration}. Since Local AS of all eBGP peers
+   * on this node will be same, returning the Local AS of the any eBGP peer will suffice.
    */
   @VisibleForTesting
   @Nonnull
@@ -365,7 +366,7 @@ public final class ModelingUtils {
             .iterator()
             .next()
             .getLocalAs();
-    checkState(Objects.nonNull(localAs), "Local AS of all EBGP peers should be set on ISP");
+    checkState(Objects.nonNull(localAs), "Local AS of all eBGP peers should be set on ISP");
     return localAs;
   }
 
@@ -409,7 +410,7 @@ public final class ModelingUtils {
   }
 
   /**
-   * Flips the local and remote AS and IP for a given EBGP peer configuration and optionally sets
+   * Flips the local and remote AS and IP for a given eBGP peer configuration and optionally sets
    * the export policy to the supplied export policy name
    */
   @VisibleForTesting
