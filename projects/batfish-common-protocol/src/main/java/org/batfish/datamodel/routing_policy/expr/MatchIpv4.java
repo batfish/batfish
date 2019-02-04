@@ -1,5 +1,6 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -8,7 +9,14 @@ public final class MatchIpv4 extends BooleanExpr {
 
   private static final long serialVersionUID = 1L;
 
-  public MatchIpv4() {}
+  private static final MatchIpv4 INSTANCE = new MatchIpv4();
+
+  private MatchIpv4() {}
+
+  @JsonCreator
+  public static MatchIpv4 instance() {
+    return INSTANCE;
+  }
 
   @Override
   public Result evaluate(Environment environment) {
