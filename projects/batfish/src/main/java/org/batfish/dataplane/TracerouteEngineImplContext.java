@@ -326,8 +326,8 @@ class TracerouteEngineImplContext {
                             namedIpSpaces)
                         .getOutputFlow();
 
-                SortedSet<Edge> edges =
-                    _dataPlane.getTopology().getInterfaceEdges().get(nextHopInterface);
+                SortedSet<NodeInterfacePair> neighbors =
+                    _dataPlane.getTopology().getNeighbors(nextHopInterface);
                 TransmissionContext transmissionContext =
                     new TransmissionContext(
                         aclDefinitions,
@@ -338,9 +338,9 @@ class TracerouteEngineImplContext {
                         originalFlow,
                         routesForThisNextHopInterface,
                         newTransformedFlow);
-                if (edges == null || edges.isEmpty()) {
+                if (neighbors.isEmpty()) {
                   /*
-                   * Interface has no edges
+                   * Interface has no neighbors
                    */
                   /* Check if denied out. If not, make standard neighbor-unreachable trace. */
                   IpAccessList outFilter = outgoingInterface.getOutgoingFilter();
@@ -383,7 +383,7 @@ class TracerouteEngineImplContext {
                       nextHopInterfaceName,
                       finalNextHopIp,
                       nextHopInterface,
-                      edges,
+                      neighbors,
                       transmissionContext);
                 }
               });
@@ -487,7 +487,7 @@ class TracerouteEngineImplContext {
       String nextHopInterfaceName,
       @Nullable Ip finalNextHopIp,
       NodeInterfacePair nextHopInterface,
-      SortedSet<Edge> edges,
+      SortedSet<NodeInterfacePair> neighbors,
       TransmissionContext transmissionContext) {
     if (!processFlowTransmission(
         srcInterface,
@@ -498,12 +498,9 @@ class TracerouteEngineImplContext {
         transmissionContext)) {
       return;
     }
-    for (Edge edge : edges) {
-      if (!edge.getNode1().equals(transmissionContext._currentNodeName)) {
-        continue;
-      }
+    for (NodeInterfacePair neighbor : neighbors) {
       processFlowReception(
-          edge,
+          new Edge(nextHopInterface, neighbor),
           transmissionContext,
           ImmutableSet.copyOf(visitedEdges),
           finalNextHopIp != null ? finalNextHopIp : dstIp);
