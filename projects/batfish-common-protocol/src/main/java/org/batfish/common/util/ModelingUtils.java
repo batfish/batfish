@@ -258,7 +258,7 @@ public final class ModelingUtils {
             .collect(ImmutableMap.toImmutableMap(InterfaceAddress::getIp, Function.identity()));
 
     Set<Ip> remoteIpsSet = ImmutableSet.copyOf(remoteIps);
-    Set<Long> remoteAsnsSet = ImmutableSet.<Long>builder().addAll(remoteAsns).build();
+    Set<Long> remoteAsnsSet = ImmutableSet.copyOf(remoteAsns);
 
     List<BgpActivePeerConfig> validBgpActivePeerConfigs =
         configuration.getVrfs().values().stream()
@@ -316,7 +316,7 @@ public final class ModelingUtils {
                     .setAddress(interfaceAddress)
                     .build());
 
-    // using an arbitrary first Ip of an interface as router ID
+    // using the lowest IP among the InterfaceAddresses as the router ID
     BgpProcess bgpProcess =
         nf.bgpProcessBuilder()
             .setRouterId(
