@@ -1,10 +1,10 @@
 package org.batfish.representation.cisco;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.representation.cisco.CiscoAsaNatUtil.dynamicTransformation;
 import static org.batfish.representation.cisco.CiscoAsaNatUtil.secondTransformation;
 import static org.batfish.representation.cisco.CiscoAsaNatUtil.staticTransformation;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Map;
@@ -12,12 +12,14 @@ import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Transformation;
 
 @ParametersAreNonnullByDefault
 public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable {
+  public static final String ANY_INTERFACE = "any";
   private static final long serialVersionUID = 1L;
   /** If true, this NAT rule is inactive and will not be used. */
   private boolean _inactive;
@@ -34,12 +36,17 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
    */
   private String _outsideInterface;
   /**
-   * NAT's specify 'any' address, a network object, or a network object-group as the real address of
+   * NATs specify 'any' address, a network object, or a network object-group as the real address of
    * sources for inside-to-outside flows.
    */
   private AccessListAddressSpecifier _realSource;
   /**
-   * NAT's are sorted into sections. There are three sections (in decreasing order of precedence):
+   * Object NATs depend on the actual network object that they were declared in for sorting. This
+   * network object must have a valid start (and end) IP.
+   */
+  private NetworkObject _realSourceObject;
+  /**
+   * NATs are sorted into sections. There are three sections (in decreasing order of precedence):
    * BEFORE, OBJECT, and AFTER. Twice NATs are in BEFORE by default and can be configured to be in
    * AFTER. Object NATs are always in the OBJECT section.
    */
@@ -52,9 +59,9 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
    */
   private AccessListAddressSpecifier _mappedDestination;
   /**
-   * NAT's specify 'any' address, a network object, a network object-group, 'interface', or a PAT
-   * pool as the translated mapping of sources for inside-to-outside flows. PAT and interface NAT
-   * are not supported. Value is null if interface NAT or a PAT pool was configured.
+   * NATs specify 'any' address, a network object, a network object-group, 'interface', a PAT pool,
+   * or an inline IP as the translated mapping of sources for inside-to-outside flows. PAT and
+   * interface NAT are not supported. Value is null if interface NAT or a PAT pool was configured.
    */
   private AccessListAddressSpecifier _mappedSource;
   /**
@@ -136,8 +143,16 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
     return _realSource;
   }
 
+  public NetworkObject getRealSourceObject() {
+    return _realSourceObject;
+  }
+
   public void setRealSource(AccessListAddressSpecifier realSource) {
     _realSource = realSource;
+  }
+
+  void setRealSourceObject(NetworkObject networkObject) {
+    _realSourceObject = networkObject;
   }
 
   public Section getSection() {
@@ -158,17 +173,36 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
 
   @Override
   public int compareTo(CiscoAsaNat o) {
-    if (_section == Section.OBJECT && o._section == Section.OBJECT) {
-      // Object NAT not implemented and is sorted differently inside the OBJECT section
-      return 0;
+    // Different sections have different sorting rules
+    if (_section != o._section) {
+      return Comparator.comparing(CiscoAsaNat::getSection).compare(this, o);
     }
     /*
-     * Twice NATs are sorted first by section and then by line, where line is the order they were
-     * specified in the configuration.
+     * Twice NATs are in the BEFORE or AFTER section. Within those sections, they are sorted
+     * by line, where line is the order they were specified in the configuration.
      */
-    return Comparator.comparing(CiscoAsaNat::getSection)
-        .thenComparingInt(CiscoAsaNat::getLine)
-        .compare(this, o);
+    if (_section == Section.BEFORE || _section == Section.AFTER) {
+      return Integer.compare(_line, o._line);
+    }
+    if (_section == Section.OBJECT) {
+      // Within the object NAT section, static is sorted before dynamic.
+      if (_dynamic != o._dynamic) {
+        return _dynamic ? 1 : -1;
+      }
+
+      /*
+       * Object NATs of the same type are finally sorted by properties of their object:
+       * 1) # of addresses (ascending)
+       * 2) Start address (ascending)
+       * 3) Object name (alphabetical)
+       */
+      return Comparator.<NetworkObject>comparingLong(
+              obj -> obj.getEnd().asLong() - obj.getStart().asLong())
+          .thenComparing(NetworkObject::getStart)
+          .thenComparing(NetworkObject::getName)
+          .compare(_realSourceObject, o._realSourceObject);
+    }
+    throw new BatfishException("Unexpected Section");
   }
 
   @Override
@@ -189,6 +223,7 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
         && Objects.equals(_outsideInterface, other._outsideInterface)
         && Objects.equals(_realDestination, other._realDestination)
         && Objects.equals(_realSource, other._realSource)
+        && Objects.equals(_realSourceObject, other._realSourceObject)
         && Objects.equals(_section, other._section)
         && _twice == other._twice;
   }
@@ -205,8 +240,15 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
         _outsideInterface,
         _realDestination,
         _realSource,
+        _realSourceObject,
         _section.ordinal(),
         _twice);
+  }
+
+  @VisibleForTesting
+  public Optional<Transformation.Builder> toIncomingTransformation(
+      Map<String, NetworkObject> networkObjects, Warnings w) {
+    return toTransformation(false, networkObjects, w);
   }
 
   /*
@@ -218,25 +260,31 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
    * destination and transform both source and destination. Only one NAT rule applies for any given
    * packet.
    *
-   * 1) ASA NAT's can optionally circumvent routing for packets that match transformation. For
+   * 1) ASA NATs can optionally circumvent routing for packets that match transformation. For
    *    example, if a packet would otherwise be routed to 'DMZ' but matches a rule which specifies
-   *    'outside' as the mapped interface, the packet would be diverted to 'outside'. Similarly, an
-   *    ASA could have zero non-connected routes and rely completely on NAT. "Identity NAT" does not
-   *    transform packets but can be used to impose policy routing. Identity NAT rules which specify
-   *    both real and mapped interfaces can optionally require route lookups anyway, which can be
-   *    useful for management traffic.
+   *    'outside' as the mapped interface, the packet would be diverted to 'outside'. "Identity NAT"
+   *    does not transform packets but can be used to impose policy routing. Identity NAT rules
+   *    which specify both real and mapped interfaces can optionally require route lookups anyway,
+   *    which can be useful for management traffic.
    * 2) Both inbound and outbound ACLs match against packets using the original source address and
    *    the post-NAT destination address.
-   * 3) When the NAT rule does not specify a mapped interface, the routing table is used.
-   *    The routing lookup uses the original destination address, not the post-NAT address.
+   * 3) When the NAT rule des not specify a mapped interface, the routing table is used. The routing
+   *    lookup uses the post-NAT destination address.
    * 4) The NAT rules match based on the original source and destination.
+   * 5) When the NAT rule specifies an interface, the packet will be dropped unless there is a route
+   *    to the post-NAT destination out of that interface. This implies a RIB check rather than a
+   *    FIB check.
+   *    "Only routes pointing out the egress interface are eligible"
+   *    https://clnv.s3.amazonaws.com/2018/usa/pdf/BRKSEC-3020.pdf
    *
    * Not necessarily in chronological order, the ASA packet flow when considering twice NATs:
    * - Receive packet with original source and original destination
    * - Choose a single source and destination transformation based on original source and original
    *   destination
    * - Check inbound ACL using original source and transformed destination
-   * - Route based on original destination or chosen transformation
+   * - Route based on transformed destination or chosen transformation
+   * - Drop packets which are sent by a NAT rule to an interface which does not have a route for the
+   *   transformed destination.
    * - Check outbound ACL using original source and transformed destination
    * - Transmit packet with transformed source and destination
    *
@@ -245,11 +293,14 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
    * P.S. Besides twice NATs, there are Object NATs. Object NATs are source-only (or
    * destination-only in reverse). If a twice NAT is chosen, Object NATS are ignored. If an object
    * NAT is chosen, it is possible to match a source NAT and a destination NAT for the same packet.
+   * Object NATs do not divert packets in reverse, only forward.
    */
-  public Optional<Transformation.Builder> toTransformationTest(
+  private Optional<Transformation.Builder> toTransformation(
       boolean outgoing, Map<String, NetworkObject> networkObjects, Warnings w) {
 
-    checkArgument(outgoing || !_dynamic, "Incoming flow for dynamic NAT is not supported.");
+    if (!outgoing && _dynamic) {
+      return Optional.empty();
+    }
 
     AccessListAddressSpecifier matchSrc;
     AccessListAddressSpecifier assignOrShiftSrc;
@@ -302,6 +353,12 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
         networkObjects,
         secondField,
         w);
+  }
+
+  @VisibleForTesting
+  public Optional<Transformation.Builder> toOutgoingTransformation(
+      Map<String, NetworkObject> networkObjects, Warnings w) {
+    return toTransformation(true, networkObjects, w);
   }
 
   public enum Section {

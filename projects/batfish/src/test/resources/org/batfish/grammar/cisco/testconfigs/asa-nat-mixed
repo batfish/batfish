@@ -1,0 +1,40 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-nat-mixed
+!
+object network source-real
+ host 1.1.1.1
+object network source-mapped
+ host 2.2.2.2
+object network source-static
+ host 3.3.3.3
+object network alphabetical
+ subnet 3.3.3.3 255.255.255.255
+object network source-subnet29
+ subnet 4.0.0.0 255.255.255.248
+object network source-subnet29-b
+ subnet 4.1.0.0 255.255.255.248
+object network source-subnet24
+ subnet 5.0.0.0 255.255.255.0
+object network source-mapped-3
+ range 192.168.3.1 192.168.3.10
+!
+nat (inside,outside) after-auto source static source-real source-mapped
+nat (inside,outside) source static source-real source-mapped
+nat (inside,outside) source dynamic source-real source-mapped
+nat (inside,outside) after-auto source dynamic source-real source-mapped
+!
+object network source-subnet29-b
+ nat (outside,inside) static 192.168.1.0
+object network source-subnet29
+ nat static 192.168.2.0
+object network source-real
+ nat (inside,outside) dynamic source-mapped-3
+object network source-static
+ nat (inside,outside) static 192.168.4.0
+object network source-subnet24
+ nat (outside,inside) static 192.168.5.0
+object network alphabetical
+ nat (inside,outside) static 192.168.6.0
+!
