@@ -100,6 +100,62 @@
       },
       {
         "Filename" : "asa_nat",
+        "Line" : 16,
+        "Text" : "dynamic interface",
+        "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "asa_nat",
+        "Line" : 17,
+        "Text" : "dynamic 1.1.1.1",
+        "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "asa_nat",
+        "Line" : 18,
+        "Text" : "dynamic source-mapped dns",
+        "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "asa_nat",
+        "Line" : 19,
+        "Text" : "dynamic source-mapped interface",
+        "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "asa_nat",
+        "Line" : 20,
+        "Text" : "dynamic pat-pool WORD interface flat",
+        "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "asa_nat",
+        "Line" : 21,
+        "Text" : "static interface",
+        "Parser_Context" : "[onn_static on_nat o_network s_object stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "asa_nat",
+        "Line" : 22,
+        "Text" : "static source-mapped no-proxy-arp route-lookup",
+        "Parser_Context" : "[onn_static on_nat o_network s_object stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "asa_nat",
+        "Line" : 23,
+        "Text" : "static source-mapped service sctp ftp bgp",
+        "Parser_Context" : "[onn_static on_nat o_network s_object stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "asa_nat",
         "Line" : 6,
         "Text" : "nat (any,any) source dynamic source-net pat-pool pool block-allocation round-robin",
         "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
@@ -674,10 +730,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 90 results",
+      "notes" : "Found 98 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 90
+      "numResults" : 98
     }
   }
 ]
