@@ -91,6 +91,19 @@
             </configuration>
           </execution>
           <execution>
+            <id>antlr4-f5-bigip-structured</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <includes>**/F5BigipStructuredLexer.g4,**/F5BigipStructuredParser.g4</includes>
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/f5_bigip_structured
+              </libDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/antlr4-f5-bigip-structured
+              </statusDirectory>
+            </configuration>
+          </execution>
+          <execution>
             <id>antlr4-flatvyos</id>
             <goals>
               <goal>antlr4</goal>
@@ -137,7 +150,7 @@
             <configuration>
               <includes>**/*.g4</includes>
               <excludes>
-                **/cisco/*.g4,**/flatjuniper/*.g4,**/flatvyos/*.g4,**/mrv/*.g4,**/palo_alto/*.g4
+                **/cisco/*.g4,**/flatjuniper/*.g4,**/f5_bigip_structured/*.g4,**/flatvyos/*.g4,**/mrv/*.g4,**/palo_alto/*.g4
               </excludes>
             </configuration>
           </execution>

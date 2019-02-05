@@ -1,0 +1,64 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_structured_net
+}
+net fdb tunnel /Common/MYTUNNEL { }
+net fdb tunnel /Common/MYVLAN { }
+net interface 1.0 {
+    bundle enabled
+    bundle-speed 40G
+    forward-error-correction auto
+    lldp-admin txrx
+    lldp-tlvmap 12304
+}
+net lldp-globals {
+    enabled
+}
+net route-domain /Common/0 {
+    id 0
+    vlans {
+        /Common/MYTUNNEL
+        /Common/MYVLAN
+    }
+}
+net self /Common/MYSELF {
+    address 10.0.0.1/24
+    allow-service all
+    traffic-group /Common/traffic-group-local-only
+    vlan /Common/MYVLAN
+}
+net self-allow {
+    defaults {
+        igmp:0
+        ospf:0
+        pim:0
+        tcp:123
+        udp:456
+    }
+}
+net stp /Common/MYSTP {
+    interfaces {
+        1.0 {
+            external-path-cost 12345
+            internal-path-cost 23456
+        }
+    }
+    vlans {
+        /Common/MYVLAN
+    }
+}
+net stp-globals {
+    config-name 00-11-22-33-44-55
+}
+net tunnels tunnel /Common/MYTUNNEL {
+    description "my tunnel"
+    profile /Common/MYPROFILE
+}
+net vlan /Common/MYVLAN {
+    interfaces {
+        1.0 { }
+    }
+    tag 123
+}
+
