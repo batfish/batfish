@@ -98,7 +98,7 @@ public final class AclExplainer {
     IpAccessList diffAclWithInvariant = scopedAcl(invariantExpr, diffAcl);
 
     IpAccessListToBDD ipAccessListToBDD =
-        MemoizedIpAccessListToBDD.create(
+        new MemoizedIpAccessListToBDD(
             bddPacket, mgr, namedAcls, differentialIpAccessList.getNamedIpSpaces());
 
     IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> literalsToLines =
@@ -147,7 +147,7 @@ public final class AclExplainer {
         "namedAcls contains a different ACL with the same name as acl");
 
     IpAccessListToBDD ipAccessListToBDD =
-        MemoizedIpAccessListToBDD.create(bddPacket, mgr, namedAcls, namedIpSpaces);
+        new MemoizedIpAccessListToBDD(bddPacket, mgr, namedAcls, namedIpSpaces);
 
     // add the top-level acl to the list of named acls, because we are going to create
     // a new top-level acl to take into account the given invariant

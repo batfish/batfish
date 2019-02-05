@@ -18,10 +18,15 @@ public final class MemoizedIpAccessListToBDD extends IpAccessListToBDD {
   private Map<AclLineMatchExpr, BDD> _cache = new IdentityHashMap<>();
 
   public MemoizedIpAccessListToBDD(
-      BDDPacket packet, Map<String, IpAccessList> aclEnv, Map<String, IpSpace> namedIpSpaces) {
+          BDDPacket packet, Map<String, IpAccessList> aclEnv, Map<String, IpSpace> namedIpSpaces) {
+    this(packet, BDDSourceManager.forInterfaces(packet, ImmutableSet.of()), aclEnv, namedIpSpaces);
+  }
+
+  public MemoizedIpAccessListToBDD(
+      BDDPacket packet, BDDSourceManager mgr, Map<String, IpAccessList> aclEnv, Map<String, IpSpace> namedIpSpaces) {
     super(
         packet,
-        BDDSourceManager.forInterfaces(packet, ImmutableSet.of()),
+        mgr,
         new HeaderSpaceToBDD(
             packet,
             namedIpSpaces,
