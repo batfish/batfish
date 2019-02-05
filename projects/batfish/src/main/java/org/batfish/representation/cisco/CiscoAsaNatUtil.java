@@ -77,14 +77,36 @@ final class CiscoAsaNatUtil {
         .apply(assignSourceIp(mappedSourceObj.getStart(), mappedSourceObj.getEnd()));
   }
 
-  private static Prefix getNetworkObjectPrefix(NetworkObject object) {
+  private static Prefix getEqualLengthPrefix(WildcardAddressSpecifier specifier, Prefix prefix) {
+    return Prefix.create(specifier.getIpWildcard().getIp(), prefix.getPrefixLength());
+  }
+
+  private static Prefix getNetworkObjectPrefix(
+      NetworkObjectAddressSpecifier specifier,
+      Map<String, NetworkObject> networkObjects,
+      Warnings w) {
+    NetworkObject object = networkObjects.get(specifier.getName());
+    if (object == null) {
+      // Previously warned about undefined reference
+      return null;
+    }
+
     if (object instanceof HostNetworkObject) {
       return ((HostNetworkObject) object).getPrefix();
     }
     if (object instanceof SubnetNetworkObject) {
       return ((SubnetNetworkObject) object).getPrefix();
     }
-    return null;
+    if (object instanceof FqdnNetworkObject) {
+      // Previously warned that these are not supported
+      return null;
+    }
+    if (object instanceof RangeNetworkObject) {
+      // These are supported for dynamic NAT but not static NAT
+      w.redFlag("Ranges are not supported for static NAT");
+      return null;
+    }
+    throw new BatfishException("Unexpected network object type");
   }
 
   private static MatchHeaderSpace matchField(Prefix prefix, IpField field) {
@@ -170,38 +192,42 @@ final class CiscoAsaNatUtil {
           "Matching 'any' and shifting to an object or object group, or vice versa, is not supported.");
       return null;
     } else {
-      // both matchAddress and shiftAddress are specified and are objects or object groups
-      if (!(matchAddress instanceof NetworkObjectAddressSpecifier)
-          && !(shiftAddress instanceof NetworkObjectAddressSpecifier)) {
+      // both matchAddress and shiftAddress are specified and are objects, object groups, or an
+      // inline IP.
+      if (matchAddress instanceof NetworkObjectGroupAddressSpecifier
+          || shiftAddress instanceof NetworkObjectGroupAddressSpecifier) {
         // Network object groups not supported
         w.redFlag("Network object groups not supported for static transformations.");
         return null;
       }
-      NetworkObject matchObject =
-          networkObjects.get(((NetworkObjectAddressSpecifier) matchAddress).getName());
-      NetworkObject shiftObject =
-          networkObjects.get(((NetworkObjectAddressSpecifier) shiftAddress).getName());
-      if (matchObject == null) {
-        w.redFlag(
-            "Undefined references for object group "
-                + ((NetworkObjectAddressSpecifier) matchAddress).getName()
-                + ".");
+      if (matchAddress instanceof WildcardAddressSpecifier
+          && shiftAddress instanceof NetworkObjectAddressSpecifier) {
+        // If match or shift address was specified as an inline IP, the prefix length was not known
+        // at the time it was created. Get the correct prefix length.
+        shiftPrefix =
+            getNetworkObjectPrefix((NetworkObjectAddressSpecifier) shiftAddress, networkObjects, w);
+        matchPrefix = getEqualLengthPrefix((WildcardAddressSpecifier) matchAddress, shiftPrefix);
+      } else if (shiftAddress instanceof WildcardAddressSpecifier
+          && matchAddress instanceof NetworkObjectAddressSpecifier) {
+        matchPrefix =
+            getNetworkObjectPrefix((NetworkObjectAddressSpecifier) matchAddress, networkObjects, w);
+        shiftPrefix = getEqualLengthPrefix((WildcardAddressSpecifier) shiftAddress, matchPrefix);
+      } else if (matchAddress instanceof NetworkObjectAddressSpecifier
+          && shiftAddress instanceof NetworkObjectAddressSpecifier) {
+        matchPrefix =
+            getNetworkObjectPrefix((NetworkObjectAddressSpecifier) matchAddress, networkObjects, w);
+        shiftPrefix =
+            getNetworkObjectPrefix((NetworkObjectAddressSpecifier) shiftAddress, networkObjects, w);
+      } else {
+        w.redFlag("Unsupported address specifier.");
         return null;
       }
-      if (shiftObject == null) {
-        // Invalid reference
-        w.redFlag(
-            "Undefined references for object group "
-                + ((NetworkObjectAddressSpecifier) shiftObject).getName()
-                + ".");
+      if (matchPrefix == null || shiftPrefix == null) {
+        // Undefined reference or unsupported network object/group which was previously warned about
         return null;
       }
 
-      matchPrefix = getNetworkObjectPrefix(matchObject);
-      shiftPrefix = getNetworkObjectPrefix(shiftObject);
-      if (matchPrefix == null
-          || shiftPrefix == null
-          || matchPrefix.getPrefixLength() != shiftPrefix.getPrefixLength()) {
+      if (matchPrefix.getPrefixLength() != shiftPrefix.getPrefixLength()) {
         w.redFlag(
             "Matching and shifting objects do not have prefixes of equal length, which is not supported.");
         return null;

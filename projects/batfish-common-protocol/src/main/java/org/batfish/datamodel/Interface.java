@@ -521,6 +521,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_SPANNING_TREE_PORTFAST = "spanningTreePortfast";
 
+  private static final String PROP_SPEED = "speed";
+
   private static final String PROP_SWITCHPORT = "switchport";
 
   private static final String PROP_SWITCHPORT_MODE = "switchportMode";
@@ -808,6 +810,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private boolean _spanningTreePortfast;
 
+  private @Nullable Double _speed;
+
   private boolean _switchport;
 
   private SwitchportMode _switchportMode;
@@ -942,6 +946,9 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
     if (!Objects.equals(this._routingPolicy, other._routingPolicy)) {
+      return false;
+    }
+    if (!Objects.equals(_speed, other._speed)) {
       return false;
     }
     if (!Objects.equals(this._switchportMode, other._switchportMode)) {
@@ -1313,6 +1320,11 @@ public final class Interface extends ComparableStructure<String> {
     return _spanningTreePortfast;
   }
 
+  /** The link speed of this interface */
+  public @Nullable Double getSpeed() {
+    return _speed;
+  }
+
   @JsonProperty(PROP_SWITCHPORT)
   @JsonPropertyDescription("Whether this interface is configured as a switchport.")
   public boolean getSwitchport() {
@@ -1659,6 +1671,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_SPANNING_TREE_PORTFAST)
   public void setSpanningTreePortfast(boolean spanningTreePortfast) {
     _spanningTreePortfast = spanningTreePortfast;
+  }
+
+  @JsonProperty(PROP_SPEED)
+  public void setSpeed(@Nullable Double speed) {
+    _speed = speed;
   }
 
   @JsonProperty(PROP_SWITCHPORT)

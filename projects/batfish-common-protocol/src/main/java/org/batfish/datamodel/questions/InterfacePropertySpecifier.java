@@ -62,6 +62,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String RIP_PASSIVE = "Rip_Passive";
   public static final String ROUTING_POLICY_NAME = "Routing_Policy_Name";
   public static final String SPANNING_TREE_PORTFAST = "Spanning_Tree_Portfast";
+  public static final String SPEED = "Speed";
   public static final String SWITCHPORT = "Switchport";
   public static final String SWITCHPORT_MODE = "Switchport_Mode";
   public static final String SWITCHPORT_TRUNK_ENCAPSULATION = "Switchport_Trunk_Encapsulation";
@@ -140,6 +141,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               SPANNING_TREE_PORTFAST,
               new PropertyDescriptor<>(Interface::getSpanningTreePortfast, Schema.BOOLEAN))
+          .put(SPEED, new PropertyDescriptor<>(Interface::getSpeed, Schema.DOUBLE))
           .put(SWITCHPORT, new PropertyDescriptor<>(Interface::getSwitchport, Schema.BOOLEAN))
           .put(
               SWITCHPORT_MODE,

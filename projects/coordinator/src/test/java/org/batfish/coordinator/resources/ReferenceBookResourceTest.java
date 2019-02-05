@@ -7,8 +7,11 @@ import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
@@ -16,6 +19,7 @@ import org.batfish.common.Version;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
+import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.junit.Before;
@@ -32,7 +36,7 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
     WorkMgrTestUtils.initWorkManager(_folder);
   }
 
-  private Builder getAddressBookTarget(String container, String bookName) {
+  private Builder getReferenceBookTarget(String container, String bookName) {
     return target(CoordConsts.SVC_CFG_WORK_MGR2)
         .path(CoordConstsV2.RSC_NETWORKS)
         .path(container)
@@ -44,7 +48,7 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void delAddressBook() throws IOException {
+  public void delReferenceBook() throws IOException {
     String container = "someContainer";
     Main.getWorkMgr().initNetwork(container, null);
 
@@ -53,7 +57,7 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
         new ReferenceLibrary(ImmutableList.of(ReferenceBook.builder("book1").build())),
         Main.getWorkMgr().getReferenceLibraryPath(container));
 
-    Response response = getAddressBookTarget(container, "book1").delete();
+    Response response = getReferenceBookTarget(container, "book1").delete();
 
     // response should be OK and book1 should have disappeared
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
@@ -62,12 +66,12 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
         equalTo(false));
 
     // deleting again should fail
-    Response response2 = getAddressBookTarget(container, "book1").delete();
+    Response response2 = getReferenceBookTarget(container, "book1").delete();
     assertThat(response2.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
   }
 
   @Test
-  public void getAddressBook() throws JsonProcessingException {
+  public void getReferenceBook() throws JsonProcessingException {
     String container = "someContainer";
     Main.getWorkMgr().initNetwork(container, null);
 
@@ -78,13 +82,54 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
 
     // we only check that the right type of object is returned at the expected URL target
     // we rely on ReferenceBookBean to have created the object with the right content
-    Response response = getAddressBookTarget(container, "book1").get();
+    Response response = getReferenceBookTarget(container, "book1").get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
         response.readEntity(ReferenceBook.class), equalTo(ReferenceBook.builder("book1").build()));
 
     // should get 404 for non-existent dimension
-    Response response2 = getAddressBookTarget(container, "book2").get();
+    Response response2 = getReferenceBookTarget(container, "book2").get();
     assertThat(response2.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+  }
+
+  @Test
+  public void testPutReferenceBookMissingNetwork() throws IOException {
+    String network = "network1";
+    String bookName = "book1";
+
+    ReferenceBookBean book = new ReferenceBookBean(ReferenceBook.builder(bookName).build());
+    Response response =
+        getReferenceBookTarget(network, bookName)
+            .put(Entity.entity(book, MediaType.APPLICATION_JSON));
+    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+  }
+
+  @Test
+  public void putReferenceBookSuccess() throws IOException {
+    String network = "someContainer";
+    String bookName = "book1";
+    Main.getWorkMgr().initNetwork(network, null);
+
+    // add book1
+    ReferenceBookBean book = new ReferenceBookBean(ReferenceBook.builder(bookName).build());
+    Response response =
+        getReferenceBookTarget(network, bookName)
+            .put(Entity.entity(book, MediaType.APPLICATION_JSON));
+
+    // test: bookName should have been added
+    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    ReferenceLibrary library = Main.getWorkMgr().getReferenceLibrary(network);
+    assertThat(library.getReferenceBook(bookName).isPresent(), equalTo(true));
+
+    // test: put of bookName again should succeed and the contents should be new
+    AddressGroup ag = new AddressGroup(null, "ag");
+    book.addressGroups = ImmutableSet.of(new AddressGroupBean(ag));
+    Response response2 =
+        getReferenceBookTarget(network, bookName)
+            .put(Entity.entity(book, MediaType.APPLICATION_JSON));
+    assertThat(response2.getStatus(), equalTo(OK.getStatusCode()));
+    ReferenceBook book2 =
+        Main.getWorkMgr().getReferenceLibrary(network).getReferenceBook(bookName).get();
+    assertThat(book2.getAddressGroups(), equalTo(ImmutableSet.of(ag)));
   }
 }

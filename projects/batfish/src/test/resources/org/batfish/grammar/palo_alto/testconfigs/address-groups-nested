@@ -1,8 +1,5 @@
 set deviceconfig system hostname address-objects
 
-# empty address group
-set address-group group0
-
 # nested group
 set address-group group1 static group0
 

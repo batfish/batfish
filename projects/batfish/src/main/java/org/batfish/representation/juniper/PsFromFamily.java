@@ -23,9 +23,9 @@ public class PsFromFamily extends PsFrom {
   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c, Warnings warnings) {
     switch (_family) {
       case IPV4:
-        return new MatchIpv4();
+        return MatchIpv4.instance();
       case IPV6:
-        return new MatchIpv6();
+        return MatchIpv6.instance();
       default:
         throw new VendorConversionException("Unsupported address family: \"" + _family + "\"");
     }

@@ -761,6 +761,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -786,6 +787,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -1035,6 +1037,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : true,
             "switchportMode" : "ACCESS",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -1338,6 +1341,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "TRUNK",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -1778,6 +1782,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -1934,6 +1939,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2027,6 +2033,15 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "neighbors" : {
+                "blah" : {
+                  "area" : 0,
+                  "hostname" : "asa_ospf",
+                  "interface" : "blah",
+                  "passive" : false,
+                  "vrf" : "default"
+                }
+              },
               "processId" : "1",
               "referenceBandwidth" : 1.0E8,
               "routerId" : "192.168.1.0"
@@ -2270,7 +2285,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -2301,7 +2316,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -2537,7 +2552,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -2568,7 +2583,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -3757,6 +3772,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -3786,6 +3802,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -3811,6 +3828,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6573,6 +6591,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -7001,6 +7020,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -7071,6 +7091,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E10,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -7250,6 +7271,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : true,
+            "speed" : 1.0E7,
             "switchport" : true,
             "switchportMode" : "TRUNK",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -7275,6 +7297,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -7301,6 +7324,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "ACCESS",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -7665,6 +7689,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -8462,6 +8487,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -8502,6 +8528,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -8536,6 +8563,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -9525,6 +9553,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -9808,6 +9837,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -9839,6 +9869,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -10073,6 +10104,15 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "neighbors" : {
+                "Ethernet1/0" : {
+                  "area" : 0,
+                  "hostname" : "cisco_ospf",
+                  "interface" : "Ethernet1/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                }
+              },
               "processId" : "1",
               "referenceBandwidth" : 4.0E10,
               "routerId" : "1.2.3.4"
@@ -11213,6 +11253,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -12267,6 +12308,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -12654,6 +12696,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -12686,6 +12729,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -12787,6 +12831,22 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "neighbors" : {
+                "Ethernet0" : {
+                  "area" : 0,
+                  "hostname" : "host2",
+                  "interface" : "Ethernet0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "Ethernet1" : {
+                  "area" : 0,
+                  "hostname" : "host2",
+                  "interface" : "Ethernet1",
+                  "passive" : false,
+                  "vrf" : "default"
+                }
+              },
               "processId" : "1",
               "referenceBandwidth" : 1.0E8,
               "routerId" : "2.130.0.1"
@@ -13404,6 +13464,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E8,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -13757,6 +13818,15 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "neighbors" : {
+                "xe-0/0/0:0.0" : {
+                  "area" : 0,
+                  "hostname" : "interfacemtu",
+                  "interface" : "xe-0/0/0:0.0",
+                  "passive" : false,
+                  "vrf" : "default"
+                }
+              },
               "referenceBandwidth" : 1.0E9,
               "routerId" : "10.1.2.3"
             }
@@ -13869,6 +13939,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -14479,6 +14550,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -14767,6 +14839,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E10,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -14792,6 +14865,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E10,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -14817,6 +14891,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E10,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -15928,7 +16003,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -15993,7 +16068,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -16058,7 +16133,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -16089,7 +16164,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -16120,7 +16195,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -16151,7 +16226,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -16406,7 +16481,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -16471,7 +16546,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -16502,7 +16577,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -16533,7 +16608,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -19094,7 +19169,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -19125,7 +19200,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -19152,7 +19227,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -19179,7 +19254,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain",
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain",
                   "subroutines" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
@@ -19216,7 +19291,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain",
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain",
                   "subroutines" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
@@ -19476,7 +19551,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -19507,7 +19582,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -19534,7 +19609,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -21101,6 +21176,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -21126,6 +21202,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E8,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -22145,6 +22222,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -22509,6 +22587,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -27875,6 +27954,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E8,
             "switchport" : false,
             "switchportMode" : "TRUNK",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -28420,6 +28500,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E8,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -28470,6 +28551,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E8,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -29355,7 +29437,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain",
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain",
                   "subroutines" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
@@ -29426,7 +29508,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain",
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain",
                   "subroutines" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
@@ -29497,7 +29579,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain",
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain",
                   "subroutines" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
@@ -29568,7 +29650,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -29633,7 +29715,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -29698,7 +29780,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -29763,7 +29845,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -29794,7 +29876,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -29825,7 +29907,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -29856,7 +29938,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -29887,7 +29969,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -29918,7 +30000,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -29949,7 +30031,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {
@@ -29980,7 +30062,7 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.DisjunctionChain"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain"
                 },
                 "trueStatements" : [
                   {

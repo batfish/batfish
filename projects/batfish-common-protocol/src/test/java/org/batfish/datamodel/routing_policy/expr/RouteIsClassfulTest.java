@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.Lists;
 import java.util.List;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
@@ -23,6 +24,12 @@ public class RouteIsClassfulTest {
     Environment env = Environment.builder(c).setVrf("vrf").setOriginalRoute(route).build();
     Result res = RouteIsClassful.instance().evaluate(env);
     return res.getBooleanValue();
+  }
+
+  @Test
+  public void testJavaSerialization() {
+    RouteIsClassful ric = RouteIsClassful.instance();
+    assertThat(SerializationUtils.clone(ric), equalTo(ric));
   }
 
   @Test

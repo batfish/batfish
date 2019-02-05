@@ -2,10 +2,10 @@
     "class": "org.batfish.question.filtertable.FilterTableQuestion",
     "differential": false,
     "columns": [
-        "mtu",
-        "interface"
+        "MTU",
+        "Interface"
     ],
-    "filter": "mtu ${comparator} ${mtuBytes}",
+    "filter": "MTU ${comparator} ${mtuBytes}",
     "innerQuestion": {
         "class": "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
         "differential": false,

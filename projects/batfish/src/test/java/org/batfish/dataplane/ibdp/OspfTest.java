@@ -4,6 +4,7 @@ import static org.batfish.datamodel.RoutingProtocol.OSPF;
 import static org.batfish.datamodel.RoutingProtocol.OSPF_E1;
 import static org.batfish.datamodel.RoutingProtocol.OSPF_E2;
 import static org.batfish.datamodel.RoutingProtocol.OSPF_IA;
+import static org.batfish.datamodel.ospf.OspfTopologyUtils.computeOspfTopology;
 import static org.batfish.dataplane.ibdp.TestUtils.assertNoRoute;
 import static org.batfish.dataplane.ibdp.TestUtils.assertRoute;
 
@@ -23,6 +24,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
@@ -37,6 +39,7 @@ import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.ospf.StubSettings;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
@@ -259,10 +262,16 @@ public class OspfTest {
             new IncrementalDataPlaneSettings(),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             (s, i) -> new AtomicInteger());
+    OspfTopologyUtils.initNeighborConfigs(NetworkConfigurations.of(configurations));
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     IncrementalDataPlane dp =
         (IncrementalDataPlane)
-            engine.computeDataPlane(configurations, topology, Collections.emptySet())._dataPlane;
+            engine.computeDataPlane(
+                    configurations,
+                    topology,
+                    computeOspfTopology(NetworkConfigurations.of(configurations), topology),
+                    Collections.emptySet())
+                ._dataPlane;
 
     return IncrementalBdpEngine.getRoutes(dp);
   }
@@ -415,7 +424,7 @@ public class OspfTest {
             .setOwner(r6)
             .setName("exportStatic")
             .setStatements(
-                ImmutableList.<Statement>of(
+                ImmutableList.of(
                     new If(
                         new MatchProtocol(RoutingProtocol.STATIC),
                         ImmutableList.of(
@@ -449,10 +458,16 @@ public class OspfTest {
             new IncrementalDataPlaneSettings(),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             (s, i) -> new AtomicInteger());
+    OspfTopologyUtils.initNeighborConfigs(NetworkConfigurations.of(configurations));
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     IncrementalDataPlane dp =
         (IncrementalDataPlane)
-            engine.computeDataPlane(configurations, topology, Collections.emptySet())._dataPlane;
+            engine.computeDataPlane(
+                    configurations,
+                    topology,
+                    computeOspfTopology(NetworkConfigurations.of(configurations), topology),
+                    Collections.emptySet())
+                ._dataPlane;
 
     return IncrementalBdpEngine.getRoutes(dp);
   }

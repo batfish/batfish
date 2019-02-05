@@ -169,6 +169,7 @@ import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.datamodel.questions.NodesSpecifier;
@@ -1472,35 +1473,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public void initBgpOriginationSpaceExplicit(Map<String, Configuration> configurations) {
-    // ProtocolDependencyAnalysis protocolDependencyAnalysis = new
-    // ProtocolDependencyAnalysis(
-    // configurations);
-    // DependencyDatabase database = protocolDependencyAnalysis
-    // .getDependencyDatabase();
-    //
-    // for (Entry<String, Configuration> e : configurations.entrySet()) {
-    // PrefixSpace ebgpExportSpace = new PrefixSpace();
-    // String name = e.getKey();
-    // Configuration node = e.getValue();
-    // BgpProcess proc = node.getBgpProcess();
-    // if (proc != null) {
-    // Set<PotentialExport> bgpExports = database.getPotentialExports(name,
-    // RoutingProtocol.BGP);
-    // for (PotentialExport export : bgpExports) {
-    // DependentRoute exportSourceRoute = export.getDependency();
-    // if (!exportSourceRoute.dependsOn(RoutingProtocol.BGP)
-    // && !exportSourceRoute.dependsOn(RoutingProtocol.IBGP)) {
-    // Prefix prefix = export.getIp();
-    // ebgpExportSpace.addPrefix(prefix);
-    // }
-    // }
-    // proc.setOriginationSpace(ebgpExportSpace);
-    // }
-    // }
-  }
-
-  @Override
   public InitInfoAnswerElement initInfo(boolean summary, boolean verboseError) {
     ParseVendorConfigurationAnswerElement parseAnswer = loadParseVendorConfigurationAnswerElement();
     InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
@@ -1575,51 +1547,47 @@ public class Batfish extends PluginConsumer implements IBatfish {
           String vrfName = e2.getKey();
           for (String ifaceName : proc.getInterfaces()) {
             Interface iface = vrf.getInterfaces().get("ifaceName");
-            SortedSet<Edge> ifaceEdges =
-                topology.getInterfaceEdges().get(new NodeInterfacePair(hostname, ifaceName));
+            SortedSet<NodeInterfacePair> ifaceNeighbors =
+                topology.getNeighbors(new NodeInterfacePair(hostname, ifaceName));
             boolean hasNeighbor = false;
             Ip localIp = iface.getAddress().getIp();
-            if (ifaceEdges != null) {
-              for (Edge edge : ifaceEdges) {
-                if (edge.getNode1().equals(hostname)) {
-                  String remoteHostname = edge.getNode2();
-                  String remoteIfaceName = edge.getInt2();
-                  Configuration remoteNode = configurations.get(remoteHostname);
-                  Interface remoteIface = remoteNode.getAllInterfaces().get(remoteIfaceName);
-                  Vrf remoteVrf = remoteIface.getVrf();
-                  String remoteVrfName = remoteVrf.getName();
-                  RipProcess remoteProc = remoteVrf.getRipProcess();
-                  if (remoteProc != null) {
-                    if (remoteProc.getRipNeighbors() == null) {
-                      remoteProc.setRipNeighbors(new TreeMap<>());
-                    }
-                    if (remoteProc.getInterfaces().contains(remoteIfaceName)) {
-                      Ip remoteIp = remoteIface.getAddress().getIp();
-                      Pair<Ip, Ip> localKey = new Pair<>(localIp, remoteIp);
-                      RipNeighbor neighbor = proc.getRipNeighbors().get(localKey);
-                      if (neighbor == null) {
-                        hasNeighbor = true;
+            for (NodeInterfacePair ifaceNeighbor : ifaceNeighbors) {
+              String remoteHostname = ifaceNeighbor.getHostname();
+              String remoteIfaceName = ifaceNeighbor.getInterface();
+              Configuration remoteNode = configurations.get(remoteHostname);
+              Interface remoteIface = remoteNode.getAllInterfaces().get(remoteIfaceName);
+              Vrf remoteVrf = remoteIface.getVrf();
+              String remoteVrfName = remoteVrf.getName();
+              RipProcess remoteProc = remoteVrf.getRipProcess();
+              if (remoteProc != null) {
+                if (remoteProc.getRipNeighbors() == null) {
+                  remoteProc.setRipNeighbors(new TreeMap<>());
+                }
+                if (remoteProc.getInterfaces().contains(remoteIfaceName)) {
+                  Ip remoteIp = remoteIface.getAddress().getIp();
+                  Pair<Ip, Ip> localKey = new Pair<>(localIp, remoteIp);
+                  RipNeighbor neighbor = proc.getRipNeighbors().get(localKey);
+                  if (neighbor == null) {
+                    hasNeighbor = true;
 
-                        // initialize local neighbor
-                        neighbor = new RipNeighbor(localKey);
-                        neighbor.setVrf(vrfName);
-                        neighbor.setOwner(c);
-                        neighbor.setInterface(iface);
-                        proc.getRipNeighbors().put(localKey, neighbor);
+                    // initialize local neighbor
+                    neighbor = new RipNeighbor(localKey);
+                    neighbor.setVrf(vrfName);
+                    neighbor.setOwner(c);
+                    neighbor.setInterface(iface);
+                    proc.getRipNeighbors().put(localKey, neighbor);
 
-                        // initialize remote neighbor
-                        Pair<Ip, Ip> remoteKey = new Pair<>(remoteIp, localIp);
-                        RipNeighbor remoteNeighbor = new RipNeighbor(remoteKey);
-                        remoteNeighbor.setVrf(remoteVrfName);
-                        remoteNeighbor.setOwner(remoteNode);
-                        remoteNeighbor.setInterface(remoteIface);
-                        remoteProc.getRipNeighbors().put(remoteKey, remoteNeighbor);
+                    // initialize remote neighbor
+                    Pair<Ip, Ip> remoteKey = new Pair<>(remoteIp, localIp);
+                    RipNeighbor remoteNeighbor = new RipNeighbor(remoteKey);
+                    remoteNeighbor.setVrf(remoteVrfName);
+                    remoteNeighbor.setOwner(remoteNode);
+                    remoteNeighbor.setInterface(remoteIface);
+                    remoteProc.getRipNeighbors().put(remoteKey, remoteNeighbor);
 
-                        // link neighbors
-                        neighbor.setRemoteRipNeighbor(remoteNeighbor);
-                        remoteNeighbor.setRemoteRipNeighbor(neighbor);
-                      }
-                    }
+                    // link neighbors
+                    neighbor.setRemoteRipNeighbor(remoteNeighbor);
+                    remoteNeighbor.setRemoteRipNeighbor(neighbor);
                   }
                 }
               }
@@ -2939,6 +2907,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void postProcessSnapshot(Map<String, Configuration> configurations) {
     updateBlacklistedAndInactiveConfigs(configurations);
     postProcessAggregatedInterfaces(configurations);
+    OspfTopologyUtils.initNeighborConfigs(NetworkConfigurations.of(configurations));
     postProcessOspfCosts(configurations);
     computeAndStoreCompletionMetadata(configurations);
   }
@@ -3232,17 +3201,38 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private Answer serializeIndependentConfigs(Path vendorConfigPath) {
-    Answer answer = new Answer();
-    ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
-    answerElement.setVersion(Version.getVersion());
-    if (_settings.getVerboseParse()) {
-      answer.addAnswerElement(answerElement);
+    try (ActiveSpan span =
+        GlobalTracer.get().buildSpan("Serialize vendor-independent configs").startActive()) {
+      assert span != null; // avoid unused warning
+      Answer answer = new Answer();
+      ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
+      answerElement.setVersion(Version.getVersion());
+      if (_settings.getVerboseParse()) {
+        answer.addAnswerElement(answerElement);
+      }
+      Map<String, Configuration> configurations;
+      try (ActiveSpan convertSpan =
+          GlobalTracer.get()
+              .buildSpan("Convert vendor-specific configs to vendor-independent configs")
+              .startActive()) {
+        assert convertSpan != null; // avoid unused warning
+        configurations = getConfigurations(vendorConfigPath, answerElement);
+      }
+
+      try (ActiveSpan storeSpan =
+          GlobalTracer.get().buildSpan("Store vendor-independent configs").startActive()) {
+        assert storeSpan != null; // avoid unused warning
+        _storage.storeConfigurations(
+            configurations, answerElement, _settings.getContainer(), _testrigSettings.getName());
+      }
+
+      try (ActiveSpan ppSpan =
+          GlobalTracer.get().buildSpan("Post-process vendor-independent configs").startActive()) {
+        assert ppSpan != null; // avoid unused warning
+        postProcessSnapshot(configurations);
+      }
+      return answer;
     }
-    Map<String, Configuration> configurations = getConfigurations(vendorConfigPath, answerElement);
-    _storage.storeConfigurations(
-        configurations, answerElement, _settings.getContainer(), _testrigSettings.getName());
-    postProcessSnapshot(configurations);
-    return answer;
   }
 
   private void updateSnapshotNodeRoles() {

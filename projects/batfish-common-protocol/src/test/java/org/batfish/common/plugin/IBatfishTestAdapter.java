@@ -43,6 +43,7 @@ import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.flow.Trace;
+import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
@@ -251,6 +252,12 @@ public class IBatfishTestAdapter implements IBatfish {
         throw new UnsupportedOperationException();
       }
 
+      @Nonnull
+      @Override
+      public OspfTopology getOspfTopology(@Nonnull NetworkSnapshot networkSnapshot) {
+        throw new UnsupportedOperationException();
+      }
+
       @Override
       public Optional<Layer1Topology> getRawLayer1PhysicalTopology(
           NetworkSnapshot networkSnapshot) {
@@ -262,11 +269,6 @@ public class IBatfishTestAdapter implements IBatfish {
         throw new UnsupportedOperationException();
       }
     };
-  }
-
-  @Override
-  public void initBgpOriginationSpaceExplicit(Map<String, Configuration> configurations) {
-    throw new UnsupportedOperationException();
   }
 
   @Override
