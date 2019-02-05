@@ -17,6 +17,12 @@
       "reachability",
       "traceroute"
     ],
+    "orderedVariableNames" : [
+      "startLocation",
+      "headers",
+      "maxTraces",
+      "ignoreFilters"
+    ],
     "variables" : {
       "headers" : {
         "description" : "Packet header constraints",
