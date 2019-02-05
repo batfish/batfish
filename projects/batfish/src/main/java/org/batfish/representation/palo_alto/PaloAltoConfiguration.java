@@ -381,8 +381,16 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       List<AclLineMatchExpr> serviceDisjuncts = new TreeList<>();
       for (ServiceOrServiceGroupReference service : ruleServices) {
         String serviceName = service.getName();
-        // TODO check for matching object before using built-ins
-        if (serviceName.equals(CATCHALL_SERVICE_NAME)) {
+
+        // Check for matching object before using built-ins
+        String vsysName = service.getVsysName(this, vsys);
+        if (vsysName != null) {
+          serviceDisjuncts.add(
+              new PermittedByAcl(
+                  computeServiceGroupMemberAclName(
+                      service.getVsysName(this, rule.getVsys()), service.getName())));
+        } else if (serviceName.equals(CATCHALL_SERVICE_NAME)) {
+          serviceDisjuncts.clear();
           serviceDisjuncts.add(TrueExpr.INSTANCE);
           break;
         } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())) {
@@ -390,10 +398,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())) {
           serviceDisjuncts.add(new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTPS.getHeaderSpace()));
         } else {
-          serviceDisjuncts.add(
-              new PermittedByAcl(
-                  computeServiceGroupMemberAclName(
-                      service.getVsysName(this, rule.getVsys()), service.getName())));
+          _w.redFlag(String.format("No matching service group/object found for: "), serviceName);
         }
       }
       conjuncts.add(new OrMatchExpr(serviceDisjuncts));

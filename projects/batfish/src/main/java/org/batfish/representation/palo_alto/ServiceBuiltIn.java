@@ -13,11 +13,9 @@ public enum ServiceBuiltIn {
   SERVICE_HTTPS;
 
   private final Supplier<HeaderSpace> _serviceHeaderSpace;
-  private final Supplier<String> _serviceName;
 
   ServiceBuiltIn() {
     _serviceHeaderSpace = Suppliers.memoize(this::init);
-    _serviceName = Suppliers.memoize(this::initName);
   }
 
   private HeaderSpace init() {
@@ -37,7 +35,11 @@ public enum ServiceBuiltIn {
     }
   }
 
-  private String initName() {
+  public HeaderSpace getHeaderSpace() {
+    return _serviceHeaderSpace.get();
+  }
+
+  public String getName() {
     switch (this) {
       case SERVICE_HTTP:
         return "service-http";
@@ -46,13 +48,5 @@ public enum ServiceBuiltIn {
       default:
         return null;
     }
-  }
-
-  public HeaderSpace getHeaderSpace() {
-    return _serviceHeaderSpace.get();
-  }
-
-  public String getName() {
-    return _serviceName.get();
   }
 }
