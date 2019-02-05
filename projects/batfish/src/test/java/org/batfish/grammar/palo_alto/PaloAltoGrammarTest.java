@@ -923,13 +923,13 @@ public class PaloAltoGrammarTest {
     Flow flowHttpAlt = createFlow(IpProtocol.TCP, 999, 8080);
     Flow flowOther = createFlow(IpProtocol.TCP, 999, 1);
 
-    // Confirm https built-in accepts flows matching built-in HTTPS definition only
+    // Confirm HTTPS built-in accepts flows matching built-in HTTPS definition only
     assertThat(c, hasIpAccessList(serviceGroupHttpsAclName, accepts(flowHttps, null, c)));
     assertThat(c, hasIpAccessList(serviceGroupHttpsAclName, rejects(flowHttp, null, c)));
     assertThat(c, hasIpAccessList(serviceGroupHttpsAclName, rejects(flowHttpAlt, null, c)));
     assertThat(c, hasIpAccessList(serviceGroupHttpsAclName, rejects(flowOther, null, c)));
 
-    // Confirm http built-in accepts flows matching built-in HTTP definitions only
+    // Confirm HTTP built-in accepts flows matching built-in HTTP definitions only
     assertThat(c, hasIpAccessList(serviceGroupHttpAclName, rejects(flowHttps, null, c)));
     assertThat(c, hasIpAccessList(serviceGroupHttpAclName, accepts(flowHttp, null, c)));
     assertThat(c, hasIpAccessList(serviceGroupHttpAclName, accepts(flowHttpAlt, null, c)));
