@@ -42,6 +42,7 @@ public final class OspfProcess implements Serializable {
     @Nullable private Long _maxMetricStubNetworks;
     @Nullable private Long _maxMetricSummaryNetworks;
     @Nullable private Long _maxMetricTransitLinks;
+    @Nullable private Map<String, OspfNeighborConfig> _neighbors;
     @Nullable private String _processId;
     @Nullable private Double _referenceBandwidth;
     @Nullable private Vrf _vrf;
@@ -67,6 +68,7 @@ public final class OspfProcess implements Serializable {
               _maxMetricStubNetworks,
               _maxMetricSummaryNetworks,
               _maxMetricTransitLinks,
+              _neighbors,
               _processId,
               _referenceBandwidth,
               _rfc1583Compatible,
@@ -99,6 +101,11 @@ public final class OspfProcess implements Serializable {
 
     public Builder setMaxMetricTransitLinks(Long maxMetricTransitLinks) {
       _maxMetricTransitLinks = maxMetricTransitLinks;
+      return this;
+    }
+
+    public Builder setNeighbors(Map<String, OspfNeighborConfig> neighbors) {
+      _neighbors = neighbors;
       return this;
     }
 
@@ -146,22 +153,6 @@ public final class OspfProcess implements Serializable {
       _routerId = routerId;
       return this;
     }
-
-    public OspfProcess createOspfProcess() {
-      return new OspfProcess(
-          _areas,
-          _exportPolicy,
-          _exportPolicySources,
-          _generatedRoutes,
-          _maxMetricExternalNetworks,
-          _maxMetricStubNetworks,
-          _maxMetricSummaryNetworks,
-          _maxMetricTransitLinks,
-          _processId,
-          _referenceBandwidth,
-          _rfc1583Compatible,
-          _routerId);
-    }
   }
 
   private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
@@ -174,6 +165,7 @@ public final class OspfProcess implements Serializable {
   private static final String PROP_MAX_METRIC_STUB_NETWORKS = "maxMetricStubNetworks";
   private static final String PROP_MAX_METRIC_SUMMARY_NETWORKS = "maxMetricSummaryNetworks";
   private static final String PROP_MAX_METRIC_TRANSIT_LINKS = "maxMetricTransitLinks";
+  private static final String PROP_NEIGHBORS = "neighbors";
   private static final String PROP_PROCESS_ID = "processId";
   private static final String PROP_REFERENCE_BANDWIDTH = "referenceBandwidth";
   private static final String PROP_ROUTER_ID = "routerId";
@@ -208,6 +200,9 @@ public final class OspfProcess implements Serializable {
 
   private transient Map<IpLink, OspfNeighbor> _ospfNeighbors;
 
+  /** Mapping from interface name to an OSPF config */
+  @Nonnull private SortedMap<String, OspfNeighborConfig> _ospfNeighborConfigs;
+
   @Nullable private String _processId;
 
   @Nonnull private Double _referenceBandwidth;
@@ -226,6 +221,7 @@ public final class OspfProcess implements Serializable {
       @Nullable @JsonProperty(PROP_MAX_METRIC_STUB_NETWORKS) Long maxMetricStubNetworks,
       @Nullable @JsonProperty(PROP_MAX_METRIC_SUMMARY_NETWORKS) Long maxMetricSummaryNetworks,
       @Nullable @JsonProperty(PROP_MAX_METRIC_TRANSIT_LINKS) Long maxMetricTransitLinks,
+      @Nullable @JsonProperty(PROP_NEIGHBORS) Map<String, OspfNeighborConfig> neighbors,
       @Nullable @JsonProperty(PROP_PROCESS_ID) String processId,
       @Nullable @JsonProperty(PROP_REFERENCE_BANDWIDTH) Double referenceBandwidth,
       @Nullable @JsonProperty(PROP_RFC1583) Boolean rfc1583Compatible,
@@ -240,6 +236,8 @@ public final class OspfProcess implements Serializable {
     _maxMetricSummaryNetworks = maxMetricSummaryNetworks;
     _maxMetricTransitLinks = maxMetricTransitLinks;
     _ospfNeighbors = new TreeMap<>();
+    _ospfNeighborConfigs =
+        ImmutableSortedMap.copyOf(firstNonNull(neighbors, ImmutableSortedMap.of()));
     _processId = processId;
     _referenceBandwidth = referenceBandwidth;
     _rfc1583Compatible = rfc1583Compatible;
@@ -337,6 +335,11 @@ public final class OspfProcess implements Serializable {
   @JsonIgnore
   public Map<IpLink, OspfNeighbor> getOspfNeighbors() {
     return _ospfNeighbors;
+  }
+
+  @JsonProperty(PROP_NEIGHBORS)
+  public Map<String, OspfNeighborConfig> getOspfNeighborConfigs() {
+    return _ospfNeighborConfigs;
   }
 
   @Nullable
@@ -444,6 +447,12 @@ public final class OspfProcess implements Serializable {
     _ospfNeighbors = ospfNeighbors;
   }
 
+  @JsonProperty(PROP_NEIGHBORS)
+  void setOspfNeighborConfigs(Map<String, OspfNeighborConfig> ospfNeighborConfigs) {
+    _ospfNeighborConfigs = ImmutableSortedMap.copyOf(ospfNeighborConfigs);
+  }
+
+  @JsonProperty(PROP_PROCESS_ID)
   public void setProcessId(@Nullable String id) {
     _processId = id;
   }

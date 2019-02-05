@@ -72,6 +72,7 @@ import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
+import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipNeighbor;
@@ -87,6 +88,7 @@ import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -97,7 +99,6 @@ import org.junit.Test;
 public class EdgesAnswererTest {
   private Configuration _host1;
   private Configuration _host2;
-  private Topology _topology;
   private Map<String, Configuration> _configurations;
   private Set<String> _includeNodes;
   private Set<String> _includeRemoteNodes;
@@ -129,9 +130,6 @@ public class EdgesAnswererTest {
     _configurations = ImmutableSortedMap.of("host1", _host1, "host2", _host2);
     _includeNodes = ImmutableSortedSet.of("host1", "host2");
     _includeRemoteNodes = ImmutableSortedSet.of("host1", "host2");
-
-    // Sending an  edge from host1 to host2 in layer 3
-    _topology = new Topology(ImmutableSortedSet.of(Edge.of("host1", "int1", "host2", "int2")));
   }
 
   @Test
@@ -292,20 +290,42 @@ public class EdgesAnswererTest {
     _host1.getAllInterfaces().get("int1").setVrf(vrf1);
     _host2.getAllInterfaces().get("int2").setVrf(vrf2);
 
+    OspfTopologyUtils.initNeighborConfigs(NetworkConfigurations.of(_configurations));
+    // Need edges to be bi-directional
+    Topology l3topo =
+        new Topology(
+            ImmutableSortedSet.of(
+                Edge.of("host1", "int1", "host2", "int2"),
+                Edge.of("host2", "int2", "host1", "int1")));
     Multiset<Row> rows =
-        getOspfEdges(_configurations, _includeNodes, _includeRemoteNodes, _topology);
+        getOspfEdges(
+            _configurations,
+            _includeNodes,
+            _includeRemoteNodes,
+            OspfTopologyUtils.computeOspfTopology(
+                NetworkConfigurations.of(_configurations), l3topo));
     assertThat(
         rows,
         contains(
-            allOf(
-                hasColumn(
-                    COL_INTERFACE,
-                    equalTo(new NodeInterfacePair("host1", "int1")),
-                    Schema.INTERFACE),
-                hasColumn(
-                    COL_REMOTE_INTERFACE,
-                    equalTo(new NodeInterfacePair("host2", "int2")),
-                    Schema.INTERFACE))));
+            ImmutableList.of(
+                allOf(
+                    hasColumn(
+                        COL_INTERFACE,
+                        equalTo(new NodeInterfacePair("host1", "int1")),
+                        Schema.INTERFACE),
+                    hasColumn(
+                        COL_REMOTE_INTERFACE,
+                        equalTo(new NodeInterfacePair("host2", "int2")),
+                        Schema.INTERFACE)),
+                allOf(
+                    hasColumn(
+                        COL_INTERFACE,
+                        equalTo(new NodeInterfacePair("host2", "int2")),
+                        Schema.INTERFACE),
+                    hasColumn(
+                        COL_REMOTE_INTERFACE,
+                        equalTo(new NodeInterfacePair("host1", "int1")),
+                        Schema.INTERFACE)))));
   }
 
   @Test

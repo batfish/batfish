@@ -48,9 +48,9 @@ import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisTopology;
-import org.batfish.datamodel.ospf.OspfNeighbor;
+import org.batfish.datamodel.ospf.OspfNeighborConfigId;
 import org.batfish.datamodel.ospf.OspfProcess;
-import org.batfish.datamodel.ospf.OspfTopologyUtils;
+import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -139,7 +139,11 @@ public class EdgesAnswerer extends Answerer {
             IsisTopology.initIsisTopology(configurations, topology);
         return getIsisEdges(includeNodes, includeRemoteNodes, isisTopology);
       case OSPF:
-        return getOspfEdges(configurations, includeNodes, includeRemoteNodes, topology);
+        return getOspfEdges(
+            configurations,
+            includeNodes,
+            includeRemoteNodes,
+            _batfish.getTopologyProvider().getOspfTopology(_batfish.getNetworkSnapshot()));
       case RIP:
         _batfish.initRemoteRipNeighbors(configurations, ipOwners, topology);
         return getRipEdges(configurations, includeNodes, includeRemoteNodes);
@@ -276,30 +280,38 @@ public class EdgesAnswerer extends Answerer {
       Map<String, Configuration> configurations,
       Set<String> includeNodes,
       Set<String> includeRemoteNodes,
-      Topology topology) {
+      OspfTopology topology) {
     Multiset<Row> rows = HashMultiset.create();
-    OspfTopologyUtils.initRemoteOspfNeighbors(configurations, topology);
     for (Configuration c : configurations.values()) {
       String hostname = c.getHostname();
+
+      if (!includeNodes.contains(hostname)) {
+        continue;
+      }
+
       for (Vrf vrf : c.getVrfs().values()) {
         OspfProcess proc = vrf.getOspfProcess();
-        if (proc != null) {
-          for (OspfNeighbor ospfNeighbor : proc.getOspfNeighbors().values()) {
-            OspfNeighbor remoteOspfNeighbor = ospfNeighbor.getRemoteOspfNeighbor();
-            if (remoteOspfNeighbor != null) {
-              Configuration remoteHost = remoteOspfNeighbor.getOwner();
-              String remoteHostname = remoteHost.getHostname();
-              if (includeNodes.contains(hostname) && includeRemoteNodes.contains(remoteHostname)) {
-                rows.add(
-                    getOspfEdgeRow(
-                        hostname,
-                        ospfNeighbor.getIface().getName(),
-                        remoteHostname,
-                        remoteOspfNeighbor.getIface().getName()));
-              }
-            }
-          }
+
+        if (proc == null) {
+          continue;
         }
+
+        proc.getOspfNeighborConfigs()
+            .keySet()
+            .forEach(
+                interfaceName ->
+                    topology
+                        .neighbors(new OspfNeighborConfigId(hostname, vrf.getName(), interfaceName))
+                        .stream()
+                        .filter(n -> includeRemoteNodes.contains(n.getHostname()))
+                        .forEach(
+                            remote ->
+                                rows.add(
+                                    getOspfEdgeRow(
+                                        hostname,
+                                        interfaceName,
+                                        remote.getHostname(),
+                                        remote.getInterfaceName()))));
       }
     }
     return rows;
