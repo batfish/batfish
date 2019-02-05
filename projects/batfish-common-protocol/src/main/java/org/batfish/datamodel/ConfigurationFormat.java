@@ -16,6 +16,7 @@ public enum ConfigurationFormat {
   CISCO_NX("cisco"),
   EMPTY("empty"),
   F5("f5"),
+  F5_BIGIP_STRUCTURED("f5_bigip_structured"),
   FLAT_JUNIPER("juniper"),
   FLAT_VYOS("vyos"),
   FORCE10("force10"),
