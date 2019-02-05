@@ -686,16 +686,6 @@ public final class FileBasedStorage implements StorageProvider {
     Files.delete(getAnswerMetadataPath(answerId));
   }
 
-  @Override
-  public @Nonnull InputStream loadNetworkObject(NetworkId networkId, String key)
-      throws FileNotFoundException, IOException {
-    Path objectPath = getNetworkObjectPath(networkId, key);
-    if (!Files.exists(objectPath)) {
-      throw new FileNotFoundException(String.format("Could not load: %s", objectPath));
-    }
-    return Files.newInputStream(objectPath);
-  }
-
   /** {@code key} must be relative normalized path. */
   @VisibleForTesting
   static @Nonnull Path objectKeyToRelativePath(String key) {
@@ -719,9 +709,46 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
+  public @Nonnull InputStream loadNetworkObject(NetworkId networkId, String key)
+      throws FileNotFoundException, IOException {
+    Path objectPath = getNetworkObjectPath(networkId, key);
+    if (!Files.exists(objectPath)) {
+      throw new FileNotFoundException(String.format("Could not load: %s", objectPath));
+    }
+    return Files.newInputStream(objectPath);
+  }
+
+  @Override
   public void storeNetworkObject(InputStream inputStream, NetworkId networkId, String key)
       throws IOException {
     Path objectPath = getNetworkObjectPath(networkId, key);
+    objectPath.getParent().toFile().mkdirs();
+    try {
+      FileUtils.copyInputStreamToFile(inputStream, objectPath.toFile());
+    } finally {
+      inputStream.close();
+    }
+  }
+
+  private @Nonnull Path getNetworkBlobPath(NetworkId networkId, String key) {
+    String encodedKey = toBase64(key);
+    return _d.getNetworkBlobsDir(networkId).resolve(encodedKey);
+  }
+
+  @Override
+  public @Nonnull InputStream loadNetworkBlob(NetworkId networkId, String key)
+      throws FileNotFoundException, IOException {
+    Path objectPath = getNetworkBlobPath(networkId, key);
+    if (!Files.exists(objectPath)) {
+      throw new FileNotFoundException(String.format("Could not load: %s", objectPath));
+    }
+    return Files.newInputStream(objectPath);
+  }
+
+  @Override
+  public void storeNetworkBlob(InputStream inputStream, NetworkId networkId, String key)
+      throws IOException {
+    Path objectPath = getNetworkBlobPath(networkId, key);
     objectPath.getParent().toFile().mkdirs();
     try {
       FileUtils.copyInputStreamToFile(inputStream, objectPath.toFile());
