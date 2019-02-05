@@ -690,7 +690,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private static @Nonnull InterfaceType computeF5BigipStructuredInterfaceType(String name) {
     if (F5_PHYSICAL_INTERFACE_NAME_PATTERN.matcher(name).find()) {
-      return InterfaceType.LOGICAL;
+      return InterfaceType.PHYSICAL;
     } else {
       return InterfaceType.UNKNOWN;
     }

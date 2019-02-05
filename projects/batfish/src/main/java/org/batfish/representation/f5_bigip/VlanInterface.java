@@ -4,6 +4,7 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+/** A member interface of a {@link Vlan}. */
 @ParametersAreNonnullByDefault
 public final class VlanInterface implements Serializable {
 

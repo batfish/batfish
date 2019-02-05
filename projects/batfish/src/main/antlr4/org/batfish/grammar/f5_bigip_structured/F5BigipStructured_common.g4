@@ -25,6 +25,7 @@ list
   | u_list
 ;
 
+/* An unrecognized fragment of syntax. When used, MUST be LAST alternative */
 u
 :
   (

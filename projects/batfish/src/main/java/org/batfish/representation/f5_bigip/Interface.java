@@ -5,6 +5,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+/** A Layer1-2 physical interface */
 @ParametersAreNonnullByDefault
 public final class Interface implements Serializable {
 

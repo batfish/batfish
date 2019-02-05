@@ -6,6 +6,14 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.InterfaceAddress;
 
+/**
+ * Configuration for a layer-3 endpoint on the device itself. Typically manifests as an IRB
+ * interface for a particular VLAN.
+ *
+ * @see <a
+ *     href="https://support.f5.com/kb/en-us/products/big-ip_ltm/manuals/product/tmos-routing-administration-11-6-0/5.html">Self
+ *     IP Addresses</a>
+ */
 @ParametersAreNonnullByDefault
 public final class Self implements Serializable {
 

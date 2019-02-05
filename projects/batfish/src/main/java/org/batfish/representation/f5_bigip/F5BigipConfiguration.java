@@ -102,6 +102,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
         new org.batfish.datamodel.Interface(self.getName(), _c, InterfaceType.VLAN);
     Vlan vlan = _vlans.get(self.getVlan());
     if (vlan != null) {
+      // TODO: Possibly add dependencies on ports allowing this VLAN
       newIface.setVlan(vlan.getTag());
     }
     InterfaceAddress address = self.getAddress();

@@ -5,7 +5,7 @@ options {
 }
 
 @members {
-// Java code to end up in PaloAltoLexer.java goes here
+// Java code to end up in F5BigipStructuredLexer.java goes here
 
 private int lastTokenType = -1;
 

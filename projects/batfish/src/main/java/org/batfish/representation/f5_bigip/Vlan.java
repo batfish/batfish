@@ -7,6 +7,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+/**
+ * Configuration for a named VLAN. This structure does not manifest as a named interface, but
+ * instead provides a link between {@link Self} and member {@link Interface}s.
+ */
 @ParametersAreNonnullByDefault
 public final class Vlan implements Serializable {
 

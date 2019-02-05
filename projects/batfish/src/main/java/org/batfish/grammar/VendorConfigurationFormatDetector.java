@@ -29,7 +29,7 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern F5_BIGIP_STRUCTURED_HEADER_PATTERN =
       Pattern.compile("(?m)^#TMSH-VERSION: .*$");
   private static final Pattern F5_BIGIP_STRUCTURED_GLOBAL_SETTINGS_PATTERN =
-      Pattern.compile("(?m)^sys\\s+global-settings\\s*\\{\\s*$");
+      Pattern.compile("(?m)^sys\\s+global-settings\\s*\\{.*$");
   private static final Pattern METAMAKO_MOS_PATTERN =
       Pattern.compile("(?m)^! device: [^\\n]+ MOS-\\d+\\.\\d+\\.\\d+\\)$");
   private static final Pattern MRV_HOSTNAME_PATTERN =
@@ -39,6 +39,8 @@ public final class VendorConfigurationFormatDetector {
       Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: cisco-nx$");
   private static final Pattern RANCID_CISCO_PATTERN =
       Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: cisco$");
+  private static final Pattern RANCID_F5_BIGIP_STRUCTURED_PATTERN =
+      Pattern.compile("(?m)^#RANCID-CONTENT-TYPE: bigip$");
   private static final Pattern RANCID_FORCE_10_PATTERN =
       Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: force10$");
   private static final Pattern RANCID_FOUNDRY_PATTERN =
@@ -293,6 +295,8 @@ public final class VendorConfigurationFormatDetector {
       // subtypes
     } else if (fileTextMatches(RANCID_CISCO_NX_PATTERN)) {
       return ConfigurationFormat.CISCO_NX;
+    } else if (fileTextMatches(RANCID_F5_BIGIP_STRUCTURED_PATTERN)) {
+      return ConfigurationFormat.F5_BIGIP_STRUCTURED;
     } else if (fileTextMatches(RANCID_FORCE_10_PATTERN)) {
       return ConfigurationFormat.FORCE10;
     } else if (fileTextMatches(RANCID_FOUNDRY_PATTERN)) {
