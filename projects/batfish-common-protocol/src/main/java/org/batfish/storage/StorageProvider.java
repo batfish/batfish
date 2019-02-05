@@ -367,6 +367,25 @@ public interface StorageProvider {
       throws FileNotFoundException, IOException;
 
   /**
+   * Provide a stream from which a network-scoped blob object for the given key may be read.
+   *
+   * @throws FileNotFoundException if the object for the given key does not exist
+   * @throws IOException if there is an error reading the object
+   */
+  @Nonnull
+  @MustBeClosed
+  InputStream loadNetworkBlob(NetworkId networkId, String key)
+      throws FileNotFoundException, IOException;
+
+  /**
+   * Writes the network-scoped blob object at for the given key using the provided input stream.
+   *
+   * @throws IOException if there is an error writing the object
+   */
+  void storeNetworkBlob(InputStream inputStream, NetworkId networkId, String key)
+      throws IOException;
+
+  /**
    * Provide a stream from which a snapshot-wide extended object for the given key may be read
    *
    * @throws FileNotFoundException if the object for the given key does not exist
