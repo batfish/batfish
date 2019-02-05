@@ -224,6 +224,17 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
+  public InputStream loadNetworkBlob(NetworkId networkId, String key) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeNetworkBlob(InputStream inputStream, NetworkId networkId, String key)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public InputStream loadNetworkObject(NetworkId networkId, String key) {
     throw new UnsupportedOperationException();
   }
