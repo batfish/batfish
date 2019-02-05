@@ -8,6 +8,8 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP_OR_ADDRESS_OBJECT;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP_OR_ADDRESS_OBJECT_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.RULE;
@@ -27,7 +29,6 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ZONE_I
 
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
@@ -311,14 +312,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   /** Convert source or destination list item into an appropriate IpSpace */
-  private @Nullable RuleEndpoint toRuleEndpoint(Src_or_dst_list_itemContext ctx) {
+  private RuleEndpoint toRuleEndpoint(Src_or_dst_list_itemContext ctx) {
     String text = ctx.getText();
-    // check for address group and object names first
-    if (_currentVsys.getAddressObjects().containsKey(text)) {
-      return new RuleEndpoint(RuleEndpoint.Type.ADDRESS_OBJECT, text);
-    } else if (_currentVsys.getAddressGroups().containsKey(text)) {
-      return new RuleEndpoint(RuleEndpoint.Type.ADDRESS_GROUP, text);
-    } else if (ctx.ANY() != null) {
+    if (ctx.ANY() != null) {
       return new RuleEndpoint(RuleEndpoint.Type.Any, text);
     } else if (ctx.IP_ADDRESS() != null) {
       return new RuleEndpoint(RuleEndpoint.Type.IP_ADDRESS, text);
@@ -327,8 +323,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     } else if (ctx.IP_RANGE() != null) {
       return new RuleEndpoint(RuleEndpoint.Type.IP_RANGE, text);
     }
-    _w.redFlag("Unhandled source/destination item conversion: " + getFullText(ctx));
-    return null;
+    return new RuleEndpoint(RuleEndpoint.Type.REFERENCE, text);
   }
 
   private String unquote(String text) {
@@ -547,13 +542,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     }
     for (VariableContext var : ctx.variable()) {
       String objectName = var.getText();
-      if (!_currentVsys.getAddressObjects().containsKey(objectName)
-          && !_currentVsys.getAddressGroups().containsKey(objectName)) {
-        _w.redFlag(
-            String.format(
-                "Cannot add non-existent address object or group '%s' to group '%s' in '%s'",
-                objectName, _currentAddressGroup.getName(), getFullText(ctx)));
-      } else if (objectName.equals(_currentAddressGroup.getName())) {
+      if (objectName.equals(_currentAddressGroup.getName())) {
         _w.redFlag(
             String.format(
                 "The address group '%s' cannot contain itself: '%s'",
@@ -564,12 +553,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
         // Use constructed name so same-named defs across vsys are unique
         String uniqueName = computeObjectName(_currentVsys.getName(), objectName);
         _configuration.referenceStructure(
-            _currentVsys.getAddressObjects().containsKey(objectName)
-                ? ADDRESS_OBJECT
-                : ADDRESS_GROUP,
-            uniqueName,
-            ADDRESS_GROUP_STATIC,
-            getLine(var.start));
+            ADDRESS_GROUP_OR_ADDRESS_OBJECT, uniqueName, ADDRESS_GROUP_STATIC, getLine(var.start));
       }
     }
   }
@@ -815,22 +799,21 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSrs_destination(Srs_destinationContext ctx) {
     for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
-      RuleEndpoint destination = toRuleEndpoint(var);
-      if (destination != null) {
-        _currentRule.getDestination().add(destination);
+      RuleEndpoint endpoint = toRuleEndpoint(var);
+      _currentRule.getDestination().add(endpoint);
 
-        if (destination.getType() == RuleEndpoint.Type.ADDRESS_OBJECT) {
-          // Use constructed object name so same-named refs across vsys are unique
-          String uniqueName = computeObjectName(_currentVsys.getName(), destination.getValue());
-          _configuration.referenceStructure(
-              ADDRESS_OBJECT, uniqueName, RULE_DESTINATION, getLine(var.start));
-        } else if (destination.getType() == RuleEndpoint.Type.ADDRESS_GROUP) {
-          // Use constructed object name so same-named refs across vsys are unique
-          String uniqueName = computeObjectName(_currentVsys.getName(), destination.getValue());
-          _configuration.referenceStructure(
-              ADDRESS_GROUP, uniqueName, RULE_DESTINATION, getLine(var.start));
-        }
+      // Use constructed object name so same-named refs across vsys are unique
+      String uniqueName = computeObjectName(_currentVsys.getName(), endpoint.getValue());
+
+      // At this time, don't know if something that looks like a constant (e.g. IP address) is a
+      // reference or not.  So mark a reference to a very permissive abstract structure type.
+      PaloAltoStructureType type = ADDRESS_GROUP_OR_ADDRESS_OBJECT_OR_NONE;
+      if (endpoint.getType() == RuleEndpoint.Type.REFERENCE) {
+        // We know this reference doesn't look like a valid constant, so it must be pointing to an
+        // object/group
+        type = ADDRESS_GROUP_OR_ADDRESS_OBJECT;
       }
+      _configuration.referenceStructure(type, uniqueName, RULE_DESTINATION, getLine(var.start));
     }
   }
 
@@ -871,24 +854,18 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSrs_source(Srs_sourceContext ctx) {
     for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
-      RuleEndpoint source = toRuleEndpoint(var);
-      if (source != null) {
-        _currentRule.getSource().add(source);
+      RuleEndpoint endpoint = toRuleEndpoint(var);
+      _currentRule.getSource().add(endpoint);
+      // Use constructed object name so same-named refs across vsys are unique
+      String uniqueName = computeObjectName(_currentVsys.getName(), endpoint.getValue());
 
-        if (source.getType() == RuleEndpoint.Type.ADDRESS_OBJECT) {
-
-          // Use constructed object name so same-named refs across vsys are unique
-          String uniqueName = computeObjectName(_currentVsys.getName(), source.getValue());
-          _configuration.referenceStructure(
-              ADDRESS_OBJECT, uniqueName, RULE_SOURCE, getLine(var.start));
-        } else if (source.getType() == RuleEndpoint.Type.ADDRESS_GROUP) {
-
-          // Use constructed object name so same-named refs across vsys are unique
-          String uniqueName = computeObjectName(_currentVsys.getName(), source.getValue());
-          _configuration.referenceStructure(
-              ADDRESS_GROUP, uniqueName, RULE_SOURCE, getLine(var.start));
-        }
+      // At this time, don't know if something that looks like a constant (e.g. IP address) is a
+      // reference or not.  So mark a reference to a very permissive abstract structure type.
+      PaloAltoStructureType type = ADDRESS_GROUP_OR_ADDRESS_OBJECT_OR_NONE;
+      if (endpoint.getType() == RuleEndpoint.Type.REFERENCE) {
+        type = ADDRESS_GROUP_OR_ADDRESS_OBJECT;
       }
+      _configuration.referenceStructure(type, uniqueName, RULE_SOURCE, getLine(var.start));
     }
   }
 

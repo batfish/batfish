@@ -47,6 +47,7 @@ import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisProcess;
+import org.batfish.datamodel.ospf.OspfTopology;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -148,7 +149,9 @@ public class IsisTest {
             (s, i) -> new AtomicInteger());
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     return (IncrementalDataPlane)
-        engine.computeDataPlane(configurations, topology, Collections.emptySet())._dataPlane;
+        engine.computeDataPlane(
+                configurations, topology, OspfTopology.empty(), Collections.emptySet())
+            ._dataPlane;
   }
 
   @Test
@@ -424,7 +427,9 @@ public class IsisTest {
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     IncrementalDataPlane dp =
         (IncrementalDataPlane)
-            engine.computeDataPlane(configurations, topology, Collections.emptySet())._dataPlane;
+            engine.computeDataPlane(
+                    configurations, topology, OspfTopology.empty(), Collections.emptySet())
+                ._dataPlane;
     return dp;
   }
 
@@ -588,7 +593,9 @@ public class IsisTest {
             (s, i) -> new AtomicInteger());
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     return (IncrementalDataPlane)
-        engine.computeDataPlane(configurations, topology, Collections.emptySet())._dataPlane;
+        engine.computeDataPlane(
+                configurations, topology, OspfTopology.empty(), Collections.emptySet())
+            ._dataPlane;
   }
 
   @Test
