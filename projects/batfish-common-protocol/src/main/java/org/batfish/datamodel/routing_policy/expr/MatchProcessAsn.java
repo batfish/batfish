@@ -7,7 +7,11 @@ import org.batfish.datamodel.EigrpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class MatchProcessAsn extends BooleanExpr {
+/**
+ * Boolean expression that evaluates whether an {@link Environment} has an EIGRP route with an ASN
+ * equal to some given ASN.
+ */
+public final class MatchProcessAsn extends BooleanExpr {
 
   private static final long serialVersionUID = 1L;
 
@@ -21,6 +25,12 @@ public class MatchProcessAsn extends BooleanExpr {
   }
 
   @Override
+  public Result evaluate(Environment environment) {
+    EigrpRoute route = (EigrpRoute) environment.getOriginalRoute();
+    return new Result(route.getProcessAsn() == _asn);
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
@@ -29,14 +39,6 @@ public class MatchProcessAsn extends BooleanExpr {
       return false;
     }
     return _asn == ((MatchProcessAsn) obj)._asn;
-  }
-
-  @Override
-  public Result evaluate(Environment environment) {
-    Result result = new Result();
-    EigrpRoute route = (EigrpRoute) environment.getOriginalRoute();
-    result.setBooleanValue(route.getProcessAsn() == _asn);
-    return result;
   }
 
   @Override

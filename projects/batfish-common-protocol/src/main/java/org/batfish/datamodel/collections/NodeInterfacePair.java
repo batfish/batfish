@@ -14,7 +14,7 @@ import org.batfish.datamodel.Interface;
 
 /** Combination of node name and interface name */
 @ParametersAreNonnullByDefault
-public class NodeInterfacePair implements Serializable, Comparable<NodeInterfacePair> {
+public final class NodeInterfacePair implements Serializable, Comparable<NodeInterfacePair> {
 
   private static final String PROP_HOSTNAME = "hostname";
   private static final String PROP_INTERFACE = "interface";
@@ -27,8 +27,8 @@ public class NodeInterfacePair implements Serializable, Comparable<NodeInterface
   private static NodeInterfacePair create(
       @Nullable @JsonProperty(PROP_HOSTNAME) String node,
       @Nullable @JsonProperty(PROP_INTERFACE) String iface) {
-    checkArgument(node != null, "Cannot create NodeInterfacePair with null node");
-    checkArgument(iface != null, "Cannot create NodeInterfacePair with null interface");
+    checkArgument(node != null, "NodeInterfacePair missing %s", PROP_HOSTNAME);
+    checkArgument(iface != null, "NodeInterfacePair missing %s", PROP_INTERFACE);
     return new NodeInterfacePair(node, iface);
   }
 
@@ -61,7 +61,7 @@ public class NodeInterfacePair implements Serializable, Comparable<NodeInterface
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

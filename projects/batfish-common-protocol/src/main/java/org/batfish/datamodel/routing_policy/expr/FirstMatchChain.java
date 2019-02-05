@@ -30,13 +30,13 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
  * https://www.juniper.net/documentation/en_US/junos/topics/concept/policy-routing-policies-chain-evaluation-method.html
  */
 @ParametersAreNonnullByDefault
-public class FirstMatchChain extends BooleanExpr {
+public final class FirstMatchChain extends BooleanExpr {
 
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_SUBROUTINES = "subroutines";
 
-  @Nonnull private List<BooleanExpr> _subroutines;
+  @Nonnull private final List<BooleanExpr> _subroutines;
 
   @JsonCreator
   private static FirstMatchChain create(
@@ -59,6 +59,38 @@ public class FirstMatchChain extends BooleanExpr {
   }
 
   @Override
+  public Result evaluate(Environment environment) {
+    /* TODO
+    It is unclear what result's value for _return means here, and it doesn't currently have any
+    impact in any context where FirstMatchChain is used. For now, just set it to false.
+     */
+    for (BooleanExpr subroutine : _subroutines) {
+      Result subroutineResult = subroutine.evaluate(environment);
+      if (subroutineResult.getExit()) {
+        // Reached an exit/terminal action. Return regardless of boolean value
+        return subroutineResult;
+      } else if (!subroutineResult.getFallThrough()) {
+        // Found first match, short-circuit here
+        return subroutineResult.toBuilder().setReturn(false).build();
+      }
+    }
+    String defaultPolicy = environment.getDefaultPolicy();
+    if (defaultPolicy != null) {
+      CallExpr callDefaultPolicy = new CallExpr(environment.getDefaultPolicy());
+      Result defaultPolicyResult = callDefaultPolicy.evaluate(environment);
+      return defaultPolicyResult.toBuilder().setReturn(false).build();
+    } else {
+      throw new BatfishException("Default policy is not set");
+    }
+  }
+
+  @Nonnull
+  @JsonProperty(PROP_SUBROUTINES)
+  public List<BooleanExpr> getSubroutines() {
+    return _subroutines;
+  }
+
+  @Override
   public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
@@ -73,40 +105,6 @@ public class FirstMatchChain extends BooleanExpr {
   @Override
   public int hashCode() {
     return Objects.hash(_subroutines);
-  }
-
-  @Override
-  public Result evaluate(Environment environment) {
-    /* TODO
-    It is unclear what result's value for _return means here, and it doesn't currently have any
-    impact in any context where FirstMatchChain is used. For now, just set it to false.
-     */
-    for (BooleanExpr subroutine : _subroutines) {
-      Result subroutineResult = subroutine.evaluate(environment);
-      if (subroutineResult.getExit()) {
-        // Reached an exit/terminal action. Return regardless of boolean value
-        return subroutineResult;
-      } else if (!subroutineResult.getFallThrough()) {
-        // Found first match, short-circuit here
-        subroutineResult.setReturn(false);
-        return subroutineResult;
-      }
-    }
-    String defaultPolicy = environment.getDefaultPolicy();
-    if (defaultPolicy != null) {
-      CallExpr callDefaultPolicy = new CallExpr(environment.getDefaultPolicy());
-      Result defaultPolicyResult = callDefaultPolicy.evaluate(environment);
-      defaultPolicyResult.setReturn(false);
-      return defaultPolicyResult;
-    } else {
-      throw new BatfishException("Default policy is not set");
-    }
-  }
-
-  @Nonnull
-  @JsonProperty(PROP_SUBROUTINES)
-  public List<BooleanExpr> getSubroutines() {
-    return _subroutines;
   }
 
   @Override

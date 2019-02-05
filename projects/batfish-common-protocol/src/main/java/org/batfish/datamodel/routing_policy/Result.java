@@ -6,14 +6,24 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 
 /** Result of evaluating a {@link RoutingPolicy} or a {@link BooleanExpr}. */
-public class Result {
+public final class Result {
+  private final boolean _booleanValue;
+  private final boolean _exit;
+  private final boolean _fallThrough;
+  private final boolean _return;
 
-  private boolean _booleanValue;
-  private boolean _exit;
-  private boolean _fallThrough;
-  private boolean _return;
+  /** Creates a Result with all fields false. */
+  public Result() {
+    this(false, false, false, false);
+  }
 
-  public Result() {}
+  /**
+   * Creates a Result with the given {@link #getBooleanValue() booleanValue} and false {@link
+   * #getExit() exit}, {@link #getFallThrough() fallThrough}, and {@link #getReturn() return}.
+   */
+  public Result(boolean booleanValue) {
+    this(booleanValue, false, false, false);
+  }
 
   /**
    * Creates a Result with the given {@link #getBooleanValue() booleanValue}, {@link #getExit()
@@ -56,22 +66,6 @@ public class Result {
     return _return;
   }
 
-  public void setBooleanValue(boolean booleanValue) {
-    _booleanValue = booleanValue;
-  }
-
-  public void setExit(boolean exit) {
-    _exit = exit;
-  }
-
-  public void setFallThrough(boolean fallThrough) {
-    _fallThrough = fallThrough;
-  }
-
-  public void setReturn(boolean ret) {
-    _return = ret;
-  }
-
   @Override
   public boolean equals(@Nullable Object o) {
     if (this == o) {
@@ -90,5 +84,51 @@ public class Result {
   @Override
   public int hashCode() {
     return Objects.hash(_booleanValue, _exit, _fallThrough, _return);
+  }
+
+  public Builder toBuilder() {
+    return builder()
+        .setBooleanValue(_booleanValue)
+        .setExit(_exit)
+        .setFallThrough(_fallThrough)
+        .setReturn(_return);
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static final class Builder {
+
+    private boolean _booleanValue;
+    private boolean _exit;
+    private boolean _fallThrough;
+    private boolean _return;
+
+    private Builder() {}
+
+    public Result build() {
+      return new Result(_booleanValue, _exit, _fallThrough, _return);
+    }
+
+    public Builder setBooleanValue(boolean booleanValue) {
+      _booleanValue = booleanValue;
+      return this;
+    }
+
+    public Builder setExit(boolean exit) {
+      _exit = exit;
+      return this;
+    }
+
+    public Builder setFallThrough(boolean fallThrough) {
+      _fallThrough = fallThrough;
+      return this;
+    }
+
+    public Builder setReturn(boolean aReturn) {
+      _return = aReturn;
+      return this;
+    }
   }
 }
