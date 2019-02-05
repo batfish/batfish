@@ -6,10 +6,11 @@ import static org.batfish.storage.FileBasedStorage.objectKeyToRelativePath;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.io.FileMatchers.anExistingDirectory;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -286,12 +287,15 @@ public final class FileBasedStorageTest {
     NetworkId network = new NetworkId("network");
     String id = "heresanid";
 
+    Boolean found = null;
     try {
       _storage.loadNetworkBlob(network, id);
-      fail("blob should not exist");
+      found = true;
     } catch (FileNotFoundException e) {
-      /* Expected. */
+      found = false;
     }
+    assertThat("Should have been set", found, notNullValue());
+    assertFalse("Should not have been found", found);
 
     byte[] content = "here's some content".getBytes(StandardCharsets.UTF_8);
     _storage.storeNetworkBlob(new ByteArrayInputStream(content), network, id);
