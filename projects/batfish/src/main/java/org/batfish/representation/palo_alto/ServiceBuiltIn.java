@@ -1,40 +1,58 @@
 package org.batfish.representation.palo_alto;
 
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.function.Supplier;
-import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.SubRange;
 
-public enum ServiceBuiltIn implements ServiceGroupMember {
+public enum ServiceBuiltIn {
   SERVICE_HTTP,
   SERVICE_HTTPS;
 
-  private final Supplier<ServiceGroupMember> _service;
+  private final Supplier<HeaderSpace> _serviceHeaderSpace;
+  private final Supplier<String> _serviceName;
 
   ServiceBuiltIn() {
-    _service = Suppliers.memoize(this::init);
+    _serviceHeaderSpace = Suppliers.memoize(this::init);
+    _serviceName = Suppliers.memoize(this::initName);
   }
 
-  private ServiceGroupMember init() {
+  private HeaderSpace init() {
     switch (this) {
       case SERVICE_HTTP:
-        return new Service("service-http", ImmutableSortedSet.of(80, 8080), IpProtocol.TCP);
+        return HeaderSpace.builder()
+            .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
+            .setDstPorts(ImmutableSortedSet.of(new SubRange(80, 80), new SubRange(8080, 8080)))
+            .build();
       case SERVICE_HTTPS:
-        return new Service("service-https", ImmutableSortedSet.of(443), IpProtocol.TCP);
+        return HeaderSpace.builder()
+            .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
+            .setDstPorts(ImmutableSortedSet.of(new SubRange(443, 443)))
+            .build();
       default:
         return null;
     }
   }
 
-  @Override
-  public IpAccessList toIpAccessList(LineAction action, PaloAltoConfiguration pc, Vsys vsys) {
-    return _service.get().toIpAccessList(action, pc, vsys);
+  private String initName() {
+    switch (this) {
+      case SERVICE_HTTP:
+        return "service-http";
+      case SERVICE_HTTPS:
+        return "service-https";
+      default:
+        return null;
+    }
   }
 
-  @Override
+  public HeaderSpace getHeaderSpace() {
+    return _serviceHeaderSpace.get();
+  }
+
   public String getName() {
-    return _service.get().getName();
+    return _serviceName.get();
   }
 }

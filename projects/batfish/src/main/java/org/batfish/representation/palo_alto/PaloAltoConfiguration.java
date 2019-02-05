@@ -276,16 +276,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                     .put(name, new IpSpaceMetadata(name, ADDRESS_GROUP.getDescription()));
               });
 
-      // Convert PAN zones and create their corresponding outgoing ACLs
-      for (Entry<String, Zone> zoneEntry : vsys.getZones().entrySet()) {
-        Zone zone = zoneEntry.getValue();
-        String zoneName = computeObjectName(vsysName, zone.getName());
-        _c.getZones().put(zoneName, toZone(zoneName, zone));
-
-        String aclName = computeOutgoingFilterName(zoneName);
-        _c.getIpAccessLists().put(aclName, generateOutgoingFilter(aclName, zone, vsys));
-      }
-
       // Services
       for (Service service : vsys.getServices().values()) {
         String serviceGroupAclName = computeServiceGroupMemberAclName(vsysName, service.getName());
@@ -299,6 +289,18 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
             computeServiceGroupMemberAclName(vsysName, serviceGroup.getName());
         _c.getIpAccessLists()
             .put(serviceGroupAclName, serviceGroup.toIpAccessList(LineAction.PERMIT, this, vsys));
+      }
+
+      // Note: filter generation needs to occur after service conversion so built-in references can
+      // be resolved properly
+      // Convert PAN zones and create their corresponding outgoing ACLs
+      for (Entry<String, Zone> zoneEntry : vsys.getZones().entrySet()) {
+        Zone zone = zoneEntry.getValue();
+        String zoneName = computeObjectName(vsysName, zone.getName());
+        _c.getZones().put(zoneName, toZone(zoneName, zone));
+
+        String aclName = computeOutgoingFilterName(zoneName);
+        _c.getIpAccessLists().put(aclName, generateOutgoingFilter(aclName, zone, vsys));
       }
     }
     _c.setLoggingServers(loggingServers);
@@ -378,9 +380,15 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     if (!ruleServices.isEmpty()) {
       List<AclLineMatchExpr> serviceDisjuncts = new TreeList<>();
       for (ServiceOrServiceGroupReference service : ruleServices) {
-        if (service.getName().equals(CATCHALL_SERVICE_NAME)) {
+        String serviceName = service.getName();
+        // TODO check for matching object before using built-ins
+        if (serviceName.equals(CATCHALL_SERVICE_NAME)) {
           serviceDisjuncts.add(TrueExpr.INSTANCE);
           break;
+        } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())) {
+          serviceDisjuncts.add(new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTP.getHeaderSpace()));
+        } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())) {
+          serviceDisjuncts.add(new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTPS.getHeaderSpace()));
         } else {
           serviceDisjuncts.add(
               new PermittedByAcl(
