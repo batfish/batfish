@@ -18,7 +18,7 @@ sys_global_settings
     NEWLINE
     (
       sgs_hostname
-      | u
+      | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
 ;
@@ -28,7 +28,7 @@ s_sys
   SYS
   (
     sys_global_settings
-    | u
+    | unrecognized
   )
 ;
 
