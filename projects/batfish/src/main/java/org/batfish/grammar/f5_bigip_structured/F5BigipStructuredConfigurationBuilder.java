@@ -60,7 +60,6 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   private @Nullable Self _currentSelf;
   private @Nullable UContext _currentU;
   private @Nullable Vlan _currentVlan;
-  private @Nullable VlanInterface _currentVlanInterface;
   private final F5BigipStructuredCombinedParser _parser;
   private final String _text;
   private final Warnings _w;
@@ -172,7 +171,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   public void exitNvi_interface(Nvi_interfaceContext ctx) {
     String name = unquote(ctx.name.getText());
     _c.referenceStructure(INTERFACE, name, VLAN_INTERFACE, ctx.name.getStart().getLine());
-    _currentVlanInterface = _currentVlan.getInterfaces().computeIfAbsent(name, VlanInterface::new);
+    _currentVlan.getInterfaces().computeIfAbsent(name, VlanInterface::new);
   }
 
   @Override

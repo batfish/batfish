@@ -73,7 +73,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
               iface.setNativeVlan(null);
               iface.setAllowedVlans(iface.getAllowedVlans().union(IntegerSpace.of(tag)));
             });
-    ;
   }
 
   @Override
