@@ -9,10 +9,12 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.io.FileMatchers.anExistingDirectory;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import com.google.common.io.ByteStreams;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -277,6 +279,25 @@ public final class FileBasedStorageTest {
     // Confirm mkdirs throws when creating a dir within a read-only dir
     _thrown.expectMessage(containsString("Unable to create directory"));
     mkdirs(dir);
+  }
+
+  @Test
+  public void testNetworkBlobRoundTrip() throws IOException {
+    NetworkId network = new NetworkId("network");
+    String id = "heresanid";
+
+    try {
+      _storage.loadNetworkBlob(network, id);
+      fail("blob should not exist");
+    } catch (FileNotFoundException e) {
+      /* Expected. */
+    }
+
+    byte[] content = "here's some content".getBytes(StandardCharsets.UTF_8);
+    _storage.storeNetworkBlob(new ByteArrayInputStream(content), network, id);
+
+    byte[] loaded = ByteStreams.toByteArray(_storage.loadNetworkBlob(network, id));
+    assertThat(content, equalTo(loaded));
   }
 
   @Test
