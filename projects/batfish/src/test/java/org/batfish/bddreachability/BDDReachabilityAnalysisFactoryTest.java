@@ -36,13 +36,11 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
@@ -488,60 +486,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
         hasEntry(
             equalTo(config.getHostname()),
             hasEntry(equalTo(vrf.getName()), equalTo(PKT.getFactory().zero()))));
-  }
-
-  @Test
-  public void testNatBackwardEdge() {
-    BDD var = Arrays.stream(PKT.getSrcIp().getBitvec()).reduce(PKT.getFactory().one(), BDD::and);
-
-    IpSpaceToBDD dstToBDD = new IpSpaceToBDD(PKT.getDstIp());
-    IpSpaceToBDD srcToBDD = new IpSpaceToBDD(PKT.getSrcIp());
-    BDD dst123 = dstToBDD.toBDD(Prefix.parse("1.2.3.0/24"));
-    BDD dst1234 = dstToBDD.toBDD(Prefix.parse("1.2.3.4/32"));
-    BDD src1111 = srcToBDD.toBDD(Ip.parse("1.1.1.1"));
-    BDD src2222 = srcToBDD.toBDD(Ip.parse("2.2.2.2"));
-    Function<BDD, BDD> edge =
-        BDDReachabilityAnalysisFactory.natBackwardEdge(
-            ImmutableList.of(new BDDNat(dst1234, src1111), new BDDNat(dst123, src2222)), var);
-
-    BDD noMatch = dst123.not().and(dst1234.not());
-    assertThat(edge.apply(src1111), equalTo(dst1234.or(noMatch.and(src1111))));
-    assertThat(edge.apply(src2222), equalTo(dst123.and(dst1234.not()).or(noMatch.and(src2222))));
-
-    BDD src3333 = srcToBDD.toBDD(Ip.parse("3.3.3.3"));
-    assertThat(edge.apply(src3333), equalTo(noMatch.and(src3333)));
-  }
-
-  @Test
-  public void testNatBackwardEdge_nullPool() {
-    BDD var = Arrays.stream(PKT.getSrcIp().getBitvec()).reduce(PKT.getFactory().one(), BDD::and);
-
-    IpSpaceToBDD dstToBDD = new IpSpaceToBDD(PKT.getDstIp());
-    IpSpaceToBDD srcToBDD = new IpSpaceToBDD(PKT.getSrcIp());
-    BDD dst123 = dstToBDD.toBDD(Prefix.parse("1.2.3.0/24"));
-    BDD dst1234 = dstToBDD.toBDD(Prefix.parse("1.2.3.4/32"));
-    BDD dst1235 = dstToBDD.toBDD(Prefix.parse("1.2.3.5/32"));
-    BDD src1111 = srcToBDD.toBDD(Ip.parse("1.1.1.1"));
-    BDD src2222 = srcToBDD.toBDD(Ip.parse("2.2.2.2"));
-    Function<BDD, BDD> edge =
-        BDDReachabilityAnalysisFactory.natBackwardEdge(
-            ImmutableList.of(
-                new BDDNat(dst1234, src1111),
-                new BDDNat(dst1235, null),
-                new BDDNat(dst123, src2222)),
-            var);
-
-    // not(dst123) and not(dst1234) and not(dst1235) == not(dst123)
-    BDD noMatch = dst123.not();
-    // src IP is not rewritten if the dst1235 rule is matched or none matches
-    BDD noRewrite = noMatch.or(dst1235);
-    assertThat(edge.apply(src1111), equalTo(dst1234.or(src1111.and(noRewrite))));
-    assertThat(
-        edge.apply(src2222),
-        equalTo(dst123.and(dst1234.not()).and(dst1235.not()).or(src2222.and(noRewrite))));
-
-    BDD src3333 = srcToBDD.toBDD(Ip.parse("3.3.3.3"));
-    assertThat(edge.apply(src3333), equalTo(noRewrite.and(src3333)));
   }
 
   @Test

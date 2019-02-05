@@ -1,8 +1,13 @@
 package org.batfish.bddreachability;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.bddreachability.transition.Transitions.addOriginatingFromDeviceConstraint;
+import static org.batfish.bddreachability.transition.Transitions.addSourceInterfaceConstraint;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
+import static org.batfish.bddreachability.transition.Transitions.eraseAndSet;
+import static org.batfish.bddreachability.transition.Transitions.or;
+import static org.batfish.bddreachability.transition.Transitions.removeSourceConstraint;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.transformation.TransformationUtil.visitTransformationSteps;
@@ -17,14 +22,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -33,7 +36,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.bddreachability.transition.Transition;
-import org.batfish.bddreachability.transition.Transitions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
@@ -49,8 +51,6 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -313,26 +313,6 @@ public final class BDDReachabilityAnalysisFactory {
         });
   }
 
-  private BDDNat bddNat(
-      String hostname,
-      BDDInteger var,
-      @Nullable IpAccessList acl,
-      @Nullable Ip poolIpFirst,
-      @Nullable Ip poolIpLast) {
-    // null acl means match everything
-    BDD match = acl == null ? _one : aclPermitBDD(hostname, acl.getName());
-
-    // null pool IPs/BDDs indicate non-NAT rules
-    if (poolIpFirst == null) {
-      return new BDDNat(match, null);
-    }
-    BDD pool =
-        poolIpFirst.equals(poolIpLast)
-            ? var.value(poolIpFirst.asLong())
-            : var.geq(poolIpFirst.asLong()).and(var.leq(poolIpLast.asLong()));
-    return new BDDNat(match, pool);
-  }
-
   private static Map<StateExpr, Map<StateExpr, Edge>> computeEdges(Stream<Edge> edgeStream) {
     Map<StateExpr, Map<StateExpr, Edge>> edges = new HashMap<>();
 
@@ -413,7 +393,7 @@ public final class BDDReachabilityAnalysisFactory {
         generateRootEdges_OriginateVrf_PostInVrf(rootBdds));
   }
 
-  private Stream<Edge> generateQueryEdges(Set<FlowDisposition> actions) {
+  private static Stream<Edge> generateQueryEdges(Set<FlowDisposition> actions) {
     return actions.stream()
         .map(
             action -> {
@@ -460,13 +440,13 @@ public final class BDDReachabilityAnalysisFactory {
               PreInInterface preInInterface = new PreInInterface(hostname, iface);
 
               BDD rootBdd = entry.getValue();
-              BDD sourceConstraint = _bddSourceManagers.get(hostname).getSourceInterfaceBDD(iface);
-              BDD constraint = rootBdd.and(sourceConstraint);
+
               return new Edge(
                   originateInterfaceLink,
                   preInInterface,
-                  eraseSourceAfter(constraint, hostname),
-                  constraint::and);
+                  compose(
+                      addSourceInterfaceConstraint(_bddSourceManagers.get(hostname), iface),
+                      constraint(rootBdd)));
             });
   }
 
@@ -480,10 +460,12 @@ public final class BDDReachabilityAnalysisFactory {
               String vrf = originateVrf.getVrf();
               PostInVrf postInVrf = new PostInVrf(hostname, vrf);
               BDD rootBdd = entry.getValue();
-              BDD sourceConstraint = _bddSourceManagers.get(hostname).getOriginatingFromDeviceBDD();
-              BDD constraint = rootBdd.and(sourceConstraint);
               return new Edge(
-                  originateVrf, postInVrf, eraseSourceAfter(constraint, hostname), constraint::and);
+                  originateVrf,
+                  postInVrf,
+                  compose(
+                      addOriginatingFromDeviceConstraint(_bddSourceManagers.get(hostname)),
+                      constraint(rootBdd)));
             });
   }
 
@@ -597,8 +579,9 @@ public final class BDDReachabilityAnalysisFactory {
                           return new Edge(
                               new PostInVrf(node, vrf),
                               new NodeAccept(node),
-                              validSource(acceptBDD, node),
-                              eraseSourceAfter(acceptBDD, node));
+                              compose(
+                                  constraint(acceptBDD),
+                                  removeSourceConstraint(_bddSourceManagers.get(node))));
                         }));
   }
 
@@ -613,12 +596,12 @@ public final class BDDReachabilityAnalysisFactory {
                           String vrf = vrfEntry.getKey();
                           BDD notAcceptBDD = vrfEntry.getValue();
                           BDD notRoutableBDD = _routableBDDs.get(node).get(vrf).not();
-                          BDD edgeBdd = notAcceptBDD.and(notRoutableBDD);
                           return new Edge(
                               new PostInVrf(node, vrf),
                               new NodeDropNoRoute(node),
-                              validSource(edgeBdd, node),
-                              eraseSourceAfter(edgeBdd, node));
+                              compose(
+                                  constraint(notAcceptBDD.and(notRoutableBDD)),
+                                  removeSourceConstraint(_bddSourceManagers.get(node))));
                         }));
   }
 
@@ -657,8 +640,9 @@ public final class BDDReachabilityAnalysisFactory {
               return new Edge(
                   new PreInInterface(node, iface),
                   new NodeDropAclIn(node),
-                  validSource(aclDenyBDD, node),
-                  eraseSourceAfter(aclDenyBDD, node));
+                  compose(
+                      constraint(aclDenyBDD),
+                      removeSourceConstraint(_bddSourceManagers.get(node))));
             });
   }
 
@@ -668,41 +652,6 @@ public final class BDDReachabilityAnalysisFactory {
 
   private BDD aclPermitBDD(String node, @Nullable String acl) {
     return acl == null ? _one : _aclPermitBDDs.get(node).get(acl).get();
-  }
-
-  /*
-   * Instrument an edge that exits the specified node to maintain the source interface
-   * invariant (no source constraint not in a node-specific state, only valid source values
-   * when in a node-specific state).
-   */
-  private Edge exitNode(String node, Edge edge) {
-    BDDSourceManager sourceManager = _bddSourceManagers.get(node);
-    BDD validSrc = sourceManager.isValidValue();
-    return new Edge(
-        edge.getPreState(),
-        edge.getPostState(),
-        // entering the node; constrain source to be valid
-        bdd -> edge.traverseBackward(bdd.and(validSrc)),
-        // exiting the node; remove the source constraint
-        bdd -> sourceManager.existsSource(edge.traverseForward(bdd)));
-  }
-
-  /*
-   * Instrument an edge that exits the specified node to maintain the source interface
-   * invariant (no source constraint not in a node-specific state, only valid source values
-   * when in a node-specific state).
-   */
-  private Edge exitNode(
-      StateExpr preState, StateExpr postState, String node, Transition transition) {
-    BDDSourceManager sourceManager = _bddSourceManagers.get(node);
-    BDD validSrc = sourceManager.isValidValue();
-    return new Edge(
-        preState,
-        postState,
-        // entering the node; constrain source to be valid
-        bdd -> transition.transitBackward(bdd.and(validSrc)),
-        // exiting the node; remove the source constraint
-        bdd -> sourceManager.existsSource(transition.transitForward(bdd)));
   }
 
   private BDD ignorableAclDenyBDD(String node, @Nullable String acl) {
@@ -763,12 +712,12 @@ public final class BDDReachabilityAnalysisFactory {
                 return Stream.of();
               }
               return Stream.of(
-                  exitNode(
-                      node1,
-                      new Edge(
-                          new PreOutEdge(node1, iface1, node2, iface2),
-                          new NodeDropAclOut(node1),
-                          denyPreNat)));
+                  new Edge(
+                      new PreOutEdge(node1, iface1, node2, iface2),
+                      new NodeDropAclOut(node1),
+                      compose(
+                          constraint(denyPreNat),
+                          removeSourceConstraint(_bddSourceManagers.get(node1)))));
             });
   }
 
@@ -825,8 +774,9 @@ public final class BDDReachabilityAnalysisFactory {
                   new Edge(
                       new PreOutEdgePostNat(node1, iface1, node2, iface2),
                       new NodeDropAclOut(node1),
-                      validSource(aclDenyBDD, node1),
-                      eraseSourceAfter(aclDenyBDD, node1)));
+                      compose(
+                          constraint(aclDenyBDD),
+                          removeSourceConstraint(_bddSourceManagers.get(node1)))));
             });
   }
 
@@ -848,8 +798,10 @@ public final class BDDReachabilityAnalysisFactory {
               return new Edge(
                   new PreOutEdgePostNat(node1, iface1, node2, iface2),
                   new PreInInterface(node2, iface2),
-                  preInInterfaceBackward(aclPermitBDD, node1, node2, iface2),
-                  preInInterfaceForward(aclPermitBDD, node2, iface2));
+                  compose(
+                      constraint(aclPermitBDD),
+                      removeSourceConstraint(_bddSourceManagers.get(node1)),
+                      addSourceInterfaceConstraint(_bddSourceManagers.get(node2), iface2)));
             });
   }
 
@@ -898,16 +850,17 @@ public final class BDDReachabilityAnalysisFactory {
                                   Transition transformation =
                                       _bddOutgoingTransformations.get(node).get(ifaceName);
 
-                                  return exitNode(
+                                  return new Edge(
                                       preState,
                                       postState,
-                                      node,
-                                      Transitions.or(
-                                          constraint(forwardBDD.and(denyPreAclBDD)),
-                                          compose(
-                                              constraint(forwardBDD.and(permitPreAclBDD)),
-                                              transformation,
-                                              constraint(denyPostAclBDD))));
+                                      compose(
+                                          or(
+                                              constraint(forwardBDD.and(denyPreAclBDD)),
+                                              compose(
+                                                  constraint(forwardBDD.and(permitPreAclBDD)),
+                                                  transformation,
+                                                  constraint(denyPostAclBDD))),
+                                          removeSourceConstraint(_bddSourceManagers.get(node))));
                                 });
                       });
             });
@@ -926,8 +879,9 @@ public final class BDDReachabilityAnalysisFactory {
                           return new Edge(
                               new PreOutVrf(node, vrf),
                               new NodeDropNullRoute(node),
-                              nullRoutedBDD::and,
-                              eraseSourceAfter(nullRoutedBDD, node));
+                              compose(
+                                  constraint(nullRoutedBDD),
+                                  removeSourceConstraint(_bddSourceManagers.get(node))));
                         }));
   }
 
@@ -967,18 +921,20 @@ public final class BDDReachabilityAnalysisFactory {
                                   StateExpr postState =
                                       dispositionNodeConstructor.apply(node, ifaceName);
 
-                                  /* 1. forward out edge
-                                   * 2. pre-transformation filter
-                                   * 3. outgoing transformation
-                                   * 4. post-transformation filter
+                                  /* 1a. forward out edge
+                                   * 1b. pre-transformation filter
+                                   * 2. outgoing transformation
+                                   * 3. post-transformation filter
+                                   * 4. erase source constraint
                                    */
                                   Transition transition =
                                       compose(
                                           constraint(forwardBdd.and(permitBeforeNatBDD)),
                                           outgoingTransformation,
-                                          constraint(permitAfterNatBDD));
+                                          constraint(permitAfterNatBDD),
+                                          removeSourceConstraint(_bddSourceManagers.get(node)));
 
-                                  return Stream.of(exitNode(preState, postState, node, transition));
+                                  return Stream.of(new Edge(preState, postState, transition));
                                 });
                       });
             });
@@ -1311,103 +1267,6 @@ public final class BDDReachabilityAnalysisFactory {
                         .accept(ipSpaceToBDD)));
   }
 
-  /*
-   * Used for backward edges from disposition states into the router.
-   */
-  private Function<BDD, BDD> validSource(BDD constraint, String node) {
-    return _bddSourceManagers.get(node).isValidValue().and(constraint)::and;
-  }
-
-  /*
-   * Whenever the packet is inside the router, we track its source in the source variable. We erase
-   * the variable when the packet is sent to another router (in which case it is immediately reset
-   * to a new value for the other router), or when the flow stops (enters some state related to a
-   * disposition), in which case the value is left undefined. This method is used in the latter
-   * (flow stops) case.
-   */
-  private Function<BDD, BDD> eraseSourceAfter(BDD constraint, String node) {
-    BDDSourceManager mgr = _bddSourceManagers.get(node);
-    // check the constraint (which may reference the source), then erase the source by existential
-    // quantification
-    return orig -> mgr.existsSource(orig.and(constraint));
-  }
-
-  private Function<BDD, BDD> preInInterfaceForward(BDD constraint, String node, String iface) {
-    BDDSourceManager mgr = _bddSourceManagers.get(node);
-    BDD ifaceBdd = mgr.getSourceInterfaceBDD(iface);
-    // 1. apply the constraint
-    // 2. existentially quantify away the previous node's source,
-    // 3. add the next node's source constraint.
-    return orig -> mgr.existsSource(orig.and(constraint)).and(ifaceBdd);
-  }
-
-  private Function<BDD, BDD> preInInterfaceBackward(
-      BDD constraint, String exitNode, String enterNode, String enterIface) {
-    BDD exitNodeValidSource = _bddSourceManagers.get(exitNode).isValidValue();
-    BDDSourceManager enterSrcMgr = _bddSourceManagers.get(enterNode);
-    BDD ifaceBdd = enterSrcMgr.getSourceInterfaceBDD(enterIface);
-    BDD exitNodeBdd = constraint.and(exitNodeValidSource);
-
-    // 3. add the next node's source constraint.
-    // 2. existentially quantify away the previous node's source,
-    // 1. constrain the source variable to be a valid value for the exit node and apply the
-    //    constraint
-    return exitNodeBdd.isZero()
-        ? orig -> _bddPacket.getFactory().zero()
-        : orig -> enterSrcMgr.existsSource(orig.and(ifaceBdd)).and(exitNodeBdd);
-  }
-
-  private static Edge natEdge(StateExpr preState, StateExpr postState, List<BDDNat> nats, BDD var) {
-    return nats.isEmpty()
-        ? new Edge(preState, postState)
-        : new Edge(preState, postState, natBackwardEdge(nats, var), natForwardEdge(nats, var));
-  }
-
-  private static Function<BDD, BDD> natForwardEdge(List<BDDNat> nats, BDD var) {
-    return orig -> {
-      BDD remaining = orig;
-      BDD result = orig.getFactory().zero();
-      for (BDDNat nat : nats) {
-        /*
-         * Check the condition, then set update the variable by existentially quantifying away the
-         * old value, then ANDing on the new value.
-         */
-        BDD matches = remaining.and(nat._condition);
-        BDD natted = nat._pool == null ? matches : matches.exist(var).and(nat._pool);
-        result = result.or(natted);
-        remaining = remaining.and(nat._condition.not());
-      }
-      result = result.or(remaining);
-      return result;
-    };
-  }
-
-  @VisibleForTesting
-  static Function<BDD, BDD> natBackwardEdge(@Nonnull List<BDDNat> nats, BDD var) {
-    return orig -> {
-      BDD result = orig.getFactory().zero();
-      BDD reach = orig.getFactory().one();
-      for (BDDNat nat : nats) {
-        if (nat._pool == null) {
-          // nat does not transform the header. So inputs just have to reach this line and match the
-          // condition
-          BDD natInputs = orig.and(reach).and(nat._condition);
-          result = result.or(natInputs);
-        } else {
-          // nat does transform the header. Inputs have to reach the line and match the condition.
-          // To recover the input from output, make sure it's in the range (i.e. the pool), then
-          // erase the transformed var since we don't know what the original value might have been,
-          // then apply the reaches and matches condition constraint
-          BDD natInputs = orig.and(nat._pool).exist(var).and(reach).and(nat._condition);
-          result = result.or(natInputs);
-        }
-        reach = reach.and(nat._condition.not());
-      }
-      result = result.or(orig.and(reach));
-      return result;
-    };
-  }
-
   /**
    * Adapt an edge to set the bit indicating that one the nodes required to be transited has now
    * been transited.
@@ -1416,13 +1275,12 @@ public final class BDDReachabilityAnalysisFactory {
    * as we exit. Going backward, we just erase the bit, since the requirement has been satisfied.
    */
   @VisibleForTesting
-  Edge adaptEdgeSetTransitedBit(Edge edge) {
-    Function<BDD, BDD> traverseBackward =
-        bdd -> edge.traverseBackward(bdd.exist(_requiredTransitNodeBDD));
-    Function<BDD, BDD> traverseForward =
-        bdd ->
-            edge.traverseForward(bdd.exist(_requiredTransitNodeBDD)).and(_requiredTransitNodeBDD);
-    return new Edge(edge.getPreState(), edge.getPostState(), traverseBackward, traverseForward);
+  private Edge adaptEdgeSetTransitedBit(Edge edge) {
+    return new Edge(
+        edge.getPreState(),
+        edge.getPostState(),
+        compose(
+            edge.getTransition(), eraseAndSet(_requiredTransitNodeBDD, _requiredTransitNodeBDD)));
   }
 
   /**
@@ -1433,31 +1291,7 @@ public final class BDDReachabilityAnalysisFactory {
     return new Edge(
         edge.getPreState(),
         edge.getPostState(),
-        bdd -> edge.traverseBackward(bdd.and(constraint)),
-        bdd -> edge.traverseForward(bdd).and(constraint));
-  }
-
-  /**
-   * Adapt an edge, applying an additional constraint before traversing the edge (in the forward
-   * direction).
-   */
-  private static Edge andThen(BDD constraint, Edge edge) {
-    return new Edge(
-        edge.getPreState(),
-        edge.getPostState(),
-        bdd -> edge.traverseBackward(bdd).and(constraint),
-        bdd -> edge.traverseForward(bdd.and(constraint)));
-  }
-
-  /** Merge two edges with or. */
-  static Edge or(Edge edge1, Edge edge2) {
-    checkArgument(edge1.getPreState().equals(edge2.getPreState()));
-    checkArgument(edge1.getPostState().equals(edge2.getPostState()));
-    return new Edge(
-        edge1.getPreState(),
-        edge2.getPostState(),
-        bdd -> edge1.traverseBackward(bdd).or(edge2.traverseBackward(bdd)),
-        bdd -> edge1.traverseForward(bdd).or(edge2.traverseForward(bdd)));
+        compose(edge.getTransition(), constraint(constraint)));
   }
 
   /**

@@ -291,6 +291,15 @@ public final class BDDSourceManager {
   }
 
   /**
+   * @return true when all values are valid for this node. Then there is nothing to track. This can
+   *     happen when no {@link IpAccessList ACL} on the node uses {@link
+   *     org.batfish.datamodel.acl.MatchSrcInterface}.
+   */
+  public boolean isTrivial() {
+    return _isValidValue.isOne();
+  }
+
+  /**
    * @return A constraint that the source variable is assigned one of the valid values for this
    *     device.
    */
@@ -301,5 +310,18 @@ public final class BDDSourceManager {
   /** Existentially quantify the source variable. */
   public BDD existsSource(BDD bdd) {
     return bdd.exist(_sourceVarBits);
+  }
+
+  /**
+   * Test if a {@link BDD} includes the constraint that the source variable has a valid value (or a
+   * stronger one that implies it).
+   */
+  public boolean hasIsValidConstraint(BDD bdd) {
+    return bdd.and(_isValidValue).equals(bdd);
+  }
+
+  /** Test if a {@link BDD} includes a constraint on the source variable. */
+  public boolean hasSourceConstraint(BDD bdd) {
+    return !bdd.exist(_sourceVarBits).equals(bdd);
   }
 }
