@@ -1,0 +1,21 @@
+package org.batfish.representation.f5_bigip;
+
+import java.io.Serializable;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
+public final class VlanInterface implements Serializable {
+
+  private static final long serialVersionUID = 1L;
+
+  private final @Nonnull String _name;
+
+  public VlanInterface(String name) {
+    _name = name;
+  }
+
+  public @Nonnull String getName() {
+    return _name;
+  }
+}

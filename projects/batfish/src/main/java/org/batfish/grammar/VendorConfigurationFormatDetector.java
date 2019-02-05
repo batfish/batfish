@@ -26,6 +26,10 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern BLADE_NETWORK_PATTERN = Pattern.compile("(?m)^switch-type");
   private static final Pattern CADANT_NETWORK_PATTERN = Pattern.compile("(?m)^shelfname");
   private static final Pattern F5_HOSTNAME_PATTERN = Pattern.compile("(?m)^tmsh .*$");
+  private static final Pattern F5_BIGIP_STRUCTURED_HEADER_PATTERN =
+      Pattern.compile("(?m)^#TMSH-VERSION: .*$");
+  private static final Pattern F5_BIGIP_STRUCTURED_GLOBAL_SETTINGS_PATTERN =
+      Pattern.compile("(?m)^sys\\s+global-settings\\s*\\{\\s*$");
   private static final Pattern METAMAKO_MOS_PATTERN =
       Pattern.compile("(?m)^! device: [^\\n]+ MOS-\\d+\\.\\d+\\.\\d+\\)$");
   private static final Pattern MRV_HOSTNAME_PATTERN =
@@ -176,6 +180,10 @@ public final class VendorConfigurationFormatDetector {
 
   @Nullable
   private ConfigurationFormat checkF5() {
+    if (fileTextMatches(F5_BIGIP_STRUCTURED_HEADER_PATTERN)
+        && fileTextMatches(F5_BIGIP_STRUCTURED_GLOBAL_SETTINGS_PATTERN)) {
+      return ConfigurationFormat.F5_BIGIP_STRUCTURED;
+    }
     if (fileTextMatches(F5_HOSTNAME_PATTERN)) {
       return ConfigurationFormat.F5;
     }
