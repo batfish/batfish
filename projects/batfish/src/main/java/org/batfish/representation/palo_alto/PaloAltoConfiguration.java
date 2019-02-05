@@ -57,6 +57,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /** This is the name of an application that matches all traffic */
   public static final String CATCHALL_APPLICATION_NAME = "any";
 
+  /** This is the name of an endpoint that matches all traffic */
+  public static final String CATCHALL_ENDPOINT_NAME = "any";
+
   /** This is the name of a service that matches all traffic */
   public static final String CATCHALL_SERVICE_NAME = "any";
 
@@ -399,25 +402,35 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   /** Converts {@link RuleEndpoint} to {@code IpSpace} */
   private IpSpace ruleEndpointToIpSpace(RuleEndpoint endpoint, Vsys vsys) {
-    switch (endpoint.getType()) {
-      case Any:
-        return UniverseIpSpace.INSTANCE;
-      case IP_ADDRESS:
-        return Ip.parse(endpoint.getValue()).toIpSpace();
-      case IP_PREFIX:
-        return Prefix.parse(endpoint.getValue()).toIpSpace();
-      case IP_RANGE:
-        String[] ips = endpoint.getValue().split("-");
-        return IpRange.range(Ip.parse(ips[0]), Ip.parse(ips[1]));
-      case ADDRESS_OBJECT:
-        return vsys.getAddressObjects().get(endpoint.getValue()).getIpSpace();
-      case ADDRESS_GROUP:
-        return vsys.getAddressGroups()
-            .get(endpoint.getValue())
-            .getIpSpace(vsys.getAddressObjects(), vsys.getAddressGroups());
-      default:
-        _w.redFlag("Could not convert RuleEndpoint to IpSpace: " + endpoint);
-        return null;
+    String endpointValue = endpoint.getValue();
+    // Palo Alto allows object references that look like IP addresses, ranges, etc.
+    // Devices use objects over constants when possible, so, check to see if there is a matching
+    // group or object regardless of the type of endpoint we're expecting.
+    if (vsys.getAddressObjects().containsKey(endpointValue)) {
+      return vsys.getAddressObjects().get(endpointValue).getIpSpace();
+    } else if (vsys.getAddressGroups().containsKey(endpoint.getValue())) {
+      return vsys.getAddressGroups()
+          .get(endpointValue)
+          .getIpSpace(vsys.getAddressObjects(), vsys.getAddressGroups());
+    } else {
+      // No named object found matching this endpoint, so parse the endpoint value as is
+      switch (endpoint.getType()) {
+        case Any:
+          return UniverseIpSpace.INSTANCE;
+        case IP_ADDRESS:
+          return Ip.parse(endpointValue).toIpSpace();
+        case IP_PREFIX:
+          return Prefix.parse(endpointValue).toIpSpace();
+        case IP_RANGE:
+          String[] ips = endpointValue.split("-");
+          return IpRange.range(Ip.parse(ips[0]), Ip.parse(ips[1]));
+        case REFERENCE:
+          // Undefined reference
+          return null;
+        default:
+          _w.redFlag("Could not convert RuleEndpoint to IpSpace: " + endpoint);
+          return null;
+      }
     }
   }
 
@@ -558,16 +571,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     // Count and mark simple structure usages and identify undefined references
-    markConcreteStructure(
-        PaloAltoStructureType.ADDRESS_GROUP,
-        PaloAltoStructureUsage.ADDRESS_GROUP_STATIC,
-        PaloAltoStructureUsage.RULE_DESTINATION,
-        PaloAltoStructureUsage.RULE_SOURCE);
-    markConcreteStructure(
-        PaloAltoStructureType.ADDRESS_OBJECT,
-        PaloAltoStructureUsage.ADDRESS_GROUP_STATIC,
-        PaloAltoStructureUsage.RULE_DESTINATION,
-        PaloAltoStructureUsage.RULE_SOURCE);
     markConcreteStructure(PaloAltoStructureType.GLOBAL_PROTECT_APP_CRYPTO_PROFILE);
     markConcreteStructure(PaloAltoStructureType.IKE_CRYPTO_PROFILE);
     markConcreteStructure(PaloAltoStructureType.IPSEC_CRYPTO_PROFILE);
@@ -587,6 +590,24 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         ImmutableList.of(PaloAltoStructureType.SERVICE, PaloAltoStructureType.SERVICE_GROUP),
         PaloAltoStructureUsage.SERVICE_GROUP_MEMBER,
         PaloAltoStructureUsage.RULEBASE_SERVICE);
+
+    // Handle marking rule endpoints
+    // First, handle those which may or may not be referencing objects (e.g. "1.2.3.4" may be IP
+    // address or a named object)
+    markAbstractStructureFromUnknownNamespace(
+        PaloAltoStructureType.ADDRESS_GROUP_OR_ADDRESS_OBJECT_OR_NONE,
+        ImmutableList.of(PaloAltoStructureType.ADDRESS_GROUP, PaloAltoStructureType.ADDRESS_OBJECT),
+        true,
+        PaloAltoStructureUsage.RULE_DESTINATION,
+        PaloAltoStructureUsage.RULE_SOURCE);
+    // Next, handle address object references which are definitely referencing objects
+    markAbstractStructureFromUnknownNamespace(
+        PaloAltoStructureType.ADDRESS_GROUP_OR_ADDRESS_OBJECT,
+        ImmutableList.of(PaloAltoStructureType.ADDRESS_GROUP, PaloAltoStructureType.ADDRESS_OBJECT),
+        PaloAltoStructureUsage.ADDRESS_GROUP_STATIC,
+        PaloAltoStructureUsage.RULE_DESTINATION,
+        PaloAltoStructureUsage.RULE_SOURCE);
+
     return ImmutableList.of(_c);
   }
 
@@ -608,7 +629,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
     return null;
   }
-
   /**
    * Update referrers and/or warn for undefined structures based on references to an abstract
    * structure type existing in either the reference's namespace or shared namespace
@@ -616,6 +636,14 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   private void markAbstractStructureFromUnknownNamespace(
       PaloAltoStructureType type,
       Collection<PaloAltoStructureType> structureTypesToCheck,
+      PaloAltoStructureUsage... usages) {
+    markAbstractStructureFromUnknownNamespace(type, structureTypesToCheck, false, usages);
+  }
+
+  private void markAbstractStructureFromUnknownNamespace(
+      PaloAltoStructureType type,
+      Collection<PaloAltoStructureType> structureTypesToCheck,
+      boolean ignoreUndefined,
       PaloAltoStructureUsage... usages) {
     Map<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> references =
         firstNonNull(_structureReferences.get(type), Collections.emptyMap());
@@ -640,7 +668,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                   info.getNumReferrers() == DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
                       ? DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
                       : info.getNumReferrers() + lines.size());
-            } else {
+            } else if (!ignoreUndefined) {
               for (int line : lines) {
                 undefined(type, name, usage, line);
               }
