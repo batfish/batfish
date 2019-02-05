@@ -426,6 +426,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
           return IpRange.range(Ip.parse(ips[0]), Ip.parse(ips[1]));
         case REFERENCE:
           // Undefined reference
+          _w.redFlag("No matching address group/object found for RuleEndpoint: " + endpoint);
           return null;
         default:
           _w.redFlag("Could not convert RuleEndpoint to IpSpace: " + endpoint);
