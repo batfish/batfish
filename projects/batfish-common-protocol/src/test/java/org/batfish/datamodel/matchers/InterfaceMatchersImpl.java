@@ -43,6 +43,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasAddress extends FeatureMatcher<Interface, InterfaceAddress> {
+    HasAddress(@Nonnull Matcher<? super InterfaceAddress> subMatcher) {
+      super(subMatcher, "An Interface with address:", "address");
+    }
+
+    @Override
+    protected InterfaceAddress featureValueOf(Interface actual) {
+      return actual.getAddress();
+    }
+  }
+
   static final class HasAllAddresses extends FeatureMatcher<Interface, Set<InterfaceAddress>> {
     HasAllAddresses(@Nonnull Matcher<? super Set<InterfaceAddress>> subMatcher) {
       super(subMatcher, "An Interface with allAddresses:", "allAddresses");
@@ -291,6 +302,18 @@ final class InterfaceMatchersImpl {
     @Override
     protected SwitchportMode featureValueOf(Interface actual) {
       return actual.getSwitchportMode();
+    }
+  }
+
+  static final class HasVlan extends FeatureMatcher<Interface, Integer> {
+    HasVlan(@Nonnull Matcher<? super Integer> subMatcher) {
+      super(subMatcher, "an Interface with vlan:", "vlan");
+    }
+
+    @Override
+    @Nullable
+    protected Integer featureValueOf(Interface actual) {
+      return actual.getVlan();
     }
   }
 
