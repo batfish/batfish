@@ -11,8 +11,7 @@ public final class RuleEndpoint implements Serializable {
     IP_ADDRESS,
     IP_PREFIX,
     IP_RANGE,
-    ADDRESS_OBJECT,
-    ADDRESS_GROUP
+    REFERENCE
   }
 
   /** */
@@ -27,6 +26,7 @@ public final class RuleEndpoint implements Serializable {
     _value = value;
   }
 
+  /** Type hint from lexer */
   public Type getType() {
     return _type;
   }

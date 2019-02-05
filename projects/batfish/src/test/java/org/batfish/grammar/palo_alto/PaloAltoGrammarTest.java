@@ -124,6 +124,9 @@ public class PaloAltoGrammarTest {
     extractor.processParseTree(tree);
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
     pac.setVendor(ConfigurationFormat.PALO_ALTO);
+    ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
+    pac.setFilename(TESTCONFIGS_PREFIX + hostname);
+    pac.setAnswerElement(answerElement);
     return pac;
   }
 
@@ -180,10 +183,11 @@ public class PaloAltoGrammarTest {
         addressGroups.get("group0").getIpSpace(addressObjects, addressGroups),
         equalTo(EmptyIpSpace.INSTANCE));
 
-    // we parsed the description, addr3 should have been discarded
+    // we parsed the description, addr3 is undefined but should not have been discarded
     assertThat(addressGroups.get("group1").getDescription(), equalTo("group1-desc"));
     assertThat(
-        addressGroups.get("group1").getMembers(), equalTo(ImmutableSet.of("addr1", "addr2")));
+        addressGroups.get("group1").getMembers(),
+        equalTo(ImmutableSet.of("addr1", "addr2", "addr3")));
     assertThat(
         addressGroups.get("group1").getIpSpace(addressObjects, addressGroups),
         equalTo(
@@ -351,6 +355,12 @@ public class PaloAltoGrammarTest {
 
     // Confirm reference count is correct for used structure
     assertThat(ccae2, hasNumReferrers(filename2, PaloAltoStructureType.ADDRESS_OBJECT, name, 2));
+
+    // Confirm undefined reference is detected
+    assertThat(
+        ccae2,
+        hasUndefinedReference(
+            filename2, PaloAltoStructureType.ADDRESS_GROUP_OR_ADDRESS_OBJECT, "addr3"));
   }
 
   @Test
