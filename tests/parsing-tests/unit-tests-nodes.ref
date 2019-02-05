@@ -12129,7 +12129,7 @@
             "switchport" : true,
             "switchportMode" : "TRUNK",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "LOGICAL",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           }
         },
