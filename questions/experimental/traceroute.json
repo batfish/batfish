@@ -14,6 +14,12 @@
             "reachability",
             "traceroute"
         ],
+        "orderedVariableNames": [
+            "startLocation",
+            "headers",
+            "maxTraces",
+            "ignoreFilters"
+        ],
         "variables": {
             "ignoreFilters": {
                 "description": "If set, filters/ACLs encountered along the path are ignored",
