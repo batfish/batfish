@@ -43,7 +43,11 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
       Map<String, Configuration> configurations, Topology topology) {
     Set<BgpAdvertisement> externalAdverts = _batfish.loadExternalBgpAnnouncements(configurations);
     ComputeDataPlaneResult answer =
-        _engine.computeDataPlane(configurations, topology, externalAdverts);
+        _engine.computeDataPlane(
+            configurations,
+            topology,
+            _batfish.getTopologyProvider().getOspfTopology(_batfish.getNetworkSnapshot()),
+            externalAdverts);
     double averageRoutes =
         ((IncrementalDataPlane) answer._dataPlane)
             .getNodes().values().stream()

@@ -39,6 +39,7 @@
           "ripEnabled" : false,
           "ripPassive" : false,
           "spanningTreePortfast" : false,
+          "speed" : 1.0E7,
           "switchport" : false,
           "switchportMode" : "NONE",
           "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2087,6 +2088,7 @@
           "ripEnabled" : false,
           "ripPassive" : false,
           "spanningTreePortfast" : false,
+          "speed" : 1.0E9,
           "switchport" : false,
           "switchportMode" : "NONE",
           "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2134,6 +2136,7 @@
           "ripEnabled" : false,
           "ripPassive" : false,
           "spanningTreePortfast" : false,
+          "speed" : 1.0E9,
           "switchport" : false,
           "switchportMode" : "NONE",
           "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2187,6 +2190,7 @@
           "ripEnabled" : false,
           "ripPassive" : false,
           "spanningTreePortfast" : false,
+          "speed" : 1.0E9,
           "switchport" : false,
           "switchportMode" : "NONE",
           "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2238,6 +2242,7 @@
           "ripEnabled" : false,
           "ripPassive" : false,
           "spanningTreePortfast" : false,
+          "speed" : 1.0E9,
           "switchport" : false,
           "switchportMode" : "NONE",
           "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2445,6 +2450,22 @@
               }
             },
             "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+            "neighbors" : {
+              "GigabitEthernet0/0" : {
+                "area" : 1,
+                "hostname" : "as1border1",
+                "interface" : "GigabitEthernet0/0",
+                "passive" : false,
+                "vrf" : "default"
+              },
+              "Loopback0" : {
+                "area" : 1,
+                "hostname" : "as1border1",
+                "interface" : "Loopback0",
+                "passive" : true,
+                "vrf" : "default"
+              }
+            },
             "processId" : "1",
             "referenceBandwidth" : 1.0E8,
             "routerId" : "1.1.1.1"

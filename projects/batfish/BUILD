@@ -24,6 +24,7 @@ java_library(
     deps = [
         "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/cisco",
+        "//projects/batfish/src/main/antlr4/org/batfish/grammar/f5_bigip_structured",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatjuniper",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatvyos",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/iptables",

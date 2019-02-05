@@ -1,7 +1,10 @@
 package org.batfish.topology;
 
+import static org.batfish.datamodel.ospf.OspfTopologyUtils.computeOspfTopology;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.util.Map;
@@ -18,10 +21,11 @@ import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.IpsecUtil;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 
-/** */
 @ParametersAreNonnullByDefault
 public final class TopologyProviderImpl implements TopologyProvider {
   private static final int MAX_CACHED_SNAPSHOTS = 3;
@@ -32,6 +36,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
   private final Cache<NetworkSnapshot, Optional<Layer1Topology>> _layer1PhysicalTopologies;
   private final Cache<NetworkSnapshot, Optional<Layer2Topology>> _layer2Topologies;
   private final Cache<NetworkSnapshot, Topology> _layer3Topologies;
+  private final Cache<NetworkSnapshot, OspfTopology> _ospfTopologies;
   private final Cache<NetworkSnapshot, Optional<Layer1Topology>> _rawLayer1PhysicalTopologies;
   private final Cache<NetworkSnapshot, Topology> _rawLayer3Topologies;
   private final Cache<NetworkSnapshot, VxlanTopology> _vxlanTopologies;
@@ -45,6 +50,7 @@ public final class TopologyProviderImpl implements TopologyProvider {
     _layer2Topologies =
         CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).softValues().build();
     _layer3Topologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
+    _ospfTopologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
     _rawLayer1PhysicalTopologies =
         CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
     _rawLayer3Topologies = CacheBuilder.newBuilder().maximumSize(MAX_CACHED_SNAPSHOTS).build();
@@ -107,13 +113,13 @@ public final class TopologyProviderImpl implements TopologyProvider {
       assert span != null; // avoid unused warning
       Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
       Topology topology = getRawLayer3Topology(networkSnapshot);
-      topology.prune(
-          _batfish.getEdgeBlacklist(networkSnapshot),
+      return topology.prune(
+          Sets.union(
+              IpsecUtil.computeFailedIpsecSessionEdges(
+                  topology.getEdges(), IpsecUtil.initIpsecTopology(configurations), configurations),
+              _batfish.getEdgeBlacklist(networkSnapshot)),
           _batfish.getNodeBlacklist(networkSnapshot),
           _batfish.getInterfaceBlacklist(networkSnapshot));
-      topology.pruneFailedIpsecSessionEdges(
-          IpsecUtil.initIpsecTopology(configurations), configurations);
-      return topology;
     }
   }
 
@@ -194,6 +200,22 @@ public final class TopologyProviderImpl implements TopologyProvider {
       return _layer3Topologies.get(networkSnapshot, () -> computeLayer3Topology(networkSnapshot));
     } catch (ExecutionException e) {
       return computeLayer3Topology(networkSnapshot);
+    }
+  }
+
+  @Override
+  public OspfTopology getOspfTopology(NetworkSnapshot networkSnapshot) {
+    try {
+      return _ospfTopologies.get(
+          networkSnapshot,
+          () ->
+              computeOspfTopology(
+                  NetworkConfigurations.of(_batfish.loadConfigurations(networkSnapshot)),
+                  getLayer3Topology(networkSnapshot)));
+    } catch (ExecutionException e) {
+      return computeOspfTopology(
+          NetworkConfigurations.of(_batfish.loadConfigurations(networkSnapshot)),
+          getLayer3Topology(networkSnapshot));
     }
   }
 

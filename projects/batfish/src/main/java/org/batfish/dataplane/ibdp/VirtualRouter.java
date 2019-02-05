@@ -25,9 +25,7 @@ import com.google.common.graph.ValueGraph;
 import java.io.Serializable;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -99,10 +97,12 @@ import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
-import org.batfish.datamodel.ospf.OspfEdge;
 import org.batfish.datamodel.ospf.OspfMetricType;
-import org.batfish.datamodel.ospf.OspfNode;
+import org.batfish.datamodel.ospf.OspfNeighborConfigId;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.OspfSessionProperties;
+import org.batfish.datamodel.ospf.OspfTopology;
+import org.batfish.datamodel.ospf.OspfTopology.EdgeId;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -218,7 +218,7 @@ public class VirtualRouter implements Serializable {
   transient OspfExternalType2Rib _ospfExternalType2StagingRib;
 
   @VisibleForTesting
-  transient SortedMap<OspfEdge, Queue<RouteAdvertisement<OspfExternalRoute>>>
+  transient SortedMap<OspfTopology.EdgeId, Queue<RouteAdvertisement<OspfExternalRoute>>>
       _ospfExternalIncomingRoutes;
 
   transient OspfInterAreaRib _ospfInterAreaRib;
@@ -248,8 +248,6 @@ public class VirtualRouter implements Serializable {
   private transient Rib _generatedRib;
 
   private transient RibDelta.Builder<OspfExternalRoute> _ospfExternalDeltaBuilder;
-
-  private transient List<OspfEdge> _ospfNeighbors;
 
   /** Metadata about propagated prefixes to/from neighbors */
   private PrefixTracer _prefixTracer;
@@ -376,62 +374,64 @@ public class VirtualRouter implements Serializable {
    * @param allNodes map of all network nodes, keyed by hostname
    * @param bgpTopology the bgp peering relationships
    * @param eigrpTopology The topology representing EIGRP adjacencies
+   * @param ospfTopology The OSPF adjacency
    */
   void initForEgpComputation(
       final Map<String, Node> allNodes,
-      Topology topology,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
       Network<EigrpInterface, EigrpEdge> eigrpTopology,
-      Network<IsisNode, IsisEdge> isisTopology) {
-    initQueuesAndDeltaBuilders(allNodes, topology, bgpTopology, eigrpTopology, isisTopology);
+      Network<IsisNode, IsisEdge> isisTopology,
+      OspfTopology ospfTopology) {
+    initQueuesAndDeltaBuilders(bgpTopology, eigrpTopology, isisTopology, ospfTopology);
   }
 
   /**
    * Initializes RIB delta builders and protocol message queues.
    *
-   * @param allNodes map of all network nodes, keyed by hostname
-   * @param topology Layer 3 network topology
    * @param bgpTopology the bgp peering relationships
    * @param eigrpTopology The topology representing EIGRP adjacencies
+   * @param ospfTopology Layer 3 network topology
    */
   @VisibleForTesting
   void initQueuesAndDeltaBuilders(
-      final Map<String, Node> allNodes,
-      final Topology topology,
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
-      Network<EigrpInterface, EigrpEdge> eigrpTopology,
-      Network<IsisNode, IsisEdge> isisTopology) {
+      final ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology,
+      final Network<EigrpInterface, EigrpEdge> eigrpTopology,
+      final Network<IsisNode, IsisEdge> isisTopology,
+      final OspfTopology ospfTopology) {
 
     // Initialize message queues for each BGP neighbor
     initBgpQueues(bgpTopology);
-
     // Initialize message queues for each EIGRP neighbor
     initEigrpQueues(eigrpTopology);
-
+    // Initialize message queues for each IS-IS neighbor
     initIsisQueues(isisTopology);
-
+    // Initialize message queues for each OSPF neighbor
+    initOspfQueues(ospfTopology);
+    // Initalize message queues for all neighboring VRFs/VirtualRouters
     initCrossVrfQueues();
+  }
 
-    // Initialize message queues for each Ospf neighbor
-    if (_vrf.getOspfProcess() == null) {
+  private void initOspfQueues(OspfTopology topology) {
+    OspfProcess proc = _vrf.getOspfProcess();
+
+    if (proc == null) {
+      // No OSPF process, nothing to do
       _ospfExternalIncomingRoutes = ImmutableSortedMap.of();
-    } else {
-      _ospfNeighbors = getOspfNeighbors(allNodes, topology);
-      if (_ospfNeighbors == null) {
-        _ospfExternalIncomingRoutes = ImmutableSortedMap.of();
-      } else {
-        _ospfExternalIncomingRoutes =
-            _ospfNeighbors.stream()
-                .map(OspfEdge::reverse)
-                .collect(
-                    ImmutableSortedMap
-                        .<OspfEdge, OspfEdge, Queue<RouteAdvertisement<OspfExternalRoute>>>
-                            toImmutableSortedMap(
-                                Comparator.naturalOrder(),
-                                Function.identity(),
-                                p -> new ConcurrentLinkedQueue<>()));
-      }
+      return;
     }
+
+    _ospfExternalIncomingRoutes =
+        proc.getOspfNeighborConfigs().keySet().stream()
+            .flatMap(
+                interfaceName ->
+                    topology
+                        .incomingEdges(
+                            new OspfNeighborConfigId(
+                                _node.getConfiguration().getHostname(), _name, interfaceName))
+                        .stream())
+            .collect(
+                ImmutableSortedMap.toImmutableSortedMap(
+                    Ordering.natural(), Function.identity(), v -> new ConcurrentLinkedQueue<>()));
   }
 
   /**
@@ -1515,11 +1515,12 @@ public class VirtualRouter implements Serializable {
    * our queues.
    *
    * @param allNodes map of all nodes, keyed by hostname
+   * @param ospfTopology the OSPF topology to use
    * @return a pair of {@link RibDelta}s, for Type1 and Type2 routes
    */
   @Nullable
   public Entry<RibDelta<OspfExternalType1Route>, RibDelta<OspfExternalType2Route>>
-      propagateOspfExternalRoutes(final Map<String, Node> allNodes) {
+      propagateOspfExternalRoutes(final Map<String, Node> allNodes, OspfTopology ospfTopology) {
     String node = _c.getHostname();
     OspfProcess proc = _vrf.getOspfProcess();
     if (proc == null) {
@@ -1536,16 +1537,21 @@ public class VirtualRouter implements Serializable {
             return;
           }
 
-          OspfNode localNode = ospfEdge.getNode2();
-          OspfNode neighborNode = ospfEdge.getNode1();
-          assert localNode.getNode().equals(node); // queue invariant of how we built the queue.
+          OspfNeighborConfigId localNode = ospfEdge.getHead();
+          OspfNeighborConfigId neighborNode = ospfEdge.getTail();
+          // Invariant: edge value (session properties) must exist for each edge
+          OspfSessionProperties session =
+              ospfTopology
+                  .getSession(ospfEdge)
+                  .orElseThrow(() -> new IllegalStateException("No OSPF edge"));
+          assert localNode.getHostname().equals(node); // queue invariant of how we built the queue.
 
           Interface localInterface = _vrf.getInterfaces().get(localNode.getInterfaceName());
           assert localInterface != null; // invariant of how routes are pushed into the queue.
           assert localInterface.getOspfArea() != null; // ^^.
           long localArea = localInterface.getOspfArea().getAreaNumber();
 
-          Node neighbor = allNodes.get(neighborNode.getNode());
+          Node neighbor = allNodes.get(neighborNode.getHostname());
           Interface neighborInterface =
               neighbor.getConfiguration().getAllInterfaces().get(neighborNode.getInterfaceName());
           OspfProcess neighborProc = neighborInterface.getVrf().getOspfProcess();
@@ -1572,7 +1578,8 @@ public class VirtualRouter implements Serializable {
             OspfExternalRoute.Builder newRouteB =
                 OspfExternalRoute.builder()
                     .setNetwork(neighborRoute.getNetwork())
-                    .setNextHopIp(neighborNode.getLocalIp())
+                    // Neighbor IP is the IP of tail node which means Ip1
+                    .setNextHopIp(session.getIpLink().getIp1())
                     .setLsaMetric(neighborRoute.getLsaMetric())
                     .setAdvertiser(neighborRoute.getAdvertiser())
                     .setOspfMetricType(neighborRoute.getOspfMetricType())
@@ -2214,7 +2221,6 @@ public class VirtualRouter implements Serializable {
    * @param type1delta A {@link RibDelta} containing diffs with respect to OSPF Type1 external
    *     routes
    * @param type2delta A {@link RibDelta} containing diffs with respect to OSPF Type2 external
-   *     routes
    */
   private void queueOutgoingOspfExternalRoutes(
       @Nonnull Map<String, Node> allNodes,
@@ -2223,31 +2229,25 @@ public class VirtualRouter implements Serializable {
     if (_vrf.getOspfProcess() == null) {
       return;
     }
-    if (_ospfNeighbors != null) {
-      _ospfNeighbors.forEach(
-          ospfEdge -> {
-            OspfArea localArea =
-                _vrf.getInterfaces().get(ospfEdge.getNode1().getInterfaceName()).getOspfArea();
-            assert localArea != null; // otherwise the edge would not be built.
-            if (localArea.getStubType() == StubType.STUB) {
-              return;
-            }
+    // We can loop over incoming edges here because OSPF edges must be symmetric
+    for (EdgeId ospfEdge : _ospfExternalIncomingRoutes.keySet()) {
+      OspfArea localArea =
+          _vrf.getInterfaces().get(ospfEdge.getHead().getInterfaceName()).getOspfArea();
+      assert localArea != null; // otherwise the edge would not be built.
 
-            // Get remote neighbor's queue
-            Node remoteNode = allNodes.get(ospfEdge.getNode2().getNode());
-            String remoteVrf =
-                remoteNode
-                    .getConfiguration()
-                    .getAllInterfaces()
-                    .get(ospfEdge.getNode2().getInterfaceName())
-                    .getVrfName();
-            VirtualRouter remoteRouter = remoteNode.getVirtualRouters().get(remoteVrf);
-            Queue<RouteAdvertisement<OspfExternalRoute>> q =
-                remoteRouter._ospfExternalIncomingRoutes.get(ospfEdge);
+      // No external routes can propagate out of stub area
+      if (localArea.getStubType() == StubType.STUB) {
+        continue;
+      }
 
-            queueDelta(q, type1delta);
-            queueDelta(q, type2delta);
-          });
+      // Get remote VirtualRouter
+      VirtualRouter remoteVr =
+          allNodes
+              .get(ospfEdge.getTail().getHostname())
+              .getVirtualRouters()
+              .get(ospfEdge.getTail().getVrfName());
+      remoteVr.enqueueOspfExternalRoutes(ospfEdge.reverse(), type1delta);
+      remoteVr.enqueueOspfExternalRoutes(ospfEdge.reverse(), type2delta);
     }
   }
 
@@ -2547,85 +2547,6 @@ public class VirtualRouter implements Serializable {
         : null;
   }
 
-  /**
-   * Compute our OSPF neighbors.
-   *
-   * @param allNodes map of all network nodes, keyed by hostname
-   * @param topology the Layer-3 network topology
-   * @return A sorted map of neighbor prefixes to links to which they correspond
-   */
-  @Nullable
-  private List<OspfEdge> getOspfNeighbors(final Map<String, Node> allNodes, Topology topology) {
-    // Check we have ospf process
-    OspfProcess proc = _vrf.getOspfProcess();
-    if (proc == null) {
-      return null;
-    }
-
-    String node = _c.getHostname();
-    SortedSet<Edge> edges = topology.getNodeEdges().get(node);
-    if (edges == null) {
-      // there are no edges, so OSPF won't produce anything
-      return null;
-    }
-
-    ImmutableList.Builder<OspfEdge> neighbors = ImmutableList.builder();
-    for (Edge edge : edges) {
-      if (!edge.getNode1().equals(node) || !edges.contains(edge.reverse())) {
-        continue;
-      }
-      Interface localInterface = _vrf.getInterfaces().get(edge.getInt1());
-      if (localInterface == null) {
-        // wrong vrf, so skip
-        continue;
-      }
-      OspfArea localArea = localInterface.getOspfArea();
-      if (!localInterface.getOspfEnabled()
-          || localInterface.getOspfPassive()
-          || localArea == null) {
-        // Not OSPF active
-        continue;
-      }
-
-      Node neighbor = allNodes.get(edge.getNode2());
-      Interface neighborInterface =
-          neighbor.getConfiguration().getAllInterfaces().get(edge.getInt2());
-
-      // Verify that the primaries use distinct IPs on compatible prefixes.
-      // TODO: should this be equal? TODO: is this true for multicast sessions?
-      InterfaceAddress localPrimary = localInterface.getAddress();
-      InterfaceAddress neighborPrimary = neighborInterface.getAddress();
-      if (!localPrimary.getPrefix().containsIp(neighborPrimary.getIp())
-          || !neighborPrimary.getPrefix().containsIp(localPrimary.getIp())
-          || localPrimary.getIp().equals(neighborPrimary.getIp())) {
-        continue;
-      }
-
-      OspfArea neighborArea = neighborInterface.getOspfArea();
-      if (!neighborInterface.getOspfEnabled()
-          || neighborInterface.getOspfPassive()
-          || neighborArea == null) {
-        // Neighbor is not ospf-enabled.
-        continue;
-      }
-
-      if (localArea.getAreaNumber() != neighborArea.getAreaNumber()) {
-        // Not in the same area.
-        continue;
-      }
-
-      OspfNode localNode = new OspfNode(node, localInterface.getName(), localPrimary.getIp());
-      OspfNode neighborNode =
-          new OspfNode(
-              neighbor.getConfiguration().getHostname(),
-              neighborInterface.getName(),
-              neighborPrimary.getIp());
-      neighbors.add(new OspfEdge(localNode, neighborNode));
-    }
-
-    return neighbors.build();
-  }
-
   public Configuration getConfiguration() {
     return _c;
   }
@@ -2822,5 +2743,11 @@ public class VirtualRouter implements Serializable {
             }
           }
         });
+  }
+
+  /** Queue OSPF external routes on this VR's incoming queues. */
+  private void enqueueOspfExternalRoutes(
+      OspfTopology.EdgeId ospfEdge, RibDelta<? extends OspfExternalRoute> ribDelta) {
+    queueDelta(_ospfExternalIncomingRoutes.get(ospfEdge), ribDelta);
   }
 }

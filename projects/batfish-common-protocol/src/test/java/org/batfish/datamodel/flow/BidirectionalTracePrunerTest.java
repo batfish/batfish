@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.pojo.Node;
@@ -37,11 +38,16 @@ public class BidirectionalTracePrunerTest {
     Trace trace2 = new Trace(DENIED_IN, ImmutableList.of(HOP2));
     Trace trace3 = new Trace(DENIED_OUT, ImmutableList.of(HOP3));
 
-    BidirectionalTrace bTrace1 = new BidirectionalTrace(FLOW1, trace1, FLOW1, trace1);
-    BidirectionalTrace bTrace2 = new BidirectionalTrace(FLOW1, trace2, FLOW2, trace2);
-    BidirectionalTrace bTrace3 = new BidirectionalTrace(FLOW1, trace3, FLOW3, trace3);
-    BidirectionalTrace bTrace4 = new BidirectionalTrace(FLOW2, trace1, FLOW1, trace1);
-    BidirectionalTrace bTrace5 = new BidirectionalTrace(FLOW3, trace1, FLOW1, trace1);
+    BidirectionalTrace bTrace1 =
+        new BidirectionalTrace(FLOW1, trace1, ImmutableSet.of(), FLOW1, trace1);
+    BidirectionalTrace bTrace2 =
+        new BidirectionalTrace(FLOW1, trace2, ImmutableSet.of(), FLOW2, trace2);
+    BidirectionalTrace bTrace3 =
+        new BidirectionalTrace(FLOW1, trace3, ImmutableSet.of(), FLOW3, trace3);
+    BidirectionalTrace bTrace4 =
+        new BidirectionalTrace(FLOW2, trace1, ImmutableSet.of(), FLOW1, trace1);
+    BidirectionalTrace bTrace5 =
+        new BidirectionalTrace(FLOW3, trace1, ImmutableSet.of(), FLOW1, trace1);
     Collection<BidirectionalTrace> pruned =
         prune(ImmutableList.of(bTrace1, bTrace2, bTrace3, bTrace4, bTrace5), 3);
     assertThat(pruned, containsInAnyOrder(bTrace1, bTrace4, bTrace5));
@@ -54,11 +60,16 @@ public class BidirectionalTracePrunerTest {
     Trace trace2 = new Trace(DENIED_IN, ImmutableList.of(HOP2));
     Trace trace3 = new Trace(DENIED_OUT, ImmutableList.of(HOP3));
 
-    BidirectionalTrace bTrace1 = new BidirectionalTrace(FLOW1, trace1, FLOW1, trace1);
-    BidirectionalTrace bTrace2 = new BidirectionalTrace(FLOW1, trace2, FLOW1, trace2);
-    BidirectionalTrace bTrace3 = new BidirectionalTrace(FLOW1, trace3, FLOW1, trace3);
-    BidirectionalTrace bTrace4 = new BidirectionalTrace(FLOW1, trace1, FLOW2, trace1);
-    BidirectionalTrace bTrace5 = new BidirectionalTrace(FLOW1, trace1, FLOW3, trace1);
+    BidirectionalTrace bTrace1 =
+        new BidirectionalTrace(FLOW1, trace1, ImmutableSet.of(), FLOW1, trace1);
+    BidirectionalTrace bTrace2 =
+        new BidirectionalTrace(FLOW1, trace2, ImmutableSet.of(), FLOW1, trace2);
+    BidirectionalTrace bTrace3 =
+        new BidirectionalTrace(FLOW1, trace3, ImmutableSet.of(), FLOW1, trace3);
+    BidirectionalTrace bTrace4 =
+        new BidirectionalTrace(FLOW1, trace1, ImmutableSet.of(), FLOW2, trace1);
+    BidirectionalTrace bTrace5 =
+        new BidirectionalTrace(FLOW1, trace1, ImmutableSet.of(), FLOW3, trace1);
     Collection<BidirectionalTrace> pruned =
         prune(ImmutableList.of(bTrace1, bTrace2, bTrace3, bTrace4, bTrace5), 3);
     assertThat(pruned, containsInAnyOrder(bTrace1, bTrace4, bTrace5));
@@ -72,11 +83,16 @@ public class BidirectionalTracePrunerTest {
     Trace trace3 = new Trace(DENIED_IN, ImmutableList.of(HOP3));
     Trace trace4 = new Trace(DENIED_OUT, ImmutableList.of(HOP3));
 
-    BidirectionalTrace bTrace1 = new BidirectionalTrace(FLOW1, trace1, FLOW1, trace1);
-    BidirectionalTrace bTrace2 = new BidirectionalTrace(FLOW1, trace2, FLOW1, trace2);
-    BidirectionalTrace bTrace3 = new BidirectionalTrace(FLOW1, trace2, FLOW1, trace3);
-    BidirectionalTrace bTrace4 = new BidirectionalTrace(FLOW1, trace3, FLOW1, trace1);
-    BidirectionalTrace bTrace5 = new BidirectionalTrace(FLOW1, trace4, FLOW1, trace1);
+    BidirectionalTrace bTrace1 =
+        new BidirectionalTrace(FLOW1, trace1, ImmutableSet.of(), FLOW1, trace1);
+    BidirectionalTrace bTrace2 =
+        new BidirectionalTrace(FLOW1, trace2, ImmutableSet.of(), FLOW1, trace2);
+    BidirectionalTrace bTrace3 =
+        new BidirectionalTrace(FLOW1, trace2, ImmutableSet.of(), FLOW1, trace3);
+    BidirectionalTrace bTrace4 =
+        new BidirectionalTrace(FLOW1, trace3, ImmutableSet.of(), FLOW1, trace1);
+    BidirectionalTrace bTrace5 =
+        new BidirectionalTrace(FLOW1, trace4, ImmutableSet.of(), FLOW1, trace1);
     Collection<BidirectionalTrace> pruned =
         prune(ImmutableList.of(bTrace1, bTrace2, bTrace3, bTrace4, bTrace5), 3);
     assertThat(pruned, containsInAnyOrder(bTrace1, bTrace4, bTrace5));
@@ -90,11 +106,16 @@ public class BidirectionalTracePrunerTest {
     Trace trace3 = new Trace(DENIED_IN, ImmutableList.of(HOP3));
     Trace trace4 = new Trace(DENIED_OUT, ImmutableList.of(HOP3));
 
-    BidirectionalTrace bTrace1 = new BidirectionalTrace(FLOW1, trace1, FLOW1, trace1);
-    BidirectionalTrace bTrace2 = new BidirectionalTrace(FLOW1, trace2, FLOW1, trace2);
-    BidirectionalTrace bTrace3 = new BidirectionalTrace(FLOW1, trace1, FLOW1, trace1);
-    BidirectionalTrace bTrace4 = new BidirectionalTrace(FLOW1, trace2, FLOW1, trace3);
-    BidirectionalTrace bTrace5 = new BidirectionalTrace(FLOW1, trace1, FLOW1, trace4);
+    BidirectionalTrace bTrace1 =
+        new BidirectionalTrace(FLOW1, trace1, ImmutableSet.of(), FLOW1, trace1);
+    BidirectionalTrace bTrace2 =
+        new BidirectionalTrace(FLOW1, trace2, ImmutableSet.of(), FLOW1, trace2);
+    BidirectionalTrace bTrace3 =
+        new BidirectionalTrace(FLOW1, trace1, ImmutableSet.of(), FLOW1, trace1);
+    BidirectionalTrace bTrace4 =
+        new BidirectionalTrace(FLOW1, trace2, ImmutableSet.of(), FLOW1, trace3);
+    BidirectionalTrace bTrace5 =
+        new BidirectionalTrace(FLOW1, trace1, ImmutableSet.of(), FLOW1, trace4);
     Collection<BidirectionalTrace> pruned =
         prune(ImmutableList.of(bTrace1, bTrace2, bTrace3, bTrace4, bTrace5), 3);
     assertThat(pruned, containsInAnyOrder(bTrace1, bTrace4, bTrace5));
@@ -107,11 +128,16 @@ public class BidirectionalTracePrunerTest {
     Trace trace2 = new Trace(ACCEPTED, ImmutableList.of(HOP2));
     Trace trace3 = new Trace(ACCEPTED, ImmutableList.of(HOP3));
 
-    BidirectionalTrace bTrace1 = new BidirectionalTrace(FLOW1, trace1, FLOW1, trace1);
-    BidirectionalTrace bTrace2 = new BidirectionalTrace(FLOW1, trace1, FLOW1, trace2);
-    BidirectionalTrace bTrace3 = new BidirectionalTrace(FLOW1, trace1, FLOW1, trace3);
-    BidirectionalTrace bTrace4 = new BidirectionalTrace(FLOW1, trace2, FLOW1, trace1);
-    BidirectionalTrace bTrace5 = new BidirectionalTrace(FLOW1, trace3, FLOW1, trace1);
+    BidirectionalTrace bTrace1 =
+        new BidirectionalTrace(FLOW1, trace1, ImmutableSet.of(), FLOW1, trace1);
+    BidirectionalTrace bTrace2 =
+        new BidirectionalTrace(FLOW1, trace1, ImmutableSet.of(), FLOW1, trace2);
+    BidirectionalTrace bTrace3 =
+        new BidirectionalTrace(FLOW1, trace1, ImmutableSet.of(), FLOW1, trace3);
+    BidirectionalTrace bTrace4 =
+        new BidirectionalTrace(FLOW1, trace2, ImmutableSet.of(), FLOW1, trace1);
+    BidirectionalTrace bTrace5 =
+        new BidirectionalTrace(FLOW1, trace3, ImmutableSet.of(), FLOW1, trace1);
     Collection<BidirectionalTrace> pruned =
         prune(ImmutableList.of(bTrace1, bTrace2, bTrace3, bTrace4, bTrace5), 3);
     assertThat(pruned, containsInAnyOrder(bTrace1, bTrace4, bTrace5));
@@ -124,11 +150,16 @@ public class BidirectionalTracePrunerTest {
     Trace trace2 = new Trace(ACCEPTED, ImmutableList.of(HOP2));
     Trace trace3 = new Trace(ACCEPTED, ImmutableList.of(HOP3));
 
-    BidirectionalTrace bTrace1 = new BidirectionalTrace(FLOW1, trace1, FLOW1, trace1);
-    BidirectionalTrace bTrace2 = new BidirectionalTrace(FLOW1, trace1, FLOW1, trace1);
-    BidirectionalTrace bTrace3 = new BidirectionalTrace(FLOW1, trace1, FLOW1, trace1);
-    BidirectionalTrace bTrace4 = new BidirectionalTrace(FLOW1, trace1, FLOW1, trace2);
-    BidirectionalTrace bTrace5 = new BidirectionalTrace(FLOW1, trace1, FLOW1, trace3);
+    BidirectionalTrace bTrace1 =
+        new BidirectionalTrace(FLOW1, trace1, ImmutableSet.of(), FLOW1, trace1);
+    BidirectionalTrace bTrace2 =
+        new BidirectionalTrace(FLOW1, trace1, ImmutableSet.of(), FLOW1, trace1);
+    BidirectionalTrace bTrace3 =
+        new BidirectionalTrace(FLOW1, trace1, ImmutableSet.of(), FLOW1, trace1);
+    BidirectionalTrace bTrace4 =
+        new BidirectionalTrace(FLOW1, trace1, ImmutableSet.of(), FLOW1, trace2);
+    BidirectionalTrace bTrace5 =
+        new BidirectionalTrace(FLOW1, trace1, ImmutableSet.of(), FLOW1, trace3);
     Collection<BidirectionalTrace> pruned =
         prune(ImmutableList.of(bTrace1, bTrace2, bTrace3, bTrace4, bTrace5), 3);
     assertThat(pruned, containsInAnyOrder(bTrace1, bTrace4, bTrace5));

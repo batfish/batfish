@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -521,6 +522,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_SPANNING_TREE_PORTFAST = "spanningTreePortfast";
 
+  private static final String PROP_SPEED = "speed";
+
   private static final String PROP_SWITCHPORT = "switchport";
 
   private static final String PROP_SWITCHPORT_MODE = "switchportMode";
@@ -651,6 +654,9 @@ public final class Interface extends ComparableStructure<String> {
       case FOUNDRY:
         return computeCiscoInterfaceType(name);
 
+      case F5_BIGIP_STRUCTURED:
+        return computeF5BigipStructuredInterfaceType(name);
+
       case FLAT_JUNIPER:
       case JUNIPER:
       case JUNIPER_SWITCH:
@@ -676,6 +682,17 @@ public final class Interface extends ComparableStructure<String> {
       default:
         throw new BatfishException(
             "Cannot compute interface type for unsupported configuration format: " + format);
+    }
+  }
+
+  private static final Pattern F5_PHYSICAL_INTERFACE_NAME_PATTERN =
+      Pattern.compile("^\\d+\\.\\d+$");
+
+  private static @Nonnull InterfaceType computeF5BigipStructuredInterfaceType(String name) {
+    if (F5_PHYSICAL_INTERFACE_NAME_PATTERN.matcher(name).find()) {
+      return InterfaceType.PHYSICAL;
+    } else {
+      return InterfaceType.UNKNOWN;
     }
   }
 
@@ -807,6 +824,8 @@ public final class Interface extends ComparableStructure<String> {
   private transient String _routingPolicyName;
 
   private boolean _spanningTreePortfast;
+
+  private @Nullable Double _speed;
 
   private boolean _switchport;
 
@@ -942,6 +961,9 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
     if (!Objects.equals(this._routingPolicy, other._routingPolicy)) {
+      return false;
+    }
+    if (!Objects.equals(_speed, other._speed)) {
       return false;
     }
     if (!Objects.equals(this._switchportMode, other._switchportMode)) {
@@ -1313,6 +1335,11 @@ public final class Interface extends ComparableStructure<String> {
     return _spanningTreePortfast;
   }
 
+  /** The link speed of this interface */
+  public @Nullable Double getSpeed() {
+    return _speed;
+  }
+
   @JsonProperty(PROP_SWITCHPORT)
   @JsonPropertyDescription("Whether this interface is configured as a switchport.")
   public boolean getSwitchport() {
@@ -1659,6 +1686,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_SPANNING_TREE_PORTFAST)
   public void setSpanningTreePortfast(boolean spanningTreePortfast) {
     _spanningTreePortfast = spanningTreePortfast;
+  }
+
+  @JsonProperty(PROP_SPEED)
+  public void setSpeed(@Nullable Double speed) {
+    _speed = speed;
   }
 
   @JsonProperty(PROP_SWITCHPORT)

@@ -1,21 +1,39 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class HasRoute6 extends BooleanExpr {
+public final class HasRoute6 extends BooleanExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
+  private static final String PROP_EXPR = "expr";
 
-  private Prefix6SetExpr _expr;
+  private final Prefix6SetExpr _expr;
 
   @JsonCreator
-  private HasRoute6() {}
+  private static HasRoute6 create(@JsonProperty(PROP_EXPR) Prefix6SetExpr expr) {
+    checkArgument(expr != null, "%s must be provided", PROP_EXPR);
+    return new HasRoute6(expr);
+  }
 
   public HasRoute6(Prefix6SetExpr expr) {
     _expr = expr;
+  }
+
+  @Override
+  public Result evaluate(Environment environment) {
+    throw new BatfishException("No implementation for HasRoute6.evaluate()");
+  }
+
+  @JsonProperty(PROP_EXPR)
+  public Prefix6SetExpr getExpr() {
+    return _expr;
   }
 
   @Override
@@ -23,41 +41,15 @@ public class HasRoute6 extends BooleanExpr {
     if (this == obj) {
       return true;
     }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    if (!(obj instanceof HasRoute6)) {
       return false;
     }
     HasRoute6 other = (HasRoute6) obj;
-    if (_expr == null) {
-      if (other._expr != null) {
-        return false;
-      }
-    } else if (!_expr.equals(other._expr)) {
-      return false;
-    }
-    return true;
-  }
-
-  @Override
-  public Result evaluate(Environment environment) {
-    throw new UnsupportedOperationException("no implementation for generated method");
-  }
-
-  public Prefix6SetExpr getExpr() {
-    return _expr;
+    return Objects.equals(_expr, other._expr);
   }
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((_expr == null) ? 0 : _expr.hashCode());
-    return result;
-  }
-
-  public void setExpr(Prefix6SetExpr expr) {
-    _expr = expr;
+    return Objects.hash(_expr);
   }
 }

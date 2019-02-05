@@ -5,6 +5,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 
 /**
@@ -64,6 +65,10 @@ public interface TopologyProvider {
    */
   @Nonnull
   Topology getLayer3Topology(NetworkSnapshot networkSnapshot);
+
+  /** Return the topology representing OSPF adjacencies. */
+  @Nonnull
+  OspfTopology getOspfTopology(@Nonnull NetworkSnapshot networkSnapshot);
 
   /**
    * Return the raw {@link Layer1Topology} provided by the user in the snapshot, or {@link

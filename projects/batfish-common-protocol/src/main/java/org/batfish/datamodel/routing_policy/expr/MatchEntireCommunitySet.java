@@ -1,21 +1,39 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public class MatchEntireCommunitySet extends BooleanExpr {
+public final class MatchEntireCommunitySet extends BooleanExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
+  private static final String PROP_EXPR = "expr";
 
-  private CommunitySetExpr _expr;
+  private final CommunitySetExpr _expr;
 
   @JsonCreator
-  private MatchEntireCommunitySet() {}
+  private static MatchEntireCommunitySet create(@JsonProperty(PROP_EXPR) CommunitySetExpr expr) {
+    checkArgument(expr != null, "%s must be provided", PROP_EXPR);
+    return new MatchEntireCommunitySet(expr);
+  }
 
   public MatchEntireCommunitySet(CommunitySetExpr expr) {
     _expr = expr;
+  }
+
+  @Override
+  public Result evaluate(Environment environment) {
+    throw new BatfishException("No implementation for MatchEntireCommunitySet.evaluate()");
+  }
+
+  @JsonProperty(PROP_EXPR)
+  public CommunitySetExpr getExpr() {
+    return _expr;
   }
 
   @Override
@@ -23,41 +41,15 @@ public class MatchEntireCommunitySet extends BooleanExpr {
     if (this == obj) {
       return true;
     }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    if (!(obj instanceof MatchEntireCommunitySet)) {
       return false;
     }
     MatchEntireCommunitySet other = (MatchEntireCommunitySet) obj;
-    if (_expr == null) {
-      if (other._expr != null) {
-        return false;
-      }
-    } else if (!_expr.equals(other._expr)) {
-      return false;
-    }
-    return true;
-  }
-
-  @Override
-  public Result evaluate(Environment environment) {
-    throw new UnsupportedOperationException("no implementation for generated method");
-  }
-
-  public CommunitySetExpr getExpr() {
-    return _expr;
+    return Objects.equals(_expr, other._expr);
   }
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((_expr == null) ? 0 : _expr.hashCode());
-    return result;
-  }
-
-  public void setExpr(CommunitySetExpr expr) {
-    _expr = expr;
+    return Objects.hash(_expr);
   }
 }

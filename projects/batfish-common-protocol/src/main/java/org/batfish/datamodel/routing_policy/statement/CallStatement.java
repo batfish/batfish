@@ -72,19 +72,15 @@ public class CallStatement extends Statement {
   public Result execute(Environment environment) {
     RoutingPolicy policy =
         environment.getConfiguration().getRoutingPolicies().get(_calledPolicyName);
-    Result result;
     if (policy == null) {
-      result = new Result();
       environment.setError(true);
-      result.setBooleanValue(false);
-    } else {
-      boolean oldCallStatementContext = environment.getCallStatementContext();
-      environment.setCallStatementContext(true);
-      result = policy.call(environment);
-      result.setReturn(false);
-      environment.setCallStatementContext(oldCallStatementContext);
+      return Result.builder().setBooleanValue(false).build();
     }
-    return result;
+    boolean oldCallStatementContext = environment.getCallStatementContext();
+    environment.setCallStatementContext(true);
+    Result policyResult = policy.call(environment);
+    environment.setCallStatementContext(oldCallStatementContext);
+    return policyResult.toBuilder().setReturn(false).build();
   }
 
   @JsonProperty(PROP_CALLED_POLICY_NAME)
