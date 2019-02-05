@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
@@ -339,6 +340,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
    * It may also contain a {@link ParseResult#getConfig() parsed vendor-specific configuration} or a
    * {@link ParseResult#getFailureCause() failure cause}.
    */
+  @Nonnull
   public ParseResult parse() {
     ConfigurationFormat format = detectFormat(_fileText, _settings, _format);
 
