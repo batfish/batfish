@@ -2130,9 +2130,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return routingTables;
   }
 
-  /** Returns a list of {@link ParseVendorConfigurationJob} to parse each file. */
+  /**
+   * Returns a list of {@link ParseVendorConfigurationJob} to parse each file.
+   *
+   * <p>{@code expectedFormat} specifies the type of files expected in the {@code keyedFileText}
+   * map, or is set to {@link ConfigurationFormat#UNKNOWN} to trigger format detection.
+   */
   private List<ParseVendorConfigurationJob> makeParseVendorConfigurationsJobs(
-      Map<String, String> keyedFileText, ConfigurationFormat seedFormat) {
+      Map<String, String> keyedFileText, ConfigurationFormat expectedFormat) {
     List<ParseVendorConfigurationJob> jobs = new ArrayList<>(keyedFileText.size());
     for (Entry<String, String> vendorFile : keyedFileText.entrySet()) {
       @Nullable
@@ -2147,7 +2152,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               vendorFile.getValue(),
               vendorFile.getKey(),
               buildWarnings(_settings),
-              seedFormat,
+              expectedFormat,
               HashMultimap.create(),
               parseVendorConfigurationSpanContext);
       jobs.add(job);
@@ -2155,15 +2160,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return jobs;
   }
 
+  /**
+   * Parses the given configuration files and returns a map keyed by hostname representing the
+   * {@link VendorConfiguration vendor-specific configurations}.
+   *
+   * <p>{@code expectedFormat} specifies the type of files expected in the {@code keyedFileText}
+   * map, or is set to {@link ConfigurationFormat#UNKNOWN} to trigger format detection.
+   */
   private SortedMap<String, VendorConfiguration> parseVendorConfigurations(
-      Map<String, String> configurationData,
+      Map<String, String> keyedConfigurationText,
       ParseVendorConfigurationAnswerElement answerElement,
-      ConfigurationFormat seedFormat) {
+      ConfigurationFormat expectedFormat) {
     _logger.info("\n*** PARSING VENDOR CONFIGURATION FILES ***\n");
     _logger.resetTimer();
     SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
     List<ParseVendorConfigurationJob> jobs =
-        makeParseVendorConfigurationsJobs(configurationData, seedFormat);
+        makeParseVendorConfigurationsJobs(keyedConfigurationText, expectedFormat);
     BatfishJobExecutor.runJobsInExecutor(
         _settings,
         _logger,

@@ -92,7 +92,10 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
 
   private String _fileText;
 
-  private ConfigurationFormat _format;
+  /**
+   * What type of files are expected, or {@link ConfigurationFormat#UNKNOWN} to detect dynamically.
+   */
+  private ConfigurationFormat _expectedFormat;
 
   private ParseTreeSentences _ptSentences;
 
@@ -105,7 +108,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       String fileText,
       String filename,
       Warnings warnings,
-      ConfigurationFormat configurationFormat,
+      ConfigurationFormat expectedFormat,
       Multimap<String, String> duplicateHostnames,
       @Nullable SpanContext spanContext) {
     super(settings);
@@ -113,7 +116,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     _filename = filename;
     _ptSentences = new ParseTreeSentences();
     _warnings = warnings;
-    _format = configurationFormat;
+    _expectedFormat = expectedFormat;
     _duplicateHostnames = duplicateHostnames;
     _spanContext = spanContext;
   }
@@ -342,7 +345,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
    */
   @Nonnull
   public ParseResult parse() {
-    ConfigurationFormat format = detectFormat(_fileText, _settings, _format);
+    ConfigurationFormat format = detectFormat(_fileText, _settings, _expectedFormat);
 
     // Handle specially some cases that will not produce a vendor configuration file.
     if (format == ConfigurationFormat.EMPTY) {
