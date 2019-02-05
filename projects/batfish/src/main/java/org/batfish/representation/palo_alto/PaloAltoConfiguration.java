@@ -629,6 +629,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
     return null;
   }
+
   /**
    * Update referrers and/or warn for undefined structures based on references to an abstract
    * structure type existing in either the reference's namespace or shared namespace
