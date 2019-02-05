@@ -3260,6 +3260,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .addReference(References.FOLLOWS_FROM, span)
             .startActive()) {
       assert parseNetworkConfigsSpan != null; // avoid unused warning
+
+      // Short-circuit all cache-related code.
+      if (!_settings.getParseReuse()) {
+        long startTime = System.currentTimeMillis();
+        ParseResult result = job.parse();
+        long elapsed = System.currentTimeMillis() - startTime;
+        return job.fromResult(result, elapsed);
+      }
+
       String id =
           Hashing.murmur3_128()
               .newHasher()
