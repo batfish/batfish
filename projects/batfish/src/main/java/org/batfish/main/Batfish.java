@@ -3277,9 +3277,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       long startTime = System.currentTimeMillis();
       boolean cached = false;
       ParseResult result;
-      try (InputStream in = _storage.loadNetworkObject(getContainerName(), id)) {
+      try (InputStream in = _storage.loadNetworkBlob(getContainerName(), id)) {
         result = SerializationUtils.deserialize(in);
-        cached = true;
+        // sanity-check filenames. In the extremely unlikely event of a collision, we'll lose reuse
+        // for this input.
+        cached = result.getFilename().equals(filename);
       } catch (FileNotFoundException e) {
         result = job.parse();
       } catch (IOException e) {
@@ -3291,7 +3293,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (!cached) {
         try {
           byte[] serialized = SerializationUtils.serialize(result);
-          _storage.storeNetworkObject(new ByteArrayInputStream(serialized), getContainerName(), id);
+          _storage.storeNetworkBlob(new ByteArrayInputStream(serialized), getContainerName(), id);
         } catch (IOException e) {
           _logger.warnf(
               "Error caching parse result for %s: %s",
