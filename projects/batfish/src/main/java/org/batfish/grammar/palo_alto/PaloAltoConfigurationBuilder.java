@@ -13,6 +13,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFA
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.RULE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ADDRESS_GROUP_STATIC;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.RULEBASE_SERVICE;
@@ -127,6 +128,7 @@ import org.batfish.representation.palo_alto.PaloAltoStructureType;
 import org.batfish.representation.palo_alto.Rule;
 import org.batfish.representation.palo_alto.RuleEndpoint;
 import org.batfish.representation.palo_alto.Service;
+import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.ServiceGroup;
 import org.batfish.representation.palo_alto.ServiceOrServiceGroupReference;
 import org.batfish.representation.palo_alto.StaticRoute;
@@ -859,9 +861,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       String serviceName = var.getText();
       _currentRule.getService().add(new ServiceOrServiceGroupReference(serviceName));
 
-      if (!serviceName.equals(CATCHALL_SERVICE_NAME)) {
-        // Use constructed object name so same-named refs across vsys are unique
-        String uniqueName = computeObjectName(_currentVsys.getName(), serviceName);
+      // Use constructed object name so same-named refs across vsys are unique
+      String uniqueName = computeObjectName(_currentVsys.getName(), serviceName);
+      if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())
+          || serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())) {
+        _configuration.referenceStructure(
+            SERVICE_OR_SERVICE_GROUP_OR_NONE, uniqueName, RULEBASE_SERVICE, getLine(var.start));
+      } else if (!serviceName.equals(CATCHALL_SERVICE_NAME)) {
         _configuration.referenceStructure(
             SERVICE_OR_SERVICE_GROUP, uniqueName, RULEBASE_SERVICE, getLine(var.start));
       }
