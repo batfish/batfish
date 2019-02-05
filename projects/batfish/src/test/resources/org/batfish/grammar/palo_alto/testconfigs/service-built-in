@@ -1,0 +1,6 @@
+set deviceconfig system hostname service-built-in
+set service service-http protocol tcp port 1
+
+set service-group SG-BUILT-IN members [ service-https ]
+set service-group SG-OVERRIDE members [ service-http ]
+set service-group SG-COMBO members [ service-http any service-https ]
