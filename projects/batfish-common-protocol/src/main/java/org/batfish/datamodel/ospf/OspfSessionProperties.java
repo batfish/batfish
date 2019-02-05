@@ -5,7 +5,7 @@ import java.util.Objects;
 import org.batfish.datamodel.IpLink;
 
 /** Properties of an OSPF session that is compatible (based on two endpoint configurations). */
-public class OspfSessionProperties {
+public final class OspfSessionProperties {
 
   private IpLink _ipLink;
 

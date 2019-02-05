@@ -52,15 +52,19 @@ public final class OspfTopology {
       return ImmutableSet.of();
     }
     return _graph.predecessors(head).stream()
-        .map(tail -> edge(tail, head))
+        .map(tail -> makeEdge(tail, head))
         .collect(ImmutableSet.toImmutableSet());
   }
 
+  /** Return an empty topology (no nodes and no edges) */
   public static OspfTopology empty() {
     return new OspfTopology(ValueGraphBuilder.directed().build());
   }
 
-  public static EdgeId edge(OspfNeighborConfigId tail, OspfNeighborConfigId head) {
+  /**
+   * Return the {@link EdgeId} represending an adjacency between two {@link OspfNeighborConfigId}s
+   */
+  public static EdgeId makeEdge(OspfNeighborConfigId tail, OspfNeighborConfigId head) {
     return new EdgeId(tail, head);
   }
 
@@ -114,7 +118,7 @@ public final class OspfTopology {
     }
 
     public EdgeId reverse() {
-      return edge(_head, _tail);
+      return makeEdge(_head, _tail);
     }
 
     @Override

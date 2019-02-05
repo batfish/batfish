@@ -64,7 +64,7 @@ public class OspfTopologyTest {
     OspfTopology topo = new OspfTopology(graph);
 
     // One edge only
-    assertThat(topo.incomingEdges(n2), equalTo(ImmutableSet.of(OspfTopology.edge(n, n2))));
+    assertThat(topo.incomingEdges(n2), equalTo(ImmutableSet.of(OspfTopology.makeEdge(n, n2))));
     // Session can be retrieved from the edge
     assertThat(topo.getSession(topo.incomingEdges(n2).iterator().next()).get(), equalTo(session));
   }
@@ -74,9 +74,9 @@ public class OspfTopologyTest {
     OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "i1");
     OspfNeighborConfigId n2 = new OspfNeighborConfigId("h2", "vrf2", "i2");
     new EqualsTester()
-        .addEqualityGroup(OspfTopology.edge(n, n2), OspfTopology.edge(n, n2))
-        .addEqualityGroup(OspfTopology.edge(n, n))
-        .addEqualityGroup(OspfTopology.edge(n2, n))
+        .addEqualityGroup(OspfTopology.makeEdge(n, n2), OspfTopology.makeEdge(n, n2))
+        .addEqualityGroup(OspfTopology.makeEdge(n, n))
+        .addEqualityGroup(OspfTopology.makeEdge(n2, n))
         .addEqualityGroup(new Object())
         .testEquals();
   }
@@ -85,7 +85,7 @@ public class OspfTopologyTest {
   public void testEdgeIdReverse() {
     OspfNeighborConfigId n = new OspfNeighborConfigId("h1", "vrf1", "i1");
     OspfNeighborConfigId n2 = new OspfNeighborConfigId("h2", "vrf2", "i2");
-    EdgeId edgeId = OspfTopology.edge(n, n2);
-    assertThat(edgeId.reverse(), equalTo(OspfTopology.edge(n2, n)));
+    EdgeId edgeId = OspfTopology.makeEdge(n, n2);
+    assertThat(edgeId.reverse(), equalTo(OspfTopology.makeEdge(n2, n)));
   }
 }

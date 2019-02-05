@@ -10,7 +10,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ospf.OspfNeighborConfig.Builder;
 import org.junit.Test;
 
-/** Tests of {@link org.batfish.datamodel.ospf.OspfNeighborConfig} */
+/** Tests of {@link OspfNeighborConfig} */
 public class OspfNeighborConfigTest {
   @Test
   public void testEquals() {

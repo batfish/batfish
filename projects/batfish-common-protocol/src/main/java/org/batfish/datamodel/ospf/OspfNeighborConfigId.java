@@ -14,12 +14,12 @@ public final class OspfNeighborConfigId implements Serializable {
 
   private final String _hostname;
   private final String _vrfName;
-  private final String _intefaceName;
+  private final String _interfaceName;
 
-  public OspfNeighborConfigId(String hostname, String vrfName, String intefaceName) {
+  public OspfNeighborConfigId(String hostname, String vrfName, String interfaceName) {
     _hostname = hostname;
     _vrfName = vrfName;
-    _intefaceName = intefaceName;
+    _interfaceName = interfaceName;
   }
 
   public String getHostname() {
@@ -31,7 +31,7 @@ public final class OspfNeighborConfigId implements Serializable {
   }
 
   public String getInterfaceName() {
-    return _intefaceName;
+    return _interfaceName;
   }
 
   public NodeInterfacePair getNodeInterfacePair() {
@@ -49,12 +49,12 @@ public final class OspfNeighborConfigId implements Serializable {
     OspfNeighborConfigId other = (OspfNeighborConfigId) o;
     return Objects.equals(_hostname, other._hostname)
         && Objects.equals(_vrfName, other._vrfName)
-        && Objects.equals(_intefaceName, other._intefaceName);
+        && Objects.equals(_interfaceName, other._interfaceName);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_hostname, _vrfName, _intefaceName);
+    return Objects.hash(_hostname, _vrfName, _interfaceName);
   }
 
   @Override
@@ -62,7 +62,7 @@ public final class OspfNeighborConfigId implements Serializable {
     return MoreObjects.toStringHelper(this)
         .add("hostname", _hostname)
         .add("vrfName", _vrfName)
-        .add("intefaceName", _intefaceName)
+        .add("intefaceName", _interfaceName)
         .toString();
   }
 }

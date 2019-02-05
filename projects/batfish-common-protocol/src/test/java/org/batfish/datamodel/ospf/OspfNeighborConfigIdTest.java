@@ -7,7 +7,7 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 
-/** Tests of {@link org.batfish.datamodel.ospf.OspfNeighborConfigId} */
+/** Tests of {@link OspfNeighborConfigId} */
 public class OspfNeighborConfigIdTest {
   @Test
   public void testEquals() {
