@@ -1,6 +1,5 @@
 package org.batfish.common.util;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 
@@ -144,7 +143,7 @@ public final class ModelingUtils {
             .collect(ImmutableMap.toImmutableMap(Configuration::getHostname, Function.identity()));
 
     Configuration internet = createInternetNode();
-    connectIspsToInternet(internet, ispConfigurations, EXPORT_POLICY_ON_INTERNET);
+    connectIspsToInternet(internet, ispConfigurations);
 
     return ImmutableMap.<String, Configuration>builder()
         .putAll(ispConfigurations)
@@ -193,14 +192,11 @@ public final class ModelingUtils {
    * each other using the created Interface pairs.
    */
   private static void connectIspsToInternet(
-      Configuration internet,
-      Map<String, Configuration> ispConfigurations,
-      String exportPolicyOnInternet) {
+      Configuration internet, Map<String, Configuration> ispConfigurations) {
     NetworkFactory nf = new NetworkFactory();
     Ip internetInterfaceIp = FIRST_EVEN_INTERNET_IP;
-    Long ispAs = null;
     for (Configuration ispConfiguration : ispConfigurations.values()) {
-      ispAs = firstNonNull(ispAs, getAsnOfIspNode(ispConfiguration));
+      long ispAs = getAsnOfIspNode(ispConfiguration);
       Ip ispInterfaceIp = Ip.create(internetInterfaceIp.asLong() + 1);
       nf.interfaceBuilder()
           .setOwner(internet)
@@ -227,7 +223,7 @@ public final class ModelingUtils {
           .setLocalIp(internetInterfaceIp)
           .setLocalAs(INTERNET_AS)
           .setBgpProcess(internet.getDefaultVrf().getBgpProcess())
-          .setExportPolicy(exportPolicyOnInternet)
+          .setExportPolicy(EXPORT_POLICY_ON_INTERNET)
           .build();
 
       internetInterfaceIp = Ip.create(internetInterfaceIp.asLong() + 2);
@@ -261,7 +257,7 @@ public final class ModelingUtils {
             .flatMap(iface -> iface.getAllAddresses().stream())
             .collect(ImmutableMap.toImmutableMap(InterfaceAddress::getIp, Function.identity()));
 
-    Set<Ip> remoteIpsSet = ImmutableSet.<Ip>builder().addAll(remoteIps).build();
+    Set<Ip> remoteIpsSet = ImmutableSet.copyOf(remoteIps);
     Set<Long> remoteAsnsSet = ImmutableSet.<Long>builder().addAll(remoteAsns).build();
 
     List<BgpActivePeerConfig> validBgpActivePeerConfigs =
@@ -323,7 +319,11 @@ public final class ModelingUtils {
     // using an arbitrary first Ip of an interface as router ID
     BgpProcess bgpProcess =
         nf.bgpProcessBuilder()
-            .setRouterId(ispInfo.getInterfaceAddresses().get(0).getIp())
+            .setRouterId(
+                ispInfo.getInterfaceAddresses().stream()
+                    .map(InterfaceAddress::getIp)
+                    .min(Ip::compareTo)
+                    .orElse(null))
             .setVrf(ispConfiguration.getDefaultVrf())
             .build();
 
