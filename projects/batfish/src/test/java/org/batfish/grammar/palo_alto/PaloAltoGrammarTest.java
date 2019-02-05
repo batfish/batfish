@@ -27,6 +27,7 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_SERVICE_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.DEFAULT_VSYS_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.NULL_VRF_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_VSYS_NAME;
@@ -90,6 +91,7 @@ import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
 import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
+import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.Vsys;
 import org.junit.Rule;
 import org.junit.Test;
@@ -679,6 +681,28 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testRulebaseService() throws IOException {
+    String hostname = "rulebase-service";
+    Configuration c = parseConfig(hostname);
+
+    String if1name = "ethernet1/1";
+    String if4name = "ethernet1/4";
+    Flow z1ToZ2OverridePermitted = createFlow("1.1.1.1", "1.1.1.2", IpProtocol.TCP, 999, 1);
+    Flow z1ToZ2HttpRejected = createFlow("1.1.1.1", "1.1.1.2", IpProtocol.TCP, 999, 80);
+    Flow z1ToZ2HttpsPermitted = createFlow("1.1.1.1", "1.1.1.2", IpProtocol.TCP, 999, 443);
+
+    // Confirm flow matching overridden service is permitted
+    assertThat(
+        c, hasInterface(if1name, hasOutgoingFilter(accepts(z1ToZ2OverridePermitted, if4name, c))));
+    // Confirm flow matching built-in service that was overridden is rejected
+    assertThat(
+        c, hasInterface(if1name, hasOutgoingFilter(rejects(z1ToZ2HttpRejected, if4name, c))));
+    // Confirm flow matching built-in service, indirectly referenced is permitted
+    assertThat(
+        c, hasInterface(if1name, hasOutgoingFilter(accepts(z1ToZ2HttpsPermitted, if4name, c))));
+  }
+
+  @Test
   public void testRulebaseDefault() throws IOException {
     String hostname = "rulebase-default";
     Configuration c = parseConfig(hostname);
@@ -882,6 +906,80 @@ public class PaloAltoGrammarTest {
     // Confirm undefined reference shows up as such
     assertThat(
         ccae, hasUndefinedReference(filename, SERVICE_OR_SERVICE_GROUP, "SERVICE_UNDEFINED"));
+  }
+
+  @Test
+  public void testServiceBuiltin() throws IOException {
+    String hostname = "service-built-in";
+    Configuration c = parseConfig(hostname);
+
+    String serviceGroupBuiltInAclName =
+        computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SG-BUILT-IN");
+    String serviceGroupOverrideAclName =
+        computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SG-OVERRIDE");
+    String serviceGroupComboAclName =
+        computeServiceGroupMemberAclName(DEFAULT_VSYS_NAME, "SG-COMBO");
+
+    Flow flowHttps = createFlow(IpProtocol.TCP, 999, 443);
+    Flow flowOverride = createFlow(IpProtocol.TCP, 999, 1);
+    Flow flowHttp = createFlow(IpProtocol.TCP, 999, 80);
+
+    // Confirm service-group built-in accepts flows matching built-in HTTPS definition only
+    assertThat(c, hasIpAccessList(serviceGroupBuiltInAclName, accepts(flowHttps, null, c)));
+    assertThat(c, hasIpAccessList(serviceGroupBuiltInAclName, rejects(flowOverride, null, c)));
+    assertThat(c, hasIpAccessList(serviceGroupBuiltInAclName, rejects(flowHttp, null, c)));
+
+    // Confirm service-group override accepts flows matching overridden definition only
+    assertThat(c, hasIpAccessList(serviceGroupOverrideAclName, rejects(flowHttps, null, c)));
+    assertThat(c, hasIpAccessList(serviceGroupOverrideAclName, accepts(flowOverride, null, c)));
+    assertThat(c, hasIpAccessList(serviceGroupOverrideAclName, rejects(flowHttp, null, c)));
+
+    // Confirm service-group matching "any" service accepts all flows
+    assertThat(c, hasIpAccessList(serviceGroupComboAclName, accepts(flowHttps, null, c)));
+    assertThat(c, hasIpAccessList(serviceGroupComboAclName, accepts(flowOverride, null, c)));
+    assertThat(c, hasIpAccessList(serviceGroupComboAclName, accepts(flowHttp, null, c)));
+  }
+
+  @Test
+  public void testServiceBuiltinReference() throws IOException {
+    String hostname = "service-built-in";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    String serviceAnyName = computeObjectName(DEFAULT_VSYS_NAME, CATCHALL_SERVICE_NAME);
+    String serviceHttpName =
+        computeObjectName(DEFAULT_VSYS_NAME, ServiceBuiltIn.SERVICE_HTTP.getName());
+    String serviceHttpsName =
+        computeObjectName(DEFAULT_VSYS_NAME, ServiceBuiltIn.SERVICE_HTTPS.getName());
+    String serviceGroupBuiltinName = computeObjectName(DEFAULT_VSYS_NAME, "SG-BUILT-IN");
+    String serviceGroupOverrideName = computeObjectName(DEFAULT_VSYS_NAME, "SG-OVERRIDE");
+    String serviceGroupComboName = computeObjectName(DEFAULT_VSYS_NAME, "SG-COMBO");
+
+    // Confirm structure definitions are tracked
+    assertThat(ccae, hasDefinedStructure(filename, SERVICE, serviceHttpName));
+    assertThat(ccae, hasDefinedStructure(filename, SERVICE_GROUP, serviceGroupBuiltinName));
+    assertThat(ccae, hasDefinedStructure(filename, SERVICE_GROUP, serviceGroupComboName));
+    assertThat(ccae, hasDefinedStructure(filename, SERVICE_GROUP, serviceGroupOverrideName));
+
+    // Confirm built-ins that are not overridden are not considered defined structures
+    assertThat(ccae, not(hasDefinedStructure(filename, SERVICE, serviceAnyName)));
+    assertThat(ccae, not(hasDefinedStructure(filename, SERVICE, serviceHttpsName)));
+
+    // Confirm structure references are tracked
+    assertThat(ccae, hasNumReferrers(filename, SERVICE, serviceHttpName, 2));
+
+    // Confirm there are no undefined references for the built-ins
+    assertThat(
+        ccae,
+        not(hasUndefinedReference(filename, SERVICE_OR_SERVICE_GROUP, CATCHALL_SERVICE_NAME)));
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                filename, SERVICE_OR_SERVICE_GROUP, ServiceBuiltIn.SERVICE_HTTPS.getName())));
   }
 
   @Test
