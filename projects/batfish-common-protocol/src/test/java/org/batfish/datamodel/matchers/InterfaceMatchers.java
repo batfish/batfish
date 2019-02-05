@@ -19,6 +19,7 @@ import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAccessVlan;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAdditionalArpIps;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAddress;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllAddresses;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllowedVlans;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasBandwidth;
@@ -38,6 +39,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfCost;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfPointToPoint;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSpeed;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSwitchPortMode;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVlan;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVrf;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasZoneName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsActive;
@@ -61,6 +63,25 @@ public final class InterfaceMatchers {
    */
   public static HasAccessVlan hasAccessVlan(Matcher<? super Integer> subMatcher) {
     return new HasAccessVlan(subMatcher);
+  }
+
+  /** Provides a matcher that matches if the interface's address is {@code expectedAddress}. */
+  public static @Nonnull Matcher<Interface> hasAddress(@Nonnull String expectedAddress) {
+    return new HasAddress(equalTo(new InterfaceAddress(expectedAddress)));
+  }
+
+  /** Provides a matcher that matches if the interface's address is {@code expectedAddress}. */
+  public static @Nonnull Matcher<Interface> hasAddress(@Nonnull InterfaceAddress expectedAddress) {
+    return new HasAddress(equalTo(expectedAddress));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * address.
+   */
+  public static @Nonnull Matcher<Interface> hasAddress(
+      @Nonnull Matcher<? super InterfaceAddress> subMatcher) {
+    return new HasAddress(subMatcher);
   }
 
   /**
@@ -284,6 +305,19 @@ public final class InterfaceMatchers {
    */
   public static HasSwitchPortMode hasSwitchPortMode(Matcher<? super SwitchportMode> subMatcher) {
     return new HasSwitchPortMode(subMatcher);
+  }
+
+  /** Provides a matcher that matches if the interface's VLAN is {@code expectedVlan}. */
+  public static @Nonnull Matcher<Interface> hasVlan(int expectedVlan) {
+    return hasVlan(equalTo(expectedVlan));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * VLAN.
+   */
+  public static @Nonnull Matcher<Interface> hasVlan(@Nonnull Matcher<? super Integer> subMatcher) {
+    return new HasVlan(subMatcher);
   }
 
   /**

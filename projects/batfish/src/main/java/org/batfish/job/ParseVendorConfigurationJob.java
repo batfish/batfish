@@ -26,6 +26,8 @@ import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredCombinedParser;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredControlPlaneExtractor;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
 import org.batfish.grammar.flatjuniper.FlatJuniperControlPlaneExtractor;
 import org.batfish.grammar.flattener.Flattener;
@@ -191,6 +193,13 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           CiscoCombinedParser ciscoParser = new CiscoCombinedParser(newFileText, _settings, format);
           combinedParser = ciscoParser;
           extractor = new CiscoControlPlaneExtractor(newFileText, ciscoParser, format, _warnings);
+          break;
+
+        case F5_BIGIP_STRUCTURED:
+          F5BigipStructuredCombinedParser parser =
+              new F5BigipStructuredCombinedParser(_fileText, _settings);
+          combinedParser = parser;
+          extractor = new F5BigipStructuredControlPlaneExtractor(_fileText, parser, _warnings);
           break;
 
         case HOST:
