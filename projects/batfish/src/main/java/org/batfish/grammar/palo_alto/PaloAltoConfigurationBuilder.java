@@ -126,6 +126,7 @@ import org.batfish.representation.palo_alto.CryptoProfile.Type;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
+import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
 import org.batfish.representation.palo_alto.Rule;
 import org.batfish.representation.palo_alto.RuleEndpoint;
 import org.batfish.representation.palo_alto.Service;
@@ -235,6 +236,28 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   /** Return token text with enclosing quotes removed, if applicable */
   private String getText(ParserRuleContext ctx) {
     return unquote(ctx.getText());
+  }
+
+  /**
+   * Helper function to add the correct service reference type for a given reference. For references
+   * that may be pointing to built-in services, this is needed to make sure we don't create false
+   * positive undefined references.
+   */
+  private void referenceService(Variable_list_itemContext var, PaloAltoStructureUsage usage) {
+    String serviceName = getText(var);
+    // Use constructed object name so same-named refs across vsys are unique
+    String uniqueName = computeObjectName(_currentVsys.getName(), serviceName);
+
+    if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())
+        || serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())
+        || serviceName.equals(CATCHALL_SERVICE_NAME)) {
+      // Built-in services can be overridden, so add optional object reference
+      _configuration.referenceStructure(
+          SERVICE_OR_SERVICE_GROUP_OR_NONE, uniqueName, usage, getLine(var.start));
+    } else {
+      _configuration.referenceStructure(
+          SERVICE_OR_SERVICE_GROUP, uniqueName, usage, getLine(var.start));
+    }
   }
 
   private DiffieHellmanGroup toDiffieHellmanGroup(Cp_dh_groupContext ctx) {
@@ -843,17 +866,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
       String serviceName = var.getText();
       _currentRule.getService().add(new ServiceOrServiceGroupReference(serviceName));
-
-      // Use constructed object name so same-named refs across vsys are unique
-      String uniqueName = computeObjectName(_currentVsys.getName(), serviceName);
-      if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())
-          || serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())) {
-        _configuration.referenceStructure(
-            SERVICE_OR_SERVICE_GROUP_OR_NONE, uniqueName, RULEBASE_SERVICE, getLine(var.start));
-      } else if (!serviceName.equals(CATCHALL_SERVICE_NAME)) {
-        _configuration.referenceStructure(
-            SERVICE_OR_SERVICE_GROUP, uniqueName, RULEBASE_SERVICE, getLine(var.start));
-      }
+      referenceService(var, RULEBASE_SERVICE);
     }
   }
 
@@ -954,11 +967,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
       String name = getText(var);
       _currentServiceGroup.getReferences().add(new ServiceOrServiceGroupReference(name));
-
-      // Use constructed object name so same-named refs across vsys are unique
-      String uniqueName = computeObjectName(_currentVsys.getName(), name);
-      _configuration.referenceStructure(
-          SERVICE_OR_SERVICE_GROUP, uniqueName, SERVICE_GROUP_MEMBER, getLine(var.getStart()));
+      referenceService(var, SERVICE_GROUP_MEMBER);
     }
   }
 

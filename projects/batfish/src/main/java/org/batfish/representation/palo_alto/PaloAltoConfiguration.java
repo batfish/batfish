@@ -278,6 +278,15 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                 _c.getIpSpaceMetadata()
                     .put(name, new IpSpaceMetadata(name, ADDRESS_GROUP.getDescription()));
               });
+      // Convert PAN zones and create their corresponding outgoing ACLs
+      for (Entry<String, Zone> zoneEntry : vsys.getZones().entrySet()) {
+        Zone zone = zoneEntry.getValue();
+        String zoneName = computeObjectName(vsysName, zone.getName());
+        _c.getZones().put(zoneName, toZone(zoneName, zone));
+
+        String aclName = computeOutgoingFilterName(zoneName);
+        _c.getIpAccessLists().put(aclName, generateOutgoingFilter(aclName, zone, vsys));
+      }
 
       // Services
       for (Service service : vsys.getServices().values()) {
@@ -292,18 +301,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
             computeServiceGroupMemberAclName(vsysName, serviceGroup.getName());
         _c.getIpAccessLists()
             .put(serviceGroupAclName, serviceGroup.toIpAccessList(LineAction.PERMIT, this, vsys));
-      }
-
-      // Note: filter generation needs to occur after service conversion so built-in references can
-      // be resolved properly
-      // Convert PAN zones and create their corresponding outgoing ACLs
-      for (Entry<String, Zone> zoneEntry : vsys.getZones().entrySet()) {
-        Zone zone = zoneEntry.getValue();
-        String zoneName = computeObjectName(vsysName, zone.getName());
-        _c.getZones().put(zoneName, toZone(zoneName, zone));
-
-        String aclName = computeOutgoingFilterName(zoneName);
-        _c.getIpAccessLists().put(aclName, generateOutgoingFilter(aclName, zone, vsys));
       }
     }
     _c.setLoggingServers(loggingServers);
@@ -389,9 +386,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         String vsysName = service.getVsysName(this, vsys);
         if (vsysName != null) {
           serviceDisjuncts.add(
-              new PermittedByAcl(
-                  computeServiceGroupMemberAclName(
-                      service.getVsysName(this, rule.getVsys()), service.getName())));
+              new PermittedByAcl(computeServiceGroupMemberAclName(vsysName, serviceName)));
         } else if (serviceName.equals(CATCHALL_SERVICE_NAME)) {
           serviceDisjuncts.clear();
           serviceDisjuncts.add(TrueExpr.INSTANCE);
@@ -401,7 +396,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())) {
           serviceDisjuncts.add(new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTPS.getHeaderSpace()));
         } else {
-          _w.redFlag(String.format("No matching service group/object found for: "), serviceName);
+          _w.redFlag(String.format("No matching service group/object found for: %s", serviceName));
         }
       }
       conjuncts.add(new OrMatchExpr(serviceDisjuncts));
@@ -598,7 +593,15 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureUsage.RULE_FROM_ZONE,
         PaloAltoStructureUsage.RULE_TO_ZONE);
 
+
     // Handle marking for structures that may exist in one of a couple namespaces
+    // Handle service objects/groups that may overlap with built-in names
+    markAbstractStructureFromUnknownNamespace(
+        PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP_OR_NONE,
+        ImmutableList.of(PaloAltoStructureType.SERVICE, PaloAltoStructureType.SERVICE_GROUP),
+        true,
+        PaloAltoStructureUsage.SERVICE_GROUP_MEMBER,
+        PaloAltoStructureUsage.RULEBASE_SERVICE);
     markAbstractStructureFromUnknownNamespace(
         PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP,
         ImmutableList.of(PaloAltoStructureType.SERVICE, PaloAltoStructureType.SERVICE_GROUP),
