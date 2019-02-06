@@ -21,7 +21,6 @@ import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.question.initialization.InitIssuesAnswerer.IssueType;
 import org.junit.Test;
 
 /** Tests for {@link InitIssuesAnswerer}. */

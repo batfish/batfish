@@ -123,25 +123,6 @@ public class InitIssuesAnswerer extends Answerer {
         .build();
   }
 
-  public enum IssueType {
-    ConvertError("Convert error"),
-    ConvertWarningRedFlag("Convert warning (redflag)"),
-    ConvertWarningUnimplemented("Convert warning (unimplemented)"),
-    ParseError("Parse error"),
-    ParseWarning("Parse warning");
-
-    private final String _value;
-
-    IssueType(String value) {
-      _value = value;
-    }
-
-    @Override
-    public String toString() {
-      return _value;
-    }
-  }
-
   static final String COL_NODES = "Nodes";
   static final String COL_FILELINES = "Source_Lines";
   static final String COL_ISSUE_TYPE = "Issue_Type";
