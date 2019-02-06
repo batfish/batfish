@@ -249,7 +249,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
     Edge edge = edges.get(new PostInVrf(CONFIG_NAME, VRF_NAME)).get(new NodeAccept(CONFIG_NAME));
     BDD headerSpaceBdd = factory.getVrfAcceptBDDs().get(CONFIG_NAME).get(VRF_NAME);
     BDD validSrcBdd = srcMgr.isValidValue();
-    assertThat(edge.traverseForward(one), equalTo(headerSpaceBdd));
+    assertThat(edge.traverseForward(validSrcBdd), equalTo(headerSpaceBdd));
     assertThat(edge.traverseForward(originatingFromDeviceBdd), equalTo(headerSpaceBdd));
     assertThat(edge.traverseForward(matchSrcInterfaceBdd), equalTo(headerSpaceBdd));
     assertThat(edge.traverseBackward(one), equalTo(headerSpaceBdd.and(validSrcBdd)));
@@ -262,7 +262,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
             .get(new OriginateInterfaceLink(CONFIG_NAME, INGRESS_IFACE_NAME))
             .get(new PreInInterface(CONFIG_NAME, INGRESS_IFACE_NAME));
     assertThat(edge.traverseForward(one), equalTo(ingressIfaceSrcIpBdd.and(matchSrcInterfaceBdd)));
-    assertThat(edge.traverseBackward(one), equalTo(ingressIfaceSrcIpBdd));
+    assertThat(edge.traverseBackward(srcMgr.isValidValue()), equalTo(ingressIfaceSrcIpBdd));
     assertThat(edge.traverseBackward(originatingFromDeviceBdd), equalTo(zero));
     assertThat(edge.traverseBackward(matchSrcInterfaceBdd), equalTo(ingressIfaceSrcIpBdd));
   }
@@ -276,7 +276,8 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
     assertThat(
         edge.traverseForward(one),
         equalTo(originatingFromDeviceSrcIpBdd.and(originatingFromDeviceBdd)));
-    assertThat(edge.traverseBackward(one), equalTo(originatingFromDeviceSrcIpBdd));
+    assertThat(
+        edge.traverseBackward(srcMgr.isValidValue()), equalTo(originatingFromDeviceSrcIpBdd));
     assertThat(
         edge.traverseBackward(originatingFromDeviceBdd), equalTo(originatingFromDeviceSrcIpBdd));
     assertThat(edge.traverseBackward(matchSrcInterfaceBdd), equalTo(zero));
@@ -288,7 +289,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
         edges
             .get(new PreOutEdgePostNat(PEER_NAME, PEER_IFACE_NAME, CONFIG_NAME, INGRESS_IFACE_NAME))
             .get(new PreInInterface(CONFIG_NAME, INGRESS_IFACE_NAME));
-    assertThat(edge.traverseForward(one), equalTo(matchSrcInterfaceBdd));
+    assertThat(edge.traverseForward(peerSrcMgr.isValidValue()), equalTo(matchSrcInterfaceBdd));
     assertThat(edge.traverseBackward(matchSrcInterfaceBdd), equalTo(peerSrcMgr.isValidValue()));
     assertThat(edge.traverseBackward(originatingFromDeviceBdd), equalTo(zero));
   }
