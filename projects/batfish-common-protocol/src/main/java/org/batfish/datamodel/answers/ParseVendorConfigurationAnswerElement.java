@@ -58,7 +58,8 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
     return _errors;
   }
 
-  @Override public SortedMap<String, String> getErrorMessages() {
+  @Override
+  public SortedMap<String, String> getErrorMessages() {
     return _errorMessages;
   }
 
