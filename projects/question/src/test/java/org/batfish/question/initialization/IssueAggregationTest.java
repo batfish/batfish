@@ -1,15 +1,17 @@
 package org.batfish.question.initialization;
 
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateParseWarnings;
-import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateRedflagWarnings;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateStrings;
-import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateUnimplementedWarnings;
+import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateWarnings;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Multimap;
 import java.util.Map;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
@@ -56,18 +58,18 @@ public class IssueAggregationTest {
     Map<String, Warnings> fileWarnings = ImmutableMap.of("f1", f1Warnings, "f2", f2Warnings);
 
     // Confirm that only the duplicate parse warnings are aggregated
-    assertThat(
-        aggregateDuplicateParseWarnings(fileWarnings),
-        equalTo(
-            ImmutableMap.of(
-                new ParseWarningTriplet("dup", "[configuration]", null),
-                ImmutableMap.of("f1", ImmutableSortedSet.of(3, 4), "f2", ImmutableSortedSet.of(23)),
-                new ParseWarningTriplet("unique", "[configuration]", null),
-                ImmutableMap.of("f1", ImmutableSortedSet.of(5)))));
+    Map<ParseWarningTriplet, Multimap<String, Integer>> aggregatedWarnings =
+        aggregateDuplicateParseWarnings(fileWarnings);
+    ParseWarningTriplet expectedKey1 = new ParseWarningTriplet("dup", "[configuration]", null);
+    ParseWarningTriplet expectedKey2 = new ParseWarningTriplet("unique", "[configuration]", null);
+
+    assertThat(aggregatedWarnings.keySet(), contains(expectedKey1, expectedKey2));
+    assertThat(aggregatedWarnings.get(expectedKey1).values(), containsInAnyOrder(3, 4, 23));
+    assertThat(aggregatedWarnings.get(expectedKey2).values(), contains(5));
   }
 
   @Test
-  public void testAggregateDuplicateRedflagWarnings() {
+  public void testAggregateDuplicateWarnings() {
     Warnings f1Warnings = new Warnings();
     f1Warnings
         .getRedFlagWarnings()
@@ -81,33 +83,7 @@ public class IssueAggregationTest {
 
     // Confirm that only the duplicate redflags are aggregated
     assertThat(
-        aggregateDuplicateRedflagWarnings(fileWarnings),
-        equalTo(
-            ImmutableMap.of(
-                new Warning("dup warning", null),
-                ImmutableSortedSet.of("f1", "f2"),
-                new Warning("unique warning", null),
-                ImmutableSortedSet.of("f1"))));
-  }
-
-  @Test
-  public void testAggregateDuplicateUnimplementedWarnings() {
-    Warnings f1Warnings = new Warnings();
-    f1Warnings
-        .getUnimplementedWarnings()
-        .addAll(
-            ImmutableList.of(
-                new Warning("dup warning", null), new Warning("unique warning", null)));
-    Warnings f2Warnings = new Warnings();
-    f2Warnings
-        .getUnimplementedWarnings()
-        .addAll(ImmutableList.of(new Warning("dup warning", null)));
-
-    Map<String, Warnings> fileWarnings = ImmutableMap.of("f1", f1Warnings, "f2", f2Warnings);
-
-    // Confirm that only the duplicate unimplemented warnings are aggregated
-    assertThat(
-        aggregateDuplicateUnimplementedWarnings(fileWarnings),
+        aggregateDuplicateWarnings(fileWarnings, Warnings::getRedFlagWarnings),
         equalTo(
             ImmutableMap.of(
                 new Warning("dup warning", null),

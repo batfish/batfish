@@ -2,20 +2,16 @@ package org.batfish.question.initialization;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateParseWarnings;
-import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateRedflagWarnings;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateStrings;
-import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateUnimplementedWarnings;
+import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateWarnings;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
-import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -40,11 +36,11 @@ public class InitIssuesAnswerer extends Answerer {
     Rows rows = new Rows();
 
     Map<String, Warnings> convertWarnings = ccae.getWarnings();
-    aggregateDuplicateRedflagWarnings(convertWarnings)
+    aggregateDuplicateWarnings(convertWarnings, Warnings::getRedFlagWarnings)
         .forEach(
             (warning, nodes) ->
                 rows.add(getRow(nodes, null, IssueType.ConvertWarningRedFlag, warning.getText())));
-    aggregateDuplicateUnimplementedWarnings(convertWarnings)
+    aggregateDuplicateWarnings(convertWarnings, Warnings::getUnimplementedWarnings)
         .forEach(
             (warning, nodes) ->
                 rows.add(
@@ -79,15 +75,11 @@ public class InitIssuesAnswerer extends Answerer {
     // Aggregate stack traces after trimming to:
     // 1) remove the redundant info like "Conversion error for node 'xyz'"
     // 2) allow useful aggregation across similar issues (e.g. on node 'xyz' and 'abc')
-    aggregateDuplicateStrings(
-            ccae.getErrors().entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> trimStackTrace(e.getValue()))))
+    aggregateDuplicateStrings(ccae.getErrorMessages())
         .forEach(
             (stackTrace, nodeNames) ->
                 rows.add(getRow(nodeNames, null, IssueType.ConvertError, stackTrace)));
-    aggregateDuplicateStrings(
-            pvcae.getErrors().entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> trimStackTrace(e.getValue()))))
+    aggregateDuplicateStrings(pvcae.getErrorMessages())
         .forEach(
             (stackTrace, fileNames) ->
                 rows.add(
@@ -106,23 +98,6 @@ public class InitIssuesAnswerer extends Answerer {
 
   InitIssuesAnswerer(InitIssuesQuestion question, IBatfish batfish) {
     super(question, batfish);
-  }
-
-  /** Remove everything from stack trace before line containing "Caused by" */
-  @VisibleForTesting
-  static String trimStackTrace(BatfishStackTrace stackTrace) {
-    List<String> lines = stackTrace.getLineMap();
-    StringBuilder sb = new StringBuilder();
-    for (String line : lines) {
-      if (line.contains("Caused by") || sb.length() > 0) {
-        sb.append(line);
-        sb.append("\n");
-      }
-    }
-    // Return all lines if there is no "Caused by"
-    return sb.length() > 0
-        ? sb.deleteCharAt(sb.length() - 1).toString()
-        : String.join("\n", stackTrace.getLineMap());
   }
 
   private static Row getRow(
@@ -197,7 +172,5 @@ public class InitIssuesAnswerer extends Answerer {
               false,
               true));
 
-  private static final String TEXT_DESC = "Snapshot initialization issues";
-
-  private static final TableMetadata TABLE_METADATA = new TableMetadata(METADATA, TEXT_DESC);
+  private static final TableMetadata TABLE_METADATA = new TableMetadata(METADATA);
 }

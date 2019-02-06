@@ -5,17 +5,13 @@ import static org.batfish.question.initialization.InitIssuesAnswerer.COL_ISSUE;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_ISSUE_TYPE;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_NODES;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_PARSER_CONTEXT;
-import static org.batfish.question.initialization.InitIssuesAnswerer.trimStackTrace;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.plugin.IBatfishTestAdapter;
@@ -30,29 +26,7 @@ import org.junit.Test;
 
 /** Tests for {@link InitIssuesAnswerer}. */
 public class InitIssuesAnswererTest {
-  private static String EXCEPTION_CAUSED_BY = "Caused by:";
-  private static String EXCEPTION_ENCLOSING = "Enclosing exception";
-  private static String EXCEPTION_INNER = "Inner exception";
-
-  @Test
-  public void testTrimStackTrace() {
-    BatfishStackTrace stackTraceFull =
-        new BatfishStackTrace(
-            ImmutableList.of(EXCEPTION_ENCLOSING, EXCEPTION_CAUSED_BY, EXCEPTION_INNER));
-    BatfishStackTrace stackTraceMissingCausedBy =
-        new BatfishStackTrace(ImmutableList.of(EXCEPTION_ENCLOSING, EXCEPTION_INNER));
-
-    // Make sure only the enclosing line (before caused by) is stripped off the resulting text
-    String trimmedFull = trimStackTrace(stackTraceFull);
-    assertThat(trimmedFull, containsString(EXCEPTION_CAUSED_BY));
-    assertThat(trimmedFull, containsString(EXCEPTION_INNER));
-    assertThat(trimmedFull, not(containsString(EXCEPTION_ENCLOSING)));
-
-    // For the trace missing a caused by line, make sure nothing is removed
-    String trimmedNoCausedBy = trimStackTrace(stackTraceMissingCausedBy);
-    assertThat(trimmedNoCausedBy, containsString(EXCEPTION_ENCLOSING));
-    assertThat(trimmedNoCausedBy, containsString(EXCEPTION_INNER));
-  }
+  private static String EXCEPTION_MESSAGE = "Exception message";
 
   @Test
   public void testAnswererNoIssues() {
@@ -66,14 +40,11 @@ public class InitIssuesAnswererTest {
 
   @Test
   public void testAnswererConvertError() {
-    BatfishStackTrace stackTrace =
-        new BatfishStackTrace(
-            ImmutableList.of(EXCEPTION_ENCLOSING, EXCEPTION_CAUSED_BY, EXCEPTION_INNER));
     String node = "nodeError";
 
     ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
     ccae.setWarnings(ImmutableSortedMap.of(node, new Warnings()));
-    ccae.getErrors().putIfAbsent(node, stackTrace);
+    ccae.getErrorMessages().putIfAbsent(node, EXCEPTION_MESSAGE);
     // Answerer using TestBatfish that should produce a single convert error
     InitIssuesAnswerer answerer =
         new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(null, ccae));
@@ -93,7 +64,7 @@ public class InitIssuesAnswererTest {
                         COL_ISSUE_TYPE,
                         IssueType.ConvertError.toString(),
                         COL_ISSUE,
-                        trimStackTrace(stackTrace),
+                        EXCEPTION_MESSAGE,
                         COL_PARSER_CONTEXT,
                         null))));
   }
@@ -148,14 +119,11 @@ public class InitIssuesAnswererTest {
 
   @Test
   public void testAnswererParseError() {
-    BatfishStackTrace stackTrace =
-        new BatfishStackTrace(
-            ImmutableList.of(EXCEPTION_ENCLOSING, EXCEPTION_CAUSED_BY, EXCEPTION_INNER));
     String file = "configs/nodeError.cfg";
 
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     pvcae.setWarnings(ImmutableSortedMap.of(file, new Warnings()));
-    pvcae.getErrors().putIfAbsent(file, stackTrace);
+    pvcae.getErrorMessages().put(file, EXCEPTION_MESSAGE);
     // Answerer using TestBatfish that should produce a single parse error
     InitIssuesAnswerer answerer =
         new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(pvcae, null));
@@ -175,7 +143,7 @@ public class InitIssuesAnswererTest {
                         COL_ISSUE_TYPE,
                         IssueType.ParseError.toString(),
                         COL_ISSUE,
-                        trimStackTrace(stackTrace),
+                        EXCEPTION_MESSAGE,
                         COL_PARSER_CONTEXT,
                         null))));
   }

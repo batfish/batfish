@@ -15,6 +15,8 @@ public class ParseEnvironmentBgpTablesAnswerElement extends ParseAnswerElement
 
   private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
 
+  private SortedMap<String, String> _errorMessages;
+
   private SortedMap<String, ParseStatus> _parseStatus;
 
   private SortedMap<String, ParseTreeSentences> _parseTrees;
@@ -25,6 +27,7 @@ public class ParseEnvironmentBgpTablesAnswerElement extends ParseAnswerElement
 
   public ParseEnvironmentBgpTablesAnswerElement() {
     _errors = new TreeMap<>();
+    _errorMessages = new TreeMap<>();
     _parseStatus = new TreeMap<>();
     _parseTrees = new TreeMap<>();
     _warnings = new TreeMap<>();
@@ -33,6 +36,11 @@ public class ParseEnvironmentBgpTablesAnswerElement extends ParseAnswerElement
   @Override
   public SortedMap<String, BatfishException.BatfishStackTrace> getErrors() {
     return _errors;
+  }
+
+  @Override
+  public SortedMap<String, String> getErrorMessages() {
+    return _errorMessages;
   }
 
   @Override

@@ -4,10 +4,12 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -82,37 +84,19 @@ final class IssueAggregation {
   }
 
   /**
-   * Aggregate same redflag warnings across multiple nodes.
+   * Aggregate same warnings across multiple nodes. The specified warningFunc determines what {@link
+   * List} of {@link Warning} within the supplied {@link Warnings} are evaluated.
    *
-   * <p>Produces a map of redflag {@link Warning} to nodes.
+   * <p>Produces a map of {@link Warning} to nodes.
    */
   @Nonnull
   @VisibleForTesting
-  static Map<Warning, SortedSet<String>> aggregateDuplicateRedflagWarnings(
-      Map<String, Warnings> nodeToWarnings) {
+  static Map<Warning, SortedSet<String>> aggregateDuplicateWarnings(
+      Map<String, Warnings> nodeToWarnings, Function<Warnings, List<Warning>> warningFunc) {
     Map<Warning, SortedSet<String>> map = new HashMap<>();
     nodeToWarnings.forEach(
         (node, warnings) -> {
-          for (Warning warning : warnings.getRedFlagWarnings()) {
-            map.computeIfAbsent(warning, w -> new TreeSet<>()).add(node);
-          }
-        });
-    return map;
-  }
-
-  /**
-   * Aggregate same unimplemented warnings across multiple nodes.
-   *
-   * <p>Produces a map of unimplemented {@link Warning} to nodes.
-   */
-  @Nonnull
-  @VisibleForTesting
-  static Map<Warning, SortedSet<String>> aggregateDuplicateUnimplementedWarnings(
-      Map<String, Warnings> nodeToWarnings) {
-    Map<Warning, SortedSet<String>> map = new HashMap<>();
-    nodeToWarnings.forEach(
-        (node, warnings) -> {
-          for (Warning warning : warnings.getUnimplementedWarnings()) {
+          for (Warning warning : warningFunc.apply(warnings)) {
             map.computeIfAbsent(warning, w -> new TreeSet<>()).add(node);
           }
         });

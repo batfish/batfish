@@ -22,6 +22,8 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
 
   private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
 
+  private SortedMap<String, String> _errorMessages;
+
   /* Map of hostname to source filenames (e.g. "configs/foo.cfg") */
   private Multimap<String, String> _fileMap;
 
@@ -40,6 +42,7 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
     _parseTrees = new TreeMap<>();
     _warnings = new TreeMap<>();
     _errors = new TreeMap<>();
+    _errorMessages = new TreeMap<>();
   }
 
   public void addRedFlagWarning(String name, Warning warning) {
@@ -53,6 +56,10 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
   @Override
   public SortedMap<String, BatfishException.BatfishStackTrace> getErrors() {
     return _errors;
+  }
+
+  @Override public SortedMap<String, String> getErrorMessages() {
+    return _errorMessages;
   }
 
   @JsonProperty(PROP_FILE_MAP)
