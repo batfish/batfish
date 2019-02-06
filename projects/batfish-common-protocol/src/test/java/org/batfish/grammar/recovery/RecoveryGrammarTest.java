@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.MockGrammarSettings;
 import org.batfish.grammar.recovery.RecoveryParser.RecoveryContext;
@@ -21,7 +22,7 @@ public class RecoveryGrammarTest {
     RecoveryCombinedParser cp = new RecoveryCombinedParser(recoveryText, settings);
     RecoveryContext ctx = cp.parse();
     RecoveryExtractor extractor = new RecoveryExtractor();
-    ParseTreeWalker walker = new ParseTreeWalker();
+    ParseTreeWalker walker = new BatfishParseTreeWalker();
     walker.walk(extractor, ctx);
 
     assertThat(extractor.getFirstErrorLine(), equalTo(2));
@@ -53,7 +54,7 @@ public class RecoveryGrammarTest {
     RecoveryCombinedParser cp = new RecoveryCombinedParser(recoveryText, settings);
     RecoveryContext ctx = cp.parse();
     RecoveryExtractor extractor = new RecoveryExtractor();
-    ParseTreeWalker walker = new ParseTreeWalker();
+    ParseTreeWalker walker = new BatfishParseTreeWalker();
     walker.walk(extractor, ctx);
 
     assertThat(extractor.getFirstErrorLine(), equalTo(4));

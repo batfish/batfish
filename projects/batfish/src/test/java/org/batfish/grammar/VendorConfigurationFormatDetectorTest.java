@@ -1,10 +1,21 @@
 package org.batfish.grammar;
 
+import static org.batfish.datamodel.ConfigurationFormat.CADANT;
+import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
+import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS_XR;
+import static org.batfish.datamodel.ConfigurationFormat.CISCO_NX;
+import static org.batfish.datamodel.ConfigurationFormat.F5_BIGIP_STRUCTURED;
+import static org.batfish.datamodel.ConfigurationFormat.FLAT_JUNIPER;
+import static org.batfish.datamodel.ConfigurationFormat.JUNIPER;
+import static org.batfish.datamodel.ConfigurationFormat.JUNIPER_SWITCH;
+import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO;
+import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO_NESTED;
+import static org.batfish.datamodel.ConfigurationFormat.UNKNOWN;
+import static org.batfish.grammar.VendorConfigurationFormatDetector.identifyConfigurationFormat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -17,9 +28,16 @@ public class VendorConfigurationFormatDetectorTest {
         "# ChassisType=<E6000> shelfName=<Arris CER CMTS> shelfSwVersion=<CER_V03.05.02.0008> \n"
             + "configure\n"
             + "shelfname \"Arris CER CMTS\"\n";
-    assertThat(
-        VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
-        equalTo(ConfigurationFormat.CADANT));
+    assertThat(identifyConfigurationFormat(fileText), equalTo(CADANT));
+  }
+
+  @Test
+  public void testF5BigipStructured() {
+    String withRancid = "#RANCID-CONTENT-TYPE: bigip\n";
+    String withoutRancid = "#TMSH-VERSION: 1.0\nsys global-settings { }\n";
+
+    assertThat(identifyConfigurationFormat(withRancid), equalTo(F5_BIGIP_STRUCTURED));
+    assertThat(identifyConfigurationFormat(withoutRancid), equalTo(F5_BIGIP_STRUCTURED));
   }
 
   @Test
@@ -30,9 +48,7 @@ public class VendorConfigurationFormatDetectorTest {
         "boot system flash bootflash:cat4500e-universalk9.SPA.03.05.03.E.152-1.E3.bin \n";
 
     for (String fileText : ImmutableList.of(asr1000, catalyst)) {
-      assertThat(
-          VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
-          equalTo(ConfigurationFormat.CISCO_IOS));
+      assertThat(identifyConfigurationFormat(fileText), equalTo(CISCO_IOS));
     }
   }
 
@@ -42,9 +58,7 @@ public class VendorConfigurationFormatDetectorTest {
     String xrRancid = "!RANCID-CONTENT-TYPE: cisco\n" + xr;
 
     for (String fileText : ImmutableList.of(xr, xrRancid)) {
-      assertThat(
-          VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
-          equalTo(ConfigurationFormat.CISCO_IOS_XR));
+      assertThat(identifyConfigurationFormat(fileText), equalTo(CISCO_IOS_XR));
     }
   }
 
@@ -64,22 +78,16 @@ public class VendorConfigurationFormatDetectorTest {
 
     /* Confirm hierarchical configs are correctly identified */
     for (String fileText : ImmutableList.of(firewall, policyOptions, rancid, snmp)) {
-      assertThat(
-          VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
-          equalTo(ConfigurationFormat.JUNIPER));
+      assertThat(identifyConfigurationFormat(fileText), equalTo(JUNIPER));
     }
 
     /* Confirm flat (set-style) configs are correctly identified */
     for (String fileText : ImmutableList.of(flatHostname, flatRancid, flatSet, flattened)) {
-      assertThat(
-          VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
-          equalTo(ConfigurationFormat.FLAT_JUNIPER));
+      assertThat(identifyConfigurationFormat(fileText), equalTo(FLAT_JUNIPER));
     }
 
     /* Confirm Juniper switch format is detected */
-    assertThat(
-        VendorConfigurationFormatDetector.identifyConfigurationFormat(flatSwitch),
-        equalTo(ConfigurationFormat.JUNIPER_SWITCH));
+    assertThat(identifyConfigurationFormat(flatSwitch), equalTo(JUNIPER_SWITCH));
   }
 
   @Test
@@ -88,9 +96,7 @@ public class VendorConfigurationFormatDetectorTest {
     String nxos = "boot nxos bootflash:nxos.7.0.3.I4.7.bin \n";
 
     for (String fileText : ImmutableList.of(n7000, nxos)) {
-      assertThat(
-          VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
-          equalTo(ConfigurationFormat.CISCO_NX));
+      assertThat(identifyConfigurationFormat(fileText), equalTo(CISCO_NX));
     }
   }
 
@@ -109,17 +115,13 @@ public class VendorConfigurationFormatDetectorTest {
 
     /* Confirm hierarchical PAN configs are correctly identified */
     for (String fileText : ImmutableList.of(rancid, panorama, sendPanorama, deviceConfig)) {
-      assertThat(
-          VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
-          equalTo(ConfigurationFormat.PALO_ALTO_NESTED));
+      assertThat(identifyConfigurationFormat(fileText), equalTo(PALO_ALTO_NESTED));
     }
 
     /* Confirm flat (set-style) PAN configs are correctly identified */
     for (String fileText :
         ImmutableList.of(flatRancid, flatPanorama, flatSendPanorama, flatDeviceConfig, flattened)) {
-      assertThat(
-          VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
-          equalTo(ConfigurationFormat.PALO_ALTO));
+      assertThat(identifyConfigurationFormat(fileText), equalTo(PALO_ALTO));
     }
   }
 
@@ -128,8 +130,6 @@ public class VendorConfigurationFormatDetectorTest {
     String unknownConfig = "unknown config line\n";
 
     /* Make sure bogus config is not misidentified */
-    assertThat(
-        VendorConfigurationFormatDetector.identifyConfigurationFormat(unknownConfig),
-        equalTo(ConfigurationFormat.UNKNOWN));
+    assertThat(identifyConfigurationFormat(unknownConfig), equalTo(UNKNOWN));
   }
 }

@@ -1,0 +1,5 @@
+set deviceconfig system hostname service-built-in
+
+set service-group SG-HTTPS members [ service-https ]
+set service-group SG-HTTP members [ service-http ]
+set service-group SG-ANY members [ service-http service-https any ]

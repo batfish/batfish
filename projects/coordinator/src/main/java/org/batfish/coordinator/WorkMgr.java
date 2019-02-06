@@ -418,6 +418,7 @@ public class WorkMgr extends AbstractCoordinator {
     return _storage.loadCompletionMetadata(networkId, snapshotId);
   }
 
+  @Nullable
   public List<AutocompleteSuggestion> autoComplete(
       String network,
       String snapshot,

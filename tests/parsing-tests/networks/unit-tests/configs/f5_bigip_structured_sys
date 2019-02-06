@@ -1,0 +1,112 @@
+#TMSH-VERSION: 13.1.1
+
+sys dns {
+    name-servers { 1.2.3.4 5.6.7.8 }
+    search { example.local localhost }
+}
+sys feature-module cgnat {
+    disabled
+}
+sys folder / {
+    device-group none
+    hidden false
+    inherited-devicegroup false
+    inherited-traffic-group false
+    traffic-group /Common/traffic-group-1
+}
+sys folder /Common {
+    device-group none
+    hidden false
+    inherited-devicegroup true
+    inherited-traffic-group true
+    traffic-group /Common/traffic-group-1
+}
+sys folder /Common/Drafts {
+    device-group none
+    hidden false
+    inherited-devicegroup true
+    inherited-traffic-group true
+    traffic-group /Common/traffic-group-1
+}
+sys global-settings {
+    gui-security-banner-text "hello
+world"
+    gui-setup disabled
+    hostname f5_bigip_structured_sys
+}
+sys httpd {
+    allow { All 192.0.2.0/255.255.255.0 }
+}
+sys management-dhcp /Common/sys-mgmt-dhcp-config {
+    request-options { subnet-mask broadcast-address routers domain-name domain-name-servers host-name ntp-servers interface-mtu }
+}
+sys management-ip 192.0.2.1/24 { }
+sys management-route /Common/default {
+    gateway 192.0.2.2
+    network default
+}
+sys ntp {
+    servers { 192.0.2.3 my.example.com }
+    timezone America/Seattle
+}
+sys provision ltm {
+    level dedicated
+}
+sys snmp {
+    agent-addresses { tcp6:123 udp6:456 }
+    allowed-addresses { 192.0.2.5 192.0.2.6 }
+    communities {
+        /Common/helloworld {
+            community-name goodbyeworld
+        }
+    }
+    disk-monitors {
+        /Common/root {
+            minspace 1234
+            path /
+        }
+        /Common/var {
+            minspace 1234
+            path /var
+        }
+    }
+    process-monitors {
+        /Common/bigd {
+            process bigd
+        }
+        /Common/chmand {
+            process chmand
+        }
+        /Common/httpd {
+            max-processes infinity
+            process httpd
+        }
+        /Common/mcpd {
+            process mcpd
+        }
+        /Common/sod {
+            process sod
+        }
+        /Common/tmm {
+            max-processes infinity
+            process tmm
+        }
+    }
+    sys-contact admin@example.com
+    sys-location "123 Fake St, Fakeville, OR 12345"
+}
+sys dynad key {
+    key myfavoritekey
+}
+sys dynad settings {
+    development-mode false
+}
+sys fpga firmware-config {
+    type standard-balanced-fpga
+}
+sys sflow global-settings http { }
+sys sflow global-settings vlan { }
+sys turboflex profile-config {
+    type turboflex-adc
+}
+

@@ -252,6 +252,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.grammar.flattener.Flattener;
@@ -3772,7 +3773,7 @@ public final class FlatJuniperGrammarTest {
     FlatJuniperCombinedParser cp = new FlatJuniperCombinedParser(recoveryText, settings);
     Flat_juniper_configurationContext ctx = cp.parse();
     FlatJuniperRecoveryExtractor extractor = new FlatJuniperRecoveryExtractor();
-    ParseTreeWalker walker = new ParseTreeWalker();
+    ParseTreeWalker walker = new BatfishParseTreeWalker();
     walker.walk(extractor, ctx);
 
     assertThat(extractor.getNumSets(), equalTo(9));
