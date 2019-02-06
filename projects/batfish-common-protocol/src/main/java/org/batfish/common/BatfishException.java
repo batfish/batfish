@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.base.Objects;
 import com.google.common.base.Throwables;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import org.batfish.datamodel.answers.AnswerElement;
 
 /**
@@ -70,7 +70,7 @@ public class BatfishException extends RuntimeException {
         return false;
       }
       BatfishStackTrace rhs = (BatfishStackTrace) obj;
-      return Objects.equal(_lines, rhs._lines);
+      return Objects.equals(_lines, rhs._lines);
     }
   }
 
