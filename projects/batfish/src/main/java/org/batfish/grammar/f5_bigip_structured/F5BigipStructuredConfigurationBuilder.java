@@ -58,7 +58,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   private @Nullable F5BigipConfiguration _c;
   private @Nullable Interface _currentInterface;
   private @Nullable Self _currentSelf;
-  private @Nullable UnrecognizedContext _currentU;
+  private @Nullable UnrecognizedContext _currentUnrecognized;
   private @Nullable Vlan _currentVlan;
   private final F5BigipStructuredCombinedParser _parser;
   private final String _text;
@@ -124,8 +124,8 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void enterUnrecognized(UnrecognizedContext ctx) {
-    if (_currentU == null) {
-      _currentU = ctx;
+    if (_currentUnrecognized == null) {
+      _currentUnrecognized = ctx;
     }
   }
 
@@ -182,11 +182,11 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitUnrecognized(UnrecognizedContext ctx) {
-    if (_currentU != ctx) {
+    if (_currentUnrecognized != ctx) {
       return;
     }
     unrecognized(ctx);
-    _currentU = null;
+    _currentUnrecognized = null;
   }
 
   public F5BigipConfiguration getConfiguration() {
