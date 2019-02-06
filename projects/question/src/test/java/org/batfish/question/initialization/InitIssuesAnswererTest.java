@@ -80,6 +80,7 @@ public class InitIssuesAnswererTest {
         return ccae;
       }
     }
+
     InitIssuesAnswerer answerer =
         new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishConvertError());
     TableAnswerElement answer = answerer.answer();
@@ -121,6 +122,7 @@ public class InitIssuesAnswererTest {
         return ccae;
       }
     }
+
     InitIssuesAnswerer answerer =
         new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishConvertWarn());
     TableAnswerElement answer = answerer.answer();
@@ -173,6 +175,7 @@ public class InitIssuesAnswererTest {
         return pvcae;
       }
     }
+
     InitIssuesAnswerer answerer =
         new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishParseError());
     TableAnswerElement answer = answerer.answer();
@@ -215,6 +218,7 @@ public class InitIssuesAnswererTest {
         return pvcae;
       }
     }
+
     InitIssuesAnswerer answerer =
         new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishConvertWarn());
     TableAnswerElement answer = answerer.answer();
