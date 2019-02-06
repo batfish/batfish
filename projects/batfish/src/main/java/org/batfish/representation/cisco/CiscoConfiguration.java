@@ -3899,9 +3899,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     c.simplifyRoutingPolicies();
 
     c.computeRoutingPolicySources(_w);
-    /*if (c.getHostname().startsWith("as2border")) {
-      throw new BatfishException("force convert fail");
-    }*/
 
     return ImmutableList.of(c);
   }

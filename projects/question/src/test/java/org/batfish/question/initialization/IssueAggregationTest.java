@@ -1,8 +1,8 @@
 package org.batfish.question.initialization;
 
-import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateErrors;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateParseWarnings;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateRedflagWarnings;
+import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateStrings;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateUnimplementedWarnings;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Map;
-import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
@@ -22,17 +21,16 @@ import org.junit.Test;
 public class IssueAggregationTest {
 
   @Test
-  public void testAggregateDuplicateErrors() {
-    BatfishStackTrace stackTraceDup = new BatfishStackTrace(ImmutableList.of("lines1", "line2"));
-    BatfishStackTrace stackTraceDup2 = new BatfishStackTrace(ImmutableList.of("lines1", "line2"));
-    BatfishStackTrace stackTraceUnique =
-        new BatfishStackTrace(ImmutableList.of("lines1", "line2", "line3"));
-    Map<String, BatfishStackTrace> errors =
+  public void testAggregateDuplicateStrings() {
+    String stackTraceDup = "line1\nline2";
+    String stackTraceDup2 = "line1\nline2";
+    String stackTraceUnique = "line1\nline2\nline3";
+    Map<String, String> errors =
         ImmutableMap.of("dup1", stackTraceDup, "dup2", stackTraceDup2, "unique", stackTraceUnique);
 
     // Confirm that only the duplicate errors are aggregated
     assertThat(
-        aggregateDuplicateErrors(errors),
+        aggregateDuplicateStrings(errors),
         equalTo(
             ImmutableMap.of(
                 stackTraceDup,

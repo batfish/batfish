@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
-import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
@@ -108,17 +107,17 @@ final class IssueAggregation {
   }
 
   /**
-   * Aggregate same errors (stack traces) across multiple nodes or files.
+   * Aggregate same strings (e.g. trimmed stack traces) across multiple nodes or files.
    *
-   * <p>Produces a map of {@link BatfishStackTrace} to node/file names
+   * <p>Produces a map of {@link String} to node/file names from a map of node/file to string.
    */
   @Nonnull
   @VisibleForTesting
-  static Map<BatfishStackTrace, SortedSet<String>> aggregateDuplicateErrors(
-      Map<String, BatfishStackTrace> errors) {
-    Map<BatfishStackTrace, SortedSet<String>> map = new HashMap<>();
-    errors.forEach(
-        (source, stackTrace) -> map.computeIfAbsent(stackTrace, t -> new TreeSet<>()).add(source));
+  static Map<String, SortedSet<String>> aggregateDuplicateStrings(
+      Map<String, String> nodeToString) {
+    Map<String, SortedSet<String>> map = new HashMap<>();
+    nodeToString.forEach(
+        (source, string) -> map.computeIfAbsent(string, t -> new TreeSet<>()).add(source));
     return map;
   }
 }

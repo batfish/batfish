@@ -1,9 +1,9 @@
 package org.batfish.question.initialization;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateErrors;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateParseWarnings;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateRedflagWarnings;
+import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateStrings;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateUnimplementedWarnings;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.Warnings;
@@ -65,12 +66,18 @@ public class InitIssuesAnswerer extends Answerer {
                             triplet._text),
                         triplet._parserContext)));
 
-    aggregateDuplicateErrors(ccae.getErrors())
+    // Aggregate stack traces after trimming to:
+    // 1) remove the redundant info like "Conversion error for node 'xyz'"
+    // 2) allow useful aggregation across similar issues (e.g. on node 'xyz' and 'abc')
+    aggregateDuplicateStrings(
+            ccae.getErrors().entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> trimStackTrace(e.getValue()))))
         .forEach(
             (stackTrace, nodeNames) ->
-                rows.add(
-                    getRow(nodeNames, null, IssueType.ConvertError, trimStackTrace(stackTrace))));
-    aggregateDuplicateErrors(pvcae.getErrors())
+                rows.add(getRow(nodeNames, null, IssueType.ConvertError, stackTrace)));
+    aggregateDuplicateStrings(
+            pvcae.getErrors().entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> trimStackTrace(e.getValue()))))
         .forEach(
             (stackTrace, fileNames) ->
                 rows.add(
@@ -80,7 +87,7 @@ public class InitIssuesAnswerer extends Answerer {
                             .map(n -> new FileLines(n, ImmutableSortedSet.of()))
                             .collect(ImmutableList.toImmutableList()),
                         IssueType.ParseError,
-                        trimStackTrace(stackTrace))));
+                        stackTrace)));
 
     TableAnswerElement answerElement = new TableAnswerElement(TABLE_METADATA);
     answerElement.postProcessAnswer(_question, rows.getData());
