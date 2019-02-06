@@ -185,34 +185,34 @@ public class InitIssuesAnswererTest {
   }
 
   private static class TestBatfishBase extends IBatfishTestAdapter {
-    @Nullable private ParseVendorConfigurationAnswerElement _pvcae;
-    @Nullable private ConvertConfigurationAnswerElement _ccae;
+    private ParseVendorConfigurationAnswerElement _pvcae;
+    private ConvertConfigurationAnswerElement _ccae;
 
     TestBatfishBase(
         @Nullable ParseVendorConfigurationAnswerElement pvcae,
         @Nullable ConvertConfigurationAnswerElement ccae) {
-      _pvcae = pvcae;
-      _ccae = ccae;
+      if (pvcae == null) {
+        _pvcae = new ParseVendorConfigurationAnswerElement();
+        _pvcae.setWarnings(ImmutableSortedMap.of("nodeOkay", new Warnings()));
+      } else {
+        _pvcae = pvcae;
+      }
+      if (ccae == null) {
+        _ccae = new ConvertConfigurationAnswerElement();
+        _ccae.setWarnings(ImmutableSortedMap.of("nodeOkay", new Warnings()));
+      } else {
+        _ccae = ccae;
+      }
     }
 
     @Override
     public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
-      if (_pvcae != null) {
-        return _pvcae;
-      }
-      ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
-      pvcae.setWarnings(ImmutableSortedMap.of("nodeOkay", new Warnings()));
-      return pvcae;
+      return _pvcae;
     }
 
     @Override
     public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
-      if (_ccae != null) {
-        return _ccae;
-      }
-      ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
-      ccae.setWarnings(ImmutableSortedMap.of("nodeOkay", new Warnings()));
-      return ccae;
+      return _ccae;
     }
   }
 }
