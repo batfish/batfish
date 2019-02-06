@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -117,6 +118,22 @@ public class IpAccessListToBDD implements GenericAclLineMatchExprVisitor<BDD> {
       result = lineBDD.ite(actionBDD, result);
     }
     return result;
+  }
+
+  /**
+   * Return the set matched by each line (and no earlier line). The last element is the set
+   * unmatched by any line.
+   */
+  public List<BDD> reachAndMatchLines(IpAccessList acl) {
+    ImmutableList.Builder<BDD> bdds = ImmutableList.builder();
+    BDD reach = _pkt.getFactory().one();
+    for (IpAccessListLine line : acl.getLines()) {
+      BDD match = visit(line.getMatchCondition());
+      bdds.add(reach.and(match));
+      reach = reach.and(match.not());
+    }
+    bdds.add(reach);
+    return bdds.build();
   }
 
   @Override

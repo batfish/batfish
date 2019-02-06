@@ -1,0 +1,32 @@
+{
+  "class" : "org.batfish.question.comparefilters.CompareFiltersQuestion",
+  "filters" : ".*",
+  "nodes" : ".*",
+  "differential" : true,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Find lines of two versions of a filter that treat the same flow(s) differently.",
+    "instanceName" : "qname",
+    "longDescription" : "This question searches for pairs of lines for which two versions of a filter (access control list) treat the same flow(s) differently.",
+    "tags" : [
+      "acl",
+      "dataPlane"
+    ],
+    "variables" : {
+      "filters" : {
+        "description" : "Only evaluate filters that match this regex",
+        "displayName" : "Filters",
+        "optional" : true,
+        "type" : "filter",
+        "value" : ".*"
+      },
+      "nodes" : {
+        "description" : "Only evaluate filters present on nodes matching this specifier",
+        "displayName" : "Nodes",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : ".*"
+      }
+    }
+  }
+}
