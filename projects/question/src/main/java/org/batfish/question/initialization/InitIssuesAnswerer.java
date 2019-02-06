@@ -172,7 +172,7 @@ public class InitIssuesAnswerer extends Answerer {
               false,
               true));
 
-  private static final String TEXT_DESC = String.format("Placeholder ${%s}", COL_NODES);
+  private static final String TEXT_DESC = "Snapshot initialization issues";
 
   private static final TableMetadata TABLE_METADATA = new TableMetadata(METADATA, TEXT_DESC);
 }

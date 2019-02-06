@@ -30,7 +30,7 @@ public class IssueAggregationTest {
     Map<String, BatfishStackTrace> errors =
         ImmutableMap.of("dup1", stackTraceDup, "dup2", stackTraceDup2, "unique", stackTraceUnique);
 
-    // Confirm that only the errors
+    // Confirm that only the duplicate errors are aggregated
     assertThat(
         aggregateDuplicateErrors(errors),
         equalTo(
@@ -58,6 +58,7 @@ public class IssueAggregationTest {
 
     Map<String, Warnings> fileWarnings = ImmutableMap.of("f1", f1Warnings, "f2", f2Warnings);
 
+    // Confirm that only the duplicate parse warnings are aggregated
     assertThat(
         aggregateDuplicateParseWarnings(fileWarnings),
         equalTo(
@@ -81,6 +82,7 @@ public class IssueAggregationTest {
 
     Map<String, Warnings> fileWarnings = ImmutableMap.of("f1", f1Warnings, "f2", f2Warnings);
 
+    // Confirm that only the duplicate reflags are aggregated
     assertThat(
         aggregateDuplicateRedflagWarnings(fileWarnings),
         equalTo(
@@ -106,6 +108,7 @@ public class IssueAggregationTest {
 
     Map<String, Warnings> fileWarnings = ImmutableMap.of("f1", f1Warnings, "f2", f2Warnings);
 
+    // Confirm that only the duplicate unimplemented warnings are aggregated
     assertThat(
         aggregateDuplicateUnimplementedWarnings(fileWarnings),
         equalTo(
