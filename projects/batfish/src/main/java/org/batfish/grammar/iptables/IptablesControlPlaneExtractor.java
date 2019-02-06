@@ -9,6 +9,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
+import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.iptables.IptablesParser.Built_in_targetContext;
 import org.batfish.grammar.iptables.IptablesParser.CommandContext;
@@ -227,7 +228,7 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
 
   @Override
   public void processParseTree(ParserRuleContext tree) {
-    ParseTreeWalker walker = new ParseTreeWalker();
+    ParseTreeWalker walker = new BatfishParseTreeWalker();
     walker.walk(this, tree);
   }
 
