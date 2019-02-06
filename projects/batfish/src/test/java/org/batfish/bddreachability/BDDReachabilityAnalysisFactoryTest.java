@@ -97,7 +97,7 @@ import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
-import org.batfish.z3.state.PostInVrf;
+import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
@@ -564,7 +564,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
         analysis
             .getEdges()
             .get(new PreInInterface(config.getHostname(), iface.getName()))
-            .get(new PostInVrf(config.getHostname(), vrf.getName()));
+            .get(new PostInInterface(config.getHostname(), iface.getName()));
 
     HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
     BDD ingressAclBdd = toBDD.toBDD(ingressAclHeaderSpace);
@@ -635,7 +635,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
         analysis
             .getEdges()
             .get(new PreInInterface(config.getHostname(), iface.getName()))
-            .get(new PostInVrf(config.getHostname(), vrf.getName()));
+            .get(new PostInInterface(config.getHostname(), iface.getName()));
 
     HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
     BDD ingressAclBdd = toBDD.toBDD(ingressAclHeaderSpace);

@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match5Tuple;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.EGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.INGRESS_FILTER;
+import static org.batfish.datamodel.flow.FilterStep.FilterType.POST_DESTINATION_NAT_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.PRE_SOURCE_NAT_FILTER;
 import static org.batfish.datamodel.flow.StepAction.DENIED;
 import static org.batfish.datamodel.flow.StepAction.TRANSMITTED;
@@ -286,8 +287,8 @@ class FlowTracer {
       _steps.add(buildEnterSrcIfaceStep(_currentConfig, _ingressInterface));
 
       // apply ingress filter
-      IpAccessList inputFilter =
-          _currentConfig.getAllInterfaces().get(_ingressInterface).getIncomingFilter();
+      Interface incomingInterface = _currentConfig.getAllInterfaces().get(_ingressInterface);
+      IpAccessList inputFilter = incomingInterface.getIncomingFilter();
       if (inputFilter != null) {
         if (applyFilter(inputFilter, INGRESS_FILTER) == DENIED) {
           return;
@@ -296,13 +297,18 @@ class FlowTracer {
 
       TransformationResult transformationResult =
           TransformationEvaluator.eval(
-              _currentConfig.getAllInterfaces().get(_ingressInterface).getIncomingTransformation(),
+              incomingInterface.getIncomingTransformation(),
               _currentFlow,
               _ingressInterface,
               _aclDefinitions,
               _namedIpSpaces);
       _steps.addAll(transformationResult.getTraceSteps());
       _currentFlow = transformationResult.getOutputFlow();
+
+      inputFilter = incomingInterface.getPostTransformationIncomingFilter();
+      if (applyFilter(inputFilter, POST_DESTINATION_NAT_FILTER) == DENIED) {
+        return;
+      }
     } else {
       // if inputIfaceName is not set for this hop, this is the originating step
       _steps.add(buildOriginateStep());

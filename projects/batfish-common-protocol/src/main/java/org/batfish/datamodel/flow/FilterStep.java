@@ -20,6 +20,8 @@ public class FilterStep extends Step<FilterStepDetail> {
     INGRESS_FILTER,
     /** egress filter */
     EGRESS_FILTER,
+    /** postDestinationNat filter */
+    POST_DESTINATION_NAT_FILTER,
     /** preSourceNat filter */
     PRE_SOURCE_NAT_FILTER;
 
@@ -28,6 +30,7 @@ public class FilterStep extends Step<FilterStepDetail> {
         case INGRESS_FILTER:
           return FlowDisposition.DENIED_IN;
         case EGRESS_FILTER:
+        case POST_DESTINATION_NAT_FILTER:
         case PRE_SOURCE_NAT_FILTER:
           return FlowDisposition.DENIED_OUT;
         default:
