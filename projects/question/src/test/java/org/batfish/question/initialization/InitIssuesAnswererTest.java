@@ -70,6 +70,7 @@ public class InitIssuesAnswererTest {
             ImmutableList.of(EXCEPTION_ENCLOSING, EXCEPTION_CAUSED_BY, EXCEPTION_INNER));
     String node = "nodeError";
 
+    // TestBatfish that should produce a single convert error
     class TestBatfishConvertError extends TestBatfishBase {
       @Override
       public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
@@ -79,7 +80,6 @@ public class InitIssuesAnswererTest {
         return ccae;
       }
     }
-
     InitIssuesAnswerer answerer =
         new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishConvertError());
     TableAnswerElement answer = answerer.answer();
@@ -109,6 +109,7 @@ public class InitIssuesAnswererTest {
     String redFlag = "red flag text";
     String unimplemented = "unimplemented warning text";
 
+    // TestBatfish that should produce two convert warnings (redflag and unimplemented)
     class TestBatfishConvertWarn extends TestBatfishBase {
       @Override
       public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
@@ -120,7 +121,6 @@ public class InitIssuesAnswererTest {
         return ccae;
       }
     }
-
     InitIssuesAnswerer answerer =
         new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishConvertWarn());
     TableAnswerElement answer = answerer.answer();
@@ -163,6 +163,7 @@ public class InitIssuesAnswererTest {
             ImmutableList.of(EXCEPTION_ENCLOSING, EXCEPTION_CAUSED_BY, EXCEPTION_INNER));
     String file = "configs/nodeError.cfg";
 
+    // TestBatfish that should produce a single parse error
     class TestBatfishParseError extends TestBatfishBase {
       @Override
       public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
@@ -172,7 +173,6 @@ public class InitIssuesAnswererTest {
         return pvcae;
       }
     }
-
     InitIssuesAnswerer answerer =
         new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishParseError());
     TableAnswerElement answer = answerer.answer();
@@ -204,6 +204,7 @@ public class InitIssuesAnswererTest {
     String comment = "comment";
     int line = 86420;
 
+    // TestBatfish that should produce a single parse warning
     class TestBatfishConvertWarn extends TestBatfishBase {
       @Override
       public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
@@ -214,7 +215,6 @@ public class InitIssuesAnswererTest {
         return pvcae;
       }
     }
-
     InitIssuesAnswerer answerer =
         new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishConvertWarn());
     TableAnswerElement answer = answerer.answer();

@@ -23,10 +23,9 @@ public class IssueAggregationTest {
   @Test
   public void testAggregateDuplicateStrings() {
     String stackTraceDup = "line1\nline2";
-    String stackTraceDup2 = "line1\nline2";
     String stackTraceUnique = "line1\nline2\nline3";
     Map<String, String> errors =
-        ImmutableMap.of("dup1", stackTraceDup, "dup2", stackTraceDup2, "unique", stackTraceUnique);
+        ImmutableMap.of("dup1", stackTraceDup, "dup2", stackTraceDup, "unique", stackTraceUnique);
 
     // Confirm that only the duplicate errors are aggregated
     assertThat(
@@ -80,7 +79,7 @@ public class IssueAggregationTest {
 
     Map<String, Warnings> fileWarnings = ImmutableMap.of("f1", f1Warnings, "f2", f2Warnings);
 
-    // Confirm that only the duplicate reflags are aggregated
+    // Confirm that only the duplicate redflags are aggregated
     assertThat(
         aggregateDuplicateRedflagWarnings(fileWarnings),
         equalTo(
@@ -92,7 +91,7 @@ public class IssueAggregationTest {
   }
 
   @Test
-  public void testAggregateDuplicateUnimplementedarnings() {
+  public void testAggregateDuplicateUnimplementedWarnings() {
     Warnings f1Warnings = new Warnings();
     f1Warnings
         .getUnimplementedWarnings()
