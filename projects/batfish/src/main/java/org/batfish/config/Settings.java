@@ -37,6 +37,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private static final String ARG_DEBUG_FLAGS = "debugflags";
 
+  private static final String ARG_PARSE_REUSE = "parsereuse";
+
   private static final String ARG_DISABLE_Z3_SIMPLIFICATION = "nosimplify";
 
   private static final String ARG_EXIT_ON_FIRST_ERROR = "ee";
@@ -325,6 +327,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getInt(ARG_PARENT_PID);
   }
 
+  public boolean getParseReuse() {
+    return _config.getBoolean(ARG_PARSE_REUSE);
+  }
+
   @Override
   public int getMaxParserContextLines() {
     return _config.getInt(ARG_MAX_PARSER_CONTEXT_LINES);
@@ -564,6 +570,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.ARG_PEDANTIC_SUPPRESS, false);
     setDefaultProperty(BfConsts.ARG_PRETTY_PRINT_ANSWER, false);
     setDefaultProperty(ARG_PARENT_PID, -1);
+    setDefaultProperty(ARG_PARSE_REUSE, true);
     setDefaultProperty(ARG_PRINT_PARSE_TREES, false);
     setDefaultProperty(ARG_PRINT_PARSE_TREE_LINE_NUMS, false);
     setDefaultProperty(BfConsts.ARG_QUESTION_NAME, null);
@@ -742,6 +749,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addOption(ARG_PARENT_PID, "name of parent PID", ARGNAME_NUMBER);
 
+    addBooleanOption(ARG_PARSE_REUSE, "reuse parse results when appropriate");
+
     addBooleanOption(BfConsts.ARG_PEDANTIC_SUPPRESS, "suppresses pedantic warnings");
 
     addBooleanOption(BfConsts.ARG_PRETTY_PRINT_ANSWER, "pretty print answer");
@@ -893,6 +902,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(BfConsts.ARG_DIFF_ACTIVE);
     getBooleanOptionValue(BfConsts.ARG_DIFFERENTIAL);
     getBooleanOptionValue(BfConsts.ARG_DISABLE_UNRECOGNIZED);
+    getBooleanOptionValue(ARG_DISABLE_Z3_SIMPLIFICATION);
     getBooleanOptionValue(ARG_EXIT_ON_FIRST_ERROR);
     getBooleanOptionValue(ARG_FLATTEN);
     getPathOptionValue(ARG_FLATTEN_DESTINATION);
@@ -927,7 +937,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getStringOptionValue(ARG_SERVICE_NAME);
     getIntOptionValue(ARG_SERVICE_PORT);
     getBooleanOptionValue(ARG_NO_SHUFFLE);
-    getBooleanOptionValue(ARG_DISABLE_Z3_SIMPLIFICATION);
+    getBooleanOptionValue(ARG_PARSE_REUSE);
     getStringOptionValue(BfConsts.ARG_SNAPSHOT_NAME);
     getBooleanOptionValue(BfConsts.ARG_SSL_DISABLE);
     getPathOptionValue(BfConsts.ARG_SSL_KEYSTORE_FILE);

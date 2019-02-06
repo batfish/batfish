@@ -1,11 +1,11 @@
 package org.batfish.grammar.flatjuniper;
 
 import javax.annotation.Nullable;
-import org.batfish.config.Settings;
 import org.batfish.grammar.BatfishANTLRErrorStrategy;
 import org.batfish.grammar.BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishLexerRecoveryStrategy;
+import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 
@@ -16,12 +16,12 @@ public class FlatJuniperCombinedParser
       new BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory(
           FlatJuniperLexer.NEWLINE, "\n");
 
-  FlatJuniperCombinedParser(String input, Settings settings) {
+  FlatJuniperCombinedParser(String input, GrammarSettings settings) {
     this(input, settings, null);
   }
 
   public FlatJuniperCombinedParser(
-      String input, Settings settings, @Nullable FlattenerLineMap lineMap) {
+      String input, GrammarSettings settings, @Nullable FlattenerLineMap lineMap) {
     super(
         FlatJuniperParser.class,
         FlatJuniperLexer.class,

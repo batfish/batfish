@@ -3,6 +3,7 @@ package org.batfish.main;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Verify.verify;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
@@ -34,19 +35,25 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
+import com.google.common.hash.Hashing;
 import io.opentracing.ActiveSpan;
+import io.opentracing.References;
 import io.opentracing.SpanContext;
 import io.opentracing.util.GlobalTracer;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -180,6 +187,7 @@ import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableFormat;
+import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
@@ -201,7 +209,9 @@ import org.batfish.job.ConvertConfigurationJob;
 import org.batfish.job.FlattenVendorConfigurationJob;
 import org.batfish.job.ParseEnvironmentBgpTableJob;
 import org.batfish.job.ParseEnvironmentRoutingTableJob;
+import org.batfish.job.ParseResult;
 import org.batfish.job.ParseVendorConfigurationJob;
+import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.question.SearchFiltersParameters;
@@ -361,28 +371,34 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   /**
-   * Returns a sorted list of {@link Path paths} contains all files under the directory indicated by
-   * {@code configsPath}. Directories under {@code configsPath} are recursively expanded but not
-   * included in the returned list.
+   * Reads the files in the given directory (recursively) and returns a map from each file's {@link
+   * Path} to its contents.
    *
-   * <p>Temporary files(files start with {@code .} are omitted from the returned list.
+   * <p>Temporary files (files start with {@code .} are omitted from the returned list.
    *
    * <p>This method follows all symbolic links.
    */
-  static List<Path> listAllFiles(Path configsPath) {
-    List<Path> configFilePaths;
-    try (Stream<Path> allFiles = Files.walk(configsPath, FileVisitOption.FOLLOW_LINKS)) {
-      configFilePaths =
-          allFiles
-              .filter(
-                  path ->
-                      !path.getFileName().toString().startsWith(".") && Files.isRegularFile(path))
-              .sorted()
-              .collect(Collectors.toList());
+  static SortedMap<Path, String> readAllFiles(Path directory, BatfishLogger logger) {
+    try (Stream<Path> paths = Files.walk(directory, FileVisitOption.FOLLOW_LINKS)) {
+      return paths
+          .filter(Files::isRegularFile)
+          .filter(path -> !path.getFileName().toString().startsWith("."))
+          .map(
+              path -> {
+                logger.debugf("Reading: \"%s\"\n", path);
+                String fileText = CommonUtil.readFile(path.toAbsolutePath());
+                if (!fileText.isEmpty()) {
+                  // Adding a trailing newline helps EOF in some parsers.
+                  fileText += '\n';
+                }
+                return new SimpleEntry<>(path, fileText);
+              })
+          .collect(
+              ImmutableSortedMap.toImmutableSortedMap(
+                  Ordering.natural(), SimpleEntry::getKey, SimpleEntry::getValue));
     } catch (IOException e) {
-      throw new BatfishException("Failed to walk path: " + configsPath, e);
+      throw new BatfishException("Failed to walk path: " + directory, e);
     }
-    return configFilePaths;
   }
 
   public static void logWarnings(BatfishLogger logger, Warnings warnings) {
@@ -401,8 +417,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return "   " + warning.getTag() + ": " + warning.getText() + "\n";
   }
 
+  /**
+   * Returns the parse tree for the given parser, logging to the given logger and using the given
+   * settings to control the parse tree printing, if applicable.
+   */
   public static ParserRuleContext parse(
-      BatfishCombinedParser<?, ?> parser, BatfishLogger logger, Settings settings) {
+      BatfishCombinedParser<?, ?> parser, BatfishLogger logger, GrammarSettings settings) {
     ParserRuleContext tree;
     try {
       tree = parser.parse();
@@ -1096,8 +1116,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public void flatten(Path inputPath, Path outputPath) {
+    _logger.info("\n*** READING FILES TO FLATTEN ***\n");
     Map<Path, String> configurationData =
-        readConfigurationFiles(inputPath, BfConsts.RELPATH_CONFIGURATIONS_DIR);
+        readAllFiles(inputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger);
+
     Map<Path, String> outputConfigurationData = new TreeMap<>();
     Path outputConfigDir = outputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
     createDirectories(outputConfigDir);
@@ -1197,7 +1219,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (Files.exists(inputPath.getParent()) && !Files.exists(inputPath)) {
       return new TreeMap<>();
     }
-    SortedMap<Path, String> inputData = readFiles(inputPath, "Environment BGP Tables");
+    _logger.info("\n*** READING Environment BGP Tables ***\n");
+    SortedMap<Path, String> inputData = readAllFiles(inputPath, _logger);
     SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
         parseEnvironmentBgpTables(inputData, answerElement);
     return bgpTables;
@@ -1208,7 +1231,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (Files.exists(inputPath.getParent()) && !Files.exists(inputPath)) {
       return new TreeMap<>();
     }
-    SortedMap<Path, String> inputData = readFiles(inputPath, "Environment Routing Tables");
+    _logger.info("\n*** READING Environment Routing Tables ***\n");
+    SortedMap<Path, String> inputData = readAllFiles(inputPath, _logger);
     SortedMap<String, RoutesByVrf> routingTables =
         parseEnvironmentRoutingTables(inputData, answerElement);
     return routingTables;
@@ -2005,15 +2029,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         AnswerMetadataUtil.computeAnswerMetadata(answer, _logger), baseAnswerId);
   }
 
-  private ParserRuleContext parse(BatfishCombinedParser<?, ?> parser) {
-    return parse(parser, _logger, _settings);
-  }
-
-  public ParserRuleContext parse(BatfishCombinedParser<?, ?> parser, String filename) {
-    _logger.infof("Parsing: \"%s\"...", filename);
-    return parse(parser);
-  }
-
   @VisibleForTesting
   public static AwsConfiguration parseAwsConfigurations(
       Map<Path, String> configurationData, ParseVendorConfigurationAnswerElement pvcae) {
@@ -2116,24 +2131,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return routingTables;
   }
 
-  private SortedMap<String, VendorConfiguration> parseVendorConfigurations(
-      Map<Path, String> configurationData,
-      ParseVendorConfigurationAnswerElement answerElement,
-      ConfigurationFormat configurationFormat) {
-    _logger.info("\n*** PARSING VENDOR CONFIGURATION FILES ***\n");
-    _logger.resetTimer();
-    SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
-    List<ParseVendorConfigurationJob> jobs = new ArrayList<>();
-    for (Entry<Path, String> vendorFile : configurationData.entrySet()) {
-      Path currentFile = vendorFile.getKey();
-      String fileText = vendorFile.getValue();
-
-      Warnings warnings = buildWarnings(_settings);
-
-      Multimap<String, String> duplicateHostnames = HashMultimap.create();
-
-      String filename =
-          _settings.getActiveTestrigSettings().getInputPath().relativize(currentFile).toString();
+  /**
+   * Returns a list of {@link ParseVendorConfigurationJob} to parse each file.
+   *
+   * <p>{@code expectedFormat} specifies the type of files expected in the {@code keyedFileText}
+   * map, or is set to {@link ConfigurationFormat#UNKNOWN} to trigger format detection.
+   */
+  private List<ParseVendorConfigurationJob> makeParseVendorConfigurationsJobs(
+      Map<String, String> keyedFileText, ConfigurationFormat expectedFormat) {
+    List<ParseVendorConfigurationJob> jobs = new ArrayList<>(keyedFileText.size());
+    for (Entry<String, String> vendorFile : keyedFileText.entrySet()) {
       @Nullable
       SpanContext parseVendorConfigurationSpanContext =
           GlobalTracer.get().activeSpan() == null
@@ -2143,14 +2150,33 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ParseVendorConfigurationJob job =
           new ParseVendorConfigurationJob(
               _settings,
-              fileText,
-              filename,
-              warnings,
-              configurationFormat,
-              duplicateHostnames,
+              vendorFile.getValue(),
+              vendorFile.getKey(),
+              buildWarnings(_settings),
+              expectedFormat,
+              HashMultimap.create(),
               parseVendorConfigurationSpanContext);
       jobs.add(job);
     }
+    return jobs;
+  }
+
+  /**
+   * Parses the given configuration files and returns a map keyed by hostname representing the
+   * {@link VendorConfiguration vendor-specific configurations}.
+   *
+   * <p>{@code expectedFormat} specifies the type of files expected in the {@code keyedFileText}
+   * map, or is set to {@link ConfigurationFormat#UNKNOWN} to trigger format detection.
+   */
+  private SortedMap<String, VendorConfiguration> parseVendorConfigurations(
+      Map<String, String> keyedConfigurationText,
+      ParseVendorConfigurationAnswerElement answerElement,
+      ConfigurationFormat expectedFormat) {
+    _logger.info("\n*** PARSING VENDOR CONFIGURATION FILES ***\n");
+    _logger.resetTimer();
+    SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
+    List<ParseVendorConfigurationJob> jobs =
+        makeParseVendorConfigurationsJobs(keyedConfigurationText, expectedFormat);
     BatfishJobExecutor.runJobsInExecutor(
         _settings,
         _logger,
@@ -2558,25 +2584,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _testrigSettings = _deltaTestrigSettings;
   }
 
-  private SortedMap<Path, String> readConfigurationFiles(Path testRigPath, String configsType) {
-    _logger.infof("\n*** READING %s FILES ***\n", configsType);
-    _logger.resetTimer();
-    SortedMap<Path, String> configurationData = new TreeMap<>();
-    Path configsPath = testRigPath.resolve(configsType);
-    List<Path> configFilePaths = listAllFiles(configsPath);
-    AtomicInteger completed =
-        newBatch("Reading network configuration files", configFilePaths.size());
-    for (Path file : configFilePaths) {
-      _logger.debugf("Reading: \"%s\"\n", file);
-      String fileTextRaw = CommonUtil.readFile(file.toAbsolutePath());
-      String fileText = fileTextRaw + ((fileTextRaw.length() != 0) ? "\n" : "");
-      configurationData.put(file, fileText);
-      completed.incrementAndGet();
-    }
-    _logger.printElapsedTime();
-    return configurationData;
-  }
-
   @Nullable
   @Override
   public String readExternalBgpAnnouncementsFile() {
@@ -2588,30 +2595,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } else {
       return null;
     }
-  }
-
-  private SortedMap<Path, String> readFiles(Path directory, String description) {
-    _logger.infof("\n*** READING FILES: %s ***\n", description);
-    _logger.resetTimer();
-    SortedMap<Path, String> fileData = new TreeMap<>();
-    List<Path> filePaths;
-    try (Stream<Path> paths = CommonUtil.list(directory)) {
-      filePaths =
-          paths
-              .filter(path -> !path.getFileName().toString().startsWith("."))
-              .sorted()
-              .collect(Collectors.toList());
-    }
-    AtomicInteger completed = newBatch("Reading files: " + description, filePaths.size());
-    for (Path file : filePaths) {
-      _logger.debugf("Reading: \"%s\"\n", file);
-      String fileTextRaw = CommonUtil.readFile(file.toAbsolutePath());
-      String fileText = fileTextRaw + ((fileTextRaw.length() != 0) ? "\n" : "");
-      fileData.put(file, fileText);
-      completed.incrementAndGet();
-    }
-    _logger.printElapsedTime();
-    return fileData;
   }
 
   /**
@@ -3054,8 +3037,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void serializeAwsConfigs(
       Path testRigPath, Path outputPath, ParseVendorConfigurationAnswerElement pvcae) {
+    _logger.info("\n*** READING AWS CONFIGS ***\n");
     Map<Path, String> configurationData =
-        readConfigurationFiles(testRigPath, BfConsts.RELPATH_AWS_CONFIGS_DIR);
+        readAllFiles(testRigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR), _logger);
     AwsConfiguration config;
     try (ActiveSpan parseAwsConfigsSpan =
         GlobalTracer.get().buildSpan("Parse AWS configs").startActive()) {
@@ -3137,15 +3121,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private SortedMap<String, VendorConfiguration> serializeHostConfigs(
       Path testRigPath, Path outputPath, ParseVendorConfigurationAnswerElement answerElement) {
-    SortedMap<Path, String> configurationData =
-        readConfigurationFiles(testRigPath, BfConsts.RELPATH_HOST_CONFIGS_DIR);
+    _logger.info("\n*** READING HOST CONFIGS ***\n");
+    Map<String, String> keyedHostText =
+        readAllFiles(testRigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR), _logger).entrySet()
+            .stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    e -> testRigPath.relativize(e.getKey()).toString(), Entry::getValue));
     // read the host files
     SortedMap<String, VendorConfiguration> allHostConfigurations;
     try (ActiveSpan parseHostConfigsSpan =
         GlobalTracer.get().buildSpan("Parse host configs").startActive()) {
       assert parseHostConfigsSpan != null; // avoid unused warning
       allHostConfigurations =
-          parseVendorConfigurations(configurationData, answerElement, ConfigurationFormat.HOST);
+          parseVendorConfigurations(keyedHostText, answerElement, ConfigurationFormat.HOST);
     }
     if (allHostConfigurations == null) {
       throw new BatfishException("Exiting due to parser errors");
@@ -3167,14 +3156,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // read and associate iptables files for specified hosts
     SortedMap<Path, String> iptablesData = new TreeMap<>();
     readIptableFiles(testRigPath, allHostConfigurations, iptablesData, answerElement);
+    Map<String, String> keyedIptablesText =
+        iptablesData.entrySet().stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    e -> testRigPath.relativize(e.getKey()).toString(), Entry::getValue));
 
     SortedMap<String, VendorConfiguration> iptablesConfigurations =
-        parseVendorConfigurations(iptablesData, answerElement, ConfigurationFormat.IPTABLES);
+        parseVendorConfigurations(keyedIptablesText, answerElement, ConfigurationFormat.IPTABLES);
     for (VendorConfiguration vc : allHostConfigurations.values()) {
       HostConfiguration hostConfig = (HostConfiguration) vc;
       if (hostConfig.getIptablesFile() != null) {
         Path path = Paths.get(testRigPath.toString(), hostConfig.getIptablesFile());
-        String relativePathStr = _testrigSettings.getInputPath().relativize(path).toString();
+        String relativePathStr = testRigPath.relativize(path).toString();
         if (iptablesConfigurations.containsKey(relativePathStr)) {
           hostConfig.setIptablesVendorConfig(
               (IptablesVendorConfiguration) iptablesConfigurations.get(relativePathStr));
@@ -3256,25 +3250,187 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  private ParseVendorConfigurationResult getOrParse(
+      ParseVendorConfigurationJob job, @Nullable SpanContext span, GrammarSettings settings) {
+    String filename = job.getFilename();
+    String filetext = job.getFileText();
+    try (ActiveSpan parseNetworkConfigsSpan =
+        GlobalTracer.get()
+            .buildSpan("Parse " + job.getFilename())
+            .addReference(References.FOLLOWS_FROM, span)
+            .startActive()) {
+      assert parseNetworkConfigsSpan != null; // avoid unused warning
+
+      // Short-circuit all cache-related code.
+      if (!_settings.getParseReuse()) {
+        long startTime = System.currentTimeMillis();
+        ParseResult result = job.parse();
+        long elapsed = System.currentTimeMillis() - startTime;
+        return job.fromResult(result, elapsed);
+      }
+
+      String id =
+          Hashing.murmur3_128()
+              .newHasher()
+              .putString("Cached Parse Result", UTF_8)
+              .putString(filename, UTF_8)
+              .putString(filetext, UTF_8)
+              .putBoolean(settings.getDisableUnrecognized())
+              .putInt(settings.getMaxParserContextLines())
+              .putInt(settings.getMaxParserContextTokens())
+              .putInt(settings.getMaxParseTreePrintLength())
+              .putBoolean(settings.getPrintParseTreeLineNums())
+              .putBoolean(settings.getPrintParseTree())
+              .putBoolean(settings.getThrowOnLexerError())
+              .putBoolean(settings.getThrowOnParserError())
+              .hash()
+              .toString();
+      long startTime = System.currentTimeMillis();
+      boolean cached = false;
+      ParseResult result;
+      try (InputStream in = _storage.loadNetworkBlob(getContainerName(), id)) {
+        result = SerializationUtils.deserialize(in);
+        // sanity-check filenames. In the extremely unlikely event of a collision, we'll lose reuse
+        // for this input.
+        cached = result.getFilename().equals(filename);
+      } catch (FileNotFoundException e) {
+        result = job.parse();
+      } catch (IOException e) {
+        _logger.warnf(
+            "Error deserializing cached parse result for %s: %s",
+            filename, Throwables.getStackTraceAsString(e));
+        result = job.parse();
+      }
+      if (!cached) {
+        try {
+          byte[] serialized = SerializationUtils.serialize(result);
+          _storage.storeNetworkBlob(new ByteArrayInputStream(serialized), getContainerName(), id);
+        } catch (IOException e) {
+          _logger.warnf(
+              "Error caching parse result for %s: %s",
+              filename, Throwables.getStackTraceAsString(e));
+        }
+      }
+      long elapsed = System.currentTimeMillis() - startTime;
+      return job.fromResult(result, elapsed);
+    }
+  }
+
+  /**
+   * Parses configuration files for networking devices from the uploaded user data and produces
+   * {@link VendorConfiguration vendor-specific configurations} serialized to the given output path.
+   *
+   * <p>This function should be named better, but it's called by the {@link
+   * #serializeVendorConfigs(Path, Path)}, so leaving as-is for now.
+   */
   private void serializeNetworkConfigs(
-      Path testRigPath,
+      Path userUploadPath,
       Path outputPath,
       ParseVendorConfigurationAnswerElement answerElement,
       SortedMap<String, VendorConfiguration> overlayHostConfigurations) {
-    Map<Path, String> configurationData =
-        readConfigurationFiles(testRigPath, BfConsts.RELPATH_CONFIGURATIONS_DIR);
+    if (!overlayHostConfigurations.isEmpty()) {
+      // Not able to cache with overlays.
+      oldSerializeNetworkConfigs(
+          userUploadPath, outputPath, answerElement, overlayHostConfigurations);
+      return;
+    }
+
+    _logger.info("\n*** READING DEVICE CONFIGURATION FILES ***\n");
+
+    List<ParseVendorConfigurationResult> parseResults;
+    try (ActiveSpan parseNetworkConfigsSpan =
+        GlobalTracer.get().buildSpan("Parse network configs").startActive()) {
+      assert parseNetworkConfigsSpan != null; // avoid unused warning
+
+      // user filename (configs/foo) -> text of configs/foo
+      Map<String, String> keyedConfigText =
+          readAllFiles(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger)
+              .entrySet().stream()
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      e -> userUploadPath.relativize(e.getKey()).toString(), Entry::getValue));
+      List<ParseVendorConfigurationJob> jobs =
+          makeParseVendorConfigurationsJobs(keyedConfigText, ConfigurationFormat.UNKNOWN);
+      AtomicInteger batch = newBatch("Parse network configs", keyedConfigText.size());
+      parseResults =
+          jobs.parallelStream()
+              .map(
+                  j -> {
+                    ParseVendorConfigurationResult result =
+                        this.getOrParse(j, parseNetworkConfigsSpan.context(), _settings);
+                    batch.incrementAndGet();
+                    return result;
+                  })
+              .collect(ImmutableList.toImmutableList());
+    }
+
+    if (_settings.getHaltOnParseError()
+        && parseResults.stream().anyMatch(r -> r.getFailureCause() != null)) {
+      throw new BatfishException("Exiting due to parser errors");
+    }
+
+    _logger.infof(
+        "Snapshot %s in network %s has total number of network configs:%d",
+        getTestrigName(), getContainerName(), parseResults.size());
+
+    /* Assemble answer. */
+    SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
+    parseResults.forEach(pvcr -> pvcr.applyTo(vendorConfigurations, _logger, answerElement));
+
+    try (ActiveSpan serializeNetworkConfigsSpan =
+        GlobalTracer.get().buildSpan("Serialize network configs").startActive()) {
+      assert serializeNetworkConfigsSpan != null; // avoid unused warning
+      _logger.info("\n*** SERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
+      _logger.resetTimer();
+      createDirectories(outputPath);
+      Map<Path, VendorConfiguration> output = new TreeMap<>();
+      vendorConfigurations.forEach(
+          (name, vc) -> {
+            if (name.contains(File.separator)) {
+              // iptables will get a hostname like configs/iptables-save if they
+              // are not set up correctly using host files
+              _logger.errorf("Cannot serialize configuration with hostname %s\n", name);
+              answerElement.addRedFlagWarning(
+                  name,
+                  new Warning(
+                      "Cannot serialize network config. Bad hostname " + name.replace("\\", "/"),
+                      "MISCELLANEOUS"));
+            } else {
+              Path currentOutputPath = outputPath.resolve(name);
+              output.put(currentOutputPath, vc);
+            }
+          });
+
+      serializeObjects(output);
+      _logger.printElapsedTime();
+    }
+  }
+
+  private void oldSerializeNetworkConfigs(
+      Path userUploadPath,
+      Path outputPath,
+      ParseVendorConfigurationAnswerElement answerElement,
+      SortedMap<String, VendorConfiguration> overlayHostConfigurations) {
+    _logger.info("\n*** READING DEVICE CONFIGURATION FILES ***\n");
+
     Map<String, VendorConfiguration> vendorConfigurations;
     try (ActiveSpan parseNetworkConfigsSpan =
         GlobalTracer.get().buildSpan("Parse network configs").startActive()) {
       assert parseNetworkConfigsSpan != null; // avoid unused warning
+      Map<String, String> keyedConfigText =
+          readAllFiles(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), _logger)
+              .entrySet().stream()
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      e -> userUploadPath.relativize(e.getKey()).toString(), Entry::getValue));
       vendorConfigurations =
-          parseVendorConfigurations(configurationData, answerElement, ConfigurationFormat.UNKNOWN);
+          parseVendorConfigurations(keyedConfigText, answerElement, ConfigurationFormat.UNKNOWN);
     }
     if (vendorConfigurations == null) {
       throw new BatfishException("Exiting due to parser errors");
     }
     _logger.infof(
-        "Testrig:%s in container:%s has total number of network configs:%d",
+        "Snapshot %s in network %s has total number of network configs:%d",
         getTestrigName(), getContainerName(), vendorConfigurations.size());
 
     try (ActiveSpan serializeNetworkConfigsSpan =
@@ -3339,12 +3495,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
             });
   }
 
-  Answer serializeVendorConfigs(Path testRigPath, Path outputPath) {
+  /**
+   * Parses configuration files from the uploaded user data and produces {@link VendorConfiguration
+   * vendor-specific configurations} serialized to the given output path.
+   *
+   * <p>This function should be named better, but it's called by the {@code -sv} argument to Batfish
+   * so leaving as-is for now.
+   */
+  private Answer serializeVendorConfigs(Path userUploadPath, Path outputPath) {
     Answer answer = new Answer();
     boolean configsFound = false;
 
-    // look for network configs
-    Path networkConfigsPath = testRigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
     ParseVendorConfigurationAnswerElement answerElement =
         new ParseVendorConfigurationAnswerElement();
     answerElement.setVersion(Version.getVersion());
@@ -3352,28 +3513,28 @@ public class Batfish extends PluginConsumer implements IBatfish {
       answer.addAnswerElement(answerElement);
     }
 
-    // look for host configs and overlay configs
+    // look for host configs and overlay configs in the `hosts/` subfolder.
     SortedMap<String, VendorConfiguration> overlayHostConfigurations = new TreeMap<>();
-    Path hostConfigsPath = testRigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR);
-    if (Files.exists(hostConfigsPath)) {
-      overlayHostConfigurations = serializeHostConfigs(testRigPath, outputPath, answerElement);
+    if (Files.exists(userUploadPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR))) {
+      overlayHostConfigurations = serializeHostConfigs(userUploadPath, outputPath, answerElement);
       configsFound = true;
     }
 
-    if (Files.exists(networkConfigsPath)) {
-      serializeNetworkConfigs(testRigPath, outputPath, answerElement, overlayHostConfigurations);
+    // look for network configs in the `configs/` subfolder.
+    if (Files.exists(userUploadPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR))) {
+      serializeNetworkConfigs(userUploadPath, outputPath, answerElement, overlayHostConfigurations);
       configsFound = true;
     }
 
-    // look for AWS VPC configs
-    Path awsVpcConfigsPath = testRigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR);
-    if (Files.exists(awsVpcConfigsPath)) {
-      serializeAwsConfigs(testRigPath, outputPath, answerElement);
+    // look for AWS VPC configs in the `aws_configs/` subfolder.
+    if (Files.exists(userUploadPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR))) {
+      serializeAwsConfigs(userUploadPath, outputPath, answerElement);
       configsFound = true;
     }
 
     if (!configsFound) {
-      throw new BatfishException("No valid configurations found in snapshot path " + testRigPath);
+      throw new BatfishException(
+          "No valid configurations found in snapshot path " + userUploadPath);
     }
 
     // serialize warnings
