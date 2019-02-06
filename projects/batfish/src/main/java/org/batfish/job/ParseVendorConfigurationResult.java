@@ -22,22 +22,26 @@ public class ParseVendorConfigurationResult
 
   private final String _filename;
 
-  private ParseTreeSentences _parseTree;
+  @Nonnull private ParseTreeSentences _parseTree;
 
   private final ParseStatus _status;
 
   private VendorConfiguration _vc;
 
-  private Warnings _warnings;
+  @Nonnull private final Warnings _warnings;
 
   public ParseVendorConfigurationResult(
       long elapsedTime,
       BatfishLoggerHistory history,
       String filename,
+      @Nonnull Warnings warnings,
+      @Nonnull ParseTreeSentences parseTree,
       @Nonnull Throwable failureCause) {
     super(elapsedTime, history, failureCause);
     _filename = filename;
+    _parseTree = parseTree;
     _status = ParseStatus.FAILED;
+    _warnings = warnings;
   }
 
   public ParseVendorConfigurationResult(
@@ -45,16 +49,16 @@ public class ParseVendorConfigurationResult
       BatfishLoggerHistory history,
       String filename,
       VendorConfiguration vc,
-      Warnings warnings,
-      ParseTreeSentences parseTree,
+      @Nonnull Warnings warnings,
+      @Nonnull ParseTreeSentences parseTree,
+      @Nonnull ParseStatus status,
       @Nonnull Multimap<String, String> duplicateHostnames) {
     super(elapsedTime, history);
     _filename = filename;
     _parseTree = parseTree;
     _vc = vc;
     _warnings = warnings;
-    // parse status is determined from other fields
-    _status = null;
+    _status = status;
     _duplicateHostnames = duplicateHostnames;
   }
 
@@ -62,10 +66,11 @@ public class ParseVendorConfigurationResult
       long elapsedTime,
       BatfishLoggerHistory history,
       String filename,
-      Warnings warnings,
-      ParseStatus status) {
+      @Nonnull Warnings warnings,
+      @Nonnull ParseStatus status) {
     super(elapsedTime, history);
     _filename = filename;
+    _parseTree = new ParseTreeSentences();
     _status = status;
     _warnings = warnings;
   }
@@ -89,6 +94,7 @@ public class ParseVendorConfigurationResult
       BatfishLogger logger,
       ParseVendorConfigurationAnswerElement answerElement) {
     appendHistory(logger);
+    answerElement.getParseStatus().put(_filename, _status);
     if (_vc != null) {
       String hostname = _vc.getHostname();
       if (vendorConfigurations.containsKey(hostname)) {
@@ -119,20 +125,11 @@ public class ParseVendorConfigurationResult
       if (!_parseTree.isEmpty()) {
         answerElement.getParseTrees().put(hostname, _parseTree);
       }
-      if (_vc.getUnrecognized()) {
-        answerElement.getParseStatus().put(_filename, ParseStatus.PARTIALLY_UNRECOGNIZED);
-      } else {
-        answerElement.getParseStatus().put(_filename, ParseStatus.PASSED);
-      }
-
-    } else {
-      answerElement.getParseStatus().put(_filename, _status);
-      if (_status == ParseStatus.FAILED) {
-        assert _failureCause != null; // status == FAILED, failureCause must be non-null
-        answerElement
-            .getErrors()
-            .put(_filename, ((BatfishException) _failureCause).getBatfishStackTrace());
-      }
+    } else if (_status == ParseStatus.FAILED) {
+      assert _failureCause != null; // status == FAILED, failureCause must be non-null
+      answerElement
+          .getErrors()
+          .put(_filename, ((BatfishException) _failureCause).getBatfishStackTrace());
     }
   }
 
