@@ -8,7 +8,6 @@ import com.google.common.base.Throwables;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import org.batfish.datamodel.answers.AnswerElement;
 
 /**
@@ -54,23 +53,6 @@ public class BatfishException extends RuntimeException {
     @Override
     public String prettyPrint() {
       return String.join("\n", _lines);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hashCode(_lines);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (!(obj instanceof BatfishStackTrace)) {
-        return false;
-      }
-      BatfishStackTrace rhs = (BatfishStackTrace) obj;
-      return Objects.equals(_lines, rhs._lines);
     }
   }
 
