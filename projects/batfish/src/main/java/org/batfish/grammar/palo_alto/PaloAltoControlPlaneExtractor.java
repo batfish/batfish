@@ -3,6 +3,7 @@ package org.batfish.grammar.palo_alto;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.Warnings;
+import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.vendor.VendorConfiguration;
@@ -29,7 +30,7 @@ public class PaloAltoControlPlaneExtractor implements ControlPlaneExtractor {
   @Override
   public void processParseTree(ParserRuleContext tree) {
     PaloAltoConfigurationBuilder cb = new PaloAltoConfigurationBuilder(_parser, _text, _w);
-    ParseTreeWalker walker = new ParseTreeWalker();
+    ParseTreeWalker walker = new BatfishParseTreeWalker();
     walker.walk(cb, tree);
     _configuration = cb.getConfiguration();
   }

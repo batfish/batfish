@@ -13,6 +13,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.flatvyos.FlatVyosParser.Bnt_nexthop_selfContext;
 import org.batfish.grammar.flatvyos.FlatVyosParser.Bnt_remote_asContext;
@@ -687,7 +688,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
 
   @Override
   public void processParseTree(ParserRuleContext tree) {
-    ParseTreeWalker walker = new ParseTreeWalker();
+    ParseTreeWalker walker = new BatfishParseTreeWalker();
     walker.walk(this, tree);
   }
 
