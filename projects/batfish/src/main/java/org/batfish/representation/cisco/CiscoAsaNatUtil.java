@@ -6,6 +6,8 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -27,10 +29,11 @@ import org.batfish.datamodel.transformation.TransformationStep;
 final class CiscoAsaNatUtil {
   private CiscoAsaNatUtil() {}
 
+  @Nullable
   static Transformation.Builder dynamicTransformation(
       AccessListAddressSpecifier realSource,
       AccessListAddressSpecifier mappedSource,
-      String insideInterface,
+      @Nullable String insideInterface,
       Map<String, NetworkObject> networkObjects,
       Warnings w) {
 
@@ -66,21 +69,22 @@ final class CiscoAsaNatUtil {
       return null;
     }
     if (insideInterface != null) {
-      /*
-       * Assuming for now that this transformation will be placed on the outside interface. If that
-       * is not true and the transformation is placed on the inside interface, this conjunction can
-       * be removed.
-       */
       matchExpr = and(matchExpr, matchSrcInterface(insideInterface));
     }
     return Transformation.when(matchExpr)
         .apply(assignSourceIp(mappedSourceObj.getStart(), mappedSourceObj.getEnd()));
   }
 
-  private static Prefix getEqualLengthPrefix(WildcardAddressSpecifier specifier, Prefix prefix) {
+  @Nullable
+  private static Prefix getEqualLengthPrefix(
+      WildcardAddressSpecifier specifier, @Nullable Prefix prefix) {
+    if (prefix == null) {
+      return null;
+    }
     return Prefix.create(specifier.getIpWildcard().getIp(), prefix.getPrefixLength());
   }
 
+  @Nullable
   private static Prefix getNetworkObjectPrefix(
       NetworkObjectAddressSpecifier specifier,
       Map<String, NetworkObject> networkObjects,
@@ -158,6 +162,7 @@ final class CiscoAsaNatUtil {
     }
   }
 
+  @Nullable
   static Transformation.Builder staticTransformation(
       AccessListAddressSpecifier matchAddress,
       AccessListAddressSpecifier shiftAddress,
@@ -235,13 +240,28 @@ final class CiscoAsaNatUtil {
     }
     AclLineMatchExpr matchExpr = matchField(matchPrefix, field);
     if (insideInterface != null) {
-      /*
-       * Assuming for now that this transformation will be placed on the outside interface. If that
-       * is not true and the transformation is placed on the inside interface, this conjunction can
-       * be removed.
-       */
       matchExpr = and(matchExpr, matchSrcInterface(insideInterface));
     }
     return Transformation.when(matchExpr).apply(shiftIp(field, shiftPrefix));
+  }
+
+  /**
+   * Completes the conversion of Cisco ASA-specific NATs to a single {@link Transformation}.
+   *
+   * @param convertedNats A list of partially built {@link Transformation}s.
+   * @return A single {@link Transformation} or null if empty
+   */
+  @Nullable
+  static Transformation toTransformationChain(
+      List<Optional<Transformation.Builder>> convertedNats) {
+
+    // Start at the end of the chain and go backwards.
+    Transformation previous = null;
+    for (Optional<Transformation.Builder> t : Lists.reverse(convertedNats)) {
+      if (t.isPresent()) {
+        previous = t.get().setOrElse(previous).build();
+      }
+    }
+    return previous;
   }
 }

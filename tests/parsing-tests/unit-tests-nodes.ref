@@ -1933,7 +1933,7 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
-            "outgoingFilter" : "~COMBINED_OUTGOING_ACL~blah~",
+            "preTransformationOutgoingFilter" : "~COMBINED_OUTGOING_ACL~blah~",
             "prefix" : "192.168.1.0/24",
             "proxyArp" : true,
             "ripEnabled" : false,
