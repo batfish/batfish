@@ -27,7 +27,7 @@ public final class Trace {
 
   public Trace(FlowDisposition disposition, List<Hop> hops) {
     _disposition = disposition;
-    _hops = hops;
+    _hops = ImmutableList.copyOf(hops);
   }
 
   @JsonCreator

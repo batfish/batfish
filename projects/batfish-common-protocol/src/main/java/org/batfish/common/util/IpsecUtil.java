@@ -16,11 +16,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
@@ -34,6 +37,8 @@ import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.NetworkConfigurations;
+import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public class IpsecUtil {
 
@@ -372,5 +377,71 @@ public class IpsecUtil {
                     .containsIp(initiator.getLocalAddress(), ImmutableMap.of()))
         .findFirst()
         .orElse(null);
+  }
+
+  /**
+   * Given a {@link ValueGraph} between {@link IpsecPeerConfigId}s, trims the edges in current
+   * {@link Topology} which are not fully established in the IPsec topology (e.g. they do not have a
+   * negotiated {@link IpsecPhase2Proposal})
+   *
+   * @param edges the network's {@link Topology} edges
+   * @param ipsecTopology original IPsec topology's {@link ValueGraph}
+   * @param configurations {@link Map} of {@link Configuration} to configuration names
+   */
+  public static Set<Edge> computeFailedIpsecSessionEdges(
+      SortedSet<Edge> edges,
+      ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology,
+      Map<String, Configuration> configurations) {
+    NetworkConfigurations networkConfigurations = NetworkConfigurations.of(configurations);
+
+    // Set of successful IPsec edges
+    Set<Edge> successfulIPsecEdges = new HashSet<>();
+    // NodeInterface pairs running IPsec peering on tunnel interfaces
+    Set<NodeInterfacePair> tunnelIpsecEndpoints = new HashSet<>();
+
+    for (IpsecPeerConfigId endPointU : ipsecTopology.nodes()) {
+      IpsecPeerConfig ipsecPeerU = networkConfigurations.getIpsecPeerConfig(endPointU);
+      // not considering endpoints not based on Tunnel interfaces
+      if (ipsecPeerU == null || ipsecPeerU.getTunnelInterface() == null) {
+        continue;
+      }
+
+      NodeInterfacePair tunnelEndPointU =
+          new NodeInterfacePair(endPointU.getHostName(), ipsecPeerU.getTunnelInterface());
+      tunnelIpsecEndpoints.add(tunnelEndPointU);
+
+      for (IpsecPeerConfigId endPointV : ipsecTopology.adjacentNodes(endPointU)) {
+        IpsecPeerConfig ipsecPeerV = networkConfigurations.getIpsecPeerConfig(endPointV);
+
+        // not considering endpoints not based on Tunnel interfaces
+        if (ipsecPeerV == null || ipsecPeerV.getTunnelInterface() == null) {
+          continue;
+        }
+
+        NodeInterfacePair tunnelEndPointV =
+            new NodeInterfacePair(endPointV.getHostName(), ipsecPeerV.getTunnelInterface());
+
+        // checking IPsec session and adding edge
+        Optional<IpsecSession> edgeIpsecSession = ipsecTopology.edgeValue(endPointU, endPointV);
+        if (edgeIpsecSession.isPresent()
+            && edgeIpsecSession.get().getNegotiatedIpsecP2Proposal() != null) {
+          successfulIPsecEdges.add(new Edge(tunnelEndPointU, tunnelEndPointV));
+        }
+      }
+    }
+
+    Set<Edge> failedIpsecEdges = new HashSet<>();
+
+    for (Edge edge : edges) {
+      NodeInterfacePair tail = edge.getTail();
+      NodeInterfacePair head = edge.getHead();
+      if ((tunnelIpsecEndpoints.contains(tail) || tunnelIpsecEndpoints.contains(head))
+          && (!successfulIPsecEdges.contains(edge)
+              || !successfulIPsecEdges.contains(edge.reverse()))) {
+        failedIpsecEdges.add(edge);
+      }
+    }
+
+    return failedIpsecEdges;
   }
 }

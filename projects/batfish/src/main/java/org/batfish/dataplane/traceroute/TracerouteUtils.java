@@ -6,27 +6,34 @@ import static org.batfish.datamodel.flow.StepAction.EXITS_NETWORK;
 import static org.batfish.datamodel.flow.StepAction.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.flow.StepAction.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.flow.StepAction.RECEIVED;
+import static org.batfish.datamodel.transformation.Transformation.always;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.TreeMultimap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
@@ -40,6 +47,7 @@ import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
+import org.batfish.datamodel.transformation.Transformation;
 
 @ParametersAreNonnullByDefault
 final class TracerouteUtils {
@@ -76,24 +84,6 @@ final class TracerouteUtils {
   }
 
   /**
-   * Returns true if the next node and interface responds for ARP request for given arpIp
-   *
-   * @param arpIp ARP for given {@link Ip}
-   * @param forwardingAnalysis {@link ForwardingAnalysis} for the given network
-   * @param node {@link Configuration} of the next node
-   * @param iface Name of the interface in the next node to be tested for ARP
-   * @return true if ARP request will get a response
-   */
-  static boolean isArpSuccessful(
-      Ip arpIp, ForwardingAnalysis forwardingAnalysis, Configuration node, String iface) {
-    return forwardingAnalysis
-        .getArpReplies()
-        .get(node.getHostname())
-        .get(iface)
-        .containsIp(arpIp, node.getIpSpaces());
-  }
-
-  /**
    * Returns the {@link Step} representing the entering of a packet on an input interface in a
    * {@link Hop}
    *
@@ -103,7 +93,7 @@ final class TracerouteUtils {
    *     the step; null if {@link EnterInputIfaceStep} can't be created
    */
   @Nonnull
-  static EnterInputIfaceStep createEnterSrcIfaceStep(Configuration node, String inputIfaceName) {
+  static EnterInputIfaceStep buildEnterSrcIfaceStep(Configuration node, String inputIfaceName) {
     Interface inputInterface = node.getAllInterfaces().get(inputIfaceName);
     checkArgument(
         inputInterface != null, "Node %s has no interface %s", node.getHostname(), inputIfaceName);
@@ -219,5 +209,65 @@ final class TracerouteUtils {
                         builder.put(
                             new NodeInterfacePair(session.getHostname(), incomingIface), session)));
     return builder.build();
+  }
+
+  @Nonnull
+  static Multimap<Ip, AbstractRoute> resolveNextHopIpRoutes(
+      String nextHopInterfaceName,
+      Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute) {
+    TreeMultimap<Ip, AbstractRoute> resolvedNextHopWithRoutes = TreeMultimap.create();
+
+    // Loop over all matching routes that use nextHopInterfaceName as one of the next hop
+    // interfaces.
+    for (Entry<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> e :
+        nextHopInterfacesByRoute.entrySet()) {
+      Map<Ip, Set<AbstractRoute>> finalNextHops = e.getValue().get(nextHopInterfaceName);
+      if (finalNextHops == null || finalNextHops.isEmpty()) {
+        continue;
+      }
+
+      AbstractRoute routeCandidate = e.getKey();
+      Ip nextHopIp = routeCandidate.getNextHopIp();
+      if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
+        resolvedNextHopWithRoutes.put(nextHopIp, routeCandidate);
+      } else {
+        for (Ip resolvedNextHopIp : finalNextHops.keySet()) {
+          resolvedNextHopWithRoutes.put(resolvedNextHopIp, routeCandidate);
+        }
+      }
+    }
+    return resolvedNextHopWithRoutes;
+  }
+
+  @Nullable
+  static Transformation sessionTransformation(Flow inputFlow, Flow currentFlow) {
+    ImmutableList.Builder<org.batfish.datamodel.transformation.TransformationStep>
+        transformationStepsBuilder = ImmutableList.builder();
+
+    Ip origDstIp = inputFlow.getDstIp();
+    if (!origDstIp.equals(currentFlow.getDstIp())) {
+      transformationStepsBuilder.add(assignSourceIp(origDstIp, origDstIp));
+    }
+
+    Ip origSrcIp = inputFlow.getSrcIp();
+    if (!origSrcIp.equals(currentFlow.getSrcIp())) {
+      transformationStepsBuilder.add(
+          org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp(
+              origSrcIp, origSrcIp));
+    }
+
+    List<org.batfish.datamodel.transformation.TransformationStep> transformationSteps =
+        transformationStepsBuilder.build();
+
+    return transformationSteps.isEmpty() ? null : always().apply(transformationSteps).build();
+  }
+
+  @Nullable
+  static Flow hopFlow(Flow originalFlow, @Nullable Flow transformedFlow) {
+    if (originalFlow == transformedFlow) {
+      return null;
+    } else {
+      return transformedFlow;
+    }
   }
 }

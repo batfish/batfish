@@ -101,9 +101,7 @@ public class If extends Statement {
         return result;
       }
     }
-    Result fallThroughResult = new Result();
-    fallThroughResult.setFallThrough(true);
-    return fallThroughResult;
+    return Result.builder().setFallThrough(true).build();
   }
 
   @JsonProperty(PROP_FALSE_STATEMENTS)

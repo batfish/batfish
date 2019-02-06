@@ -30,7 +30,11 @@ public class ReferenceLibraryResource {
     _network = network;
   }
 
-  /** Adds a new {@link ReferenceBook} to the network's {@link ReferenceLibrary} */
+  /**
+   * Adds a new {@link ReferenceBook} to the network's {@link ReferenceLibrary}. Deprecated in favor
+   * of {@link ReferenceBookResource#putReferenceBook(ReferenceBookBean)}
+   */
+  @Deprecated
   @POST
   public Response addReferenceBook(ReferenceBookBean referenceBookBean) {
     _logger.infof("WMS2: addReferenceBook '%s'\n", _network);

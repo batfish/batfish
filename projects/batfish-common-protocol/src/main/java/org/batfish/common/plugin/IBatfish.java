@@ -152,8 +152,6 @@ public interface IBatfish extends IPluginConsumer {
 
   SnapshotId getTestrigName();
 
-  void initBgpOriginationSpaceExplicit(Map<String, Configuration> configurations);
-
   InitInfoAnswerElement initInfo(boolean summary, boolean verboseError);
 
   InitInfoAnswerElement initInfoBgpAdvertisements(boolean summary, boolean verboseError);

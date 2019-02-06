@@ -73,6 +73,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -104,6 +105,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -133,6 +135,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -1198,6 +1201,22 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "neighbors" : {
+                "GigabitEthernet0/0" : {
+                  "area" : 1,
+                  "hostname" : "as1border1",
+                  "interface" : "GigabitEthernet0/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "Loopback0" : {
+                  "area" : 1,
+                  "hostname" : "as1border1",
+                  "interface" : "Loopback0",
+                  "passive" : true,
+                  "vrf" : "default"
+                }
+              },
               "processId" : "1",
               "referenceBandwidth" : 1.0E8,
               "routerId" : "1.1.1.1"
@@ -1290,6 +1309,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -1319,6 +1339,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -1350,6 +1371,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -1379,6 +1401,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2444,6 +2467,22 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "neighbors" : {
+                "GigabitEthernet1/0" : {
+                  "area" : 1,
+                  "hostname" : "as1border2",
+                  "interface" : "GigabitEthernet1/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "Loopback0" : {
+                  "area" : 1,
+                  "hostname" : "as1border2",
+                  "interface" : "Loopback0",
+                  "passive" : false,
+                  "vrf" : "default"
+                }
+              },
               "processId" : "1",
               "referenceBandwidth" : 1.0E8,
               "routerId" : "1.2.2.2"
@@ -2478,6 +2517,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2509,6 +2549,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2540,6 +2581,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2841,6 +2883,29 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "neighbors" : {
+                "GigabitEthernet0/0" : {
+                  "area" : 1,
+                  "hostname" : "as1core1",
+                  "interface" : "GigabitEthernet0/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "GigabitEthernet1/0" : {
+                  "area" : 1,
+                  "hostname" : "as1core1",
+                  "interface" : "GigabitEthernet1/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "Loopback0" : {
+                  "area" : 1,
+                  "hostname" : "as1core1",
+                  "interface" : "Loopback0",
+                  "passive" : false,
+                  "vrf" : "default"
+                }
+              },
               "processId" : "1",
               "referenceBandwidth" : 1.0E8,
               "routerId" : "1.10.1.1"
@@ -2919,6 +2984,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2950,6 +3016,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -2981,6 +3048,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -3012,6 +3080,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -4108,6 +4177,29 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "neighbors" : {
+                "GigabitEthernet1/0" : {
+                  "area" : 1,
+                  "hostname" : "as2border1",
+                  "interface" : "GigabitEthernet1/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "GigabitEthernet2/0" : {
+                  "area" : 1,
+                  "hostname" : "as2border1",
+                  "interface" : "GigabitEthernet2/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "Loopback0" : {
+                  "area" : 1,
+                  "hostname" : "as2border1",
+                  "interface" : "Loopback0",
+                  "passive" : false,
+                  "vrf" : "default"
+                }
+              },
               "processId" : "1",
               "referenceBandwidth" : 1.0E8,
               "routerId" : "2.1.1.1"
@@ -4186,6 +4278,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -4217,6 +4310,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -4248,6 +4342,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -4279,6 +4374,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -5318,6 +5414,29 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "neighbors" : {
+                "GigabitEthernet1/0" : {
+                  "area" : 1,
+                  "hostname" : "as2border2",
+                  "interface" : "GigabitEthernet1/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "GigabitEthernet2/0" : {
+                  "area" : 1,
+                  "hostname" : "as2border2",
+                  "interface" : "GigabitEthernet2/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "Loopback0" : {
+                  "area" : 1,
+                  "hostname" : "as2border2",
+                  "interface" : "Loopback0",
+                  "passive" : false,
+                  "vrf" : "default"
+                }
+              },
               "processId" : "1",
               "referenceBandwidth" : 1.0E8,
               "routerId" : "2.1.1.2"
@@ -5352,6 +5471,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -5383,6 +5503,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -5414,6 +5535,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -5446,6 +5568,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -5478,6 +5601,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -5928,6 +6052,43 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "neighbors" : {
+                "GigabitEthernet0/0" : {
+                  "area" : 1,
+                  "hostname" : "as2core1",
+                  "interface" : "GigabitEthernet0/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "GigabitEthernet1/0" : {
+                  "area" : 1,
+                  "hostname" : "as2core1",
+                  "interface" : "GigabitEthernet1/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "GigabitEthernet2/0" : {
+                  "area" : 1,
+                  "hostname" : "as2core1",
+                  "interface" : "GigabitEthernet2/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "GigabitEthernet3/0" : {
+                  "area" : 1,
+                  "hostname" : "as2core1",
+                  "interface" : "GigabitEthernet3/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "Loopback0" : {
+                  "area" : 1,
+                  "hostname" : "as2core1",
+                  "interface" : "Loopback0",
+                  "passive" : false,
+                  "vrf" : "default"
+                }
+              },
               "processId" : "1",
               "referenceBandwidth" : 1.0E8,
               "routerId" : "2.1.2.1"
@@ -5962,6 +6123,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -5993,6 +6155,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6024,6 +6187,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6055,6 +6219,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6086,6 +6251,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6485,6 +6651,43 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "neighbors" : {
+                "GigabitEthernet0/0" : {
+                  "area" : 1,
+                  "hostname" : "as2core2",
+                  "interface" : "GigabitEthernet0/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "GigabitEthernet1/0" : {
+                  "area" : 1,
+                  "hostname" : "as2core2",
+                  "interface" : "GigabitEthernet1/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "GigabitEthernet2/0" : {
+                  "area" : 1,
+                  "hostname" : "as2core2",
+                  "interface" : "GigabitEthernet2/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "GigabitEthernet3/0" : {
+                  "area" : 1,
+                  "hostname" : "as2core2",
+                  "interface" : "GigabitEthernet3/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "Loopback0" : {
+                  "area" : 1,
+                  "hostname" : "as2core2",
+                  "interface" : "Loopback0",
+                  "passive" : false,
+                  "vrf" : "default"
+                }
+              },
               "processId" : "1",
               "referenceBandwidth" : 1.0E8,
               "routerId" : "2.1.2.2"
@@ -6535,6 +6738,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6564,6 +6768,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6593,6 +6798,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6623,6 +6829,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -6653,6 +6860,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -7490,6 +7698,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -7521,6 +7730,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -7552,6 +7762,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -7581,6 +7792,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -8197,6 +8409,29 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "neighbors" : {
+                "GigabitEthernet0/0" : {
+                  "area" : 1,
+                  "hostname" : "as2dist1",
+                  "interface" : "GigabitEthernet0/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "GigabitEthernet1/0" : {
+                  "area" : 1,
+                  "hostname" : "as2dist1",
+                  "interface" : "GigabitEthernet1/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "Loopback0" : {
+                  "area" : 1,
+                  "hostname" : "as2dist1",
+                  "interface" : "Loopback0",
+                  "passive" : false,
+                  "vrf" : "default"
+                }
+              },
               "processId" : "1",
               "referenceBandwidth" : 1.0E8,
               "routerId" : "2.1.3.1"
@@ -8247,6 +8482,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -8278,6 +8514,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -8309,6 +8546,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -8338,6 +8576,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -8954,6 +9193,29 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "neighbors" : {
+                "GigabitEthernet0/0" : {
+                  "area" : 1,
+                  "hostname" : "as2dist2",
+                  "interface" : "GigabitEthernet0/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "GigabitEthernet1/0" : {
+                  "area" : 1,
+                  "hostname" : "as2dist2",
+                  "interface" : "GigabitEthernet1/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "Loopback0" : {
+                  "area" : 1,
+                  "hostname" : "as2dist2",
+                  "interface" : "Loopback0",
+                  "passive" : false,
+                  "vrf" : "default"
+                }
+              },
               "processId" : "1",
               "referenceBandwidth" : 1.0E8,
               "routerId" : "2.1.3.2"
@@ -9032,6 +9294,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -9063,6 +9326,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -9092,6 +9356,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -10079,6 +10344,22 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "neighbors" : {
+                "GigabitEthernet0/0" : {
+                  "area" : 1,
+                  "hostname" : "as3border1",
+                  "interface" : "GigabitEthernet0/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "Loopback0" : {
+                  "area" : 1,
+                  "hostname" : "as3border1",
+                  "interface" : "Loopback0",
+                  "passive" : false,
+                  "vrf" : "default"
+                }
+              },
               "processId" : "1",
               "referenceBandwidth" : 1.0E8,
               "routerId" : "3.1.1.1"
@@ -10157,6 +10438,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -10186,6 +10468,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -10217,6 +10500,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -11156,6 +11440,22 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "neighbors" : {
+                "GigabitEthernet1/0" : {
+                  "area" : 1,
+                  "hostname" : "as3border2",
+                  "interface" : "GigabitEthernet1/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "Loopback0" : {
+                  "area" : 1,
+                  "hostname" : "as3border2",
+                  "interface" : "Loopback0",
+                  "passive" : false,
+                  "vrf" : "default"
+                }
+              },
               "processId" : "1",
               "referenceBandwidth" : 1.0E8,
               "routerId" : "3.2.2.2"
@@ -11190,6 +11490,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E7,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -11221,6 +11522,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -11252,6 +11554,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -11281,6 +11584,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -11310,6 +11614,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
@@ -11753,6 +12058,29 @@
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "neighbors" : {
+                "GigabitEthernet0/0" : {
+                  "area" : 1,
+                  "hostname" : "as3core1",
+                  "interface" : "GigabitEthernet0/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "GigabitEthernet1/0" : {
+                  "area" : 1,
+                  "hostname" : "as3core1",
+                  "interface" : "GigabitEthernet1/0",
+                  "passive" : false,
+                  "vrf" : "default"
+                },
+                "Loopback0" : {
+                  "area" : 1,
+                  "hostname" : "as3core1",
+                  "interface" : "Loopback0",
+                  "passive" : false,
+                  "vrf" : "default"
+                }
+              },
               "processId" : "1",
               "referenceBandwidth" : 1.0E8,
               "routerId" : "3.10.1.1"

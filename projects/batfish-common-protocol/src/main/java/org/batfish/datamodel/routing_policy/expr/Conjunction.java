@@ -17,9 +17,12 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
+/**
+ * Boolean expression that evaluates to true if every {@link BooleanExpr} in a given list evaluates
+ * to true. Evaluates to true if the given list is empty.
+ */
 public final class Conjunction extends BooleanExpr {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_CONJUNCTS = "conjuncts";
@@ -46,44 +49,21 @@ public final class Conjunction extends BooleanExpr {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (!(obj instanceof Conjunction)) {
-      return false;
-    }
-    Conjunction other = (Conjunction) obj;
-    return Objects.equals(_conjuncts, other._conjuncts);
-  }
-
-  @Override
   public Result evaluate(Environment environment) {
     for (BooleanExpr conjunct : _conjuncts) {
       Result conjunctResult = conjunct.evaluate(environment);
       if (conjunctResult.getExit()) {
         return conjunctResult;
       } else if (!conjunctResult.getBooleanValue()) {
-        conjunctResult.setReturn(false);
-        return conjunctResult;
+        return conjunctResult.toBuilder().setReturn(false).build();
       }
     }
-    Result result = new Result();
-    result.setBooleanValue(true);
-    return result;
+    return new Result(true);
   }
 
   @JsonProperty(PROP_CONJUNCTS)
   public List<BooleanExpr> getConjuncts() {
     return _conjuncts;
-  }
-
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((_conjuncts == null) ? 0 : _conjuncts.hashCode());
-    return result;
   }
 
   @JsonProperty(PROP_CONJUNCTS)
@@ -127,6 +107,23 @@ public final class Conjunction extends BooleanExpr {
       simple._simplified = _simplified;
     }
     return _simplified;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof Conjunction)) {
+      return false;
+    }
+    Conjunction other = (Conjunction) obj;
+    return Objects.equals(_conjuncts, other._conjuncts);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_conjuncts);
   }
 
   @Override

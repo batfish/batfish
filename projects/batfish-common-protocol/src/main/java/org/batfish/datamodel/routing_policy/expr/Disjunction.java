@@ -14,11 +14,14 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
+/**
+ * Boolean expression that evaluates to true if any {@link BooleanExpr} in a given list evaluates to
+ * true. Evaluates to false if the given list is empty.
+ */
 public final class Disjunction extends BooleanExpr {
 
   private static final String PROP_DISJUNCTS = "disjuncts";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private List<BooleanExpr> _disjuncts;
@@ -46,44 +49,21 @@ public final class Disjunction extends BooleanExpr {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (!(obj instanceof Disjunction)) {
-      return false;
-    }
-    Disjunction other = (Disjunction) obj;
-    return Objects.equals(_disjuncts, other._disjuncts);
-  }
-
-  @Override
   public Result evaluate(Environment environment) {
     for (BooleanExpr disjunct : _disjuncts) {
       Result disjunctResult = disjunct.evaluate(environment);
       if (disjunctResult.getExit()) {
         return disjunctResult;
       } else if (disjunctResult.getBooleanValue()) {
-        disjunctResult.setReturn(false);
-        return disjunctResult;
+        return disjunctResult.toBuilder().setReturn(false).build();
       }
     }
-    Result result = new Result();
-    result.setBooleanValue(false);
-    return result;
+    return new Result(false);
   }
 
   @JsonProperty(PROP_DISJUNCTS)
   public List<BooleanExpr> getDisjuncts() {
     return _disjuncts;
-  }
-
-  @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((_disjuncts == null) ? 0 : _disjuncts.hashCode());
-    return result;
   }
 
   @JsonProperty(PROP_DISJUNCTS)
@@ -122,6 +102,23 @@ public final class Disjunction extends BooleanExpr {
       simple._simplified = _simplified;
     }
     return _simplified;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof Disjunction)) {
+      return false;
+    }
+    Disjunction other = (Disjunction) obj;
+    return Objects.equals(_disjuncts, other._disjuncts);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_disjuncts);
   }
 
   @Override

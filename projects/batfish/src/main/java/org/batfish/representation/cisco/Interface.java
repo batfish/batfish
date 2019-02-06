@@ -24,39 +24,58 @@ import org.batfish.datamodel.isis.IsisInterfaceMode;
 
 public class Interface implements Serializable {
 
-  private static final double ARISTA_ETHERNET_BANDWIDTH = 1E9;
+  private static final double DEFAULT_ARISTA_ETHERNET_SPEED = 1E9D;
 
-  private static final double DEFAULT_INTERFACE_BANDWIDTH = 1E12;
+  private static final double DEFAULT_FAST_ETHERNET_SPEED = 100E6D;
+
+  private static final double DEFAULT_GIGABIT_ETHERNET_SPEED = 1E9D;
+
+  private static final double DEFAULT_INTERFACE_BANDWIDTH = 1E12D;
 
   private static final int DEFAULT_INTERFACE_MTU = 1500;
 
-  private static final double FAST_ETHERNET_BANDWIDTH = 100E6;
+  private static final double DEFAULT_IOS_ETHERNET_SPEED = 1E7D;
 
-  private static final double GIGABIT_ETHERNET_BANDWIDTH = 1E9;
-
-  private static final double IOS_ETHERNET_BANDWIDTH = 1E7;
-
-  private static final double LONG_REACH_ETHERNET_BANDWIDTH = 10E6;
+  private static final double DEFAULT_LONG_REACH_ETHERNET_SPEED = 10E6D;
 
   /** Loopback bandwidth */
-  private static final double LOOPBACK_BANDWIDTH = 8E9;
-
-  /** Loopback delay for IOS */
-  private static final double LOOPBACK_IOS_DELAY = 5E9;
+  private static final double DEFAULT_LOOPBACK_BANDWIDTH = 8E9D;
 
   /** NX-OS Ethernet 802.3z - may not apply for non-NX-OS */
-  private static final double NXOS_ETHERNET_BANDWIDTH = 1E9;
+  private static final double DEFAULT_NXOS_ETHERNET_SPEED = 1E9D;
+
+  private static final double DEFAULT_TEN_GIGABIT_ETHERNET_SPEED = 10E9D;
+
+  /** Loopback delay for IOS */
+  private static final double LOOPBACK_IOS_DELAY = 5E9D;
 
   private static final long serialVersionUID = 1L;
 
-  private static final double TEN_GIGABIT_ETHERNET_BANDWIDTH = 10E9;
+  public static @Nullable Double getDefaultBandwidth(
+      @Nonnull String name, @Nonnull ConfigurationFormat format) {
+    Double defaultSpeed = getDefaultSpeed(name, format);
+    if (defaultSpeed != null) {
+      return defaultSpeed;
+    } else if (name.startsWith("Bundle-Ethernet")) {
+      // Derived from member interfaces
+      return null;
+    } else if (name.startsWith("Loopback")) {
+      return DEFAULT_LOOPBACK_BANDWIDTH;
+    } else if (name.startsWith("Port-Channel")) {
+      // Derived from member interfaces
+      return null;
+    } else {
+      // Use default bandwidth for other interface types that have no speed
+      return DEFAULT_INTERFACE_BANDWIDTH;
+    }
+  }
 
-  public static double getDefaultBandwidth(String name, ConfigurationFormat format) {
-    Double bandwidth = null;
+  public static @Nullable Double getDefaultSpeed(
+      @Nonnull String name, @Nonnull ConfigurationFormat format) {
     if (name.startsWith("Ethernet")) {
       switch (format) {
         case ARISTA:
-          return ARISTA_ETHERNET_BANDWIDTH;
+          return DEFAULT_ARISTA_ETHERNET_SPEED;
 
         case ALCATEL_AOS:
         case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
@@ -66,10 +85,10 @@ public class Interface implements Serializable {
         case CISCO_IOS_XR:
         case FORCE10:
         case FOUNDRY:
-          return IOS_ETHERNET_BANDWIDTH;
+          return DEFAULT_IOS_ETHERNET_SPEED;
 
         case CISCO_NX:
-          return NXOS_ETHERNET_BANDWIDTH;
+          return DEFAULT_NXOS_ETHERNET_SPEED;
 
         case AWS:
         case BLADENETWORK:
@@ -92,24 +111,21 @@ public class Interface implements Serializable {
           throw new BatfishException("Unuspported format: " + format);
       }
     } else if (name.startsWith("FastEthernet")) {
-      bandwidth = FAST_ETHERNET_BANDWIDTH;
+      return DEFAULT_FAST_ETHERNET_SPEED;
     } else if (name.startsWith("GigabitEthernet")) {
-      bandwidth = GIGABIT_ETHERNET_BANDWIDTH;
+      return DEFAULT_GIGABIT_ETHERNET_SPEED;
     } else if (name.startsWith("LongReachEthernet")) {
-      bandwidth = LONG_REACH_ETHERNET_BANDWIDTH;
+      return DEFAULT_LONG_REACH_ETHERNET_SPEED;
     } else if (name.startsWith("TenGigabitEthernet")) {
-      bandwidth = TEN_GIGABIT_ETHERNET_BANDWIDTH;
-    } else if (name.startsWith("Vlan")) {
-      bandwidth = null;
-    } else if (name.startsWith("Loopback")) {
-      bandwidth = LOOPBACK_BANDWIDTH;
-    } else if (name.startsWith("Bundle-Ethernet") || name.startsWith("Port-Channel")) {
-      bandwidth = 0D;
+      return DEFAULT_TEN_GIGABIT_ETHERNET_SPEED;
+    } else {
+      // Bundle-Ethernet
+      // Loopback
+      // Port-Channel
+      // Vlan
+      // ... others
+      return null;
     }
-    if (bandwidth == null) {
-      bandwidth = DEFAULT_INTERFACE_BANDWIDTH;
-    }
-    return bandwidth;
   }
 
   public static int getDefaultMtu() {
@@ -207,6 +223,8 @@ public class Interface implements Serializable {
   private String _securityZone;
 
   @Nullable private Integer _securityLevel;
+
+  private @Nullable Double _speed;
 
   public static double getDefaultDelay(String name, ConfigurationFormat format) {
     if (format == ConfigurationFormat.CISCO_IOS && name.startsWith("Loopback")) {
@@ -467,6 +485,10 @@ public class Interface implements Serializable {
     return _spanningTreePortfast;
   }
 
+  public @Nullable Double getSpeed() {
+    return _speed;
+  }
+
   public InterfaceAddress getStandbyAddress() {
     return _standbyAddress;
   }
@@ -634,6 +656,10 @@ public class Interface implements Serializable {
 
   public void setSpanningTreePortfast(boolean spanningTreePortfast) {
     _spanningTreePortfast = spanningTreePortfast;
+  }
+
+  public void setSpeed(@Nullable Double speed) {
+    _speed = speed;
   }
 
   public void setStandbyAddress(InterfaceAddress standbyAddress) {

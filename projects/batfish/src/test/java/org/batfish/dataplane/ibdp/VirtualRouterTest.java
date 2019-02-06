@@ -47,6 +47,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LocalRoute;
+import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
@@ -73,6 +74,7 @@ import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisProcess;
+import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
@@ -619,7 +621,11 @@ public class VirtualRouterTest {
         .forEach(
             vr ->
                 vr.initQueuesAndDeltaBuilders(
-                    nodes, topology, bgpTopology, eigrpTopology, initialIsisTopology));
+                    bgpTopology,
+                    eigrpTopology,
+                    initialIsisTopology,
+                    OspfTopologyUtils.computeOspfTopology(
+                        NetworkConfigurations.of(configs), topology)));
 
     // Assert that queues are empty as there are no OSPF, BGP, EIGRP, nor IS-IS processes
     vrs.values()
@@ -657,7 +663,11 @@ public class VirtualRouterTest {
     for (Node n : nodes.values()) {
       n.getVirtualRouters()
           .get(DEFAULT_VRF_NAME)
-          .initQueuesAndDeltaBuilders(nodes, topology, bgpTopology2, eigrpTopology, isisTopology);
+          .initQueuesAndDeltaBuilders(
+              bgpTopology2,
+              eigrpTopology,
+              isisTopology,
+              OspfTopologyUtils.computeOspfTopology(NetworkConfigurations.of(configs), topology));
     }
     // Assert that queues are initialized
     vrs.values()
@@ -720,7 +730,11 @@ public class VirtualRouterTest {
         .forEach(
             vr ->
                 vr.initQueuesAndDeltaBuilders(
-                    nodes, topology, bgpTopology, eigrpTopology, initialIsisTopology));
+                    bgpTopology,
+                    eigrpTopology,
+                    initialIsisTopology,
+                    OspfTopologyUtils.computeOspfTopology(
+                        NetworkConfigurations.of(configs), topology)));
 
     // Assert that queues are empty as there are no OSPF, BGP, nor IS-IS processes
     vrs.values()
@@ -739,7 +753,11 @@ public class VirtualRouterTest {
         .forEach(
             vr ->
                 vr.initQueuesAndDeltaBuilders(
-                    nodes, topology, bgpTopology, eigrpTopology, updatedIsisTopology));
+                    bgpTopology,
+                    eigrpTopology,
+                    updatedIsisTopology,
+                    OspfTopologyUtils.computeOspfTopology(
+                        NetworkConfigurations.of(configs), topology)));
 
     // Assert that queues are initialized
     assertThat(

@@ -30,7 +30,6 @@ public class TopologyTest {
     Topology topo = new Topology(edges);
 
     assertThat(topo.getEdges(), equalTo(ImmutableSet.of()));
-    assertThat(topo.getInterfaceEdges(), equalTo(ImmutableMap.of()));
     assertThat(topo.getNodeEdges(), equalTo(ImmutableMap.of()));
     assertThat(
         topo.getNeighbors(new NodeInterfacePair("node", "iface")), equalTo(ImmutableSet.of()));
@@ -45,7 +44,6 @@ public class TopologyTest {
     Topology topo = new Topology(edges);
 
     assertThat(topo.getEdges(), equalTo(edges));
-    assertThat(topo.getInterfaceEdges(), equalTo(ImmutableMap.of(nip1, edges, nip2, edges)));
     assertThat(topo.getNodeEdges(), equalTo(ImmutableMap.of("n1", edges, "n2", edges)));
     assertThat(topo.getNeighbors(nip1), equalTo(ImmutableSet.of(nip2)));
     assertThat(topo.getNeighbors(nip2), equalTo(ImmutableSet.of()));
@@ -57,9 +55,6 @@ public class TopologyTest {
     Topology topo = new Topology(_bothEdges);
     assertThat(topo.getEdges(), equalTo(_bothEdges));
     assertThat(
-        topo.getInterfaceEdges(),
-        equalTo(ImmutableMap.of(_nip1, _edge1to2Set, _nip2, _bothEdges, _nip3, _edge2to3Set)));
-    assertThat(
         topo.getNodeEdges(),
         equalTo(ImmutableMap.of("n1", _edge1to2Set, "n2", _bothEdges, "n3", _edge2to3Set)));
     assertThat(topo.getNeighbors(_nip1), equalTo(ImmutableSet.of(_nip2)));
@@ -69,12 +64,9 @@ public class TopologyTest {
 
   @Test
   public void testPruneEdge() {
-    Topology topo = new Topology(_bothEdges);
-    topo.prune(_edge1to2Set, null, null);
+    Topology topo =
+        new Topology(_bothEdges).prune(_edge1to2Set, ImmutableSet.of(), ImmutableSet.of());
     assertThat(topo.getEdges(), equalTo(_edge2to3Set));
-    assertThat(
-        topo.getInterfaceEdges(),
-        equalTo(ImmutableMap.of(_nip2, _edge2to3Set, _nip3, _edge2to3Set)));
     assertThat(
         topo.getNodeEdges(), equalTo(ImmutableMap.of("n2", _edge2to3Set, "n3", _edge2to3Set)));
     assertThat(topo.getNeighbors(_nip1), equalTo(ImmutableSet.of()));
@@ -84,12 +76,9 @@ public class TopologyTest {
 
   @Test
   public void testPruneNode1() {
-    Topology topo = new Topology(_bothEdges);
-    topo.prune(null, ImmutableSet.of("n1"), null);
+    Topology topo =
+        new Topology(_bothEdges).prune(ImmutableSet.of(), ImmutableSet.of("n1"), ImmutableSet.of());
     assertThat(topo.getEdges(), equalTo(_edge2to3Set));
-    assertThat(
-        topo.getInterfaceEdges(),
-        equalTo(ImmutableMap.of(_nip2, _edge2to3Set, _nip3, _edge2to3Set)));
     assertThat(
         topo.getNodeEdges(), equalTo(ImmutableMap.of("n2", _edge2to3Set, "n3", _edge2to3Set)));
     assertThat(topo.getNeighbors(_nip2), equalTo(ImmutableSet.of(_nip3)));
@@ -98,10 +87,9 @@ public class TopologyTest {
 
   @Test
   public void testPruneNode2() {
-    Topology topo = new Topology(_bothEdges);
-    topo.prune(null, ImmutableSet.of("n2"), null);
+    Topology topo =
+        new Topology(_bothEdges).prune(ImmutableSet.of(), ImmutableSet.of("n2"), ImmutableSet.of());
     assertThat(topo.getEdges(), equalTo(ImmutableSet.of()));
-    assertThat(topo.getInterfaceEdges(), equalTo(ImmutableMap.of()));
     assertThat(topo.getNodeEdges(), equalTo(ImmutableMap.of()));
     assertThat(topo.getNeighbors(_nip1), equalTo(ImmutableSet.of()));
     assertThat(topo.getNeighbors(_nip3), equalTo(ImmutableSet.of()));
@@ -109,12 +97,9 @@ public class TopologyTest {
 
   @Test
   public void testPruneNode3() {
-    Topology topo = new Topology(_bothEdges);
-    topo.prune(null, ImmutableSet.of("n3"), null);
+    Topology topo =
+        new Topology(_bothEdges).prune(ImmutableSet.of(), ImmutableSet.of("n3"), ImmutableSet.of());
     assertThat(topo.getEdges(), equalTo(_edge1to2Set));
-    assertThat(
-        topo.getInterfaceEdges(),
-        equalTo(ImmutableMap.of(_nip1, _edge1to2Set, _nip2, _edge1to2Set)));
     assertThat(
         topo.getNodeEdges(), equalTo(ImmutableMap.of("n1", _edge1to2Set, "n2", _edge1to2Set)));
     assertThat(topo.getNeighbors(_nip1), equalTo(ImmutableSet.of(_nip2)));
@@ -123,12 +108,10 @@ public class TopologyTest {
 
   @Test
   public void testPruneInterface1() {
-    Topology topo = new Topology(_bothEdges);
-    topo.prune(null, null, ImmutableSet.of(_nip1));
+    Topology topo =
+        new Topology(_bothEdges)
+            .prune(ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(_nip1));
     assertThat(topo.getEdges(), equalTo(_edge2to3Set));
-    assertThat(
-        topo.getInterfaceEdges(),
-        equalTo(ImmutableMap.of(_nip2, _edge2to3Set, _nip3, _edge2to3Set)));
     assertThat(
         topo.getNodeEdges(), equalTo(ImmutableMap.of("n2", _edge2to3Set, "n3", _edge2to3Set)));
     assertThat(topo.getNeighbors(_nip2), equalTo(ImmutableSet.of(_nip3)));
@@ -137,10 +120,10 @@ public class TopologyTest {
 
   @Test
   public void testPruneInterface2() {
-    Topology topo = new Topology(_bothEdges);
-    topo.prune(null, null, ImmutableSet.of(_nip2));
+    Topology topo =
+        new Topology(_bothEdges)
+            .prune(ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(_nip2));
     assertThat(topo.getEdges(), equalTo(ImmutableSet.of()));
-    assertThat(topo.getInterfaceEdges(), equalTo(ImmutableMap.of()));
     assertThat(topo.getNodeEdges(), equalTo(ImmutableMap.of()));
     assertThat(topo.getNeighbors(_nip1), equalTo(ImmutableSet.of()));
     assertThat(topo.getNeighbors(_nip3), equalTo(ImmutableSet.of()));
@@ -148,12 +131,10 @@ public class TopologyTest {
 
   @Test
   public void testPruneInterface3() {
-    Topology topo = new Topology(_bothEdges);
-    topo.prune(null, null, ImmutableSet.of(_nip3));
+    Topology topo =
+        new Topology(_bothEdges)
+            .prune(ImmutableSet.of(), ImmutableSet.of(), ImmutableSet.of(_nip3));
     assertThat(topo.getEdges(), equalTo(_edge1to2Set));
-    assertThat(
-        topo.getInterfaceEdges(),
-        equalTo(ImmutableMap.of(_nip1, _edge1to2Set, _nip2, _edge1to2Set)));
     assertThat(
         topo.getNodeEdges(), equalTo(ImmutableMap.of("n1", _edge1to2Set, "n2", _edge1to2Set)));
     assertThat(topo.getNeighbors(_nip1), equalTo(ImmutableSet.of(_nip2)));

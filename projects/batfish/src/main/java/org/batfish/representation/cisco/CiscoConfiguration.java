@@ -165,6 +165,7 @@ import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
+import org.batfish.representation.cisco.CiscoAsaNat.Section;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.batfish.representation.cisco.nx.CiscoNxBgpGlobalConfiguration;
@@ -457,6 +458,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
 
+  private final Map<String, NetworkObjectInfo> _networkObjectInfos;
+
   private final Map<String, NetworkObject> _networkObjects;
 
   private String _ntpSourceInterface;
@@ -554,6 +557,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _ciscoAsaNats = new ArrayList<>();
     _ciscoIosNats = new ArrayList<>();
     _networkObjectGroups = new TreeMap<>();
+    _networkObjectInfos = new TreeMap<>();
     _networkObjects = new TreeMap<>();
     _nxBgpGlobalConfiguration = new CiscoNxBgpGlobalConfiguration();
     _objectGroups = new TreeMap<>();
@@ -2068,12 +2072,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setHsrpVersion(iface.getHsrpVersion());
     newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
-    if (iface.getBandwidth() == null) {
-      newIface.setBandwidth(
-          Interface.getDefaultBandwidth(iface.getName(), c.getConfigurationFormat()));
-    } else {
-      newIface.setBandwidth(iface.getBandwidth());
-    }
+    newIface.setSpeed(
+        firstNonNull(
+            iface.getSpeed(),
+            Interface.getDefaultSpeed(iface.getName(), c.getConfigurationFormat())));
+    newIface.setBandwidth(
+        firstNonNull(
+            iface.getBandwidth(),
+            newIface.getSpeed(),
+            Interface.getDefaultBandwidth(iface.getName(), c.getConfigurationFormat())));
     if (iface.getDhcpRelayClient()) {
       newIface.setDhcpRelayAddresses(_dhcpRelayServers);
     } else {
@@ -3168,6 +3175,38 @@ public final class CiscoConfiguration extends VendorConfiguration {
       c.getIpAccessLists().put(ipaList.getName(), ipaList);
     }
 
+    /*
+     * Consolidate info about networkObjects
+     * - Associate networkObjects with their Info
+     * - Associate ASA Object NATs with their object (needed for sorting)
+     * - Removes ASA Object NATs that were created without a valid network object
+     */
+    _networkObjectInfos.forEach(
+        (name, info) -> {
+          if (_networkObjects.containsKey(name)) {
+            _networkObjects.get(name).setInfo(info);
+          }
+        });
+    _ciscoAsaNats.removeIf(
+        nat -> {
+          if (nat.getSection() != Section.OBJECT) {
+            return false;
+          }
+          String objectName = ((NetworkObjectAddressSpecifier) nat.getRealSource()).getName();
+          NetworkObject object = _networkObjects.get(objectName);
+          if (object == null) {
+            // Network object has a NAT but no addresses
+            _w.redFlag("Invalid reference for object NAT " + objectName + ".");
+            return true;
+          }
+          if (object.getStart() == null) {
+            // Unsupported network object type, already warned
+            return true;
+          }
+          nat.setRealSourceObject(object);
+          return false;
+        });
+
     // convert each NetworkObject and NetworkObjectGroup to IpSpace
     _networkObjectGroups.forEach(
         (name, networkObjectGroup) -> c.getIpSpaces().put(name, toIpSpace(networkObjectGroup)));
@@ -3539,6 +3578,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.IP_ROUTE_NHINT,
         CiscoStructureUsage.IP_TACACS_SOURCE_INTERFACE,
         CiscoStructureUsage.NTP_SOURCE_INTERFACE,
+        CiscoStructureUsage.OBJECT_NAT_MAPPED_INTERFACE,
+        CiscoStructureUsage.OBJECT_NAT_REAL_INTERFACE,
         CiscoStructureUsage.OSPF_AREA_INTERFACE,
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
@@ -3762,6 +3803,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.NETWORK_OBJECT_GROUP,
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP,
         CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT,
+        CiscoStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
         CiscoStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT_GROUP,
         CiscoStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
         CiscoStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT_GROUP,
@@ -3788,6 +3830,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.NETWORK_OBJECT,
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT,
         CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT,
+        CiscoStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
+        CiscoStructureUsage.OBJECT_NAT_REAL_SOURCE_NETWORK_OBJECT,
         CiscoStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT,
         CiscoStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
         CiscoStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT,
@@ -4362,6 +4406,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, NetworkObjectGroup> getNetworkObjectGroups() {
     return _networkObjectGroups;
+  }
+
+  public Map<String, NetworkObjectInfo> getNetworkObjectInfos() {
+    return _networkObjectInfos;
   }
 
   public Map<String, NetworkObject> getNetworkObjects() {

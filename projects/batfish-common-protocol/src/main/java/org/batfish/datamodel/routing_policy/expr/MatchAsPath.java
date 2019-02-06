@@ -1,24 +1,42 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
+/**
+ * Boolean expression that tests whether an {@link Environment} contains a BGP route with an AS path
+ * that matches a given {@link AsPathSetExpr}.
+ */
 public final class MatchAsPath extends BooleanExpr {
-  /** */
+
   private static final long serialVersionUID = 1L;
 
   private static final String PROP_EXPR = "expr";
-
-  private AsPathSetExpr _expr;
+  private final AsPathSetExpr _expr;
 
   @JsonCreator
-  private MatchAsPath() {}
+  private static MatchAsPath create(@JsonProperty(PROP_EXPR) AsPathSetExpr expr) {
+    checkArgument(expr != null, "%s must be provided", PROP_EXPR);
+    return new MatchAsPath(expr);
+  }
 
   public MatchAsPath(AsPathSetExpr expr) {
     _expr = expr;
+  }
+
+  @Override
+  public Result evaluate(Environment environment) {
+    return new Result(_expr.matches(environment));
+  }
+
+  @JsonProperty(PROP_EXPR)
+  public AsPathSetExpr getExpr() {
+    return _expr;
   }
 
   @Override
@@ -34,29 +52,8 @@ public final class MatchAsPath extends BooleanExpr {
   }
 
   @Override
-  public Result evaluate(Environment environment) {
-    boolean match = _expr.matches(environment);
-    Result result = new Result();
-    result.setBooleanValue(match);
-    return result;
-  }
-
-  @JsonProperty(PROP_EXPR)
-  public AsPathSetExpr getExpr() {
-    return _expr;
-  }
-
-  @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((_expr == null) ? 0 : _expr.hashCode());
-    return result;
-  }
-
-  @JsonProperty(PROP_EXPR)
-  public void setExpr(AsPathSetExpr expr) {
-    _expr = expr;
+    return Objects.hash(_expr);
   }
 
   @Override
