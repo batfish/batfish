@@ -120,7 +120,6 @@ NO_ORDERED_VARIABLE_NAMES_QUESTIONS = {
     'questions/experimental/nodes.json',
     'questions/experimental/ospfProperties.json',
     'questions/experimental/prefixTracer.json',
-    'questions/experimental/reachability.json',
     'questions/experimental/resolveFilterSpecifier.json',
     'questions/experimental/resolveInterfaceSpecifier.json',
     'questions/experimental/searchFilters.json',
