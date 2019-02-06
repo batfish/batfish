@@ -39,6 +39,7 @@ import org.batfish.z3.expr.MockBooleanAtom;
 import org.batfish.z3.expr.MockIntAtom;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.RuleStatement;
+import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TransformationExpr;
 import org.batfish.z3.expr.TransformationStepExpr;
 import org.batfish.z3.expr.TransformedVarIntExpr;
@@ -863,6 +864,7 @@ public class DefaultTransitionGeneratorTest {
                     ImmutableMap.of(INTERFACE1, ACL1),
                     NODE2,
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2)))
+            .setPreOutgoingAcls(ImmutableMap.of(NODE2, ImmutableMap.of(INTERFACE1, ACL3)))
             .setTopologyInterfaces(
                 ImmutableMap.of(
                     NODE1,
@@ -897,6 +899,11 @@ public class DefaultTransitionGeneratorTest {
                 ImmutableSet.of(
                     new AclDeny(NODE2, ACL2),
                     new PreOutEdgePostNat(NODE2, INTERFACE2, NODE1, INTERFACE2)),
+                new NodeDropAclOut(NODE2)),
+            new BasicRuleStatement(
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(
+                    new AclDeny(NODE2, ACL3), new PreOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE1)),
                 new NodeDropAclOut(NODE2))));
   }
 
@@ -1881,6 +1888,7 @@ public class DefaultTransitionGeneratorTest {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
             .setEnabledEdges(ImmutableSet.of(Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE2)))
+            .setPreOutgoingAcls(ImmutableMap.of(NODE1, ImmutableMap.of(INTERFACE1, ACL1)))
             .setTopologyInterfaces(ImmutableMap.of(NODE1, ImmutableSet.of(INTERFACE1)))
             .setAclLineMatchExprToBooleanExprs(
                 ImmutableMap.of(
@@ -1895,14 +1903,16 @@ public class DefaultTransitionGeneratorTest {
         DefaultTransitionGenerator.generateTransitions(
             input, ImmutableSet.of(PreOutEdgePostNat.State.INSTANCE));
 
-    PreOutEdge preState = new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2);
+    Set<StateExpr> preStates =
+        ImmutableSet.of(
+            new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2), new AclPermit(NODE1, ACL1));
     TransformationExpr transformationExpr =
         new TransformationExpr(NODE1, INTERFACE1, NODE2, INTERFACE2, "OUTGOING", 0);
     TransformationStepExpr noopStep =
         new TransformationStepExpr(NODE1, INTERFACE1, NODE2, INTERFACE2, "OUTGOING", 0, 0);
     PreOutEdgePostNat postState = new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE2);
 
-    RuleStatement enterRule = new BasicRuleStatement(preState, transformationExpr);
+    RuleStatement enterRule = new BasicRuleStatement(preStates, transformationExpr);
     RuleStatement stepRule = new BasicRuleStatement(transformationExpr, noopStep);
     RuleStatement andThenRule = new BasicRuleStatement(noopStep, postState);
     RuleStatement orElseRule =

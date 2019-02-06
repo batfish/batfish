@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -158,7 +159,7 @@ public final class TransformationTransitionGenerator {
       String iface1,
       String tag,
       AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr,
-      StateExpr preState,
+      Set<StateExpr> preStates,
       StateExpr postState,
       @Nullable Transformation transformation) {
     return generateTransitions(
@@ -168,7 +169,7 @@ public final class TransformationTransitionGenerator {
         null,
         tag,
         aclLineMatchExprToBooleanExpr,
-        preState,
+        preStates,
         postState,
         transformation);
   }
@@ -180,18 +181,18 @@ public final class TransformationTransitionGenerator {
       @Nullable String iface2,
       String tag,
       AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr,
-      StateExpr preState,
+      Set<StateExpr> preStates,
       StateExpr postState,
       @Nullable Transformation transformation) {
     if (transformation == null) {
-      return ImmutableList.of(new BasicRuleStatement(preState, postState));
+      return ImmutableList.of(new BasicRuleStatement(preStates, postState));
     }
 
     TransformationTransitionGenerator gen =
         new TransformationTransitionGenerator(
             node1, iface1, node2, iface2, tag, aclLineMatchExprToBooleanExpr, postState);
     StateExpr stateExpr = gen.generateTransitions(transformation);
-    gen._statements.add(new BasicRuleStatement(preState, stateExpr));
+    gen._statements.add(new BasicRuleStatement(preStates, stateExpr));
     return gen._statements.build();
   }
 

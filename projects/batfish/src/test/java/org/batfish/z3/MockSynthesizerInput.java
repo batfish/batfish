@@ -66,6 +66,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Map<String, Transformation>> _outgoingTransformations;
 
+    private Map<String, Map<String, String>> _preOutgoingAcls;
+
     private Map<String, Map<String, BooleanExpr>> _routableIps;
 
     private boolean _simplify;
@@ -103,6 +105,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _nullRoutedIps = ImmutableMap.of();
       _outgoingAcls = ImmutableMap.of();
       _outgoingTransformations = ImmutableMap.of();
+      _preOutgoingAcls = ImmutableMap.of();
       _routableIps = ImmutableMap.of();
       _srcInterfaceField = null;
       _srcInterfaceFieldValues = ImmutableMap.of();
@@ -226,6 +229,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
+    public Builder setPreOutgoingAcls(Map<String, Map<String, String>> preOutgoingAcls) {
+      _preOutgoingAcls = preOutgoingAcls;
+      return this;
+    }
+
     public Builder setRoutableIps(Map<String, Map<String, BooleanExpr>> routableIps) {
       _routableIps = routableIps;
       return this;
@@ -326,6 +334,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private Map<String, Map<String, Transformation>> _outgoingTransformations;
 
+  private final Map<String, Map<String, String>> _preOutgoingAcls;
+
   private final Map<String, Map<String, BooleanExpr>> _routableIps;
 
   private final boolean _simplify;
@@ -363,6 +373,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _nonTransitNodes = builder._nonTransitNodes;
     _outgoingAcls = builder._outgoingAcls;
     _outgoingTransformations = builder._outgoingTransformations;
+    _preOutgoingAcls = builder._preOutgoingAcls;
     _routableIps = builder._routableIps;
     _simplify = builder._simplify;
     _sourceInterfaceField = builder._srcInterfaceField;
@@ -472,6 +483,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
   @Override
   public Map<String, Map<String, Transformation>> getOutgoingTransformations() {
     return _outgoingTransformations;
+  }
+
+  @Override
+  public Map<String, Map<String, String>> getPreOutgoingAcls() {
+    return _preOutgoingAcls;
   }
 
   @Override

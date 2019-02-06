@@ -93,6 +93,9 @@ public interface SynthesizerInput {
   /** Mapping: hostname -&gt; interface -&gt; outgoingTransformation */
   Map<String, Map<String, Transformation>> getOutgoingTransformations();
 
+  /** Mapping: hostname -&gt; interface-&gt; preOutgoingAcl */
+  Map<String, Map<String, String>> getPreOutgoingAcls();
+
   /** Mapping: hostname -&gt; vrfName -&gt; routableIps */
   Map<String, Map<String, BooleanExpr>> getRoutableIps();
 

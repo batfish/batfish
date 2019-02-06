@@ -497,6 +497,19 @@ public class DefaultTransitionGenerator implements StateVisitor {
               String iface1 = edge.getInt1();
               String node2 = edge.getNode2();
               String iface2 = edge.getInt2();
+              String preOutAcl =
+                  _input.getPreOutgoingAcls().getOrDefault(node1, ImmutableMap.of()).get(iface1);
+              // There has to be an ACL -- no ACL is an implicit Permit.
+              if (preOutAcl != null) {
+                Set<StateExpr> postTransformationPreStates =
+                    ImmutableSet.of(
+                        new AclDeny(node1, preOutAcl),
+                        new PreOutEdge(node1, iface1, node2, iface2));
+                _rules.add(
+                    new BasicRuleStatement(
+                        TrueExpr.INSTANCE, postTransformationPreStates, new NodeDropAclOut(node1)));
+              }
+
               String outAcl = _input.getOutgoingAcls().get(node1).get(iface1);
               // There has to be an ACL -- no ACL is an implicit Permit.
               if (outAcl != null) {
@@ -704,7 +717,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                             ifaceName,
                             "INCOMING",
                             _input.getAclLineMatchExprToBooleanExprs().get(hostname),
-                            preState,
+                            ImmutableSet.of(preState),
                             postState,
                             _input
                                 .getIncomingTransformations()
@@ -918,6 +931,14 @@ public class DefaultTransitionGenerator implements StateVisitor {
               PreOutEdge preState = new PreOutEdge(node1, iface1, node2, iface2);
               StateExpr postState = new PreOutEdgePostNat(node1, iface1, node2, iface2);
 
+              ImmutableSet.Builder<StateExpr> preStates =
+                  ImmutableSet.<StateExpr>builder().add(preState);
+              String outAcl =
+                  _input.getPreOutgoingAcls().getOrDefault(node1, ImmutableMap.of()).get(iface1);
+              if (outAcl != null) {
+                preStates.add(new AclPermit(node1, outAcl));
+              }
+
               return TransformationTransitionGenerator.generateTransitions(
                   node1,
                   iface1,
@@ -925,7 +946,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                   iface2,
                   "OUTGOING",
                   _input.getAclLineMatchExprToBooleanExprs().get(node1),
-                  preState,
+                  preStates.build(),
                   postState,
                   _input
                       .getOutgoingTransformations()

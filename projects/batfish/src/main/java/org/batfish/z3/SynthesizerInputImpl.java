@@ -232,6 +232,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nonnull Map<String, Map<String, Transformation>> _outgoingTransformations;
 
+  private final @Nonnull Map<String, Map<String, String>> _preOutgoingAcls;
+
   private final @Nullable Map<String, Map<String, BooleanExpr>> _routableIps;
 
   private final boolean _simplify;
@@ -281,6 +283,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _srcIpConstraints = computeSrcIpConstraints(builder._srcIpConstraints);
     _outgoingAcls = computeOutgoingAcls();
     _outgoingTransformations = computeOutgoingTransformations();
+    _preOutgoingAcls = computePreOutgoingAcls();
     _simplify = builder._simplify;
     _vectorizedParameters = builder._vectorizedParameters;
 
@@ -787,6 +790,27 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                         ifaceEntry -> ifaceEntry.getValue().getOutgoingTransformation())));
   }
 
+  private Map<String, Map<String, String>> computePreOutgoingAcls() {
+    return toImmutableMap(
+        _enabledInterfaces,
+        Entry::getKey,
+        enabledInterfacesEntry -> {
+          Configuration c = _configurations.get(enabledInterfacesEntry.getKey());
+          return enabledInterfacesEntry.getValue().stream()
+              .filter(
+                  ifaceName ->
+                      c.getAllInterfaces().get(ifaceName).getPreTransformationOutgoingFilterName()
+                          != null)
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      Function.identity(),
+                      ifaceName ->
+                          c.getAllInterfaces()
+                              .get(ifaceName)
+                              .getPreTransformationOutgoingFilterName()));
+        });
+  }
+
   private Map<String, Map<String, BooleanExpr>> computeRoutableIps(
       Map<String, Map<String, IpSpace>> routableIps) {
     return toImmutableMap(
@@ -920,6 +944,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   @Override
   public Map<String, Map<String, Transformation>> getOutgoingTransformations() {
     return _outgoingTransformations;
+  }
+
+  @Override
+  public Map<String, Map<String, String>> getPreOutgoingAcls() {
+    return _preOutgoingAcls;
   }
 
   @Override
