@@ -14,6 +14,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
@@ -56,7 +57,7 @@ public class InitIssuesAnswererTest {
   @Test
   public void testAnswererNoIssues() {
     InitIssuesAnswerer answerer =
-        new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase());
+        new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(null, null));
     TableAnswerElement answer = answerer.answer();
 
     // Make sure config with no warnings or errors has no rows
@@ -70,19 +71,12 @@ public class InitIssuesAnswererTest {
             ImmutableList.of(EXCEPTION_ENCLOSING, EXCEPTION_CAUSED_BY, EXCEPTION_INNER));
     String node = "nodeError";
 
-    // TestBatfish that should produce a single convert error
-    class TestBatfishConvertError extends TestBatfishBase {
-      @Override
-      public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
-        ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
-        ccae.setWarnings(ImmutableSortedMap.of(node, new Warnings()));
-        ccae.getErrors().putIfAbsent(node, stackTrace);
-        return ccae;
-      }
-    }
-
+    ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
+    ccae.setWarnings(ImmutableSortedMap.of(node, new Warnings()));
+    ccae.getErrors().putIfAbsent(node, stackTrace);
+    // Answerer using TestBatfish that should produce a single convert error
     InitIssuesAnswerer answerer =
-        new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishConvertError());
+        new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(null, ccae));
     TableAnswerElement answer = answerer.answer();
 
     // Make sure we see convert error row in answer
@@ -110,21 +104,15 @@ public class InitIssuesAnswererTest {
     String redFlag = "red flag text";
     String unimplemented = "unimplemented warning text";
 
-    // TestBatfish that should produce two convert warnings (redflag and unimplemented)
-    class TestBatfishConvertWarn extends TestBatfishBase {
-      @Override
-      public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
-        ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
-        Warnings warnings = new Warnings(true, true, true);
-        warnings.redFlag(redFlag);
-        warnings.unimplemented(unimplemented);
-        ccae.setWarnings(ImmutableSortedMap.of(node, warnings));
-        return ccae;
-      }
-    }
-
+    ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
+    Warnings warnings = new Warnings(true, true, true);
+    warnings.redFlag(redFlag);
+    warnings.unimplemented(unimplemented);
+    ccae.setWarnings(ImmutableSortedMap.of(node, warnings));
+    // Answerer using TestBatfish that should produce two convert warnings (redflag and
+    // unimplemented)
     InitIssuesAnswerer answerer =
-        new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishConvertWarn());
+        new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(null, ccae));
     TableAnswerElement answer = answerer.answer();
 
     // Make sure we see both the unimplemented and red flag warning rows in answer
@@ -165,19 +153,12 @@ public class InitIssuesAnswererTest {
             ImmutableList.of(EXCEPTION_ENCLOSING, EXCEPTION_CAUSED_BY, EXCEPTION_INNER));
     String file = "configs/nodeError.cfg";
 
-    // TestBatfish that should produce a single parse error
-    class TestBatfishParseError extends TestBatfishBase {
-      @Override
-      public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
-        ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
-        pvcae.setWarnings(ImmutableSortedMap.of(file, new Warnings()));
-        pvcae.getErrors().putIfAbsent(file, stackTrace);
-        return pvcae;
-      }
-    }
-
+    ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
+    pvcae.setWarnings(ImmutableSortedMap.of(file, new Warnings()));
+    pvcae.getErrors().putIfAbsent(file, stackTrace);
+    // Answerer using TestBatfish that should produce a single parse error
     InitIssuesAnswerer answerer =
-        new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishParseError());
+        new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(pvcae, null));
     TableAnswerElement answer = answerer.answer();
 
     // Make sure we see parse error row in answer
@@ -207,20 +188,13 @@ public class InitIssuesAnswererTest {
     String comment = "comment";
     int line = 86420;
 
-    // TestBatfish that should produce a single parse warning
-    class TestBatfishConvertWarn extends TestBatfishBase {
-      @Override
-      public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
-        ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
-        Warnings warnings = new Warnings(true, true, true);
-        warnings.getParseWarnings().add(new ParseWarning(line, text, context, comment));
-        pvcae.setWarnings(ImmutableSortedMap.of(node, warnings));
-        return pvcae;
-      }
-    }
-
+    ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
+    Warnings warnings = new Warnings(true, true, true);
+    warnings.getParseWarnings().add(new ParseWarning(line, text, context, comment));
+    pvcae.setWarnings(ImmutableSortedMap.of(node, warnings));
+    // Answerer using TestBatfish that should produce a single parse warning
     InitIssuesAnswerer answerer =
-        new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishConvertWarn());
+        new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(pvcae, null));
     TableAnswerElement answer = answerer.answer();
 
     // Make sure we see parse warning row in answer
@@ -243,8 +217,21 @@ public class InitIssuesAnswererTest {
   }
 
   private static class TestBatfishBase extends IBatfishTestAdapter {
+    @Nullable private ParseVendorConfigurationAnswerElement _pvcae;
+    @Nullable private ConvertConfigurationAnswerElement _ccae;
+
+    TestBatfishBase(
+        @Nullable ParseVendorConfigurationAnswerElement pvcae,
+        @Nullable ConvertConfigurationAnswerElement ccae) {
+      _pvcae = pvcae;
+      _ccae = ccae;
+    }
+
     @Override
     public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
+      if (_pvcae != null) {
+        return _pvcae;
+      }
       ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
       pvcae.setWarnings(ImmutableSortedMap.of("nodeOkay", new Warnings()));
       return pvcae;
@@ -252,6 +239,9 @@ public class InitIssuesAnswererTest {
 
     @Override
     public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
+      if (_ccae != null) {
+        return _ccae;
+      }
       ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
       ccae.setWarnings(ImmutableSortedMap.of("nodeOkay", new Warnings()));
       return ccae;

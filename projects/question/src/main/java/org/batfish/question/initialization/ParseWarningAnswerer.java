@@ -5,8 +5,10 @@ import static org.batfish.question.initialization.IssueAggregation.aggregateDupl
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Multimap;
+import java.util.Comparator;
 import java.util.Map;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.Warnings;
@@ -20,7 +22,7 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
-import org.batfish.question.initialization.IssueAggregation.WarningTriplet;
+import org.batfish.question.initialization.IssueAggregation.ParseWarningTriplet;
 
 /** Answers {@link ParseWarningQuestion}. */
 class ParseWarningAnswerer extends Answerer {
@@ -41,8 +43,8 @@ class ParseWarningAnswerer extends Answerer {
     if (question.getAggregateDuplicates()) {
       aggregateDuplicateParseWarnings(fileWarnings)
           .forEach(
-              (triplet, filelines) ->
-                  rows.add(getAggregateRow(triplet, filelines, columnMetadataMap)));
+              (triplet, fileLines) ->
+                  rows.add(getAggregateRow(triplet, fileLines, columnMetadataMap)));
 
     } else {
       fileWarnings.forEach(
@@ -65,14 +67,21 @@ class ParseWarningAnswerer extends Answerer {
   @Nonnull
   @VisibleForTesting
   static Row getAggregateRow(
-      WarningTriplet triplet,
-      Map<String, SortedSet<Integer>> filelines,
+      ParseWarningTriplet triplet,
+      Multimap<String, Integer> fileLines,
       Map<String, ColumnMetadata> columnMetadataMap) {
     return Row.builder(columnMetadataMap)
         .put(
             COL_FILELINES,
-            filelines.entrySet().stream()
-                .map(e -> new FileLines(e.getKey(), e.getValue()))
+            fileLines.asMap().entrySet().stream()
+                .map(
+                    e ->
+                        new FileLines(
+                            e.getKey(),
+                            e.getValue().stream()
+                                .collect(
+                                    ImmutableSortedSet.toImmutableSortedSet(
+                                        Comparator.naturalOrder()))))
                 .collect(ImmutableList.toImmutableList()))
         .put(COL_TEXT, triplet._text)
         .put(COL_PARSER_CONTEXT, triplet._parserContext)

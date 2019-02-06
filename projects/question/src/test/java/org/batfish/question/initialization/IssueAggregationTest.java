@@ -14,7 +14,7 @@ import java.util.Map;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
-import org.batfish.question.initialization.IssueAggregation.WarningTriplet;
+import org.batfish.question.initialization.IssueAggregation.ParseWarningTriplet;
 import org.junit.Test;
 
 /** Tests of {@link IssueAggregation}. */
@@ -60,9 +60,9 @@ public class IssueAggregationTest {
         aggregateDuplicateParseWarnings(fileWarnings),
         equalTo(
             ImmutableMap.of(
-                new WarningTriplet("dup", "[configuration]", null),
+                new ParseWarningTriplet("dup", "[configuration]", null),
                 ImmutableMap.of("f1", ImmutableSortedSet.of(3, 4), "f2", ImmutableSortedSet.of(23)),
-                new WarningTriplet("unique", "[configuration]", null),
+                new ParseWarningTriplet("unique", "[configuration]", null),
                 ImmutableMap.of("f1", ImmutableSortedSet.of(5)))));
   }
 

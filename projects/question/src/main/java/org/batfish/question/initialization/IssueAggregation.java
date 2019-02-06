@@ -1,27 +1,41 @@
 package org.batfish.question.initialization;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 
+/**
+ * Aggregate similar issues ({@link Warning}, {@link ParseWarning}, and {@link String}) across nodes
+ * or files.
+ */
+@ParametersAreNonnullByDefault
 final class IssueAggregation {
-  static class WarningTriplet {
-    String _text;
-    String _parserContext;
-    String _comment;
 
-    WarningTriplet(ParseWarning w) {
+  /**
+   * Class for holding aggregatable parse warnings. Similar to {@link ParseWarning}s, but ignoring
+   * line numbers to allow useful aggregation.
+   */
+  static final class ParseWarningTriplet {
+    final String _text;
+    final String _parserContext;
+    @Nullable final String _comment;
+
+    ParseWarningTriplet(ParseWarning w) {
       this(w.getText(), w.getParserContext(), w.getComment());
     }
 
-    WarningTriplet(String text, String parserContext, String comment) {
+    ParseWarningTriplet(String text, String parserContext, @Nullable String comment) {
       _text = text;
       _parserContext = parserContext;
       _comment = comment;
@@ -32,12 +46,13 @@ final class IssueAggregation {
       if (this == o) {
         return true;
       }
-      if (!(o instanceof WarningTriplet)) {
+      if (!(o instanceof ParseWarningTriplet)) {
         return false;
       }
-      return Objects.equals(_text, ((WarningTriplet) o)._text)
-          && Objects.equals(_parserContext, ((WarningTriplet) o)._parserContext)
-          && Objects.equals(_comment, ((WarningTriplet) o)._comment);
+      ParseWarningTriplet triplet = (ParseWarningTriplet) o;
+      return Objects.equals(_text, triplet._text)
+          && Objects.equals(_parserContext, triplet._parserContext)
+          && Objects.equals(_comment, triplet._comment);
     }
 
     @Override
@@ -49,20 +64,18 @@ final class IssueAggregation {
   /**
    * Aggregate same parse warnings across multiple files and lines.
    *
-   * <p>Produces a map of {@link WarningTriplet} to map of filename to lines.
+   * <p>Produces a map of {@link ParseWarningTriplet} to map of filename to lines.
    */
   @Nonnull
   @VisibleForTesting
-  static Map<WarningTriplet, Map<String, SortedSet<Integer>>> aggregateDuplicateParseWarnings(
+  static Map<ParseWarningTriplet, Multimap<String, Integer>> aggregateDuplicateParseWarnings(
       Map<String, Warnings> fileWarnings) {
-    Map<WarningTriplet, Map<String, SortedSet<Integer>>> map = new HashMap<>();
+    Map<ParseWarningTriplet, Multimap<String, Integer>> map = new HashMap<>();
     fileWarnings.forEach(
         (filename, warnings) -> {
           for (ParseWarning w : warnings.getParseWarnings()) {
-            WarningTriplet triplet = new WarningTriplet(w);
-            map.computeIfAbsent(triplet, k -> new HashMap<>())
-                .computeIfAbsent(filename, k -> new TreeSet<>())
-                .add(w.getLine());
+            ParseWarningTriplet triplet = new ParseWarningTriplet(w);
+            map.computeIfAbsent(triplet, k -> HashMultimap.create()).put(filename, w.getLine());
           }
         });
     return map;
@@ -107,9 +120,10 @@ final class IssueAggregation {
   }
 
   /**
-   * Aggregate same strings (e.g. trimmed stack traces) across multiple nodes or files.
+   * Aggregate same strings (e.g. trimmed stack traces) across multiple nodes (or alternatively
+   * files).
    *
-   * <p>Produces a map of {@link String} to node/file names from a map of node/file to string.
+   * <p>Produces a map of {@link String} to node names from a map of node names to string.
    */
   @Nonnull
   @VisibleForTesting

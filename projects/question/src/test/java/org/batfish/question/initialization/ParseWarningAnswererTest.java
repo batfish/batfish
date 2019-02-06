@@ -12,7 +12,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.common.Warnings;
@@ -23,7 +23,7 @@ import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.question.initialization.IssueAggregation.WarningTriplet;
+import org.batfish.question.initialization.IssueAggregation.ParseWarningTriplet;
 import org.junit.Test;
 
 /** Tests of {@link ParseWarningAnswerer}. */
@@ -33,8 +33,8 @@ public class ParseWarningAnswererTest {
   public void testAggregateRow() {
     Row row =
         getAggregateRow(
-            new WarningTriplet("dup", "[configuration]", null),
-            ImmutableMap.of("f1", ImmutableSortedSet.of(3, 4), "f2", ImmutableSortedSet.of(23)),
+            new ParseWarningTriplet("dup", "[configuration]", null),
+            ImmutableMultimap.of("f1", 3, "f1", 4, "f2", 23),
             createMetadata(new ParseWarningQuestion(true)).toColumnMap());
 
     Row expected =

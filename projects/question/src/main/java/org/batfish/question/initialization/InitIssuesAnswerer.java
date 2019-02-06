@@ -8,11 +8,12 @@ import static org.batfish.question.initialization.IssueAggregation.aggregateDupl
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException.BatfishStackTrace;
 import org.batfish.common.Warnings;
@@ -52,12 +53,21 @@ public class InitIssuesAnswerer extends Answerer {
     Map<String, Warnings> fileWarnings = pvcae.getWarnings();
     aggregateDuplicateParseWarnings(fileWarnings)
         .forEach(
-            (triplet, filelines) ->
+            (triplet, fileLines) ->
                 rows.add(
                     getRow(
-                        filelines.keySet().stream().collect(ImmutableSet.toImmutableSet()),
-                        filelines.entrySet().stream()
-                            .map(e -> new FileLines(e.getKey(), e.getValue()))
+                        fileLines.keySet().stream()
+                            .collect(
+                                ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())),
+                        fileLines.asMap().entrySet().stream()
+                            .map(
+                                e ->
+                                    new FileLines(
+                                        e.getKey(),
+                                        e.getValue().stream()
+                                            .collect(
+                                                ImmutableSortedSet.toImmutableSortedSet(
+                                                    Comparator.naturalOrder()))))
                             .collect(ImmutableList.toImmutableList()),
                         IssueType.ParseWarning,
                         String.format(
@@ -109,25 +119,29 @@ public class InitIssuesAnswerer extends Answerer {
         sb.append("\n");
       }
     }
+    // Return all lines if there is no "Caused by"
     return sb.length() > 0
         ? sb.deleteCharAt(sb.length() - 1).toString()
         : String.join("\n", stackTrace.getLineMap());
   }
 
   private static Row getRow(
-      Iterable<String> nodes, Iterable<FileLines> filelines, IssueType issueType, String issue) {
-    return getRow(nodes, filelines, issueType, issue, null);
+      @Nullable Iterable<String> nodes,
+      @Nullable Iterable<FileLines> fileLines,
+      IssueType issueType,
+      String issue) {
+    return getRow(nodes, fileLines, issueType, issue, null);
   }
 
   private static Row getRow(
       Iterable<String> nodes,
-      Iterable<FileLines> filelines,
+      Iterable<FileLines> fileLines,
       IssueType issueType,
       String issue,
-      String parserContext) {
+      @Nullable String parserContext) {
     return Row.builder(TABLE_METADATA.toColumnMap())
         .put(COL_NODES, nodes)
-        .put(COL_FILELINES, filelines)
+        .put(COL_FILELINES, fileLines)
         .put(COL_ISSUE_TYPE, issueType.toString())
         .put(COL_ISSUE, issue)
         .put(COL_PARSER_CONTEXT, parserContext)
@@ -162,20 +176,24 @@ public class InitIssuesAnswerer extends Answerer {
   private static final List<ColumnMetadata> METADATA =
       ImmutableList.of(
           new ColumnMetadata(
-              COL_NODES, Schema.list(Schema.STRING), "The node that was converted", true, false),
-          new ColumnMetadata(
-              COL_FILELINES,
-              Schema.list(Schema.FILE_LINES),
-              "The files and lines that caused the issue",
+              COL_NODES,
+              Schema.list(Schema.STRING),
+              "The nodes that were converted (if applicable)",
               true,
               false),
           new ColumnMetadata(
-              COL_ISSUE_TYPE, Schema.STRING, "The type of issue identified", true, false),
-          new ColumnMetadata(COL_ISSUE, Schema.STRING, "The issue identified", false, true),
+              COL_FILELINES,
+              Schema.list(Schema.FILE_LINES),
+              "The files and lines that caused the issues (if applicable)",
+              true,
+              false),
+          new ColumnMetadata(
+              COL_ISSUE_TYPE, Schema.STRING, "The type of issues identified", true, false),
+          new ColumnMetadata(COL_ISSUE, Schema.STRING, "The issues identified", false, true),
           new ColumnMetadata(
               COL_PARSER_CONTEXT,
               Schema.STRING,
-              "Batfish parser state when issue was encountered",
+              "Batfish parser state when issues were encountered (if applicable)",
               false,
               true));
 
