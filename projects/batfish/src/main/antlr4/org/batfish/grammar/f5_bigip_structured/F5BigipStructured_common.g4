@@ -26,7 +26,7 @@ list
 ;
 
 /* An unrecognized fragment of syntax. When used, MUST be LAST alternative */
-u
+unrecognized
 :
   (
     (
@@ -38,7 +38,7 @@ u
 
 u_list
 :
-  BRACE_LEFT NEWLINE u+ BRACE_RIGHT
+  BRACE_LEFT NEWLINE unrecognized+ BRACE_RIGHT
 ;
 
 u_word

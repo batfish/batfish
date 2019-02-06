@@ -557,238 +557,238 @@
         "Filename" : "f5_bigip_structured_net",
         "Line" : 11,
         "Text" : "forward-error-correction",
-        "Parser_Context" : "[u net_interface s_net statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized net_interface s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_net",
         "Line" : 12,
         "Text" : "lldp-admin",
-        "Parser_Context" : "[u net_interface s_net statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized net_interface s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_net",
         "Line" : 13,
         "Text" : "lldp-tlvmap",
-        "Parser_Context" : "[u net_interface s_net statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized net_interface s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_net",
         "Line" : 15,
         "Text" : "lldp-globals",
-        "Parser_Context" : "[u s_net statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_net",
         "Line" : 18,
         "Text" : "route-domain",
-        "Parser_Context" : "[u s_net statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_net",
         "Line" : 27,
         "Text" : "allow-service",
-        "Parser_Context" : "[u net_self s_net statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized net_self s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_net",
         "Line" : 28,
         "Text" : "traffic-group",
-        "Parser_Context" : "[u net_self s_net statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized net_self s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_net",
         "Line" : 31,
         "Text" : "self-allow",
-        "Parser_Context" : "[u s_net statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_net",
         "Line" : 40,
         "Text" : "stp",
-        "Parser_Context" : "[u s_net statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_net",
         "Line" : 51,
         "Text" : "stp-globals",
-        "Parser_Context" : "[u s_net statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_net",
         "Line" : 54,
         "Text" : "tunnels",
-        "Parser_Context" : "[u s_net statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_net",
         "Line" : 6,
         "Text" : "fdb",
-        "Parser_Context" : "[u s_net statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_net",
         "Line" : 7,
         "Text" : "fdb",
-        "Parser_Context" : "[u s_net statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_net",
         "Line" : 9,
         "Text" : "bundle",
-        "Parser_Context" : "[u net_interface s_net statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized net_interface s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
         "Line" : 10,
         "Text" : "folder",
-        "Parser_Context" : "[u s_sys statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
         "Line" : 101,
         "Text" : "dynad",
-        "Parser_Context" : "[u s_sys statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
         "Line" : 104,
         "Text" : "fpga",
-        "Parser_Context" : "[u s_sys statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
         "Line" : 107,
         "Text" : "sflow",
-        "Parser_Context" : "[u s_sys statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
         "Line" : 108,
         "Text" : "sflow",
-        "Parser_Context" : "[u s_sys statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
         "Line" : 109,
         "Text" : "turboflex",
-        "Parser_Context" : "[u s_sys statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
         "Line" : 17,
         "Text" : "folder",
-        "Parser_Context" : "[u s_sys statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
         "Line" : 24,
         "Text" : "folder",
-        "Parser_Context" : "[u s_sys statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
         "Line" : 3,
         "Text" : "dns",
-        "Parser_Context" : "[u s_sys statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
         "Line" : 32,
         "Text" : "gui-security-banner-text",
-        "Parser_Context" : "[u sys_global_settings s_sys statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized sys_global_settings s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
         "Line" : 34,
         "Text" : "gui-setup",
-        "Parser_Context" : "[u sys_global_settings s_sys statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized sys_global_settings s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
         "Line" : 37,
         "Text" : "httpd",
-        "Parser_Context" : "[u s_sys statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
         "Line" : 40,
         "Text" : "management-dhcp",
-        "Parser_Context" : "[u s_sys statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
         "Line" : 43,
         "Text" : "management-ip",
-        "Parser_Context" : "[u s_sys statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
         "Line" : 44,
         "Text" : "management-route",
-        "Parser_Context" : "[u s_sys statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
         "Line" : 48,
         "Text" : "ntp",
-        "Parser_Context" : "[u s_sys statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
         "Line" : 52,
         "Text" : "provision",
-        "Parser_Context" : "[u s_sys statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
         "Line" : 55,
         "Text" : "snmp",
-        "Parser_Context" : "[u s_sys statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
         "Line" : 7,
         "Text" : "feature-module",
-        "Parser_Context" : "[u s_sys statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
         "Line" : 98,
         "Text" : "dynad",
-        "Parser_Context" : "[u s_sys statement f5_bigip_structured_configuration]",
+        "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {

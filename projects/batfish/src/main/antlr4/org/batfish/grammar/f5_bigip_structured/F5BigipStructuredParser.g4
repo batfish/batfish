@@ -24,6 +24,6 @@ statement
 :
   s_net
   | s_sys
-  | u
+  | unrecognized
 ;
 

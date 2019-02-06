@@ -19,7 +19,7 @@ net_interface
     NEWLINE
     (
       ni_bundle_speed
-      | u
+      | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
 ;
@@ -32,7 +32,7 @@ net_self
     (
       ns_address
       | ns_vlan
-      | u
+      | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
 ;
@@ -45,7 +45,7 @@ net_vlan
     (
       nv_interfaces
       | nv_tag
-      | u
+      | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
 ;
@@ -93,6 +93,6 @@ s_net
     net_interface
     | net_self
     | net_vlan
-    | u
+    | unrecognized
   )
 ;

@@ -31,7 +31,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ns_vlanCo
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nv_tagContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nvi_interfaceContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sgs_hostnameContext;
-import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.UContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.UnrecognizedContext;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.representation.f5_bigip.Interface;
 import org.batfish.representation.f5_bigip.Self;
@@ -58,7 +58,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   private @Nullable F5BigipConfiguration _c;
   private @Nullable Interface _currentInterface;
   private @Nullable Self _currentSelf;
-  private @Nullable UContext _currentU;
+  private @Nullable UnrecognizedContext _currentUnrecognized;
   private @Nullable Vlan _currentVlan;
   private final F5BigipStructuredCombinedParser _parser;
   private final String _text;
@@ -123,9 +123,9 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
-  public void enterU(UContext ctx) {
-    if (_currentU == null) {
-      _currentU = ctx;
+  public void enterUnrecognized(UnrecognizedContext ctx) {
+    if (_currentUnrecognized == null) {
+      _currentUnrecognized = ctx;
     }
   }
 
@@ -181,12 +181,12 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
-  public void exitU(UContext ctx) {
-    if (_currentU != ctx) {
+  public void exitUnrecognized(UnrecognizedContext ctx) {
+    if (_currentUnrecognized != ctx) {
       return;
     }
     unrecognized(ctx);
-    _currentU = null;
+    _currentUnrecognized = null;
   }
 
   public F5BigipConfiguration getConfiguration() {
@@ -214,7 +214,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     }
   }
 
-  private void unrecognized(UContext ctx) {
+  private void unrecognized(UnrecognizedContext ctx) {
     Token start = ctx.getStart();
     int line = start.getLine();
     _w.getParseWarnings()
