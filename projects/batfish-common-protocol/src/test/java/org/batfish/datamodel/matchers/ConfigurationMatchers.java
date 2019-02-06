@@ -9,6 +9,7 @@ import java.util.NavigableMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.Interface;
@@ -21,6 +22,7 @@ import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasConfigurationFormat;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasDefaultVrf;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasDeviceType;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasHostname;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIkePhase1Policy;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIkePhase1Proposal;
@@ -60,6 +62,14 @@ public class ConfigurationMatchers {
    */
   public static HasDefaultVrf hasDefaultVrf(@Nonnull Matcher<? super Vrf> subMatcher) {
     return new HasDefaultVrf(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * device type
+   */
+  public static HasDeviceType hasDeviceType(@Nonnull Matcher<? super DeviceType> subMatcher) {
+    return new HasDeviceType(subMatcher);
   }
 
   /**
