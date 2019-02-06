@@ -112,12 +112,13 @@ public class WorkMgrService {
             "There was a problem getting Autocomplete suggestions - network or snapshot does not exist!");
       }
 
-      List<String> serializedSuggestions = answer
-              .stream()
+      List<String> serializedSuggestions =
+          answer.stream()
               .map(BatfishObjectMapper::writeStringRuntimeError)
               .collect(Collectors.toList());
 
-      return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_SUGGESTIONS, serializedSuggestions));
+      return successResponse(
+          new JSONObject().put(CoordConsts.SVC_KEY_SUGGESTIONS, serializedSuggestions));
     } catch (IllegalArgumentException | AccessControlException e) {
       _logger.errorf("WMS:autoComplete exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
