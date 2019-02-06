@@ -4,8 +4,10 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceType;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
@@ -35,6 +37,7 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
@@ -120,13 +123,17 @@ public class ModelingUtilsTest {
         ispConfiguration,
         allOf(
             hasHostname("Isp_2"),
+            hasDeviceType(equalTo(DeviceType.ISP)),
             hasInterface(
                 "~Interface_0~", hasAllAddresses(equalTo(ImmutableSet.of(interfaceAddress)))),
             hasVrf(
                 DEFAULT_VRF_NAME,
                 hasBgpProcess(
-                    hasActiveNeighbor(
-                        Prefix.parse("1.1.1.1/32"), allOf(hasRemoteAs(1L), hasLocalAs(2L)))))));
+                    allOf(
+                        hasMultipathEbgp(true),
+                        hasActiveNeighbor(
+                            Prefix.parse("1.1.1.1/32"),
+                            allOf(hasRemoteAs(1L), hasLocalAs(2L))))))));
 
     assertThat(
         ispConfiguration
@@ -247,6 +254,7 @@ public class ModelingUtilsTest {
         internet,
         allOf(
             hasHostname(ModelingUtils.INTERNET_HOST_NAME),
+            hasDeviceType(equalTo(DeviceType.INTERNET)),
             hasInterface(
                 ModelingUtils.INTERNET_OUT_INTERFACE,
                 hasAllAddresses(equalTo(ImmutableSet.of(interfaceAddress)))),
@@ -261,7 +269,10 @@ public class ModelingUtilsTest {
                                     .setNextHopInterface(ModelingUtils.INTERNET_OUT_INTERFACE)
                                     .setAdministrativeCost(1)
                                     .build()))),
-                    hasBgpProcess(hasRouterId(ModelingUtils.INTERNET_OUT_ADDRESS))))));
+                    hasBgpProcess(
+                        allOf(
+                            hasRouterId(ModelingUtils.INTERNET_OUT_ADDRESS),
+                            hasMultipathEbgp(true)))))));
 
     assertThat(internet.getRoutingPolicies(), hasKey(ModelingUtils.EXPORT_POLICY_ON_INTERNET));
     assertThat(

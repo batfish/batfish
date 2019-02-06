@@ -27,6 +27,7 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
@@ -160,6 +161,7 @@ public final class ModelingUtils {
         cb.setHostname(INTERNET_HOST_NAME)
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
+    internetConfiguration.setDeviceType(DeviceType.INTERNET);
     Vrf defaultVrf =
         nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(internetConfiguration).build();
     nf.interfaceBuilder()
@@ -179,7 +181,9 @@ public final class ModelingUtils {
                     .setAdministrativeCost(1)
                     .build()));
 
-    nf.bgpProcessBuilder().setRouterId(INTERNET_OUT_ADDRESS).setVrf(defaultVrf).build();
+    BgpProcess bgpProcess =
+        nf.bgpProcessBuilder().setRouterId(INTERNET_OUT_ADDRESS).setVrf(defaultVrf).build();
+    bgpProcess.setMultipathEbgp(true);
 
     internetConfiguration.setRoutingPolicies(
         ImmutableSortedMap.of(EXPORT_POLICY_ON_INTERNET, getDefaultRoutingPolicy()));
@@ -304,6 +308,7 @@ public final class ModelingUtils {
         cb.setHostname(String.format("%s_%s", ISP_HOSTNAME_PREFIX, asn))
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
+    ispConfiguration.setDeviceType(DeviceType.ISP);
     Vrf defaultVrf = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(ispConfiguration).build();
 
     ispInfo
@@ -326,6 +331,7 @@ public final class ModelingUtils {
                     .orElse(null))
             .setVrf(ispConfiguration.getDefaultVrf())
             .build();
+    bgpProcess.setMultipathEbgp(true);
 
     ispInfo
         .getBgpActivePeerConfigs()
