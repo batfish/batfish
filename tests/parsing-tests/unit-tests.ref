@@ -48764,6 +48764,32 @@
             "            FIREWALL:'firewall'",
             "            (f_family",
             "              FAMILY:'family'",
+            "              INET:'inet'",
+            "              (f_common",
+            "                (f_filter",
+            "                  FILTER:'filter'",
+            "                  name = (variable",
+            "                    text = VARIABLE:'blah')",
+            "                  (ff_term",
+            "                    TERM:'term'",
+            "                    name = (variable",
+            "                      text = VARIABLE:'t2')",
+            "                    (fft_then",
+            "                      THEN:'then'",
+            "                      (fftt_routing_instance",
+            "                        ROUTING_INSTANCE:'routing-instance'",
+            "                        name = (variable",
+            "                          text = VARIABLE:'OTHER_INSTANCE')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_firewall",
+            "            FIREWALL:'firewall'",
+            "            (f_family",
+            "              FAMILY:'family'",
             "              INET6:'inet6'",
             "              (f_common",
             "                (f_filter",
@@ -70066,7 +70092,7 @@
           "firewall filter" : {
             "ISP-INBOUND-L2" : {
               "definitionLines" : [
-                38
+                40
               ],
               "numReferrers" : 0
             },
@@ -70096,15 +70122,16 @@
                 26,
                 27,
                 30,
-                31
+                31,
+                33
               ],
               "numReferrers" : 0
             },
             "blah6" : {
               "definitionLines" : [
-                33,
-                34,
-                35
+                35,
+                36,
+                37
               ],
               "numReferrers" : 0
             },

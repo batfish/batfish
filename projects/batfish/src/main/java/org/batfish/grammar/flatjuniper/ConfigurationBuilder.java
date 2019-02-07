@@ -592,6 +592,7 @@ import org.batfish.representation.juniper.FwThenDiscard;
 import org.batfish.representation.juniper.FwThenNextIp;
 import org.batfish.representation.juniper.FwThenNextTerm;
 import org.batfish.representation.juniper.FwThenNop;
+import org.batfish.representation.juniper.FwThenRoutingInstance;
 import org.batfish.representation.juniper.GeneratedRoute;
 import org.batfish.representation.juniper.HostProtocol;
 import org.batfish.representation.juniper.HostSystemService;
@@ -3936,8 +3937,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitFftt_routing_instance(Fftt_routing_instanceContext ctx) {
-    todo(ctx);
-    _currentFwTerm.getThens().add(FwThenDiscard.INSTANCE);
+    _currentFwTerm.getThens().add(new FwThenRoutingInstance(unquote(ctx.name.getText())));
   }
 
   @Override
