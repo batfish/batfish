@@ -9,6 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -25,7 +26,12 @@ public class MemoizedIpAccessListToBddTest {
   @Before
   public void setup() {
     BDDPacket pkt = new BDDPacket();
-    _toBdd = new MemoizedIpAccessListToBdd(pkt, ImmutableMap.of(), ImmutableMap.of());
+    _toBdd =
+        new MemoizedIpAccessListToBdd(
+            pkt,
+            BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()),
+            ImmutableMap.of(),
+            ImmutableMap.of());
   }
 
   @Test

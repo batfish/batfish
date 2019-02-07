@@ -1,7 +1,6 @@
 package org.batfish.common.bdd;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -16,11 +15,6 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
  */
 public final class MemoizedIpAccessListToBdd extends IpAccessListToBdd {
   private Map<AclLineMatchExpr, BDD> _cache = new IdentityHashMap<>();
-
-  public MemoizedIpAccessListToBdd(
-      BDDPacket packet, Map<String, IpAccessList> aclEnv, Map<String, IpSpace> namedIpSpaces) {
-    this(packet, BDDSourceManager.forInterfaces(packet, ImmutableSet.of()), aclEnv, namedIpSpaces);
-  }
 
   public MemoizedIpAccessListToBdd(
       BDDPacket packet,
