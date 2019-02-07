@@ -137,13 +137,13 @@ public class IpAccessListToBddTest {
     Prefix p16 = Prefix.parse("1.1.0.0/16");
     Prefix p8 = Prefix.parse("1.0.0.0/8");
 
-    IpAccessListToBDD ipAccessListToBDD =
-        IpAccessListToBDD.create(
+    IpAccessListToBdd aclToBdd =
+        new IpAccessListToBddImpl(
             _pkt,
             BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
             ImmutableMap.of(),
             ImmutableMap.of());
-    IpSpaceToBDD dstToBdd = ipAccessListToBDD.getHeaderSpaceToBDD().getDstIpSpaceToBdd();
+    IpSpaceToBDD dstToBdd = aclToBdd.getHeaderSpaceToBDD().getDstIpSpaceToBdd();
 
     BDD bdd32 = dstToBdd.toBDD(p32);
     BDD bdd24 = dstToBdd.toBDD(p24);
@@ -151,7 +151,7 @@ public class IpAccessListToBddTest {
     BDD bdd8 = dstToBdd.toBDD(p8);
 
     List<BDD> matchLines1 =
-        ipAccessListToBDD.reachAndMatchLines(
+        aclToBdd.reachAndMatchLines(
             aclWithLines(
                 acceptingDst(p32), acceptingDst(p24), acceptingDst(p16), acceptingDst(p8)));
 
@@ -165,7 +165,7 @@ public class IpAccessListToBddTest {
             bdd8.not()));
 
     List<BDD> matchLines2 =
-        ipAccessListToBDD.reachAndMatchLines(
+        aclToBdd.reachAndMatchLines(
             aclWithLines(
                 rejectingDst(p32), acceptingDst(p24), rejectingDst(p16), acceptingDst(p8)));
 
