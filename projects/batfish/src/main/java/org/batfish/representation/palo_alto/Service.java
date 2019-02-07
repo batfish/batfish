@@ -31,6 +31,13 @@ public final class Service implements ServiceGroupMember {
     _sourcePorts = new TreeSet<>();
   }
 
+  public Service(String name, SortedSet<Integer> ports, IpProtocol protocol) {
+    _name = name;
+    _ports = ports;
+    _protocol = protocol;
+    _sourcePorts = new TreeSet<>();
+  }
+
   public String getDescription() {
     return _description;
   }

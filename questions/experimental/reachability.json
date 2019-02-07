@@ -11,6 +11,14 @@
     "instance": {
         "description": "Find flows that match the ingress and egress location, src and dest ip address and disposition constraints, as described by the input specifiers.",
         "instanceName": "reachability",
+        "orderedVariableNames": [
+            "pathConstraints",
+            "headers",
+            "actions",
+            "maxTraces",
+            "invertSearch",
+            "ignoreFilters"
+        ],
         "tags": [
             "dataPlane",
             "reachability"

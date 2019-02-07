@@ -25,6 +25,7 @@ import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RouteBuilder;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.collections.RoutesByVrf;
+import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.RoutingTableExtractor;
 import org.batfish.grammar.routing_table.ios.IosRoutingTableParser.Ios_routing_tableContext;
 import org.batfish.grammar.routing_table.ios.IosRoutingTableParser.ProtocolContext;
@@ -197,7 +198,7 @@ public class IosRoutingTableExtractor extends IosRoutingTableParserBaseListener
 
   @Override
   public void processParseTree(ParserRuleContext tree) {
-    ParseTreeWalker walker = new ParseTreeWalker();
+    ParseTreeWalker walker = new BatfishParseTreeWalker();
     walker.walk(this, tree);
   }
 

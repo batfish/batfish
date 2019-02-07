@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts.TaskStatus;
@@ -40,19 +41,22 @@ public class WorkQueueMgr {
     INCOMPLETE
   }
 
+  @GuardedBy("this")
   private Set<UUID> _blockingWork;
 
   private BatfishLogger _logger;
 
+  @GuardedBy("this")
   private WorkQueue _queueCompletedWork;
 
+  @GuardedBy("this")
   private WorkQueue _queueIncompleteWork;
 
-  public WorkQueueMgr(BatfishLogger logger) {
+  WorkQueueMgr(BatfishLogger logger) {
     this(Main.getSettings().getQueueType(), logger);
   }
 
-  public WorkQueueMgr(WorkQueue.Type wqType, BatfishLogger logger) {
+  WorkQueueMgr(WorkQueue.Type wqType, BatfishLogger logger) {
     _blockingWork = new HashSet<>();
     _logger = logger;
     switch (wqType) {
@@ -349,7 +353,7 @@ public class WorkQueueMgr {
   }
 
   @Nonnull
-  public List<QueuedWork> getWorkForChecking() {
+  public synchronized List<QueuedWork> getWorkForChecking() {
     List<QueuedWork> workToCheck = new ArrayList<>();
     for (QueuedWork work : _queueIncompleteWork) {
       if (work.getStatus() == WorkStatusCode.ASSIGNED) {
@@ -551,8 +555,8 @@ public class WorkQueueMgr {
     }
   }
 
-  private boolean queueDependentAnsweringWork(QueuedWork work, boolean dataplaneDependent)
-      throws Exception {
+  private synchronized boolean queueDependentAnsweringWork(
+      QueuedWork work, boolean dataplaneDependent) throws Exception {
     WorkDetails wDetails = work.getDetails();
 
     QueuedWork baseBlocker =
@@ -574,13 +578,13 @@ public class WorkQueueMgr {
     return _queueIncompleteWork.enque(work);
   }
 
-  private boolean queueBlockedWork(QueuedWork work, QueuedWork blocker) {
+  private synchronized boolean queueBlockedWork(QueuedWork work, QueuedWork blocker) {
     _blockingWork.add(blocker.getId());
     work.setStatus(WorkStatusCode.BLOCKED);
     return _queueIncompleteWork.enque(work);
   }
 
-  private boolean queueDataplaningWork(QueuedWork work) throws Exception {
+  private synchronized boolean queueDataplaningWork(QueuedWork work) throws Exception {
 
     WorkItem wItem = work.getWorkItem();
     WorkDetails wDetails = work.getDetails();

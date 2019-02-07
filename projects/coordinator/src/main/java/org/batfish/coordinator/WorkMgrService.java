@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -110,7 +111,14 @@ public class WorkMgrService {
         return failureResponse(
             "There was a problem getting Autocomplete suggestions - network or snapshot does not exist!");
       }
-      return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_SUGGESTIONS, answer));
+
+      List<String> serializedSuggestions =
+          answer.stream()
+              .map(BatfishObjectMapper::writeStringRuntimeError)
+              .collect(Collectors.toList());
+
+      return successResponse(
+          new JSONObject().put(CoordConsts.SVC_KEY_SUGGESTIONS, serializedSuggestions));
     } catch (IllegalArgumentException | AccessControlException e) {
       _logger.errorf("WMS:autoComplete exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
