@@ -50,7 +50,7 @@ import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.Transformation;
 
 @ParametersAreNonnullByDefault
-final class TracerouteUtils {
+public final class TracerouteUtils {
 
   /**
    * Does a basic validation of input to {@link

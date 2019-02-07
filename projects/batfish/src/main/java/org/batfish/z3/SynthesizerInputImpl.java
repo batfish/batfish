@@ -201,6 +201,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nonnull Map<String, Map<String, String>> _incomingAcls;
 
+  private final @Nonnull Map<String, Map<String, Transformation>> _incomingTransformations;
+
   private final @Nullable Map<String, IpAccessListSpecializer> _ipAccessListSpecializers;
 
   private final @Nonnull IpAccessListToBDD _ipAccessListToBDD;
@@ -226,9 +228,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nullable Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
-  private final @Nonnull Map<String, Map<String, String>> _outgoingAcls;
+  private final @Nonnull Map<String, Map<String, String>> _postTransformationOutgoingAcls;
 
   private final @Nonnull Map<String, Map<String, Transformation>> _outgoingTransformations;
+
+  private final @Nonnull Map<String, Map<String, String>> _preTransformationOutgoingAcls;
 
   private final @Nullable Map<String, Map<String, BooleanExpr>> _routableIps;
 
@@ -275,9 +279,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _enabledInterfacesByNodeVrf = computeEnabledInterfacesByNodeVrf();
     _enabledInterfaces = computeEnabledInterfaces();
     _incomingAcls = computeIncomingAcls();
+    _incomingTransformations = computeIncomingTransformations();
     _srcIpConstraints = computeSrcIpConstraints(builder._srcIpConstraints);
-    _outgoingAcls = computeOutgoingAcls();
     _outgoingTransformations = computeOutgoingTransformations();
+    _postTransformationOutgoingAcls = computePostTransformationOutgoingAcls();
+    _preTransformationOutgoingAcls = computePreTransformationOutgoingAcls();
     _simplify = builder._simplify;
     _vectorizedParameters = builder._vectorizedParameters;
 
@@ -640,6 +646,19 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         });
   }
 
+  private Map<String, Map<String, Transformation>> computeIncomingTransformations() {
+    return toImmutableMap(
+        _configurations,
+        Entry::getKey,
+        nodeEntry ->
+            nodeEntry.getValue().getAllInterfaces().entrySet().stream()
+                .filter(ifaceEntry -> ifaceEntry.getValue().getIncomingTransformation() != null)
+                .collect(
+                    ImmutableMap.toImmutableMap(
+                        Entry::getKey,
+                        ifaceEntry -> ifaceEntry.getValue().getIncomingTransformation())));
+  }
+
   private Map<String, Set<Ip>> computeIpsByHostname() {
     Map<String, Set<Interface>> enabledInterfaces =
         toImmutableMap(
@@ -742,7 +761,20 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         });
   }
 
-  private Map<String, Map<String, String>> computeOutgoingAcls() {
+  public Map<String, Map<String, Transformation>> computeOutgoingTransformations() {
+    return toImmutableMap(
+        _configurations,
+        Entry::getKey,
+        nodeEntry ->
+            nodeEntry.getValue().getAllInterfaces().entrySet().stream()
+                .filter(ifaceEntry -> ifaceEntry.getValue().getOutgoingTransformation() != null)
+                .collect(
+                    ImmutableMap.toImmutableMap(
+                        Entry::getKey,
+                        ifaceEntry -> ifaceEntry.getValue().getOutgoingTransformation())));
+  }
+
+  private Map<String, Map<String, String>> computePostTransformationOutgoingAcls() {
     return toImmutableMap(
         _enabledInterfaces,
         Entry::getKey,
@@ -758,17 +790,25 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         });
   }
 
-  public Map<String, Map<String, Transformation>> computeOutgoingTransformations() {
+  private Map<String, Map<String, String>> computePreTransformationOutgoingAcls() {
     return toImmutableMap(
-        _configurations,
+        _enabledInterfaces,
         Entry::getKey,
-        nodeEntry ->
-            nodeEntry.getValue().getAllInterfaces().entrySet().stream()
-                .filter(ifaceEntry -> ifaceEntry.getValue().getOutgoingTransformation() != null)
-                .collect(
-                    ImmutableMap.toImmutableMap(
-                        Entry::getKey,
-                        ifaceEntry -> ifaceEntry.getValue().getOutgoingTransformation())));
+        enabledInterfacesEntry -> {
+          Configuration c = _configurations.get(enabledInterfacesEntry.getKey());
+          return enabledInterfacesEntry.getValue().stream()
+              .filter(
+                  ifaceName ->
+                      c.getAllInterfaces().get(ifaceName).getPreTransformationOutgoingFilterName()
+                          != null)
+              .collect(
+                  ImmutableMap.toImmutableMap(
+                      Function.identity(),
+                      ifaceName ->
+                          c.getAllInterfaces()
+                              .get(ifaceName)
+                              .getPreTransformationOutgoingFilterName()));
+        });
   }
 
   private Map<String, Map<String, BooleanExpr>> computeRoutableIps(
@@ -857,6 +897,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   @Override
+  public Map<String, Map<String, Transformation>> getIncomingTransformations() {
+    return _incomingTransformations;
+  }
+
+  @Override
   public Map<IngressLocation, BooleanExpr> getSrcIpConstraints() {
     return _srcIpConstraints;
   }
@@ -892,13 +937,18 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Map<String, String>> getOutgoingAcls() {
-    return _outgoingAcls;
+  public Map<String, Map<String, Transformation>> getOutgoingTransformations() {
+    return _outgoingTransformations;
   }
 
   @Override
-  public Map<String, Map<String, Transformation>> getOutgoingTransformations() {
-    return _outgoingTransformations;
+  public Map<String, Map<String, String>> getPostTransformationOutgoingAcls() {
+    return _postTransformationOutgoingAcls;
+  }
+
+  @Override
+  public Map<String, Map<String, String>> getPreTransformationOutgoingAcls() {
+    return _preTransformationOutgoingAcls;
   }
 
   @Override
