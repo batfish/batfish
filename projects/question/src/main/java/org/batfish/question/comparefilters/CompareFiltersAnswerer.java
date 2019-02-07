@@ -52,8 +52,11 @@ public class CompareFiltersAnswerer extends Answerer {
 
   private static final String END_OF_ACL = "End of ACL";
 
-  public CompareFiltersAnswerer(Question question, IBatfish batfish) {
+  private final CompareFiltersQuestion _question;
+
+  public CompareFiltersAnswerer(CompareFiltersQuestion question, IBatfish batfish) {
     super(question, batfish);
+    _question = question;
   }
 
   @Override
@@ -64,12 +67,10 @@ public class CompareFiltersAnswerer extends Answerer {
 
   @Override
   public AnswerElement answerDiff() {
-    CompareFiltersQuestion question = (CompareFiltersQuestion) _question;
-
     NodeSpecifier nodeSpecifier =
-        new FlexibleNodeSpecifierFactory().buildNodeSpecifier(question.getNodes());
+        new FlexibleNodeSpecifierFactory().buildNodeSpecifier(_question.getNodes());
     FilterSpecifier filterSpecifier =
-        new FlexibleFilterSpecifierFactory().buildFilterSpecifier(question.getFilters());
+        new FlexibleFilterSpecifierFactory().buildFilterSpecifier(_question.getFilters());
 
     _batfish.pushBaseSnapshot();
     SortedMap<String, Configuration> currentConfigs = _batfish.loadConfigurations();

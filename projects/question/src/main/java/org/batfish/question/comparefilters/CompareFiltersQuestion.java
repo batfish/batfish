@@ -27,6 +27,7 @@ public final class CompareFiltersQuestion extends Question {
   CompareFiltersQuestion(String filters, String nodes) {
     _filters = filters;
     _nodes = nodes;
+    setDifferential(true);
   }
 
   @JsonCreator
