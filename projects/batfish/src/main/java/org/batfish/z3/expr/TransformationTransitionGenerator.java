@@ -11,9 +11,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Noop;
@@ -154,29 +156,33 @@ public final class TransformationTransitionGenerator {
     return next;
   }
 
+  /**
+   * Generates {@link BasicRuleStatement}s corresponding to either incoming or outgoing {@link
+   * Transformation}s. Outgoing transformations are parameterized on edges and incoming
+   * transformations are parameterized on an interface.
+   *
+   * @param node1 For outgoing transformations, the first node in the edge which has the
+   *     transformation. For incoming transformations, the node of the interface which has the
+   *     transformation.
+   * @param iface1 For outgoing transformations, the interface of the first node in the edge which
+   *     has the transformation. For incoming transformations, the interface which has the
+   *     transformation.
+   * @param node2 For outgoing transformations, the second node in the edge which has the
+   *     transformation. For incoming transformations, null.
+   * @param iface2 For outgoing transformations, the interface of the second node in the edge which
+   *     has the transformation. For incoming transformations, null.
+   * @param tag Distinguishes this transformation from others on the same interface
+   * @param aclLineMatchExprToBooleanExpr Converts {@link AclLineMatchExpr} to {@link BooleanExpr}
+   *     on {@code node1}
+   * @param preStates The set of precondition states for this transition.
+   * @param postState The postcondition state for this transition.
+   * @param transformation The transformation for this transition.
+   * @return A {@link List} of {@link BasicRuleStatement}s which correspond to the {@link
+   *     Transformation}.
+   */
   public static List<BasicRuleStatement> generateTransitions(
-      String node1,
-      String iface1,
-      String tag,
-      AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr,
-      Set<StateExpr> preStates,
-      StateExpr postState,
-      @Nullable Transformation transformation) {
-    return generateTransitions(
-        node1,
-        iface1,
-        null,
-        null,
-        tag,
-        aclLineMatchExprToBooleanExpr,
-        preStates,
-        postState,
-        transformation);
-  }
-
-  public static List<BasicRuleStatement> generateTransitions(
-      String node1,
-      String iface1,
+      @Nonnull String node1,
+      @Nonnull String iface1,
       @Nullable String node2,
       @Nullable String iface2,
       String tag,

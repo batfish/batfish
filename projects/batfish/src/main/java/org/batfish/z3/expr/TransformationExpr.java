@@ -5,7 +5,11 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
-/** A {@link StateExpr} for a {@link Transformation} on an edge. */
+/**
+ * A {@link StateExpr} for a {@link Transformation} on an edge or interface. Outgoing
+ * transformations are parameterized by an edge and incoming transformations are parameterized by an
+ * interface.
+ */
 public class TransformationExpr extends StateExpr {
   public static class State extends StateExpr.State {
 
@@ -23,8 +27,12 @@ public class TransformationExpr extends StateExpr {
 
   private final String _iface1;
 
+  /** For egress transformations, the second node in the edge. Null for ingress transformations. */
   @Nullable private final String _node2;
 
+  /**
+   * For egress transformations, the second interface in the edge. Null for ingress transformations.
+   */
   @Nullable private final String _iface2;
 
   private final String _tag;

@@ -359,7 +359,7 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
       list.add(new StateParameter(transformationStepExpr.getNode2(), NODE));
     }
     if (transformationStepExpr.getIface2() != null) {
-      list.add(new StateParameter(transformationStepExpr.getIface2(), NODE));
+      list.add(new StateParameter(transformationStepExpr.getIface2(), INTERFACE));
     }
     list.add(
         new StateParameter(transformationStepExpr.getTag(), TRANSFORMATION_TAG),

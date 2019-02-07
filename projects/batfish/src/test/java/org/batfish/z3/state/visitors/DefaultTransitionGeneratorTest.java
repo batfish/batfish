@@ -858,13 +858,14 @@ public class DefaultTransitionGeneratorTest {
                     Edge.of(NODE1, INTERFACE2, NODE2, INTERFACE2),
                     Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE1),
                     Edge.of(NODE2, INTERFACE2, NODE1, INTERFACE2)))
-            .setOutgoingAcls(
+            .setPostTransformationOutgoingAcls(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableMap.of(INTERFACE1, ACL1),
                     NODE2,
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2)))
-            .setPreOutgoingAcls(ImmutableMap.of(NODE2, ImmutableMap.of(INTERFACE1, ACL3)))
+            .setPreTransformationOutgoingAcls(
+                ImmutableMap.of(NODE2, ImmutableMap.of(INTERFACE1, ACL3)))
             .setTopologyInterfaces(
                 ImmutableMap.of(
                     NODE1,
@@ -913,7 +914,8 @@ public class DefaultTransitionGeneratorTest {
         MockSynthesizerInput.builder()
             .setNeighborUnreachableOrExitsNetwork(
                 ImmutableMap.of(NODE1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, b(1)))))
-            .setOutgoingAcls(ImmutableMap.of(NODE1, ImmutableMap.of(INTERFACE1, ACL1)))
+            .setPostTransformationOutgoingAcls(
+                ImmutableMap.of(NODE1, ImmutableMap.of(INTERFACE1, ACL1)))
             .build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
@@ -1160,7 +1162,9 @@ public class DefaultTransitionGeneratorTest {
                 new PreInInterface(NODE2, INTERFACE3), new PostInInterface(NODE2, INTERFACE3))));
   }
 
-  /** Test the transitions generated for PostInInterfacePostNat for an edge with a source nat. */
+  /**
+   * Test the transitions generated for PostInInterfacePostNat for an interface with a source nat.
+   */
   @Test
   public void testVisitPostInInterfacePostNat_topologyInterfaceWithNAT() {
     SynthesizerInput input =
@@ -1250,7 +1254,7 @@ public class DefaultTransitionGeneratorTest {
                 ImmutableSet.of(
                     Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE1),
                     Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE1)))
-            .setOutgoingAcls(
+            .setPostTransformationOutgoingAcls(
                 ImmutableMap.of(
                     NODE1, ImmutableMap.of(),
                     NODE2, ImmutableMap.of()))
@@ -1359,7 +1363,7 @@ public class DefaultTransitionGeneratorTest {
                     Edge.of(NODE1, INTERFACE2, NODE2, INTERFACE2),
                     Edge.of(NODE1, INTERFACE3, NODE2, INTERFACE3),
                     Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE1)))
-            .setOutgoingAcls(
+            .setPostTransformationOutgoingAcls(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2),
@@ -1435,7 +1439,7 @@ public class DefaultTransitionGeneratorTest {
                 ImmutableSet.of(
                     Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE1),
                     Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE1)))
-            .setOutgoingAcls(
+            .setPostTransformationOutgoingAcls(
                 ImmutableMap.of(
                     NODE1, ImmutableMap.of(),
                     NODE2, ImmutableMap.of()))
@@ -1482,7 +1486,7 @@ public class DefaultTransitionGeneratorTest {
                 ImmutableSet.of(
                     Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE1),
                     Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE1)))
-            .setOutgoingAcls(
+            .setPostTransformationOutgoingAcls(
                 ImmutableMap.of(
                     NODE1, ImmutableMap.of(),
                     NODE2, ImmutableMap.of()))
@@ -1888,7 +1892,8 @@ public class DefaultTransitionGeneratorTest {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
             .setEnabledEdges(ImmutableSet.of(Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE2)))
-            .setPreOutgoingAcls(ImmutableMap.of(NODE1, ImmutableMap.of(INTERFACE1, ACL1)))
+            .setPreTransformationOutgoingAcls(
+                ImmutableMap.of(NODE1, ImmutableMap.of(INTERFACE1, ACL1)))
             .setTopologyInterfaces(ImmutableMap.of(NODE1, ImmutableSet.of(INTERFACE1)))
             .setAclLineMatchExprToBooleanExprs(
                 ImmutableMap.of(

@@ -228,11 +228,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nullable Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
-  private final @Nonnull Map<String, Map<String, String>> _outgoingAcls;
+  private final @Nonnull Map<String, Map<String, String>> _postTransformationOutgoingAcls;
 
   private final @Nonnull Map<String, Map<String, Transformation>> _outgoingTransformations;
 
-  private final @Nonnull Map<String, Map<String, String>> _preOutgoingAcls;
+  private final @Nonnull Map<String, Map<String, String>> _preTransformationOutgoingAcls;
 
   private final @Nullable Map<String, Map<String, BooleanExpr>> _routableIps;
 
@@ -281,9 +281,9 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _incomingAcls = computeIncomingAcls();
     _incomingTransformations = computeIncomingTransformations();
     _srcIpConstraints = computeSrcIpConstraints(builder._srcIpConstraints);
-    _outgoingAcls = computeOutgoingAcls();
     _outgoingTransformations = computeOutgoingTransformations();
-    _preOutgoingAcls = computePreOutgoingAcls();
+    _postTransformationOutgoingAcls = computePostTransformationOutgoingAcls();
+    _preTransformationOutgoingAcls = computePreTransformationOutgoingAcls();
     _simplify = builder._simplify;
     _vectorizedParameters = builder._vectorizedParameters;
 
@@ -761,7 +761,20 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         });
   }
 
-  private Map<String, Map<String, String>> computeOutgoingAcls() {
+  public Map<String, Map<String, Transformation>> computeOutgoingTransformations() {
+    return toImmutableMap(
+        _configurations,
+        Entry::getKey,
+        nodeEntry ->
+            nodeEntry.getValue().getAllInterfaces().entrySet().stream()
+                .filter(ifaceEntry -> ifaceEntry.getValue().getOutgoingTransformation() != null)
+                .collect(
+                    ImmutableMap.toImmutableMap(
+                        Entry::getKey,
+                        ifaceEntry -> ifaceEntry.getValue().getOutgoingTransformation())));
+  }
+
+  private Map<String, Map<String, String>> computePostTransformationOutgoingAcls() {
     return toImmutableMap(
         _enabledInterfaces,
         Entry::getKey,
@@ -777,20 +790,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         });
   }
 
-  public Map<String, Map<String, Transformation>> computeOutgoingTransformations() {
-    return toImmutableMap(
-        _configurations,
-        Entry::getKey,
-        nodeEntry ->
-            nodeEntry.getValue().getAllInterfaces().entrySet().stream()
-                .filter(ifaceEntry -> ifaceEntry.getValue().getOutgoingTransformation() != null)
-                .collect(
-                    ImmutableMap.toImmutableMap(
-                        Entry::getKey,
-                        ifaceEntry -> ifaceEntry.getValue().getOutgoingTransformation())));
-  }
-
-  private Map<String, Map<String, String>> computePreOutgoingAcls() {
+  private Map<String, Map<String, String>> computePreTransformationOutgoingAcls() {
     return toImmutableMap(
         _enabledInterfaces,
         Entry::getKey,
@@ -937,18 +937,18 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Map<String, String>> getOutgoingAcls() {
-    return _outgoingAcls;
-  }
-
-  @Override
   public Map<String, Map<String, Transformation>> getOutgoingTransformations() {
     return _outgoingTransformations;
   }
 
   @Override
-  public Map<String, Map<String, String>> getPreOutgoingAcls() {
-    return _preOutgoingAcls;
+  public Map<String, Map<String, String>> getPostTransformationOutgoingAcls() {
+    return _postTransformationOutgoingAcls;
+  }
+
+  @Override
+  public Map<String, Map<String, String>> getPreTransformationOutgoingAcls() {
+    return _preTransformationOutgoingAcls;
   }
 
   @Override
