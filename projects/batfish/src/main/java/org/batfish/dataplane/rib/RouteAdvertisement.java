@@ -8,6 +8,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.BatfishException;
 
 /**
  * A wrapper around a route object representing a route advertisement action (send/withdraw) and the
@@ -16,7 +17,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class RouteAdvertisement<T> {
   @Nonnull private final T _route;
-  private final boolean _withdraw;
   @Nonnull private final Reason _reason;
 
   private transient volatile int _hashcode = 0;
@@ -32,15 +32,14 @@ public final class RouteAdvertisement<T> {
   }
 
   /**
-   * Create a new route advertisement, optionally allowing this to be a withdrawal advertisement
+   * Create a new route advertisement
    *
-   * @param route route that is advertised
-   * @param withdraw whether the route is being withdrawn
+   * @param route route object that is advertised
+   * @param reason The {@link Reason} indicating if the route was added or withdrawn and why
    */
   @VisibleForTesting
-  RouteAdvertisement(T route, boolean withdraw, Reason reason) {
+  RouteAdvertisement(T route, Reason reason) {
     _route = route;
-    _withdraw = withdraw;
     _reason = reason;
   }
 
@@ -51,7 +50,6 @@ public final class RouteAdvertisement<T> {
    */
   public RouteAdvertisement(T route) {
     _route = route;
-    _withdraw = false;
     _reason = Reason.ADD;
   }
 
@@ -72,7 +70,16 @@ public final class RouteAdvertisement<T> {
    * @return true if the route is being withdrawn
    */
   public boolean isWithdrawn() {
-    return _withdraw;
+    switch (_reason) {
+      case WITHDRAW:
+      case REPLACE:
+        return true;
+      case ADD:
+        return false;
+      default:
+        throw new BatfishException(
+            String.format("Unrecognized RouteAdvertisement reason: %s", _reason));
+    }
   }
 
   @Override
@@ -84,26 +91,20 @@ public final class RouteAdvertisement<T> {
       return false;
     }
     RouteAdvertisement<?> that = (RouteAdvertisement<?>) o;
-    return _withdraw == that._withdraw
-        && Objects.equals(_route, that._route)
-        && _reason == that._reason;
+    return Objects.equals(_route, that._route) && _reason == that._reason;
   }
 
   @Override
   public int hashCode() {
     if (_hashcode == 0) {
-      _hashcode = Objects.hash(_route, _withdraw, _reason);
+      _hashcode = Objects.hash(_route, _reason);
     }
     return _hashcode;
   }
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this)
-        .add("route", _route)
-        .add("withdraw", _withdraw)
-        .add("reason", _reason)
-        .toString();
+    return MoreObjects.toStringHelper(this).add("route", _route).add("reason", _reason).toString();
   }
 
   @Nonnull
@@ -113,27 +114,18 @@ public final class RouteAdvertisement<T> {
 
   @Nonnull
   public Builder<T> toBuilder() {
-    return RouteAdvertisement.<T>builder()
-        .setRoute(_route)
-        .setWithdraw(_withdraw)
-        .setReason(_reason);
+    return RouteAdvertisement.<T>builder().setRoute(_route).setReason(_reason);
   }
 
   /** Builder for {@link RouteAdvertisement} */
   public static final class Builder<T> {
     private T _route;
-    private boolean _withdraw;
     private Reason _reason = Reason.ADD;
 
     private Builder() {}
 
     public Builder<T> setRoute(T route) {
       _route = route;
-      return this;
-    }
-
-    public Builder<T> setWithdraw(boolean withdraw) {
-      _withdraw = withdraw;
       return this;
     }
 
@@ -145,14 +137,7 @@ public final class RouteAdvertisement<T> {
     @Nonnull
     public RouteAdvertisement<T> build() {
       checkArgument(_route != null, "Route advertisement missing the route");
-      checkArgument(
-          !_withdraw || _reason != Reason.ADD,
-          "Route advertisement is missing a withdrawal reason");
-      checkArgument(
-          _withdraw || (_reason != Reason.WITHDRAW && _reason != Reason.REPLACE),
-          "Route advertisement has invalid reason %s",
-          _reason);
-      return new RouteAdvertisement<>(_route, _withdraw, _reason);
+      return new RouteAdvertisement<>(_route, _reason);
     }
   }
 }
