@@ -96,7 +96,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
                     .assign(
                         new InterfaceLocation(PEER_NAME, PEER_IFACE_NAME), UniverseIpSpace.INSTANCE)
                     .build())
-            .getEdges();
+            .getForwardEdgeMap();
   }
 
   /*
