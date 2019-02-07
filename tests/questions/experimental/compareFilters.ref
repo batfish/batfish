@@ -8,6 +8,10 @@
     "description" : "Find lines of two versions of a filter that treat the same flow(s) differently.",
     "instanceName" : "qname",
     "longDescription" : "This question searches for pairs of lines for which two versions of a filter (access control list) treat the same flow(s) differently.",
+    "orderedVariableNames" : [
+      "nodes",
+      "filters"
+    ],
     "tags" : [
       "acl",
       "dataPlane"
