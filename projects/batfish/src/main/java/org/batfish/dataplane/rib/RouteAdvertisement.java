@@ -8,15 +8,14 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.AbstractRoute;
 
 /**
- * A wrapper around {@link org.batfish.datamodel.AbstractRoute} representing a route advertisement
- * action (send/withdraw) and the reason for the action
+ * A wrapper around a route object representing a route advertisement action (send/withdraw) and the
+ * reason for the action
  */
 @ParametersAreNonnullByDefault
-public final class RouteAdvertisement<R extends AbstractRoute> {
-  @Nonnull private final R _route;
+public final class RouteAdvertisement<T> {
+  @Nonnull private final T _route;
   private final boolean _withdraw;
   @Nonnull private final Reason _reason;
 
@@ -39,7 +38,7 @@ public final class RouteAdvertisement<R extends AbstractRoute> {
    * @param withdraw whether the route is being withdrawn
    */
   @VisibleForTesting
-  RouteAdvertisement(R route, boolean withdraw, Reason reason) {
+  RouteAdvertisement(T route, boolean withdraw, Reason reason) {
     _route = route;
     _withdraw = withdraw;
     _reason = reason;
@@ -50,7 +49,7 @@ public final class RouteAdvertisement<R extends AbstractRoute> {
    *
    * @param route route that is advertised
    */
-  public RouteAdvertisement(R route) {
+  public RouteAdvertisement(T route) {
     _route = route;
     _withdraw = false;
     _reason = Reason.ADD;
@@ -58,7 +57,7 @@ public final class RouteAdvertisement<R extends AbstractRoute> {
 
   /** Get the underlying route that's being advertised (or withdrawn) */
   @Nonnull
-  public R getRoute() {
+  public T getRoute() {
     return _route;
   }
 
@@ -108,43 +107,43 @@ public final class RouteAdvertisement<R extends AbstractRoute> {
   }
 
   @Nonnull
-  public static <R extends AbstractRoute> Builder<R> builder() {
+  public static <T> Builder<T> builder() {
     return new Builder<>();
   }
 
   @Nonnull
-  public Builder<R> toBuilder() {
-    return RouteAdvertisement.<R>builder()
+  public Builder<T> toBuilder() {
+    return RouteAdvertisement.<T>builder()
         .setRoute(_route)
         .setWithdraw(_withdraw)
         .setReason(_reason);
   }
 
   /** Builder for {@link RouteAdvertisement} */
-  public static final class Builder<R extends AbstractRoute> {
-    private R _route;
+  public static final class Builder<T> {
+    private T _route;
     private boolean _withdraw;
     private Reason _reason = Reason.ADD;
 
     private Builder() {}
 
-    public Builder<R> setRoute(R route) {
+    public Builder<T> setRoute(T route) {
       _route = route;
       return this;
     }
 
-    public Builder<R> setWithdraw(boolean withdraw) {
+    public Builder<T> setWithdraw(boolean withdraw) {
       _withdraw = withdraw;
       return this;
     }
 
-    public Builder<R> setReason(Reason reason) {
+    public Builder<T> setReason(Reason reason) {
       _reason = reason;
       return this;
     }
 
     @Nonnull
-    public RouteAdvertisement<R> build() {
+    public RouteAdvertisement<T> build() {
       checkArgument(_route != null, "Route advertisement missing the route");
       checkArgument(
           !_withdraw || _reason != Reason.ADD,
