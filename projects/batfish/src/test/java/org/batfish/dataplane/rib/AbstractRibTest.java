@@ -417,7 +417,7 @@ public class AbstractRibTest {
     assertThat(_rib.getRoutes(), contains(r));
     assertThat(_rib.getRoutes(), not(contains(_mostGeneralRoute)));
     assertThat(
-        d.getActions().contains(new RouteAdvertisement<>(_mostGeneralRoute, true, Reason.WITHDRAW)),
+        d.getActions().contains(new RouteAdvertisement<>(_mostGeneralRoute, Reason.WITHDRAW)),
         equalTo(true));
 
     // Remove route r
@@ -425,7 +425,7 @@ public class AbstractRibTest {
     assertThat(_rib.getRoutes(), not(contains(r)));
     assertThat(_rib.getRoutes(), emptyIterableOf(StaticRoute.class));
     assertThat(
-        d.getActions().contains(new RouteAdvertisement<>(r, true, Reason.WITHDRAW)), equalTo(true));
+        d.getActions().contains(new RouteAdvertisement<>(r, Reason.WITHDRAW)), equalTo(true));
   }
 
   /**
