@@ -12,8 +12,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBDD;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Ip;
@@ -41,7 +43,12 @@ public class TransformationToTransitionTest {
     _srcIpSpaceToBdd = new IpSpaceToBDD(_pkt.getSrcIp());
     _toTransition =
         new TransformationToTransition(
-            _pkt, IpAccessListToBDD.create(_pkt, ImmutableMap.of(), ImmutableMap.of()));
+            _pkt,
+            new IpAccessListToBDD(
+                _pkt,
+                BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
+                ImmutableMap.of(),
+                ImmutableMap.of()));
   }
 
   @Test

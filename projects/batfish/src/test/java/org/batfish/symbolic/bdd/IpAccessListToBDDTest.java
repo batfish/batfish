@@ -75,7 +75,7 @@ public class IpAccessListToBDDTest {
     Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", fooAcl);
     IpAccessList acl = aclWithLines(accepting(new PermittedByAcl("foo")));
     BDD bdd =
-        IpAccessListToBDD.create(
+        new IpAccessListToBDD(
                 _pkt,
                 BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
                 namedAcls,
@@ -88,7 +88,7 @@ public class IpAccessListToBDDTest {
   public void testPermittedByAcl_undefined() {
     IpAccessList acl = aclWithLines(accepting(new PermittedByAcl("foo")));
     IpAccessListToBDD ipAccessListToBDD =
-        IpAccessListToBDD.create(
+        new IpAccessListToBDD(
             _pkt,
             BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
             ImmutableMap.of(),
@@ -104,7 +104,7 @@ public class IpAccessListToBDDTest {
     IpAccessList fooAcl = aclWithLines(accepting(permittedByAcl));
     Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", fooAcl);
     IpAccessListToBDD ipAccessListToBDD =
-        IpAccessListToBDD.create(
+        new IpAccessListToBDD(
             _pkt,
             BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
             namedAcls,

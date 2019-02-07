@@ -255,7 +255,12 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         toImmutableMap(_configurations, Entry::getKey, entry -> entry.getValue().getIpSpaces());
     AclLineMatchExpr headerSpace = firstNonNull(builder._headerSpace, AclLineMatchExprs.TRUE);
     BDDPacket pkt = new BDDPacket();
-    _ipAccessListToBDD = IpAccessListToBDD.create(pkt, ImmutableMap.of(), ImmutableMap.of());
+    _ipAccessListToBDD =
+        new IpAccessListToBDD(
+            pkt,
+            BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()),
+            ImmutableMap.of(),
+            ImmutableMap.of());
     if (builder._specialize) {
       _headerSpaceBdd = _ipAccessListToBDD.visit(headerSpace);
       _ipSpaceSpecializers = computeIpSpaceSpecializers(pkt, _headerSpaceBdd, _configurations);

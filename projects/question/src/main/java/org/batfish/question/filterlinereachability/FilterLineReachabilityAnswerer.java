@@ -551,7 +551,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     BDDSourceManager sourceMgr =
         BDDSourceManager.forInterfaces(bddPacket, aclSpec.acl.getInterfaces());
     IpAccessListToBDD ipAccessListToBDD =
-        IpAccessListToBDD.create(
+        new IpAccessListToBDD(
             bddPacket, sourceMgr, aclSpec.acl.getDependencies(), ImmutableMap.of());
 
     IpAccessList ipAcl = aclSpec.acl.getSanitizedAcl();

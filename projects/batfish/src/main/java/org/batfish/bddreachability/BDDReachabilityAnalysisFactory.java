@@ -248,7 +248,7 @@ public final class BDDReachabilityAnalysisFactory {
         nodeEntry -> {
           Configuration config = nodeEntry.getValue();
           IpAccessListToBDD aclToBdd =
-              IpAccessListToBDD.create(
+              new IpAccessListToBDD(
                   bddPacket,
                   bddSourceManagers.get(config.getHostname()),
                   config.getIpAccessLists(),
@@ -1135,7 +1135,11 @@ public final class BDDReachabilityAnalysisFactory {
       Set<String> finalNodes,
       Set<FlowDisposition> actions) {
     IpAccessListToBDD ipAccessListToBDD =
-        IpAccessListToBDD.create(_bddPacket, ImmutableMap.of(), ImmutableMap.of());
+        new IpAccessListToBDD(
+            _bddPacket,
+            BDDSourceManager.forInterfaces(_bddPacket, ImmutableSet.of()),
+            ImmutableMap.of(),
+            ImmutableMap.of());
     BDD initialHeaderSpaceBdd = ipAccessListToBDD.visit(initialHeaderSpace);
     BDD finalHeaderSpaceBdd = computeFinalHeaderSpaceBdd(initialHeaderSpaceBdd);
 

@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import java.util.HashMap;
 import java.util.Map;
@@ -81,24 +80,11 @@ public class IpAccessListToBDD implements GenericAclLineMatchExprVisitor<BDD> {
     _pkt = pkt;
   }
 
-  public static IpAccessListToBDD create(
-      BDDPacket pkt,
-      BDDSourceManager bddSrcManager,
-      Map<String, IpAccessList> aclEnv,
-      Map<String, IpSpace> ipSpaceEnv) {
-    return new IpAccessListToBDD(pkt, bddSrcManager, aclEnv, ipSpaceEnv);
-  }
-
-  public static IpAccessListToBDD create(
-      BDDPacket pkt, Map<String, IpAccessList> aclEnv, Map<String, IpSpace> ipSpaceEnv) {
-    return new IpAccessListToBDD(
-        pkt, BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()), aclEnv, ipSpaceEnv);
-  }
-
   public BDDPacket getBDDPacket() {
     return _pkt;
   }
 
+  @Nonnull
   public HeaderSpaceToBDD getHeaderSpaceToBDD() {
     return _headerSpaceToBDD;
   }

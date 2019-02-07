@@ -72,7 +72,7 @@ public final class BDDAcl {
       Map<String, IpAccessList> aclEnv,
       Map<String, IpSpace> ipSpaceEnv,
       BDDSourceManager bddSrcManager) {
-    BDD bdd = IpAccessListToBDD.create(pkt, bddSrcManager, aclEnv, ipSpaceEnv).toBdd(acl);
+    BDD bdd = new IpAccessListToBDD(pkt, bddSrcManager, aclEnv, ipSpaceEnv).toBdd(acl);
     return new BDDAcl(bdd, pkt);
   }
 

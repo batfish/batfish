@@ -85,7 +85,7 @@ public class AclToAclLineMatchExprTest {
 
   private static IpAccessListToBDD aclLineMatchExprToBDD(Map<String, IpAccessList> namedAcls) {
     BDDPacket pkt = new BDDPacket();
-    return IpAccessListToBDD.create(
+    return new IpAccessListToBDD(
         pkt, BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()), namedAcls, ImmutableMap.of());
   }
 

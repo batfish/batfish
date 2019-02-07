@@ -302,8 +302,7 @@ public class BDDIpAccessListSpecializerTest {
     BDDPacket pkt = new BDDPacket();
     BDDSourceManager sourceMgr = BDDSourceManager.forInterfaces(pkt, interfaces);
     BDD line2BDD =
-        line2.accept(
-            IpAccessListToBDD.create(pkt, sourceMgr, ImmutableMap.of(), ImmutableMap.of()));
+        line2.accept(new IpAccessListToBDD(pkt, sourceMgr, ImmutableMap.of(), ImmutableMap.of()));
     BDDIpAccessListSpecializer specializer =
         new BDDIpAccessListSpecializer(pkt, line2BDD, ImmutableMap.of(), sourceMgr);
     return line1.accept(specializer);
@@ -450,7 +449,11 @@ public class BDDIpAccessListSpecializerTest {
   @Test
   public void testNegate() {
     IpAccessListToBDD ipAccessListToBDD =
-        IpAccessListToBDD.create(PKT, ImmutableMap.of(), ImmutableMap.of());
+        new IpAccessListToBDD(
+            PKT,
+            BDDSourceManager.forInterfaces(PKT, ImmutableSet.of()),
+            ImmutableMap.of(),
+            ImmutableMap.of());
     IpSpace dstIpSpace = Ip.parse("1.2.3.4").toIpSpace();
     HeaderSpace headerSpace =
         HeaderSpace.builder()
