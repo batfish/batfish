@@ -105,6 +105,24 @@ public final class BatfishObjectMapper {
     return PRETTY_WRITER.writeValueAsString(o);
   }
 
+  /** Returns a concise JSON string representation of the given object. */
+  public static String writeStringRuntimeError(Object o) {
+    try {
+      return writeString(o);
+    } catch (JsonProcessingException e) {
+      throw new IllegalArgumentException(e);
+    }
+  }
+
+  /** Returns a pretty JSON string representation of the given object. */
+  public static String writePrettyStringRuntimeError(Object o) throws JsonProcessingException {
+    try {
+      return writePrettyString(o);
+    } catch (JsonProcessingException e) {
+      throw new IllegalArgumentException(e);
+    }
+  }
+
   /**
    * A custom Jackson {@link DefaultPrettyPrinter} that also prints newlines between array elements,
    * which is better suited towards complex, highly-nested objects.
