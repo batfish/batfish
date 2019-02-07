@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
+import org.batfish.common.bdd.BDDSourceManager;
 
 /** Smart constructors of {@link Transition}. */
 public final class Transitions {
@@ -37,6 +38,10 @@ public final class Transitions {
     return bdd.isOne() ? IDENTITY : bdd.isZero() ? ZERO : new Constraint(bdd);
   }
 
+  public static Transition eraseAndSet(BDD var, BDD value) {
+    return value.isOne() ? IDENTITY : new EraseAndSet(var, value);
+  }
+
   public static Transition or() {
     throw new BatfishException("Don't call or() with no Transitions -- just use Zero instead.");
   }
@@ -53,5 +58,17 @@ public final class Transitions {
       return nonZeroTransitions.get(0);
     }
     return new Or(nonZeroTransitions);
+  }
+
+  public static Transition addSourceInterfaceConstraint(BDDSourceManager mgr, String iface) {
+    return mgr.isTrivial() ? IDENTITY : new AddSourceConstraint(mgr, iface);
+  }
+
+  public static Transition addOriginatingFromDeviceConstraint(BDDSourceManager mgr) {
+    return mgr.isTrivial() ? IDENTITY : new AddSourceConstraint(mgr);
+  }
+
+  public static Transition removeSourceConstraint(BDDSourceManager mgr) {
+    return mgr.isTrivial() ? IDENTITY : new RemoveSourceConstraint(mgr);
   }
 }

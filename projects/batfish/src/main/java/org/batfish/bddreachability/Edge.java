@@ -1,9 +1,11 @@
 package org.batfish.bddreachability;
 
-import java.util.function.Function;
+import static org.batfish.bddreachability.transition.Transitions.constraint;
+
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
+import org.batfish.bddreachability.transition.Identity;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.z3.expr.StateExpr;
 
@@ -12,39 +14,24 @@ import org.batfish.z3.expr.StateExpr;
 final class Edge {
   private final @Nonnull StateExpr _postState;
   private final @Nonnull StateExpr _preState;
-  private final @Nonnull Function<BDD, BDD> _traverseBackward;
-  private final @Nonnull Function<BDD, BDD> _traverseForward;
+  private final @Nonnull Transition _transition;
 
   Edge(StateExpr preState, StateExpr postState) {
     _preState = preState;
     _postState = postState;
-    _traverseBackward = Function.identity();
-    _traverseForward = Function.identity();
+    _transition = Identity.INSTANCE;
   }
 
   Edge(StateExpr preState, StateExpr postState, BDD constraint) {
     _preState = preState;
     _postState = postState;
-    _traverseBackward = constraint::and;
-    _traverseForward = constraint::and;
-  }
-
-  Edge(
-      StateExpr preState,
-      StateExpr postState,
-      Function<BDD, BDD> traverseBackward,
-      Function<BDD, BDD> traverseForward) {
-    _postState = postState;
-    _preState = preState;
-    _traverseBackward = traverseBackward;
-    _traverseForward = traverseForward;
+    _transition = constraint(constraint);
   }
 
   public Edge(StateExpr preState, StateExpr postState, Transition transition) {
     _preState = preState;
     _postState = postState;
-    _traverseBackward = transition::transitBackward;
-    _traverseForward = transition::transitForward;
+    _transition = transition;
   }
 
   @Nonnull
@@ -58,12 +45,17 @@ final class Edge {
   }
 
   @Nonnull
+  Transition getTransition() {
+    return _transition;
+  }
+
+  @Nonnull
   BDD traverseBackward(BDD bdd) {
-    return _traverseBackward.apply(bdd);
+    return _transition.transitBackward(bdd);
   }
 
   @Nonnull
   BDD traverseForward(BDD bdd) {
-    return _traverseForward.apply(bdd);
+    return _transition.transitForward(bdd);
   }
 }
