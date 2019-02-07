@@ -39,8 +39,10 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
   /** Map to keep track when routes were merged in. */
   protected Map<R, Long> _logicalArrivalTime;
 
+  /** Root of our prefix trie */
   private RibTree<R> _tree;
 
+  /** Memoized set of all routes in this RIB */
   @Nullable private Set<R> _allRoutes;
 
   /**
