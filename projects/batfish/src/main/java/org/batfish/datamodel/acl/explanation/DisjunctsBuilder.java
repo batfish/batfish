@@ -55,7 +55,7 @@ public final class DisjunctsBuilder extends AclLineMatchExprSetBuilder {
      * disjunct separately (so we can detect and remove redundant disjuncts). This could create some
      * extra work though, so only do this if the conjunction won't be valid after adding.
      */
-    if (_ipAccessListToBdd.visit(expr).or(getBdd()).isOne()) {
+    if (_ipAccessListToBdd.toBdd(expr).or(getBdd()).isOne()) {
       /*
        * expr is valid with the other conjuncts. Just add it now.
        */

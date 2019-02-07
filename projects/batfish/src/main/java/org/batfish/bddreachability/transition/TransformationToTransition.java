@@ -88,7 +88,7 @@ public class TransformationToTransition {
   }
 
   private Transition computeTransition(Transformation transformation) {
-    BDD guard = _ipAccessListToBdd.visit(transformation.getGuard());
+    BDD guard = _ipAccessListToBdd.toBdd(transformation.getGuard());
     Transition steps = computeSteps(transformation.getTransformationSteps());
 
     Transition trueBranch =

@@ -33,8 +33,8 @@ public final class MemoizedIpAccessListToBdd extends IpAccessListToBdd {
   }
 
   @Override
-  public BDD visit(AclLineMatchExpr expr) {
-    return _cache.computeIfAbsent(expr, k -> k.accept(this));
+  public BDD toBdd(AclLineMatchExpr expr) {
+    return _cache.computeIfAbsent(expr, this::visit);
   }
 
   @VisibleForTesting

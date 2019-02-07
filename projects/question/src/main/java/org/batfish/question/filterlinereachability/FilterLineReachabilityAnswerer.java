@@ -562,7 +562,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     List<BDD> ipLineToBDDMap =
         lines.stream()
             .map(IpAccessListLine::getMatchCondition)
-            .map(matchExpr -> matchExpr.accept(ipAccessListToBdd))
+            .map(ipAccessListToBdd::toBdd)
             .collect(Collectors.toList());
 
     /* Pass over BDDs to classify each as unmatchable, unreachable, or (implicitly) reachable. */

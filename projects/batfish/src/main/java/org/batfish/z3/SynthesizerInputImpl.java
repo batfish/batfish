@@ -263,7 +263,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             ImmutableMap.of(),
             ImmutableMap.of());
     if (builder._specialize) {
-      _headerSpaceBdd = _ipAccessListToBdd.visit(headerSpace);
+      _headerSpaceBdd = _ipAccessListToBdd.toBdd(headerSpace);
       _ipSpaceSpecializers = computeIpSpaceSpecializers(pkt, _headerSpaceBdd, _configurations);
       _ipAccessListSpecializers =
           computeIpAccessListSpecializers(pkt, _headerSpaceBdd, _configurations);

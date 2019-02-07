@@ -26,7 +26,7 @@ public final class IpAccessListToBddImpl extends IpAccessListToBdd {
   }
 
   @Override
-  public BDD visit(AclLineMatchExpr expr) {
-    return expr.accept(this);
+  public BDD toBdd(AclLineMatchExpr expr) {
+    return visit(expr);
   }
 }

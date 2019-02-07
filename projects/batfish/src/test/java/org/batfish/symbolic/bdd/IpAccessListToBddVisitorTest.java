@@ -66,7 +66,7 @@ public class IpAccessListToBddVisitorTest {
                 .build());
     IpAccessListToBdd toBDD =
         new IpAccessListToBddImpl(_pkt, _sourceMgr, namedAclBDDs, ImmutableMap.of());
-    assertThat(permittedByAcl.accept(toBDD), equalTo(fooIpBDD));
+    assertThat(toBDD.toBdd(permittedByAcl), equalTo(fooIpBDD));
   }
 
   @Test
@@ -76,7 +76,7 @@ public class IpAccessListToBddVisitorTest {
         new IpAccessListToBddImpl(_pkt, _sourceMgr, ImmutableMap.of(), ImmutableMap.of());
     exception.expect(IllegalArgumentException.class);
     exception.expectMessage("Undefined PermittedByAcl reference: foo");
-    permittedByAcl.accept(toBDD);
+    toBDD.toBdd(permittedByAcl);
   }
 
   @Test
@@ -97,7 +97,7 @@ public class IpAccessListToBddVisitorTest {
             ImmutableMap.of());
     exception.expect(BatfishException.class);
     exception.expectMessage("Circular PermittedByAcl reference: foo");
-    permittedByAcl.accept(toBDD);
+    toBDD.toBdd(permittedByAcl);
   }
 
   @Test
@@ -106,16 +106,16 @@ public class IpAccessListToBddVisitorTest {
     BDD iface1BDD = _sourceMgr.getSourceInterfaceBDD(IFACE1);
     BDD iface2BDD = _sourceMgr.getSourceInterfaceBDD(IFACE2);
 
-    BDD bdd1 = _toBDD.visit(matchSrcInterface1);
+    BDD bdd1 = _toBDD.toBdd(matchSrcInterface1);
     assertThat(bdd1, equalTo(iface1BDD));
     assertThat(_sourceMgr.getSourceFromAssignment(bdd1), equalTo(Optional.of(IFACE1)));
 
     MatchSrcInterface matchSrcInterface2 = new MatchSrcInterface(ImmutableList.of(IFACE2));
-    assertThat(_toBDD.visit(matchSrcInterface2), equalTo(iface2BDD));
+    assertThat(_toBDD.toBdd(matchSrcInterface2), equalTo(iface2BDD));
 
     MatchSrcInterface matchSrcInterface1Or2 =
         new MatchSrcInterface(ImmutableList.of(IFACE1, IFACE2));
-    BDD bdd1Or2 = _toBDD.visit(matchSrcInterface1Or2);
+    BDD bdd1Or2 = _toBDD.toBdd(matchSrcInterface1Or2);
     assertThat(bdd1Or2, equalTo(iface1BDD.or(iface2BDD)));
     assertThat(
         _sourceMgr.getSourceFromAssignment(bdd1Or2.fullSatOne()).get(), oneOf(IFACE1, IFACE2));
@@ -123,13 +123,13 @@ public class IpAccessListToBddVisitorTest {
     AclLineMatchExpr expr =
         new AndMatchExpr(
             ImmutableList.of(matchSrcInterface1Or2, new NotMatchExpr(matchSrcInterface1)));
-    assertThat(_toBDD.visit(expr), equalTo(iface2BDD));
+    assertThat(_toBDD.toBdd(expr), equalTo(iface2BDD));
   }
 
   @Test
   public void testOriginateFromInterface() {
     assertThat(
-        _toBDD.visit(OriginatingFromDevice.INSTANCE),
+        _toBDD.toBdd(OriginatingFromDevice.INSTANCE),
         equalTo(_sourceMgr.getOriginatingFromDeviceBDD()));
   }
 }

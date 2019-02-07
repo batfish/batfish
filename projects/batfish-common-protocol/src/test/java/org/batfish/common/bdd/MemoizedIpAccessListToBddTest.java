@@ -37,14 +37,14 @@ public class MemoizedIpAccessListToBddTest {
   @Test
   public void testVisit() {
     MatcherAssert.assertThat(_toBdd.getMemoizedBdd(MATCH_DST_IP), equalTo(Optional.empty()));
-    BDD bdd = _toBdd.visit(MATCH_DST_IP);
+    BDD bdd = _toBdd.toBdd(MATCH_DST_IP);
     MatcherAssert.assertThat(_toBdd.getMemoizedBdd(MATCH_DST_IP), equalTo(Optional.of(bdd)));
   }
 
   @Test
   public void testNegate() {
     MatcherAssert.assertThat(_toBdd.getMemoizedBdd(MATCH_DST_IP), equalTo(Optional.empty()));
-    BDD bdd = _toBdd.visit(not(MATCH_DST_IP));
+    BDD bdd = _toBdd.toBdd(not(MATCH_DST_IP));
     MatcherAssert.assertThat(_toBdd.getMemoizedBdd(MATCH_DST_IP), equalTo(Optional.of(bdd.not())));
   }
 
@@ -52,7 +52,7 @@ public class MemoizedIpAccessListToBddTest {
   public void testAnd() {
     MatcherAssert.assertThat(_toBdd.getMemoizedBdd(MATCH_DST_IP), equalTo(Optional.empty()));
     MatcherAssert.assertThat(_toBdd.getMemoizedBdd(MATCH_SRC_IP), equalTo(Optional.empty()));
-    BDD bdd = _toBdd.visit(and(MATCH_DST_IP, MATCH_SRC_IP));
+    BDD bdd = _toBdd.toBdd(and(MATCH_DST_IP, MATCH_SRC_IP));
     Optional<BDD> dstBdd = _toBdd.getMemoizedBdd(MATCH_DST_IP);
     Optional<BDD> srcBdd = _toBdd.getMemoizedBdd(MATCH_SRC_IP);
     assertThat("MATCH_DST_IP should be memoized", dstBdd.isPresent());
@@ -64,7 +64,7 @@ public class MemoizedIpAccessListToBddTest {
   public void testOr() {
     MatcherAssert.assertThat(_toBdd.getMemoizedBdd(MATCH_DST_IP), equalTo(Optional.empty()));
     MatcherAssert.assertThat(_toBdd.getMemoizedBdd(MATCH_SRC_IP), equalTo(Optional.empty()));
-    BDD bdd = _toBdd.visit(or(MATCH_DST_IP, MATCH_SRC_IP));
+    BDD bdd = _toBdd.toBdd(or(MATCH_DST_IP, MATCH_SRC_IP));
     Optional<BDD> dstBdd = _toBdd.getMemoizedBdd(MATCH_DST_IP);
     Optional<BDD> srcBdd = _toBdd.getMemoizedBdd(MATCH_SRC_IP);
     assertThat("MATCH_DST_IP should be memoized", dstBdd.isPresent());

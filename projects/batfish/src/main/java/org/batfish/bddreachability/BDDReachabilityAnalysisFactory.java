@@ -1141,7 +1141,7 @@ public final class BDDReachabilityAnalysisFactory {
             BDDSourceManager.forInterfaces(_bddPacket, ImmutableSet.of()),
             ImmutableMap.of(),
             ImmutableMap.of());
-    BDD initialHeaderSpaceBdd = ipAccessListToBdd.visit(initialHeaderSpace);
+    BDD initialHeaderSpaceBdd = ipAccessListToBdd.toBdd(initialHeaderSpace);
     BDD finalHeaderSpaceBdd = computeFinalHeaderSpaceBdd(initialHeaderSpaceBdd);
 
     Map<StateExpr, BDD> roots = rootConstraints(srcIpSpaceAssignment, initialHeaderSpaceBdd);
