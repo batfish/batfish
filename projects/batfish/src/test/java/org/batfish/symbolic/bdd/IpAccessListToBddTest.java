@@ -1,11 +1,14 @@
 package org.batfish.symbolic.bdd;
 
+import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import net.sf.javabdd.BDD;
@@ -14,11 +17,13 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.PermittedByAcl;
@@ -50,6 +55,16 @@ public class IpAccessListToBddTest {
 
   private static IpAccessListLine accepting(HeaderSpace headerSpace) {
     return accepting(new MatchHeaderSpace(headerSpace));
+  }
+
+  private static IpAccessListLine acceptingDst(Prefix prefix) {
+    return accepting(
+        new MatchHeaderSpace(HeaderSpace.builder().setDstIps(prefix.toIpSpace()).build()));
+  }
+
+  private static IpAccessListLine rejectingDst(Prefix prefix) {
+    return rejecting(
+        new MatchHeaderSpace(HeaderSpace.builder().setDstIps(prefix.toIpSpace()).build()));
   }
 
   @Test
@@ -113,5 +128,48 @@ public class IpAccessListToBddTest {
     exception.expect(BatfishException.class);
     exception.expectMessage("Circular PermittedByAcl reference: foo");
     ipAccessListToBdd.toBdd(fooAcl);
+  }
+
+  @Test
+  public void testReachAndMatchLines() {
+    Prefix p32 = Prefix.parse("1.1.1.1/32");
+    Prefix p24 = Prefix.parse("1.1.1.0/24");
+    Prefix p16 = Prefix.parse("1.1.0.0/16");
+    Prefix p8 = Prefix.parse("1.0.0.0/8");
+
+    IpAccessListToBDD ipAccessListToBDD =
+        IpAccessListToBDD.create(
+            _pkt,
+            BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    IpSpaceToBDD dstToBdd = ipAccessListToBDD.getHeaderSpaceToBDD().getDstIpSpaceToBdd();
+
+    BDD bdd32 = dstToBdd.toBDD(p32);
+    BDD bdd24 = dstToBdd.toBDD(p24);
+    BDD bdd16 = dstToBdd.toBDD(p16);
+    BDD bdd8 = dstToBdd.toBDD(p8);
+
+    List<BDD> matchLines1 =
+        ipAccessListToBDD.reachAndMatchLines(
+            aclWithLines(
+                acceptingDst(p32), acceptingDst(p24), acceptingDst(p16), acceptingDst(p8)));
+
+    assertThat(
+        matchLines1,
+        contains(
+            bdd32,
+            bdd32.not().and(bdd24),
+            bdd24.not().and(bdd16),
+            bdd16.not().and(bdd8),
+            bdd8.not()));
+
+    List<BDD> matchLines2 =
+        ipAccessListToBDD.reachAndMatchLines(
+            aclWithLines(
+                rejectingDst(p32), acceptingDst(p24), rejectingDst(p16), acceptingDst(p8)));
+
+    // LineAction doesn't matter.
+    assertThat(matchLines1, equalTo(matchLines2));
   }
 }

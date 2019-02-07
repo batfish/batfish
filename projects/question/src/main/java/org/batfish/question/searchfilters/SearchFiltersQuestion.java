@@ -31,7 +31,6 @@ import org.batfish.specifier.NodeSpecifierFactory;
 
 /** A question to determine which flows match a particular ACL action. */
 public final class SearchFiltersQuestion extends Question {
-
   private static final String PROP_ACTION = "action";
   private static final String PROP_COMPLEMENT_HEADERSPACE = "invertSearch";
   private static final String PROP_FILTERS = "filters";

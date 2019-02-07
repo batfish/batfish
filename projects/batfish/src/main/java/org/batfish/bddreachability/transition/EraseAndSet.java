@@ -27,11 +27,16 @@ public final class EraseAndSet implements Transition {
   }
 
   EraseAndSet(BDD eraseVars, BDD setValue) {
+    Set<Integer> vars = vars(eraseVars);
+    checkArgument(!vars.isEmpty(), "No variables to erase");
+
+    checkArgument(!setValue.isOne(), "Value is one (always true). Use Identity instead");
+
     /* Require that the erased variables include the set variables. We consider it an error to
      * set a variable that wasn't erased. If we want to set a variable that wasn't erased, use a
      * different transition class.
      */
-    checkArgument(vars(eraseVars).containsAll(vars(setValue)));
+    checkArgument(vars.containsAll(vars(setValue)));
 
     _eraseVars = eraseVars;
     _setValue = setValue;
