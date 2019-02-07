@@ -1268,7 +1268,7 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   /**
-   * Adapt an edge to set the bit indicating that one the nodes required to be transited has now
+   * Adapt an edge to set the bit indicating that one of the nodes required to be transited has now
    * been transited.
    *
    * <p>Going forward, we erase the previous value of the bit as we enter the edge, then set it to 1
