@@ -26,7 +26,8 @@ import net.sf.javabdd.BDDFactory;
 import org.batfish.common.Answerer;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.bdd.IpAccessListToBDD;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
@@ -550,8 +551,8 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     BDDFactory bddFactory = bddPacket.getFactory();
     BDDSourceManager sourceMgr =
         BDDSourceManager.forInterfaces(bddPacket, aclSpec.acl.getInterfaces());
-    IpAccessListToBDD ipAccessListToBDD =
-        new IpAccessListToBDD(
+    IpAccessListToBdd ipAccessListToBdd =
+        new IpAccessListToBddImpl(
             bddPacket, sourceMgr, aclSpec.acl.getDependencies(), ImmutableMap.of());
 
     IpAccessList ipAcl = aclSpec.acl.getSanitizedAcl();
@@ -561,7 +562,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     List<BDD> ipLineToBDDMap =
         lines.stream()
             .map(IpAccessListLine::getMatchCondition)
-            .map(matchExpr -> matchExpr.accept(ipAccessListToBDD))
+            .map(matchExpr -> matchExpr.accept(ipAccessListToBdd))
             .collect(Collectors.toList());
 
     /* Pass over BDDs to classify each as unmatchable, unreachable, or (implicitly) reachable. */

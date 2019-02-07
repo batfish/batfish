@@ -14,7 +14,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.bdd.IpAccessListToBDD;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -32,8 +33,8 @@ public class DisjunctsBuilderTest {
   @Before
   public void setup() {
     BDDPacket pkt = new BDDPacket();
-    IpAccessListToBDD toBdd =
-        new IpAccessListToBDD(
+    IpAccessListToBdd toBdd =
+        new IpAccessListToBddImpl(
             pkt,
             BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()),
             ImmutableMap.of(),

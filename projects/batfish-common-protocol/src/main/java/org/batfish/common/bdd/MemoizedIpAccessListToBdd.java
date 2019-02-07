@@ -11,19 +11,22 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 
 /**
- * An {@link IpAccessListToBDD} that memoizes its {@link IpAccessListToBDD#visit} method using an
+ * An {@link IpAccessListToBdd} that memoizes its {@link IpAccessListToBdd#visit} method using an
  * {@link IdentityHashMap}.
  */
-public final class MemoizedIpAccessListToBDD extends IpAccessListToBDD {
+public final class MemoizedIpAccessListToBdd extends IpAccessListToBdd {
   private Map<AclLineMatchExpr, BDD> _cache = new IdentityHashMap<>();
 
-  public MemoizedIpAccessListToBDD(
-          BDDPacket packet, Map<String, IpAccessList> aclEnv, Map<String, IpSpace> namedIpSpaces) {
+  public MemoizedIpAccessListToBdd(
+      BDDPacket packet, Map<String, IpAccessList> aclEnv, Map<String, IpSpace> namedIpSpaces) {
     this(packet, BDDSourceManager.forInterfaces(packet, ImmutableSet.of()), aclEnv, namedIpSpaces);
   }
 
-  public MemoizedIpAccessListToBDD(
-      BDDPacket packet, BDDSourceManager mgr, Map<String, IpAccessList> aclEnv, Map<String, IpSpace> namedIpSpaces) {
+  public MemoizedIpAccessListToBdd(
+      BDDPacket packet,
+      BDDSourceManager mgr,
+      Map<String, IpAccessList> aclEnv,
+      Map<String, IpSpace> namedIpSpaces) {
     super(
         packet,
         mgr,
@@ -37,7 +40,7 @@ public final class MemoizedIpAccessListToBDD extends IpAccessListToBDD {
 
   @Override
   public BDD visit(AclLineMatchExpr expr) {
-    return _cache.computeIfAbsent(expr, super::visit);
+    return _cache.computeIfAbsent(expr, k -> k.accept(this));
   }
 
   @VisibleForTesting

@@ -39,7 +39,8 @@ import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
-import org.batfish.common.bdd.IpAccessListToBDD;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
 import org.batfish.common.topology.TopologyUtil;
@@ -247,8 +248,8 @@ public final class BDDReachabilityAnalysisFactory {
         Entry::getKey,
         nodeEntry -> {
           Configuration config = nodeEntry.getValue();
-          IpAccessListToBDD aclToBdd =
-              new IpAccessListToBDD(
+          IpAccessListToBdd aclToBdd =
+              new IpAccessListToBddImpl(
                   bddPacket,
                   bddSourceManagers.get(config.getHostname()),
                   config.getIpAccessLists(),
@@ -275,7 +276,7 @@ public final class BDDReachabilityAnalysisFactory {
   private TransformationToTransition initTransformationToTransformation(Configuration node) {
     return new TransformationToTransition(
         _bddPacket,
-        new IpAccessListToBDD(
+        new IpAccessListToBddImpl(
             _bddPacket,
             _bddSourceManagers.get(node.getHostname()),
             new HeaderSpaceToBDD(
@@ -1134,13 +1135,13 @@ public final class BDDReachabilityAnalysisFactory {
       Set<String> requiredTransitNodes,
       Set<String> finalNodes,
       Set<FlowDisposition> actions) {
-    IpAccessListToBDD ipAccessListToBDD =
-        new IpAccessListToBDD(
+    IpAccessListToBdd ipAccessListToBdd =
+        new IpAccessListToBddImpl(
             _bddPacket,
             BDDSourceManager.forInterfaces(_bddPacket, ImmutableSet.of()),
             ImmutableMap.of(),
             ImmutableMap.of());
-    BDD initialHeaderSpaceBdd = ipAccessListToBDD.visit(initialHeaderSpace);
+    BDD initialHeaderSpaceBdd = ipAccessListToBdd.visit(initialHeaderSpace);
     BDD finalHeaderSpaceBdd = computeFinalHeaderSpaceBdd(initialHeaderSpaceBdd);
 
     Map<StateExpr, BDD> roots = rootConstraints(srcIpSpaceAssignment, initialHeaderSpaceBdd);

@@ -16,7 +16,7 @@ import com.google.common.collect.ImmutableSet;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.bdd.IpAccessListToBDD;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
@@ -44,7 +44,7 @@ public class TransformationToTransitionTest {
     _toTransition =
         new TransformationToTransition(
             _pkt,
-            new IpAccessListToBDD(
+            new IpAccessListToBddImpl(
                 _pkt,
                 BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
                 ImmutableMap.of(),

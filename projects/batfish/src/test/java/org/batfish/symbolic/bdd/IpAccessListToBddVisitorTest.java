@@ -13,7 +13,8 @@ import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.bdd.IpAccessListToBDD;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -29,8 +30,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-/** Test the visitor methods of {@link IpAccessListToBDD}. */
-public class IpAccessListToBDDVisitorTest {
+/** Test the visitor methods of {@link IpAccessListToBdd}. */
+public class IpAccessListToBddVisitorTest {
   @Rule public ExpectedException exception = ExpectedException.none();
 
   private static final String IFACE1 = "iface1";
@@ -41,13 +42,13 @@ public class IpAccessListToBDDVisitorTest {
 
   private BDDSourceManager _sourceMgr;
 
-  private IpAccessListToBDD _toBDD;
+  private IpAccessListToBdd _toBDD;
 
   @Before
   public void setup() {
     _pkt = new BDDPacket();
     _sourceMgr = BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of(IFACE1, IFACE2));
-    _toBDD = new IpAccessListToBDD(_pkt, _sourceMgr, ImmutableMap.of(), ImmutableMap.of());
+    _toBDD = new IpAccessListToBddImpl(_pkt, _sourceMgr, ImmutableMap.of(), ImmutableMap.of());
   }
 
   @Test
@@ -63,16 +64,16 @@ public class IpAccessListToBDDVisitorTest {
                 .setLines(
                     ImmutableList.of(IpAccessListLine.accepting(AclLineMatchExprs.matchDst(fooIp))))
                 .build());
-    IpAccessListToBDD toBDD =
-        new IpAccessListToBDD(_pkt, _sourceMgr, namedAclBDDs, ImmutableMap.of());
+    IpAccessListToBdd toBDD =
+        new IpAccessListToBddImpl(_pkt, _sourceMgr, namedAclBDDs, ImmutableMap.of());
     assertThat(permittedByAcl.accept(toBDD), equalTo(fooIpBDD));
   }
 
   @Test
   public void testPermittedByAcl_undefined() {
     PermittedByAcl permittedByAcl = new PermittedByAcl("foo");
-    IpAccessListToBDD toBDD =
-        new IpAccessListToBDD(_pkt, _sourceMgr, ImmutableMap.of(), ImmutableMap.of());
+    IpAccessListToBdd toBDD =
+        new IpAccessListToBddImpl(_pkt, _sourceMgr, ImmutableMap.of(), ImmutableMap.of());
     exception.expect(IllegalArgumentException.class);
     exception.expectMessage("Undefined PermittedByAcl reference: foo");
     permittedByAcl.accept(toBDD);
@@ -88,8 +89,8 @@ public class IpAccessListToBDDVisitorTest {
                 .setName("foo")
                 .setLines(ImmutableList.of(IpAccessListLine.accepting(permittedByAcl)))
                 .build());
-    IpAccessListToBDD toBDD =
-        new IpAccessListToBDD(
+    IpAccessListToBdd toBDD =
+        new IpAccessListToBddImpl(
             _pkt,
             BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
             namedAclBDDs,

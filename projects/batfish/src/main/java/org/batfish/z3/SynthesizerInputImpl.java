@@ -27,7 +27,8 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDIpSpaceSpecializer;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.bdd.IpAccessListToBDD;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.ipspace.IpSpaceSpecializer;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
@@ -203,7 +204,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nullable Map<String, IpAccessListSpecializer> _ipAccessListSpecializers;
 
-  private final @Nonnull IpAccessListToBDD _ipAccessListToBDD;
+  private final @Nonnull IpAccessListToBdd _ipAccessListToBdd;
 
   private final @Nullable Map<String, Set<Ip>> _ipsByHostname;
 
@@ -255,14 +256,14 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         toImmutableMap(_configurations, Entry::getKey, entry -> entry.getValue().getIpSpaces());
     AclLineMatchExpr headerSpace = firstNonNull(builder._headerSpace, AclLineMatchExprs.TRUE);
     BDDPacket pkt = new BDDPacket();
-    _ipAccessListToBDD =
-        new IpAccessListToBDD(
+    _ipAccessListToBdd =
+        new IpAccessListToBddImpl(
             pkt,
             BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()),
             ImmutableMap.of(),
             ImmutableMap.of());
     if (builder._specialize) {
-      _headerSpaceBdd = _ipAccessListToBDD.visit(headerSpace);
+      _headerSpaceBdd = _ipAccessListToBdd.visit(headerSpace);
       _ipSpaceSpecializers = computeIpSpaceSpecializers(pkt, _headerSpaceBdd, _configurations);
       _ipAccessListSpecializers =
           computeIpAccessListSpecializers(pkt, _headerSpaceBdd, _configurations);
@@ -684,7 +685,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   private boolean inSpecializationSpace(Ip ip) {
     return _headerSpaceBdd.isOne()
         || !_headerSpaceBdd
-            .and(_ipAccessListToBDD.getHeaderSpaceToBDD().getDstIpSpaceToBdd().toBDD(ip))
+            .and(_ipAccessListToBdd.getHeaderSpaceToBDD().getDstIpSpaceToBdd().toBDD(ip))
             .isZero();
   }
 

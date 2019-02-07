@@ -16,16 +16,16 @@ import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
 
-public class MemoizedIpAccessListToBDDTest {
+public class MemoizedIpAccessListToBddTest {
   private static final AclLineMatchExpr MATCH_DST_IP = matchDstIp("1.1.1.1");
   private static final AclLineMatchExpr MATCH_SRC_IP = matchSrcIp("2.2.2.2");
 
-  private MemoizedIpAccessListToBDD _toBdd;
+  private MemoizedIpAccessListToBdd _toBdd;
 
   @Before
   public void setup() {
     BDDPacket pkt = new BDDPacket();
-    _toBdd = new MemoizedIpAccessListToBDD(pkt, ImmutableMap.of(), ImmutableMap.of());
+    _toBdd = new MemoizedIpAccessListToBdd(pkt, ImmutableMap.of(), ImmutableMap.of());
   }
 
   @Test

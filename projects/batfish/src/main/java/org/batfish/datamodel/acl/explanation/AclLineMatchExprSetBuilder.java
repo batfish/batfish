@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.sf.javabdd.BDD;
-import org.batfish.common.bdd.IpAccessListToBDD;
+import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 
 /**
@@ -15,20 +15,20 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
  */
 public abstract class AclLineMatchExprSetBuilder {
 
-  private final IpAccessListToBDD _ipAccessListToBDD;
+  private final IpAccessListToBdd _ipAccessListToBdd;
   private final Map<AclLineMatchExpr, BDD> _exprs;
   private BDD _bdd;
   private BDD _orExprBDDs;
 
-  protected AclLineMatchExprSetBuilder(IpAccessListToBDD ipAccessListToBDD, BDD identity) {
-    _ipAccessListToBDD = ipAccessListToBDD;
+  protected AclLineMatchExprSetBuilder(IpAccessListToBdd ipAccessListToBdd, BDD identity) {
+    _ipAccessListToBdd = ipAccessListToBdd;
     _exprs = new HashMap<>();
     _bdd = identity;
     _orExprBDDs = identity.getFactory().zero();
   }
 
   public AclLineMatchExprSetBuilder(AclLineMatchExprSetBuilder other) {
-    _ipAccessListToBDD = other._ipAccessListToBDD;
+    _ipAccessListToBdd = other._ipAccessListToBdd;
     _exprs = new HashMap<>(other._exprs);
     _bdd = other._bdd;
     _orExprBDDs = other._orExprBDDs;
@@ -51,7 +51,7 @@ public abstract class AclLineMatchExprSetBuilder {
       return;
     }
 
-    BDD exprBdd = _ipAccessListToBDD.visit(expr);
+    BDD exprBdd = _ipAccessListToBdd.visit(expr);
     BDD newBdd = combinator(_bdd, exprBdd);
     if (newBdd.equals(_bdd)) {
       // expr contributes nothing to the set; discard

@@ -15,8 +15,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.bdd.IpAccessListToBDD;
-import org.batfish.common.bdd.MemoizedIpAccessListToBDD;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
@@ -97,8 +97,8 @@ public final class AclExplainer {
 
     IpAccessList diffAclWithInvariant = scopedAcl(invariantExpr, diffAcl);
 
-    IpAccessListToBDD ipAccessListToBDD =
-        new MemoizedIpAccessListToBDD(
+    IpAccessListToBdd ipAccessListToBdd =
+        new MemoizedIpAccessListToBdd(
             bddPacket, mgr, namedAcls, differentialIpAccessList.getNamedIpSpaces());
 
     IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> literalsToLines =
@@ -108,7 +108,7 @@ public final class AclExplainer {
     literalsToLines.putAll(AclLineMatchExprLiterals.literalsToLines(diffAclWithInvariant));
 
     return explainWithProvenance(
-        ipAccessListToBDD,
+        ipAccessListToBdd,
         diffAclWithInvariant,
         namedAcls,
         differentialIpAccessList.getLiteralsToLines());
@@ -146,8 +146,8 @@ public final class AclExplainer {
         namedAcls.getOrDefault(acl.getName(), acl).equals(acl),
         "namedAcls contains a different ACL with the same name as acl");
 
-    IpAccessListToBDD ipAccessListToBDD =
-        new MemoizedIpAccessListToBDD(bddPacket, mgr, namedAcls, namedIpSpaces);
+    IpAccessListToBdd ipAccessListToBdd =
+        new MemoizedIpAccessListToBdd(bddPacket, mgr, namedAcls, namedIpSpaces);
 
     // add the top-level acl to the list of named acls, because we are going to create
     // a new top-level acl to take into account the given invariant
@@ -162,21 +162,21 @@ public final class AclExplainer {
     literalsToLines.putAll(AclLineMatchExprLiterals.literalsToLines(aclWithInvariant));
 
     return explainWithProvenance(
-        ipAccessListToBDD, aclWithInvariant, ImmutableMap.copyOf(finalNamedAcls), literalsToLines);
+        ipAccessListToBdd, aclWithInvariant, ImmutableMap.copyOf(finalNamedAcls), literalsToLines);
   }
 
   private static AclLineMatchExprWithProvenance<IpAccessListLineIndex> explainWithProvenance(
-      IpAccessListToBDD ipAccessListToBDD,
+      IpAccessListToBdd ipAccessListToBdd,
       IpAccessList acl,
       Map<String, IpAccessList> namedAcls,
       IdentityHashMap<AclLineMatchExpr, IpAccessListLineIndex> literalsToLines) {
 
     // Convert acl to a single expression.
     AclLineMatchExpr aclExpr =
-        AclToAclLineMatchExpr.toAclLineMatchExpr(ipAccessListToBDD, acl, namedAcls);
+        AclToAclLineMatchExpr.toAclLineMatchExpr(ipAccessListToBdd, acl, namedAcls);
 
     // Reduce that expression to normal form.
-    AclLineMatchExpr aclExprNf = AclLineMatchExprNormalizer.normalize(ipAccessListToBDD, aclExpr);
+    AclLineMatchExpr aclExprNf = AclLineMatchExprNormalizer.normalize(ipAccessListToBdd, aclExpr);
 
     // Simplify the normal form
     AclLineMatchExprWithProvenance<AclLineMatchExpr> aclExprNfExplained =
