@@ -49,7 +49,15 @@ public class TransformationTransitionGeneratorTest {
 
   private static List<BasicRuleStatement> generateTransitions(Transformation transformation) {
     return TransformationTransitionGenerator.generateTransitions(
-        NODE1, IFACE1, NODE2, IFACE2, TAG, TO_BOOLEAN_EXPR, PRE_STATE, POST_STATE, transformation);
+        NODE1,
+        IFACE1,
+        NODE2,
+        IFACE2,
+        TAG,
+        TO_BOOLEAN_EXPR,
+        ImmutableSet.of(PRE_STATE),
+        POST_STATE,
+        transformation);
   }
 
   private static TransformationExpr stateExpr(int id) {
