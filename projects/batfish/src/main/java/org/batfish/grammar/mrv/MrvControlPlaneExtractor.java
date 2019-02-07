@@ -3,6 +3,7 @@ package org.batfish.grammar.mrv;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.Warnings;
+import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.mrv.MrvParser.A_system_systemnameContext;
 import org.batfish.grammar.mrv.MrvParser.Mrv_configurationContext;
@@ -60,7 +61,7 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
 
   @Override
   public void processParseTree(ParserRuleContext tree) {
-    ParseTreeWalker walker = new ParseTreeWalker();
+    ParseTreeWalker walker = new BatfishParseTreeWalker();
     walker.walk(this, tree);
   }
 

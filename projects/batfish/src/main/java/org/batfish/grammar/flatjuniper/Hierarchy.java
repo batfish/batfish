@@ -19,6 +19,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Deactivate_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
@@ -41,7 +42,7 @@ public final class Hierarchy {
 
     private static boolean isHostnameStatement(StatementContext ctx) {
       IsHostnameStatement listener = new IsHostnameStatement();
-      ParseTreeWalker walker = new ParseTreeWalker();
+      ParseTreeWalker walker = new BatfishParseTreeWalker();
       walker.walk(listener, ctx);
       return listener._isHostname;
     }
@@ -597,7 +598,7 @@ public final class Hierarchy {
         String newStatementText,
         Map<Token, String> tokenInputs) {
       TokenInputMarker listener = new TokenInputMarker(newStatementText, tokenInputs);
-      ParseTreeWalker walker = new ParseTreeWalker();
+      ParseTreeWalker walker = new BatfishParseTreeWalker();
       walker.walk(listener, newConfiguration);
     }
 

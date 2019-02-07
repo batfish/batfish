@@ -278,7 +278,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                 _c.getIpSpaceMetadata()
                     .put(name, new IpSpaceMetadata(name, ADDRESS_GROUP.getDescription()));
               });
-
       // Convert PAN zones and create their corresponding outgoing ACLs
       for (Entry<String, Zone> zoneEntry : vsys.getZones().entrySet()) {
         Zone zone = zoneEntry.getValue();
@@ -381,14 +380,23 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     if (!ruleServices.isEmpty()) {
       List<AclLineMatchExpr> serviceDisjuncts = new TreeList<>();
       for (ServiceOrServiceGroupReference service : ruleServices) {
-        if (service.getName().equals(CATCHALL_SERVICE_NAME)) {
+        String serviceName = service.getName();
+
+        // Check for matching object before using built-ins
+        String vsysName = service.getVsysName(this, vsys);
+        if (vsysName != null) {
+          serviceDisjuncts.add(
+              new PermittedByAcl(computeServiceGroupMemberAclName(vsysName, serviceName)));
+        } else if (serviceName.equals(CATCHALL_SERVICE_NAME)) {
+          serviceDisjuncts.clear();
           serviceDisjuncts.add(TrueExpr.INSTANCE);
           break;
+        } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())) {
+          serviceDisjuncts.add(new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTP.getHeaderSpace()));
+        } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())) {
+          serviceDisjuncts.add(new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTPS.getHeaderSpace()));
         } else {
-          serviceDisjuncts.add(
-              new PermittedByAcl(
-                  computeServiceGroupMemberAclName(
-                      service.getVsysName(this, rule.getVsys()), service.getName())));
+          _w.redFlag(String.format("No matching service group/object found for: %s", serviceName));
         }
       }
       conjuncts.add(new OrMatchExpr(serviceDisjuncts));
@@ -586,6 +594,13 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureUsage.RULE_TO_ZONE);
 
     // Handle marking for structures that may exist in one of a couple namespaces
+    // Handle service objects/groups that may overlap with built-in names
+    markAbstractStructureFromUnknownNamespace(
+        PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP_OR_NONE,
+        ImmutableList.of(PaloAltoStructureType.SERVICE, PaloAltoStructureType.SERVICE_GROUP),
+        true,
+        PaloAltoStructureUsage.SERVICE_GROUP_MEMBER,
+        PaloAltoStructureUsage.RULEBASE_SERVICE);
     markAbstractStructureFromUnknownNamespace(
         PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP,
         ImmutableList.of(PaloAltoStructureType.SERVICE, PaloAltoStructureType.SERVICE_GROUP),
