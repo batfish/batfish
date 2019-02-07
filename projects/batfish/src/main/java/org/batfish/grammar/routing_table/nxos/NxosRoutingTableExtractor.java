@@ -163,7 +163,7 @@ public class NxosRoutingTableExtractor extends NxosRoutingTableParserBaseListene
 
   @Override
   public void processParseTree(ParserRuleContext tree) {
-    ParseTreeWalker walker = new BatfishParseTreeWalker();
+    ParseTreeWalker walker = new BatfishParseTreeWalker(_parser);
     walker.walk(this, tree);
   }
 
