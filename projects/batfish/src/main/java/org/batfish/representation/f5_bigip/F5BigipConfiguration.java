@@ -58,6 +58,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   private void processVlanSettings(Vlan vlan) {
+    // Configure interface switchport parameters.
     Integer tag = vlan.getTag();
     if (tag == null) {
       return;
@@ -107,6 +108,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   private void processSelf(Self self) {
+    // Add addresses to appropriate VLAN interfaces.
     org.batfish.datamodel.Interface vlanIface = _c.getAllInterfaces().get(self.getVlan());
     if (vlanIface == null) {
       return;
@@ -144,11 +146,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
           _c.getDefaultVrf().getInterfaces().put(name, newIface);
         });
     // Process vlans:
-    // - configure interface switchport parameters
     _vlans.values().forEach(this::processVlanSettings);
 
     // Process selves:
-    // - add addresses to appropriate VLAN interfaces
     _selves.values().forEach(this::processSelf);
 
     return _c;
