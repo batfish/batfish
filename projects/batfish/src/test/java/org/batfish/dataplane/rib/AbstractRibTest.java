@@ -465,38 +465,6 @@ public class AbstractRibTest {
   }
 
   @Test
-  public void testClear() {
-    // Two routes for same prefix,
-    StaticRoute r1 =
-        StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
-            .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
-            .setAdministrativeCost(1)
-            .setMetric(0L)
-            .setTag(1)
-            .build();
-    StaticRoute r2 =
-        StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
-            .setNextHopIp(Ip.parse("2.2.2.2"))
-            .setNextHopInterface(null)
-            .setAdministrativeCost(1)
-            .setMetric(0L)
-            .setTag(1)
-            .build();
-
-    _rib.mergeRoute(r1);
-    _rib.mergeRoute(r2);
-    // sanity check here
-    assertThat(_rib.getRoutes(), hasSize(2));
-
-    // Check that clearing all routes works:
-    _rib.clearRoutes(Prefix.parse("1.1.1.1/32"));
-    assertThat(_rib.getRoutes(), hasSize(0));
-  }
-
-  @Test
   public void testLengthLimit() {
     StaticRoute.Builder builder =
         StaticRoute.builder()

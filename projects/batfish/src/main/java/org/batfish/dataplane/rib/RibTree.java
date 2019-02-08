@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
@@ -179,17 +180,8 @@ final class RibTree<R extends AbstractRoute> implements Serializable {
     return (obj == this) || (obj instanceof RibTree && this._root.equals(((RibTree<?>) obj)._root));
   }
 
-  RibDelta<R> clearRoutes(Prefix prefix) {
-    PrefixTrieMap<R> node = _root.findNode(prefix);
-    if (node == null) {
-      return RibDelta.empty();
-    }
-    RibDelta<R> delta = RibDelta.<R>builder().remove(node.getElements(), Reason.REPLACE).build();
-    node.clear();
-    return delta;
-  }
-
-  Map<Prefix, IpSpace> getMatchingIps() {
+  /** See {@link GenericRib#getMatchingIps()} */
+  public Map<Prefix, IpSpace> getMatchingIps() {
     ImmutableMap.Builder<Prefix, IpSpace> builder = ImmutableMap.builder();
     IpWildcardSetIpSpace.Builder matchingIps = IpWildcardSetIpSpace.builder();
     Traverser.<PrefixTrieMap<R>>forTree(PrefixTrieMap::getChildren)
@@ -208,6 +200,7 @@ final class RibTree<R extends AbstractRoute> implements Serializable {
     return builder.build();
   }
 
+  /** See {@link GenericRib#getRoutableIps()} */
   IpSpace getRoutableIps() {
     IpWildcardSetIpSpace.Builder builder = IpWildcardSetIpSpace.builder();
     Traverser.<PrefixTrieMap<R>>forTree(PrefixTrieMap::getChildren)

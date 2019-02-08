@@ -217,24 +217,6 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
   }
 
   /**
-   * Clear the routes for a given prefix.
-   *
-   * <p><b>Only routes with exact prefix matches are cleared!</b>
-   *
-   * <p>The returning {@link RibDelta} will specify {@link Reason#REPLACE} as the reason for route
-   * removal.
-   *
-   * @param prefix the {@link Prefix} for which the routes should be cleared.
-   */
-  public RibDelta<R> clearRoutes(Prefix prefix) {
-    RibDelta<R> d = _tree.clearRoutes(prefix);
-    if (!d.isEmpty()) {
-      _allRoutes = null;
-    }
-    return d;
-  }
-
-  /**
    * Extract routes stored for this exact prefix, if any.
    *
    * <p>Does not collect routes for any other prefixes. Does not alter memoized routes.
