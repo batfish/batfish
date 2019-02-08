@@ -12,7 +12,6 @@ import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import net.sf.javabdd.BDD;
 
@@ -68,6 +67,7 @@ public final class BDDFiniteDomain<V> {
    */
   public static <K, V> Map<K, BDDFiniteDomain<V>> domainsWithSharedVariable(
       BDDPacket pkt, String varName, Map<K, Set<V>> values) {
+    checkArgument(!values.isEmpty(), "empty values map");
     int maxSize = values.values().stream().mapToInt(Set::size).max().getAsInt();
     int bitsRequired = computeBitsRequired(maxSize);
     BDDInteger var = pkt.allocateBDDInteger(varName, bitsRequired, false);
@@ -87,14 +87,15 @@ public final class BDDFiniteDomain<V> {
     return _valueBdds;
   }
 
-  public Optional<V> getValueFromAssignment(BDD bdd) {
+  public V getValueFromAssignment(BDD bdd) {
     checkArgument(isAssignment(bdd));
     checkArgument(bdd.imp(_isValidValue).isOne());
 
     return _valueBdds.entrySet().stream()
         .filter(entry -> bdd.imp(entry.getValue()).isOne())
         .map(Entry::getKey)
-        .findFirst();
+        .findFirst()
+        .orElseThrow(() -> new IllegalStateException("No value for valid assignment."));
   }
 
   public boolean isEmpty() {

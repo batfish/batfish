@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.Optional;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,8 +55,8 @@ public final class BDDFiniteDomainTest {
   @Test
   public void testGetValueFromAssignment() {
     BDDFiniteDomain<Integer> fd = new BDDFiniteDomain<>(_pkt, "", ImmutableSet.of(1, 2, 3));
-    assertThat(fd.getValueFromAssignment(fd.getConstraintForValue(1)), equalTo(Optional.of(1)));
-    assertThat(fd.getValueFromAssignment(fd.getConstraintForValue(2)), equalTo(Optional.of(2)));
-    assertThat(fd.getValueFromAssignment(fd.getConstraintForValue(3)), equalTo(Optional.of(3)));
+    assertThat(fd.getValueFromAssignment(fd.getConstraintForValue(1)), equalTo(1));
+    assertThat(fd.getValueFromAssignment(fd.getConstraintForValue(2)), equalTo(2));
+    assertThat(fd.getValueFromAssignment(fd.getConstraintForValue(3)), equalTo(3));
   }
 }

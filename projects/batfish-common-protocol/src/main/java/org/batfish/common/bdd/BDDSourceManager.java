@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
@@ -36,7 +37,7 @@ public final class BDDSourceManager {
   /* For efficiency, the finite domain doesn't track each active but unreferenced source. Instead,
    * it tracks a single representative value that represents all of them.
    */
-  private final String _activeButUnreferencedRepresentative;
+  private final @Nullable String _activeButUnreferencedRepresentative;
   private final Set<String> _activeButUnreferenced;
   private final BDD _falseBDD;
   private final BDDFiniteDomain<String> _finiteDomain;
@@ -220,11 +221,15 @@ public final class BDDSourceManager {
    *     source.
    */
   public Optional<String> getSourceFromAssignment(BDD bdd) {
-    return _finiteDomain
-        .getValueFromAssignment(bdd)
-        .flatMap(
-            src ->
-                src.equals(SOURCE_ORIGINATING_FROM_DEVICE) ? Optional.empty() : Optional.of(src));
+    if (_finiteDomain.isEmpty() && _activeButUnreferencedRepresentative == null) {
+      // No sources
+      return Optional.empty();
+    }
+    String value =
+        _finiteDomain.isEmpty()
+            ? _activeButUnreferencedRepresentative
+            : _finiteDomain.getValueFromAssignment(bdd);
+    return value.equals(SOURCE_ORIGINATING_FROM_DEVICE) ? Optional.empty() : Optional.of(value);
   }
 
   /**
