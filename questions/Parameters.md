@@ -151,7 +151,7 @@ A specification for IPv4 addresses. An `ipSpec` is a string with the following s
 
 ```
 ipSpec =
-    ref.addressbook(<group=string>,<book=string>)
+    ref.addressgroup(<group=string>,<book=string>)
     | ofLocation(<locationSpec>)
     | <ipv4spec>
     | <ipv4spec> - <ipv4spec>
