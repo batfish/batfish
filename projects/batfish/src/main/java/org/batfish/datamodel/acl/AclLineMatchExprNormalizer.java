@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
-import org.batfish.common.bdd.IpAccessListToBDD;
+import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.datamodel.acl.explanation.ConjunctsBuilder;
 import org.batfish.datamodel.acl.normalize.Negate;
 
@@ -25,17 +25,17 @@ import org.batfish.datamodel.acl.normalize.Negate;
  * simpler to grok) in order to detect those contradictions earlier.
  */
 public final class AclLineMatchExprNormalizer implements GenericAclLineMatchExprVisitor<Void> {
-  private final IpAccessListToBDD _ipAccessListToBDD;
+  private final IpAccessListToBdd _ipAccessListToBdd;
   private Set<ConjunctsBuilder> _conjunctsBuilders;
 
-  private AclLineMatchExprNormalizer(IpAccessListToBDD ipAccessListToBDD) {
-    _ipAccessListToBDD = ipAccessListToBDD;
+  private AclLineMatchExprNormalizer(IpAccessListToBdd ipAccessListToBdd) {
+    _ipAccessListToBdd = ipAccessListToBdd;
     _conjunctsBuilders = new HashSet<>();
-    _conjunctsBuilders.add(new ConjunctsBuilder(_ipAccessListToBDD));
+    _conjunctsBuilders.add(new ConjunctsBuilder(_ipAccessListToBdd));
   }
 
   private AclLineMatchExprNormalizer(AclLineMatchExprNormalizer other) {
-    _ipAccessListToBDD = other._ipAccessListToBDD;
+    _ipAccessListToBdd = other._ipAccessListToBdd;
     _conjunctsBuilders =
         other._conjunctsBuilders.stream().map(ConjunctsBuilder::new).collect(Collectors.toSet());
   }
@@ -43,7 +43,7 @@ public final class AclLineMatchExprNormalizer implements GenericAclLineMatchExpr
   /**
    * This method is the public API of the class. It normalizes the input {@link AclLineMatchExpr}.
    */
-  public static AclLineMatchExpr normalize(IpAccessListToBDD toBDD, AclLineMatchExpr expr) {
+  public static AclLineMatchExpr normalize(IpAccessListToBdd toBDD, AclLineMatchExpr expr) {
     AclLineMatchExprNormalizer normalizer = new AclLineMatchExprNormalizer(toBDD);
     expr.accept(normalizer);
     Set<AclLineMatchExpr> disjuncts =
