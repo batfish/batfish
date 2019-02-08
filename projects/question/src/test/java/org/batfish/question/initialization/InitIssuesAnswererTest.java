@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
+import org.batfish.common.Warnings.ParseExceptionContext;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -119,16 +120,51 @@ public class InitIssuesAnswererTest {
   @Test
   public void testAnswererParseError() {
     String file = "configs/nodeError.cfg";
+    Integer line = 9876;
 
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     pvcae.setWarnings(ImmutableSortedMap.of(file, new Warnings()));
     pvcae.getErrorMessages().put(file, EXCEPTION_MESSAGE);
-    // Answerer using TestBatfish that should produce a single parse error
+    pvcae.getParseExceptionContexts().put(file, new ParseExceptionContext("content", line));
+    // Answerer using TestBatfish that should produce a single parse error with parse exception
+    // context
     InitIssuesAnswerer answerer =
         new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(pvcae, null));
     TableAnswerElement answer = answerer.answer();
 
-    // Make sure we see parse error row in answer
+    // Make sure we see parse error row with line number in answer
+    assertThat(
+        answer.getRows(),
+        equalTo(
+            new Rows()
+                .add(
+                    Row.of(
+                        COL_NODES,
+                        null,
+                        COL_FILELINES,
+                        ImmutableList.of(new FileLines(file, ImmutableSortedSet.of(line))),
+                        COL_ISSUE_TYPE,
+                        IssueType.ParseError.toString(),
+                        COL_ISSUE,
+                        EXCEPTION_MESSAGE,
+                        COL_PARSER_CONTEXT,
+                        null))));
+  }
+
+  @Test
+  public void testAnswererParseErrorNoContext() {
+    String file = "configs/nodeError.cfg";
+
+    ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
+    pvcae.setWarnings(ImmutableSortedMap.of(file, new Warnings()));
+    pvcae.getErrorMessages().put(file, EXCEPTION_MESSAGE);
+    // Answerer using TestBatfish that should produce a single parse error without parse exception
+    // context
+    InitIssuesAnswerer answerer =
+        new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(pvcae, null));
+    TableAnswerElement answer = answerer.answer();
+
+    // Make sure we see parse error row (without line number) in answer
     assertThat(
         answer.getRows(),
         equalTo(

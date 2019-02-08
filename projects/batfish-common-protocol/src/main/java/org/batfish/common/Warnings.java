@@ -227,7 +227,7 @@ public class Warnings implements Serializable {
   }
 
   /** A class to represent context for a parse exception for a file. */
-  public class ParseExceptionContext implements Serializable {
+  public static class ParseExceptionContext implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final String PROP_LINE_CONTENT = "Line_Content";
@@ -244,7 +244,7 @@ public class Warnings implements Serializable {
       _lineNumber = lineNumber;
     }
 
-    public ParseExceptionContext(
+    ParseExceptionContext(
         @Nonnull ParserRuleContext parseRuleContext,
         @Nonnull BatfishCombinedParser<? extends BatfishParser, ? extends BatfishLexer> parser) {
       _lineNumber = parser.getLine(parseRuleContext.getStart());

@@ -13,6 +13,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.Warnings;
+import org.batfish.common.Warnings.ParseExceptionContext;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
@@ -86,7 +87,17 @@ public class InitIssuesAnswerer extends Answerer {
                     getRow(
                         null,
                         fileNames.stream()
-                            .map(n -> new FileLines(n, ImmutableSortedSet.of()))
+                            .map(
+                                n -> {
+                                  ImmutableSortedSet.Builder<Integer> lines =
+                                      ImmutableSortedSet.naturalOrder();
+                                  ParseExceptionContext pec =
+                                      pvcae.getParseExceptionContexts().get(n);
+                                  if (pec != null && pec.getLineNumber() != null) {
+                                    lines.add(pec.getLineNumber());
+                                  }
+                                  return new FileLines(n, lines.build());
+                                })
                             .collect(ImmutableList.toImmutableList()),
                         IssueType.ParseError,
                         stackTrace)));
