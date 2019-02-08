@@ -14,6 +14,7 @@ import static org.batfish.datamodel.transformation.TransformationUtil.visitTrans
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -22,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -312,22 +314,6 @@ public final class BDDReachabilityAnalysisFactory {
               ifaceEntry ->
                   toTransition.toTransition(ifaceEntry.getValue().getOutgoingTransformation()));
         });
-  }
-
-  private static Map<StateExpr, Map<StateExpr, Edge>> computeEdges(Stream<Edge> edgeStream) {
-    Map<StateExpr, Map<StateExpr, Edge>> edges = new HashMap<>();
-
-    edgeStream.forEach(
-        edge ->
-            edges
-                .computeIfAbsent(edge.getPreState(), k -> new HashMap<>())
-                .put(edge.getPostState(), edge));
-
-    // freeze
-    return toImmutableMap(
-        edges,
-        Entry::getKey,
-        preStateEntry -> toImmutableMap(preStateEntry.getValue(), Entry::getKey, Entry::getValue));
   }
 
   private static Map<String, Map<String, BDD>> computeRoutableBDDs(
@@ -1109,9 +1095,9 @@ public final class BDDReachabilityAnalysisFactory {
     edgeStream = instrumentForbiddenTransitNodes(forbiddenTransitNodes, edgeStream);
     edgeStream = instrumentRequiredTransitNodes(requiredTransitNodes, edgeStream);
 
-    Map<StateExpr, Map<StateExpr, Edge>> edgeMap = computeEdges(edgeStream);
+    List<Edge> edges = edgeStream.collect(ImmutableList.toImmutableList());
 
-    return new BDDReachabilityAnalysis(_bddPacket, roots.keySet(), edgeMap, finalHeaderSpaceBdd);
+    return new BDDReachabilityAnalysis(_bddPacket, roots.keySet(), edges, finalHeaderSpaceBdd);
   }
 
   /**
