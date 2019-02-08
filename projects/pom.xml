@@ -83,6 +83,7 @@
     <lz4.version>1.5.0</lz4.version>
     <opentracing-jaxrs2.version>0.0.9</opentracing-jaxrs2.version>
     <opentracing.version>0.30.0</opentracing.version>
+    <parboiled.version>1.1.8</parboiled.version>
     <pmd.version>6.8.0</pmd.version>
     <puppycrawl.version>8.13</puppycrawl.version>
     <servlet.version>4.0.0</servlet.version>
@@ -1001,6 +1002,12 @@
         <groupId>org.lastnpe.eea</groupId>
         <artifactId>jdk-eea</artifactId>
         <version>${jdk-eea.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.parboiled</groupId>
+        <artifactId>parboiled-java</artifactId>
+        <version>${parboiled.version}</version>
       </dependency>
 
       <dependency>

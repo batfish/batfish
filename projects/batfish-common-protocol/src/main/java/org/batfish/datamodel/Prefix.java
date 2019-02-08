@@ -89,6 +89,9 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   }
 
   public static Prefix create(Ip ip, int prefixLength) {
+    if (prefixLength < 0 || prefixLength > MAX_PREFIX_LENGTH) {
+      throw new IllegalArgumentException("Invalid prefix length " + prefixLength);
+    }
     Prefix p = new Prefix(ip, prefixLength);
     try {
       return CACHE.get(p, () -> p);
