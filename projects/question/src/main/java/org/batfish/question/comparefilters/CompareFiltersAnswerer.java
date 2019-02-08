@@ -20,7 +20,8 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.bdd.IpAccessListToBDD;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
@@ -169,8 +170,8 @@ public class CompareFiltersAnswerer extends Answerer {
             .collect(ImmutableList.toImmutableList());
     BDDSourceManager currentSrcMgr =
         BDDSourceManager.forIpAccessList(bddPacket, currentConfig, currentAcl);
-    IpAccessListToBDD currentToBdd =
-        new IpAccessListToBDD(bddPacket, currentSrcMgr, currentAcls, currentIpSpaces);
+    IpAccessListToBdd currentToBdd =
+        new IpAccessListToBddImpl(bddPacket, currentSrcMgr, currentAcls, currentIpSpaces);
     List<BDD> currentBdds = currentToBdd.reachAndMatchLines(currentAcl);
 
     Configuration referenceConfig = referenceConfigs.get(hostname);
@@ -184,7 +185,7 @@ public class CompareFiltersAnswerer extends Answerer {
     BDDSourceManager referenceSrcMgr =
         BDDSourceManager.forIpAccessList(bddPacket, referenceConfig, referenceAcl);
     List<BDD> referenceBdds =
-        new IpAccessListToBDD(bddPacket, referenceSrcMgr, referenceAcls, referenceIpSpaces)
+        new IpAccessListToBddImpl(bddPacket, referenceSrcMgr, referenceAcls, referenceIpSpaces)
             .reachAndMatchLines(referenceAcl);
     return compareFilters(
         hostname, filtername, currentActions, currentBdds, referenceActions, referenceBdds);
