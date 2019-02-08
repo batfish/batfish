@@ -17,11 +17,11 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
@@ -235,7 +235,7 @@ public class SpecifiersReachabilityTest {
         ((TableAnswerElement) answer)
             .getRowsList().stream()
                 .map(row -> row.getFlow(TracerouteAnswerer.COL_FLOW))
-                .collect(Collectors.toSet());
+                .collect(ImmutableSet.toImmutableSet());
     assertThat(flows, not(empty()));
     assertThat(flows, Matchers.everyItem(FlowMatchers.hasDstIp(NODE1_LOOPBACK_IP)));
 
@@ -256,7 +256,7 @@ public class SpecifiersReachabilityTest {
         ((TableAnswerElement) answer)
             .getRowsList().stream()
                 .map(row -> row.getFlow(TracerouteAnswerer.COL_FLOW))
-                .collect(Collectors.toSet());
+                .collect(ImmutableSet.toImmutableSet());
     assertThat(flows, not(empty()));
     assertThat(flows, Matchers.everyItem(FlowMatchers.hasDstIp(not(NODE1_LOOPBACK_IP))));
   }

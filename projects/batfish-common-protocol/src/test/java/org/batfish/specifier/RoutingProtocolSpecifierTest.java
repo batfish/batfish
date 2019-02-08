@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.RoutingProtocol;
@@ -18,7 +17,7 @@ public final class RoutingProtocolSpecifierTest {
   public void testCreationDefault() {
     assertThat(
         RoutingProtocolSpecifier.create(null).getProtocols(),
-        equalTo(Stream.of(RoutingProtocol.values()).collect(Collectors.toSet())));
+        equalTo(Stream.of(RoutingProtocol.values()).collect(ImmutableSet.toImmutableSet())));
   }
 
   @Test
@@ -51,7 +50,7 @@ public final class RoutingProtocolSpecifierTest {
   public void testAll() {
     assertThat(
         RoutingProtocolSpecifier.create("all").getProtocols(),
-        equalTo(Stream.of(RoutingProtocol.values()).collect(Collectors.toSet())));
+        equalTo(Stream.of(RoutingProtocol.values()).collect(ImmutableSet.toImmutableSet())));
   }
 
   @Test
@@ -230,7 +229,7 @@ public final class RoutingProtocolSpecifierTest {
     assertThat(
         RoutingProtocolSpecifier.autoComplete("b").stream()
             .map(AutocompleteSuggestion::getText)
-            .collect(Collectors.toSet()),
+            .collect(ImmutableSet.toImmutableSet()),
         equalTo(
             ImmutableSet.of(
                 RoutingProtocolSpecifier.BGP,

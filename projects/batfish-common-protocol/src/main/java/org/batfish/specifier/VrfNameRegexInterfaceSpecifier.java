@@ -1,10 +1,10 @@
 package org.batfish.specifier;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import org.batfish.datamodel.Interface;
 
 /**
@@ -44,6 +44,6 @@ public final class VrfNameRegexInterfaceSpecifier implements InterfaceSpecifier 
         .filter(v -> _pattern.matcher(v.getName()).matches())
         .map(v -> v.getInterfaces().values())
         .flatMap(Collection::stream)
-        .collect(Collectors.toSet());
+        .collect(ImmutableSet.toImmutableSet());
   }
 }
