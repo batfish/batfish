@@ -61,10 +61,17 @@ public final class PrefixTrieMap<DataT> implements Serializable {
     return _left;
   }
 
+  private void setLeft(@Nullable PrefixTrieMap<DataT> left) {
+    _left = left;
+  }
   /** Return right subtree */
   @Nullable
   public PrefixTrieMap<DataT> getRight() {
     return _right;
+  }
+
+  private void setRight(@Nullable PrefixTrieMap<DataT> right) {
+    _right = right;
   }
 
   /** Returns the list of non-null children for this node */
@@ -85,7 +92,7 @@ public final class PrefixTrieMap<DataT> implements Serializable {
     return node == null ? ImmutableSet.of() : ImmutableSet.copyOf(node._elements);
   }
 
-  /** Add a element to <i>this</i> node */
+  /** Add an element to <i>this</i> node */
   public boolean add(DataT e) {
     return _elements.add(e);
   }
@@ -95,7 +102,7 @@ public final class PrefixTrieMap<DataT> implements Serializable {
     return _elements.addAll(elements);
   }
 
-  /** Remove an element to <i>this</i> node */
+  /** Remove an element from <i>this</i> node */
   public boolean remove(DataT e) {
     return _elements.remove(e);
   }
@@ -111,13 +118,19 @@ public final class PrefixTrieMap<DataT> implements Serializable {
     return add(e);
   }
 
+  /** Replace all elements stored at <i>this</i> node with the given elements */
+  public boolean replaceAll(Collection<DataT> e) {
+    _elements.clear();
+    return addAll(e);
+  }
+
   /** Find or create a node for a given prefix (must be an exact match) */
   @Nonnull
   public PrefixTrieMap<DataT> findOrCreateNode(Prefix prefix) {
     return findOrCreateNode(prefix, prefix.getStartIp().asLong(), 0);
   }
 
-  /** Find or create a node for a given prefix (must be an exact match) */
+  /** Find the node for a given prefix (must be an exact match) */
   @Nullable
   public PrefixTrieMap<DataT> findNode(Prefix prefix) {
     return findNode(prefix.getStartIp().asLong(), prefix.getPrefixLength(), 0);
@@ -161,9 +174,8 @@ public final class PrefixTrieMap<DataT> implements Serializable {
   private PrefixTrieMap<DataT> findOrCreateNode(
       Prefix prefix, long bits, int firstUnmatchedBitIndex) {
     /*
-     * We have reached the node where an element should be inserted, because:
-     * 1) the prefix length of this node matches the desired prefix length exactly, and
-     * 2) going deeper can only gets us longer matches
+     * We know we've reached the node at which to insert the element because
+     * this node's prefix equals our target prefix.
      */
     if (prefix.getPrefixLength() == _prefix.getPrefixLength()) {
       return this;
@@ -209,7 +221,7 @@ public final class PrefixTrieMap<DataT> implements Serializable {
   }
 
   /**
-   * Returns a set of routes with the longest prefix match for a given IP address
+   * Returns a node with the longest prefix match for a given IP address.
    *
    * @param address IP address
    * @param bits IP address represented as a set of bits
@@ -267,7 +279,7 @@ public final class PrefixTrieMap<DataT> implements Serializable {
    * @return the node into which an element can be added
    */
   @Nonnull
-  private PrefixTrieMap<DataT> findHelper(
+  private static <DataT> PrefixTrieMap<DataT> findHelper(
       PrefixTrieMap<DataT> parent,
       Prefix prefix,
       long bits,
@@ -346,7 +358,7 @@ public final class PrefixTrieMap<DataT> implements Serializable {
      * before we reach the end of either prefix. This requires the following:
      * - Compute the max prefix match (up to nextUnmatchedBit)
      * - Create a new node with this new prefix above the current node
-     * - Create a new node with the elementToMerge's full prefix and assign it the parent.
+     * - Create a new node with the desired prefix and assign the newly created node.
      * - Existing node becomes a sibling of the node with full elementToMerge prefix
      */
     PrefixTrieMap<DataT> oldNode = node;
@@ -363,12 +375,12 @@ public final class PrefixTrieMap<DataT> implements Serializable {
     return child;
   }
 
-  private void assignChild(
+  private static <DataT> void assignChild(
       PrefixTrieMap<DataT> parent, PrefixTrieMap<DataT> child, boolean branchRight) {
     if (branchRight) {
-      parent._right = child;
+      parent.setRight(child);
     } else {
-      parent._left = child;
+      parent.setLeft(child);
     }
   }
 
