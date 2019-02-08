@@ -1,10 +1,10 @@
 package org.batfish.specifier;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 
@@ -41,7 +41,7 @@ public final class ZoneNameRegexInterfaceSpecifier implements InterfaceSpecifier
     return nodes.stream()
         .map(n -> resolve(n, ctxt))
         .flatMap(Collection::stream)
-        .collect(Collectors.toSet());
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   // This helper could be avoided if Zones stored Interfaces and not (just) interface names
@@ -52,9 +52,9 @@ public final class ZoneNameRegexInterfaceSpecifier implements InterfaceSpecifier
             .filter(z -> _pattern.matcher(z.getName()).matches())
             .map(z -> z.getInterfaces())
             .flatMap(Collection::stream)
-            .collect(Collectors.toSet());
+            .collect(ImmutableSet.toImmutableSet());
     return config.getAllInterfaces().values().stream()
         .filter(i -> interfaceNamesInMatchingZones.contains(i.getName()))
-        .collect(Collectors.toSet());
+        .collect(ImmutableSet.toImmutableSet());
   }
 }

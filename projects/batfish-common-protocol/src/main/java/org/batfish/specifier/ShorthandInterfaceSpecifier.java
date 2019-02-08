@@ -1,9 +1,9 @@
 package org.batfish.specifier;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -46,6 +46,6 @@ public final class ShorthandInterfaceSpecifier implements InterfaceSpecifier {
         .map(c -> c.getAllInterfaces().values())
         .flatMap(Collection::stream)
         .filter(_shorthandSpecifier::matches)
-        .collect(Collectors.toSet());
+        .collect(ImmutableSet.toImmutableSet());
   }
 }

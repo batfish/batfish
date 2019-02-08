@@ -14,7 +14,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
@@ -108,7 +107,7 @@ public class DispositionSpecifierTest {
     assertThat(
         DispositionSpecifier.autoComplete("s").stream()
             .map(AutocompleteSuggestion::getText)
-            .collect(Collectors.toSet()),
+            .collect(ImmutableSet.toImmutableSet()),
         equalTo(
             ImmutableSet.of(
                 SUCCESS,
@@ -120,7 +119,7 @@ public class DispositionSpecifierTest {
     assertThat(
         DispositionSpecifier.autoComplete("f").stream()
             .map(AutocompleteSuggestion::getText)
-            .collect(Collectors.toSet()),
+            .collect(ImmutableSet.toImmutableSet()),
         equalTo(ImmutableSet.of(FAILURE, INSUFFICIENT_INFO.name().toLowerCase())));
   }
 }

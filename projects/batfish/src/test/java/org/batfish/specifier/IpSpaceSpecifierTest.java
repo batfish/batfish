@@ -15,7 +15,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
@@ -107,7 +106,7 @@ public class IpSpaceSpecifierTest {
         assignment.getEntries().stream()
             .map(Entry::getLocations)
             .flatMap(Set::stream)
-            .collect(Collectors.toSet());
+            .collect(ImmutableSet.toImmutableSet());
     assertThat(assignmentLocations, containsInAnyOrder(_allLocations.toArray()));
 
     assertThat(
