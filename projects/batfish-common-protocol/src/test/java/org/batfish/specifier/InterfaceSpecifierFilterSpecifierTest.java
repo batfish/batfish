@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.specifier.InterfaceSpecifierFilterSpecifier.Type;
@@ -18,7 +17,6 @@ import org.junit.rules.ExpectedException;
 public class InterfaceSpecifierFilterSpecifierTest {
   @Rule public final ExpectedException exception = ExpectedException.none();
 
-  private static final String _interfaceName = "eth0";
   private static final String _nodeName = "node0";
   private static final MockSpecifierContext _ctxt;
 
@@ -29,15 +27,18 @@ public class InterfaceSpecifierFilterSpecifierTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb = nf.configurationBuilder().setHostname(_nodeName);
     cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Interface.Builder ib = nf.interfaceBuilder();
 
     Configuration n1 = cb.build();
 
-    ib.setOwner(n1)
-        .setName(_interfaceName)
+    nf.interfaceBuilder()
+        .setOwner(n1)
+        .setName("eth0")
         .setIncomingFilter(_filter1)
         .setOutgoingFilter(_filter2)
         .build();
+
+    // second interface with no filters.
+    nf.interfaceBuilder().setOwner(n1).setName("eth1").build();
 
     n1.getIpAccessLists()
         .putAll(ImmutableMap.of(_filter1.getName(), _filter1, _filter2.getName(), _filter2));
@@ -63,5 +64,15 @@ public class InterfaceSpecifierFilterSpecifierTest {
                 new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("eth0"))
             .resolve(_nodeName, _ctxt),
         equalTo(ImmutableSet.of(_filter2)));
+  }
+
+  @Test
+  public void resolveMissingFilter() {
+    assertThat(
+        new InterfaceSpecifierFilterSpecifier(
+                Type.OUT_FILTER,
+                new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("eth1"))
+            .resolve(_nodeName, _ctxt),
+        equalTo(ImmutableSet.of()));
   }
 }
