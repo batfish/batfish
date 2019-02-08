@@ -12082,8 +12082,8 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
         "interfaces" : {
-          "/Common/MYSELF" : {
-            "name" : "/Common/MYSELF",
+          "/Common/MYVLAN" : {
+            "name" : "/Common/MYVLAN",
             "active" : true,
             "allPrefixes" : [
               "10.0.0.1/24"
@@ -12138,7 +12138,7 @@
           "default" : {
             "name" : "default",
             "interfaces" : [
-              "/Common/MYSELF",
+              "/Common/MYVLAN",
               "1.0"
             ]
           }
