@@ -54,6 +54,8 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
 
   @Nonnull private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
 
+  @Nonnull private SortedMap<String, String> _errorMessages;
+
   // This is just to support legacy objects, before _convertStatus map was used
   @Nullable private Set<String> _failed;
 
@@ -68,7 +70,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   @Nonnull private SortedMap<String, Warnings> _warnings;
 
   public ConvertConfigurationAnswerElement() {
-    this(null, null, null, null, null, null, null);
+    this(null, null, null, null, null, null, null, null);
   }
 
   @VisibleForTesting
@@ -84,6 +86,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
               referencedstructures,
       @JsonProperty(PROP_CONVERT_STATUS) SortedMap<String, ConvertStatus> convertStatus,
       @JsonProperty(PROP_ERRORS) SortedMap<String, BatfishException.BatfishStackTrace> errors,
+      @JsonProperty(PROP_ERROR_MESSAGES) SortedMap<String, String> errorMessages,
       @JsonProperty(PROP_UNDEFINED_REFERENCES)
           SortedMap<
                   String,
@@ -93,6 +96,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
       @JsonProperty(PROP_WARNINGS) SortedMap<String, Warnings> warnings) {
     _definedStructures = firstNonNull(definedStructures, new TreeMap<>());
     _errors = firstNonNull(errors, new TreeMap<>());
+    _errorMessages = firstNonNull(errorMessages, new TreeMap<>());
     _convertStatus = firstNonNull(convertStatus, new TreeMap<>());
 
     _referencedStructures = firstNonNull(referencedstructures, new TreeMap<>());
@@ -133,6 +137,12 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   @Nonnull
   public SortedMap<String, BatfishException.BatfishStackTrace> getErrors() {
     return _errors;
+  }
+
+  @Override
+  @Nonnull
+  public SortedMap<String, String> getErrorMessages() {
+    return _errorMessages;
   }
 
   @JsonProperty(PROP_REFERENCED_STRUCTURES)

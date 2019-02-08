@@ -1,14 +1,14 @@
 package org.batfish.question.initialization;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateParseWarnings;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import java.util.HashMap;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Multimap;
+import java.util.Comparator;
 import java.util.Map;
-import java.util.Objects;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.Warnings;
@@ -22,43 +22,10 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.question.initialization.IssueAggregation.ParseWarningTriplet;
 
 /** Answers {@link ParseWarningQuestion}. */
 class ParseWarningAnswerer extends Answerer {
-
-  static class WarningTriplet {
-    String _text;
-    String _parserContext;
-    String _comment;
-
-    public WarningTriplet(ParseWarning w) {
-      this(w.getText(), w.getParserContext(), w.getComment());
-    }
-
-    public WarningTriplet(String text, String parserContext, String comment) {
-      _text = text;
-      _parserContext = parserContext;
-      _comment = comment;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (!(o instanceof WarningTriplet)) {
-        return false;
-      }
-      return Objects.equals(_text, ((WarningTriplet) o)._text)
-          && Objects.equals(_parserContext, ((WarningTriplet) o)._parserContext)
-          && Objects.equals(_comment, ((WarningTriplet) o)._comment);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(_text, _parserContext, _comment);
-    }
-  }
 
   @Override
   public TableAnswerElement answer() {
@@ -74,10 +41,10 @@ class ParseWarningAnswerer extends Answerer {
     Rows rows = new Rows();
 
     if (question.getAggregateDuplicates()) {
-      aggregateDuplicateWarnings(fileWarnings)
+      aggregateDuplicateParseWarnings(fileWarnings)
           .forEach(
-              (triplet, filelines) ->
-                  rows.add(getAggregateRow(triplet, filelines, columnMetadataMap)));
+              (triplet, fileLines) ->
+                  rows.add(getAggregateRow(triplet, fileLines, columnMetadataMap)));
 
     } else {
       fileWarnings.forEach(
@@ -99,33 +66,22 @@ class ParseWarningAnswerer extends Answerer {
 
   @Nonnull
   @VisibleForTesting
-  // triplet -> filename -> lines
-  static Map<WarningTriplet, Map<String, SortedSet<Integer>>> aggregateDuplicateWarnings(
-      Map<String, Warnings> fileWarnings) {
-    Map<WarningTriplet, Map<String, SortedSet<Integer>>> map = new HashMap<>();
-    fileWarnings.forEach(
-        (filename, warnings) -> {
-          for (ParseWarning w : warnings.getParseWarnings()) {
-            WarningTriplet triplet = new WarningTriplet(w);
-            map.computeIfAbsent(triplet, k -> new HashMap<>())
-                .computeIfAbsent(filename, k -> new TreeSet<>())
-                .add(w.getLine());
-          }
-        });
-    return map;
-  }
-
-  @Nonnull
-  @VisibleForTesting
   static Row getAggregateRow(
-      WarningTriplet triplet,
-      Map<String, SortedSet<Integer>> filelines,
+      ParseWarningTriplet triplet,
+      Multimap<String, Integer> fileLines,
       Map<String, ColumnMetadata> columnMetadataMap) {
     return Row.builder(columnMetadataMap)
         .put(
             COL_FILELINES,
-            filelines.entrySet().stream()
-                .map(e -> new FileLines(e.getKey(), e.getValue()))
+            fileLines.asMap().entrySet().stream()
+                .map(
+                    e ->
+                        new FileLines(
+                            e.getKey(),
+                            e.getValue().stream()
+                                .collect(
+                                    ImmutableSortedSet.toImmutableSortedSet(
+                                        Comparator.naturalOrder()))))
                 .collect(ImmutableList.toImmutableList()))
         .put(COL_TEXT, triplet._text)
         .put(COL_PARSER_CONTEXT, triplet._parserContext)
