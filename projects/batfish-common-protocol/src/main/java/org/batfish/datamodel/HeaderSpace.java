@@ -3,7 +3,6 @@ package org.batfish.datamodel;
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsFirst;
 import static org.batfish.common.util.CommonUtil.nullIfEmpty;
-import static org.batfish.common.util.CommonUtil.rangesContain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -23,69 +22,37 @@ import org.batfish.common.util.CommonUtil;
 public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
   public static class Builder {
-
     private SortedSet<Integer> _dscps;
-
     private @Nullable IpSpace _dstIps;
-
     private SortedSet<SubRange> _dstPorts;
-
     private SortedSet<Protocol> _dstProtocols;
-
     private SortedSet<Integer> _ecns;
-
     private SortedSet<SubRange> _fragmentOffsets;
-
     private SortedSet<SubRange> _icmpCodes;
-
     private SortedSet<SubRange> _icmpTypes;
-
     private SortedSet<IpProtocol> _ipProtocols;
-
     private boolean _negate;
-
     private SortedSet<Integer> _notDscps;
-
     private @Nullable IpSpace _notDstIps;
-
     private SortedSet<SubRange> _notDstPorts;
-
     private SortedSet<Protocol> _notDstProtocols;
-
     private SortedSet<Integer> _notEcns;
-
     private SortedSet<SubRange> _notFragmentOffsets;
-
     private SortedSet<SubRange> _notIcmpCodes;
-
     private SortedSet<SubRange> _notIcmpTypes;
-
     private SortedSet<IpProtocol> _notIpProtocols;
-
     private SortedSet<SubRange> _notPacketLengths;
-
     private @Nullable IpSpace _notSrcIps;
-
     private SortedSet<SubRange> _notSrcPorts;
-
     private SortedSet<Protocol> _notSrcProtocols;
-
     private SortedSet<SubRange> _packetLengths;
-
     private @Nullable IpSpace _srcIps;
-
     private @Nullable IpSpace _srcOrDstIps;
-
     private SortedSet<SubRange> _srcOrDstPorts;
-
     private SortedSet<Protocol> _srcOrDstProtocols;
-
     private SortedSet<SubRange> _srcPorts;
-
     private SortedSet<Protocol> _srcProtocols;
-
     private SortedSet<FlowState> _states;
-
     private List<TcpFlagsMatchConditions> _tcpFlags;
 
     private Builder() {
@@ -490,70 +457,38 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
           .thenComparing(HeaderSpace::getTcpFlags, CommonUtil::compareIterable);
 
   private static final String PROP_DSCPS = "dscps";
-
   private static final String PROP_DST_IPS = "dstIps";
-
   private static final String PROP_DST_PORTS = "dstPorts";
-
   private static final String PROP_DST_PROTOCOLS = "dstProtocols";
-
   private static final String PROP_ECNS = "ecns";
-
   private static final String PROP_FRAGMENT_OFFSETS = "fragmentOffsets";
-
   private static final String PROP_ICMP_CODES = "icmpCodes";
-
   private static final String PROP_ICMP_TYPES = "icmpTypes";
-
   private static final String PROP_IP_PROTOCOLS = "ipProtocols";
-
   private static final String PROP_NEGATE = "negate";
-
   private static final String PROP_NOT_DSCPS = "notDscps";
-
   private static final String PROP_NOT_DST_IPS = "notDstIps";
-
   private static final String PROP_NOT_DST_PORTS = "notDstPorts";
-
   private static final String PROP_NOT_DST_PROTOCOLS = "notDstProtocols";
-
   private static final String PROP_NOT_ECNS = "notEcns";
-
   private static final String PROP_NOT_FRAGMENT_OFFSETS = "notFragmentOffsets";
-
   private static final String PROP_NOT_ICMP_CODES = "notIcmpCodes";
-
   private static final String PROP_NOT_ICMP_TYPES = "notIcmpTypes";
-
   private static final String PROP_NOT_IP_PROTOCOLS = "notIpProtocols";
-
   private static final String PROP_NOT_PACKET_LENGTHS = "notPacketLengths";
-
   private static final String PROP_NOT_SRC_IPS = "notSrcIps";
-
   private static final String PROP_NOT_SRC_PORTS = "notSrcPorts";
-
   private static final String PROP_NOT_SRC_PROTOCOLS = "notSrcProtocols";
-
   private static final String PROP_PACKET_LENGTHS = "packetLengths";
-
   private static final String PROP_SRC_IPS = "srcIps";
-
   private static final String PROP_SRC_OR_DST_IPS = "srcOrDstIps";
-
   private static final String PROP_SRC_OR_DST_PORTS = "srcOrDstPorts";
-
   private static final String PROP_SRC_OR_DST_PROTOCOLS = "srcOrDstProtocols";
-
   private static final String PROP_SRC_PORTS = "srcPorts";
-
   private static final String PROP_SRC_PROTOCOLS = "srcProtocols";
-
   private static final String PROP_STATES = "states";
-
   private static final String PROP_TCP_FLAGS_MATCH_CONDITIONS = "tcpFlagsMatchConditions";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static Builder builder() {
@@ -561,67 +496,36 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   }
 
   private SortedSet<Integer> _dscps;
-
   private IpSpace _dstIps;
-
   private SortedSet<SubRange> _dstPorts;
-
   private SortedSet<Protocol> _dstProtocols;
-
   private SortedSet<Integer> _ecns;
-
   private SortedSet<SubRange> _fragmentOffsets;
-
   private SortedSet<SubRange> _icmpCodes;
-
   private SortedSet<SubRange> _icmpTypes;
-
   private SortedSet<IpProtocol> _ipProtocols;
-
   private boolean _negate;
-
   private SortedSet<Integer> _notDscps;
-
   private IpSpace _notDstIps;
-
   private SortedSet<SubRange> _notDstPorts;
-
   private SortedSet<Protocol> _notDstProtocols;
-
   private SortedSet<Integer> _notEcns;
-
   private SortedSet<SubRange> _notFragmentOffsets;
-
   private SortedSet<SubRange> _notIcmpCodes;
-
   private SortedSet<SubRange> _notIcmpTypes;
-
   private SortedSet<IpProtocol> _notIpProtocols;
-
   private SortedSet<SubRange> _notPacketLengths;
-
   private IpSpace _notSrcIps;
-
   private SortedSet<SubRange> _notSrcPorts;
-
   private SortedSet<Protocol> _notSrcProtocols;
-
   private SortedSet<SubRange> _packetLengths;
-
   private IpSpace _srcIps;
-
   private IpSpace _srcOrDstIps;
-
   private SortedSet<SubRange> _srcOrDstPorts;
-
   private SortedSet<Protocol> _srcOrDstProtocols;
-
   private SortedSet<SubRange> _srcPorts;
-
   private SortedSet<Protocol> _srcProtocols;
-
   private SortedSet<FlowState> _states;
-
   private List<TcpFlagsMatchConditions> _tcpFlags;
 
   public HeaderSpace() {
@@ -967,7 +871,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     if (!_dscps.isEmpty() && !_dscps.contains(flow.getDscp())) {
       return false;
     }
-    if (!_notDscps.isEmpty() && _notDscps.contains(flow.getDscp())) {
+    if (_notDscps.contains(flow.getDscp())) {
       return false;
     }
     if (_dstIps != null && !_dstIps.containsIp(flow.getDstIp(), namedIpSpaces)) {
@@ -976,74 +880,66 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     if (_notDstIps != null && _notDstIps.containsIp(flow.getDstIp(), namedIpSpaces)) {
       return false;
     }
-    if (!_dstPorts.isEmpty() && !rangesContain(_dstPorts, flow.getDstPort())) {
+    if (!_dstPorts.isEmpty()
+        && _dstPorts.stream().noneMatch(sr -> sr.includes(flow.getDstPort()))) {
       return false;
     }
-    if (!_notDstPorts.isEmpty() && rangesContain(_notDstPorts, flow.getDstPort())) {
+    if (_notDstPorts.stream().anyMatch(sr -> sr.includes(flow.getDstPort()))) {
       return false;
     }
-    if (!_dstProtocols.isEmpty()) {
-      boolean match = false;
-      for (Protocol dstProtocol : _dstProtocols) {
-        if (dstProtocol.getIpProtocol().equals(flow.getIpProtocol())) {
-          match = true;
-          Integer dstPort = dstProtocol.getPort();
-          if (dstPort != null && !dstPort.equals(flow.getDstPort())) {
-            match = false;
-          }
-          if (match) {
-            break;
-          }
-        }
-      }
-      if (!match) {
-        return false;
-      }
-    }
-    if (!_notDstProtocols.isEmpty()) {
-      boolean match = false;
-      for (Protocol notDstProtocol : _notDstProtocols) {
-        if (notDstProtocol.getIpProtocol().equals(flow.getIpProtocol())) {
-          match = true;
-          Integer dstPort = notDstProtocol.getPort();
-          if (dstPort != null && !dstPort.equals(flow.getDstPort())) {
-            match = false;
-          }
-          if (match) {
-            return false;
-          }
-        }
-      }
-    }
-    if (!_fragmentOffsets.isEmpty() && !rangesContain(_fragmentOffsets, flow.getFragmentOffset())) {
+    if (!_dstProtocols.isEmpty()
+        && _dstProtocols.stream()
+            .noneMatch(
+                dstProtocol ->
+                    dstProtocol.getPort() == flow.getDstPort()
+                        && dstProtocol.getIpProtocol() == flow.getIpProtocol())) {
       return false;
     }
-    if (!_notFragmentOffsets.isEmpty()
-        && rangesContain(_notFragmentOffsets, flow.getFragmentOffset())) {
+    if (_notDstProtocols.stream()
+        .anyMatch(
+            notDstProtocol ->
+                notDstProtocol.getPort() == flow.getDstPort()
+                    && notDstProtocol.getIpProtocol() == flow.getIpProtocol())) {
       return false;
     }
-    if (!_icmpCodes.isEmpty() && !rangesContain(_icmpCodes, flow.getIcmpCode())) {
+    if (!_ecns.isEmpty() && !_ecns.contains(flow.getEcn())) {
       return false;
     }
-    if (!_notIcmpCodes.isEmpty() && rangesContain(_notIcmpCodes, flow.getFragmentOffset())) {
+    if (_notEcns.contains(flow.getEcn())) {
       return false;
     }
-    if (!_icmpTypes.isEmpty() && !rangesContain(_icmpTypes, flow.getIcmpType())) {
+    if (!_fragmentOffsets.isEmpty()
+        && _fragmentOffsets.stream().noneMatch(sr -> sr.includes(flow.getFragmentOffset()))) {
       return false;
     }
-    if (!_notIcmpTypes.isEmpty() && rangesContain(_notIcmpTypes, flow.getFragmentOffset())) {
+    if (_notFragmentOffsets.stream().anyMatch(sr -> sr.includes(flow.getFragmentOffset()))) {
+      return false;
+    }
+    if (!_icmpCodes.isEmpty()
+        && _icmpCodes.stream().noneMatch(sr -> sr.includes(flow.getIcmpCode()))) {
+      return false;
+    }
+    if (_notIcmpCodes.stream().anyMatch(sr -> sr.includes(flow.getFragmentOffset()))) {
+      return false;
+    }
+    if (!_icmpTypes.isEmpty()
+        && _icmpTypes.stream().noneMatch(sr -> sr.includes(flow.getIcmpType()))) {
+      return false;
+    }
+    if (_notIcmpTypes.stream().anyMatch(sr -> sr.includes(flow.getFragmentOffset()))) {
       return false;
     }
     if (!_ipProtocols.isEmpty() && !_ipProtocols.contains(flow.getIpProtocol())) {
       return false;
     }
-    if (!_notIpProtocols.isEmpty() && _notIpProtocols.contains(flow.getIpProtocol())) {
+    if (_notIpProtocols.contains(flow.getIpProtocol())) {
       return false;
     }
-    if (!_packetLengths.isEmpty() && !rangesContain(_packetLengths, flow.getPacketLength())) {
+    if (!_packetLengths.isEmpty()
+        && _packetLengths.stream().noneMatch(sr -> sr.includes(flow.getPacketLength()))) {
       return false;
     }
-    if (!_notPacketLengths.isEmpty() && rangesContain(_notPacketLengths, flow.getPacketLength())) {
+    if (_notPacketLengths.stream().anyMatch(sr -> sr.includes(flow.getPacketLength()))) {
       return false;
     }
     if (_srcOrDstIps != null
@@ -1052,25 +948,19 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return false;
     }
     if (!_srcOrDstPorts.isEmpty()
-        && !(rangesContain(_srcOrDstPorts, flow.getSrcPort())
-            || rangesContain(_srcOrDstPorts, flow.getDstPort()))) {
+        && _srcOrDstPorts.stream()
+            .noneMatch(sr -> sr.includes(flow.getSrcPort()) || sr.includes(flow.getDstPort()))) {
       return false;
     }
     if (!_srcOrDstProtocols.isEmpty()) {
-      boolean match = false;
-      for (Protocol protocol : _srcOrDstProtocols) {
-        if (protocol.getIpProtocol().equals(flow.getIpProtocol())) {
-          match = true;
-          Integer port = protocol.getPort();
-          if (port != null && !port.equals(flow.getDstPort()) && !port.equals(flow.getSrcPort())) {
-            match = false;
-          }
-          if (match) {
-            break;
-          }
-        }
-      }
-      if (!match) {
+      IpProtocol flowProtocol = flow.getIpProtocol();
+      int flowDstPort = flow.getDstPort();
+      int flowSrcPort = flow.getSrcPort();
+      if (_srcOrDstProtocols.stream()
+          .noneMatch(
+              protocol ->
+                  (protocol.getPort() == flowDstPort || protocol.getPort() == flowSrcPort)
+                      && protocol.getIpProtocol() == flowProtocol)) {
         return false;
       }
     }
@@ -1080,44 +970,27 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     if (_notSrcIps != null && _notSrcIps.containsIp(flow.getSrcIp(), namedIpSpaces)) {
       return false;
     }
-    if (!_srcPorts.isEmpty() && !rangesContain(_srcPorts, flow.getSrcPort())) {
+    if (!_srcPorts.isEmpty()
+        && _srcPorts.stream().noneMatch(sr -> sr.includes(flow.getSrcPort()))) {
       return false;
     }
-    if (!_notSrcPorts.isEmpty() && rangesContain(_notSrcPorts, flow.getSrcPort())) {
+    if (_notSrcPorts.stream().anyMatch(sr -> sr.includes(flow.getSrcPort()))) {
       return false;
     }
-    if (!_srcProtocols.isEmpty()) {
-      boolean match = false;
-      for (Protocol srcProtocol : _srcProtocols) {
-        if (srcProtocol.getIpProtocol().equals(flow.getIpProtocol())) {
-          match = true;
-          Integer srcPort = srcProtocol.getPort();
-          if (srcPort != null && !srcPort.equals(flow.getSrcPort())) {
-            match = false;
-          }
-          if (match) {
-            break;
-          }
-        }
-      }
-      if (!match) {
-        return false;
-      }
+    if (!_srcProtocols.isEmpty()
+        && _srcProtocols.stream()
+            .noneMatch(
+                srcProtocol ->
+                    srcProtocol.getPort() == flow.getSrcPort()
+                        && srcProtocol.getIpProtocol() == flow.getIpProtocol())) {
+      return false;
     }
-    if (!_notSrcProtocols.isEmpty()) {
-      boolean match = false;
-      for (Protocol notSrcProtocol : _notSrcProtocols) {
-        if (notSrcProtocol.getIpProtocol().equals(flow.getIpProtocol())) {
-          match = true;
-          Integer srcPort = notSrcProtocol.getPort();
-          if (srcPort != null && !srcPort.equals(flow.getSrcPort())) {
-            match = false;
-          }
-          if (match) {
-            return false;
-          }
-        }
-      }
+    if (_notSrcProtocols.stream()
+        .anyMatch(
+            notSrcProtocol ->
+                notSrcProtocol.getPort() == flow.getSrcPort()
+                    && notSrcProtocol.getIpProtocol() == flow.getIpProtocol())) {
+      return false;
     }
     if (!_states.isEmpty() && !_states.contains(flow.getState())) {
       return false;
