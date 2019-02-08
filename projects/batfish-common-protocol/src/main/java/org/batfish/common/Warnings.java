@@ -14,6 +14,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishLexer;
+import org.batfish.grammar.BatfishParser;
 
 public class Warnings implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -24,6 +26,8 @@ public class Warnings implements Serializable {
 
   public static final String TAG_UNIMPLEMENTED = "UNIMPLEMENTED";
 
+  public static final String PROP_PARSER_EXCEPTION_CONTEXT = "Parser exception context";
+
   private static final String PROP_PARSE_WARNINGS = "Parse warnings";
 
   private static final String PROP_PEDANTIC = "Pedantic complaints";
@@ -31,6 +35,8 @@ public class Warnings implements Serializable {
   private static final String PROP_RED_FLAGS = "Red flags";
 
   private static final String PROP_UNIMPLEMENTED = "Unimplemented features";
+
+  private ParseExceptionContext _parseExceptionContext;
 
   @Nonnull private final List<ParseWarning> _parseWarnings;
 
@@ -51,11 +57,14 @@ public class Warnings implements Serializable {
       @Nullable @JsonProperty(PROP_PEDANTIC) List<Warning> pedanticWarnings,
       @Nullable @JsonProperty(PROP_RED_FLAGS) List<Warning> redFlagWarnings,
       @Nullable @JsonProperty(PROP_UNIMPLEMENTED) List<Warning> unimplementedWarnings,
-      @Nullable @JsonProperty(PROP_PARSE_WARNINGS) List<ParseWarning> parseWarnings) {
+      @Nullable @JsonProperty(PROP_PARSE_WARNINGS) List<ParseWarning> parseWarnings,
+      @Nullable @JsonProperty(PROP_PARSER_EXCEPTION_CONTEXT)
+          ParseExceptionContext parseExceptionContext) {
     _pedanticWarnings = firstNonNull(pedanticWarnings, new LinkedList<>());
     _redFlagWarnings = firstNonNull(redFlagWarnings, new LinkedList<>());
     _parseWarnings = firstNonNull(parseWarnings, new LinkedList<>());
     _unimplementedWarnings = firstNonNull(unimplementedWarnings, new LinkedList<>());
+    _parseExceptionContext = parseExceptionContext;
   }
 
   public Warnings() {
@@ -63,7 +72,7 @@ public class Warnings implements Serializable {
   }
 
   public Warnings(boolean pedanticRecord, boolean redFlagRecord, boolean unimplementedRecord) {
-    this(null, null, null, null);
+    this(null, null, null, null, null);
     _pedanticRecord = pedanticRecord;
     _redFlagRecord = redFlagRecord;
     _unimplementedRecord = unimplementedRecord;
@@ -88,6 +97,22 @@ public class Warnings implements Serializable {
   @JsonProperty(PROP_UNIMPLEMENTED)
   public List<Warning> getUnimplementedWarnings() {
     return _unimplementedWarnings;
+  }
+
+  @JsonProperty(PROP_PARSER_EXCEPTION_CONTEXT)
+  public ParseExceptionContext getParseExceptionContext() {
+    return _parseExceptionContext;
+  }
+
+  @JsonProperty(PROP_PARSER_EXCEPTION_CONTEXT)
+  public void setParseExceptionContext(ParseExceptionContext parseExceptionContext) {
+    _parseExceptionContext = parseExceptionContext;
+  }
+
+  public void setParseExceptionContext(
+      ParserRuleContext parseRuleContext,
+      BatfishCombinedParser<? extends BatfishParser, ? extends BatfishLexer> parser) {
+    _parseExceptionContext = new ParseExceptionContext(parseRuleContext, parser);
   }
 
   @JsonIgnore
@@ -198,6 +223,44 @@ public class Warnings implements Serializable {
     @Nonnull
     public String getText() {
       return _text;
+    }
+  }
+
+  /** A class to represent context for a parse exception for a file. */
+  public class ParseExceptionContext implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private static final String PROP_LINE_CONTENT = "Line_Content";
+    private static final String PROP_LINE_NUMBER = "Line_Number";
+
+    @Nullable private final String _lineContent;
+    @Nullable private final Integer _lineNumber;
+
+    @JsonCreator
+    public ParseExceptionContext(
+        @Nullable @JsonProperty(PROP_LINE_CONTENT) String lineContent,
+        @Nullable @JsonProperty(PROP_LINE_NUMBER) Integer lineNumber) {
+      _lineContent = lineContent;
+      _lineNumber = lineNumber;
+    }
+
+    public ParseExceptionContext(
+        @Nonnull ParserRuleContext parseRuleContext,
+        @Nonnull BatfishCombinedParser<? extends BatfishParser, ? extends BatfishLexer> parser) {
+      _lineNumber = parser.getLine(parseRuleContext.getStart());
+      _lineContent = parseRuleContext.getText();
+    }
+
+    @JsonProperty(PROP_LINE_CONTENT)
+    @Nullable
+    public String getLineContent() {
+      return _lineContent;
+    }
+
+    @JsonProperty(PROP_LINE_NUMBER)
+    @Nullable
+    public Integer getLineNumber() {
+      return _lineNumber;
     }
   }
 }

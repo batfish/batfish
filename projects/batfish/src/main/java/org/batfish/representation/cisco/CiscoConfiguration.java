@@ -3897,7 +3897,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED);
 
     c.simplifyRoutingPolicies();
-
+    if (c.getHostname().startsWith("as2border")) {
+      throw new BatfishException("force convert fail");
+    }
     c.computeRoutingPolicySources(_w);
 
     return ImmutableList.of(c);

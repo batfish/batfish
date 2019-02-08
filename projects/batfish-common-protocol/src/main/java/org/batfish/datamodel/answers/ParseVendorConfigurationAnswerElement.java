@@ -10,6 +10,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
+import org.batfish.common.Warnings.ParseExceptionContext;
 
 public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
     implements Serializable {
@@ -27,6 +28,8 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
   /* Map of hostname to source filenames (e.g. "configs/foo.cfg") */
   private Multimap<String, String> _fileMap;
 
+  private SortedMap<String, ParseExceptionContext> _parseExceptionContexts;
+
   private SortedMap<String, ParseStatus> _parseStatus;
 
   private SortedMap<String, ParseTreeSentences> _parseTrees;
@@ -43,6 +46,7 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
     _warnings = new TreeMap<>();
     _errors = new TreeMap<>();
     _errorMessages = new TreeMap<>();
+    _parseExceptionContexts = new TreeMap<>();
   }
 
   public void addRedFlagWarning(String name, Warning warning) {
@@ -61,6 +65,10 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
   @Override
   public SortedMap<String, String> getErrorMessages() {
     return _errorMessages;
+  }
+
+  public SortedMap<String, ParseExceptionContext> getParseExceptionContexts() {
+    return _parseExceptionContexts;
   }
 
   @JsonProperty(PROP_FILE_MAP)

@@ -318,7 +318,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.RedFlagBatfishException;
@@ -9075,6 +9074,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       hostname = sb.toString();
     }
     _configuration.setHostname(hostname);
+    if (_configuration.getHostname().startsWith("as1border2")) {
+      throw new BatfishException("force parser fail");
+    }
     _configuration.getCf().setHostname(hostname);
   }
 
@@ -10122,8 +10124,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void processParseTree(ParserRuleContext tree) {
-    ParseTreeWalker walker = new BatfishParseTreeWalker();
-    walker.walk(this, tree);
+    BatfishParseTreeWalker walker = new BatfishParseTreeWalker();
+    try {
+      walker.walk(this, tree);
+    } catch (Exception e) {
+      _w.setParseExceptionContext(walker.getCurrentCtx(), _parser);
+      throw e;
+    }
   }
 
   private void pushPeer(BgpPeerGroup pg) {
