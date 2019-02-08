@@ -2813,6 +2813,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.BGP_IMPORT_POLICY,
         JuniperStructureUsage.FORWARDING_TABLE_EXPORT_POLICY,
         JuniperStructureUsage.GENERATED_ROUTE_POLICY,
+        JuniperStructureUsage.INSTANCE_IMPORT_POLICY,
         JuniperStructureUsage.OSPF_EXPORT_POLICY,
         JuniperStructureUsage.POLICY_STATEMENT_POLICY,
         JuniperStructureUsage.ROUTING_INSTANCE_VRF_EXPORT,

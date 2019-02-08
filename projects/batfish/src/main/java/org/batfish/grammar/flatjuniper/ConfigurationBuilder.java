@@ -51,6 +51,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.GENERATED
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_EXTERNAL_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_IKE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_POLICY_IKE_PROPOSAL;
+import static org.batfish.representation.juniper.JuniperStructureUsage.INSTANCE_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_INCOMING_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_OUTGOING_FILTER;
@@ -384,6 +385,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vtep_source_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_autonomous_systemContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_confederationContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_instance_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_rib_groupsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_router_idContext;
@@ -4835,6 +4837,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     // is not set.
     ctx.member.forEach(mctx -> _currentRoutingInstance.getConfederationMembers().add(toLong(mctx)));
     todo(ctx);
+  }
+
+  @Override
+  public void exitRo_instance_import(Ro_instance_importContext ctx) {
+    String policyName = unquote(ctx.name.getText());
+    _configuration.referenceStructure(
+        POLICY_STATEMENT, policyName, INSTANCE_IMPORT_POLICY, getLine(ctx.name.getStart()));
+    _currentRoutingInstance.getInstanceImports().add(policyName);
   }
 
   @Override
