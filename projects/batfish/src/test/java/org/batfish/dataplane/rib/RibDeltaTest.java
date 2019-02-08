@@ -193,8 +193,7 @@ public class RibDeltaTest {
     assertThat(delta.getActions(), hasSize(2));
     // Route withdrawn
     assertThat(
-        delta.getActions().get(0),
-        equalTo(new RouteAdvertisement<>(oldGoodRoute, true, Reason.REPLACE)));
+        delta.getActions().get(0), equalTo(new RouteAdvertisement<>(oldGoodRoute, Reason.REPLACE)));
     // Route added
     assertThat(delta.getActions().get(1), equalTo(new RouteAdvertisement<>(newGoodRoute)));
   }

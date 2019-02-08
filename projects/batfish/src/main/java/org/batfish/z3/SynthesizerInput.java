@@ -58,6 +58,9 @@ public interface SynthesizerInput {
   /** Mapping: hostname -&gt; interface-&gt; incomingAcl */
   Map<String, Map<String, String>> getIncomingAcls();
 
+  /** Mapping: hostname -&gt; interface -&gt; incomingTransformation */
+  Map<String, Map<String, Transformation>> getIncomingTransformations();
+
   /** Ingress locations grouped by the required constraint on src IP */
   Map<IngressLocation, BooleanExpr> getSrcIpConstraints();
 
@@ -84,11 +87,14 @@ public interface SynthesizerInput {
   /** Mapping: hostname -&gt; vrfName -&gt; nullRoutedIps */
   Map<String, Map<String, BooleanExpr>> getNullRoutedIps();
 
-  /** Mapping: hostname -&gt; interface-&gt; outgoingAcl */
-  Map<String, Map<String, String>> getOutgoingAcls();
-
   /** Mapping: hostname -&gt; interface -&gt; outgoingTransformation */
   Map<String, Map<String, Transformation>> getOutgoingTransformations();
+
+  /** Mapping: hostname -&gt; interface-&gt; postTransformationOutgoingAcl */
+  Map<String, Map<String, String>> getPostTransformationOutgoingAcls();
+
+  /** Mapping: hostname -&gt; interface-&gt; preTransformationOutgoingAcl */
+  Map<String, Map<String, String>> getPreTransformationOutgoingAcls();
 
   /** Mapping: hostname -&gt; vrfName -&gt; routableIps */
   Map<String, Map<String, BooleanExpr>> getRoutableIps();

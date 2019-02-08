@@ -138,13 +138,7 @@ public final class RibDelta<R extends AbstractRoute> {
     public Builder<R> remove(R route, Reason reason) {
       LinkedHashMap<R, RouteAdvertisement<R>> l =
           _actions.computeIfAbsent(route.getNetwork(), p -> new LinkedHashMap<>(10, 1, true));
-      l.put(
-          route,
-          RouteAdvertisement.<R>builder()
-              .setRoute(route)
-              .setWithdraw(true)
-              .setReason(reason)
-              .build());
+      l.put(route, RouteAdvertisement.<R>builder().setRoute(route).setReason(reason).build());
       return this;
     }
 
@@ -157,13 +151,7 @@ public final class RibDelta<R extends AbstractRoute> {
       for (R route : routes) {
         LinkedHashMap<R, RouteAdvertisement<R>> l =
             _actions.computeIfAbsent(route.getNetwork(), p -> new LinkedHashMap<>(10, 1, true));
-        l.put(
-            route,
-            RouteAdvertisement.<R>builder()
-                .setRoute(route)
-                .setWithdraw(true)
-                .setReason(reason)
-                .build());
+        l.put(route, RouteAdvertisement.<R>builder().setRoute(route).setReason(reason).build());
       }
       return this;
     }
@@ -206,7 +194,6 @@ public final class RibDelta<R extends AbstractRoute> {
             a.getRoute(),
             RouteAdvertisement.<R>builder()
                 .setRoute(a.getRoute())
-                .setWithdraw(a.isWithdrawn())
                 .setReason(a.getReason())
                 .build());
       }

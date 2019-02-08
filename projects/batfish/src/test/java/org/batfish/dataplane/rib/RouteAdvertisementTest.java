@@ -26,8 +26,8 @@ public class RouteAdvertisementTest {
     new EqualsTester()
         .addEqualityGroup(new RouteAdvertisement<>(cr1), new RouteAdvertisement<>(cr1))
         .addEqualityGroup(new RouteAdvertisement<>(cr2))
-        .addEqualityGroup(new RouteAdvertisement<>(cr2, true, Reason.REPLACE))
-        .addEqualityGroup(new RouteAdvertisement<>(cr2, true, Reason.WITHDRAW))
+        .addEqualityGroup(new RouteAdvertisement<>(cr2, Reason.REPLACE))
+        .addEqualityGroup(new RouteAdvertisement<>(cr2, Reason.WITHDRAW))
         .addEqualityGroup(new Object())
         .testEquals();
   }
@@ -43,54 +43,33 @@ public class RouteAdvertisementTest {
                     .setNextHopIp(Ip.parse("2.2.2.2"))
                     .build())
             .setReason(Reason.WITHDRAW)
-            .setWithdraw(true)
             .build();
 
     assertThat(ra.toBuilder().build(), equalTo(ra));
   }
 
   @Test
-  public void testThrowsOnInvalidWithdrawReason() {
-    thrown.expect(IllegalArgumentException.class);
-    RouteAdvertisement.<StaticRoute>builder()
-        .setRoute(
-            StaticRoute.builder()
-                .setAdministrativeCost(1)
-                .setNetwork(Prefix.parse("1.1.1.0/24"))
-                .setNextHopIp(Ip.parse("2.2.2.2"))
-                .build())
-        .setReason(Reason.ADD)
-        .setWithdraw(true)
-        .build();
+  public void testIsWithdrawn() {
+    RouteAdvertisement.Builder<StaticRoute> raBuilder =
+        RouteAdvertisement.<StaticRoute>builder()
+            .setRoute(
+                StaticRoute.builder()
+                    .setAdministrativeCost(1)
+                    .setNetwork(Prefix.parse("1.1.1.0/24"))
+                    .setNextHopIp(Ip.parse("2.2.2.2"))
+                    .build());
+
+    // Advertisement with Reason.ADD should not be withdrawn
+    assertThat(raBuilder.setReason(Reason.ADD).build().isWithdrawn(), equalTo(false));
+
+    // Advertisement with Reason.REPLACE or Reason.WITHDRAW should be withdrawn
+    assertThat(raBuilder.setReason(Reason.REPLACE).build().isWithdrawn(), equalTo(true));
+    assertThat(raBuilder.setReason(Reason.WITHDRAW).build().isWithdrawn(), equalTo(true));
   }
 
   @Test
-  public void testThrowsOnInvalidAddReason() {
+  public void testThrowsOnNullRoute() {
     thrown.expect(IllegalArgumentException.class);
-    RouteAdvertisement.<StaticRoute>builder()
-        .setRoute(
-            StaticRoute.builder()
-                .setAdministrativeCost(1)
-                .setNetwork(Prefix.parse("1.1.1.0/24"))
-                .setNextHopIp(Ip.parse("2.2.2.2"))
-                .build())
-        .setReason(Reason.REPLACE)
-        .setWithdraw(false)
-        .build();
-  }
-
-  @Test
-  public void testThrowsOnInvalidAddReason2() {
-    thrown.expect(IllegalArgumentException.class);
-    RouteAdvertisement.<StaticRoute>builder()
-        .setRoute(
-            StaticRoute.builder()
-                .setAdministrativeCost(1)
-                .setNetwork(Prefix.parse("1.1.1.0/24"))
-                .setNextHopIp(Ip.parse("2.2.2.2"))
-                .build())
-        .setReason(Reason.WITHDRAW)
-        .setWithdraw(false)
-        .build();
+    RouteAdvertisement.<StaticRoute>builder().setReason(Reason.ADD).build();
   }
 }

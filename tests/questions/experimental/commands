@@ -18,6 +18,9 @@ test -raw tests/questions/experimental/bgpSessionStatus.ref validate-template bg
 # test bidirectionalTraceroute
 test -raw tests/questions/experimental/bidirectionalTraceroute.ref validate-template bidirectionalTraceroute startLocation="location", ignoreFilters=false, maxTraces=0, headers={"dstIps" : "1.1.1.1/32"}
 
+# validate compareFilters
+test -raw tests/questions/experimental/compareFilters.ref validate-template compareFilters filters=".*", nodes=".*"
+
 # validate detectLoops
 test -raw tests/questions/experimental/detectLoops.ref validate-template detectLoops maxTraces=0
 

@@ -42,6 +42,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Map<String, String>> _incomingAcls;
 
+    private Map<String, Map<String, Transformation>> _incomingTransformations;
+
     private Map<IngressLocation, BooleanExpr> _srcIpConstraints;
 
     private Map<String, Set<Ip>> _ipsByHostname;
@@ -60,9 +62,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
-    private Map<String, Map<String, String>> _outgoingAcls;
+    private Map<String, Map<String, String>> _postTransformationOutgoingAcls;
 
     private Map<String, Map<String, Transformation>> _outgoingTransformations;
+
+    private Map<String, Map<String, String>> _preTransformationOutgoingAcls;
 
     private Map<String, Map<String, BooleanExpr>> _routableIps;
 
@@ -89,6 +93,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _enabledNodes = ImmutableSet.of();
       _enabledVrfs = ImmutableMap.of();
       _incomingAcls = ImmutableMap.of();
+      _incomingTransformations = ImmutableMap.of();
       _srcIpConstraints = ImmutableMap.of();
       _ipsByHostname = ImmutableMap.of();
       _ipsByNodeVrf = ImmutableMap.of();
@@ -98,8 +103,9 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _nodesWithSrcInterfaceConstraints = ImmutableSet.of();
       _nonTransitNodes = ImmutableSortedSet.of();
       _nullRoutedIps = ImmutableMap.of();
-      _outgoingAcls = ImmutableMap.of();
       _outgoingTransformations = ImmutableMap.of();
+      _postTransformationOutgoingAcls = ImmutableMap.of();
+      _preTransformationOutgoingAcls = ImmutableMap.of();
       _routableIps = ImmutableMap.of();
       _srcInterfaceField = null;
       _srcInterfaceFieldValues = ImmutableMap.of();
@@ -159,6 +165,12 @@ public class MockSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
+    public Builder setIncomingTransformations(
+        Map<String, Map<String, Transformation>> incomingTransformations) {
+      _incomingTransformations = incomingTransformations;
+      return this;
+    }
+
     public Builder setSrcIpConstraints(Map<IngressLocation, BooleanExpr> srcIpConstraints) {
       _srcIpConstraints = ImmutableMap.copyOf(srcIpConstraints);
       return this;
@@ -206,14 +218,21 @@ public class MockSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
-    public Builder setOutgoingAcls(Map<String, Map<String, String>> outgoingAcls) {
-      _outgoingAcls = outgoingAcls;
-      return this;
-    }
-
     public Builder setOutgoingTransformations(
         Map<String, Map<String, Transformation>> outgoingTransformations) {
       _outgoingTransformations = outgoingTransformations;
+      return this;
+    }
+
+    public Builder setPostTransformationOutgoingAcls(
+        Map<String, Map<String, String>> postTransformationOutgoingAcls) {
+      _postTransformationOutgoingAcls = postTransformationOutgoingAcls;
+      return this;
+    }
+
+    public Builder setPreTransformationOutgoingAcls(
+        Map<String, Map<String, String>> preTransformationOutgoingAcls) {
+      _preTransformationOutgoingAcls = preTransformationOutgoingAcls;
       return this;
     }
 
@@ -292,6 +311,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Map<String, String>> _incomingAcls;
 
+  private Map<String, Map<String, Transformation>> _incomingTransformations;
+
   private final Map<IngressLocation, BooleanExpr> _srcIpConstraints;
 
   private final Map<String, Set<Ip>> _ipsByHostname;
@@ -311,9 +332,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
-  private final Map<String, Map<String, String>> _outgoingAcls;
-
   private Map<String, Map<String, Transformation>> _outgoingTransformations;
+
+  private final Map<String, Map<String, String>> _postTransformationOutgoingAcls;
+
+  private final Map<String, Map<String, String>> _preTransformationOutgoingAcls;
 
   private final Map<String, Map<String, BooleanExpr>> _routableIps;
 
@@ -341,6 +364,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _enabledNodes = builder._enabledNodes;
     _enabledVrfs = builder._enabledVrfs;
     _incomingAcls = builder._incomingAcls;
+    _incomingTransformations = builder._incomingTransformations;
     _srcIpConstraints = builder._srcIpConstraints;
     _ipsByHostname = builder._ipsByHostname;
     _ipsByNodeVrf = builder._ipsByNodeVrf;
@@ -349,8 +373,9 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _nodesWithSrcInterfaceConstraints = builder._nodesWithSrcInterfaceConstraints;
     _nullRoutedIps = builder._nullRoutedIps;
     _nonTransitNodes = builder._nonTransitNodes;
-    _outgoingAcls = builder._outgoingAcls;
     _outgoingTransformations = builder._outgoingTransformations;
+    _postTransformationOutgoingAcls = builder._postTransformationOutgoingAcls;
+    _preTransformationOutgoingAcls = builder._preTransformationOutgoingAcls;
     _routableIps = builder._routableIps;
     _simplify = builder._simplify;
     _sourceInterfaceField = builder._srcInterfaceField;
@@ -413,6 +438,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
+  public Map<String, Map<String, Transformation>> getIncomingTransformations() {
+    return _incomingTransformations;
+  }
+
+  @Override
   public Map<IngressLocation, BooleanExpr> getSrcIpConstraints() {
     return _srcIpConstraints;
   }
@@ -448,13 +478,18 @@ public class MockSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
-  public Map<String, Map<String, String>> getOutgoingAcls() {
-    return _outgoingAcls;
+  public Map<String, Map<String, String>> getPostTransformationOutgoingAcls() {
+    return _postTransformationOutgoingAcls;
   }
 
   @Override
   public Map<String, Map<String, Transformation>> getOutgoingTransformations() {
     return _outgoingTransformations;
+  }
+
+  @Override
+  public Map<String, Map<String, String>> getPreTransformationOutgoingAcls() {
+    return _preTransformationOutgoingAcls;
   }
 
   @Override

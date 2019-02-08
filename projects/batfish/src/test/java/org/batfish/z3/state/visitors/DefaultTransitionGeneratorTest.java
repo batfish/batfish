@@ -1,6 +1,7 @@
 package org.batfish.z3.state.visitors;
 
 import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
+import static org.batfish.datamodel.transformation.Noop.NOOP_SOURCE_NAT;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -38,6 +39,7 @@ import org.batfish.z3.expr.MockBooleanAtom;
 import org.batfish.z3.expr.MockIntAtom;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.RuleStatement;
+import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TransformationExpr;
 import org.batfish.z3.expr.TransformationStepExpr;
 import org.batfish.z3.expr.TransformedVarIntExpr;
@@ -67,6 +69,7 @@ import org.batfish.z3.state.NodeNeighborUnreachableOrExitsNetwork;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
+import org.batfish.z3.state.PostInInterfacePostNat;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
@@ -855,12 +858,14 @@ public class DefaultTransitionGeneratorTest {
                     Edge.of(NODE1, INTERFACE2, NODE2, INTERFACE2),
                     Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE1),
                     Edge.of(NODE2, INTERFACE2, NODE1, INTERFACE2)))
-            .setOutgoingAcls(
+            .setPostTransformationOutgoingAcls(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableMap.of(INTERFACE1, ACL1),
                     NODE2,
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2)))
+            .setPreTransformationOutgoingAcls(
+                ImmutableMap.of(NODE2, ImmutableMap.of(INTERFACE1, ACL3)))
             .setTopologyInterfaces(
                 ImmutableMap.of(
                     NODE1,
@@ -895,6 +900,11 @@ public class DefaultTransitionGeneratorTest {
                 ImmutableSet.of(
                     new AclDeny(NODE2, ACL2),
                     new PreOutEdgePostNat(NODE2, INTERFACE2, NODE1, INTERFACE2)),
+                new NodeDropAclOut(NODE2)),
+            new BasicRuleStatement(
+                TrueExpr.INSTANCE,
+                ImmutableSet.of(
+                    new AclDeny(NODE2, ACL3), new PreOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE1)),
                 new NodeDropAclOut(NODE2))));
   }
 
@@ -904,7 +914,8 @@ public class DefaultTransitionGeneratorTest {
         MockSynthesizerInput.builder()
             .setNeighborUnreachableOrExitsNetwork(
                 ImmutableMap.of(NODE1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, b(1)))))
-            .setOutgoingAcls(ImmutableMap.of(NODE1, ImmutableMap.of(INTERFACE1, ACL1)))
+            .setPostTransformationOutgoingAcls(
+                ImmutableMap.of(NODE1, ImmutableMap.of(INTERFACE1, ACL1)))
             .build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
@@ -1151,6 +1162,43 @@ public class DefaultTransitionGeneratorTest {
                 new PreInInterface(NODE2, INTERFACE3), new PostInInterface(NODE2, INTERFACE3))));
   }
 
+  /**
+   * Test the transitions generated for PostInInterfacePostNat for an interface with a source nat.
+   */
+  @Test
+  public void testVisitPostInInterfacePostNat_topologyInterfaceWithNAT() {
+    SynthesizerInput input =
+        MockSynthesizerInput.builder()
+            .setAclLineMatchExprToBooleanExprs(
+                ImmutableMap.of(
+                    NODE1,
+                    new AclLineMatchExprToBooleanExpr(
+                        ImmutableMap.of(), ImmutableMap.of(), null, ImmutableMap.of())))
+            .setEnabledInterfaces(ImmutableMap.of(NODE1, ImmutableSet.of(INTERFACE1)))
+            .setIncomingTransformations(
+                ImmutableMap.of(
+                    NODE1, ImmutableMap.of(INTERFACE1, always().apply(NOOP_SOURCE_NAT).build())))
+            .build();
+    List<RuleStatement> rules =
+        DefaultTransitionGenerator.generateTransitions(
+            input, ImmutableSet.of(PostInInterfacePostNat.State.INSTANCE));
+
+    PostInInterface preState = new PostInInterface(NODE1, INTERFACE1);
+    TransformationExpr transformationExpr =
+        new TransformationExpr(NODE1, INTERFACE1, null, null, "INCOMING", 0);
+    TransformationStepExpr noopStep =
+        new TransformationStepExpr(NODE1, INTERFACE1, null, null, "INCOMING", 0, 0);
+    PostInInterfacePostNat postState = new PostInInterfacePostNat(NODE1, INTERFACE1);
+
+    RuleStatement enterRule = new BasicRuleStatement(preState, transformationExpr);
+    RuleStatement stepRule = new BasicRuleStatement(transformationExpr, noopStep);
+    RuleStatement andThenRule = new BasicRuleStatement(noopStep, postState);
+    RuleStatement orElseRule =
+        new BasicRuleStatement(FalseExpr.INSTANCE, transformationExpr, postState);
+
+    assertThat(rules, containsInAnyOrder(enterRule, stepRule, andThenRule, orElseRule));
+  }
+
   @Test
   public void testVisitPostInVrf_OriginateVrf() {
     SynthesizerInput input =
@@ -1206,7 +1254,7 @@ public class DefaultTransitionGeneratorTest {
                 ImmutableSet.of(
                     Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE1),
                     Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE1)))
-            .setOutgoingAcls(
+            .setPostTransformationOutgoingAcls(
                 ImmutableMap.of(
                     NODE1, ImmutableMap.of(),
                     NODE2, ImmutableMap.of()))
@@ -1267,42 +1315,42 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE1, INTERFACE1), new PostInVrf(NODE1, VRF1))));
+                new PostInInterfacePostNat(NODE1, INTERFACE1), new PostInVrf(NODE1, VRF1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE1, INTERFACE2), new PostInVrf(NODE1, VRF1))));
+                new PostInInterfacePostNat(NODE1, INTERFACE2), new PostInVrf(NODE1, VRF1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE1, INTERFACE3), new PostInVrf(NODE1, VRF2))));
+                new PostInInterfacePostNat(NODE1, INTERFACE3), new PostInVrf(NODE1, VRF2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE1, INTERFACE4), new PostInVrf(NODE1, VRF2))));
+                new PostInInterfacePostNat(NODE1, INTERFACE4), new PostInVrf(NODE1, VRF2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE2, INTERFACE1), new PostInVrf(NODE2, VRF1))));
+                new PostInInterfacePostNat(NODE2, INTERFACE1), new PostInVrf(NODE2, VRF1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE2, INTERFACE2), new PostInVrf(NODE2, VRF1))));
+                new PostInInterfacePostNat(NODE2, INTERFACE2), new PostInVrf(NODE2, VRF1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE2, INTERFACE3), new PostInVrf(NODE2, VRF2))));
+                new PostInInterfacePostNat(NODE2, INTERFACE3), new PostInVrf(NODE2, VRF2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterface(NODE2, INTERFACE4), new PostInVrf(NODE2, VRF2))));
+                new PostInInterfacePostNat(NODE2, INTERFACE4), new PostInVrf(NODE2, VRF2))));
   }
 
   @Test
@@ -1315,7 +1363,7 @@ public class DefaultTransitionGeneratorTest {
                     Edge.of(NODE1, INTERFACE2, NODE2, INTERFACE2),
                     Edge.of(NODE1, INTERFACE3, NODE2, INTERFACE3),
                     Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE1)))
-            .setOutgoingAcls(
+            .setPostTransformationOutgoingAcls(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2),
@@ -1391,7 +1439,7 @@ public class DefaultTransitionGeneratorTest {
                 ImmutableSet.of(
                     Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE1),
                     Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE1)))
-            .setOutgoingAcls(
+            .setPostTransformationOutgoingAcls(
                 ImmutableMap.of(
                     NODE1, ImmutableMap.of(),
                     NODE2, ImmutableMap.of()))
@@ -1438,7 +1486,7 @@ public class DefaultTransitionGeneratorTest {
                 ImmutableSet.of(
                     Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE1),
                     Edge.of(NODE2, INTERFACE1, NODE1, INTERFACE1)))
-            .setOutgoingAcls(
+            .setPostTransformationOutgoingAcls(
                 ImmutableMap.of(
                     NODE1, ImmutableMap.of(),
                     NODE2, ImmutableMap.of()))
@@ -1844,6 +1892,8 @@ public class DefaultTransitionGeneratorTest {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
             .setEnabledEdges(ImmutableSet.of(Edge.of(NODE1, INTERFACE1, NODE2, INTERFACE2)))
+            .setPreTransformationOutgoingAcls(
+                ImmutableMap.of(NODE1, ImmutableMap.of(INTERFACE1, ACL1)))
             .setTopologyInterfaces(ImmutableMap.of(NODE1, ImmutableSet.of(INTERFACE1)))
             .setAclLineMatchExprToBooleanExprs(
                 ImmutableMap.of(
@@ -1858,14 +1908,16 @@ public class DefaultTransitionGeneratorTest {
         DefaultTransitionGenerator.generateTransitions(
             input, ImmutableSet.of(PreOutEdgePostNat.State.INSTANCE));
 
-    PreOutEdge preState = new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2);
+    Set<StateExpr> preStates =
+        ImmutableSet.of(
+            new PreOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE2), new AclPermit(NODE1, ACL1));
     TransformationExpr transformationExpr =
         new TransformationExpr(NODE1, INTERFACE1, NODE2, INTERFACE2, "OUTGOING", 0);
     TransformationStepExpr noopStep =
         new TransformationStepExpr(NODE1, INTERFACE1, NODE2, INTERFACE2, "OUTGOING", 0, 0);
     PreOutEdgePostNat postState = new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE2);
 
-    RuleStatement enterRule = new BasicRuleStatement(preState, transformationExpr);
+    RuleStatement enterRule = new BasicRuleStatement(preStates, transformationExpr);
     RuleStatement stepRule = new BasicRuleStatement(transformationExpr, noopStep);
     RuleStatement andThenRule = new BasicRuleStatement(noopStep, postState);
     RuleStatement orElseRule =

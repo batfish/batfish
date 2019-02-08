@@ -50,6 +50,7 @@ import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
+import org.batfish.z3.state.PostInInterfacePostNat;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
@@ -289,6 +290,14 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   }
 
   @Override
+  public List<StateParameter> visitPostInInterfacePostNat(
+      PostInInterfacePostNat postInInterfacePostNat) {
+    return ImmutableList.of(
+        new StateParameter(postInInterfacePostNat.getHostname(), NODE),
+        new StateParameter(postInInterfacePostNat.getIface(), INTERFACE));
+  }
+
+  @Override
   public List<StateParameter> visitPostInVrf(PostInVrf postInVrf) {
     return ImmutableList.of(
         new StateParameter(postInVrf.getHostname(), NODE),
@@ -341,16 +350,24 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   @Override
   public List<StateParameter> visitTransformationStep(
       TransformationStepExpr transformationStepExpr) {
-    return ImmutableList.of(
-        new StateParameter(transformationStepExpr.getNode1(), NODE),
-        new StateParameter(transformationStepExpr.getIface1(), INTERFACE),
-        new StateParameter(transformationStepExpr.getNode2(), NODE),
-        new StateParameter(transformationStepExpr.getIface2(), INTERFACE),
+    ImmutableList.Builder<StateParameter> list =
+        ImmutableList.<StateParameter>builder()
+            .add(
+                new StateParameter(transformationStepExpr.getNode1(), NODE),
+                new StateParameter(transformationStepExpr.getIface1(), INTERFACE));
+    if (transformationStepExpr.getNode2() != null) {
+      list.add(new StateParameter(transformationStepExpr.getNode2(), NODE));
+    }
+    if (transformationStepExpr.getIface2() != null) {
+      list.add(new StateParameter(transformationStepExpr.getIface2(), INTERFACE));
+    }
+    list.add(
         new StateParameter(transformationStepExpr.getTag(), TRANSFORMATION_TAG),
         new StateParameter(
             Integer.toString(transformationStepExpr.getTransformationId()), TRANSFORMATION_ID),
         new StateParameter(
             Integer.toString(transformationStepExpr.getId()), TRANSFORMATION_STEP_ID));
+    return list.build();
   }
 
   @Override

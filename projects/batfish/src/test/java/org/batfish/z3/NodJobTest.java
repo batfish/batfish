@@ -1,19 +1,20 @@
 package org.batfish.z3;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
+import static org.batfish.datamodel.flow.StepAction.TRANSFORMED;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 import static org.batfish.datamodel.transformation.Transformation.when;
+import static org.batfish.dataplane.traceroute.TracerouteUtils.transformationStep;
 import static org.batfish.question.SrcNattedConstraint.REQUIRE_NOT_SRC_NATTED;
 import static org.batfish.question.SrcNattedConstraint.REQUIRE_SRC_NATTED;
 import static org.batfish.question.SrcNattedConstraint.UNCONSTRAINED;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -23,19 +24,16 @@ import com.microsoft.z3.Context;
 import com.microsoft.z3.Solver;
 import com.microsoft.z3.Status;
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
+import java.util.stream.Collectors;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.FlowTrace;
-import org.batfish.datamodel.FlowTraceHop;
 import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -50,6 +48,8 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -67,8 +67,6 @@ public class NodJobTest {
   private DataPlane _dataPlane;
   private Configuration _dstNode;
   private IngressLocation _ingressLocation;
-  private Configuration _srcNode;
-  private Vrf _srcVrf;
   private Synthesizer _synthesizer;
 
   public static Status checkSat(NodJob nodJob) {
@@ -84,10 +82,8 @@ public class NodJobTest {
   }
 
   private NodJob getNodJob(HeaderSpace headerSpace, SrcNattedConstraint srcNatted) {
-    IngressLocation ingressLocation =
-        IngressLocation.vrf(_srcNode.getHostname(), _srcVrf.getName());
     Map<IngressLocation, BooleanExpr> srcIpConstraints =
-        ImmutableMap.of(ingressLocation, TrueExpr.INSTANCE);
+        ImmutableMap.of(_ingressLocation, TrueExpr.INSTANCE);
     StandardReachabilityQuerySynthesizer querySynthesizer =
         StandardReachabilityQuerySynthesizer.builder()
             .setActions(ImmutableSet.of(FlowDisposition.ACCEPTED))
@@ -117,13 +113,13 @@ public class NodJobTest {
     IpAccessList.Builder aclb = nf.aclBuilder();
     Vrf.Builder vb = nf.vrfBuilder();
 
-    _srcNode = cb.build();
+    Configuration srcNode = cb.build();
     _dstNode = cb.build();
-    _srcVrf = vb.setOwner(_srcNode).build();
-    _ingressLocation = IngressLocation.vrf(_srcNode.getHostname(), _srcVrf.getName());
+    Vrf srcVrf = vb.setOwner(srcNode).build();
     Vrf dstVrf = vb.setOwner(_dstNode).build();
     Prefix p1 = Prefix.parse("1.0.0.0/31");
     Ip poolIp1 = Ip.parse("1.0.0.10");
+    Ip poolIp2 = Ip.parse("1.0.0.11");
 
     // apply NAT to all packets
     IpAccessList sourceNat1Acl =
@@ -133,20 +129,36 @@ public class NodJobTest {
                         HeaderSpace.builder()
                             .setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.0/32")))
                             .build())))
-            .setOwner(_srcNode)
+            .setOwner(srcNode)
             .build();
 
-    ib.setOwner(_srcNode)
-        .setVrf(_srcVrf)
-        .setAddress(new InterfaceAddress(p1.getStartIp(), p1.getPrefixLength()))
-        .setOutgoingTransformation(
-            when(permittedByAcl(sourceNat1Acl.getName()))
-                .apply(TransformationStep.assignSourceIp(poolIp1, poolIp1))
-                .build())
-        .build();
+    IpAccessList sourceNat2Acl =
+        aclb.setLines(
+                ImmutableList.of(
+                    IpAccessListLine.acceptingHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.2/32")))
+                            .build())))
+            .setOwner(srcNode)
+            .build();
+
+    Interface srcInterface =
+        ib.setOwner(srcNode)
+            .setVrf(srcVrf)
+            .setAddress(new InterfaceAddress(p1.getStartIp(), p1.getPrefixLength()))
+            .setIncomingTransformation(
+                when(permittedByAcl(sourceNat2Acl.getName()))
+                    .apply(TransformationStep.assignSourceIp(poolIp2, poolIp2))
+                    .build())
+            .setOutgoingTransformation(
+                when(permittedByAcl(sourceNat1Acl.getName()))
+                    .apply(TransformationStep.assignSourceIp(poolIp1, poolIp1))
+                    .build())
+            .build();
     ib.setOwner(_dstNode)
         .setVrf(dstVrf)
         .setAddress(new InterfaceAddress(p1.getEndIp(), p1.getPrefixLength()))
+        .setIncomingTransformation(null)
         .setOutgoingTransformation(null)
         .build();
 
@@ -158,11 +170,12 @@ public class NodJobTest {
         .build();
 
     StaticRoute.Builder bld = StaticRoute.builder().setNetwork(pDest).setAdministrativeCost(1);
-    _srcVrf.getStaticRoutes().add(bld.setNextHopIp(p1.getEndIp()).build());
+    srcVrf.getStaticRoutes().add(bld.setNextHopIp(p1.getEndIp()).build());
+    _ingressLocation = IngressLocation.interfaceLink(srcNode.getHostname(), srcInterface.getName());
 
     _configs =
         ImmutableSortedMap.of(
-            _srcNode.getHostname(), _srcNode,
+            srcNode.getHostname(), srcNode,
             _dstNode.getHostname(), _dstNode);
   }
 
@@ -216,25 +229,78 @@ public class NodJobTest {
         hasEntry(equalTo(Field.SRC_IP.getName()), not(equalTo(Ip.parse("3.0.0.0").asLong()))));
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), Ip.parse("1.0.0.10").asLong()));
 
-    Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
-
-    List<FlowTrace> flowTraces = getFlowTraces(flows);
-
-    flowTraces.forEach(
-        trace -> {
-          assertThat(trace.getNotes(), is("ACCEPTED"));
-          List<FlowTraceHop> hops = trace.getHops();
-          assertThat(hops, hasSize(1));
-          FlowTraceHop hop = hops.get(0);
-          assertThat(hop.getTransformedFlow(), notNullValue());
-          assertThat(hop.getTransformedFlow().getSrcIp(), equalTo(Ip.parse("1.0.0.10")));
-        });
+    // Assert that each trace for each flow has the desired transformation
+    nodJob
+        .getFlows(ingressLocationConstraints)
+        .forEach(
+            flow ->
+                _tracerouteEngine
+                    .computeTraces(ImmutableSet.of(flow), false)
+                    .get(flow)
+                    .forEach(
+                        trace ->
+                            assertThat(
+                                trace.getHops().stream()
+                                    .map(Hop::getSteps)
+                                    .flatMap(Collection::stream)
+                                    .collect(Collectors.toList()),
+                                hasItem(
+                                    transformationStep(
+                                        SOURCE_NAT,
+                                        flow,
+                                        flow.toBuilder()
+                                            .setSrcIp(Ip.parse("1.0.0.10"))
+                                            .build())))));
   }
 
-  private List<FlowTrace> getFlowTraces(Set<Flow> flows) {
-    return _tracerouteEngine.processFlows(flows, false).values().stream()
-        .flatMap(Set::stream)
-        .collect(ImmutableList.toImmutableList());
+  /** Test that traffic originated from 3.0.0.2 is NATed with an incoming transformation */
+  @Test
+  public void testNattedIncoming() {
+    HeaderSpace headerSpace = new HeaderSpace();
+    headerSpace.setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.2")));
+    NodJob nodJob = getNodJob(headerSpace);
+
+    Context z3Context = new Context();
+    SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
+
+    Map<IngressLocation, Map<String, Long>> ingressLocationConstraints =
+        nodJob.getSolutionPerIngressLocation(z3Context, smtInput);
+    assertThat(ingressLocationConstraints.entrySet(), hasSize(1));
+    assertThat(ingressLocationConstraints, hasKey(_ingressLocation));
+    Map<String, Long> fieldConstraints = ingressLocationConstraints.get(_ingressLocation);
+
+    // Only one OriginateVrf choice, so this must be 0
+    assertThat(
+        fieldConstraints, hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, 0L));
+    assertThat(
+        fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), Ip.parse("3.0.0.2").asLong()));
+    assertThat(
+        fieldConstraints,
+        hasEntry(equalTo(Field.SRC_IP.getName()), not(equalTo(Ip.parse("3.0.0.2").asLong()))));
+    assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), Ip.parse("1.0.0.11").asLong()));
+
+    // Assert that each trace for each flow has the desired transformation
+    nodJob
+        .getFlows(ingressLocationConstraints)
+        .forEach(
+            flow ->
+                _tracerouteEngine
+                    .computeTraces(ImmutableSet.of(flow), false)
+                    .get(flow)
+                    .forEach(
+                        trace ->
+                            assertThat(
+                                trace.getHops().stream()
+                                    .map(Hop::getSteps)
+                                    .flatMap(Collection::stream)
+                                    .collect(Collectors.toList()),
+                                hasItem(
+                                    transformationStep(
+                                        SOURCE_NAT,
+                                        flow,
+                                        flow.toBuilder()
+                                            .setSrcIp(Ip.parse("1.0.0.11"))
+                                            .build())))));
   }
 
   /**
@@ -286,17 +352,23 @@ public class NodJobTest {
         fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), Ip.parse("3.0.0.1").asLong()));
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), Ip.parse("3.0.0.1").asLong()));
 
-    Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
-    List<FlowTrace> flowTraces = getFlowTraces(flows);
-
-    flowTraces.forEach(
-        trace -> {
-          assertThat(trace.getNotes(), is("ACCEPTED"));
-          List<FlowTraceHop> hops = trace.getHops();
-          assertThat(hops, hasSize(1));
-          FlowTraceHop hop = hops.get(0);
-          assertThat(hop.getTransformedFlow(), nullValue());
-        });
+    // Assert that each trace for each flow has no transformation
+    nodJob
+        .getFlows(ingressLocationConstraints)
+        .forEach(
+            flow ->
+                _tracerouteEngine
+                    .computeTraces(ImmutableSet.of(flow), false)
+                    .get(flow)
+                    .forEach(
+                        trace ->
+                            assertThat(
+                                trace.getHops().stream()
+                                    .map(Hop::getSteps)
+                                    .flatMap(Collection::stream)
+                                    .map(Step::getAction)
+                                    .anyMatch(TRANSFORMED::equals),
+                                equalTo(false))));
   }
 
   /**

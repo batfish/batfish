@@ -50,6 +50,7 @@ public final class InterfaceSpecifierFilterSpecifier implements FilterSpecifier 
         .map(
             iface ->
                 _type == Type.IN_FILTER ? iface.getIncomingFilter() : iface.getOutgoingFilter())
+        .filter(Objects::nonNull)
         .collect(Collectors.toSet());
   }
 }

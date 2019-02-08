@@ -69,6 +69,7 @@ import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
+import org.batfish.z3.state.PostInInterfacePostNat;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
@@ -496,12 +497,29 @@ public class DefaultTransitionGenerator implements StateVisitor {
               String iface1 = edge.getInt1();
               String node2 = edge.getNode2();
               String iface2 = edge.getInt2();
-              String outAcl = _input.getOutgoingAcls().get(node1).get(iface1);
+              String preTransformationOutAcl =
+                  _input
+                      .getPreTransformationOutgoingAcls()
+                      .getOrDefault(node1, ImmutableMap.of())
+                      .get(iface1);
               // There has to be an ACL -- no ACL is an implicit Permit.
-              if (outAcl != null) {
+              if (preTransformationOutAcl != null) {
                 Set<StateExpr> postTransformationPreStates =
                     ImmutableSet.of(
-                        new AclDeny(node1, outAcl),
+                        new AclDeny(node1, preTransformationOutAcl),
+                        new PreOutEdge(node1, iface1, node2, iface2));
+                _rules.add(
+                    new BasicRuleStatement(
+                        TrueExpr.INSTANCE, postTransformationPreStates, new NodeDropAclOut(node1)));
+              }
+
+              String postTransformationOutAcl =
+                  _input.getPostTransformationOutgoingAcls().get(node1).get(iface1);
+              // There has to be an ACL -- no ACL is an implicit Permit.
+              if (postTransformationOutAcl != null) {
+                Set<StateExpr> postTransformationPreStates =
+                    ImmutableSet.of(
+                        new AclDeny(node1, postTransformationOutAcl),
                         new PreOutEdgePostNat(node1, iface1, node2, iface2));
                 _rules.add(
                     new BasicRuleStatement(
@@ -520,7 +538,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                             (outIface, dstIpConstraint) -> {
                               String outAcl =
                                   _input
-                                      .getOutgoingAcls()
+                                      .getPostTransformationOutgoingAcls()
                                       .getOrDefault(hostname, ImmutableMap.of())
                                       .get(outIface);
                               if (outAcl == null) {
@@ -610,7 +628,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                           // add outAcl if one exists
                           String outAcl =
                               _input
-                                  .getOutgoingAcls()
+                                  .getPostTransformationOutgoingAcls()
                                   .getOrDefault(hostname, ImmutableMap.of())
                                   .get(outIface);
                           if (outAcl != null) {
@@ -686,6 +704,37 @@ public class DefaultTransitionGenerator implements StateVisitor {
   }
 
   @Override
+  public void visitPostInInterfacePostNat(PostInInterfacePostNat.State postInInterfacePostNat) {
+    _input.getEnabledInterfaces().entrySet().stream()
+        .flatMap(
+            topologyInterfacesEntry -> {
+              String hostname = topologyInterfacesEntry.getKey();
+
+              return topologyInterfacesEntry.getValue().stream()
+                  .map(
+                      ifaceName -> {
+                        StateExpr preState = new PostInInterface(hostname, ifaceName);
+                        StateExpr postState = new PostInInterfacePostNat(hostname, ifaceName);
+
+                        return TransformationTransitionGenerator.generateTransitions(
+                            hostname,
+                            ifaceName,
+                            null,
+                            null,
+                            "INCOMING",
+                            _input.getAclLineMatchExprToBooleanExprs().get(hostname),
+                            ImmutableSet.of(preState),
+                            postState,
+                            _input
+                                .getIncomingTransformations()
+                                .getOrDefault(hostname, ImmutableMap.of())
+                                .get(ifaceName));
+                      });
+            })
+        .forEach(_rules::addAll);
+  }
+
+  @Override
   public void visitPostInVrf(PostInVrf.State postInVrf) {
     // Project OriginateVrf
     _input.getEnabledVrfs().entrySet().stream()
@@ -718,7 +767,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                             .map(
                                 ifaceName ->
                                     new BasicRuleStatement(
-                                        new PostInInterface(hostname, ifaceName),
+                                        new PostInInterfacePostNat(hostname, ifaceName),
                                         new PostInVrf(hostname, vrfName)));
                       });
             })
@@ -740,7 +789,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
               String iface1 = edge.getInt1();
               String node2 = edge.getNode2();
               String iface2 = edge.getInt2();
-              String outAcl = _input.getOutgoingAcls().get(node1).get(iface1);
+              String outAcl = _input.getPostTransformationOutgoingAcls().get(node1).get(iface1);
               Set<StateExpr> aclStates =
                   outAcl == null
                       ? ImmutableSet.of(new PreOutEdgePostNat(node1, iface1, node2, iface2))
@@ -888,6 +937,17 @@ public class DefaultTransitionGenerator implements StateVisitor {
               PreOutEdge preState = new PreOutEdge(node1, iface1, node2, iface2);
               StateExpr postState = new PreOutEdgePostNat(node1, iface1, node2, iface2);
 
+              ImmutableSet.Builder<StateExpr> preStates =
+                  ImmutableSet.<StateExpr>builder().add(preState);
+              String outAcl =
+                  _input
+                      .getPreTransformationOutgoingAcls()
+                      .getOrDefault(node1, ImmutableMap.of())
+                      .get(iface1);
+              if (outAcl != null) {
+                preStates.add(new AclPermit(node1, outAcl));
+              }
+
               return TransformationTransitionGenerator.generateTransitions(
                   node1,
                   iface1,
@@ -895,7 +955,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                   iface2,
                   "OUTGOING",
                   _input.getAclLineMatchExprToBooleanExprs().get(node1),
-                  preState,
+                  preStates.build(),
                   postState,
                   _input
                       .getOutgoingTransformations()

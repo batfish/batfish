@@ -294,12 +294,7 @@ public class VirtualRouter implements Serializable {
     for (RouteAdvertisement<D> r : delta.getActions()) {
       // REPLACE does not make sense across routers, update with WITHDRAW
       Reason reason = r.getReason() == Reason.REPLACE ? Reason.WITHDRAW : r.getReason();
-      queue.add(
-          RouteAdvertisement.<R>builder()
-              .setRoute(r.getRoute())
-              .setReason(reason)
-              .setWithdraw(r.isWithdrawn())
-              .build());
+      queue.add(RouteAdvertisement.<R>builder().setRoute(r.getRoute()).setReason(reason).build());
     }
   }
 
@@ -2110,7 +2105,6 @@ public class VirtualRouter implements Serializable {
                                 adv.getReason() == Reason.REPLACE
                                     ? Reason.WITHDRAW
                                     : adv.getReason())
-                            .setWithdraw(adv.isWithdrawn())
                             .setRoute(transformedRoute)
                             .build();
                   })

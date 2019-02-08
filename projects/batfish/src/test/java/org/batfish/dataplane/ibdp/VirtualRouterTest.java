@@ -574,12 +574,7 @@ public class VirtualRouterTest {
     assertThat(q.remove(), equalTo(new RouteAdvertisement<>(sr1)));
     assertThat(
         q.remove(),
-        equalTo(
-            RouteAdvertisement.builder()
-                .setRoute(sr2)
-                .setWithdraw(true)
-                .setReason(Reason.WITHDRAW)
-                .build()));
+        equalTo(RouteAdvertisement.builder().setRoute(sr2).setReason(Reason.WITHDRAW).build()));
     assertThat(q, empty());
   }
 
