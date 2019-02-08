@@ -891,15 +891,15 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         && _dstProtocols.stream()
             .noneMatch(
                 dstProtocol ->
-                    dstProtocol.getPort().equals(flow.getDstPort())
-                        && dstProtocol.getIpProtocol().equals(flow.getIpProtocol()))) {
+                    dstProtocol.getPort() == flow.getDstPort()
+                        && dstProtocol.getIpProtocol() == flow.getIpProtocol())) {
       return false;
     }
     if (_notDstProtocols.stream()
         .anyMatch(
             notDstProtocol ->
-                notDstProtocol.getPort().equals(flow.getDstPort())
-                    && notDstProtocol.getIpProtocol().equals(flow.getIpProtocol()))) {
+                notDstProtocol.getPort() == flow.getDstPort()
+                    && notDstProtocol.getIpProtocol() == flow.getIpProtocol())) {
       return false;
     }
     if (!_ecns.isEmpty() && !_ecns.contains(flow.getEcn())) {
@@ -959,8 +959,8 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       if (_srcOrDstProtocols.stream()
           .noneMatch(
               protocol ->
-                  (protocol.getPort().equals(flowDstPort) || protocol.getPort().equals(flowSrcPort))
-                      && protocol.getIpProtocol().equals(flowProtocol))) {
+                  (protocol.getPort() == flowDstPort || protocol.getPort() == flowSrcPort)
+                      && protocol.getIpProtocol() == flowProtocol)) {
         return false;
       }
     }
@@ -981,15 +981,15 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         && _srcProtocols.stream()
             .noneMatch(
                 srcProtocol ->
-                    srcProtocol.getPort().equals(flow.getSrcPort())
-                        && srcProtocol.getIpProtocol().equals(flow.getIpProtocol()))) {
+                    srcProtocol.getPort() == flow.getSrcPort()
+                        && srcProtocol.getIpProtocol() == flow.getIpProtocol())) {
       return false;
     }
     if (_notSrcProtocols.stream()
         .anyMatch(
             notSrcProtocol ->
-                notSrcProtocol.getPort().equals(flow.getSrcPort())
-                    && notSrcProtocol.getIpProtocol().equals(flow.getIpProtocol()))) {
+                notSrcProtocol.getPort() == flow.getSrcPort()
+                    && notSrcProtocol.getIpProtocol() == flow.getIpProtocol())) {
       return false;
     }
     if (!_states.isEmpty() && !_states.contains(flow.getState())) {
