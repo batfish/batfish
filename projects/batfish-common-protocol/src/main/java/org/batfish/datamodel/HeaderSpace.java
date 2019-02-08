@@ -23,69 +23,37 @@ import org.batfish.common.util.CommonUtil;
 public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
   public static class Builder {
-
     private SortedSet<Integer> _dscps;
-
     private @Nullable IpSpace _dstIps;
-
     private SortedSet<SubRange> _dstPorts;
-
     private SortedSet<Protocol> _dstProtocols;
-
     private SortedSet<Integer> _ecns;
-
     private SortedSet<SubRange> _fragmentOffsets;
-
     private SortedSet<SubRange> _icmpCodes;
-
     private SortedSet<SubRange> _icmpTypes;
-
     private SortedSet<IpProtocol> _ipProtocols;
-
     private boolean _negate;
-
     private SortedSet<Integer> _notDscps;
-
     private @Nullable IpSpace _notDstIps;
-
     private SortedSet<SubRange> _notDstPorts;
-
     private SortedSet<Protocol> _notDstProtocols;
-
     private SortedSet<Integer> _notEcns;
-
     private SortedSet<SubRange> _notFragmentOffsets;
-
     private SortedSet<SubRange> _notIcmpCodes;
-
     private SortedSet<SubRange> _notIcmpTypes;
-
     private SortedSet<IpProtocol> _notIpProtocols;
-
     private SortedSet<SubRange> _notPacketLengths;
-
     private @Nullable IpSpace _notSrcIps;
-
     private SortedSet<SubRange> _notSrcPorts;
-
     private SortedSet<Protocol> _notSrcProtocols;
-
     private SortedSet<SubRange> _packetLengths;
-
     private @Nullable IpSpace _srcIps;
-
     private @Nullable IpSpace _srcOrDstIps;
-
     private SortedSet<SubRange> _srcOrDstPorts;
-
     private SortedSet<Protocol> _srcOrDstProtocols;
-
     private SortedSet<SubRange> _srcPorts;
-
     private SortedSet<Protocol> _srcProtocols;
-
     private SortedSet<FlowState> _states;
-
     private List<TcpFlagsMatchConditions> _tcpFlags;
 
     private Builder() {
@@ -490,70 +458,38 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
           .thenComparing(HeaderSpace::getTcpFlags, CommonUtil::compareIterable);
 
   private static final String PROP_DSCPS = "dscps";
-
   private static final String PROP_DST_IPS = "dstIps";
-
   private static final String PROP_DST_PORTS = "dstPorts";
-
   private static final String PROP_DST_PROTOCOLS = "dstProtocols";
-
   private static final String PROP_ECNS = "ecns";
-
   private static final String PROP_FRAGMENT_OFFSETS = "fragmentOffsets";
-
   private static final String PROP_ICMP_CODES = "icmpCodes";
-
   private static final String PROP_ICMP_TYPES = "icmpTypes";
-
   private static final String PROP_IP_PROTOCOLS = "ipProtocols";
-
   private static final String PROP_NEGATE = "negate";
-
   private static final String PROP_NOT_DSCPS = "notDscps";
-
   private static final String PROP_NOT_DST_IPS = "notDstIps";
-
   private static final String PROP_NOT_DST_PORTS = "notDstPorts";
-
   private static final String PROP_NOT_DST_PROTOCOLS = "notDstProtocols";
-
   private static final String PROP_NOT_ECNS = "notEcns";
-
   private static final String PROP_NOT_FRAGMENT_OFFSETS = "notFragmentOffsets";
-
   private static final String PROP_NOT_ICMP_CODES = "notIcmpCodes";
-
   private static final String PROP_NOT_ICMP_TYPES = "notIcmpTypes";
-
   private static final String PROP_NOT_IP_PROTOCOLS = "notIpProtocols";
-
   private static final String PROP_NOT_PACKET_LENGTHS = "notPacketLengths";
-
   private static final String PROP_NOT_SRC_IPS = "notSrcIps";
-
   private static final String PROP_NOT_SRC_PORTS = "notSrcPorts";
-
   private static final String PROP_NOT_SRC_PROTOCOLS = "notSrcProtocols";
-
   private static final String PROP_PACKET_LENGTHS = "packetLengths";
-
   private static final String PROP_SRC_IPS = "srcIps";
-
   private static final String PROP_SRC_OR_DST_IPS = "srcOrDstIps";
-
   private static final String PROP_SRC_OR_DST_PORTS = "srcOrDstPorts";
-
   private static final String PROP_SRC_OR_DST_PROTOCOLS = "srcOrDstProtocols";
-
   private static final String PROP_SRC_PORTS = "srcPorts";
-
   private static final String PROP_SRC_PROTOCOLS = "srcProtocols";
-
   private static final String PROP_STATES = "states";
-
   private static final String PROP_TCP_FLAGS_MATCH_CONDITIONS = "tcpFlagsMatchConditions";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static Builder builder() {
@@ -561,67 +497,36 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   }
 
   private SortedSet<Integer> _dscps;
-
   private IpSpace _dstIps;
-
   private SortedSet<SubRange> _dstPorts;
-
   private SortedSet<Protocol> _dstProtocols;
-
   private SortedSet<Integer> _ecns;
-
   private SortedSet<SubRange> _fragmentOffsets;
-
   private SortedSet<SubRange> _icmpCodes;
-
   private SortedSet<SubRange> _icmpTypes;
-
   private SortedSet<IpProtocol> _ipProtocols;
-
   private boolean _negate;
-
   private SortedSet<Integer> _notDscps;
-
   private IpSpace _notDstIps;
-
   private SortedSet<SubRange> _notDstPorts;
-
   private SortedSet<Protocol> _notDstProtocols;
-
   private SortedSet<Integer> _notEcns;
-
   private SortedSet<SubRange> _notFragmentOffsets;
-
   private SortedSet<SubRange> _notIcmpCodes;
-
   private SortedSet<SubRange> _notIcmpTypes;
-
   private SortedSet<IpProtocol> _notIpProtocols;
-
   private SortedSet<SubRange> _notPacketLengths;
-
   private IpSpace _notSrcIps;
-
   private SortedSet<SubRange> _notSrcPorts;
-
   private SortedSet<Protocol> _notSrcProtocols;
-
   private SortedSet<SubRange> _packetLengths;
-
   private IpSpace _srcIps;
-
   private IpSpace _srcOrDstIps;
-
   private SortedSet<SubRange> _srcOrDstPorts;
-
   private SortedSet<Protocol> _srcOrDstProtocols;
-
   private SortedSet<SubRange> _srcPorts;
-
   private SortedSet<Protocol> _srcProtocols;
-
   private SortedSet<FlowState> _states;
-
   private List<TcpFlagsMatchConditions> _tcpFlags;
 
   public HeaderSpace() {
@@ -982,38 +887,26 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     if (!_notDstPorts.isEmpty() && rangesContain(_notDstPorts, flow.getDstPort())) {
       return false;
     }
-    if (!_dstProtocols.isEmpty()) {
-      boolean match = false;
-      for (Protocol dstProtocol : _dstProtocols) {
-        if (dstProtocol.getIpProtocol().equals(flow.getIpProtocol())) {
-          match = true;
-          Integer dstPort = dstProtocol.getPort();
-          if (dstPort != null && !dstPort.equals(flow.getDstPort())) {
-            match = false;
-          }
-          if (match) {
-            break;
-          }
-        }
-      }
-      if (!match) {
-        return false;
-      }
+    if (!_dstProtocols.isEmpty()
+        && _dstProtocols.stream()
+            .noneMatch(
+                dstProtocol ->
+                    dstProtocol.getPort().equals(flow.getDstPort())
+                        && dstProtocol.getIpProtocol().equals(flow.getIpProtocol()))) {
+      return false;
     }
-    if (!_notDstProtocols.isEmpty()) {
-      boolean match = false;
-      for (Protocol notDstProtocol : _notDstProtocols) {
-        if (notDstProtocol.getIpProtocol().equals(flow.getIpProtocol())) {
-          match = true;
-          Integer dstPort = notDstProtocol.getPort();
-          if (dstPort != null && !dstPort.equals(flow.getDstPort())) {
-            match = false;
-          }
-          if (match) {
-            return false;
-          }
-        }
-      }
+    if (_notDstProtocols.stream()
+        .anyMatch(
+            notDstProtocol ->
+                notDstProtocol.getPort().equals(flow.getDstPort())
+                    && notDstProtocol.getIpProtocol().equals(flow.getIpProtocol()))) {
+      return false;
+    }
+    if (!_ecns.isEmpty() && !_ecns.contains(flow.getEcn())) {
+      return false;
+    }
+    if (!_notEcns.isEmpty() && _notEcns.contains(flow.getEcn())) {
+      return false;
     }
     if (!_fragmentOffsets.isEmpty() && !rangesContain(_fragmentOffsets, flow.getFragmentOffset())) {
       return false;
@@ -1057,20 +950,14 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return false;
     }
     if (!_srcOrDstProtocols.isEmpty()) {
-      boolean match = false;
-      for (Protocol protocol : _srcOrDstProtocols) {
-        if (protocol.getIpProtocol().equals(flow.getIpProtocol())) {
-          match = true;
-          Integer port = protocol.getPort();
-          if (port != null && !port.equals(flow.getDstPort()) && !port.equals(flow.getSrcPort())) {
-            match = false;
-          }
-          if (match) {
-            break;
-          }
-        }
-      }
-      if (!match) {
+      IpProtocol flowProtocol = flow.getIpProtocol();
+      Integer flowDstPort = flow.getDstPort();
+      Integer flowSrcPort = flow.getSrcPort();
+      if (_srcOrDstProtocols.stream()
+          .noneMatch(
+              protocol ->
+                  (protocol.getPort().equals(flowDstPort) || protocol.getPort().equals(flowSrcPort))
+                      && protocol.getIpProtocol().equals(flowProtocol))) {
         return false;
       }
     }
@@ -1086,38 +973,20 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     if (!_notSrcPorts.isEmpty() && rangesContain(_notSrcPorts, flow.getSrcPort())) {
       return false;
     }
-    if (!_srcProtocols.isEmpty()) {
-      boolean match = false;
-      for (Protocol srcProtocol : _srcProtocols) {
-        if (srcProtocol.getIpProtocol().equals(flow.getIpProtocol())) {
-          match = true;
-          Integer srcPort = srcProtocol.getPort();
-          if (srcPort != null && !srcPort.equals(flow.getSrcPort())) {
-            match = false;
-          }
-          if (match) {
-            break;
-          }
-        }
-      }
-      if (!match) {
-        return false;
-      }
+    if (!_srcProtocols.isEmpty()
+        && _srcProtocols.stream()
+            .noneMatch(
+                srcProtocol ->
+                    srcProtocol.getPort().equals(flow.getSrcPort())
+                        && srcProtocol.getIpProtocol().equals(flow.getIpProtocol()))) {
+      return false;
     }
-    if (!_notSrcProtocols.isEmpty()) {
-      boolean match = false;
-      for (Protocol notSrcProtocol : _notSrcProtocols) {
-        if (notSrcProtocol.getIpProtocol().equals(flow.getIpProtocol())) {
-          match = true;
-          Integer srcPort = notSrcProtocol.getPort();
-          if (srcPort != null && !srcPort.equals(flow.getSrcPort())) {
-            match = false;
-          }
-          if (match) {
-            return false;
-          }
-        }
-      }
+    if (_notSrcProtocols.stream()
+        .anyMatch(
+            notSrcProtocol ->
+                notSrcProtocol.getPort().equals(flow.getSrcPort())
+                    && notSrcProtocol.getIpProtocol().equals(flow.getIpProtocol()))) {
+      return false;
     }
     if (!_states.isEmpty() && !_states.contains(flow.getState())) {
       return false;
