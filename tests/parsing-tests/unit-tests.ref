@@ -69133,6 +69133,48 @@
               ],
               "numReferrers" : 1
             }
+          },
+          "routing-instance" : {
+            "fabric" : {
+              "definitionLines" : [
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                213,
+                214,
+                217,
+                218,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                229,
+                230,
+                231,
+                232,
+                233
+              ],
+              "numReferrers" : 0
+            },
+            "vr" : {
+              "definitionLines" : [
+                196,
+                197,
+                198
+              ],
+              "numReferrers" : 0
+            }
           }
         },
         "configs/host2" : {
@@ -70297,6 +70339,14 @@
               "numReferrers" : 1
             }
           },
+          "routing-instance" : {
+            "SOME_INSTANCE" : {
+              "definitionLines" : [
+                22
+              ],
+              "numReferrers" : 0
+            }
+          },
           "vlan" : {
             "unused-vlan" : {
               "definitionLines" : [
@@ -70324,7 +70374,16 @@
           }
         },
         "configs/juniper_l2_learning" : { },
-        "configs/juniper_misc" : { },
+        "configs/juniper_misc" : {
+          "routing-instance" : {
+            "ROUTING_INSTANCE" : {
+              "definitionLines" : [
+                9
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/juniper_nat" : {
           "interface" : {
             "ge-0/0/0" : {
@@ -70555,6 +70614,19 @@
                 7,
                 8,
                 9
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "routing-instance" : {
+            "ROUTING_INSTANCE_NAME" : {
+              "definitionLines" : [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25
               ],
               "numReferrers" : 0
             }
@@ -74097,6 +74169,15 @@
             "MYGROUP" : {
               "bgp group neighbor" : [
                 7
+              ]
+            }
+          }
+        },
+        "configs/juniper_firewall" : {
+          "routing-instance" : {
+            "OTHER_INSTANCE" : {
+              "firewall filter routing-instance" : [
+                33
               ]
             }
           }

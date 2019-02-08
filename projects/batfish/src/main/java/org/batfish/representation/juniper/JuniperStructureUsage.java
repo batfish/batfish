@@ -17,6 +17,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP("dhcp relay group active-server-group"),
   FIREWALL_FILTER_DESTINATION_PREFIX_LIST("firewall filter destination prefix-list"),
   FIREWALL_FILTER_PREFIX_LIST("firewall filter prefix-list"),
+  FIREWALL_FILTER_ROUTING_INSTANCE("firewall filter routing-instance"),
   FIREWALL_FILTER_SOURCE_PREFIX_LIST("firewall filter source prefix-list"),
   FORWARDING_OPTIONS_DHCP_RELAY_GROUP_INTERFACE("fowarding-options dhcp-relay group interface"),
   FORWARDING_TABLE_EXPORT_POLICY("forwarding-table export policy-statement"),
