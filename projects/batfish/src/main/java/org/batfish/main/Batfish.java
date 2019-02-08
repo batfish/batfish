@@ -3800,10 +3800,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     BDDPacket bddPacket = new BDDPacket();
 
     Set<String> activeSources = resolveSources(parameters, node.getHostname());
-
-    Set<String> inactiveInterfaces =
-        Sets.difference(node.getAllInterfaces().keySet(), activeSources);
-
     Set<String> referencedSources = referencedSources(node.getIpAccessLists(), acl);
 
     BDDSourceManager mgr = BDDSourceManager.forSources(bddPacket, activeSources, referencedSources);

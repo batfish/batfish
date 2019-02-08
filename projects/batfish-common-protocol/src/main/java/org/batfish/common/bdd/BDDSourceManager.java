@@ -7,6 +7,7 @@ import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referen
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,6 +17,8 @@ import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
 
 /**
  * Manages BDD variables to track a packet's source: which interface it entered the node through, if
@@ -28,16 +31,19 @@ import org.batfish.datamodel.IpAccessList;
  *
  * <p>We need these identifiers in two contexts: to record the source of a packet as it enters a
  * node, and to check the source of a packet when an ACL includes a {@link
- * org.batfish.datamodel.acl.MatchSrcInterface} or {@link
- * org.batfish.datamodel.acl.OriginatingFromDevice} expression.
+ * org.batfish.datamodel.acl.MatchSrcInterface} or {@link OriginatingFromDevice} expression.
  */
 public final class BDDSourceManager {
   private static final String VAR_NAME = "PacketSource";
 
-  /* For efficiency, the finite domain doesn't track each active but unreferenced source. Instead,
-   * it tracks a single representative value that represents all of them.
+  /**
+   * A source (an interface or the device itself) is "active but unreferenced" if it is active but
+   * not reference by {@link MatchSrcInterface} or {@link OriginatingFromDevice}. For efficiency,
+   * the finite domain doesn't track each active but unreferenced source. Instead, it tracks a
+   * single representative value that represents all of them.
    */
   private final @Nullable String _activeButUnreferencedRepresentative;
+
   private final Set<String> _activeButUnreferenced;
   private final BDD _falseBDD;
   private final BDDFiniteDomain<String> _finiteDomain;
@@ -185,8 +191,8 @@ public final class BDDSourceManager {
     ImmutableSet.Builder<String> builder = ImmutableSet.builder();
     builder.addAll(activeAndReferenced);
 
-    if (activeButUnreferenced.size() > 0) {
-      builder.add(activeButUnreferenced.stream().sorted().findFirst().get());
+    if (!activeButUnreferenced.isEmpty()) {
+      builder.add(activeButUnreferenced.stream().max(Comparator.naturalOrder()).get());
     }
 
     return builder.build();
@@ -235,7 +241,7 @@ public final class BDDSourceManager {
   /**
    * @return true when there is nothing to track. This can happen when no {@link IpAccessList ACL}
    *     on the node uses {@link org.batfish.datamodel.acl.MatchSrcInterface} or {@link
-   *     org.batfish.datamodel.acl.OriginatingFromDevice}.
+   *     OriginatingFromDevice}.
    */
   public boolean isTrivial() {
     return _finiteDomain.isEmpty();
