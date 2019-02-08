@@ -1,5 +1,8 @@
 package org.batfish.job;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
+import com.google.common.base.Throwables;
 import java.nio.file.Path;
 import java.util.SortedMap;
 import org.batfish.common.BatfishException;
@@ -108,6 +111,12 @@ public class ParseEnvironmentRoutingTableResult
         answerElement
             .getErrors()
             .put(filename, ((BatfishException) _failureCause).getBatfishStackTrace());
+        answerElement
+            .getErrorMessages()
+            .put(
+                filename,
+                Throwables.getStackTraceAsString(
+                    firstNonNull(_failureCause.getCause(), _failureCause)));
       }
     }
   }

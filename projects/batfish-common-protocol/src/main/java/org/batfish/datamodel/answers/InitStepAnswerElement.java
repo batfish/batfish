@@ -8,10 +8,14 @@ import org.batfish.common.Warnings;
 public abstract class InitStepAnswerElement extends AnswerElement {
 
   protected static final String PROP_ERRORS = "errors";
+  protected static final String PROP_ERROR_MESSAGES = "errorMessages";
   protected static final String PROP_WARNINGS = "warnings";
 
   @JsonProperty(PROP_ERRORS)
   public abstract SortedMap<String, BatfishException.BatfishStackTrace> getErrors();
+
+  @JsonProperty(PROP_ERROR_MESSAGES)
+  public abstract SortedMap<String, String> getErrorMessages();
 
   @JsonProperty(PROP_WARNINGS)
   public abstract SortedMap<String, Warnings> getWarnings();

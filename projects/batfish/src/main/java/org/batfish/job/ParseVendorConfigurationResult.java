@@ -1,5 +1,8 @@
 package org.batfish.job;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
+import com.google.common.base.Throwables;
 import com.google.common.collect.Multimap;
 import java.io.File;
 import java.util.Map;
@@ -130,6 +133,12 @@ public class ParseVendorConfigurationResult
       answerElement
           .getErrors()
           .put(_filename, ((BatfishException) _failureCause).getBatfishStackTrace());
+      answerElement
+          .getErrorMessages()
+          .put(
+              _filename,
+              Throwables.getStackTraceAsString(
+                  firstNonNull(_failureCause.getCause(), _failureCause)));
     }
   }
 
