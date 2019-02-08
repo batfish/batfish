@@ -67,9 +67,9 @@ public final class F5BigipStructuredGrammarTest {
   public void testVlan() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_vlan");
     String portName = "1.0";
-    String selfName = "/Common/MYSELF";
+    String vlanName = "/Common/MYVLAN";
 
-    assertThat(c.getAllInterfaces().keySet(), containsInAnyOrder(portName, selfName));
+    assertThat(c.getAllInterfaces().keySet(), containsInAnyOrder(portName, vlanName));
 
     // port interface
     assertThat(c, hasInterface(portName, isActive()));
@@ -78,9 +78,9 @@ public final class F5BigipStructuredGrammarTest {
     assertThat(c, hasInterface(portName, hasAllowedVlans(IntegerSpace.of(123))));
     assertThat(c, hasInterface(portName, hasNativeVlan(nullValue())));
 
-    // self interface
-    assertThat(c, hasInterface(selfName, isActive()));
-    assertThat(c, hasInterface(selfName, hasVlan(123)));
-    assertThat(c, hasInterface(selfName, hasAddress("10.0.0.1/24")));
+    // vlan interface
+    assertThat(c, hasInterface(vlanName, isActive()));
+    assertThat(c, hasInterface(vlanName, hasVlan(123)));
+    assertThat(c, hasInterface(vlanName, hasAddress("10.0.0.1/24")));
   }
 }

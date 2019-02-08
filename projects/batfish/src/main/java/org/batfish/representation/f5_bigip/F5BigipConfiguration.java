@@ -96,20 +96,24 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return newIface;
   }
 
-  private org.batfish.datamodel.Interface toInterface(Self self) {
+  private org.batfish.datamodel.Interface toInterface(Vlan vlan) {
     org.batfish.datamodel.Interface newIface =
-        new org.batfish.datamodel.Interface(self.getName(), _c, InterfaceType.VLAN);
-    Vlan vlan = _vlans.get(self.getVlan());
-    if (vlan != null) {
-      // TODO: Possibly add dependencies on ports allowing this VLAN
-      newIface.setVlan(vlan.getTag());
-    }
-    InterfaceAddress address = self.getAddress();
-    newIface.setAddress(address);
-    newIface.setAllAddresses(ImmutableSortedSet.of(address));
+        new org.batfish.datamodel.Interface(vlan.getName(), _c, InterfaceType.VLAN);
+    // TODO: Possibly add dependencies on ports allowing this VLAN
+    newIface.setVlan(vlan.getTag());
     newIface.setBandwidth(Interface.DEFAULT_BANDWIDTH);
     newIface.setVrf(_c.getDefaultVrf());
     return newIface;
+  }
+
+  private void processSelf(Self self) {
+    org.batfish.datamodel.Interface vlanIface = _c.getAllInterfaces().get(self.getVlan());
+    if (vlanIface == null) {
+      return;
+    }
+    InterfaceAddress address = self.getAddress();
+    vlanIface.setAddress(address);
+    vlanIface.setAllAddresses(ImmutableSortedSet.of(address));
   }
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
@@ -122,8 +126,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // Add default VRF
     _c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new);
 
-    // Add self interfaces
-
     // Add interfaces
     _interfaces.forEach(
         (name, iface) -> {
@@ -133,18 +135,21 @@ public class F5BigipConfiguration extends VendorConfiguration {
           _c.getDefaultVrf().getInterfaces().put(name, newIface);
         });
 
-    // Process vlans:
-    // - configure interface switchport parameters
-    _vlans.values().forEach(this::processVlanSettings);
-
-    // Add self interfaces
-    _selves.forEach(
-        (name, self) -> {
-          org.batfish.datamodel.Interface newIface = toInterface(self);
+    // Add VLAN interfaces
+    _vlans.forEach(
+        (name, vlan) -> {
+          org.batfish.datamodel.Interface newIface = toInterface(vlan);
           _c.getAllInterfaces().put(name, newIface);
           // Assume all interfaces are in default VRF for now
           _c.getDefaultVrf().getInterfaces().put(name, newIface);
         });
+    // Process vlans:
+    // - configure interface switchport parameters
+    _vlans.values().forEach(this::processVlanSettings);
+
+    // Process selves:
+    // - add addresses to appropriate VLAN interfaces
+    _selves.values().forEach(this::processSelf);
 
     return _c;
   }
