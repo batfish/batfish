@@ -3799,10 +3799,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Configuration node, IpAccessList acl, SearchFiltersParameters parameters) {
     BDDPacket bddPacket = new BDDPacket();
 
+    Set<String> activeSources = resolveSources(parameters, node.getHostname());
+
     Set<String> inactiveInterfaces =
-        Sets.difference(node.getAllInterfaces().keySet(), node.activeInterfaces());
-    Set<String> activeSources =
-        Sets.difference(resolveSources(parameters, node.getHostname()), inactiveInterfaces);
+        Sets.difference(node.getAllInterfaces().keySet(), activeSources);
 
     Set<String> referencedSources = referencedSources(node.getIpAccessLists(), acl);
 

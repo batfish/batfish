@@ -1,26 +1,18 @@
 package org.batfish.common.bdd;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.common.bdd.BDDUtils.isAssignment;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.google.common.math.LongMath;
-import java.math.RoundingMode;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import net.sf.javabdd.BDD;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
 
@@ -41,59 +33,32 @@ import org.batfish.datamodel.IpAccessList;
 public final class BDDSourceManager {
   private static final String VAR_NAME = "PacketSource";
 
+  /* For efficiency, the finite domain doesn't track each active but unreferenced source. Instead,
+   * it tracks a single representative value that represents all of them.
+   */
+  private final String _activeButUnreferencedRepresentative;
+  private final Set<String> _activeButUnreferenced;
   private final BDD _falseBDD;
+  private final BDDFiniteDomain<String> _finiteDomain;
+  private final BDD _trueBDD;
 
-  private final BDD _isValidValue;
-
-  private final Map<String, BDD> _sourceBDDs;
-
-  private final BDD _sourceVarBits;
-
-  private BDDSourceManager(BDD isValidValue, Map<String, BDD> sourceBDDs, BDD sourceVarBits) {
-    _isValidValue = isValidValue;
-    _sourceBDDs = ImmutableMap.copyOf(sourceBDDs);
-    _sourceVarBits = sourceVarBits;
-    _falseBDD = isValidValue.getFactory().zero();
-  }
-
-  private static BDDSourceManager forNoReferencedSources(
-      BDDPacket pkt, Set<String> activeButNotReferenced) {
-    return new BDDSourceManager(
-        pkt.getFactory().one(),
-        toImmutableMap(activeButNotReferenced, Function.identity(), src -> pkt.getFactory().one()),
-        pkt.getFactory().zero());
+  private BDDSourceManager(
+      BDDFiniteDomain<String> finiteDomain, Set<String> activeButUnreferenced) {
+    _activeButUnreferenced = ImmutableSet.copyOf(activeButUnreferenced);
+    _activeButUnreferencedRepresentative =
+        _activeButUnreferenced.stream().sorted().findFirst().orElse(null);
+    _falseBDD = finiteDomain.getIsValidConstraint().getFactory().zero();
+    _trueBDD = finiteDomain.getIsValidConstraint().getFactory().one();
+    _finiteDomain = finiteDomain;
   }
 
   /** Allocates a variable for the sources and initializes SANE. */
   private static BDDSourceManager forSourcesInternal(
       BDDPacket pkt, Set<String> activeAndReferenced, Set<String> activeButNotReferenced) {
-    if (activeAndReferenced.isEmpty()) {
-      return forNoReferencedSources(pkt, activeButNotReferenced);
-    }
-
-    int bitsRequired =
-        LongMath.log2(
-            valuesRequired(activeAndReferenced, activeButNotReferenced), RoundingMode.CEILING);
-    BDDInteger sourceVar = pkt.allocateBDDInteger(VAR_NAME, bitsRequired, false);
-
-    return forSourcesInternal(pkt, sourceVar, activeAndReferenced, activeButNotReferenced);
-  }
-
-  private static BDDSourceManager forSourcesInternal(
-      BDDPacket pkt,
-      BDDInteger sourceVar,
-      Set<String> activeAndReferenced,
-      Set<String> activeButNotReferenced) {
-
-    Map<String, BDD> sourceBDDs =
-        computeMatchSourceBDDs(sourceVar, activeAndReferenced, activeButNotReferenced);
-
-    BDD isSane = sourceVar.leq(valuesRequired(activeAndReferenced, activeButNotReferenced) - 1);
-
-    BDD sourceVarBits =
-        Arrays.stream(sourceVar.getBitvec()).reduce(pkt.getFactory().one(), BDD::and);
-
-    return new BDDSourceManager(isSane, sourceBDDs, sourceVarBits);
+    return new BDDSourceManager(
+        new BDDFiniteDomain<>(
+            pkt, VAR_NAME, valuesToTrack(activeAndReferenced, activeButNotReferenced)),
+        activeButNotReferenced);
   }
 
   /**
@@ -174,34 +139,25 @@ public final class BDDSourceManager {
                 Sets.difference(
                     activeEntry.getValue(), referencedSources.get(activeEntry.getKey())));
 
-    // Number of values needed to track sources in any node
-    int valuesNeeded =
-        activeAndReferenced.keySet().stream()
-            .mapToInt(
-                node ->
-                    valuesRequired(activeAndReferenced.get(node), activeButNotReferenced.get(node)))
-            .max()
-            .orElse(0);
+    Map<String, Set<String>> valuesToTrack =
+        toImmutableMap(
+            activeAndReferenced,
+            Entry::getKey,
+            entry -> {
+              String hostname = entry.getKey();
+              Set<String> hostActiveAndReferenced = entry.getValue();
+              Set<String> hostActiveButNotReferenced = activeButNotReferenced.get(hostname);
+              return valuesToTrack(hostActiveAndReferenced, hostActiveButNotReferenced);
+            });
 
-    if (valuesNeeded == 0) {
-      return toImmutableMap(
-          configs.keySet(),
-          Function.identity(),
-          hostname -> forNoReferencedSources(pkt, activeButNotReferenced.get(hostname)));
-    }
-
-    int bits = LongMath.log2(valuesNeeded, RoundingMode.CEILING);
-    BDDInteger sourceVar = pkt.allocateBDDInteger(VAR_NAME, bits, false);
+    Map<String, BDDFiniteDomain<String>> finiteDomains =
+        BDDFiniteDomain.domainsWithSharedVariable(pkt, VAR_NAME, valuesToTrack);
 
     return toImmutableMap(
-        configs.keySet(),
-        Function.identity(),
-        hostname ->
-            forSourcesInternal(
-                pkt,
-                sourceVar,
-                activeAndReferenced.get(hostname),
-                activeButNotReferenced.get(hostname)));
+        finiteDomains,
+        Entry::getKey,
+        entry ->
+            new BDDSourceManager(entry.getValue(), activeButNotReferenced.get(entry.getKey())));
   }
 
   /**
@@ -217,54 +173,45 @@ public final class BDDSourceManager {
     return forSources(pkt, activeInterfaces, referencedSources);
   }
 
-  /*
-   * If there are activeButUnreference sources, we need to allocate an extra value that is shared
-   * by all of them.
-   */
-  private static int valuesRequired(
-      Set<String> activeAndReferenced, Set<String> activeButUnreferenced) {
-    return activeButUnreferenced.isEmpty()
-        ? activeAndReferenced.size()
-        : activeAndReferenced.size() + 1;
-  }
-
   /**
    * A packet can enter a router from at most 1 interface, possibly none (if the packet originated
    * at the router). So for N srcInterfaces, we need N+1 distinct values (0 through N): one for each
    * interface, and one for "none of them". We use the last value (N) for "none of them".
    */
-  private static Map<String, BDD> computeMatchSourceBDDs(
-      BDDInteger sourceVar, Set<String> activeAndReferenced, Set<String> activeButUnreferenced) {
-    int bitsRequired =
-        LongMath.log2(
-            valuesRequired(activeAndReferenced, activeButUnreferenced), RoundingMode.CEILING);
-    checkArgument(
-        bitsRequired <= sourceVar.getBitvec().length,
-        "sourceVar not big enough to track active and referenced sources");
+  private static Set<String> valuesToTrack(
+      Set<String> activeAndReferenced, Set<String> activeButUnreferenced) {
 
-    ImmutableMap.Builder<String, BDD> matchSrcBDDs = ImmutableMap.builder();
-    CommonUtil.forEachWithIndex(
-        activeAndReferenced, (idx, src) -> matchSrcBDDs.put(src, sourceVar.value(idx)));
+    ImmutableSet.Builder<String> builder = ImmutableSet.builder();
+    builder.addAll(activeAndReferenced);
 
-    // Get the next unused identifier. This is used for all activeButUnreferenced sources
-    int unreferencedSourceValue = activeAndReferenced.size();
-    activeButUnreferenced.forEach(
-        src -> matchSrcBDDs.put(src, sourceVar.value(unreferencedSourceValue)));
+    if (activeButUnreferenced.size() > 0) {
+      builder.add(activeButUnreferenced.stream().sorted().findFirst().get());
+    }
 
-    return matchSrcBDDs.build();
+    return builder.build();
   }
 
   public BDD getOriginatingFromDeviceBDD() {
-    return _sourceBDDs.getOrDefault(SOURCE_ORIGINATING_FROM_DEVICE, _falseBDD);
+    return getSourceBDD(SOURCE_ORIGINATING_FROM_DEVICE);
+  }
+
+  private BDD getSourceBDD(String source) {
+    if (isTrivial()) {
+      return _trueBDD;
+    }
+    String key =
+        _activeButUnreferenced.contains(source) ? _activeButUnreferencedRepresentative : source;
+    BDD bdd = _finiteDomain.getValueBdds().getOrDefault(key, _falseBDD);
+    return bdd;
   }
 
   public BDD getSourceInterfaceBDD(String iface) {
-    return _sourceBDDs.getOrDefault(iface, _falseBDD);
+    return getSourceBDD(iface);
   }
 
   @VisibleForTesting
   Map<String, BDD> getSourceBDDs() {
-    return _sourceBDDs;
+    return _finiteDomain.getValueBdds();
   }
 
   /**
@@ -273,30 +220,20 @@ public final class BDDSourceManager {
    *     source.
    */
   public Optional<String> getSourceFromAssignment(BDD bdd) {
-    checkArgument(isAssignment(bdd));
-    checkArgument(bdd.imp(_isValidValue).isOne());
-
-    // not tracking any sources, so we can the arbitrarily choose the device
-    if (_sourceBDDs.isEmpty()) {
-      return Optional.empty();
-    }
-
-    String source =
-        _sourceBDDs.entrySet().stream()
-            .filter(entry -> bdd.imp(entry.getValue()).isOne())
-            .map(Entry::getKey)
-            .findFirst()
-            .get();
-    return source.equals(SOURCE_ORIGINATING_FROM_DEVICE) ? Optional.empty() : Optional.of(source);
+    return _finiteDomain
+        .getValueFromAssignment(bdd)
+        .flatMap(
+            src ->
+                src.equals(SOURCE_ORIGINATING_FROM_DEVICE) ? Optional.empty() : Optional.of(src));
   }
 
   /**
-   * @return true when all values are valid for this node. Then there is nothing to track. This can
-   *     happen when no {@link IpAccessList ACL} on the node uses {@link
-   *     org.batfish.datamodel.acl.MatchSrcInterface}.
+   * @return true when there is nothing to track. This can happen when no {@link IpAccessList ACL}
+   *     on the node uses {@link org.batfish.datamodel.acl.MatchSrcInterface} or {@link
+   *     org.batfish.datamodel.acl.OriginatingFromDevice}.
    */
   public boolean isTrivial() {
-    return _isValidValue.isOne();
+    return _finiteDomain.isEmpty();
   }
 
   /**
@@ -304,12 +241,12 @@ public final class BDDSourceManager {
    *     device.
    */
   public BDD isValidValue() {
-    return _isValidValue;
+    return _finiteDomain.getIsValidConstraint();
   }
 
   /** Existentially quantify the source variable. */
   public BDD existsSource(BDD bdd) {
-    return bdd.exist(_sourceVarBits);
+    return _finiteDomain.existsValue(bdd);
   }
 
   /**
@@ -317,11 +254,11 @@ public final class BDDSourceManager {
    * stronger one that implies it).
    */
   public boolean hasIsValidConstraint(BDD bdd) {
-    return bdd.and(_isValidValue).equals(bdd);
+    return bdd.and(_finiteDomain.getIsValidConstraint()).equals(bdd);
   }
 
   /** Test if a {@link BDD} includes a constraint on the source variable. */
   public boolean hasSourceConstraint(BDD bdd) {
-    return !bdd.exist(_sourceVarBits).equals(bdd);
+    return !bdd.equals(_finiteDomain.existsValue(bdd));
   }
 }

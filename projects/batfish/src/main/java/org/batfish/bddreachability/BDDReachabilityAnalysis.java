@@ -89,9 +89,7 @@ public class BDDReachabilityAnalysis {
   private Map<StateExpr, BDD> computeReverseReachableStates() {
     Map<StateExpr, BDD> reverseReachableStates = new HashMap<>();
     reverseReachableStates.put(Query.INSTANCE, _queryHeaderSpaceBdd);
-
     backwardFixpoint(reverseReachableStates);
-
     return ImmutableMap.copyOf(reverseReachableStates);
   }
 
