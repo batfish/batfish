@@ -576,13 +576,14 @@ public final class Flow implements Comparable<Flow>, Serializable {
     return _dscp;
   }
 
+  @Nonnull
   @JsonProperty(PROP_DST_IP)
   public Ip getDstIp() {
     return _dstIp;
   }
 
   @JsonProperty(PROP_DST_PORT)
-  public Integer getDstPort() {
+  public int getDstPort() {
     return _dstPort;
   }
 
@@ -606,21 +607,25 @@ public final class Flow implements Comparable<Flow>, Serializable {
     return _icmpType;
   }
 
+  @Nullable
   @JsonProperty(PROP_INGRESS_INTERFACE)
   public String getIngressInterface() {
     return _ingressInterface;
   }
 
+  @Nonnull
   @JsonProperty(PROP_INGRESS_NODE)
   public String getIngressNode() {
     return _ingressNode;
   }
 
+  @Nullable
   @JsonProperty(PROP_INGRESS_VRF)
   public String getIngressVrf() {
     return _ingressVrf;
   }
 
+  @Nonnull
   @JsonProperty(PROP_IP_PROTOCOL)
   public IpProtocol getIpProtocol() {
     return _ipProtocol;
@@ -631,21 +636,24 @@ public final class Flow implements Comparable<Flow>, Serializable {
     return _packetLength;
   }
 
+  @Nonnull
   @JsonProperty(PROP_SRC_IP)
   public Ip getSrcIp() {
     return _srcIp;
   }
 
   @JsonProperty(PROP_SRC_PORT)
-  public Integer getSrcPort() {
+  public int getSrcPort() {
     return _srcPort;
   }
 
+  @Nonnull
   @JsonProperty(PROP_STATE)
   public FlowState getState() {
     return _state;
   }
 
+  @Nonnull
   @JsonProperty(PROP_TAG)
   public String getTag() {
     return _tag;

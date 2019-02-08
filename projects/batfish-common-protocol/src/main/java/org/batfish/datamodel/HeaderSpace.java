@@ -3,7 +3,6 @@ package org.batfish.datamodel;
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsFirst;
 import static org.batfish.common.util.CommonUtil.nullIfEmpty;
-import static org.batfish.common.util.CommonUtil.rangesContain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -949,14 +948,14 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return false;
     }
     if (!_srcOrDstPorts.isEmpty()
-        && !(rangesContain(_srcOrDstPorts, flow.getSrcPort())
-            || rangesContain(_srcOrDstPorts, flow.getDstPort()))) {
+        && _srcOrDstPorts.stream()
+            .noneMatch(sr -> sr.includes(flow.getSrcPort()) || sr.includes(flow.getDstPort()))) {
       return false;
     }
     if (!_srcOrDstProtocols.isEmpty()) {
       IpProtocol flowProtocol = flow.getIpProtocol();
-      Integer flowDstPort = flow.getDstPort();
-      Integer flowSrcPort = flow.getSrcPort();
+      int flowDstPort = flow.getDstPort();
+      int flowSrcPort = flow.getSrcPort();
       if (_srcOrDstProtocols.stream()
           .noneMatch(
               protocol ->
