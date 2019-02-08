@@ -20,22 +20,18 @@ public class HeaderSpaceMatchesTest {
   private static final int _fragmentOffset = 5;
   private static final int _icmpCode = 5;
   private static final int _icmpType = 5;
-  private static final String _ingressInterface = "ingressIface";
-  private static final String _ingressNode = "ingressNode";
-  private static final String _ingressVrf = "ingressVrf";
   private static final IpProtocol _ipProtocol = IpProtocol.TCP;
   private static final int _packetLength = 5;
   private static final Ip _srcIp = Ip.parse("1.1.1.1");
   private static final int _srcPort = 22;
   private static final FlowState _state = FlowState.NEW;
-  private static final String _tag = "tag";
   private static final TcpFlags _tcpFlags = TcpFlags.builder().setAck(true).build();
 
-  /**
-   * SSH {@link Flow} from 1.1.1.1 to 2.2.2.2 with more or less arbitrary values for other fields
-   */
+  /** SSH {@link Flow} from 1.1.1.1 to 2.2.2.2 with arbitrary values for other fields */
   private static final Flow _flow =
       Flow.builder()
+          .setIngressNode("ingressNode") // required
+          .setTag("tag") // required
           .setDscp(_dscp)
           .setDstIp(_dstIp)
           .setDstPort(_dstPort)
@@ -43,15 +39,11 @@ public class HeaderSpaceMatchesTest {
           .setFragmentOffset(_fragmentOffset)
           .setIcmpCode(_icmpCode)
           .setIcmpType(_icmpType)
-          .setIngressInterface(_ingressInterface)
-          .setIngressNode(_ingressNode)
-          .setIngressVrf(_ingressVrf)
           .setIpProtocol(_ipProtocol)
           .setPacketLength(_packetLength)
           .setSrcIp(_srcIp)
           .setSrcPort(_srcPort)
           .setState(_state)
-          .setTag(_tag)
           .setTcpFlags(_tcpFlags)
           .build();
 
@@ -65,8 +57,8 @@ public class HeaderSpaceMatchesTest {
     testMatches(
         dscps -> HeaderSpace.builder().setDscps(dscps).build(),
         dscps -> HeaderSpace.builder().setNotDscps(dscps).build(),
-        ImmutableSet.of(_dscp),
-        ImmutableSet.of(_dscp + 1));
+        ImmutableSet.of(_dscp, _dscp + 1),
+        ImmutableSet.of(_dscp + 1, _dscp + 2));
   }
 
   @Test
@@ -80,11 +72,12 @@ public class HeaderSpaceMatchesTest {
 
   @Test
   public void testDstPortsMatchers() {
+    SubRange nonMatching = new SubRange(0, _dstPort - 1);
     testMatches(
         dstPorts -> HeaderSpace.builder().setDstPorts(dstPorts).build(),
         dstPorts -> HeaderSpace.builder().setNotDstPorts(dstPorts).build(),
-        ImmutableSet.of(new SubRange(0, _dstPort)),
-        ImmutableSet.of(new SubRange(0, _dstPort - 1)));
+        ImmutableSet.of(new SubRange(0, _dstPort), nonMatching),
+        ImmutableSet.of(nonMatching, nonMatching));
   }
 
   @Test
@@ -93,8 +86,8 @@ public class HeaderSpaceMatchesTest {
     testMatches(
         dstProtocols -> HeaderSpace.builder().setDstProtocols(dstProtocols).build(),
         dstProtocols -> HeaderSpace.builder().setNotDstProtocols(dstProtocols).build(),
-        ImmutableSet.of(Protocol.SSH),
-        ImmutableSet.of(Protocol.HTTP));
+        ImmutableSet.of(Protocol.SSH, Protocol.HTTP),
+        ImmutableSet.of(Protocol.HTTP, Protocol.DNS));
   }
 
   @Test
@@ -102,54 +95,58 @@ public class HeaderSpaceMatchesTest {
     testMatches(
         ecns -> HeaderSpace.builder().setEcns(ecns).build(),
         ecns -> HeaderSpace.builder().setNotEcns(ecns).build(),
-        ImmutableSet.of(_ecn),
-        ImmutableSet.of(_ecn + 1));
+        ImmutableSet.of(_ecn, _ecn + 1),
+        ImmutableSet.of(_ecn + 1, _ecn + 2));
   }
 
   @Test
   public void testFragmentOffsetsMatchers() {
+    SubRange nonMatching = new SubRange(0, _fragmentOffset - 1);
     testMatches(
         fragOffsets -> HeaderSpace.builder().setFragmentOffsets(fragOffsets).build(),
         fragOffsets -> HeaderSpace.builder().setNotFragmentOffsets(fragOffsets).build(),
-        ImmutableSet.of(new SubRange(0, _fragmentOffset)),
-        ImmutableSet.of(new SubRange(0, _fragmentOffset - 1)));
+        ImmutableSet.of(new SubRange(0, _fragmentOffset), nonMatching),
+        ImmutableSet.of(nonMatching, nonMatching));
   }
 
   @Test
   public void testIcmpCodesMatchers() {
+    SubRange nonMatching = new SubRange(0, _icmpCode - 1);
     testMatches(
         icmpCodes -> HeaderSpace.builder().setIcmpCodes(icmpCodes).build(),
         icmpCodes -> HeaderSpace.builder().setNotIcmpCodes(icmpCodes).build(),
-        ImmutableSet.of(new SubRange(0, _icmpCode)),
-        ImmutableSet.of(new SubRange(0, _icmpCode - 1)));
+        ImmutableSet.of(new SubRange(0, _icmpCode), nonMatching),
+        ImmutableSet.of(nonMatching, nonMatching));
   }
 
   @Test
   public void testIcmpTypesMatchers() {
+    SubRange nonMatching = new SubRange(0, _icmpType - 1);
     testMatches(
         icmpTypes -> HeaderSpace.builder().setIcmpTypes(icmpTypes).build(),
         icmpTypes -> HeaderSpace.builder().setNotIcmpTypes(icmpTypes).build(),
-        ImmutableSet.of(new SubRange(0, _icmpType)),
-        ImmutableSet.of(new SubRange(0, _icmpType - 1)));
+        ImmutableSet.of(new SubRange(0, _icmpType), nonMatching),
+        ImmutableSet.of(nonMatching, nonMatching));
   }
 
   @Test
   public void testIpProtocolsMatchers() {
-    // _flow is TCP, so notMatching can be UDP
+    // _flow is TCP, so notMatching can be UDP and IP
     testMatches(
         protocols -> HeaderSpace.builder().setIpProtocols(protocols).build(),
         protocols -> HeaderSpace.builder().setNotIpProtocols(protocols).build(),
-        ImmutableSet.of(_ipProtocol),
-        ImmutableSet.of(IpProtocol.UDP));
+        ImmutableSet.of(_ipProtocol, IpProtocol.UDP),
+        ImmutableSet.of(IpProtocol.UDP, IpProtocol.UDP));
   }
 
   @Test
   public void testPacketLengthsMatchers() {
+    SubRange nonMatching = new SubRange(0, _packetLength - 1);
     testMatches(
         packetLengths -> HeaderSpace.builder().setPacketLengths(packetLengths).build(),
         packetLengths -> HeaderSpace.builder().setNotPacketLengths(packetLengths).build(),
-        ImmutableSet.of(new SubRange(0, _packetLength)),
-        ImmutableSet.of(new SubRange(0, _packetLength - 1)));
+        ImmutableSet.of(new SubRange(0, _packetLength), nonMatching),
+        ImmutableSet.of(nonMatching, nonMatching));
   }
 
   @Test
@@ -163,11 +160,12 @@ public class HeaderSpaceMatchesTest {
 
   @Test
   public void testSrcPortsMatchers() {
+    SubRange nonMatching = new SubRange(0, _srcPort - 1);
     testMatches(
         srcPorts -> HeaderSpace.builder().setSrcPorts(srcPorts).build(),
         srcPorts -> HeaderSpace.builder().setNotSrcPorts(srcPorts).build(),
-        ImmutableSet.of(new SubRange(0, _srcPort)),
-        ImmutableSet.of(new SubRange(0, _srcPort - 1)));
+        ImmutableSet.of(new SubRange(0, _srcPort), nonMatching),
+        ImmutableSet.of(nonMatching, nonMatching));
   }
 
   @Test
@@ -176,8 +174,8 @@ public class HeaderSpaceMatchesTest {
     testMatches(
         srcProtocols -> HeaderSpace.builder().setSrcProtocols(srcProtocols).build(),
         srcProtocols -> HeaderSpace.builder().setNotSrcProtocols(srcProtocols).build(),
-        ImmutableSet.of(Protocol.SSH),
-        ImmutableSet.of(Protocol.HTTP));
+        ImmutableSet.of(Protocol.SSH, Protocol.HTTP),
+        ImmutableSet.of(Protocol.HTTP, Protocol.HTTP));
   }
 
   @Test
@@ -199,16 +197,17 @@ public class HeaderSpaceMatchesTest {
     // Need a new flow for this because _flow has the same port for src and dst (22).
     int newDstPort = _dstPort + 1;
     Flow newDstPortFlow = _flow.toBuilder().setDstPort(newDstPort).build();
+    SubRange nonMatching = new SubRange(0, _srcPort - 1);
     HeaderSpace withSrcPortAsSrcOrDst =
-        HeaderSpace.builder().setSrcOrDstPorts(ImmutableSet.of(new SubRange(0, _srcPort))).build();
+        HeaderSpace.builder()
+            .setSrcOrDstPorts(ImmutableSet.of(new SubRange(0, _srcPort), nonMatching))
+            .build();
     HeaderSpace withDstPortAsSrcOrDst =
         HeaderSpace.builder()
-            .setSrcOrDstPorts(ImmutableSet.of(new SubRange(newDstPort, newDstPort)))
+            .setSrcOrDstPorts(ImmutableSet.of(new SubRange(newDstPort, newDstPort), nonMatching))
             .build();
     HeaderSpace withOtherPortAsSrcOrDst =
-        HeaderSpace.builder()
-            .setSrcOrDstPorts(ImmutableSet.of(new SubRange(0, _srcPort - 1)))
-            .build();
+        HeaderSpace.builder().setSrcOrDstPorts(ImmutableSet.of(nonMatching, nonMatching)).build();
     assertThat(withSrcPortAsSrcOrDst.matches(newDstPortFlow, _namedIpSpaces), equalTo(true));
     assertThat(withDstPortAsSrcOrDst.matches(newDstPortFlow, _namedIpSpaces), equalTo(true));
     assertThat(withOtherPortAsSrcOrDst.matches(newDstPortFlow, _namedIpSpaces), equalTo(false));
@@ -220,14 +219,52 @@ public class HeaderSpaceMatchesTest {
     // Set dstPort to port number for HTTP; this should work since HTTP and SSH are both TCP.
     Flow newDstProtocolFlow = _flow.toBuilder().setDstPort(Protocol.HTTP.getPort()).build();
     HeaderSpace withSshAsSrcOrDst =
-        HeaderSpace.builder().setSrcOrDstProtocols(ImmutableSet.of(Protocol.SSH)).build();
+        HeaderSpace.builder()
+            .setSrcOrDstProtocols(ImmutableSet.of(Protocol.SSH, Protocol.DNS))
+            .build();
     HeaderSpace withHttpAsSrcOrDst =
-        HeaderSpace.builder().setSrcOrDstProtocols(ImmutableSet.of(Protocol.HTTP)).build();
+        HeaderSpace.builder()
+            .setSrcOrDstProtocols(ImmutableSet.of(Protocol.HTTP, Protocol.DNS))
+            .build();
     HeaderSpace withDnsAsSrcOrDst =
-        HeaderSpace.builder().setSrcOrDstProtocols(ImmutableSet.of(Protocol.DNS)).build();
+        HeaderSpace.builder()
+            .setSrcOrDstProtocols(ImmutableSet.of(Protocol.DNS, Protocol.DNS))
+            .build();
     assertThat(withSshAsSrcOrDst.matches(newDstProtocolFlow, _namedIpSpaces), equalTo(true));
     assertThat(withHttpAsSrcOrDst.matches(newDstProtocolFlow, _namedIpSpaces), equalTo(true));
     assertThat(withDnsAsSrcOrDst.matches(newDstProtocolFlow, _namedIpSpaces), equalTo(false));
+  }
+
+  @Test
+  public void testStatesMatchers() {
+    // Actual state is FlowState.NEW
+    HeaderSpace withRightState =
+        HeaderSpace.builder().setStates(ImmutableSet.of(_state, FlowState.ESTABLISHED)).build();
+    HeaderSpace withWrongState =
+        HeaderSpace.builder()
+            .setStates(ImmutableSet.of(FlowState.ESTABLISHED, FlowState.ESTABLISHED))
+            .build();
+    assertThat(withRightState.matches(_flow, _namedIpSpaces), equalTo(true));
+    assertThat(withWrongState.matches(_flow, _namedIpSpaces), equalTo(false));
+  }
+
+  @Test
+  public void testTcpFlagsMatchers() {
+    HeaderSpace withRightFlag =
+        HeaderSpace.builder()
+            .setTcpFlags(
+                ImmutableSet.of(
+                    TcpFlagsMatchConditions.builder()
+                        .setTcpFlags(_tcpFlags)
+                        .setUseAck(true)
+                        .build()))
+            .build();
+    HeaderSpace withWrongFlag =
+        HeaderSpace.builder()
+            .setTcpFlags(ImmutableSet.of(TcpFlagsMatchConditions.builder().setUseAck(true).build()))
+            .build();
+    assertThat(withRightFlag.matches(_flow, _namedIpSpaces), equalTo(true));
+    assertThat(withWrongFlag.matches(_flow, _namedIpSpaces), equalTo(false));
   }
 
   /**

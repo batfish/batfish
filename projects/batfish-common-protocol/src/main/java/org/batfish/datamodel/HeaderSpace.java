@@ -872,7 +872,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     if (!_dscps.isEmpty() && !_dscps.contains(flow.getDscp())) {
       return false;
     }
-    if (!_notDscps.isEmpty() && _notDscps.contains(flow.getDscp())) {
+    if (_notDscps.contains(flow.getDscp())) {
       return false;
     }
     if (_dstIps != null && !_dstIps.containsIp(flow.getDstIp(), namedIpSpaces)) {
@@ -881,10 +881,11 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     if (_notDstIps != null && _notDstIps.containsIp(flow.getDstIp(), namedIpSpaces)) {
       return false;
     }
-    if (!_dstPorts.isEmpty() && !rangesContain(_dstPorts, flow.getDstPort())) {
+    if (!_dstPorts.isEmpty()
+        && _dstPorts.stream().noneMatch(sr -> sr.includes(flow.getDstPort()))) {
       return false;
     }
-    if (!_notDstPorts.isEmpty() && rangesContain(_notDstPorts, flow.getDstPort())) {
+    if (_notDstPorts.stream().anyMatch(sr -> sr.includes(flow.getDstPort()))) {
       return false;
     }
     if (!_dstProtocols.isEmpty()
@@ -905,38 +906,41 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     if (!_ecns.isEmpty() && !_ecns.contains(flow.getEcn())) {
       return false;
     }
-    if (!_notEcns.isEmpty() && _notEcns.contains(flow.getEcn())) {
+    if (_notEcns.contains(flow.getEcn())) {
       return false;
     }
-    if (!_fragmentOffsets.isEmpty() && !rangesContain(_fragmentOffsets, flow.getFragmentOffset())) {
+    if (!_fragmentOffsets.isEmpty()
+        && _fragmentOffsets.stream().noneMatch(sr -> sr.includes(flow.getFragmentOffset()))) {
       return false;
     }
-    if (!_notFragmentOffsets.isEmpty()
-        && rangesContain(_notFragmentOffsets, flow.getFragmentOffset())) {
+    if (_notFragmentOffsets.stream().anyMatch(sr -> sr.includes(flow.getFragmentOffset()))) {
       return false;
     }
-    if (!_icmpCodes.isEmpty() && !rangesContain(_icmpCodes, flow.getIcmpCode())) {
+    if (!_icmpCodes.isEmpty()
+        && _icmpCodes.stream().noneMatch(sr -> sr.includes(flow.getIcmpCode()))) {
       return false;
     }
-    if (!_notIcmpCodes.isEmpty() && rangesContain(_notIcmpCodes, flow.getFragmentOffset())) {
+    if (_notIcmpCodes.stream().anyMatch(sr -> sr.includes(flow.getFragmentOffset()))) {
       return false;
     }
-    if (!_icmpTypes.isEmpty() && !rangesContain(_icmpTypes, flow.getIcmpType())) {
+    if (!_icmpTypes.isEmpty()
+        && _icmpTypes.stream().noneMatch(sr -> sr.includes(flow.getIcmpType()))) {
       return false;
     }
-    if (!_notIcmpTypes.isEmpty() && rangesContain(_notIcmpTypes, flow.getFragmentOffset())) {
+    if (_notIcmpTypes.stream().anyMatch(sr -> sr.includes(flow.getFragmentOffset()))) {
       return false;
     }
     if (!_ipProtocols.isEmpty() && !_ipProtocols.contains(flow.getIpProtocol())) {
       return false;
     }
-    if (!_notIpProtocols.isEmpty() && _notIpProtocols.contains(flow.getIpProtocol())) {
+    if (_notIpProtocols.contains(flow.getIpProtocol())) {
       return false;
     }
-    if (!_packetLengths.isEmpty() && !rangesContain(_packetLengths, flow.getPacketLength())) {
+    if (!_packetLengths.isEmpty()
+        && _packetLengths.stream().noneMatch(sr -> sr.includes(flow.getPacketLength()))) {
       return false;
     }
-    if (!_notPacketLengths.isEmpty() && rangesContain(_notPacketLengths, flow.getPacketLength())) {
+    if (_notPacketLengths.stream().anyMatch(sr -> sr.includes(flow.getPacketLength()))) {
       return false;
     }
     if (_srcOrDstIps != null
@@ -967,10 +971,11 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     if (_notSrcIps != null && _notSrcIps.containsIp(flow.getSrcIp(), namedIpSpaces)) {
       return false;
     }
-    if (!_srcPorts.isEmpty() && !rangesContain(_srcPorts, flow.getSrcPort())) {
+    if (!_srcPorts.isEmpty()
+        && _srcPorts.stream().noneMatch(sr -> sr.includes(flow.getSrcPort()))) {
       return false;
     }
-    if (!_notSrcPorts.isEmpty() && rangesContain(_notSrcPorts, flow.getSrcPort())) {
+    if (_notSrcPorts.stream().anyMatch(sr -> sr.includes(flow.getSrcPort()))) {
       return false;
     }
     if (!_srcProtocols.isEmpty()
