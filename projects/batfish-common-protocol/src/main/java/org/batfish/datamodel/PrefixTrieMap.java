@@ -64,6 +64,7 @@ public final class PrefixTrieMap<DataT> implements Serializable {
   private void setLeft(@Nullable PrefixTrieMap<DataT> left) {
     _left = left;
   }
+
   /** Return right subtree */
   @Nullable
   public PrefixTrieMap<DataT> getRight() {
