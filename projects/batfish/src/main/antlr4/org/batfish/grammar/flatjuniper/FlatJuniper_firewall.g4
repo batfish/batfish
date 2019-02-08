@@ -393,7 +393,7 @@ fftt_reject
 
 fftt_routing_instance
 :
-   ROUTING_INSTANCE null_filler
+   ROUTING_INSTANCE name = variable
 ;
 
 s_firewall
