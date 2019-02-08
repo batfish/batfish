@@ -74176,7 +74176,7 @@
         "configs/juniper_firewall" : {
           "routing-instance" : {
             "OTHER_INSTANCE" : {
-              "firewall filter routing-instance" : [
+              "firewall filter then routing-instance" : [
                 33
               ]
             }

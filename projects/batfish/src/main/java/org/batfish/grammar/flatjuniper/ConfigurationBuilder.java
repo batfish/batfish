@@ -43,8 +43,8 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_NEIGH
 import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST;
-import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_THEN_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FORWARDING_OPTIONS_DHCP_RELAY_GROUP_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FORWARDING_TABLE_EXPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.GENERATED_ROUTE_POLICY;
@@ -3943,7 +3943,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = unquote(ctx.name.getText());
     _currentFwTerm.getThens().add(new FwThenRoutingInstance(name));
     _configuration.referenceStructure(
-        ROUTING_INSTNACE, name, FIREWALL_FILTER_ROUTING_INSTANCE, ctx.getStart().getLine());
+        ROUTING_INSTNACE, name, FIREWALL_FILTER_THEN_ROUTING_INSTANCE, ctx.getStart().getLine());
   }
 
   @Override
