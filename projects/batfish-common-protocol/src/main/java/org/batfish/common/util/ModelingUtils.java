@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.Warnings;
+import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -53,6 +53,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 public final class ModelingUtils {
 
   static final String EXPORT_POLICY_ON_INTERNET = "exportPolicyOnInternet";
+  static final String EXPORT_POLICY_ON_ISP = "exportPolicyOnIsp";
   private static final Ip FIRST_EVEN_INTERNET_IP = Ip.parse("240.1.1.2");
   static final long INTERNET_AS = 65537L;
   static final String INTERNET_HOST_NAME = "Internet";
@@ -110,13 +111,14 @@ public final class ModelingUtils {
    * @return {@link Map} of {@link Configuration}s for the ISPs and Internet
    */
   @VisibleForTesting
-  static Map<String, Configuration> getInternetAndIspNodes(
+  @Nonnull
+  public static Map<String, Configuration> getInternetAndIspNodes(
       @Nonnull Map<String, Configuration> configurations,
       @Nonnull List<NodeInterfacePair> interfacesConnectedToIsps,
       @Nonnull List<Long> asNumOfIsps,
       @Nonnull List<Ip> ipsOfIsps,
-      @Nonnull Warnings warnings) {
-
+      @Nonnull BatfishLogger logger) {
+    NetworkFactory nf = new NetworkFactory();
     Map<String, Set<String>> interfaceSetByNodes =
         interfacesConnectedToIsps.stream()
             .collect(
@@ -127,7 +129,7 @@ public final class ModelingUtils {
     Map<Long, IspInfo> asnToIspInfos = new HashMap<>();
 
     for (Entry<String, Set<String>> nodeAndInterfaces : interfaceSetByNodes.entrySet()) {
-      Configuration configuration = configurations.get(nodeAndInterfaces.getKey());
+      Configuration configuration = configurations.get(nodeAndInterfaces.getKey().toLowerCase());
       if (configuration == null) {
         continue;
       }
@@ -139,12 +141,16 @@ public final class ModelingUtils {
         asnToIspInfos.entrySet().stream()
             .map(
                 asnIspInfo ->
-                    getIspConfigurationNode(asnIspInfo.getKey(), asnIspInfo.getValue(), warnings))
+                    getIspConfigurationNode(asnIspInfo.getKey(), asnIspInfo.getValue(), nf, logger))
             .filter(Objects::nonNull)
             .collect(ImmutableMap.toImmutableMap(Configuration::getHostname, Function.identity()));
 
-    Configuration internet = createInternetNode();
-    connectIspsToInternet(internet, ispConfigurations);
+    if (ispConfigurations.isEmpty()) {
+      return ispConfigurations;
+    }
+
+    Configuration internet = createInternetNode(nf);
+    connectIspsToInternet(internet, ispConfigurations, nf);
 
     return ImmutableMap.<String, Configuration>builder()
         .putAll(ispConfigurations)
@@ -153,8 +159,7 @@ public final class ModelingUtils {
   }
 
   @VisibleForTesting
-  static Configuration createInternetNode() {
-    NetworkFactory nf = new NetworkFactory();
+  static Configuration createInternetNode(NetworkFactory nf) {
 
     Configuration.Builder cb = nf.configurationBuilder();
     Configuration internetConfiguration =
@@ -186,7 +191,8 @@ public final class ModelingUtils {
     bgpProcess.setMultipathEbgp(true);
 
     internetConfiguration.setRoutingPolicies(
-        ImmutableSortedMap.of(EXPORT_POLICY_ON_INTERNET, getDefaultRoutingPolicy()));
+        ImmutableSortedMap.of(
+            EXPORT_POLICY_ON_INTERNET, getDefaultRoutingPolicy(internetConfiguration, nf)));
     return internetConfiguration;
   }
 
@@ -196,8 +202,7 @@ public final class ModelingUtils {
    * each other using the created Interface pairs.
    */
   private static void connectIspsToInternet(
-      Configuration internet, Map<String, Configuration> ispConfigurations) {
-    NetworkFactory nf = new NetworkFactory();
+      Configuration internet, Map<String, Configuration> ispConfigurations, NetworkFactory nf) {
     Ip internetInterfaceIp = FIRST_EVEN_INTERNET_IP;
     for (Configuration ispConfiguration : ispConfigurations.values()) {
       long ispAs = getAsnOfIspNode(ispConfiguration);
@@ -218,6 +223,7 @@ public final class ModelingUtils {
           .setRemoteAs(INTERNET_AS)
           .setLocalIp(ispInterfaceIp)
           .setLocalAs(ispAs)
+          .setExportPolicy(EXPORT_POLICY_ON_ISP)
           .setBgpProcess(ispConfiguration.getDefaultVrf().getBgpProcess())
           .build();
 
@@ -294,14 +300,14 @@ public final class ModelingUtils {
    */
   @VisibleForTesting
   @Nullable
-  static Configuration getIspConfigurationNode(Long asn, IspInfo ispInfo, Warnings warnings) {
+  static Configuration getIspConfigurationNode(
+      Long asn, IspInfo ispInfo, NetworkFactory nf, BatfishLogger logger) {
     if (ispInfo.getBgpActivePeerConfigs().isEmpty()
         || ispInfo.getInterfaceAddresses().isEmpty()
         || ispInfo.getInterfaceAddresses().size() != ispInfo.getBgpActivePeerConfigs().size()) {
-      warnings.redFlag(String.format("ISP information for ASN '%s' is not correct", asn));
+      logger.warnf("ISP information for ASN '%s' is not correct", asn);
       return null;
     }
-    NetworkFactory nf = new NetworkFactory();
 
     Configuration.Builder cb = nf.configurationBuilder();
     Configuration ispConfiguration =
@@ -309,6 +315,8 @@ public final class ModelingUtils {
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
     ispConfiguration.setDeviceType(DeviceType.ISP);
+    ispConfiguration.setRoutingPolicies(
+        ImmutableSortedMap.of(EXPORT_POLICY_ON_ISP, getDefaultRoutingPolicyIsp(ispConfiguration)));
     Vrf defaultVrf = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(ispConfiguration).build();
 
     ispInfo
@@ -342,6 +350,7 @@ public final class ModelingUtils {
                     .setLocalAs(bgpActivePeerConfig.getLocalAs())
                     .setPeerAddress(bgpActivePeerConfig.getPeerAddress())
                     .setRemoteAs(bgpActivePeerConfig.getRemoteAs())
+                    .setExportPolicy(bgpActivePeerConfig.getExportPolicy())
                     .setBgpProcess(bgpProcess)
                     .build());
 
@@ -378,12 +387,12 @@ public final class ModelingUtils {
 
   /** Creates a routing policy to advertise all static routes configured */
   @VisibleForTesting
-  static RoutingPolicy getDefaultRoutingPolicy() {
-    NetworkFactory nf = new NetworkFactory();
+  static RoutingPolicy getDefaultRoutingPolicy(Configuration owner, NetworkFactory nf) {
     PrefixSpace prefixSpace = new PrefixSpace();
     prefixSpace.addPrefix(Prefix.ZERO);
     return nf.routingPolicyBuilder()
         .setName(EXPORT_POLICY_ON_INTERNET)
+        .setOwner(owner)
         .setStatements(
             Collections.singletonList(
                 new If(
@@ -396,6 +405,23 @@ public final class ModelingUtils {
                     ImmutableList.of(
                         new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)),
                         Statements.ExitAccept.toStaticStatement()))))
+        .build();
+  }
+
+  /** Creates a routing policy to advertise all static routes configured */
+  @VisibleForTesting
+  static RoutingPolicy getDefaultRoutingPolicyIsp(Configuration owner) {
+    NetworkFactory nf = new NetworkFactory();
+    PrefixSpace prefixSpace = new PrefixSpace();
+    prefixSpace.addPrefix(Prefix.ZERO);
+    return nf.routingPolicyBuilder()
+        .setName(EXPORT_POLICY_ON_INTERNET)
+        .setOwner(owner)
+        .setStatements(
+            Collections.singletonList(
+                new If(
+                    new Conjunction(ImmutableList.of(new MatchProtocol(RoutingProtocol.BGP))),
+                    ImmutableList.of(Statements.ReturnTrue.toStaticStatement()))))
         .build();
   }
 
@@ -426,6 +452,7 @@ public final class ModelingUtils {
         .setRemoteAs(bgpActivePeerConfig.getLocalAs())
         .setLocalIp(bgpActivePeerConfig.getPeerAddress())
         .setLocalAs(bgpActivePeerConfig.getRemoteAs())
+        .setExportPolicy(EXPORT_POLICY_ON_ISP)
         .build();
   }
 }

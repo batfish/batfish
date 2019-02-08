@@ -21,6 +21,7 @@ import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
@@ -78,6 +79,15 @@ public interface StorageProvider {
    */
   @Nullable
   SortedSet<NodeInterfacePair> loadInterfaceBlacklist(NetworkId network, SnapshotId snapshot);
+
+  /**
+   * Returns the configuration required to initialize ISPs for the specified snapshot.
+   *
+   * @param network The name of the network
+   * @param snapshot The name of the snapshot
+   */
+  @Nullable
+  IspConfiguration loadIspConfiguration(NetworkId network, SnapshotId snapshot);
 
   /**
    * Returns the node blacklist for the specified snapshot.

@@ -61,6 +61,7 @@ import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
@@ -226,6 +227,30 @@ public final class FileBasedStorage implements StorageProvider {
     } catch (IOException e) {
       _logger.warnf(
           "Unexpected exception caught while loading interface blacklist for snapshot %s: %s",
+          snapshot, Throwables.getStackTraceAsString(e));
+      return null;
+    }
+  }
+
+  @Override
+  public @Nullable IspConfiguration loadIspConfiguration(NetworkId network, SnapshotId snapshot) {
+    Path path =
+        _d.getSnapshotDir(network, snapshot)
+            .resolve(
+                Paths.get(
+                    BfConsts.RELPATH_INPUT,
+                    BfConsts.RELPATH_BATFISH_CONFIGS_DIR,
+                    BfConsts.RELPATH_ISP_CONFIG_FILE));
+    if (!Files.exists(path)) {
+      return null;
+    }
+    String fileText = CommonUtil.readFile(path);
+    try {
+      return BatfishObjectMapper.mapper()
+          .readValue(fileText, new TypeReference<IspConfiguration>() {});
+    } catch (IOException e) {
+      _logger.warnf(
+          "Unexpected exception caught while loading ISP configuration for snapshot %s: %s",
           snapshot, Throwables.getStackTraceAsString(e));
       return null;
     }
