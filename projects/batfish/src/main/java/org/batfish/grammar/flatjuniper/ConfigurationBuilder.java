@@ -26,6 +26,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE_S
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.RIB_GROUP;
+import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_INSTNACE;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_PROFILE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ADDRESS_BOOK_ATTACH_ZONE;
@@ -43,6 +44,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELA
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_THEN_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FORWARDING_OPTIONS_DHCP_RELAY_GROUP_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FORWARDING_TABLE_EXPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.GENERATED_ROUTE_POLICY;
@@ -592,6 +594,7 @@ import org.batfish.representation.juniper.FwThenDiscard;
 import org.batfish.representation.juniper.FwThenNextIp;
 import org.batfish.representation.juniper.FwThenNextTerm;
 import org.batfish.representation.juniper.FwThenNop;
+import org.batfish.representation.juniper.FwThenRoutingInstance;
 import org.batfish.representation.juniper.GeneratedRoute;
 import org.batfish.representation.juniper.HostProtocol;
 import org.batfish.representation.juniper.HostSystemService;
@@ -2740,6 +2743,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     name = ctx.name.getText();
     _currentRoutingInstance =
         _currentLogicalSystem.getRoutingInstances().computeIfAbsent(name, RoutingInstance::new);
+    defineStructure(ROUTING_INSTNACE, name, ctx);
   }
 
   @Override
@@ -3936,8 +3940,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitFftt_routing_instance(Fftt_routing_instanceContext ctx) {
-    todo(ctx);
-    _currentFwTerm.getThens().add(FwThenDiscard.INSTANCE);
+    String name = unquote(ctx.name.getText());
+    _currentFwTerm.getThens().add(new FwThenRoutingInstance(name));
+    _configuration.referenceStructure(
+        ROUTING_INSTNACE, name, FIREWALL_FILTER_THEN_ROUTING_INSTANCE, ctx.getStart().getLine());
   }
 
   @Override
