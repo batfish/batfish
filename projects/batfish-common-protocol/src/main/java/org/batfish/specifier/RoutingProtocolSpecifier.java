@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -93,9 +91,7 @@ public class RoutingProtocolSpecifier {
   private static final RoutingProtocol STATIC_PROTOCOL = RoutingProtocol.STATIC;
 
   private static final Set<RoutingProtocol> ALL_PROTOCOLS =
-      ImmutableSet.<RoutingProtocol>builder()
-          .addAll(Stream.of(RoutingProtocol.values()).collect(Collectors.toSet()))
-          .build();
+      ImmutableSet.copyOf(RoutingProtocol.values());
 
   private static final Set<RoutingProtocol> OSPF_INT_PROTOCOLS;
 

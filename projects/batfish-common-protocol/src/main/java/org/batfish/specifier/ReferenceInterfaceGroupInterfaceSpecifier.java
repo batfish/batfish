@@ -1,10 +1,10 @@
 package org.batfish.specifier;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.referencelibrary.InterfaceGroup;
@@ -65,6 +65,6 @@ public final class ReferenceInterfaceGroupInterfaceSpecifier implements Interfac
                 interfaceGroup
                     .getInterfaces()
                     .contains(new NodeInterfacePair(v.getOwner().getHostname(), v.getName())))
-        .collect(Collectors.toSet());
+        .collect(ImmutableSet.toImmutableSet());
   }
 }

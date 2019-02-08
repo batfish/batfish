@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -82,7 +83,7 @@ public abstract class PropertySpecifier {
     if (outputPropertyValue instanceof Map<?, ?>) {
       outputPropertyValue =
           ((Map<?, ?>) outputPropertyValue)
-              .keySet().stream().map(Object::toString).collect(Collectors.toSet());
+              .keySet().stream().map(Object::toString).collect(ImmutableSet.toImmutableSet());
     }
 
     // check if a conversion to String or List/Set<String> is needed for complex objects (e.g., VRF)
@@ -110,7 +111,7 @@ public abstract class PropertySpecifier {
         outputPropertyValue =
             targetSchema.getType() == Type.LIST
                 ? stream.collect(Collectors.toList())
-                : stream.collect(Collectors.toSet());
+                : stream.collect(ImmutableSet.toImmutableSet());
       }
     }
 

@@ -6,7 +6,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.stream.Collectors;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
@@ -34,7 +33,7 @@ public class ReferenceAddressGroupIpSpaceSpecifierTest {
         AclIpSpace.union(
             specifier.resolve(ImmutableSet.of(), ctxt).getEntries().stream()
                 .map(e -> e.getIpSpace())
-                .collect(Collectors.toSet()));
+                .collect(ImmutableSet.toImmutableSet()));
 
     assertThat(
         resolvedSpace,

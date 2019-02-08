@@ -278,13 +278,13 @@ public class LocationSpecifierTest {
     Set<Location> interfaceLocations =
         interfaces.stream()
             .map(iface -> new InterfaceLocation(iface.getOwner().getHostname(), iface.getName()))
-            .collect(Collectors.toSet());
+            .collect(ImmutableSet.toImmutableSet());
 
     Set<Location> interfaceLinkLocations =
         interfaces.stream()
             .map(
                 iface -> new InterfaceLinkLocation(iface.getOwner().getHostname(), iface.getName()))
-            .collect(Collectors.toSet());
+            .collect(ImmutableSet.toImmutableSet());
 
     assertThat(
         new VrfNameRegexInterfaceLocationSpecifier(pattern).resolve(_context),

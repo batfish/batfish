@@ -3,9 +3,9 @@ package org.batfish.specifier;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.auto.service.AutoService;
+import com.google.common.collect.ImmutableSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
@@ -64,7 +64,7 @@ public final class InterfaceWithConnectedIpsSpecifier implements InterfaceSpecif
         .filter(c -> nodes.contains(c.getHostname()))
         .flatMap(c -> c.getAllInterfaces().values().stream().filter(Interface::getActive))
         .filter(i -> i.getAllAddresses().stream().anyMatch(this::interfaceAddressMatchesIpSpace))
-        .collect(Collectors.toSet());
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /** Factory for {@link InterfaceWithConnectedIpsSpecifier}. */
