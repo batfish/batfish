@@ -13,7 +13,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.bdd.IpAccessListToBDD;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
@@ -36,13 +37,13 @@ public class AclLineMatchExprNormalizerTest {
   private static final AclLineMatchExpr E =
       matchDst(new IpWildcard(Ip.create(0x00000000L), Ip.create(0xFFF0FFFFL)));
 
-  private IpAccessListToBDD _toBDD;
+  private IpAccessListToBdd _toBDD;
 
   @Before
   public void setup() {
     BDDPacket pkt = new BDDPacket();
     BDDSourceManager mgr = BDDSourceManager.forInterfaces(pkt, ImmutableSet.of(IFACE));
-    _toBDD = new IpAccessListToBDD(pkt, mgr, ImmutableMap.of(), ImmutableMap.of());
+    _toBDD = new IpAccessListToBddImpl(pkt, mgr, ImmutableMap.of(), ImmutableMap.of());
   }
 
   private AclLineMatchExpr normalize(AclLineMatchExpr expr) {

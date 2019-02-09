@@ -1,5 +1,8 @@
 package org.batfish.job;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
+import com.google.common.base.Throwables;
 import java.util.Map;
 import java.util.Map.Entry;
 import org.batfish.common.BatfishException;
@@ -82,6 +85,12 @@ public class ConvertConfigurationResult
       answerElement
           .getErrors()
           .put(_name, ((BatfishException) _failureCause).getBatfishStackTrace());
+      answerElement
+          .getErrorMessages()
+          .put(
+              _name,
+              Throwables.getStackTraceAsString(
+                  firstNonNull(_failureCause.getCause(), _failureCause)));
     }
   }
 

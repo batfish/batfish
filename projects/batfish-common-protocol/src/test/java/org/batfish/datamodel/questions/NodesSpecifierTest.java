@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.questions.NodesSpecifier.Type;
 import org.batfish.role.NodeRole;
@@ -102,7 +101,9 @@ public class NodesSpecifierTest {
     List<AutocompleteSuggestion> suggestions =
         NodesSpecifier.autoComplete(queryAllDimensions, null, nodeRolesData);
     Set<String> suggestionsText =
-        suggestions.stream().map(suggestion -> suggestion.getText()).collect(Collectors.toSet());
+        suggestions.stream()
+            .map(suggestion -> suggestion.getText())
+            .collect(ImmutableSet.toImmutableSet());
 
     // suggestions should have two elements, one for each dimension
     assertThat(suggestions, hasSize(2));
@@ -129,7 +130,9 @@ public class NodesSpecifierTest {
     List<AutocompleteSuggestion> suggestions =
         NodesSpecifier.autoComplete(queryDimension, null, nodeRolesData);
     Set<String> suggestionsText =
-        suggestions.stream().map(suggestion -> suggestion.getText()).collect(Collectors.toSet());
+        suggestions.stream()
+            .map(suggestion -> suggestion.getText())
+            .collect(ImmutableSet.toImmutableSet());
 
     // suggestions should have three elements, one for each role and one .*
     assertThat(suggestions, hasSize(3));

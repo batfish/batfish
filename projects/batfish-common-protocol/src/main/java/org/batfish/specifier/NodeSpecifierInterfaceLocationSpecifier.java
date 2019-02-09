@@ -1,9 +1,9 @@
 package org.batfish.specifier;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
@@ -39,6 +39,6 @@ public class NodeSpecifierInterfaceLocationSpecifier implements LocationSpecifie
         .map(n -> ctxt.getConfigs().get(n).getAllInterfaces().values())
         .flatMap(Collection::stream)
         .map(iface -> new InterfaceLocation(iface.getOwner().getHostname(), iface.getName()))
-        .collect(Collectors.toSet());
+        .collect(ImmutableSet.toImmutableSet());
   }
 }

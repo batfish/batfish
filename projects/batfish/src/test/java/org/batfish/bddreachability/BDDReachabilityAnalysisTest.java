@@ -1,6 +1,9 @@
 package org.batfish.bddreachability;
 
+import static org.batfish.bddreachability.BDDReachabilityAnalysis.fixpoint;
 import static org.batfish.bddreachability.BDDReachabilityAnalysis.toIngressLocation;
+import static org.batfish.bddreachability.BDDReachabilityUtils.computeForwardEdgeMap;
+import static org.batfish.bddreachability.BDDReachabilityUtils.computeReverseEdgeMap;
 import static org.batfish.bddreachability.TestNetwork.DST_PREFIX_1;
 import static org.batfish.bddreachability.TestNetwork.DST_PREFIX_2;
 import static org.batfish.bddreachability.TestNetwork.LINK_1_NETWORK;
@@ -17,10 +20,13 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDInteger;
@@ -180,11 +186,15 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   private BDD bddTransition(StateExpr preState, StateExpr postState) {
-    return _graph.getEdges().get(preState).get(postState).traverseForward(PKT.getFactory().one());
+    return _graph
+        .getForwardEdgeMap()
+        .get(preState)
+        .get(postState)
+        .traverseForward(PKT.getFactory().one());
   }
 
   private Edge edge(StateExpr preState, StateExpr postState) {
-    return _graph.getEdges().get(preState).get(postState);
+    return _graph.getForwardEdgeMap().get(preState).get(postState);
   }
 
   private static BDD dstIpBDD(Ip ip) {
@@ -304,25 +314,25 @@ public final class BDDReachabilityAnalysisTest {
     // delievered to subnet
     assertThat(
         _graph
-            .getEdges()
+            .getForwardEdgeMap()
             .get(_dstPreOutVrf)
             .get(new NodeInterfaceDeliveredToSubnet(_dstName, _dstIface1Name)),
         nullValue());
     assertThat(
         _graph
-            .getEdges()
+            .getForwardEdgeMap()
             .get(_dstPreOutVrf)
             .get(new NodeInterfaceDeliveredToSubnet(_dstName, _dstIface2Name)),
         nullValue());
     assertThat(
         _graph
-            .getEdges()
+            .getForwardEdgeMap()
             .get(_dstPreOutVrf)
             .get(new NodeInterfaceDeliveredToSubnet(_dstName, _link1DstName)),
         nullValue());
     assertThat(
         _graph
-            .getEdges()
+            .getForwardEdgeMap()
             .get(_dstPreOutVrf)
             .get(new NodeInterfaceDeliveredToSubnet(_dstName, _link2DstName)),
         nullValue());
@@ -330,25 +340,25 @@ public final class BDDReachabilityAnalysisTest {
     // exits network
     assertThat(
         _graph
-            .getEdges()
+            .getForwardEdgeMap()
             .get(_dstPreOutVrf)
             .get(new NodeInterfaceExitsNetwork(_dstName, _dstIface1Name)),
         nullValue());
     assertThat(
         _graph
-            .getEdges()
+            .getForwardEdgeMap()
             .get(_dstPreOutVrf)
             .get(new NodeInterfaceExitsNetwork(_dstName, _dstIface2Name)),
         nullValue());
     assertThat(
         _graph
-            .getEdges()
+            .getForwardEdgeMap()
             .get(_dstPreOutVrf)
             .get(new NodeInterfaceExitsNetwork(_dstName, _link1DstName)),
         nullValue());
     assertThat(
         _graph
-            .getEdges()
+            .getForwardEdgeMap()
             .get(_dstPreOutVrf)
             .get(new NodeInterfaceExitsNetwork(_dstName, _link2DstName)),
         nullValue());
@@ -372,25 +382,25 @@ public final class BDDReachabilityAnalysisTest {
     // insufficient info
     assertThat(
         _graph
-            .getEdges()
+            .getForwardEdgeMap()
             .get(_dstPreOutVrf)
             .get(new NodeInterfaceInsufficientInfo(_dstName, _dstIface1Name)),
         nullValue());
     assertThat(
         _graph
-            .getEdges()
+            .getForwardEdgeMap()
             .get(_dstPreOutVrf)
             .get(new NodeInterfaceInsufficientInfo(_dstName, _dstIface2Name)),
         nullValue());
     assertThat(
         _graph
-            .getEdges()
+            .getForwardEdgeMap()
             .get(_dstPreOutVrf)
             .get(new NodeInterfaceInsufficientInfo(_dstName, _link1DstName)),
         nullValue());
     assertThat(
         _graph
-            .getEdges()
+            .getForwardEdgeMap()
             .get(_dstPreOutVrf)
             .get(new NodeInterfaceInsufficientInfo(_dstName, _link2DstName)),
         nullValue());
@@ -439,12 +449,74 @@ public final class BDDReachabilityAnalysisTest {
         new BDDReachabilityAnalysis(
             pkt,
             ImmutableSet.of(originateVrf),
-            ImmutableMap.of(
-                originateVrf,
-                ImmutableMap.of(Drop.INSTANCE, new Edge(originateVrf, Drop.INSTANCE, one))),
+            ImmutableList.of(new Edge(originateVrf, Drop.INSTANCE, one)),
             one);
     assertThat(
         graph.getIngressLocationReachableBDDs(),
         equalTo(ImmutableMap.of(toIngressLocation(originateVrf), pkt.getFactory().zero())));
+  }
+
+  @Test
+  public void testFixpoint() {
+    StateExpr a = new NodeAccept("A");
+    StateExpr b = new NodeAccept("B");
+    StateExpr c = new NodeAccept("C");
+
+    BDD start = PKT.getSrcPort().value(1);
+    BDD bddAB = PKT.getDstIp().value(1);
+    BDD bddBC = PKT.getSrcIp().value(1);
+
+    Edge edgeAB = new Edge(a, b, bddAB);
+    Edge edgeBC = new Edge(b, c, bddBC);
+
+    Map<StateExpr, Map<StateExpr, Edge>> forwardEdges =
+        computeForwardEdgeMap(ImmutableList.of(edgeAB, edgeBC));
+
+    // forward from a
+    {
+      Map<StateExpr, BDD> forwardReachability = new HashMap<>();
+      forwardReachability.put(a, start);
+      fixpoint(forwardReachability, forwardEdges, Edge::traverseForward);
+      assertThat(
+          forwardReachability,
+          equalTo(
+              ImmutableMap.of(
+                  a, start, //
+                  b, start.and(bddAB), //
+                  c, start.and(bddAB).and(bddBC))));
+    }
+
+    // forward from c
+    {
+      Map<StateExpr, BDD> forwardReachability = new HashMap<>();
+      forwardReachability.put(c, start);
+      fixpoint(forwardReachability, forwardEdges, Edge::traverseForward);
+      assertThat(forwardReachability, equalTo(ImmutableMap.of(c, start)));
+    }
+
+    Map<StateExpr, Map<StateExpr, Edge>> reverseEdges =
+        computeReverseEdgeMap(ImmutableList.of(edgeAB, edgeBC));
+
+    // reverse from a
+    {
+      Map<StateExpr, BDD> reverseReachability = new HashMap<>();
+      reverseReachability.put(a, start);
+      fixpoint(reverseReachability, reverseEdges, Edge::traverseBackward);
+      assertThat(reverseReachability, equalTo(ImmutableMap.of(a, start)));
+    }
+
+    // reverse from c
+    {
+      Map<StateExpr, BDD> reverseReachability = new HashMap<>();
+      reverseReachability.put(c, start);
+      fixpoint(reverseReachability, reverseEdges, Edge::traverseBackward);
+      assertThat(
+          reverseReachability,
+          equalTo(
+              ImmutableMap.of(
+                  a, start.and(bddBC).and(bddAB), //
+                  b, start.and(bddBC),
+                  c, start)));
+    }
   }
 }

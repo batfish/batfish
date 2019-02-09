@@ -1,0 +1,11 @@
+{
+    "class": "org.batfish.question.initialization.InitIssuesQuestion",
+    "differential": false,
+    "instance": {
+        "description": "Return issues that occurred when parsing input files and converting to vendor independent model",
+        "instanceName": "initIssues",
+        "tags": [
+            "initialization"
+        ]
+    }
+}

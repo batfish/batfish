@@ -15,55 +15,31 @@ import javax.annotation.Nullable;
 
 public final class Flow implements Comparable<Flow>, Serializable {
   public static class Builder {
-
     private int _dscp;
-
     private Ip _dstIp;
-
     private int _dstPort;
-
     private int _ecn;
-
     private int _fragmentOffset;
-
     private int _icmpCode;
-
     private int _icmpType;
-
     private @Nullable String _ingressInterface;
-
     // Nullable because no sensible default. User is required to specify.
     private @Nullable String _ingressNode;
-
     private @Nullable String _ingressVrf;
-
     private @Nonnull IpProtocol _ipProtocol;
-
     private int _packetLength;
-
     private @Nonnull Ip _srcIp;
-
     private int _srcPort;
-
     private @Nonnull FlowState _state;
-
     // Nullable because no sensible default. User is required to specify.
     private @Nullable String _tag;
-
     private int _tcpFlagsAck;
-
     private int _tcpFlagsCwr;
-
     private int _tcpFlagsEce;
-
     private int _tcpFlagsFin;
-
     private int _tcpFlagsPsh;
-
     private int _tcpFlagsRst;
-
     private int _tcpFlagsSyn;
-
     private int _tcpFlagsUrg;
 
     public Builder() {
@@ -383,58 +359,32 @@ public final class Flow implements Comparable<Flow>, Serializable {
   }
 
   private static final String PROP_DSCP = "dscp";
-
   static final String PROP_DST_IP = "dstIp";
-
   private static final String PROP_DST_PORT = "dstPort";
-
   private static final String PROP_ECN = "ecn";
-
   private static final String PROP_FRAGMENT_OFFSET = "fragmentOffset";
-
   private static final String PROP_ICMP_CODE = "icmpCode";
-
   private static final String PROP_ICMP_TYPE = "icmpVar";
-
   private static final String PROP_INGRESS_INTERFACE = "ingressInterface";
-
   private static final String PROP_INGRESS_NODE = "ingressNode";
-
   private static final String PROP_INGRESS_VRF = "ingressVrf";
-
   private static final String PROP_IP_PROTOCOL = "ipProtocol";
-
   private static final String PROP_PACKET_LENGTH = "packetLength";
-
   static final String PROP_SRC_IP = "srcIp";
-
   private static final String PROP_SRC_PORT = "srcPort";
-
   private static final String PROP_STATE = "state";
-
   private static final String PROP_TAG = "tag";
-
   private static final String PROP_TCP_FLAGS_ACK = "tcpFlagsAck";
-
   private static final String PROP_TCP_FLAGS_CWR = "tcpFlagsCwr";
-
   private static final String PROP_TCP_FLAGS_ECE = "tcpFlagsEce";
-
   private static final String PROP_TCP_FLAGS_FIN = "tcpFlagsFin";
-
   private static final String PROP_TCP_FLAGS_PSH = "tcpFlagsPsh";
-
   private static final String PROP_TCP_FLAGS_RST = "tcpFlagsRst";
-
   private static final String PROP_TCP_FLAGS_SYN = "tcpFlagsSyn";
-
   private static final String PROP_TCP_FLAGS_URG = "tcpFlagsUrg";
-
   public static final String BASE_FLOW_TAG = "BASE";
-
   public static final String DELTA_FLOW_TAG = "DELTA";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static Builder builder() {
@@ -442,37 +392,21 @@ public final class Flow implements Comparable<Flow>, Serializable {
   }
 
   private final int _dscp;
-
   private final @Nonnull Ip _dstIp;
-
   private final int _dstPort;
-
   private final int _ecn;
-
   private final int _fragmentOffset;
-
   private final int _icmpCode;
-
   private final int _icmpType;
-
   private final @Nullable String _ingressInterface;
-
   private final @Nonnull String _ingressNode;
-
   private final @Nullable String _ingressVrf;
-
   private final @Nonnull IpProtocol _ipProtocol;
-
   private final int _packetLength;
-
   private final @Nonnull Ip _srcIp;
-
   private final int _srcPort;
-
   private final @Nonnull FlowState _state;
-
   private final @Nonnull String _tag;
-
   private final @Nonnull TcpFlags _tcpFlags;
 
   private Flow(
@@ -642,13 +576,14 @@ public final class Flow implements Comparable<Flow>, Serializable {
     return _dscp;
   }
 
+  @Nonnull
   @JsonProperty(PROP_DST_IP)
   public Ip getDstIp() {
     return _dstIp;
   }
 
   @JsonProperty(PROP_DST_PORT)
-  public Integer getDstPort() {
+  public int getDstPort() {
     return _dstPort;
   }
 
@@ -672,21 +607,25 @@ public final class Flow implements Comparable<Flow>, Serializable {
     return _icmpType;
   }
 
+  @Nullable
   @JsonProperty(PROP_INGRESS_INTERFACE)
   public String getIngressInterface() {
     return _ingressInterface;
   }
 
+  @Nonnull
   @JsonProperty(PROP_INGRESS_NODE)
   public String getIngressNode() {
     return _ingressNode;
   }
 
+  @Nullable
   @JsonProperty(PROP_INGRESS_VRF)
   public String getIngressVrf() {
     return _ingressVrf;
   }
 
+  @Nonnull
   @JsonProperty(PROP_IP_PROTOCOL)
   public IpProtocol getIpProtocol() {
     return _ipProtocol;
@@ -697,21 +636,24 @@ public final class Flow implements Comparable<Flow>, Serializable {
     return _packetLength;
   }
 
+  @Nonnull
   @JsonProperty(PROP_SRC_IP)
   public Ip getSrcIp() {
     return _srcIp;
   }
 
   @JsonProperty(PROP_SRC_PORT)
-  public Integer getSrcPort() {
+  public int getSrcPort() {
     return _srcPort;
   }
 
+  @Nonnull
   @JsonProperty(PROP_STATE)
   public FlowState getState() {
     return _state;
   }
 
+  @Nonnull
   @JsonProperty(PROP_TAG)
   public String getTag() {
     return _tag;

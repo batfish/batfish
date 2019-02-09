@@ -5,9 +5,9 @@ import static org.batfish.datamodel.IpAccessListLine.ACCEPT_ALL;
 import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
-import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -60,8 +60,8 @@ public class BDDSourceManagerTest {
   @Test
   public void testNoReferencedSources() {
     BDDSourceManager mgr = BDDSourceManager.forSources(_pkt, IFACES_1_2, ImmutableSet.of());
-    BDD one = _pkt.getFactory().one();
-    assertThat(mgr.getSourceBDDs(), equalTo(ImmutableMap.of(IFACE1, one, IFACE2, one)));
+    assertTrue(mgr.getSourceInterfaceBDD(IFACE1).isOne());
+    assertTrue(mgr.getSourceInterfaceBDD(IFACE2).isOne());
   }
 
   private static Configuration configWithOneAcl(NetworkFactory nf) {
@@ -93,15 +93,11 @@ public class BDDSourceManagerTest {
     IpAccessList acl = config.getIpAccessLists().values().iterator().next();
 
     BDDSourceManager mgr = BDDSourceManager.forIpAccessList(_pkt, config, acl);
-    Map<String, BDD> srcBDDs = mgr.getSourceBDDs();
-    assertThat(
-        srcBDDs.keySet(),
-        equalTo(ImmutableSet.of(IFACE1, IFACE2, IFACE3, SOURCE_ORIGINATING_FROM_DEVICE)));
 
-    BDD iface1BDD = srcBDDs.get(IFACE1);
-    BDD iface2BDD = srcBDDs.get(IFACE2);
-    BDD iface3BDD = srcBDDs.get(IFACE3);
-    BDD origBDD = srcBDDs.get(SOURCE_ORIGINATING_FROM_DEVICE);
+    BDD iface1BDD = mgr.getSourceInterfaceBDD(IFACE1);
+    BDD iface2BDD = mgr.getSourceInterfaceBDD(IFACE2);
+    BDD iface3BDD = mgr.getSourceInterfaceBDD(IFACE3);
+    BDD origBDD = mgr.getOriginatingFromDeviceBDD();
 
     assertThat("BDDs for IFACE1 and IFACE2 should be different", !iface1BDD.equals(iface2BDD));
     assertThat(

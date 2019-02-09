@@ -15,7 +15,8 @@ import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.bdd.IpAccessListToBDD;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
@@ -31,7 +32,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class IpAccessListToBDDTest {
+public class IpAccessListToBddTest {
   @Rule public ExpectedException exception = ExpectedException.none();
 
   private NetworkFactory _nf;
@@ -90,7 +91,7 @@ public class IpAccessListToBDDTest {
     Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", fooAcl);
     IpAccessList acl = aclWithLines(accepting(new PermittedByAcl("foo")));
     BDD bdd =
-        IpAccessListToBDD.create(
+        new IpAccessListToBddImpl(
                 _pkt,
                 BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
                 namedAcls,
@@ -102,15 +103,15 @@ public class IpAccessListToBDDTest {
   @Test
   public void testPermittedByAcl_undefined() {
     IpAccessList acl = aclWithLines(accepting(new PermittedByAcl("foo")));
-    IpAccessListToBDD ipAccessListToBDD =
-        IpAccessListToBDD.create(
+    IpAccessListToBdd ipAccessListToBdd =
+        new IpAccessListToBddImpl(
             _pkt,
             BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
             ImmutableMap.of(),
             ImmutableMap.of());
     exception.expect(IllegalArgumentException.class);
     exception.expectMessage("Undefined PermittedByAcl reference: foo");
-    ipAccessListToBDD.toBdd(acl);
+    ipAccessListToBdd.toBdd(acl);
   }
 
   @Test
@@ -118,15 +119,15 @@ public class IpAccessListToBDDTest {
     PermittedByAcl permittedByAcl = new PermittedByAcl("foo");
     IpAccessList fooAcl = aclWithLines(accepting(permittedByAcl));
     Map<String, IpAccessList> namedAcls = ImmutableMap.of("foo", fooAcl);
-    IpAccessListToBDD ipAccessListToBDD =
-        IpAccessListToBDD.create(
+    IpAccessListToBdd ipAccessListToBdd =
+        new IpAccessListToBddImpl(
             _pkt,
             BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
             namedAcls,
             ImmutableMap.of());
     exception.expect(BatfishException.class);
     exception.expectMessage("Circular PermittedByAcl reference: foo");
-    ipAccessListToBDD.toBdd(fooAcl);
+    ipAccessListToBdd.toBdd(fooAcl);
   }
 
   @Test
@@ -136,13 +137,13 @@ public class IpAccessListToBDDTest {
     Prefix p16 = Prefix.parse("1.1.0.0/16");
     Prefix p8 = Prefix.parse("1.0.0.0/8");
 
-    IpAccessListToBDD ipAccessListToBDD =
-        IpAccessListToBDD.create(
+    IpAccessListToBdd aclToBdd =
+        new IpAccessListToBddImpl(
             _pkt,
             BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
             ImmutableMap.of(),
             ImmutableMap.of());
-    IpSpaceToBDD dstToBdd = ipAccessListToBDD.getHeaderSpaceToBDD().getDstIpSpaceToBdd();
+    IpSpaceToBDD dstToBdd = aclToBdd.getHeaderSpaceToBDD().getDstIpSpaceToBdd();
 
     BDD bdd32 = dstToBdd.toBDD(p32);
     BDD bdd24 = dstToBdd.toBDD(p24);
@@ -150,7 +151,7 @@ public class IpAccessListToBDDTest {
     BDD bdd8 = dstToBdd.toBDD(p8);
 
     List<BDD> matchLines1 =
-        ipAccessListToBDD.reachAndMatchLines(
+        aclToBdd.reachAndMatchLines(
             aclWithLines(
                 acceptingDst(p32), acceptingDst(p24), acceptingDst(p16), acceptingDst(p8)));
 
@@ -164,7 +165,7 @@ public class IpAccessListToBDDTest {
             bdd8.not()));
 
     List<BDD> matchLines2 =
-        ipAccessListToBDD.reachAndMatchLines(
+        aclToBdd.reachAndMatchLines(
             aclWithLines(
                 rejectingDst(p32), acceptingDst(p24), rejectingDst(p16), acceptingDst(p8)));
 

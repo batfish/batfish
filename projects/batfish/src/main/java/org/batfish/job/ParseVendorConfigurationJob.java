@@ -392,7 +392,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     } catch (Exception e) {
       return new ParseResult(
           null,
-          new BatfishException("Error parsing configuration file: '" + _filename + "'"),
+          new BatfishException("Error parsing configuration file: '" + _filename + "'", e),
           _filename,
           _ptSentences,
           ParseStatus.FAILED,

@@ -14,6 +14,7 @@ import static org.batfish.datamodel.transformation.TransformationUtil.visitTrans
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -22,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -41,7 +43,8 @@ import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
-import org.batfish.common.bdd.IpAccessListToBDD;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
 import org.batfish.common.topology.TopologyUtil;
@@ -247,8 +250,8 @@ public final class BDDReachabilityAnalysisFactory {
         Entry::getKey,
         nodeEntry -> {
           Configuration config = nodeEntry.getValue();
-          IpAccessListToBDD aclToBdd =
-              IpAccessListToBDD.create(
+          IpAccessListToBdd aclToBdd =
+              new IpAccessListToBddImpl(
                   bddPacket,
                   bddSourceManagers.get(config.getHostname()),
                   config.getIpAccessLists(),
@@ -275,7 +278,7 @@ public final class BDDReachabilityAnalysisFactory {
   private TransformationToTransition initTransformationToTransformation(Configuration node) {
     return new TransformationToTransition(
         _bddPacket,
-        new IpAccessListToBDD(
+        new IpAccessListToBddImpl(
             _bddPacket,
             _bddSourceManagers.get(node.getHostname()),
             new HeaderSpaceToBDD(
@@ -311,22 +314,6 @@ public final class BDDReachabilityAnalysisFactory {
               ifaceEntry ->
                   toTransition.toTransition(ifaceEntry.getValue().getOutgoingTransformation()));
         });
-  }
-
-  private static Map<StateExpr, Map<StateExpr, Edge>> computeEdges(Stream<Edge> edgeStream) {
-    Map<StateExpr, Map<StateExpr, Edge>> edges = new HashMap<>();
-
-    edgeStream.forEach(
-        edge ->
-            edges
-                .computeIfAbsent(edge.getPreState(), k -> new HashMap<>())
-                .put(edge.getPostState(), edge));
-
-    // freeze
-    return toImmutableMap(
-        edges,
-        Entry::getKey,
-        preStateEntry -> toImmutableMap(preStateEntry.getValue(), Entry::getKey, Entry::getValue));
   }
 
   private static Map<String, Map<String, BDD>> computeRoutableBDDs(
@@ -1090,9 +1077,13 @@ public final class BDDReachabilityAnalysisFactory {
       Set<String> requiredTransitNodes,
       Set<String> finalNodes,
       Set<FlowDisposition> actions) {
-    IpAccessListToBDD ipAccessListToBDD =
-        IpAccessListToBDD.create(_bddPacket, ImmutableMap.of(), ImmutableMap.of());
-    BDD initialHeaderSpaceBdd = ipAccessListToBDD.visit(initialHeaderSpace);
+    IpAccessListToBdd ipAccessListToBdd =
+        new IpAccessListToBddImpl(
+            _bddPacket,
+            BDDSourceManager.forInterfaces(_bddPacket, ImmutableSet.of()),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    BDD initialHeaderSpaceBdd = ipAccessListToBdd.toBdd(initialHeaderSpace);
     BDD finalHeaderSpaceBdd = computeFinalHeaderSpaceBdd(initialHeaderSpaceBdd);
 
     Map<StateExpr, BDD> roots = rootConstraints(srcIpSpaceAssignment, initialHeaderSpaceBdd);
@@ -1104,9 +1095,9 @@ public final class BDDReachabilityAnalysisFactory {
     edgeStream = instrumentForbiddenTransitNodes(forbiddenTransitNodes, edgeStream);
     edgeStream = instrumentRequiredTransitNodes(requiredTransitNodes, edgeStream);
 
-    Map<StateExpr, Map<StateExpr, Edge>> edgeMap = computeEdges(edgeStream);
+    List<Edge> edges = edgeStream.collect(ImmutableList.toImmutableList());
 
-    return new BDDReachabilityAnalysis(_bddPacket, roots.keySet(), edgeMap, finalHeaderSpaceBdd);
+    return new BDDReachabilityAnalysis(_bddPacket, roots.keySet(), edges, finalHeaderSpaceBdd);
   }
 
   /**

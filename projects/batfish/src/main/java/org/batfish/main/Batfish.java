@@ -1,5 +1,6 @@
 package org.batfish.main;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Verify.verify;
@@ -2637,6 +2638,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     failureMessage,
                     answerElement.getErrors().get(hostConfig.getHostname()).getException());
             answerElement.getErrors().put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
+            answerElement
+                .getErrorMessages()
+                .put(
+                    hostConfig.getHostname(),
+                    Throwables.getStackTraceAsString(firstNonNull(bfc.getCause(), bfc)));
           } else {
             bfc = new BatfishException(failureMessage);
             if (_settings.getExitOnFirstError()) {
@@ -2645,6 +2651,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
               failureCauses.add(bfc);
               answerElement.getErrors().put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
               answerElement.getParseStatus().put(hostConfig.getIptablesFile(), ParseStatus.FAILED);
+              answerElement
+                  .getErrorMessages()
+                  .put(
+                      hostConfig.getHostname(),
+                      Throwables.getStackTraceAsString(firstNonNull(bfc.getCause(), bfc)));
             }
           }
         } else {
@@ -3788,11 +3799,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Configuration node, IpAccessList acl, SearchFiltersParameters parameters) {
     BDDPacket bddPacket = new BDDPacket();
 
-    Set<String> inactiveInterfaces =
-        Sets.difference(node.getAllInterfaces().keySet(), node.activeInterfaces());
-    Set<String> activeSources =
-        Sets.difference(resolveSources(parameters, node.getHostname()), inactiveInterfaces);
-
+    Set<String> activeSources = resolveSources(parameters, node.getHostname());
     Set<String> referencedSources = referencedSources(node.getIpAccessLists(), acl);
 
     BDDSourceManager mgr = BDDSourceManager.forSources(bddPacket, activeSources, referencedSources);

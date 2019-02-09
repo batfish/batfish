@@ -1,8 +1,8 @@
 package org.batfish.specifier;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
@@ -37,6 +37,6 @@ public class InterfaceSpecifierInterfaceLocationSpecifier implements LocationSpe
   public Set<Location> resolve(SpecifierContext ctxt) {
     return _interfaceSpecifier.resolve(ctxt.getConfigs().keySet(), ctxt).stream()
         .map(iface -> new InterfaceLocation(iface.getOwner().getHostname(), iface.getName()))
-        .collect(Collectors.toSet());
+        .collect(ImmutableSet.toImmutableSet());
   }
 }
