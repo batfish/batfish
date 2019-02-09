@@ -6,8 +6,8 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match5Tuple;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.EGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.INGRESS_FILTER;
-import static org.batfish.datamodel.flow.FilterStep.FilterType.POST_DESTINATION_NAT_FILTER;
-import static org.batfish.datamodel.flow.FilterStep.FilterType.PRE_SOURCE_NAT_FILTER;
+import static org.batfish.datamodel.flow.FilterStep.FilterType.POST_TRANSFORMATION_INGRESS_FILTER;
+import static org.batfish.datamodel.flow.FilterStep.FilterType.PRE_TRANSFORMATION_EGRESS_FILTER;
 import static org.batfish.datamodel.flow.StepAction.DENIED;
 import static org.batfish.datamodel.flow.StepAction.TRANSMITTED;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.buildEnterSrcIfaceStep;
@@ -306,7 +306,7 @@ class FlowTracer {
       _currentFlow = transformationResult.getOutputFlow();
 
       inputFilter = incomingInterface.getPostTransformationIncomingFilter();
-      if (applyFilter(inputFilter, POST_DESTINATION_NAT_FILTER) == DENIED) {
+      if (applyFilter(inputFilter, POST_TRANSFORMATION_INGRESS_FILTER) == DENIED) {
         return;
       }
     } else {
@@ -530,7 +530,8 @@ class FlowTracer {
 
   private void forwardOutInterface(Interface outgoingInterface, Ip nextHopIp) {
     // Apply preSourceNatOutgoingFilter
-    if (applyFilter(outgoingInterface.getPreTransformationOutgoingFilter(), PRE_SOURCE_NAT_FILTER)
+    if (applyFilter(outgoingInterface.getPreTransformationOutgoingFilter(),
+        PRE_TRANSFORMATION_EGRESS_FILTER)
         == DENIED) {
       return;
     }
