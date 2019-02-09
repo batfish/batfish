@@ -131,6 +131,8 @@ public class BDDInteger {
    * Create a BDD representing the exact value
    */
   public BDD value(long val) {
+    checkArgument(val >= 0, "val is negative");
+    checkArgument(val < (2L << _bitvec.length), "val is out of range");
     long currentVal = val;
     BDD bdd = _factory.one();
     for (int i = this._bitvec.length - 1; i >= 0; i--) {
@@ -149,6 +151,8 @@ public class BDDInteger {
    * Less than or equal to on integers
    */
   public BDD leq(long val) {
+    checkArgument(val >= 0, "val is negative");
+    checkArgument(val < (2L << _bitvec.length), "val is out of range");
     long currentVal = val;
     BDD[] eq = new BDD[_bitvec.length];
     BDD[] less = new BDD[_bitvec.length];
@@ -173,6 +177,8 @@ public class BDDInteger {
    * Less than or equal to on integers
    */
   public BDD geq(long val) {
+    checkArgument(val >= 0, "val is negative");
+    checkArgument(val < (2L << _bitvec.length), "val is out of range");
     long currentVal = val;
     BDD[] eq = new BDD[_bitvec.length];
     BDD[] greater = new BDD[_bitvec.length];
