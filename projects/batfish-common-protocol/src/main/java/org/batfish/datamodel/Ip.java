@@ -79,7 +79,9 @@ public class Ip implements Comparable<Ip>, Serializable {
         int segment = Integer.parseInt(segmentStr);
         checkArgument(
             segment >= 0 && segment <= 255,
-            "Invalid ip segment: \"" + segmentStr + "\" in ip string: \"" + addr + "\"");
+            "Invalid ip segment '%s' in ip string: '%s'",
+            segmentStr,
+            addr);
         num += ((segment * Math.pow(256, power)));
       } catch (NumberFormatException e) {
         throw new IllegalArgumentException(
