@@ -46,11 +46,7 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
     _prefix = prefix;
   }
 
-  /**
-   * Return the key {@link Prefix} for this node
-   *
-   * @throws IllegalArgumentException if the given prefix does not belong in this subtree
-   */
+  /** Return the key {@link Prefix} for this node */
   @Nonnull
   public Prefix getPrefix() {
     return _prefix;
