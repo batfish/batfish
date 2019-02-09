@@ -72,6 +72,13 @@ public class PrefixTest {
   }
 
   @Test
+  public void testInvalidPrefix() {
+    _thrown.expectMessage("Invalid prefix length");
+    _thrown.expect(IllegalArgumentException.class);
+    Prefix.parse("1.1.1.1/33");
+  }
+
+  @Test
   public void testStrictCanonical() {
     String canonicalStr = "1.0.0.0/8";
     Prefix canonical = strict(canonicalStr);

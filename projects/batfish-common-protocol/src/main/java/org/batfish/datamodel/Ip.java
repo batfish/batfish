@@ -75,7 +75,11 @@ public class Ip implements Comparable<Ip>, Serializable {
       String segmentStr = addrArray[i];
       try {
         int segment = Integer.parseInt(segmentStr);
-        num += ((segment % 256 * Math.pow(256, power)));
+        if (segment < 0 || segment > 255) {
+          throw new IllegalArgumentException(
+              "Invalid ip segment: \"" + segmentStr + "\" in ip string: \"" + addr + "\"");
+        }
+        num += ((segment * Math.pow(256, power)));
       } catch (NumberFormatException e) {
         throw new IllegalArgumentException(
             "Invalid ip segment: \"" + segmentStr + "\" in ip string: \"" + addr + "\"", e);
