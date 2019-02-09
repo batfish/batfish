@@ -3378,7 +3378,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     if (_settings.getHaltOnParseError()
         && parseResults.stream().anyMatch(r -> r.getFailureCause() != null)) {
-      throw new BatfishException("Exiting due to parser errors");
+      BatfishException e = new BatfishException("Exiting due to parser errors");
+      parseResults.stream()
+          .map(ParseVendorConfigurationResult::getFailureCause)
+          .filter(Objects::nonNull)
+          .forEach(e::addSuppressed);
+      throw e;
     }
 
     _logger.infof(
