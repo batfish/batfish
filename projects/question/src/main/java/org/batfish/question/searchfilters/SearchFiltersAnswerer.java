@@ -2,6 +2,7 @@ package org.batfish.question.searchfilters;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
+import static org.batfish.question.FilterQuestionUtils.differentialBDDSourceManager;
 import static org.batfish.question.FilterQuestionUtils.getFlow;
 import static org.batfish.question.FilterQuestionUtils.resolveSources;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
@@ -56,7 +57,6 @@ import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableDiff;
 import org.batfish.datamodel.table.TableMetadata;
-import org.batfish.question.FilterQuestionUtils;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.question.testfilters.TestFiltersAnswerer;
 import org.batfish.question.testfilters.TestFiltersQuestion;
@@ -390,11 +390,8 @@ public final class SearchFiltersAnswerer extends Answerer {
     SpecifierContext specifierContext = batfish.specifierContext();
 
     Set<String> activeSources =
-        Sets.difference(
-            resolveSources(
-                specifierContext, parameters.getStartLocationSpecifier(), node.getHostname()),
-            inactiveInterfaces);
-
+        resolveSources(
+            specifierContext, parameters.getStartLocationSpecifier(), node.getHostname());
     Set<String> referencedSources = referencedSources(node.getIpAccessLists(), acl);
 
     BDDSourceManager mgr = BDDSourceManager.forSources(bddPacket, activeSources, referencedSources);
@@ -440,7 +437,7 @@ public final class SearchFiltersAnswerer extends Answerer {
         new HeaderSpaceToBDD(bddPacket, baseConfig.getIpSpaces()).toBDD(headerSpace);
 
     BDDSourceManager mgr =
-        FilterQuestionUtils.differentialBDDSourceManager(
+        differentialBDDSourceManager(
             bddPacket,
             batfish,
             baseConfig,
