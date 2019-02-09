@@ -37,6 +37,7 @@ java_library(
     deps = [
         ":question",
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
         "@guava//:compile",
         "@hamcrest//:compile",
         "@jsr305//:compile",
@@ -71,5 +72,6 @@ junit_tests(
         "@hamcrest//:compile",
         "@jackson_databind//:compile",
         "@junit//:compile",
+        "@org_apache_commons_commons_lang3//jar",
     ],
 )
