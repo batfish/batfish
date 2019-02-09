@@ -6,7 +6,10 @@ import org.batfish.vendor.StructureType;
 
 @ParametersAreNonnullByDefault
 public enum F5BigipStructureType implements StructureType {
+  BGP_PROCESS("bgp process"),
   INTERFACE("interface"),
+  PREFIX_LIST("prefix-list"),
+  ROUTE_MAP("route-map"),
   SELF("self"),
   VLAN("vlan");
 

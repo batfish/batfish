@@ -1,6 +1,6 @@
 parser grammar F5BigipStructured_net;
 
-import F5BigipStructured_common;
+import F5BigipStructured_common, F5BigipStructured_bgp, F5BigipStructured_prefix_list, F5BigipStructured_route_map;
 
 options {
   tokenVocab = F5BigipStructuredLexer;
@@ -22,6 +22,17 @@ net_interface
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
+;
+
+net_routing
+:
+  ROUTING
+  (
+    nr_bgp
+    | nr_prefix_list
+    | nr_route_map
+    | unrecognized
+  )
 ;
 
 net_self
@@ -91,6 +102,7 @@ s_net
   NET
   (
     net_interface
+    | net_routing
     | net_self
     | net_vlan
     | unrecognized
