@@ -8,7 +8,6 @@ import static org.batfish.question.searchfilters.SearchFiltersAnswerer.different
 import static org.batfish.specifier.LocationSpecifiers.ALL_LOCATIONS;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
@@ -20,7 +19,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.matchers.FlowMatchers;
-import org.batfish.main.BatfishFactory;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.NameRegexInterfaceLinkLocationSpecifier;
@@ -64,13 +62,8 @@ public class SearchFiltersAnswererDifferentialTest {
             .build();
   }
 
-  private IBatfish getBatfish(Configuration baseConfig, Configuration deltaConfig)
-      throws IOException {
-    return BatfishFactory.load()
-        .getBatfish(
-            ImmutableSortedMap.of(baseConfig.getHostname(), baseConfig),
-            ImmutableSortedMap.of(deltaConfig.getHostname(), deltaConfig),
-            _tmp);
+  private static IBatfish getBatfish(Configuration baseConfig, Configuration deltaConfig) {
+    return new MockBatfish(baseConfig, deltaConfig);
   }
 
   @Test

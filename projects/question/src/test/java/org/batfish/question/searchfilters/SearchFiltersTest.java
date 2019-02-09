@@ -36,13 +36,11 @@ import static org.hamcrest.Matchers.oneOf;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
 import org.apache.commons.lang3.tuple.Triple;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
@@ -60,7 +58,6 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.main.BatfishFactory;
 import org.batfish.question.SearchFiltersParameters;
 import org.batfish.question.testfilters.TestFiltersAnswerer;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
@@ -189,10 +186,7 @@ public final class SearchFiltersTest {
     ib.setName(IFACE1).build();
     ib.setName(IFACE2).build();
 
-    SortedMap<String, Configuration> configurationMap =
-        ImmutableSortedMap.of(_config.getHostname(), _config);
-
-    _batfish = BatfishFactory.load().getBatfish(configurationMap, _tmp);
+    _batfish = new MockBatfish(_config);
     _allLocationsParams =
         new SearchFiltersQuestion()
             .toSearchFiltersParameters()

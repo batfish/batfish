@@ -99,41 +99,6 @@ junit_tests(
 )
 
 junit_tests(
-    name = "SearchFiltersDifferentialTest",
-    size = "small",
-    srcs = [
-        "src/test/java/org/batfish/question/searchfilters/SearchFiltersDifferentialTest.java",
-    ],
-    deps = [
-        "//projects/batfish",
-        "//projects/batfish:batfish_testlib",
-        "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol:common_testlib",
-        "//projects/question",
-        "@guava//:compile",
-        "@hamcrest//:compile",
-    ],
-)
-
-junit_tests(
-    name = "SearchFiltersTest",
-    size = "small",
-    srcs = [
-        "src/test/java/org/batfish/question/searchfilters/SearchFiltersTest.java",
-    ],
-    deps = [
-        "//projects/batfish",
-        "//projects/batfish:batfish_testlib",
-        "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol:common_testlib",
-        "//projects/question",
-        "@commons_lang3//:compile",
-        "@guava//:compile",
-        "@hamcrest//:compile",
-    ],
-)
-
-junit_tests(
     name = "DifferentialReachabilityTest",
     size = "small",
     srcs = [

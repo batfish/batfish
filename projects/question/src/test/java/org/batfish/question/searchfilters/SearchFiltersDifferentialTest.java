@@ -15,7 +15,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
@@ -28,7 +27,6 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableDiff;
-import org.batfish.main.BatfishFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -58,13 +56,8 @@ public class SearchFiltersDifferentialTest {
     _ab = _nf.aclBuilder().setName(ACLNAME);
   }
 
-  private IBatfish getBatfish(Configuration baseConfig, Configuration deltaConfig)
-      throws IOException {
-    return BatfishFactory.load()
-        .getBatfish(
-            ImmutableSortedMap.of(baseConfig.getHostname(), baseConfig),
-            ImmutableSortedMap.of(deltaConfig.getHostname(), deltaConfig),
-            _tmp);
+  private IBatfish getBatfish(Configuration baseConfig, Configuration deltaConfig) {
+    return new MockBatfish(baseConfig, deltaConfig);
   }
 
   @Test
