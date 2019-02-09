@@ -96,6 +96,7 @@ import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
+import org.batfish.common.ErrorDetails;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
@@ -2639,10 +2640,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     answerElement.getErrors().get(hostConfig.getHostname()).getException());
             answerElement.getErrors().put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
             answerElement
-                .getErrorMessages()
+                .getErrorDetails()
                 .put(
                     hostConfig.getHostname(),
-                    Throwables.getStackTraceAsString(firstNonNull(bfc.getCause(), bfc)));
+                    new ErrorDetails(Throwables.getStackTraceAsString(firstNonNull(bfc.getCause(), bfc))));
           } else {
             bfc = new BatfishException(failureMessage);
             if (_settings.getExitOnFirstError()) {
@@ -2652,10 +2653,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
               answerElement.getErrors().put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
               answerElement.getParseStatus().put(hostConfig.getIptablesFile(), ParseStatus.FAILED);
               answerElement
-                  .getErrorMessages()
+                  .getErrorDetails()
                   .put(
                       hostConfig.getHostname(),
-                      Throwables.getStackTraceAsString(firstNonNull(bfc.getCause(), bfc)));
+                      new ErrorDetails(Throwables.getStackTraceAsString(firstNonNull(bfc.getCause(), bfc))));
             }
           }
         } else {

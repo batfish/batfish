@@ -32,6 +32,10 @@ public class ErrorDetails implements Serializable {
     _parseExceptionContext = parseExceptionContext;
   }
 
+  public ErrorDetails(@Nonnull String message) {
+    this(message, null);
+  }
+
   @Override
   public boolean equals(@Nullable Object o) {
     if (this == o) {

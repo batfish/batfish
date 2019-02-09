@@ -135,11 +135,12 @@ public class ParseVendorConfigurationResult
           .getErrors()
           .put(_filename, ((BatfishException) _failureCause).getBatfishStackTrace());
       answerElement
-          .getErrorMessages()
+          .getErrorDetails()
           .put(
               _filename,
-              Throwables.getStackTraceAsString(
-                  firstNonNull(_failureCause.getCause(), _failureCause)));
+              new ErrorDetails(
+                  Throwables.getStackTraceAsString(
+                      firstNonNull(_failureCause.getCause(), _failureCause))));
       ErrorDetails errorDetails = _warnings.getErrorDetails();
       if (errorDetails != null) {
         answerElement.getErrorDetails().put(_filename, errorDetails);

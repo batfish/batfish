@@ -8,6 +8,7 @@ import java.util.SortedMap;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
+import org.batfish.common.ErrorDetails;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
@@ -112,11 +113,12 @@ public class ParseEnvironmentRoutingTableResult
             .getErrors()
             .put(filename, ((BatfishException) _failureCause).getBatfishStackTrace());
         answerElement
-            .getErrorMessages()
+            .getErrorDetails()
             .put(
                 filename,
-                Throwables.getStackTraceAsString(
-                    firstNonNull(_failureCause.getCause(), _failureCause)));
+                new ErrorDetails(
+                    Throwables.getStackTraceAsString(
+                        firstNonNull(_failureCause.getCause(), _failureCause))));
       }
     }
   }

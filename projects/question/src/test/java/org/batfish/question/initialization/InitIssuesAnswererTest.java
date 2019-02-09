@@ -45,7 +45,7 @@ public class InitIssuesAnswererTest {
 
     ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
     ccae.setWarnings(ImmutableSortedMap.of(node, new Warnings()));
-    ccae.getErrorMessages().putIfAbsent(node, EXCEPTION_MESSAGE);
+    ccae.getErrorDetails().putIfAbsent(node, new ErrorDetails(EXCEPTION_MESSAGE));
     // Answerer using TestBatfish that should produce a single convert error
     InitIssuesAnswerer answerer =
         new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(null, ccae));
@@ -125,7 +125,7 @@ public class InitIssuesAnswererTest {
 
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     pvcae.setWarnings(ImmutableSortedMap.of(file, new Warnings()));
-    pvcae.getErrorMessages().put(file, EXCEPTION_MESSAGE);
+    pvcae.getErrorDetails().put(file, new ErrorDetails(EXCEPTION_MESSAGE));
     pvcae
         .getErrorDetails()
         .put(file, new ErrorDetails("", new ParseExceptionContext("content", line, "context")));
@@ -160,7 +160,7 @@ public class InitIssuesAnswererTest {
 
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     pvcae.setWarnings(ImmutableSortedMap.of(file, new Warnings()));
-    pvcae.getErrorMessages().put(file, EXCEPTION_MESSAGE);
+    pvcae.getErrorDetails().put(file, new ErrorDetails(EXCEPTION_MESSAGE));
     // Answerer using TestBatfish that should produce a single parse error without parse exception
     // context
     InitIssuesAnswerer answerer =

@@ -3,7 +3,6 @@ package org.batfish.question.initialization;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateErrors;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateParseWarnings;
-import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateStrings;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateWarnings;
 
 import com.google.common.collect.ImmutableList;
@@ -95,10 +94,10 @@ public class InitIssuesAnswerer extends Answerer {
     // Aggregate stack traces after trimming to:
     // 1) remove the redundant info like "Conversion error for node 'xyz'"
     // 2) allow useful aggregation across similar issues (e.g. on node 'xyz' and 'abc')
-    aggregateDuplicateStrings(ccae.getErrorMessages())
+    aggregateDuplicateErrors(ccae.getErrorDetails())
         .forEach(
-            (stackTrace, nodeNames) ->
-                rows.add(getRow(nodeNames, null, IssueType.ConvertError, stackTrace)));
+            (errorDetails, nodeNames) ->
+                rows.add(getRow(nodeNames, null, IssueType.ConvertError, errorDetails._message)));
     aggregateDuplicateErrors(pvcae.getErrorDetails())
         .forEach(
             (errorDetails, fileNames) -> {
