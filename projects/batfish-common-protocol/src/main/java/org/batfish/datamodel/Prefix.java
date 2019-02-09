@@ -79,6 +79,9 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   private final int _prefixLength;
 
   private Prefix(Ip ip, int prefixLength) {
+    checkArgument(
+        prefixLength >= 0 && prefixLength <= MAX_PREFIX_LENGTH,
+        "Invalid prefix length " + prefixLength);
     if (ip.valid()) {
       // TODO: stop using Ip as a holder for invalid values.
       _ip = ip.getNetworkAddress(prefixLength);
@@ -91,9 +94,6 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   public static Prefix create(Ip ip, int prefixLength) {
     Prefix p = new Prefix(ip, prefixLength);
     try {
-      checkArgument(
-          prefixLength >= 0 && prefixLength <= MAX_PREFIX_LENGTH,
-          "Invalid prefix length " + prefixLength);
       return CACHE.get(p, () -> p);
     } catch (ExecutionException e) {
       // This shouldn't happen, but handle anyway.
