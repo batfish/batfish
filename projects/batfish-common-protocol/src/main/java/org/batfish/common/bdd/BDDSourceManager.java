@@ -192,7 +192,7 @@ public final class BDDSourceManager {
     builder.addAll(activeAndReferenced);
 
     if (!activeButUnreferenced.isEmpty()) {
-      builder.add(activeButUnreferenced.stream().max(Comparator.naturalOrder()).get());
+      builder.add(activeButUnreferenced.stream().min(Comparator.naturalOrder()).get());
     }
 
     return builder.build();
