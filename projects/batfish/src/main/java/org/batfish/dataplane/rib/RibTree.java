@@ -92,9 +92,10 @@ final class RibTree<R extends AbstractRoute> implements Serializable {
    */
   @Nonnull
   Set<R> getLongestPrefixMatch(Ip address, int maxPrefixLength) {
-    Set<R> routes = _root.longestPrefixMatch(address, maxPrefixLength);
+    int pl = maxPrefixLength;
+    Set<R> routes = _root.longestPrefixMatch(address, pl);
     while (!hasForwardingRoute(routes) && maxPrefixLength > 0) {
-      routes = _root.longestPrefixMatch(address, --maxPrefixLength);
+      routes = _root.longestPrefixMatch(address, --pl);
     }
     return routes.stream()
         .filter(r -> !r.getNonForwarding())
