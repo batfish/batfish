@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.cache.Cache;
@@ -75,10 +77,9 @@ public class Ip implements Comparable<Ip>, Serializable {
       String segmentStr = addrArray[i];
       try {
         int segment = Integer.parseInt(segmentStr);
-        if (segment < 0 || segment > 255) {
-          throw new IllegalArgumentException(
-              "Invalid ip segment: \"" + segmentStr + "\" in ip string: \"" + addr + "\"");
-        }
+        checkArgument(
+            segment >= 0 && segment <= 255,
+            "Invalid ip segment: \"" + segmentStr + "\" in ip string: \"" + addr + "\"");
         num += ((segment * Math.pow(256, power)));
       } catch (NumberFormatException e) {
         throw new IllegalArgumentException(
