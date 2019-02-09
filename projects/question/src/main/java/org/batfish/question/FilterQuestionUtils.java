@@ -114,7 +114,6 @@ public final class FilterQuestionUtils {
 
     // effectively active sources are those of interest that are active in both configs.
     Set<String> activeSources = Sets.difference(commonSources, inactiveInterfaces);
-
     Set<String> referencedSources =
         Sets.union(
             referencedSources(baseConfig.getIpAccessLists(), baseAcl),

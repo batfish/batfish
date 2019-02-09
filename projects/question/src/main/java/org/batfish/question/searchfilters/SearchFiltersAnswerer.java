@@ -385,8 +385,6 @@ public final class SearchFiltersAnswerer extends Answerer {
       IBatfish batfish, Configuration node, IpAccessList acl, SearchFiltersParameters parameters) {
     BDDPacket bddPacket = new BDDPacket();
 
-    Set<String> inactiveInterfaces =
-        Sets.difference(node.getAllInterfaces().keySet(), node.activeInterfaces());
     SpecifierContext specifierContext = batfish.specifierContext();
 
     Set<String> activeSources =
