@@ -20,6 +20,9 @@ public class ParserTestIpSpace {
 
   private static Parser _parser = Parboiled.createParser(Parser.class);
 
+  private static BasicParseRunner<?> _runner =
+      new BasicParseRunner<>(_parser.input(_parser.IpSpaceExpression()));
+
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static AstNode getOnlyStackItem(ParsingResult<?> result) {
@@ -29,123 +32,113 @@ public class ParserTestIpSpace {
   }
 
   @Test
-  public void testIpSpaceIpAddress() {
-    ParsingResult<?> result =
-        new BasicParseRunner<>(_parser.input(_parser.IpSpaceExpression())).run("1.1.1.1");
+  public void testIpSpaceAddressGroup() {
+    IpSpaceAstNode expectedAst =
+        new IpSpaceAstNode(Type.ADDRESS_GROUP, new LeafAstNode("a"), new LeafAstNode("b"));
 
-    assertThat(getOnlyStackItem(result), equalTo(new LeafAstNode(Ip.parse("1.1.1.1"))));
+    assertThat(getOnlyStackItem(_runner.run("addressgroup(a, b)")), equalTo(expectedAst));
+    assertThat(getOnlyStackItem(_runner.run("addressgroup ( a , b ) ")), equalTo(expectedAst));
+    assertThat(getOnlyStackItem(_runner.run("ADDRESSGROUP(a , b)")), equalTo(expectedAst));
+    assertThat(getOnlyStackItem(_runner.run("addressGroup(a , b)")), equalTo(expectedAst));
+  }
+
+  @Test
+  public void testIpSpaceAddressGroupRef() {
+    IpSpaceAstNode expectedAst =
+        new IpSpaceAstNode(Type.ADDRESS_GROUP, new LeafAstNode("a"), new LeafAstNode("b"));
+
+    assertThat(getOnlyStackItem(_runner.run("ref.addressgroup(a, b)")), equalTo(expectedAst));
+    assertThat(getOnlyStackItem(_runner.run("ref.addressgroup ( a , b ) ")), equalTo(expectedAst));
+    assertThat(getOnlyStackItem(_runner.run("REF.ADDRESSGROUP(a , b)")), equalTo(expectedAst));
+    assertThat(getOnlyStackItem(_runner.run("ref.addressGroup(a , b)")), equalTo(expectedAst));
+  }
+
+  @Test
+  public void testIpSpaceIpAddress() {
+    assertThat(
+        getOnlyStackItem(_runner.run("1.1.1.1")), equalTo(new LeafAstNode(Ip.parse("1.1.1.1"))));
   }
 
   @Test
   public void testIpSpaceIpAddressFail() {
     _thrown.expectMessage("Invalid ip");
     _thrown.expect(ParserRuntimeException.class);
-    ParsingResult<?> result =
-        new BasicParseRunner<>(_parser.input(_parser.IpSpaceExpression())).run("1.1.1.1111");
+    _runner.run("1.1.1.1111");
   }
 
   @Test
   public void testIpSpaceIpRange() {
-    ParsingResult<?> result =
-        new BasicParseRunner<>(_parser.input(_parser.IpSpaceExpression())).run("1.1.1.1-2.2.2.2");
+    IpSpaceAstNode expectedAst =
+        new IpSpaceAstNode(
+            Type.DASH, new LeafAstNode(Ip.parse("1.1.1.1")), new LeafAstNode(Ip.parse("2.2.2.2")));
 
-    assertThat(
-        getOnlyStackItem(result),
-        equalTo(
-            new IpSpaceAstNode(
-                Type.DASH,
-                new LeafAstNode(Ip.parse("1.1.1.1")),
-                new LeafAstNode(Ip.parse("2.2.2.2")))));
-
-    // with white space
-    ParsingResult<?> result2 =
-        new BasicParseRunner<>(_parser.input(_parser.IpSpaceExpression())).run("1.1.1.1 - 2.2.2.2");
-
-    assertThat(
-        getOnlyStackItem(result2),
-        equalTo(
-            new IpSpaceAstNode(
-                Type.DASH,
-                new LeafAstNode(Ip.parse("1.1.1.1")),
-                new LeafAstNode(Ip.parse("2.2.2.2")))));
+    assertThat(getOnlyStackItem(_runner.run("1.1.1.1-2.2.2.2")), equalTo(expectedAst));
+    assertThat(getOnlyStackItem(_runner.run("1.1.1.1 - 2.2.2.2 ")), equalTo(expectedAst));
   }
 
   @Test
   public void testIpSpaceIpWildcard() {
-    ParsingResult<?> result =
-        new BasicParseRunner<>(_parser.input(_parser.IpSpaceExpression())).run("1.1.1.1:2.2.2.2");
-
     assertThat(
-        getOnlyStackItem(result), equalTo(new LeafAstNode(new IpWildcard("1.1.1.1:2.2.2.2"))));
+        getOnlyStackItem(_runner.run("1.1.1.1:2.2.2.2")),
+        equalTo(new LeafAstNode(new IpWildcard("1.1.1.1:2.2.2.2"))));
   }
 
   @Test
   public void testIpSpaceList2() {
-    ParsingResult<?> result =
-        new BasicParseRunner<>(_parser.input(_parser.IpSpaceExpression())).run("1.1.1.1,2.2.2.2");
-
     IpSpaceAstNode expectedNode =
         new IpSpaceAstNode(
             Type.COMMA, new LeafAstNode(Ip.parse("1.1.1.1")), new LeafAstNode(Ip.parse("2.2.2.2")));
 
-    assertThat(getOnlyStackItem(result), equalTo(expectedNode));
-
-    // again, with space
-    ParsingResult<?> resultSpace =
-        new BasicParseRunner<>(_parser.input(_parser.IpSpaceExpression())).run("1.1.1.1 , 2.2.2.2");
-
-    assertThat(getOnlyStackItem(resultSpace), equalTo(expectedNode));
+    assertThat(getOnlyStackItem(_runner.run("1.1.1.1,2.2.2.2")), equalTo(expectedNode));
+    assertThat(getOnlyStackItem(_runner.run("1.1.1.1 , 2.2.2.2 ")), equalTo(expectedNode));
   }
 
   @Test
   public void testIpSpaceList3() {
-    ParsingResult<?> result =
-        new BasicParseRunner<>(_parser.input(_parser.IpSpaceExpression()))
-            .run("1.1.1.1,2.2.2.2,3.3.3.3");
-
-    assertThat(
-        getOnlyStackItem(result),
-        equalTo(
+    IpSpaceAstNode expectedNode =
+        new IpSpaceAstNode(
+            Type.COMMA,
             new IpSpaceAstNode(
                 Type.COMMA,
-                new IpSpaceAstNode(
-                    Type.COMMA,
-                    new LeafAstNode(Ip.parse("1.1.1.1")),
-                    new LeafAstNode(Ip.parse("2.2.2.2"))),
-                new LeafAstNode(Ip.parse("3.3.3.3")))));
+                new LeafAstNode(Ip.parse("1.1.1.1")),
+                new LeafAstNode(Ip.parse("2.2.2.2"))),
+            new LeafAstNode(Ip.parse("3.3.3.3")));
+
+    assertThat(getOnlyStackItem(_runner.run("1.1.1.1,2.2.2.2,3.3.3.3")), equalTo(expectedNode));
+
+    // a more complex list
+    IpSpaceAstNode expectedNode2 =
+        new IpSpaceAstNode(
+            Type.COMMA,
+            new IpSpaceAstNode(
+                Type.COMMA,
+                new LeafAstNode(Ip.parse("1.1.1.1")),
+                new IpSpaceAstNode(Type.NOT, new LeafAstNode(Ip.parse("2.2.2.2")), null)),
+            new LeafAstNode(Ip.parse("3.3.3.3")));
+
+    assertThat(getOnlyStackItem(_runner.run("1.1.1.1,!2.2.2.2,3.3.3.3")), equalTo(expectedNode2));
   }
 
   @Test
   public void testIpSpaceNot() {
-    ParsingResult<?> result =
-        new BasicParseRunner<>(_parser.input(_parser.IpSpaceExpression())).run("!1.1.1.1");
+    IpSpaceAstNode expectedAst =
+        new IpSpaceAstNode(Type.NOT, new LeafAstNode(Ip.parse("1.1.1.1")), null);
 
-    assertThat(
-        getOnlyStackItem(result),
-        equalTo(new IpSpaceAstNode(Type.NOT, new LeafAstNode(Ip.parse("1.1.1.1")), null)));
-
-    // with space
-    ParsingResult<?> resultSpace =
-        new BasicParseRunner<>(_parser.input(_parser.IpSpaceExpression())).run("! 1.1.1.1");
-
-    assertThat(
-        getOnlyStackItem(resultSpace),
-        equalTo(new IpSpaceAstNode(Type.NOT, new LeafAstNode(Ip.parse("1.1.1.1")), null)));
+    assertThat(getOnlyStackItem(_runner.run("!1.1.1.1")), equalTo(expectedAst));
+    assertThat(getOnlyStackItem(_runner.run("! 1.1.1.1 ")), equalTo(expectedAst));
   }
 
   @Test
   public void testIpSpacePrefix() {
-    ParsingResult<?> result =
-        new BasicParseRunner<>(_parser.input(_parser.IpSpaceExpression())).run("1.1.1.1/1");
-
-    assertThat(getOnlyStackItem(result), equalTo(new LeafAstNode(Prefix.parse("1.1.1.1/1"))));
+    assertThat(
+        getOnlyStackItem(_runner.run("1.1.1.1/1")),
+        equalTo(new LeafAstNode(Prefix.parse("1.1.1.1/1"))));
   }
 
   @Test
   public void testIpSpacePrefixFail() {
     _thrown.expectMessage("Invalid prefix length");
     _thrown.expect(ParserRuntimeException.class);
-    ParsingResult<?> result =
-        new BasicParseRunner<>(_parser.input(_parser.IpSpaceExpression())).run("1.1.1.1/33");
+    _runner.run("1.1.1.1/33");
   }
 }

@@ -47,18 +47,21 @@ public class Parser extends BaseParser<Object> {
         ZeroOrMore(
             ", ",
             IpSpaceTerm(),
-            push(new IpSpaceAstNode(Type.COMMA, (AstNode) pop(1), (AstNode) pop()))));
+            push(new IpSpaceAstNode(Type.COMMA, (AstNode) pop(1), (AstNode) pop())),
+            WhiteSpace()));
   }
 
   /* An IpSpace term is one of these things */
   public Rule IpSpaceTerm() {
     return FirstOf(
-        Prefix(), IpWildcard(), IpRange(), IpAddress(), IpSpaceNot(), IpSpaceAddressGroup());
+        IpSpaceAddressGroup(), IpSpaceNot(), Prefix(), IpWildcard(), IpRange(), IpAddress());
   }
 
+  /** Includes ref.addgressgroup for backward compatibility. Should be removed later */
   public Rule IpSpaceAddressGroup() {
     return Sequence(
-        "addressgroup ",
+        FirstOf(IgnoreCase("addressgroup"), IgnoreCase("ref.addressgroup")),
+        WhiteSpace(),
         "( ",
         AddressGroupName(),
         ", ",
@@ -72,6 +75,11 @@ public class Parser extends BaseParser<Object> {
   }
 
   // Common helpers follow
+
+  public Rule AddressGroupName() {
+    return Sequence(
+        ReferenceObjectNameLiteral(), push(new LeafAstNode(matchOrDefault("Error"))), WhiteSpace());
+  }
 
   public Rule IpAddress() {
     return Sequence(IpAddressUnchecked(), push(new LeafAstNode(Ip.parse(matchOrDefault("Error")))));
@@ -107,7 +115,8 @@ public class Parser extends BaseParser<Object> {
   }
 
   public Rule ReferenceBookName() {
-    return Sequence(NameLiteral(), push(new LeafAstNode(matchOrDefault("Error"))), WhiteSpace());
+    return Sequence(
+        ReferenceObjectNameLiteral(), push(new LeafAstNode(matchOrDefault("Error"))), WhiteSpace());
   }
 
   /**
@@ -123,12 +132,19 @@ public class Parser extends BaseParser<Object> {
         : String(string);
   }
 
+  public Rule AlphabetChar() {
+    return FirstOf(CharRange('a', 'z'), CharRange('A', 'Z'));
+  }
+
   public Rule Digit() {
     return CharRange('0', '9');
   }
 
-  public Rule NameLiteral() {
-    return OneOrMore(NoneOf(" \t\f()[],:"));
+  /** This spec is based on {@link org.batfish.referencelibrary.ReferenceLibrary#NAME_PATTERN} */
+  public Rule ReferenceObjectNameLiteral() {
+    return Sequence(
+        FirstOf(AlphabetChar(), Ch('_')),
+        ZeroOrMore(FirstOf(AlphabetChar(), Ch('_'), Digit(), Ch('-'))));
   }
 
   public Rule Number() {
