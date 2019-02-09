@@ -13,6 +13,8 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.ErrorDetails;
+import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
@@ -64,6 +66,54 @@ final class IssueAggregation {
   }
 
   /**
+   * Class for holding aggregatable errors. Similar to {@link ErrorDetails}, but ignoring line
+   * numbers to allow useful aggregation.
+   */
+  static final class ErrorDetailsTriplet {
+    @Nullable final String _lineContent;
+    @Nullable final String _message;
+    @Nullable final String _parserContext;
+
+    ErrorDetailsTriplet(@Nonnull ErrorDetails details) {
+      ParseExceptionContext pec = details.getParseExceptionContext();
+      _message = details.getMessage();
+      if (pec != null) {
+        _lineContent = pec.getLineContent();
+        _parserContext = pec.getParserContext();
+      } else {
+        _lineContent = null;
+        _parserContext = null;
+      }
+    }
+
+    ErrorDetailsTriplet(
+        @Nullable String message, @Nullable String lineContent, @Nullable String parserContext) {
+      _message = message;
+      _lineContent = lineContent;
+      _parserContext = parserContext;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof ErrorDetailsTriplet)) {
+        return false;
+      }
+      ErrorDetailsTriplet triplet = (ErrorDetailsTriplet) o;
+      return Objects.equals(_lineContent, triplet._lineContent)
+          && Objects.equals(_message, triplet._message)
+          && Objects.equals(_parserContext, triplet._parserContext);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_lineContent, _message, _parserContext);
+    }
+  }
+
+  /**
    * Aggregate same parse warnings across multiple files and lines.
    *
    * <p>Produces a map of {@link ParseWarningTriplet} to map of filename to lines.
@@ -100,6 +150,23 @@ final class IssueAggregation {
             map.computeIfAbsent(warning, w -> new TreeSet<>()).add(node);
           }
         });
+    return map;
+  }
+
+  /**
+   * Aggregate same {@link ErrorDetails} across multiple nodes (or alternatively files).
+   *
+   * <p>Produces a map of {@link ErrorDetails} to node names.
+   */
+  @Nonnull
+  @VisibleForTesting
+  static Map<ErrorDetailsTriplet, SortedSet<String>> aggregateDuplicateErrors(
+      Map<String, ErrorDetails> nodeToErrorDetails) {
+    Map<ErrorDetailsTriplet, SortedSet<String>> map = new HashMap<>();
+    nodeToErrorDetails.forEach(
+        (source, details) ->
+            map.computeIfAbsent(new ErrorDetailsTriplet(details), t -> new TreeSet<>())
+                .add(source));
     return map;
   }
 

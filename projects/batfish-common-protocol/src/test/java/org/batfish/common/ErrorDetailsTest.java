@@ -7,7 +7,7 @@ import java.io.IOException;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
-import org.batfish.common.Warnings.ParseExceptionContext;
+import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.grammar.BatfishANTLRErrorStrategy;
 import org.batfish.grammar.BatfishCombinedParser;
@@ -17,7 +17,7 @@ import org.batfish.grammar.recovery.RecoveryLexer;
 import org.batfish.grammar.recovery.RecoveryParser;
 import org.junit.Test;
 
-public class WarningsTest {
+public class ErrorDetailsTest {
   private static final Integer LINE_NUMBER = 1234;
   private static final String LINE_TEXT = "tokenText";
 
@@ -68,11 +68,13 @@ public class WarningsTest {
 
   @Test
   public void testParseExceptionContextSerialization() throws IOException {
-    ParseExceptionContext pec = new ParseExceptionContext("content", 1);
-    String serialzed = BatfishObjectMapper.writeString(pec);
-    ParseExceptionContext deserialized = BatfishObjectMapper.mapper().readValue(serialzed, ParseExceptionContext.class);
+    ParseExceptionContext pec = new ParseExceptionContext("content", 1, "context");
+    String serialized = BatfishObjectMapper.writeString(pec);
+    ParseExceptionContext deserialized =
+        BatfishObjectMapper.mapper().readValue(serialized, ParseExceptionContext.class);
 
     assertThat(pec.getLineContent(), equalTo(deserialized.getLineContent()));
     assertThat(pec.getLineNumber(), equalTo(deserialized.getLineNumber()));
+    assertThat(pec, equalTo(deserialized));
   }
 }

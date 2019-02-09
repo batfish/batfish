@@ -10,9 +10,9 @@ import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
+import org.batfish.common.ErrorDetails;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
-import org.batfish.common.Warnings.ParseExceptionContext;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.vendor.VendorConfiguration;
@@ -140,9 +140,9 @@ public class ParseVendorConfigurationResult
               _filename,
               Throwables.getStackTraceAsString(
                   firstNonNull(_failureCause.getCause(), _failureCause)));
-      ParseExceptionContext parseExceptionContext = _warnings.getParseExceptionContext();
-      if (parseExceptionContext != null) {
-        answerElement.getParseExceptionContexts().put(_filename, parseExceptionContext);
+      ErrorDetails errorDetails = _warnings.getErrorDetails();
+      if (errorDetails != null) {
+        answerElement.getErrorDetails().put(_filename, errorDetails);
       }
     }
   }

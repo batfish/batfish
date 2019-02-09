@@ -294,6 +294,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_SOU
 import static org.batfish.representation.cisco.Interface.ALL_VLANS;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -320,6 +321,8 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
+import org.batfish.common.ErrorDetails;
+import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.RedFlagBatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
@@ -9074,7 +9077,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       hostname = sb.toString();
     }
     _configuration.setHostname(hostname);
-    if (_configuration.getHostname().startsWith("as1border2")) {
+    if (_configuration.getHostname().startsWith("as1border")) {
       throw new BatfishException("force parser fail");
     }
     _configuration.getCf().setHostname(hostname);
@@ -10128,7 +10131,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     try {
       walker.walk(this, tree);
     } catch (Exception e) {
-      _w.setParseExceptionContext(walker.getCurrentCtx(), _parser);
+      _w.setErrorDetails(
+          new ErrorDetails(
+              Throwables.getStackTraceAsString(firstNonNull(e.getCause(), e)),
+              new ParseExceptionContext(walker.getCurrentCtx(), _parser)));
       throw e;
     }
   }

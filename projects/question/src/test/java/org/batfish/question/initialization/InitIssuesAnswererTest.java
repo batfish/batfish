@@ -12,8 +12,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import javax.annotation.Nullable;
+import org.batfish.common.ErrorDetails;
+import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.Warnings;
-import org.batfish.common.Warnings.ParseExceptionContext;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -125,7 +126,9 @@ public class InitIssuesAnswererTest {
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     pvcae.setWarnings(ImmutableSortedMap.of(file, new Warnings()));
     pvcae.getErrorMessages().put(file, EXCEPTION_MESSAGE);
-    pvcae.getParseExceptionContexts().put(file, new ParseExceptionContext("content", line));
+    pvcae
+        .getErrorDetails()
+        .put(file, new ErrorDetails("", new ParseExceptionContext("content", line, "context")));
     // Answerer using TestBatfish that should produce a single parse error with parse exception
     // context
     InitIssuesAnswerer answerer =
