@@ -1,9 +1,8 @@
 package org.batfish.grammar;
 
+import static org.batfish.common.util.ThrowableMatchers.hasStackTrace;
 import static org.hamcrest.Matchers.containsString;
 
-import com.google.common.base.Throwables;
-import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
@@ -15,8 +14,6 @@ import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 import org.antlr.v4.runtime.tree.RuleNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
-import org.hamcrest.FeatureMatcher;
-import org.hamcrest.Matcher;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -123,22 +120,6 @@ public final class BatfishParseTreeWalkerTest {
     public String getText() {
       return _text;
     }
-  }
-
-  private static final class HasStackTrace extends FeatureMatcher<Throwable, String> {
-    public HasStackTrace(@Nonnull Matcher<? super String> subMatcher) {
-      super(subMatcher, "A Throwable with stackTrace:", "stackTrace:");
-    }
-
-    @Override
-    protected String featureValueOf(Throwable actual) {
-      return Throwables.getStackTraceAsString(actual);
-    }
-  }
-
-  private static @Nonnull Matcher<Throwable> hasStackTrace(
-      @Nonnull Matcher<? super String> subMatcher) {
-    return new HasStackTrace(subMatcher);
   }
 
   private static final String LINE_TEXT = "Line text";
