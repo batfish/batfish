@@ -1,4 +1,4 @@
-package org.batfish.main;
+package org.batfish.question.searchfilters;
 
 import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
@@ -6,14 +6,15 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
+import static org.batfish.question.searchfilters.SearchFiltersAnswerer.differentialReachFilter;
 import static org.batfish.specifier.LocationSpecifiers.ALL_LOCATIONS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
@@ -23,7 +24,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.question.SearchFiltersParameters;
-import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.NameRegexInterfaceLinkLocationSpecifier;
 import org.junit.Before;
@@ -31,8 +31,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-/** Tests of {@link Batfish#differentialReachFilter}. */
-public class BatfishSearchFiltersDifferentialTest {
+/** Tests of {@link SearchFiltersAnswerer} */
+public class SearchFiltersAnswererDifferentialTest {
   @Rule public TemporaryFolder _tmp = new TemporaryFolder();
 
   private static final String HOSTNAME = "hostname";
@@ -64,12 +64,8 @@ public class BatfishSearchFiltersDifferentialTest {
             .build();
   }
 
-  private Batfish getBatfish(Configuration baseConfig, Configuration deltaConfig)
-      throws IOException {
-    return BatfishTestUtils.getBatfish(
-        ImmutableSortedMap.of(baseConfig.getHostname(), baseConfig),
-        ImmutableSortedMap.of(deltaConfig.getHostname(), deltaConfig),
-        _tmp);
+  private static IBatfish getBatfish(Configuration baseConfig, Configuration deltaConfig) {
+    return new MockBatfish(baseConfig, deltaConfig);
   }
 
   @Test
@@ -78,17 +74,20 @@ public class BatfishSearchFiltersDifferentialTest {
     Configuration deltaConfig = _cb.build();
     _ib.setName(IFACE1).setOwner(baseConfig).build();
     _ib.setOwner(deltaConfig).build();
-    IpAccessList baseAcl = _ab.build();
+    String aclName = "aclName";
+    IpAccessList baseAcl = _ab.setName(aclName).setOwner(baseConfig).build();
     IpAccessList deltaAcl =
-        _ab.setLines(
+        _ab.setOwner(deltaConfig)
+            .setLines(
                 ImmutableList.of(
                     accepting()
                         .setMatchCondition(and(matchSrcInterface(IFACE1), matchDst(IP)))
                         .build()))
             .build();
-    Batfish batfish = getBatfish(baseConfig, deltaConfig);
+    IBatfish batfish = getBatfish(baseConfig, deltaConfig);
+
     DifferentialSearchFiltersResult result =
-        batfish.differentialReachFilter(baseConfig, baseAcl, deltaConfig, deltaAcl, _params);
+        differentialReachFilter(batfish, baseConfig, baseAcl, deltaConfig, deltaAcl, _params);
     assertThat("Expected no decreased result", !result.getDecreasedResult().isPresent());
     assertThat("Expected increased result", result.getIncreasedResult().isPresent());
     assertThat(
@@ -96,7 +95,7 @@ public class BatfishSearchFiltersDifferentialTest {
         allOf(hasIngressInterface(IFACE1), hasDstIp(IP)));
 
     // flip base and delta
-    result = batfish.differentialReachFilter(deltaConfig, deltaAcl, baseConfig, baseAcl, _params);
+    result = differentialReachFilter(batfish, deltaConfig, deltaAcl, baseConfig, baseAcl, _params);
     assertThat("Expected no increased result", !result.getIncreasedResult().isPresent());
     assertThat("Expected decreased result", result.getDecreasedResult().isPresent());
     assertThat(
@@ -107,13 +106,13 @@ public class BatfishSearchFiltersDifferentialTest {
   @Test
   public void testAclLineAddedRemoved() throws IOException {
     Configuration config = _cb.build();
-    IpAccessList baseAcl = _ab.build();
+    IpAccessList baseAcl = _ab.setOwner(config).build();
     IpAccessList deltaAcl =
         _ab.setLines(ImmutableList.of(accepting().setMatchCondition(matchDst(IP)).build())).build();
-    Batfish batfish = getBatfish(config, config);
+    IBatfish batfish = getBatfish(config, config);
 
     DifferentialSearchFiltersResult result =
-        batfish.differentialReachFilter(config, baseAcl, config, deltaAcl, _params);
+        differentialReachFilter(batfish, config, baseAcl, config, deltaAcl, _params);
     assertThat("Expected no decreased result", !result.getDecreasedResult().isPresent());
     assertThat("Expected increased result", result.getIncreasedResult().isPresent());
     assertThat(result.getIncreasedResult().get().getExampleFlow(), hasDstIp(IP));
@@ -123,7 +122,8 @@ public class BatfishSearchFiltersDifferentialTest {
 
     // flip base and delta ACL; turn on explanations
     result =
-        batfish.differentialReachFilter(
+        differentialReachFilter(
+            batfish,
             config,
             deltaAcl,
             config,
@@ -144,16 +144,18 @@ public class BatfishSearchFiltersDifferentialTest {
     _ib.setOwner(deltaConfig).build();
     _ib.setName(IFACE2).setOwner(baseConfig).build();
     _ib.setOwner(deltaConfig).build();
-    IpAccessList baseAcl = _ab.build();
+    String aclName = "acl";
+    IpAccessList baseAcl = _ab.setName(aclName).setOwner(baseConfig).build();
     IpAccessList deltaAcl =
-        _ab.setLines(
+        _ab.setOwner(deltaConfig)
+            .setLines(
                 ImmutableList.of(
                     accepting()
                         .setMatchCondition(and(matchSrcInterface(IFACE1), matchDst(IP)))
                         .build()))
             .build();
 
-    Batfish batfish = getBatfish(baseConfig, deltaConfig);
+    IBatfish batfish = getBatfish(baseConfig, deltaConfig);
     SearchFiltersParameters params =
         _params
             .toBuilder()
@@ -162,7 +164,7 @@ public class BatfishSearchFiltersDifferentialTest {
 
     // can match line 1 because IFACE1 is specified
     DifferentialSearchFiltersResult result =
-        batfish.differentialReachFilter(baseConfig, baseAcl, deltaConfig, deltaAcl, params);
+        differentialReachFilter(batfish, baseConfig, baseAcl, deltaConfig, deltaAcl, params);
     assertThat("Expected no decreased result", !result.getDecreasedResult().isPresent());
     assertThat("Expected increased result", result.getIncreasedResult().isPresent());
     assertThat(
@@ -176,7 +178,7 @@ public class BatfishSearchFiltersDifferentialTest {
             .build();
 
     // not can't match line 1 because IFACE2 is specified
-    result = batfish.differentialReachFilter(baseConfig, baseAcl, deltaConfig, deltaAcl, params);
+    result = differentialReachFilter(batfish, baseConfig, baseAcl, deltaConfig, deltaAcl, params);
     assertThat("Expected no decreased result", !result.getDecreasedResult().isPresent());
     assertThat("Expected no increased result", !result.getIncreasedResult().isPresent());
   }

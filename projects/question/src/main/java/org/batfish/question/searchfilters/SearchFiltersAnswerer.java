@@ -1,6 +1,10 @@
 package org.batfish.question.searchfilters;
 
 import static com.google.common.base.Preconditions.checkState;
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
+import static org.batfish.question.FilterQuestionUtils.differentialBDDSourceManager;
+import static org.batfish.question.FilterQuestionUtils.getFlow;
+import static org.batfish.question.FilterQuestionUtils.resolveSources;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_FILTER_NAME;
 import static org.batfish.question.testfilters.TestFiltersAnswerer.COL_NODE;
 
@@ -25,18 +29,25 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import net.sf.javabdd.BDD;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.acl.AclExplainer;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.Question;
@@ -51,6 +62,7 @@ import org.batfish.question.testfilters.TestFiltersAnswerer;
 import org.batfish.question.testfilters.TestFiltersQuestion;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.SpecifierContext;
+import org.batfish.symbolic.bdd.BDDAcl;
 
 /** Answerer for SearchFiltersQuestion */
 public final class SearchFiltersAnswerer extends Answerer {
@@ -139,8 +151,8 @@ public final class SearchFiltersAnswerer extends Answerer {
 
         // present in both snapshot
         DifferentialSearchFiltersResult results =
-            _batfish.differentialReachFilter(
-                baseConfig, baseAcl.get(), deltaConfig, deltaAcl.get(), parameters);
+            differentialReachFilter(
+                _batfish, baseConfig, baseAcl.get(), deltaConfig, deltaAcl.get(), parameters);
 
         Stream.of(results.getDecreasedResult(), results.getIncreasedResult())
             .filter(Optional::isPresent)
@@ -237,7 +249,7 @@ public final class SearchFiltersAnswerer extends Answerer {
       Configuration node = configurations.get(hostname);
       IpAccessList acl = triple.getRight();
       Optional<SearchFiltersResult> optionalResult;
-      optionalResult = _batfish.reachFilter(node, acl, question.toSearchFiltersParameters());
+      optionalResult = reachFilter(_batfish, node, acl, question.toSearchFiltersParameters());
       optionalResult.ifPresent(
           result ->
               rows.add(
@@ -362,9 +374,145 @@ public final class SearchFiltersAnswerer extends Answerer {
   }
 
   /** Adds {@code nodes} (which are present in only one snapshot) to the {@code table} */
-  private void addOneSnapshotNodes(SetView<String> nodes, TableAnswerElement table) {
+  private static void addOneSnapshotNodes(SetView<String> nodes, TableAnswerElement table) {
     for (String node : nodes) {
       table.addRow(Row.builder(table.getMetadata().toColumnMap()).put(COL_NODE, node).build());
     }
+  }
+
+  @VisibleForTesting
+  static Optional<SearchFiltersResult> reachFilter(
+      IBatfish batfish, Configuration node, IpAccessList acl, SearchFiltersParameters parameters) {
+    BDDPacket bddPacket = new BDDPacket();
+
+    SpecifierContext specifierContext = batfish.specifierContext();
+
+    Set<String> inactiveIfaces =
+        Sets.difference(node.getAllInterfaces().keySet(), node.activeInterfaces());
+    Set<String> activeSources =
+        Sets.difference(
+            resolveSources(
+                specifierContext, parameters.getStartLocationSpecifier(), node.getHostname()),
+            inactiveIfaces);
+    Set<String> referencedSources = referencedSources(node.getIpAccessLists(), acl);
+
+    BDDSourceManager mgr = BDDSourceManager.forSources(bddPacket, activeSources, referencedSources);
+
+    HeaderSpace headerSpace = parameters.resolveHeaderspace(specifierContext);
+    BDD headerSpaceBDD = new HeaderSpaceToBDD(bddPacket, node.getIpSpaces()).toBDD(headerSpace);
+    BDD bdd =
+        BDDAcl.create(bddPacket, acl, node.getIpAccessLists(), node.getIpSpaces(), mgr)
+            .getBdd()
+            .and(headerSpaceBDD)
+            .and(mgr.isValidValue());
+
+    return getFlow(bddPacket, mgr, node.getHostname(), bdd, batfish.getFlowTag())
+        .map(
+            flow ->
+                new SearchFiltersResult(
+                    flow,
+                    parameters.getGenerateExplanations()
+                        ? AclExplainer.explain(
+                            bddPacket,
+                            mgr,
+                            new MatchHeaderSpace(headerSpace),
+                            acl,
+                            node.getIpAccessLists(),
+                            node.getIpSpaces())
+                        : null));
+  }
+
+  /** Performs a difference reachFilters analysis (both increased and decreased reachability). */
+  @VisibleForTesting
+  static DifferentialSearchFiltersResult differentialReachFilter(
+      IBatfish batfish,
+      Configuration baseConfig,
+      IpAccessList baseAcl,
+      Configuration deltaConfig,
+      IpAccessList deltaAcl,
+      SearchFiltersParameters searchFiltersParameters) {
+    BDDPacket bddPacket = new BDDPacket();
+
+    HeaderSpace headerSpace =
+        searchFiltersParameters.resolveHeaderspace(batfish.specifierContext());
+    BDD headerSpaceBDD =
+        new HeaderSpaceToBDD(bddPacket, baseConfig.getIpSpaces()).toBDD(headerSpace);
+
+    BDDSourceManager mgr =
+        differentialBDDSourceManager(
+            bddPacket,
+            batfish,
+            baseConfig,
+            deltaConfig,
+            baseAcl,
+            deltaAcl,
+            searchFiltersParameters.getStartLocationSpecifier());
+
+    BDD baseAclBDD =
+        BDDAcl.create(
+                bddPacket, baseAcl, baseConfig.getIpAccessLists(), baseConfig.getIpSpaces(), mgr)
+            .getBdd()
+            .and(headerSpaceBDD)
+            .and(mgr.isValidValue());
+    BDD deltaAclBDD =
+        BDDAcl.create(
+                bddPacket, deltaAcl, deltaConfig.getIpAccessLists(), deltaConfig.getIpSpaces(), mgr)
+            .getBdd()
+            .and(headerSpaceBDD)
+            .and(mgr.isValidValue());
+
+    String hostname = baseConfig.getHostname();
+    String flowTag = batfish.getFlowTag();
+
+    BDD increasedBDD = baseAclBDD.not().and(deltaAclBDD);
+    Optional<Flow> increasedFlow = getFlow(bddPacket, mgr, hostname, increasedBDD, flowTag);
+
+    BDD decreasedBDD = baseAclBDD.and(deltaAclBDD.not());
+    Optional<Flow> decreasedFlow = getFlow(bddPacket, mgr, hostname, decreasedBDD, flowTag);
+
+    boolean explain = searchFiltersParameters.getGenerateExplanations();
+
+    /*
+     * Only generate an explanation if the differential headerspace is non-empty (i.e. we found a
+     * flow).
+     */
+    Optional<SearchFiltersResult> increasedResult =
+        increasedFlow.map(
+            flow ->
+                new SearchFiltersResult(
+                    flow,
+                    !explain
+                        ? null
+                        : AclExplainer.explainDifferential(
+                            bddPacket,
+                            mgr,
+                            new MatchHeaderSpace(headerSpace),
+                            baseAcl,
+                            baseConfig.getIpAccessLists(),
+                            baseConfig.getIpSpaces(),
+                            deltaAcl,
+                            deltaConfig.getIpAccessLists(),
+                            deltaConfig.getIpSpaces())));
+
+    Optional<SearchFiltersResult> decreasedResult =
+        decreasedFlow.map(
+            flow ->
+                new SearchFiltersResult(
+                    flow,
+                    !explain
+                        ? null
+                        : AclExplainer.explainDifferential(
+                            bddPacket,
+                            mgr,
+                            new MatchHeaderSpace(headerSpace),
+                            deltaAcl,
+                            deltaConfig.getIpAccessLists(),
+                            deltaConfig.getIpSpaces(),
+                            baseAcl,
+                            baseConfig.getIpAccessLists(),
+                            baseConfig.getIpSpaces())));
+
+    return new DifferentialSearchFiltersResult(
+        increasedResult.orElse(null), decreasedResult.orElse(null));
   }
 }
