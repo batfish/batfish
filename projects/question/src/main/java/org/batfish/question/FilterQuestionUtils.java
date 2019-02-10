@@ -18,6 +18,8 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
@@ -48,7 +50,7 @@ public final class FilterQuestionUtils {
     return filters.build();
   }
 
-  public static <T> T withDeltaSnapshot(IBatfish batfish, Supplier<T> supplier) {
+  private static <T> T withDeltaSnapshot(IBatfish batfish, Supplier<T> supplier) {
     batfish.pushDeltaSnapshot();
     try {
       return supplier.get();
@@ -57,7 +59,7 @@ public final class FilterQuestionUtils {
     }
   }
 
-  public static <T> T withBaseSnapshot(IBatfish batfish, Supplier<T> supplier) {
+  private static <T> T withBaseSnapshot(IBatfish batfish, Supplier<T> supplier) {
     batfish.pushDeltaSnapshot();
     try {
       return supplier.get();
@@ -66,6 +68,11 @@ public final class FilterQuestionUtils {
     }
   }
 
+  /**
+   * Instantiate a {@link BDDSourceManager} that tracks sources that are active and referenced on
+   * both the current and reference version of a node. Further scope references to the input ACL,
+   * and active sources to those specified by the input {@link LocationSpecifier}.
+   */
   public static BDDSourceManager differentialBDDSourceManager(
       BDDPacket bddPacket,
       IBatfish batfish,
@@ -85,6 +92,11 @@ public final class FilterQuestionUtils {
         bddPacket, batfish, baseConfig, deltaConfig, baseAcl, deltaAcl, startLocationSpecifier);
   }
 
+  /**
+   * Instantiate a {@link BDDSourceManager} that tracks sources that are active and referenced on
+   * both the current and reference version of a node. Further scope references to the input ACL,
+   * and active sources to those specified by the input {@link LocationSpecifier}.
+   */
   public static BDDSourceManager differentialBDDSourceManager(
       BDDPacket bddPacket,
       IBatfish batfish,
@@ -122,6 +134,7 @@ public final class FilterQuestionUtils {
     return BDDSourceManager.forSources(bddPacket, activeSources, referencedSources);
   }
 
+  /** Return a concrete flow satisfying the input {@link BDD}, if one exists. */
   public static Optional<Flow> getFlow(
       BDDPacket pkt, BDDSourceManager bddSourceManager, String hostname, BDD bdd, String flowTag) {
     if (bdd.isZero()) {
@@ -136,6 +149,10 @@ public final class FilterQuestionUtils {
             .build());
   }
 
+  /**
+   * Resolve the set of filter sources (for {@link MatchSrcInterface} and {@link
+   * OriginatingFromDevice} specified by the input {@link LocationSpecifier}.
+   */
   public static Set<String> resolveSources(
       SpecifierContext specifierContext, LocationSpecifier startLocationSpecifier, String node) {
     LocationVisitor<String> locationToSource =

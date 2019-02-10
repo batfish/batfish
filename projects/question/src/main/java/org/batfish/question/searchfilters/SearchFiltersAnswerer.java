@@ -387,9 +387,13 @@ public final class SearchFiltersAnswerer extends Answerer {
 
     SpecifierContext specifierContext = batfish.specifierContext();
 
+    Set<String> inactiveIfaces =
+        Sets.difference(node.getAllInterfaces().keySet(), node.activeInterfaces());
     Set<String> activeSources =
-        resolveSources(
-            specifierContext, parameters.getStartLocationSpecifier(), node.getHostname());
+        Sets.difference(
+            resolveSources(
+                specifierContext, parameters.getStartLocationSpecifier(), node.getHostname()),
+            inactiveIfaces);
     Set<String> referencedSources = referencedSources(node.getIpAccessLists(), acl);
 
     BDDSourceManager mgr = BDDSourceManager.forSources(bddPacket, activeSources, referencedSources);

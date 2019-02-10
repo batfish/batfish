@@ -36,7 +36,6 @@ import static org.hamcrest.Matchers.oneOf;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -164,7 +163,7 @@ public final class SearchFiltersTest {
   private static SearchFiltersParameters _allLocationsParams;
 
   @BeforeClass
-  public static void setup() throws IOException {
+  public static void setup() {
     NetworkFactory nf = new NetworkFactory();
     _config =
         nf.configurationBuilder()
@@ -185,6 +184,7 @@ public final class SearchFiltersTest {
     Builder ib = nf.interfaceBuilder().setActive(true).setOwner(_config);
     ib.setName(IFACE1).build();
     ib.setName(IFACE2).build();
+    ib.setName("inactiveIface").setActive(false).build();
 
     _batfish = new MockBatfish(_config);
     _allLocationsParams =
