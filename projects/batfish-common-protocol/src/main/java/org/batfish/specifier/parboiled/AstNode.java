@@ -8,11 +8,4 @@ public abstract class AstNode extends ImmutableBinaryTreeNode<AstNode> {
   public AstNode(AstNode left, AstNode right) {
     super(left, right);
   }
-
-  public abstract Object getValue();
-
-  @Override
-  public String toString() {
-    return getValue().toString();
-  }
 }

@@ -24,8 +24,12 @@ public class LeafAstNode extends AstNode {
     return Objects.hash(_value);
   }
 
-  @Override
   public Object getValue() {
     return _value;
+  }
+
+  @Override
+  public String toString() {
+    return Objects.toString(_value);
   }
 }

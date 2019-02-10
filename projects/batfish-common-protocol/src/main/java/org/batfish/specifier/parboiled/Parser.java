@@ -4,7 +4,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.specifier.parboiled.IpSpaceAstNode.Type;
-import org.parboiled.BaseParser;
+import org.parboiled.Parboiled;
 import org.parboiled.Rule;
 
 /**
@@ -16,14 +16,17 @@ import org.parboiled.Rule;
   "checkstyle:methodname", // this class uses idiomatic names
   "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
 })
-public class Parser extends BaseParser<Object> {
+public class Parser extends CommonParser {
+
+  public static Parser INSTANCE = Parboiled.createParser(Parser.class);
 
   /**
-   * This is the common entry point for all types of expressions. The type of expression you want to
-   * parse is specified by the top-level rule for the expression
+   * Shared entry point for all expressions.
+   *
+   * <p>The parameter {@code expression} specifies the type of expression we want to parse.
    */
   public Rule input(Rule expression) {
-    return Sequence(expression, EOI);
+    return Sequence(WhiteSpace(), expression, WhiteSpace(), EOI);
   }
 
   /**
@@ -33,7 +36,6 @@ public class Parser extends BaseParser<Object> {
    * ipSpec := ipSpecTerm [, ipSpecTerm]*
    *
    * ipSpecTerm := addgressgroup(groupname, bookname)
-   *               | ! ipSpecTerm
    *               | ipPrefix (e.g., 1.1.1.0/24)
    *               | ipWildcard (e.g., 1.1.1.1:255.255.255.0)
    *               | ipRange (e.g., 1.1.1.1-1.1.1.2)
@@ -55,34 +57,30 @@ public class Parser extends BaseParser<Object> {
 
   /* An IpSpace term is one of these things */
   public Rule IpSpaceTerm() {
-    return FirstOf(
-        IpSpaceAddressGroup(), IpSpaceNot(), IpPrefix(), IpWildcard(), IpRange(), IpAddress());
+    return FirstOf(IpSpaceAddressGroup(), IpPrefix(), IpWildcard(), IpRange(), IpAddress());
   }
 
   /** Includes ref.addgressgroup for backward compatibility. Should be removed later */
   public Rule IpSpaceAddressGroup() {
     return Sequence(
-        FirstOf(IgnoreCase("addressgroup"), IgnoreCase("ref.addressgroup")),
+        FirstOf(IgnoreCase("@addressgroup"), IgnoreCase("ref.addressgroup")),
         WhiteSpace(),
         "( ",
-        AddressGroupName(),
-        ", ",
-        ReferenceBookName(),
+        AddressGroupAndBook(),
         ") ",
         push(new IpSpaceAstNode(Type.ADDRESS_GROUP, (AstNode) pop(1), (AstNode) pop())));
   }
 
-  /** Not of the IpSpaceTerm, which means exclusion */
-  public Rule IpSpaceNot() {
-    return Sequence("! ", IpSpaceTerm(), push(new IpSpaceAstNode(Type.NOT, (AstNode) pop(), null)));
-  }
-
-  // Common helpers follow
-
-  /** Matches names of AddressGroup */
-  public Rule AddressGroupName() {
+  /** Matches AddressGroup, ReferenceBook pair. Puts two values on stack */
+  public Rule AddressGroupAndBook() {
     return Sequence(
-        ReferenceObjectNameLiteral(), push(new LeafAstNode(matchOrDefault("Error"))), WhiteSpace());
+        ReferenceObjectNameLiteral(),
+        push(new LeafAstNode(matchOrDefault("Error"))),
+        WhiteSpace(),
+        ", ",
+        ReferenceObjectNameLiteral(),
+        push(new LeafAstNode(matchOrDefault("Error"))),
+        WhiteSpace());
   }
 
   /**
@@ -91,10 +89,6 @@ public class Parser extends BaseParser<Object> {
    */
   public Rule IpAddress() {
     return Sequence(IpAddressUnchecked(), push(new LeafAstNode(Ip.parse(matchOrDefault("Error")))));
-  }
-
-  public Rule IpAddressUnchecked() {
-    return Sequence(Number(), '.', Number(), '.', Number(), '.', Number());
   }
 
   /**
@@ -106,10 +100,6 @@ public class Parser extends BaseParser<Object> {
         IpPrefixUnchecked(), push(new LeafAstNode(Prefix.parse(matchOrDefault("Error")))));
   }
 
-  public Rule IpPrefixUnchecked() {
-    return Sequence(IpAddressUnchecked(), '/', Number());
-  }
-
   /** Matches Ip ranges (e.g., 1.1.1.1 - 1.1.1.2) */
   public Rule IpRange() {
     return Sequence(
@@ -117,63 +107,14 @@ public class Parser extends BaseParser<Object> {
         WhiteSpace(),
         "- ",
         IpAddress(),
-        push(new IpSpaceAstNode(Type.DASH, (AstNode) pop(1), (AstNode) pop(0))),
+        push(new IpSpaceAstNode(Type.RANGE, (AstNode) pop(1), (AstNode) pop(0))),
         WhiteSpace());
   }
 
-  /** Matches Ip ranges (e.g., 1.1.1.1 - 1.1.1.2) */
+  /** Matches Ip wildcards (e.g., 1.1.1.1:255.255.255.255) */
   public Rule IpWildcard() {
     return Sequence(
         Sequence(IpAddressUnchecked(), ':', IpAddressUnchecked()),
         push(new LeafAstNode(new IpWildcard(matchOrDefault("Error")))));
-  }
-
-  /** Matches names of reference books */
-  public Rule ReferenceBookName() {
-    return Sequence(
-        ReferenceObjectNameLiteral(), push(new LeafAstNode(matchOrDefault("Error"))), WhiteSpace());
-  }
-
-  /**
-   * Redefine rule creation for string literals.
-   *
-   * <p>We automatically match trailing whitespace, so we don't have to insert extra Whitespace()
-   * rules after each character or string literal
-   */
-  @Override
-  protected Rule fromStringLiteral(String string) {
-    return string.endsWith(" ")
-        ? Sequence(String(string.substring(0, string.length() - 1)), WhiteSpace())
-        : String(string);
-  }
-
-  /** [a-z] + [A-Z] */
-  public Rule AlphabetChar() {
-    return FirstOf(CharRange('a', 'z'), CharRange('A', 'Z'));
-  }
-
-  /** [0-9] */
-  public Rule Digit() {
-    return CharRange('0', '9');
-  }
-
-  /** [0-9]+ */
-  public Rule Number() {
-    return OneOrMore(Digit());
-  }
-
-  /**
-   * [a-zA-Z_][-a-zA-Z0-9_]*
-   *
-   * <p>This spec is based on {@link org.batfish.referencelibrary.ReferenceLibrary#NAME_PATTERN}
-   */
-  public Rule ReferenceObjectNameLiteral() {
-    return Sequence(
-        FirstOf(AlphabetChar(), Ch('_')),
-        ZeroOrMore(FirstOf(AlphabetChar(), Ch('_'), Digit(), Ch('-'))));
-  }
-
-  public Rule WhiteSpace() {
-    return ZeroOrMore(AnyOf(" \t\f"));
   }
 }

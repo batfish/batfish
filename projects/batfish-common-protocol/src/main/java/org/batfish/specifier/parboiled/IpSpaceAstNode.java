@@ -7,15 +7,18 @@ public class IpSpaceAstNode extends AstNode {
   public enum Type {
     ADDRESS_GROUP,
     COMMA,
-    DASH,
-    NOT
+    RANGE
   }
 
-  private Type _type;
+  private final Type _type;
 
   public IpSpaceAstNode(Type type, AstNode left, AstNode right) {
     super(left, right);
-    this._type = type;
+    _type = type;
+  }
+
+  public Type getType() {
+    return _type;
   }
 
   @Override
@@ -29,26 +32,21 @@ public class IpSpaceAstNode extends AstNode {
   }
 
   @Override
-  public String getValue() {
-    switch (_type) {
-      case COMMA:
-        return String.format("%s, %s", left().getValue(), right().getValue());
-      case DASH:
-        return String.format("%s-%s", left().getValue(), right().getValue());
-      case NOT:
-        return String.format("!%s", left().getValue());
-      default:
-        throw new IllegalStateException(String.format("Unknown type of IpSpaceAstNode: %s", _type));
-    }
-  }
-
-  @Override
   public int hashCode() {
     return Objects.hash(_type, left(), right());
   }
 
   @Override
   public String toString() {
-    return getValue();
+    switch (_type) {
+      case ADDRESS_GROUP:
+        return String.format("addressgroup(%s, %s)", left(), right());
+      case COMMA:
+        return String.format("%s, %s", left(), right());
+      case RANGE:
+        return String.format("%s-%s", left(), right());
+      default:
+        throw new IllegalStateException(String.format("Unknown type of IpSpaceAstNode: %s", _type));
+    }
   }
 }
