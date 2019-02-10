@@ -21,8 +21,7 @@ public class BatfishParseTreeWalker extends ParseTreeWalker {
       ctx.enterRule(listener);
     } catch (Exception e) {
       throw new BatfishException(
-          String.format("Exception walking line '%s': %s", ctx.getText(), e.getMessage()),
-          e.getCause());
+          String.format("Exception walking line '%s': %s", ctx.getText(), e.getMessage()), e);
     }
   }
 
@@ -34,8 +33,7 @@ public class BatfishParseTreeWalker extends ParseTreeWalker {
       listener.exitEveryRule(ctx);
     } catch (Exception e) {
       throw new BatfishException(
-          String.format("Exception walking line '%s': %s", ctx.getText(), e.getMessage()),
-          e.getCause());
+          String.format("Exception walking line '%s': %s", ctx.getText(), e.getMessage()), e);
     }
   }
 }

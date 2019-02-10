@@ -1,12 +1,12 @@
 package org.batfish.datamodel.acl.explanation;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.normalize.Negate;
@@ -52,7 +52,7 @@ public final class ConjunctsBuilder extends AclLineMatchExprSetBuilder {
 
   @Override
   public AclLineMatchExpr build() {
-    return getBdd().isZero() ? FALSE : and(getExprs());
+    return getBdd().isZero() ? FALSE : AclLineMatchExprs.and(getExprs());
   }
 
   @Override
