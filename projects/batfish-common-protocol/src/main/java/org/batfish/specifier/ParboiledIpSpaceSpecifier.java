@@ -46,7 +46,6 @@ public final class ParboiledIpSpaceSpecifier implements IpSpaceSpecifier {
     return IpSpaceAssignment.builder().assign(locations, ipSpace).build();
   }
 
-  // TODO: tests for this function
   @VisibleForTesting
   static IpSpace computeIpSpace(AstNode ast, SpecifierContext ctxt) {
     if (ast instanceof IpSpaceAstNode) {
