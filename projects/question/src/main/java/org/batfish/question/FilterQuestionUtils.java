@@ -150,7 +150,8 @@ public final class FilterQuestionUtils {
 
   /**
    * Resolve the set of filter sources (for {@link MatchSrcInterface} and {@link
-   * OriginatingFromDevice} specified by the input {@link LocationSpecifier}.
+   * org.batfish.datamodel.acl.OriginatingFromDevice} specified by the input {@link
+   * LocationSpecifier}.
    */
   public static Set<String> resolveSources(
       SpecifierContext specifierContext, LocationSpecifier startLocationSpecifier, String node) {
