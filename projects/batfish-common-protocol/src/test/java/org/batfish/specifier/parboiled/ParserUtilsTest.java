@@ -150,9 +150,7 @@ public class ParserUtilsTest {
     ParsingResult<?> result = getRunner().run("@specifier");
     assertThat(
         getPartialMatches((InvalidInputError) result.parseErrors.get(0)),
-        equalTo(
-            ImmutableSet.of(
-                new PartialMatch(ParserUtils.STRING_LITERAL_LABEL, "@specifier", "("))));
+        equalTo(ImmutableSet.of(new PartialMatch(ParserUtils.STRING_LITERAL_LABEL, "", "("))));
   }
 
   @Test
