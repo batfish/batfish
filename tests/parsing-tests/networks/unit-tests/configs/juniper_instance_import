@@ -1,0 +1,6 @@
+#
+set system host-name juniper_instance_import
+#
+set routing-options instance-import POLICY
+#
+set policy-options policy-statement POLICY then accept

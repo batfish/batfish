@@ -4845,6 +4845,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _configuration.referenceStructure(
         POLICY_STATEMENT, policyName, INSTANCE_IMPORT_POLICY, getLine(ctx.name.getStart()));
     _currentRoutingInstance.getInstanceImports().add(policyName);
+    todo(ctx);
   }
 
   @Override
