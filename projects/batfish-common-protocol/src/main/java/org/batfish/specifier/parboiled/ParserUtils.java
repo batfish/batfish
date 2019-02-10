@@ -5,20 +5,21 @@ import com.google.common.collect.ImmutableSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.matchers.AnyOfMatcher;
 import org.parboiled.matchers.CharMatcher;
 import org.parboiled.matchers.CharRangeMatcher;
 import org.parboiled.matchers.StringMatcher;
-import org.parboiled.parserunners.RecoveringParseRunner;
-import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.MatcherPath;
 
 /** A helper class to interpret parser errors */
+@ParametersAreNonnullByDefault
 public final class ParserUtils {
 
   /** The label for the built in rule to create tokens from string literals */
-  public static String STRING_LITERAL_LABEL = "fromStringLiteral";
+  static String STRING_LITERAL_LABEL = "fromStringLiteral";
 
   private static Set<String> _BUILT_IN_LABELS =
       ImmutableSet.of("Sequence", "FirstOf", "AnyOf", "ZeroOrMore", "OneOrMore", "Optional");
@@ -29,13 +30,13 @@ public final class ParserUtils {
   }
 
   /** Generates a friendly message to explain what might be wrong with parser input */
-  public static String getErrorString(int startIndex, Set<PartialMatch> partialMatches) {
+  static String getErrorString(int startIndex, Set<PartialMatch> partialMatches) {
     String retString = String.format("Error parsing input at index %d.", startIndex);
     if (!partialMatches.isEmpty()) {
       retString +=
           "Expected "
               + partialMatches.stream()
-                  .map(pm -> getErrorString(pm))
+                  .map(ParserUtils::getErrorString)
                   .collect(Collectors.joining(", "));
     }
     return retString;
@@ -58,11 +59,13 @@ public final class ParserUtils {
    * When parsing fails, given its error, this function returns the set of matches that could have
    * made things work.
    *
-   * <p>This function has been tested with only {@link ReportingParseRunner}. When using {@link
-   * RecoveringParseRunner}, there may be some additional complexity with respect to indices. See
+   * <p>This function has been tested with only {@link
+   * org.parboiled.parserunners.ReportingParseRunner}. When using {@link
+   * org.parboiled.parserunners.RecoveringParseRunner}, there may be some additional complexity with
+   * respect to indices. See
    * https://github.com/sirthias/parboiled/blob/07b6e2b5c583c7e258599650157a3b0d2b63667a/parboiled-core/src/main/java/org/parboiled/errors/DefaultInvalidInputErrorFormatter.java#L60.
    */
-  public static Set<PartialMatch> getPartialMatches(InvalidInputError error) {
+  static Set<PartialMatch> getPartialMatches(InvalidInputError error) {
 
     Set<PartialMatch> partialMatches = new HashSet<>();
 
@@ -90,7 +93,7 @@ public final class ParserUtils {
         }
 
         partialMatches.add(getPartialMatch(error, path, element, level));
-        break;
+        break; // NOPMD
       }
       if (level == -1) {
         throw new IllegalStateException(String.format("Useful matcher not found in path %s", path));
@@ -100,6 +103,7 @@ public final class ParserUtils {
     return partialMatches;
   }
 
+  @Nonnull
   private static PartialMatch getPartialMatch(
       InvalidInputError error, MatcherPath path, MatcherPath.Element element, int level) {
 

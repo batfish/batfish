@@ -27,6 +27,11 @@ public class ParserUtilsTest {
     return new ReportingParseRunner<>(_parser.input(_parser.TestExpression()));
   }
 
+  @SuppressWarnings({
+    "InfiniteRecursion",
+    "checkstyle:methodname", // this class uses idiomatic names
+    "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
+  })
   public static class TestParser extends CommonParser {
 
     public Rule input(Rule expression) {
