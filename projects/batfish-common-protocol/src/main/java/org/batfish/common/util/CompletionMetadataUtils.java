@@ -8,36 +8,11 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
-import org.batfish.referencelibrary.AddressGroup;
-import org.batfish.referencelibrary.ReferenceBook;
-import org.batfish.referencelibrary.ReferenceLibrary;
 
 /** Various functions useful for fetching data used in the creation of CompletionMetadata */
 public final class CompletionMetadataUtils {
 
   private CompletionMetadataUtils() {}
-
-  @VisibleForTesting
-  public static Set<String> getAddressBooks(ReferenceLibrary referenceLibrary) {
-    ImmutableSet.Builder<String> addressBooks = ImmutableSet.builder();
-    referenceLibrary.getReferenceBooks().stream()
-        .map(ReferenceBook::getName)
-        .forEach(addressBooks::add);
-    return addressBooks.build();
-  }
-
-  @VisibleForTesting
-  public static Set<String> getAddressGroups(ReferenceLibrary referenceLibrary) {
-    ImmutableSet.Builder<String> addressGroups = ImmutableSet.builder();
-    referenceLibrary
-        .getReferenceBooks()
-        .forEach(
-            referenceBook ->
-                referenceBook.getAddressGroups().stream()
-                    .map(AddressGroup::getName)
-                    .forEach(addressGroups::add));
-    return addressGroups.build();
-  }
 
   @VisibleForTesting
   public static Set<String> getFilterNames(Map<String, Configuration> configurations) {
@@ -78,6 +53,11 @@ public final class CompletionMetadataUtils {
                                 .forEach(ips::add)));
 
     return ips.build();
+  }
+
+  @VisibleForTesting
+  public static Set<String> getNodes(Map<String, Configuration> configurations) {
+    return ImmutableSet.copyOf(configurations.keySet());
   }
 
   @VisibleForTesting

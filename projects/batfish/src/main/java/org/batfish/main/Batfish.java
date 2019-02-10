@@ -9,11 +9,10 @@ import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
-import static org.batfish.common.util.CompletionMetadataUtils.getAddressBooks;
-import static org.batfish.common.util.CompletionMetadataUtils.getAddressGroups;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
 import static org.batfish.common.util.CompletionMetadataUtils.getIps;
+import static org.batfish.common.util.CompletionMetadataUtils.getNodes;
 import static org.batfish.common.util.CompletionMetadataUtils.getPrefixes;
 import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
@@ -2906,13 +2905,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private CompletionMetadata computeCompletionMetadata(Map<String, Configuration> configurations) {
-    ReferenceLibrary referenceLibrary = getReferenceLibraryData();
     return new CompletionMetadata(
-        getAddressBooks(referenceLibrary),
-        getAddressGroups(referenceLibrary),
         getFilterNames(configurations),
         getInterfaces(configurations),
         getIps(configurations),
+        getNodes(configurations),
         getPrefixes(configurations),
         getStructureNames(configurations),
         getVrfs(configurations),
