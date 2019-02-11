@@ -2631,67 +2631,60 @@ public class VirtualRouter implements Serializable {
       @Nonnull BgpPeerConfig remoteConfig,
       @Nonnull Map<String, Node> allNodes,
       @Nonnull BgpSessionProperties sessionProperties) {
+
+    RoutingPolicy exportPolicy = _c.getRoutingPolicies().get(ourConfig.getExportPolicy());
+    BgpRoute.Builder transformedOutgoingRouteBuilder;
     try {
-      RoutingPolicy exportPolicy = null;
+      transformedOutgoingRouteBuilder =
+          BgpProtocolHelper.transformBgpRouteOnExport(
+              ourConfig,
+              remoteConfig,
+              sessionProperties,
+              _vrf,
+              requireNonNull(getRemoteBgpNeighborVR(remoteConfigId, allNodes))._vrf,
+              exportCandidate);
+    } catch (BgpRoutePropagationException e) {
+      // TODO: Log a warning
+      return null;
+    }
+    if (transformedOutgoingRouteBuilder == null) {
+      // This route could not be exported for core bgp protocol reasons
+      return null;
+    }
 
-      exportPolicy = _c.getRoutingPolicies().get(ourConfig.getExportPolicy());
-
-      BgpRoute.Builder transformedOutgoingRouteBuilder;
-      try {
-        transformedOutgoingRouteBuilder =
-            BgpProtocolHelper.transformBgpRouteOnExport(
-                ourConfig,
-                remoteConfig,
-                sessionProperties,
-                _vrf,
-                requireNonNull(getRemoteBgpNeighborVR(remoteConfigId, allNodes))._vrf,
-                exportCandidate);
-      } catch (BgpRoutePropagationException e) {
-        // TODO: Log a warning
-        return null;
-      }
-      if (transformedOutgoingRouteBuilder == null) {
-        // This route could not be exported for core bgp protocol reasons
-        return null;
-      }
-
-      // Process transformed outgoing route by the export policy
-      boolean shouldExport =
-          exportPolicy.process(
-              exportCandidate,
-              transformedOutgoingRouteBuilder,
-              remoteConfig.getLocalIp(),
-              ourConfigId.getRemotePeerPrefix(),
-              ourConfigId.getVrfName(),
-              Direction.OUT);
-
-      VirtualRouter remoteVr = getRemoteBgpNeighborVR(remoteConfigId, allNodes);
-      if (!shouldExport) {
-        // This route could not be exported due to export policy
-        _prefixTracer.filtered(
-            exportCandidate.getNetwork(),
-            requireNonNull(remoteVr).getHostname(),
+    // Process transformed outgoing route by the export policy
+    boolean shouldExport =
+        exportPolicy.process(
+            exportCandidate,
+            transformedOutgoingRouteBuilder,
             remoteConfig.getLocalIp(),
-            remoteConfigId.getVrfName(),
-            ourConfig.getExportPolicy(),
+            ourConfigId.getRemotePeerPrefix(),
+            ourConfigId.getVrfName(),
             Direction.OUT);
-        return null;
-      }
 
-      // Successfully exported route
-      BgpRoute transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
-      _prefixTracer.sentTo(
-          transformedOutgoingRoute.getNetwork(),
+    VirtualRouter remoteVr = getRemoteBgpNeighborVR(remoteConfigId, allNodes);
+    if (!shouldExport) {
+      // This route could not be exported due to export policy
+      _prefixTracer.filtered(
+          exportCandidate.getNetwork(),
           requireNonNull(remoteVr).getHostname(),
           remoteConfig.getLocalIp(),
           remoteConfigId.getVrfName(),
-          ourConfig.getExportPolicy());
-
-      return transformedOutgoingRoute;
-    } catch (NullPointerException e) {
-      System.out.print("haha");
+          ourConfig.getExportPolicy(),
+          Direction.OUT);
       return null;
     }
+
+    // Successfully exported route
+    BgpRoute transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
+    _prefixTracer.sentTo(
+        transformedOutgoingRoute.getNetwork(),
+        requireNonNull(remoteVr).getHostname(),
+        remoteConfig.getLocalIp(),
+        remoteConfigId.getVrfName(),
+        ourConfig.getExportPolicy());
+
+    return transformedOutgoingRoute;
   }
 
   Optional<Rib> getRib(RibId id) {
