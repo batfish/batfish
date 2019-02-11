@@ -36,10 +36,8 @@ public final class LastHopOutgoingInterfaceManagerTest {
   private static final String IFACE2 = "IFACE2";
 
   private BDDPacket _pkt;
-  private BDD _falseBdd;
   private BDD _trueBdd;
 
-  private NetworkFactory _nf;
   private Configuration.Builder _cb;
   private Interface.Builder _ib;
   private Vrf.Builder _vb;
@@ -52,13 +50,12 @@ public final class LastHopOutgoingInterfaceManagerTest {
   @Before
   public void setup() {
     _pkt = new BDDPacket();
-    _falseBdd = _pkt.getFactory().zero();
     _trueBdd = _pkt.getFactory().one();
 
-    _nf = new NetworkFactory();
-    _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    _ib = _nf.interfaceBuilder();
-    _vb = _nf.vrfBuilder();
+    NetworkFactory nf = new NetworkFactory();
+    _cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    _ib = nf.interfaceBuilder();
+    _vb = nf.vrfBuilder();
   }
 
   private Configuration configurationWithSession() {
