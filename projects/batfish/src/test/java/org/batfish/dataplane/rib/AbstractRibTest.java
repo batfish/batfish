@@ -201,6 +201,18 @@ public class AbstractRibTest {
     assertThat(_rib.longestPrefixMatch(Ip.parse("0.0.0.0")), emptyIterableOf(StaticRoute.class));
   }
 
+  /** Ensure that longestPrefixMatch finds route in root (guarantee no off-by-one length error) */
+  @Test
+  public void testLongestPrefixMatchWhenInRoot() {
+    StaticRoute r =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setAdministrativeCost(1)
+            .build();
+    _rib.mergeRouteGetDelta(r);
+    assertThat(_rib.longestPrefixMatch(Ip.parse("1.1.1.1"), 32), contains(r));
+  }
+
   /**
    * Ensure that {@link AbstractRib#longestPrefixMatch(Ip)} returns correct routes when the RIB is
    * non-empty
