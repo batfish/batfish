@@ -292,13 +292,6 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
         && Ip.getBitAtPosition(childPrefix.getStartIp(), parentPrefix.getPrefixLength());
   }
 
-  /** Find the node for a given prefix (must be an exact match). */
-  @Nullable
-  private PrefixTrieMultiMap<DataT> findNode(Prefix prefix) {
-    assert _prefix.containsPrefix(prefix);
-    return findNode(prefix, _prefix.getPrefixLength());
-  }
-
   /** Find a node longest prefix match for a given IP address. */
   @Nonnull
   public Set<DataT> longestPrefixMatch(Ip address) {
@@ -338,34 +331,10 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
   }
 
   @Nullable
-  private PrefixTrieMultiMap<DataT> findNode(Prefix p, int firstUnmatchedBitIndex) {
-    if (!_prefix.containsPrefix(p)) {
-      return null;
-    }
-
-    // If prefix lengths match, this is the node where such element would be stored.
-    if (_prefix.getPrefixLength() == p.getPrefixLength()) {
-      return this;
-    }
-
-    boolean currentBit = Ip.getBitAtPosition(p.getStartIp().asLong(), firstUnmatchedBitIndex);
-    /*
-     * If prefixes don't match exactly, look at the current bit. That determines whether we look
-     * left or right. As long as the child is not null, recurse.
-     *
-     * Note that:
-     * 1) elements are stored in the nodes where lengths of the node prefix and the desired prefix
-     *    match exactly; and
-     * 2) prefix matches only get more specific (longer) the deeper we go in the tree
-     *
-     * Therefore, we can fast-forward the firstUnmatchedBitIndex to the prefix length of the
-     * child node
-     */
-    if (currentBit) {
-      return (_right != null) ? _right.findNode(p, _right.getPrefix().getPrefixLength()) : null;
-    } else {
-      return (_left != null) ? _left.findNode(p, _left.getPrefix().getPrefixLength()) : null;
-    }
+  private PrefixTrieMultiMap<DataT> findNode(Prefix p) {
+    assert _prefix.containsPrefix(p);
+    PrefixTrieMultiMap<DataT> node = findLongestPrefixMatchNode(this, p);
+    return node._prefix.equals(p) ? node : null;
   }
 
   /** Returns the node with the longest prefxix match for a given prefix. */
