@@ -1,6 +1,5 @@
 package org.batfish.main;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Verify.verify;
@@ -326,7 +325,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           } catch (Exception e) {
             warnings.setErrorDetails(
                 new ErrorDetails(
-                    Throwables.getStackTraceAsString(firstNonNull(e.getCause(), e)),
+                    Throwables.getStackTraceAsString(e),
                     new ParseExceptionContext(walker.getCurrentCtx(), parser, input)));
             throw e;
           }
@@ -344,7 +343,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           } catch (Exception e) {
             warnings.setErrorDetails(
                 new ErrorDetails(
-                    Throwables.getStackTraceAsString(firstNonNull(e.getCause(), e)),
+                    Throwables.getStackTraceAsString(e),
                     new ParseExceptionContext(walker.getCurrentCtx(), parser, input)));
             throw e;
           }
@@ -2647,8 +2646,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 .getErrorDetails()
                 .put(
                     hostConfig.getHostname(),
-                    new ErrorDetails(
-                        Throwables.getStackTraceAsString(firstNonNull(bfc.getCause(), bfc))));
+                    new ErrorDetails(Throwables.getStackTraceAsString(bfc)));
           } else {
             bfc = new BatfishException(failureMessage);
             if (_settings.getExitOnFirstError()) {
@@ -2661,8 +2659,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   .getErrorDetails()
                   .put(
                       hostConfig.getHostname(),
-                      new ErrorDetails(
-                          Throwables.getStackTraceAsString(firstNonNull(bfc.getCause(), bfc))));
+                      new ErrorDetails(Throwables.getStackTraceAsString(bfc)));
             }
           }
         } else {

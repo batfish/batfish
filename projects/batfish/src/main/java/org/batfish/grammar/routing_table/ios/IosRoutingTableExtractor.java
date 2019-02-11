@@ -1,6 +1,5 @@
 package org.batfish.grammar.routing_table.ios;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.Route.AMBIGUOUS_NEXT_HOP;
 
 import com.google.common.base.Throwables;
@@ -207,7 +206,7 @@ public class IosRoutingTableExtractor extends IosRoutingTableParserBaseListener
     } catch (Exception e) {
       _w.setErrorDetails(
           new ErrorDetails(
-              Throwables.getStackTraceAsString(firstNonNull(e.getCause(), e)),
+              Throwables.getStackTraceAsString(e),
               new ParseExceptionContext(walker.getCurrentCtx(), _parser, _text)));
       throw e;
     }

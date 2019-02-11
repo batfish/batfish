@@ -1,7 +1,5 @@
 package org.batfish.grammar.flatjuniper;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.google.common.base.Throwables;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
@@ -123,7 +121,7 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
     } catch (Exception e) {
       _w.setErrorDetails(
           new ErrorDetails(
-              Throwables.getStackTraceAsString(firstNonNull(e.getCause(), e)),
+              Throwables.getStackTraceAsString(e),
               new ParseExceptionContext(walker.getCurrentCtx(), _parser, _text)));
       throw e;
     }

@@ -1,7 +1,5 @@
 package org.batfish.grammar.iptables;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.google.common.base.Throwables;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -238,7 +236,7 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
     } catch (Exception e) {
       _w.setErrorDetails(
           new ErrorDetails(
-              Throwables.getStackTraceAsString(firstNonNull(e.getCause(), e)),
+              Throwables.getStackTraceAsString(e),
               new ParseExceptionContext(walker.getCurrentCtx(), _parser, _text)));
       throw e;
     }

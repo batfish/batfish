@@ -1,7 +1,5 @@
 package org.batfish.grammar.mrv;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.google.common.base.Throwables;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.ErrorDetails;
@@ -71,7 +69,7 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
     } catch (Exception e) {
       _w.setErrorDetails(
           new ErrorDetails(
-              Throwables.getStackTraceAsString(firstNonNull(e.getCause(), e)),
+              Throwables.getStackTraceAsString(e),
               new ParseExceptionContext(walker.getCurrentCtx(), _parser, _text)));
       throw e;
     }
