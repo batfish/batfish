@@ -17,6 +17,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.VLAN_INT
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -94,7 +95,10 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   private @Nullable F5BigipConfiguration _c;
-  private @Nullable BgpAddressFamily _currentBgpAddressFamily;
+
+  @SuppressWarnings("unused") // temporary
+  private BgpAddressFamily _currentBgpAddressFamily;
+
   private @Nullable BgpProcess _currentBgpProcess;
   private @Nullable Interface _currentInterface;
   private @Nullable PrefixList _currentPrefixList;
@@ -295,15 +299,15 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitNrpee_prefix(Nrpee_prefixContext ctx) {
     String text = ctx.prefix.getText();
-    try {
-      _currentPrefixListEntry.setPrefix(Prefix.parse(text));
+    Optional<Prefix> prefix = Prefix.tryParse(text);
+    if (prefix.isPresent()) {
+      _currentPrefixListEntry.setPrefix(prefix.get());
       return;
-    } catch (BatfishException | IllegalArgumentException e) {
     }
-    try {
-      _currentPrefixListEntry.setPrefix6(new Prefix6(text));
+    Optional<Prefix6> prefix6 = Prefix6.tryParse(text);
+    if (prefix6.isPresent()) {
+      _currentPrefixListEntry.setPrefix6(prefix6.get());
       return;
-    } catch (BatfishException e) {
     }
     _w.redFlag(
         String.format("'%s' is neither IPv4 nor IPv6 prefix in: %s", text, getFullText(ctx)));

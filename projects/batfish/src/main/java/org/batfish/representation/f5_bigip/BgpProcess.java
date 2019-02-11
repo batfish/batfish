@@ -9,8 +9,8 @@ public final class BgpProcess implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private final @Nonnull BgpIpv6AddressFamily _ipv6AddressFamily;
   private final @Nonnull BgpIpv4AddressFamily _ipv4AddressFamily;
+  private final @Nonnull BgpIpv6AddressFamily _ipv6AddressFamily;
   private final @Nonnull String _name;
 
   public BgpProcess(String name) {
@@ -25,5 +25,9 @@ public final class BgpProcess implements Serializable {
 
   public @Nonnull BgpIpv6AddressFamily getIpv6AddressFamily() {
     return _ipv6AddressFamily;
+  }
+
+  public @Nonnull String getName() {
+    return _name;
   }
 }

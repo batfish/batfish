@@ -8,6 +8,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -61,6 +62,19 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
       throw new BatfishException("Invalid prefix length: \"" + parts[1] + "\"", e);
     }
     return create(ip, prefixLength);
+  }
+
+  /**
+   * Return an {@link Optional} {@link Prefix} from a string, or {@link Optional#empty} if the
+   * string does not represent a {@link Prefix}.
+   */
+  @Nonnull
+  public static Optional<Prefix> tryParse(@Nonnull String text) {
+    try {
+      return Optional.of(parse(text));
+    } catch (IllegalArgumentException | BatfishException e) {
+      return Optional.empty();
+    }
   }
 
   /**
