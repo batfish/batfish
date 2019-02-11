@@ -87,13 +87,13 @@ public interface SynthesizerInput {
   /** Mapping: hostname -&gt; interface -&gt; outgoingTransformation */
   Map<String, Map<String, Transformation>> getOutgoingTransformations();
 
-  /** Mapping: hostname -&gt; interface-&gt; postOutgoingAcl */
+  /** Mapping: hostname -&gt; interface-&gt; postTransformationIncomingAcl */
   Map<String, Map<String, String>> getPostTransformationIncomingAcls();
 
   /** Mapping: hostname -&gt; interface-&gt; postTransformationOutgoingAcl */
   Map<String, Map<String, String>> getPostTransformationOutgoingAcls();
 
-  /** Mapping: hostname -&gt; interface-&gt; incomingAcl */
+  /** Mapping: hostname -&gt; interface-&gt; preTransformationIncomingAcl */
   Map<String, Map<String, String>> getPreTransformationIncomingAcls();
 
   /** Mapping: hostname -&gt; interface-&gt; preTransformationOutgoingAcl */
