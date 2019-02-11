@@ -1,22 +1,18 @@
 package org.batfish.specifier.parboiled;
 
-import com.google.common.collect.ImmutableSet;
-import java.util.Set;
+import static org.batfish.specifier.parboiled.Completion.Type.STRING_LITERAL;
+
+import com.google.common.collect.ImmutableMap;
+import java.lang.reflect.Method;
+import java.util.Map;
+import org.batfish.specifier.parboiled.Completion.Type;
 import org.parboiled.BaseParser;
 import org.parboiled.Rule;
 
 /**
  * This class contains common matchers for different types of expressions.
  *
- * <p>The rules in this class have two invariants:
- *
- * <ol>
- *   <li>They should not put anything on the stack.
- *   <li>They are ignored for the purposes of error reporting and completion suggestion (via
- *       inclusion in the {@link #COMMON_LABELS} set).
- * </ol>
- *
- * <p>Any newly-defined rules should be added to the {@link #COMMON_LABELS} set.
+ * <p>The rules in this class have two invariants should not put anything on the stack.
  */
 @SuppressWarnings({
   "InfiniteRecursion",
@@ -25,15 +21,18 @@ import org.parboiled.Rule;
 })
 public abstract class CommonParser extends BaseParser<Object> {
 
-  // TODO: Can we populate this list automatically?
-  public static final Set<String> COMMON_LABELS =
-      ImmutableSet.of(
-          "AlphabetChar",
-          "Digit",
-          "IpAddressUnchecked",
-          "IpPrefixUnchecked",
-          "Number",
-          "ReferenceObjectNameLiteral");
+  static Map<String, Type> initCompletionTypes(Class<?> parserClass) {
+    ImmutableMap.Builder<String, Completion.Type> completionTypes = ImmutableMap.builder();
+    // fromStringLiteral is not enumerated because its protected; so we add explicitly
+    completionTypes.put("fromStringLiteral", Completion.Type.STRING_LITERAL);
+    for (Method method : parserClass.getMethods()) {
+      Completion annotation = method.getAnnotation(Completion.class);
+      if (annotation != null) {
+        completionTypes.put(method.getName(), annotation.value());
+      }
+    }
+    return completionTypes.build();
+  }
 
   /** [a-z] + [A-Z] */
   public Rule AlphabetChar() {
@@ -79,6 +78,7 @@ public abstract class CommonParser extends BaseParser<Object> {
    * <p>We automatically match trailing whitespace, so we don't have to insert extra Whitespace()
    * rules after each character or string literal
    */
+  @Completion(STRING_LITERAL)
   @Override
   protected Rule fromStringLiteral(String string) {
     return string.endsWith(" ")
