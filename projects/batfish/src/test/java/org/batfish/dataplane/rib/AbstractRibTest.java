@@ -201,6 +201,18 @@ public class AbstractRibTest {
     assertThat(_rib.longestPrefixMatch(Ip.parse("0.0.0.0")), emptyIterableOf(StaticRoute.class));
   }
 
+  /** Ensure that longestPrefixMatch finds route in root (guarantee no off-by-one length error) */
+  @Test
+  public void testLongestPrefixMatchWhenInRoot() {
+    StaticRoute r =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setAdministrativeCost(1)
+            .build();
+    _rib.mergeRouteGetDelta(r);
+    assertThat(_rib.longestPrefixMatch(Ip.parse("1.1.1.1"), 32), contains(r));
+  }
+
   /**
    * Ensure that {@link AbstractRib#longestPrefixMatch(Ip)} returns correct routes when the RIB is
    * non-empty
@@ -462,38 +474,6 @@ public class AbstractRibTest {
     // Remove only r1, check that r2 remains
     _rib.removeRoute(r1);
     assertThat(_rib.getRoutes(), contains(r2));
-  }
-
-  @Test
-  public void testClear() {
-    // Two routes for same prefix,
-    StaticRoute r1 =
-        StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
-            .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
-            .setAdministrativeCost(1)
-            .setMetric(0L)
-            .setTag(1)
-            .build();
-    StaticRoute r2 =
-        StaticRoute.builder()
-            .setNetwork(Prefix.create(Ip.parse("1.1.1.1"), 32))
-            .setNextHopIp(Ip.parse("2.2.2.2"))
-            .setNextHopInterface(null)
-            .setAdministrativeCost(1)
-            .setMetric(0L)
-            .setTag(1)
-            .build();
-
-    _rib.mergeRoute(r1);
-    _rib.mergeRoute(r2);
-    // sanity check here
-    assertThat(_rib.getRoutes(), hasSize(2));
-
-    // Check that clearing all routes works:
-    _rib.clearRoutes(Prefix.parse("1.1.1.1/32"));
-    assertThat(_rib.getRoutes(), hasSize(0));
   }
 
   @Test
