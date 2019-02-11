@@ -243,7 +243,8 @@ public class Interface implements Serializable {
   private @Nullable Double _speed;
 
   /** Returns the default interface delay in picoseconds for the given {@code format}. */
-  public static double getDefaultDelay(String name, ConfigurationFormat format) {
+  @Nullable
+  public static Double getDefaultDelay(String name, ConfigurationFormat format) {
     if (format == ConfigurationFormat.CISCO_IOS && name.startsWith("Loopback")) {
       // TODO Cisco NX whitepaper says to use the formula, not this value. Confirm?
       // Enhanced Interior Gateway Routing Protocol (EIGRP) Wide Metrics White Paper
@@ -254,9 +255,8 @@ public class Interface implements Serializable {
     }
 
     Double bandwidth = getDefaultBandwidth(name, format);
-    if (bandwidth == null) {
-      // TODO EIGRP will not use this interface because cost is proportional to bandwidth^-1
-      return 0D;
+    if (bandwidth == null || bandwidth == 0D) {
+      return null;
     }
 
     /*
