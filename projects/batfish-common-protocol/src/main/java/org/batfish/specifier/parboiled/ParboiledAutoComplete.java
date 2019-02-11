@@ -31,9 +31,11 @@ public final class ParboiledAutoComplete {
         new ReportingParseRunner<>(Parser.INSTANCE.input(expression)).run(query);
 
     // this is valid input, so we don't get any other potential matches
-    // to force the issue, we make the string illegal first
+    // to force the issue, we make the string illegal by adding a non-ascii character (soccer ball)
     if (result.parseErrors.isEmpty()) {
-      result = new ReportingParseRunner<>(Parser.INSTANCE.input(expression)).run(query + ")");
+      result =
+          new ReportingParseRunner<>(Parser.INSTANCE.input(expression))
+              .run(query + new String(Character.toChars(0x26bd)));
     }
 
     if (result.parseErrors.isEmpty()) {
@@ -41,14 +43,15 @@ public final class ParboiledAutoComplete {
     }
 
     InvalidInputError error = (InvalidInputError) result.parseErrors.get(0);
-    Set<PartialMatch> partialMatches = ParserUtils.getPartialMatches(error);
+    Set<PartialMatch> partialMatches =
+        ParserUtils.getPartialMatches(error, Parser.COMPLETION_TYPES);
 
     // first add string literals and then add others to the list. we do this because there can be
     // many suggestions based on dynamic completion (e.g., all nodes in the snapshot) and we do not
     // want them to drown everything else out
     List<AutocompleteSuggestion> suggestions =
         partialMatches.stream()
-            .filter(pm -> pm.getRuleLabel().equals(ParserUtils.STRING_LITERAL_LABEL))
+            .filter(pm -> pm.getCompletionType().equals(Completion.Type.STRING_LITERAL))
             .map(
                 pm ->
                     autoCompletePartialMatch(
@@ -63,7 +66,7 @@ public final class ParboiledAutoComplete {
 
     suggestions.addAll(
         partialMatches.stream()
-            .filter(pm -> !pm.getRuleLabel().equals(ParserUtils.STRING_LITERAL_LABEL))
+            .filter(pm -> !pm.getCompletionType().equals(Completion.Type.STRING_LITERAL))
             .map(
                 pm ->
                     autoCompletePartialMatch(
@@ -103,11 +106,11 @@ public final class ParboiledAutoComplete {
       NodeRolesData nodeRolesData,
       ReferenceLibrary referenceLibrary) {
 
-    switch (pm.getRuleLabel()) {
-      case ParserUtils.STRING_LITERAL_LABEL:
+    switch (pm.getCompletionType()) {
+      case STRING_LITERAL:
         return ImmutableList.of(
             new AutocompleteSuggestion(pm.getMatchCompletion(), true, null, -1, startIndex));
-      case "IpAddress":
+      case IP_ADDRESS:
         return AutoCompleteUtils.autoComplete(
             null,
             null,
