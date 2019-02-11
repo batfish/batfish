@@ -52,25 +52,25 @@ final class ParboiledIpSpaceSpecifier implements IpSpaceSpecifier {
   static IpSpace computeIpSpace(AstNode ast, SpecifierContext ctxt) {
     if (ast instanceof IpSpaceAstNode) {
       IpSpaceAstNode node = (IpSpaceAstNode) ast;
-      switch (node.getType()) {
+      switch (node.type()) {
         case ADDRESS_GROUP:
-          String addressGroup = (String) ((LeafAstNode) ast.left()).getValue();
-          String book = (String) ((LeafAstNode) ast.right()).getValue();
+          String addressGroup = (String) ((LeafAstNode) node.left()).value();
+          String book = (String) ((LeafAstNode) node.right()).value();
           return ReferenceAddressGroupIpSpaceSpecifier.computeIpSpace(addressGroup, book, ctxt);
         case COMMA:
-          IpSpace leftSpace = computeIpSpace(ast.left(), ctxt);
-          IpSpace rightSpace = computeIpSpace(ast.right(), ctxt);
+          IpSpace leftSpace = computeIpSpace(node.left(), ctxt);
+          IpSpace rightSpace = computeIpSpace(node.right(), ctxt);
           return AclIpSpace.union(leftSpace, rightSpace);
         case RANGE:
-          Ip leftIp = (Ip) ((LeafAstNode) ast.left()).getValue();
-          Ip rightIp = (Ip) ((LeafAstNode) ast.right()).getValue();
+          Ip leftIp = (Ip) ((LeafAstNode) node.left()).value();
+          Ip rightIp = (Ip) ((LeafAstNode) node.right()).value();
           return IpRange.range(leftIp, rightIp);
         default:
           throw new IllegalStateException(
-              String.format("Unhandled IpSpaceAstNode type for IpSpace %s", node.getType()));
+              String.format("Unhandled IpSpaceAstNode type for IpSpace %s", node.type()));
       }
     } else if (ast instanceof LeafAstNode) {
-      Object value = ((LeafAstNode) ast).getValue();
+      Object value = ((LeafAstNode) ast).value();
       if (value instanceof Ip) {
         return ((Ip) value).toIpSpace();
       } else if (value instanceof IpWildcard) {
