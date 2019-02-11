@@ -35,6 +35,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1750,6 +1751,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
       } else if (term.getThens().contains(FwThenNop.INSTANCE)) {
         // we assume for now that any 'nop' operations imply acceptance
         action = LineAction.PERMIT;
+      } else if (term.getThens().stream()
+          .map(Object::getClass)
+          .anyMatch(Predicate.isEqual(FwThenRoutingInstance.class))) {
+        // Should be handled by packet policy, not applicable to ACLs
+        continue;
       } else {
         _w.redFlag(
             "missing action in firewall filter: '" + aclName + "', term: '" + term.getName() + "'");

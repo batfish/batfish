@@ -1,5 +1,6 @@
 package org.batfish.grammar;
 
+import static org.batfish.common.util.ThrowableMatchers.hasStackTrace;
 import static org.hamcrest.Matchers.containsString;
 
 import org.antlr.v4.runtime.Parser;
@@ -17,8 +18,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class BatfishParseTreeWalkerTest {
-  private final class TestParseTreeListener implements ParseTreeListener {
+public final class BatfishParseTreeWalkerTest {
+  private static final class TestParseTreeListener implements ParseTreeListener {
     @Override
     public void visitTerminal(TerminalNode terminalNode) {}
 
@@ -27,16 +28,24 @@ public class BatfishParseTreeWalkerTest {
 
     @Override
     public void enterEveryRule(ParserRuleContext parserRuleContext) {
-      throw new BatfishException("fail enterEveryRule");
+      throwEnter();
     }
 
     @Override
     public void exitEveryRule(ParserRuleContext parserRuleContext) {
+      throwExit();
+    }
+
+    private static void throwEnter() {
+      throw new BatfishException("fail enterEveryRule");
+    }
+
+    private static void throwExit() {
       throw new BatfishException("fail exitEveryRule");
     }
   }
 
-  private final class TestRuleNode implements RuleNode {
+  private static final class TestRuleNode implements RuleNode {
 
     private final String _text;
 
@@ -99,7 +108,7 @@ public class BatfishParseTreeWalkerTest {
     }
   }
 
-  private final class TestParserRuleContext extends ParserRuleContext {
+  private static final class TestParserRuleContext extends ParserRuleContext {
     private final String _text;
 
     TestParserRuleContext(String text) {
@@ -121,9 +130,10 @@ public class BatfishParseTreeWalkerTest {
   public void enterRule() {
     BatfishParseTreeWalker swimmer = new BatfishParseTreeWalker();
 
-    // Make sure an exception in enterRule contains the context's text
+    // Make sure an exception in enterRule contains the context's text and name of throwing function
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(containsString(LINE_TEXT));
+    _thrown.expect(hasStackTrace(containsString("throwEnter")));
     swimmer.enterRule(new TestParseTreeListener(), new TestRuleNode(LINE_TEXT));
   }
 
@@ -131,9 +141,10 @@ public class BatfishParseTreeWalkerTest {
   public void exitRule() {
     BatfishParseTreeWalker swimmer = new BatfishParseTreeWalker();
 
-    // Make sure an exception in exitRule contains the context's text
+    // Make sure an exception in exitRule contains the context's text and name of throwing function
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(containsString(LINE_TEXT));
+    _thrown.expect(hasStackTrace(containsString("throwExit")));
     swimmer.exitRule(new TestParseTreeListener(), new TestRuleNode(LINE_TEXT));
   }
 }

@@ -25,7 +25,6 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -48,12 +47,9 @@ import org.batfish.grammar.BgpTableFormat;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.ReachabilityParameters;
-import org.batfish.question.SearchFiltersParameters;
 import org.batfish.question.differentialreachability.DifferentialReachabilityParameters;
 import org.batfish.question.differentialreachability.DifferentialReachabilityResult;
 import org.batfish.question.multipath.MultipathConsistencyParameters;
-import org.batfish.question.searchfilters.DifferentialSearchFiltersResult;
-import org.batfish.question.searchfilters.SearchFiltersResult;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
@@ -86,13 +82,6 @@ public interface IBatfish extends IPluginConsumer {
   DataPlaneAnswerElement computeDataPlane(boolean differentialContext);
 
   boolean debugFlagEnabled(String flag);
-
-  DifferentialSearchFiltersResult differentialReachFilter(
-      Configuration baseConfig,
-      IpAccessList baseAcl,
-      Configuration deltaConfig,
-      IpAccessList deltaAcl,
-      SearchFiltersParameters searchFiltersParameters);
 
   ReferenceLibrary getReferenceLibraryData();
 
@@ -220,9 +209,6 @@ public interface IBatfish extends IPluginConsumer {
 
   void registerExternalBgpAdvertisementPlugin(
       ExternalBgpAdvertisementPlugin externalBgpAdvertisementPlugin);
-
-  Optional<SearchFiltersResult> reachFilter(
-      Configuration node, IpAccessList acl, SearchFiltersParameters parameters);
 
   AnswerElement smtBlackhole(HeaderQuestion q);
 
