@@ -9077,9 +9077,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       hostname = sb.toString();
     }
     _configuration.setHostname(hostname);
-    if (_configuration.getHostname().startsWith("as1border")) {
-      throw new BatfishException("force parser fail");
-    }
     _configuration.getCf().setHostname(hostname);
   }
 
