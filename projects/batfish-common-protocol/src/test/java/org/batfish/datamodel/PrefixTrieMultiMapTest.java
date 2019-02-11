@@ -120,6 +120,7 @@ public class PrefixTrieMultiMapTest {
   @Test
   public void testRemoveWrongNode() {
     PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>(Prefix.parse("128.0.0.0/1"));
+    ptm1.add(Prefix.parse("128.0.0.0/1"), 1);
     assertThat("Nothing to remove", !ptm1.remove(Prefix.ZERO, 1));
   }
 
@@ -130,9 +131,9 @@ public class PrefixTrieMultiMapTest {
   }
 
   @Test
-  public void testClearAddWrongNode() {
+  public void testClearWrongNode() {
     PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>(Prefix.parse("128.0.0.0/1"));
     thrown.expect(IllegalArgumentException.class);
-    ptm1.add(Prefix.ZERO, 1);
+    ptm1.clear(Prefix.ZERO);
   }
 }
