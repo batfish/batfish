@@ -53,6 +53,7 @@ import org.batfish.z3.state.NodeInterfaceExitsNetwork;
 import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.OriginateVrf;
+import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdge;
@@ -82,6 +83,8 @@ public final class BDDReachabilityAnalysisTest {
   private String _dstIface2Name;
   private String _dstName;
   private NodeAccept _dstNodeAccept;
+  private PostInInterface _dstPostInInterface1;
+  private PostInInterface _dstPostInInterface2;
   private PostInVrf _dstPostInVrf;
   private PreInInterface _dstPreInInterface1;
   private PreInInterface _dstPreInInterface2;
@@ -156,6 +159,9 @@ public final class BDDReachabilityAnalysisTest {
     _srcName = _net._srcNode.getHostname();
     _srcNodeAccept = new NodeAccept(_srcName);
     _srcPostInVrf = new PostInVrf(_srcName, DEFAULT_VRF_NAME);
+
+    _dstPostInInterface1 = new PostInInterface(_dstName, _link1DstName);
+    _dstPostInInterface2 = new PostInInterface(_dstName, _link2DstName);
 
     _dstPreInInterface1 = new PreInInterface(_dstName, _link1DstName);
     _dstPreInInterface2 = new PreInInterface(_dstName, _link2DstName);
@@ -271,12 +277,13 @@ public final class BDDReachabilityAnalysisTest {
   }
 
   @Test
-  public void testBDDTransitions_PreInInterface_PostInVrf() {
+  public void testBDDTransitions_PreInInterface_PostInInterface() {
     // link1: not(_dstIface2Ip)
     assertThat(
-        bddTransition(_dstPreInInterface1, _dstPostInVrf), equalTo(dstIpBDD(_dstIface2Ip).not()));
+        bddTransition(_dstPreInInterface1, _dstPostInInterface1),
+        equalTo(dstIpBDD(_dstIface2Ip).not()));
     // link2: universe
-    assertThat(bddTransition(_dstPreInInterface2, _dstPostInVrf), isOne());
+    assertThat(bddTransition(_dstPreInInterface2, _dstPostInInterface2), isOne());
   }
 
   @Test
