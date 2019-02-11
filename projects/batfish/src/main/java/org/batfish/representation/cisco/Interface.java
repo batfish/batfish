@@ -46,18 +46,18 @@ public class Interface implements Serializable {
 
   private static final double DEFAULT_TEN_GIGABIT_ETHERNET_SPEED = 10E9D;
 
-  /** Loopback delay for IOS */
+  /** Loopback delay in picoseconds for IOS */
   private static final double LOOPBACK_IOS_DELAY = 5E9D;
 
   /**
-   * Tunnel bandwidth for IOS (checked in IOS 16.4)
+   * Tunnel bandwidth in bps for IOS (checked in IOS 16.4)
    *
    * <p>See https://bst.cloudapps.cisco.com/bugsearch/bug/CSCse69736
    */
   private static final double TUNNEL_IOS_BANDWIDTH = 100E3D;
 
   /**
-   * Tunnel delay for IOS (checked in IOS 16.4)
+   * Tunnel delay in picoseconds for IOS (checked in IOS 16.4)
    *
    * <p>See https://bst.cloudapps.cisco.com/bugsearch/bug/CSCse69736
    */
@@ -242,6 +242,7 @@ public class Interface implements Serializable {
 
   private @Nullable Double _speed;
 
+  /** Returns the default interface delay in picoseconds for the given {@code format}. */
   public static double getDefaultDelay(String name, ConfigurationFormat format) {
     if (format == ConfigurationFormat.CISCO_IOS && name.startsWith("Loopback")) {
       // TODO Cisco NX whitepaper says to use the formula, not this value. Confirm?
