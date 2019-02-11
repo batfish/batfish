@@ -155,7 +155,7 @@ public class AutoCompleteUtilsTest {
 
     assertThat(
         AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.FILTER, "fil", 5, completionMetadata, null)
+                network, snapshot, Type.FILTER, "fil", 5, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -186,7 +186,7 @@ public class AutoCompleteUtilsTest {
 
     assertThat(
         AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.INTERFACE, "int", 5, completionMetadata, null)
+                network, snapshot, Type.INTERFACE, "int", 5, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -217,7 +217,7 @@ public class AutoCompleteUtilsTest {
 
     assertThat(
         AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.IP, "1.2", 5, completionMetadata, null)
+                network, snapshot, Type.IP, "1.2", 5, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -277,7 +277,7 @@ public class AutoCompleteUtilsTest {
 
     assertThat(
         AutoCompleteUtils.autoComplete(
-                network, "snapshot", Type.NODE_ROLE_DIMENSION, "dim", 5, null, nodeRolesData)
+                network, "snapshot", Type.NODE_ROLE_DIMENSION, "dim", 5, null, nodeRolesData, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -296,7 +296,7 @@ public class AutoCompleteUtilsTest {
 
     assertThat(
         AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.NODE_SPEC, "a", 5, completionMetadata, nodeRolesData)
+                network, snapshot, Type.NODE_SPEC, "a", 5, completionMetadata, nodeRolesData, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -325,7 +325,7 @@ public class AutoCompleteUtilsTest {
 
     assertThat(
         AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.PREFIX, "1.2", 5, completionMetadata, null)
+                network, snapshot, Type.PREFIX, "1.2", 5, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -365,7 +365,7 @@ public class AutoCompleteUtilsTest {
 
     assertThat(
         AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.STRUCTURE_NAME, "str", 5, completionMetadata, null)
+                network, snapshot, Type.STRUCTURE_NAME, "str", 5, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -385,7 +385,7 @@ public class AutoCompleteUtilsTest {
 
     assertThat(
         AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.VRF, "v", 5, completionMetadata, null)
+                network, snapshot, Type.VRF, "v", 5, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -405,7 +405,7 @@ public class AutoCompleteUtilsTest {
 
     assertThat(
         AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.ZONE, "z", 5, completionMetadata, null)
+                network, snapshot, Type.ZONE, "z", 5, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -436,6 +436,6 @@ public class AutoCompleteUtilsTest {
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Unsupported completion type: " + type);
 
-    AutoCompleteUtils.autoComplete("network", "snapshot", type, "blah", 5, null, null);
+    AutoCompleteUtils.autoComplete("network", "snapshot", type, "blah", 5, null, null, null);
   }
 }

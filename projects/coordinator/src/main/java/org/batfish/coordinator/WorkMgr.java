@@ -418,7 +418,8 @@ public class WorkMgr extends AbstractCoordinator {
         query,
         maxSuggestions,
         getCompletionMetadata(network, snapshot),
-        getNetworkNodeRoles(network));
+        getNetworkNodeRoles(network),
+        getReferenceLibrary(network));
   }
 
   private void checkTask(QueuedWork work, String worker) {

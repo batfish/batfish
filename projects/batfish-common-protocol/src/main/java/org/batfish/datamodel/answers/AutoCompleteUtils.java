@@ -29,11 +29,13 @@ import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Variable;
+import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.DispositionSpecifier;
 import org.batfish.specifier.IpProtocolSpecifier;
 import org.batfish.specifier.RoutingProtocolSpecifier;
+import org.batfish.specifier.parboiled.ParboiledAutoComplete;
 
 @ParametersAreNonnullByDefault
 public final class AutoCompleteUtils {
@@ -41,7 +43,7 @@ public final class AutoCompleteUtils {
   @Nonnull
   public static List<AutocompleteSuggestion> autoComplete(
       Variable.Type completionType, String query, int maxSuggestions) {
-    return autoComplete(null, null, completionType, query, maxSuggestions, null, null);
+    return autoComplete(null, null, completionType, query, maxSuggestions, null, null, null);
   }
 
   @Nonnull
@@ -52,7 +54,8 @@ public final class AutoCompleteUtils {
       String query,
       int maxSuggestions,
       @Nullable CompletionMetadata completionMetadata,
-      @Nullable NodeRolesData nodeRolesData) {
+      @Nullable NodeRolesData nodeRolesData,
+      @Nullable ReferenceLibrary referenceLibrary) {
     List<AutocompleteSuggestion> suggestions;
 
     switch (completionType) {
@@ -137,6 +140,13 @@ public final class AutoCompleteUtils {
       case IP_PROTOCOL_SPEC:
         {
           suggestions = IpProtocolSpecifier.autoComplete(query);
+          break;
+        }
+      case IP_SPACE_SPEC:
+        {
+          suggestions =
+              ParboiledAutoComplete.autoCompleteIpSpace(
+                  query, maxSuggestions, completionMetadata, nodeRolesData, referenceLibrary);
           break;
         }
       case IPSEC_SESSION_STATUS:

@@ -19,9 +19,9 @@ import org.parboiled.support.MatcherPath;
 final class ParserUtils {
 
   /** The label for the built in rule to create tokens from string literals */
-  static String STRING_LITERAL_LABEL = "fromStringLiteral";
+  static final String STRING_LITERAL_LABEL = "fromStringLiteral";
 
-  private static Set<String> _BUILT_IN_LABELS =
+  private static final Set<String> _BUILT_IN_LABELS =
       ImmutableSet.of("Sequence", "FirstOf", "AnyOf", "ZeroOrMore", "OneOrMore", "Optional");
 
   /** Generates a friendly message to explain what might be wrong with parser input */

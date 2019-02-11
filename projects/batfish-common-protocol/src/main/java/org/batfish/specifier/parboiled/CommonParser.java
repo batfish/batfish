@@ -26,7 +26,7 @@ import org.parboiled.Rule;
 public abstract class CommonParser extends BaseParser<Object> {
 
   // TODO: Can we populate this list automatically?
-  public static Set<String> COMMON_LABELS =
+  public static final Set<String> COMMON_LABELS =
       ImmutableSet.of(
           "AlphabetChar",
           "Digit",
