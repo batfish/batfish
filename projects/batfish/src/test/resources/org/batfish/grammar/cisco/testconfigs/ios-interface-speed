@@ -9,4 +9,7 @@ interface GigabitEthernet0/1
 interface GigabitEthernet0/2
  speed 100
 !
+interface Loopback0
+!
+interface Tunnel0
 !
