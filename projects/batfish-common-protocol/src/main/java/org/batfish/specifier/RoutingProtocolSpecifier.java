@@ -17,8 +17,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.answers.AutoCompleteUtils;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
-import org.batfish.datamodel.questions.PropertySpecifier;
 
 /** A way to specify groups of RoutingProtocols */
 @ParametersAreNonnullByDefault
@@ -200,10 +200,10 @@ public class RoutingProtocolSpecifier {
 
   /**
    * Returns a list of suggestions based on the query, based on {@link
-   * PropertySpecifier#baseAutoComplete}.
+   * AutoCompleteUtils#baseAutoComplete}.
    */
   public static List<AutocompleteSuggestion> autoComplete(String query) {
-    return PropertySpecifier.baseAutoComplete(query, MAP.keySet());
+    return AutoCompleteUtils.baseAutoComplete(query, MAP.keySet());
   }
 
   public Set<RoutingProtocol> getProtocols() {

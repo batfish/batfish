@@ -18,7 +18,6 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
 
@@ -90,14 +89,6 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
     _expression =
         properties.stream().map(String::trim).map(Pattern::quote).collect(Collectors.joining("|"));
     _pattern = Pattern.compile(_expression, Pattern.CASE_INSENSITIVE);
-  }
-
-  /**
-   * Returns a list of suggestions based on the query, based on {@link
-   * PropertySpecifier#baseAutoComplete}.
-   */
-  public static List<AutocompleteSuggestion> autoComplete(String query) {
-    return PropertySpecifier.baseAutoComplete(query, JAVA_MAP.keySet());
   }
 
   /** Returns cluster ID of this peer */
