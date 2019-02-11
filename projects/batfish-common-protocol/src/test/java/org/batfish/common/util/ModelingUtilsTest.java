@@ -18,6 +18,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -30,8 +31,7 @@ import com.google.common.collect.Maps;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import org.batfish.common.Warning;
-import org.batfish.common.Warnings;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.ModelingUtils.IspInfo;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -117,7 +117,8 @@ public class ModelingUtilsTest {
     IspInfo ispInfo = new IspInfo(ImmutableList.of(interfaceAddress), ImmutableList.of(peer));
 
     Configuration ispConfiguration =
-        ModelingUtils.getIspConfigurationNode(2L, ispInfo, new Warnings());
+        ModelingUtils.getIspConfigurationNode(
+            2L, ispInfo, new NetworkFactory(), new BatfishLogger("output", false));
 
     assertThat(
         ispConfiguration,
@@ -160,15 +161,15 @@ public class ModelingUtilsTest {
             .build();
     IspInfo ispInfo =
         new IspInfo(ImmutableList.of(interfaceAddress, interfaceAddress2), ImmutableList.of(peer));
-    Warnings warnings = new Warnings(true, true, true);
-    Configuration ispConfiguration = ModelingUtils.getIspConfigurationNode(2L, ispInfo, warnings);
+    BatfishLogger logger = new BatfishLogger("debug", false);
+    Configuration ispConfiguration =
+        ModelingUtils.getIspConfigurationNode(2L, ispInfo, new NetworkFactory(), logger);
 
     assertThat(ispConfiguration, nullValue());
+
+    assertThat(logger.getHistory(), hasSize(1));
     assertThat(
-        warnings.getRedFlagWarnings(),
-        equalTo(
-            ImmutableList.of(
-                new Warning("ISP information for ASN '2' is not correct", Warnings.TAG_RED_FLAG))));
+        logger.getHistory().toString(300), equalTo("ISP information for ASN '2' is not correct"));
   }
 
   @Test
@@ -247,7 +248,7 @@ public class ModelingUtilsTest {
 
   @Test
   public void testCreateInternetNode() {
-    Configuration internet = ModelingUtils.createInternetNode();
+    Configuration internet = ModelingUtils.createInternetNode(new NetworkFactory());
     InterfaceAddress interfaceAddress =
         new InterfaceAddress(ModelingUtils.INTERNET_OUT_ADDRESS, ModelingUtils.INTERNET_OUT_SUBNET);
     assertThat(
@@ -310,7 +311,7 @@ public class ModelingUtilsTest {
             ImmutableList.of(new NodeInterfacePair("conf", "interface")),
             ImmutableList.of(),
             ImmutableList.of(),
-            new Warnings());
+            new BatfishLogger("output", false));
 
     assertThat(internetAndIsps, hasKey(ModelingUtils.INTERNET_HOST_NAME));
     Configuration internetNode = internetAndIsps.get(ModelingUtils.INTERNET_HOST_NAME);
