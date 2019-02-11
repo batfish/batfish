@@ -3,7 +3,6 @@ package org.batfish.question.initialization;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_FILELINES;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_ISSUE;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_ISSUE_TYPE;
-import static org.batfish.question.initialization.InitIssuesAnswerer.COL_LINE_TEXT;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_NODES;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_PARSER_CONTEXT;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -67,8 +66,6 @@ public class InitIssuesAnswererTest {
                         IssueType.ConvertError.toString(),
                         COL_ISSUE,
                         message,
-                        COL_LINE_TEXT,
-                        null,
                         COL_PARSER_CONTEXT,
                         null))));
   }
@@ -105,8 +102,6 @@ public class InitIssuesAnswererTest {
                         IssueType.ConvertWarningRedFlag.toString(),
                         COL_ISSUE,
                         String.format("%s", redFlag),
-                        COL_LINE_TEXT,
-                        null,
                         COL_PARSER_CONTEXT,
                         null))
                 .add(
@@ -119,8 +114,6 @@ public class InitIssuesAnswererTest {
                         IssueType.ConvertWarningUnimplemented.toString(),
                         COL_ISSUE,
                         String.format("%s", unimplemented),
-                        COL_LINE_TEXT,
-                        null,
                         COL_PARSER_CONTEXT,
                         null))));
   }
@@ -159,8 +152,6 @@ public class InitIssuesAnswererTest {
                         IssueType.ParseError.toString(),
                         COL_ISSUE,
                         message,
-                        COL_LINE_TEXT,
-                        content,
                         COL_PARSER_CONTEXT,
                         context))));
   }
@@ -194,8 +185,6 @@ public class InitIssuesAnswererTest {
                         IssueType.ParseError.toString(),
                         COL_ISSUE,
                         message,
-                        COL_LINE_TEXT,
-                        null,
                         COL_PARSER_CONTEXT,
                         null))));
   }
@@ -231,9 +220,7 @@ public class InitIssuesAnswererTest {
                         COL_ISSUE_TYPE,
                         IssueType.ParseWarning.toString(),
                         COL_ISSUE,
-                        comment,
-                        COL_LINE_TEXT,
-                        text,
+                        String.format("%s (%s)", comment, text),
                         COL_PARSER_CONTEXT,
                         context))));
   }
