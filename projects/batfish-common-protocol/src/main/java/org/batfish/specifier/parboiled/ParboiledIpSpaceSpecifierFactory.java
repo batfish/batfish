@@ -23,7 +23,8 @@ public class ParboiledIpSpaceSpecifierFactory implements IpSpaceSpecifierFactory
 
     checkArgument(
         !result.parseErrors.isEmpty(),
-        ParserUtils.getErrorString((InvalidInputError) result.parseErrors.get(0)));
+        ParserUtils.getErrorString(
+            (InvalidInputError) result.parseErrors.get(0), Parser.COMPLETION_TYPES));
 
     return new ParboiledIpSpaceSpecifier((AstNode) result.valueStack);
   }

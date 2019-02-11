@@ -1,13 +1,14 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.ParserUtils.STRING_LITERAL_LABEL;
 import static org.batfish.specifier.parboiled.ParserUtils.getErrorString;
 import static org.batfish.specifier.parboiled.ParserUtils.getPartialMatches;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.Map;
 import java.util.Set;
+import org.batfish.specifier.parboiled.Completion.Type;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.parboiled.Parboiled;
@@ -32,7 +33,9 @@ public class ParserUtilsTest {
     "checkstyle:methodname", // this class uses idiomatic names
     "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
   })
-  public static class TestParser extends CommonParser {
+  static class TestParser extends CommonParser {
+
+    public static final Map<String, Type> COMPLETION_TYPES = initCompletionTypes(TestParser.class);
 
     public Rule input(Rule expression) {
       return Sequence(WhiteSpace(), expression, WhiteSpace(), EOI);
@@ -73,37 +76,42 @@ public class ParserUtilsTest {
       return Sequence("! ", TestNot("! "), TestTerm());
     }
 
+    @Completion(Type.ADDRESS_GROUP_AND_BOOK)
     public Rule TestSpecifierInput() {
       return Sequence(ReferenceObjectNameLiteral(), WhiteSpace());
     }
 
+    @Completion(Type.IP_ADDRESS)
     public Rule TestBase() {
-      return ReferenceObjectNameLiteral();
+      return IpAddressUnchecked();
     }
   }
 
   /** These represent all the ways valid input can start */
   private Set<PartialMatch> _validStarts =
       ImmutableSet.of(
-          new PartialMatch(ParserUtils.STRING_LITERAL_LABEL, "", "@specifier"),
-          new PartialMatch(ParserUtils.STRING_LITERAL_LABEL, "", "!"),
-          new PartialMatch("TestBase", "", null),
-          new PartialMatch(ParserUtils.STRING_LITERAL_LABEL, "", "("));
+          new PartialMatch(Completion.Type.STRING_LITERAL, "", "@specifier"),
+          new PartialMatch(Completion.Type.STRING_LITERAL, "", "!"),
+          new PartialMatch(Type.IP_ADDRESS, "", null),
+          new PartialMatch(Completion.Type.STRING_LITERAL, "", "("));
 
   @Test
   public void testGetErrorString() {
-    assertThat(getErrorString(new PartialMatch(STRING_LITERAL_LABEL, "a", "b")), equalTo("'b'"));
-    assertThat(getErrorString(new PartialMatch("TestBase", "", "b")), equalTo("TestBase"));
+    assertThat(getErrorString(new PartialMatch(Type.STRING_LITERAL, "a", "b")), equalTo("'b'"));
     assertThat(
-        getErrorString(new PartialMatch("TestBase", "a", null)),
-        equalTo("TestBase starting with 'a'"));
+        getErrorString(new PartialMatch(Type.IP_ADDRESS, "", "b")),
+        equalTo(Type.IP_ADDRESS.toString()));
+    assertThat(
+        getErrorString(new PartialMatch(Type.IP_ADDRESS, "a", null)),
+        equalTo(Type.IP_ADDRESS.toString() + " starting with 'a'"));
   }
 
   @Test
   public void testGetPartialMatchesEmpty() {
     ParsingResult<?> resultEmpty = getRunner().run("");
     assertThat(
-        getPartialMatches((InvalidInputError) resultEmpty.parseErrors.get(0)),
+        getPartialMatches(
+            (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.COMPLETION_TYPES),
         equalTo(_validStarts));
   }
 
@@ -111,7 +119,8 @@ public class ParserUtilsTest {
   public void testGetPartialMatchesBadStart() {
     ParsingResult<?> resultEmpty = getRunner().run("[");
     assertThat(
-        getPartialMatches((InvalidInputError) resultEmpty.parseErrors.get(0)),
+        getPartialMatches(
+            (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.COMPLETION_TYPES),
         equalTo(_validStarts));
   }
 
@@ -119,7 +128,8 @@ public class ParserUtilsTest {
   public void testGetPartialMatchesDanglingList() {
     ParsingResult<?> resultEmpty = getRunner().run("a,");
     assertThat(
-        getPartialMatches((InvalidInputError) resultEmpty.parseErrors.get(0)),
+        getPartialMatches(
+            (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.COMPLETION_TYPES),
         equalTo(_validStarts));
   }
 
@@ -127,7 +137,8 @@ public class ParserUtilsTest {
   public void testGetPartialMatchesOpenParens() {
     ParsingResult<?> resultEmpty = getRunner().run("(");
     assertThat(
-        getPartialMatches((InvalidInputError) resultEmpty.parseErrors.get(0)),
+        getPartialMatches(
+            (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.COMPLETION_TYPES),
         equalTo(_validStarts));
   }
 
@@ -135,52 +146,58 @@ public class ParserUtilsTest {
   public void testGetPartialMatchesOperator() {
     ParsingResult<?> resultEmpty = getRunner().run("!");
     assertThat(
-        getPartialMatches((InvalidInputError) resultEmpty.parseErrors.get(0)),
+        getPartialMatches(
+            (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.COMPLETION_TYPES),
         equalTo(_validStarts));
   }
 
   @Test
   public void testGetPartialMatchesMissingCloseParens() {
-    ParsingResult<?> result = getRunner().run("(a");
+    ParsingResult<?> result = getRunner().run("(1.1.1.1");
     assertThat(
-        getPartialMatches((InvalidInputError) result.parseErrors.get(0)),
+        getPartialMatches(
+            (InvalidInputError) result.parseErrors.get(0), TestParser.COMPLETION_TYPES),
         equalTo(
             ImmutableSet.of(
-                new PartialMatch(ParserUtils.STRING_LITERAL_LABEL, "", ")"),
-                new PartialMatch("TestBase", "a", null))));
+                new PartialMatch(Type.STRING_LITERAL, "", ")"),
+                new PartialMatch(Type.IP_ADDRESS, "1.1.1.1", null))));
   }
 
   @Test
   public void testGetPartialMatchesSpecifierComplete() {
     ParsingResult<?> result = getRunner().run("@specifier");
     assertThat(
-        getPartialMatches((InvalidInputError) result.parseErrors.get(0)),
-        equalTo(ImmutableSet.of(new PartialMatch(ParserUtils.STRING_LITERAL_LABEL, "", "("))));
+        getPartialMatches(
+            (InvalidInputError) result.parseErrors.get(0), TestParser.COMPLETION_TYPES),
+        equalTo(ImmutableSet.of(new PartialMatch(Completion.Type.STRING_LITERAL, "", "("))));
   }
 
   @Test
   public void testGetPartialMatchesSpecifierOpenParens() {
     ParsingResult<?> result = getRunner().run("@specifier(");
     assertThat(
-        getPartialMatches((InvalidInputError) result.parseErrors.get(0)),
-        equalTo(ImmutableSet.of(new PartialMatch("TestSpecifierInput", "", null))));
+        getPartialMatches(
+            (InvalidInputError) result.parseErrors.get(0), TestParser.COMPLETION_TYPES),
+        equalTo(ImmutableSet.of(new PartialMatch(Type.ADDRESS_GROUP_AND_BOOK, "", null))));
   }
 
   @Test
   public void testGetPartialMatchesSpecifierSubstring() {
     ParsingResult<?> result = getRunner().run("@specifi");
     assertThat(
-        getPartialMatches((InvalidInputError) result.parseErrors.get(0)),
+        getPartialMatches(
+            (InvalidInputError) result.parseErrors.get(0), TestParser.COMPLETION_TYPES),
         equalTo(
-            ImmutableSet.of(new PartialMatch(ParserUtils.STRING_LITERAL_LABEL, "@specifi", "er"))));
+            ImmutableSet.of(new PartialMatch(Completion.Type.STRING_LITERAL, "@specifi", "er"))));
   }
 
   @Test
   public void testGetPartialMatchesSpecifierIncorrect() {
     ParsingResult<?> result = getRunner().run("@wrong");
     assertThat(
-        getPartialMatches((InvalidInputError) result.parseErrors.get(0)),
+        getPartialMatches(
+            (InvalidInputError) result.parseErrors.get(0), TestParser.COMPLETION_TYPES),
         equalTo(
-            ImmutableSet.of(new PartialMatch(ParserUtils.STRING_LITERAL_LABEL, "@", "specifier"))));
+            ImmutableSet.of(new PartialMatch(Completion.Type.STRING_LITERAL, "@", "specifier"))));
   }
 }

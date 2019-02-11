@@ -1,5 +1,12 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.specifier.parboiled.Completion.Type.ADDRESS_GROUP_AND_BOOK;
+import static org.batfish.specifier.parboiled.Completion.Type.IP_ADDRESS;
+import static org.batfish.specifier.parboiled.Completion.Type.IP_PREFIX;
+import static org.batfish.specifier.parboiled.Completion.Type.IP_RANGE;
+import static org.batfish.specifier.parboiled.Completion.Type.IP_WILDCARD;
+
+import java.util.Map;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
@@ -8,8 +15,12 @@ import org.parboiled.Parboiled;
 import org.parboiled.Rule;
 
 /**
- * A parboiled-based parser for our flexible specifiers. The rules for all types of specifiers are
- * in this file (not sure how to put them in different files).
+ * A parboiled-based parser for flexible specifiers. The rules for all types of expressions are in
+ * this file (not sure how to put them in different files when they point to each other).
+ *
+ * <p>Completion annotation: For each path from the top-level rule of an expression to leaf values,
+ * there should be at least one rule with a Completion annotation. This annotation is used for both
+ * error messages and generating auto completion suggestions.
  */
 @SuppressWarnings({
   "InfiniteRecursion",
@@ -18,7 +29,9 @@ import org.parboiled.Rule;
 })
 class Parser extends CommonParser {
 
-  static Parser INSTANCE = Parboiled.createParser(Parser.class);
+  static final Parser INSTANCE = Parboiled.createParser(Parser.class);
+
+  static final Map<String, Completion.Type> COMPLETION_TYPES = initCompletionTypes(Parser.class);
 
   /**
    * Shared entry point for all expressions.
@@ -72,6 +85,7 @@ class Parser extends CommonParser {
   }
 
   /** Matches AddressGroup, ReferenceBook pair. Puts two values on stack */
+  @Completion(ADDRESS_GROUP_AND_BOOK)
   public Rule AddressGroupAndBook() {
     return Sequence(
         ReferenceObjectNameLiteral(),
@@ -87,6 +101,7 @@ class Parser extends CommonParser {
    * Matched IP addresses. Throws an exception if something matches syntactically but is invalid
    * (e.g., 1.1.1.256)
    */
+  @Completion(IP_ADDRESS)
   public Rule IpAddress() {
     return Sequence(IpAddressUnchecked(), push(new LeafAstNode(Ip.parse(matchOrDefault("Error")))));
   }
@@ -95,12 +110,14 @@ class Parser extends CommonParser {
    * Matched IP prefixes. Throws an exception if something matches syntactically but is invalid
    * (e.g., 1.1.1.2/33)
    */
+  @Completion(IP_PREFIX)
   public Rule IpPrefix() {
     return Sequence(
         IpPrefixUnchecked(), push(new LeafAstNode(Prefix.parse(matchOrDefault("Error")))));
   }
 
   /** Matches Ip ranges (e.g., 1.1.1.1 - 1.1.1.2) */
+  @Completion(IP_RANGE)
   public Rule IpRange() {
     return Sequence(
         IpAddress(),
@@ -112,6 +129,7 @@ class Parser extends CommonParser {
   }
 
   /** Matches Ip wildcards (e.g., 1.1.1.1:255.255.255.255) */
+  @Completion(IP_WILDCARD)
   public Rule IpWildcard() {
     return Sequence(
         Sequence(IpAddressUnchecked(), ':', IpAddressUnchecked()),

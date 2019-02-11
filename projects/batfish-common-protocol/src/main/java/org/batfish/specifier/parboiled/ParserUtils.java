@@ -1,32 +1,25 @@
 package org.batfish.specifier.parboiled;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.specifier.parboiled.Completion.Type;
 import org.parboiled.errors.InvalidInputError;
-import org.parboiled.matchers.AnyOfMatcher;
-import org.parboiled.matchers.CharMatcher;
-import org.parboiled.matchers.CharRangeMatcher;
-import org.parboiled.matchers.StringMatcher;
 import org.parboiled.support.MatcherPath;
+import org.parboiled.support.MatcherPath.Element;
 
 /** A helper class to interpret parser errors */
 @ParametersAreNonnullByDefault
 final class ParserUtils {
 
-  /** The label for the built in rule to create tokens from string literals */
-  static final String STRING_LITERAL_LABEL = "fromStringLiteral";
-
-  private static final Set<String> _BUILT_IN_LABELS =
-      ImmutableSet.of("Sequence", "FirstOf", "AnyOf", "ZeroOrMore", "OneOrMore", "Optional");
-
   /** Generates a friendly message to explain what might be wrong with parser input */
-  static String getErrorString(InvalidInputError error) {
-    return getErrorString(error.getStartIndex(), getPartialMatches(error));
+  static String getErrorString(
+      InvalidInputError error, Map<String, Completion.Type> completionTypes) {
+    return getErrorString(error.getStartIndex(), getPartialMatches(error, completionTypes));
   }
 
   /** Generates a friendly message to explain what might be wrong with parser input */
@@ -45,13 +38,13 @@ final class ParserUtils {
   /** Generates a friendly message to explain what might be wrong with a particular partial match */
   @VisibleForTesting
   static String getErrorString(PartialMatch pm) {
-    if (pm.getRuleLabel().equals(STRING_LITERAL_LABEL)) {
+    if (pm.getCompletionType().equals(Completion.Type.STRING_LITERAL)) {
       return String.format("'%s'", pm.getMatchCompletion());
     }
     if (pm.getMatchPrefix().equals("")) {
-      return String.format("%s", pm.getRuleLabel());
+      return String.format("%s", pm.getCompletionType());
     } else {
-      return String.format("%s starting with '%s'", pm.getRuleLabel(), pm.getMatchPrefix());
+      return String.format("%s starting with '%s'", pm.getCompletionType(), pm.getMatchPrefix());
     }
   }
 
@@ -65,7 +58,8 @@ final class ParserUtils {
    * respect to indices. See
    * https://github.com/sirthias/parboiled/blob/07b6e2b5c583c7e258599650157a3b0d2b63667a/parboiled-core/src/main/java/org/parboiled/errors/DefaultInvalidInputErrorFormatter.java#L60.
    */
-  static Set<PartialMatch> getPartialMatches(InvalidInputError error) {
+  static Set<PartialMatch> getPartialMatches(
+      InvalidInputError error, Map<String, Completion.Type> completionTypes) {
 
     Set<PartialMatch> partialMatches = new HashSet<>();
 
@@ -75,28 +69,28 @@ final class ParserUtils {
       int level = path.length() - 1;
       for (; level >= 0; level--) {
         MatcherPath.Element element = path.getElementAtLevel(level);
+        String label = element.matcher.getLabel();
 
         // Ignore paths that end in WhiteSpace -- nothing interesting to report there because
         // our grammar is not sensitive to whitespace
-        if (element.matcher.getLabel().equals("WhiteSpace")) {
+        if (label.equals("WhiteSpace")) {
           break;
         }
 
-        // Ignore points in the path that correspond to built-in and common rules
-        if (element.matcher instanceof AnyOfMatcher
-            || element.matcher instanceof CharMatcher
-            || element.matcher instanceof CharRangeMatcher
-            || element.matcher instanceof StringMatcher
-            || _BUILT_IN_LABELS.contains(element.matcher.getLabel())
-            || CommonParser.COMMON_LABELS.contains(element.matcher.getLabel())) {
-          continue;
+        if (completionTypes.containsKey(label)) {
+          partialMatches.add(
+              getPartialMatch(error, path, element, level, completionTypes.get(label)));
+          break;
         }
-
-        partialMatches.add(getPartialMatch(error, path, element, level));
-        break; // NOPMD
       }
       if (level == -1) {
-        throw new IllegalStateException(String.format("Useful matcher not found in path %s", path));
+        /**
+         * If you get here, that means the grammar is missing a Completion annotation on one or more
+         * rules. For each path from the top-level rule to the leaf, there should be at least one
+         * rule with a Completion annotation.
+         */
+        throw new IllegalStateException(
+            String.format("Useful completion not found in path %s", path));
       }
     }
 
@@ -105,22 +99,22 @@ final class ParserUtils {
 
   @Nonnull
   private static PartialMatch getPartialMatch(
-      InvalidInputError error, MatcherPath path, MatcherPath.Element element, int level) {
+      InvalidInputError error, MatcherPath path, Element element, int level, Completion.Type type) {
 
     String matchPrefix =
         error.getInputBuffer().extract(element.startIndex, path.element.startIndex);
 
-    if (STRING_LITERAL_LABEL.equals(element.matcher.getLabel())) {
+    if (type.equals(Type.STRING_LITERAL)) {
       String fullToken = path.getElementAtLevel(level + 1).matcher.getLabel();
       if (fullToken.length() >= 2) {
         fullToken = fullToken.substring(1, fullToken.length() - 1);
       }
       String matchCompletion = fullToken.substring(matchPrefix.length());
 
-      return new PartialMatch(STRING_LITERAL_LABEL, matchPrefix, matchCompletion);
+      return new PartialMatch(type, matchPrefix, matchCompletion);
 
     } else {
-      return new PartialMatch(element.matcher.getLabel(), matchPrefix, null);
+      return new PartialMatch(type, matchPrefix, null);
     }
   }
 }

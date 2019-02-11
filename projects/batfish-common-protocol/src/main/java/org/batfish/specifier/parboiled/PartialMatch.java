@@ -6,17 +6,17 @@ import java.util.Objects;
 /** Represents one (of possibly multiple) potential matches when the parser input does not match */
 class PartialMatch {
 
+  /** The type of completion this match indicates */
+  private final Completion.Type _completionType;
+
   /** The current rule would have matched if the input was followed by this */
   private final String _matchCompletion;
 
   /** What matched thus far when trying to match the current rule */
   private final String _matchPrefix;
 
-  /** The label for the rule that we were trying to match */
-  private final String _ruleLabel;
-
-  PartialMatch(String ruleLabel, String matchPrefix, String matchCompletion) {
-    _ruleLabel = ruleLabel;
+  PartialMatch(Completion.Type completionType, String matchPrefix, String matchCompletion) {
+    _completionType = completionType;
     _matchPrefix = matchPrefix;
     _matchCompletion = matchCompletion;
   }
@@ -26,9 +26,13 @@ class PartialMatch {
     if (!(o instanceof PartialMatch)) {
       return false;
     }
-    return Objects.equals(_matchCompletion, ((PartialMatch) o)._matchCompletion)
-        && Objects.equals(_matchPrefix, ((PartialMatch) o)._matchPrefix)
-        && Objects.equals(_ruleLabel, ((PartialMatch) o)._ruleLabel);
+    return Objects.equals(_completionType, ((PartialMatch) o)._completionType)
+        && Objects.equals(_matchCompletion, ((PartialMatch) o)._matchCompletion)
+        && Objects.equals(_matchPrefix, ((PartialMatch) o)._matchPrefix);
+  }
+
+  Completion.Type getCompletionType() {
+    return _completionType;
   }
 
   String getMatchCompletion() {
@@ -39,19 +43,15 @@ class PartialMatch {
     return _matchPrefix;
   }
 
-  String getRuleLabel() {
-    return _ruleLabel;
-  }
-
   @Override
   public int hashCode() {
-    return Objects.hash(_matchCompletion, _matchPrefix, _ruleLabel);
+    return Objects.hash(_completionType, _matchCompletion, _matchPrefix);
   }
 
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this.getClass())
-        .add("ruleLabel", _ruleLabel)
+        .add("completionType", _completionType)
         .add("matchingPrefix", _matchPrefix)
         .add("matchingCompletion", _matchCompletion)
         .toString();
