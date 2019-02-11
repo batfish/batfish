@@ -1118,7 +1118,8 @@ public class BfCoordWorkHelper {
     }
   }
 
-  public boolean uploadQuestion(String networkName, String snapshotName, String qName, String qFileName) {
+  public boolean uploadQuestion(
+      String networkName, String snapshotName, String qName, String qFileName) {
     try {
       WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_UPLOAD_QUESTION);
 
