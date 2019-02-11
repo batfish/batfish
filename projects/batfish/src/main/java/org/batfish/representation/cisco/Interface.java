@@ -46,12 +46,22 @@ public class Interface implements Serializable {
 
   private static final double DEFAULT_TEN_GIGABIT_ETHERNET_SPEED = 10E9D;
 
-  private static final double DEFAULT_TUNNEL_BANDWIDTH = 1E5D;
-
-  private static final double DEFAULT_TUNNEL_DELAY = 5E10D;
-
   /** Loopback delay for IOS */
   private static final double LOOPBACK_IOS_DELAY = 5E9D;
+
+  /**
+   * Tunnel bandwidth for IOS (checked in IOS 16.4)
+   *
+   * <p>See https://bst.cloudapps.cisco.com/bugsearch/bug/CSCse69736
+   */
+  private static final double TUNNEL_IOS_BANDWIDTH = 100E3D;
+
+  /**
+   * Tunnel delay for IOS (checked in IOS 16.4)
+   *
+   * <p>See https://bst.cloudapps.cisco.com/bugsearch/bug/CSCse69736
+   */
+  private static final double TUNNEL_IOS_DELAY = 50E9D;
 
   private static final long serialVersionUID = 1L;
 
@@ -68,8 +78,8 @@ public class Interface implements Serializable {
     } else if (name.startsWith("Port-Channel")) {
       // Derived from member interfaces
       return null;
-    } else if (name.startsWith("Tunnel")) {
-      return DEFAULT_TUNNEL_BANDWIDTH;
+    } else if (format == ConfigurationFormat.CISCO_IOS && name.startsWith("Tunnel")) {
+      return TUNNEL_IOS_BANDWIDTH;
     } else {
       // Use default bandwidth for other interface types that have no speed
       return DEFAULT_INTERFACE_BANDWIDTH;
@@ -238,8 +248,8 @@ public class Interface implements Serializable {
       // Enhanced Interior Gateway Routing Protocol (EIGRP) Wide Metrics White Paper
       return LOOPBACK_IOS_DELAY;
     }
-    if (name.startsWith("Tunnel")) {
-      return DEFAULT_TUNNEL_DELAY;
+    if (format == ConfigurationFormat.CISCO_IOS && name.startsWith("Tunnel")) {
+      return TUNNEL_IOS_DELAY;
     }
 
     Double bandwidth = getDefaultBandwidth(name, format);
