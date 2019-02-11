@@ -143,22 +143,17 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
     return _elements.remove(e);
   }
 
-  /**
-   * Remove all elements associated with prefix {@code p}
-   *
-   * @throws IllegalArgumentException if the given prefix does not belong to this subtree
-   */
-  public void clear(Prefix p) {
-    checkArgument(_prefix.containsPrefix(p), "Prefix %s is not contained within node %s", p, this);
+  /** Remove all elements associated with prefix {@code p} */
+  public boolean clear(Prefix p) {
     PrefixTrieMultiMap<DataT> node = findNode(p);
-    if (node != null) {
-      node.clear();
-    }
+    return node != null && node.clear();
   }
 
   /** Clear any elements stored at <i>this</i> node */
-  private void clear() {
+  private boolean clear() {
+    boolean ret = !_elements.isEmpty();
     _elements.clear();
+    return ret;
   }
 
   /** Replace all elements associated with prefix {@code p} with a given element */

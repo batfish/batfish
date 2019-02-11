@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
+import java.util.Set;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -82,9 +83,14 @@ public class PrefixTrieMultiMapTest {
   @Test
   public void testClear() {
     PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>(Prefix.ZERO);
+    Prefix p = Prefix.parse("1.1.1.0/24");
+    Set<Integer> elementsAtP = ImmutableSet.of(4, 5, 6);
     ptm1.addAll(Prefix.ZERO, ImmutableSet.of(1, 2, 3));
-    ptm1.clear(Prefix.ZERO);
+    ptm1.addAll(p, elementsAtP);
+    assertThat("Elements cleared", ptm1.clear(Prefix.ZERO), equalTo(true));
     assertThat(ptm1.getElements(), empty());
+    assertThat("Nothing to remove", ptm1.clear(Prefix.ZERO), equalTo(false));
+    assertThat("Elements in child node unchanged", ptm1.getElements(p), equalTo(elementsAtP));
   }
 
   @Test
@@ -128,12 +134,5 @@ public class PrefixTrieMultiMapTest {
   public void testReplaceWrongNode() {
     PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>(Prefix.parse("128.0.0.0/1"));
     assertThat("Nothing to replace", !ptm1.replaceAll(Prefix.ZERO, 1));
-  }
-
-  @Test
-  public void testClearWrongNode() {
-    PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>(Prefix.parse("128.0.0.0/1"));
-    thrown.expect(IllegalArgumentException.class);
-    ptm1.clear(Prefix.ZERO);
   }
 }
