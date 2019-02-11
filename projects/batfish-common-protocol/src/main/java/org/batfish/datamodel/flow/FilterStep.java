@@ -20,15 +20,18 @@ public class FilterStep extends Step<FilterStepDetail> {
     INGRESS_FILTER,
     /** egress filter */
     EGRESS_FILTER,
-    /** preSourceNat filter */
-    PRE_SOURCE_NAT_FILTER;
+    /** post-transformation ingress filter */
+    POST_TRANSFORMATION_INGRESS_FILTER,
+    /** pre-transformation egress filter */
+    PRE_TRANSFORMATION_EGRESS_FILTER;
 
     public FlowDisposition deniedDisposition() {
       switch (this) {
         case INGRESS_FILTER:
+        case POST_TRANSFORMATION_INGRESS_FILTER:
           return FlowDisposition.DENIED_IN;
         case EGRESS_FILTER:
-        case PRE_SOURCE_NAT_FILTER:
+        case PRE_TRANSFORMATION_EGRESS_FILTER:
           return FlowDisposition.DENIED_OUT;
         default:
           throw new IllegalArgumentException("Unexpected FilterType: " + this);

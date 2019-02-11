@@ -85,6 +85,8 @@ public final class Interface extends ComparableStructure<String> {
 
     private Configuration _owner;
 
+    private IpAccessList _postTransformationIncomingFilter;
+
     private boolean _proxyArp;
 
     private IpAccessList _preTransformationOutgoingFilter;
@@ -148,6 +150,7 @@ public final class Interface extends ComparableStructure<String> {
       if (_owner != null) {
         _owner.getAllInterfaces().put(name, iface);
       }
+      iface.setPostTransformationIncomingFilter(_postTransformationIncomingFilter);
       iface.setPreTransformationOutgoingFilter(_preTransformationOutgoingFilter);
       iface.setProxyArp(_proxyArp);
       if (_type != null) {
@@ -325,6 +328,12 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setOwner(Configuration owner) {
       _owner = owner;
+      return this;
+    }
+
+    public Builder setPostTransformationIncomingFilter(
+        IpAccessList postTransformationIncomingFilter) {
+      _postTransformationIncomingFilter = postTransformationIncomingFilter;
       return this;
     }
 
@@ -506,6 +515,9 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_OUTGOING_FILTER = "outgoingFilter";
 
   private static final String PROP_OUTGOING_TRANSFORMATION = "outgoingTransformation";
+
+  private static final String PROP_POST_TRANSFORMATION_INCOMING_FILTER =
+      "postTransformationIncomingFilter";
 
   private static final String PROP_PREFIX = "prefix";
 
@@ -809,6 +821,10 @@ public final class Interface extends ComparableStructure<String> {
 
   private InterfaceAddress _address;
 
+  private IpAccessList _postTransformationIncomingFilter;
+
+  private transient String _postTransformationIncomingFilterName;
+
   private boolean _proxyArp;
 
   private IpAccessList _preTransformationOutgoingFilter;
@@ -970,6 +986,10 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
     if (!Objects.equals(this._zoneName, other._zoneName)) {
+      return false;
+    }
+    if (!IpAccessList.bothNullOrSameName(
+        this._postTransformationIncomingFilter, other._postTransformationIncomingFilter)) {
       return false;
     }
     if (!IpAccessList.bothNullOrSameName(
@@ -1273,6 +1293,22 @@ public final class Interface extends ComparableStructure<String> {
   @JsonPropertyDescription("The primary IPV4 address/network of this interface")
   public InterfaceAddress getAddress() {
     return _address;
+  }
+
+  @JsonIgnore
+  public IpAccessList getPostTransformationIncomingFilter() {
+    return _postTransformationIncomingFilter;
+  }
+
+  @JsonProperty(PROP_POST_TRANSFORMATION_INCOMING_FILTER)
+  @JsonPropertyDescription(
+      "The IPV4 access-list used to filter incoming traffic after applying destination NAT.")
+  public String getPostTransformationIncomingFilterName() {
+    if (_postTransformationIncomingFilter != null) {
+      return _postTransformationIncomingFilter.getName();
+    } else {
+      return _postTransformationIncomingFilterName;
+    }
   }
 
   @JsonIgnore
@@ -1646,6 +1682,16 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_PREFIX)
   public void setAddress(InterfaceAddress address) {
     _address = address;
+  }
+
+  @JsonIgnore
+  public void setPostTransformationIncomingFilter(IpAccessList postTransformationIncomingFilter) {
+    _postTransformationIncomingFilter = postTransformationIncomingFilter;
+  }
+
+  @JsonProperty(PROP_POST_TRANSFORMATION_INCOMING_FILTER)
+  public void setPostTransformationIncomingFilter(String postTransformationIncomingFilterName) {
+    _postTransformationIncomingFilterName = postTransformationIncomingFilterName;
   }
 
   @JsonIgnore
