@@ -140,7 +140,7 @@ public class ErrorDetailsTest {
     ErrorDetails deserialized =
         BatfishObjectMapper.mapper().readValue(serialized, ErrorDetails.class);
 
-    // Confirm serialization and deserialization produce output equal to input
+    // Confirm serialization and deserialization produce output equal to original object
     assertThat(error, equalTo(deserialized));
   }
 
@@ -164,7 +164,7 @@ public class ErrorDetailsTest {
     ParseExceptionContext deserialized =
         BatfishObjectMapper.mapper().readValue(serialized, ParseExceptionContext.class);
 
-    // Confirm serialization and deserialization produce output equal to input
+    // Confirm serialization and deserialization produce output equal to original object
     assertThat(context, equalTo(deserialized));
   }
 }

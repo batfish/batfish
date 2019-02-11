@@ -72,9 +72,6 @@ public class InitIssuesAnswerer extends Answerer {
                         triplet._text,
                         triplet._parserContext)));
 
-    // Aggregate stack traces after trimming to:
-    // 1) remove the redundant info like "Conversion error for node 'xyz'"
-    // 2) allow useful aggregation across similar issues (e.g. on node 'xyz' and 'abc')
     aggregateDuplicateErrors(ccae.getErrorDetails())
         .forEach(
             (errorDetails, nodeNames) ->

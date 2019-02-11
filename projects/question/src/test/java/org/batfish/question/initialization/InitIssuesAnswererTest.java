@@ -168,10 +168,11 @@ public class InitIssuesAnswererTest {
   @Test
   public void testAnswererParseErrorNoContext() {
     String file = "configs/nodeError.cfg";
+    String message = "Exception message";
 
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     pvcae.setWarnings(ImmutableSortedMap.of(file, new Warnings()));
-    pvcae.getErrorDetails().put(file, new ErrorDetails("Exception message"));
+    pvcae.getErrorDetails().put(file, new ErrorDetails(message));
     // Answerer using TestBatfish that should produce a single parse error without parse exception
     // context
     InitIssuesAnswerer answerer =
@@ -192,7 +193,7 @@ public class InitIssuesAnswererTest {
                         COL_ISSUE_TYPE,
                         IssueType.ParseError.toString(),
                         COL_ISSUE,
-                        "Exception message",
+                        message,
                         COL_LINE_TEXT,
                         null,
                         COL_PARSER_CONTEXT,

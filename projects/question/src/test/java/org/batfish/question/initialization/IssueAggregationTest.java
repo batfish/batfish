@@ -50,16 +50,22 @@ public class IssueAggregationTest {
         new ErrorDetails("message1", new ParseExceptionContext("line", 1234, "ctx"));
     ErrorDetails errorDupDifferentLine =
         new ErrorDetails("message1", new ParseExceptionContext("line", 5678, "ctx"));
+    ErrorDetails errorUnique =
+        new ErrorDetails("message1", new ParseExceptionContext("line2", 90, "ctx"));
 
     ImmutableMap<String, ErrorDetails> errors =
-        ImmutableMap.of("dup1", error, "dup2", errorDupDifferentLine);
+        ImmutableMap.of("dup1", error, "dup2", errorDupDifferentLine, "unique", errorUnique);
 
-    // Confirm the duplicate errors are aggregated despite different parse line numbers
+    // Confirm the duplicate errors are aggregated despite different parse line numbers and that
+    // unique error is not aggregated
     assertThat(
         aggregateDuplicateErrors(errors),
         equalTo(
             ImmutableMap.of(
-                new ErrorDetailsTriplet(error), ImmutableSortedSet.of("dup1", "dup2"))));
+                new ErrorDetailsTriplet(error),
+                ImmutableSortedSet.of("dup1", "dup2"),
+                new ErrorDetailsTriplet(errorUnique),
+                ImmutableSortedSet.of("unique"))));
   }
 
   @Test

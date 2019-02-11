@@ -135,6 +135,8 @@ public class ParseVendorConfigurationResult
           .getErrors()
           .put(_filename, ((BatfishException) _failureCause).getBatfishStackTrace());
       ErrorDetails errorDetails = _warnings.getErrorDetails();
+      // Pass existing errorDetails through, if applicable (e.g. exception caught while walking
+      // parse tree and details [including parser context] already populated)
       if (errorDetails != null) {
         answerElement.getErrorDetails().put(_filename, errorDetails);
       } else {
