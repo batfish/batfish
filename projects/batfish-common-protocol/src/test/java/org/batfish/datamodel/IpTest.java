@@ -7,13 +7,18 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Tests of {@link Ip}. */
 @RunWith(JUnit4.class)
 public class IpTest {
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
+
   @Test
   public void numSubnetBitsToSubnetLong() {
     // Test the boundaries (0 and 32) as well as a representative sample of intermediate values.
@@ -34,6 +39,18 @@ public class IpTest {
     for (int i = 0; i < 32; i++) {
       assertThat(getBitAtPosition(Ip.MAX.asLong(), i), equalTo(true));
     }
+  }
+
+  @Test
+  public void testGetBitAtInvalidTooHighPosition() {
+    _thrown.expect(IllegalArgumentException.class);
+    getBitAtPosition(0L, Prefix.MAX_PREFIX_LENGTH);
+  }
+
+  @Test
+  public void testGetBitAtInvalidNegativePosition() {
+    _thrown.expect(IllegalArgumentException.class);
+    getBitAtPosition(0L, -1);
   }
 
   @Test

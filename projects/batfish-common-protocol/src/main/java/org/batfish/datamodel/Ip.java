@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.cache.Cache;
@@ -51,6 +53,8 @@ public class Ip implements Comparable<Ip>, Serializable {
    * @return a boolean representation of the bit value
    */
   public static boolean getBitAtPosition(long bits, int position) {
+    checkArgument(
+        position >= 0 && position < Prefix.MAX_PREFIX_LENGTH, "Invalid bit position %s", position);
     return (bits & (1 << (Prefix.MAX_PREFIX_LENGTH - 1 - position))) != 0;
   }
 
