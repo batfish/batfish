@@ -10,7 +10,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
-import org.batfish.common.bdd.IpAccessListToBDD;
+import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -27,13 +27,13 @@ import org.batfish.datamodel.transformation.TransformationStepVisitor;
 public class TransformationToTransition {
   private final BDDPacket _bddPacket;
   private final IdentityHashMap<Transformation, Transition> _cache;
-  private final IpAccessListToBDD _ipAccessListToBDD;
+  private final IpAccessListToBdd _ipAccessListToBdd;
   private final TransformationStepToTransition _stepToTransition;
 
-  public TransformationToTransition(BDDPacket bddPacket, IpAccessListToBDD ipAccessListToBDD) {
+  public TransformationToTransition(BDDPacket bddPacket, IpAccessListToBdd ipAccessListToBdd) {
     _bddPacket = bddPacket;
     _cache = new IdentityHashMap<>();
-    _ipAccessListToBDD = ipAccessListToBDD;
+    _ipAccessListToBdd = ipAccessListToBdd;
     _stepToTransition = new TransformationStepToTransition();
   }
 
@@ -88,7 +88,7 @@ public class TransformationToTransition {
   }
 
   private Transition computeTransition(Transformation transformation) {
-    BDD guard = _ipAccessListToBDD.visit(transformation.getGuard());
+    BDD guard = _ipAccessListToBdd.toBdd(transformation.getGuard());
     Transition steps = computeSteps(transformation.getTransformationSteps());
 
     Transition trueBranch =

@@ -3,6 +3,7 @@ package org.batfish.datamodel.questions;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -217,7 +218,7 @@ public class NodesSpecifier {
                             "ROLE:" + dim.getName() + ":",
                             true,
                             "Select nodes using this dimension"))
-                .collect(Collectors.toSet()));
+                .collect(ImmutableSet.toImmutableSet()));
       }
     }
 
@@ -259,13 +260,15 @@ public class NodesSpecifier {
   }
 
   public Set<String> getMatchingNodesByName(Set<String> nodes) {
-    return nodes.stream().filter(n -> _regex.matcher(n).matches()).collect(Collectors.toSet());
+    return nodes.stream()
+        .filter(n -> _regex.matcher(n).matches())
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   public Set<String> getMatchingNodesByRole(NodeRoleDimension roleDimension, Set<String> nodes) {
     return nodes.stream()
         .filter(n -> nodeNameInMatchingRole(n, roleDimension.getRoles()))
-        .collect(Collectors.toSet());
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @JsonIgnore

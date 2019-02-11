@@ -1,6 +1,7 @@
 package org.batfish.grammar;
 
-import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -12,13 +13,10 @@ import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 import org.antlr.v4.runtime.tree.RuleNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.batfish.common.BatfishException;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
-public class BatfishParseTreeWalkerTest {
-  private final class TestParseTreeListener implements ParseTreeListener {
+public final class BatfishParseTreeWalkerTest {
+  private static final class TestParseTreeListener implements ParseTreeListener {
     @Override
     public void visitTerminal(TerminalNode terminalNode) {}
 
@@ -26,28 +24,27 @@ public class BatfishParseTreeWalkerTest {
     public void visitErrorNode(ErrorNode errorNode) {}
 
     @Override
-    public void enterEveryRule(ParserRuleContext parserRuleContext) {
-      throw new BatfishException("fail enterEveryRule");
-    }
+    public void enterEveryRule(ParserRuleContext parserRuleContext) {}
 
     @Override
-    public void exitEveryRule(ParserRuleContext parserRuleContext) {
-      throw new BatfishException("fail exitEveryRule");
-    }
+    public void exitEveryRule(ParserRuleContext parserRuleContext) {}
   }
 
-  private final class TestRuleNode implements RuleNode {
+  private static final class TestRuleNode implements RuleNode {
 
     private final String _text;
+
+    private final RuleContext _ruleContext;
 
     TestRuleNode(String text) {
       super();
       _text = text;
+      _ruleContext = new TestParserRuleContext(_text);
     }
 
     @Override
     public RuleContext getRuleContext() {
-      return new TestParserRuleContext(_text);
+      return _ruleContext;
     }
 
     @Override
@@ -99,7 +96,7 @@ public class BatfishParseTreeWalkerTest {
     }
   }
 
-  private final class TestParserRuleContext extends ParserRuleContext {
+  private static final class TestParserRuleContext extends ParserRuleContext {
     private final String _text;
 
     TestParserRuleContext(String text) {
@@ -115,25 +112,23 @@ public class BatfishParseTreeWalkerTest {
 
   private static final String LINE_TEXT = "Line text";
 
-  @Rule public ExpectedException _thrown = ExpectedException.none();
-
   @Test
   public void enterRule() {
     BatfishParseTreeWalker swimmer = new BatfishParseTreeWalker();
+    TestRuleNode testRuleNode = new TestRuleNode(LINE_TEXT);
 
-    // Make sure an exception in enterRule contains the context's text
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(containsString(LINE_TEXT));
-    swimmer.enterRule(new TestParseTreeListener(), new TestRuleNode(LINE_TEXT));
+    swimmer.enterRule(new TestParseTreeListener(), testRuleNode);
+    // Make sure current context is updated correctly for enterRule
+    assertThat(swimmer.getCurrentCtx(), equalTo(testRuleNode.getRuleContext()));
   }
 
   @Test
   public void exitRule() {
     BatfishParseTreeWalker swimmer = new BatfishParseTreeWalker();
+    TestRuleNode testRuleNode = new TestRuleNode(LINE_TEXT);
 
-    // Make sure an exception in exitRule contains the context's text
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(containsString(LINE_TEXT));
-    swimmer.exitRule(new TestParseTreeListener(), new TestRuleNode(LINE_TEXT));
+    swimmer.exitRule(new TestParseTreeListener(), testRuleNode);
+    // Make sure current context is updated correctly for exitRule
+    assertThat(swimmer.getCurrentCtx(), equalTo(testRuleNode.getRuleContext()));
   }
 }

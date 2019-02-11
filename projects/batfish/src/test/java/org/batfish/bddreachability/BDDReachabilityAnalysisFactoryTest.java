@@ -163,7 +163,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                   ImmutableSet.of(),
                   ImmutableSet.of(node),
                   ALL_DISPOSITIONS)
-              .getEdges();
+              .getForwardEdgeMap();
       assertThat(edges, hasEntry(equalTo(new NodeAccept(node)), hasKey(Accept.INSTANCE)));
       assertThat(edges, not(hasEntry(equalTo(new NodeAccept(otherNode)), hasKey(Accept.INSTANCE))));
 
@@ -217,7 +217,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                   ImmutableSet.of(),
                   ImmutableSet.of(),
                   ALL_DISPOSITIONS)
-              .getEdges();
+              .getForwardEdgeMap();
 
       Set<Edge> edges =
           edgeMap.values().stream().flatMap(m -> m.values().stream()).collect(Collectors.toSet());
@@ -266,7 +266,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                   ImmutableSet.of(node),
                   ImmutableSet.of(),
                   ALL_DISPOSITIONS)
-              .getEdges();
+              .getForwardEdgeMap();
       Set<Edge> edges =
           edgeMap.values().stream().flatMap(m -> m.values().stream()).collect(Collectors.toSet());
 
@@ -562,7 +562,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                 .build());
     Edge edge =
         analysis
-            .getEdges()
+            .getForwardEdgeMap()
             .get(new PreInInterface(config.getHostname(), iface.getName()))
             .get(new PostInVrf(config.getHostname(), vrf.getName()));
 
@@ -633,7 +633,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                 .build());
     Edge edge =
         analysis
-            .getEdges()
+            .getForwardEdgeMap()
             .get(new PreInInterface(config.getHostname(), iface.getName()))
             .get(new PostInVrf(config.getHostname(), vrf.getName()));
 
@@ -702,7 +702,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                 .build());
     Edge edge =
         analysis
-            .getEdges()
+            .getForwardEdgeMap()
             .get(new PreOutVrf(config.getHostname(), vrf.getName()))
             .get(new NodeInterfaceDeliveredToSubnet(config.getHostname(), iface.getName()));
 
@@ -795,7 +795,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     BDD poolIpBdd = srcToBdd.toBDD(poolIp);
 
     Map<StateExpr, Edge> preOutVrfOutEdges =
-        analysis.getEdges().get(new PreOutVrf(hostname, vrf.getName()));
+        analysis.getForwardEdgeMap().get(new PreOutVrf(hostname, vrf.getName()));
 
     // DeliveredToSubnet
     Edge edge = preOutVrfOutEdges.get(new NodeInterfaceDeliveredToSubnet(hostname, ifaceName));
@@ -930,7 +930,9 @@ public final class BDDReachabilityAnalysisFactoryTest {
     BDD origSrcIpBdd = srcToBdd.toBDD(Ip.parse("6.6.6.6"));
 
     Map<StateExpr, Edge> preOutEdgeOutEdges =
-        analysis.getEdges().get(new PreOutEdge(hostname, ifaceName, peername, peerIfaceName));
+        analysis
+            .getForwardEdgeMap()
+            .get(new PreOutEdge(hostname, ifaceName, peername, peerIfaceName));
 
     Edge edge =
         preOutEdgeOutEdges.get(new PreOutEdgePostNat(hostname, ifaceName, peername, peerIfaceName));
@@ -992,7 +994,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     Edge edge =
         analysis
-            .getEdges()
+            .getForwardEdgeMap()
             .get(new PreOutVrf(c1.getHostname(), v1.getName()))
             .get(new NodeInterfaceExitsNetwork(c1.getHostname(), i1.getName()));
 
@@ -1005,7 +1007,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     Edge edgeII =
         analysis
-            .getEdges()
+            .getForwardEdgeMap()
             .get(new PreOutVrf(c1.getHostname(), v1.getName()))
             .get(new NodeInterfaceInsufficientInfo(c1.getHostname(), i1.getName()));
 
@@ -1075,7 +1077,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     Edge edge =
         analysis
-            .getEdges()
+            .getForwardEdgeMap()
             .get(new PreOutVrf(c1.getHostname(), v1.getName()))
             .get(new NodeInterfaceInsufficientInfo(c1.getHostname(), i1.getName()));
 
@@ -1088,7 +1090,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     Edge edgeEN =
         analysis
-            .getEdges()
+            .getForwardEdgeMap()
             .get(new PreOutVrf(c1.getHostname(), v1.getName()))
             .get(new NodeInterfaceExitsNetwork(c1.getHostname(), i1.getName()));
 

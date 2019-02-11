@@ -1,5 +1,6 @@
 package org.batfish.main;
 
+import static org.batfish.common.util.ThrowableMatchers.hasStackTrace;
 import static org.batfish.main.Batfish.postProcessInterfaceDependencies;
 import static org.batfish.main.Batfish.readAllFiles;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -725,5 +726,22 @@ public class BatfishTest {
         name -> assertThat(c1.getAllInterfaces().get(name).getActive(), equalTo(true)));
     inactiveIfaces.forEach(
         name -> assertThat(c1.getAllInterfaces().get(name).getActive(), equalTo(false)));
+  }
+
+  @Test
+  public void testHaltOnParseError() throws IOException {
+    String hostname = "r1";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    ImmutableMap.of(
+                        hostname,
+                        "!RANCID-CONTENT-TYPE: cisco\nhostname r1\ntotally-invalid-text\n"))
+                .build(),
+            _folder);
+    batfish.getSettings().setHaltOnParseError(true);
+    _thrown.expect(hasStackTrace(containsString("Error parsing configuration file")));
+    batfish.loadConfigurations();
   }
 }

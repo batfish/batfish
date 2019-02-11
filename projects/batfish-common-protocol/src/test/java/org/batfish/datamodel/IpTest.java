@@ -7,13 +7,18 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /** Tests of {@link Ip}. */
 @RunWith(JUnit4.class)
 public class IpTest {
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
+
   @Test
   public void numSubnetBitsToSubnetLong() {
     // Test the boundaries (0 and 32) as well as a representative sample of intermediate values.
@@ -48,5 +53,12 @@ public class IpTest {
     IpSpace ipSpace = Ip.parse("1.1.1.1").toIpSpace().complement();
     assertThat(ipSpace, not(containsIp(Ip.parse("1.1.1.1"))));
     assertThat(ipSpace, containsIp(Ip.parse("1.2.3.4")));
+  }
+
+  @Test
+  public void testInvalidIp() {
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage("Invalid ip segment");
+    Ip.parse("1.1.1.256");
   }
 }

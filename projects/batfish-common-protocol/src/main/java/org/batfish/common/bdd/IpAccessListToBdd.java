@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +21,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
@@ -38,7 +38,7 @@ import org.batfish.datamodel.acl.TrueExpr;
  * AclLineMatchExprs} to {@link BDD}.
  */
 @ParametersAreNonnullByDefault
-public class IpAccessListToBDD implements GenericAclLineMatchExprVisitor<BDD> {
+public abstract class IpAccessListToBdd {
 
   @Nonnull private final Map<String, Supplier<BDD>> _aclEnv;
 
@@ -52,7 +52,9 @@ public class IpAccessListToBDD implements GenericAclLineMatchExprVisitor<BDD> {
 
   @Nonnull private final HeaderSpaceToBDD _headerSpaceToBDD;
 
-  public IpAccessListToBDD(
+  @Nonnull private final Visitor _visitor;
+
+  protected IpAccessListToBdd(
       @Nonnull BDDPacket pkt,
       @Nonnull BDDSourceManager bddSrcManager,
       @Nonnull Map<String, IpAccessList> aclEnv,
@@ -60,7 +62,7 @@ public class IpAccessListToBDD implements GenericAclLineMatchExprVisitor<BDD> {
     this(pkt, bddSrcManager, new HeaderSpaceToBDD(pkt, ipSpaceEnv), aclEnv);
   }
 
-  public IpAccessListToBDD(
+  protected IpAccessListToBdd(
       @Nonnull BDDPacket pkt,
       @Nonnull BDDSourceManager bddSrcManager,
       @Nonnull HeaderSpaceToBDD headerSpaceToBDD,
@@ -80,27 +82,21 @@ public class IpAccessListToBDD implements GenericAclLineMatchExprVisitor<BDD> {
     _factory = pkt.getFactory();
     _headerSpaceToBDD = headerSpaceToBDD;
     _pkt = pkt;
+    _visitor = new Visitor();
   }
 
-  public static IpAccessListToBDD create(
-      BDDPacket pkt,
-      BDDSourceManager bddSrcManager,
-      Map<String, IpAccessList> aclEnv,
-      Map<String, IpSpace> ipSpaceEnv) {
-    return new IpAccessListToBDD(pkt, bddSrcManager, aclEnv, ipSpaceEnv);
+  public abstract BDD toBdd(AclLineMatchExpr expr);
+
+  protected final BDD visit(AclLineMatchExpr expr) {
+    return expr.accept(_visitor);
   }
 
-  public static IpAccessListToBDD create(
-      BDDPacket pkt, Map<String, IpAccessList> aclEnv, Map<String, IpSpace> ipSpaceEnv) {
-    return new IpAccessListToBDD(
-        pkt, BDDSourceManager.forInterfaces(pkt, ImmutableSet.of()), aclEnv, ipSpaceEnv);
-  }
-
-  public BDDPacket getBDDPacket() {
+  public final BDDPacket getBDDPacket() {
     return _pkt;
   }
 
-  public HeaderSpaceToBDD getHeaderSpaceToBDD() {
+  @Nonnull
+  public final HeaderSpaceToBDD getHeaderSpaceToBDD() {
     return _headerSpaceToBDD;
   }
 
@@ -109,11 +105,11 @@ public class IpAccessListToBDD implements GenericAclLineMatchExprVisitor<BDD> {
    * ACL is to deny all traffic.
    */
   @Nonnull
-  public BDD toBdd(IpAccessList acl) {
+  public final BDD toBdd(IpAccessList acl) {
     BDDFactory bddFactory = _pkt.getFactory();
     BDD result = bddFactory.zero();
     for (IpAccessListLine line : Lists.reverse(acl.getLines())) {
-      BDD lineBDD = visit(line.getMatchCondition());
+      BDD lineBDD = toBdd(line.getMatchCondition());
       BDD actionBDD = line.getAction() == LineAction.PERMIT ? bddFactory.one() : bddFactory.zero();
       result = lineBDD.ite(actionBDD, result);
     }
@@ -136,63 +132,69 @@ public class IpAccessListToBDD implements GenericAclLineMatchExprVisitor<BDD> {
     return bdds.build();
   }
 
-  @Override
-  public BDD visitAndMatchExpr(AndMatchExpr andMatchExpr) {
-    return _bddOps.and(
-        andMatchExpr.getConjuncts().stream()
-            .map(this::visit)
-            .collect(ImmutableList.toImmutableList()));
-  }
-
-  @Override
-  public BDD visitFalseExpr(FalseExpr falseExpr) {
-    return _factory.zero();
-  }
-
-  @Override
-  public BDD visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
-    return _headerSpaceToBDD.toBDD(matchHeaderSpace.getHeaderspace());
-  }
-
-  @Override
-  public BDD visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
-    return _bddOps.or(
-        matchSrcInterface.getSrcInterfaces().stream()
-            .map(_bddSrcManager::getSourceInterfaceBDD)
-            .collect(Collectors.toList()));
-  }
-
-  @Override
-  public BDD visitNotMatchExpr(NotMatchExpr notMatchExpr) {
-    return visit(notMatchExpr.getOperand()).not();
-  }
-
-  @Override
-  public BDD visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
-    return _bddSrcManager.getOriginatingFromDeviceBDD();
-  }
-
-  @Override
-  public BDD visitOrMatchExpr(OrMatchExpr orMatchExpr) {
-    return _bddOps.or(
-        orMatchExpr.getDisjuncts().stream()
-            .map(this::visit)
-            .collect(ImmutableList.toImmutableList()));
-  }
-
-  @Override
-  public BDD visitPermittedByAcl(PermittedByAcl permittedByAcl) {
-    String name = permittedByAcl.getAclName();
-    checkArgument(_aclEnv.containsKey(name), "Undefined PermittedByAcl reference: %s", name);
-    try {
-      return _aclEnv.get(name).get();
-    } catch (NonRecursiveSupplierException e) {
-      throw new BatfishException("Circular PermittedByAcl reference: " + name);
+  /**
+   * A visitor that does the actual conversion to BDD. Recursive calls go through the abstract
+   * {@link IpAccessListToBdd#toBdd(AclLineMatchExpr)} method, allowing subclasses to intercerpt.
+   */
+  private final class Visitor implements GenericAclLineMatchExprVisitor<BDD> {
+    @Override
+    public final BDD visitAndMatchExpr(AndMatchExpr andMatchExpr) {
+      return _bddOps.and(
+          andMatchExpr.getConjuncts().stream()
+              .map(IpAccessListToBdd.this::toBdd)
+              .collect(ImmutableList.toImmutableList()));
     }
-  }
 
-  @Override
-  public BDD visitTrueExpr(TrueExpr trueExpr) {
-    return _factory.one();
+    @Override
+    public final BDD visitFalseExpr(FalseExpr falseExpr) {
+      return _factory.zero();
+    }
+
+    @Override
+    public final BDD visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
+      return _headerSpaceToBDD.toBDD(matchHeaderSpace.getHeaderspace());
+    }
+
+    @Override
+    public final BDD visitMatchSrcInterface(MatchSrcInterface matchSrcInterface) {
+      return _bddOps.or(
+          matchSrcInterface.getSrcInterfaces().stream()
+              .map(_bddSrcManager::getSourceInterfaceBDD)
+              .collect(Collectors.toList()));
+    }
+
+    @Override
+    public final BDD visitNotMatchExpr(NotMatchExpr notMatchExpr) {
+      return toBdd(notMatchExpr.getOperand()).not();
+    }
+
+    @Override
+    public final BDD visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
+      return _bddSrcManager.getOriginatingFromDeviceBDD();
+    }
+
+    @Override
+    public final BDD visitOrMatchExpr(OrMatchExpr orMatchExpr) {
+      return _bddOps.or(
+          orMatchExpr.getDisjuncts().stream()
+              .map(IpAccessListToBdd.this::toBdd)
+              .collect(ImmutableList.toImmutableList()));
+    }
+
+    @Override
+    public final BDD visitPermittedByAcl(PermittedByAcl permittedByAcl) {
+      String name = permittedByAcl.getAclName();
+      checkArgument(_aclEnv.containsKey(name), "Undefined PermittedByAcl reference: %s", name);
+      try {
+        return _aclEnv.get(name).get();
+      } catch (NonRecursiveSupplierException e) {
+        throw new BatfishException("Circular PermittedByAcl reference: " + name);
+      }
+    }
+
+    @Override
+    public final BDD visitTrueExpr(TrueExpr trueExpr) {
+      return _factory.one();
+    }
   }
 }

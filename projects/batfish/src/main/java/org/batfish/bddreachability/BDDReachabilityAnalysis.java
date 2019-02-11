@@ -1,6 +1,8 @@
 package org.batfish.bddreachability;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.bddreachability.BDDReachabilityUtils.computeForwardEdgeMap;
+import static org.batfish.bddreachability.BDDReachabilityUtils.computeReverseEdgeMap;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -8,9 +10,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
@@ -49,7 +53,7 @@ public class BDDReachabilityAnalysis {
   private final BDDPacket _bddPacket;
 
   // preState --> postState --> predicate
-  private final Map<StateExpr, Map<StateExpr, Edge>> _edges;
+  private final Map<StateExpr, Map<StateExpr, Edge>> _forwardEdgeMap;
 
   // postState --> preState --> predicate
   private final Map<StateExpr, Map<StateExpr, Edge>> _reverseEdges;
@@ -62,72 +66,68 @@ public class BDDReachabilityAnalysis {
   BDDReachabilityAnalysis(
       BDDPacket packet,
       Set<StateExpr> ingressLocationStates,
-      Map<StateExpr, Map<StateExpr, Edge>> edges,
+      List<Edge> edges,
       BDD queryHeaderSpaceBdd) {
     _bddPacket = packet;
-    _edges = edges;
-    _reverseEdges = computeReverseEdges(_edges);
+    _forwardEdgeMap = computeForwardEdgeMap(edges);
+    _reverseEdges = computeReverseEdgeMap(edges);
     _ingressLocationStates = ImmutableSet.copyOf(ingressLocationStates);
     _queryHeaderSpaceBdd = queryHeaderSpaceBdd;
-  }
-
-  private static Map<StateExpr, Map<StateExpr, Edge>> computeReverseEdges(
-      Map<StateExpr, Map<StateExpr, Edge>> edges) {
-    Map<StateExpr, Map<StateExpr, Edge>> reverseEdges = new HashMap<>();
-    edges.forEach(
-        (preState, preStateOutEdges) ->
-            preStateOutEdges.forEach(
-                (postState, edge) ->
-                    reverseEdges
-                        .computeIfAbsent(postState, k -> new HashMap<>())
-                        .put(preState, edge)));
-    // freeze
-    return toImmutableMap(
-        reverseEdges, Entry::getKey, entry -> ImmutableMap.copyOf(entry.getValue()));
   }
 
   private Map<StateExpr, BDD> computeReverseReachableStates() {
     Map<StateExpr, BDD> reverseReachableStates = new HashMap<>();
     reverseReachableStates.put(Query.INSTANCE, _queryHeaderSpaceBdd);
-
     backwardFixpoint(reverseReachableStates);
-
     return ImmutableMap.copyOf(reverseReachableStates);
   }
 
-  private void backwardFixpoint(Map<StateExpr, BDD> reverseReachableStates) {
-    Set<StateExpr> dirty = ImmutableSet.copyOf(reverseReachableStates.keySet());
+  private void backwardFixpoint(Map<StateExpr, BDD> reverseReachable) {
+    fixpoint(reverseReachable, _reverseEdges, Edge::traverseBackward);
+  }
 
-    while (!dirty.isEmpty()) {
-      Set<StateExpr> newDirty = new HashSet<>();
+  private void forwardFixpoint(Map<StateExpr, BDD> reachable) {
+    fixpoint(reachable, _forwardEdgeMap, Edge::traverseForward);
+  }
 
-      dirty.forEach(
-          postState -> {
-            Map<StateExpr, Edge> postStateInEdges = _reverseEdges.get(postState);
-            if (postStateInEdges == null) {
-              // postState has no in-edges
+  /** Apply edges to the reachableSets until a fixed point is reached. */
+  @VisibleForTesting
+  static void fixpoint(
+      Map<StateExpr, BDD> reachableSets,
+      Map<StateExpr, Map<StateExpr, Edge>> edges,
+      BiFunction<Edge, BDD, BDD> traverse) {
+    Set<StateExpr> dirtyStates = ImmutableSet.copyOf(reachableSets.keySet());
+
+    while (!dirtyStates.isEmpty()) {
+      Set<StateExpr> newDirtyStates = new HashSet<>();
+
+      dirtyStates.forEach(
+          dirtyState -> {
+            Map<StateExpr, Edge> dirtyStateEdges = edges.get(dirtyState);
+            if (dirtyStateEdges == null) {
+              // dirtyState has no edges
               return;
             }
 
-            BDD postStateBDD = reverseReachableStates.get(postState);
-            postStateInEdges.forEach(
-                (preState, edge) -> {
-                  BDD result = edge.traverseBackward(postStateBDD);
+            BDD dirtyStateBDD = reachableSets.get(dirtyState);
+            dirtyStateEdges.forEach(
+                (neighbor, edge) -> {
+                  BDD result = traverse.apply(edge, dirtyStateBDD);
                   if (result.isZero()) {
                     return;
                   }
 
-                  // update preState BDD reverse-reachable from leaf
-                  BDD oldReach = reverseReachableStates.get(preState);
+                  // update neighbor's reachable set
+                  BDD oldReach = reachableSets.get(neighbor);
                   BDD newReach = oldReach == null ? result : oldReach.or(result);
                   if (oldReach == null || !oldReach.equals(newReach)) {
-                    reverseReachableStates.put(preState, newReach);
-                    newDirty.add(preState);
+                    reachableSets.put(neighbor, newReach);
+                    newDirtyStates.add(neighbor);
                   }
                 });
           });
 
-      dirty = newDirty;
+      dirtyStates = newDirtyStates;
     }
   }
 
@@ -184,7 +184,7 @@ public class BDDReachabilityAnalysis {
     Map<StateExpr, BDD> newReachableInNRounds = new HashMap<>();
     bdds.forEach(
         (source, sourceBdd) ->
-            _edges
+            _forwardEdgeMap
                 .getOrDefault(source, ImmutableMap.of())
                 .forEach(
                     (target, edge) -> {
@@ -211,7 +211,7 @@ public class BDDReachabilityAnalysis {
 
       dirty.forEach(
           preState -> {
-            Map<StateExpr, Edge> preStateOutEdges = _edges.get(preState);
+            Map<StateExpr, Edge> preStateOutEdges = _forwardEdgeMap.get(preState);
             if (preStateOutEdges == null) {
               // preState has no out-edges
               return;
@@ -279,7 +279,7 @@ public class BDDReachabilityAnalysis {
   }
 
   @VisibleForTesting
-  Map<StateExpr, Map<StateExpr, Edge>> getEdges() {
-    return _edges;
+  Map<StateExpr, Map<StateExpr, Edge>> getForwardEdgeMap() {
+    return _forwardEdgeMap;
   }
 }
