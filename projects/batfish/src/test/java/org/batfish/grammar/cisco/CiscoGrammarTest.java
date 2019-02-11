@@ -1527,6 +1527,14 @@ public class CiscoGrammarTest {
         hasInterface(
             "FastEthernet0/1",
             hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(1E8)))));
+    assertThat(
+        c,
+        hasInterface(
+            "Loopback0", hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(5E9)))));
+    assertThat(
+        c,
+        hasInterface(
+            "Tunnel0", hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(5E10)))));
   }
 
   @Test
@@ -1539,6 +1547,8 @@ public class CiscoGrammarTest {
     assertThat(c, hasInterface("GigabitEthernet0/1", hasSpeed(1E9D)));
     assertThat(c, hasInterface("GigabitEthernet0/2", hasBandwidth(100E6D)));
     assertThat(c, hasInterface("GigabitEthernet0/2", hasSpeed(100E6D)));
+    assertThat(c, hasInterface("Loopback0", hasBandwidth(8E9D)));
+    assertThat(c, hasInterface("Tunnel0", hasBandwidth(1E5D)));
   }
 
   @Test
