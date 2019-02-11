@@ -1,10 +1,14 @@
 package org.batfish.grammar.iptables;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
+import com.google.common.base.Throwables;
 import java.util.List;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.batfish.common.ErrorDetails;
+import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -228,8 +232,16 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
 
   @Override
   public void processParseTree(ParserRuleContext tree) {
-    ParseTreeWalker walker = new BatfishParseTreeWalker();
-    walker.walk(this, tree);
+    BatfishParseTreeWalker walker = new BatfishParseTreeWalker();
+    try {
+      walker.walk(this, tree);
+    } catch (Exception e) {
+      _w.setErrorDetails(
+          new ErrorDetails(
+              Throwables.getStackTraceAsString(firstNonNull(e.getCause(), e)),
+              new ParseExceptionContext(walker.getCurrentCtx(), _parser)));
+      throw e;
+    }
   }
 
   private void todo(ParserRuleContext ctx) {

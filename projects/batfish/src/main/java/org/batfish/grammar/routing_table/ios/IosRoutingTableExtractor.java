@@ -1,7 +1,9 @@
 package org.batfish.grammar.routing_table.ios;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.Route.AMBIGUOUS_NEXT_HOP;
 
+import com.google.common.base.Throwables;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,8 +13,9 @@ import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishException;
+import org.batfish.common.ErrorDetails;
+import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.TopologyUtil;
@@ -198,8 +201,16 @@ public class IosRoutingTableExtractor extends IosRoutingTableParserBaseListener
 
   @Override
   public void processParseTree(ParserRuleContext tree) {
-    ParseTreeWalker walker = new BatfishParseTreeWalker();
-    walker.walk(this, tree);
+    BatfishParseTreeWalker walker = new BatfishParseTreeWalker();
+    try {
+      walker.walk(this, tree);
+    } catch (Exception e) {
+      _w.setErrorDetails(
+          new ErrorDetails(
+              Throwables.getStackTraceAsString(firstNonNull(e.getCause(), e)),
+              new ParseExceptionContext(walker.getCurrentCtx(), _parser)));
+      throw e;
+    }
   }
 
   private RoutingProtocol toProtocol(ProtocolContext ctx) {

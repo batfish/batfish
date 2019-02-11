@@ -223,6 +223,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                       _fileText,
                       _logger,
                       _settings,
+                      _warnings,
                       ConfigurationFormat.VYOS,
                       VendorConfigurationFormatDetector.BATFISH_FLATTENED_VYOS_HEADER)
                   .getFlattenedConfigurationText();
@@ -240,6 +241,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                     _fileText,
                     _logger,
                     _settings,
+                    _warnings,
                     ConfigurationFormat.JUNIPER,
                     VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
             _fileText = flattener.getFlattenedConfigurationText();
@@ -276,6 +278,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                     _fileText,
                     _logger,
                     _settings,
+                    _warnings,
                     ConfigurationFormat.PALO_ALTO_NESTED,
                     VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
             _fileText = flattener.getFlattenedConfigurationText();

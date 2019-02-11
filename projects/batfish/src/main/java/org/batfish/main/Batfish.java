@@ -80,7 +80,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.bddreachability.BDDReachabilityAnalysis;
@@ -95,6 +94,7 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.common.ErrorDetails;
+import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
@@ -309,6 +309,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String input,
       BatfishLogger logger,
       Settings settings,
+      Warnings warnings,
       ConfigurationFormat format,
       String header) {
     switch (format) {
@@ -319,8 +320,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
           JuniperCombinedParser parser = new JuniperCombinedParser(input, settings);
           ParserRuleContext tree = parse(parser, logger, settings);
           JuniperFlattener flattener = new JuniperFlattener(header);
-          ParseTreeWalker walker = new BatfishParseTreeWalker();
-          walker.walk(flattener, tree);
+          BatfishParseTreeWalker walker = new BatfishParseTreeWalker();
+          try {
+            walker.walk(flattener, tree);
+          } catch (Exception e) {
+            warnings.setErrorDetails(
+                new ErrorDetails(
+                    Throwables.getStackTraceAsString(firstNonNull(e.getCause(), e)),
+                    new ParseExceptionContext(walker.getCurrentCtx(), parser)));
+            throw e;
+          }
           return flattener;
         }
 
@@ -329,8 +338,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
           VyosCombinedParser parser = new VyosCombinedParser(input, settings);
           ParserRuleContext tree = parse(parser, logger, settings);
           VyosFlattener flattener = new VyosFlattener(header);
-          ParseTreeWalker walker = new BatfishParseTreeWalker();
-          walker.walk(flattener, tree);
+          BatfishParseTreeWalker walker = new BatfishParseTreeWalker();
+          try {
+            walker.walk(flattener, tree);
+          } catch (Exception e) {
+            warnings.setErrorDetails(
+                new ErrorDetails(
+                    Throwables.getStackTraceAsString(firstNonNull(e.getCause(), e)),
+                    new ParseExceptionContext(walker.getCurrentCtx(), parser)));
+            throw e;
+          }
           return flattener;
         }
 
@@ -2630,7 +2647,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 .getErrorDetails()
                 .put(
                     hostConfig.getHostname(),
-                    new ErrorDetails(Throwables.getStackTraceAsString(firstNonNull(bfc.getCause(), bfc))));
+                    new ErrorDetails(
+                        Throwables.getStackTraceAsString(firstNonNull(bfc.getCause(), bfc))));
           } else {
             bfc = new BatfishException(failureMessage);
             if (_settings.getExitOnFirstError()) {
@@ -2643,7 +2661,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   .getErrorDetails()
                   .put(
                       hostConfig.getHostname(),
-                      new ErrorDetails(Throwables.getStackTraceAsString(firstNonNull(bfc.getCause(), bfc))));
+                      new ErrorDetails(
+                          Throwables.getStackTraceAsString(firstNonNull(bfc.getCause(), bfc))));
             }
           }
         } else {
