@@ -134,16 +134,17 @@ public class ParseVendorConfigurationResult
       answerElement
           .getErrors()
           .put(_filename, ((BatfishException) _failureCause).getBatfishStackTrace());
-      answerElement
-          .getErrorDetails()
-          .put(
-              _filename,
-              new ErrorDetails(
-                  Throwables.getStackTraceAsString(
-                      firstNonNull(_failureCause.getCause(), _failureCause))));
       ErrorDetails errorDetails = _warnings.getErrorDetails();
       if (errorDetails != null) {
         answerElement.getErrorDetails().put(_filename, errorDetails);
+      } else {
+        answerElement
+            .getErrorDetails()
+            .put(
+                _filename,
+                new ErrorDetails(
+                    Throwables.getStackTraceAsString(
+                        firstNonNull(_failureCause.getCause(), _failureCause))));
       }
     }
   }

@@ -57,24 +57,35 @@ public class ErrorDetailsTest {
   }
 
   @Test
+  public void testErrorDetailsSerialization() throws IOException {
+    ParseExceptionContext context = new ParseExceptionContext("content", 1, "context");
+    ErrorDetails error = new ErrorDetails("message", context);
+    String serialized = BatfishObjectMapper.writeString(error);
+    ErrorDetails deserialized =
+        BatfishObjectMapper.mapper().readValue(serialized, ErrorDetails.class);
+
+    // Confirm serialization and deserialization produce output equal to input
+    assertThat(error, equalTo(deserialized));
+  }
+
+  @Test
   public void testParseExceptionContextConstructionFromParserRuleContext() {
-    ParseExceptionContext pec =
+    ParseExceptionContext context =
         new ParseExceptionContext(new TestParserRuleContext(), new TestParser());
 
     // Confirm line number and text are correctly extracted from rule context and parser
-    assertThat(pec.getLineNumber(), equalTo(LINE_NUMBER));
-    assertThat(pec.getLineContent(), equalTo(LINE_TEXT));
+    assertThat(context.getLineNumber(), equalTo(LINE_NUMBER));
+    assertThat(context.getLineContent(), equalTo(LINE_TEXT));
   }
 
   @Test
   public void testParseExceptionContextSerialization() throws IOException {
-    ParseExceptionContext pec = new ParseExceptionContext("content", 1, "context");
-    String serialized = BatfishObjectMapper.writeString(pec);
+    ParseExceptionContext context = new ParseExceptionContext("content", 1, "context");
+    String serialized = BatfishObjectMapper.writeString(context);
     ParseExceptionContext deserialized =
         BatfishObjectMapper.mapper().readValue(serialized, ParseExceptionContext.class);
 
-    assertThat(pec.getLineContent(), equalTo(deserialized.getLineContent()));
-    assertThat(pec.getLineNumber(), equalTo(deserialized.getLineNumber()));
-    assertThat(pec, equalTo(deserialized));
+    // Confirm serialization and deserialization produce output equal to input
+    assertThat(context, equalTo(deserialized));
   }
 }

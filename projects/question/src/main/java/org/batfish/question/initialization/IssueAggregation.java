@@ -169,20 +169,4 @@ final class IssueAggregation {
                 .add(source));
     return map;
   }
-
-  /**
-   * Aggregate same strings (e.g. trimmed stack traces) across multiple nodes (or alternatively
-   * files).
-   *
-   * <p>Produces a map of {@link String} to node names from a map of node names to string.
-   */
-  @Nonnull
-  @VisibleForTesting
-  static Map<String, SortedSet<String>> aggregateDuplicateStrings(
-      Map<String, String> nodeToString) {
-    Map<String, SortedSet<String>> map = new HashMap<>();
-    nodeToString.forEach(
-        (source, string) -> map.computeIfAbsent(string, t -> new TreeSet<>()).add(source));
-    return map;
-  }
 }

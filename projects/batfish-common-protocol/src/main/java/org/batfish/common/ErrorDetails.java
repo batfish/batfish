@@ -13,7 +13,7 @@ import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishLexer;
 import org.batfish.grammar.BatfishParser;
 
-/** A class containing details regarding an error (e.g. parse error). */
+/** A class containing details regarding an error (e.g. parse error or convert error). */
 public class ErrorDetails implements Serializable {
   private static final long serialVersionUID = 1L;
 

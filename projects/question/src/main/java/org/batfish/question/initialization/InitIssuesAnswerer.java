@@ -37,23 +37,6 @@ public class InitIssuesAnswerer extends Answerer {
         .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
   }
 
-  /*
-  private static SortedSet<?> toSortedSet(Collection<?> collection) {
-    return collection.stream()
-        .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
-  }
-  */
-
-  private static SortedSet<String> toSortedSetStr(Collection<String> collection) {
-    return collection.stream()
-        .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
-  }
-
-  private static SortedSet<Integer> toSortedSetInt(Collection<Integer> collection) {
-    return collection.stream()
-        .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
-  }
-
   @Override
   public TableAnswerElement answer() {
     ConvertConfigurationAnswerElement ccae =
@@ -85,10 +68,8 @@ public class InitIssuesAnswerer extends Answerer {
                             .map(e -> new FileLines(e.getKey(), toSortedSet(e.getValue())))
                             .collect(ImmutableList.toImmutableList()),
                         IssueType.ParseWarning,
-                        String.format(
-                            "%s (%s)",
-                            firstNonNull(triplet._comment, "(details not provided)"),
-                            triplet._text),
+                        firstNonNull(triplet._comment, "(details not provided)"),
+                        triplet._text,
                         triplet._parserContext)));
 
     // Aggregate stack traces after trimming to:
@@ -122,6 +103,7 @@ public class InitIssuesAnswerer extends Answerer {
                           .collect(ImmutableList.toImmutableList()),
                       IssueType.ParseError,
                       errorDetails._message,
+                      errorDetails._lineContent,
                       errorDetails._parserContext));
             });
 
@@ -139,7 +121,7 @@ public class InitIssuesAnswerer extends Answerer {
       @Nullable Iterable<FileLines> fileLines,
       IssueType issueType,
       String issue) {
-    return getRow(nodes, fileLines, issueType, issue, null);
+    return getRow(nodes, fileLines, issueType, issue, null, null);
   }
 
   private static Row getRow(
@@ -147,12 +129,14 @@ public class InitIssuesAnswerer extends Answerer {
       Iterable<FileLines> fileLines,
       IssueType issueType,
       String issue,
+      @Nullable String lineText,
       @Nullable String parserContext) {
     return Row.builder(TABLE_METADATA.toColumnMap())
         .put(COL_NODES, nodes)
         .put(COL_FILELINES, fileLines)
         .put(COL_ISSUE_TYPE, issueType.toString())
         .put(COL_ISSUE, issue)
+        .put(COL_LINE_TEXT, lineText)
         .put(COL_PARSER_CONTEXT, parserContext)
         .build();
   }
@@ -161,6 +145,7 @@ public class InitIssuesAnswerer extends Answerer {
   static final String COL_FILELINES = "Source_Lines";
   static final String COL_ISSUE_TYPE = "Issue_Type";
   static final String COL_ISSUE = "Issue";
+  static final String COL_LINE_TEXT = "Line_Text";
   static final String COL_PARSER_CONTEXT = "Parser_Context";
 
   private static final List<ColumnMetadata> METADATA =
@@ -180,6 +165,12 @@ public class InitIssuesAnswerer extends Answerer {
           new ColumnMetadata(
               COL_ISSUE_TYPE, Schema.STRING, "The type of issues identified", true, false),
           new ColumnMetadata(COL_ISSUE, Schema.STRING, "The issues identified", false, true),
+          new ColumnMetadata(
+              COL_LINE_TEXT,
+              Schema.STRING,
+              "The text of the input file that caused the issue",
+              false,
+              true),
           new ColumnMetadata(
               COL_PARSER_CONTEXT,
               Schema.STRING,

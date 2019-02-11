@@ -3,6 +3,7 @@ package org.batfish.question.initialization;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_FILELINES;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_ISSUE;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_ISSUE_TYPE;
+import static org.batfish.question.initialization.InitIssuesAnswerer.COL_LINE_TEXT;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_NODES;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_PARSER_CONTEXT;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -27,7 +28,6 @@ import org.junit.Test;
 
 /** Tests for {@link InitIssuesAnswerer}. */
 public class InitIssuesAnswererTest {
-  private static String EXCEPTION_MESSAGE = "Exception message";
 
   @Test
   public void testAnswererNoIssues() {
@@ -42,10 +42,11 @@ public class InitIssuesAnswererTest {
   @Test
   public void testAnswererConvertError() {
     String node = "nodeError";
+    String message = "Exception message";
 
     ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
     ccae.setWarnings(ImmutableSortedMap.of(node, new Warnings()));
-    ccae.getErrorDetails().putIfAbsent(node, new ErrorDetails(EXCEPTION_MESSAGE));
+    ccae.getErrorDetails().putIfAbsent(node, new ErrorDetails(message));
     // Answerer using TestBatfish that should produce a single convert error
     InitIssuesAnswerer answerer =
         new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(null, ccae));
@@ -65,7 +66,9 @@ public class InitIssuesAnswererTest {
                         COL_ISSUE_TYPE,
                         IssueType.ConvertError.toString(),
                         COL_ISSUE,
-                        EXCEPTION_MESSAGE,
+                        message,
+                        COL_LINE_TEXT,
+                        null,
                         COL_PARSER_CONTEXT,
                         null))));
   }
@@ -102,6 +105,8 @@ public class InitIssuesAnswererTest {
                         IssueType.ConvertWarningRedFlag.toString(),
                         COL_ISSUE,
                         String.format("%s", redFlag),
+                        COL_LINE_TEXT,
+                        null,
                         COL_PARSER_CONTEXT,
                         null))
                 .add(
@@ -114,6 +119,8 @@ public class InitIssuesAnswererTest {
                         IssueType.ConvertWarningUnimplemented.toString(),
                         COL_ISSUE,
                         String.format("%s", unimplemented),
+                        COL_LINE_TEXT,
+                        null,
                         COL_PARSER_CONTEXT,
                         null))));
   }
@@ -122,13 +129,15 @@ public class InitIssuesAnswererTest {
   public void testAnswererParseError() {
     String file = "configs/nodeError.cfg";
     Integer line = 9876;
+    String content = "content";
+    String context = "context";
+    String message = "Exception message";
 
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     pvcae.setWarnings(ImmutableSortedMap.of(file, new Warnings()));
-    pvcae.getErrorDetails().put(file, new ErrorDetails(EXCEPTION_MESSAGE));
     pvcae
         .getErrorDetails()
-        .put(file, new ErrorDetails("", new ParseExceptionContext("content", line, "context")));
+        .put(file, new ErrorDetails(message, new ParseExceptionContext(content, line, context)));
     // Answerer using TestBatfish that should produce a single parse error with parse exception
     // context
     InitIssuesAnswerer answerer =
@@ -149,9 +158,11 @@ public class InitIssuesAnswererTest {
                         COL_ISSUE_TYPE,
                         IssueType.ParseError.toString(),
                         COL_ISSUE,
-                        EXCEPTION_MESSAGE,
+                        message,
+                        COL_LINE_TEXT,
+                        content,
                         COL_PARSER_CONTEXT,
-                        null))));
+                        context))));
   }
 
   @Test
@@ -160,7 +171,7 @@ public class InitIssuesAnswererTest {
 
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     pvcae.setWarnings(ImmutableSortedMap.of(file, new Warnings()));
-    pvcae.getErrorDetails().put(file, new ErrorDetails(EXCEPTION_MESSAGE));
+    pvcae.getErrorDetails().put(file, new ErrorDetails("Exception message"));
     // Answerer using TestBatfish that should produce a single parse error without parse exception
     // context
     InitIssuesAnswerer answerer =
@@ -181,7 +192,9 @@ public class InitIssuesAnswererTest {
                         COL_ISSUE_TYPE,
                         IssueType.ParseError.toString(),
                         COL_ISSUE,
-                        EXCEPTION_MESSAGE,
+                        "Exception message",
+                        COL_LINE_TEXT,
+                        null,
                         COL_PARSER_CONTEXT,
                         null))));
   }
@@ -217,7 +230,9 @@ public class InitIssuesAnswererTest {
                         COL_ISSUE_TYPE,
                         IssueType.ParseWarning.toString(),
                         COL_ISSUE,
-                        String.format("%s (%s)", comment, text),
+                        comment,
+                        COL_LINE_TEXT,
+                        text,
                         COL_PARSER_CONTEXT,
                         context))));
   }
