@@ -1,11 +1,14 @@
 package org.batfish.coordinator.resources;
 
+import static org.batfish.common.CoordConstsV2.RSC_LIST;
+
 import com.google.common.annotations.VisibleForTesting;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.GET;
+import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -47,4 +50,10 @@ public class SnapshotInputObjectsResource {
         .header(CoordConsts.SVC_FILENAME_HDR, filename)
         .build();
   }
+
+  @Path(RSC_LIST)
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @SuppressWarnings("MustBeClosedChecker") // Response eventually closes it.
+  public Response listKeys() throws IOException {}
 }
