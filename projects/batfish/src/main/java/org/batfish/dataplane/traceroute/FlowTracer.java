@@ -530,8 +530,9 @@ class FlowTracer {
 
   private void forwardOutInterface(Interface outgoingInterface, Ip nextHopIp) {
     // Apply preSourceNatOutgoingFilter
-    if (applyFilter(outgoingInterface.getPreTransformationOutgoingFilter(),
-        PRE_TRANSFORMATION_EGRESS_FILTER)
+    if (applyFilter(
+            outgoingInterface.getPreTransformationOutgoingFilter(),
+            PRE_TRANSFORMATION_EGRESS_FILTER)
         == DENIED) {
       return;
     }
