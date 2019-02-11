@@ -327,7 +327,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             warnings.setErrorDetails(
                 new ErrorDetails(
                     Throwables.getStackTraceAsString(firstNonNull(e.getCause(), e)),
-                    new ParseExceptionContext(walker.getCurrentCtx(), parser)));
+                    new ParseExceptionContext(walker.getCurrentCtx(), parser, input)));
             throw e;
           }
           return flattener;
@@ -345,7 +345,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             warnings.setErrorDetails(
                 new ErrorDetails(
                     Throwables.getStackTraceAsString(firstNonNull(e.getCause(), e)),
-                    new ParseExceptionContext(walker.getCurrentCtx(), parser)));
+                    new ParseExceptionContext(walker.getCurrentCtx(), parser, input)));
             throw e;
           }
           return flattener;

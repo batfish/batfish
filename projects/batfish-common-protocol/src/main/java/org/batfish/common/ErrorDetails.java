@@ -92,11 +92,27 @@ public class ErrorDetails implements Serializable {
 
     public ParseExceptionContext(
         @Nonnull ParserRuleContext parseRuleContext,
-        @Nonnull BatfishCombinedParser<? extends BatfishParser, ? extends BatfishLexer> parser) {
+        @Nonnull BatfishCombinedParser<? extends BatfishParser, ? extends BatfishLexer> parser,
+        @Nonnull String rawText) {
       _lineNumber = parser.getLine(parseRuleContext.getStart());
-      _lineContent = parseRuleContext.getText();
+      _lineContent = getFullText(parseRuleContext, rawText);
       List<String> ruleNames = Arrays.asList(parser.getParser().getRuleNames());
       _parserContext = parseRuleContext.toString(ruleNames);
+    }
+
+    public ParseExceptionContext(
+        @Nonnull ParserRuleContext parseRuleContext,
+        @Nonnull BatfishCombinedParser<? extends BatfishParser, ? extends BatfishLexer> parser) {
+      _lineNumber = parser.getLine(parseRuleContext.getStart());
+      _lineContent = getFullText(parseRuleContext, "");
+      List<String> ruleNames = Arrays.asList(parser.getParser().getRuleNames());
+      _parserContext = parseRuleContext.toString(ruleNames);
+    }
+
+    private static String getFullText(ParserRuleContext parserRuleContext, String rawText) {
+      int start = parserRuleContext.getStart().getStartIndex();
+      int end = parserRuleContext.getStop().getStopIndex();
+      return rawText.substring(start, end + 1);
     }
 
     @Override

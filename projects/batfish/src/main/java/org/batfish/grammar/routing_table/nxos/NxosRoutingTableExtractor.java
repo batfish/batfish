@@ -173,7 +173,7 @@ public class NxosRoutingTableExtractor extends NxosRoutingTableParserBaseListene
       _w.setErrorDetails(
           new ErrorDetails(
               Throwables.getStackTraceAsString(firstNonNull(e.getCause(), e)),
-              new ParseExceptionContext(walker.getCurrentCtx(), _parser)));
+              new ParseExceptionContext(walker.getCurrentCtx(), _parser, _text)));
       throw e;
     }
   }

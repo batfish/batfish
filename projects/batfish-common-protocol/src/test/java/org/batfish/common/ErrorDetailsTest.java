@@ -5,8 +5,10 @@ import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import javax.annotation.Nonnull;
+import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.TokenSource;
 import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.grammar.BatfishANTLRErrorStrategy;
@@ -45,14 +47,88 @@ public class ErrorDetailsTest {
   }
 
   private final class TestParserRuleContext extends ParserRuleContext {
+
+    private final Token _token;
+
+    public TestParserRuleContext(Token token) {
+      _token = token;
+    }
+
     @Override
     public Token getStart() {
-      return null;
+      return _token;
+    }
+
+    @Override
+    public Token getStop() {
+      return _token;
     }
 
     @Override
     public String getText() {
       return LINE_TEXT;
+    }
+  }
+
+  private final class TestToken implements Token {
+
+    private final int _startIndex;
+
+    private final int _stopIndex;
+
+    public TestToken(int startIndex, int stopIndex) {
+      _startIndex = startIndex;
+      _stopIndex = stopIndex;
+    }
+
+    @Override
+    public String getText() {
+      return null;
+    }
+
+    @Override
+    public int getType() {
+      return 0;
+    }
+
+    @Override
+    public int getLine() {
+      return 0;
+    }
+
+    @Override
+    public int getCharPositionInLine() {
+      return 0;
+    }
+
+    @Override
+    public int getChannel() {
+      return 0;
+    }
+
+    @Override
+    public int getTokenIndex() {
+      return 0;
+    }
+
+    @Override
+    public int getStartIndex() {
+      return _startIndex;
+    }
+
+    @Override
+    public int getStopIndex() {
+      return _stopIndex;
+    }
+
+    @Override
+    public TokenSource getTokenSource() {
+      return null;
+    }
+
+    @Override
+    public CharStream getInputStream() {
+      return null;
     }
   }
 
@@ -71,7 +147,10 @@ public class ErrorDetailsTest {
   @Test
   public void testParseExceptionContextConstructionFromParserRuleContext() {
     ParseExceptionContext context =
-        new ParseExceptionContext(new TestParserRuleContext(), new TestParser());
+        new ParseExceptionContext(
+            new TestParserRuleContext(new TestToken(0, LINE_TEXT.length() - 1)),
+            new TestParser(),
+            LINE_TEXT);
 
     // Confirm line number and text are correctly extracted from rule context and parser
     assertThat(context.getLineNumber(), equalTo(LINE_NUMBER));
