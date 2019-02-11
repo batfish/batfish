@@ -321,7 +321,7 @@ public class ModelingUtilsTest {
         allOf(
             hasHostname(ModelingUtils.INTERNET_HOST_NAME),
             hasInterface(
-                "~Interface_0~",
+                "~Interface_1~",
                 hasAllAddresses(
                     equalTo(ImmutableSet.of(new InterfaceAddress(Ip.parse("240.1.1.2"), 31))))),
             hasVrf(
