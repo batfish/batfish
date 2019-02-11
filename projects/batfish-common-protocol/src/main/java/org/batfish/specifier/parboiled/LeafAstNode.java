@@ -2,11 +2,11 @@ package org.batfish.specifier.parboiled;
 
 import java.util.Objects;
 
-public class LeafAstNode extends AstNode {
+class LeafAstNode extends AstNode {
 
   private Object _value;
 
-  public LeafAstNode(Object value) {
+  LeafAstNode(Object value) {
     super(null, null);
     this._value = value;
   }

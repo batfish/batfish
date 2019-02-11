@@ -16,7 +16,7 @@ import org.parboiled.support.MatcherPath;
 
 /** A helper class to interpret parser errors */
 @ParametersAreNonnullByDefault
-public final class ParserUtils {
+final class ParserUtils {
 
   /** The label for the built in rule to create tokens from string literals */
   static String STRING_LITERAL_LABEL = "fromStringLiteral";
@@ -25,7 +25,7 @@ public final class ParserUtils {
       ImmutableSet.of("Sequence", "FirstOf", "AnyOf", "ZeroOrMore", "OneOrMore", "Optional");
 
   /** Generates a friendly message to explain what might be wrong with parser input */
-  public static String getErrorString(InvalidInputError error) {
+  static String getErrorString(InvalidInputError error) {
     return getErrorString(error.getStartIndex(), getPartialMatches(error));
   }
 

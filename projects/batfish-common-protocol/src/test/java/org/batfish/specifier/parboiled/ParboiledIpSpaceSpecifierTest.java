@@ -1,6 +1,6 @@
-package org.batfish.specifier;
+package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.ParboiledIpSpaceSpecifier.computeIpSpace;
+import static org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifier.computeIpSpace;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -13,9 +13,8 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.ReferenceBook;
-import org.batfish.specifier.parboiled.IpSpaceAstNode;
+import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.parboiled.IpSpaceAstNode.Type;
-import org.batfish.specifier.parboiled.LeafAstNode;
 import org.junit.Test;
 
 public class ParboiledIpSpaceSpecifierTest {

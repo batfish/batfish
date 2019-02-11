@@ -4,7 +4,7 @@ import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
 /** Represents one (of possibly multiple) potential matches when the parser input does not match */
-public class PartialMatch {
+class PartialMatch {
 
   /** The current rule would have matched if the input was followed by this */
   private final String _matchCompletion;
@@ -15,7 +15,7 @@ public class PartialMatch {
   /** The label for the rule that we were trying to match */
   private final String _ruleLabel;
 
-  public PartialMatch(String ruleLabel, String matchPrefix, String matchCompletion) {
+  PartialMatch(String ruleLabel, String matchPrefix, String matchCompletion) {
     _ruleLabel = ruleLabel;
     _matchPrefix = matchPrefix;
     _matchCompletion = matchCompletion;
@@ -31,15 +31,15 @@ public class PartialMatch {
         && Objects.equals(_ruleLabel, ((PartialMatch) o)._ruleLabel);
   }
 
-  public String getMatchCompletion() {
+  String getMatchCompletion() {
     return _matchCompletion;
   }
 
-  public String getMatchPrefix() {
+  String getMatchPrefix() {
     return _matchPrefix;
   }
 
-  public String getRuleLabel() {
+  String getRuleLabel() {
     return _ruleLabel;
   }
 

@@ -16,9 +16,9 @@ import org.parboiled.Rule;
   "checkstyle:methodname", // this class uses idiomatic names
   "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
 })
-public class Parser extends CommonParser {
+class Parser extends CommonParser {
 
-  public static Parser INSTANCE = Parboiled.createParser(Parser.class);
+  static Parser INSTANCE = Parboiled.createParser(Parser.class);
 
   /**
    * Shared entry point for all expressions.

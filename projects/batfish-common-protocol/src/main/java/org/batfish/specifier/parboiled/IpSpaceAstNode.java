@@ -2,7 +2,7 @@ package org.batfish.specifier.parboiled;
 
 import java.util.Objects;
 
-public class IpSpaceAstNode extends AstNode {
+class IpSpaceAstNode extends AstNode {
 
   public enum Type {
     ADDRESS_GROUP,
@@ -12,7 +12,7 @@ public class IpSpaceAstNode extends AstNode {
 
   private final Type _type;
 
-  public IpSpaceAstNode(Type type, AstNode left, AstNode right) {
+  IpSpaceAstNode(Type type, AstNode left, AstNode right) {
     super(left, right);
     _type = type;
   }
