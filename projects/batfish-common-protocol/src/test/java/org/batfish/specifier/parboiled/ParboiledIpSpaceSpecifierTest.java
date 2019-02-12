@@ -22,7 +22,7 @@ public class ParboiledIpSpaceSpecifierTest {
   private MockSpecifierContext _emptyCtxt = MockSpecifierContext.builder().build();
 
   @Test
-  public void testComputerIpSpaceAddressGroup() {
+  public void testComputeIpSpaceAddressGroup() {
     String ip = "8.8.8.8";
     String addressGroup = "ag";
     String book = "book";
@@ -45,7 +45,7 @@ public class ParboiledIpSpaceSpecifierTest {
   }
 
   @Test
-  public void testComputerIpSpaceComma() {
+  public void testComputeIpSpaceComma() {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("1.1.1.10");
     assertThat(
