@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.Prefix.longestCommonPrefix;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
@@ -235,18 +236,19 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
    */
   private @Nonnull PrefixTrieMultiMap<DataT> combine(
       @Nonnull PrefixTrieMultiMap<DataT> newNode, @Nullable PrefixTrieMultiMap<DataT> oldNode) {
-    Prefix newPrefix = newNode._prefix;
-    assert oldNode == null || !oldNode.getPrefix().containsPrefix(newPrefix);
-
     // No existing node, newNode is the tree
     if (oldNode == null) {
       return newNode;
     }
 
+    Prefix newPrefix = newNode._prefix;
+    Prefix oldPrefix = oldNode._prefix;
+
+    assert !oldPrefix.containsPrefix(newPrefix);
+
     /* If the newNode's prefix contains the oldNode's prefix, the existing node is a child of
      * the newNode.
      */
-    Prefix oldPrefix = oldNode._prefix;
     if (newPrefix.containsPrefix(oldPrefix)) {
       boolean currentBit = Ip.getBitAtPosition(oldPrefix.getStartIp(), newPrefix.getPrefixLength());
       if (currentBit) {
@@ -258,13 +260,12 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
     }
 
     /* Find the least-upper-bound of the two prefixes, i.e. the one for which the newNode branches
-     * one way and the oldNode branches the other. This is always the newNode's prefix with
-     * a length one bit shorter.
+     * one way and the oldNode branches the other.
      */
-    Prefix lub = longestCommonPrefix(newPrefix, oldPrefix);
-    PrefixTrieMultiMap<DataT> parent = new PrefixTrieMultiMap<>(lub);
+    Prefix lcp = longestCommonPrefix(newPrefix, oldPrefix);
+    PrefixTrieMultiMap<DataT> parent = new PrefixTrieMultiMap<>(lcp);
 
-    boolean newNodeRight = Ip.getBitAtPosition(newPrefix.getStartIp(), lub.getPrefixLength());
+    boolean newNodeRight = Ip.getBitAtPosition(newPrefix.getStartIp(), lcp.getPrefixLength());
     if (newNodeRight) {
       parent.setRight(newNode);
       parent.setLeft(oldNode);
@@ -275,35 +276,17 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
     return parent;
   }
 
-  /** Return the longest prefix that contains both input prefixes. */
-  static Prefix longestCommonPrefix(Prefix p1, Prefix p2) {
-    long l1 = p1.getStartIp().asLong();
-    long l2 = p2.getStartIp().asLong();
-
-    int minLength = Integer.min(p1.getPrefixLength(), p2.getPrefixLength());
-
-    // non-wildcard bit mask for /0 prefixes
-    long mask = -1L ^ 0xFFFFFFFFL;
-    mask = mask >> 1; // now for /1 prefixes
-
-    int len = 0;
-    while (len < minLength && (l1 & mask) == (l2 & mask)) {
-      mask = mask >> 1;
-      len++;
-    }
-
-    return Prefix.create(Ip.create(l1), len);
-  }
-
   @VisibleForTesting
   static boolean legalLeftChildPrefix(Prefix parentPrefix, Prefix childPrefix) {
     return parentPrefix.containsPrefix(childPrefix)
+        && parentPrefix.getPrefixLength() < childPrefix.getPrefixLength()
         && !Ip.getBitAtPosition(childPrefix.getStartIp(), parentPrefix.getPrefixLength());
   }
 
   @VisibleForTesting
   static boolean legalRightChildPrefix(Prefix parentPrefix, Prefix childPrefix) {
     return parentPrefix.containsPrefix(childPrefix)
+        && parentPrefix.getPrefixLength() < childPrefix.getPrefixLength()
         && Ip.getBitAtPosition(childPrefix.getStartIp(), parentPrefix.getPrefixLength());
   }
 
@@ -360,7 +343,7 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
     return node._prefix.equals(p) ? node : null;
   }
 
-  /** Returns the node with the longest prefxix match for a given prefix. */
+  /** Returns the node with the longest prefix match for a given prefix. */
   @Nonnull
   PrefixTrieMultiMap<DataT> findLongestPrefixMatchNode(Prefix prefix) {
     assert this._prefix.containsPrefix(prefix);
@@ -373,20 +356,18 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
         return node;
       }
 
-      // Examine the bit at the given index
-      boolean currentBit = Ip.getBitAtPosition(prefixAsLong, node._prefix.getPrefixLength());
+      // Choose which child might have a longer match
+      PrefixTrieMultiMap<DataT> child =
+          Ip.getBitAtPosition(prefixAsLong, node._prefix.getPrefixLength())
+              ? node._right
+              : node._left;
 
-      // If the current bit is 1, go right recursively
-      PrefixTrieMultiMap<DataT> child = currentBit ? node._right : node._left;
-      if (child == null) {
+      // Check if the child exists and matches
+      if (child == null || !child._prefix.containsPrefix(prefix)) {
         return node;
       }
 
-      if (!child._prefix.containsPrefix(prefix)) {
-        return node;
-      }
-
-      // keep looking
+      // Child does have a longer match, keep looking
       node = child;
     }
   }
