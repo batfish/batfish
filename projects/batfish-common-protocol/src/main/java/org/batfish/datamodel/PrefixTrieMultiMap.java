@@ -9,12 +9,14 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
+import com.google.common.graph.Traverser;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -72,10 +74,20 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
 
   /** Returns the list of non-null children for this node */
   @Nonnull
-  public List<PrefixTrieMultiMap<DataT>> getChildren() {
+  private List<PrefixTrieMultiMap<DataT>> getChildren() {
     return Stream.of(_left, _right)
         .filter(Objects::nonNull)
         .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Post-order traversal over the entries. Entries will always contain non-null keys and values.
+   * The traversal may not mutate the entries (the values are immutable sets).
+   */
+  public void traverseEntries(BiConsumer<Prefix, Set<DataT>> consumer) {
+    Traverser.<PrefixTrieMultiMap<DataT>>forTree(PrefixTrieMultiMap::getChildren)
+        .depthFirstPostOrder(this)
+        .forEach(node -> consumer.accept(node._prefix, node.getElements()));
   }
 
   /**
@@ -138,25 +150,6 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
   /** Remove an element from <i>this</i> node */
   private boolean remove(DataT e) {
     return _elements.remove(e);
-  }
-
-  /**
-   * Remove all elements associated with prefix {@code p}
-   *
-   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
-   *     Prefix} of this subtree.
-   */
-  public boolean clear(Prefix p) {
-    checkArgument(_prefix.containsPrefix(p), "Prefix %s does not belong to subtree %s", p, this);
-    PrefixTrieMultiMap<DataT> node = findNode(p);
-    return node != null && node.clear();
-  }
-
-  /** Clear any elements stored at <i>this</i> node */
-  private boolean clear() {
-    boolean ret = !_elements.isEmpty();
-    _elements.clear();
-    return ret;
   }
 
   /**
@@ -302,7 +295,7 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
   public Set<DataT> longestPrefixMatch(Ip address, int maxPrefixLength) {
     checkArgument(
         _prefix.containsIp(address), "Ip %s does not belong to subtree %s", address, this);
-    return findLongestPrefixMatchNode(address, maxPrefixLength).getElements();
+    return findLongestPrefixMatchNode(Prefix.create(address, maxPrefixLength)).getElements();
   }
 
   /** Collect (recursively) and return all elements in this subtree. */
@@ -358,17 +351,6 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
       // Child does have a longer match, keep looking
       node = child;
     }
-  }
-
-  /**
-   * Returns the node with the longest prefix match for a given IP address.
-   *
-   * @param address IP address contained in the current node's prefix.
-   * @param maxPrefixLength only return routes with prefix length less than or equal to given value
-   */
-  private @Nonnull PrefixTrieMultiMap<DataT> findLongestPrefixMatchNode(
-      Ip address, int maxPrefixLength) {
-    return findLongestPrefixMatchNode(Prefix.create(address, maxPrefixLength));
   }
 
   @Override

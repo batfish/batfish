@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import static org.batfish.datamodel.PrefixTrieMultiMap.legalLeftChildPrefix;
 import static org.batfish.datamodel.PrefixTrieMultiMap.legalRightChildPrefix;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -10,7 +11,8 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -82,19 +84,6 @@ public class PrefixTrieMultiMapTest {
     assertThat(ptm1.getElements(Prefix.ZERO), empty());
     assertThat(ptm1.getElements(p), equalTo(ImmutableSet.of(1)));
     assertThat(ptm1.getAllElements(), equalTo(ImmutableSet.of(1)));
-  }
-
-  @Test
-  public void testClear() {
-    PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>(Prefix.ZERO);
-    Prefix p = Prefix.parse("1.1.1.0/24");
-    Set<Integer> elementsAtP = ImmutableSet.of(4, 5, 6);
-    ptm1.addAll(Prefix.ZERO, ImmutableSet.of(1, 2, 3));
-    ptm1.addAll(p, elementsAtP);
-    assertThat("Elements cleared", ptm1.clear(Prefix.ZERO), equalTo(true));
-    assertThat(ptm1.getElements(), empty());
-    assertThat("Nothing to remove", ptm1.clear(Prefix.ZERO), equalTo(false));
-    assertThat("Elements in child node unchanged", ptm1.getElements(p), equalTo(elementsAtP));
   }
 
   @Test
@@ -180,5 +169,29 @@ public class PrefixTrieMultiMapTest {
     // longer prefixes are allowed; everything after the 9th bit can be anything
     child = Prefix.parse("1.255.255.0/24");
     assertTrue(legalRightChildPrefix(parent, child));
+  }
+
+  @Test
+  public void testTraverseEntries() {
+    PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>(Prefix.ZERO);
+    Prefix l = Prefix.parse("0.0.0.0/8");
+    Prefix ll = Prefix.parse("0.0.0.0/16");
+    Prefix lr = Prefix.parse("0.128.0.0/16");
+    Prefix r = Prefix.parse("128.0.0.0/8");
+    Prefix rl = Prefix.parse("128.0.0.0/16");
+    Prefix rr = Prefix.parse("128.128.0.0/16");
+
+    map.add(l, 0);
+    map.add(ll, 0);
+    map.add(lr, 0);
+
+    // adding in different order just for fun
+    map.add(rr, 0);
+    map.add(rl, 0);
+    map.add(r, 0);
+
+    List<Prefix> prefixes = new ArrayList<>();
+    map.traverseEntries((prefix, elems) -> prefixes.add(prefix));
+    assertThat(prefixes, contains(ll, lr, l, rl, rr, r, Prefix.ZERO));
   }
 }
