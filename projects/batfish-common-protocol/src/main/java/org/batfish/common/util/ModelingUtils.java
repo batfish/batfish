@@ -108,16 +108,17 @@ public final class ModelingUtils {
    * @param interfacesConnectedToIsps {@link List} of {@link NodeInterfacePair}s connected to ISPs
    * @param asNumOfIsps {@link List} optional {@link List} of AS numbers of ISPs
    * @param ipsOfIsps {@link List} optional {@link List} of {@link Ip}s of ISPs
+   * @param logger {@link BatfishLogger} to log warnings and errors
    * @return {@link Map} of {@link Configuration}s for the ISPs and Internet
    */
   @VisibleForTesting
-  @Nonnull
-  public static Map<String, Configuration> getInternetAndIspNodes(
+  static Map<String, Configuration> getInternetAndIspNodes(
       @Nonnull Map<String, Configuration> configurations,
       @Nonnull List<NodeInterfacePair> interfacesConnectedToIsps,
       @Nonnull List<Long> asNumOfIsps,
       @Nonnull List<Ip> ipsOfIsps,
       @Nonnull BatfishLogger logger) {
+
     NetworkFactory nf = new NetworkFactory();
     Map<String, Set<String>> interfaceSetByNodes =
         interfacesConnectedToIsps.stream()
@@ -129,7 +130,7 @@ public final class ModelingUtils {
     Map<Long, IspInfo> asnToIspInfos = new HashMap<>();
 
     for (Entry<String, Set<String>> nodeAndInterfaces : interfaceSetByNodes.entrySet()) {
-      Configuration configuration = configurations.get(nodeAndInterfaces.getKey().toLowerCase());
+      Configuration configuration = configurations.get(nodeAndInterfaces.getKey());
       if (configuration == null) {
         continue;
       }
@@ -144,7 +145,7 @@ public final class ModelingUtils {
                     getIspConfigurationNode(asnIspInfo.getKey(), asnIspInfo.getValue(), nf, logger))
             .filter(Objects::nonNull)
             .collect(ImmutableMap.toImmutableMap(Configuration::getHostname, Function.identity()));
-
+    // not proceeding if no ISPs were created
     if (ispConfigurations.isEmpty()) {
       return ispConfigurations;
     }
@@ -192,7 +193,7 @@ public final class ModelingUtils {
 
     internetConfiguration.setRoutingPolicies(
         ImmutableSortedMap.of(
-            EXPORT_POLICY_ON_INTERNET, getDefaultRoutingPolicy(internetConfiguration, nf)));
+            EXPORT_POLICY_ON_INTERNET, getRoutingPolicyForInternet(internetConfiguration, nf)));
     return internetConfiguration;
   }
 
@@ -223,8 +224,8 @@ public final class ModelingUtils {
           .setRemoteAs(INTERNET_AS)
           .setLocalIp(ispInterfaceIp)
           .setLocalAs(ispAs)
-          .setExportPolicy(EXPORT_POLICY_ON_ISP)
           .setBgpProcess(ispConfiguration.getDefaultVrf().getBgpProcess())
+          .setExportPolicy(EXPORT_POLICY_ON_ISP)
           .build();
 
       BgpActivePeerConfig.builder()
@@ -291,7 +292,7 @@ public final class ModelingUtils {
           new InterfaceAddress(
               bgpActivePeerConfig.getPeerAddress(),
               ipToInterfaceAddresses.get(bgpActivePeerConfig.getLocalIp()).getNetworkBits()));
-      ispInfo.addBgpActivePeerConfig(reverseLocalAndRemote(bgpActivePeerConfig));
+      ispInfo.addBgpActivePeerConfig(getBgpPeerOnIsp(bgpActivePeerConfig));
     }
   }
 
@@ -316,7 +317,7 @@ public final class ModelingUtils {
             .build();
     ispConfiguration.setDeviceType(DeviceType.ISP);
     ispConfiguration.setRoutingPolicies(
-        ImmutableSortedMap.of(EXPORT_POLICY_ON_ISP, getDefaultRoutingPolicyIsp(ispConfiguration)));
+        ImmutableSortedMap.of(EXPORT_POLICY_ON_ISP, getRoutingPolicyForIsp(ispConfiguration, nf)));
     Vrf defaultVrf = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(ispConfiguration).build();
 
     ispInfo
@@ -387,12 +388,12 @@ public final class ModelingUtils {
 
   /** Creates a routing policy to advertise all static routes configured */
   @VisibleForTesting
-  static RoutingPolicy getDefaultRoutingPolicy(Configuration owner, NetworkFactory nf) {
+  static RoutingPolicy getRoutingPolicyForInternet(Configuration internet, NetworkFactory nf) {
     PrefixSpace prefixSpace = new PrefixSpace();
     prefixSpace.addPrefix(Prefix.ZERO);
     return nf.routingPolicyBuilder()
         .setName(EXPORT_POLICY_ON_INTERNET)
-        .setOwner(owner)
+        .setOwner(internet)
         .setStatements(
             Collections.singletonList(
                 new If(
@@ -408,15 +409,12 @@ public final class ModelingUtils {
         .build();
   }
 
-  /** Creates a routing policy to advertise all static routes configured */
+  /** Creates a routing policy to export all BGP routes */
   @VisibleForTesting
-  static RoutingPolicy getDefaultRoutingPolicyIsp(Configuration owner) {
-    NetworkFactory nf = new NetworkFactory();
-    PrefixSpace prefixSpace = new PrefixSpace();
-    prefixSpace.addPrefix(Prefix.ZERO);
+  static RoutingPolicy getRoutingPolicyForIsp(Configuration isp, NetworkFactory nf) {
     return nf.routingPolicyBuilder()
-        .setName(EXPORT_POLICY_ON_INTERNET)
-        .setOwner(owner)
+        .setName(EXPORT_POLICY_ON_ISP)
+        .setOwner(isp)
         .setStatements(
             Collections.singletonList(
                 new If(
@@ -442,11 +440,11 @@ public final class ModelingUtils {
   }
 
   /**
-   * Flips the local and remote AS and IP for a given eBGP peer configuration and optionally sets
-   * the export policy to the supplied export policy name
+   * Returns the {@link BgpActivePeerConfig} to be used on ISP by flipping the local and remote AS
+   * and IP for a given eBGP peer configuration. Also sets the export policy meant for the ISP
    */
   @VisibleForTesting
-  static BgpActivePeerConfig reverseLocalAndRemote(BgpActivePeerConfig bgpActivePeerConfig) {
+  static BgpActivePeerConfig getBgpPeerOnIsp(BgpActivePeerConfig bgpActivePeerConfig) {
     return BgpActivePeerConfig.builder()
         .setPeerAddress(bgpActivePeerConfig.getLocalIp())
         .setRemoteAs(bgpActivePeerConfig.getLocalAs())

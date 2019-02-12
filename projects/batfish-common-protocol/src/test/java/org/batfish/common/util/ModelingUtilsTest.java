@@ -16,6 +16,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
@@ -46,6 +47,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -72,7 +74,7 @@ public class ModelingUtilsTest {
             .setLocalAs(2L)
             .build();
 
-    BgpActivePeerConfig reversedPeer = ModelingUtils.reverseLocalAndRemote(bgpActivePeerConfig);
+    BgpActivePeerConfig reversedPeer = ModelingUtils.getBgpPeerOnIsp(bgpActivePeerConfig);
     assertThat(reversedPeer.getPeerAddress(), equalTo(Ip.parse("2.2.2.2")));
     assertThat(reversedPeer.getLocalIp(), equalTo(Ip.parse("1.1.1.1")));
     assertThat(reversedPeer, allOf(hasLocalAs(1L), hasRemoteAs(2L)));
@@ -146,6 +148,7 @@ public class ModelingUtilsTest {
             .iterator()
             .next(),
         equalTo(peer));
+    assertThat(ispConfiguration.getRoutingPolicies(), hasKey(ModelingUtils.EXPORT_POLICY_ON_ISP));
   }
 
   @Test
@@ -166,6 +169,7 @@ public class ModelingUtilsTest {
         ModelingUtils.getIspConfigurationNode(2L, ispInfo, new NetworkFactory(), logger);
 
     assertThat(ispConfiguration, nullValue());
+
     assertThat(logger.getHistory(), hasSize(1));
     assertThat(
         logger.getHistory().toString(300), equalTo("ISP information for ASN '2' is not correct"));
@@ -212,6 +216,7 @@ public class ModelingUtilsTest {
             .setLocalAs(1L)
             .setPeerAddress(Ip.parse("2.2.2.2"))
             .setRemoteAs(2L)
+            .setExportPolicy(ModelingUtils.EXPORT_POLICY_ON_ISP)
             .build();
     assertThat(ispInfo.getBgpActivePeerConfigs(), equalTo(ImmutableList.of(reversedPeer)));
     assertThat(
@@ -275,9 +280,6 @@ public class ModelingUtilsTest {
                             hasMultipathEbgp(true)))))));
 
     assertThat(internet.getRoutingPolicies(), hasKey(ModelingUtils.EXPORT_POLICY_ON_INTERNET));
-    assertThat(
-        internet.getRoutingPolicies().get(ModelingUtils.EXPORT_POLICY_ON_INTERNET),
-        equalTo(ModelingUtils.getDefaultRoutingPolicy(internet, new NetworkFactory())));
   }
 
   @Test
@@ -310,7 +312,7 @@ public class ModelingUtilsTest {
             ImmutableList.of(new NodeInterfacePair("conf", "interface")),
             ImmutableList.of(),
             ImmutableList.of(),
-            new BatfishLogger("debug", false));
+            new BatfishLogger("output", false));
 
     assertThat(internetAndIsps, hasKey(ModelingUtils.INTERNET_HOST_NAME));
     Configuration internetNode = internetAndIsps.get(ModelingUtils.INTERNET_HOST_NAME);
@@ -320,7 +322,7 @@ public class ModelingUtilsTest {
         allOf(
             hasHostname(ModelingUtils.INTERNET_HOST_NAME),
             hasInterface(
-                "~Interface_0~",
+                "~Interface_1~",
                 hasAllAddresses(
                     equalTo(ImmutableSet.of(new InterfaceAddress(Ip.parse("240.1.1.2"), 31))))),
             hasVrf(
@@ -365,6 +367,7 @@ public class ModelingUtilsTest {
                                 .setPeerAddress(Ip.parse("2.2.2.2"))
                                 .setRemoteAs(2L)
                                 .setLocalIp(Ip.parse("1.1.1.1"))
+                                .setExportPolicy(ModelingUtils.EXPORT_POLICY_ON_ISP)
                                 .setLocalAs(1L)
                                 .build(),
                             Prefix.parse("240.1.1.2/32"),
@@ -372,23 +375,23 @@ public class ModelingUtilsTest {
                                 .setPeerAddress(Ip.parse("240.1.1.2"))
                                 .setRemoteAs(ModelingUtils.INTERNET_AS)
                                 .setLocalIp(Ip.parse("240.1.1.3"))
+                                .setExportPolicy(ModelingUtils.EXPORT_POLICY_ON_ISP)
                                 .setLocalAs(1L)
                                 .build()))))));
   }
 
   @Test
-  public void testGetsDefaultRoutingPolicy() {
+  public void testGetRoutingPolicyForInternet() {
     NetworkFactory nf = new NetworkFactory();
-    Configuration testConfiguration = nf.configurationBuilder().setHostname("test").build();
-    RoutingPolicy defaultRoutingPolicy =
-        ModelingUtils.getDefaultRoutingPolicy(testConfiguration, new NetworkFactory());
+    Configuration internet = nf.configurationBuilder().setHostname("fakeInternet").build();
+    RoutingPolicy internetRoutingPolicy = ModelingUtils.getRoutingPolicyForInternet(internet, nf);
 
     PrefixSpace prefixSpace = new PrefixSpace();
     prefixSpace.addPrefix(Prefix.ZERO);
     RoutingPolicy expectedRoutingPolicy =
         nf.routingPolicyBuilder()
             .setName(ModelingUtils.EXPORT_POLICY_ON_INTERNET)
-            .setOwner(testConfiguration)
+            .setOwner(internet)
             .setStatements(
                 Collections.singletonList(
                     new If(
@@ -402,6 +405,127 @@ public class ModelingUtilsTest {
                             new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)),
                             Statements.ExitAccept.toStaticStatement()))))
             .build();
-    assertThat(defaultRoutingPolicy, equalTo(expectedRoutingPolicy));
+    assertThat(internetRoutingPolicy, equalTo(expectedRoutingPolicy));
+  }
+
+  @Test
+  public void testGetRoutingPolicyForIsp() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration isp = nf.configurationBuilder().setHostname("fakeIsp").build();
+    RoutingPolicy ispRoutingPolicy = ModelingUtils.getRoutingPolicyForIsp(isp, nf);
+
+    RoutingPolicy expectedRoutingPolicy =
+        nf.routingPolicyBuilder()
+            .setName(ModelingUtils.EXPORT_POLICY_ON_ISP)
+            .setOwner(isp)
+            .setStatements(
+                Collections.singletonList(
+                    new If(
+                        new Conjunction(ImmutableList.of(new MatchProtocol(RoutingProtocol.BGP))),
+                        ImmutableList.of(Statements.ReturnTrue.toStaticStatement()))))
+            .build();
+    assertThat(ispRoutingPolicy, equalTo(expectedRoutingPolicy));
+  }
+
+  @Test
+  public void testInterfaceNamesIsp() {
+    NetworkFactory nf = new NetworkFactory();
+
+    Configuration.Builder cb = nf.configurationBuilder();
+    Configuration configuration1 =
+        cb.setHostname("conf1").setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration1).build();
+    nf.interfaceBuilder()
+        .setName("interface1")
+        .setOwner(configuration1)
+        .setAddress(new InterfaceAddress(Ip.parse("1.1.1.1"), 24))
+        .build();
+    Vrf vrfConf1 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration1).build();
+    BgpProcess bgpProcess1 = nf.bgpProcessBuilder().setVrf(vrfConf1).build();
+    BgpActivePeerConfig.builder()
+        .setBgpProcess(bgpProcess1)
+        .setPeerAddress(Ip.parse("1.1.1.2"))
+        .setRemoteAs(1234L)
+        .setLocalIp(Ip.parse("1.1.1.1"))
+        .setLocalAs(1L)
+        .build();
+
+    Configuration configuration2 =
+        cb.setHostname("conf2").setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration2).build();
+    nf.interfaceBuilder()
+        .setName("interface2")
+        .setOwner(configuration2)
+        .setAddress(new InterfaceAddress(Ip.parse("2.2.2.2"), 24))
+        .build();
+    Vrf vrfConf2 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration2).build();
+    BgpProcess bgpProcess2 = nf.bgpProcessBuilder().setVrf(vrfConf2).build();
+    BgpActivePeerConfig.builder()
+        .setBgpProcess(bgpProcess2)
+        .setPeerAddress(Ip.parse("2.2.2.3"))
+        .setRemoteAs(1234L)
+        .setLocalIp(Ip.parse("2.2.2.2"))
+        .setLocalAs(1L)
+        .build();
+
+    Map<String, Configuration> internetAndIsps =
+        ModelingUtils.getInternetAndIspNodes(
+            ImmutableMap.of(
+                configuration1.getHostname(),
+                configuration1,
+                configuration2.getHostname(),
+                configuration2),
+            ImmutableList.of(
+                new NodeInterfacePair("conf1", "interface1"),
+                new NodeInterfacePair("conf2", "interface2")),
+            ImmutableList.of(),
+            ImmutableList.of(),
+            new BatfishLogger("output", false));
+
+    assertThat(internetAndIsps, hasKey("Isp_1234"));
+
+    Configuration isp = internetAndIsps.get("Isp_1234");
+    // two interfaces for peering with the two configurations and one interface for peering with
+    // internet
+    assertThat(isp.getAllInterfaces().entrySet(), hasSize(3));
+    assertThat(
+        isp.getAllInterfaces().keySet(),
+        equalTo(ImmutableSet.of("~Interface_0~", "~Interface_1~", "~Interface_3~")));
+  }
+
+  @Test
+  public void testNoIsps() {
+    NetworkFactory nf = new NetworkFactory();
+
+    Configuration.Builder cb = nf.configurationBuilder();
+    Configuration configuration1 =
+        cb.setHostname("conf1").setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration1).build();
+    nf.interfaceBuilder()
+        .setName("interface1")
+        .setOwner(configuration1)
+        .setAddress(new InterfaceAddress(Ip.parse("1.1.1.1"), 24))
+        .build();
+    Vrf vrfConf1 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration1).build();
+    BgpProcess bgpProcess1 = nf.bgpProcessBuilder().setVrf(vrfConf1).build();
+    BgpActivePeerConfig.builder()
+        .setBgpProcess(bgpProcess1)
+        .setPeerAddress(Ip.parse("1.1.1.2"))
+        .setRemoteAs(1234L)
+        .setLocalIp(Ip.parse("1.1.1.1"))
+        .setLocalAs(1L)
+        .build();
+
+    // passing non-existent border interfaces
+    Map<String, Configuration> internetAndIsps =
+        ModelingUtils.getInternetAndIspNodes(
+            ImmutableMap.of(configuration1.getHostname(), configuration1),
+            ImmutableList.of(new NodeInterfacePair("conf2", "interface2")),
+            ImmutableList.of(),
+            ImmutableList.of(),
+            new BatfishLogger("output", false));
+
+    // no ISPs and no Internet
+    assertThat(internetAndIsps, anEmptyMap());
   }
 }

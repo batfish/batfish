@@ -6,7 +6,8 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match5Tuple;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.EGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.INGRESS_FILTER;
-import static org.batfish.datamodel.flow.FilterStep.FilterType.PRE_SOURCE_NAT_FILTER;
+import static org.batfish.datamodel.flow.FilterStep.FilterType.POST_TRANSFORMATION_INGRESS_FILTER;
+import static org.batfish.datamodel.flow.FilterStep.FilterType.PRE_TRANSFORMATION_EGRESS_FILTER;
 import static org.batfish.datamodel.flow.StepAction.DENIED;
 import static org.batfish.datamodel.flow.StepAction.TRANSMITTED;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.buildEnterSrcIfaceStep;
@@ -186,6 +187,8 @@ class FlowTracer {
 
   /** Creates a new TransmissionContext for the specified last-hop node and outgoing interface. */
   private FlowTracer followEdge(NodeInterfacePair exitIface, NodeInterfacePair enterIface) {
+    checkState(
+        _hops.size() == _breadcrumbs.size(), "Must have equal number of hops and breadcrumbs");
     return new FlowTracer(
         _tracerouteContext,
         new Node(enterIface.getHostname()),
@@ -201,6 +204,7 @@ class FlowTracer {
   }
 
   private FlowTracer branch() {
+    checkState(_hops.size() == _breadcrumbs.size() - 1, "Must be just ready to add another hop");
     return new FlowTracer(
         _tracerouteContext,
         _currentNode,
@@ -286,8 +290,8 @@ class FlowTracer {
       _steps.add(buildEnterSrcIfaceStep(_currentConfig, _ingressInterface));
 
       // apply ingress filter
-      IpAccessList inputFilter =
-          _currentConfig.getAllInterfaces().get(_ingressInterface).getIncomingFilter();
+      Interface incomingInterface = _currentConfig.getAllInterfaces().get(_ingressInterface);
+      IpAccessList inputFilter = incomingInterface.getIncomingFilter();
       if (inputFilter != null) {
         if (applyFilter(inputFilter, INGRESS_FILTER) == DENIED) {
           return;
@@ -296,13 +300,18 @@ class FlowTracer {
 
       TransformationResult transformationResult =
           TransformationEvaluator.eval(
-              _currentConfig.getAllInterfaces().get(_ingressInterface).getIncomingTransformation(),
+              incomingInterface.getIncomingTransformation(),
               _currentFlow,
               _ingressInterface,
               _aclDefinitions,
               _namedIpSpaces);
       _steps.addAll(transformationResult.getTraceSteps());
       _currentFlow = transformationResult.getOutputFlow();
+
+      inputFilter = incomingInterface.getPostTransformationIncomingFilter();
+      if (applyFilter(inputFilter, POST_TRANSFORMATION_INGRESS_FILTER) == DENIED) {
+        return;
+      }
     } else {
       // if inputIfaceName is not set for this hop, this is the originating step
       _steps.add(buildOriginateStep());
@@ -339,10 +348,8 @@ class FlowTracer {
 
       // For every interface with a route to the dst IP
       for (String nextHopInterfaceName : nextHopInterfaces) {
-        FlowTracer clonedFlowTracer = branch();
-
         if (nextHopInterfaceName.equals(Interface.NULL_INTERFACE_NAME)) {
-          clonedFlowTracer.buildNullRoutedTrace();
+          branch().buildNullRoutedTrace();
           continue;
         }
 
@@ -354,7 +361,7 @@ class FlowTracer {
             .asMap()
             .forEach(
                 (resolvedNextHopIp, routeCandidates) ->
-                    clonedFlowTracer.forwardOutInterface(nextHopInterface, resolvedNextHopIp));
+                    branch().forwardOutInterface(nextHopInterface, resolvedNextHopIp));
       }
     } finally {
       _breadcrumbs.pop();
@@ -524,7 +531,9 @@ class FlowTracer {
 
   private void forwardOutInterface(Interface outgoingInterface, Ip nextHopIp) {
     // Apply preSourceNatOutgoingFilter
-    if (applyFilter(outgoingInterface.getPreTransformationOutgoingFilter(), PRE_SOURCE_NAT_FILTER)
+    if (applyFilter(
+            outgoingInterface.getPreTransformationOutgoingFilter(),
+            PRE_TRANSFORMATION_EGRESS_FILTER)
         == DENIED) {
       return;
     }

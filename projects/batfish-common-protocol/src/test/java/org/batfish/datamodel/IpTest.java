@@ -42,6 +42,18 @@ public class IpTest {
   }
 
   @Test
+  public void testGetBitAtInvalidTooHighPosition() {
+    _thrown.expect(IllegalArgumentException.class);
+    getBitAtPosition(0L, Prefix.MAX_PREFIX_LENGTH);
+  }
+
+  @Test
+  public void testGetBitAtInvalidNegativePosition() {
+    _thrown.expect(IllegalArgumentException.class);
+    getBitAtPosition(0L, -1);
+  }
+
+  @Test
   public void testContainsIp() {
     IpSpace ipSpace = Ip.parse("1.1.1.1").toIpSpace();
     assertThat(ipSpace, containsIp(Ip.parse("1.1.1.1")));
