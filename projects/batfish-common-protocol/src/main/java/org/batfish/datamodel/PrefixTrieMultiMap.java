@@ -93,8 +93,8 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
    * Retrieve an immutable copy of elements for the given prefix (anywhere in the subtree). Returns
    * empty set if the prefix is not in the subtree.
    *
-   * @throws IllegalArgumentException if {@param p} is not contained in the {@link Prefix} of this
-   *     subtree.
+   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
+   *     Prefix} of this subtree.
    */
   @Nonnull
   public Set<DataT> getElements(Prefix p) {
@@ -106,7 +106,8 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
   /**
    * Insert an element into this subtree corresponding to a prefix {@code p}
    *
-   * @throws IllegalArgumentException if the given prefix does not belong in this subtree
+   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
+   *     Prefix} of this subtree.
    */
   public boolean add(Prefix p, DataT e) {
     checkArgument(_prefix.containsPrefix(p), "Prefix %s does not belong to subtree %s", p, this);
@@ -117,7 +118,8 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
   /**
    * Insert a collection of elements into this subtree corresponding to a prefix {@code p}
    *
-   * @throws IllegalArgumentException if the given prefix does not belong in this subtree
+   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
+   *     Prefix} of this subtree.
    */
   public boolean addAll(Prefix p, Collection<DataT> elements) {
     checkArgument(_prefix.containsPrefix(p), "Prefix %s does not belong to subtree %s", p, this);
@@ -133,6 +135,8 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
   /**
    * Remove an element from the subtree
    *
+   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
+   *     Prefix} of this subtree.
    * @param p prefix the element is mapped to
    * @param e element to remove
    */
@@ -150,7 +154,8 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
   /**
    * Remove all elements associated with prefix {@code p}
    *
-   * @throws IllegalArgumentException if the given prefix does not belong to this subtree
+   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
+   *     Prefix} of this subtree.
    */
   public boolean clear(Prefix p) {
     checkArgument(_prefix.containsPrefix(p), "Prefix %s does not belong to subtree %s", p, this);
@@ -165,7 +170,12 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
     return ret;
   }
 
-  /** Replace all elements associated with prefix {@code p} with a given element */
+  /**
+   * Replace all elements associated with prefix {@code p} with a given element.
+   *
+   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
+   *     Prefix} of this subtree.
+   */
   public boolean replaceAll(Prefix p, DataT e) {
     checkArgument(_prefix.containsPrefix(p), "Prefix %s does not belong to subtree %s", p, this);
     PrefixTrieMultiMap<DataT> node = findNode(p);
@@ -178,7 +188,12 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
     return _elements.add(e);
   }
 
-  /** Replace all elements associated with prefix {@code p} with a given collection of elements */
+  /**
+   * Replace all elements associated with prefix {@code p} with a given collection of elements
+   *
+   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
+   *     Prefix} of this subtree.
+   */
   public boolean replaceAll(Prefix p, Collection<DataT> e) {
     checkArgument(_prefix.containsPrefix(p), "Prefix %s does not belong to subtree %s", p, this);
     PrefixTrieMultiMap<DataT> node = findNode(p);
@@ -196,7 +211,7 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
   private PrefixTrieMultiMap<DataT> findOrCreateNode(Prefix prefix) {
     assert _prefix.containsPrefix(prefix);
 
-    PrefixTrieMultiMap<DataT> node = findLongestPrefixMatchNode(this, prefix);
+    PrefixTrieMultiMap<DataT> node = findLongestPrefixMatchNode(prefix);
     return node._prefix.equals(prefix) ? node : node.createChild(prefix);
   }
 
@@ -292,7 +307,12 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
         && Ip.getBitAtPosition(childPrefix.getStartIp(), parentPrefix.getPrefixLength());
   }
 
-  /** Find a node longest prefix match for a given IP address. */
+  /**
+   * Find a node longest prefix match for a given IP address.
+   *
+   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
+   *     Prefix} of this subtree.
+   */
   @Nonnull
   public Set<DataT> longestPrefixMatch(Ip address) {
     checkArgument(
@@ -303,6 +323,9 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
   /**
    * Find a node longest prefix match for a given IP address, where the length of the match is
    * bounded by {@code maxPrefixLength}
+   *
+   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
+   *     Prefix} of this subtree.
    */
   @Nonnull
   public Set<DataT> longestPrefixMatch(Ip address, int maxPrefixLength) {
@@ -333,16 +356,16 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
   @Nullable
   private PrefixTrieMultiMap<DataT> findNode(Prefix p) {
     assert _prefix.containsPrefix(p);
-    PrefixTrieMultiMap<DataT> node = findLongestPrefixMatchNode(this, p);
+    PrefixTrieMultiMap<DataT> node = findLongestPrefixMatchNode(p);
     return node._prefix.equals(p) ? node : null;
   }
 
   /** Returns the node with the longest prefxix match for a given prefix. */
   @Nonnull
-  static <DataT> PrefixTrieMultiMap<DataT> findLongestPrefixMatchNode(
-      PrefixTrieMultiMap<DataT> node, Prefix prefix) {
-    assert node._prefix.containsPrefix(prefix);
+  PrefixTrieMultiMap<DataT> findLongestPrefixMatchNode(Prefix prefix) {
+    assert this._prefix.containsPrefix(prefix);
 
+    PrefixTrieMultiMap<DataT> node = this;
     long prefixAsLong = prefix.getStartIp().asLong();
     while (true) {
       if (node._prefix.equals(prefix)) {
@@ -376,7 +399,7 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
    */
   private @Nonnull PrefixTrieMultiMap<DataT> findLongestPrefixMatchNode(
       Ip address, int maxPrefixLength) {
-    return findLongestPrefixMatchNode(this, Prefix.create(address, maxPrefixLength));
+    return findLongestPrefixMatchNode(Prefix.create(address, maxPrefixLength));
   }
 
   @Override
