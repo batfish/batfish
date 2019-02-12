@@ -2,7 +2,6 @@ package org.batfish.datamodel.answers;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Strings.isNullOrEmpty;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -131,9 +130,7 @@ public final class AutoCompleteUtils {
         }
       case IP:
         {
-          if (completionMetadata == null) {
-            return null;
-          }
+          checkCompletionMetadata(completionMetadata, network, snapshot);
           suggestions = baseAutoComplete(query, completionMetadata.getIps());
           break;
         }
@@ -171,12 +168,7 @@ public final class AutoCompleteUtils {
         }
       case NODE_ROLE_DIMENSION:
         {
-          checkArgument(
-              !isNullOrEmpty(network),
-              "Network name should be supplied for 'NODE_ROLE_DIMENSION' autoCompletion");
-          checkArgument(
-              nodeRolesData != null,
-              String.format("Node role data not found for network %s", network));
+          checkNodeRolesData(nodeRolesData, network);
           suggestions =
               baseAutoComplete(
                   query,
@@ -187,15 +179,8 @@ public final class AutoCompleteUtils {
         }
       case NODE_SPEC:
         {
-          checkArgument(
-              !isNullOrEmpty(snapshot),
-              "Snapshot name should be supplied for 'NODE' autoCompletion");
-          checkArgument(
-              nodeRolesData != null,
-              String.format("Node role data not found for network %s", network));
-          checkArgument(
-              completionMetadata != null,
-              String.format("Auto complete meta data not found for snapshot %s", snapshot));
+          checkCompletionMetadata(completionMetadata, network, snapshot);
+          checkNodeRolesData(nodeRolesData, network);
           suggestions =
               NodesSpecifier.autoComplete(query, completionMetadata.getNodes(), nodeRolesData);
           break;
@@ -207,9 +192,7 @@ public final class AutoCompleteUtils {
         }
       case PREFIX:
         {
-          if (completionMetadata == null) {
-            return null;
-          }
+          checkCompletionMetadata(completionMetadata, network, snapshot);
           suggestions = baseAutoComplete(query, completionMetadata.getPrefixes());
           break;
         }
@@ -228,25 +211,19 @@ public final class AutoCompleteUtils {
         }
       case STRUCTURE_NAME:
         {
-          if (completionMetadata == null) {
-            return null;
-          }
+          checkCompletionMetadata(completionMetadata, network, snapshot);
           suggestions = baseAutoComplete(query, completionMetadata.getStructureNames());
           break;
         }
       case VRF:
         {
-          if (completionMetadata == null) {
-            return null;
-          }
+          checkCompletionMetadata(completionMetadata, network, snapshot);
           suggestions = baseAutoComplete(query, completionMetadata.getVrfs());
           break;
         }
       case ZONE:
         {
-          if (completionMetadata == null) {
-            return null;
-          }
+          checkCompletionMetadata(completionMetadata, network, snapshot);
           suggestions = baseAutoComplete(query, completionMetadata.getZones());
           break;
         }
@@ -283,6 +260,22 @@ public final class AutoCompleteUtils {
               .collect(Collectors.toList()));
     }
     return suggestions.build();
+  }
+
+  private static void checkCompletionMetadata(
+      CompletionMetadata completionMetadata, String network, String snapshot) {
+    checkArgument(
+        completionMetadata != null,
+        "Cannot autocomplete because completion metadata not found for %s / %s",
+        network,
+        snapshot);
+  }
+
+  private static void checkNodeRolesData(NodeRolesData nodeRolesData, String network) {
+    checkArgument(
+        nodeRolesData != null,
+        "Cannot autocomplete because node roles data not found for %s",
+        network);
   }
 
   /** Returns the Pattern if {@code candidateRegex} is a valid regex, and null otherwise */
