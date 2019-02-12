@@ -6,6 +6,7 @@ import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+/** Name structure that implements routing policy via a series of ordered entries */
 @ParametersAreNonnullByDefault
 public final class RouteMap implements Serializable {
 

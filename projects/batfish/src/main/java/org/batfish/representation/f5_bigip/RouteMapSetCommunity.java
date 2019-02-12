@@ -12,6 +12,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
+/** Route-map transformation that replaces the communities attribute of the route */
 @ParametersAreNonnullByDefault
 public final class RouteMapSetCommunity implements RouteMapSet {
 

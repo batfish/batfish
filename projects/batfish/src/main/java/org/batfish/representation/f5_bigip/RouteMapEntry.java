@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.LineAction;
 
+/** Entry in a route-map supplying match conditions and transformations for a route */
 @ParametersAreNonnullByDefault
 public final class RouteMapEntry implements Serializable {
 

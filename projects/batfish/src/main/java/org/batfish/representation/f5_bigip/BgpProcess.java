@@ -4,6 +4,7 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+/** BGP process configuration */
 @ParametersAreNonnullByDefault
 public final class BgpProcess implements Serializable {
 

@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.vendor.StructureUsage;
 
+/** Named structure-usage types for F5 BIG-IP device */
 @ParametersAreNonnullByDefault
 public enum F5BigipStructureUsage implements StructureUsage {
   BGP_ADDRESS_FAMILY_REDISTRIBUTE_KERNEL_ROUTE_MAP(

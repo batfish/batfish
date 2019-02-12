@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.vendor.StructureType;
 
+/** Named structure-types for F5 BIG-IP device */
 @ParametersAreNonnullByDefault
 public enum F5BigipStructureType implements StructureType {
   BGP_PROCESS("bgp process"),

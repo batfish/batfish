@@ -88,7 +88,7 @@ nrbafcr_kernel
 
 nrbafcrk_route_map
 :
-  ROUTE_MAP name=word NEWLINE
+  ROUTE_MAP name = word NEWLINE
 ;
 
 nrb_local_as

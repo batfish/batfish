@@ -6,6 +6,7 @@ import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+/** Named prefix-list serving as an access-control list for either IPv4 or IPv6 prefixes */
 @ParametersAreNonnullByDefault
 public final class PrefixList implements Serializable {
 

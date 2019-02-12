@@ -33,6 +33,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.vendor.VendorConfiguration;
 
+/** Vendor-specific configuration for F5 BIG-IP device */
 @ParametersAreNonnullByDefault
 public class F5BigipConfiguration extends VendorConfiguration {
 
@@ -126,6 +127,20 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _format = format;
   }
 
+  private @Nonnull List<Statement> toActions(RouteMapEntry entry) {
+    ImmutableList.Builder<Statement> builder = ImmutableList.builder();
+    entry.getSets().flatMap(set -> set.toStatements(_c, this, _w)).forEach(builder::add);
+    return builder.add(toStatement(entry.getAction())).build();
+  }
+
+  private @Nonnull BooleanExpr toGuard(RouteMapEntry entry) {
+    return new Conjunction(
+        entry
+            .getMatches()
+            .map(match -> match.toBooleanExpr(_c, this, _w))
+            .collect(ImmutableList.toImmutableList()));
+  }
+
   private @Nonnull org.batfish.datamodel.Interface toInterface(Interface iface) {
     org.batfish.datamodel.Interface newIface =
         new org.batfish.datamodel.Interface(iface.getName(), _c);
@@ -148,30 +163,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Converts {@code prefixList} to {@link RouteFilterList}. If {@code prefixList} contains IPv6
-   * information, returns {@code null}.
-   */
-  private @Nullable RouteFilterList toRouteFilterList(PrefixList prefixList) {
-    Collection<PrefixListEntry> entries = prefixList.getEntries().values();
-    if (entries.stream().map(PrefixListEntry::getPrefix6).anyMatch(Objects::nonNull)) {
-      if (entries.stream().map(PrefixListEntry::getPrefix).anyMatch(Objects::nonNull)) {
-        _w.redFlag(
-            String.format(
-                "prefix-list '%s' is invalid since it contains both IPv4 and IPv6 information",
-                prefixList.getName()));
-      }
-      return null;
-    }
-    String name = prefixList.getName();
-    RouteFilterList output = new RouteFilterList(name);
-    entries.stream()
-        .map(entry -> entry.toRouteFilterLine(_w, name))
-        .filter(Objects::nonNull)
-        .forEach(output::addLine);
-    return output;
-  }
-
-  /**
    * Converts {@code prefixList} to {@link Route6FilterList}. If {@code prefixList} contains IPv4
    * information, returns {@code null}.
    */
@@ -184,6 +175,24 @@ public class F5BigipConfiguration extends VendorConfiguration {
     Route6FilterList output = new Route6FilterList(name);
     entries.stream()
         .map(entry -> entry.toRoute6FilterLine(_w, name))
+        .filter(Objects::nonNull)
+        .forEach(output::addLine);
+    return output;
+  }
+
+  /**
+   * Converts {@code prefixList} to {@link RouteFilterList}. If {@code prefixList} contains IPv6
+   * information, returns {@code null}.
+   */
+  private @Nullable RouteFilterList toRouteFilterList(PrefixList prefixList) {
+    Collection<PrefixListEntry> entries = prefixList.getEntries().values();
+    if (entries.stream().map(PrefixListEntry::getPrefix6).anyMatch(Objects::nonNull)) {
+      return null;
+    }
+    String name = prefixList.getName();
+    RouteFilterList output = new RouteFilterList(name);
+    entries.stream()
+        .map(entry -> entry.toRouteFilterLine(_w, name))
         .filter(Objects::nonNull)
         .forEach(output::addLine);
     return output;
@@ -210,20 +219,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private @Nonnull Statement toRoutingPolicyStatement(RouteMapEntry entry) {
     return new If(toGuard(entry), toActions(entry));
-  }
-
-  private @Nonnull BooleanExpr toGuard(RouteMapEntry entry) {
-    return new Conjunction(
-        entry
-            .getMatches()
-            .map(match -> match.toBooleanExpr(_c, this, _w))
-            .collect(ImmutableList.toImmutableList()));
-  }
-
-  private @Nonnull List<Statement> toActions(RouteMapEntry entry) {
-    ImmutableList.Builder<Statement> builder = ImmutableList.builder();
-    entry.getSets().flatMap(set -> set.toStatements(_c, this, _w)).forEach(builder::add);
-    return builder.add(toStatement(entry.getAction())).build();
   }
 
   private @Nonnull Statement toStatement(LineAction action) {
@@ -288,6 +283,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
           }
         });
 
+    // Warn about invalid prefix-lists
+    _prefixLists.values().forEach(this::warnInvalidPrefixList);
+
     // Convert route-maps to RoutingPolicies
     _routeMaps.forEach(
         (name, routeMap) -> _c.getRoutingPolicies().put(name, toRoutingPolicy(routeMap)));
@@ -299,5 +297,15 @@ public class F5BigipConfiguration extends VendorConfiguration {
   public @Nonnull List<Configuration> toVendorIndependentConfigurations()
       throws VendorConversionException {
     return ImmutableList.of(toVendorIndependentConfiguration());
+  }
+
+  private void warnInvalidPrefixList(PrefixList prefixList) {
+    if (prefixList.getEntries().values().stream()
+        .anyMatch(entry -> entry.getPrefix() != null && entry.getPrefix6() != null)) {
+      _w.redFlag(
+          String.format(
+              "prefix-list '%s' is invalid since it contains both IPv4 and IPv6 information",
+              prefixList.getName()));
+    }
   }
 }

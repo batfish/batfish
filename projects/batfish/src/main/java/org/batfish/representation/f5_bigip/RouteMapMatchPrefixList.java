@@ -10,6 +10,7 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 
+/** Match condition that holds when route's network is matched by the referenced prefix-list */
 @ParametersAreNonnullByDefault
 public final class RouteMapMatchPrefixList implements RouteMapMatch {
 

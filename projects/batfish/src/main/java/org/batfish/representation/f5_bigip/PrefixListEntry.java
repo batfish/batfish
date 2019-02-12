@@ -11,6 +11,7 @@ import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.SubRange;
 
+/** Entry serving as an access-control line in a prefix-list */
 @ParametersAreNonnullByDefault
 public final class PrefixListEntry implements Serializable {
 

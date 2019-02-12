@@ -74,7 +74,7 @@ public class RoutingPolicy implements Serializable {
       return this;
     }
 
-    public @Nonnull Builder setStatements(List<Statement> statements) {
+    public @Nonnull Builder setStatements(@Nonnull List<Statement> statements) {
       _statements = ImmutableList.<Statement>builder().addAll(statements);
       return this;
     }
