@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -18,7 +18,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.FilenameUtils;
 import org.batfish.common.CoordConsts;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.Main;
 import org.batfish.storage.StoredObjectMetadata;
 
@@ -58,15 +57,13 @@ public class SnapshotInputObjectsResource {
   @Path(RSC_LIST)
   @GET
   @Produces(MediaType.APPLICATION_JSON)
+  @Nonnull
   public Response listKeys() throws IOException {
-    List<StoredObjectMetadata> keys = Main.getWorkMgr().getSnapshotInputKeys(_network, _snapshot);
+    List<StoredObjectMetadata> keys =
+        Main.getWorkMgr().getSnapshotInputObjectsMetadata(_network, _snapshot);
     if (keys == null) {
       return Response.status(Status.NOT_FOUND).build();
     }
-    List<String> serializedKeys =
-        keys.stream()
-            .map(BatfishObjectMapper::writeStringRuntimeError)
-            .collect(Collectors.toList());
-    return Response.ok(serializedKeys, MediaType.APPLICATION_JSON).build();
+    return Response.ok(keys).build();
   }
 }

@@ -432,8 +432,8 @@ public interface StorageProvider {
    * @throws IOException if there is an error retrieving the metadata
    */
   @Nonnull
-  List<StoredObjectMetadata> getSnapshotInputKeys(NetworkId networkId, SnapshotId snapshotId)
-      throws FileNotFoundException, IOException;
+  List<StoredObjectMetadata> getSnapshotInputObjectsMetadata(
+      NetworkId networkId, SnapshotId snapshotId) throws FileNotFoundException, IOException;
 
   /**
    * Loads the JSON-serialized POJO topology produced for a snapshot

@@ -277,7 +277,7 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public @Nonnull List<StoredObjectMetadata> getSnapshotInputKeys(
+  public @Nonnull List<StoredObjectMetadata> getSnapshotInputObjectsMetadata(
       NetworkId networkId, SnapshotId snapshotId) throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException();
   }

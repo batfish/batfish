@@ -3156,8 +3156,8 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   @Nullable
-  public List<StoredObjectMetadata> getSnapshotInputKeys(String network, String snapshot)
-      throws IOException {
+  public List<StoredObjectMetadata> getSnapshotInputObjectsMetadata(String network, String snapshot)
+      throws FileNotFoundException, IOException {
     if (!_idManager.hasNetworkId(network)) {
       return null;
     }
@@ -3167,9 +3167,12 @@ public class WorkMgr extends AbstractCoordinator {
     }
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
     try {
-      return _storage.getSnapshotInputKeys(networkId, snapshotId);
+      return _storage.getSnapshotInputObjectsMetadata(networkId, snapshotId);
     } catch (FileNotFoundException e) {
-      return null;
+      throw new FileNotFoundException(
+          String.format(
+              "Snapshot input folder not found for network '%s', snapshot '%s'",
+              network, snapshot));
     } catch (IOException e) {
       throw new IOException(
           String.format(

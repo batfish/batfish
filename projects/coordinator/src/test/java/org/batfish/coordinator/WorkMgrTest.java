@@ -2954,7 +2954,7 @@ public final class WorkMgrTest {
 
   @Test
   public void testGetSnapshotInputKeysInvalidNetwork() throws IOException {
-    assertThat(_manager.getSnapshotInputKeys("network", "snapshot"), nullValue());
+    assertThat(_manager.getSnapshotInputObjectsMetadata("network", "snapshot"), nullValue());
   }
 
   @Test
@@ -2962,7 +2962,7 @@ public final class WorkMgrTest {
     String network = "network";
     NetworkId networkId = _idManager.generateNetworkId();
     _idManager.assignNetwork(network, networkId);
-    assertThat(_manager.getSnapshotInputKeys(network, "snapshot"), nullValue());
+    assertThat(_manager.getSnapshotInputObjectsMetadata(network, "snapshot"), nullValue());
   }
 
   @Test
@@ -2976,7 +2976,7 @@ public final class WorkMgrTest {
     uploadTestSnapshot(network, snapshot, fileName, content);
 
     assertThat(
-        _manager.getSnapshotInputKeys(network, snapshot),
+        _manager.getSnapshotInputObjectsMetadata(network, snapshot),
         equalTo(
             ImmutableList.of(
                 new StoredObjectMetadata("configs/" + fileName, content.getBytes().length))));

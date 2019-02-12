@@ -827,20 +827,24 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nonnull List<StoredObjectMetadata> getSnapshotInputKeys(
+  public @Nonnull List<StoredObjectMetadata> getSnapshotInputObjectsMetadata(
       NetworkId networkId, SnapshotId snapshotId) throws IOException {
     Path objectPath = _d.getSnapshotInputObjectsDir(networkId, snapshotId);
     if (!Files.exists(objectPath)) {
       throw new FileNotFoundException(String.format("Could not load: %s", objectPath));
     }
 
-    return Files.walk(objectPath)
-        .filter(Files::isRegularFile)
-        .map(
-            path ->
-                new StoredObjectMetadata(
-                    objectPath.relativize(path).toString(), getObjectSize(path)))
-        .collect(Collectors.toList());
+    try {
+      return Files.walk(objectPath)
+          .filter(Files::isRegularFile)
+          .map(
+              path ->
+                  new StoredObjectMetadata(
+                      objectPath.relativize(path).toString(), getObjectSize(path)))
+          .collect(Collectors.toList());
+    } catch (BatfishException e) {
+      throw new IOException(e);
+    }
   }
 
   private long getObjectSize(Path objectPath) {
@@ -848,7 +852,7 @@ public final class FileBasedStorage implements StorageProvider {
       return Files.size(objectPath);
     } catch (IOException e) {
       throw new BatfishException(
-          String.format("Could not get size of object at path: %s", objectPath));
+          String.format("Could not get size of object at path: %s", objectPath), e);
     }
   }
 

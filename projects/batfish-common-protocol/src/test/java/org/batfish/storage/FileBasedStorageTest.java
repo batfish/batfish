@@ -375,11 +375,11 @@ public final class FileBasedStorageTest {
     String file2Contents = "some other content";
     Files.write(dir2Path.resolve(file2), file2Contents.getBytes());
 
-    List<StoredObjectMetadata> keys = _storage.getSnapshotInputKeys(network, snapshot);
+    List<StoredObjectMetadata> keys = _storage.getSnapshotInputObjectsMetadata(network, snapshot);
     assertThat(
-        keys,
+        keys.stream().collect(ImmutableSet.toImmutableSet()),
         equalTo(
-            ImmutableList.of(
+            ImmutableSet.of(
                 new StoredObjectMetadata(dir2 + "/" + file2, file2Contents.getBytes().length),
                 new StoredObjectMetadata(dir1 + "/" + file1, file1Contents.getBytes().length))));
   }
