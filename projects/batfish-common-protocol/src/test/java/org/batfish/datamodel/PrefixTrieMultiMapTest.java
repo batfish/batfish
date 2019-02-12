@@ -1,8 +1,12 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.PrefixTrieMultiMap.legalLeftChildPrefix;
+import static org.batfish.datamodel.PrefixTrieMultiMap.legalRightChildPrefix;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
@@ -136,5 +140,45 @@ public class PrefixTrieMultiMapTest {
     PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>(Prefix.parse("128.0.0.0/1"));
     thrown.expect(IllegalArgumentException.class);
     ptm1.replaceAll(Prefix.ZERO, 1);
+  }
+
+  @Test
+  public void testLegalLeftChildPrefix() {
+    Prefix parent = Prefix.parse("1.0.0.0/8");
+
+    // child prefix cannot equal parent prefix
+    assertFalse(legalLeftChildPrefix(parent, parent));
+
+    // shortest possible child prefix
+    Prefix child = Prefix.parse("1.0.0.0/9");
+    assertTrue(legalLeftChildPrefix(parent, child));
+
+    // 9th bit cannot be 1
+    child = Prefix.parse("1.128.0.0/9");
+    assertFalse(legalLeftChildPrefix(parent, child));
+
+    // longer prefixes are allowed; everything after the 9th bit can be anything
+    child = Prefix.parse("1.127.255.0/24");
+    assertTrue(legalLeftChildPrefix(parent, child));
+  }
+
+  @Test
+  public void testLegalRightChildPrefix() {
+    Prefix parent = Prefix.parse("1.0.0.0/8");
+
+    // child prefix cannot equal parent prefix
+    assertFalse(legalRightChildPrefix(parent, parent));
+
+    // shortest possible child prefix
+    Prefix child = Prefix.parse("1.128.0.0/9");
+    assertTrue(legalRightChildPrefix(parent, child));
+
+    // 9th bit cannot be 0
+    child = Prefix.parse("1.0.0.0/9");
+    assertFalse(legalRightChildPrefix(parent, child));
+
+    // longer prefixes are allowed; everything after the 9th bit can be anything
+    child = Prefix.parse("1.255.255.0/24");
+    assertTrue(legalRightChildPrefix(parent, child));
   }
 }

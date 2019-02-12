@@ -60,21 +60,9 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
     return ImmutableSet.copyOf(_elements);
   }
 
-  /** Return left subtree */
-  @Nullable
-  public PrefixTrieMultiMap<DataT> getLeft() {
-    return _left;
-  }
-
   private void setLeft(@Nullable PrefixTrieMultiMap<DataT> left) {
     assert left == null || legalLeftChildPrefix(_prefix, left._prefix);
     _left = left;
-  }
-
-  /** Return right subtree */
-  @Nullable
-  public PrefixTrieMultiMap<DataT> getRight() {
-    return _right;
   }
 
   private void setRight(@Nullable PrefixTrieMultiMap<DataT> right) {
@@ -136,10 +124,11 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
   /**
    * Remove an element from the subtree
    *
-   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
-   *     Prefix} of this subtree.
    * @param p prefix the element is mapped to
    * @param e element to remove
+   *
+   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
+   *     Prefix} of this subtree.
    */
   public boolean remove(Prefix p, DataT e) {
     checkArgument(_prefix.containsPrefix(p), "Prefix %s does not belong to subtree %s", p, this);
