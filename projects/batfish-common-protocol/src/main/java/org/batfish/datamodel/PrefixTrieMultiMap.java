@@ -297,7 +297,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
 
   /**
    * Find the elements associated with the longest matching prefix of a given IP address, up to the
-   * given {@param maxPrefixLength}.
+   * given maximum length.
    */
   @Nonnull
   public Set<T> longestPrefixMatch(Ip address, int maxPrefixLength) {
