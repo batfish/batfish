@@ -39935,13 +39935,9 @@
             "          WORD:'1.0')",
             "        BRACE_LEFT:'{'",
             "        NEWLINE:'\\n'",
-            "        (unrecognized",
-            "          (u_word",
-            "            (word",
-            "              WORD:'bundle'))",
-            "          (u_word",
-            "            (word",
-            "              WORD:'enabled'))",
+            "        (ni_bundle",
+            "          BUNDLE:'bundle'",
+            "          ENABLED:'enabled'",
             "          NEWLINE:'\\n')",
             "        (ni_bundle_speed",
             "          BUNDLE_SPEED:'bundle-speed'",
@@ -39988,7 +39984,7 @@
             "            (unrecognized",
             "              (u_word",
             "                (word",
-            "                  WORD:'enabled'))",
+            "                  ENABLED:'enabled'))",
             "              NEWLINE:'\\n')",
             "            BRACE_RIGHT:'}'))",
             "        NEWLINE:'\\n')))",
@@ -39998,7 +39994,7 @@
             "      (unrecognized",
             "        (u_word",
             "          (word",
-            "            WORD:'route-domain'))",
+            "            ROUTE_DOMAIN:'route-domain'))",
             "        (u_word",
             "          (word",
             "            WORD:'/Common/0'))",
@@ -40050,21 +40046,14 @@
             "          interface_address = (word",
             "            WORD:'10.0.0.1/24')",
             "          NEWLINE:'\\n')",
-            "        (unrecognized",
-            "          (u_word",
-            "            (word",
-            "              WORD:'allow-service'))",
-            "          (u_word",
-            "            (word",
-            "              WORD:'all'))",
+            "        (ns_allow_service",
+            "          ALLOW_SERVICE:'allow-service'",
+            "          ALL:'all'",
             "          NEWLINE:'\\n')",
-            "        (unrecognized",
-            "          (u_word",
-            "            (word",
-            "              WORD:'traffic-group'))",
-            "          (u_word",
-            "            (word",
-            "              WORD:'/Common/traffic-group-local-only'))",
+            "        (ns_traffic_group",
+            "          TRAFFIC_GROUP:'traffic-group'",
+            "          name = (word",
+            "            WORD:'/Common/traffic-group-local-only')",
             "          NEWLINE:'\\n')",
             "        (ns_vlan",
             "          VLAN:'vlan'",
@@ -40562,7 +40551,7 @@
             "          (unrecognized",
             "            (u_word",
             "              (word",
-            "                WORD:'route-domain'))",
+            "                ROUTE_DOMAIN:'route-domain'))",
             "            (u_word",
             "              (word",
             "                WORD:'/Common/0'))",
@@ -40650,13 +40639,10 @@
             "              NEWLINE:'\\n')",
             "            BRACE_RIGHT:'}'",
             "            NEWLINE:'\\n')",
-            "          (unrecognized",
-            "            (u_word",
-            "              (word",
-            "                WORD:'route-domain'))",
-            "            (u_word",
-            "              (word",
-            "                WORD:'/Common/0'))",
+            "          (nrp_route_domain",
+            "            ROUTE_DOMAIN:'route-domain'",
+            "            name = (word",
+            "              WORD:'/Common/0')",
             "            NEWLINE:'\\n')",
             "          BRACE_RIGHT:'}'",
             "          NEWLINE:'\\n'))))",
@@ -40721,13 +40707,10 @@
             "              NEWLINE:'\\n')",
             "            BRACE_RIGHT:'}'",
             "            NEWLINE:'\\n')",
-            "          (unrecognized",
-            "            (u_word",
-            "              (word",
-            "                WORD:'route-domain'))",
-            "            (u_word",
-            "              (word",
-            "                WORD:'/Common/0'))",
+            "          (nrp_route_domain",
+            "            ROUTE_DOMAIN:'route-domain'",
+            "            name = (word",
+            "              WORD:'/Common/0')",
             "            NEWLINE:'\\n')",
             "          BRACE_RIGHT:'}'",
             "          NEWLINE:'\\n\\n\\n'))))",
@@ -40893,13 +40876,10 @@
             "              NEWLINE:'\\n')",
             "            BRACE_RIGHT:'}'",
             "            NEWLINE:'\\n')",
-            "          (unrecognized",
-            "            (u_word",
-            "              (word",
-            "                WORD:'route-domain'))",
-            "            (u_word",
-            "              (word",
-            "                WORD:'/Common/0'))",
+            "          (nrr_route_domain",
+            "            ROUTE_DOMAIN:'route-domain'",
+            "            name = (word",
+            "              WORD:'/Common/0')",
             "            NEWLINE:'\\n')",
             "          BRACE_RIGHT:'}'",
             "          NEWLINE:'\\n\\n\\n'))))",
@@ -41018,7 +40998,7 @@
             "            (unrecognized",
             "              (u_word",
             "                (word",
-            "                  WORD:'traffic-group'))",
+            "                  TRAFFIC_GROUP:'traffic-group'))",
             "              (u_word",
             "                (word",
             "                  WORD:'/Common/traffic-group-1'))",
@@ -41074,7 +41054,7 @@
             "            (unrecognized",
             "              (u_word",
             "                (word",
-            "                  WORD:'traffic-group'))",
+            "                  TRAFFIC_GROUP:'traffic-group'))",
             "              (u_word",
             "                (word",
             "                  WORD:'/Common/traffic-group-1'))",
@@ -41130,7 +41110,7 @@
             "            (unrecognized",
             "              (u_word",
             "                (word",
-            "                  WORD:'traffic-group'))",
+            "                  TRAFFIC_GROUP:'traffic-group'))",
             "              (u_word",
             "                (word",
             "                  WORD:'/Common/traffic-group-1'))",
@@ -66215,10 +66195,10 @@
               "Text" : "fdb"
             },
             {
-              "Comment" : "This syntax is unrecognized",
+              "Comment" : "This feature is not currently supported",
               "Line" : 9,
-              "Parser_Context" : "[unrecognized net_interface s_net statement f5_bigip_structured_configuration]",
-              "Text" : "bundle"
+              "Parser_Context" : "[ni_bundle net_interface s_net statement f5_bigip_structured_configuration]",
+              "Text" : "bundle enabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
@@ -66251,16 +66231,16 @@
               "Text" : "route-domain"
             },
             {
-              "Comment" : "This syntax is unrecognized",
+              "Comment" : "This feature is not currently supported",
               "Line" : 27,
-              "Parser_Context" : "[unrecognized net_self s_net statement f5_bigip_structured_configuration]",
-              "Text" : "allow-service"
+              "Parser_Context" : "[ns_allow_service net_self s_net statement f5_bigip_structured_configuration]",
+              "Text" : "allow-service all"
             },
             {
-              "Comment" : "This syntax is unrecognized",
+              "Comment" : "This feature is not currently supported",
               "Line" : 28,
-              "Parser_Context" : "[unrecognized net_self s_net statement f5_bigip_structured_configuration]",
-              "Text" : "traffic-group"
+              "Parser_Context" : "[ns_traffic_group net_self s_net statement f5_bigip_structured_configuration]",
+              "Text" : "traffic-group /Common/traffic-group-local-only"
             },
             {
               "Comment" : "This syntax is unrecognized",
@@ -66291,6 +66271,12 @@
         "f5_bigip_structured_net_routing_bgp" : {
           "Parse warnings" : [
             {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 12,
+              "Parser_Context" : "[nrbafcrk_route_map nrbafcr_kernel nrbafc_redistribute nrbaf_common nrbaf_ipv4 nrb_address_family nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "route-map /Common/MY_KERNEL_OUT"
+            },
+            {
               "Comment" : "This syntax is unrecognized",
               "Line" : 26,
               "Parser_Context" : "[unrecognized nrbnnaf_ipv6 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
@@ -66301,6 +66287,12 @@
               "Line" : 29,
               "Parser_Context" : "[unrecognized nrbnnaf_ipv6 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
               "Text" : "maximum-prefix"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 33,
+              "Parser_Context" : "[nrbnnafcr_out nrbnnafc_route_map nrbnnaf_common nrbnnaf_ipv6 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "out /Common/MY_IPV6_OUT"
             },
             {
               "Comment" : "This syntax is unrecognized",
@@ -66319,6 +66311,12 @@
               "Line" : 48,
               "Parser_Context" : "[unrecognized nrbnnaf_ipv4 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
               "Text" : "maximum-prefix"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 52,
+              "Parser_Context" : "[nrbnnafcr_out nrbnnafc_route_map nrbnnaf_common nrbnnaf_ipv4 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "out /Common/MY_IPV4_OUT"
             },
             {
               "Comment" : "This syntax is unrecognized",
@@ -66343,26 +66341,26 @@
         "f5_bigip_structured_net_routing_prefix_list" : {
           "Parse warnings" : [
             {
-              "Comment" : "This syntax is unrecognized",
+              "Comment" : "This feature is not currently supported",
               "Line" : 20,
-              "Parser_Context" : "[unrecognized nr_prefix_list net_routing s_net statement f5_bigip_structured_configuration]",
-              "Text" : "route-domain"
+              "Parser_Context" : "[nrp_route_domain nr_prefix_list net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "route-domain /Common/0"
             },
             {
-              "Comment" : "This syntax is unrecognized",
+              "Comment" : "This feature is not currently supported",
               "Line" : 35,
-              "Parser_Context" : "[unrecognized nr_prefix_list net_routing s_net statement f5_bigip_structured_configuration]",
-              "Text" : "route-domain"
+              "Parser_Context" : "[nrp_route_domain nr_prefix_list net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "route-domain /Common/0"
             }
           ]
         },
         "f5_bigip_structured_net_routing_route_map" : {
           "Parse warnings" : [
             {
-              "Comment" : "This syntax is unrecognized",
+              "Comment" : "This feature is not currently supported",
               "Line" : 43,
-              "Parser_Context" : "[unrecognized nr_route_map net_routing s_net statement f5_bigip_structured_configuration]",
-              "Text" : "route-domain"
+              "Parser_Context" : "[nrr_route_domain nr_route_map net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "route-domain /Common/0"
             }
           ]
         },
@@ -69559,7 +69557,7 @@
                 13,
                 14
               ],
-              "numReferrers" : 0
+              "numReferrers" : 2
             }
           },
           "self" : {
@@ -69572,7 +69570,7 @@
                 29,
                 30
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           },
           "vlan" : {
@@ -69585,7 +69583,7 @@
                 62,
                 63
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },
@@ -69655,7 +69653,7 @@
                 66,
                 67
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },
@@ -74296,6 +74294,23 @@
                 7
               ]
             }
+          },
+          "route-map" : {
+            "/Common/MY_IPV4_OUT" : {
+              "bgp neighbor address-family ipv6 route-map out" : [
+                52
+              ]
+            },
+            "/Common/MY_IPV6_OUT" : {
+              "bgp neighbor address-family ipv6 route-map out" : [
+                33
+              ]
+            },
+            "/Common/MY_KERNEL_OUT" : {
+              "bgp address-family redistribute kernel route-map" : [
+                12
+              ]
+            }
           }
         },
         "configs/f5_bigip_structured_net_routing_route_map" : {
@@ -77089,6 +77104,39 @@
             "RMT_PBI" : {
               "bgp redistribute connected route-map" : [
                 6
+              ]
+            }
+          }
+        },
+        "configs/f5_bigip_structured_net_routing_bgp" : {
+          "route-map" : {
+            "/Common/MY_IPV4_OUT" : {
+              "bgp neighbor address-family ipv6 route-map out" : [
+                52
+              ]
+            },
+            "/Common/MY_IPV6_OUT" : {
+              "bgp neighbor address-family ipv6 route-map out" : [
+                33
+              ]
+            },
+            "/Common/MY_KERNEL_OUT" : {
+              "bgp address-family redistribute kernel route-map" : [
+                12
+              ]
+            }
+          }
+        },
+        "configs/f5_bigip_structured_net_routing_route_map" : {
+          "prefix-list" : {
+            "/Common/MY_PREFIX_LIST" : {
+              "route-map match ipv4 address prefix-list" : [
+                14
+              ]
+            },
+            "/Common/MY_PREFIX_LIST2" : {
+              "route-map match ipv4 address prefix-list" : [
+                29
               ]
             }
           }

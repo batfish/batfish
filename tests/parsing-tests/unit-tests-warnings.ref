@@ -591,16 +591,16 @@
       {
         "Filename" : "f5_bigip_structured_net",
         "Line" : 27,
-        "Text" : "allow-service",
-        "Parser_Context" : "[unrecognized net_self s_net statement f5_bigip_structured_configuration]",
-        "Comment" : "This syntax is unrecognized"
+        "Text" : "allow-service all",
+        "Parser_Context" : "[ns_allow_service net_self s_net statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "f5_bigip_structured_net",
         "Line" : 28,
-        "Text" : "traffic-group",
-        "Parser_Context" : "[unrecognized net_self s_net statement f5_bigip_structured_configuration]",
-        "Comment" : "This syntax is unrecognized"
+        "Text" : "traffic-group /Common/traffic-group-local-only",
+        "Parser_Context" : "[ns_traffic_group net_self s_net statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "f5_bigip_structured_net",
@@ -647,9 +647,16 @@
       {
         "Filename" : "f5_bigip_structured_net",
         "Line" : 9,
-        "Text" : "bundle",
-        "Parser_Context" : "[unrecognized net_interface s_net statement f5_bigip_structured_configuration]",
-        "Comment" : "This syntax is unrecognized"
+        "Text" : "bundle enabled",
+        "Parser_Context" : "[ni_bundle net_interface s_net statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "f5_bigip_structured_net_routing_bgp",
+        "Line" : 12,
+        "Text" : "route-map /Common/MY_KERNEL_OUT",
+        "Parser_Context" : "[nrbafcrk_route_map nrbafcr_kernel nrbafc_redistribute nrbaf_common nrbaf_ipv4 nrb_address_family nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "f5_bigip_structured_net_routing_bgp",
@@ -664,6 +671,13 @@
         "Text" : "maximum-prefix",
         "Parser_Context" : "[unrecognized nrbnnaf_ipv6 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "f5_bigip_structured_net_routing_bgp",
+        "Line" : 33,
+        "Text" : "out /Common/MY_IPV6_OUT",
+        "Parser_Context" : "[nrbnnafcr_out nrbnnafc_route_map nrbnnaf_common nrbnnaf_ipv6 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "f5_bigip_structured_net_routing_bgp",
@@ -685,6 +699,13 @@
         "Text" : "maximum-prefix",
         "Parser_Context" : "[unrecognized nrbnnaf_ipv4 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
+      },
+      {
+        "Filename" : "f5_bigip_structured_net_routing_bgp",
+        "Line" : 52,
+        "Text" : "out /Common/MY_IPV4_OUT",
+        "Parser_Context" : "[nrbnnafcr_out nrbnnafc_route_map nrbnnaf_common nrbnnaf_ipv4 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "f5_bigip_structured_net_routing_bgp",
@@ -710,23 +731,23 @@
       {
         "Filename" : "f5_bigip_structured_net_routing_prefix_list",
         "Line" : 20,
-        "Text" : "route-domain",
-        "Parser_Context" : "[unrecognized nr_prefix_list net_routing s_net statement f5_bigip_structured_configuration]",
-        "Comment" : "This syntax is unrecognized"
+        "Text" : "route-domain /Common/0",
+        "Parser_Context" : "[nrp_route_domain nr_prefix_list net_routing s_net statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "f5_bigip_structured_net_routing_prefix_list",
         "Line" : 35,
-        "Text" : "route-domain",
-        "Parser_Context" : "[unrecognized nr_prefix_list net_routing s_net statement f5_bigip_structured_configuration]",
-        "Comment" : "This syntax is unrecognized"
+        "Text" : "route-domain /Common/0",
+        "Parser_Context" : "[nrp_route_domain nr_prefix_list net_routing s_net statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "f5_bigip_structured_net_routing_route_map",
         "Line" : 43,
-        "Text" : "route-domain",
-        "Parser_Context" : "[unrecognized nr_route_map net_routing s_net statement f5_bigip_structured_configuration]",
-        "Comment" : "This syntax is unrecognized"
+        "Text" : "route-domain /Common/0",
+        "Parser_Context" : "[nrr_route_domain nr_route_map net_routing s_net statement f5_bigip_structured_configuration]",
+        "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "f5_bigip_structured_sys",
@@ -1045,10 +1066,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 143 results",
+      "notes" : "Found 146 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 143
+      "numResults" : 146
     }
   }
 ]
