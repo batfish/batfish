@@ -29,8 +29,8 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.answers.AutoCompleteUtils;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
-import org.batfish.datamodel.questions.PropertySpecifier;
 
 /** A way to specify dispositions using a shorthand, such as "success" or "failure". */
 @ParametersAreNonnullByDefault
@@ -111,10 +111,10 @@ public final class DispositionSpecifier {
 
   /**
    * Returns a list of suggestions based on the query, based on {@link
-   * PropertySpecifier#baseAutoComplete}.
+   * AutoCompleteUtils#baseAutoComplete}.
    */
   public static List<AutocompleteSuggestion> autoComplete(String query) {
-    return PropertySpecifier.baseAutoComplete(query, _map.keySet());
+    return AutoCompleteUtils.baseAutoComplete(query, _map.keySet());
   }
 
   public Set<FlowDisposition> getDispositions() {

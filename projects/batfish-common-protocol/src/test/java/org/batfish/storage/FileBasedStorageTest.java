@@ -360,11 +360,10 @@ public final class FileBasedStorageTest {
 
     CompletionMetadata completionMetadata =
         new CompletionMetadata(
-            ImmutableSet.of("addressBook1"),
-            ImmutableSet.of("addressGroup1"),
             ImmutableSet.of("filter1"),
             ImmutableSet.of(new NodeInterfacePair("node", "iface")),
             ImmutableSet.of("1.1.1.1"),
+            ImmutableSet.of("node"),
             ImmutableSet.of("1.1.1.1/30"),
             ImmutableSet.of("structure1"),
             ImmutableSet.of("vrf1"),
