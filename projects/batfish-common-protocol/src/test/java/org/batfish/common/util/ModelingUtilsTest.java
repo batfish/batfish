@@ -465,5 +465,6 @@ public class ModelingUtilsTest {
     // two interfaces for peering with the two configurations and one interface for peering with
     // internet
     assertThat(isp.getAllInterfaces().entrySet(), hasSize(3));
+    assertThat(isp.getAllInterfaces().keySet(), equalTo(ImmutableSet.of("~Interface_0~", "~Interface_1~", "~Interface_3~")));
   }
 }
