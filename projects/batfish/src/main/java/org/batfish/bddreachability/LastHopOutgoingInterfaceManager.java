@@ -23,9 +23,9 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 /**
  * Tracks {@link BDD} constraints to identify the previous hop and its outgoing interface. This is
  * required for implementing sessions, since they don't forward using the FIB. Instead, return
- * traffic is forwarded to the node/interface the forward traffic was received from. In real devices,
- * the MAC address of the previous hop node/interface is stored in the session. We model that
- * behavior using the node/interface names.
+ * traffic is forwarded to the node/interface the forward traffic was received from. In real
+ * devices, the MAC address of the previous hop node/interface is stored in the session. We model
+ * that behavior using the node/interface names.
  *
  * <p>We use a separate {@link BDDFiniteDomain} for each (receiving node, ingress interface), since
  * that makes the domains smaller (thus fewer BDD variables required; more efficient) and we already
