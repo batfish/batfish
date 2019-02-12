@@ -106,6 +106,21 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     return create(address, mask.numSubnetBits());
   }
 
+  /** Return the longest prefix that contains both input prefixes. */
+  public static Prefix longestCommonPrefix(Prefix p1, Prefix p2) {
+    if (p1.containsPrefix(p2)) {
+      return p1;
+    }
+    if (p2.containsPrefix(p1)) {
+      return p2;
+    }
+    long l1 = p1.getStartIp().asLong();
+    long l2 = p2.getStartIp().asLong();
+    long oneAtFirstDifferentBit = Long.highestOneBit(l1 ^ l2);
+    int lengthInCommon = MAX_PREFIX_LENGTH - 1 - Long.numberOfTrailingZeros(oneAtFirstDifferentBit);
+    return Prefix.create(Ip.create(l1), lengthInCommon);
+  }
+
   @Override
   public int compareTo(Prefix rhs) {
     int ret = _ip.compareTo(rhs._ip);

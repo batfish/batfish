@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.Prefix.longestCommonPrefix;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
@@ -59,23 +60,13 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
     return ImmutableSet.copyOf(_elements);
   }
 
-  /** Return left subtree */
-  @Nullable
-  public PrefixTrieMultiMap<DataT> getLeft() {
-    return _left;
-  }
-
   private void setLeft(@Nullable PrefixTrieMultiMap<DataT> left) {
+    assert left == null || legalLeftChildPrefix(_prefix, left._prefix);
     _left = left;
   }
 
-  /** Return right subtree */
-  @Nullable
-  public PrefixTrieMultiMap<DataT> getRight() {
-    return _right;
-  }
-
   private void setRight(@Nullable PrefixTrieMultiMap<DataT> right) {
+    assert right == null || legalRightChildPrefix(_prefix, right._prefix);
     _right = right;
   }
 
@@ -90,9 +81,13 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
   /**
    * Retrieve an immutable copy of elements for the given prefix (anywhere in the subtree). Returns
    * empty set if the prefix is not in the subtree.
+   *
+   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
+   *     Prefix} of this subtree.
    */
   @Nonnull
   public Set<DataT> getElements(Prefix p) {
+    checkArgument(_prefix.containsPrefix(p), "Prefix %s does not belong to subtree %s", p, this);
     PrefixTrieMultiMap<DataT> node = findNode(p);
     return node == null ? ImmutableSet.of() : node.getElements();
   }
@@ -100,24 +95,23 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
   /**
    * Insert an element into this subtree corresponding to a prefix {@code p}
    *
-   * @throws IllegalArgumentException if the given prefix does not belong in this subtree
+   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
+   *     Prefix} of this subtree.
    */
   public boolean add(Prefix p, DataT e) {
+    checkArgument(_prefix.containsPrefix(p), "Prefix %s does not belong to subtree %s", p, this);
     PrefixTrieMultiMap<DataT> node = findOrCreateNode(p);
-    return node.add(e);
-  }
-
-  /** Add an element to <i>this</i> node */
-  private boolean add(DataT e) {
-    return _elements.add(e);
+    return node._elements.add(e);
   }
 
   /**
    * Insert a collection of elements into this subtree corresponding to a prefix {@code p}
    *
-   * @throws IllegalArgumentException if the given prefix does not belong in this subtree
+   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
+   *     Prefix} of this subtree.
    */
   public boolean addAll(Prefix p, Collection<DataT> elements) {
+    checkArgument(_prefix.containsPrefix(p), "Prefix %s does not belong to subtree %s", p, this);
     PrefixTrieMultiMap<DataT> node = findOrCreateNode(p);
     return node.addAll(elements);
   }
@@ -132,8 +126,11 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
    *
    * @param p prefix the element is mapped to
    * @param e element to remove
+   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
+   *     Prefix} of this subtree.
    */
   public boolean remove(Prefix p, DataT e) {
+    checkArgument(_prefix.containsPrefix(p), "Prefix %s does not belong to subtree %s", p, this);
     PrefixTrieMultiMap<DataT> node = findNode(p);
     return node != null && node.remove(e);
   }
@@ -143,8 +140,14 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
     return _elements.remove(e);
   }
 
-  /** Remove all elements associated with prefix {@code p} */
+  /**
+   * Remove all elements associated with prefix {@code p}
+   *
+   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
+   *     Prefix} of this subtree.
+   */
   public boolean clear(Prefix p) {
+    checkArgument(_prefix.containsPrefix(p), "Prefix %s does not belong to subtree %s", p, this);
     PrefixTrieMultiMap<DataT> node = findNode(p);
     return node != null && node.clear();
   }
@@ -156,8 +159,14 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
     return ret;
   }
 
-  /** Replace all elements associated with prefix {@code p} with a given element */
+  /**
+   * Replace all elements associated with prefix {@code p} with a given element.
+   *
+   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
+   *     Prefix} of this subtree.
+   */
   public boolean replaceAll(Prefix p, DataT e) {
+    checkArgument(_prefix.containsPrefix(p), "Prefix %s does not belong to subtree %s", p, this);
     PrefixTrieMultiMap<DataT> node = findNode(p);
     return node != null && node.replaceAll(e);
   }
@@ -165,11 +174,17 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
   /** Replace all elements stored at <i>this</i> node with a given element */
   private boolean replaceAll(DataT e) {
     _elements.clear();
-    return add(e);
+    return _elements.add(e);
   }
 
-  /** Replace all elements associated with prefix {@code p} with a given collection of elements */
+  /**
+   * Replace all elements associated with prefix {@code p} with a given collection of elements
+   *
+   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
+   *     Prefix} of this subtree.
+   */
   public boolean replaceAll(Prefix p, Collection<DataT> e) {
+    checkArgument(_prefix.containsPrefix(p), "Prefix %s does not belong to subtree %s", p, this);
     PrefixTrieMultiMap<DataT> node = findNode(p);
     return node == null || node.replaceAll(e);
   }
@@ -183,30 +198,111 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
   /** Find or create a node for a given prefix (must be an exact match) */
   @Nonnull
   private PrefixTrieMultiMap<DataT> findOrCreateNode(Prefix prefix) {
-    return findOrCreateNode(prefix, prefix.getStartIp().asLong(), 0);
+    assert _prefix.containsPrefix(prefix);
+
+    PrefixTrieMultiMap<DataT> node = findLongestPrefixMatchNode(prefix);
+    return node._prefix.equals(prefix) ? node : node.createChild(prefix);
   }
 
-  /** Find the node for a given prefix (must be an exact match) */
-  @Nullable
-  private PrefixTrieMultiMap<DataT> findNode(Prefix prefix) {
-    return findNode(prefix, 0);
+  private @Nonnull PrefixTrieMultiMap<DataT> createChild(Prefix prefix) {
+    assert _prefix.containsPrefix(prefix);
+    boolean currentBit =
+        Ip.getBitAtPosition(prefix.getStartIp().asLong(), _prefix.getPrefixLength());
+
+    PrefixTrieMultiMap<DataT> node = new PrefixTrieMultiMap<>(prefix);
+    if (currentBit) {
+      _right = combine(node, _right);
+    } else {
+      _left = combine(node, _left);
+    }
+    return node;
   }
 
-  /** Find a node longest prefix match for a given IP address. */
+  /**
+   * Combine two nodes into a tree -- a newly created node, and an existing node. The existing node
+   * cannot be the parent of the new node.
+   */
+  private @Nonnull PrefixTrieMultiMap<DataT> combine(
+      @Nonnull PrefixTrieMultiMap<DataT> newNode, @Nullable PrefixTrieMultiMap<DataT> oldNode) {
+    // No existing node, newNode is the tree
+    if (oldNode == null) {
+      return newNode;
+    }
+
+    Prefix newPrefix = newNode._prefix;
+    Prefix oldPrefix = oldNode._prefix;
+
+    assert !oldPrefix.containsPrefix(newPrefix);
+
+    /* If the newNode's prefix contains the oldNode's prefix, the existing node is a child of
+     * the newNode.
+     */
+    if (newPrefix.containsPrefix(oldPrefix)) {
+      boolean currentBit = Ip.getBitAtPosition(oldPrefix.getStartIp(), newPrefix.getPrefixLength());
+      if (currentBit) {
+        newNode._right = oldNode;
+      } else {
+        newNode._left = oldNode;
+      }
+      return newNode;
+    }
+
+    /* Find the least-upper-bound of the two prefixes, i.e. the one for which the newNode branches
+     * one way and the oldNode branches the other.
+     */
+    Prefix lcp = longestCommonPrefix(newPrefix, oldPrefix);
+    PrefixTrieMultiMap<DataT> parent = new PrefixTrieMultiMap<>(lcp);
+
+    boolean newNodeRight = Ip.getBitAtPosition(newPrefix.getStartIp(), lcp.getPrefixLength());
+    if (newNodeRight) {
+      parent.setRight(newNode);
+      parent.setLeft(oldNode);
+    } else {
+      parent.setRight(oldNode);
+      parent.setLeft(newNode);
+    }
+    return parent;
+  }
+
+  @VisibleForTesting
+  static boolean legalLeftChildPrefix(Prefix parentPrefix, Prefix childPrefix) {
+    return parentPrefix.containsPrefix(childPrefix)
+        && parentPrefix.getPrefixLength() < childPrefix.getPrefixLength()
+        && !Ip.getBitAtPosition(childPrefix.getStartIp(), parentPrefix.getPrefixLength());
+  }
+
+  @VisibleForTesting
+  static boolean legalRightChildPrefix(Prefix parentPrefix, Prefix childPrefix) {
+    return parentPrefix.containsPrefix(childPrefix)
+        && parentPrefix.getPrefixLength() < childPrefix.getPrefixLength()
+        && Ip.getBitAtPosition(childPrefix.getStartIp(), parentPrefix.getPrefixLength());
+  }
+
+  /**
+   * Find a node longest prefix match for a given IP address.
+   *
+   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
+   *     Prefix} of this subtree.
+   */
   @Nonnull
   public Set<DataT> longestPrefixMatch(Ip address) {
+    checkArgument(
+        _prefix.containsIp(address), "Ip %s does not belong to subtree %s", address, this);
     return longestPrefixMatch(address, Prefix.MAX_PREFIX_LENGTH);
   }
 
   /**
    * Find a node longest prefix match for a given IP address, where the length of the match is
    * bounded by {@code maxPrefixLength}
+   *
+   * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
+   *     Prefix} of this subtree.
    */
   @Nonnull
   public Set<DataT> longestPrefixMatch(Ip address, int maxPrefixLength) {
-    PrefixTrieMultiMap<DataT> node =
-        findLongestPrefixMatchNode(address, address.asLong(), maxPrefixLength);
-    return node == null ? ImmutableSet.of() : node.getElements();
+    checkArgument(
+        _prefix.containsIp(address), "Ip %s does not belong to subtree %s", address, this);
+    return findLongestPrefixMatchNode(address, maxPrefixLength).getElements();
   }
 
   /** Collect (recursively) and return all elements in this subtree. */
@@ -228,220 +324,51 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
     collectionBuilder.addAll(_elements);
   }
 
-  @Nonnull
-  private PrefixTrieMultiMap<DataT> findOrCreateNode(
-      Prefix prefix, long bits, int firstUnmatchedBitIndex) {
-    checkArgument(
-        _prefix.containsPrefix(prefix), "Prefix %s is not contained within node %s", prefix, this);
-    /*
-     * We know we've reached the node at which to insert the element because
-     * this node's prefix equals our target prefix.
-     */
-    if (prefix.getPrefixLength() == _prefix.getPrefixLength()) {
-      return this;
-    }
-
-    /*
-     * The prefix match is not exact, do some extra insertion logic.
-     * Current bit determines which side of the tree to go down (1 = right, 0 = left)
-     */
-    boolean currentBit = Ip.getBitAtPosition(bits, firstUnmatchedBitIndex);
-    return findHelper(this, prefix, bits, firstUnmatchedBitIndex, currentBit);
-  }
-
   @Nullable
-  private PrefixTrieMultiMap<DataT> findNode(Prefix p, int firstUnmatchedBitIndex) {
-    if (!_prefix.containsPrefix(p)) {
-      return null;
-    }
-
-    // If prefix lengths match, this is the node where such element would be stored.
-    if (_prefix.getPrefixLength() == p.getPrefixLength()) {
-      return this;
-    }
-
-    boolean currentBit = Ip.getBitAtPosition(p.getStartIp().asLong(), firstUnmatchedBitIndex);
-    /*
-     * If prefixes don't match exactly, look at the current bit. That determines whether we look
-     * left or right. As long as the child is not null, recurse.
-     *
-     * Note that:
-     * 1) elements are stored in the nodes where lengths of the node prefix and the desired prefix
-     *    match exactly; and
-     * 2) prefix matches only get more specific (longer) the deeper we go in the tree
-     *
-     * Therefore, we can fast-forward the firstUnmatchedBitIndex to the prefix length of the
-     * child node
-     */
-    if (currentBit) {
-      return (_right != null) ? _right.findNode(p, _right.getPrefix().getPrefixLength()) : null;
-    } else {
-      return (_left != null) ? _left.findNode(p, _left.getPrefix().getPrefixLength()) : null;
-    }
+  private PrefixTrieMultiMap<DataT> findNode(Prefix p) {
+    assert _prefix.containsPrefix(p);
+    PrefixTrieMultiMap<DataT> node = findLongestPrefixMatchNode(p);
+    return node._prefix.equals(p) ? node : null;
   }
 
-  /**
-   * Returns a node with the longest prefix match for a given IP address.
-   *
-   * @param address IP address
-   * @param bits IP address represented as a set of bits
-   * @param maxPrefixLength only return routes with prefix length less than or equal to given value
-   * @return a set of routes
-   */
-  @Nullable
-  private PrefixTrieMultiMap<DataT> findLongestPrefixMatchNode(
-      Ip address, long bits, int maxPrefixLength) {
-    // If the current subtree only contains routes that are too long, no matches.
-    int index = _prefix.getPrefixLength();
-    if (index > maxPrefixLength) {
-      return null;
-    }
-
-    // If the current subtree does not contain the destination IP, no matches.
-    if (!_prefix.containsIp(address)) {
-      return null;
-    }
-
-    // If the network of the current node is exactly the desired maximum length, stop here.
-    if (index == maxPrefixLength) {
-      return this;
-    }
-
-    // Examine the bit at the given index
-    boolean currentBit = Ip.getBitAtPosition(bits, index);
-    // If the current bit is 1, go right recursively
-    PrefixTrieMultiMap<DataT> child = currentBit ? _right : _left;
-    if (child == null) {
-      return this;
-    }
-
-    // Represents any potentially longer route matches (than ones stored at this node)
-    PrefixTrieMultiMap<DataT> candidateNode =
-        child.findLongestPrefixMatchNode(address, bits, maxPrefixLength);
-
-    // If we found no better matches, return the ones from this node
-    if (candidateNode == null) {
-      return this;
-    } else { // otherwise return longer matches
-      return candidateNode;
-    }
-  }
-
-  /**
-   * Takes care of adding new nodes to the tree and maintaining correct pointers.
-   *
-   * @param parent node that we are trying to merge an element into
-   * @param prefix the desired prefix the element should be mapped to
-   * @param bits the {@code long} representation of the desired prefix
-   * @param firstUnmatchedBitIndex the index of the first bit in the desired prefix that we haven't
-   *     checked yet
-   * @param rightBranch whether we should recurse down the right side of the tree
-   * @return the node into which an element can be added
-   */
+  /** Returns the node with the longest prefix match for a given prefix. */
   @Nonnull
-  private static <DataT> PrefixTrieMultiMap<DataT> findHelper(
-      PrefixTrieMultiMap<DataT> parent,
-      Prefix prefix,
-      long bits,
-      int firstUnmatchedBitIndex,
-      boolean rightBranch) {
-    PrefixTrieMultiMap<DataT> node;
+  PrefixTrieMultiMap<DataT> findLongestPrefixMatchNode(Prefix prefix) {
+    assert this._prefix.containsPrefix(prefix);
 
-    // Get our node from one of the tree sides
-    if (rightBranch) {
-      node = parent._right;
-    } else {
-      node = parent._left;
-    }
-
-    // Node doesn't exist, so create one. By construction, it will be the best match
-    // for the given elementToMerge
-    if (node == null) {
-      node = new PrefixTrieMultiMap<>(prefix);
-      // don't forget to assign new node element to parent node
-      assignChild(parent, node, rightBranch);
-      return node;
-    }
-
-    // Node exists, get some helper data out of the current node we are examining
-    Prefix nodePrefix = node._prefix;
-    int nodePrefixLength = nodePrefix.getPrefixLength();
-    Ip nodeAddress = nodePrefix.getStartIp();
-    long nodeAddressBits = nodeAddress.asLong();
-    int nextUnmatchedBit;
-    // Set up two "pointers" as we scan through the bits and the node's prefixes
-    boolean currentAddressBit = false;
-    boolean currentNodeAddressBit;
-
-    /*
-     * We know we matched up to firstUnmatchedBitIndex. Continue going forward in the bits
-     * to find a longer match.
-     * At the end of this loop nextUnmatchedBit will be the first place where the elementToMerge prefix
-     * and this node's prefix diverge.
-     * Note that nextUnmatchedBit can be outside of the node's or the elementToMerge's prefix.
-     */
-    for (nextUnmatchedBit = firstUnmatchedBitIndex + 1;
-        nextUnmatchedBit < nodePrefixLength && nextUnmatchedBit < prefix.getPrefixLength();
-        nextUnmatchedBit++) {
-      currentAddressBit = Ip.getBitAtPosition(bits, nextUnmatchedBit);
-      currentNodeAddressBit = Ip.getBitAtPosition(nodeAddressBits, nextUnmatchedBit);
-      if (currentNodeAddressBit != currentAddressBit) {
-        break;
+    PrefixTrieMultiMap<DataT> node = this;
+    long prefixAsLong = prefix.getStartIp().asLong();
+    while (true) {
+      if (node._prefix.equals(prefix)) {
+        // found an exact match
+        return node;
       }
+
+      // Choose which child might have a longer match
+      PrefixTrieMultiMap<DataT> child =
+          Ip.getBitAtPosition(prefixAsLong, node._prefix.getPrefixLength())
+              ? node._right
+              : node._left;
+
+      // Check if the child exists and matches
+      if (child == null || !child._prefix.containsPrefix(prefix)) {
+        return node;
+      }
+
+      // Child does have a longer match, keep looking
+      node = child;
     }
-
-    /*
-     * If the next unmatched bit is the same as node prefix length, we "ran off" the node prefix.
-     * Recursively find the appropriate node that's a child of this node.
-     */
-    if (nextUnmatchedBit == nodePrefixLength) {
-      return node.findOrCreateNode(prefix, bits, nextUnmatchedBit);
-    }
-
-    /*
-     * If we reached the desired prefix length (but have not exhausted the nodes) we need to create a new node
-     * above the current node that matches the prefix and re-attach the current node to
-     * the newly created node.
-     */
-    if (nextUnmatchedBit == prefix.getPrefixLength()) {
-      currentNodeAddressBit = Ip.getBitAtPosition(nodeAddressBits, nextUnmatchedBit);
-      PrefixTrieMultiMap<DataT> oldNode = node;
-      node = new PrefixTrieMultiMap<>(prefix);
-      // Keep track of pointers
-      assignChild(parent, node, rightBranch);
-      assignChild(node, oldNode, currentNodeAddressBit);
-      return node;
-    }
-
-    /*
-     * If we are here, there is a bit difference between the node's prefix and the desired prefix,
-     * before we reach the end of either prefix. This requires the following:
-     * - Compute the max prefix match (up to nextUnmatchedBit)
-     * - Create a new node with this new prefix above the current node
-     * - Create a new node with the desired prefix and assign the newly created node.
-     * - Existing node becomes a sibling of the node with full elementToMerge prefix
-     */
-    PrefixTrieMultiMap<DataT> oldNode = node;
-
-    // newNetwork has the max prefix match up to nextUnmatchedBit
-    Prefix newNetwork = Prefix.create(prefix.getStartIp(), nextUnmatchedBit);
-    node = new PrefixTrieMultiMap<>(newNetwork); // this is the node we are inserting in the middle
-    PrefixTrieMultiMap<DataT> child = new PrefixTrieMultiMap<>(prefix);
-
-    assignChild(parent, node, rightBranch);
-    // child and old node become siblings, children of the newly inserted node
-    assignChild(node, child, currentAddressBit);
-    assignChild(node, oldNode, !currentAddressBit);
-    return child;
   }
 
-  private static <DataT> void assignChild(
-      PrefixTrieMultiMap<DataT> parent, PrefixTrieMultiMap<DataT> child, boolean branchRight) {
-    if (branchRight) {
-      parent.setRight(child);
-    } else {
-      parent.setLeft(child);
-    }
+  /**
+   * Returns the node with the longest prefix match for a given IP address.
+   *
+   * @param address IP address contained in the current node's prefix.
+   * @param maxPrefixLength only return routes with prefix length less than or equal to given value
+   */
+  private @Nonnull PrefixTrieMultiMap<DataT> findLongestPrefixMatchNode(
+      Ip address, int maxPrefixLength) {
+    return findLongestPrefixMatchNode(Prefix.create(address, maxPrefixLength));
   }
 
   @Override
