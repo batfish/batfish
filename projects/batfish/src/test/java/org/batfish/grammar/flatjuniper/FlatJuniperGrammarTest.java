@@ -138,6 +138,9 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -4458,5 +4461,27 @@ public final class FlatJuniperGrammarTest {
 
     // ge-0/0/0.3 is not part of any zoone, so no firewall session interface info.
     assertThat(c.getAllInterfaces().get(i3Name).getFirewallSessionInterfaceInfo(), nullValue());
+  }
+
+  @Test
+  public void testPortAddressTranslation() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-nat-pat");
+    Nat sourceNat = juniperConfiguration.getMasterLogicalSystem().getNatSource();
+    NatPool pool1 = sourceNat.getPools().get("POOL1");
+    NatPool pool2 = sourceNat.getPools().get("POOL2");
+    assertNotNull(pool1);
+    assertNotNull(pool2);
+    assertThat(pool1.getFromPort(), equalTo(2000));
+    assertThat(pool1.getToPort(), equalTo(3000));
+    assertNull(pool2.getFromPort());
+    assertNull(pool2.getToPort());
+    assertFalse(pool2.getPortTranslation());
+
+    Nat destNat = juniperConfiguration.getMasterLogicalSystem().getNatDestination();
+    NatPool pool3 = destNat.getPools().get("POOL3");
+    assertNotNull(pool3);
+    assertThat(pool3.getFromPort(), equalTo(6000));
+    assertThat(pool3.getToPort(), equalTo(6000));
+    assertThat(pool3.getFromAddress(), equalTo(Ip.parse("1.0.0.1")));
   }
 }

@@ -16,9 +16,18 @@ public final class NatPool implements Serializable {
 
   private Ip _toAddress;
 
+  private Integer _fromPort;
+
+  private Integer _toPort;
+
+  private boolean _portTranslation;
+
   public NatPool() {
     _fromAddress = Prefix.ZERO.getStartIp();
     _toAddress = Prefix.ZERO.getEndIp();
+    _fromPort = null;
+    _toPort = null;
+    _portTranslation = false;
   }
 
   @Nonnull
@@ -31,11 +40,35 @@ public final class NatPool implements Serializable {
     return _toAddress;
   }
 
+  public Integer getFromPort() {
+    return _fromPort;
+  }
+
+  public Integer getToPort() {
+    return _toPort;
+  }
+
+  public boolean getPortTranslation() {
+    return _portTranslation;
+  }
+
   public void setFromAddress(Ip fromAddress) {
     _fromAddress = fromAddress;
   }
 
   public void setToAddress(Ip toAddress) {
     _toAddress = toAddress;
+  }
+
+  public void setFromPort(int fromPort) {
+    _fromPort = fromPort;
+  }
+
+  public void setToPort(int toPort) {
+    _toPort = toPort;
+  }
+
+  public void setPortTranslation(boolean portTranslation) {
+    _portTranslation = portTranslation;
   }
 }

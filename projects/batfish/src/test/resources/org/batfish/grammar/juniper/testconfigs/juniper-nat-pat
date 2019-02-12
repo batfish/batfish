@@ -1,0 +1,10 @@
+#
+set system host-name juniper-nat-pat
+#
+# source nat
+set security nat source pool POOL1 port range 2000 to 3000
+set security nat source pool POOL2 port no-translation
+set security nat source pool-default-port-range 4000 to 5000
+#
+# destination nat
+set security nat destination pool POOL3 address 1.0.0.1 port 6000
