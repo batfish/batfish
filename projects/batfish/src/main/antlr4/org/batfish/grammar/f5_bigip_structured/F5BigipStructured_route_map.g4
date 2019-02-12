@@ -13,6 +13,7 @@ nr_route_map
     NEWLINE
     (
       nrr_entries
+      | nrr_route_domain
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -112,6 +113,11 @@ nrrees_community
 nreesc_value
 :
   VALUE BRACE_LEFT communities += standard_community+ BRACE_RIGHT NEWLINE
+;
+
+nrr_route_domain
+:
+  ROUTE_DOMAIN name = word NEWLINE
 ;
 
 route_map_action

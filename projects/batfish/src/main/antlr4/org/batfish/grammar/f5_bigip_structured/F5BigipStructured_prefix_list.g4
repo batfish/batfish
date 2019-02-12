@@ -13,6 +13,7 @@ nr_prefix_list
     NEWLINE
     (
       nrp_entries
+      | nrp_route_domain
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -24,6 +25,11 @@ nrp_entries
   (
     NEWLINE nrpe_entry*
   )? BRACE_RIGHT NEWLINE
+;
+
+nrp_route_domain
+:
+  ROUTE_DOMAIN name = word NEWLINE
 ;
 
 nrpe_entry
@@ -46,12 +52,12 @@ nrpee_action
 
 nrpee_prefix
 :
-  PREFIX prefix=word NEWLINE
+  PREFIX prefix = word NEWLINE
 ;
 
 nrpee_prefix_len_range
 :
-  PREFIX_LEN_RANGE range=word NEWLINE
+  PREFIX_LEN_RANGE range = word NEWLINE
 ;
 
 prefix_list_action

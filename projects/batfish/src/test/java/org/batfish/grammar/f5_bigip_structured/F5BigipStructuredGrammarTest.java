@@ -1,8 +1,10 @@
 package org.batfish.grammar.f5_bigip_structured;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
@@ -13,6 +15,12 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.INTERFACE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PREFIX_LIST;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE_MAP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.SELF;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -41,6 +49,8 @@ import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.matchers.Route6FilterListMatchers;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -79,12 +89,46 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testBgpProcessReferences() throws IOException {
+    String hostname = "f5_bigip_structured_bgp_process_references";
+    String file = "configs/" + hostname;
+    String used = "/Common/my_bgp_process";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, BGP_PROCESS, used, 1));
+  }
+
+  @Test
   public void testHostname() throws IOException {
     String filename = "f5_bigip_structured_hostname";
     String hostname = "myhostname";
     Map<String, Configuration> configurations = parseTextConfigs(filename);
 
     assertThat(configurations, hasKey(hostname));
+  }
+
+  @Test
+  public void testInterfaceReferences() throws IOException {
+    String hostname = "f5_bigip_structured_interface_references";
+    String file = "configs/" + hostname;
+    String undefined = "3.0";
+    String unused = "2.0";
+    String used = "1.0";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // detect undefined reference
+    assertThat(ans, hasUndefinedReference(file, INTERFACE, undefined));
+
+    // detected unused structure (except self-reference)
+    assertThat(ans, hasNumReferrers(file, INTERFACE, unused, 1));
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, INTERFACE, used, 2));
   }
 
   @Test
@@ -167,6 +211,27 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testPrefixListReferences() throws IOException {
+    String hostname = "f5_bigip_structured_prefix_list_references";
+    String file = "configs/" + hostname;
+    String undefined = "/Common/prefix-list-undefined";
+    String unused = "/Common/prefix-list-unused";
+    String used = "/Common/prefix-list-used";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // detect undefined reference
+    assertThat(ans, hasUndefinedReference(file, PREFIX_LIST, undefined));
+
+    // detected unused structure
+    assertThat(ans, hasNumReferrers(file, PREFIX_LIST, unused, 0));
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, PREFIX_LIST, used, 1));
+  }
+
+  @Test
   public void testRouteMap() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_net_routing_route_map");
     String acceptAllName = "/Common/ACCEPT_ALL";
@@ -242,6 +307,40 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testRouteMapReferences() throws IOException {
+    String hostname = "f5_bigip_structured_route_map_references";
+    String file = "configs/" + hostname;
+    String undefined = "/Common/route-map-undefined";
+    String unused = "/Common/route-map-unused";
+    String used = "/Common/route-map-used";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // detect undefined reference
+    assertThat(ans, hasUndefinedReference(file, ROUTE_MAP, undefined));
+
+    // detected unused structure
+    assertThat(ans, hasNumReferrers(file, ROUTE_MAP, unused, 0));
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, ROUTE_MAP, used, 3));
+  }
+
+  @Test
+  public void testSelfReferences() throws IOException {
+    String hostname = "f5_bigip_structured_self_references";
+    String file = "configs/" + hostname;
+    String used = "/Common/self_used";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, SELF, used, 1));
+  }
+
+  @Test
   public void testVlan() throws IOException {
     Configuration c = parseConfig("f5_bigip_structured_vlan");
     String portName = "1.0";
@@ -260,5 +359,26 @@ public final class F5BigipStructuredGrammarTest {
     assertThat(c, hasInterface(vlanName, isActive()));
     assertThat(c, hasInterface(vlanName, hasVlan(123)));
     assertThat(c, hasInterface(vlanName, hasAddress("10.0.0.1/24")));
+  }
+
+  @Test
+  public void testVlanReferences() throws IOException {
+    String hostname = "f5_bigip_structured_vlan_references";
+    String file = "configs/" + hostname;
+    String undefined = "/Common/vlan_undefined";
+    String unused = "/Common/vlan_unused";
+    String used = "/Common/vlan_used";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // detect undefined reference
+    assertThat(ans, hasUndefinedReference(file, VLAN, undefined));
+
+    // detected unused structure
+    assertThat(ans, hasNumReferrers(file, VLAN, unused, 0));
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, VLAN, used, 1));
   }
 }

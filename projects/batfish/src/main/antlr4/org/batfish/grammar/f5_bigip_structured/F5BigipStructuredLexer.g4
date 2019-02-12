@@ -41,9 +41,29 @@ ADDRESS_FAMILY
   'address-family'
 ;
 
+ALL
+:
+  'all'
+;
+
+ALLOW_SERVICE
+:
+  'allow-service'
+;
+
 BGP
 :
   'bgp'
+;
+
+BUNDLE
+:
+  'bundle'
+;
+
+BUNDLE_SPEED
+:
+  'bundle-speed'
 ;
 
 COMMUNITY
@@ -66,6 +86,11 @@ DISABLED
   'disabled'
 ;
 
+ENABLED
+:
+  'enabled'
+;
+
 ENTRIES
 :
   'entries'
@@ -74,11 +99,6 @@ ENTRIES
 FORTY_G
 :
   '40G'
-;
-
-BUNDLE_SPEED
-:
-  'bundle-speed'
 ;
 
 GLOBAL_SETTINGS
@@ -181,6 +201,11 @@ REMOTE_AS
   'remote-as'
 ;
 
+ROUTE_DOMAIN
+:
+  'route-domain'
+;
+
 ROUTE_MAP
 :
   'route-map'
@@ -194,6 +219,11 @@ ROUTING
 SET
 :
   'set'
+;
+
+TRAFFIC_GROUP
+:
+  'traffic-group'
 ;
 
 UPDATE_SOURCE

@@ -87,15 +87,40 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _vlans;
   }
 
+  private void markStructures() {
+    markConcreteStructure(
+        F5BigipStructureType.BGP_PROCESS, F5BigipStructureUsage.BGP_PROCESS_SELF_REFERENCE);
+    markConcreteStructure(
+        F5BigipStructureType.INTERFACE,
+        F5BigipStructureUsage.INTERFACE_SELF_REFERENCE,
+        F5BigipStructureUsage.BGP_NEIGHBOR_UPDATE_SOURCE,
+        F5BigipStructureUsage.VLAN_INTERFACE);
+    markConcreteStructure(
+        F5BigipStructureType.PREFIX_LIST,
+        F5BigipStructureUsage.ROUTE_MAP_MATCH_IPV4_ADDRESS_PREFIX_LIST);
+    markConcreteStructure(
+        F5BigipStructureType.ROUTE_MAP,
+        F5BigipStructureUsage.BGP_ADDRESS_FAMILY_REDISTRIBUTE_KERNEL_ROUTE_MAP,
+        F5BigipStructureUsage.BGP_NEIGHBOR_IPV4_ROUTE_MAP_OUT,
+        F5BigipStructureUsage.BGP_NEIGHBOR_IPV6_ROUTE_MAP_OUT);
+    markConcreteStructure(F5BigipStructureType.SELF, F5BigipStructureUsage.SELF_SELF_REFERENCE);
+    markConcreteStructure(F5BigipStructureType.VLAN, F5BigipStructureUsage.SELF_VLAN);
+  }
+
   private void processSelf(Self self) {
     // Add addresses to appropriate VLAN interfaces.
-    org.batfish.datamodel.Interface vlanIface = _c.getAllInterfaces().get(self.getVlan());
+    String vlanName = self.getVlan();
+    if (vlanName == null) {
+      return;
+    }
+    org.batfish.datamodel.Interface vlanIface = _c.getAllInterfaces().get(vlanName);
     if (vlanIface == null) {
       return;
     }
     InterfaceAddress address = self.getAddress();
     vlanIface.setAddress(address);
-    vlanIface.setAllAddresses(ImmutableSortedSet.of(address));
+    vlanIface.setAllAddresses(
+        address != null ? ImmutableSortedSet.of(address) : ImmutableSortedSet.of());
   }
 
   private void processVlanSettings(Vlan vlan) {
@@ -289,6 +314,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // Convert route-maps to RoutingPolicies
     _routeMaps.forEach(
         (name, routeMap) -> _c.getRoutingPolicies().put(name, toRoutingPolicy(routeMap)));
+
+    markStructures();
 
     return _c;
   }

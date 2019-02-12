@@ -1,6 +1,7 @@
 parser grammar F5BigipStructured_net;
 
-import F5BigipStructured_common, F5BigipStructured_bgp, F5BigipStructured_prefix_list, F5BigipStructured_route_map;
+import
+F5BigipStructured_common, F5BigipStructured_bgp, F5BigipStructured_prefix_list, F5BigipStructured_route_map;
 
 options {
   tokenVocab = F5BigipStructuredLexer;
@@ -18,7 +19,8 @@ net_interface
   (
     NEWLINE
     (
-      ni_bundle_speed
+      ni_bundle
+      | ni_bundle_speed
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -42,6 +44,8 @@ net_self
     NEWLINE
     (
       ns_address
+      | ns_allow_service
+      | ns_traffic_group
       | ns_vlan
       | unrecognized
     )*
@@ -61,6 +65,11 @@ net_vlan
   )? BRACE_RIGHT NEWLINE
 ;
 
+ni_bundle
+:
+  BUNDLE ENABLED NEWLINE
+;
+
 ni_bundle_speed
 :
   BUNDLE_SPEED bundle_speed NEWLINE
@@ -69,6 +78,16 @@ ni_bundle_speed
 ns_address
 :
   ADDRESS interface_address = word NEWLINE
+;
+
+ns_allow_service
+:
+  ALLOW_SERVICE ALL NEWLINE
+;
+
+ns_traffic_group
+:
+  TRAFFIC_GROUP name = word NEWLINE
 ;
 
 ns_vlan
