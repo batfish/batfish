@@ -16,6 +16,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
@@ -490,5 +491,41 @@ public class ModelingUtilsTest {
     assertThat(
         isp.getAllInterfaces().keySet(),
         equalTo(ImmutableSet.of("~Interface_0~", "~Interface_1~", "~Interface_3~")));
+  }
+
+  @Test
+  public void testNoIsps() {
+    NetworkFactory nf = new NetworkFactory();
+
+    Configuration.Builder cb = nf.configurationBuilder();
+    Configuration configuration1 =
+        cb.setHostname("conf1").setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration1).build();
+    nf.interfaceBuilder()
+        .setName("interface1")
+        .setOwner(configuration1)
+        .setAddress(new InterfaceAddress(Ip.parse("1.1.1.1"), 24))
+        .build();
+    Vrf vrfConf1 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration1).build();
+    BgpProcess bgpProcess1 = nf.bgpProcessBuilder().setVrf(vrfConf1).build();
+    BgpActivePeerConfig.builder()
+        .setBgpProcess(bgpProcess1)
+        .setPeerAddress(Ip.parse("1.1.1.2"))
+        .setRemoteAs(1234L)
+        .setLocalIp(Ip.parse("1.1.1.1"))
+        .setLocalAs(1L)
+        .build();
+
+    // passing non-existent border interfaces
+    Map<String, Configuration> internetAndIsps =
+        ModelingUtils.getInternetAndIspNodes(
+            ImmutableMap.of(configuration1.getHostname(), configuration1),
+            ImmutableList.of(new NodeInterfacePair("conf2", "interface2")),
+            ImmutableList.of(),
+            ImmutableList.of(),
+            new BatfishLogger("output", false));
+
+    // no ISPs and no Internet
+    assertThat(internetAndIsps, anEmptyMap());
   }
 }
