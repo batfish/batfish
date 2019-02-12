@@ -826,11 +826,10 @@ public final class FileBasedStorage implements StorageProvider {
         : Files.newInputStream(objectPath);
   }
 
-  @MustBeClosed
   @Override
   public @Nonnull List<StoredObjectMetadata> getSnapshotInputKeys(
-      NetworkId networkId, SnapshotId snapshotId) throws FileNotFoundException, IOException {
-    Path objectPath = getSnapshotInputObjectPath(networkId, snapshotId, "");
+      NetworkId networkId, SnapshotId snapshotId) throws IOException {
+    Path objectPath = _d.getSnapshotInputObjectsDir(networkId, snapshotId);
     if (!Files.exists(objectPath)) {
       throw new FileNotFoundException(String.format("Could not load: %s", objectPath));
     }
@@ -848,7 +847,8 @@ public final class FileBasedStorage implements StorageProvider {
     try {
       return Files.size(objectPath);
     } catch (IOException e) {
-      return 0;
+      throw new BatfishException(
+          String.format("Could not get size of object at path: %s", objectPath));
     }
   }
 

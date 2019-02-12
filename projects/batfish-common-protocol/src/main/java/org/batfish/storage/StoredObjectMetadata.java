@@ -2,6 +2,7 @@ package org.batfish.storage;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -21,7 +22,8 @@ public final class StoredObjectMetadata {
 
   @JsonCreator
   private static @Nonnull StoredObjectMetadata create(
-      @Nullable @JsonProperty(PROP_KEY) String key, @JsonProperty(PROP_SIZE) long size) {
+      @Nullable @JsonProperty(PROP_KEY) String key, @Nullable @JsonProperty(PROP_SIZE) Long size) {
+    checkArgument(size != null, "Object size must not be null!");
     return new StoredObjectMetadata(firstNonNull(key, ""), size);
   }
 
@@ -31,6 +33,7 @@ public final class StoredObjectMetadata {
   }
 
   @JsonProperty(PROP_KEY)
+  @Nonnull
   public String getKey() {
     return _key;
   }
@@ -49,7 +52,7 @@ public final class StoredObjectMetadata {
       return false;
     }
     StoredObjectMetadata other = (StoredObjectMetadata) o;
-    return Objects.equals(_key, other._key) && Objects.equals(_size, other._size);
+    return _key.equals(other._key) && _size == other._size;
   }
 
   @Override

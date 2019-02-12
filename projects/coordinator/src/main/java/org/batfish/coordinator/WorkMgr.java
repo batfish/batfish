@@ -3155,7 +3155,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-  @MustBeClosed
+  @Nullable
   public List<StoredObjectMetadata> getSnapshotInputKeys(String network, String snapshot)
       throws IOException {
     if (!_idManager.hasNetworkId(network)) {

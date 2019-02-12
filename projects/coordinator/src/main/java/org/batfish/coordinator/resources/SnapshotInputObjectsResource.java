@@ -58,7 +58,6 @@ public class SnapshotInputObjectsResource {
   @Path(RSC_LIST)
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  @SuppressWarnings("MustBeClosedChecker") // Response eventually closes it.
   public Response listKeys() throws IOException {
     List<StoredObjectMetadata> keys = Main.getWorkMgr().getSnapshotInputKeys(_network, _snapshot);
     if (keys == null) {

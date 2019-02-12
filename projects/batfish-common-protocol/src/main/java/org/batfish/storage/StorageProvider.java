@@ -429,7 +429,7 @@ public interface StorageProvider {
    * Fetch the list of keys in the given snapshot's input directory
    *
    * @throws FileNotFoundException if the given snapshot's input directory is not found
-   * @throws IOException if there is an error reading the keys
+   * @throws IOException if there is an error retrieving the metadata
    */
   @Nonnull
   List<StoredObjectMetadata> getSnapshotInputKeys(NetworkId networkId, SnapshotId snapshotId)
