@@ -3169,9 +3169,15 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       return _storage.getSnapshotInputObjectsMetadata(networkId, snapshotId);
     } catch (FileNotFoundException e) {
-      throw new FileNotFoundException(e.toString());
+      throw new FileNotFoundException(
+          String.format(
+              "Snapshot input folder not found for network '%s', snapshot '%s'",
+              network, snapshot));
     } catch (IOException e) {
-      throw new IOException(e);
+      throw new IOException(
+          String.format(
+              "Could not fetch input keys for network '%s', snapshot '%s'", network, snapshot),
+          e);
     }
   }
 
