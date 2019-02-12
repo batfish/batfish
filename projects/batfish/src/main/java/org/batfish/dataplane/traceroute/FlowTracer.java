@@ -187,6 +187,8 @@ class FlowTracer {
 
   /** Creates a new TransmissionContext for the specified last-hop node and outgoing interface. */
   private FlowTracer followEdge(NodeInterfacePair exitIface, NodeInterfacePair enterIface) {
+    checkState(
+        _hops.size() == _breadcrumbs.size(), "Must have equal number of hops and breadcrumbs");
     return new FlowTracer(
         _tracerouteContext,
         new Node(enterIface.getHostname()),
@@ -202,6 +204,7 @@ class FlowTracer {
   }
 
   private FlowTracer branch() {
+    checkState(_hops.size() == _breadcrumbs.size() - 1, "Must be just ready to add another hop");
     return new FlowTracer(
         _tracerouteContext,
         _currentNode,
@@ -345,10 +348,8 @@ class FlowTracer {
 
       // For every interface with a route to the dst IP
       for (String nextHopInterfaceName : nextHopInterfaces) {
-        FlowTracer clonedFlowTracer = branch();
-
         if (nextHopInterfaceName.equals(Interface.NULL_INTERFACE_NAME)) {
-          clonedFlowTracer.buildNullRoutedTrace();
+          branch().buildNullRoutedTrace();
           continue;
         }
 
@@ -360,7 +361,7 @@ class FlowTracer {
             .asMap()
             .forEach(
                 (resolvedNextHopIp, routeCandidates) ->
-                    clonedFlowTracer.forwardOutInterface(nextHopInterface, resolvedNextHopIp));
+                    branch().forwardOutInterface(nextHopInterface, resolvedNextHopIp));
       }
     } finally {
       _breadcrumbs.pop();
