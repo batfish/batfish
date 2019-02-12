@@ -117,6 +117,11 @@ public class MockRib implements GenericRib<AbstractRoute> {
   }
 
   @Override
+  public Prefix getNetwork(AbstractRoute r) {
+    return r.getNetwork();
+  }
+
+  @Override
   public SortedSet<Prefix> getPrefixes() {
     return _prefixes;
   }

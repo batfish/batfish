@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -26,7 +27,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
  *     preferences.
  */
 @ParametersAreNonnullByDefault
-public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib<R> {
+public abstract class AbstractRib<R> implements GenericRib<R> {
 
   private static final long serialVersionUID = 1L;
 
@@ -50,29 +51,27 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
    */
   @Nullable protected final Map<Prefix, SortedSet<R>> _backupRoutes;
 
-  public AbstractRib(@Nullable Map<Prefix, SortedSet<R>> backupRoutes) {
+  public AbstractRib(
+      @Nullable Map<Prefix, SortedSet<R>> backupRoutes, Function<R, AbstractRoute> routeExtractor) {
     _allRoutes = ImmutableSet.of();
     _backupRoutes = backupRoutes;
     _logicalArrivalTime = new HashMap<>();
     _logicalClock = 0;
-    _tree = new RibTree<>(this);
+    _tree = new RibTree<>(this, routeExtractor);
   }
 
   /**
-   * Import routes from one RIB into another
+   * Import routes into this RIB from another
    *
-   * @param importingRib the RIB that imports routes
-   * @param exportingRib the RIB that exports routes
-   * @param <U> type of route
-   * @param <T> type of route (must be more specific than {@link U}
+   * @param exportingRib the RIB from which to import routes
+   * @param <T> type of routes in exportingRib (must be more specific than {@link R})
    * @return a {@link RibDelta}
    */
   @Nonnull
-  public static <U extends AbstractRoute, T extends U> RibDelta<U> importRib(
-      AbstractRib<U> importingRib, AbstractRib<T> exportingRib) {
-    RibDelta.Builder<U> builder = RibDelta.builder();
+  public <T extends R> RibDelta<R> importRoutesFrom(AbstractRib<T> exportingRib) {
+    RibDelta.Builder<R> builder = RibDelta.builder(this::getNetwork);
     for (T route : exportingRib.getRoutes()) {
-      builder.from(importingRib.mergeRouteGetDelta(route));
+      builder.from(mergeRouteGetDelta(route));
     }
     return builder.build();
   }
@@ -84,7 +83,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
    */
   public final void addBackupRoute(R route) {
     if (_backupRoutes != null) {
-      _backupRoutes.computeIfAbsent(route.getNetwork(), k -> new TreeSet<>()).add(route);
+      _backupRoutes.computeIfAbsent(getNetwork(route), k -> new TreeSet<>()).add(route);
     }
   }
 
@@ -97,7 +96,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
     SortedSet<Prefix> prefixes = new TreeSet<>();
     Set<R> routes = getRoutes();
     for (R route : routes) {
-      prefixes.add(route.getNetwork());
+      prefixes.add(getNetwork(route));
     }
     return prefixes;
   }
@@ -113,7 +112,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
   public final Set<R> getRoutes(Prefix p) {
     // Collect routes that match the prefix
     return getRoutes().stream()
-        .filter(r -> r.getNetwork().equals(p))
+        .filter(r -> getNetwork(r).equals(p))
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -124,7 +123,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
    */
   public final void removeBackupRoute(R route) {
     if (_backupRoutes != null) {
-      SortedSet<R> routes = _backupRoutes.get(route.getNetwork());
+      SortedSet<R> routes = _backupRoutes.get(getNetwork(route));
       if (routes != null) {
         routes.remove(route);
       }

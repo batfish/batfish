@@ -49,7 +49,7 @@ public class RouteDependencyTracker<R extends AbstractRoute, D extends AbstractR
       // Nothing to process
       return null;
     }
-    RibDelta.Builder<R> b = RibDelta.builder();
+    RibDelta.Builder<R> b = RibDelta.builder(rib::getNetwork);
     for (R depRoute : dependents) {
       b.from(rib.removeRouteGetDelta(depRoute, Reason.WITHDRAW));
     }

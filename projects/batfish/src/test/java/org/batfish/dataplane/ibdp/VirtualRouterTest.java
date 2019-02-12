@@ -506,7 +506,7 @@ public class VirtualRouterTest {
     VirtualRouter.queueDelta(q, RibDelta.empty());
     assertThat(q, empty());
 
-    RibDelta<AbstractRoute> delta = RibDelta.builder().build();
+    RibDelta<AbstractRoute> delta = RibDelta.builder(AbstractRoute::getNetwork).build();
     VirtualRouter.queueDelta(q, delta);
     assertThat(q, empty());
 
@@ -529,7 +529,7 @@ public class VirtualRouterTest {
             .setMetric(0L)
             .setTag(1)
             .build();
-    RibDelta.Builder<AbstractRoute> builder = RibDelta.builder().add(sr1);
+    RibDelta.Builder<AbstractRoute> builder = RibDelta.builder(AbstractRoute::getNetwork).add(sr1);
 
     // Add one route
     VirtualRouter.queueDelta(q, builder.build());
@@ -563,7 +563,7 @@ public class VirtualRouterTest {
             .setMetric(0L)
             .setTag(1)
             .build();
-    RibDelta.Builder<AbstractRoute> builder = RibDelta.builder();
+    RibDelta.Builder<AbstractRoute> builder = RibDelta.builder(AbstractRoute::getNetwork);
 
     // Test queueing empty deltas
     builder.add(sr1).remove(sr2, Reason.WITHDRAW);

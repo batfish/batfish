@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
-public interface GenericRib<R extends AbstractRoute> extends Serializable {
+public interface GenericRib<R> extends Serializable {
 
   /**
    * Compare the preferability of one route with anther
@@ -16,6 +16,14 @@ public interface GenericRib<R extends AbstractRoute> extends Serializable {
    *     preferable (i.e. for multipath routing); 1 if lhs route is strictly more preferred than rhs
    */
   int comparePreference(R lhs, R rhs);
+
+  /**
+   * Returns the destination network of the given route.
+   *
+   * @param route Route object whose network to extract
+   * @return The network of the given route object
+   */
+  Prefix getNetwork(R route);
 
   /**
    * Returns a mapping from prefixes of forwarding routes in the RIB to the IPs for which that

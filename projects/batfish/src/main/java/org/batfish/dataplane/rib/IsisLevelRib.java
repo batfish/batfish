@@ -13,11 +13,16 @@ public class IsisLevelRib extends AbstractRib<IsisRoute> {
   private static final long serialVersionUID = 1L;
 
   public IsisLevelRib(@Nullable Map<Prefix, SortedSet<IsisRoute>> backupRoutes) {
-    super(backupRoutes);
+    super(backupRoutes, r -> r);
   }
 
   @Override
   public int comparePreference(@Nonnull IsisRoute lhs, @Nonnull IsisRoute rhs) {
     return IsisRib.routePreferenceComparator.compare(lhs, rhs);
+  }
+
+  @Override
+  public Prefix getNetwork(IsisRoute route) {
+    return route.getNetwork();
   }
 }

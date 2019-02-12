@@ -10,7 +10,10 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
@@ -29,16 +32,27 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
  * where the wildcard symbols can appear only after (to-the-right-of) non wildcard symbols in the
  * bit vector. E.g., 101010**, but not 1*001***
  */
-final class RibTree<R extends AbstractRoute> implements Serializable {
+@ParametersAreNonnullByDefault
+final class RibTree<R> implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private PrefixTrieMultiMap<R> _root;
-  private AbstractRib<R> _owner;
+  @Nonnull private final PrefixTrieMultiMap<R> _root;
+  @Nonnull private final AbstractRib<R> _owner;
+  @Nonnull private final Function<R, AbstractRoute> _routeExtractor;
 
-  RibTree(AbstractRib<R> owner) {
+  RibTree(AbstractRib<R> owner, Function<R, AbstractRoute> routeExtractor) {
     _root = new PrefixTrieMultiMap<>(Prefix.ZERO);
     _owner = owner;
+    _routeExtractor = routeExtractor;
+  }
+
+  private Prefix getNetwork(R route) {
+    return _routeExtractor.apply(route).getNetwork();
+  }
+
+  private boolean getNonForwarding(R route) {
+    return _routeExtractor.apply(route).getNonForwarding();
   }
 
   /**
@@ -49,20 +63,20 @@ final class RibTree<R extends AbstractRoute> implements Serializable {
    */
   @Nonnull
   RibDelta<R> removeRouteGetDelta(R route, Reason reason) {
-    boolean removed = _root.remove(route.getNetwork(), route);
+    boolean removed = _root.remove(getNetwork(route), route);
     if (!removed) {
       return RibDelta.empty();
     }
 
-    Builder<R> b = RibDelta.builder();
+    Builder<R> b = RibDelta.builder(this::getNetwork);
     b.remove(route, reason);
-    if (_root.get(route.getNetwork()).isEmpty() && _owner._backupRoutes != null) {
+    if (_root.get(getNetwork(route)).isEmpty() && _owner._backupRoutes != null) {
       SortedSet<? extends R> backups =
-          _owner._backupRoutes.getOrDefault(route.getNetwork(), ImmutableSortedSet.of());
+          _owner._backupRoutes.getOrDefault(getNetwork(route), ImmutableSortedSet.of());
       if (backups.isEmpty()) {
         return b.build();
       }
-      _root.put(route.getNetwork(), backups.first());
+      _root.put(getNetwork(route), backups.first());
       b.add(backups.first());
     }
     // Return new delta
@@ -76,11 +90,11 @@ final class RibTree<R extends AbstractRoute> implements Serializable {
    * @return true if the route exists in the RIB
    */
   boolean containsRoute(R route) {
-    return _root.get(route.getNetwork()).contains(route);
+    return _root.get(getNetwork(route)).contains(route);
   }
 
   private boolean hasForwardingRoute(Set<R> routes) {
-    return routes.stream().anyMatch(Predicates.not(AbstractRoute::getNonForwarding));
+    return routes.stream().anyMatch(Predicates.not(this::getNonForwarding));
   }
 
   /**
@@ -95,7 +109,7 @@ final class RibTree<R extends AbstractRoute> implements Serializable {
       Set<R> routes = _root.longestPrefixMatch(address, pl);
       if (hasForwardingRoute(routes)) {
         return routes.stream()
-            .filter(r -> !r.getNonForwarding())
+            .filter(r -> !getNonForwarding(r))
             .collect(ImmutableSet.toImmutableSet());
       }
     }
@@ -125,10 +139,10 @@ final class RibTree<R extends AbstractRoute> implements Serializable {
    */
   @Nonnull
   RibDelta<R> mergeRoute(R route) {
-    Set<R> routes = _root.get(route.getNetwork());
+    Set<R> routes = _root.get(getNetwork(route));
     if (routes.isEmpty()) {
-      _root.put(route.getNetwork(), route);
-      return RibDelta.<R>builder().add(route).build();
+      _root.put(getNetwork(route), route);
+      return RibDelta.builder(this::getNetwork).add(route).build();
     }
     /*
      * Check if the route we are adding is preferred to the routes we already have.
@@ -144,8 +158,8 @@ final class RibTree<R extends AbstractRoute> implements Serializable {
     }
     if (preferenceComparison == 0) { // equal preference, so add for multipath routing
       // Otherwise add the route
-      if (_root.put(route.getNetwork(), route)) {
-        return RibDelta.<R>builder().add(route).build();
+      if (_root.put(getNetwork(route), route)) {
+        return RibDelta.builder(this::getNetwork).add(route).build();
       } else {
         return RibDelta.empty();
       }
@@ -155,8 +169,8 @@ final class RibTree<R extends AbstractRoute> implements Serializable {
      * Better than all existing routes for this prefix, so
      * replace them with this one.
      */
-    if (_root.replaceAll(route.getNetwork(), route)) {
-      return RibDelta.<R>builder().remove(routes, REPLACE).add(route).build();
+    if (_root.replaceAll(getNetwork(route), route)) {
+      return RibDelta.builder(this::getNetwork).remove(routes, REPLACE).add(route).build();
     } else {
       return RibDelta.empty();
     }
@@ -168,12 +182,12 @@ final class RibTree<R extends AbstractRoute> implements Serializable {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(@Nullable Object obj) {
     return (obj == this) || (obj instanceof RibTree && this._root.equals(((RibTree<?>) obj)._root));
   }
 
   /** See {@link GenericRib#getMatchingIps()} */
-  public Map<Prefix, IpSpace> getMatchingIps() {
+  Map<Prefix, IpSpace> getMatchingIps() {
     ImmutableMap.Builder<Prefix, IpSpace> builder = ImmutableMap.builder();
 
     /* We traverse the tree in post-order, so when we visit each intermediate node the blacklist

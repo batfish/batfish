@@ -55,7 +55,7 @@ public class BgpRib extends AbstractRib<BgpRoute> {
       BgpTieBreaker tieBreaker,
       @Nullable Integer maxPaths,
       @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode) {
-    super(backupRoutes);
+    super(backupRoutes, r -> r);
     _mainRib = mainRib;
     _tieBreaker = tieBreaker;
     checkArgument(maxPaths == null || maxPaths > 0, "Invalid max-paths value %s", maxPaths);
@@ -271,5 +271,10 @@ public class BgpRib extends AbstractRib<BgpRoute> {
     }
     Set<AbstractRoute> s = _mainRib.longestPrefixMatch(nextHopIp);
     return s.isEmpty() ? Long.MAX_VALUE : s.iterator().next().getMetric();
+  }
+
+  @Override
+  public Prefix getNetwork(BgpRoute route) {
+    return route.getNetwork();
   }
 }

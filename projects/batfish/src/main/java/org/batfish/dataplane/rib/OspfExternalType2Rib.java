@@ -16,7 +16,7 @@ public class OspfExternalType2Rib extends AbstractRib<OspfExternalType2Route> {
   public OspfExternalType2Rib(
       @Nonnull String hostname,
       @Nullable Map<Prefix, SortedSet<OspfExternalType2Route>> backupRoutes) {
-    super(backupRoutes);
+    super(backupRoutes, r -> r);
     _hostname = hostname;
   }
 
@@ -39,5 +39,10 @@ public class OspfExternalType2Rib extends AbstractRib<OspfExternalType2Route> {
     } else {
       return super.mergeRouteGetDelta(route);
     }
+  }
+
+  @Override
+  public Prefix getNetwork(OspfExternalType2Route route) {
+    return route.getNetwork();
   }
 }

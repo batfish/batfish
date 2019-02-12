@@ -12,10 +12,10 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
@@ -25,7 +25,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
  * @param <R> route type
  */
 @ParametersAreNonnullByDefault
-public final class RibDelta<R extends AbstractRoute> {
+public final class RibDelta<R> {
 
   /** Sorted for deterministic iteration order */
   private SortedMap<Prefix, List<RouteAdvertisement<R>>> _actions;
@@ -95,13 +95,19 @@ public final class RibDelta<R extends AbstractRoute> {
 
   /** Builder for {@link RibDelta} */
   @ParametersAreNonnullByDefault
-  public static final class Builder<R extends AbstractRoute> {
+  public static final class Builder<R> {
 
     private Map<Prefix, LinkedHashMap<R, RouteAdvertisement<R>>> _actions;
+    @Nonnull private final Function<R, Prefix> _prefixExtractor;
 
     /** Initialize a new RibDelta builder */
-    private Builder() {
+    private Builder(Function<R, Prefix> prefixExtractor) {
       _actions = new LinkedHashMap<>();
+      _prefixExtractor = prefixExtractor;
+    }
+
+    private Prefix getNetwork(R route) {
+      return _prefixExtractor.apply(route);
     }
 
     /**
@@ -111,7 +117,7 @@ public final class RibDelta<R extends AbstractRoute> {
      */
     public Builder<R> add(R route) {
       LinkedHashMap<R, RouteAdvertisement<R>> l =
-          _actions.computeIfAbsent(route.getNetwork(), p -> new LinkedHashMap<>(10, 1, true));
+          _actions.computeIfAbsent(getNetwork(route), p -> new LinkedHashMap<>(10, 1, true));
       l.put(route, new RouteAdvertisement<>(route));
       return this;
     }
@@ -124,7 +130,7 @@ public final class RibDelta<R extends AbstractRoute> {
     public Builder<R> add(Collection<? extends R> routes) {
       for (R route : routes) {
         LinkedHashMap<R, RouteAdvertisement<R>> l =
-            _actions.computeIfAbsent(route.getNetwork(), p -> new LinkedHashMap<>(10, 1, true));
+            _actions.computeIfAbsent(getNetwork(route), p -> new LinkedHashMap<>(10, 1, true));
         l.put(route, new RouteAdvertisement<>(route));
       }
       return this;
@@ -137,7 +143,7 @@ public final class RibDelta<R extends AbstractRoute> {
      */
     public Builder<R> remove(R route, Reason reason) {
       LinkedHashMap<R, RouteAdvertisement<R>> l =
-          _actions.computeIfAbsent(route.getNetwork(), p -> new LinkedHashMap<>(10, 1, true));
+          _actions.computeIfAbsent(getNetwork(route), p -> new LinkedHashMap<>(10, 1, true));
       l.put(route, RouteAdvertisement.<R>builder().setRoute(route).setReason(reason).build());
       return this;
     }
@@ -150,7 +156,7 @@ public final class RibDelta<R extends AbstractRoute> {
     public Builder<R> remove(Collection<R> routes, Reason reason) {
       for (R route : routes) {
         LinkedHashMap<R, RouteAdvertisement<R>> l =
-            _actions.computeIfAbsent(route.getNetwork(), p -> new LinkedHashMap<>(10, 1, true));
+            _actions.computeIfAbsent(getNetwork(route), p -> new LinkedHashMap<>(10, 1, true));
         l.put(route, RouteAdvertisement.<R>builder().setRoute(route).setReason(reason).build());
       }
       return this;
@@ -189,7 +195,7 @@ public final class RibDelta<R extends AbstractRoute> {
       for (RouteAdvertisement<T> a : delta.getActions()) {
         LinkedHashMap<R, RouteAdvertisement<R>> l =
             _actions.computeIfAbsent(
-                a.getRoute().getNetwork(), p -> new LinkedHashMap<>(10, 1, true));
+                getNetwork(a.getRoute()), p -> new LinkedHashMap<>(10, 1, true));
         l.put(
             a.getRoute(),
             RouteAdvertisement.<R>builder()
@@ -202,14 +208,14 @@ public final class RibDelta<R extends AbstractRoute> {
   }
 
   @Nonnull
-  public static <T extends AbstractRoute> Builder<T> builder() {
-    return new Builder<>();
+  public static <T> Builder<T> builder(Function<T, Prefix> prefixExtractor) {
+    return new Builder<>(prefixExtractor);
   }
 
   /** Return an empty RIB delta */
   @Nonnull
-  public static <T extends AbstractRoute> RibDelta<T> empty() {
-    return RibDelta.<T>builder().build();
+  public static <T> RibDelta<T> empty() {
+    return RibDelta.<T>builder(r -> Prefix.ZERO).build();
   }
 
   /**
@@ -223,12 +229,12 @@ public final class RibDelta<R extends AbstractRoute> {
    */
   @VisibleForTesting
   @Nonnull
-  public static <U extends AbstractRoute, T extends U> RibDelta<U> importRibDelta(
+  public static <U, T extends U> RibDelta<U> importRibDelta(
       @Nonnull AbstractRib<U> importingRib, @Nonnull RibDelta<T> delta) {
     if (delta.isEmpty()) {
-      return RibDelta.<U>builder().build();
+      return empty();
     }
-    Builder<U> builder = RibDelta.builder();
+    Builder<U> builder = RibDelta.builder(importingRib::getNetwork);
     delta
         .getActionMap()
         .forEach(

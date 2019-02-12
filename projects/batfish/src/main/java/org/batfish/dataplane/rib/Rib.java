@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Comparator;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.Prefix;
 
 /**
  * Represents a general RIB, capable of storing routes across different protocols. Uses
@@ -15,7 +16,7 @@ public class Rib extends AbstractRib<AbstractRoute> implements Serializable {
 
   /** Create a new empty RIB. */
   public Rib() {
-    super(null);
+    super(null, r -> r);
   }
 
   @Override
@@ -34,5 +35,10 @@ public class Rib extends AbstractRib<AbstractRoute> implements Serializable {
     } else {
       return RibDelta.empty();
     }
+  }
+
+  @Override
+  public Prefix getNetwork(AbstractRoute route) {
+    return route.getNetwork();
   }
 }
