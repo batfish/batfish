@@ -20,15 +20,13 @@ public final class CompletionMetadata implements Serializable {
 
   public static final class Builder {
 
-    private Set<String> _addressBooks;
-
-    private Set<String> _addressGroups;
-
     private Set<String> _filterNames;
 
     private Set<NodeInterfacePair> _interfaces;
 
     private Set<String> _ips;
+
+    private Set<String> _nodes;
 
     private Set<String> _prefixes;
 
@@ -41,26 +39,17 @@ public final class CompletionMetadata implements Serializable {
     private Builder() {}
 
     public @Nonnull CompletionMetadata build() {
-      return create(
-          _addressBooks,
-          _addressGroups,
+      return CompletionMetadata.create(
+          null,
+          null,
           _filterNames,
           _interfaces,
           _ips,
+          _nodes,
           _prefixes,
           _structureNames,
           _vrfs,
           _zones);
-    }
-
-    public @Nonnull Builder setAddressBooks(Set<String> addressBooks) {
-      _addressBooks = ImmutableSet.copyOf(addressBooks);
-      return this;
-    }
-
-    public @Nonnull Builder setAddressGroups(Set<String> addressGroups) {
-      _addressGroups = ImmutableSet.copyOf(addressGroups);
-      return this;
     }
 
     public @Nonnull Builder setFilterNames(Set<String> filterNames) {
@@ -75,6 +64,11 @@ public final class CompletionMetadata implements Serializable {
 
     public @Nonnull Builder setIps(Set<String> ips) {
       _ips = ImmutableSet.copyOf(ips);
+      return this;
+    }
+
+    public @Nonnull Builder setNodes(Set<String> nodes) {
+      _nodes = ImmutableSet.copyOf(nodes);
       return this;
     }
 
@@ -99,11 +93,18 @@ public final class CompletionMetadata implements Serializable {
     }
   }
 
-  private static final String PROP_ADDRESS_BOOKS = "addressBooks";
-  private static final String PROP_ADDRESS_GROUPS = "addressGroups";
+  /**
+   * Address books and groups do not belong here as they are network-wide. Leaving these properties
+   * in place to be able to de-serialize old data. Should be removed at some point.
+   */
+  @Deprecated private static final String PROP_ADDRESS_BOOKS = "addressBooks";
+
+  @Deprecated private static final String PROP_ADDRESS_GROUPS = "addressGroups";
+
   private static final String PROP_FILTER_NAMES = "filterNames";
   private static final String PROP_INTERFACES = "interfaces";
   private static final String PROP_IPS = "ips";
+  private static final String PROP_NODES = "nodes";
   private static final String PROP_PREFIXES = "prefixes";
   private static final String PROP_STRUCTURE_NAMES = "structureNames";
   private static final String PROP_VRFS = "vrfs";
@@ -111,15 +112,13 @@ public final class CompletionMetadata implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private final Set<String> _addressBooks;
-
-  private final Set<String> _addressGroups;
-
   private final Set<String> _filterNames;
 
   private final Set<NodeInterfacePair> _interfaces;
 
   private final Set<String> _ips;
+
+  private final Set<String> _nodes;
 
   private final Set<String> _prefixes;
 
@@ -142,16 +141,16 @@ public final class CompletionMetadata implements Serializable {
       @Nullable @JsonProperty(PROP_FILTER_NAMES) Set<String> filterNames,
       @Nullable @JsonProperty(PROP_INTERFACES) Set<NodeInterfacePair> interfaces,
       @Nullable @JsonProperty(PROP_IPS) Set<String> ips,
+      @Nullable @JsonProperty(PROP_NODES) Set<String> nodes,
       @Nullable @JsonProperty(PROP_PREFIXES) Set<String> prefixes,
       @Nullable @JsonProperty(PROP_STRUCTURE_NAMES) Set<String> structureNames,
       @Nullable @JsonProperty(PROP_VRFS) Set<String> vrfs,
       @Nullable @JsonProperty(PROP_ZONES) Set<String> zones) {
     return new CompletionMetadata(
-        firstNonNull(addressBooks, ImmutableSet.of()),
-        firstNonNull(addressGroups, ImmutableSet.of()),
         firstNonNull(filterNames, ImmutableSet.of()),
         firstNonNull(interfaces, ImmutableSet.of()),
         firstNonNull(ips, ImmutableSet.of()),
+        firstNonNull(nodes, ImmutableSet.of()),
         firstNonNull(prefixes, ImmutableSet.of()),
         firstNonNull(structureNames, ImmutableSet.of()),
         firstNonNull(vrfs, ImmutableSet.of()),
@@ -159,36 +158,22 @@ public final class CompletionMetadata implements Serializable {
   }
 
   public CompletionMetadata(
-      Set<String> addressBooks,
-      Set<String> addressGroups,
       Set<String> filterNames,
       Set<NodeInterfacePair> interfaces,
       Set<String> ips,
+      Set<String> nodes,
       Set<String> prefixes,
       Set<String> structureNames,
       Set<String> vrfs,
       Set<String> zones) {
-    _addressBooks = addressBooks;
-    _addressGroups = addressGroups;
     _filterNames = filterNames;
     _interfaces = interfaces;
     _ips = ips;
+    _nodes = nodes;
     _prefixes = prefixes;
     _structureNames = structureNames;
     _vrfs = vrfs;
     _zones = zones;
-  }
-
-  @JsonProperty(PROP_ADDRESS_BOOKS)
-  @Nonnull
-  public Set<String> getAddressBooks() {
-    return _addressBooks;
-  }
-
-  @JsonProperty(PROP_ADDRESS_GROUPS)
-  @Nonnull
-  public Set<String> getAddressGroups() {
-    return _addressGroups;
   }
 
   @JsonProperty(PROP_FILTER_NAMES)
@@ -207,6 +192,12 @@ public final class CompletionMetadata implements Serializable {
   @Nonnull
   public Set<String> getIps() {
     return _ips;
+  }
+
+  @JsonProperty(PROP_NODES)
+  @Nonnull
+  public Set<String> getNodes() {
+    return _nodes;
   }
 
   @JsonProperty(PROP_PREFIXES)
@@ -242,11 +233,10 @@ public final class CompletionMetadata implements Serializable {
       return false;
     }
     CompletionMetadata rhs = (CompletionMetadata) obj;
-    return _addressBooks.equals(rhs._addressBooks)
-        && _addressGroups.equals(rhs._addressGroups)
-        && _filterNames.equals(rhs._filterNames)
+    return _filterNames.equals(rhs._filterNames)
         && _interfaces.equals(rhs._interfaces)
         && _ips.equals(rhs._ips)
+        && _nodes.equals(rhs._nodes)
         && _prefixes.equals(rhs._prefixes)
         && _structureNames.equals(rhs._structureNames)
         && _vrfs.equals(rhs._vrfs)
@@ -256,25 +246,16 @@ public final class CompletionMetadata implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _addressBooks,
-        _addressGroups,
-        _filterNames,
-        _interfaces,
-        _ips,
-        _prefixes,
-        _structureNames,
-        _vrfs,
-        _zones);
+        _filterNames, _interfaces, _ips, _nodes, _prefixes, _structureNames, _vrfs, _zones);
   }
 
   @Override
   public String toString() {
     return toStringHelper(getClass())
-        .add(PROP_ADDRESS_BOOKS, _addressBooks)
-        .add(PROP_ADDRESS_GROUPS, _addressGroups)
         .add(PROP_FILTER_NAMES, _filterNames)
         .add(PROP_INTERFACES, _interfaces)
         .add(PROP_IPS, _ips)
+        .add(PROP_NODES, _nodes)
         .add(PROP_PREFIXES, _prefixes)
         .add(PROP_STRUCTURE_NAMES, _structureNames)
         .add(PROP_VRFS, _vrfs)

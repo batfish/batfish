@@ -7,15 +7,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.PropertySpecifier.PropertyDescriptor;
@@ -27,28 +23,6 @@ import org.junit.rules.ExpectedException;
 
 public class PropertySpecifierTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
-
-  @Test
-  public void baseAutoComplete() {
-    Set<String> properties =
-        ImmutableSet.of(
-            "abc", NodePropertySpecifier.NTP_SERVERS, NodePropertySpecifier.NTP_SOURCE_INTERFACE);
-
-    // null or empty string should yield all options
-    assertThat(
-        PropertySpecifier.baseAutoComplete(null, properties).stream()
-            .map(s -> s.getText())
-            .collect(Collectors.toList()),
-        equalTo(ImmutableList.builder().addAll(properties).build()));
-
-    // the capital P shouldn't matter and this should autoComplete to three entries
-    assertThat(
-        new ArrayList<>(PropertySpecifier.baseAutoComplete("ntP", properties)),
-        equalTo(
-            ImmutableList.of(
-                new AutocompleteSuggestion(NodePropertySpecifier.NTP_SERVERS, false),
-                new AutocompleteSuggestion(NodePropertySpecifier.NTP_SOURCE_INTERFACE, false))));
-  }
 
   /** Map should be converted to set of strings when the schema is string list */
   @Test
