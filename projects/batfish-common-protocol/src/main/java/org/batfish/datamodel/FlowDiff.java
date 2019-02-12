@@ -5,6 +5,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Comparator.comparing;
 import static org.batfish.datamodel.Flow.PROP_DST_IP;
 import static org.batfish.datamodel.Flow.PROP_SRC_IP;
+import static org.batfish.datamodel.Flow.PROP_DST_PORT;
+import static org.batfish.datamodel.Flow.PROP_SRC_PORT;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -19,6 +21,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.PortField;
 
 /** A representation of one difference between two flows. */
 @JsonTypeName("FlowDiff")
@@ -32,7 +35,7 @@ public final class FlowDiff implements Comparable<FlowDiff> {
    * We require the field names to match the flow field names.
    */
   private static final Set<String> FLOW_DIFF_FIELD_NAMES =
-      ImmutableSet.of(PROP_DST_IP, PROP_SRC_IP);
+      ImmutableSet.of(PROP_DST_IP, PROP_SRC_IP, PROP_DST_PORT, PROP_SRC_PORT);
 
   private final String _fieldName;
   private final String _oldValue;
@@ -72,6 +75,17 @@ public final class FlowDiff implements Comparable<FlowDiff> {
     return new FlowDiff(fieldName, oldValue, newValue);
   }
 
+  private static String portFieldName(PortField portField) {
+    switch (portField) {
+      case DESTINATION:
+        return PROP_DST_PORT;
+      case SOURCE:
+        return PROP_SRC_PORT;
+      default:
+        throw new BatfishException("Unknown PortField: " + portField);
+    }
+  }
+
   private static String ipFieldName(IpField ipField) {
     switch (ipField) {
       case DESTINATION:
@@ -86,6 +100,12 @@ public final class FlowDiff implements Comparable<FlowDiff> {
   /** Create a {@link FlowDiff} for a specific changed IpField. */
   public static FlowDiff flowDiff(IpField ipField, Ip oldValue, Ip newValue) {
     return new FlowDiff(ipFieldName(ipField), oldValue.toString(), newValue.toString());
+  }
+
+  /** Create a {@link FlowDiff} for a specific changed PortField. */
+  public static FlowDiff flowDiff(PortField portField, int oldValue, int newValue) {
+    return new FlowDiff(
+        portFieldName(portField), Integer.toString(oldValue), Integer.toString(newValue));
   }
 
   @JsonProperty(PROP_FIELD_NAME)
@@ -119,11 +139,27 @@ public final class FlowDiff implements Comparable<FlowDiff> {
             .toBuilder()
             .setDstIp(flow2.getDstIp())
             .setSrcIp(flow2.getSrcIp())
+            .setDstPort(flow2.getDstPort())
+            .setSrcPort(flow2.getSrcPort())
             .build()
             .equals(flow2),
-        "flowDiff only supports differences of src or dst Ip");
+        "flowDiff only supports differences of src/dst Ip and src/dst Port");
 
     ImmutableSortedSet.Builder<FlowDiff> diffs = ImmutableSortedSet.naturalOrder();
+    if (flow1.getDstPort() != flow2.getDstPort()) {
+      diffs.add(
+          new FlowDiff(
+              PROP_DST_PORT,
+              Integer.toString(flow1.getDstPort()),
+              Integer.toString(flow2.getDstPort())));
+    }
+    if (flow1.getSrcPort() != flow2.getSrcPort()) {
+      diffs.add(
+          new FlowDiff(
+              PROP_SRC_PORT,
+              Integer.toString(flow1.getSrcPort()),
+              Integer.toString(flow2.getSrcPort())));
+    }
     if (!flow1.getDstIp().equals(flow2.getDstIp())) {
       diffs.add(
           new FlowDiff(PROP_DST_IP, flow1.getDstIp().toString(), flow2.getDstIp().toString()));

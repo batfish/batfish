@@ -56,6 +56,19 @@ public class TransformationEvaluator {
       }
     }
 
+    private void setPort(PortField field, int port) {
+      switch (field) {
+        case DESTINATION:
+          _flowBuilder.setDstPort(port);
+          break;
+        case SOURCE:
+          _flowBuilder.setSrcPort(port);
+          break;
+        default:
+          throw new IllegalArgumentException("unknown PortField " + field);
+      }
+    }
+
     private Ip get(IpField field) {
       switch (field) {
         case DESTINATION:
@@ -64,6 +77,17 @@ public class TransformationEvaluator {
           return _flowBuilder.getSrcIp();
         default:
           throw new IllegalArgumentException("unknown IpField " + field);
+      }
+    }
+
+    private int getPort(PortField field) {
+      switch (field) {
+        case DESTINATION:
+          return _flowBuilder.getDstPort();
+        case SOURCE:
+          return _flowBuilder.getSrcPort();
+        default:
+          throw new IllegalArgumentException("unknown PortField " + field);
       }
     }
 
@@ -96,6 +120,18 @@ public class TransformationEvaluator {
       }
     }
 
+    private Boolean setPort(
+        TransformationType type, PortField portField, int oldValue, int newValue) {
+      if (oldValue == newValue) {
+        getFlowDiffs(type);
+        return false;
+      } else {
+        setPort(portField, newValue);
+        getFlowDiffs(type).add(flowDiff(portField, oldValue, newValue));
+        return true;
+      }
+    }
+
     @Override
     public Boolean visitAssignIpAddressFromPool(AssignIpAddressFromPool step) {
       return set(step.getType(), step.getIpField(), get(step.getIpField()), step.getPoolStart());
@@ -119,6 +155,12 @@ public class TransformationEvaluator {
       long offset = oldValue.asLong() - currentSubnetPrefix.getStartIp().asLong();
       Ip newValue = Ip.create(targetSubnet.getStartIp().asLong() + offset);
       return set(step.getType(), field, oldValue, newValue);
+    }
+
+    @Override
+    public Boolean visitAssignPortFromPool(AssignPortFromPool step) {
+
+      return null;
     }
   }
 

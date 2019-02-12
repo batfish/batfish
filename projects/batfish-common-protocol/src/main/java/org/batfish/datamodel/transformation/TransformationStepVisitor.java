@@ -11,4 +11,6 @@ public interface TransformationStepVisitor<T> {
   T visitNoop(Noop noop);
 
   T visitShiftIpAddressIntoSubnet(ShiftIpAddressIntoSubnet shiftIpAddressIntoSubnet);
+
+  T visitAssignPortFromPool(AssignPortFromPool assignPortFromPool);
 }
