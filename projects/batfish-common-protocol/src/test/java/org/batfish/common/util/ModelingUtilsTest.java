@@ -46,6 +46,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -401,5 +402,68 @@ public class ModelingUtilsTest {
                             Statements.ExitAccept.toStaticStatement()))))
             .build();
     assertThat(defaultRoutingPolicy, equalTo(expectedRoutingPolicy));
+  }
+
+  @Test
+  public void testInterfaceNamesIsp() {
+    NetworkFactory nf = new NetworkFactory();
+
+    Configuration.Builder cb = nf.configurationBuilder();
+    Configuration configuration1 =
+        cb.setHostname("conf1").setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration1).build();
+    nf.interfaceBuilder()
+        .setName("interface1")
+        .setOwner(configuration1)
+        .setAddress(new InterfaceAddress(Ip.parse("1.1.1.1"), 24))
+        .build();
+    Vrf vrfConf1 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration1).build();
+    BgpProcess bgpProcess1 = nf.bgpProcessBuilder().setVrf(vrfConf1).build();
+    BgpActivePeerConfig.builder()
+        .setBgpProcess(bgpProcess1)
+        .setPeerAddress(Ip.parse("1.1.1.2"))
+        .setRemoteAs(1234L)
+        .setLocalIp(Ip.parse("1.1.1.1"))
+        .setLocalAs(1L)
+        .build();
+
+    Configuration configuration2 =
+        cb.setHostname("conf2").setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration2).build();
+    nf.interfaceBuilder()
+        .setName("interface2")
+        .setOwner(configuration2)
+        .setAddress(new InterfaceAddress(Ip.parse("2.2.2.2"), 24))
+        .build();
+    Vrf vrfConf2 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration2).build();
+    BgpProcess bgpProcess2 = nf.bgpProcessBuilder().setVrf(vrfConf2).build();
+    BgpActivePeerConfig.builder()
+        .setBgpProcess(bgpProcess2)
+        .setPeerAddress(Ip.parse("2.2.2.3"))
+        .setRemoteAs(1234L)
+        .setLocalIp(Ip.parse("2.2.2.2"))
+        .setLocalAs(1L)
+        .build();
+
+    Map<String, Configuration> internetAndIsps =
+        ModelingUtils.getInternetAndIspNodes(
+            ImmutableMap.of(
+                configuration1.getHostname(),
+                configuration1,
+                configuration2.getHostname(),
+                configuration2),
+            ImmutableList.of(
+                new NodeInterfacePair("conf1", "interface1"),
+                new NodeInterfacePair("conf2", "interface2")),
+            ImmutableList.of(),
+            ImmutableList.of(),
+            new BatfishLogger("output", false));
+
+    assertThat(internetAndIsps, hasKey("Isp_1234"));
+
+    Configuration isp = internetAndIsps.get("Isp_1234");
+    // two interfaces for peering with the two configurations and one interface for peering with
+    // internet
+    assertThat(isp.getAllInterfaces().entrySet(), hasSize(3));
   }
 }
