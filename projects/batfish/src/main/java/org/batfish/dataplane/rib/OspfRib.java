@@ -1,8 +1,8 @@
 package org.batfish.dataplane.rib;
 
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.OspfRoute;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 
 public class OspfRib extends AbstractRib<OspfRoute> {
@@ -10,7 +10,7 @@ public class OspfRib extends AbstractRib<OspfRoute> {
   private static final long serialVersionUID = 1L;
 
   public OspfRib() {
-    super(null, r -> r);
+    super(null);
   }
 
   @Override
@@ -37,7 +37,7 @@ public class OspfRib extends AbstractRib<OspfRoute> {
   }
 
   @Override
-  public Prefix getNetwork(OspfRoute route) {
-    return route.getNetwork();
+  public AbstractRoute getAbstractRoute(OspfRoute route) {
+    return route;
   }
 }

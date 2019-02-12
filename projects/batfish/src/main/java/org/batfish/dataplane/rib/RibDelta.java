@@ -98,67 +98,35 @@ public final class RibDelta<R> {
   public static final class Builder<R> {
 
     private Map<Prefix, LinkedHashMap<R, RouteAdvertisement<R>>> _actions;
-    @Nonnull private final Function<R, Prefix> _prefixExtractor;
 
     /** Initialize a new RibDelta builder */
-    private Builder(Function<R, Prefix> prefixExtractor) {
+    private Builder() {
       _actions = new LinkedHashMap<>();
-      _prefixExtractor = prefixExtractor;
-    }
-
-    private Prefix getNetwork(R route) {
-      return _prefixExtractor.apply(route);
     }
 
     /**
      * Indicate that a route was added to the RIB
      *
-     * @param route that was added
+     * @param prefix {@link Prefix} representing destination network of route to add
+     * @param route Route to add
      */
-    public Builder<R> add(R route) {
+    public Builder<R> add(Prefix prefix, R route) {
       LinkedHashMap<R, RouteAdvertisement<R>> l =
-          _actions.computeIfAbsent(getNetwork(route), p -> new LinkedHashMap<>(10, 1, true));
+          _actions.computeIfAbsent(prefix, p -> new LinkedHashMap<>(10, 1, true));
       l.put(route, new RouteAdvertisement<>(route));
-      return this;
-    }
-
-    /**
-     * Indicate that multiple routes have been added to the RIB
-     *
-     * @param routes a collection of routes
-     */
-    public Builder<R> add(Collection<? extends R> routes) {
-      for (R route : routes) {
-        LinkedHashMap<R, RouteAdvertisement<R>> l =
-            _actions.computeIfAbsent(getNetwork(route), p -> new LinkedHashMap<>(10, 1, true));
-        l.put(route, new RouteAdvertisement<>(route));
-      }
       return this;
     }
 
     /**
      * Indicate that a route was removed from the RIB
      *
+     * @param prefix {@link Prefix} representing destination network of route to remove
      * @param route that was removed
      */
-    public Builder<R> remove(R route, Reason reason) {
+    public Builder<R> remove(Prefix prefix, R route, Reason reason) {
       LinkedHashMap<R, RouteAdvertisement<R>> l =
-          _actions.computeIfAbsent(getNetwork(route), p -> new LinkedHashMap<>(10, 1, true));
+          _actions.computeIfAbsent(prefix, p -> new LinkedHashMap<>(10, 1, true));
       l.put(route, RouteAdvertisement.<R>builder().setRoute(route).setReason(reason).build());
-      return this;
-    }
-
-    /**
-     * Indicate that multiple routes were removed from the RIB
-     *
-     * @param routes that were removed
-     */
-    public Builder<R> remove(Collection<R> routes, Reason reason) {
-      for (R route : routes) {
-        LinkedHashMap<R, RouteAdvertisement<R>> l =
-            _actions.computeIfAbsent(getNetwork(route), p -> new LinkedHashMap<>(10, 1, true));
-        l.put(route, RouteAdvertisement.<R>builder().setRoute(route).setReason(reason).build());
-      }
       return this;
     }
 
@@ -181,21 +149,27 @@ public final class RibDelta<R> {
                               .collect(ImmutableList.toImmutableList()))));
     }
 
-    /** Process all added and removed routes from a collection of deltas */
-    public Builder<R> from(Collection<RibDelta<R>> deltas) {
-      for (RibDelta<R> d : deltas) {
-        from(d);
-      }
+    /**
+     * Process all added and removed routes from a collection of deltas
+     *
+     * @param prefixExtractor Function to extract destination network from routes of type {@link R}
+     */
+    public Builder<R> from(Collection<RibDelta<R>> deltas, Function<R, Prefix> prefixExtractor) {
+      deltas.forEach(d -> from(d, prefixExtractor));
       return this;
     }
 
-    /** Process all added and removed routes from a given delta */
+    /**
+     * Process all added and removed routes from a given delta
+     *
+     * @param prefixExtractor Function to extract destination network from routes of type {@link R}
+     */
     @Nonnull
-    public <T extends R> Builder<R> from(@Nonnull RibDelta<T> delta) {
+    public <T extends R> Builder<R> from(RibDelta<T> delta, Function<R, Prefix> prefixExtractor) {
       for (RouteAdvertisement<T> a : delta.getActions()) {
         LinkedHashMap<R, RouteAdvertisement<R>> l =
             _actions.computeIfAbsent(
-                getNetwork(a.getRoute()), p -> new LinkedHashMap<>(10, 1, true));
+                prefixExtractor.apply(a.getRoute()), p -> new LinkedHashMap<>(10, 1, true));
         l.put(
             a.getRoute(),
             RouteAdvertisement.<R>builder()
@@ -208,14 +182,14 @@ public final class RibDelta<R> {
   }
 
   @Nonnull
-  public static <T> Builder<T> builder(Function<T, Prefix> prefixExtractor) {
-    return new Builder<>(prefixExtractor);
+  public static <T> Builder<T> builder() {
+    return new Builder<>();
   }
 
   /** Return an empty RIB delta */
   @Nonnull
   public static <T> RibDelta<T> empty() {
-    return RibDelta.<T>builder(r -> Prefix.ZERO).build();
+    return RibDelta.<T>builder().build();
   }
 
   /**
@@ -234,7 +208,7 @@ public final class RibDelta<R> {
     if (delta.isEmpty()) {
       return empty();
     }
-    Builder<U> builder = RibDelta.builder(importingRib::getNetwork);
+    Builder<U> builder = RibDelta.builder();
     delta
         .getActionMap()
         .forEach(
@@ -248,10 +222,12 @@ public final class RibDelta<R> {
                             builder.from(
                                 importingRib.removeRouteGetDelta(
                                     tRouteAdvertisement.getRoute(),
-                                    tRouteAdvertisement.getReason()));
+                                    tRouteAdvertisement.getReason()),
+                                importingRib::getNetwork);
                           } else {
                             builder.from(
-                                importingRib.mergeRouteGetDelta(tRouteAdvertisement.getRoute()));
+                                importingRib.mergeRouteGetDelta(tRouteAdvertisement.getRoute()),
+                                importingRib::getNetwork);
                           }
                         }));
     return builder.build();

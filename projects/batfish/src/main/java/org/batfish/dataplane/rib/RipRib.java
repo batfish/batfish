@@ -1,7 +1,7 @@
 package org.batfish.dataplane.rib;
 
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.RipRoute;
 import org.batfish.datamodel.RoutingProtocol;
 
@@ -15,7 +15,7 @@ public class RipRib extends AbstractRib<RipRoute> {
   private static final long serialVersionUID = 1L;
 
   public RipRib() {
-    super(null, r -> r);
+    super(null);
   }
 
   @Override
@@ -36,7 +36,7 @@ public class RipRib extends AbstractRib<RipRoute> {
   }
 
   @Override
-  public Prefix getNetwork(RipRoute route) {
-    return route.getNetwork();
+  public AbstractRoute getAbstractRoute(RipRoute route) {
+    return route;
   }
 }

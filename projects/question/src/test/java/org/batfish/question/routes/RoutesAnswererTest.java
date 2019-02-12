@@ -486,6 +486,11 @@ public class RoutesAnswererTest {
     }
 
     @Override
+    public AbstractRoute getAbstractRoute(R route) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Map<Prefix, IpSpace> getMatchingIps() {
       throw new UnsupportedOperationException();
     }

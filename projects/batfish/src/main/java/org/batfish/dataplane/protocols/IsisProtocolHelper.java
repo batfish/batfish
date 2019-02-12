@@ -2,7 +2,6 @@ package org.batfish.dataplane.protocols;
 
 import java.util.Optional;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.isis.IsisLevel;
@@ -37,16 +36,16 @@ public class IsisProtocolHelper {
   @Nonnull
   public static RibDelta<IsisRoute> setOverloadOnAllRoutes(@Nonnull RibDelta<IsisRoute> delta) {
 
-    RibDelta.Builder<IsisRoute> deltaWithOverloadTrue = RibDelta.builder(AbstractRoute::getNetwork);
+    RibDelta.Builder<IsisRoute> deltaWithOverloadTrue = RibDelta.builder();
     delta
         .getActions()
         .forEach(
             ra -> {
               IsisRoute newRoute = ra.getRoute().toBuilder().setOverload(true).build();
               if (ra.isWithdrawn()) {
-                deltaWithOverloadTrue.remove(newRoute, ra.getReason());
+                deltaWithOverloadTrue.remove(newRoute.getNetwork(), newRoute, ra.getReason());
               } else {
-                deltaWithOverloadTrue.add(newRoute);
+                deltaWithOverloadTrue.add(newRoute.getNetwork(), newRoute);
               }
             });
     return deltaWithOverloadTrue.build();

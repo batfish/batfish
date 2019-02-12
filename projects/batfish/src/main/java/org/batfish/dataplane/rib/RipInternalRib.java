@@ -1,6 +1,6 @@
 package org.batfish.dataplane.rib;
 
-import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.RipInternalRoute;
 
 /** Rib that stores internal RIP routes */
@@ -9,7 +9,7 @@ public class RipInternalRib extends AbstractRib<RipInternalRoute> {
   private static final long serialVersionUID = 1L;
 
   public RipInternalRib() {
-    super(null, r -> r);
+    super(null);
   }
 
   @Override
@@ -19,7 +19,7 @@ public class RipInternalRib extends AbstractRib<RipInternalRoute> {
   }
 
   @Override
-  public Prefix getNetwork(RipInternalRoute route) {
-    return route.getNetwork();
+  public AbstractRoute getAbstractRoute(RipInternalRoute route) {
+    return route;
   }
 }

@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.Prefix;
 
@@ -13,7 +14,7 @@ public class IsisLevelRib extends AbstractRib<IsisRoute> {
   private static final long serialVersionUID = 1L;
 
   public IsisLevelRib(@Nullable Map<Prefix, SortedSet<IsisRoute>> backupRoutes) {
-    super(backupRoutes, r -> r);
+    super(backupRoutes);
   }
 
   @Override
@@ -22,7 +23,7 @@ public class IsisLevelRib extends AbstractRib<IsisRoute> {
   }
 
   @Override
-  public Prefix getNetwork(IsisRoute route) {
-    return route.getNetwork();
+  public AbstractRoute getAbstractRoute(IsisRoute route) {
+    return route;
   }
 }

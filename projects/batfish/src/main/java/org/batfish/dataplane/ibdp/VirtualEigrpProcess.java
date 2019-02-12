@@ -198,14 +198,14 @@ class VirtualEigrpProcess {
   void initExports(Map<String, Node> allNodes, Set<AbstractRoute> mainRoutes) {
 
     // For each route in the previous RIB, compute an export route and add it
-    RibDelta.Builder<EigrpExternalRoute> builder = RibDelta.builder(AbstractRoute::getNetwork);
+    RibDelta.Builder<EigrpExternalRoute> builder = RibDelta.builder();
 
     for (AbstractRoute potentialExport : mainRoutes) {
       EigrpExternalRoute outputRoute = computeEigrpExportRoute(potentialExport);
       if (outputRoute == null) {
         continue; // no need to export
       }
-      builder.from(_externalRib.mergeRouteGetDelta(outputRoute));
+      builder.from(_externalRib.mergeRouteGetDelta(outputRoute), AbstractRoute::getNetwork);
     }
 
     queueOutgoingExternalRoutes(allNodes, builder.build());
@@ -234,7 +234,7 @@ class VirtualEigrpProcess {
   @Nonnull
   RibDelta<EigrpExternalRoute> propagateExternalRoutes(NetworkConfigurations nc) {
 
-    RibDelta.Builder<EigrpExternalRoute> deltaBuilder = RibDelta.builder(AbstractRoute::getNetwork);
+    RibDelta.Builder<EigrpExternalRoute> deltaBuilder = RibDelta.builder();
     EigrpExternalRoute.Builder routeBuilder = EigrpExternalRoute.builder();
     routeBuilder.setAdmin(_defaultExternalAdminCost).setProcessAsn(_asn);
 
@@ -266,10 +266,11 @@ class VirtualEigrpProcess {
             EigrpExternalRoute newRoute = routeBuilder.build();
 
             if (routeAdvert.isWithdrawn()) {
-              deltaBuilder.remove(newRoute, Reason.WITHDRAW);
+              deltaBuilder.remove(newRoute.getNetwork(), newRoute, Reason.WITHDRAW);
               _externalRib.removeBackupRoute(newRoute);
             } else {
-              deltaBuilder.from(_externalStagingRib.mergeRouteGetDelta(newRoute));
+              deltaBuilder.from(
+                  _externalStagingRib.mergeRouteGetDelta(newRoute), AbstractRoute::getNetwork);
               _externalRib.addBackupRoute(newRoute);
             }
           }
@@ -395,9 +396,10 @@ class VirtualEigrpProcess {
       Rib mainRib) {
     RibDelta<EigrpExternalRoute> ribDelta = importRibDelta(_externalRib, delta);
     queueOutgoingExternalRoutes(allNodes, delta);
-    RibDelta.Builder<EigrpRoute> eigrpDeltaBuilder = RibDelta.builder(AbstractRoute::getNetwork);
-    eigrpDeltaBuilder.from(importRibDelta(_rib, ribDelta));
-    mainRibRouteDeltaBuilder.from(importRibDelta(mainRib, eigrpDeltaBuilder.build()));
+    RibDelta.Builder<EigrpRoute> eigrpDeltaBuilder = RibDelta.builder();
+    eigrpDeltaBuilder.from(importRibDelta(_rib, ribDelta), AbstractRoute::getNetwork);
+    mainRibRouteDeltaBuilder.from(
+        importRibDelta(mainRib, eigrpDeltaBuilder.build()), AbstractRoute::getNetwork);
     return !ribDelta.isEmpty();
   }
 

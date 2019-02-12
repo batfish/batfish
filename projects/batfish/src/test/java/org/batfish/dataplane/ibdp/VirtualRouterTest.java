@@ -506,7 +506,7 @@ public class VirtualRouterTest {
     VirtualRouter.queueDelta(q, RibDelta.empty());
     assertThat(q, empty());
 
-    RibDelta<AbstractRoute> delta = RibDelta.builder(AbstractRoute::getNetwork).build();
+    RibDelta<AbstractRoute> delta = RibDelta.empty();
     VirtualRouter.queueDelta(q, delta);
     assertThat(q, empty());
 
@@ -529,14 +529,15 @@ public class VirtualRouterTest {
             .setMetric(0L)
             .setTag(1)
             .build();
-    RibDelta.Builder<AbstractRoute> builder = RibDelta.builder(AbstractRoute::getNetwork).add(sr1);
+    RibDelta.Builder<AbstractRoute> builder =
+        RibDelta.<AbstractRoute>builder().add(sr1.getNetwork(), sr1);
 
     // Add one route
     VirtualRouter.queueDelta(q, builder.build());
     assertThat(q, hasSize(1));
 
     // Repeats are allowed; So existing route + 1 add + 1 remove = 3 total
-    builder.remove(sr2, Reason.WITHDRAW);
+    builder.remove(sr2.getNetwork(), sr2, Reason.WITHDRAW);
     VirtualRouter.queueDelta(q, builder.build());
     assertThat(q, hasSize(3));
   }
@@ -563,10 +564,10 @@ public class VirtualRouterTest {
             .setMetric(0L)
             .setTag(1)
             .build();
-    RibDelta.Builder<AbstractRoute> builder = RibDelta.builder(AbstractRoute::getNetwork);
+    RibDelta.Builder<AbstractRoute> builder = RibDelta.builder();
 
     // Test queueing empty deltas
-    builder.add(sr1).remove(sr2, Reason.WITHDRAW);
+    builder.add(sr1.getNetwork(), sr1).remove(sr2.getNetwork(), sr2, Reason.WITHDRAW);
     VirtualRouter.queueDelta(q, builder.build());
 
     // Check queuing order.

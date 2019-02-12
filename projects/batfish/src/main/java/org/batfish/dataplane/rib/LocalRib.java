@@ -1,14 +1,14 @@
 package org.batfish.dataplane.rib;
 
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.LocalRoute;
-import org.batfish.datamodel.Prefix;
 
 public class LocalRib extends AbstractRib<LocalRoute> {
 
   private static final long serialVersionUID = 1L;
 
   public LocalRib() {
-    super(null, r -> r);
+    super(null);
   }
 
   @Override
@@ -17,7 +17,7 @@ public class LocalRib extends AbstractRib<LocalRoute> {
   }
 
   @Override
-  public Prefix getNetwork(LocalRoute route) {
-    return route.getNetwork();
+  public AbstractRoute getAbstractRoute(LocalRoute route) {
+    return route;
   }
 }

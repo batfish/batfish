@@ -2,8 +2,8 @@ package org.batfish.dataplane.rib;
 
 import java.util.Comparator;
 import java.util.TreeMap;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.EigrpExternalRoute;
-import org.batfish.datamodel.Prefix;
 
 /** Rib that stores external EIGRP routes */
 public class EigrpExternalRib extends AbstractRib<EigrpExternalRoute> {
@@ -11,7 +11,7 @@ public class EigrpExternalRib extends AbstractRib<EigrpExternalRoute> {
   private static final long serialVersionUID = 1L;
 
   public EigrpExternalRib() {
-    super(new TreeMap<>(), r -> r);
+    super(new TreeMap<>());
   }
 
   @Override
@@ -22,7 +22,7 @@ public class EigrpExternalRib extends AbstractRib<EigrpExternalRoute> {
   }
 
   @Override
-  public Prefix getNetwork(EigrpExternalRoute route) {
-    return route.getNetwork();
+  public AbstractRoute getAbstractRoute(EigrpExternalRoute route) {
+    return route;
   }
 }

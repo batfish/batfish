@@ -17,13 +17,8 @@ public interface GenericRib<R> extends Serializable {
    */
   int comparePreference(R lhs, R rhs);
 
-  /**
-   * Returns the destination network of the given route.
-   *
-   * @param route Route object whose network to extract
-   * @return The network of the given route object
-   */
-  Prefix getNetwork(R route);
+  /** Returns the {@link AbstractRoute} contained in a route object of type {@link R}. */
+  AbstractRoute getAbstractRoute(R route);
 
   /**
    * Returns a mapping from prefixes of forwarding routes in the RIB to the IPs for which that

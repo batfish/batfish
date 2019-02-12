@@ -1,6 +1,6 @@
 package org.batfish.dataplane.rib;
 
-import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.StaticRoute;
 
 public class StaticRib extends AbstractRib<StaticRoute> {
@@ -8,7 +8,7 @@ public class StaticRib extends AbstractRib<StaticRoute> {
   private static final long serialVersionUID = 1L;
 
   public StaticRib() {
-    super(null, r -> r);
+    super(null);
   }
 
   @Override
@@ -18,7 +18,7 @@ public class StaticRib extends AbstractRib<StaticRoute> {
   }
 
   @Override
-  public Prefix getNetwork(StaticRoute route) {
-    return route.getNetwork();
+  public AbstractRoute getAbstractRoute(StaticRoute route) {
+    return route;
   }
 }

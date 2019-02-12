@@ -3,8 +3,8 @@ package org.batfish.dataplane.rib;
 import java.util.Comparator;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.IsisRoute;
-import org.batfish.datamodel.Prefix;
 
 /** Rib for storing {@link IsisRoute}s */
 public class IsisRib extends AbstractRib<IsisRoute> {
@@ -33,7 +33,7 @@ public class IsisRib extends AbstractRib<IsisRoute> {
   private final boolean _l1Only;
 
   public IsisRib(boolean l1Only) {
-    super(null, r -> r);
+    super(null);
     _l1Only = l1Only;
   }
 
@@ -52,7 +52,7 @@ public class IsisRib extends AbstractRib<IsisRoute> {
   }
 
   @Override
-  public Prefix getNetwork(IsisRoute route) {
-    return route.getNetwork();
+  public AbstractRoute getAbstractRoute(IsisRoute route) {
+    return route;
   }
 }

@@ -28,7 +28,7 @@ public class RibDeltaTest {
 
   @Before
   public void setupNewBuilder() {
-    _builder = RibDelta.builder(AbstractRoute::getNetwork);
+    _builder = RibDelta.builder();
   }
 
   /** Check that empty {@link Builder} produces a null delta */
@@ -40,45 +40,26 @@ public class RibDeltaTest {
 
   @Test
   public void testEquals() {
+    Prefix p1 = Prefix.parse("1.1.1.0/24");
+    Prefix p2 = Prefix.parse("2.2.2.0/24");
     StaticRoute sr1 =
-        StaticRoute.builder()
-            .setNetwork(Prefix.parse("1.1.1.0/24"))
-            .setAdmin(1)
-            .setNextHopIp(Ip.parse("2.2.2.2"))
-            .build();
+        StaticRoute.builder().setNetwork(p1).setAdmin(1).setNextHopIp(Ip.parse("2.2.2.2")).build();
     StaticRoute sr2 =
-        StaticRoute.builder()
-            .setNetwork(Prefix.parse("2.2.2.0/24"))
-            .setAdmin(1)
-            .setNextHopIp(Ip.parse("2.2.2.2"))
-            .build();
+        StaticRoute.builder().setNetwork(p2).setAdmin(1).setNextHopIp(Ip.parse("2.2.2.2")).build();
     StaticRoute sr3 =
-        StaticRoute.builder()
-            .setNetwork(Prefix.parse("2.2.2.0/24"))
-            .setAdmin(1)
-            .setNextHopIp(Ip.parse("3.3.3.3"))
-            .build();
+        StaticRoute.builder().setNetwork(p2).setAdmin(1).setNextHopIp(Ip.parse("3.3.3.3")).build();
     new EqualsTester()
+        .addEqualityGroup(RibDelta.builder().build(), RibDelta.builder().build())
         .addEqualityGroup(
-            RibDelta.builder(AbstractRoute::getNetwork).build(),
-            RibDelta.builder(AbstractRoute::getNetwork).build())
-        .addEqualityGroup(
-            RibDelta.builder(AbstractRoute::getNetwork).add(sr1).build(),
-            RibDelta.<StaticRoute>builder(AbstractRoute::getNetwork).add(sr1).build())
-        .addEqualityGroup(
-            RibDelta.builder(AbstractRoute::getNetwork).remove(sr1, Reason.WITHDRAW).build())
-        .addEqualityGroup(
-            RibDelta.builder(AbstractRoute::getNetwork).remove(sr1, Reason.REPLACE).build())
-        .addEqualityGroup(RibDelta.builder(AbstractRoute::getNetwork).add(sr2))
-        .addEqualityGroup(RibDelta.builder(AbstractRoute::getNetwork).add(sr3))
-        .addEqualityGroup(
-            RibDelta.builder(AbstractRoute::getNetwork).remove(sr2, Reason.WITHDRAW).build())
-        .addEqualityGroup(RibDelta.builder(AbstractRoute::getNetwork).add(sr1).add(sr2).build())
-        .addEqualityGroup(
-            RibDelta.builder(AbstractRoute::getNetwork)
-                .add(sr1)
-                .remove(sr2, Reason.WITHDRAW)
-                .build())
+            RibDelta.builder().add(p1, sr1).build(),
+            RibDelta.<StaticRoute>builder().add(p1, sr1).build())
+        .addEqualityGroup(RibDelta.builder().remove(p1, sr1, Reason.WITHDRAW).build())
+        .addEqualityGroup(RibDelta.builder().remove(p1, sr1, Reason.REPLACE).build())
+        .addEqualityGroup(RibDelta.builder().add(p2, sr2))
+        .addEqualityGroup(RibDelta.builder().add(p2, sr3))
+        .addEqualityGroup(RibDelta.builder().remove(p2, sr2, Reason.WITHDRAW).build())
+        .addEqualityGroup(RibDelta.builder().add(p1, sr1).add(p2, sr2).build())
+        .addEqualityGroup(RibDelta.builder().add(p1, sr1).remove(p2, sr2, Reason.WITHDRAW).build())
         .addEqualityGroup(new Object())
         .testEquals();
   }
@@ -114,15 +95,15 @@ public class RibDeltaTest {
             .setMetric(0L)
             .setTag(1)
             .build();
-    _builder.add(route1);
-    _builder.add(route2);
+    _builder.add(route1.getNetwork(), route1);
+    _builder.add(route2.getNetwork(), route2);
 
     // Ensure routes are added in order
     RibDelta<AbstractRoute> delta = _builder.build();
     assertThat(delta.getRoutes(), contains(route1, route2));
 
     // Test that re-adding a route does not change resulting set
-    _builder.add(route3);
+    _builder.add(route3.getNetwork(), route3);
     delta = _builder.build();
     assertThat(delta.getRoutes(), contains(route1, route2));
   }
@@ -158,15 +139,15 @@ public class RibDeltaTest {
             .setMetric(0L)
             .setTag(1)
             .build();
-    _builder.remove(route1, Reason.WITHDRAW);
-    _builder.remove(route2, Reason.WITHDRAW);
+    _builder.remove(route1.getNetwork(), route1, Reason.WITHDRAW);
+    _builder.remove(route2.getNetwork(), route2, Reason.WITHDRAW);
 
     // Ensure routes are added in order
     RibDelta<AbstractRoute> delta = _builder.build();
     assertThat(delta.getRoutes(), contains(route1, route2));
 
     // Test that re-removing a route does not change resulting set
-    _builder.remove(route3, Reason.WITHDRAW);
+    _builder.remove(route3.getNetwork(), route3, Reason.WITHDRAW);
     delta = _builder.build();
     assertThat(delta.getRoutes(), contains(route1, route2));
   }
@@ -194,9 +175,9 @@ public class RibDeltaTest {
     routeBuilder.setLocalPreference(oldGoodRoute.getLocalPreference() + 1);
     BgpRoute newGoodRoute = routeBuilder.build();
 
-    RibDelta.Builder<BgpRoute> builder = RibDelta.builder(AbstractRoute::getNetwork);
-    builder.from(rib.mergeRouteGetDelta(oldGoodRoute));
-    builder.from(rib.mergeRouteGetDelta(newGoodRoute));
+    RibDelta.Builder<BgpRoute> builder = RibDelta.builder();
+    builder.from(rib.mergeRouteGetDelta(oldGoodRoute), rib::getNetwork);
+    builder.from(rib.mergeRouteGetDelta(newGoodRoute), rib::getNetwork);
 
     RibDelta<BgpRoute> delta = builder.build();
     assertThat(delta.getActions(), hasSize(2));
@@ -237,9 +218,9 @@ public class RibDeltaTest {
     // Setup
     rib.mergeRoute(r1);
     RibDelta<BgpRoute> delta =
-        RibDelta.<BgpRoute>builder(AbstractRoute::getNetwork)
-            .add(r2)
-            .remove(r1, Reason.WITHDRAW)
+        RibDelta.<BgpRoute>builder()
+            .add(r2.getNetwork(), r2)
+            .remove(r1.getNetwork(), r1, Reason.WITHDRAW)
             .build();
     // Test
     RibDelta.importRibDelta(rib, delta);

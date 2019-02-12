@@ -2,8 +2,8 @@ package org.batfish.dataplane.rib;
 
 import java.util.Comparator;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.EigrpRoute;
-import org.batfish.datamodel.Prefix;
 
 /** Rib that stores internal and external EIGRP routes */
 public class EigrpRib extends AbstractRib<EigrpRoute> {
@@ -11,7 +11,7 @@ public class EigrpRib extends AbstractRib<EigrpRoute> {
   private static final long serialVersionUID = 1L;
 
   public EigrpRib() {
-    super(null, r -> r);
+    super(null);
   }
 
   private static int getTypeCost(EigrpRoute route) {
@@ -34,7 +34,7 @@ public class EigrpRib extends AbstractRib<EigrpRoute> {
   }
 
   @Override
-  public Prefix getNetwork(EigrpRoute route) {
-    return route.getNetwork();
+  public AbstractRoute getAbstractRoute(EigrpRoute route) {
+    return route;
   }
 }

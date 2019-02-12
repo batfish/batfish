@@ -112,13 +112,13 @@ public class MockRib implements GenericRib<AbstractRoute> {
   }
 
   @Override
-  public Map<Prefix, IpSpace> getMatchingIps() {
-    return _matchingIps;
+  public AbstractRoute getAbstractRoute(AbstractRoute r) {
+    return r;
   }
 
   @Override
-  public Prefix getNetwork(AbstractRoute r) {
-    return r.getNetwork();
+  public Map<Prefix, IpSpace> getMatchingIps() {
+    return _matchingIps;
   }
 
   @Override

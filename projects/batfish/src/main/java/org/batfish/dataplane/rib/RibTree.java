@@ -2,7 +2,6 @@ package org.batfish.dataplane.rib;
 
 import static org.batfish.dataplane.rib.RouteAdvertisement.Reason.REPLACE;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -14,7 +13,6 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
@@ -39,45 +37,36 @@ final class RibTree<R> implements Serializable {
 
   @Nonnull private final PrefixTrieMultiMap<R> _root;
   @Nonnull private final AbstractRib<R> _owner;
-  @Nonnull private final Function<R, AbstractRoute> _routeExtractor;
 
-  RibTree(AbstractRib<R> owner, Function<R, AbstractRoute> routeExtractor) {
+  RibTree(AbstractRib<R> owner) {
     _root = new PrefixTrieMultiMap<>(Prefix.ZERO);
     _owner = owner;
-    _routeExtractor = routeExtractor;
-  }
-
-  private Prefix getNetwork(R route) {
-    return _routeExtractor.apply(route).getNetwork();
-  }
-
-  private boolean getNonForwarding(R route) {
-    return _routeExtractor.apply(route).getNonForwarding();
   }
 
   /**
    * Remove a single route from the RIB, if it exists
    *
+   * @param p {@link Prefix} representing destination network of route to remove
    * @param route route to remove
    * @return {@link RibDelta} if the route was removed, otherwise {@code null};
    */
   @Nonnull
-  RibDelta<R> removeRouteGetDelta(R route, Reason reason) {
-    boolean removed = _root.remove(getNetwork(route), route);
+  RibDelta<R> removeRouteGetDelta(Prefix p, R route, Reason reason) {
+    boolean removed = _root.remove(p, route);
     if (!removed) {
       return RibDelta.empty();
     }
 
-    Builder<R> b = RibDelta.builder(this::getNetwork);
-    b.remove(route, reason);
-    if (_root.get(getNetwork(route)).isEmpty() && _owner._backupRoutes != null) {
+    Builder<R> b = RibDelta.builder();
+    b.remove(p, route, reason);
+    if (_root.get(p).isEmpty() && _owner._backupRoutes != null) {
       SortedSet<? extends R> backups =
-          _owner._backupRoutes.getOrDefault(getNetwork(route), ImmutableSortedSet.of());
+          _owner._backupRoutes.getOrDefault(p, ImmutableSortedSet.of());
       if (backups.isEmpty()) {
         return b.build();
       }
-      _root.put(getNetwork(route), backups.first());
-      b.add(backups.first());
+      _root.put(p, backups.first());
+      b.add(p, backups.first());
     }
     // Return new delta
     return b.build();
@@ -86,34 +75,23 @@ final class RibTree<R> implements Serializable {
   /**
    * Check if the route is present in the RIB
    *
+   * @param p {@link Prefix} representing destination network of route to check for
    * @param route route to find
    * @return true if the route exists in the RIB
    */
-  boolean containsRoute(R route) {
-    return _root.get(getNetwork(route)).contains(route);
-  }
-
-  private boolean hasForwardingRoute(Set<R> routes) {
-    return routes.stream().anyMatch(Predicates.not(this::getNonForwarding));
+  boolean containsRoute(Prefix p, R route) {
+    return _root.get(p).contains(route);
   }
 
   /**
-   * Returns a set of routes in this tree which 1) are forwarding routes, 2) match the given IP
-   * address, and 3) have the longest prefix length within the specified maximum.
+   * Returns a set of routes in this tree that 1) match the given IP address, and 2) have the
+   * longest prefix length within the specified maximum. May include non-forwarding routes.
    *
-   * <p>Returns the empty set if there are no forwarding routes that match.
+   * <p>Returns the empty set if there are no routes that match.
    */
   @Nonnull
   Set<R> getLongestPrefixMatch(Ip address, int maxPrefixLength) {
-    for (int pl = maxPrefixLength; pl >= 0; pl--) {
-      Set<R> routes = _root.longestPrefixMatch(address, pl);
-      if (hasForwardingRoute(routes)) {
-        return routes.stream()
-            .filter(r -> !getNonForwarding(r))
-            .collect(ImmutableSet.toImmutableSet());
-      }
-    }
-    return ImmutableSet.of();
+    return ImmutableSet.copyOf(_root.longestPrefixMatch(address, maxPrefixLength));
   }
 
   /**
@@ -133,16 +111,17 @@ final class RibTree<R> implements Serializable {
   /**
    * Add a new route into the RIB, potentially replacing other routes
    *
+   * @param p {@link Prefix} representing destination network of route to add
    * @param route route to add
    * @return a {@link RibDelta} objects indicating which routes where added and evicted from this
    *     RIB
    */
   @Nonnull
-  RibDelta<R> mergeRoute(R route) {
-    Set<R> routes = _root.get(getNetwork(route));
+  RibDelta<R> mergeRoute(Prefix p, R route) {
+    Set<R> routes = _root.get(p);
     if (routes.isEmpty()) {
-      _root.put(getNetwork(route), route);
-      return RibDelta.builder(this::getNetwork).add(route).build();
+      _root.put(p, route);
+      return RibDelta.<R>builder().add(p, route).build();
     }
     /*
      * Check if the route we are adding is preferred to the routes we already have.
@@ -158,8 +137,8 @@ final class RibTree<R> implements Serializable {
     }
     if (preferenceComparison == 0) { // equal preference, so add for multipath routing
       // Otherwise add the route
-      if (_root.put(getNetwork(route), route)) {
-        return RibDelta.builder(this::getNetwork).add(route).build();
+      if (_root.put(p, route)) {
+        return RibDelta.<R>builder().add(p, route).build();
       } else {
         return RibDelta.empty();
       }
@@ -169,8 +148,10 @@ final class RibTree<R> implements Serializable {
      * Better than all existing routes for this prefix, so
      * replace them with this one.
      */
-    if (_root.replaceAll(getNetwork(route), route)) {
-      return RibDelta.builder(this::getNetwork).remove(routes, REPLACE).add(route).build();
+    if (_root.replaceAll(p, route)) {
+      RibDelta.Builder<R> deltaBuilder = RibDelta.builder();
+      routes.forEach(r -> deltaBuilder.remove(p, r, REPLACE));
+      return deltaBuilder.add(p, route).build();
     } else {
       return RibDelta.empty();
     }
@@ -186,8 +167,17 @@ final class RibTree<R> implements Serializable {
     return (obj == this) || (obj instanceof RibTree && this._root.equals(((RibTree<?>) obj)._root));
   }
 
-  /** See {@link GenericRib#getMatchingIps()} */
-  Map<Prefix, IpSpace> getMatchingIps() {
+  /**
+   * Returns a mapping from prefixes in the RIB that contain at least one element matching the given
+   * {@code matches} function to the IPs for which that prefix is the longest match in the RIB
+   * (among prefixes with elements that match the function).
+   *
+   * <p>Used for {@link GenericRib#getMatchingIps()}.
+   *
+   * @param matches Function to specify the condition routes must meet for their prefix to be added
+   *     to the returned map. Takes a route of type {@link R} and returns true if it matches.
+   */
+  Map<Prefix, IpSpace> getMatchingIps(Function<R, Boolean> matches) {
     ImmutableMap.Builder<Prefix, IpSpace> builder = ImmutableMap.builder();
 
     /* We traverse the tree in post-order, so when we visit each intermediate node the blacklist
@@ -199,7 +189,7 @@ final class RibTree<R> implements Serializable {
     ImmutableSortedSet.Builder<IpWildcard> blacklist = ImmutableSortedSet.naturalOrder();
     _root.traverseEntries(
         (prefix, elems) -> {
-          if (hasForwardingRoute(elems)) {
+          if (elems.stream().anyMatch(matches::apply)) {
             IpWildcard wc = new IpWildcard(prefix);
             builder.put(
                 prefix, new IpWildcardSetIpSpace(blacklist.build(), ImmutableSortedSet.of(wc)));
@@ -209,12 +199,20 @@ final class RibTree<R> implements Serializable {
     return builder.build();
   }
 
-  /** See {@link GenericRib#getRoutableIps()} */
-  IpSpace getRoutableIps() {
+  /**
+   * Returns the {@link IpSpace} of IPs contained by prefixes with any route that matches the given
+   * matching condition.
+   *
+   * <p>Used for {@link GenericRib#getRoutableIps()}.
+   *
+   * @param matches Function to specify the condition routes must meet for IPs contained by their
+   *     prefix to be added to the returned {@link IpSpace}.
+   */
+  IpSpace getRoutableIps(Function<R, Boolean> matches) {
     IpWildcardSetIpSpace.Builder builder = IpWildcardSetIpSpace.builder();
     _root.traverseEntries(
         (prefix, elems) -> {
-          if (hasForwardingRoute(elems)) {
+          if (elems.stream().anyMatch(matches::apply)) {
             builder.including(new IpWildcard(prefix));
           }
         });

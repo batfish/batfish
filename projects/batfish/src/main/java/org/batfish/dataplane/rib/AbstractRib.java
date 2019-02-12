@@ -7,11 +7,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
@@ -51,13 +49,12 @@ public abstract class AbstractRib<R> implements GenericRib<R> {
    */
   @Nullable protected final Map<Prefix, SortedSet<R>> _backupRoutes;
 
-  public AbstractRib(
-      @Nullable Map<Prefix, SortedSet<R>> backupRoutes, Function<R, AbstractRoute> routeExtractor) {
+  public AbstractRib(@Nullable Map<Prefix, SortedSet<R>> backupRoutes) {
     _allRoutes = ImmutableSet.of();
     _backupRoutes = backupRoutes;
     _logicalArrivalTime = new HashMap<>();
     _logicalClock = 0;
-    _tree = new RibTree<>(this, routeExtractor);
+    _tree = new RibTree<>(this);
   }
 
   /**
@@ -69,9 +66,9 @@ public abstract class AbstractRib<R> implements GenericRib<R> {
    */
   @Nonnull
   public <T extends R> RibDelta<R> importRoutesFrom(AbstractRib<T> exportingRib) {
-    RibDelta.Builder<R> builder = RibDelta.builder(this::getNetwork);
+    RibDelta.Builder<R> builder = RibDelta.builder();
     for (T route : exportingRib.getRoutes()) {
-      builder.from(mergeRouteGetDelta(route));
+      builder.from(mergeRouteGetDelta(route), this::getNetwork);
     }
     return builder.build();
   }
@@ -88,7 +85,7 @@ public abstract class AbstractRib<R> implements GenericRib<R> {
   }
 
   public final boolean containsRoute(R route) {
-    return _tree.containsRoute(route);
+    return _tree.containsRoute(getNetwork(route), route);
   }
 
   @Override
@@ -140,7 +137,16 @@ public abstract class AbstractRib<R> implements GenericRib<R> {
 
   @Override
   public @Nonnull Set<R> longestPrefixMatch(Ip address, int maxPrefixLength) {
-    return _tree.getLongestPrefixMatch(address, maxPrefixLength);
+    for (int pl = maxPrefixLength; pl >= 0; pl--) {
+      Set<R> routes =
+          _tree.getLongestPrefixMatch(address, pl).stream()
+              .filter(this::getForwarding)
+              .collect(ImmutableSet.toImmutableSet());
+      if (!routes.isEmpty()) {
+        return routes;
+      }
+    }
+    return ImmutableSet.of();
   }
 
   /**
@@ -152,7 +158,7 @@ public abstract class AbstractRib<R> implements GenericRib<R> {
    */
   @Nonnull
   public RibDelta<R> mergeRouteGetDelta(R route) {
-    RibDelta<R> delta = _tree.mergeRoute(route);
+    RibDelta<R> delta = _tree.mergeRoute(getNetwork(route), route);
     if (!delta.isEmpty()) {
       // A change to routes has been made
       _allRoutes = null;
@@ -184,7 +190,7 @@ public abstract class AbstractRib<R> implements GenericRib<R> {
    */
   @Nonnull
   public RibDelta<R> removeRouteGetDelta(R route, Reason reason) {
-    RibDelta<R> delta = _tree.removeRouteGetDelta(route, reason);
+    RibDelta<R> delta = _tree.removeRouteGetDelta(getNetwork(route), route, reason);
     if (!delta.isEmpty()) {
       // A change to routes has been made
       _allRoutes = null;
@@ -246,11 +252,20 @@ public abstract class AbstractRib<R> implements GenericRib<R> {
 
   @Override
   public final Map<Prefix, IpSpace> getMatchingIps() {
-    return _tree.getMatchingIps();
+    return _tree.getMatchingIps(this::getForwarding);
   }
 
   @Override
   public final IpSpace getRoutableIps() {
-    return _tree.getRoutableIps();
+    return _tree.getRoutableIps(this::getForwarding);
+  }
+
+  @Nonnull
+  public Prefix getNetwork(R route) {
+    return getAbstractRoute(route).getNetwork();
+  }
+
+  private boolean getForwarding(R route) {
+    return !getAbstractRoute(route).getNonForwarding();
   }
 }

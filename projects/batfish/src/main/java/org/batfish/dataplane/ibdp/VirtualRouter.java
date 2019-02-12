@@ -488,7 +488,7 @@ public class VirtualRouter implements Serializable {
    */
   @VisibleForTesting
   RibDelta<AbstractRoute> activateGeneratedRoutes() {
-    RibDelta.Builder<AbstractRoute> builder = RibDelta.builder(AbstractRoute::getNetwork);
+    RibDelta.Builder<AbstractRoute> builder = RibDelta.builder();
 
     /*
      * Loop over all generated routes and check whether any of the contributing routes can trigger
@@ -506,7 +506,7 @@ public class VirtualRouter implements Serializable {
         GeneratedRoute newGr = grb.build();
         // Routes have been changed
         RibDelta<AbstractRoute> d = _generatedRib.mergeRouteGetDelta(newGr);
-        builder.from(d);
+        builder.from(d, AbstractRoute::getNetwork);
       }
     }
     return builder.build();
@@ -518,16 +518,15 @@ public class VirtualRouter implements Serializable {
    */
   void recomputeGeneratedRoutes() {
     RibDelta<AbstractRoute> d;
-    RibDelta.Builder<AbstractRoute> generatedRouteDeltaBuilder =
-        RibDelta.builder(AbstractRoute::getNetwork);
+    RibDelta.Builder<AbstractRoute> generatedRouteDeltaBuilder = RibDelta.builder();
     do {
       d = activateGeneratedRoutes();
-      generatedRouteDeltaBuilder.from(d);
+      generatedRouteDeltaBuilder.from(d, AbstractRoute::getNetwork);
     } while (!d.isEmpty());
 
     d = generatedRouteDeltaBuilder.build();
     // Update main rib as well
-    _mainRibRouteDeltaBuilder.from(importRibDelta(_mainRib, d));
+    _mainRibRouteDeltaBuilder.from(importRibDelta(_mainRib, d), _mainRib::getNetwork);
 
     /*
      * Check dependencies for BGP aggregates.
@@ -537,7 +536,10 @@ public class VirtualRouter implements Serializable {
     if (!d.isEmpty()) {
       d.getActions().stream()
           .filter(RouteAdvertisement::isWithdrawn)
-          .forEach(r -> _bgpDeltaBuilder.from(_bgpAggDeps.deleteRoute(r.getRoute(), _bgpRib)));
+          .forEach(
+              r ->
+                  _bgpDeltaBuilder.from(
+                      _bgpAggDeps.deleteRoute(r.getRoute(), _bgpRib), AbstractRoute::getNetwork));
     }
   }
 
@@ -550,12 +552,13 @@ public class VirtualRouter implements Serializable {
   void activateStaticRoutes() {
     for (StaticRoute sr : _staticNextHopRib.getRoutes()) {
       if (shouldActivateNextHopIpRoute(sr, _mainRib)) {
-        _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(sr));
+        _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(sr), _mainRib::getNetwork);
       } else {
         /*
          * If the route is not in the RIB, this has no effect. But might add some overhead (TODO)
          */
-        _mainRibRouteDeltaBuilder.from(_mainRib.removeRouteGetDelta(sr, Reason.WITHDRAW));
+        _mainRibRouteDeltaBuilder.from(
+            _mainRib.removeRouteGetDelta(sr, Reason.WITHDRAW), _mainRib::getNetwork);
       }
     }
   }
@@ -656,8 +659,8 @@ public class VirtualRouter implements Serializable {
 
     // Keep track of changes to the RIBs using delta builders, keyed by RIB type
     Map<BgpRib, RibDelta.Builder<BgpRoute>> ribDeltas = new IdentityHashMap<>();
-    ribDeltas.put(_ebgpStagingRib, RibDelta.builder(AbstractRoute::getNetwork));
-    ribDeltas.put(_ibgpStagingRib, RibDelta.builder(AbstractRoute::getNetwork));
+    ribDeltas.put(_ebgpStagingRib, RibDelta.builder());
+    ribDeltas.put(_ibgpStagingRib, RibDelta.builder());
 
     // initialize admin costs for routes
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
@@ -754,7 +757,7 @@ public class VirtualRouter implements Serializable {
         // TODO: possibly support setting tag
         builder.setWeight(weight);
         BgpRoute route = builder.build();
-        ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(route));
+        ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(route), targetRib::getNetwork);
       } else {
         long localPreference;
         if (ebgp) {
@@ -852,7 +855,9 @@ public class VirtualRouter implements Serializable {
         }
         if (acceptIncoming) {
           BgpRoute transformedIncomingRoute = transformedIncomingRouteBuilder.build();
-          ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
+          ribDeltas
+              .get(targetRib)
+              .from(targetRib.mergeRouteGetDelta(transformedIncomingRoute), targetRib::getNetwork);
         }
       }
     }
@@ -973,7 +978,7 @@ public class VirtualRouter implements Serializable {
               gr, _vrf.getBgpProcess().getRouterId(), true);
       /* TODO: tests for this */
       RibDelta<BgpRoute> d1 = _bgpRib.mergeRouteGetDelta(br);
-      _bgpDeltaBuilder.from(d1);
+      _bgpDeltaBuilder.from(d1, _bgpRib::getNetwork);
       if (!d1.isEmpty()) {
         _bgpAggDeps.addRouteDependency(br, gr);
       }
@@ -1072,8 +1077,8 @@ public class VirtualRouter implements Serializable {
     if (proc == null) {
       return; // nothing to do
     }
-    RibDelta.Builder<IsisRoute> d1 = RibDelta.builder(AbstractRoute::getNetwork);
-    RibDelta.Builder<IsisRoute> d2 = RibDelta.builder(AbstractRoute::getNetwork);
+    RibDelta.Builder<IsisRoute> d1 = RibDelta.builder();
+    RibDelta.Builder<IsisRoute> d2 = RibDelta.builder();
     /*
      * init L1 and L2 routes from connected routes
      */
@@ -1104,7 +1109,7 @@ public class VirtualRouter implements Serializable {
               .setProtocol(RoutingProtocol.ISIS_L1)
               .setSystemId(proc.getNetAddress().getSystemIdString())
               .build();
-      d1.from(_isisL1Rib.mergeRouteGetDelta(defaultRoute));
+      d1.from(_isisL1Rib.mergeRouteGetDelta(defaultRoute), _isisL1Rib::getNetwork);
     }
 
     queueOutgoingIsisRoutes(allNodes, nc, d1.build(), d2.build());
@@ -1130,11 +1135,11 @@ public class VirtualRouter implements Serializable {
     IsisInterfaceLevelSettings ifaceL2Settings = ifaceSettings.getLevel2();
     if (ifaceL1Settings != null && l1Settings != null) {
       generateIsisInterfaceRoutesPerLevel(l1Admin, routeBuilder, iface, IsisLevel.LEVEL_1)
-          .forEach(r -> d1.from(_isisL1Rib.mergeRouteGetDelta(r)));
+          .forEach(r -> d1.from(_isisL1Rib.mergeRouteGetDelta(r), _isisL1Rib::getNetwork));
     }
     if (ifaceL2Settings != null && l2Settings != null) {
       generateIsisInterfaceRoutesPerLevel(l2Admin, routeBuilder, iface, IsisLevel.LEVEL_2)
-          .forEach(r -> d2.from(_isisL2Rib.mergeRouteGetDelta(r)));
+          .forEach(r -> d2.from(_isisL2Rib.mergeRouteGetDelta(r), _isisL2Rib::getNetwork));
     }
   }
 
@@ -1185,17 +1190,21 @@ public class VirtualRouter implements Serializable {
 
     // For each route in the previous RIB, compute an export route and add it to the appropriate
     // RIB.
-    RibDelta.Builder<OspfExternalType1Route> d1 = RibDelta.builder(AbstractRoute::getNetwork);
-    RibDelta.Builder<OspfExternalType2Route> d2 = RibDelta.builder(AbstractRoute::getNetwork);
+    RibDelta.Builder<OspfExternalType1Route> d1 = RibDelta.builder();
+    RibDelta.Builder<OspfExternalType2Route> d2 = RibDelta.builder();
     for (AbstractRoute potentialExport : _mainRib.getRoutes()) {
       OspfExternalRoute outputRoute = computeOspfExportRoute(potentialExport, exportPolicy, proc);
       if (outputRoute == null) {
         continue; // no need to export
       }
       if (outputRoute.getOspfMetricType() == OspfMetricType.E1) {
-        d1.from(_ospfExternalType1Rib.mergeRouteGetDelta((OspfExternalType1Route) outputRoute));
+        d1.from(
+            _ospfExternalType1Rib.mergeRouteGetDelta((OspfExternalType1Route) outputRoute),
+            _ospfExternalType1Rib::getNetwork);
       } else { // assuming here that MetricType exists. Or E2 is the default
-        d2.from(_ospfExternalType2Rib.mergeRouteGetDelta((OspfExternalType2Route) outputRoute));
+        d2.from(
+            _ospfExternalType2Rib.mergeRouteGetDelta((OspfExternalType2Route) outputRoute),
+            _ospfExternalType2Rib::getNetwork);
       }
     }
     queueOutgoingOspfExternalRoutes(allNodes, d1.build(), d2.build());
@@ -1213,7 +1222,7 @@ public class VirtualRouter implements Serializable {
     // Main RIB + delta builder
     _mainRibs = ImmutableMap.of(RibId.DEFAULT_RIB_NAME, new Rib());
     _mainRib = _mainRibs.get(RibId.DEFAULT_RIB_NAME);
-    _mainRibRouteDeltaBuilder = RibDelta.builder(AbstractRoute::getNetwork);
+    _mainRibRouteDeltaBuilder = RibDelta.builder();
 
     // BGP
     BgpProcess proc = _vrf.getBgpProcess();
@@ -1240,7 +1249,7 @@ public class VirtualRouter implements Serializable {
             tieBreaker,
             proc == null || proc.getMultipathEbgp() || proc.getMultipathIbgp() ? null : 1,
             mpTieBreaker);
-    _bgpDeltaBuilder = RibDelta.builder(AbstractRoute::getNetwork);
+    _bgpDeltaBuilder = RibDelta.builder();
 
     _ebgpStagingRib = new BgpRib(null, _mainRib, tieBreaker, null, mpTieBreaker);
     _ibgpStagingRib = new BgpRib(null, _mainRib, tieBreaker, null, mpTieBreaker);
@@ -1340,8 +1349,8 @@ public class VirtualRouter implements Serializable {
 
     // Keep track of changes to the RIBs using delta builders, keyed by RIB type
     Map<BgpRib, RibDelta.Builder<BgpRoute>> ribDeltas = new IdentityHashMap<>();
-    ribDeltas.put(_ebgpStagingRib, RibDelta.builder(AbstractRoute::getNetwork));
-    ribDeltas.put(_ibgpStagingRib, RibDelta.builder(AbstractRoute::getNetwork));
+    ribDeltas.put(_ebgpStagingRib, RibDelta.builder());
+    ribDeltas.put(_ibgpStagingRib, RibDelta.builder());
 
     // Process updates from each neighbor
     for (Entry<BgpEdgeId, Queue<RouteAdvertisement<BgpRoute>>> e : _bgpIncomingRoutes.entrySet()) {
@@ -1358,7 +1367,7 @@ public class VirtualRouter implements Serializable {
       BgpPeerConfig remoteBgpConfig = requireNonNull(nc.getBgpPeerConfig(e.getKey().src()));
 
       BgpRib targetRib = sessionProperties.isEbgp() ? _ebgpStagingRib : _ibgpStagingRib;
-      Builder<AbstractRoute> perNeighborDelta = RibDelta.builder(AbstractRoute::getNetwork);
+      Builder<AbstractRoute> perNeighborDelta = RibDelta.builder();
 
       // Process all routes from neighbor
       while (queue.peek() != null) {
@@ -1402,16 +1411,19 @@ public class VirtualRouter implements Serializable {
           continue;
         }
         BgpRoute transformedIncomingRoute = transformedIncomingRouteBuilder.build();
+        Prefix routeNetwork = transformedIncomingRoute.getNetwork();
 
         if (remoteRouteAdvert.isWithdrawn()) {
           // Note this route was removed
-          ribDeltas.get(targetRib).remove(transformedIncomingRoute, Reason.WITHDRAW);
-          perNeighborDelta.remove(transformedIncomingRoute, Reason.WITHDRAW);
+          ribDeltas.get(targetRib).remove(routeNetwork, transformedIncomingRoute, Reason.WITHDRAW);
+          perNeighborDelta.remove(routeNetwork, transformedIncomingRoute, Reason.WITHDRAW);
           _bgpRib.removeBackupRoute(transformedIncomingRoute);
         } else {
           // Merge into staging rib, note delta
-          ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
-          perNeighborDelta.add(transformedIncomingRoute);
+          ribDeltas
+              .get(targetRib)
+              .from(targetRib.mergeRouteGetDelta(transformedIncomingRoute), targetRib::getNetwork);
+          perNeighborDelta.add(routeNetwork, transformedIncomingRoute);
           _bgpRib.addBackupRoute(transformedIncomingRoute);
           _prefixTracer.installed(
               transformedIncomingRoute.getNetwork(),
@@ -1452,8 +1464,8 @@ public class VirtualRouter implements Serializable {
     if (_vrf.getIsisProcess() == null) {
       return null;
     }
-    RibDelta.Builder<IsisRoute> l1DeltaBuilder = RibDelta.builder(AbstractRoute::getNetwork);
-    RibDelta.Builder<IsisRoute> l2DeltaBuilder = RibDelta.builder(AbstractRoute::getNetwork);
+    RibDelta.Builder<IsisRoute> l1DeltaBuilder = RibDelta.builder();
+    RibDelta.Builder<IsisRoute> l2DeltaBuilder = RibDelta.builder();
     int l1Admin = RoutingProtocol.ISIS_L1.getDefaultAdministrativeCost(_c.getConfigurationFormat());
     int l2Admin = RoutingProtocol.ISIS_L2.getDefaultAdministrativeCost(_c.getConfigurationFormat());
     _isisIncomingRoutes.forEach(
@@ -1492,12 +1504,13 @@ public class VirtualRouter implements Serializable {
                     .setProtocol(levelProtocol)
                     .build();
             if (withdraw) {
-              deltaBuilder.remove(newRoute, Reason.WITHDRAW);
+              deltaBuilder.remove(newRoute.getNetwork(), newRoute, Reason.WITHDRAW);
               levelRib.removeBackupRoute(newRoute);
             } else {
               IsisLevelRib levelStagingRib =
                   routeLevel == IsisLevel.LEVEL_1 ? _isisL1StagingRib : _isisL2StagingRib;
-              deltaBuilder.from(levelStagingRib.mergeRouteGetDelta(newRoute));
+              deltaBuilder.from(
+                  levelStagingRib.mergeRouteGetDelta(newRoute), levelStagingRib::getNetwork);
               levelRib.addBackupRoute(newRoute);
             }
           }
@@ -1522,10 +1535,8 @@ public class VirtualRouter implements Serializable {
       return null;
     }
 
-    RibDelta.Builder<OspfExternalType1Route> builderType1 =
-        RibDelta.builder(AbstractRoute::getNetwork);
-    RibDelta.Builder<OspfExternalType2Route> builderType2 =
-        RibDelta.builder(AbstractRoute::getNetwork);
+    RibDelta.Builder<OspfExternalType1Route> builderType1 = RibDelta.builder();
+    RibDelta.Builder<OspfExternalType2Route> builderType2 = RibDelta.builder();
 
     _ospfExternalIncomingRoutes.forEach(
         (ospfEdge, queue) -> {
@@ -1609,10 +1620,12 @@ public class VirtualRouter implements Serializable {
                           .setCostToAdvertiser(newCostToAdvertiser)
                           .build();
               if (withdraw) {
-                builderType1.remove(newRoute, Reason.WITHDRAW);
+                builderType1.remove(newRoute.getNetwork(), newRoute, Reason.WITHDRAW);
                 _ospfExternalType1Rib.removeBackupRoute(newRoute);
               } else {
-                builderType1.from(_ospfExternalType1StagingRib.mergeRouteGetDelta(newRoute));
+                builderType1.from(
+                    _ospfExternalType1StagingRib.mergeRouteGetDelta(newRoute),
+                    _ospfExternalType1StagingRib::getNetwork);
                 _ospfExternalType1Rib.addBackupRoute(newRoute);
               }
 
@@ -1637,10 +1650,12 @@ public class VirtualRouter implements Serializable {
                           .setCostToAdvertiser(newCostToAdvertiser)
                           .build();
               if (withdraw) {
-                builderType2.remove(newRoute, Reason.WITHDRAW);
+                builderType2.remove(newRoute.getNetwork(), newRoute, Reason.WITHDRAW);
                 _ospfExternalType2Rib.addBackupRoute(newRoute);
               } else {
-                builderType2.from(_ospfExternalType2StagingRib.mergeRouteGetDelta(newRoute));
+                builderType2.from(
+                    _ospfExternalType2StagingRib.mergeRouteGetDelta(newRoute),
+                    _ospfExternalType2StagingRib::getNetwork);
                 _ospfExternalType2Rib.addBackupRoute(newRoute);
               }
             }
@@ -2050,16 +2065,16 @@ public class VirtualRouter implements Serializable {
         continue;
       }
 
-      Builder<AbstractRoute> finalBuilder = RibDelta.builder(AbstractRoute::getNetwork);
+      Builder<AbstractRoute> finalBuilder = RibDelta.builder();
 
       // Definitely queue mainRib updates
-      finalBuilder.from(mainDelta);
+      finalBuilder.from(mainDelta, AbstractRoute::getNetwork);
       // These knobs control which additional BGP routes get advertised
       if (session.getAdvertiseExternal()) {
         /*
          * Advertise external ensures that even if we withdrew an external route from the RIB
          */
-        finalBuilder.from(ebgpBestPathDelta);
+        finalBuilder.from(ebgpBestPathDelta, AbstractRoute::getNetwork);
       }
       if (session.getAdvertiseInactive()) {
         /*
@@ -2073,12 +2088,12 @@ public class VirtualRouter implements Serializable {
             if (_bgpRib.getRoutes(p) == null) {
               continue;
             }
-            finalBuilder.add(_bgpRib.getRoutes(p));
+            _bgpRib.getRoutes(p).forEach(r -> finalBuilder.add(p, r));
           }
         }
       }
       if (session.getAdditionalPaths()) {
-        finalBuilder.from(bgpMultiPathDelta);
+        finalBuilder.from(bgpMultiPathDelta, AbstractRoute::getNetwork);
       }
       RibDelta<AbstractRoute> routesToExport = finalBuilder.build();
       if (routesToExport.isEmpty()) {
@@ -2186,7 +2201,7 @@ public class VirtualRouter implements Serializable {
 
           // We are a L1_L2 router, we must "upgrade" L1 routes to L2 routes
           // TODO: a little cumbersome, simplify later
-          RibDelta.Builder<IsisRoute> upgradedRoutes = RibDelta.builder(AbstractRoute::getNetwork);
+          RibDelta.Builder<IsisRoute> upgradedRoutes = RibDelta.builder();
           correctedL1Delta
               .getActions()
               .forEach(
@@ -2197,10 +2212,11 @@ public class VirtualRouter implements Serializable {
                             RoutingProtocol.ISIS_L2.getDefaultAdministrativeCost(
                                 _c.getConfigurationFormat()));
                     if (newRoute.isPresent()) {
+                      IsisRoute route = newRoute.get();
                       if (ra.isWithdrawn()) {
-                        upgradedRoutes.remove(newRoute.get(), ra.getReason());
+                        upgradedRoutes.remove(route.getNetwork(), route, ra.getReason());
                       } else {
-                        upgradedRoutes.add(newRoute.get());
+                        upgradedRoutes.add(route.getNetwork(), route);
                       }
                     }
                   });
@@ -2272,9 +2288,10 @@ public class VirtualRouter implements Serializable {
 
     RibDelta<BgpRoute> ebgpDelta = importRibDelta(_ebgpRib, ebgpStagingDelta);
     RibDelta<BgpRoute> ibgpDelta = importRibDelta(_ibgpRib, ibgpStagingDelta);
-    _bgpDeltaBuilder.from(importRibDelta(_bgpRib, ebgpDelta));
-    _bgpDeltaBuilder.from(importRibDelta(_bgpRib, ibgpDelta));
-    _mainRibRouteDeltaBuilder.from(importRibDelta(_mainRib, _bgpDeltaBuilder.build()));
+    _bgpDeltaBuilder.from(importRibDelta(_bgpRib, ebgpDelta), _bgpRib::getNetwork);
+    _bgpDeltaBuilder.from(importRibDelta(_bgpRib, ibgpDelta), _bgpRib::getNetwork);
+    _mainRibRouteDeltaBuilder.from(
+        importRibDelta(_mainRib, _bgpDeltaBuilder.build()), _mainRib::getNetwork);
 
     queueOutgoingBgpRoutes(
         ebgpDelta,
@@ -2307,10 +2324,11 @@ public class VirtualRouter implements Serializable {
     RibDelta<IsisRoute> d1 = importRibDelta(_isisL1Rib, l1Delta);
     RibDelta<IsisRoute> d2 = importRibDelta(_isisL2Rib, l2Delta);
     queueOutgoingIsisRoutes(allNodes, nc, d1, d2);
-    Builder<IsisRoute> isisDeltaBuilder = RibDelta.builder(AbstractRoute::getNetwork);
-    isisDeltaBuilder.from(importRibDelta(_isisRib, d1));
-    isisDeltaBuilder.from(importRibDelta(_isisRib, d2));
-    _mainRibRouteDeltaBuilder.from(importRibDelta(_mainRib, isisDeltaBuilder.build()));
+    Builder<IsisRoute> isisDeltaBuilder = RibDelta.builder();
+    isisDeltaBuilder.from(importRibDelta(_isisRib, d1), _isisRib::getNetwork);
+    isisDeltaBuilder.from(importRibDelta(_isisRib, d2), _isisRib::getNetwork);
+    _mainRibRouteDeltaBuilder.from(
+        importRibDelta(_mainRib, isisDeltaBuilder.build()), _mainRib::getNetwork);
     return !d1.isEmpty() || !d2.isEmpty();
   }
 
@@ -2329,10 +2347,11 @@ public class VirtualRouter implements Serializable {
     RibDelta<OspfExternalType1Route> d1 = importRibDelta(_ospfExternalType1Rib, type1Delta);
     RibDelta<OspfExternalType2Route> d2 = importRibDelta(_ospfExternalType2Rib, type2Delta);
     queueOutgoingOspfExternalRoutes(allNodes, d1, d2);
-    Builder<OspfRoute> ospfDeltaBuilder = RibDelta.builder(AbstractRoute::getNetwork);
-    ospfDeltaBuilder.from(importRibDelta(_ospfRib, d1));
-    ospfDeltaBuilder.from(importRibDelta(_ospfRib, d2));
-    _mainRibRouteDeltaBuilder.from(importRibDelta(_mainRib, ospfDeltaBuilder.build()));
+    Builder<OspfRoute> ospfDeltaBuilder = RibDelta.builder();
+    ospfDeltaBuilder.from(importRibDelta(_ospfRib, d1), _ospfRib::getNetwork);
+    ospfDeltaBuilder.from(importRibDelta(_ospfRib, d2), _ospfRib::getNetwork);
+    _mainRibRouteDeltaBuilder.from(
+        importRibDelta(_mainRib, ospfDeltaBuilder.build()), _mainRib::getNetwork);
     return !d1.isEmpty() || !d2.isEmpty();
   }
 
@@ -2349,9 +2368,9 @@ public class VirtualRouter implements Serializable {
 
   /** Re-initialize RIBs (at the start of each iteration). */
   void reinitForNewIteration() {
-    _mainRibRouteDeltaBuilder = RibDelta.builder(AbstractRoute::getNetwork);
-    _bgpDeltaBuilder = RibDelta.builder(AbstractRoute::getNetwork);
-    _ospfExternalDeltaBuilder = RibDelta.builder(AbstractRoute::getNetwork);
+    _mainRibRouteDeltaBuilder = RibDelta.builder();
+    _bgpDeltaBuilder = RibDelta.builder();
+    _ospfExternalDeltaBuilder = RibDelta.builder();
 
     /*
      * RIBs not read from can just be re-initialized
@@ -2372,7 +2391,8 @@ public class VirtualRouter implements Serializable {
     /*
      * Add routes that cannot change (does not affect below computation)
      */
-    _mainRibRouteDeltaBuilder.from(_mainRib.importRoutesFrom(_independentRib));
+    _mainRibRouteDeltaBuilder.from(
+        _mainRib.importRoutesFrom(_independentRib), _mainRib::getNetwork);
 
     /*
      * Re-add independent OSPF routes to ospfRib for tie-breaking
@@ -2733,9 +2753,11 @@ public class VirtualRouter implements Serializable {
             // TODO: handle non-default main RIBs based on RIB specified in edgeID
             // https://github.com/batfish/batfish/issues/3050
             if (ra.isWithdrawn()) {
-              _mainRibRouteDeltaBuilder.from(_mainRib.removeRouteGetDelta(ra.getRoute()));
+              _mainRibRouteDeltaBuilder.from(
+                  _mainRib.removeRouteGetDelta(ra.getRoute()), _mainRib::getNetwork);
             } else {
-              _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(ra.getRoute()));
+              _mainRibRouteDeltaBuilder.from(
+                  _mainRib.mergeRouteGetDelta(ra.getRoute()), _mainRib::getNetwork);
             }
           }
         });

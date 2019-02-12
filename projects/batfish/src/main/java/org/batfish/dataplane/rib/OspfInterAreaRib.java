@@ -1,14 +1,14 @@
 package org.batfish.dataplane.rib;
 
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.OspfInterAreaRoute;
-import org.batfish.datamodel.Prefix;
 
 public class OspfInterAreaRib extends AbstractRib<OspfInterAreaRoute> {
 
   private static final long serialVersionUID = 1L;
 
   public OspfInterAreaRib() {
-    super(null, r -> r);
+    super(null);
   }
 
   @Override
@@ -18,7 +18,7 @@ public class OspfInterAreaRib extends AbstractRib<OspfInterAreaRoute> {
   }
 
   @Override
-  public Prefix getNetwork(OspfInterAreaRoute route) {
-    return route.getNetwork();
+  public AbstractRoute getAbstractRoute(OspfInterAreaRoute route) {
+    return route;
   }
 }

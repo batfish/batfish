@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
 
@@ -16,7 +17,7 @@ public class OspfExternalType2Rib extends AbstractRib<OspfExternalType2Route> {
   public OspfExternalType2Rib(
       @Nonnull String hostname,
       @Nullable Map<Prefix, SortedSet<OspfExternalType2Route>> backupRoutes) {
-    super(backupRoutes, r -> r);
+    super(backupRoutes);
     _hostname = hostname;
   }
 
@@ -42,7 +43,7 @@ public class OspfExternalType2Rib extends AbstractRib<OspfExternalType2Route> {
   }
 
   @Override
-  public Prefix getNetwork(OspfExternalType2Route route) {
-    return route.getNetwork();
+  public AbstractRoute getAbstractRoute(OspfExternalType2Route route) {
+    return route;
   }
 }
