@@ -70,7 +70,7 @@ public class IpTest {
   @Test
   public void testInvalidIp() {
     _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Invalid ip segment");
+    _thrown.expectMessage("Invalid IPv4 address: 1.1.1.256. 256 is an invalid octet");
     Ip.parse("1.1.1.256");
   }
 }
