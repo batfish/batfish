@@ -135,12 +135,12 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
   public abstract int comparePreference(R lhs, R rhs);
 
   @Override
-  public Set<R> longestPrefixMatch(Ip address) {
+  public @Nonnull Set<R> longestPrefixMatch(Ip address) {
     return longestPrefixMatch(address, Prefix.MAX_PREFIX_LENGTH);
   }
 
   @Override
-  public Set<R> longestPrefixMatch(Ip address, int maxPrefixLength) {
+  public @Nonnull Set<R> longestPrefixMatch(Ip address, int maxPrefixLength) {
     return _tree.getLongestPrefixMatch(address, maxPrefixLength);
   }
 

@@ -683,15 +683,14 @@ public final class ClientTest {
 
   @Test
   public void testInvalidIPValue() throws IOException {
-    String input = "\"0.0.0\"";
-    String expectedMessage = String.format("Invalid ip string: %s", input);
-    validateTypeWithInvalidInput(input, IllegalArgumentException.class, expectedMessage, IP);
+    validateTypeWithInvalidInput(
+        "\"0.0.0\"", IllegalArgumentException.class, "Invalid IPv4 address: 0.0.0", IP);
   }
 
   @Test
   public void testInvalidIpWildcardValue() throws IOException {
     String input = "\"10.168.5.5:10.168.100.$\"";
-    String expectedMessage = "Invalid ip segment: \"$\" in ip string: " + "\"10.168.100.$\"";
+    String expectedMessage = "Invalid IPv4 address: 10.168.100.$";
     validateTypeWithInvalidInput(
         input, IllegalArgumentException.class, expectedMessage, IP_WILDCARD);
   }

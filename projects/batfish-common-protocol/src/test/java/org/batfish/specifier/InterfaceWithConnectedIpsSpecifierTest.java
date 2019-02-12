@@ -55,7 +55,7 @@ public class InterfaceWithConnectedIpsSpecifierTest {
     Factory f = new Factory();
 
     _exception.expect(IllegalArgumentException.class);
-    _exception.expectMessage("Invalid ip string: \"45.6\"");
+    _exception.expectMessage("Invalid IPv4 address: 45.6");
     f.buildInterfaceSpecifier("45.6");
   }
 
