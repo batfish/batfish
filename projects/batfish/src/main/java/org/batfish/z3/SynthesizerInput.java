@@ -55,9 +55,6 @@ public interface SynthesizerInput {
   /** Mapping: hostname -&gt; vrfs */
   Map<String, Set<String>> getEnabledVrfs();
 
-  /** Mapping: hostname -&gt; interface-&gt; incomingAcl */
-  Map<String, Map<String, String>> getIncomingAcls();
-
   /** Mapping: hostname -&gt; interface -&gt; incomingTransformation */
   Map<String, Map<String, Transformation>> getIncomingTransformations();
 
@@ -90,8 +87,14 @@ public interface SynthesizerInput {
   /** Mapping: hostname -&gt; interface -&gt; outgoingTransformation */
   Map<String, Map<String, Transformation>> getOutgoingTransformations();
 
+  /** Mapping: hostname -&gt; interface-&gt; postTransformationIncomingAcl */
+  Map<String, Map<String, String>> getPostTransformationIncomingAcls();
+
   /** Mapping: hostname -&gt; interface-&gt; postTransformationOutgoingAcl */
   Map<String, Map<String, String>> getPostTransformationOutgoingAcls();
+
+  /** Mapping: hostname -&gt; interface-&gt; preTransformationIncomingAcl */
+  Map<String, Map<String, String>> getPreTransformationIncomingAcls();
 
   /** Mapping: hostname -&gt; interface-&gt; preTransformationOutgoingAcl */
   Map<String, Map<String, String>> getPreTransformationOutgoingAcls();

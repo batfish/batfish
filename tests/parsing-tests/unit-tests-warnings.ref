@@ -912,7 +912,7 @@
       },
       {
         "Filename" : "juniper_interfaces",
-        "Line" : 18,
+        "Line" : 19,
         "Text" : "tcp-mss 1400",
         "Parser_Context" : "[ifi_tcp_mss if_inet i_family i_common i_unit int_named s_interfaces s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"

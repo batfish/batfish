@@ -46,8 +46,22 @@ public class Interface implements Serializable {
 
   private static final double DEFAULT_TEN_GIGABIT_ETHERNET_SPEED = 10E9D;
 
-  /** Loopback delay for IOS */
+  /** Loopback delay in picoseconds for IOS */
   private static final double LOOPBACK_IOS_DELAY = 5E9D;
+
+  /**
+   * Tunnel bandwidth in bps for IOS (checked in IOS 16.4)
+   *
+   * <p>See https://bst.cloudapps.cisco.com/bugsearch/bug/CSCse69736
+   */
+  private static final double TUNNEL_IOS_BANDWIDTH = 100E3D;
+
+  /**
+   * Tunnel delay in picoseconds for IOS (checked in IOS 16.4)
+   *
+   * <p>See https://bst.cloudapps.cisco.com/bugsearch/bug/CSCse69736
+   */
+  private static final double TUNNEL_IOS_DELAY = 50E9D;
 
   private static final long serialVersionUID = 1L;
 
@@ -64,6 +78,8 @@ public class Interface implements Serializable {
     } else if (name.startsWith("Port-Channel")) {
       // Derived from member interfaces
       return null;
+    } else if (format == ConfigurationFormat.CISCO_IOS && name.startsWith("Tunnel")) {
+      return TUNNEL_IOS_BANDWIDTH;
     } else {
       // Use default bandwidth for other interface types that have no speed
       return DEFAULT_INTERFACE_BANDWIDTH;
@@ -226,24 +242,28 @@ public class Interface implements Serializable {
 
   private @Nullable Double _speed;
 
-  public static double getDefaultDelay(String name, ConfigurationFormat format) {
+  /** Returns the default interface delay in picoseconds for the given {@code format}. */
+  @Nullable
+  public static Double getDefaultDelay(String name, ConfigurationFormat format) {
     if (format == ConfigurationFormat.CISCO_IOS && name.startsWith("Loopback")) {
       // TODO Cisco NX whitepaper says to use the formula, not this value. Confirm?
       // Enhanced Interior Gateway Routing Protocol (EIGRP) Wide Metrics White Paper
       return LOOPBACK_IOS_DELAY;
     }
-    double bandwidth = getDefaultBandwidth(name, format);
-    if (bandwidth == 0D) {
-      // TODO EIGRP will not use this interface because cost is proportional to bandwidth^-1
-      return 0D;
+    if (format == ConfigurationFormat.CISCO_IOS && name.startsWith("Tunnel")) {
+      return TUNNEL_IOS_DELAY;
+    }
+
+    Double bandwidth = getDefaultBandwidth(name, format);
+    if (bandwidth == null || bandwidth == 0D) {
+      return null;
     }
 
     /*
      * Delay is only relevant on routers that support EIGRP (Cisco).
      *
      * When bandwidth > 1Gb, this formula is used. The interface may report a different value.
-     * For bandwidths < 1Gb, the delay is interface type-specific. However, all of the specific cases
-     * handled in getDefaultBandwidth also match this formula.
+     * For bandwidths < 1Gb, the delay may be interface type-specific.
      * See https://tools.ietf.org/html/rfc7868#section-5.6.1.2
      */
     return 1E16 / bandwidth;

@@ -42,6 +42,18 @@ public class IpTest {
   }
 
   @Test
+  public void testGetBitAtInvalidTooHighPosition() {
+    _thrown.expect(IllegalArgumentException.class);
+    getBitAtPosition(0L, Prefix.MAX_PREFIX_LENGTH);
+  }
+
+  @Test
+  public void testGetBitAtInvalidNegativePosition() {
+    _thrown.expect(IllegalArgumentException.class);
+    getBitAtPosition(0L, -1);
+  }
+
+  @Test
   public void testContainsIp() {
     IpSpace ipSpace = Ip.parse("1.1.1.1").toIpSpace();
     assertThat(ipSpace, containsIp(Ip.parse("1.1.1.1")));
@@ -58,7 +70,7 @@ public class IpTest {
   @Test
   public void testInvalidIp() {
     _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Invalid ip segment");
+    _thrown.expectMessage("Invalid IPv4 address: 1.1.1.256. 256 is an invalid octet");
     Ip.parse("1.1.1.256");
   }
 }

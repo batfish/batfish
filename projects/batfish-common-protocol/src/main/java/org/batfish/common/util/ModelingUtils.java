@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.Warnings;
+import org.batfish.common.BatfishLogger;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -107,6 +107,7 @@ public final class ModelingUtils {
    * @param interfacesConnectedToIsps {@link List} of {@link NodeInterfacePair}s connected to ISPs
    * @param asNumOfIsps {@link List} optional {@link List} of AS numbers of ISPs
    * @param ipsOfIsps {@link List} optional {@link List} of {@link Ip}s of ISPs
+   * @param logger {@link BatfishLogger} to log warnings and errors
    * @return {@link Map} of {@link Configuration}s for the ISPs and Internet
    */
   @VisibleForTesting
@@ -115,8 +116,9 @@ public final class ModelingUtils {
       @Nonnull List<NodeInterfacePair> interfacesConnectedToIsps,
       @Nonnull List<Long> asNumOfIsps,
       @Nonnull List<Ip> ipsOfIsps,
-      @Nonnull Warnings warnings) {
+      @Nonnull BatfishLogger logger) {
 
+    NetworkFactory nf = new NetworkFactory();
     Map<String, Set<String>> interfaceSetByNodes =
         interfacesConnectedToIsps.stream()
             .collect(
@@ -139,12 +141,12 @@ public final class ModelingUtils {
         asnToIspInfos.entrySet().stream()
             .map(
                 asnIspInfo ->
-                    getIspConfigurationNode(asnIspInfo.getKey(), asnIspInfo.getValue(), warnings))
+                    getIspConfigurationNode(asnIspInfo.getKey(), asnIspInfo.getValue(), nf, logger))
             .filter(Objects::nonNull)
             .collect(ImmutableMap.toImmutableMap(Configuration::getHostname, Function.identity()));
 
-    Configuration internet = createInternetNode();
-    connectIspsToInternet(internet, ispConfigurations);
+    Configuration internet = createInternetNode(nf);
+    connectIspsToInternet(internet, ispConfigurations, nf);
 
     return ImmutableMap.<String, Configuration>builder()
         .putAll(ispConfigurations)
@@ -153,8 +155,7 @@ public final class ModelingUtils {
   }
 
   @VisibleForTesting
-  static Configuration createInternetNode() {
-    NetworkFactory nf = new NetworkFactory();
+  static Configuration createInternetNode(NetworkFactory nf) {
 
     Configuration.Builder cb = nf.configurationBuilder();
     Configuration internetConfiguration =
@@ -196,8 +197,7 @@ public final class ModelingUtils {
    * each other using the created Interface pairs.
    */
   private static void connectIspsToInternet(
-      Configuration internet, Map<String, Configuration> ispConfigurations) {
-    NetworkFactory nf = new NetworkFactory();
+      Configuration internet, Map<String, Configuration> ispConfigurations, NetworkFactory nf) {
     Ip internetInterfaceIp = FIRST_EVEN_INTERNET_IP;
     for (Configuration ispConfiguration : ispConfigurations.values()) {
       long ispAs = getAsnOfIspNode(ispConfiguration);
@@ -294,14 +294,14 @@ public final class ModelingUtils {
    */
   @VisibleForTesting
   @Nullable
-  static Configuration getIspConfigurationNode(Long asn, IspInfo ispInfo, Warnings warnings) {
+  static Configuration getIspConfigurationNode(
+      Long asn, IspInfo ispInfo, NetworkFactory nf, BatfishLogger logger) {
     if (ispInfo.getBgpActivePeerConfigs().isEmpty()
         || ispInfo.getInterfaceAddresses().isEmpty()
         || ispInfo.getInterfaceAddresses().size() != ispInfo.getBgpActivePeerConfigs().size()) {
-      warnings.redFlag(String.format("ISP information for ASN '%s' is not correct", asn));
+      logger.warnf("ISP information for ASN '%s' is not correct", asn);
       return null;
     }
-    NetworkFactory nf = new NetworkFactory();
 
     Configuration.Builder cb = nf.configurationBuilder();
     Configuration ispConfiguration =
