@@ -143,7 +143,13 @@ public final class AutoCompleteUtils {
         {
           suggestions =
               ParboiledAutoComplete.autoCompleteIpSpace(
-                  query, maxSuggestions, completionMetadata, nodeRolesData, referenceLibrary);
+                  network,
+                  snapshot,
+                  query,
+                  maxSuggestions,
+                  completionMetadata,
+                  nodeRolesData,
+                  referenceLibrary);
           break;
         }
       case IPSEC_SESSION_STATUS:

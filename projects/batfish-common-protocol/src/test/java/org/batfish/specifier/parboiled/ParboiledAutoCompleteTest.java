@@ -1,6 +1,5 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.ParboiledAutoComplete.autoCompletePartialMatch;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -11,19 +10,20 @@ import org.junit.Test;
 
 public class ParboiledAutoCompleteTest {
 
+  ParboiledAutoComplete _testPAC =
+      new ParboiledAutoComplete(null, null, null, null, null, 0, null, null, null);
+
   @Test
   public void testAutoCompletePartialMatchStringLiteral() {
     PartialMatch pm = new PartialMatch(Type.STRING_LITERAL, "pfx", "comp");
     assertThat(
-        autoCompletePartialMatch(pm, 2, Integer.MAX_VALUE, null, null, null),
+        _testPAC.autoCompletePartialMatch(pm, 2),
         equalTo(ImmutableList.of(new AutocompleteSuggestion("comp", true, null, -1, 2))));
   }
 
   @Test
-  public void testAutoCompletePartialMatchUnknownLabel() {
+  public void testAutoCompletePartialMatchSkipLabel() {
     PartialMatch pm = new PartialMatch(Type.IP_RANGE, "pfx", "comp");
-    assertThat(
-        autoCompletePartialMatch(pm, 2, Integer.MAX_VALUE, null, null, null),
-        equalTo(ImmutableList.of()));
+    assertThat(_testPAC.autoCompletePartialMatch(pm, 2), equalTo(ImmutableList.of()));
   }
 }

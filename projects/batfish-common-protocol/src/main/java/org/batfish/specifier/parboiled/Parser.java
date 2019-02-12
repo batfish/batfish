@@ -31,15 +31,12 @@ class Parser extends CommonParser {
 
   static final Parser INSTANCE = Parboiled.createParser(Parser.class);
 
-  static final Map<String, Completion.Type> COMPLETION_TYPES = initCompletionTypes(Parser.class);
+  private static final Map<String, Completion.Type> _COMPLETION_TYPES =
+      initCompletionTypes(Parser.class);
 
-  /**
-   * Shared entry point for all expressions.
-   *
-   * <p>The parameter {@code expression} specifies the type of expression we want to parse.
-   */
-  public Rule input(Rule expression) {
-    return Sequence(WhiteSpace(), expression, WhiteSpace(), EOI);
+  @Override
+  public Map<String, Completion.Type> getCompletionTypes() {
+    return _COMPLETION_TYPES;
   }
 
   /**
