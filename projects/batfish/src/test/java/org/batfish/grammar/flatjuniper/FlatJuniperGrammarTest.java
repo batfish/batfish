@@ -1537,15 +1537,34 @@ public final class FlatJuniperGrammarTest {
 
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
-    String addr = "2.2.2.2";
+    String addrAccepted = "2.2.2.2";
+    String addrRejected = "2.2.2.3";
 
-    Flow flow = createFlow(addr, addr);
+    Flow flowAccepted = createFlow(addrAccepted, addrAccepted);
+    Flow flowRejected = createFlow(addrAccepted, addrRejected);
 
-    IpAccessList acl =
+    IpAccessList aclUntrust =
         c.getAllInterfaces().get(interfaceNameUntrust).getPreTransformationOutgoingFilter();
+    IpAccessList aclTrust =
+        c.getAllInterfaces().get(interfaceNameTrust).getPreTransformationOutgoingFilter();
 
-    // Make sure the flow is rejected since the destination address is undefined
-    assertThat(acl, rejects(flow, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    // Make sure flow matching address-book entry is accepted despite the rule having one undefined
+    // destination address
+    assertThat(
+        aclUntrust,
+        accepts(flowAccepted, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    // Make sure flow not matching address-book entry is rejected
+    assertThat(
+        aclUntrust,
+        rejects(flowRejected, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+
+    // Make sure both flows are rejected by rule with no defined destination address
+    assertThat(
+        aclTrust,
+        rejects(flowAccepted, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclTrust,
+        rejects(flowRejected, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test
@@ -1566,6 +1585,7 @@ public final class FlatJuniperGrammarTest {
     IpAccessList acl =
         c.getAllInterfaces().get(interfaceNameUntrust).getPreTransformationOutgoingFilter();
 
+    // Confirm both global and attached address-book entries are processed properly
     // Make sure the flow with source address matching global book and destination address matching
     // attached book is accepted
     assertThat(

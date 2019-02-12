@@ -40,8 +40,8 @@ public final class FwFromSourceAddressBookEntry extends FwFrom {
     if (addressBookName == null) {
       w.redFlag(String.format("Missing source address-book entry '%s'", _addressBookEntryName));
       // Leave existing constraint, otherwise match nothing
-      if (headerSpaceBuilder.getDstIps() == null) {
-        headerSpaceBuilder.setDstIps(EmptyIpSpace.INSTANCE);
+      if (headerSpaceBuilder.getSrcIps() == null) {
+        headerSpaceBuilder.setSrcIps(EmptyIpSpace.INSTANCE);
       }
       return;
     }
