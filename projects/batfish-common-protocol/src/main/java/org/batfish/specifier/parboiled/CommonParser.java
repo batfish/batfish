@@ -25,6 +25,8 @@ public abstract class CommonParser extends BaseParser<Object> {
     ImmutableMap.Builder<String, Completion.Type> completionTypes = ImmutableMap.builder();
     // fromStringLiteral is not enumerated because its protected; so we add explicitly
     completionTypes.put("fromStringLiteral", Completion.Type.STRING_LITERAL);
+    // EOI does not have an explicit rule; so we add explicitly
+    completionTypes.put("EOI", Completion.Type.EOI);
     for (Method method : parserClass.getMethods()) {
       Completion annotation = method.getAnnotation(Completion.class);
       if (annotation != null) {

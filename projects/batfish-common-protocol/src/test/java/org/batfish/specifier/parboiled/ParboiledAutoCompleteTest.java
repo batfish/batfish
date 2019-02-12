@@ -2,12 +2,14 @@ package org.batfish.specifier.parboiled;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import java.util.Map;
+import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.batfish.referencelibrary.ReferenceLibrary;
+import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.parboiled.Completion.Type;
 import org.junit.Test;
 import org.parboiled.Parboiled;
@@ -87,9 +89,9 @@ public class ParboiledAutoCompleteTest {
         "snapshot",
         query,
         Integer.MAX_VALUE,
-        null,
-        null,
-        null);
+        CompletionMetadata.builder().build(),
+        NodeRolesData.builder().build(),
+        new ReferenceLibrary(null));
   }
 
   /** Test that we produce auto completion suggestions even for valid inputs */
@@ -103,7 +105,9 @@ public class ParboiledAutoCompleteTest {
             .run(query);
     assertTrue(result.parseErrors.isEmpty());
 
-    assertFalse(getTestPAC(query).run().isEmpty());
+    assertThat(
+        getTestPAC(query).run(),
+        equalTo(ImmutableList.of(new AutocompleteSuggestion(",", true, null, -1, 7))));
   }
 
   @Test

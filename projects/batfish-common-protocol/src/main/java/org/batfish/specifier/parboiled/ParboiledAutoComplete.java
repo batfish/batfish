@@ -88,9 +88,8 @@ public final class ParboiledAutoComplete {
      * Before passing the query to the parser, we make it illegal by adding a funny, non-ascii
      * character (soccer ball :)). We will not get any errors backs if the string is legal.
      */
-    ParsingResult<?> result =
-        new ReportingParseRunner<>(_parser.input(_expression))
-            .run(_query + new String(Character.toChars(0x26bd)));
+    String testQuery = _query + new String(Character.toChars(0x26bd));
+    ParsingResult<?> result = new ReportingParseRunner<>(_parser.input(_expression)).run(testQuery);
     if (result.parseErrors.isEmpty()) {
       throw new IllegalStateException("Failed to force erroneous input");
     }

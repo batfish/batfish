@@ -15,6 +15,7 @@ import java.lang.annotation.Target;
 
   enum Type {
     ADDRESS_GROUP_AND_BOOK,
+    EOI,
     IP_ADDRESS,
     IP_PREFIX,
     IP_RANGE,
