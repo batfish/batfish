@@ -891,10 +891,10 @@ class EncoderSlice {
    */
   private void addBoundConstraints() {
 
-    ArithExpr upperBound4 = mkInt((long) Math.pow(2, 4));
-    ArithExpr upperBound8 = mkInt((long) Math.pow(2, 8));
-    ArithExpr upperBound16 = mkInt((long) Math.pow(2, 16));
-    ArithExpr upperBound32 = mkInt((long) Math.pow(2, 32));
+    ArithExpr upperBound4 = mkInt(1L << 4);
+    ArithExpr upperBound8 = mkInt(1L << 8);
+    ArithExpr upperBound16 = mkInt(1L << 16);
+    ArithExpr upperBound32 = mkInt(1L << 32);
     ArithExpr zero = mkInt(0);
 
     // Valid 16 bit integer
