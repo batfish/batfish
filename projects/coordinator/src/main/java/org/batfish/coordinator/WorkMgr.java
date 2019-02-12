@@ -159,6 +159,7 @@ import org.batfish.specifier.IpProtocolSpecifier;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.storage.FileBasedStorageDirectoryProvider;
 import org.batfish.storage.StorageProvider;
+import org.batfish.storage.StoredObjectMetadata;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -3151,6 +3152,28 @@ public class WorkMgr extends AbstractCoordinator {
               "Could not read input object for network '%s', snapshot '%s', key '%s'",
               network, snapshot, key),
           e);
+    }
+  }
+
+  @MustBeClosed
+  public List<StoredObjectMetadata> getSnapshotInputKeys(String network, String snapshot)
+      throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return null;
+    }
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    try {
+      return _storage.getSnapshotInputKeys(networkId, snapshotId);
+    } catch (FileNotFoundException e) {
+      return null;
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not fetch input keys for network '%s', snapshot '%s'", network, snapshot));
     }
   }
 

@@ -6,6 +6,8 @@ import com.google.common.annotations.VisibleForTesting;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -16,7 +18,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.FilenameUtils;
 import org.batfish.common.CoordConsts;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.Main;
+import org.batfish.storage.StoredObjectMetadata;
 
 /**
  * This resource provided functionality for storing and retrieving user-submitted input data at the
@@ -55,5 +59,15 @@ public class SnapshotInputObjectsResource {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @SuppressWarnings("MustBeClosedChecker") // Response eventually closes it.
-  public Response listKeys() throws IOException {}
+  public Response listKeys() throws IOException {
+    List<StoredObjectMetadata> keys = Main.getWorkMgr().getSnapshotInputKeys(_network, _snapshot);
+    if (keys == null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    List<String> serializedKeys =
+        keys.stream()
+            .map(BatfishObjectMapper::writeStringRuntimeError)
+            .collect(Collectors.toList());
+    return Response.ok(serializedKeys, MediaType.APPLICATION_JSON).build();
+  }
 }
