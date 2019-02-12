@@ -246,6 +246,7 @@ public final class AutoCompleteUtils {
    * @param query The query that came to the concrete child class
    * @return The list of suggestions
    */
+  @Nonnull
   public static List<AutocompleteSuggestion> baseAutoComplete(
       @Nullable String query, Set<String> allProperties) {
 
@@ -269,7 +270,9 @@ public final class AutoCompleteUtils {
   }
 
   private static void checkCompletionMetadata(
-      CompletionMetadata completionMetadata, String network, String snapshot) {
+      @Nullable CompletionMetadata completionMetadata,
+      @Nullable String network,
+      @Nullable String snapshot) {
     checkArgument(
         completionMetadata != null,
         "Cannot autocomplete because completion metadata not found for %s / %s",
@@ -277,7 +280,8 @@ public final class AutoCompleteUtils {
         snapshot);
   }
 
-  private static void checkNodeRolesData(NodeRolesData nodeRolesData, String network) {
+  private static void checkNodeRolesData(
+      @Nullable NodeRolesData nodeRolesData, @Nullable String network) {
     checkArgument(
         nodeRolesData != null,
         "Cannot autocomplete because node roles data not found for %s",
@@ -285,6 +289,7 @@ public final class AutoCompleteUtils {
   }
 
   /** Returns the Pattern if {@code candidateRegex} is a valid regex, and null otherwise */
+  @Nullable
   private static Pattern safeGetPattern(String candidateRegex) {
     try {
       return Pattern.compile(candidateRegex);
