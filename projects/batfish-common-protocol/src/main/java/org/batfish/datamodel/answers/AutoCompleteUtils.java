@@ -170,6 +170,7 @@ public final class AutoCompleteUtils {
       case NODE_SPEC:
         {
           checkCompletionMetadata(completionMetadata, network, snapshot);
+          checkNodeRolesData(nodeRolesData, network);
           suggestions =
               NodesSpecifier.autoComplete(query, completionMetadata.getNodes(), nodeRolesData);
           break;
