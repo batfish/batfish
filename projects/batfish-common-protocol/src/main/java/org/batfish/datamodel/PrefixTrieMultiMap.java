@@ -126,7 +126,6 @@ public final class PrefixTrieMultiMap<DataT> implements Serializable {
    *
    * @param p prefix the element is mapped to
    * @param e element to remove
-   *
    * @throws IllegalArgumentException if the input {@link Prefix} is not contained in the {@link
    *     Prefix} of this subtree.
    */
