@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -24,6 +25,7 @@ public final class ParboiledAutoComplete {
 
   private final CommonParser _parser;
   private final Rule _expression;
+  private final Map<String, Completion.Type> _completionTypes;
 
   private final String _network;
   private final String _snapshot;
@@ -36,6 +38,7 @@ public final class ParboiledAutoComplete {
   ParboiledAutoComplete(
       CommonParser parser,
       Rule expression,
+      Map<String, Completion.Type> completionTypes,
       String network,
       String snapshot,
       String query,
@@ -45,6 +48,7 @@ public final class ParboiledAutoComplete {
       ReferenceLibrary referenceLibrary) {
     _parser = parser;
     _expression = expression;
+    _completionTypes = completionTypes;
     _network = network;
     _snapshot = snapshot;
     _query = query;
@@ -54,6 +58,30 @@ public final class ParboiledAutoComplete {
     _referenceLibrary = referenceLibrary;
   }
 
+  /** Auto completes IpSpace queries */
+  public static List<AutocompleteSuggestion> autoCompleteIpSpace(
+      String network,
+      String snapshot,
+      String query,
+      int maxSuggestions,
+      CompletionMetadata completionMetadata,
+      NodeRolesData nodeRolesData,
+      ReferenceLibrary referenceLibrary) {
+    return new ParboiledAutoComplete(
+            Parser.INSTANCE,
+            Parser.INSTANCE.IpSpaceExpression(),
+            Parser.COMPLETION_TYPES,
+            network,
+            snapshot,
+            query,
+            maxSuggestions,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary)
+        .run();
+  }
+
+  /** This is the entry point for all auto completions */
   List<AutocompleteSuggestion> run() {
 
     /**
@@ -69,8 +97,7 @@ public final class ParboiledAutoComplete {
 
     InvalidInputError error = (InvalidInputError) result.parseErrors.get(0);
 
-    Set<PartialMatch> partialMatches =
-        ParserUtils.getPartialMatches(error, _parser.getCompletionTypes());
+    Set<PartialMatch> partialMatches = ParserUtils.getPartialMatches(error, _completionTypes);
 
     // first add string literals and then add others to the list. we do this because there can be
     // many suggestions based on dynamic completion (e.g., all nodes in the snapshot) and we do not
@@ -90,27 +117,6 @@ public final class ParboiledAutoComplete {
             .collect(Collectors.toList()));
 
     return suggestions;
-  }
-
-  public static List<AutocompleteSuggestion> autoCompleteIpSpace(
-      String network,
-      String snapshot,
-      String query,
-      int maxSuggestions,
-      CompletionMetadata completionMetadata,
-      NodeRolesData nodeRolesData,
-      ReferenceLibrary referenceLibrary) {
-    return new ParboiledAutoComplete(
-            Parser.INSTANCE,
-            Parser.INSTANCE.IpSpaceExpression(),
-            network,
-            snapshot,
-            query,
-            maxSuggestions,
-            completionMetadata,
-            nodeRolesData,
-            referenceLibrary)
-        .run();
   }
 
   @VisibleForTesting

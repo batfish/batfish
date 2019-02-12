@@ -21,10 +21,6 @@ import org.parboiled.Rule;
 })
 public abstract class CommonParser extends BaseParser<Object> {
 
-  public Map<String, Completion.Type> getCompletionTypes() {
-    return initCompletionTypes(this.getClass());
-  }
-
   static Map<String, Type> initCompletionTypes(Class<?> parserClass) {
     ImmutableMap.Builder<String, Completion.Type> completionTypes = ImmutableMap.builder();
     // fromStringLiteral is not enumerated because its protected; so we add explicitly

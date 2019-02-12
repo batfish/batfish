@@ -24,7 +24,7 @@ public class CommonParserTest {
      * <pre>
      * testExpr := testTerm [, testTerm]*
      *
-     * testTerm := specifier(argument)
+     * testTerm := @specifier(argument)
      *               | (testTerm)
      *               | testBase
      * </pre>

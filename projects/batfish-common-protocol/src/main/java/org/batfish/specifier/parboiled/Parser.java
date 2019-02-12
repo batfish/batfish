@@ -31,13 +31,7 @@ class Parser extends CommonParser {
 
   static final Parser INSTANCE = Parboiled.createParser(Parser.class);
 
-  private static final Map<String, Completion.Type> _COMPLETION_TYPES =
-      initCompletionTypes(Parser.class);
-
-  @Override
-  public Map<String, Completion.Type> getCompletionTypes() {
-    return _COMPLETION_TYPES;
-  }
+  static final Map<String, Completion.Type> COMPLETION_TYPES = initCompletionTypes(Parser.class);
 
   /**
    * IpSpace grammar

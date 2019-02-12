@@ -22,10 +22,9 @@ public class ParserUtilsTest {
 
   @org.junit.Rule public ExpectedException _thrown = ExpectedException.none();
 
-  private static TestParser _parser = Parboiled.createParser(TestParser.class);
-
   private static AbstractParseRunner<?> getRunner() {
-    return new ReportingParseRunner<>(_parser.input(_parser.TestExpression()));
+    return new ReportingParseRunner<>(
+        TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()));
   }
 
   @SuppressWarnings({
@@ -35,11 +34,9 @@ public class ParserUtilsTest {
   })
   static class TestParser extends CommonParser {
 
-    public static final Map<String, Type> COMPLETION_TYPES = initCompletionTypes(TestParser.class);
+    public static final TestParser INSTANCE = Parboiled.createParser(TestParser.class);
 
-    public Rule input(Rule expression) {
-      return Sequence(WhiteSpace(), expression, WhiteSpace(), EOI);
-    }
+    public static final Map<String, Type> COMPLETION_TYPES = initCompletionTypes(TestParser.class);
 
     /**
      * Test grammar
