@@ -71,24 +71,21 @@ public class Ip implements Comparable<Ip>, Serializable {
           }
         }
       }
-      throw new IllegalArgumentException("Invalid ip string: \"" + addr + "\"");
+      throw new IllegalArgumentException("Invalid IPv4 address: " + addr);
     }
     long num = 0;
-    for (int i = 0; i < addrArray.length; i++) {
-      int power = 3 - i;
-      String segmentStr = addrArray[i];
-      try {
-        int segment = Integer.parseInt(segmentStr);
+    try {
+      for (int i = 0; i < 4; i++) {
+        long segment = Long.parseLong(addrArray[i]);
         checkArgument(
-            segment >= 0 && segment <= 255,
-            "Invalid ip segment '%s' in ip string: '%s'",
-            segmentStr,
-            addr);
-        num += ((segment * Math.pow(256, power)));
-      } catch (NumberFormatException e) {
-        throw new IllegalArgumentException(
-            "Invalid ip segment: \"" + segmentStr + "\" in ip string: \"" + addr + "\"", e);
+            0 <= segment && segment <= 255,
+            "Invalid IPv4 address: %s. %s is an invalid octet",
+            addr,
+            addrArray[i]);
+        num += segment << ((3 - i) * 8);
       }
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException("Invalid IPv4 address: " + addr, e);
     }
     return num;
   }
