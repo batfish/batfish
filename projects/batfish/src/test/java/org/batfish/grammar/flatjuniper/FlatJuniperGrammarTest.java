@@ -1532,6 +1532,52 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testFirewallZoneAddressUndefined() throws IOException {
+    Configuration c = parseConfig("firewall-zone-address-undefined");
+
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    String addr = "2.2.2.2";
+
+    Flow flow = createFlow(addr, addr);
+
+    IpAccessList acl =
+        c.getAllInterfaces().get(interfaceNameUntrust).getPreTransformationOutgoingFilter();
+
+    // Make sure the flow is rejected since the destination address is undefined
+    assertThat(acl, rejects(flow, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
+  public void testFirewallZoneAddressBookAttachAndGlobal() throws IOException {
+    Configuration c = parseConfig("firewall-zone-address-book-attach-and-global");
+
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    // Destination address allowed by the address-book
+    String destAddr = "2.2.2.2";
+    // Source address allowed by the address-book
+    String sourceAddr = "3.3.3.3";
+
+    Flow flowAllowed = createFlow(sourceAddr, destAddr);
+    Flow flowRejected1 = createFlow(destAddr, destAddr);
+    Flow flowRejected2 = createFlow(sourceAddr, sourceAddr);
+
+    IpAccessList acl =
+        c.getAllInterfaces().get(interfaceNameUntrust).getPreTransformationOutgoingFilter();
+
+    // Make sure the flow with source address matching global book and destination address matching
+    // attached book is accepted
+    assertThat(
+        acl, accepts(flowAllowed, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    // Make sure flow with different addresses is denied
+    assertThat(
+        acl, rejects(flowRejected1, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        acl, rejects(flowRejected2, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
   public void testFirewallZones() throws IOException {
     Configuration c = parseConfig("firewall-no-policies");
     String interfaceNameTrust = "ge-0/0/0.0";
