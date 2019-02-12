@@ -390,14 +390,17 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   @VisibleForTesting
   IpSpace computeIpsAssignedToThisInterface(Interface iface) {
+    if (iface.getAllAddresses().isEmpty()) {
+      return EmptyIpSpace.INSTANCE;
+    }
+
     Set<Ip> ips = _interfaceOwnedIps.get(iface.getOwner().getHostname()).get(iface.getName());
     if (ips == null || ips.isEmpty()) {
       return EmptyIpSpace.INSTANCE;
     }
     IpWildcardSetIpSpace.Builder ipsAssignedToThisInterfaceBuilder = IpWildcardSetIpSpace.builder();
     ips.forEach(ip -> ipsAssignedToThisInterfaceBuilder.including(new IpWildcard(ip)));
-    IpWildcardSetIpSpace ipsAssignedToThisInterface = ipsAssignedToThisInterfaceBuilder.build();
-    return ipsAssignedToThisInterface;
+    return ipsAssignedToThisInterfaceBuilder.build();
   }
 
   @VisibleForTesting

@@ -19,6 +19,7 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -263,7 +264,12 @@ public class BgpRib extends AbstractRib<BgpRoute> {
     if (_mainRib == null) {
       return Long.MAX_VALUE;
     }
-    Set<AbstractRoute> s = _mainRib.longestPrefixMatch(route.getNextHopIp());
-    return s == null || s.isEmpty() ? Long.MAX_VALUE : s.iterator().next().getMetric();
+
+    Ip nextHopIp = route.getNextHopIp();
+    if (nextHopIp == Ip.AUTO) {
+      return Long.MAX_VALUE;
+    }
+    Set<AbstractRoute> s = _mainRib.longestPrefixMatch(nextHopIp);
+    return s.isEmpty() ? Long.MAX_VALUE : s.iterator().next().getMetric();
   }
 }

@@ -6,7 +6,6 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.graph.Traverser;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
@@ -176,34 +175,35 @@ final class RibTree<R extends AbstractRoute> implements Serializable {
   /** See {@link GenericRib#getMatchingIps()} */
   public Map<Prefix, IpSpace> getMatchingIps() {
     ImmutableMap.Builder<Prefix, IpSpace> builder = ImmutableMap.builder();
-    IpWildcardSetIpSpace.Builder matchingIps = IpWildcardSetIpSpace.builder();
-    Traverser.<PrefixTrieMultiMap<R>>forTree(PrefixTrieMultiMap::getChildren)
-        // Post order ensures exclusions are properly handled
-        .depthFirstPostOrder(_root)
-        .forEach(
-            n -> {
-              if (hasForwardingRoute(n.getElements(n.getPrefix()))) {
-                matchingIps
-                    .excluding(matchingIps.build().getWhitelist())
-                    .including(new IpWildcard(n.getPrefix()));
-                builder.put(n.getPrefix(), matchingIps.build());
-              }
-            });
 
+    /* We traverse the tree in post-order, so when we visit each intermediate node the blacklist
+     * will contain all prefixes from each of its children. However, when we are visiting the right
+     * subtree of a node, the blacklist will already contain all the prefixes of the left subtree.
+     * This is wasteful, as the blacklist can include potentially many redundant prefixes. Consider
+     * rewriting to avoid this (e.g. use a fold).
+     */
+    ImmutableSortedSet.Builder<IpWildcard> blacklist = ImmutableSortedSet.naturalOrder();
+    _root.traverseEntries(
+        (prefix, elems) -> {
+          if (hasForwardingRoute(elems)) {
+            IpWildcard wc = new IpWildcard(prefix);
+            builder.put(
+                prefix, new IpWildcardSetIpSpace(blacklist.build(), ImmutableSortedSet.of(wc)));
+            blacklist.add(wc);
+          }
+        });
     return builder.build();
   }
 
   /** See {@link GenericRib#getRoutableIps()} */
   IpSpace getRoutableIps() {
     IpWildcardSetIpSpace.Builder builder = IpWildcardSetIpSpace.builder();
-    Traverser.<PrefixTrieMultiMap<R>>forTree(PrefixTrieMultiMap::getChildren)
-        .breadthFirst(_root)
-        .forEach(
-            n -> {
-              if (hasForwardingRoute(n.getElements(n.getPrefix()))) {
-                builder.including(new IpWildcard(n.getPrefix()));
-              }
-            });
+    _root.traverseEntries(
+        (prefix, elems) -> {
+          if (hasForwardingRoute(elems)) {
+            builder.including(new IpWildcard(prefix));
+          }
+        });
     return builder.build();
   }
 }

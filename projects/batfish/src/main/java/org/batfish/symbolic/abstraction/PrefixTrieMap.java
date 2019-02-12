@@ -84,7 +84,7 @@ public class PrefixTrieMap implements Serializable {
       long l = ip.asLong();
       long lnew = l;
       if (val) {
-        long delta = (long) Math.pow(2, 32 - length - 1);
+        long delta = 1L << (32 - length - 1);
         lnew = l + delta;
       }
       return Prefix.create(Ip.create(lnew), length + 1);
