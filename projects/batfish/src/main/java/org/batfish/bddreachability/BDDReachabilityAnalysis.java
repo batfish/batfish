@@ -149,15 +149,16 @@ public class BDDReachabilityAnalysis {
    */
   public Map<IngressLocation, BDD> detectLoops() {
     /*
-     * Run enough rounds to exceed the max TTL (255). It takes at most 5 iterations to go between
+     * Run enough rounds to exceed the max TTL (255). It takes at most 6 iterations to go between
      * hops:
-     * PreInInterface -> PostInVrf -> PreOutVrf -> PreOutEdge -> PreOutEdgePostNat -> PreInInterface
+     * PreInInterface -> PostInInterface -> PostInVrf -> PreOutVrf -> PreOutEdge ->
+     * PreOutEdgePostNat -> PreInInterface
      *
      * Since we don't model TTL, all packets on loops will loop forever. But most paths will stop
      * long before numRounds. What's left will be a few candidate location/headerspace pairs that
      * may be on loops. In practice this is most likely way more iterations than necessary.
      */
-    int numRounds = 256 * 5;
+    int numRounds = 256 * 6;
     Map<StateExpr, BDD> reachableInNRounds = reachableInNRounds(numRounds);
 
     /*

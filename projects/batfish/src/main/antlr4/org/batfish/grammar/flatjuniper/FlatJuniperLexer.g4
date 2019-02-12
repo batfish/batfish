@@ -6509,6 +6509,7 @@ F_InterfaceMediaType
    'em' |
    'es' |
    'et' |
+   'fab' |
    'fe' |
    'fxp' |
    'ge' |

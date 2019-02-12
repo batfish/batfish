@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.stream.LongStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNullableByDefault;
 
 /** Handles EIGRP metric information. */
 public class EigrpMetric implements Serializable {
@@ -241,11 +242,12 @@ public class EigrpMetric implements Serializable {
     }
   }
 
+  @ParametersAreNullableByDefault
   public static class Builder {
     @Nullable private Double _bandwidth;
+    @Nullable private Double _defaultBandwidth;
+    @Nullable private Double _defaultDelay;
     @Nullable private Double _delay;
-    private Double _defaultDelay;
-    private Double _defaultBandwidth;
     private EigrpProcessMode _mode;
 
     @Nullable
@@ -259,27 +261,27 @@ public class EigrpMetric implements Serializable {
       return new EigrpMetric(bandwidth, delay, _mode);
     }
 
-    public Builder setBandwidth(@Nullable Double bandwidth) {
+    public Builder setBandwidth(Double bandwidth) {
       _bandwidth = bandwidth;
       return this;
     }
 
-    public Builder setDefaultDelay(double defaultDelay) {
+    public Builder setDefaultDelay(Double defaultDelay) {
       _defaultDelay = defaultDelay;
       return this;
     }
 
-    public Builder setDefaultBandwidth(double defaultBandwidth) {
+    public Builder setDefaultBandwidth(Double defaultBandwidth) {
       _defaultBandwidth = defaultBandwidth;
       return this;
     }
 
-    public Builder setDelay(@Nullable Double delay) {
+    public Builder setDelay(Double delay) {
       _delay = delay;
       return this;
     }
 
-    public Builder setMode(EigrpProcessMode mode) {
+    public Builder setMode(@Nonnull EigrpProcessMode mode) {
       _mode = mode;
       return this;
     }

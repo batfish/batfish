@@ -26,6 +26,7 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressVrf;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
 import static org.batfish.datamodel.matchers.HopMatchers.hasNodeName;
+import static org.batfish.datamodel.matchers.HopMatchers.hasSteps;
 import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasNewFirewallSessions;
 import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasReverseFlow;
 import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasTrace;
@@ -1834,5 +1835,61 @@ public class TracerouteEngineImplTest {
                           ImmutableList.of(
                               hasNodeName(c1.getHostname()), hasNodeName(c2.getHostname())))))));
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void testMultipleNextHopInterfaces() throws IOException {
+    // Construct network
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration config = cb.build();
+    Vrf vrf = nf.vrfBuilder().setOwner(config).build();
+    Interface.Builder ib =
+        nf.interfaceBuilder()
+            .setOwner(config)
+            .setVrf(vrf)
+            .setOutgoingFilter(
+                nf.aclBuilder()
+                    .setOwner(config)
+                    .setLines(ImmutableList.of(IpAccessListLine.REJECT_ALL))
+                    .build());
+
+    Interface i1 = ib.setAddress(new InterfaceAddress("1.1.1.1/24")).build();
+
+    StaticRoute.Builder sb =
+        StaticRoute.builder()
+            .setAdministrativeCost(1)
+            .setNetwork(Prefix.parse("5.0.0.0/32"))
+            .setNextHopInterface(i1.getName());
+
+    // two static routes with the same outgoing interface but two different next-hop IPs.
+    vrf.setStaticRoutes(
+        ImmutableSortedSet.of(
+            sb.setNextHopIp(Ip.parse("8.8.8.8")).build(),
+            sb.setNextHopIp(Ip.parse("8.8.8.9")).build()));
+
+    // Compute data plane
+    SortedMap<String, Configuration> configs = ImmutableSortedMap.of(config.getHostname(), config);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
+    batfish.computeDataPlane();
+    TracerouteEngine tracerouteEngine = batfish.getTracerouteEngine();
+
+    Flow flow =
+        Flow.builder()
+            .setDstIp(Ip.parse("5.0.0.0"))
+            .setIngressNode(config.getHostname())
+            .setIngressVrf(vrf.getName())
+            .setTag("TAG")
+            .build();
+    List<Trace> traces = tracerouteEngine.computeTraces(ImmutableSet.of(flow), false).get(flow);
+
+    /* The trace steps we create for each route should be not leak into the other trace. If they did
+     * the number of steps would increase in the second trace.
+     */
+    assertThat(
+        traces,
+        contains(hasHops(contains(hasSteps(hasSize(3)))), hasHops(contains(hasSteps(hasSize(3))))));
   }
 }
