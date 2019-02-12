@@ -112,7 +112,7 @@ public final class ModelingUtils {
    * @return {@link Map} of {@link Configuration}s for the ISPs and Internet
    */
   @VisibleForTesting
-  static Map<String, Configuration> getInternetAndIspNodes(
+  public static Map<String, Configuration> getInternetAndIspNodes(
       @Nonnull Map<String, Configuration> configurations,
       @Nonnull List<NodeInterfacePair> interfacesConnectedToIsps,
       @Nonnull List<Long> asNumOfIsps,

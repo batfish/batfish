@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
+/** Border interface information used to create ISPs */
 public class BorderInterfaceInfo {
   private static final String PROP_BORDER_INTERFACE = "borderInterface";
 
@@ -16,6 +17,24 @@ public class BorderInterfaceInfo {
 
   public BorderInterfaceInfo(@Nonnull NodeInterfacePair borderInterface) {
     _borderInterface = borderInterface;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof BorderInterfaceInfo)) {
+      return false;
+    }
+    BorderInterfaceInfo that = (BorderInterfaceInfo) o;
+    return Objects.equals(_borderInterface, that._borderInterface);
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(_borderInterface);
   }
 
   @JsonCreator

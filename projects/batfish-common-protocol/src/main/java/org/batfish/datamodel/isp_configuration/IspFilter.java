@@ -6,10 +6,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
+/** Apply filter on top of created ISPs through {@link BorderInterfaceInfo}s */
 public class IspFilter {
   private static final String PROP_ONLY_REMOTE_ASNS = "onlyRemoteAsns";
   private static final String PROP_ONLY_REMOTE_IPS = "onlyRemoteIps";
@@ -29,6 +31,25 @@ public class IspFilter {
     return new IspFilter(
         firstNonNull(onlyRemoteAsns, ImmutableList.of()),
         firstNonNull(onlyRemoteIps, ImmutableList.of()));
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof IspFilter)) {
+      return false;
+    }
+    IspFilter ispFilter = (IspFilter) o;
+    return Objects.equals(_onlyRemoteAsns, ispFilter._onlyRemoteAsns)
+        && Objects.equals(_onlyRemoteIps, ispFilter._onlyRemoteIps);
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(_onlyRemoteAsns, _onlyRemoteIps);
   }
 
   @JsonProperty(PROP_ONLY_REMOTE_ASNS)
