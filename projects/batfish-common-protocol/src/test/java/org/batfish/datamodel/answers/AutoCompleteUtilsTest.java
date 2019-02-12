@@ -75,7 +75,7 @@ public class AutoCompleteUtilsTest {
             .collect(Collectors.toList()),
         equalTo(ImmutableList.builder().addAll(properties).build()));
 
-    // the capital P shouldn't matter and this should autoComplete to three entries
+    // the capital P shouldn't matter and this should autoComplete to two entries
     assertThat(
         new ArrayList<>(AutoCompleteUtils.baseAutoComplete("ntP", properties)),
         equalTo(
@@ -411,23 +411,6 @@ public class AutoCompleteUtilsTest {
             .collect(Collectors.toSet()),
         equalTo(ImmutableSet.of(suggested)));
   }
-
-  @Test
-  public void testAutocompleteNonExistentNetwork() throws IOException {
-    // should return null if network is not set up
-    assertThat(AutoCompleteUtils.autoComplete(Type.ZONE, "z", 5), equalTo(null));
-  }
-
-  //  @Test
-  //  public void testAutocompleteNonExistentSnapshot() throws IOException {
-  //    String network = "network";
-  //    // todo set up network here
-  //    _idManager.assignNetwork(network, _idManager.generateNetworkId());
-  //    // should return null if snapshot is not set up
-  //    assertThat(
-  //        AutoCompleteUtils.autoComplete(network, "snapshot", Type.ZONE, "z", 5, null, null),
-  //        equalTo(null));
-  //  }
 
   @Test
   public void testAutocompleteUnsupportedType() throws IOException {
