@@ -1,10 +1,13 @@
 package org.batfish.specifier.parboiled;
 
 import static junit.framework.TestCase.assertTrue;
+import static org.batfish.specifier.parboiled.ParboiledAutoComplete.RANK_STRING_LITERAL;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import java.util.List;
 import java.util.Map;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
@@ -94,9 +97,70 @@ public class ParboiledAutoCompleteTest {
         new ReferenceLibrary(null));
   }
 
+  static ParboiledAutoComplete getTestPAC(String query, CompletionMetadata completionMetadata) {
+    return new ParboiledAutoComplete(
+        TestParser.INSTANCE,
+        TestParser.INSTANCE.TestExpression(),
+        TestParser.COMPLETION_TYPES,
+        "network",
+        "snapshot",
+        query,
+        Integer.MAX_VALUE,
+        completionMetadata,
+        NodeRolesData.builder().build(),
+        new ReferenceLibrary(null));
+  }
+
+  /** Test that we produce auto complete snapshot-based dynamic values like IP addresses */
+  @Test
+  public void testRunDynamicValues() {
+    String query = "1.1.1.";
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder().setIps(ImmutableSet.of("1.1.1.1", "2.2.2.2")).build();
+
+    // 1.1.1.1 matches, but 2.2.2.2 does not
+    assertThat(
+        getTestPAC(query, completionMetadata).run(),
+        equalTo(
+            ImmutableList.of(
+                new AutocompleteSuggestion(
+                    "1.1.1.1", false, null, AutocompleteSuggestion.DEFAULT_RANK, 0))));
+  }
+
+  /** Test that String literals are inserted before dynamic values */
+  @Test
+  public void testRunStringLiteralsFirst() {
+    String query = "";
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder().setIps(ImmutableSet.of("1.1.1.1")).build();
+
+    List<AutocompleteSuggestion> suggestions = getTestPAC(query, completionMetadata).run();
+
+    /**
+     * The first three elements should should string literals and the last one should be dynamic. We
+     * do a 3-step dance to assert this because the ordering of first three completions is
+     * non-deterministic.
+     */
+    assertThat(suggestions.size(), equalTo(4));
+    assertThat(
+        ImmutableSet.copyOf(suggestions.subList(0, 3)),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion("!", true, null, RANK_STRING_LITERAL, 0),
+                new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, 0),
+                new AutocompleteSuggestion("@specifier", true, null, RANK_STRING_LITERAL, 0))));
+    assertThat(
+        suggestions.get(3),
+        equalTo(
+            new AutocompleteSuggestion(
+                "1.1.1.1", false, null, AutocompleteSuggestion.DEFAULT_RANK, 0)));
+  }
+
   /** Test that we produce auto completion suggestions even for valid inputs */
   @Test
-  public void testRunForceAutoComplete() {
+  public void testRunValidInput() {
     String query = "1.1.1.1";
 
     // first ensure that the query is valid input
@@ -105,9 +169,11 @@ public class ParboiledAutoCompleteTest {
             .run(query);
     assertTrue(result.parseErrors.isEmpty());
 
+    // commma is the only viable auto completion after a valid input
     assertThat(
         getTestPAC(query).run(),
-        equalTo(ImmutableList.of(new AutocompleteSuggestion(",", true, null, -1, 7))));
+        equalTo(
+            ImmutableList.of(new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, 7))));
   }
 
   @Test

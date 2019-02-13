@@ -52,6 +52,7 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.Variable.Type;
+import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.junit.Rule;
@@ -82,6 +83,16 @@ public class AutoCompleteUtilsTest {
             ImmutableList.of(
                 new AutocompleteSuggestion(NodePropertySpecifier.NTP_SERVERS, false),
                 new AutocompleteSuggestion(NodePropertySpecifier.NTP_SOURCE_INTERFACE, false))));
+  }
+
+  @Test
+  public void testAddressGroupAndBookAutocomplete() throws IOException {
+    ReferenceLibrary library = new ReferenceLibrary()
+    assertThat(
+        AutoCompleteUtils.autoComplete("network", "snapshot", Type.ADDRESS_GROUP_AND_BOOK, " ag , ", 5).stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(LOCAL_AS, IS_PASSIVE, REMOTE_AS)));
   }
 
   @Test

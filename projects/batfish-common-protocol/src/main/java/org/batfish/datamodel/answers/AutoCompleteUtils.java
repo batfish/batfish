@@ -4,7 +4,10 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -58,6 +61,21 @@ public final class AutoCompleteUtils {
     List<AutocompleteSuggestion> suggestions;
 
     switch (completionType) {
+      case ADDRESS_GROUP_AND_BOOK:
+        {
+          checkReferenceLibrary(referenceLibrary, network);
+          Map<String, Set<String>> pairs =
+              referenceLibrary.getReferenceBooks().stream()
+                  .map(
+                      b ->
+                          b.getAddressGroups().stream()
+                              .map(ag -> String.join(",", ag.getName(), b.getName()))
+                              .collect(ImmutableSet.toImmutableSet()))
+                  .flatMap(Collection::stream)
+                  .collect(ImmutableSet.toImmutableSet());
+          suggestions = pairAutoComplete(query, pairs);
+          break;
+        }
       case BGP_PEER_PROPERTY_SPEC:
         {
           suggestions = baseAutoComplete(query, BgpPeerPropertySpecifier.JAVA_MAP.keySet());
@@ -269,6 +287,28 @@ public final class AutoCompleteUtils {
     return suggestions.build();
   }
 
+  /**
+   * Returns a list of suggestions based on query over pairs.
+   *
+   * @param query The query that came to the concrete child class
+   * @return The list of suggestions
+   */
+  @Nonnull
+  public static List<AutocompleteSuggestion> pairAutoComplete(
+      @Nullable String query, Set<String> allProperties) {
+
+    // remove whitespace from the query
+    String testQuery = query == null ? "" : query.replaceAll("\\s+", "");
+
+    suggestions.addAll(
+        allProperties.stream()
+            .filter(prop -> queryPattern.matcher(prop.toLowerCase()).matches())
+            .map(prop -> new AutocompleteSuggestion(prop, false))
+            .collect(Collectors.toList()));
+
+    return suggestions.build();
+  }
+
   private static void checkCompletionMetadata(
       @Nullable CompletionMetadata completionMetadata,
       @Nullable String network,
@@ -285,6 +325,14 @@ public final class AutoCompleteUtils {
     checkArgument(
         nodeRolesData != null,
         "Cannot autocomplete because node roles data not found for %s",
+        network);
+  }
+
+  private static void checkReferenceLibrary(
+      @Nullable ReferenceLibrary referenceLibrary, @Nullable String network) {
+    checkArgument(
+        referenceLibrary != null,
+        "Cannot autocomplete because reference library not found for %s",
         network);
   }
 

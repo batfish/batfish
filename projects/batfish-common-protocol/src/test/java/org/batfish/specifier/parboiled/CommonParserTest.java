@@ -65,10 +65,12 @@ public class CommonParserTest {
         initCompletionTypes(TestParser.class),
         equalTo(
             ImmutableMap.of(
-                "TestBase",
-                Type.IP_ADDRESS,
                 "TestSpecifierInput",
                 Type.ADDRESS_GROUP_AND_BOOK,
+                "EOI",
+                Type.EOI,
+                "TestBase",
+                Type.IP_ADDRESS,
                 "fromStringLiteral",
                 Type.STRING_LITERAL)));
   }

@@ -23,6 +23,8 @@ import org.parboiled.support.ParsingResult;
 @ParametersAreNonnullByDefault
 public final class ParboiledAutoComplete {
 
+  public static final int RANK_STRING_LITERAL = 1;
+
   private final CommonParser _parser;
   private final Rule _expression;
   private final Map<String, Completion.Type> _completionTypes;
@@ -124,7 +126,8 @@ public final class ParboiledAutoComplete {
     switch (pm.getCompletionType()) {
       case STRING_LITERAL:
         return ImmutableList.of(
-            new AutocompleteSuggestion(pm.getMatchCompletion(), true, null, -1, startIndex));
+            new AutocompleteSuggestion(
+                pm.getMatchCompletion(), true, null, RANK_STRING_LITERAL, startIndex));
       case IP_ADDRESS:
         return AutoCompleteUtils.autoComplete(
             _network,
@@ -149,6 +152,7 @@ public final class ParboiledAutoComplete {
       case IP_WILDCARD:
         // We do not auto complete these two, as IP address mostly takes care of them
         return ImmutableList.of();
+      case EOI:
       default:
         // ignore things we do not know how to auto complete
         return ImmutableList.of();

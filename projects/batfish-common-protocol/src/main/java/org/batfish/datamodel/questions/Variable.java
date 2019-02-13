@@ -23,6 +23,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 public class Variable {
 
   public enum Type {
+    ADDRESS_GROUP_AND_BOOK("addressGroupAndBook", true),
     ANSWER_ELEMENT("answerElement", true),
     BGP_PEER_PROPERTY_SPEC("bgpPeerPropertySpec", true),
     BGP_PROCESS_PROPERTY_SPEC("bgpProcessPropertySpec", true),
