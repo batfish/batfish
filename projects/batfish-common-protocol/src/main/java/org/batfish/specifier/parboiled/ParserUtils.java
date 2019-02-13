@@ -16,11 +16,21 @@ import org.parboiled.errors.InvalidInputError;
 import org.parboiled.support.MatcherPath;
 import org.parboiled.support.MatcherPath.Element;
 import org.parboiled.support.ParsingResult;
-import scala.Tuple2;
 
 /** A helper class to interpret parser errors */
 @ParametersAreNonnullByDefault
 final class ParserUtils {
+
+  /** A helper class that captures where in the matching path we can build auto completion off of */
+  private static class UsefulPointInPath {
+    public final int level;
+    public final Completion.Type completionType;
+
+    public UsefulPointInPath(int level, Completion.Type completionType) {
+      this.level = level;
+      this.completionType = completionType;
+    }
+  }
 
   static AstNode getAst(ParsingResult<AstNode> result) {
     checkArgument(
@@ -82,33 +92,35 @@ final class ParserUtils {
 
     Set<PartialMatch> partialMatches = new HashSet<>();
 
-    // For each path that failed to match we identify a useful point in the path that is closest to
-    // the end and can provide the basis for error reporting and completion suggestions.
+    /*
+     For each path that failed to match we identify a useful point in the path that is closest to
+     the end and can provide the basis for error reporting and completion suggestions.
+    */
     for (MatcherPath path : error.getFailedMatchers()) {
-      Tuple2<Integer, Completion.Type> usefulPoint =
-          getUsefulLabel(path, path.length() - 1, completionTypes);
+      UsefulPointInPath usefulPoint =
+          getUsefulPointInPath(path, path.length() - 1, completionTypes);
 
       if (usefulPoint == null) {
-        /**
-         * If you get here, that means the grammar is missing a Completion annotation on one or more
-         * rules. For each path from the top-level rule to the leaf, there should be at least one
-         * rule with a Completion annotation.
-         */
+        /*
+         If you get here, that means the grammar is missing a Completion annotation on one or more
+         rules. For each path from the top-level rule to the leaf, there should be at least one
+         rule with a Completion annotation.
+        */
         throw new IllegalStateException(
             String.format("Useful completion not found in path %s", path));
       }
 
-      int level = usefulPoint._1;
-      Completion.Type completionType = usefulPoint._2;
-
-      // Ignore paths that end in WhiteSpace -- nothing interesting to report there because
-      // our grammar is not sensitive to whitespace
-      if (completionType.equals(Type.WhiteSpace)) {
+      /*
+       Ignore paths that end in WhiteSpace -- nothing interesting to report there because our
+       grammar is not sensitive to whitespace
+      */
+      if (usefulPoint.completionType.equals(Type.WhiteSpace)) {
         continue;
       }
 
       partialMatches.add(
-          getPartialMatch(error, path, path.getElementAtLevel(level), completionType));
+          getPartialMatch(
+              error, path, path.getElementAtLevel(usefulPoint.level), usefulPoint.completionType));
     }
 
     return partialMatches;
@@ -140,24 +152,24 @@ final class ParserUtils {
    * completion. Returns null if none is found.
    */
   @Nullable
-  private static Tuple2<Integer, Completion.Type> getUsefulLabel(
+  private static UsefulPointInPath getUsefulPointInPath(
       MatcherPath path, int level, Map<String, Completion.Type> completionTypes) {
 
     MatcherPath.Element element = path.getElementAtLevel(level);
     String label = element.matcher.getLabel();
 
     if (completionTypes.containsKey(label)) {
-      return new Tuple2<>(level, completionTypes.get(label));
+      return new UsefulPointInPath(level, completionTypes.get(label));
     } else if (isStringLiteralLabel(label)) {
-      return new Tuple2<>(level, Type.STRING_LITERAL);
+      return new UsefulPointInPath(level, Type.STRING_LITERAL);
     } else if (isCharLiteralLabel(label)) {
-      if (level == 0 || getUsefulLabel(path, level - 1, completionTypes) == null) {
-        return new Tuple2<>(level, Type.STRING_LITERAL);
+      if (level == 0 || getUsefulPointInPath(path, level - 1, completionTypes) == null) {
+        return new UsefulPointInPath(level, Type.STRING_LITERAL);
       }
     } else if (level == 0) {
       return null;
     }
-    return getUsefulLabel(path, level - 1, completionTypes);
+    return getUsefulPointInPath(path, level - 1, completionTypes);
   }
 
   private static boolean isCharLiteralLabel(String label) {

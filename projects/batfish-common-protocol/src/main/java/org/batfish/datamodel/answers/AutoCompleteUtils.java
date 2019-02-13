@@ -37,10 +37,19 @@ import org.batfish.specifier.DispositionSpecifier;
 import org.batfish.specifier.IpProtocolSpecifier;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.parboiled.ParboiledAutoComplete;
-import scala.Tuple2;
 
 @ParametersAreNonnullByDefault
 public final class AutoCompleteUtils {
+
+  private static class StringPair {
+    public final String s1;
+    public final String s2;
+
+    public StringPair(String s1, String s2) {
+      this.s1 = s1;
+      this.s2 = s2;
+    }
+  }
 
   @Nonnull
   public static List<AutocompleteSuggestion> autoComplete(
@@ -64,12 +73,12 @@ public final class AutoCompleteUtils {
       case ADDRESS_GROUP_AND_BOOK:
         {
           checkReferenceLibrary(referenceLibrary, network);
-          ImmutableSet<Tuple2<String, String>> pairs =
+          ImmutableSet<StringPair> pairs =
               referenceLibrary.getReferenceBooks().stream()
                   .map(
                       b ->
                           b.getAddressGroups().stream()
-                              .map(ag -> new Tuple2<>(ag.getName(), b.getName()))
+                              .map(ag -> new StringPair(ag.getName(), b.getName()))
                               .collect(ImmutableSet.toImmutableSet()))
                   .flatMap(Collection::stream)
                   .collect(ImmutableSet.toImmutableSet());
@@ -320,15 +329,15 @@ public final class AutoCompleteUtils {
    */
   @Nonnull
   public static List<AutocompleteSuggestion> stringPairAutoComplete(
-      @Nullable String query, Set<Tuple2<String, String>> pairs) {
+      @Nullable String query, Set<StringPair> pairs) {
 
     // remove whitespace from the query
     String testQuery = query == null ? "" : query.replaceAll("\\s+", "").toLowerCase();
 
     return pairs.stream()
-        .map(t -> String.join(",", t._1, t._2).toLowerCase())
-        .filter(pair -> pair.startsWith(testQuery))
-        .map(pair -> new AutocompleteSuggestion(pair.substring(testQuery.length()), false))
+        .map(p -> String.join(",", p.s1, p.s2).toLowerCase())
+        .filter(p -> p.startsWith(testQuery))
+        .map(p -> new AutocompleteSuggestion(p.substring(testQuery.length()), false))
         .collect(ImmutableList.toImmutableList());
   }
 

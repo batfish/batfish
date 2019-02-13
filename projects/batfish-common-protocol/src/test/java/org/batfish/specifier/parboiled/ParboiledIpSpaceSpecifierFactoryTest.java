@@ -15,7 +15,7 @@ public class ParboiledIpSpaceSpecifierFactoryTest {
   @Test
   public void testBuildIpSpaceSpecifierBadInput() {
     _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("Expected");
+    _thrown.expectMessage("Error parsing");
     new ParboiledIpSpaceSpecifierFactory().buildIpSpaceSpecifier("1.1.1");
   }
 
