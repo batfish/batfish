@@ -49,7 +49,7 @@ public class RoutingPolicy implements Serializable {
     }
 
     @Override
-    public RoutingPolicy build() {
+    public @Nonnull RoutingPolicy build() {
       String name = _name != null ? _name : generateName();
       RoutingPolicy routingPolicy = new RoutingPolicy(name, _owner);
       if (_owner != null) {
@@ -59,17 +59,22 @@ public class RoutingPolicy implements Serializable {
       return routingPolicy;
     }
 
-    public Builder setName(String name) {
+    public @Nonnull Builder setName(String name) {
       _name = name;
       return this;
     }
 
-    public Builder setOwner(Configuration owner) {
+    public @Nonnull Builder setOwner(Configuration owner) {
       _owner = owner;
       return this;
     }
 
-    public Builder setStatements(List<Statement> statements) {
+    public @Nonnull Builder addStatement(@Nonnull Statement statement) {
+      _statements.add(statement);
+      return this;
+    }
+
+    public @Nonnull Builder setStatements(@Nonnull List<Statement> statements) {
       _statements = ImmutableList.<Statement>builder().addAll(statements);
       return this;
     }
