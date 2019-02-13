@@ -2,7 +2,6 @@ package org.batfish.specifier.parboiled;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
@@ -13,17 +12,10 @@ import org.junit.rules.ExpectedException;
 import org.parboiled.errors.ParserRuntimeException;
 import org.parboiled.parserunners.AbstractParseRunner;
 import org.parboiled.parserunners.ReportingParseRunner;
-import org.parboiled.support.ParsingResult;
 
 public class ParserTestIpSpace {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
-
-  private static AstNode getOnlyStackItem(ParsingResult<?> result) {
-    assertTrue(result.parseErrors.isEmpty());
-    assertThat(result.valueStack.size(), equalTo(1));
-    return (AstNode) result.valueStack.iterator().next();
-  }
 
   private static AbstractParseRunner<?> getRunner() {
     return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.IpSpaceExpression()));
@@ -33,28 +25,31 @@ public class ParserTestIpSpace {
   public void testIpSpaceAddressGroup() {
     IpSpaceAstNode expectedAst = new AddressGroupAstNode("a", "b");
 
-    assertThat(getOnlyStackItem(getRunner().run("@addressgroup(a, b)")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run("@addressgroup(a, b)")), equalTo(expectedAst));
     assertThat(
-        getOnlyStackItem(getRunner().run(" @addressgroup ( a , b ) ")), equalTo(expectedAst));
-    assertThat(getOnlyStackItem(getRunner().run("@ADDRESSGROUP(a , b)")), equalTo(expectedAst));
-    assertThat(getOnlyStackItem(getRunner().run("@addressGroup(a , b)")), equalTo(expectedAst));
+        ParserUtils.getAst(getRunner().run(" @addressgroup ( a , b ) ")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run("@ADDRESSGROUP(a , b)")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run("@addressGroup(a , b)")), equalTo(expectedAst));
   }
 
   @Test
   public void testIpSpaceAddressGroupRef() {
     IpSpaceAstNode expectedAst = new AddressGroupAstNode("a", "b");
 
-    assertThat(getOnlyStackItem(getRunner().run("ref.addressgroup(a, b)")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run("ref.addressgroup(a, b)")), equalTo(expectedAst));
     assertThat(
-        getOnlyStackItem(getRunner().run(" ref.addressgroup ( a , b ) ")), equalTo(expectedAst));
-    assertThat(getOnlyStackItem(getRunner().run("REF.ADDRESSGROUP(a , b)")), equalTo(expectedAst));
-    assertThat(getOnlyStackItem(getRunner().run("ref.addressGroup(a , b)")), equalTo(expectedAst));
+        ParserUtils.getAst(getRunner().run(" ref.addressgroup ( a , b ) ")), equalTo(expectedAst));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("REF.ADDRESSGROUP(a , b)")), equalTo(expectedAst));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("ref.addressGroup(a , b)")), equalTo(expectedAst));
   }
 
   @Test
   public void testIpSpaceIpAddress() {
     assertThat(
-        getOnlyStackItem(getRunner().run("1.1.1.1")), equalTo(new IpAstNode(Ip.parse("1.1.1.1"))));
+        ParserUtils.getAst(getRunner().run("1.1.1.1")),
+        equalTo(new IpAstNode(Ip.parse("1.1.1.1"))));
   }
 
   @Test
@@ -68,14 +63,14 @@ public class ParserTestIpSpace {
   public void testIpSpaceIpRange() {
     IpSpaceAstNode expectedAst = new IpRangeAstNode(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"));
 
-    assertThat(getOnlyStackItem(getRunner().run("1.1.1.1-2.2.2.2")), equalTo(expectedAst));
-    assertThat(getOnlyStackItem(getRunner().run(" 1.1.1.1 - 2.2.2.2 ")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run("1.1.1.1-2.2.2.2")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" 1.1.1.1 - 2.2.2.2 ")), equalTo(expectedAst));
   }
 
   @Test
   public void testIpSpaceIpWildcard() {
     assertThat(
-        getOnlyStackItem(getRunner().run("1.1.1.1:2.2.2.2")),
+        ParserUtils.getAst(getRunner().run("1.1.1.1:2.2.2.2")),
         equalTo(new IpWildcardAstNode(new IpWildcard("1.1.1.1:2.2.2.2"))));
   }
 
@@ -85,8 +80,8 @@ public class ParserTestIpSpace {
         new CommaIpSpaceAstNode(
             new IpAstNode(Ip.parse("1.1.1.1")), new IpAstNode(Ip.parse("2.2.2.2")));
 
-    assertThat(getOnlyStackItem(getRunner().run("1.1.1.1,2.2.2.2")), equalTo(expectedNode));
-    assertThat(getOnlyStackItem(getRunner().run("1.1.1.1 , 2.2.2.2 ")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run("1.1.1.1,2.2.2.2")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run("1.1.1.1 , 2.2.2.2 ")), equalTo(expectedNode));
   }
 
   @Test
@@ -97,7 +92,8 @@ public class ParserTestIpSpace {
                 new IpAstNode(Ip.parse("1.1.1.1")), new IpAstNode(Ip.parse("2.2.2.2"))),
             new IpAstNode(Ip.parse("3.3.3.3")));
 
-    assertThat(getOnlyStackItem(getRunner().run("1.1.1.1,2.2.2.2,3.3.3.3")), equalTo(expectedNode));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("1.1.1.1,2.2.2.2,3.3.3.3")), equalTo(expectedNode));
 
     // a more complex list
     IpSpaceAstNode expectedNode2 =
@@ -108,14 +104,14 @@ public class ParserTestIpSpace {
             new IpAstNode(Ip.parse("3.3.3.3")));
 
     assertThat(
-        getOnlyStackItem(getRunner().run("1.1.1.1,2.2.2.2-2.2.2.3,3.3.3.3")),
+        ParserUtils.getAst(getRunner().run("1.1.1.1,2.2.2.2-2.2.2.3,3.3.3.3")),
         equalTo(expectedNode2));
   }
 
   @Test
   public void testIpSpacePrefix() {
     assertThat(
-        getOnlyStackItem(getRunner().run("1.1.1.1/1")),
+        ParserUtils.getAst(getRunner().run("1.1.1.1/1")),
         equalTo(new PrefixAstNode(Prefix.parse("1.1.1.1/1"))));
   }
 

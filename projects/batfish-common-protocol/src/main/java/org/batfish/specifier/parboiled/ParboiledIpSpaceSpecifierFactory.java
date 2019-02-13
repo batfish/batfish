@@ -21,14 +21,17 @@ public class ParboiledIpSpaceSpecifierFactory implements IpSpaceSpecifierFactory
         new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.IpSpaceExpression()))
             .run((String) input);
 
-    checkArgument(
-        result.parseErrors.isEmpty(),
-        ParserUtils.getErrorString(
-            (InvalidInputError) result.parseErrors.get(0), Parser.COMPLETION_TYPES));
+    if (!result.parseErrors.isEmpty()) {
+      String error =
+          ParserUtils.getErrorString(
+              (InvalidInputError) result.parseErrors.get(0), Parser.COMPLETION_TYPES);
+      throw new IllegalArgumentException(error);
+    }
 
-    checkArgument(
-        result.valueStack instanceof IpSpaceAstNode, "%s requires an IpSpace input", NAME);
-    return new ParboiledIpSpaceSpecifier((IpSpaceAstNode) result.valueStack);
+    AstNode ast = ParserUtils.getAst(result);
+
+    checkArgument(ast instanceof IpSpaceAstNode, "%s requires an IpSpace input", NAME);
+    return new ParboiledIpSpaceSpecifier((IpSpaceAstNode) ast);
   }
 
   @Override

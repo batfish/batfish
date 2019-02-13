@@ -1,5 +1,7 @@
 package org.batfish.specifier.parboiled;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.annotations.VisibleForTesting;
 import java.util.HashSet;
 import java.util.Map;
@@ -11,10 +13,23 @@ import org.batfish.specifier.parboiled.Completion.Type;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.support.MatcherPath;
 import org.parboiled.support.MatcherPath.Element;
+import org.parboiled.support.ParsingResult;
 
 /** A helper class to interpret parser errors */
 @ParametersAreNonnullByDefault
 final class ParserUtils {
+
+  static AstNode getAst(ParsingResult<?> result) {
+    checkArgument(
+        result.parseErrors.isEmpty(),
+        "Cannot get AST because parsing failed for '%s'",
+        result.inputBuffer);
+    checkArgument(
+        result.valueStack.size() == 1,
+        "Unexpected number of items '%d' on value stack",
+        result.valueStack.size());
+    return (AstNode) result.valueStack.iterator().next();
+  }
 
   /** Generates a friendly message to explain what might be wrong with parser input */
   static String getErrorString(
