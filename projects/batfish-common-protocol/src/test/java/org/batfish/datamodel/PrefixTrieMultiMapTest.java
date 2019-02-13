@@ -118,14 +118,19 @@ public class PrefixTrieMultiMapTest {
     assertThat(ptm1.longestPrefixMatch(Ip.parse("1.1.1.130")), equalTo(ImmutableSet.of(2)));
   }
 
+  @SuppressWarnings("unchecked")
   @Test
-  public void testAddAtRoot() {
+  public void testPutAtRoot() {
     Prefix prefix = Prefix.parse("128.0.0.0/1");
     PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>(prefix);
     assertThat(keysInPostOrder(map), contains(prefix));
     // true because map is modified
     assertTrue(map.put(Prefix.ZERO, 1));
-    assertThat(keysInPostOrder(map), contains(prefix, Prefix.ZERO));
+    assertThat(
+        entriesPostOrder(map),
+        contains(
+            immutableEntry(prefix, ImmutableSet.of()),
+            immutableEntry(Prefix.ZERO, ImmutableSet.of(1))));
   }
 
   @Test
@@ -145,16 +150,22 @@ public class PrefixTrieMultiMapTest {
     assertFalse(ptm1.remove(Prefix.ZERO, 1));
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void testReplaceNewRoot() {
     Prefix prefix = Prefix.parse("128.0.0.0/1");
-    PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>(prefix);
-    assertThat(keysInPostOrder(map), contains(prefix));
+    ImmutableSet<Integer> prefixValues = ImmutableSet.of(4, 5, 6);
+    PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>();
+    map.putAll(prefix, prefixValues);
+    assertThat(entriesPostOrder(map), contains(immutableEntry(prefix, prefixValues)));
 
     // true because we modified the map
     assertTrue(map.replaceAll(Prefix.ZERO, 1));
 
-    assertThat(keysInPostOrder(map), contains(prefix, Prefix.ZERO));
+    assertThat(
+        entriesPostOrder(map),
+        contains(
+            immutableEntry(prefix, prefixValues), immutableEntry(Prefix.ZERO, ImmutableSet.of(1))));
   }
 
   @Test
