@@ -1,9 +1,6 @@
 package org.batfish.grammar.palo_alto;
 
-import com.google.common.base.Throwables;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.batfish.common.ErrorDetails;
-import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
@@ -33,15 +30,7 @@ public class PaloAltoControlPlaneExtractor implements ControlPlaneExtractor {
   public void processParseTree(ParserRuleContext tree) {
     PaloAltoConfigurationBuilder cb = new PaloAltoConfigurationBuilder(_parser, _text, _w);
     BatfishParseTreeWalker walker = new BatfishParseTreeWalker();
-    try {
-      walker.walk(cb, tree);
-    } catch (Exception e) {
-      _w.setErrorDetails(
-          new ErrorDetails(
-              Throwables.getStackTraceAsString(e),
-              new ParseExceptionContext(walker.getCurrentCtx(), _parser, _text)));
-      throw e;
-    }
+    walker.walk(cb, tree);
     _configuration = cb.getConfiguration();
   }
 }

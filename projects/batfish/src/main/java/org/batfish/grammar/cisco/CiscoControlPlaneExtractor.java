@@ -294,7 +294,6 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_SOU
 import static org.batfish.representation.cisco.Interface.ALL_VLANS;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -321,8 +320,6 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
-import org.batfish.common.ErrorDetails;
-import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.RedFlagBatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
@@ -10125,15 +10122,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void processParseTree(ParserRuleContext tree) {
     BatfishParseTreeWalker walker = new BatfishParseTreeWalker();
-    try {
-      walker.walk(this, tree);
-    } catch (Exception e) {
-      _w.setErrorDetails(
-          new ErrorDetails(
-              Throwables.getStackTraceAsString(e),
-              new ParseExceptionContext(walker.getCurrentCtx(), _parser, _text)));
-      throw e;
-    }
+    walker.walk(this, tree);
   }
 
   private void pushPeer(BgpPeerGroup pg) {

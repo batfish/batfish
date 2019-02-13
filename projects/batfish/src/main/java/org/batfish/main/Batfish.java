@@ -180,6 +180,7 @@ import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishParseException;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
@@ -322,11 +323,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
           BatfishParseTreeWalker walker = new BatfishParseTreeWalker();
           try {
             walker.walk(flattener, tree);
-          } catch (Exception e) {
+          } catch (BatfishParseException e) {
             warnings.setErrorDetails(
                 new ErrorDetails(
                     Throwables.getStackTraceAsString(e),
-                    new ParseExceptionContext(walker.getCurrentCtx(), parser, input)));
+                    new ParseExceptionContext(e.getContext(), parser, input)));
             throw e;
           }
           return flattener;
@@ -340,11 +341,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
           BatfishParseTreeWalker walker = new BatfishParseTreeWalker();
           try {
             walker.walk(flattener, tree);
-          } catch (Exception e) {
+          } catch (BatfishParseException e) {
             warnings.setErrorDetails(
                 new ErrorDetails(
                     Throwables.getStackTraceAsString(e),
-                    new ParseExceptionContext(walker.getCurrentCtx(), parser, input)));
+                    new ParseExceptionContext(e.getContext(), parser, input)));
             throw e;
           }
           return flattener;

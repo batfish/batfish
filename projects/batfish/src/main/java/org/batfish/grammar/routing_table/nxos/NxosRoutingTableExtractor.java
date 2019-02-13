@@ -2,7 +2,6 @@ package org.batfish.grammar.routing_table.nxos;
 
 import static org.batfish.datamodel.Route.AMBIGUOUS_NEXT_HOP;
 
-import com.google.common.base.Throwables;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -10,8 +9,6 @@ import java.util.TreeSet;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.batfish.common.BatfishException;
-import org.batfish.common.ErrorDetails;
-import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.TopologyUtil;
@@ -166,15 +163,7 @@ public class NxosRoutingTableExtractor extends NxosRoutingTableParserBaseListene
   @Override
   public void processParseTree(ParserRuleContext tree) {
     BatfishParseTreeWalker walker = new BatfishParseTreeWalker();
-    try {
-      walker.walk(this, tree);
-    } catch (Exception e) {
-      _w.setErrorDetails(
-          new ErrorDetails(
-              Throwables.getStackTraceAsString(e),
-              new ParseExceptionContext(walker.getCurrentCtx(), _parser, _text)));
-      throw e;
-    }
+    walker.walk(this, tree);
   }
 
   private RoutingProtocol toProtocol(ProtocolContext ctx) {

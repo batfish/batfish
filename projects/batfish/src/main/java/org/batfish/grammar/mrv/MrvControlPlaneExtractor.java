@@ -1,9 +1,6 @@
 package org.batfish.grammar.mrv;
 
-import com.google.common.base.Throwables;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.batfish.common.ErrorDetails;
-import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
@@ -64,15 +61,7 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
   @Override
   public void processParseTree(ParserRuleContext tree) {
     BatfishParseTreeWalker walker = new BatfishParseTreeWalker();
-    try {
-      walker.walk(this, tree);
-    } catch (Exception e) {
-      _w.setErrorDetails(
-          new ErrorDetails(
-              Throwables.getStackTraceAsString(e),
-              new ParseExceptionContext(walker.getCurrentCtx(), _parser, _text)));
-      throw e;
-    }
+    walker.walk(this, tree);
   }
 
   @SuppressWarnings("unused")
