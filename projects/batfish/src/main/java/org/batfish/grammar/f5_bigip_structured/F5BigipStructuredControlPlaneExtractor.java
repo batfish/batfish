@@ -1,6 +1,7 @@
 package org.batfish.grammar.f5_bigip_structured;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
@@ -30,7 +31,7 @@ public class F5BigipStructuredControlPlaneExtractor implements ControlPlaneExtra
   public void processParseTree(ParserRuleContext tree) {
     F5BigipStructuredConfigurationBuilder cb =
         new F5BigipStructuredConfigurationBuilder(_parser, _text, _w);
-    BatfishParseTreeWalker walker = new BatfishParseTreeWalker();
+    ParseTreeWalker walker = new BatfishParseTreeWalker();
     walker.walk(cb, tree);
     _configuration = cb.getConfiguration();
   }

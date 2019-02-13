@@ -4,6 +4,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -227,7 +228,7 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
 
   @Override
   public void processParseTree(ParserRuleContext tree) {
-    BatfishParseTreeWalker walker = new BatfishParseTreeWalker();
+    ParseTreeWalker walker = new BatfishParseTreeWalker();
     walker.walk(this, tree);
   }
 

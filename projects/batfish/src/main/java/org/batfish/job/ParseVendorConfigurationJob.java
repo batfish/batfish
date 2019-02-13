@@ -336,7 +336,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             new ErrorDetails(
                 Throwables.getStackTraceAsString(e),
                 new ParseExceptionContext(e.getContext(), combinedParser, _fileText)));
-        throw e;
+        throw new BatfishException("Error processing parse tree", e);
       }
 
       _logger.info("OK\n");

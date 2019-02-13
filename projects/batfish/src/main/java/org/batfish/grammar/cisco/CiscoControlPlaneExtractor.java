@@ -10121,7 +10121,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void processParseTree(ParserRuleContext tree) {
-    BatfishParseTreeWalker walker = new BatfishParseTreeWalker();
+    ParseTreeWalker walker = new BatfishParseTreeWalker();
     walker.walk(this, tree);
   }
 

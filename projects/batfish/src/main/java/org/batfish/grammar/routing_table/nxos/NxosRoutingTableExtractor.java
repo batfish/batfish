@@ -8,6 +8,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
@@ -162,7 +163,7 @@ public class NxosRoutingTableExtractor extends NxosRoutingTableParserBaseListene
 
   @Override
   public void processParseTree(ParserRuleContext tree) {
-    BatfishParseTreeWalker walker = new BatfishParseTreeWalker();
+    ParseTreeWalker walker = new BatfishParseTreeWalker();
     walker.walk(this, tree);
   }
 
