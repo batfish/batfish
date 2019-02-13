@@ -31,7 +31,7 @@ public class ParserTestIpSpace {
 
   @Test
   public void testIpSpaceAddressGroup() {
-    NewIpSpaceAstNode expectedAst = new AddressGroupAstNode("a", "b");
+    IpSpaceAstNode expectedAst = new AddressGroupAstNode("a", "b");
 
     assertThat(getOnlyStackItem(getRunner().run("@addressgroup(a, b)")), equalTo(expectedAst));
     assertThat(
@@ -42,7 +42,7 @@ public class ParserTestIpSpace {
 
   @Test
   public void testIpSpaceAddressGroupRef() {
-    NewIpSpaceAstNode expectedAst = new AddressGroupAstNode("a", "b");
+    IpSpaceAstNode expectedAst = new AddressGroupAstNode("a", "b");
 
     assertThat(getOnlyStackItem(getRunner().run("ref.addressgroup(a, b)")), equalTo(expectedAst));
     assertThat(
@@ -66,7 +66,7 @@ public class ParserTestIpSpace {
 
   @Test
   public void testIpSpaceIpRange() {
-    NewIpSpaceAstNode expectedAst = new IpRangeAstNode(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"));
+    IpSpaceAstNode expectedAst = new IpRangeAstNode(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"));
 
     assertThat(getOnlyStackItem(getRunner().run("1.1.1.1-2.2.2.2")), equalTo(expectedAst));
     assertThat(getOnlyStackItem(getRunner().run(" 1.1.1.1 - 2.2.2.2 ")), equalTo(expectedAst));
@@ -81,7 +81,7 @@ public class ParserTestIpSpace {
 
   @Test
   public void testIpSpaceList2() {
-    NewIpSpaceAstNode expectedNode =
+    IpSpaceAstNode expectedNode =
         new CommaIpSpaceAstNode(
             new IpAstNode(Ip.parse("1.1.1.1")), new IpAstNode(Ip.parse("2.2.2.2")));
 
@@ -91,7 +91,7 @@ public class ParserTestIpSpace {
 
   @Test
   public void testIpSpaceList3() {
-    NewIpSpaceAstNode expectedNode =
+    IpSpaceAstNode expectedNode =
         new CommaIpSpaceAstNode(
             new CommaIpSpaceAstNode(
                 new IpAstNode(Ip.parse("1.1.1.1")), new IpAstNode(Ip.parse("2.2.2.2"))),
@@ -100,7 +100,7 @@ public class ParserTestIpSpace {
     assertThat(getOnlyStackItem(getRunner().run("1.1.1.1,2.2.2.2,3.3.3.3")), equalTo(expectedNode));
 
     // a more complex list
-    NewIpSpaceAstNode expectedNode2 =
+    IpSpaceAstNode expectedNode2 =
         new CommaIpSpaceAstNode(
             new CommaIpSpaceAstNode(
                 new IpAstNode(Ip.parse("1.1.1.1")),

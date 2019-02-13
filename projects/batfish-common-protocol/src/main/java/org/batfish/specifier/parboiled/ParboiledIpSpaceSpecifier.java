@@ -14,9 +14,9 @@ import org.batfish.specifier.SpecifierContext;
  * org.batfish.specifier.parboiled.Parser}.
  */
 final class ParboiledIpSpaceSpecifier implements IpSpaceSpecifier {
-  private final NewIpSpaceAstNode _ast;
+  private final IpSpaceAstNode _ast;
 
-  ParboiledIpSpaceSpecifier(NewIpSpaceAstNode ast) {
+  ParboiledIpSpaceSpecifier(IpSpaceAstNode ast) {
     _ast = ast;
   }
 
@@ -43,7 +43,7 @@ final class ParboiledIpSpaceSpecifier implements IpSpaceSpecifier {
   }
 
   @VisibleForTesting
-  static IpSpace computeIpSpace(NewIpSpaceAstNode ast, SpecifierContext ctxt) {
+  static IpSpace computeIpSpace(IpSpaceAstNode ast, SpecifierContext ctxt) {
     return ast.accept(new IpSpaceAstNodeToIpSpace(ctxt));
   }
 }

@@ -4,7 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Objects;
 
-class AddressGroupAstNode implements NewIpSpaceAstNode {
+class AddressGroupAstNode implements IpSpaceAstNode {
   private final String _addressGroup;
   private final String _addressBook;
 

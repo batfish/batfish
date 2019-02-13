@@ -27,8 +27,8 @@ public class ParboiledIpSpaceSpecifierFactory implements IpSpaceSpecifierFactory
             (InvalidInputError) result.parseErrors.get(0), Parser.COMPLETION_TYPES));
 
     checkArgument(
-        result.valueStack instanceof NewIpSpaceAstNode, "%s requires an IpSpace input", NAME);
-    return new ParboiledIpSpaceSpecifier((NewIpSpaceAstNode) result.valueStack);
+        result.valueStack instanceof IpSpaceAstNode, "%s requires an IpSpace input", NAME);
+    return new ParboiledIpSpaceSpecifier((IpSpaceAstNode) result.valueStack);
   }
 
   @Override

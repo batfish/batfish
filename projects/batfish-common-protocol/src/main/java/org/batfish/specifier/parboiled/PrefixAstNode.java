@@ -3,7 +3,7 @@ package org.batfish.specifier.parboiled;
 import java.util.Objects;
 import org.batfish.datamodel.Prefix;
 
-final class PrefixAstNode implements NewIpSpaceAstNode {
+final class PrefixAstNode implements IpSpaceAstNode {
   private final Prefix _prefix;
 
   PrefixAstNode(Prefix prefix) {

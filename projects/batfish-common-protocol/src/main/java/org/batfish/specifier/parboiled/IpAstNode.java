@@ -3,7 +3,7 @@ package org.batfish.specifier.parboiled;
 import java.util.Objects;
 import org.batfish.datamodel.Ip;
 
-final class IpAstNode implements NewIpSpaceAstNode {
+final class IpAstNode implements IpSpaceAstNode {
   private final Ip _ip;
 
   IpAstNode(Ip ip) {

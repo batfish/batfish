@@ -2,13 +2,13 @@ package org.batfish.specifier.parboiled;
 
 import java.util.Objects;
 
-class CommaIpSpaceAstNode implements NewIpSpaceAstNode {
-  private final NewIpSpaceAstNode _left;
-  private final NewIpSpaceAstNode _right;
+class CommaIpSpaceAstNode implements IpSpaceAstNode {
+  private final IpSpaceAstNode _left;
+  private final IpSpaceAstNode _right;
 
   CommaIpSpaceAstNode(AstNode left, AstNode right) {
-    _left = (NewIpSpaceAstNode) left;
-    _right = (NewIpSpaceAstNode) right;
+    _left = (IpSpaceAstNode) left;
+    _right = (IpSpaceAstNode) right;
   }
 
   @Override
@@ -33,11 +33,11 @@ class CommaIpSpaceAstNode implements NewIpSpaceAstNode {
     return Objects.equals(_left, that._left) && Objects.equals(_right, that._right);
   }
 
-  public NewIpSpaceAstNode getLeft() {
+  public IpSpaceAstNode getLeft() {
     return _left;
   }
 
-  public NewIpSpaceAstNode getRight() {
+  public IpSpaceAstNode getRight() {
     return _right;
   }
 

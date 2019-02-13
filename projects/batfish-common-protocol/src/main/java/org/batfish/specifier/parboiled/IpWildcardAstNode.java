@@ -3,7 +3,7 @@ package org.batfish.specifier.parboiled;
 import java.util.Objects;
 import org.batfish.datamodel.IpWildcard;
 
-final class IpWildcardAstNode implements NewIpSpaceAstNode {
+final class IpWildcardAstNode implements IpSpaceAstNode {
 
   private final IpWildcard _ipWildcard;
 

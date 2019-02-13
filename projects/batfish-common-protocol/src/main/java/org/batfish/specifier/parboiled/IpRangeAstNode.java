@@ -3,7 +3,7 @@ package org.batfish.specifier.parboiled;
 import java.util.Objects;
 import org.batfish.datamodel.Ip;
 
-final class IpRangeAstNode implements NewIpSpaceAstNode {
+final class IpRangeAstNode implements IpSpaceAstNode {
   private final Ip _low;
   private final Ip _high;
 
