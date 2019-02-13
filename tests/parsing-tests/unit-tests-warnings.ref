@@ -43,920 +43,990 @@
     },
     "rows" : [
       {
-        "Filename" : "arista_nat",
+        "Filename" : "configs/arista_nat",
         "Line" : 10,
         "Text" : "ip nat pool pool3 1.1.1.1 1.1.1.2 prefix-length 32",
         "Parser_Context" : "[ip_nat_pool s_ip_nat stanza cisco_configuration]",
         "Comment" : "Subnet of NAT pool pool3 does not contain last pool IP"
       },
       {
-        "Filename" : "arista_nat",
+        "Filename" : "configs/arista_nat",
         "Line" : 9,
         "Text" : "ip nat pool pool2 1.1.1.1 1.1.1.2 netmask 255.255.255.255",
         "Parser_Context" : "[ip_nat_pool s_ip_nat stanza cisco_configuration]",
         "Comment" : "Subnet of NAT pool pool2 does not contain last pool IP"
       },
       {
-        "Filename" : "aruba_misc",
+        "Filename" : "configs/aruba_misc",
         "Line" : 90,
         "Text" : "no ip default-gateway import cell",
         "Parser_Context" : "[s_ip_default_gateway stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "aruba_misc",
+        "Filename" : "configs/aruba_misc",
         "Line" : 91,
         "Text" : "no ip default-gateway import pppoe",
         "Parser_Context" : "[s_ip_default_gateway stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "asa_acl",
+        "Filename" : "configs/asa_acl",
         "Line" : 9,
         "Text" : "interface outside",
         "Parser_Context" : "[access_list_ip_range extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "asa_nat",
+        "Filename" : "configs/asa_nat",
         "Line" : 10,
         "Text" : "nat source dynamic source-net pat-pool pool extended flat include-reserve",
         "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "asa_nat",
+        "Filename" : "configs/asa_nat",
         "Line" : 12,
         "Text" : "nat source static net1 net2 dns no-proxy-arp unidirectional",
         "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "asa_nat",
+        "Filename" : "configs/asa_nat",
         "Line" : 13,
         "Text" : "nat source static net1 net2 service service1 service2",
         "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "asa_nat",
+        "Filename" : "configs/asa_nat",
         "Line" : 16,
         "Text" : "dynamic interface",
         "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "asa_nat",
+        "Filename" : "configs/asa_nat",
         "Line" : 17,
         "Text" : "dynamic 1.1.1.1",
         "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "asa_nat",
+        "Filename" : "configs/asa_nat",
         "Line" : 18,
         "Text" : "dynamic source-mapped dns",
         "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "asa_nat",
+        "Filename" : "configs/asa_nat",
         "Line" : 19,
         "Text" : "dynamic source-mapped interface",
         "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "asa_nat",
+        "Filename" : "configs/asa_nat",
         "Line" : 20,
         "Text" : "dynamic pat-pool WORD interface flat",
         "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "asa_nat",
+        "Filename" : "configs/asa_nat",
         "Line" : 21,
         "Text" : "static interface",
         "Parser_Context" : "[onn_static on_nat o_network s_object stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "asa_nat",
+        "Filename" : "configs/asa_nat",
         "Line" : 22,
         "Text" : "static source-mapped no-proxy-arp route-lookup",
         "Parser_Context" : "[onn_static on_nat o_network s_object stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "asa_nat",
+        "Filename" : "configs/asa_nat",
         "Line" : 23,
         "Text" : "static source-mapped service sctp ftp bgp",
         "Parser_Context" : "[onn_static on_nat o_network s_object stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "asa_nat",
+        "Filename" : "configs/asa_nat",
         "Line" : 6,
         "Text" : "nat (any,any) source dynamic source-net pat-pool pool block-allocation round-robin",
         "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "asa_nat",
+        "Filename" : "configs/asa_nat",
         "Line" : 7,
         "Text" : "nat (inside,outside) source dynamic net1 net2 interface",
         "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "asa_nat",
+        "Filename" : "configs/asa_nat",
         "Line" : 9,
         "Text" : "nat (inside,outside) source static net1 net2 route-lookup",
         "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cadant_acl",
+        "Filename" : "configs/cadant_acl",
         "Line" : 22,
         "Text" : "123",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "cadant_acl",
+        "Filename" : "configs/cadant_acl",
         "Line" : 24,
         "Text" : "133",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "cadant_acl",
+        "Filename" : "configs/cadant_acl",
         "Line" : 24,
         "Text" : "nd-type",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "cisco-zone",
-        "Line" : 10,
-        "Text" : "zone t1",
-        "Parser_Context" : "[s_zone stanza cisco_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "cisco_acl",
+        "Filename" : "configs/cisco_acl",
         "Line" : 10,
         "Text" : "ttl eq 255",
         "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in extended access list"
       },
       {
-        "Filename" : "cisco_acl",
+        "Filename" : "configs/cisco_acl",
         "Line" : 11,
         "Text" : "ttl eq 255",
         "Parser_Context" : "[extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in extended access list"
       },
       {
-        "Filename" : "cisco_bgp",
+        "Filename" : "configs/cisco_bgp",
         "Line" : 29,
         "Text" : "redistribute ospf abc",
         "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_bgp",
+        "Filename" : "configs/cisco_bgp",
         "Line" : 30,
         "Text" : "redistribute ospf 2",
         "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_bgp",
+        "Filename" : "configs/cisco_bgp",
         "Line" : 31,
         "Text" : "redistribute ospf 2 vrf vrf1",
         "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_bgp_confederation",
+        "Filename" : "configs/cisco_bgp_confederation",
         "Line" : 7,
         "Text" : "bgp confederation identifier 100",
         "Parser_Context" : "[bgp_confederation_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_bgp_confederation",
+        "Filename" : "configs/cisco_bgp_confederation",
         "Line" : 8,
         "Text" : "bgp confederation peers 10 11",
         "Parser_Context" : "[bgp_confederation_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_eigrp",
+        "Filename" : "configs/cisco_eigrp",
         "Line" : 115,
         "Text" : "addrgroup bleep_blorp",
         "Parser_Context" : "[access_list_ip_range extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_eigrp",
+        "Filename" : "configs/cisco_eigrp",
         "Line" : 118,
         "Text" : "address-family ipv4 multicast vrf autonomous-system autonomous-system 4\n  af-interface Ethernet0\n   add-paths 4\n   bandwidth-percent 75\n   dampening-change 75\n   dampening-interval 45\n   hold-time 40\n   passive-interface\n  exit-af-interface\n  eigrp default-route-tag 2\n  network 1.1.1.100\n  remote-neighbors source GigabitEthernet0/0/1 unicast-listen lisp-encap 2\n  topology base\n   offset-list 21 out 10\n   summary-metric 192.168.0.0/16 10000 10 255 1 1500 distance 20\n   traffic-share balanced\n   variance 4\n  exit-af-topology\n  topology VOICE tid 1000\n   no auto-summary\n  exit-af-topology\n  passive-interface default\n  no passive-interface FastEthernet0/1\n exit-address-family",
         "Parser_Context" : "[ren_address_family re_named_tail re_named s_router_eigrp stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_eigrp",
+        "Filename" : "configs/cisco_eigrp",
         "Line" : 15,
         "Text" : "default-metric 1 2 3 4 5",
         "Parser_Context" : "[re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_eigrp",
+        "Filename" : "configs/cisco_eigrp",
         "Line" : 15,
         "Text" : "default-metric 1 2 3 4 5",
         "Parser_Context" : "[re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_eigrp",
+        "Filename" : "configs/cisco_eigrp",
         "Line" : 15,
         "Text" : "default-metric 1 2 3 4 5",
         "Parser_Context" : "[re_default_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_eigrp",
+        "Filename" : "configs/cisco_eigrp",
         "Line" : 34,
         "Text" : "redistribute isis route-map ISIS_TO_EIGRP",
         "Parser_Context" : "[re_redistribute_isis re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
         "Comment" : "ISIS redistribution in EIGRP is not implemented"
       },
       {
-        "Filename" : "cisco_eigrp",
+        "Filename" : "configs/cisco_eigrp",
         "Line" : 35,
         "Text" : "redistribute ospf 4 route-map OSPF_TO_EIGRP",
         "Parser_Context" : "[re_redistribute_ospf re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_eigrp",
+        "Filename" : "configs/cisco_eigrp",
         "Line" : 37,
         "Text" : "redistribute static metric 10000 10 255 1 1500 route-map STATIC_TO_EIGRP",
         "Parser_Context" : "[re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_eigrp",
+        "Filename" : "configs/cisco_eigrp",
         "Line" : 37,
         "Text" : "redistribute static metric 10000 10 255 1 1500 route-map STATIC_TO_EIGRP",
         "Parser_Context" : "[re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_eigrp",
+        "Filename" : "configs/cisco_eigrp",
         "Line" : 37,
         "Text" : "redistribute static metric 10000 10 255 1 1500 route-map STATIC_TO_EIGRP",
         "Parser_Context" : "[re_redistribute_static re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_interface",
+        "Filename" : "configs/cisco_interface",
         "Line" : 279,
         "Text" : "zone-member t1",
         "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_interface",
+        "Filename" : "configs/cisco_interface",
         "Line" : 315,
         "Text" : "mode gre multipoint",
         "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_ip_nat",
+        "Filename" : "configs/cisco_ip_nat",
         "Line" : 13,
         "Text" : "ip nat outside source static 6.6.6.6 7.7.7.7 add-route no-alias",
         "Parser_Context" : "[ip_nat_source s_ip_nat stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_ip_nat",
+        "Filename" : "configs/cisco_ip_nat",
         "Line" : 4,
         "Text" : "ip nat pool abc prefix-length 32  \n range 10.1.2.3 10.1.2.4",
         "Parser_Context" : "[ip_nat_pool_range s_ip_nat stanza cisco_configuration]",
         "Comment" : "Subnet of NAT pool abc does not contain last pool IP"
       },
       {
-        "Filename" : "cisco_ipv6_access_list",
+        "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 10,
         "Text" : "router",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "cisco_ipv6_access_list",
+        "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 11,
         "Text" : "nd",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "cisco_ipv6_access_list",
+        "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 12,
         "Text" : "nd",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "cisco_ipv6_access_list",
+        "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 13,
         "Text" : "141",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "cisco_ipv6_access_list",
+        "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 14,
         "Text" : "142",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "cisco_ipv6_access_list",
+        "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 15,
         "Text" : "neighbor",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "cisco_ipv6_access_list",
+        "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 20,
         "Text" : "mld-query",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "cisco_ipv6_access_list",
+        "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 21,
         "Text" : "mld-report",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "cisco_ipv6_access_list",
+        "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 22,
         "Text" : "mld-reduction",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "cisco_ipv6_access_list",
+        "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 23,
         "Text" : "mldv2",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "cisco_ipv6_access_list",
+        "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 9,
         "Text" : "hoplimit",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "cisco_ipv6_access_list",
+        "Filename" : "configs/cisco_ipv6_access_list",
         "Line" : 9,
         "Text" : "router",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "cisco_ospf",
+        "Filename" : "configs/cisco_ospf",
         "Line" : 28,
         "Text" : "area 0.0.0.0 filter-list prefix filterName in",
         "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_ospf",
+        "Filename" : "configs/cisco_ospf",
         "Line" : 29,
         "Text" : "area 0.0.0.0 filter-list prefix filterName out",
         "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_ospf",
+        "Filename" : "configs/cisco_ospf",
         "Line" : 34,
         "Text" : "area 0.0.0.0 nssa no-redistribution",
         "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_ospf",
+        "Filename" : "configs/cisco_ospf",
         "Line" : 35,
         "Text" : "area 0.0.0.0 nssa no-redistribution no-summary",
         "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_ospf",
+        "Filename" : "configs/cisco_ospf",
         "Line" : 36,
         "Text" : "area 0.0.0.0 nssa no-redistribution default-information-originate no-summary",
         "Parser_Context" : "[ro_area_nssa s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_ospf",
+        "Filename" : "configs/cisco_ospf",
         "Line" : 53,
         "Text" : "distribute-list aclin in",
         "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_ospf",
+        "Filename" : "configs/cisco_ospf",
         "Line" : 54,
         "Text" : "distribute-list aclin in ethernet0/0",
         "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_ospf",
+        "Filename" : "configs/cisco_ospf",
         "Line" : 55,
         "Text" : "distribute-list aclout out",
         "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_ospf",
+        "Filename" : "configs/cisco_ospf",
         "Line" : 56,
         "Text" : "distribute-list prefix plin in",
         "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_ospf",
+        "Filename" : "configs/cisco_ospf",
         "Line" : 57,
         "Text" : "distribute-list prefix plout out",
         "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_ospf",
+        "Filename" : "configs/cisco_ospf",
         "Line" : 58,
         "Text" : "distribute-list route-map rmin in",
         "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_ospf",
+        "Filename" : "configs/cisco_ospf",
         "Line" : 59,
         "Text" : "distribute-list route-map rmout out",
         "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_ospf",
+        "Filename" : "configs/cisco_ospf",
         "Line" : 66,
         "Text" : "maximum-paths 32",
         "Parser_Context" : "[ro_maximum_paths s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_ospf",
+        "Filename" : "configs/cisco_ospf",
         "Line" : 82,
         "Text" : "area 0 filter-list prefix INFILTER in",
         "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_ospf",
+        "Filename" : "configs/cisco_ospf",
         "Line" : 83,
         "Text" : "area 0 filter-list prefix OUTFILTER out",
         "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_route_map",
+        "Filename" : "configs/cisco_route_map",
         "Line" : 33,
         "Text" : "match source-protocol ospf 1",
         "Parser_Context" : "[match_source_protocol_rm_stanza match_rm_stanza rm_stanza route_map_stanza stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "cisco_route_map",
+        "Filename" : "configs/cisco_route_map",
         "Line" : 41,
         "Text" : "match source-protocol static",
         "Parser_Context" : "[match_source_protocol_rm_stanza match_rm_stanza rm_stanza route_map_stanza stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "f5_bigip_structured_net",
+        "Filename" : "configs/cisco_zone",
+        "Line" : 10,
+        "Text" : "zone t1",
+        "Parser_Context" : "[s_zone stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/f5_bigip_structured_net",
         "Line" : 11,
         "Text" : "forward-error-correction",
         "Parser_Context" : "[unrecognized net_interface s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_net",
+        "Filename" : "configs/f5_bigip_structured_net",
         "Line" : 12,
         "Text" : "lldp-admin",
         "Parser_Context" : "[unrecognized net_interface s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_net",
+        "Filename" : "configs/f5_bigip_structured_net",
         "Line" : 13,
         "Text" : "lldp-tlvmap",
         "Parser_Context" : "[unrecognized net_interface s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_net",
+        "Filename" : "configs/f5_bigip_structured_net",
         "Line" : 15,
         "Text" : "lldp-globals",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_net",
+        "Filename" : "configs/f5_bigip_structured_net",
         "Line" : 18,
         "Text" : "route-domain",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_net",
+        "Filename" : "configs/f5_bigip_structured_net",
         "Line" : 27,
         "Text" : "allow-service all",
         "Parser_Context" : "[ns_allow_service net_self s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "f5_bigip_structured_net",
+        "Filename" : "configs/f5_bigip_structured_net",
         "Line" : 28,
         "Text" : "traffic-group /Common/traffic-group-local-only",
         "Parser_Context" : "[ns_traffic_group net_self s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "f5_bigip_structured_net",
+        "Filename" : "configs/f5_bigip_structured_net",
         "Line" : 31,
         "Text" : "self-allow",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_net",
+        "Filename" : "configs/f5_bigip_structured_net",
         "Line" : 40,
         "Text" : "stp",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_net",
+        "Filename" : "configs/f5_bigip_structured_net",
         "Line" : 51,
         "Text" : "stp-globals",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_net",
+        "Filename" : "configs/f5_bigip_structured_net",
         "Line" : 54,
         "Text" : "tunnels",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_net",
+        "Filename" : "configs/f5_bigip_structured_net",
         "Line" : 6,
         "Text" : "fdb",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_net",
+        "Filename" : "configs/f5_bigip_structured_net",
         "Line" : 7,
         "Text" : "fdb",
         "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_net",
+        "Filename" : "configs/f5_bigip_structured_net",
         "Line" : 9,
         "Text" : "bundle enabled",
         "Parser_Context" : "[ni_bundle net_interface s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "f5_bigip_structured_net_routing_bgp",
+        "Filename" : "configs/f5_bigip_structured_net_routing_bgp",
         "Line" : 12,
         "Text" : "route-map /Common/MY_KERNEL_OUT",
         "Parser_Context" : "[nrbafcrk_route_map nrbafcr_kernel nrbafc_redistribute nrbaf_common nrbaf_ipv4 nrb_address_family nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "f5_bigip_structured_net_routing_bgp",
+        "Filename" : "configs/f5_bigip_structured_net_routing_bgp",
         "Line" : 26,
         "Text" : "capability",
         "Parser_Context" : "[unrecognized nrbnnaf_ipv6 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_net_routing_bgp",
+        "Filename" : "configs/f5_bigip_structured_net_routing_bgp",
         "Line" : 29,
         "Text" : "maximum-prefix",
         "Parser_Context" : "[unrecognized nrbnnaf_ipv6 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_net_routing_bgp",
+        "Filename" : "configs/f5_bigip_structured_net_routing_bgp",
         "Line" : 33,
         "Text" : "out /Common/MY_IPV6_OUT",
         "Parser_Context" : "[nrbnnafcr_out nrbnnafc_route_map nrbnnaf_common nrbnnaf_ipv6 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "f5_bigip_structured_net_routing_bgp",
+        "Filename" : "configs/f5_bigip_structured_net_routing_bgp",
         "Line" : 38,
         "Text" : "fall-over",
         "Parser_Context" : "[unrecognized nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_net_routing_bgp",
+        "Filename" : "configs/f5_bigip_structured_net_routing_bgp",
         "Line" : 45,
         "Text" : "capability",
         "Parser_Context" : "[unrecognized nrbnnaf_ipv4 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_net_routing_bgp",
+        "Filename" : "configs/f5_bigip_structured_net_routing_bgp",
         "Line" : 48,
         "Text" : "maximum-prefix",
         "Parser_Context" : "[unrecognized nrbnnaf_ipv4 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_net_routing_bgp",
+        "Filename" : "configs/f5_bigip_structured_net_routing_bgp",
         "Line" : 52,
         "Text" : "out /Common/MY_IPV4_OUT",
         "Parser_Context" : "[nrbnnafcr_out nrbnnafc_route_map nrbnnaf_common nrbnnaf_ipv4 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "f5_bigip_structured_net_routing_bgp",
+        "Filename" : "configs/f5_bigip_structured_net_routing_bgp",
         "Line" : 60,
         "Text" : "fall-over",
         "Parser_Context" : "[unrecognized nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_net_routing_bgp",
+        "Filename" : "configs/f5_bigip_structured_net_routing_bgp",
         "Line" : 65,
         "Text" : "profile",
         "Parser_Context" : "[unrecognized nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_net_routing_bgp",
+        "Filename" : "configs/f5_bigip_structured_net_routing_bgp",
         "Line" : 66,
         "Text" : "route-domain",
         "Parser_Context" : "[unrecognized nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_net_routing_prefix_list",
+        "Filename" : "configs/f5_bigip_structured_net_routing_prefix_list",
         "Line" : 20,
         "Text" : "route-domain /Common/0",
         "Parser_Context" : "[nrp_route_domain nr_prefix_list net_routing s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "f5_bigip_structured_net_routing_prefix_list",
+        "Filename" : "configs/f5_bigip_structured_net_routing_prefix_list",
         "Line" : 35,
         "Text" : "route-domain /Common/0",
         "Parser_Context" : "[nrp_route_domain nr_prefix_list net_routing s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "f5_bigip_structured_net_routing_route_map",
+        "Filename" : "configs/f5_bigip_structured_net_routing_route_map",
         "Line" : 43,
         "Text" : "route-domain /Common/0",
         "Parser_Context" : "[nrr_route_domain nr_route_map net_routing s_net statement f5_bigip_structured_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "f5_bigip_structured_sys",
+        "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 10,
         "Text" : "folder",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_sys",
+        "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 101,
         "Text" : "dynad",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_sys",
+        "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 104,
         "Text" : "fpga",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_sys",
+        "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 107,
         "Text" : "sflow",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_sys",
+        "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 108,
         "Text" : "sflow",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_sys",
+        "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 109,
         "Text" : "turboflex",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_sys",
+        "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 17,
         "Text" : "folder",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_sys",
+        "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 24,
         "Text" : "folder",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_sys",
+        "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 3,
         "Text" : "dns",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_sys",
+        "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 32,
         "Text" : "gui-security-banner-text",
         "Parser_Context" : "[unrecognized sys_global_settings s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_sys",
+        "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 34,
         "Text" : "gui-setup",
         "Parser_Context" : "[unrecognized sys_global_settings s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_sys",
+        "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 37,
         "Text" : "httpd",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_sys",
+        "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 40,
         "Text" : "management-dhcp",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_sys",
+        "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 43,
         "Text" : "management-ip",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_sys",
+        "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 44,
         "Text" : "management-route",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_sys",
+        "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 48,
         "Text" : "ntp",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_sys",
+        "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 52,
         "Text" : "provision",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_sys",
+        "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 55,
         "Text" : "snmp",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_sys",
+        "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 7,
         "Text" : "feature-module",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "f5_bigip_structured_sys",
+        "Filename" : "configs/f5_bigip_structured_sys",
         "Line" : 98,
         "Text" : "dynad",
         "Parser_Context" : "[unrecognized s_sys statement f5_bigip_structured_configuration]",
         "Comment" : "This syntax is unrecognized"
       },
       {
-        "Filename" : "foundry_access_list",
+        "Filename" : "configs/foundry_access_list",
         "Line" : 11,
         "Text" : "133",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "foundry_access_list",
+        "Filename" : "configs/foundry_access_list",
         "Line" : 12,
         "Text" : "134",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "foundry_access_list",
+        "Filename" : "configs/foundry_access_list",
         "Line" : 13,
         "Text" : "135",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "foundry_access_list",
+        "Filename" : "configs/foundry_access_list",
         "Line" : 14,
         "Text" : "136",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "foundry_access_list",
+        "Filename" : "configs/foundry_access_list",
         "Line" : 15,
         "Text" : "141",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "foundry_access_list",
+        "Filename" : "configs/foundry_access_list",
         "Line" : 16,
         "Text" : "142",
         "Parser_Context" : "[extended_ipv6_access_list_tail extended_ipv6_access_list_stanza stanza cisco_configuration]",
         "Comment" : "clause in IPv6 extended access list"
       },
       {
-        "Filename" : "ios_xr_bgp_neighbor_group",
+        "Filename" : "configs/ios_xr_bgp_neighbor_group",
         "Line" : 17,
         "Text" : "use session-group blabber",
         "Parser_Context" : "[use_session_group_bgp_tail session_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "ios_xr_bgp_neighbor_group",
+        "Filename" : "configs/ios_xr_bgp_neighbor_group",
         "Line" : 94,
         "Text" : "use session-group CIAO",
         "Parser_Context" : "[use_session_group_bgp_tail session_group_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "ios_xr_class_map",
+        "Filename" : "configs/ios_xr_class_map",
         "Line" : 10,
         "Text" : "match not dscp ipv4 cs2 cs3 cs4",
         "Parser_Context" : "[cm_match s_class_map stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
-        "Filename" : "ios_xr_ospf",
+        "Filename" : "configs/ios_xr_ospf",
         "Line" : 9,
         "Text" : "maximum paths 16",
         "Parser_Context" : "[ro_maximum_paths s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/ip_default_route_classless",
+        "Line" : 4,
+        "Text" : "ip default-gateway 128.125.253.254",
+        "Parser_Context" : "[s_ip_default_gateway stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_interfaces",
+        "Line" : 19,
+        "Text" : "tcp-mss 1400",
+        "Parser_Context" : "[ifi_tcp_mss if_inet i_family i_common i_unit int_named s_interfaces s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_isis",
+        "Line" : 12,
+        "Text" : "priority 65",
+        "Parser_Context" : "[isil_priority isi_level is_interface p_isis s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_ospf",
+        "Line" : 14,
+        "Text" : "area-range dead:beef::/56 override-metric 100",
+        "Parser_Context" : "[oa_area_range o_area o_common p_ospf3 s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_ospf",
+        "Line" : 14,
+        "Text" : "area-range dead:beef::/56 override-metric 100",
+        "Parser_Context" : "[oa_area_range o_area o_common p_ospf3 s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_policy_statement",
+        "Line" : 4,
+        "Text" : "as-path-group AS_PATH_GROUP",
+        "Parser_Context" : "[popsf_as_path_group pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_rib_groups",
+        "Line" : 4,
+        "Text" : "rib-group inet6 interface-routes-rib",
+        "Parser_Context" : "[roi_rib_group ro_interface_routes s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_routing_options",
+        "Line" : 10,
+        "Text" : "confederation 11111 members 22222",
+        "Parser_Context" : "[ro_confederation s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_routing_options",
+        "Line" : 9,
+        "Text" : "policy AGGREGATE_ROUTE_POLICY",
+        "Parser_Context" : "[roa_policy roa_common roa_route ro_aggregate s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/peer_template",
+        "Line" : 24,
+        "Text" : "allowas-in 1",
+        "Parser_Context" : "[rbnx_n_af_allowas_in rbnx_n_af_inner rbnx_n_address_family rbnx_n_inner rbnx_template_peer router_bgp_nxos_toplevel router_bgp_stanza stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
@@ -992,76 +1062,6 @@
         "Line" : 20,
         "Text" : "-s 44.22.33.11/32 -p tcp -m tcp --dport 143 -j ACCEPT",
         "Parser_Context" : "[rule_spec command_append command_tail command iptables_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "juniper-ospf",
-        "Line" : 14,
-        "Text" : "area-range dead:beef::/56 override-metric 100",
-        "Parser_Context" : "[oa_area_range o_area o_common p_ospf3 s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "juniper-ospf",
-        "Line" : 14,
-        "Text" : "area-range dead:beef::/56 override-metric 100",
-        "Parser_Context" : "[oa_area_range o_area o_common p_ospf3 s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "juniper_interfaces",
-        "Line" : 19,
-        "Text" : "tcp-mss 1400",
-        "Parser_Context" : "[ifi_tcp_mss if_inet i_family i_common i_unit int_named s_interfaces s_common statement set_line_tail set_line flat_juniper_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "juniper_isis",
-        "Line" : 12,
-        "Text" : "priority 65",
-        "Parser_Context" : "[isil_priority isi_level is_interface p_isis s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "juniper_policy_statement",
-        "Line" : 4,
-        "Text" : "as-path-group AS_PATH_GROUP",
-        "Parser_Context" : "[popsf_as_path_group pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "juniper_rib_groups",
-        "Line" : 4,
-        "Text" : "rib-group inet6 interface-routes-rib",
-        "Parser_Context" : "[roi_rib_group ro_interface_routes s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "juniper_routing_options",
-        "Line" : 10,
-        "Text" : "confederation 11111 members 22222",
-        "Parser_Context" : "[ro_confederation s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "juniper_routing_options",
-        "Line" : 9,
-        "Text" : "policy AGGREGATE_ROUTE_POLICY",
-        "Parser_Context" : "[roa_policy roa_common roa_route ro_aggregate s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "peer_template",
-        "Line" : 24,
-        "Text" : "allowas-in 1",
-        "Parser_Context" : "[rbnx_n_af_allowas_in rbnx_n_af_inner rbnx_n_address_family rbnx_n_inner rbnx_template_peer router_bgp_nxos_toplevel router_bgp_stanza stanza cisco_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "test",
-        "Line" : 4,
-        "Text" : "ip default-gateway 128.125.253.254",
-        "Parser_Context" : "[s_ip_default_gateway stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       }
     ],
