@@ -2966,6 +2966,21 @@ public final class WorkMgrTest {
   }
 
   @Test
+  public void testGetSnapshotInputKeysIOException() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+
+    NetworkId networkId = _idManager.generateNetworkId();
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+
+    _idManager.assignNetwork(network, networkId);
+    _idManager.assignSnapshot(snapshot, networkId, snapshotId);
+
+    _thrown.expect(IOException.class);
+    _manager.getSnapshotInputObjectsMetadata(network, snapshot);
+  }
+
+  @Test
   public void testGetSnapshotInputKeys() throws IOException {
     String network = "network";
     String snapshot = "snapshot";

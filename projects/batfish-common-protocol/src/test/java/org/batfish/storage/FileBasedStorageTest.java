@@ -354,6 +354,14 @@ public final class FileBasedStorageTest {
   }
 
   @Test
+  public void testGetSnapshotInputKeysNonExistentInput() throws IOException {
+    NetworkId network = new NetworkId("network");
+    SnapshotId snapshot = new SnapshotId("snapshot");
+    _thrown.expect(FileNotFoundException.class);
+    _storage.getSnapshotInputObjectsMetadata(network, snapshot);
+  }
+
+  @Test
   public void testGetSnapshotInputKeys() throws IOException {
     NetworkId network = new NetworkId("network");
     SnapshotId snapshot = new SnapshotId("snapshot");
