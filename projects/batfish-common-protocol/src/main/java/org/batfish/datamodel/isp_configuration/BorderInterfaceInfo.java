@@ -1,5 +1,6 @@
 package org.batfish.datamodel.isp_configuration;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -34,17 +35,18 @@ public class BorderInterfaceInfo {
   @Override
   public int hashCode() {
 
-    return Objects.hash(_borderInterface);
+    return Objects.hashCode(_borderInterface);
   }
 
   @JsonCreator
   private static BorderInterfaceInfo jsonCreator(
       @JsonProperty(PROP_BORDER_INTERFACE) @Nullable NodeInterfacePair borderInterface) {
-    checkState(Objects.nonNull(borderInterface), "borderInterface should not be null");
+    checkArgument(borderInterface != null, "Missing %s", PROP_BORDER_INTERFACE);
     return new BorderInterfaceInfo(borderInterface);
   }
 
   @JsonProperty(PROP_BORDER_INTERFACE)
+  @Nonnull
   public NodeInterfacePair getBorderInterface() {
     return _borderInterface;
   }

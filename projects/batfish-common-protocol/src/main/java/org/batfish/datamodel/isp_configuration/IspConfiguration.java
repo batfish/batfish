@@ -13,26 +13,26 @@ import javax.annotation.Nullable;
 /** Configuration required to create ISPs for a given network snapshot */
 public class IspConfiguration {
 
-  private static final String PROP_BORDER_INTERFACE_INFOS = "borderInterfaceInfos";
-  private static final String PROP_ISP_FILTER = "ispFilter";
+  private static final String PROP_BORDER_INTERFACES = "borderInterfaces";
+  private static final String PROP_FILTER = "filter";
 
-  @Nonnull private List<BorderInterfaceInfo> _borderInterfaceInfos;
-  @Nonnull private IspFilter _ispFilter;
+  @Nonnull private final List<BorderInterfaceInfo> _borderInterfaces;
+  @Nonnull private final IspFilter _filter;
 
   public IspConfiguration(
-      @Nonnull List<BorderInterfaceInfo> borderInterfaceInfos, @Nonnull IspFilter ispFilter) {
-    _borderInterfaceInfos = borderInterfaceInfos;
-    _ispFilter = ispFilter;
+      @Nonnull List<BorderInterfaceInfo> borderInterfaces, @Nonnull IspFilter filter) {
+    _borderInterfaces = ImmutableList.copyOf(borderInterfaces);
+    _filter = filter;
   }
 
   @JsonCreator
   private static IspConfiguration jsonCreator(
-      @JsonProperty(PROP_BORDER_INTERFACE_INFOS) @Nullable
+      @JsonProperty(PROP_BORDER_INTERFACES) @Nullable
           List<BorderInterfaceInfo> borderInterfaceInfos,
-      @JsonProperty(PROP_ISP_FILTER) @Nullable IspFilter ispFilter) {
+      @JsonProperty(PROP_FILTER) @Nullable IspFilter filter) {
     return new IspConfiguration(
         firstNonNull(borderInterfaceInfos, ImmutableList.of()),
-        firstNonNull(ispFilter, new IspFilter(ImmutableList.of(), ImmutableList.of())));
+        firstNonNull(filter, IspFilter.ALLOW_ALL));
   }
 
   @Override
@@ -44,25 +44,25 @@ public class IspConfiguration {
       return false;
     }
     IspConfiguration that = (IspConfiguration) o;
-    return Objects.equals(_borderInterfaceInfos, that._borderInterfaceInfos)
-        && Objects.equals(_ispFilter, that._ispFilter);
+    return Objects.equals(_borderInterfaces, that._borderInterfaces)
+        && Objects.equals(_filter, that._filter);
   }
 
   @Override
   public int hashCode() {
 
-    return Objects.hash(_borderInterfaceInfos, _ispFilter);
+    return Objects.hash(_borderInterfaces, _filter);
   }
 
-  @JsonProperty(PROP_BORDER_INTERFACE_INFOS)
+  @JsonProperty(PROP_BORDER_INTERFACES)
   @Nonnull
-  public List<BorderInterfaceInfo> getBorderInterfaceInfos() {
-    return _borderInterfaceInfos;
+  public List<BorderInterfaceInfo> getBorderInterfaces() {
+    return _borderInterfaces;
   }
 
-  @JsonProperty(PROP_ISP_FILTER)
+  @JsonProperty(PROP_FILTER)
   @Nonnull
-  public IspFilter getIspFilter() {
-    return _ispFilter;
+  public IspFilter getfilter() {
+    return _filter;
   }
 }

@@ -13,15 +13,17 @@ import org.batfish.datamodel.Ip;
 
 /** Apply filter on top of created ISPs through {@link BorderInterfaceInfo}s */
 public class IspFilter {
+  public static final IspFilter ALLOW_ALL = new IspFilter(ImmutableList.of(), ImmutableList.of());
+
   private static final String PROP_ONLY_REMOTE_ASNS = "onlyRemoteAsns";
   private static final String PROP_ONLY_REMOTE_IPS = "onlyRemoteIps";
 
-  @Nonnull private List<Long> _onlyRemoteAsns;
-  @Nonnull private List<Ip> _onlyRemoteIps;
+  @Nonnull private final List<Long> _onlyRemoteAsns;
+  @Nonnull private final List<Ip> _onlyRemoteIps;
 
   public IspFilter(@Nonnull List<Long> onlyRemoteAsns, @Nonnull List<Ip> onlyRemoteIps) {
-    _onlyRemoteAsns = onlyRemoteAsns;
-    _onlyRemoteIps = onlyRemoteIps;
+    _onlyRemoteAsns = ImmutableList.copyOf(onlyRemoteAsns);
+    _onlyRemoteIps = ImmutableList.copyOf(onlyRemoteIps);
   }
 
   @JsonCreator
@@ -48,7 +50,6 @@ public class IspFilter {
 
   @Override
   public int hashCode() {
-
     return Objects.hash(_onlyRemoteAsns, _onlyRemoteIps);
   }
 

@@ -49,6 +49,9 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
+import org.batfish.datamodel.isp_configuration.IspConfiguration;
+import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
@@ -309,9 +312,10 @@ public class ModelingUtilsTest {
     Map<String, Configuration> internetAndIsps =
         ModelingUtils.getInternetAndIspNodes(
             ImmutableMap.of(configuration.getHostname(), configuration),
-            ImmutableList.of(new NodeInterfacePair("conf", "interface")),
-            ImmutableList.of(),
-            ImmutableList.of(),
+            new IspConfiguration(
+                ImmutableList.of(
+                    new BorderInterfaceInfo(new NodeInterfacePair("conf", "interface"))),
+                IspFilter.ALLOW_ALL),
             new BatfishLogger("output", false));
 
     assertThat(internetAndIsps, hasKey(ModelingUtils.INTERNET_HOST_NAME));
@@ -383,7 +387,11 @@ public class ModelingUtilsTest {
   @Test
   public void testGetRoutingPolicyForInternet() {
     NetworkFactory nf = new NetworkFactory();
-    Configuration internet = nf.configurationBuilder().setHostname("fakeInternet").build();
+    Configuration internet =
+        nf.configurationBuilder()
+            .setHostname("fakeInternet")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
     RoutingPolicy internetRoutingPolicy = ModelingUtils.getRoutingPolicyForInternet(internet, nf);
 
     PrefixSpace prefixSpace = new PrefixSpace();
@@ -411,7 +419,11 @@ public class ModelingUtilsTest {
   @Test
   public void testGetRoutingPolicyForIsp() {
     NetworkFactory nf = new NetworkFactory();
-    Configuration isp = nf.configurationBuilder().setHostname("fakeIsp").build();
+    Configuration isp =
+        nf.configurationBuilder()
+            .setHostname("fakeIsp")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
     RoutingPolicy ispRoutingPolicy = ModelingUtils.getRoutingPolicyForIsp(isp, nf);
 
     RoutingPolicy expectedRoutingPolicy =
@@ -475,11 +487,11 @@ public class ModelingUtilsTest {
                 configuration1,
                 configuration2.getHostname(),
                 configuration2),
-            ImmutableList.of(
-                new NodeInterfacePair("conf1", "interface1"),
-                new NodeInterfacePair("conf2", "interface2")),
-            ImmutableList.of(),
-            ImmutableList.of(),
+            new IspConfiguration(
+                ImmutableList.of(
+                    new BorderInterfaceInfo(new NodeInterfacePair("conf1", "interface1")),
+                    new BorderInterfaceInfo(new NodeInterfacePair("conf2", "interface2"))),
+                IspFilter.ALLOW_ALL),
             new BatfishLogger("output", false));
 
     assertThat(internetAndIsps, hasKey("Isp_1234"));
@@ -520,9 +532,11 @@ public class ModelingUtilsTest {
     Map<String, Configuration> internetAndIsps =
         ModelingUtils.getInternetAndIspNodes(
             ImmutableMap.of(configuration1.getHostname(), configuration1),
-            ImmutableList.of(new NodeInterfacePair("conf2", "interface2")),
-            ImmutableList.of(),
-            ImmutableList.of(),
+            new IspConfiguration(
+                ImmutableList.of(
+                    new BorderInterfaceInfo(new NodeInterfacePair("conf2", "interface2")),
+                    new BorderInterfaceInfo(new NodeInterfacePair("conf2", "interface2"))),
+                IspFilter.ALLOW_ALL),
             new BatfishLogger("output", false));
 
     // no ISPs and no Internet

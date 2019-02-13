@@ -1356,11 +1356,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
     return ModelingUtils.getInternetAndIspNodes(
         configurations,
-        ispConfiguration.getBorderInterfaceInfos().stream()
+        ispConfiguration.getBorderInterfaces().stream()
             .map(BorderInterfaceInfo::getBorderInterface)
             .collect(Collectors.toList()),
-        ispConfiguration.getIspFilter().getOnlyRemoteAsns(),
-        ispConfiguration.getIspFilter().getOnlyRemoteIps(),
+        ispConfiguration.getfilter().getOnlyRemoteAsns(),
+        ispConfiguration.getfilter().getOnlyRemoteIps(),
         _logger);
   }
 
