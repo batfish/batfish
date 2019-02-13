@@ -1956,6 +1956,7 @@ public final class FlatJuniperGrammarTest {
             CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             new Settings(),
+            new Warnings(),
             ConfigurationFormat.JUNIPER,
             VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
     FlattenerLineMap lineMap = flattener.getOriginalLineMap();

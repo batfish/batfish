@@ -12,6 +12,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import javax.annotation.Nullable;
+import org.batfish.common.ErrorDetails;
+import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.plugin.IBatfishTestAdapter;
@@ -25,7 +27,6 @@ import org.junit.Test;
 
 /** Tests for {@link InitIssuesAnswerer}. */
 public class InitIssuesAnswererTest {
-  private static String EXCEPTION_MESSAGE = "Exception message";
 
   @Test
   public void testAnswererNoIssues() {
@@ -40,10 +41,11 @@ public class InitIssuesAnswererTest {
   @Test
   public void testAnswererConvertError() {
     String node = "nodeError";
+    String message = "Exception message";
 
     ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
     ccae.setWarnings(ImmutableSortedMap.of(node, new Warnings()));
-    ccae.getErrorMessages().putIfAbsent(node, EXCEPTION_MESSAGE);
+    ccae.getErrorDetails().putIfAbsent(node, new ErrorDetails(message));
     // Answerer using TestBatfish that should produce a single convert error
     InitIssuesAnswerer answerer =
         new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(null, ccae));
@@ -63,7 +65,7 @@ public class InitIssuesAnswererTest {
                         COL_ISSUE_TYPE,
                         IssueType.ConvertError.toString(),
                         COL_ISSUE,
-                        EXCEPTION_MESSAGE,
+                        message,
                         COL_PARSER_CONTEXT,
                         null))));
   }
@@ -119,16 +121,56 @@ public class InitIssuesAnswererTest {
   @Test
   public void testAnswererParseError() {
     String file = "configs/nodeError.cfg";
+    Integer line = 9876;
+    String content = "content";
+    String context = "context";
+    String message = "Exception message";
 
     ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
     pvcae.setWarnings(ImmutableSortedMap.of(file, new Warnings()));
-    pvcae.getErrorMessages().put(file, EXCEPTION_MESSAGE);
-    // Answerer using TestBatfish that should produce a single parse error
+    pvcae
+        .getErrorDetails()
+        .put(file, new ErrorDetails(message, new ParseExceptionContext(content, line, context)));
+    // Answerer using TestBatfish that should produce a single parse error with parse exception
+    // context
     InitIssuesAnswerer answerer =
         new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(pvcae, null));
     TableAnswerElement answer = answerer.answer();
 
-    // Make sure we see parse error row in answer
+    // Make sure we see parse error row with line number in answer
+    assertThat(
+        answer.getRows(),
+        equalTo(
+            new Rows()
+                .add(
+                    Row.of(
+                        COL_NODES,
+                        null,
+                        COL_FILELINES,
+                        ImmutableList.of(new FileLines(file, ImmutableSortedSet.of(line))),
+                        COL_ISSUE_TYPE,
+                        IssueType.ParseError.toString(),
+                        COL_ISSUE,
+                        message,
+                        COL_PARSER_CONTEXT,
+                        context))));
+  }
+
+  @Test
+  public void testAnswererParseErrorNoContext() {
+    String file = "configs/nodeError.cfg";
+    String message = "Exception message";
+
+    ParseVendorConfigurationAnswerElement pvcae = new ParseVendorConfigurationAnswerElement();
+    pvcae.setWarnings(ImmutableSortedMap.of(file, new Warnings()));
+    pvcae.getErrorDetails().put(file, new ErrorDetails(message));
+    // Answerer using TestBatfish that should produce a single parse error without parse exception
+    // context
+    InitIssuesAnswerer answerer =
+        new InitIssuesAnswerer(new InitIssuesQuestion(), new TestBatfishBase(pvcae, null));
+    TableAnswerElement answer = answerer.answer();
+
+    // Make sure we see parse error row (without line number) in answer
     assertThat(
         answer.getRows(),
         equalTo(
@@ -142,7 +184,7 @@ public class InitIssuesAnswererTest {
                         COL_ISSUE_TYPE,
                         IssueType.ParseError.toString(),
                         COL_ISSUE,
-                        EXCEPTION_MESSAGE,
+                        message,
                         COL_PARSER_CONTEXT,
                         null))));
   }
