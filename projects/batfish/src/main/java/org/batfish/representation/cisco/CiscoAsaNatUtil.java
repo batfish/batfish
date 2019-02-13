@@ -1,9 +1,11 @@
 package org.batfish.representation.cisco;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
+import static org.batfish.representation.cisco.CiscoAsaNat.ANY_INTERFACE;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -23,6 +25,7 @@ import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
+import org.batfish.representation.cisco.CiscoAsaNat.Section;
 
 /** Utility methods related to {@link CiscoAsaNat}. */
 @ParametersAreNonnullByDefault
@@ -33,7 +36,7 @@ final class CiscoAsaNatUtil {
   static Transformation.Builder dynamicTransformation(
       AccessListAddressSpecifier realSource,
       AccessListAddressSpecifier mappedSource,
-      @Nullable String insideInterface,
+      String insideInterface,
       Map<String, NetworkObject> networkObjects,
       Warnings w) {
 
@@ -68,19 +71,14 @@ final class CiscoAsaNatUtil {
       w.redFlag("Invalid network object for assigning addresses " + mappedSourceObj.getName());
       return null;
     }
-    if (insideInterface != null) {
+    if (!insideInterface.equals(ANY_INTERFACE)) {
       matchExpr = and(matchExpr, matchSrcInterface(insideInterface));
     }
     return Transformation.when(matchExpr)
         .apply(assignSourceIp(mappedSourceObj.getStart(), mappedSourceObj.getEnd()));
   }
 
-  @Nullable
-  private static Prefix getEqualLengthPrefix(
-      WildcardAddressSpecifier specifier, @Nullable Prefix prefix) {
-    if (prefix == null) {
-      return null;
-    }
+  private static Prefix getEqualLengthPrefix(WildcardAddressSpecifier specifier, Prefix prefix) {
     return Prefix.create(specifier.getIpWildcard().getIp(), prefix.getPrefixLength());
   }
 
@@ -88,7 +86,7 @@ final class CiscoAsaNatUtil {
   private static Prefix getNetworkObjectPrefix(
       NetworkObjectAddressSpecifier specifier,
       Map<String, NetworkObject> networkObjects,
-      Warnings w) {
+      @Nullable Warnings w) {
     NetworkObject object = networkObjects.get(specifier.getName());
     if (object == null) {
       // Previously warned about undefined reference
@@ -107,10 +105,60 @@ final class CiscoAsaNatUtil {
     }
     if (object instanceof RangeNetworkObject) {
       // These are supported for dynamic NAT but not static NAT
-      w.redFlag("Ranges are not supported for static NAT");
+      if (w != null) {
+        w.redFlag("Ranges are not supported for static NAT");
+      }
       return null;
     }
     throw new BatfishException("Unexpected network object type");
+  }
+
+  /**
+   * Determine if an object NAT is an identity NAT.
+   *
+   * @param nat An object NAT
+   * @param networkObjects Mapping of network object names to {@link NetworkObject}s
+   * @return True if the object NAT is an identity NAT, or false if it is not. If the answer could
+   *     not be determined because the NAT is not supported or invalid, returns null.
+   */
+  @Nullable
+  static Boolean isIdentityObjectNat(CiscoAsaNat nat, Map<String, NetworkObject> networkObjects) {
+    checkArgument(nat.getSection().equals(Section.OBJECT), "Only supports object NATs.");
+
+    if (nat.getDynamic()) {
+      return false;
+    }
+    Prefix realPrefix =
+        getNetworkObjectPrefix(
+            (NetworkObjectAddressSpecifier) nat.getRealSource(), networkObjects, null);
+    if (realPrefix == null) {
+      return null;
+    }
+    AccessListAddressSpecifier mappedSource = nat.getMappedSource();
+    if (mappedSource == null) {
+      // undefined reference to a network object or network object group, already warned
+      return null;
+    }
+    if (mappedSource instanceof NetworkObjectGroupAddressSpecifier) {
+      // Not supported, will warn about this when creating transformations
+      return null;
+    }
+    if (mappedSource instanceof NetworkObjectAddressSpecifier) {
+      return realPrefix.equals(
+          getNetworkObjectPrefix(
+              (NetworkObjectAddressSpecifier) mappedSource, networkObjects, null));
+    }
+    if (mappedSource instanceof WildcardAddressSpecifier) {
+      // Specified as 'any'
+      if (mappedSource.toIpSpace().equals(IpWildcard.ANY.toIpSpace())) {
+        return realPrefix.equals(Prefix.ZERO);
+      }
+      // Specified as inline IP, so only compare start IP
+      return realPrefix
+          .getStartIp()
+          .equals(((WildcardAddressSpecifier) mappedSource).getIpWildcard().getIp());
+    }
+    throw new BatfishException("Unexpected NetworkObject type");
   }
 
   private static MatchHeaderSpace matchField(Prefix prefix, IpField field) {
@@ -125,21 +173,16 @@ final class CiscoAsaNatUtil {
   }
 
   static Optional<Transformation.Builder> secondTransformation(
-      @Nullable AccessListAddressSpecifier shiftDestination,
-      @Nullable AccessListAddressSpecifier matchDestination,
+      AccessListAddressSpecifier shiftDestination,
+      AccessListAddressSpecifier matchDestination,
       Transformation first,
       Map<String, NetworkObject> networkObjects,
       IpField field,
       Warnings w) {
 
-    if (shiftDestination == null || matchDestination == null) {
-      // Invalid reference or not supported
-      w.redFlag("Invalid match or shift destination.");
-      return Optional.empty();
-    }
-
     Transformation.Builder secondBuilder =
-        staticTransformation(matchDestination, shiftDestination, null, networkObjects, field, w);
+        staticTransformation(
+            matchDestination, shiftDestination, ANY_INTERFACE, networkObjects, field, w);
     if (secondBuilder == null) {
       return Optional.empty();
     }
@@ -166,15 +209,15 @@ final class CiscoAsaNatUtil {
   static Transformation.Builder staticTransformation(
       AccessListAddressSpecifier matchAddress,
       AccessListAddressSpecifier shiftAddress,
-      @Nullable String insideInterface,
+      String insideInterface,
       Map<String, NetworkObject> networkObjects,
       IpField field,
       Warnings w) {
 
     boolean anyMatch = matchAddress.toIpSpace().equals(IpWildcard.ANY.toIpSpace());
     boolean anyShift = shiftAddress.toIpSpace().equals(IpWildcard.ANY.toIpSpace());
-    Prefix matchPrefix;
-    Prefix shiftPrefix;
+    Prefix matchPrefix = null;
+    Prefix shiftPrefix = null;
     /*
      * There are valid cases which are not supported here
      * 1) Ranges do not map to prefixes but are valid. There is currently no support for
@@ -211,12 +254,16 @@ final class CiscoAsaNatUtil {
         // at the time it was created. Get the correct prefix length.
         shiftPrefix =
             getNetworkObjectPrefix((NetworkObjectAddressSpecifier) shiftAddress, networkObjects, w);
-        matchPrefix = getEqualLengthPrefix((WildcardAddressSpecifier) matchAddress, shiftPrefix);
+        if (shiftPrefix != null) {
+          matchPrefix = getEqualLengthPrefix((WildcardAddressSpecifier) matchAddress, shiftPrefix);
+        }
       } else if (shiftAddress instanceof WildcardAddressSpecifier
           && matchAddress instanceof NetworkObjectAddressSpecifier) {
         matchPrefix =
             getNetworkObjectPrefix((NetworkObjectAddressSpecifier) matchAddress, networkObjects, w);
-        shiftPrefix = getEqualLengthPrefix((WildcardAddressSpecifier) shiftAddress, matchPrefix);
+        if (matchPrefix != null) {
+          shiftPrefix = getEqualLengthPrefix((WildcardAddressSpecifier) shiftAddress, matchPrefix);
+        }
       } else if (matchAddress instanceof NetworkObjectAddressSpecifier
           && shiftAddress instanceof NetworkObjectAddressSpecifier) {
         matchPrefix =
@@ -239,7 +286,7 @@ final class CiscoAsaNatUtil {
       }
     }
     AclLineMatchExpr matchExpr = matchField(matchPrefix, field);
-    if (insideInterface != null) {
+    if (!insideInterface.equals(ANY_INTERFACE)) {
       matchExpr = and(matchExpr, matchSrcInterface(insideInterface));
     }
     return Transformation.when(matchExpr).apply(shiftIp(field, shiftPrefix));

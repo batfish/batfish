@@ -4514,8 +4514,8 @@ public class CiscoGrammarTest {
     nat = nats.get(2);
     assertThat(nat.getDynamic(), equalTo(false));
     assertThat(nat.getTwice(), equalTo(false));
-    assertThat(nat.getInsideInterface(), nullValue());
-    assertThat(nat.getOutsideInterface(), nullValue());
+    assertThat(nat.getInsideInterface(), equalTo(CiscoAsaNat.ANY_INTERFACE));
+    assertThat(nat.getOutsideInterface(), equalTo(CiscoAsaNat.ANY_INTERFACE));
     assertThat(
         nat.getRealSource(), equalTo(new NetworkObjectGroupAddressSpecifier("source-real-group")));
     assertThat(
@@ -4525,10 +4525,10 @@ public class CiscoGrammarTest {
     nat = nats.get(3);
     MatcherAssert.assertThat("NAT is active", nat.getInactive());
     assertThat(nat.getInsideInterface(), equalTo("inside"));
-    assertThat(nat.getOutsideInterface(), nullValue());
+    assertThat(nat.getOutsideInterface(), equalTo(CiscoAsaNat.ANY_INTERFACE));
 
     nat = nats.get(4);
-    assertThat(nat.getInsideInterface(), nullValue());
+    assertThat(nat.getInsideInterface(), equalTo(CiscoAsaNat.ANY_INTERFACE));
     assertThat(nat.getOutsideInterface(), equalTo("outside"));
 
     nat = nats.get(5);

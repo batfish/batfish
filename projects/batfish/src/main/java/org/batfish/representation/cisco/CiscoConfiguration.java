@@ -2314,13 +2314,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     // ASA places incoming and outgoing object NATs as transformations on the outside interface.
-    // Each NAT rule specifies an outside interface or 'any'
+    // Each NAT rule specifies an outside interface or ANY_INTERFACE
     SortedSet<CiscoAsaNat> objectNats =
         ciscoAsaNats.stream()
             .filter(nat -> nat.getSection().equals(Section.OBJECT))
             .filter(
                 nat ->
-                    nat.getOutsideInterface() == null
+                    nat.getOutsideInterface().equals(CiscoAsaNat.ANY_INTERFACE)
                         || nat.getOutsideInterface().equals(ifaceName))
             .collect(Collectors.toCollection(TreeSet::new));
 

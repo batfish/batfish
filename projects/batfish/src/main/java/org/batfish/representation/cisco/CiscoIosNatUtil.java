@@ -96,7 +96,6 @@ final class CiscoIosNatUtil {
 
   private static Transformation chain(
       List<Transformation.Builder> nonEmptySortedList, @Nullable Transformation andThen) {
-
     // Start at the end of the chain and go backwards. The end of the chain should have
     // t.andThen == t.orElse
     Transformation previous = andThen;

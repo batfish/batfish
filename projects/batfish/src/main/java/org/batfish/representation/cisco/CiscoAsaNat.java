@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco;
 
 import static org.batfish.representation.cisco.CiscoAsaNatUtil.dynamicTransformation;
+import static org.batfish.representation.cisco.CiscoAsaNatUtil.isIdentityObjectNat;
 import static org.batfish.representation.cisco.CiscoAsaNatUtil.secondTransformation;
 import static org.batfish.representation.cisco.CiscoAsaNatUtil.staticTransformation;
 
@@ -23,17 +24,11 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
   private static final long serialVersionUID = 1L;
   /** If true, this NAT rule is inactive and will not be used. */
   private boolean _inactive;
-  /**
-   * NATs optionally specify an inside, or 'real', interface. Interface is null if unspecified or
-   * specified as 'any'.
-   */
+  /** NATs optionally specify an inside, or 'real', interface. May be ANY_INTERFACE */
   private String _insideInterface;
   /** Indicates the order in which this NAT was specified in the configuration */
   private int _line;
-  /**
-   * NATs optionally specify an outside, or 'mapped', interface. Interface is null if unspecified or
-   * specified as 'any'.
-   */
+  /** NATs optionally specify an outside, or 'mapped', interface. May be ANY_INTERFACE */
   private String _outsideInterface;
   /**
    * NATs specify 'any' address, a network object, or a network object-group as the real address of
@@ -44,7 +39,7 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
    * Object NATs depend on the actual network object that they were declared in for sorting. This
    * network object must have a valid start (and end) IP.
    */
-  private NetworkObject _realSourceObject;
+  @Nullable private NetworkObject _realSourceObject;
   /**
    * NATs are sorted into sections. There are three sections (in decreasing order of precedence):
    * BEFORE, OBJECT, and AFTER. Twice NATs are in BEFORE by default and can be configured to be in
@@ -57,19 +52,19 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
    * destinations for inside-to-outside flows. Interface NAT is not supported. Value is null if this
    * NAT does not have a destination transformation or if interface NAT was configured.
    */
-  private AccessListAddressSpecifier _mappedDestination;
+  @Nullable private AccessListAddressSpecifier _mappedDestination;
   /**
    * NATs specify 'any' address, a network object, a network object-group, 'interface', a PAT pool,
    * or an inline IP as the translated mapping of sources for inside-to-outside flows. PAT and
    * interface NAT are not supported. Value is null if interface NAT or a PAT pool was configured.
    */
-  private AccessListAddressSpecifier _mappedSource;
+  @Nullable private AccessListAddressSpecifier _mappedSource;
   /**
    * If this NAT has an optional destination transformation, it is configured with 'any' address, a
    * network object, or a network object-group as the real address of destinations for
    * inside-to-outside flows. Value is null if this NAT does not have a destination transformation.
    */
-  private AccessListAddressSpecifier _realDestination;
+  @Nullable private AccessListAddressSpecifier _realDestination;
   /** Whether this NAT includes a destination NAT */
   private boolean _twice;
   /** Whether this NAT is dynamic or static */
@@ -107,6 +102,7 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
     _line = line;
   }
 
+  @Nullable
   public AccessListAddressSpecifier getMappedDestination() {
     return _mappedDestination;
   }
@@ -115,11 +111,12 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
     _mappedDestination = mappedDestination;
   }
 
+  @Nullable
   public AccessListAddressSpecifier getMappedSource() {
     return _mappedSource;
   }
 
-  public void setMappedSource(AccessListAddressSpecifier mappedSource) {
+  public void setMappedSource(@Nullable AccessListAddressSpecifier mappedSource) {
     _mappedSource = mappedSource;
   }
 
@@ -131,6 +128,7 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
     _outsideInterface = outsideInterface;
   }
 
+  @Nullable
   public AccessListAddressSpecifier getRealDestination() {
     return _realDestination;
   }
@@ -143,12 +141,13 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
     return _realSource;
   }
 
-  public NetworkObject getRealSourceObject() {
-    return _realSourceObject;
-  }
-
   public void setRealSource(AccessListAddressSpecifier realSource) {
     _realSource = realSource;
+  }
+
+  @Nullable
+  public NetworkObject getRealSourceObject() {
+    return _realSourceObject;
   }
 
   void setRealSourceObject(NetworkObject networkObject) {
@@ -252,8 +251,9 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
   }
 
   /*
-   * Included for testing, but not integrated with data plane. ASA NATs aren't compatible yet with
-   * the ACL/routing sequence.
+   * ASA NATs are only partially compatible with the ACL/routing sequence in the dataplane. Twice
+   * NATs are not compatible (see below) and object NATs are partially compatible (see below and
+   * warning in this function).
    *
    * First, some background. ASA NATs optionally specify a real and a mapped interface, which
    * correspond to "inside" and "outside" interfaces. NAT rules can match both source and
@@ -299,6 +299,12 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
       boolean outgoing, Map<String, NetworkObject> networkObjects, Warnings w) {
 
     if (!outgoing && _dynamic) {
+      // Inbound dynamic NAT not supported
+      return Optional.empty();
+    }
+
+    if (_mappedSource == null) {
+      // Invalid reference or unsupported, warned during extraction
       return Optional.empty();
     }
 
@@ -326,7 +332,7 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
       matchDestination = _realDestination;
       shiftDestination = _mappedDestination;
       assignOrShiftSrc = _realSource;
-      insideInterface = null;
+      insideInterface = ANY_INTERFACE;
       firstField = IpField.DESTINATION;
       secondField = IpField.SOURCE;
     }
@@ -334,15 +340,52 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
     /*
      * All NAT rules start with an outbound source transformation which matches realSource and
      * translates to mappedSource. The reverse of this transformation is a destination
-     * transformation matches mappedSource and translated into realSource.
+     * transformation which matches mappedSource and translates into realSource.
      */
     Transformation.Builder firstTransformationBuilder =
         _dynamic
             ? dynamicTransformation(matchSrc, assignOrShiftSrc, insideInterface, networkObjects, w)
             : staticTransformation(
                 matchSrc, assignOrShiftSrc, insideInterface, networkObjects, firstField, w);
-    if (!_twice || firstTransformationBuilder == null) {
-      return Optional.ofNullable(firstTransformationBuilder);
+    if (firstTransformationBuilder == null) {
+      return Optional.empty();
+    }
+    /*
+     * Object NAT will "divert" traffic to the NAT-specified egress interface in some cases.
+     * This could be supported using policy routing based on destination and source interface.
+     * These are the conditions necessary for object NAT to divert traffic:
+     * 1) Inbound only: Object NAT does not divert traffic in the outbound direction.
+     * 2) Actual transformation is required: identity object NAT does not divert traffic.
+     * 3) Specified real interface: the real interface must be explicit, not ANY_INTERFACE.
+     *
+     * For simple firewall FIBs, the NAT divert may result in the same forwarding decision as
+     * the FIB. However, this isn't guaranteed and can't be checked here.
+     *
+     * Given conditions 2 and 3 and that _outsideInterface is ANY_INTERFACE, policy routing would
+     * not be necessary since the source interface requirement is relaxed. A route to
+     * _insideInterface for traffic with destination matching _realSourceObject would suffice.
+     */
+    if (_section.equals(Section.OBJECT)) {
+      Boolean identity = isIdentityObjectNat(this, networkObjects);
+      if (identity == null) {
+        throw new BatfishException(
+            "Failed to determine if identity NAT but created Transformation");
+      }
+      if (!outgoing && !identity && !_insideInterface.equals(ANY_INTERFACE)) {
+        w.redFlag(
+            String.format(
+                "Possibly incorrect forwarding behavior for destination=%s, source interface=%s",
+                ((NetworkObjectAddressSpecifier) _realSource).getName(), _outsideInterface));
+      }
+    }
+
+    if (!_twice) {
+      return Optional.of(firstTransformationBuilder);
+    }
+
+    if (matchDestination == null || shiftDestination == null) {
+      // Invalid reference or unsupported, warned during extraction
+      return Optional.empty();
     }
 
     // NAT rules can optionally have an outbound destination transformation which is always static.
