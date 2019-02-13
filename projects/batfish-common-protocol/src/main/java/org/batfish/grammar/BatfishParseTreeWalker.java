@@ -32,7 +32,7 @@ public class BatfishParseTreeWalker extends ParseTreeWalker {
       listener.exitEveryRule(ctx);
     } catch (Exception e) {
       throw new BatfishParseException(
-          String.format("Exception walking parse tree: %s", e.getMessage()), e, ctx);
+          String.format("Exception while walking parse tree: %s", e.getMessage()), e, ctx);
     }
   }
 }
