@@ -1,6 +1,8 @@
 package org.batfish.common.bdd;
 
+import static org.batfish.common.bdd.BDDOps.andNull;
 import static org.batfish.common.bdd.BDDUtils.isAssignment;
+import static org.batfish.common.bdd.BDDUtils.swap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -48,5 +50,31 @@ public class BDDUtilsTest {
     BDD orig = mkBdd.apply(dstIp, srcIp);
     BDD swapped = mkBdd.apply(srcIp, dstIp);
     assertThat(swapped, equalTo(BDDUtils.swap(orig, dstIp, srcIp)));
+  }
+
+  @Test
+  public void testSwapMultiVar() {
+    BDDPacket pkt = new BDDPacket();
+    BDDInteger dstIp = pkt.getDstIp();
+    BDDInteger srcIp = pkt.getSrcIp();
+    BDDInteger dstPort = pkt.getDstPort();
+    BDDInteger srcPort = pkt.getSrcPort();
+
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("2.2.2.2");
+
+    BDD orig =
+        andNull(
+            dstIp.value(ip1.asLong()),
+            dstPort.value(5),
+            srcIp.value(ip2.asLong()),
+            srcPort.value(7));
+    BDD swapped =
+        andNull(
+            srcIp.value(ip1.asLong()),
+            srcPort.value(5),
+            dstIp.value(ip2.asLong()),
+            dstPort.value(7));
+    assertThat(swap(orig, dstIp, srcIp, dstPort, srcPort), equalTo(swapped));
   }
 }
