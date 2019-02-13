@@ -121,6 +121,7 @@ import org.batfish.role.NodeRole;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.storage.StorageProvider;
+import org.batfish.storage.StoredObjectMetadata;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.io.FileMatchers;
 import org.junit.Before;
@@ -2908,6 +2909,51 @@ public final class WorkMgrTest {
 
     // extra dir should be ignored, and s1Path should be considered the snapshot subdir
     assertThat(WorkMgr.getSnapshotSubdir(root), equalTo(s1Path));
+  }
+
+  @Test
+  public void testGetSnapshotInputKeysInvalidNetwork() throws IOException {
+    assertThat(_manager.getSnapshotInputObjectsMetadata("network", "snapshot"), nullValue());
+  }
+
+  @Test
+  public void testGetSnapshotInputKeysInvalidSnapshot() throws IOException {
+    String network = "network";
+    NetworkId networkId = _idManager.generateNetworkId();
+    _idManager.assignNetwork(network, networkId);
+    assertThat(_manager.getSnapshotInputObjectsMetadata(network, "snapshot"), nullValue());
+  }
+
+  @Test
+  public void testGetSnapshotInputKeysIOException() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+
+    NetworkId networkId = _idManager.generateNetworkId();
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+
+    _idManager.assignNetwork(network, networkId);
+    _idManager.assignSnapshot(snapshot, networkId, snapshotId);
+
+    _thrown.expect(IOException.class);
+    _manager.getSnapshotInputObjectsMetadata(network, snapshot);
+  }
+
+  @Test
+  public void testGetSnapshotInputKeys() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String fileName = "fileName";
+    String content = "some content";
+
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot, fileName, content);
+
+    assertThat(
+        _manager.getSnapshotInputObjectsMetadata(network, snapshot),
+        equalTo(
+            ImmutableList.of(
+                new StoredObjectMetadata("configs/" + fileName, content.getBytes().length))));
   }
 
   private void storeCompletionMetadata(
