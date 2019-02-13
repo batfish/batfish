@@ -7,9 +7,9 @@ import static org.batfish.question.prefixtracer.PrefixTracerAnswerer.COL_PREFIX;
 import static org.batfish.question.prefixtracer.PrefixTracerAnswerer.COL_VRF;
 import static org.batfish.question.prefixtracer.PrefixTracerAnswerer.getRows;
 import static org.batfish.question.prefixtracer.PrefixTracerAnswerer.getTableMetadata;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;

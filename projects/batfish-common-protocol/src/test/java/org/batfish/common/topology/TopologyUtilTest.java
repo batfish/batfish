@@ -4,10 +4,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.topology.TopologyUtil.computeIpInterfaceOwners;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer3Topology;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -195,7 +197,7 @@ public final class TopologyUtilTest {
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
       Layer1Topology layer1Topology = layer1Topology(c1Name, c1i1Name, c2Name, c2i1Name);
       Layer2Topology layer2Topology = computeLayer2Topology(layer1Topology, configs);
-      assertThat(
+      assertTrue(
           "c1:i1 and c2:i1 are in the same broadcast domain",
           layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
     }
@@ -221,7 +223,7 @@ public final class TopologyUtilTest {
               c1Name, c1i1Name, c3Name, c3i1Name, //
               c2Name, c2i1Name, c3Name, c3i2Name);
       Layer2Topology layer2Topology = computeLayer2Topology(layer1Topology, configs);
-      assertThat(
+      assertTrue(
           "c1:i1 and c2:i1 are in the same broadcast domain",
           layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
     }
@@ -247,9 +249,9 @@ public final class TopologyUtilTest {
               c1Name, c1i1Name, c3Name, c3i1Name, //
               c2Name, c2i1Name, c3Name, c3i2Name);
       Layer2Topology layer2Topology = computeLayer2Topology(layer1Topology, configs);
-      assertThat(
+      assertFalse(
           "c1:i1 and c2:i1 are not in the same broadcast domain",
-          !layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
+          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
     }
 
     {
@@ -274,7 +276,7 @@ public final class TopologyUtilTest {
               c1Name, c1i1Name, c3Name, c3i1Name, //
               c2Name, c2i1Name, c3Name, c3i2Name);
       Layer2Topology layer2Topology = computeLayer2Topology(layer1Topology, configs);
-      assertThat(
+      assertTrue(
           "c1:i1 and c2:i1 are in the same broadcast domain",
           layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
     }
@@ -301,9 +303,9 @@ public final class TopologyUtilTest {
               c1Name, c1i1Name, c3Name, c3i1Name, //
               c2Name, c2i1Name, c3Name, c3i2Name);
       Layer2Topology layer2Topology = computeLayer2Topology(layer1Topology, configs);
-      assertThat(
+      assertFalse(
           "c1:i1 and c2:i1 are not in the same broadcast domain",
-          !layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
+          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
     }
 
     {
@@ -328,9 +330,9 @@ public final class TopologyUtilTest {
               c1Name, c1i1Name, c3Name, c3i1Name, //
               c2Name, c2i1Name, c3Name, c3i2Name);
       Layer2Topology layer2Topology = computeLayer2Topology(layer1Topology, configs);
-      assertThat(
+      assertFalse(
           "c1:i1 and c2:i1 are not in the same broadcast domain",
-          !layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
+          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
     }
 
     {
@@ -371,7 +373,7 @@ public final class TopologyUtilTest {
               c3Name, c3i2Name, c4Name, c4i1Name, //
               c4Name, c4i2Name, c2Name, c2i1Name);
       Layer2Topology layer2Topology = computeLayer2Topology(layer1Topology, configs);
-      assertThat(
+      assertTrue(
           "c1:i1 and c2:i1 are in the same broadcast domain",
           layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
     }
@@ -414,9 +416,9 @@ public final class TopologyUtilTest {
               c3Name, c3i2Name, c4Name, c4i2Name, //
               c4Name, c4i1Name, c2Name, c2i1Name);
       Layer2Topology layer2Topology = computeLayer2Topology(layer1Topology, configs);
-      assertThat(
+      assertFalse(
           "c1:i1 and c2:i1 are not in the same broadcast domain",
-          !layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
+          layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
     }
   }
 
@@ -463,15 +465,15 @@ public final class TopologyUtilTest {
     Layer2Topology layer2Topology =
         computeLayer2Topology(layer1LogicalTopology, ImmutableMap.of(n1Name, n1, n2Name, n2));
 
-    assertThat(
+    assertTrue(
         "n1:i1a and n2:i1a are in the same broadcast domain",
         layer2Topology.inSameBroadcastDomain(n1Name, i1aName, n2Name, i1aName));
-    assertThat(
+    assertTrue(
         "n1:i1b and n2:i1b are in the same broadcast domain",
         layer2Topology.inSameBroadcastDomain(n1Name, i1bName, n2Name, i1bName));
-    assertThat(
+    assertFalse(
         "n1:i1a and n2:i1b are NOT in the same broadcast domain",
-        !layer2Topology.inSameBroadcastDomain(n1Name, i1aName, n2Name, i1bName));
+        layer2Topology.inSameBroadcastDomain(n1Name, i1aName, n2Name, i1bName));
   }
 
   @Test
@@ -560,21 +562,21 @@ public final class TopologyUtilTest {
     Layer2Topology layer2Topology =
         computeLayer2Topology(layer1LogicalTopology, ImmutableMap.of(n1Name, n1, n2Name, n2));
 
-    assertThat(
+    assertTrue(
         "n1:ia and n2:ia are in the same broadcast domain",
         layer2Topology.inSameBroadcastDomain(n1Name, iaName, n2Name, iaName));
-    assertThat(
+    assertFalse(
         "n1:ib and n2:ib are NOT in the same broadcast domain",
-        !layer2Topology.inSameBroadcastDomain(n1Name, ibName, n2Name, ibName));
-    assertThat(
+        layer2Topology.inSameBroadcastDomain(n1Name, ibName, n2Name, ibName));
+    assertFalse(
         "n1:ic and n2:ic are NOT in the same broadcast domain",
-        !layer2Topology.inSameBroadcastDomain(n1Name, icName, n2Name, icName));
-    assertThat(
+        layer2Topology.inSameBroadcastDomain(n1Name, icName, n2Name, icName));
+    assertFalse(
         "n1:ia and n2:ib are NOT in the same broadcast domain",
-        !layer2Topology.inSameBroadcastDomain(n1Name, iaName, n2Name, ibName));
-    assertThat(
+        layer2Topology.inSameBroadcastDomain(n1Name, iaName, n2Name, ibName));
+    assertFalse(
         "n1:ia and n2:ic are NOT in the same broadcast domain",
-        !layer2Topology.inSameBroadcastDomain(n1Name, iaName, n2Name, icName));
+        layer2Topology.inSameBroadcastDomain(n1Name, iaName, n2Name, icName));
   }
 
   @Test

@@ -14,8 +14,8 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.acl.normalize.AclToAclLineMatchExpr.aclLines;
 import static org.batfish.datamodel.acl.normalize.AclToAclLineMatchExpr.toAclLineMatchExpr;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

@@ -12,11 +12,11 @@ import static org.batfish.datamodel.matchers.IsisRouteMatchers.isisRouteWith;
 import static org.batfish.dataplane.ibdp.TestUtils.assertIsisRoute;
 import static org.batfish.dataplane.ibdp.TestUtils.assertNoRoute;
 import static org.batfish.dataplane.ibdp.TestUtils.assertRoute;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;

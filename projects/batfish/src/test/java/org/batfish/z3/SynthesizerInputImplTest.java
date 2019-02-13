@@ -11,13 +11,13 @@ import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasEnabledVrfs;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasIpsByHostname;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasNeighborUnreachable;
 import static org.batfish.z3.matchers.SynthesizerInputMatchers.hasTopologyInterfaces;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

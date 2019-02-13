@@ -21,12 +21,13 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.PREFIX_LI
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE_MAP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SELF;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
@@ -173,36 +174,36 @@ public final class F5BigipStructuredGrammarTest {
     // Check errors
     Warnings warnings = batfish.initInfo(false, true).getWarnings().get(hostname);
 
-    assertThat(
+    assertTrue(
         "Missing IPv4 prefix reported",
         warnings.getRedFlagWarnings().stream()
             .map(Warning::getText)
             .anyMatch(Predicates.containsPattern("Missing IPv4 prefix.*PL4_WITH_MISSING_PREFIX")));
-    assertThat(
+    assertTrue(
         "Missing IPv6 prefix reported",
         warnings.getRedFlagWarnings().stream()
             .map(Warning::getText)
             .anyMatch(Predicates.containsPattern("Missing IPv6 prefix.*PL6_WITH_MISSING_PREFIX")));
-    assertThat(
+    assertTrue(
         "Invalid IPv4 length-range reported",
         warnings.getRedFlagWarnings().stream()
             .map(Warning::getText)
             .anyMatch(
                 Predicates.containsPattern(
                     "Invalid IPv4 prefix-len-range.*PL4_WITH_INVALID_LENGTH")));
-    assertThat(
+    assertTrue(
         "Invalid IPv6 length-range reported",
         warnings.getRedFlagWarnings().stream()
             .map(Warning::getText)
             .anyMatch(
                 Predicates.containsPattern(
                     "Invalid IPv6 prefix-len-range.*PL6_WITH_INVALID_LENGTH")));
-    assertThat(
+    assertTrue(
         "Missing action reported for IPv4 prefix-list",
         warnings.getRedFlagWarnings().stream()
             .map(Warning::getText)
             .anyMatch(Predicates.containsPattern("Missing action.*PL4_WITH_MISSING_ACTION")));
-    assertThat(
+    assertTrue(
         "Missing action reported for IPv6 prefix-list",
         warnings.getRedFlagWarnings().stream()
             .map(Warning::getText)
@@ -238,7 +239,7 @@ public final class F5BigipStructuredGrammarTest {
 
     // ACCEPT_ALL
     assertThat(c.getRoutingPolicies(), hasKey(acceptAllName));
-    assertThat(
+    assertTrue(
         "ACCEPT_ALL accepts arbitrary prefix 10.0.0.0/24",
         c.getRoutingPolicies()
             .get(acceptAllName)
@@ -256,7 +257,7 @@ public final class F5BigipStructuredGrammarTest {
 
     RoutingPolicy rm1 = c.getRoutingPolicies().get(rm1Name);
 
-    assertThat(
+    assertTrue(
         "rm1 denies prefix 10.0.0.0/24 (via 10)",
         !rm1.call(
                 Environment.builder(c)
@@ -284,7 +285,7 @@ public final class F5BigipStructuredGrammarTest {
             .build();
     Result acceptedBy20 = rm1.call(acceptedPrefixEnvironment);
 
-    assertThat("rm1 accepts prefix 10.0.1.0/24 (via 20)", acceptedBy20.getBooleanValue());
+    assertTrue("rm1 accepts prefix 10.0.1.0/24 (via 20)", acceptedBy20.getBooleanValue());
     assertThat(
         "rm1 sets communities 1:2 and 33:44 on the output route",
         outputRoute.build().getCommunities(),
@@ -293,7 +294,7 @@ public final class F5BigipStructuredGrammarTest {
                 .map(CommonUtil::communityStringToLong)
                 .collect(ImmutableSet.toImmutableSet())));
 
-    assertThat(
+    assertTrue(
         "rm1 rejects prefix 10.0.2.0/24 (no matching entry)",
         !rm1.call(
                 Environment.builder(c)

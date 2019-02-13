@@ -5,11 +5,11 @@ import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginAnswerer.COLUMN_LINE_NAMES;
 import static org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginAnswerer.COLUMN_NODE;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.util.Arrays;

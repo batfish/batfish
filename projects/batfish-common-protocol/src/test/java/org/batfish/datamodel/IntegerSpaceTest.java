@@ -3,10 +3,10 @@ package org.batfish.datamodel;
 import static org.batfish.datamodel.IntegerSpace.EMPTY;
 import static org.batfish.datamodel.IntegerSpace.PORTS;
 import static org.batfish.datamodel.IntegerSpace.builder;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -42,10 +42,10 @@ public class IntegerSpaceTest {
   public void testClosedRangeCreation() {
     IntegerSpace space = _b.including(new SubRange(1, 10)).build();
     for (int i = 1; i <= 10; i++) {
-      assertThat("Closed ranges are inclusive", space.contains(i));
+      assertTrue("Closed ranges are inclusive", space.contains(i));
     }
-    assertThat("No members outside of subrange", !space.contains(11));
-    assertThat("No members outside of subrange", !space.contains(0));
+    assertTrue("No members outside of subrange", !space.contains(11));
+    assertTrue("No members outside of subrange", !space.contains(0));
   }
 
   @Test
@@ -75,14 +75,14 @@ public class IntegerSpaceTest {
   @Test
   public void testExcludeWithoutInclude() {
     IntegerSpace space = _b.excluding(Range.closed(1, 10)).build();
-    assertThat("No inclusions means empty space", space.isEmpty());
-    assertThat("No inclusions means contiguous space", space.isContiguous());
+    assertTrue("No inclusions means empty space", space.isEmpty());
+    assertTrue("No inclusions means contiguous space", space.isContiguous());
   }
 
   @Test
   public void testIgnoreEmptySubrange() {
     IntegerSpace space = _b.including(new SubRange(10, 0)).build();
-    assertThat("Empty subrange means empty space", space.isEmpty());
+    assertTrue("Empty subrange means empty space", space.isEmpty());
   }
 
   @Test
@@ -93,26 +93,26 @@ public class IntegerSpaceTest {
             .excluding(new SubRange(5, 6))
             .build();
 
-    assertThat("Space not empty", !space.isEmpty());
-    assertThat("Space not contiguous", !space.isContiguous());
-    assertThat("Space does not contain excluded values", !space.contains(1));
-    assertThat("Space does not contain excluded values", !space.contains(2));
-    assertThat("Space does not contain excluded values", !space.contains(5));
-    assertThat("Space does not contain excluded values", !space.contains(6));
-    assertThat(
+    assertTrue("Space not empty", !space.isEmpty());
+    assertTrue("Space not contiguous", !space.isContiguous());
+    assertTrue("Space does not contain excluded values", !space.contains(1));
+    assertTrue("Space does not contain excluded values", !space.contains(2));
+    assertTrue("Space does not contain excluded values", !space.contains(5));
+    assertTrue("Space does not contain excluded values", !space.contains(6));
+    assertTrue(
         "Space does not contain excluded values",
         !space.contains(IntegerSpace.builder().including(new SubRange(1, 2)).build()));
-    assertThat(
+    assertTrue(
         "Space contains child space",
         space.contains(IntegerSpace.builder().including(Range.closed(7, 10)).build()));
-    assertThat(
+    assertTrue(
         "Space does not contain partially overlapping spaces",
         !space.contains(IntegerSpace.builder().including(Range.closed(0, 1)).build()));
   }
 
   @Test
   public void emptyInstanceIsEmpty() {
-    assertThat("Empty instance is empty", EMPTY.isEmpty());
+    assertTrue("Empty instance is empty", EMPTY.isEmpty());
   }
 
   @Test
@@ -159,7 +159,7 @@ public class IntegerSpaceTest {
   @Test
   public void testComplement() {
     IntegerSpace notPorts = PORTS.not(PORTS);
-    assertThat("Complement of full space is empty", notPorts.isEmpty());
+    assertTrue("Complement of full space is empty", notPorts.isEmpty());
 
     IntegerSpace portsWithExclusion = PORTS.toBuilder().excluding(new SubRange(10, 20)).build();
     assertThat(
@@ -192,8 +192,8 @@ public class IntegerSpaceTest {
     newBuilder.including(Range.closed(-10, -5));
     newBuilder.excluding(Range.closed(53, 53));
     IntegerSpace newSpace = newBuilder.build();
-    assertThat("Has newly added value", newSpace.contains(-7));
-    assertThat("Does not have newly excluded value", !newSpace.contains(53));
+    assertTrue("Has newly added value", newSpace.contains(-7));
+    assertTrue("Does not have newly excluded value", !newSpace.contains(53));
   }
 
   @Test
@@ -354,9 +354,9 @@ public class IntegerSpaceTest {
     IntegerSpace s2 =
         IntegerSpace.builder().including(Range.closed(1, 3)).excluding(Range.closed(2, 3)).build();
     IntegerSpace twoValues = IntegerSpace.builder().including(Range.closed(1, 2)).build();
-    assertThat("Must be singleton", s1.isSingleton());
-    assertThat("Must be singleton", s2.isSingleton());
-    assertThat("Must not be singleton", !twoValues.isSingleton());
+    assertTrue("Must be singleton", s1.isSingleton());
+    assertTrue("Must be singleton", s2.isSingleton());
+    assertTrue("Must not be singleton", !twoValues.isSingleton());
   }
 
   @Test

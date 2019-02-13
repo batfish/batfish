@@ -4,9 +4,9 @@ import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.main.ReachabilityParametersResolver.isActive;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSortedMap;

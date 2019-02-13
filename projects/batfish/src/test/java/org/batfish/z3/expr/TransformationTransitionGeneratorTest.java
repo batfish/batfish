@@ -11,9 +11,9 @@ import static org.batfish.z3.expr.ExtractExpr.newExtractExpr;
 import static org.batfish.z3.expr.HeaderSpaceMatchExpr.matchIp;
 import static org.batfish.z3.expr.TransformationTransitionGenerator.assignFromPoolExpr;
 import static org.batfish.z3.expr.TransformationTransitionGenerator.shiftIntoSubnetExpr;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

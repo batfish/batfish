@@ -11,9 +11,9 @@ import static org.batfish.datamodel.PacketHeaderConstraints.resolvePorts;
 import static org.batfish.datamodel.Protocol.DNS;
 import static org.batfish.datamodel.Protocol.HTTP;
 import static org.batfish.datamodel.Protocol.SSH;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;

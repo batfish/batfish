@@ -121,7 +121,6 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATI
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.contains;
@@ -134,6 +133,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.hasValue;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -288,7 +288,6 @@ import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
 import org.batfish.representation.juniper.Zone;
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -2070,12 +2069,12 @@ public final class FlatJuniperGrammarTest {
     assertThat(policyPreference.getStatements(), hasSize(2));
 
     // Extracting the If statement
-    MatcherAssert.assertThat(policyPreference.getStatements().get(0), instanceOf(If.class));
+    assertThat(policyPreference.getStatements().get(0), instanceOf(If.class));
 
     If i = (If) policyPreference.getStatements().get(0);
 
-    MatcherAssert.assertThat(i.getTrueStatements(), hasSize(1));
-    MatcherAssert.assertThat(
+    assertThat(i.getTrueStatements(), hasSize(1));
+    assertThat(
         Iterables.getOnlyElement(i.getTrueStatements()), instanceOf(SetAdministrativeCost.class));
 
     assertThat(
