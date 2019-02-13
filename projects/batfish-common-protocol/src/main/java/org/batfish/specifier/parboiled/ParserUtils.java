@@ -3,6 +3,7 @@ package org.batfish.specifier.parboiled;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Iterables;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -19,16 +20,12 @@ import org.parboiled.support.ParsingResult;
 @ParametersAreNonnullByDefault
 final class ParserUtils {
 
-  static AstNode getAst(ParsingResult<?> result) {
+  static AstNode getAst(ParsingResult<AstNode> result) {
     checkArgument(
         result.parseErrors.isEmpty(),
         "Cannot get AST because parsing failed for '%s'",
         result.inputBuffer);
-    checkArgument(
-        result.valueStack.size() == 1,
-        "Unexpected number of items '%d' on value stack",
-        result.valueStack.size());
-    return (AstNode) result.valueStack.iterator().next();
+    return Iterables.getOnlyElement(result.valueStack);
   }
 
   /** Generates a friendly message to explain what might be wrong with parser input */

@@ -22,7 +22,7 @@ public class ParserUtilsTest {
 
   @org.junit.Rule public ExpectedException _thrown = ExpectedException.none();
 
-  private static AbstractParseRunner<?> getRunner() {
+  private static AbstractParseRunner<AstNode> getRunner() {
     return new ReportingParseRunner<>(
         TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()));
   }

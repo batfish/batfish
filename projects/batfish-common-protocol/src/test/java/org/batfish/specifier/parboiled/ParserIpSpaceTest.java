@@ -13,11 +13,12 @@ import org.parboiled.errors.ParserRuntimeException;
 import org.parboiled.parserunners.AbstractParseRunner;
 import org.parboiled.parserunners.ReportingParseRunner;
 
-public class ParserTestIpSpace {
+/** Tests of {@link Parser} producing {@link IpSpaceAstNode}. */
+public class ParserIpSpaceTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
-  private static AbstractParseRunner<?> getRunner() {
+  private static AbstractParseRunner<AstNode> getRunner() {
     return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.IpSpaceExpression()));
   }
 

@@ -91,7 +91,8 @@ public final class ParboiledAutoComplete {
      * character (soccer ball :)). We will not get any errors backs if the string is legal.
      */
     String testQuery = _query + new String(Character.toChars(0x26bd));
-    ParsingResult<?> result = new ReportingParseRunner<>(_parser.input(_expression)).run(testQuery);
+    ParsingResult<AstNode> result =
+        new ReportingParseRunner<AstNode>(_parser.input(_expression)).run(testQuery);
     if (result.parseErrors.isEmpty()) {
       throw new IllegalStateException("Failed to force erroneous input");
     }

@@ -17,8 +17,9 @@ public class ParboiledIpSpaceSpecifierFactory implements IpSpaceSpecifierFactory
   public IpSpaceSpecifier buildIpSpaceSpecifier(Object input) {
     checkArgument(input instanceof String, "%s requires String input", NAME);
 
-    ParsingResult<?> result =
-        new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.IpSpaceExpression()))
+    ParsingResult<AstNode> result =
+        new ReportingParseRunner<AstNode>(
+                Parser.INSTANCE.input(Parser.INSTANCE.IpSpaceExpression()))
             .run((String) input);
 
     if (!result.parseErrors.isEmpty()) {
