@@ -5,58 +5,23 @@ dist: xenial
 jdk:
   - openjdk8 
 
-env:
-  - BF_BUILDER="mvn"
-  # Disable for now - no one is using it
-  # - BF_BUILDER="bazel" V="0.19.2"
-matrix:
-  fast_finish: true
-  allow_failures:
-  - env: BF_BUILDER="bazel" V="0.19.2"
+branches:
+  only:
+    - master
 
 before_install:
-  - rm -rf $HOME/.cache/bazel/_bazel_$USER/install
   - tools/fix_java_format.sh --check
-  - |
-    if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
-      OS=darwin
-    else
-      sysctl kernel.unprivileged_userns_clone=1
-      OS=linux
-    fi
-    URL="https://github.com/bazelbuild/bazel/releases/download/${V}/bazel-${V}-installer-${OS}-x86_64.sh"
-    wget -O install.sh "${URL}"
-    chmod +x install.sh
-    ./install.sh --user
-    rm -f install.sh
 
 install:
   - .travis/install.sh
 
 script:
-  - if [ ${BF_BUILDER} == "mvn" ]; then .travis/build.sh ; fi
-  - |
-    if [ ${BF_BUILDER} == "bazel" ]; then
-      bazel \
-      --output_base=$HOME/.cache/bazel \
-      --host_jvm_args=-Xmx500m \
-      --host_jvm_args=-Xms500m \
-      test \
-      --jobs=4 \
-      --curses=no \
-      --test_output=errors \
-      --verbose_failures \
-      --experimental_repository_cache="$HOME/.bazel_repository_cache" \
-      //...
-    fi
-
+  - .travis/build.sh
 
 # Cache the Maven dependencies installed.
 cache:
   directories:
   - $HOME/.batfish_z3_cache
-  - $HOME/.bazel_repository_cache
-  - $HOME/.cache/bazel
   - $HOME/.m2
 
 # Delete the batfish jars, which change every build, from the cache.
@@ -70,7 +35,6 @@ before_cache:
   - rm -rf $HOME/.m2/repository/net/sf/javabdd/
   - rm -rf $HOME/.m2/repository/org/antlr/antlr4/
   - rm -rf $HOME/.m2/repository/org/batfish
-  - rm -rf $HOME/.cache/bazel/_bazel_$USER/install
   
 #after_success:
 #  - bash <(curl -s https://codecov.io/bash)
