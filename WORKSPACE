@@ -892,10 +892,13 @@ jline3_compile()
 # json_smart
 maven_repository(
     name = "json_smart",
+    force = [
+        "org.ow2.asm:asm:7.0",
+    ],
     transitive_deps = [
         "c592b500269bfde36096641b01238a8350f8aa31:net.minidev:accessors-smart:1.2",
         "007396407491352ce4fa30de92efb158adb76b5b:net.minidev:json-smart:2.3",
-        "0da08b8cce7bbf903602a25a3a163ae252435795:org.ow2.asm:asm:5.0.4",
+        "d74d4ba0dee443f68fb2dcb7fcdb945a2cd89912:org.ow2.asm:asm:7.0",
     ],
     deps = [
         "net.minidev:json-smart:2.3",
@@ -925,11 +928,14 @@ jsonassert_compile()
 # jsonassert
 maven_repository(
     name = "jsonpath",
+    force = [
+        "org.ow2.asm:asm:7.0",
+    ],
     transitive_deps = [
         "765a4401ceb2dc8d40553c2075eb80a8fa35c2ae:com.jayway.jsonpath:json-path:2.4.0",
         "c592b500269bfde36096641b01238a8350f8aa31:net.minidev:accessors-smart:1.2",
         "007396407491352ce4fa30de92efb158adb76b5b:net.minidev:json-smart:2.3",
-        "0da08b8cce7bbf903602a25a3a163ae252435795:org.ow2.asm:asm:5.0.4",
+        "d74d4ba0dee443f68fb2dcb7fcdb945a2cd89912:org.ow2.asm:asm:7.0",
         "da76ca59f6a57ee3102f8f9bd9cee742973efa8a:org.slf4j:slf4j-api:1.7.25",
     ],
     deps = [
@@ -1081,6 +1087,26 @@ maven_repository(
 load("@opentracing_util//:rules.bzl", "opentracing_util_compile")
 
 opentracing_util_compile()
+
+# parboiled
+maven_repository(
+    name = "parboiled",
+    transitive_deps = [
+        "d74d4ba0dee443f68fb2dcb7fcdb945a2cd89912:org.ow2.asm:asm:7.0",
+        "4b310d20d6f1c6b7197a75f1b5d69f169bc8ac1f:org.ow2.asm:asm-analysis:7.0",
+        "29bc62dcb85573af6e62e5b2d735ef65966c4180:org.ow2.asm:asm-tree:7.0",
+        "18d4d07010c24405129a6dbb0e92057f8779fb9d:org.ow2.asm:asm-util:7.0",
+        "2de1123c7844679a1af247cb5a58c6c2ff0a571c:org.parboiled:parboiled-core:1.3.0",
+        "894462ef5b936cd246caab80ba97a7976e206a00:org.parboiled:parboiled-java:1.3.0",
+    ],
+    deps = [
+        "org.parboiled:parboiled-java:1.3.0",
+    ],
+)
+
+load("@parboiled//:rules.bzl", "parboiled_compile")
+
+parboiled_compile()
 
 # scala_library
 maven_repository(
