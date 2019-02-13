@@ -52,6 +52,8 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.Variable.Type;
+import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
@@ -87,12 +89,51 @@ public class AutoCompleteUtilsTest {
 
   @Test
   public void testAddressGroupAndBookAutocomplete() throws IOException {
-    ReferenceLibrary library = new ReferenceLibrary()
+    ReferenceLibrary library =
+        new ReferenceLibrary(
+            ImmutableList.of(
+                ReferenceBook.builder("b1")
+                    .setAddressGroups(
+                        ImmutableList.of(
+                            new AddressGroup(null, "g1"), new AddressGroup(null, "a1")))
+                    .build(),
+                ReferenceBook.builder("b2")
+                    .setAddressGroups(ImmutableList.of(new AddressGroup(null, "g2")))
+                    .build()));
+
+    // empty matches all possibilities
     assertThat(
-        AutoCompleteUtils.autoComplete("network", "snapshot", Type.ADDRESS_GROUP_AND_BOOK, " ag , ", 5).stream()
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.ADDRESS_GROUP_AND_BOOK, " ", 5, null, null, library)
+            .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of(LOCAL_AS, IS_PASSIVE, REMOTE_AS)));
+        equalTo(ImmutableSet.of("g1,b1", "a1,b1", "g2,b2")));
+
+    // 'g' matches two pairs
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.ADDRESS_GROUP_AND_BOOK, " G ", 5, null, null, library)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("1,b1", "2,b2")));
+
+    // 'g1' matches one pair
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.ADDRESS_GROUP_AND_BOOK,
+                " G1 , ",
+                5,
+                null,
+                null,
+                library)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("b1")));
   }
 
   @Test
@@ -220,11 +261,8 @@ public class AutoCompleteUtilsTest {
     String network = "network";
     String snapshot = "snapshot";
 
-    String suggested = "1.2.3.4";
-    String notSuggested = "1.3.2.4";
-
     CompletionMetadata completionMetadata =
-        CompletionMetadata.builder().setIps(ImmutableSet.of(suggested, notSuggested)).build();
+        CompletionMetadata.builder().setIps(ImmutableSet.of("1.2.3.4", "1.3.2.4")).build();
 
     assertThat(
         AutoCompleteUtils.autoComplete(
@@ -232,7 +270,7 @@ public class AutoCompleteUtilsTest {
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of(suggested)));
+        equalTo(ImmutableSet.of(".3.4")));
   }
 
   @Test
@@ -328,11 +366,10 @@ public class AutoCompleteUtilsTest {
     String network = "network";
     String snapshot = "snapshot";
 
-    String suggested = "1.2.3.4/24";
-    String notSuggested = "1.3.2.4/30";
-
     CompletionMetadata completionMetadata =
-        CompletionMetadata.builder().setPrefixes(ImmutableSet.of(suggested, notSuggested)).build();
+        CompletionMetadata.builder()
+            .setPrefixes(ImmutableSet.of("1.2.3.4/24", "1.3.2.4/30"))
+            .build();
 
     assertThat(
         AutoCompleteUtils.autoComplete(
@@ -340,7 +377,7 @@ public class AutoCompleteUtilsTest {
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of(suggested)));
+        equalTo(ImmutableSet.of(".3.4/24")));
   }
 
   @Test

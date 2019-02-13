@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -38,6 +37,7 @@ import org.batfish.specifier.DispositionSpecifier;
 import org.batfish.specifier.IpProtocolSpecifier;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.parboiled.ParboiledAutoComplete;
+import scala.Tuple2;
 
 @ParametersAreNonnullByDefault
 public final class AutoCompleteUtils {
@@ -64,16 +64,16 @@ public final class AutoCompleteUtils {
       case ADDRESS_GROUP_AND_BOOK:
         {
           checkReferenceLibrary(referenceLibrary, network);
-          Map<String, Set<String>> pairs =
+          ImmutableSet<Tuple2<String, String>> pairs =
               referenceLibrary.getReferenceBooks().stream()
                   .map(
                       b ->
                           b.getAddressGroups().stream()
-                              .map(ag -> String.join(",", ag.getName(), b.getName()))
+                              .map(ag -> new Tuple2<>(ag.getName(), b.getName()))
                               .collect(ImmutableSet.toImmutableSet()))
                   .flatMap(Collection::stream)
                   .collect(ImmutableSet.toImmutableSet());
-          suggestions = pairAutoComplete(query, pairs);
+          suggestions = stringPairAutoComplete(query, pairs);
           break;
         }
       case BGP_PEER_PROPERTY_SPEC:
@@ -149,7 +149,7 @@ public final class AutoCompleteUtils {
       case IP:
         {
           checkCompletionMetadata(completionMetadata, network, snapshot);
-          suggestions = baseAutoComplete(query, completionMetadata.getIps());
+          suggestions = stringAutoComplete(query, completionMetadata.getIps());
           break;
         }
       case IP_PROTOCOL_SPEC:
@@ -217,7 +217,7 @@ public final class AutoCompleteUtils {
       case PREFIX:
         {
           checkCompletionMetadata(completionMetadata, network, snapshot);
-          suggestions = baseAutoComplete(query, completionMetadata.getPrefixes());
+          suggestions = stringAutoComplete(query, completionMetadata.getPrefixes());
           break;
         }
       case PROTOCOL:
@@ -288,25 +288,48 @@ public final class AutoCompleteUtils {
   }
 
   /**
-   * Returns a list of suggestions based on query over pairs.
+   * Returns a list of suggestions based on query strings.
    *
-   * @param query The query that came to the concrete child class
-   * @return The list of suggestions
+   * <p>The query is considered to be a prefix of the string and the search is case-insensitive
+   *
+   * <p>The returned list contains the tail of the match. If the query is "ab" and the matching
+   * string is "abcd", "cd" is returned.
    */
   @Nonnull
-  public static List<AutocompleteSuggestion> pairAutoComplete(
-      @Nullable String query, Set<String> allProperties) {
+  public static List<AutocompleteSuggestion> stringAutoComplete(
+      @Nullable String query, Set<String> strings) {
 
     // remove whitespace from the query
-    String testQuery = query == null ? "" : query.replaceAll("\\s+", "");
+    String testQuery = query == null ? "" : query.toLowerCase();
 
-    suggestions.addAll(
-        allProperties.stream()
-            .filter(prop -> queryPattern.matcher(prop.toLowerCase()).matches())
-            .map(prop -> new AutocompleteSuggestion(prop, false))
-            .collect(Collectors.toList()));
+    return strings.stream()
+        .filter(s -> s.toLowerCase().startsWith(testQuery))
+        .map(s -> new AutocompleteSuggestion(s.substring(testQuery.length()), false))
+        .collect(ImmutableList.toImmutableList());
+  }
 
-    return suggestions.build();
+  /**
+   * Returns a list of suggestions based on query over pairs of names (strings).
+   *
+   * <p>The pairs are converted to "a,b" lowercase strings and the query is considered to be a
+   * prefix over those strings. We assume that neither "a" not "b" contain whitespace, consistent
+   * with valid names per {@link ReferenceLibrary#NAME_PATTERN}.
+   *
+   * <p>The returned list contains the tail of the matching pair. If the query is "aa" and a
+   * matching pair is "aa,bb", ",bb" is returned.
+   */
+  @Nonnull
+  public static List<AutocompleteSuggestion> stringPairAutoComplete(
+      @Nullable String query, Set<Tuple2<String, String>> pairs) {
+
+    // remove whitespace from the query
+    String testQuery = query == null ? "" : query.replaceAll("\\s+", "").toLowerCase();
+
+    return pairs.stream()
+        .map(t -> String.join(",", t._1, t._2).toLowerCase())
+        .filter(pair -> pair.startsWith(testQuery))
+        .map(pair -> new AutocompleteSuggestion(pair.substring(testQuery.length()), false))
+        .collect(ImmutableList.toImmutableList());
   }
 
   private static void checkCompletionMetadata(

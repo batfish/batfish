@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.parboiled.Completion.Type;
@@ -74,7 +76,12 @@ public class ParboiledAutoCompleteTest {
 
     @Completion(Type.ADDRESS_GROUP_AND_BOOK)
     public Rule TestSpecifierInput() {
-      return Sequence(ReferenceObjectNameLiteral(), WhiteSpace());
+      return Sequence(
+          ReferenceObjectNameLiteral(),
+          WhiteSpace(),
+          ", ",
+          ReferenceObjectNameLiteral(),
+          WhiteSpace());
     }
 
     @Completion(Type.IP_ADDRESS)
@@ -111,6 +118,20 @@ public class ParboiledAutoCompleteTest {
         new ReferenceLibrary(null));
   }
 
+  static ParboiledAutoComplete getTestPAC(String query, ReferenceLibrary referenceLibrary) {
+    return new ParboiledAutoComplete(
+        TestParser.INSTANCE,
+        TestParser.INSTANCE.TestExpression(),
+        TestParser.COMPLETION_TYPES,
+        "network",
+        "snapshot",
+        query,
+        Integer.MAX_VALUE,
+        null,
+        NodeRolesData.builder().build(),
+        referenceLibrary);
+  }
+
   /** Test that we produce auto complete snapshot-based dynamic values like IP addresses */
   @Test
   public void testRunDynamicValues() {
@@ -125,7 +146,41 @@ public class ParboiledAutoCompleteTest {
         equalTo(
             ImmutableList.of(
                 new AutocompleteSuggestion(
-                    "1.1.1.1", false, null, AutocompleteSuggestion.DEFAULT_RANK, 0))));
+                    "1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 6))));
+  }
+
+  /** Test that we produce auto complete snapshot-based dynamic values like IP addresses */
+  @Test
+  public void testRunSpecifierInput() {
+    ReferenceLibrary library =
+        new ReferenceLibrary(
+            ImmutableList.of(
+                ReferenceBook.builder("b1")
+                    .setAddressGroups(
+                        ImmutableList.of(
+                            new AddressGroup(null, "g1"), new AddressGroup(null, "a1")))
+                    .build(),
+                ReferenceBook.builder("b2")
+                    .setAddressGroups(ImmutableList.of(new AddressGroup(null, "g2")))
+                    .build()));
+
+    assertThat(
+        ImmutableSet.copyOf(getTestPAC("@specifier(", library).run()),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion(
+                    "g1,b1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 11),
+                new AutocompleteSuggestion(
+                    "a1,b1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 11),
+                new AutocompleteSuggestion(
+                    "g2,b2", true, null, AutocompleteSuggestion.DEFAULT_RANK, 11))));
+
+    assertThat(
+        ImmutableSet.copyOf(getTestPAC("@specifier(g1,", library).run()),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion(
+                    "b1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 14))));
   }
 
   /** Test that String literals are inserted before dynamic values */
@@ -155,7 +210,7 @@ public class ParboiledAutoCompleteTest {
         suggestions.get(3),
         equalTo(
             new AutocompleteSuggestion(
-                "1.1.1.1", false, null, AutocompleteSuggestion.DEFAULT_RANK, 0)));
+                "1.1.1.1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0)));
   }
 
   /** Test that we produce auto completion suggestions even for valid inputs */

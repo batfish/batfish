@@ -123,39 +123,63 @@ public final class ParboiledAutoComplete {
   @VisibleForTesting
   List<AutocompleteSuggestion> autoCompletePartialMatch(PartialMatch pm, int startIndex) {
 
+    List<AutocompleteSuggestion> suggestions = null;
     switch (pm.getCompletionType()) {
       case STRING_LITERAL:
         return ImmutableList.of(
             new AutocompleteSuggestion(
                 pm.getMatchCompletion(), true, null, RANK_STRING_LITERAL, startIndex));
+      case ADDRESS_GROUP_AND_BOOK:
+        suggestions =
+            AutoCompleteUtils.autoComplete(
+                _network,
+                _snapshot,
+                Type.ADDRESS_GROUP_AND_BOOK,
+                pm.getMatchPrefix(),
+                _maxSuggestions,
+                _completionMetadata,
+                _nodeRolesData,
+                _referenceLibrary);
+        break;
       case IP_ADDRESS:
-        return AutoCompleteUtils.autoComplete(
-            _network,
-            _snapshot,
-            Type.IP,
-            pm.getMatchPrefix(),
-            _maxSuggestions,
-            _completionMetadata,
-            _nodeRolesData,
-            _referenceLibrary);
+        suggestions =
+            AutoCompleteUtils.autoComplete(
+                _network,
+                _snapshot,
+                Type.IP,
+                pm.getMatchPrefix(),
+                _maxSuggestions,
+                _completionMetadata,
+                _nodeRolesData,
+                _referenceLibrary);
+        break;
       case IP_PREFIX:
-        return AutoCompleteUtils.autoComplete(
-            _network,
-            _snapshot,
-            Type.PREFIX,
-            pm.getMatchPrefix(),
-            _maxSuggestions,
-            _completionMetadata,
-            _nodeRolesData,
-            _referenceLibrary);
-      case IP_RANGE:
-      case IP_WILDCARD:
-        // We do not auto complete these two, as IP address mostly takes care of them
-        return ImmutableList.of();
+        suggestions =
+            AutoCompleteUtils.autoComplete(
+                _network,
+                _snapshot,
+                Type.PREFIX,
+                pm.getMatchPrefix(),
+                _maxSuggestions,
+                _completionMetadata,
+                _nodeRolesData,
+                _referenceLibrary);
+        break;
+      case IP_RANGE: // IP_ADDRESS take care of this case
+      case IP_WILDCARD: // IP_ADDRESS takes care of this case
       case EOI:
-      default:
-        // ignore things we do not know how to auto complete
+      default: // ignore things we do not know how to auto complete
         return ImmutableList.of();
     }
+    return suggestions.stream()
+        .map(
+            s ->
+                new AutocompleteSuggestion(
+                    s.getText(),
+                    true,
+                    s.getDescription(),
+                    AutocompleteSuggestion.DEFAULT_RANK,
+                    startIndex))
+        .collect(ImmutableList.toImmutableList());
   }
 }

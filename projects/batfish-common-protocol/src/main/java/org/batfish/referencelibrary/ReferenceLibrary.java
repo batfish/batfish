@@ -114,6 +114,7 @@ public class ReferenceLibrary {
   }
 
   @JsonProperty(PROP_BOOKS)
+  @Nonnull
   public SortedSet<ReferenceBook> getReferenceBooks() {
     return _books;
   }
