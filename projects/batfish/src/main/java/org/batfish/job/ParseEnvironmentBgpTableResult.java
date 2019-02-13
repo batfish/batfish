@@ -95,10 +95,10 @@ public class ParseEnvironmentBgpTableResult
       } else {
         bgpTables.put(hostname, _bgpTable);
         if (!_warnings.isEmpty()) {
-          answerElement.getWarnings().put(hostname, _warnings);
+          answerElement.getWarnings().put(filename, _warnings);
         }
         if (!_parseTree.isEmpty()) {
-          answerElement.getParseTrees().put(hostname, _parseTree);
+          answerElement.getParseTrees().put(filename, _parseTree);
         }
         if (_bgpTable.getUnrecognized()) {
           answerElement.getParseStatus().put(filename, ParseStatus.PARTIALLY_UNRECOGNIZED);
