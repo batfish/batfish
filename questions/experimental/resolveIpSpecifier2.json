@@ -4,18 +4,18 @@
     "ipSpaceSpecifierFactory": "ParboiledIpSpaceSpecifierFactory",
     "queryType": "ip_space",
     "instance": {
-        "description": "Show the resolved values for IP specifier",
+        "description": "Show the resolved values for IP space specifier",
         "instanceName": "resolveIpSpecifier2",
         "tags": [
             "specifiers"
         ],
         "variables": {
             "ips": {
-                "description": "Input to the IpSpaceSpecifier",
+                "description": "Input to the IP space specifier",
                 "optional": true,
-                "value": "0.0.0.0/0",
+                "value": "",
                 "type": "ipSpaceSpec",
-                "displayName": "IPs"
+                "displayName": "IP space"
             }
         }
     }

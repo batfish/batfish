@@ -5,15 +5,15 @@
   "filterSpecifierFactory" : "FlexibleFilterSpecifierFactory",
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Show the resolved values for IP specifier",
+    "description" : "Show the resolved values for IP space specifier",
     "instanceName" : "qname",
     "tags" : [
       "specifiers"
     ],
     "variables" : {
       "ips" : {
-        "description" : "Input to the IpSpaceSpecifier",
-        "displayName" : "IPs",
+        "description" : "Input to the IP space specifier",
+        "displayName" : "IP space",
         "optional" : true,
         "type" : "ipSpaceSpec",
         "value" : "1.1.1.1/24"

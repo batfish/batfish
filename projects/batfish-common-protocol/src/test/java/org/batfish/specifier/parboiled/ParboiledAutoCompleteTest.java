@@ -25,7 +25,6 @@ import org.parboiled.support.ParsingResult;
 public class ParboiledAutoCompleteTest {
 
   @SuppressWarnings({
-    "InfiniteRecursion",
     "checkstyle:methodname", // this class uses idiomatic names
     "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
   })
@@ -216,7 +215,7 @@ public class ParboiledAutoCompleteTest {
   /** Test that we produce auto completion suggestions even for valid inputs */
   @Test
   public void testRunValidInput() {
-    String query = "1.1.1.1";
+    String query = "1.1.1.1 "; // space at the end means that ip adresses won't match
 
     // first ensure that the query is valid input
     ParsingResult<?> result =
@@ -228,7 +227,38 @@ public class ParboiledAutoCompleteTest {
     assertThat(
         getTestPAC(query).run(),
         equalTo(
-            ImmutableList.of(new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, 7))));
+            ImmutableList.of(new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, 8))));
+  }
+
+  @Test
+  public void testAutoCompletePartialMatchIpRange() {
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder().setIps(ImmutableSet.of("1.1.1.1", "2.2.2.2")).build();
+
+    assertThat(
+        getTestPAC("1.1.1.", completionMetadata)
+            .autoCompletePartialMatch(new PartialMatch(Type.IP_RANGE, "1.1.1.", null), 2),
+        equalTo(ImmutableList.of()));
+
+    assertThat(
+        ImmutableSet.copyOf(
+            getTestPAC("1.1.1.", completionMetadata)
+                .autoCompletePartialMatch(new PartialMatch(Type.IP_RANGE, "1.1.1.1 - ", null), 2)),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion(
+                    "1.1.1.1-1.1.1.1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 2),
+                new AutocompleteSuggestion(
+                    "1.1.1.1-2.2.2.2", true, null, AutocompleteSuggestion.DEFAULT_RANK, 2))));
+
+    assertThat(
+        ImmutableSet.copyOf(
+            getTestPAC("1.1.1.", completionMetadata)
+                .autoCompletePartialMatch(new PartialMatch(Type.IP_RANGE, "1.1.1.1 - 2", null), 2)),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion(
+                    "1.1.1.1-2.2.2.2", true, null, AutocompleteSuggestion.DEFAULT_RANK, 2))));
   }
 
   @Test
@@ -241,7 +271,7 @@ public class ParboiledAutoCompleteTest {
 
   @Test
   public void testAutoCompletePartialMatchSkipLabel() {
-    PartialMatch pm = new PartialMatch(Type.IP_RANGE, "pfx", "comp");
+    PartialMatch pm = new PartialMatch(Type.IP_WILDCARD, "pfx", "comp");
     assertThat(getTestPAC(null).autoCompletePartialMatch(pm, 2), equalTo(ImmutableList.of()));
   }
 }

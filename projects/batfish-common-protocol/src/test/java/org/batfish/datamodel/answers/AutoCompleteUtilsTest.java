@@ -262,7 +262,9 @@ public class AutoCompleteUtilsTest {
     String snapshot = "snapshot";
 
     CompletionMetadata completionMetadata =
-        CompletionMetadata.builder().setIps(ImmutableSet.of("1.2.3.4", "1.3.2.4")).build();
+        CompletionMetadata.builder()
+            .setIps(ImmutableSet.of("1.2.3.4", "1.3.2.4", "1.23.4.5"))
+            .build();
 
     assertThat(
         AutoCompleteUtils.autoComplete(
@@ -270,7 +272,7 @@ public class AutoCompleteUtilsTest {
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of(".3.4")));
+        equalTo(ImmutableSet.of(".3.4", "3.4.5")));
   }
 
   @Test

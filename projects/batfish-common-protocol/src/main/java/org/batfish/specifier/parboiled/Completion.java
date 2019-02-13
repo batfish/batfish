@@ -21,7 +21,7 @@ import java.lang.annotation.Target;
     IP_RANGE,
     IP_WILDCARD,
     STRING_LITERAL,
-    WhiteSpace
+    WHITESPACE
   }
 
   Type value();

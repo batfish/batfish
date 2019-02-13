@@ -70,7 +70,7 @@ public class CommonParserTest {
                 Type.EOI,
                 "TestBase",
                 Type.IP_ADDRESS,
-                "WhiteSpace",
-                Type.WhiteSpace)));
+                "WHITESPACE",
+                Type.WHITESPACE)));
   }
 }

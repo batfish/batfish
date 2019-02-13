@@ -2,7 +2,9 @@ package org.batfish.specifier.parboiled;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,7 +13,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.answers.AutoCompleteUtils;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
-import org.batfish.datamodel.questions.Variable.Type;
+import org.batfish.datamodel.questions.Variable;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.parboiled.Rule;
@@ -101,24 +103,15 @@ public final class ParboiledAutoComplete {
 
     Set<PartialMatch> partialMatches = ParserUtils.getPartialMatches(error, _completionTypes);
 
-    // first add string literals and then add others to the list. we do this because there can be
-    // many suggestions based on dynamic completion (e.g., all nodes in the snapshot) and we do not
-    // want them to drown everything else out
-    List<AutocompleteSuggestion> suggestions =
+    Set<AutocompleteSuggestion> allSuggestions =
         partialMatches.stream()
-            .filter(pm -> pm.getCompletionType().equals(Completion.Type.STRING_LITERAL))
             .map(pm -> autoCompletePartialMatch(pm, error.getStartIndex()))
             .flatMap(Collection::stream)
-            .collect(Collectors.toList());
+            .collect(ImmutableSet.toImmutableSet());
 
-    suggestions.addAll(
-        partialMatches.stream()
-            .filter(pm -> !pm.getCompletionType().equals(Completion.Type.STRING_LITERAL))
-            .map(pm -> autoCompletePartialMatch(pm, error.getStartIndex()))
-            .flatMap(Collection::stream)
-            .collect(Collectors.toList()));
-
-    return suggestions;
+    return allSuggestions.stream()
+        .sorted(Comparator.comparing(s -> s.getRank()))
+        .collect(ImmutableList.toImmutableList());
   }
 
   @VisibleForTesting
@@ -127,51 +120,76 @@ public final class ParboiledAutoComplete {
     List<AutocompleteSuggestion> suggestions = null;
     switch (pm.getCompletionType()) {
       case STRING_LITERAL:
+        /*
+         String literals get a lower rank because there can be many suggestions for dynamic values
+         (e.g., all nodes in the snapshot) and we do not want them to drown everything else
+        */
         return ImmutableList.of(
             new AutocompleteSuggestion(
                 pm.getMatchCompletion(), true, null, RANK_STRING_LITERAL, startIndex));
       case ADDRESS_GROUP_AND_BOOK:
-        suggestions =
-            AutoCompleteUtils.autoComplete(
-                _network,
-                _snapshot,
-                Type.ADDRESS_GROUP_AND_BOOK,
-                pm.getMatchPrefix(),
-                _maxSuggestions,
-                _completionMetadata,
-                _nodeRolesData,
-                _referenceLibrary);
-        break;
       case IP_ADDRESS:
-        suggestions =
-            AutoCompleteUtils.autoComplete(
-                _network,
-                _snapshot,
-                Type.IP,
-                pm.getMatchPrefix(),
-                _maxSuggestions,
-                _completionMetadata,
-                _nodeRolesData,
-                _referenceLibrary);
-        break;
       case IP_PREFIX:
         suggestions =
             AutoCompleteUtils.autoComplete(
                 _network,
                 _snapshot,
-                Type.PREFIX,
+                completionTypeToVariableType(pm.getCompletionType()),
                 pm.getMatchPrefix(),
                 _maxSuggestions,
                 _completionMetadata,
                 _nodeRolesData,
                 _referenceLibrary);
         break;
-      case IP_RANGE: // IP_ADDRESS take care of this case
-      case IP_WILDCARD: // IP_ADDRESS takes care of this case
+        /*
+         IP ranges are address1  - address2. If address1 is not fully present in the query, it will
+         get auto completed by IP_ADDRESS autocompletion. If we are past the '-', we do
+         IP_ADDRESS autocompletion for address2.
+        */
+      case IP_RANGE:
+        if (pm.getMatchPrefix().contains("-")) {
+          String matchPrefix = pm.getMatchPrefix().replaceAll("\\s+", "");
+          // pull out address2 portion for autocompletion
+          int dashIndex = matchPrefix.indexOf("-");
+          String address2Part =
+              dashIndex == matchPrefix.length() - 1 ? "" : matchPrefix.substring(dashIndex + 1);
+          List<AutocompleteSuggestion> address2Suggestions =
+              AutoCompleteUtils.autoComplete(
+                  _network,
+                  _snapshot,
+                  Variable.Type.IP,
+                  address2Part,
+                  _maxSuggestions,
+                  _completionMetadata,
+                  _nodeRolesData,
+                  _referenceLibrary);
+          // put back the "address1 -" part
+          suggestions =
+              address2Suggestions.stream()
+                  .map(
+                      s ->
+                          new AutocompleteSuggestion(
+                              matchPrefix + s.getText(),
+                              s.getIsPartial(),
+                              s.getDescription(),
+                              s.getRank(),
+                              s.getInsertionIndex()))
+                  .collect(Collectors.toList());
+        } else {
+          return ImmutableList.of();
+        }
+        break;
+        /*
+         IP wildcards are address:mask. If the address is not fully present in the query, it will
+         get auto completed by IP_ADDRESS autocompletion. If we are past the ';', we expect mask but we
+         can't help autocomplete that. So, net net, we don't need to do anything.
+        */
+      case IP_WILDCARD:
       case EOI:
-      case WhiteSpace:
-      default: // ignore things we do not know how to auto complete
+      case WHITESPACE:
         return ImmutableList.of();
+      default: // ignore things we do not know how to auto complete
+        throw new IllegalArgumentException("Unhandled completion type " + pm.getCompletionType());
     }
     return suggestions.stream()
         .map(
@@ -183,5 +201,22 @@ public final class ParboiledAutoComplete {
                     AutocompleteSuggestion.DEFAULT_RANK,
                     startIndex))
         .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Converts completion type to variable type for cases. Throws an exception when the mapping does
+   * not exist
+   */
+  private static Variable.Type completionTypeToVariableType(Completion.Type cType) {
+    switch (cType) {
+      case ADDRESS_GROUP_AND_BOOK:
+        return Variable.Type.ADDRESS_GROUP_AND_BOOK;
+      case IP_ADDRESS:
+        return Variable.Type.IP;
+      case IP_PREFIX:
+        return Variable.Type.PREFIX;
+      default:
+        throw new IllegalArgumentException("No valid Variable type for Completion type" + cType);
+    }
   }
 }

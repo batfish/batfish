@@ -328,7 +328,7 @@ public final class AutoCompleteUtils {
    * matching pair is "aa,bb", ",bb" is returned.
    */
   @Nonnull
-  public static List<AutocompleteSuggestion> stringPairAutoComplete(
+  private static List<AutocompleteSuggestion> stringPairAutoComplete(
       @Nullable String query, Set<StringPair> pairs) {
 
     // remove whitespace from the query

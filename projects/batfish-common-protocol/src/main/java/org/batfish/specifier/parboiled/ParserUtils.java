@@ -23,11 +23,11 @@ final class ParserUtils {
 
   /** A helper class that captures where in the matching path we can build auto completion off of */
   private static class UsefulPointInPath {
-    public final int level;
     public final Completion.Type completionType;
+    public final Element element;
 
-    public UsefulPointInPath(int level, Completion.Type completionType) {
-      this.level = level;
+    public UsefulPointInPath(Element element, Completion.Type completionType) {
+      this.element = element;
       this.completionType = completionType;
     }
   }
@@ -111,21 +111,24 @@ final class ParserUtils {
       }
 
       /*
-       Ignore paths that end in WhiteSpace -- nothing interesting to report there because our
+       Ignore paths that end in WHITESPACE -- nothing interesting to report there because our
        grammar is not sensitive to whitespace
       */
-      if (usefulPoint.completionType.equals(Type.WhiteSpace)) {
+      if (usefulPoint.completionType.equals(Type.WHITESPACE)) {
         continue;
       }
 
       partialMatches.add(
-          getPartialMatch(
-              error, path, path.getElementAtLevel(usefulPoint.level), usefulPoint.completionType));
+          getPartialMatch(error, path, usefulPoint.element, usefulPoint.completionType));
     }
 
     return partialMatches;
   }
 
+  /**
+   * Build a {@link PartialMatch} object from the inputs. This is straightforwward for everything
+   * else, but for string literals, we remove the quotes inserted by parboiled.
+   */
   @Nonnull
   private static PartialMatch getPartialMatch(
       InvalidInputError error, MatcherPath path, Element element, Completion.Type type) {
@@ -159,13 +162,17 @@ final class ParserUtils {
     String label = element.matcher.getLabel();
 
     if (completionTypes.containsKey(label)) {
-      return new UsefulPointInPath(level, completionTypes.get(label));
+      return new UsefulPointInPath(element, completionTypes.get(label));
     } else if (isStringLiteralLabel(label)) {
-      return new UsefulPointInPath(level, Type.STRING_LITERAL);
+      return new UsefulPointInPath(element, Type.STRING_LITERAL);
     } else if (isCharLiteralLabel(label)) {
-      if (level == 0 || getUsefulPointInPath(path, level - 1, completionTypes) == null) {
-        return new UsefulPointInPath(level, Type.STRING_LITERAL);
+      if (level == 0) {
+        return new UsefulPointInPath(element, Type.STRING_LITERAL);
       }
+      UsefulPointInPath usefulParent = getUsefulPointInPath(path, level - 1, completionTypes);
+      return usefulParent == null
+          ? new UsefulPointInPath(element, Type.STRING_LITERAL)
+          : usefulParent;
     } else if (level == 0) {
       return null;
     }
