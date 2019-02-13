@@ -3897,6 +3897,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED);
 
     c.simplifyRoutingPolicies();
+
     c.computeRoutingPolicySources(_w);
 
     return ImmutableList.of(c);
