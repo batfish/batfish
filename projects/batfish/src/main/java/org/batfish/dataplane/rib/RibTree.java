@@ -56,13 +56,13 @@ final class RibTree<R extends AbstractRoute> implements Serializable {
 
     Builder<R> b = RibDelta.builder();
     b.remove(route, reason);
-    if (_root.getElements(route.getNetwork()).isEmpty() && _owner._backupRoutes != null) {
+    if (_root.get(route.getNetwork()).isEmpty() && _owner._backupRoutes != null) {
       SortedSet<? extends R> backups =
           _owner._backupRoutes.getOrDefault(route.getNetwork(), ImmutableSortedSet.of());
       if (backups.isEmpty()) {
         return b.build();
       }
-      _root.add(route.getNetwork(), backups.first());
+      _root.put(route.getNetwork(), backups.first());
       b.add(backups.first());
     }
     // Return new delta
@@ -76,7 +76,7 @@ final class RibTree<R extends AbstractRoute> implements Serializable {
    * @return true if the route exists in the RIB
    */
   boolean containsRoute(R route) {
-    return _root.getElements(route.getNetwork()).contains(route);
+    return _root.get(route.getNetwork()).contains(route);
   }
 
   private boolean hasForwardingRoute(Set<R> routes) {
@@ -113,7 +113,7 @@ final class RibTree<R extends AbstractRoute> implements Serializable {
 
   /** Retrieve stored routes for a particular prefix only. */
   public Set<R> getRoutes(Prefix prefix) {
-    return _root.getElements(prefix);
+    return _root.get(prefix);
   }
 
   /**
@@ -125,9 +125,9 @@ final class RibTree<R extends AbstractRoute> implements Serializable {
    */
   @Nonnull
   RibDelta<R> mergeRoute(R route) {
-    Set<R> routes = _root.getElements(route.getNetwork());
+    Set<R> routes = _root.get(route.getNetwork());
     if (routes.isEmpty()) {
-      _root.add(route.getNetwork(), route);
+      _root.put(route.getNetwork(), route);
       return RibDelta.<R>builder().add(route).build();
     }
     /*
@@ -144,7 +144,7 @@ final class RibTree<R extends AbstractRoute> implements Serializable {
     }
     if (preferenceComparison == 0) { // equal preference, so add for multipath routing
       // Otherwise add the route
-      if (_root.add(route.getNetwork(), route)) {
+      if (_root.put(route.getNetwork(), route)) {
         return RibDelta.<R>builder().add(route).build();
       } else {
         return RibDelta.empty();
