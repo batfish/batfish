@@ -2,6 +2,7 @@ package org.batfish.datamodel.visitors;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Optional;
 import org.batfish.datamodel.AclIpSpace;
@@ -12,7 +13,6 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,7 +66,7 @@ public class IpSpaceRepresentativeTest {
             .thenPermitting(ip4.toIpSpace())
             .build();
     Optional<Ip> representative = _ipSpaceRepresentative.getRepresentative(ipSpace);
-    MatcherAssert.assertThat("no representative", representative.isPresent());
+    assertTrue("no representative", representative.isPresent());
     assertThat(representative.get(), Matchers.oneOf(ip1, ip2, ip3, ip4));
   }
 

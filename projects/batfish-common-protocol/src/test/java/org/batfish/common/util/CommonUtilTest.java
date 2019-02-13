@@ -4,9 +4,9 @@ import static org.batfish.common.util.CommonUtil.asNegativeIpWildcards;
 import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
 import static org.batfish.common.util.CommonUtil.communityStringToLong;
 import static org.batfish.common.util.CommonUtil.longToCommunity;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Ignore;
 import org.junit.Test;

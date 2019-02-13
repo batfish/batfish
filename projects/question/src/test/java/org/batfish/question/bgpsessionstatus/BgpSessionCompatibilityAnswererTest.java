@@ -10,9 +10,9 @@ import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswe
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COL_REMOTE_NODE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COL_SESSION_TYPE;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.COL_VRF;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
