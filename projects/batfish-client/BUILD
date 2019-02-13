@@ -75,6 +75,7 @@ junit_tests(
         "@commons_lang3//:compile",
         "@diffutils//:compile",
         "@guava//:compile",
+        "@hamcrest//:compile",
         "@jackson_databind//:compile",
         "@jettison//:compile",
     ],

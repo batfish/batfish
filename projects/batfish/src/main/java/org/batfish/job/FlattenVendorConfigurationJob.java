@@ -53,7 +53,7 @@ public class FlattenVendorConfigurationJob extends BatfishJob<FlattenVendorConfi
       String flatConfigText;
       try {
         flatConfigText =
-            Batfish.flatten(_fileText, _logger, _settings, format, header)
+            Batfish.flatten(_fileText, _logger, _settings, _warnings, format, header)
                 .getFlattenedConfigurationText();
       } catch (ParserBatfishException e) {
         String error = "Error parsing configuration file: \"" + inputFileAsString + "\"";

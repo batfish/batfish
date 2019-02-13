@@ -7,8 +7,9 @@ import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE_OR_EXIT
 import static org.batfish.specifier.DispositionSpecifier.FAILURE;
 import static org.batfish.specifier.DispositionSpecifier.FAILURE_SPECIFIER;
 import static org.batfish.specifier.DispositionSpecifier.SUCCESS;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -80,7 +81,8 @@ public class DispositionSpecifierTest {
     Set<FlowDisposition> failure = DispositionSpecifier.create("FAILURE").getDispositions();
     assertThat(
         "No overlap between success and failure dispositions",
-        Sets.intersection(success, failure).isEmpty());
+        Sets.intersection(success, failure),
+        empty());
   }
 
   @Test

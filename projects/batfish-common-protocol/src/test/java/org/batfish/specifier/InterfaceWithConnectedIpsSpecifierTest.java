@@ -1,7 +1,7 @@
 package org.batfish.specifier;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 

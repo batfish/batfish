@@ -1,7 +1,7 @@
 package org.batfish.question.bgpsessionstatus;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.junit.Test;

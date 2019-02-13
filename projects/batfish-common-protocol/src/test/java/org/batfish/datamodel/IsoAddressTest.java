@@ -3,8 +3,8 @@ package org.batfish.datamodel;
 import static org.batfish.datamodel.IsoAddress.invalidCharsMessage;
 import static org.batfish.datamodel.IsoAddress.invalidLengthMessage;
 import static org.batfish.datamodel.IsoAddress.trim;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Rule;
 import org.junit.Test;

@@ -10,9 +10,9 @@ import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setIcmpValues;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setPacketLength;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setSrcPort;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.setTcpFlags;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;

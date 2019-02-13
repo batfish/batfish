@@ -1,6 +1,6 @@
 package org.batfish.representation.palo_alto;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;

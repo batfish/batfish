@@ -1,10 +1,10 @@
 package org.batfish.dataplane;
 
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.graph.ValueGraph;

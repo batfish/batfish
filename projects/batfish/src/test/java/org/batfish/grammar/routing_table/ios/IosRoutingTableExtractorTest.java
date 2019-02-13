@@ -3,11 +3,11 @@ package org.batfish.grammar.routing_table.ios;
 import static org.batfish.datamodel.matchers.RouteMatchers.hasNextHop;
 import static org.batfish.datamodel.matchers.RouteMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.RouteMatchers.hasPrefix;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
