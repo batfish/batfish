@@ -3,16 +3,10 @@ package org.batfish.specifier.parboiled;
 import com.google.common.annotations.VisibleForTesting;
 import java.util.Objects;
 import java.util.Set;
-import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.Prefix;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.Location;
-import org.batfish.specifier.ReferenceAddressGroupIpSpaceSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
 /**
@@ -20,9 +14,9 @@ import org.batfish.specifier.SpecifierContext;
  * org.batfish.specifier.parboiled.Parser}.
  */
 final class ParboiledIpSpaceSpecifier implements IpSpaceSpecifier {
-  private final AstNode _ast;
+  private final NewIpSpaceAstNode _ast;
 
-  ParboiledIpSpaceSpecifier(AstNode ast) {
+  ParboiledIpSpaceSpecifier(NewIpSpaceAstNode ast) {
     _ast = ast;
   }
 
@@ -49,40 +43,7 @@ final class ParboiledIpSpaceSpecifier implements IpSpaceSpecifier {
   }
 
   @VisibleForTesting
-  static IpSpace computeIpSpace(AstNode ast, SpecifierContext ctxt) {
-    if (ast instanceof IpSpaceAstNode) {
-      IpSpaceAstNode node = (IpSpaceAstNode) ast;
-      switch (node.type()) {
-        case ADDRESS_GROUP:
-          String addressGroup = (String) ((LeafAstNode) node.left()).value();
-          String book = (String) ((LeafAstNode) node.right()).value();
-          return ReferenceAddressGroupIpSpaceSpecifier.computeIpSpace(addressGroup, book, ctxt);
-        case COMMA:
-          IpSpace leftSpace = computeIpSpace(node.left(), ctxt);
-          IpSpace rightSpace = computeIpSpace(node.right(), ctxt);
-          return AclIpSpace.union(leftSpace, rightSpace);
-        case RANGE:
-          Ip leftIp = (Ip) ((LeafAstNode) node.left()).value();
-          Ip rightIp = (Ip) ((LeafAstNode) node.right()).value();
-          return IpRange.range(leftIp, rightIp);
-        default:
-          throw new IllegalStateException(
-              String.format("Unhandled IpSpaceAstNode type for IpSpace %s", node.type()));
-      }
-    } else if (ast instanceof LeafAstNode) {
-      Object value = ((LeafAstNode) ast).value();
-      if (value instanceof Ip) {
-        return ((Ip) value).toIpSpace();
-      } else if (value instanceof IpWildcard) {
-        return ((IpWildcard) value).toIpSpace();
-      } else if (value instanceof Prefix) {
-        return ((Prefix) value).toIpSpace();
-      } else {
-        throw new IllegalStateException(
-            String.format("Unhandled LeafAstNode type for IpSpace %s", ast));
-      }
-    } else {
-      throw new IllegalStateException(String.format("Unhandled AstNode type for IpSpace %s", ast));
-    }
+  static IpSpace computeIpSpace(NewIpSpaceAstNode ast, SpecifierContext ctxt) {
+    return ast.accept(new IpSpaceAstNodeToIpSpace(ctxt));
   }
 }

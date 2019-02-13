@@ -2,7 +2,7 @@ package org.batfish.specifier.parboiled;
 
 import java.util.Objects;
 
-class LeafAstNode implements AstNode {
+class LeafAstNode {
 
   private Object _value;
 

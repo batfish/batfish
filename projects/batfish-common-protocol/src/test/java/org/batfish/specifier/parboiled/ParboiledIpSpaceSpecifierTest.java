@@ -14,7 +14,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.specifier.MockSpecifierContext;
-import org.batfish.specifier.parboiled.IpSpaceAstNode.Type;
 import org.junit.Test;
 
 public class ParboiledIpSpaceSpecifierTest {
@@ -38,8 +37,7 @@ public class ParboiledIpSpaceSpecifierTest {
             .build();
     assertThat(
         computeIpSpace(
-            new IpSpaceAstNode(
-                Type.ADDRESS_GROUP, new LeafAstNode(addressGroup), new LeafAstNode(book)),
+            new AddressGroupAstNode(new StringAstNode(addressGroup), new StringAstNode(book)),
             ctxt),
         equalTo(new IpWildcard(ip).toIpSpace()));
   }
@@ -49,15 +47,14 @@ public class ParboiledIpSpaceSpecifierTest {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("1.1.1.10");
     assertThat(
-        computeIpSpace(
-            new IpSpaceAstNode(Type.COMMA, new LeafAstNode(ip1), new LeafAstNode(ip2)), _emptyCtxt),
+        computeIpSpace(new CommaIpSpaceAstNode(new IpAstNode(ip1), new IpAstNode(ip2)), _emptyCtxt),
         equalTo(AclIpSpace.union(ip1.toIpSpace(), ip2.toIpSpace())));
   }
 
   @Test
   public void testComputeIpSpaceIp() {
     Ip ip = Ip.parse("1.1.1.1");
-    assertThat(computeIpSpace(new LeafAstNode(ip), _emptyCtxt), equalTo(ip.toIpSpace()));
+    assertThat(computeIpSpace(new IpAstNode(ip), _emptyCtxt), equalTo(ip.toIpSpace()));
   }
 
   @Test
@@ -65,21 +62,19 @@ public class ParboiledIpSpaceSpecifierTest {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("1.1.1.10");
     assertThat(
-        computeIpSpace(
-            new IpSpaceAstNode(Type.RANGE, new LeafAstNode(ip1), new LeafAstNode(ip2)), _emptyCtxt),
-        equalTo(IpRange.range(ip1, ip2)));
+        computeIpSpace(new IpRangeAstNode(ip1, ip2), _emptyCtxt), equalTo(IpRange.range(ip1, ip2)));
   }
 
   @Test
   public void testComputeIpSpaceIpWildcard() {
     IpWildcard wildcard = new IpWildcard("1.1.1.1:255.255.255.255");
     assertThat(
-        computeIpSpace(new LeafAstNode(wildcard), _emptyCtxt), equalTo(wildcard.toIpSpace()));
+        computeIpSpace(new IpWildcardAstNode(wildcard), _emptyCtxt), equalTo(wildcard.toIpSpace()));
   }
 
   @Test
   public void testComputeIpSpacePrefix() {
     Prefix pfx = Prefix.parse("1.1.1.1/24");
-    assertThat(computeIpSpace(new LeafAstNode(pfx), _emptyCtxt), equalTo(pfx.toIpSpace()));
+    assertThat(computeIpSpace(new PrefixAstNode(pfx), _emptyCtxt), equalTo(pfx.toIpSpace()));
   }
 }
