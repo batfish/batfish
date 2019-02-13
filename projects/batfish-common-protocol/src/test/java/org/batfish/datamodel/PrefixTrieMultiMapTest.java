@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 /** Tests of {@link PrefixTrieMultiMap} */
+@SuppressWarnings("unchecked")
 public class PrefixTrieMultiMapTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
@@ -118,7 +119,6 @@ public class PrefixTrieMultiMapTest {
     assertThat(ptm1.longestPrefixMatch(Ip.parse("1.1.1.130")), equalTo(ImmutableSet.of(2)));
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testPutAtRoot() {
     Prefix prefix = Prefix.parse("128.0.0.0/1");
@@ -137,10 +137,14 @@ public class PrefixTrieMultiMapTest {
   public void testPutAllAtRoot() {
     Prefix prefix = Prefix.parse("128.0.0.0/1");
     PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>(prefix);
-    assertThat(keysInPostOrder(map), contains(prefix));
+    assertThat(entriesPostOrder(map), contains(immutableEntry(prefix, ImmutableSet.of())));
     // true because map is modified
-    assertTrue(map.putAll(Prefix.ZERO, ImmutableSet.of(1, 2)));
-    assertThat(keysInPostOrder(map), contains(prefix, Prefix.ZERO));
+    ImmutableSet<Integer> zeroValues = ImmutableSet.of(1, 2);
+    assertTrue(map.putAll(Prefix.ZERO, zeroValues));
+    assertThat(
+        entriesPostOrder(map),
+        contains(
+            immutableEntry(prefix, ImmutableSet.of()), immutableEntry(Prefix.ZERO, zeroValues)));
   }
 
   @Test
@@ -150,7 +154,6 @@ public class PrefixTrieMultiMapTest {
     assertFalse(ptm1.remove(Prefix.ZERO, 1));
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testReplaceNewRoot() {
     Prefix prefix = Prefix.parse("128.0.0.0/1");
@@ -231,7 +234,6 @@ public class PrefixTrieMultiMapTest {
     assertThat(prefixes, contains(ll, lr, l, rl, rr, r, Prefix.ZERO));
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testPutWithCombineAtRoot() {
     PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>();
@@ -249,7 +251,6 @@ public class PrefixTrieMultiMapTest {
             immutableEntry(Prefix.ZERO, ImmutableSet.of())));
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void testPutWithCombineInternal() {
     PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>(Prefix.ZERO);
