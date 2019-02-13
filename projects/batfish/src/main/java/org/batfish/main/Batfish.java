@@ -8,11 +8,10 @@ import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
-import static org.batfish.common.util.CompletionMetadataUtils.getAddressBooks;
-import static org.batfish.common.util.CompletionMetadataUtils.getAddressGroups;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
 import static org.batfish.common.util.CompletionMetadataUtils.getIps;
+import static org.batfish.common.util.CompletionMetadataUtils.getNodes;
 import static org.batfish.common.util.CompletionMetadataUtils.getPrefixes;
 import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
@@ -79,6 +78,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.bddreachability.BDDReachabilityAnalysis;
@@ -180,6 +180,7 @@ import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishParseException;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
@@ -319,15 +320,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
           JuniperCombinedParser parser = new JuniperCombinedParser(input, settings);
           ParserRuleContext tree = parse(parser, logger, settings);
           JuniperFlattener flattener = new JuniperFlattener(header);
-          BatfishParseTreeWalker walker = new BatfishParseTreeWalker();
+          ParseTreeWalker walker = new BatfishParseTreeWalker();
           try {
             walker.walk(flattener, tree);
-          } catch (Exception e) {
+          } catch (BatfishParseException e) {
             warnings.setErrorDetails(
                 new ErrorDetails(
                     Throwables.getStackTraceAsString(e),
-                    new ParseExceptionContext(walker.getCurrentCtx(), parser, input)));
-            throw e;
+                    new ParseExceptionContext(e.getContext(), parser, input)));
+            throw new BatfishException(
+                String.format("Error flattening %s config", format.getVendorString()), e);
           }
           return flattener;
         }
@@ -337,15 +339,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
           VyosCombinedParser parser = new VyosCombinedParser(input, settings);
           ParserRuleContext tree = parse(parser, logger, settings);
           VyosFlattener flattener = new VyosFlattener(header);
-          BatfishParseTreeWalker walker = new BatfishParseTreeWalker();
+          ParseTreeWalker walker = new BatfishParseTreeWalker();
           try {
             walker.walk(flattener, tree);
-          } catch (Exception e) {
+          } catch (BatfishParseException e) {
             warnings.setErrorDetails(
                 new ErrorDetails(
                     Throwables.getStackTraceAsString(e),
-                    new ParseExceptionContext(walker.getCurrentCtx(), parser, input)));
-            throw e;
+                    new ParseExceptionContext(e.getContext(), parser, input)));
+            throw new BatfishException(
+                String.format("Error flattening %s config", format.getVendorString()), e);
           }
           return flattener;
         }
@@ -2923,13 +2926,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private CompletionMetadata computeCompletionMetadata(Map<String, Configuration> configurations) {
-    ReferenceLibrary referenceLibrary = getReferenceLibraryData();
     return new CompletionMetadata(
-        getAddressBooks(referenceLibrary),
-        getAddressGroups(referenceLibrary),
         getFilterNames(configurations),
         getInterfaces(configurations),
         getIps(configurations),
+        getNodes(configurations),
         getPrefixes(configurations),
         getStructureNames(configurations),
         getVrfs(configurations),

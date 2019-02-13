@@ -268,6 +268,19 @@ final class ConfigurationMatchersImpl {
     }
   }
 
+  static final class HasRoute6FilterLists
+      extends FeatureMatcher<Configuration, NavigableMap<String, Route6FilterList>> {
+    HasRoute6FilterLists(
+        @Nonnull Matcher<? super NavigableMap<String, Route6FilterList>> subMatcher) {
+      super(subMatcher, "A Configuration with route6FilterLists:", "route6FilterLists");
+    }
+
+    @Override
+    protected NavigableMap<String, Route6FilterList> featureValueOf(Configuration actual) {
+      return actual.getRoute6FilterLists();
+    }
+  }
+
   static final class HasRouteFilterList extends FeatureMatcher<Configuration, RouteFilterList> {
     private final String _name;
 

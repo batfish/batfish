@@ -272,6 +272,36 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasPostTransformationIncomingFilter
+      extends FeatureMatcher<Interface, IpAccessList> {
+    HasPostTransformationIncomingFilter(@Nonnull Matcher<? super IpAccessList> subMatcher) {
+      super(
+          subMatcher,
+          "an Interface with postTransformationIncomingFilter:",
+          "postTransformationIncomingFilter");
+    }
+
+    @Override
+    protected IpAccessList featureValueOf(Interface actual) {
+      return actual.getPostTransformationIncomingFilter();
+    }
+  }
+
+  static final class HasPreTransformationOutgoingFilter
+      extends FeatureMatcher<Interface, IpAccessList> {
+    HasPreTransformationOutgoingFilter(@Nonnull Matcher<? super IpAccessList> subMatcher) {
+      super(
+          subMatcher,
+          "an Interface with preTransformationOutgoingFilter:",
+          "preTransformationOutgoingFilter");
+    }
+
+    @Override
+    protected IpAccessList featureValueOf(Interface actual) {
+      return actual.getPreTransformationOutgoingFilter();
+    }
+  }
+
   static final class HasOutgoingFilterName extends FeatureMatcher<Interface, String> {
     HasOutgoingFilterName(@Nonnull Matcher<? super String> subMatcher) {
       super(subMatcher, "an Interface with outgoingFilterName:", "outgoingFilterName");

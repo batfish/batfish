@@ -7,11 +7,8 @@ import static org.batfish.question.initialization.IssueAggregation.aggregateDupl
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.ErrorDetails;
@@ -30,13 +27,6 @@ import org.batfish.datamodel.table.TableMetadata;
 
 /** Implements {@link InitIssuesQuestion}. */
 public class InitIssuesAnswerer extends Answerer {
-
-  // Helper to convert collection to immutable sorted set
-  private static <T extends Comparable<T>> SortedSet<T> toSortedSet(Collection<T> collection) {
-    return collection.stream()
-        .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
-  }
-
   @Override
   public TableAnswerElement answer() {
     ConvertConfigurationAnswerElement ccae =
@@ -63,9 +53,12 @@ public class InitIssuesAnswerer extends Answerer {
             (triplet, fileLines) ->
                 rows.add(
                     getRow(
-                        toSortedSet(fileLines.keySet()),
+                        ImmutableSortedSet.copyOf(fileLines.keySet()),
                         fileLines.asMap().entrySet().stream()
-                            .map(e -> new FileLines(e.getKey(), toSortedSet(e.getValue())))
+                            .map(
+                                e ->
+                                    new FileLines(
+                                        e.getKey(), ImmutableSortedSet.copyOf(e.getValue())))
                             .collect(ImmutableList.toImmutableList()),
                         IssueType.ParseWarning,
                         firstNonNull(triplet._comment, "(details not provided)"),
@@ -78,31 +71,29 @@ public class InitIssuesAnswerer extends Answerer {
                 rows.add(getRow(nodeNames, null, IssueType.ConvertError, errorDetails._message)));
     aggregateDuplicateErrors(pvcae.getErrorDetails())
         .forEach(
-            (errorDetails, fileNames) -> {
-              rows.add(
-                  getRow(
-                      null,
-                      fileNames.stream()
-                          .map(
-                              name -> {
-                                ImmutableSortedSet.Builder<Integer> lines =
-                                    ImmutableSortedSet.naturalOrder();
-                                ErrorDetails details = pvcae.getErrorDetails().get(name);
-                                if (details != null) {
-                                  ParseExceptionContext context =
-                                      details.getParseExceptionContext();
-                                  if (context != null && context.getLineNumber() != null) {
-                                    lines.add(context.getLineNumber());
+            (errorDetails, fileNames) ->
+                rows.add(
+                    getRow(
+                        null,
+                        fileNames.stream()
+                            .map(
+                                name -> {
+                                  ImmutableSortedSet<Integer> lines = ImmutableSortedSet.of();
+                                  ErrorDetails details = pvcae.getErrorDetails().get(name);
+                                  if (details != null) {
+                                    ParseExceptionContext context =
+                                        details.getParseExceptionContext();
+                                    if (context != null && context.getLineNumber() != null) {
+                                      lines = ImmutableSortedSet.of(context.getLineNumber());
+                                    }
                                   }
-                                }
-                                return new FileLines(name, lines.build());
-                              })
-                          .collect(ImmutableList.toImmutableList()),
-                      IssueType.ParseError,
-                      errorDetails._message,
-                      errorDetails._lineContent,
-                      errorDetails._parserContext));
-            });
+                                  return new FileLines(name, lines);
+                                })
+                            .collect(ImmutableList.toImmutableList()),
+                        IssueType.ParseError,
+                        errorDetails._message,
+                        errorDetails._lineContent,
+                        errorDetails._parserContext)));
 
     TableAnswerElement answerElement = new TableAnswerElement(TABLE_METADATA);
     answerElement.postProcessAnswer(_question, rows.getData());

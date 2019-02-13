@@ -4,6 +4,7 @@ import com.google.errorprone.annotations.MustBeClosed;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -423,6 +424,16 @@ public interface StorageProvider {
   @Nonnull
   InputStream loadSnapshotInputObject(NetworkId networkId, SnapshotId snapshotId, String key)
       throws FileNotFoundException, IOException;
+
+  /**
+   * Fetch the list of keys in the given snapshot's input directory
+   *
+   * @throws FileNotFoundException if the given snapshot's input directory is not found
+   * @throws IOException if there is an error retrieving the metadata
+   */
+  @Nonnull
+  List<StoredObjectMetadata> getSnapshotInputObjectsMetadata(
+      NetworkId networkId, SnapshotId snapshotId) throws FileNotFoundException, IOException;
 
   /**
    * Loads the JSON-serialized POJO topology produced for a snapshot

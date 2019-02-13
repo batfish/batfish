@@ -7411,7 +7411,7 @@
             "active" : true,
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 100000.0,
             "declaredNames" : [
               "tunnel0"
             ],
@@ -12141,6 +12141,157 @@
               "/Common/MYVLAN",
               "1.0"
             ]
+          }
+        }
+      },
+      "f5_bigip_structured_net_routing_bgp" : {
+        "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "name" : "f5_bigip_structured_net_routing_bgp",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : { },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
+      "f5_bigip_structured_net_routing_prefix_list" : {
+        "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "name" : "f5_bigip_structured_net_routing_prefix_list",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "route6FilterLists" : {
+          "/Common/MY_IPV6_PREFIX_LIST" : {
+            "lines" : [
+              {
+                "action" : "DENY",
+                "ipWildcard" : "dead:beef:0:0:0:0:0:0/64",
+                "lengthRange" : "0-128"
+              },
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "deaf:beef:1:0:0:0:0:0/64",
+                "lengthRange" : "2-127"
+              }
+            ],
+            "name" : "/Common/MY_IPV6_PREFIX_LIST"
+          }
+        },
+        "routeFilterLists" : {
+          "/Common/MY_IPV4_PREFIX_LIST" : {
+            "lines" : [
+              {
+                "action" : "DENY",
+                "ipWildcard" : "192.0.2.0/31",
+                "lengthRange" : "0-32"
+              },
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "192.0.2.4/30",
+                "lengthRange" : "1-31"
+              }
+            ],
+            "name" : "/Common/MY_IPV4_PREFIX_LIST"
+          }
+        },
+        "vendorFamily" : { },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
+      "f5_bigip_structured_net_routing_route_map" : {
+        "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "name" : "f5_bigip_structured_net_routing_route_map",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "/Common/MY_ROUTE_MAP" : {
+            "name" : "/Common/MY_ROUTE_MAP",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "False"
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetCommunity",
+                    "expr" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet",
+                      "communities" : [
+                        65538,
+                        2162732
+                      ]
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "False"
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetCommunity",
+                    "expr" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet",
+                      "communities" : [
+                        3604546
+                      ]
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
+          }
+        },
+        "vendorFamily" : { },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
           }
         }
       },
@@ -17443,6 +17594,32 @@
             "type" : "AGGREGATE_CHILD",
             "vrf" : "default"
           },
+          "fab0" : {
+            "name" : "fab0",
+            "active" : true,
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "declaredNames" : [
+              "fab0"
+            ],
+            "description" : "Fabric interface 0",
+            "mtu" : 1500,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
           "ge-0/0/0" : {
             "name" : "ge-0/0/0",
             "active" : true,
@@ -17981,6 +18158,7 @@
             "interfaces" : [
               "ae0",
               "ae0.0",
+              "fab0",
               "ge-0/0/0",
               "ge-1/0/0",
               "ge-2/0/0",

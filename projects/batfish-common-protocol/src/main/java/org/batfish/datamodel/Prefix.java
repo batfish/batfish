@@ -8,6 +8,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -64,6 +65,19 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   }
 
   /**
+   * Return an {@link Optional} {@link Prefix} from a string, or {@link Optional#empty} if the
+   * string does not represent a {@link Prefix}.
+   */
+  @Nonnull
+  public static Optional<Prefix> tryParse(@Nonnull String text) {
+    try {
+      return Optional.of(parse(text));
+    } catch (IllegalArgumentException | BatfishException e) {
+      return Optional.empty();
+    }
+  }
+
+  /**
    * Parse a {@link Prefix} from a string.
    *
    * @throws IllegalArgumentException if the string does not represent a prefix in canonical form.
@@ -104,6 +118,21 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
 
   public static Prefix create(Ip address, Ip mask) {
     return create(address, mask.numSubnetBits());
+  }
+
+  /** Return the longest prefix that contains both input prefixes. */
+  public static Prefix longestCommonPrefix(Prefix p1, Prefix p2) {
+    if (p1.containsPrefix(p2)) {
+      return p1;
+    }
+    if (p2.containsPrefix(p1)) {
+      return p2;
+    }
+    long l1 = p1.getStartIp().asLong();
+    long l2 = p2.getStartIp().asLong();
+    long oneAtFirstDifferentBit = Long.highestOneBit(l1 ^ l2);
+    int lengthInCommon = MAX_PREFIX_LENGTH - 1 - Long.numberOfTrailingZeros(oneAtFirstDifferentBit);
+    return Prefix.create(Ip.create(l1), lengthInCommon);
   }
 
   @Override

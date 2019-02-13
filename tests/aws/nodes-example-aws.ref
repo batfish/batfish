@@ -843,7 +843,7 @@
             ],
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 100000.0,
             "declaredNames" : [
               "Tunnel1"
             ],
@@ -872,7 +872,7 @@
             ],
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 100000.0,
             "declaredNames" : [
               "Tunnel2"
             ],

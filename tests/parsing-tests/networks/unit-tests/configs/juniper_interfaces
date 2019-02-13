@@ -3,6 +3,7 @@
 set system host-name juniper_interfaces
 #
 set interfaces ae0 unit 0 family ethernet-switching vlan members 1-1000
+set interfaces fab0 description "Fabric interface 0"
 set interfaces ge-0/0/0 forwarding-class-accounting
 set interfaces ge-1/0/0 ether-options 802.3ad ae0
 set interfaces ge-2/0/0 unit 0 bandwidth 5

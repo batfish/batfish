@@ -1,0 +1,41 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_structured_route_map_references
+}
+net routing bgp /Common/my_bgp {
+    address-family {
+        ipv4 {
+            redistribute {
+                kernel {
+                    route-map /Common/route-map-undefined
+                    route-map /Common/route-map-used
+                }
+            }   
+        }
+    }
+    neighbor {
+        192.0.2.1 {
+            address-family {
+                ipv4 {
+                    route-map {
+                        out /Common/route-map-used
+                    }
+                }
+            }
+        }
+    }
+    neighbor {
+        dead:beef::1 {
+            address-family {
+                ipv6 {
+                    route-map {
+                        out /Common/route-map-used
+                    }
+                }
+            }
+        }
+    }
+}
+net routing route-map /Common/route-map-used { }
+net routing route-map /Common/route-map-unused { }

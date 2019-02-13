@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.Schema;
 
 /** Enables specification a set of named structures. */
@@ -101,17 +100,6 @@ public class NamedStructureSpecifier extends PropertySpecifier {
             .map(Pattern::quote)
             .collect(Collectors.joining("|"));
     _pattern = Pattern.compile(_expression, Pattern.CASE_INSENSITIVE);
-  }
-
-  /**
-   * Returns a list of suggestions based on the query. The current implementation treats the query
-   * as a prefix of the property string.
-   *
-   * @param query The query to auto complete
-   * @return The list of suggestions
-   */
-  public static List<AutocompleteSuggestion> autoComplete(String query) {
-    return PropertySpecifier.baseAutoComplete(query, JAVA_MAP.keySet());
   }
 
   @Override

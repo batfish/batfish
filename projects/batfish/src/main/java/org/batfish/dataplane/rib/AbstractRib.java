@@ -39,8 +39,10 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
   /** Map to keep track when routes were merged in. */
   protected Map<R, Long> _logicalArrivalTime;
 
+  /** Root of our prefix trie */
   private RibTree<R> _tree;
 
+  /** Memoized set of all routes in this RIB */
   @Nullable private Set<R> _allRoutes;
 
   /**
@@ -133,12 +135,12 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
   public abstract int comparePreference(R lhs, R rhs);
 
   @Override
-  public Set<R> longestPrefixMatch(Ip address) {
+  public @Nonnull Set<R> longestPrefixMatch(Ip address) {
     return longestPrefixMatch(address, Prefix.MAX_PREFIX_LENGTH);
   }
 
   @Override
-  public Set<R> longestPrefixMatch(Ip address, int maxPrefixLength) {
+  public @Nonnull Set<R> longestPrefixMatch(Ip address, int maxPrefixLength) {
     return _tree.getLongestPrefixMatch(address, maxPrefixLength);
   }
 
@@ -212,24 +214,6 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
    */
   public boolean removeRoute(R route) {
     return !removeRouteGetDelta(route, Reason.WITHDRAW).isEmpty();
-  }
-
-  /**
-   * Clear the routes for a given prefix.
-   *
-   * <p><b>Only routes with exact prefix matches are cleared!</b>
-   *
-   * <p>The returning {@link RibDelta} will specify {@link Reason#REPLACE} as the reason for route
-   * removal.
-   *
-   * @param prefix the {@link Prefix} for which the routes should be cleared.
-   */
-  public RibDelta<R> clearRoutes(Prefix prefix) {
-    RibDelta<R> d = _tree.clearRoutes(prefix);
-    if (!d.isEmpty()) {
-      _allRoutes = null;
-    }
-    return d;
   }
 
   /**

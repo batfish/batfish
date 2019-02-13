@@ -58,8 +58,6 @@ import static org.batfish.client.Command.SHOW_SNAPSHOT;
 import static org.batfish.client.Command.TEST;
 import static org.batfish.client.Command.UPLOAD_CUSTOM_OBJECT;
 import static org.batfish.common.CoordConsts.DEFAULT_API_KEY;
-import static org.batfish.datamodel.questions.Variable.Type.ADDRESS_BOOK;
-import static org.batfish.datamodel.questions.Variable.Type.ADDRESS_GROUP;
 import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_STATUS;
 import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_TYPE;
 import static org.batfish.datamodel.questions.Variable.Type.BOOLEAN;
@@ -547,24 +545,6 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidAddressBookValue() throws IOException {
-    String input = "5";
-    Type expectedType = ADDRESS_BOOK;
-    String expectedMessage =
-        String.format("A Batfish %s must be a JSON string", expectedType.getName());
-    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
-  }
-
-  @Test
-  public void testInvalidAddressGroupValue() throws IOException {
-    String input = "5";
-    Type expectedType = ADDRESS_GROUP;
-    String expectedMessage =
-        String.format("A Batfish %s must be a JSON string", expectedType.getName());
-    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
-  }
-
-  @Test
   public void testInvalidBgpSessionStatusValue() throws IOException {
     String input = "5";
     Type expectedType = BGP_SESSION_STATUS;
@@ -703,15 +683,14 @@ public final class ClientTest {
 
   @Test
   public void testInvalidIPValue() throws IOException {
-    String input = "\"0.0.0\"";
-    String expectedMessage = String.format("Invalid ip string: %s", input);
-    validateTypeWithInvalidInput(input, IllegalArgumentException.class, expectedMessage, IP);
+    validateTypeWithInvalidInput(
+        "\"0.0.0\"", IllegalArgumentException.class, "Invalid IPv4 address: 0.0.0", IP);
   }
 
   @Test
   public void testInvalidIpWildcardValue() throws IOException {
     String input = "\"10.168.5.5:10.168.100.$\"";
-    String expectedMessage = "Invalid ip segment: \"$\" in ip string: " + "\"10.168.100.$\"";
+    String expectedMessage = "Invalid IPv4 address: 10.168.100.$";
     validateTypeWithInvalidInput(
         input, IllegalArgumentException.class, expectedMessage, IP_WILDCARD);
   }
@@ -1634,22 +1613,6 @@ public final class ClientTest {
     booleanVariable.setType(BOOLEAN);
     variables.put("boolean", booleanVariable);
     Client.validateAndSet(parameters, variables);
-  }
-
-  @Test
-  public void testValidAddressBookValue() throws IOException {
-    JsonNode addressBookNode = _mapper.readTree("\"addressBookName\"");
-    Variable variable = new Variable();
-    variable.setType(ADDRESS_BOOK);
-    Client.validateType(addressBookNode, variable);
-  }
-
-  @Test
-  public void testValidAddressGroupValue() throws IOException {
-    JsonNode addressGroupNode = _mapper.readTree("\"addressGroupName\"");
-    Variable variable = new Variable();
-    variable.setType(ADDRESS_GROUP);
-    Client.validateType(addressGroupNode, variable);
   }
 
   @Test
