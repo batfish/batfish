@@ -8,6 +8,10 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 
+/**
+ * A route-map condition requiring the candidate route be for a network allowed by a specified
+ * prefix-list.
+ */
 public class RouteMapMatchPrefixList implements RouteMapMatch {
 
   /** */
