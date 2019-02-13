@@ -1,0 +1,134 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_structured_net_routing_prefix_list
+}
+
+net routing prefix-list /Common/MY_IPV4_PREFIX_LIST {
+    entries {
+        10 {
+            action deny
+            prefix 192.0.2.0/31
+            prefix-len-range 0:32
+        }
+        20 {
+            action permit
+            prefix 192.0.2.4/30
+            prefix-len-range 30:31
+        }
+    }
+    route-domain /Common/0
+}
+net routing prefix-list /Common/MY_IPV6_PREFIX_LIST {
+    entries {
+        30 {
+            action deny
+            prefix dead:beef::/64
+            prefix-len-range 0:128
+        }
+        40 {
+            action permit
+            prefix dead:beef:1::/64
+            prefix-len-range 2:127
+        }
+    }
+    route-domain /Common/0
+}
+
+net routing prefix-list /Common/INVALID_MIXED_PREFIX_LIST {
+    entries {
+        50 {
+            action deny
+            prefix dead:beef::/64
+            prefix-len-range 0:128
+        }
+        60 {
+            action permit
+            prefix 192.0.2.0/31
+            prefix-len-range 0:32
+        }
+    }
+    route-domain /Common/0
+}
+
+net routing prefix-list /Common/PL4_WITH_MISSING_PREFIX {
+    entries {
+        1 {
+            action deny
+            prefix 192.0.2.0/24
+            prefix-len-range 0:32
+        }
+        2 {
+            action deny
+            prefix-len-range 0:32
+        }
+    }
+    route-domain /Common/0
+}
+
+net routing prefix-list /Common/PL6_WITH_MISSING_PREFIX {
+    entries {
+        1 {
+            action deny
+            prefix dead:beef::/64
+            prefix-len-range 0:128
+        }
+        2 {
+            action deny
+            prefix-len-range 0:128
+        }
+    }
+    route-domain /Common/0
+}
+
+net routing prefix-list /Common/PL4_WITH_INVALID_LENGTH {
+    entries {
+        1 {
+            action deny
+            prefix 192.0.2.0/24
+            prefix-len-range 0:33
+        }
+    }
+    route-domain /Common/0
+}
+
+net routing prefix-list /Common/PL6_WITH_INVALID_LENGTH {
+    entries {
+        1 {
+            action deny
+            prefix dead:beef::/64
+            prefix-len-range 0:129
+        }
+    }
+    route-domain /Common/0
+}
+
+net routing prefix-list /Common/PL4_WITH_MISSING_ACTION {
+    entries {
+        1 {
+            action permit
+            prefix 192.0.2.0/31
+            prefix-len-range 0:32
+        }
+        2 {
+            prefix 192.0.2.2/31
+            prefix-len-range 0:32
+        }
+    }
+    route-domain /Common/0
+}
+
+net routing prefix-list /Common/PL6_WITH_MISSING_ACTION {
+    entries {
+        1 {
+            action permit
+            prefix dead:beef::/64
+            prefix-len-range 0:128
+        }
+        2 {
+            prefix dead:beef::/64
+            prefix-len-range 0:128
+        }
+    }
+    route-domain /Common/0
+}

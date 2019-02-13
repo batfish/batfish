@@ -3,6 +3,7 @@ package org.batfish.storage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -279,6 +280,12 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public InputStream loadSnapshotInputObject(NetworkId networkId, SnapshotId snapshotId, String key)
       throws FileNotFoundException, IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public @Nonnull List<StoredObjectMetadata> getSnapshotInputObjectsMetadata(
+      NetworkId networkId, SnapshotId snapshotId) throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException();
   }
 

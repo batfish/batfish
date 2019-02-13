@@ -21,19 +21,84 @@ public void emit(Token token) {
 
 // Keywords
 
+ACTION
+:
+  'action'
+;
+
+ACTIVATE
+:
+  'activate'
+;
+
 ADDRESS
 :
   'address'
 ;
 
-FORTY_G
+ADDRESS_FAMILY
 :
-  '40G'
+  'address-family'
+;
+
+ALL
+:
+  'all'
+;
+
+ALLOW_SERVICE
+:
+  'allow-service'
+;
+
+BGP
+:
+  'bgp'
+;
+
+BUNDLE
+:
+  'bundle'
 ;
 
 BUNDLE_SPEED
 :
   'bundle-speed'
+;
+
+COMMUNITY
+:
+  'community'
+;
+
+DENY
+:
+  'deny'
+;
+
+DESCRIPTION
+:
+  'description'
+;
+
+DISABLED
+:
+  'disabled'
+;
+
+ENABLED
+:
+  'enabled'
+;
+
+ENTRIES
+:
+  'entries'
+;
+
+FORTY_G
+:
+  '40G'
 ;
 
 GLOBAL_SETTINGS
@@ -61,6 +126,36 @@ INTERFACES
   'interfaces'
 ;
 
+IPV4
+:
+  'ipv4'
+;
+
+IPV6
+:
+  'ipv6'
+;
+
+KERNEL
+:
+  'kernel'
+;
+
+LOCAL_AS
+:
+  'local-as'
+;
+
+MATCH
+:
+  'match'
+;
+
+NEIGHBOR
+:
+  'neighbor'
+;
+
 NET
 :
   'net'
@@ -69,6 +164,76 @@ NET
 ONE_HUNDRED_G
 :
   '100G'
+;
+
+OUT
+:
+  'out'
+;
+
+PERMIT
+:
+  'permit'
+;
+
+PREFIX
+:
+  'prefix'
+;
+
+PREFIX_LEN_RANGE
+:
+  'prefix-len-range'
+;
+
+PREFIX_LIST
+:
+  'prefix-list'
+;
+
+REDISTRIBUTE
+:
+  'redistribute'
+;
+
+REMOTE_AS
+:
+  'remote-as'
+;
+
+ROUTE_DOMAIN
+:
+  'route-domain'
+;
+
+ROUTE_MAP
+:
+  'route-map'
+;
+
+ROUTING
+:
+  'routing'
+;
+
+SET
+:
+  'set'
+;
+
+TRAFFIC_GROUP
+:
+  'traffic-group'
+;
+
+UPDATE_SOURCE
+:
+  'update-source'
+;
+
+VALUE
+:
+  'value'
 ;
 
 SELF

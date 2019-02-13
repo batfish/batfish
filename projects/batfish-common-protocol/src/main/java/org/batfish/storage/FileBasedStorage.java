@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -848,6 +849,36 @@ public final class FileBasedStorage implements StorageProvider {
     return Files.isDirectory(objectPath)
         ? ZipUtility.zipFilesToInputStream(objectPath)
         : Files.newInputStream(objectPath);
+  }
+
+  @Override
+  public @Nonnull List<StoredObjectMetadata> getSnapshotInputObjectsMetadata(
+      NetworkId networkId, SnapshotId snapshotId) throws IOException {
+    Path objectPath = _d.getSnapshotInputObjectsDir(networkId, snapshotId);
+    if (!Files.exists(objectPath)) {
+      throw new FileNotFoundException(String.format("Could not load: %s", objectPath));
+    }
+
+    try {
+      return Files.walk(objectPath)
+          .filter(Files::isRegularFile)
+          .map(
+              path ->
+                  new StoredObjectMetadata(
+                      objectPath.relativize(path).toString(), getObjectSize(path)))
+          .collect(Collectors.toList());
+    } catch (BatfishException e) {
+      throw new IOException(e);
+    }
+  }
+
+  private long getObjectSize(Path objectPath) {
+    try {
+      return Files.size(objectPath);
+    } catch (IOException e) {
+      throw new BatfishException(
+          String.format("Could not get size of object at path: %s", objectPath), e);
+    }
   }
 
   @VisibleForTesting

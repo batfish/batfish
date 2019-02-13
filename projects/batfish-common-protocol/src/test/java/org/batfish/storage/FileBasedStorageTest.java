@@ -387,17 +387,55 @@ public final class FileBasedStorageTest {
   }
 
   @Test
+  public void testGetSnapshotInputKeysNonExistentInput() throws IOException {
+    NetworkId network = new NetworkId("network");
+    SnapshotId snapshot = new SnapshotId("snapshot");
+    _thrown.expect(FileNotFoundException.class);
+    _storage.getSnapshotInputObjectsMetadata(network, snapshot);
+  }
+
+  @Test
+  public void testGetSnapshotInputKeys() throws IOException {
+    NetworkId network = new NetworkId("network");
+    SnapshotId snapshot = new SnapshotId("snapshot");
+
+    String dir1 = "dir1";
+    String dir2 = "dir2";
+
+    Path dir1Path = _storage.getSnapshotInputObjectPath(network, snapshot, dir1);
+    dir1Path.toFile().mkdirs();
+
+    Path dir2Path = _storage.getSnapshotInputObjectPath(network, snapshot, dir2);
+    dir2Path.toFile().mkdirs();
+
+    String file1 = "file1";
+    String file1Contents = "some content";
+    Files.write(dir1Path.resolve(file1), file1Contents.getBytes());
+
+    String file2 = "file2";
+    String file2Contents = "some other content";
+    Files.write(dir2Path.resolve(file2), file2Contents.getBytes());
+
+    List<StoredObjectMetadata> keys = _storage.getSnapshotInputObjectsMetadata(network, snapshot);
+    assertThat(
+        keys.stream().collect(ImmutableSet.toImmutableSet()),
+        equalTo(
+            ImmutableSet.of(
+                new StoredObjectMetadata(dir2 + "/" + file2, file2Contents.getBytes().length),
+                new StoredObjectMetadata(dir1 + "/" + file1, file1Contents.getBytes().length))));
+  }
+
+  @Test
   public void testCompletionMetadataRoundtrip() throws IOException {
     NetworkId networkId = new NetworkId("network");
     SnapshotId snapshotId = new SnapshotId("snapshot");
 
     CompletionMetadata completionMetadata =
         new CompletionMetadata(
-            ImmutableSet.of("addressBook1"),
-            ImmutableSet.of("addressGroup1"),
             ImmutableSet.of("filter1"),
             ImmutableSet.of(new NodeInterfacePair("node", "iface")),
             ImmutableSet.of("1.1.1.1"),
+            ImmutableSet.of("node"),
             ImmutableSet.of("1.1.1.1/30"),
             ImmutableSet.of("structure1"),
             ImmutableSet.of("vrf1"),

@@ -325,18 +325,6 @@ public class Client extends AbstractClient implements IClient {
     }
     Variable.Type expectedType = variable.getType();
     switch (expectedType) {
-      case ADDRESS_BOOK:
-        if (!value.isTextual()) {
-          throw new BatfishException(
-              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
-        }
-        break;
-      case ADDRESS_GROUP:
-        if (!value.isTextual()) {
-          throw new BatfishException(
-              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
-        }
-        break;
       case ANSWER_ELEMENT:
         // this will barf with JsonProcessingException if the value is not castable
         try {

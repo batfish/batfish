@@ -4,7 +4,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.RuleNode;
-import org.batfish.common.BatfishException;
 
 /** Custom ParseTreeWalker that adds some additional context when exceptions occur */
 public class BatfishParseTreeWalker extends ParseTreeWalker {
@@ -20,8 +19,8 @@ public class BatfishParseTreeWalker extends ParseTreeWalker {
       listener.enterEveryRule(ctx);
       ctx.enterRule(listener);
     } catch (Exception e) {
-      throw new BatfishException(
-          String.format("Exception walking line '%s': %s", ctx.getText(), e.getMessage()), e);
+      throw new BatfishParseException(
+          String.format("Exception while walking parse tree: %s", e.getMessage()), e, ctx);
     }
   }
 
@@ -32,8 +31,8 @@ public class BatfishParseTreeWalker extends ParseTreeWalker {
       ctx.exitRule(listener);
       listener.exitEveryRule(ctx);
     } catch (Exception e) {
-      throw new BatfishException(
-          String.format("Exception walking line '%s': %s", ctx.getText(), e.getMessage()), e);
+      throw new BatfishParseException(
+          String.format("Exception walking parse tree: %s", e.getMessage()), e, ctx);
     }
   }
 }

@@ -38,6 +38,7 @@ import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.matchers.AclTraceMatchers.HasEvents;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRoute6FilterList;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRoute6FilterLists;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRouteFilterList;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRouteFilterLists;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasZone;
@@ -196,6 +197,15 @@ public final class DataModelMatchers {
   public static Matcher<Configuration> hasRoute6FilterList(
       @Nonnull String name, @Nonnull Matcher<? super Route6FilterList> subMatcher) {
     return new HasRoute6FilterList(name, subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * route6FilterLists.
+   */
+  public static Matcher<Configuration> hasRoute6FilterLists(
+      @Nonnull Matcher<? super NavigableMap<String, Route6FilterList>> subMatcher) {
+    return new HasRoute6FilterLists(subMatcher);
   }
 
   /**

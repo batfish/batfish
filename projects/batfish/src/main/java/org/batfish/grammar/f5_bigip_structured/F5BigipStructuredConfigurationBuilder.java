@@ -1,14 +1,26 @@
 package org.batfish.grammar.f5_bigip_structured;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.INTERFACE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PREFIX_LIST;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE_MAP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SELF;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_ADDRESS_FAMILY_REDISTRIBUTE_KERNEL_ROUTE_MAP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_IPV4_ROUTE_MAP_OUT;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_IPV6_ROUTE_MAP_OUT;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_PROCESS_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.INTERFACE_SELF_REFERENCE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.ROUTE_MAP_MATCH_IPV4_ADDRESS_PREFIX_LIST;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.SELF_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.SELF_VLAN;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.VLAN_INTERFACE;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -20,20 +32,59 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.SubRange;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Bundle_speedContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.F5_bigip_structured_configurationContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_interfaceContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_selfContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Net_vlanContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ni_bundleContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_bgpContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_prefix_listContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_route_mapContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbaf_ipv4Context;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbaf_ipv6Context;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbafcrk_route_mapContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnnafcr_outContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nreem4a_prefix_listContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nreesc_valueContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrp_route_domainContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrpe_entryContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrpee_actionContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrpee_prefixContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrpee_prefix_len_rangeContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrr_route_domainContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrre_entryContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrree_actionContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ns_addressContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ns_allow_serviceContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ns_traffic_groupContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ns_vlanContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nv_tagContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nvi_interfaceContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Prefix_list_actionContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Route_map_actionContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sgs_hostnameContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Standard_communityContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.UnrecognizedContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.WordContext;
+import org.batfish.representation.f5_bigip.BgpAddressFamily;
+import org.batfish.representation.f5_bigip.BgpIpv4AddressFamily;
+import org.batfish.representation.f5_bigip.BgpProcess;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
+import org.batfish.representation.f5_bigip.F5BigipStructureUsage;
 import org.batfish.representation.f5_bigip.Interface;
+import org.batfish.representation.f5_bigip.PrefixList;
+import org.batfish.representation.f5_bigip.PrefixListEntry;
+import org.batfish.representation.f5_bigip.RouteMap;
+import org.batfish.representation.f5_bigip.RouteMapEntry;
+import org.batfish.representation.f5_bigip.RouteMapMatchPrefixList;
+import org.batfish.representation.f5_bigip.RouteMapSetCommunity;
 import org.batfish.representation.f5_bigip.Self;
 import org.batfish.representation.f5_bigip.Vlan;
 import org.batfish.representation.f5_bigip.VlanInterface;
@@ -56,13 +107,19 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   private @Nullable F5BigipConfiguration _c;
+  private @Nullable BgpAddressFamily _currentBgpAddressFamily;
+  private @Nullable BgpProcess _currentBgpProcess;
   private @Nullable Interface _currentInterface;
+  private @Nullable PrefixList _currentPrefixList;
+  private @Nullable PrefixListEntry _currentPrefixListEntry;
+  private @Nullable RouteMap _currentRouteMap;
+  private @Nullable RouteMapEntry _currentRouteMapEntry;
   private @Nullable Self _currentSelf;
   private @Nullable UnrecognizedContext _currentUnrecognized;
   private @Nullable Vlan _currentVlan;
-  private final F5BigipStructuredCombinedParser _parser;
-  private final String _text;
-  private final Warnings _w;
+  private final @Nonnull F5BigipStructuredCombinedParser _parser;
+  private final @Nonnull String _text;
+  private final @Nonnull Warnings _w;
 
   public F5BigipStructuredConfigurationBuilder(
       F5BigipStructuredCombinedParser parser, String text, Warnings w) {
@@ -75,7 +132,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     return String.format("Could not convert to %s: %s", type.getSimpleName(), getFullText(ctx));
   }
 
-  private <T, U extends T> T convProblem(
+  private @Nullable <T, U extends T> T convProblem(
       Class<T> returnType, ParserRuleContext ctx, @Nullable U defaultReturnValue) {
     _w.redFlag(convErrorMessage(returnType, ctx));
     return defaultReturnValue;
@@ -123,6 +180,51 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void enterNr_bgp(Nr_bgpContext ctx) {
+    String name = unquote(ctx.name.getText());
+    defineStructure(BGP_PROCESS, name, ctx);
+    _c.referenceStructure(
+        BGP_PROCESS, name, BGP_PROCESS_SELF_REFERENCE, ctx.name.getStart().getLine());
+    _currentBgpProcess = _c.getBgpProcesses().computeIfAbsent(name, BgpProcess::new);
+  }
+
+  @Override
+  public void enterNr_prefix_list(Nr_prefix_listContext ctx) {
+    String name = unquote(ctx.name.getText());
+    defineStructure(PREFIX_LIST, name, ctx);
+    _currentPrefixList = _c.getPrefixLists().computeIfAbsent(name, PrefixList::new);
+  }
+
+  @Override
+  public void enterNr_route_map(Nr_route_mapContext ctx) {
+    String name = unquote(ctx.name.getText());
+    defineStructure(ROUTE_MAP, name, ctx);
+    _currentRouteMap = _c.getRouteMaps().computeIfAbsent(name, RouteMap::new);
+  }
+
+  @Override
+  public void enterNrbaf_ipv4(Nrbaf_ipv4Context ctx) {
+    _currentBgpAddressFamily = _currentBgpProcess.getIpv4AddressFamily();
+  }
+
+  @Override
+  public void enterNrbaf_ipv6(Nrbaf_ipv6Context ctx) {
+    _currentBgpAddressFamily = _currentBgpProcess.getIpv6AddressFamily();
+  }
+
+  @Override
+  public void enterNrpe_entry(Nrpe_entryContext ctx) {
+    _currentPrefixListEntry =
+        _currentPrefixList.getEntries().computeIfAbsent(toInteger(ctx.num), PrefixListEntry::new);
+  }
+
+  @Override
+  public void enterNrre_entry(Nrre_entryContext ctx) {
+    _currentRouteMapEntry =
+        _currentRouteMap.getEntries().computeIfAbsent(toInteger(ctx.num), RouteMapEntry::new);
+  }
+
+  @Override
   public void enterUnrecognized(UnrecognizedContext ctx) {
     if (_currentUnrecognized == null) {
       _currentUnrecognized = ctx;
@@ -151,8 +253,140 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void exitNi_bundle(Ni_bundleContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitNr_bgp(Nr_bgpContext ctx) {
+    _currentBgpProcess = null;
+  }
+
+  @Override
+  public void exitNr_prefix_list(Nr_prefix_listContext ctx) {
+    _currentPrefixList = null;
+  }
+
+  @Override
+  public void exitNr_route_map(Nr_route_mapContext ctx) {
+    _currentRouteMap = null;
+  }
+
+  @Override
+  public void exitNrbaf_ipv4(Nrbaf_ipv4Context ctx) {
+    _currentBgpAddressFamily = null;
+  }
+
+  @Override
+  public void exitNrbaf_ipv6(Nrbaf_ipv6Context ctx) {
+    _currentBgpAddressFamily = null;
+  }
+
+  @Override
+  public void exitNrbafcrk_route_map(Nrbafcrk_route_mapContext ctx) {
+    String name = unquote(ctx.name.getText());
+    _c.referenceStructure(
+        ROUTE_MAP,
+        name,
+        BGP_ADDRESS_FAMILY_REDISTRIBUTE_KERNEL_ROUTE_MAP,
+        ctx.name.getStart().getLine());
+    todo(ctx);
+  }
+
+  @Override
+  public void exitNrbnnafcr_out(Nrbnnafcr_outContext ctx) {
+    String name = unquote(ctx.name.getText());
+    F5BigipStructureUsage usage =
+        _currentBgpAddressFamily instanceof BgpIpv4AddressFamily
+            ? BGP_NEIGHBOR_IPV4_ROUTE_MAP_OUT
+            : BGP_NEIGHBOR_IPV6_ROUTE_MAP_OUT;
+    _c.referenceStructure(ROUTE_MAP, name, usage, ctx.name.getStart().getLine());
+    todo(ctx);
+  }
+
+  @Override
+  public void exitNreem4a_prefix_list(Nreem4a_prefix_listContext ctx) {
+    String name = unquote(ctx.name.getText());
+    _c.referenceStructure(
+        PREFIX_LIST, name, ROUTE_MAP_MATCH_IPV4_ADDRESS_PREFIX_LIST, ctx.name.getStart().getLine());
+    _currentRouteMapEntry.setMatchPrefixList(new RouteMapMatchPrefixList(name));
+  }
+
+  @Override
+  public void exitNreesc_value(Nreesc_valueContext ctx) {
+    _currentRouteMapEntry.setSetCommunity(
+        new RouteMapSetCommunity(
+            ctx.communities.stream()
+                .map(this::toCommunity)
+                .filter(Objects::nonNull)
+                .collect(ImmutableSet.toImmutableSet())));
+  }
+
+  @Override
+  public void exitNrp_route_domain(Nrp_route_domainContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitNrpe_entry(Nrpe_entryContext ctx) {
+    _currentPrefixListEntry = null;
+  }
+
+  @Override
+  public void exitNrpee_action(Nrpee_actionContext ctx) {
+    _currentPrefixListEntry.setAction(toLineAction(ctx.action));
+  }
+
+  @Override
+  public void exitNrpee_prefix(Nrpee_prefixContext ctx) {
+    String text = ctx.prefix.getText();
+    Optional<Prefix> prefix = Prefix.tryParse(text);
+    if (prefix.isPresent()) {
+      _currentPrefixListEntry.setPrefix(prefix.get());
+      return;
+    }
+    Optional<Prefix6> prefix6 = Prefix6.tryParse(text);
+    if (prefix6.isPresent()) {
+      _currentPrefixListEntry.setPrefix6(prefix6.get());
+      return;
+    }
+    _w.redFlag(
+        String.format("'%s' is neither IPv4 nor IPv6 prefix in: %s", text, getFullText(ctx)));
+  }
+
+  @Override
+  public void exitNrpee_prefix_len_range(Nrpee_prefix_len_rangeContext ctx) {
+    _currentPrefixListEntry.setLengthRange(toSubRange(ctx.range));
+  }
+
+  @Override
+  public void exitNrr_route_domain(Nrr_route_domainContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitNrre_entry(Nrre_entryContext ctx) {
+    _currentRouteMapEntry = null;
+  }
+
+  @Override
+  public void exitNrree_action(Nrree_actionContext ctx) {
+    _currentRouteMapEntry.setAction(toLineAction(ctx.action));
+  }
+
+  @Override
   public void exitNs_address(Ns_addressContext ctx) {
     _currentSelf.setAddress(new InterfaceAddress(ctx.interface_address.getText()));
+  }
+
+  @Override
+  public void exitNs_allow_service(Ns_allow_serviceContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitNs_traffic_group(Ns_traffic_groupContext ctx) {
+    todo(ctx);
   }
 
   @Override
@@ -200,8 +434,40 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     return text;
   }
 
+  private @Nullable Long toCommunity(Standard_communityContext ctx) {
+    if (ctx.word() != null) {
+      return CommonUtil.communityStringToLong(ctx.getText());
+    } else {
+      return convProblem(Long.class, ctx, null);
+    }
+  }
+
+  private void todo(ParserRuleContext ctx) {
+    _w.todo(ctx, getFullText(ctx), _parser);
+  }
+
   private int toInteger(ParserRuleContext ctx) {
     return Integer.parseUnsignedInt(ctx.getText(), 10);
+  }
+
+  private @Nullable LineAction toLineAction(Prefix_list_actionContext ctx) {
+    if (ctx.PERMIT() != null) {
+      return LineAction.PERMIT;
+    } else if (ctx.DENY() != null) {
+      return LineAction.DENY;
+    } else {
+      return convProblem(LineAction.class, ctx, null);
+    }
+  }
+
+  private @Nullable LineAction toLineAction(Route_map_actionContext ctx) {
+    if (ctx.PERMIT() != null) {
+      return LineAction.PERMIT;
+    } else if (ctx.DENY() != null) {
+      return LineAction.DENY;
+    } else {
+      return convProblem(LineAction.class, ctx, null);
+    }
   }
 
   private @Nullable Double toSpeed(Bundle_speedContext ctx) {
@@ -211,6 +477,18 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
       return 100E9D;
     } else {
       return convProblem(Double.class, ctx, null);
+    }
+  }
+
+  private @Nullable SubRange toSubRange(WordContext ctx) {
+    String[] parts = ctx.getText().split(":", -1);
+    try {
+      checkArgument(parts.length == 2);
+      int low = Integer.parseInt(parts[0], 10);
+      int high = Integer.parseInt(parts[1], 10);
+      return new SubRange(low, high);
+    } catch (IllegalArgumentException e) {
+      return convProblem(SubRange.class, ctx, null);
     }
   }
 

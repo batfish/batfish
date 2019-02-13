@@ -1,7 +1,7 @@
 package org.batfish.question.initialization;
 
+import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateErrors;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateParseWarnings;
-import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateStrings;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateWarnings;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -13,9 +13,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 import java.util.Map;
+import org.batfish.common.ErrorDetails;
+import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.question.initialization.IssueAggregation.ErrorDetailsTriplet;
 import org.batfish.question.initialization.IssueAggregation.ParseWarningTriplet;
 import org.junit.Test;
 
@@ -23,20 +26,45 @@ import org.junit.Test;
 public class IssueAggregationTest {
 
   @Test
-  public void testAggregateDuplicateStrings() {
-    String stackTraceDup = "line1\nline2";
-    String stackTraceUnique = "line1\nline2\nline3";
-    Map<String, String> errors =
-        ImmutableMap.of("dup1", stackTraceDup, "dup2", stackTraceDup, "unique", stackTraceUnique);
+  public void testAggregateDuplicateErrors() {
+    ErrorDetails error = new ErrorDetails("message1");
+    ErrorDetails errorDup = new ErrorDetails("message1");
+    ErrorDetails errorUnique = new ErrorDetails("message2");
+    ImmutableMap<String, ErrorDetails> errors =
+        ImmutableMap.of("dup1", error, "dup2", errorDup, "unique", errorUnique);
 
-    // Confirm that only the duplicate errors are aggregated
+    // Confirm only the duplicate errors are aggregated
     assertThat(
-        aggregateDuplicateStrings(errors),
+        aggregateDuplicateErrors(errors),
         equalTo(
             ImmutableMap.of(
-                stackTraceDup,
+                new ErrorDetailsTriplet(error),
                 ImmutableSortedSet.of("dup1", "dup2"),
-                stackTraceUnique,
+                new ErrorDetailsTriplet(errorUnique),
+                ImmutableSortedSet.of("unique"))));
+  }
+
+  @Test
+  public void testAggregateDuplicateErrorsDifferentLines() {
+    ErrorDetails error =
+        new ErrorDetails("message1", new ParseExceptionContext("line", 1234, "ctx"));
+    ErrorDetails errorDupDifferentLine =
+        new ErrorDetails("message1", new ParseExceptionContext("line", 5678, "ctx"));
+    ErrorDetails errorUnique =
+        new ErrorDetails("message1", new ParseExceptionContext("line2", 90, "ctx"));
+
+    ImmutableMap<String, ErrorDetails> errors =
+        ImmutableMap.of("dup1", error, "dup2", errorDupDifferentLine, "unique", errorUnique);
+
+    // Confirm the duplicate errors are aggregated despite different parse line numbers and that
+    // unique error is not aggregated
+    assertThat(
+        aggregateDuplicateErrors(errors),
+        equalTo(
+            ImmutableMap.of(
+                new ErrorDetailsTriplet(error),
+                ImmutableSortedSet.of("dup1", "dup2"),
+                new ErrorDetailsTriplet(errorUnique),
                 ImmutableSortedSet.of("unique"))));
   }
 
