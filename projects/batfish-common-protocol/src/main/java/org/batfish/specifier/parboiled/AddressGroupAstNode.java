@@ -6,18 +6,18 @@ import java.util.Objects;
 
 class AddressGroupAstNode implements IpSpaceAstNode {
   private final String _addressGroup;
-  private final String _addressBook;
+  private final String _referenceBook;
 
-  AddressGroupAstNode(AstNode addressGroup, AstNode addressBook) {
+  AddressGroupAstNode(AstNode addressGroup, AstNode referenceBook) {
     checkArgument(addressGroup instanceof StringAstNode, "addressGroup must be a string");
-    checkArgument(addressBook instanceof StringAstNode, "addressBook must be a string");
+    checkArgument(referenceBook instanceof StringAstNode, "referenceBook must be a string");
     _addressGroup = ((StringAstNode) addressGroup).getStr();
-    _addressBook = ((StringAstNode) addressBook).getStr();
+    _referenceBook = ((StringAstNode) referenceBook).getStr();
   }
 
-  AddressGroupAstNode(String addressGroup, String addressBook) {
+  AddressGroupAstNode(String addressGroup, String referenceBook) {
     _addressGroup = addressGroup;
-    _addressBook = addressBook;
+    _referenceBook = referenceBook;
   }
 
   @Override
@@ -40,7 +40,7 @@ class AddressGroupAstNode implements IpSpaceAstNode {
     }
     AddressGroupAstNode that = (AddressGroupAstNode) o;
     return Objects.equals(_addressGroup, that._addressGroup)
-        && Objects.equals(_addressBook, that._addressBook);
+        && Objects.equals(_referenceBook, that._referenceBook);
   }
 
   String getAddressGroup() {
@@ -48,11 +48,11 @@ class AddressGroupAstNode implements IpSpaceAstNode {
   }
 
   String getAddressBook() {
-    return _addressBook;
+    return _referenceBook;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_addressGroup, _addressBook);
+    return Objects.hash(_addressGroup, _referenceBook);
   }
 }
