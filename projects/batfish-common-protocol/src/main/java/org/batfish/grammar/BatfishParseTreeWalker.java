@@ -12,8 +12,6 @@ public class BatfishParseTreeWalker extends ParseTreeWalker {
     super();
   }
 
-  ParserRuleContext _currentCtx;
-
   @Override
   protected void enterRule(ParseTreeListener listener, RuleNode r) {
     ParserRuleContext ctx = (ParserRuleContext) r.getRuleContext();
@@ -34,7 +32,7 @@ public class BatfishParseTreeWalker extends ParseTreeWalker {
       listener.exitEveryRule(ctx);
     } catch (Exception e) {
       throw new BatfishParseException(
-          String.format("Exception while walking parse tree: %s", e.getMessage()), e, ctx);
+          String.format("Exception walking parse tree: %s", e.getMessage()), e, ctx);
     }
   }
 }
