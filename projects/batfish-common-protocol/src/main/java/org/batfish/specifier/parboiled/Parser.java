@@ -22,7 +22,6 @@ import org.parboiled.Rule;
  * error messages and generating auto completion suggestions.
  */
 @SuppressWarnings({
-  "InfiniteRecursion",
   "checkstyle:methodname", // this class uses idiomatic names
   "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
 })

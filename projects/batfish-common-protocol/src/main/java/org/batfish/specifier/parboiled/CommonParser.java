@@ -12,14 +12,13 @@ import org.parboiled.Rule;
 /**
  * This class contains common matchers for different types of expressions.
  *
- * <p>The rules in this class have two invariants should not put anything on the stack.
+ * <p>The rules in this class should not put anything on the stack.
  */
 @SuppressWarnings({
-  "InfiniteRecursion",
   "checkstyle:methodname", // this class uses idiomatic names
   "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
 })
-public abstract class CommonParser extends BaseParser<AstNode> {
+abstract class CommonParser extends BaseParser<AstNode> {
 
   static Map<String, Type> initCompletionTypes(Class<?> parserClass) {
     ImmutableMap.Builder<String, Completion.Type> completionTypes = ImmutableMap.builder();
@@ -69,7 +68,7 @@ public abstract class CommonParser extends BaseParser<AstNode> {
   }
 
   public Rule WhiteSpace() {
-    return ZeroOrMore(AnyOf(" \t\f"));
+    return ZeroOrMore(AnyOf(" \t"));
   }
 
   /**
