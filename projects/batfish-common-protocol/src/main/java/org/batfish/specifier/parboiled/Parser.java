@@ -10,7 +10,6 @@ import java.util.Map;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
-import org.batfish.specifier.parboiled.IpSpaceAstNode.Type;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
 
@@ -23,7 +22,6 @@ import org.parboiled.Rule;
  * error messages and generating auto completion suggestions.
  */
 @SuppressWarnings({
-  "InfiniteRecursion",
   "checkstyle:methodname", // this class uses idiomatic names
   "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
 })
@@ -53,10 +51,7 @@ class Parser extends CommonParser {
         IpSpaceTerm(),
         WhiteSpace(),
         ZeroOrMore(
-            ", ",
-            IpSpaceTerm(),
-            push(new IpSpaceAstNode(Type.COMMA, (AstNode) pop(1), (AstNode) pop())),
-            WhiteSpace()));
+            ", ", IpSpaceTerm(), push(new CommaIpSpaceAstNode(pop(1), pop())), WhiteSpace()));
   }
 
   /* An IpSpace term is one of these things */
@@ -72,7 +67,7 @@ class Parser extends CommonParser {
         "( ",
         AddressGroupAndBook(),
         ") ",
-        push(new IpSpaceAstNode(Type.ADDRESS_GROUP, (AstNode) pop(1), (AstNode) pop())));
+        push(new AddressGroupAstNode(pop(1), pop())));
   }
 
   /** Matches AddressGroup, ReferenceBook pair. Puts two values on stack */
@@ -80,11 +75,11 @@ class Parser extends CommonParser {
   public Rule AddressGroupAndBook() {
     return Sequence(
         ReferenceObjectNameLiteral(),
-        push(new LeafAstNode(matchOrDefault("Error"))),
+        push(new StringAstNode(matchOrDefault("Error"))),
         WhiteSpace(),
         ", ",
         ReferenceObjectNameLiteral(),
-        push(new LeafAstNode(matchOrDefault("Error"))),
+        push(new StringAstNode(matchOrDefault("Error"))),
         WhiteSpace());
   }
 
@@ -94,7 +89,7 @@ class Parser extends CommonParser {
    */
   @Completion(IP_ADDRESS)
   public Rule IpAddress() {
-    return Sequence(IpAddressUnchecked(), push(new LeafAstNode(Ip.parse(matchOrDefault("Error")))));
+    return Sequence(IpAddressUnchecked(), push(new IpAstNode(Ip.parse(matchOrDefault("Error")))));
   }
 
   /**
@@ -104,7 +99,7 @@ class Parser extends CommonParser {
   @Completion(IP_PREFIX)
   public Rule IpPrefix() {
     return Sequence(
-        IpPrefixUnchecked(), push(new LeafAstNode(Prefix.parse(matchOrDefault("Error")))));
+        IpPrefixUnchecked(), push(new PrefixAstNode(Prefix.parse(matchOrDefault("Error")))));
   }
 
   /** Matches Ip ranges (e.g., 1.1.1.1 - 1.1.1.2) */
@@ -115,7 +110,7 @@ class Parser extends CommonParser {
         WhiteSpace(),
         "- ",
         IpAddress(),
-        push(new IpSpaceAstNode(Type.RANGE, (AstNode) pop(1), (AstNode) pop(0))),
+        push(new IpRangeAstNode(pop(1), pop())),
         WhiteSpace());
   }
 
@@ -124,6 +119,6 @@ class Parser extends CommonParser {
   public Rule IpWildcard() {
     return Sequence(
         Sequence(IpAddressUnchecked(), ':', IpAddressUnchecked()),
-        push(new LeafAstNode(new IpWildcard(matchOrDefault("Error")))));
+        push(new IpWildcardAstNode(new IpWildcard(matchOrDefault("Error")))));
   }
 }

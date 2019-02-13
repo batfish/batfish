@@ -28,7 +28,6 @@ public class ParserUtilsTest {
   }
 
   @SuppressWarnings({
-    "InfiniteRecursion",
     "checkstyle:methodname", // this class uses idiomatic names
     "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
   })
