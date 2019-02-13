@@ -6,8 +6,8 @@ import static org.batfish.question.initialization.InitIssuesAnswerer.COL_LINE_TE
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_NODES;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_PARSER_CONTEXT;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_TYPE;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;

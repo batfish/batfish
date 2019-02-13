@@ -1,8 +1,8 @@
 package org.batfish.common.bdd;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;

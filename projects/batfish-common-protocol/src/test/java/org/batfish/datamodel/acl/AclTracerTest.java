@@ -6,9 +6,9 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.isDeniedByIpAcces
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclIpSpaceLineThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByIpAccessListLineThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByNamedIpSpace;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

@@ -2,8 +2,8 @@ package org.batfish.datamodel;
 
 import static org.batfish.datamodel.Ip.getBitAtPosition;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 

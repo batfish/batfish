@@ -11,8 +11,8 @@ import static org.batfish.question.edges.EdgesAnswerer.COL_UDP_PORT;
 import static org.batfish.question.edges.EdgesAnswerer.COL_VLAN;
 import static org.batfish.question.edges.EdgesAnswerer.COL_VNI;
 import static org.batfish.question.edges.EdgesAnswerer.COL_VTEP_ADDRESS;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;

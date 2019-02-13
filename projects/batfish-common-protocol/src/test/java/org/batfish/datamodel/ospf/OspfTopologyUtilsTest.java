@@ -1,8 +1,8 @@
 package org.batfish.datamodel.ospf;
 
 import static org.batfish.datamodel.ospf.OspfTopologyUtils.trimLinks;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.EndpointPair;

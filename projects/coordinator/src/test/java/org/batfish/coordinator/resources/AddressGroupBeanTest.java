@@ -1,7 +1,7 @@
 package org.batfish.coordinator.resources;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.referencelibrary.AddressGroup;

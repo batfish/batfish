@@ -4,9 +4,9 @@ import static java.util.Collections.singleton;
 import static org.batfish.symbolic.smt.matchers.SmtReachabilityAnswerElementMatchers.hasVerificationResult;
 import static org.batfish.symbolic.smt.matchers.VerificationResultMatchers.hasFailures;
 import static org.batfish.symbolic.smt.matchers.VerificationResultMatchers.hasIsVerified;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;

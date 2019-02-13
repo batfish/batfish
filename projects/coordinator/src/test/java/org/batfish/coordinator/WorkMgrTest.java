@@ -7,18 +7,18 @@ import static org.batfish.coordinator.WorkMgr.removeFromSerializedList;
 import static org.batfish.coordinator.WorkMgrTestUtils.createSnapshot;
 import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
 import static org.batfish.identifiers.QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.io.FileMatchers.anExistingFile;
 import static org.junit.Assert.assertFalse;
@@ -122,7 +122,6 @@ import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.storage.StorageProvider;
 import org.batfish.storage.StoredObjectMetadata;
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.io.FileMatchers;
 import org.junit.Before;
 import org.junit.Rule;
@@ -279,7 +278,7 @@ public final class WorkMgrTest {
         serializedListPath, ImmutableList.of(), new TypeReference<List<NodeInterfacePair>>() {});
 
     // Confirm no file was created (since there was no list to begin with and nothing was added)
-    assertThat(serializedList, CoreMatchers.not(FileMatchers.anExistingFile()));
+    assertThat(serializedList, not(FileMatchers.anExistingFile()));
   }
 
   @Test

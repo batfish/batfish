@@ -1,7 +1,7 @@
 package org.batfish.job;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import java.nio.file.Paths;
 import org.batfish.common.Warnings;

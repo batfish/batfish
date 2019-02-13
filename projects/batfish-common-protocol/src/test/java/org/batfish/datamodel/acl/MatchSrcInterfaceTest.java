@@ -1,8 +1,8 @@
 package org.batfish.datamodel.acl;
 
 import static org.batfish.datamodel.matchers.AclLineMatchExprMatchers.matches;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
 
 import java.util.HashSet;
 import java.util.Set;
