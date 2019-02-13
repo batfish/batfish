@@ -4,9 +4,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.vendor.StructureType;
 
+/** Named structure-types for F5 BIG-IP device */
 @ParametersAreNonnullByDefault
 public enum F5BigipStructureType implements StructureType {
+  BGP_PROCESS("bgp process"),
   INTERFACE("interface"),
+  PREFIX_LIST("prefix-list"),
+  ROUTE_MAP("route-map"),
   SELF("self"),
   VLAN("vlan");
 
