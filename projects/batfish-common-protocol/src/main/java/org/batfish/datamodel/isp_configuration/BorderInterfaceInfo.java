@@ -1,7 +1,6 @@
 package org.batfish.datamodel.isp_configuration;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -34,8 +33,7 @@ public class BorderInterfaceInfo {
 
   @Override
   public int hashCode() {
-
-    return Objects.hashCode(_borderInterface);
+    return _borderInterface.hashCode();
   }
 
   @JsonCreator
