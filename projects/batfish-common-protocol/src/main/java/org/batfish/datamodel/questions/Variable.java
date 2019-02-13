@@ -45,7 +45,7 @@ public class Variable {
     IP("ip", true),
     IP_PROTOCOL("ipProtocol", true),
     IP_PROTOCOL_SPEC("ipProtocolSpec", true),
-    IP_SPACE_SPEC("ipsSpaceSpec", true),
+    IP_SPACE_SPEC("ipSpaceSpec", true),
     IP_WILDCARD("ipWildcard", true),
     IPSEC_SESSION_STATUS("ipsecSessionStatus", true),
     JAVA_REGEX("javaRegex", true),

@@ -5,7 +5,7 @@
     "queryType": "ip_space",
     "instance": {
         "description": "Show the resolved values for IP specifier",
-        "instanceName": "resolveIpSpecifier",
+        "instanceName": "resolveIpSpecifier2",
         "tags": [
             "specifiers"
         ],
@@ -14,7 +14,7 @@
                 "description": "Input to the IpSpaceSpecifier",
                 "optional": true,
                 "value": "0.0.0.0/0",
-                "type": "string",
+                "type": "ipSpaceSpec",
                 "displayName": "IPs"
             }
         }
