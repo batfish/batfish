@@ -170,7 +170,6 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
-import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
@@ -1354,14 +1353,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (ispConfiguration == null) {
       return ImmutableMap.of();
     }
-    return ModelingUtils.getInternetAndIspNodes(
-        configurations,
-        ispConfiguration.getBorderInterfaces().stream()
-            .map(BorderInterfaceInfo::getBorderInterface)
-            .collect(Collectors.toList()),
-        ispConfiguration.getfilter().getOnlyRemoteAsns(),
-        ispConfiguration.getfilter().getOnlyRemoteIps(),
-        _logger);
+    return ModelingUtils.getInternetAndIspNodes(configurations, ispConfiguration, _logger);
   }
 
   @Nonnull
