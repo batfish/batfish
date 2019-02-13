@@ -1,12 +1,13 @@
 package org.batfish.question.initialization;
 
+import static org.batfish.question.initialization.InitIssuesAnswerer.COL_DETAILS;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_FILELINES;
-import static org.batfish.question.initialization.InitIssuesAnswerer.COL_ISSUE;
-import static org.batfish.question.initialization.InitIssuesAnswerer.COL_ISSUE_TYPE;
+import static org.batfish.question.initialization.InitIssuesAnswerer.COL_LINE_TEXT;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_NODES;
 import static org.batfish.question.initialization.InitIssuesAnswerer.COL_PARSER_CONTEXT;
+import static org.batfish.question.initialization.InitIssuesAnswerer.COL_TYPE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
@@ -62,10 +63,12 @@ public class InitIssuesAnswererTest {
                         ImmutableList.of(node),
                         COL_FILELINES,
                         null,
-                        COL_ISSUE_TYPE,
+                        COL_TYPE,
                         IssueType.ConvertError.toString(),
-                        COL_ISSUE,
+                        COL_DETAILS,
                         message,
+                        COL_LINE_TEXT,
+                        null,
                         COL_PARSER_CONTEXT,
                         null))));
   }
@@ -98,10 +101,12 @@ public class InitIssuesAnswererTest {
                         ImmutableList.of(node),
                         COL_FILELINES,
                         null,
-                        COL_ISSUE_TYPE,
+                        COL_TYPE,
                         IssueType.ConvertWarningRedFlag.toString(),
-                        COL_ISSUE,
+                        COL_DETAILS,
                         String.format("%s", redFlag),
+                        COL_LINE_TEXT,
+                        null,
                         COL_PARSER_CONTEXT,
                         null))
                 .add(
@@ -110,10 +115,12 @@ public class InitIssuesAnswererTest {
                         ImmutableList.of(node),
                         COL_FILELINES,
                         null,
-                        COL_ISSUE_TYPE,
+                        COL_TYPE,
                         IssueType.ConvertWarningUnimplemented.toString(),
-                        COL_ISSUE,
+                        COL_DETAILS,
                         String.format("%s", unimplemented),
+                        COL_LINE_TEXT,
+                        null,
                         COL_PARSER_CONTEXT,
                         null))));
   }
@@ -148,10 +155,12 @@ public class InitIssuesAnswererTest {
                         null,
                         COL_FILELINES,
                         ImmutableList.of(new FileLines(file, ImmutableSortedSet.of(line))),
-                        COL_ISSUE_TYPE,
+                        COL_TYPE,
                         IssueType.ParseError.toString(),
-                        COL_ISSUE,
+                        COL_DETAILS,
                         message,
+                        COL_LINE_TEXT,
+                        content,
                         COL_PARSER_CONTEXT,
                         context))));
   }
@@ -181,10 +190,12 @@ public class InitIssuesAnswererTest {
                         null,
                         COL_FILELINES,
                         ImmutableList.of(new FileLines(file, ImmutableSortedSet.of())),
-                        COL_ISSUE_TYPE,
+                        COL_TYPE,
                         IssueType.ParseError.toString(),
-                        COL_ISSUE,
+                        COL_DETAILS,
                         message,
+                        COL_LINE_TEXT,
+                        null,
                         COL_PARSER_CONTEXT,
                         null))));
   }
@@ -214,13 +225,15 @@ public class InitIssuesAnswererTest {
                 .add(
                     Row.of(
                         COL_NODES,
-                        ImmutableList.of(node),
+                        null,
                         COL_FILELINES,
                         ImmutableList.of(new FileLines(node, ImmutableSortedSet.of(line))),
-                        COL_ISSUE_TYPE,
+                        COL_TYPE,
                         IssueType.ParseWarning.toString(),
-                        COL_ISSUE,
-                        String.format("%s (%s)", comment, text),
+                        COL_DETAILS,
+                        comment,
+                        COL_LINE_TEXT,
+                        text,
                         COL_PARSER_CONTEXT,
                         context))));
   }
