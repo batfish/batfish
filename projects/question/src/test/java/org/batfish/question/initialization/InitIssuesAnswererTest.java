@@ -225,7 +225,7 @@ public class InitIssuesAnswererTest {
                 .add(
                     Row.of(
                         COL_NODES,
-                        ImmutableList.of(node),
+                        null,
                         COL_FILELINES,
                         ImmutableList.of(new FileLines(node, ImmutableSortedSet.of(line))),
                         COL_TYPE,

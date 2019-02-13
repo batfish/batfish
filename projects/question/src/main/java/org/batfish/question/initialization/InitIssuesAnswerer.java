@@ -53,7 +53,7 @@ public class InitIssuesAnswerer extends Answerer {
             (triplet, fileLines) ->
                 rows.add(
                     getRow(
-                        ImmutableSortedSet.copyOf(fileLines.keySet()),
+                        null,
                         fileLines.asMap().entrySet().stream()
                             .map(
                                 e ->
