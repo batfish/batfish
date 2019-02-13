@@ -1,9 +1,9 @@
 package org.batfish.coordinator;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.WorkItem;

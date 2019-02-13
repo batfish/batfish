@@ -1,7 +1,7 @@
 package org.batfish.datamodel.vendor_family;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
 import org.batfish.datamodel.vendor_family.VendorFamily.Type;

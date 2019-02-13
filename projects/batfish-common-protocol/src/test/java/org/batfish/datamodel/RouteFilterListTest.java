@@ -2,7 +2,7 @@ package org.batfish.datamodel;
 
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import org.junit.Before;

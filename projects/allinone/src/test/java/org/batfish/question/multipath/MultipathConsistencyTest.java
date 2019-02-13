@@ -14,10 +14,10 @@ import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_FLOW;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACES;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.oneOf;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;

@@ -2,8 +2,8 @@ package org.batfish.datamodel.questions;
 
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.getIsPassive;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.getRemoteAs;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.BgpActivePeerConfig;

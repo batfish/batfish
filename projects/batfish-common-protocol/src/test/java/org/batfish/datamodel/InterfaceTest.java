@@ -1,8 +1,12 @@
 package org.batfish.datamodel;
 
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.Interface.Dependency;
@@ -28,13 +32,13 @@ public class InterfaceTest {
   @Test
   public void testBlacklisting() {
     Interface i = Interface.builder().setName("iface").build();
-    assertThat("Interface is not blacklisted", !i.getBlacklisted());
-    assertThat("Interface is not disabled", i.getActive());
+    assertFalse("Interface is not blacklisted", i.getBlacklisted());
+    assertThat(i, isActive());
 
     i.blacklist();
 
-    assertThat("Interface is blacklisted", i.getBlacklisted());
-    assertThat("Interface is disabled", !i.getActive());
+    assertTrue("Interface is blacklisted", i.getBlacklisted());
+    assertThat(i, not(isActive()));
   }
 
   @Test

@@ -2,8 +2,8 @@ package org.batfish.dataplane.protocols;
 
 import static org.batfish.dataplane.protocols.StaticRouteHelper.isInterfaceRoute;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.shouldActivateNextHopIpRoute;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Interface;

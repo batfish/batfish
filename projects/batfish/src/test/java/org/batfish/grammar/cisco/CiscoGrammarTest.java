@@ -206,9 +206,6 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ISAKMP_PROFIL
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandwidth;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.contains;
@@ -222,6 +219,9 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.in;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertFalse;
@@ -358,7 +358,6 @@ import org.batfish.representation.cisco.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
 import org.batfish.representation.cisco.eos.AristaEosVxlan;
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -4443,7 +4442,7 @@ public class CiscoGrammarTest {
         equalTo(new NetworkObjectGroupAddressSpecifier("source-mapped-group")));
 
     nat = nats.get(3);
-    MatcherAssert.assertThat("NAT is active", nat.getInactive());
+    assertTrue("NAT is active", nat.getInactive());
     assertThat(nat.getInsideInterface(), equalTo("inside"));
     assertThat(nat.getOutsideInterface(), nullValue());
 

@@ -7,8 +7,9 @@ import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
 import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -138,7 +139,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
                   if (disposition1 == disposition2) {
                     return;
                   }
-                  assertThat(
+                  assertTrue(
                       String.format(
                           "dispositions %s and %s should not intersect",
                           disposition1, disposition2),

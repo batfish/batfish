@@ -7,8 +7,8 @@ import static org.batfish.datamodel.questions.Variable.Type.NAMED_STRUCTURE_SPEC
 import static org.batfish.datamodel.questions.Variable.Type.NODE_PROPERTY_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.NODE_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.OSPF_PROPERTY_SPEC;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;

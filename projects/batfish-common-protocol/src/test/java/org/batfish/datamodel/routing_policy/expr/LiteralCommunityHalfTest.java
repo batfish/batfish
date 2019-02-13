@@ -1,8 +1,8 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import static org.batfish.datamodel.matchers.CommunityHalfExprMatchers.matches;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import org.junit.Test;
