@@ -68,7 +68,7 @@ junit_tests(
         "//projects/lib/bdd",
         "//projects/lib/jsonpath",
         "@auto_service//:compile",
-	"@commons_lang3//:compile",
+        "@commons_lang3//:compile",
         "@guava//:compile",
         "@hamcrest//:compile",
         "@jackson_databind//:compile",

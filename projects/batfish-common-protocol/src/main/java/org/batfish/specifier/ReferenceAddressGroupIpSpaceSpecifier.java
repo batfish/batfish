@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.referencelibrary.AddressGroup;
 
@@ -44,29 +45,30 @@ public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceSpeci
 
   @Override
   public IpSpaceAssignment resolve(Set<Location> locations, SpecifierContext ctxt) {
+    IpSpace ipSpace = computeIpSpace(_addressGroupName, _bookName, ctxt);
+    return IpSpaceAssignment.builder().assign(locations, ipSpace).build();
+  }
+
+  /* Returns the IpSpace in the address group. Returns the empty space if the addressgroup is empty */
+  public static IpSpace computeIpSpace(
+      String addressGroupName, String bookName, SpecifierContext ctxt) {
     AddressGroup addressGroup =
-        ctxt.getReferenceBook(_bookName)
+        ctxt.getReferenceBook(bookName)
             .orElseThrow(
-                () -> new NoSuchElementException("ReferenceBook '" + _bookName + "' not found"))
-            .getAddressGroup(_addressGroupName)
+                () -> new NoSuchElementException("ReferenceBook '" + bookName + "' not found"))
+            .getAddressGroup(addressGroupName)
             .orElseThrow(
                 () ->
                     new NoSuchElementException(
-                        "AddressGroup '"
-                            + _addressGroupName
-                            + "' not found in ReferenceBook '"
-                            + _bookName
-                            + "'"));
+                        String.format(
+                            "AddressGroup '%s' not found in ReferenceBook '%s'",
+                            addressGroupName, bookName)));
 
-    return IpSpaceAssignment.builder()
-        .assign(
-            locations,
-            firstNonNull(
-                AclIpSpace.union(
-                    addressGroup.getAddresses().stream()
-                        .map(add -> new IpWildcard(add).toIpSpace())
-                        .collect(Collectors.toList())),
-                EmptyIpSpace.INSTANCE))
-        .build();
+    return firstNonNull(
+        AclIpSpace.union(
+            addressGroup.getAddresses().stream()
+                .map(add -> new IpWildcard(add).toIpSpace())
+                .collect(Collectors.toList())),
+        EmptyIpSpace.INSTANCE);
   }
 }
