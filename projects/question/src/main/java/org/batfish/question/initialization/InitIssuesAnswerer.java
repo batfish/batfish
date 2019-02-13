@@ -156,7 +156,7 @@ public class InitIssuesAnswerer extends Answerer {
           new ColumnMetadata(
               COL_LINE_TEXT,
               Schema.STRING,
-              "The text of the input file that caused the issues",
+              "The text of the input files that caused the issues (if applicable)",
               false,
               true),
           new ColumnMetadata(
