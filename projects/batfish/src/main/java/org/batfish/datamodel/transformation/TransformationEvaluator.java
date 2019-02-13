@@ -56,7 +56,7 @@ public class TransformationEvaluator {
       }
     }
 
-    private void setPort(PortField field, int port) {
+    private void set(PortField field, int port) {
       switch (field) {
         case DESTINATION:
           _flowBuilder.setDstPort(port);
@@ -80,7 +80,7 @@ public class TransformationEvaluator {
       }
     }
 
-    private int getPort(PortField field) {
+    private int get(PortField field) {
       switch (field) {
         case DESTINATION:
           return _flowBuilder.getDstPort();
@@ -120,13 +120,12 @@ public class TransformationEvaluator {
       }
     }
 
-    private Boolean setPort(
-        TransformationType type, PortField portField, int oldValue, int newValue) {
+    private Boolean set(TransformationType type, PortField portField, int oldValue, int newValue) {
       if (oldValue == newValue) {
         getFlowDiffs(type);
         return false;
       } else {
-        setPort(portField, newValue);
+        set(portField, newValue);
         getFlowDiffs(type).add(flowDiff(portField, oldValue, newValue));
         return true;
       }
@@ -159,8 +158,8 @@ public class TransformationEvaluator {
 
     @Override
     public Boolean visitAssignPortFromPool(AssignPortFromPool step) {
-
-      return null;
+      return set(
+          step.getType(), step.getPortField(), get(step.getPortField()), step.getPoolStart());
     }
   }
 

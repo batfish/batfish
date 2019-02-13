@@ -46,6 +46,6 @@ public interface TransformationStep {
   }
 
   static AssignPortFromPool assignDestinationPort(int poolStart, int poolEnd) {
-    return new AssignPortFromPool(SOURCE_NAT, PortField.DESTINATION, poolStart, poolEnd);
+    return new AssignPortFromPool(DEST_NAT, PortField.DESTINATION, poolStart, poolEnd);
   }
 }

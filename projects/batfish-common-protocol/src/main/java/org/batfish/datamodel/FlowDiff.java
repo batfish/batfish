@@ -4,8 +4,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Comparator.comparing;
 import static org.batfish.datamodel.Flow.PROP_DST_IP;
-import static org.batfish.datamodel.Flow.PROP_SRC_IP;
 import static org.batfish.datamodel.Flow.PROP_DST_PORT;
+import static org.batfish.datamodel.Flow.PROP_SRC_IP;
 import static org.batfish.datamodel.Flow.PROP_SRC_PORT;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
