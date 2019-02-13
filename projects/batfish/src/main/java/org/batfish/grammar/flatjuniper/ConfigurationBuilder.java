@@ -647,6 +647,7 @@ import org.batfish.representation.juniper.NatRuleThenPool;
 import org.batfish.representation.juniper.NodeDevice;
 import org.batfish.representation.juniper.NssaSettings;
 import org.batfish.representation.juniper.OspfArea;
+import org.batfish.representation.juniper.PatPool;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PrefixList;
 import org.batfish.representation.juniper.PsFromAsPath;
@@ -2388,10 +2389,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterNat_pool(Nat_poolContext ctx) {
     String poolName = ctx.name.getText();
     _currentNatPool = _currentNat.getPools().computeIfAbsent(poolName, p -> new NatPool());
-    // port address translation is enabled by default for source nat
-    if (_currentNat.getType() == SOURCE) {
-      _currentNatPool.setPortTranslation(true);
-    }
     defineStructure(NAT_POOL, poolName, ctx);
   }
 
@@ -4376,9 +4373,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       // port translation
       _currentNatPool.setFromAddress(Ip.parse(ctx.ip_address.getText()));
       _currentNatPool.setToAddress(Ip.parse(ctx.ip_address.getText()));
-      _currentNatPool.setFromPort(Integer.parseInt(ctx.port_num.getText()));
-      _currentNatPool.setToPort(Integer.parseInt(ctx.port_num.getText()));
-      _currentNatPool.setPortTranslation(true);
+      PatPool patPool = new PatPool();
+      patPool.setFromPort(Integer.parseInt(ctx.port_num.getText()));
+      patPool.setToPort(Integer.parseInt(ctx.port_num.getText()));
+      patPool.setPortTranslation(true);
+      _currentNatPool.setPatPool(patPool);
     } else {
       _w.redFlag(ctx.getText() + " cannot be recognized");
     }
@@ -4386,12 +4385,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitNatp_port(Natp_portContext ctx) {
+    if (_currentNatPool.getPatPool() == null) {
+      _currentNatPool.setPatPool(new PatPool());
+    }
+
     if (ctx.NO_TRANSLATION() != null) {
-      _currentNatPool.setPortTranslation(false);
+      _currentNatPool.getPatPool().setPortTranslation(false);
     } else if (ctx.RANGE() != null) {
-      _currentNatPool.setFromPort(Integer.parseInt(ctx.from.getText()));
+      _currentNatPool.getPatPool().setFromPort(Integer.parseInt(ctx.from.getText()));
       if (ctx.TO() != null) {
-        _currentNatPool.setToPort(Integer.parseInt(ctx.to.getText()));
+        _currentNatPool.getPatPool().setToPort(Integer.parseInt(ctx.to.getText()));
       }
     } else {
       _w.redFlag(ctx.getText() + " cannot be recognized");

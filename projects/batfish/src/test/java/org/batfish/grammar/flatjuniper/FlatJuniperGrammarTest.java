@@ -1,5 +1,6 @@
 package org.batfish.grammar.flatjuniper;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.batfish.common.util.CommonUtil.communityStringToLong;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
@@ -4469,19 +4470,43 @@ public final class FlatJuniperGrammarTest {
     Nat sourceNat = juniperConfiguration.getMasterLogicalSystem().getNatSource();
     NatPool pool1 = sourceNat.getPools().get("POOL1");
     NatPool pool2 = sourceNat.getPools().get("POOL2");
+    NatPool pool3 = sourceNat.getPools().get("POOL3");
+
+    // pool1 should has a pat pool with range [2000,3000] with no port translation configured
     assertNotNull(pool1);
+    assertNotNull(pool1.getPatPool());
+    assertThat(pool1.getPatPool().getFromPort(), equalTo(2000));
+    assertThat(pool1.getPatPool().getToPort(), equalTo(3000));
+    assertNull(pool1.getPatPool().getPortTranslation());
+
+    // pool2 should have a pat pool specified with port translation equal false, but port range
+    // configured
     assertNotNull(pool2);
-    assertThat(pool1.getFromPort(), equalTo(2000));
-    assertThat(pool1.getToPort(), equalTo(3000));
-    assertNull(pool2.getFromPort());
-    assertNull(pool2.getToPort());
-    assertFalse(pool2.getPortTranslation());
+    assertNotNull(pool2.getPatPool());
+    assertNull(pool2.getPatPool().getFromPort());
+    assertNull(pool2.getPatPool().getToPort());
+    assertFalse(pool2.getPatPool().getPortTranslation());
+
+    // pool3 should have a pat pool with port translation equal false and range [10000,20000]
+    assertNotNull(pool3);
+    assertNotNull(pool3.getPatPool());
+    assertThat(pool3.getPatPool().getFromPort(), equalTo(10000));
+    assertThat(pool3.getPatPool().getToPort(), equalTo(20000));
+    assertFalse(pool3.getPatPool().getPortTranslation());
 
     Nat destNat = juniperConfiguration.getMasterLogicalSystem().getNatDestination();
-    NatPool pool3 = destNat.getPools().get("POOL3");
-    assertNotNull(pool3);
-    assertThat(pool3.getFromPort(), equalTo(6000));
-    assertThat(pool3.getToPort(), equalTo(6000));
-    assertThat(pool3.getFromAddress(), equalTo(Ip.parse("1.0.0.1")));
+    NatPool pool4 = destNat.getPools().get("POOL4");
+    NatPool pool5 = destNat.getPools().get("POOL5");
+
+    // pool4 should have a pat pool with port translation equal false and range [6000,6000]
+    assertNotNull(pool4);
+    assertNotNull(pool4.getPatPool());
+    assertThat(pool4.getPatPool().getFromPort(), equalTo(6000));
+    assertThat(pool4.getPatPool().getToPort(), equalTo(6000));
+    assertTrue(pool4.getPatPool().getPortTranslation());
+
+    // pool5 should not have a pat pool
+    assertNotNull(pool5);
+    assertNull(pool5.getPatPool());
   }
 }

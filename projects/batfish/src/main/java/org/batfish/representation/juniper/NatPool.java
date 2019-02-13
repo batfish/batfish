@@ -2,6 +2,7 @@ package org.batfish.representation.juniper;
 
 import java.io.Serializable;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -16,18 +17,13 @@ public final class NatPool implements Serializable {
 
   private Ip _toAddress;
 
-  private Integer _fromPort;
-
-  private Integer _toPort;
-
-  private boolean _portTranslation;
+  // null value means no pat is configured
+  @Nullable private PatPool _patPool;
 
   public NatPool() {
     _fromAddress = Prefix.ZERO.getStartIp();
     _toAddress = Prefix.ZERO.getEndIp();
-    _fromPort = null;
-    _toPort = null;
-    _portTranslation = false;
+    _patPool = null;
   }
 
   @Nonnull
@@ -40,16 +36,9 @@ public final class NatPool implements Serializable {
     return _toAddress;
   }
 
-  public Integer getFromPort() {
-    return _fromPort;
-  }
-
-  public Integer getToPort() {
-    return _toPort;
-  }
-
-  public boolean getPortTranslation() {
-    return _portTranslation;
+  @Nullable
+  public PatPool getPatPool() {
+    return _patPool;
   }
 
   public void setFromAddress(Ip fromAddress) {
@@ -60,15 +49,7 @@ public final class NatPool implements Serializable {
     _toAddress = toAddress;
   }
 
-  public void setFromPort(int fromPort) {
-    _fromPort = fromPort;
-  }
-
-  public void setToPort(int toPort) {
-    _toPort = toPort;
-  }
-
-  public void setPortTranslation(boolean portTranslation) {
-    _portTranslation = portTranslation;
+  public void setPatPool(PatPool patPool) {
+    _patPool = patPool;
   }
 }
