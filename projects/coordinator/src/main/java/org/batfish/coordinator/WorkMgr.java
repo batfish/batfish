@@ -143,6 +143,7 @@ import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.storage.FileBasedStorageDirectoryProvider;
 import org.batfish.storage.StorageProvider;
+import org.batfish.storage.StoredObjectMetadata;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -2929,6 +2930,27 @@ public class WorkMgr extends AbstractCoordinator {
           String.format(
               "Could not read input object for network '%s', snapshot '%s', key '%s'",
               network, snapshot, key),
+          e);
+    }
+  }
+
+  @Nullable
+  public List<StoredObjectMetadata> getSnapshotInputObjectsMetadata(String network, String snapshot)
+      throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return null;
+    }
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    try {
+      return _storage.getSnapshotInputObjectsMetadata(networkId, snapshotId);
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not fetch input keys for network '%s', snapshot '%s'", network, snapshot),
           e);
     }
   }
