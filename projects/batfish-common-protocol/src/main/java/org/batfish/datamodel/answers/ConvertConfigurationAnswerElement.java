@@ -15,6 +15,7 @@ import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.common.ErrorDetails;
 import org.batfish.common.Version;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
@@ -54,7 +55,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
 
   @Nonnull private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
 
-  @Nonnull private SortedMap<String, String> _errorMessages;
+  @Nonnull private SortedMap<String, ErrorDetails> _errorDetails;
 
   // This is just to support legacy objects, before _convertStatus map was used
   @Nullable private Set<String> _failed;
@@ -86,7 +87,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
               referencedstructures,
       @JsonProperty(PROP_CONVERT_STATUS) SortedMap<String, ConvertStatus> convertStatus,
       @JsonProperty(PROP_ERRORS) SortedMap<String, BatfishException.BatfishStackTrace> errors,
-      @JsonProperty(PROP_ERROR_MESSAGES) SortedMap<String, String> errorMessages,
+      @JsonProperty(PROP_ERROR_DETAILS) SortedMap<String, ErrorDetails> errorDetails,
       @JsonProperty(PROP_UNDEFINED_REFERENCES)
           SortedMap<
                   String,
@@ -96,7 +97,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
       @JsonProperty(PROP_WARNINGS) SortedMap<String, Warnings> warnings) {
     _definedStructures = firstNonNull(definedStructures, new TreeMap<>());
     _errors = firstNonNull(errors, new TreeMap<>());
-    _errorMessages = firstNonNull(errorMessages, new TreeMap<>());
+    _errorDetails = firstNonNull(errorDetails, new TreeMap<>());
     _convertStatus = firstNonNull(convertStatus, new TreeMap<>());
 
     _referencedStructures = firstNonNull(referencedstructures, new TreeMap<>());
@@ -141,8 +142,8 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
 
   @Override
   @Nonnull
-  public SortedMap<String, String> getErrorMessages() {
-    return _errorMessages;
+  public SortedMap<String, ErrorDetails> getErrorDetails() {
+    return _errorDetails;
   }
 
   @JsonProperty(PROP_REFERENCED_STRUCTURES)

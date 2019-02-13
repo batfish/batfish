@@ -603,6 +603,7 @@ public class PaloAltoGrammarTest {
             CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             new Settings(),
+            new Warnings(),
             ConfigurationFormat.PALO_ALTO_NESTED,
             VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
     FlattenerLineMap lineMap = flattener.getOriginalLineMap();

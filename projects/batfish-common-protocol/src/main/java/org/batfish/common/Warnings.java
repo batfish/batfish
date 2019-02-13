@@ -24,6 +24,8 @@ public class Warnings implements Serializable {
 
   public static final String TAG_UNIMPLEMENTED = "UNIMPLEMENTED";
 
+  private static final String PROP_ERROR_DETAILS = "Error details";
+
   private static final String PROP_PARSE_WARNINGS = "Parse warnings";
 
   private static final String PROP_PEDANTIC = "Pedantic complaints";
@@ -31,6 +33,8 @@ public class Warnings implements Serializable {
   private static final String PROP_RED_FLAGS = "Red flags";
 
   private static final String PROP_UNIMPLEMENTED = "Unimplemented features";
+
+  private ErrorDetails _errorDetails;
 
   @Nonnull private final List<ParseWarning> _parseWarnings;
 
@@ -51,11 +55,13 @@ public class Warnings implements Serializable {
       @Nullable @JsonProperty(PROP_PEDANTIC) List<Warning> pedanticWarnings,
       @Nullable @JsonProperty(PROP_RED_FLAGS) List<Warning> redFlagWarnings,
       @Nullable @JsonProperty(PROP_UNIMPLEMENTED) List<Warning> unimplementedWarnings,
-      @Nullable @JsonProperty(PROP_PARSE_WARNINGS) List<ParseWarning> parseWarnings) {
+      @Nullable @JsonProperty(PROP_PARSE_WARNINGS) List<ParseWarning> parseWarnings,
+      @Nullable @JsonProperty(PROP_ERROR_DETAILS) ErrorDetails errorDetails) {
     _pedanticWarnings = firstNonNull(pedanticWarnings, new LinkedList<>());
     _redFlagWarnings = firstNonNull(redFlagWarnings, new LinkedList<>());
     _parseWarnings = firstNonNull(parseWarnings, new LinkedList<>());
     _unimplementedWarnings = firstNonNull(unimplementedWarnings, new LinkedList<>());
+    _errorDetails = errorDetails;
   }
 
   public Warnings() {
@@ -63,7 +69,7 @@ public class Warnings implements Serializable {
   }
 
   public Warnings(boolean pedanticRecord, boolean redFlagRecord, boolean unimplementedRecord) {
-    this(null, null, null, null);
+    this(null, null, null, null, null);
     _pedanticRecord = pedanticRecord;
     _redFlagRecord = redFlagRecord;
     _unimplementedRecord = unimplementedRecord;
@@ -88,6 +94,16 @@ public class Warnings implements Serializable {
   @JsonProperty(PROP_UNIMPLEMENTED)
   public List<Warning> getUnimplementedWarnings() {
     return _unimplementedWarnings;
+  }
+
+  @JsonProperty(PROP_ERROR_DETAILS)
+  public ErrorDetails getErrorDetails() {
+    return _errorDetails;
+  }
+
+  @JsonProperty(PROP_ERROR_DETAILS)
+  public void setErrorDetails(ErrorDetails errorDetails) {
+    _errorDetails = errorDetails;
   }
 
   @JsonIgnore
