@@ -53,7 +53,7 @@ public class InitIssuesAnswerer extends Answerer {
             (triplet, fileLines) ->
                 rows.add(
                     getRow(
-                        ImmutableSortedSet.copyOf(fileLines.keySet()),
+                        null,
                         fileLines.asMap().entrySet().stream()
                             .map(
                                 e ->
@@ -61,10 +61,8 @@ public class InitIssuesAnswerer extends Answerer {
                                         e.getKey(), ImmutableSortedSet.copyOf(e.getValue())))
                             .collect(ImmutableList.toImmutableList()),
                         IssueType.ParseWarning,
-                        String.format(
-                            "%s (%s)",
-                            firstNonNull(triplet._comment, "(details not provided)"),
-                            triplet._text),
+                        firstNonNull(triplet._comment, "(details not provided)"),
+                        triplet._text,
                         triplet._parserContext)));
 
     aggregateDuplicateErrors(ccae.getErrorDetails())
@@ -94,6 +92,7 @@ public class InitIssuesAnswerer extends Answerer {
                             .collect(ImmutableList.toImmutableList()),
                         IssueType.ParseError,
                         errorDetails._message,
+                        errorDetails._lineContent,
                         errorDetails._parserContext)));
 
     TableAnswerElement answerElement = new TableAnswerElement(TABLE_METADATA);
@@ -110,7 +109,7 @@ public class InitIssuesAnswerer extends Answerer {
       @Nullable Iterable<FileLines> fileLines,
       IssueType issueType,
       String issue) {
-    return getRow(nodes, fileLines, issueType, issue, null);
+    return getRow(nodes, fileLines, issueType, issue, null, null);
   }
 
   private static Row getRow(
@@ -118,20 +117,22 @@ public class InitIssuesAnswerer extends Answerer {
       Iterable<FileLines> fileLines,
       IssueType issueType,
       String issue,
+      @Nullable String lineText,
       @Nullable String parserContext) {
     return Row.builder(TABLE_METADATA.toColumnMap())
         .put(COL_NODES, nodes)
         .put(COL_FILELINES, fileLines)
-        .put(COL_ISSUE_TYPE, issueType.toString())
-        .put(COL_ISSUE, issue)
+        .put(COL_TYPE, issueType.toString())
+        .put(COL_DETAILS, issue)
+        .put(COL_LINE_TEXT, lineText)
         .put(COL_PARSER_CONTEXT, parserContext)
         .build();
   }
 
   static final String COL_NODES = "Nodes";
   static final String COL_FILELINES = "Source_Lines";
-  static final String COL_ISSUE_TYPE = "Issue_Type";
-  static final String COL_ISSUE = "Issue";
+  static final String COL_TYPE = "Type";
+  static final String COL_DETAILS = "Details";
   static final String COL_LINE_TEXT = "Line_Text";
   static final String COL_PARSER_CONTEXT = "Parser_Context";
 
@@ -149,9 +150,15 @@ public class InitIssuesAnswerer extends Answerer {
               "The files and lines that caused the issues (if applicable)",
               true,
               false),
+          new ColumnMetadata(COL_TYPE, Schema.STRING, "The type of issues identified", true, false),
           new ColumnMetadata(
-              COL_ISSUE_TYPE, Schema.STRING, "The type of issues identified", true, false),
-          new ColumnMetadata(COL_ISSUE, Schema.STRING, "The issues identified", false, true),
+              COL_DETAILS, Schema.STRING, "Details about the issues identified", false, true),
+          new ColumnMetadata(
+              COL_LINE_TEXT,
+              Schema.STRING,
+              "The text of the input files that caused the issues (if applicable)",
+              false,
+              true),
           new ColumnMetadata(
               COL_PARSER_CONTEXT,
               Schema.STRING,
