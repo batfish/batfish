@@ -169,6 +169,7 @@ public final class ParboiledAutoComplete {
       case IP_RANGE: // IP_ADDRESS take care of this case
       case IP_WILDCARD: // IP_ADDRESS takes care of this case
       case EOI:
+      case WhiteSpace:
       default: // ignore things we do not know how to auto complete
         return ImmutableList.of();
     }

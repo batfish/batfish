@@ -20,7 +20,8 @@ import java.lang.annotation.Target;
     IP_PREFIX,
     IP_RANGE,
     IP_WILDCARD,
-    STRING_LITERAL
+    STRING_LITERAL,
+    WhiteSpace
   }
 
   Type value();

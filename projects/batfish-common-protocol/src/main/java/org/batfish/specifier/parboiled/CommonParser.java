@@ -22,9 +22,8 @@ abstract class CommonParser extends BaseParser<AstNode> {
 
   static Map<String, Type> initCompletionTypes(Class<?> parserClass) {
     ImmutableMap.Builder<String, Completion.Type> completionTypes = ImmutableMap.builder();
-    // fromStringLiteral is not enumerated because its protected; so we add explicitly
-    completionTypes.put("fromStringLiteral", Completion.Type.STRING_LITERAL);
-    // EOI does not have an explicit rule; so we add explicitly
+    // Explicitly add WhiteSpace and EOI
+    completionTypes.put("WhiteSpace", Type.WhiteSpace);
     completionTypes.put("EOI", Completion.Type.EOI);
     for (Method method : parserClass.getMethods()) {
       Completion annotation = method.getAnnotation(Completion.class);

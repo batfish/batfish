@@ -106,11 +106,12 @@ class Parser extends CommonParser {
   @Completion(IP_RANGE)
   public Rule IpRange() {
     return Sequence(
-        IpAddress(),
+        IpAddressUnchecked(),
+        push(new IpAstNode(Ip.parse(matchOrDefault("Error")))),
         WhiteSpace(),
         "- ",
-        IpAddress(),
-        push(new IpRangeAstNode(pop(1), pop())),
+        IpAddressUnchecked(),
+        push(new IpRangeAstNode(pop(), new IpAstNode(Ip.parse(matchOrDefault("Error"))))),
         WhiteSpace());
   }
 

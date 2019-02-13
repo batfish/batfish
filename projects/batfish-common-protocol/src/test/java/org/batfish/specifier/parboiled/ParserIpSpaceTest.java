@@ -3,15 +3,20 @@ package org.batfish.specifier.parboiled;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
+import org.batfish.specifier.parboiled.Completion.Type;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.parboiled.errors.InvalidInputError;
 import org.parboiled.errors.ParserRuntimeException;
 import org.parboiled.parserunners.AbstractParseRunner;
 import org.parboiled.parserunners.ReportingParseRunner;
+import org.parboiled.support.ParsingResult;
 
 /** Tests of {@link Parser} producing {@link IpSpaceAstNode}. */
 public class ParserIpSpaceTest {
@@ -20,6 +25,27 @@ public class ParserIpSpaceTest {
 
   private static AbstractParseRunner<AstNode> getRunner() {
     return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.IpSpaceExpression()));
+  }
+
+  /** This tests if we have proper completion annotations on the rules */
+  @Test
+  public void testCompletions() {
+    ParsingResult<?> result = getRunner().run("");
+
+    Set<PartialMatch> partialMatches =
+        ParserUtils.getPartialMatches(
+            (InvalidInputError) result.parseErrors.get(0), Parser.COMPLETION_TYPES);
+
+    assertThat(
+        partialMatches,
+        equalTo(
+            ImmutableSet.of(
+                new PartialMatch(Type.STRING_LITERAL, "", "@addressgroup"),
+                new PartialMatch(Type.STRING_LITERAL, "", "ref.addressgroup"),
+                new PartialMatch(Type.IP_ADDRESS, "", null),
+                new PartialMatch(Type.IP_WILDCARD, "", null),
+                new PartialMatch(Type.IP_PREFIX, "", null),
+                new PartialMatch(Type.IP_RANGE, "", null))));
   }
 
   @Test

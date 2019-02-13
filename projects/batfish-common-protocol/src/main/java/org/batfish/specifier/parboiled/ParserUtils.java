@@ -9,12 +9,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.specifier.parboiled.Completion.Type;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.support.MatcherPath;
 import org.parboiled.support.MatcherPath.Element;
 import org.parboiled.support.ParsingResult;
+import scala.Tuple2;
 
 /** A helper class to interpret parser errors */
 @ParametersAreNonnullByDefault
@@ -30,21 +32,30 @@ final class ParserUtils {
 
   /** Generates a friendly message to explain what might be wrong with parser input */
   static String getErrorString(
-      InvalidInputError error, Map<String, Completion.Type> completionTypes) {
-    return getErrorString(error.getStartIndex(), getPartialMatches(error, completionTypes));
+      String input,
+      String inputType,
+      InvalidInputError error,
+      Map<String, Completion.Type> completionTypes) {
+    return getErrorString(
+        input, inputType, error.getStartIndex(), getPartialMatches(error, completionTypes));
   }
 
   /** Generates a friendly message to explain what might be wrong with parser input */
-  static String getErrorString(int startIndex, Set<PartialMatch> partialMatches) {
-    String retString = String.format("Error parsing input at index %d.", startIndex);
+  static String getErrorString(
+      String input, String inputType, int startIndex, Set<PartialMatch> partialMatches) {
+    StringBuilder retString =
+        new StringBuilder(
+            String.format(
+                "Error parsing '%s' as %s after index %d. ", input, inputType, startIndex));
     if (!partialMatches.isEmpty()) {
-      retString +=
-          "Expected "
-              + partialMatches.stream()
-                  .map(ParserUtils::getErrorString)
-                  .collect(Collectors.joining(", "));
+      retString.append("Valid continuations are ");
+      retString.append(
+          partialMatches.stream()
+              .map(ParserUtils::getErrorString)
+              .collect(Collectors.joining(" or ")));
+      retString.append(".");
     }
-    return retString;
+    return retString.toString();
   }
 
   /** Generates a friendly message to explain what might be wrong with a particular partial match */
@@ -53,11 +64,7 @@ final class ParserUtils {
     if (pm.getCompletionType().equals(Completion.Type.STRING_LITERAL)) {
       return String.format("'%s'", pm.getMatchCompletion());
     }
-    if (pm.getMatchPrefix().equals("")) {
-      return String.format("%s", pm.getCompletionType());
-    } else {
-      return String.format("%s starting with '%s'", pm.getCompletionType(), pm.getMatchPrefix());
-    }
+    return String.format("%s", pm.getCompletionType());
   }
 
   /**
@@ -78,24 +85,10 @@ final class ParserUtils {
     // For each path that failed to match we identify a useful point in the path that is closest to
     // the end and can provide the basis for error reporting and completion suggestions.
     for (MatcherPath path : error.getFailedMatchers()) {
-      int level = path.length() - 1;
-      for (; level >= 0; level--) {
-        MatcherPath.Element element = path.getElementAtLevel(level);
-        String label = element.matcher.getLabel();
+      Tuple2<Integer, Completion.Type> usefulPoint =
+          getUsefulLabel(path, path.length() - 1, completionTypes);
 
-        // Ignore paths that end in WhiteSpace -- nothing interesting to report there because
-        // our grammar is not sensitive to whitespace
-        if (label.equals("WhiteSpace")) {
-          break;
-        }
-
-        if (completionTypes.containsKey(label)) {
-          partialMatches.add(
-              getPartialMatch(error, path, element, level, completionTypes.get(label)));
-          break;
-        }
-      }
-      if (level == -1) {
+      if (usefulPoint == null) {
         /**
          * If you get here, that means the grammar is missing a Completion annotation on one or more
          * rules. For each path from the top-level rule to the leaf, there should be at least one
@@ -104,6 +97,18 @@ final class ParserUtils {
         throw new IllegalStateException(
             String.format("Useful completion not found in path %s", path));
       }
+
+      int level = usefulPoint._1;
+      Completion.Type completionType = usefulPoint._2;
+
+      // Ignore paths that end in WhiteSpace -- nothing interesting to report there because
+      // our grammar is not sensitive to whitespace
+      if (completionType.equals(Type.WhiteSpace)) {
+        continue;
+      }
+
+      partialMatches.add(
+          getPartialMatch(error, path, path.getElementAtLevel(level), completionType));
     }
 
     return partialMatches;
@@ -111,13 +116,13 @@ final class ParserUtils {
 
   @Nonnull
   private static PartialMatch getPartialMatch(
-      InvalidInputError error, MatcherPath path, Element element, int level, Completion.Type type) {
+      InvalidInputError error, MatcherPath path, Element element, Completion.Type type) {
 
     String matchPrefix =
         error.getInputBuffer().extract(element.startIndex, path.element.startIndex);
 
     if (type.equals(Type.STRING_LITERAL)) {
-      String fullToken = path.getElementAtLevel(level + 1).matcher.getLabel();
+      String fullToken = element.matcher.getLabel();
       if (fullToken.length() >= 2) {
         fullToken = fullToken.substring(1, fullToken.length() - 1);
       }
@@ -128,5 +133,38 @@ final class ParserUtils {
     } else {
       return new PartialMatch(type, matchPrefix, null);
     }
+  }
+
+  /**
+   * Working backwards from level, tries to find a useful label for error messages and auto
+   * completion. Returns null if none is found.
+   */
+  @Nullable
+  private static Tuple2<Integer, Completion.Type> getUsefulLabel(
+      MatcherPath path, int level, Map<String, Completion.Type> completionTypes) {
+
+    MatcherPath.Element element = path.getElementAtLevel(level);
+    String label = element.matcher.getLabel();
+
+    if (completionTypes.containsKey(label)) {
+      return new Tuple2<>(level, completionTypes.get(label));
+    } else if (isStringLiteralLabel(label)) {
+      return new Tuple2<>(level, Type.STRING_LITERAL);
+    } else if (isCharLiteralLabel(label)) {
+      if (level == 0 || getUsefulLabel(path, level - 1, completionTypes) == null) {
+        return new Tuple2<>(level, Type.STRING_LITERAL);
+      }
+    } else if (level == 0) {
+      return null;
+    }
+    return getUsefulLabel(path, level - 1, completionTypes);
+  }
+
+  private static boolean isCharLiteralLabel(String label) {
+    return label.startsWith("\'") && label.endsWith("\'");
+  }
+
+  private static boolean isStringLiteralLabel(String label) {
+    return label.startsWith("\"") && label.endsWith("\"");
   }
 }

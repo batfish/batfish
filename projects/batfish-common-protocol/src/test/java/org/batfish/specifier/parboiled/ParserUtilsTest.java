@@ -97,9 +97,6 @@ public class ParserUtilsTest {
     assertThat(
         getErrorString(new PartialMatch(Type.IP_ADDRESS, "", "b")),
         equalTo(Type.IP_ADDRESS.toString()));
-    assertThat(
-        getErrorString(new PartialMatch(Type.IP_ADDRESS, "a", null)),
-        equalTo(Type.IP_ADDRESS.toString() + " starting with 'a'"));
   }
 
   @Test
@@ -121,7 +118,16 @@ public class ParserUtilsTest {
   }
 
   @Test
-  public void testGetPartialMatchesDanglingList() {
+  public void testGetPartialMatchesIncompleteBase() {
+    ParsingResult<?> result = getRunner().run("(1.1.1");
+    assertThat(
+        getPartialMatches(
+            (InvalidInputError) result.parseErrors.get(0), TestParser.COMPLETION_TYPES),
+        equalTo(ImmutableSet.of(new PartialMatch(Type.IP_ADDRESS, "1.1.1", null))));
+  }
+
+  @Test
+  public void testGetPartialMatchesIncompleteList() {
     ParsingResult<?> resultEmpty = getRunner().run("a,");
     assertThat(
         getPartialMatches(
