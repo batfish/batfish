@@ -2,8 +2,9 @@ package org.batfish.specifier.parboiled;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.empty;
 
+import com.google.common.collect.Iterables;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
@@ -15,17 +16,17 @@ import org.parboiled.parserunners.AbstractParseRunner;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
 
-public class ParserTestIpSpace {
+/** Tests of {@link Parser} producing {@link IpSpaceAstNode}. */
+public class ParserIpSpaceTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
-  private static AstNode getOnlyStackItem(ParsingResult<?> result) {
-    assertTrue(result.parseErrors.isEmpty());
-    assertThat(result.valueStack.size(), equalTo(1));
-    return (AstNode) result.valueStack.iterator().next();
+  private static AstNode getOnlyStackItem(ParsingResult<AstNode> result) {
+    assertThat(result.parseErrors, empty());
+    return Iterables.getOnlyElement(result.valueStack);
   }
 
-  private static AbstractParseRunner<?> getRunner() {
+  private static AbstractParseRunner<AstNode> getRunner() {
     return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.IpSpaceExpression()));
   }
 
