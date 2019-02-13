@@ -82,7 +82,7 @@ public final class DetectLoopsAnswerer extends Answerer {
             "Expect only one environment in flow history info. Found %d",
             historyInfo.getPaths().size()));
     SortedSet<FlowTrace> paths =
-        historyInfo.getPaths().values().stream().findAny().orElse(ImmutableSortedSet.of());
+        historyInfo.getPaths().values().stream().findAny().orElseGet(ImmutableSortedSet::of);
     return Row.of(COL_FLOW, historyInfo.getFlow(), COL_TRACES, paths);
   }
 
