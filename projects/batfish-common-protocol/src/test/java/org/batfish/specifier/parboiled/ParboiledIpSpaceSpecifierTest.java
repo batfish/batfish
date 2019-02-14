@@ -53,8 +53,8 @@ public class ParboiledIpSpaceSpecifierTest {
 
   @Test
   public void testComputeIpSpaceIp() {
-    String ip = "1.1.1.1";
-    assertThat(computeIpSpace(new IpAstNode(ip), _emptyCtxt), equalTo(Ip.parse(ip).toIpSpace()));
+    Ip ip = Ip.parse("1.1.1.1");
+    assertThat(computeIpSpace(new IpAstNode(ip), _emptyCtxt), equalTo(ip.toIpSpace()));
   }
 
   @Test
