@@ -19,7 +19,7 @@ import org.parboiled.support.MatcherPath;
  * <p>@Anchor annotation: For each path from the top-level rule of an expression to leaf values,
  * there should be at least one rule with a Anchor annotation. This annotation is used for error
  * messages and generating auto completion suggestions. Character and string literals are treated as
- * implicit anchors (see {@link ParserUtils#findAnchor(MatcherPath, int, Map, boolean)}
+ * implicit anchors (see {@link ParserUtils#findPathAnchor(MatcherPath, int, Map, boolean)}
  */
 @SuppressWarnings({
   "checkstyle:methodname", // this class uses idiomatic names
