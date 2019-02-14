@@ -114,7 +114,9 @@ final class CiscoAsaNatUtil {
   }
 
   /**
-   * Determine if an object NAT is an identity NAT.
+   * Determine if an object NAT is an identity NAT. Identity NATs are NATs which do not transform
+   * packets, but can be used in conjunction with other NATs. NAT divert will not occur for object
+   * NATs unless there is an "actual" transformation, i.e. not an identity transformation.
    *
    * @param nat An object NAT
    * @param networkObjects Mapping of network object names to {@link NetworkObject}s
@@ -216,8 +218,8 @@ final class CiscoAsaNatUtil {
 
     boolean anyMatch = matchAddress.toIpSpace().equals(IpWildcard.ANY.toIpSpace());
     boolean anyShift = shiftAddress.toIpSpace().equals(IpWildcard.ANY.toIpSpace());
-    Prefix matchPrefix = null;
-    Prefix shiftPrefix = null;
+    Prefix matchPrefix;
+    Prefix shiftPrefix;
     /*
      * There are valid cases which are not supported here
      * 1) Ranges do not map to prefixes but are valid. There is currently no support for
@@ -254,16 +256,18 @@ final class CiscoAsaNatUtil {
         // at the time it was created. Get the correct prefix length.
         shiftPrefix =
             getNetworkObjectPrefix((NetworkObjectAddressSpecifier) shiftAddress, networkObjects, w);
-        if (shiftPrefix != null) {
-          matchPrefix = getEqualLengthPrefix((WildcardAddressSpecifier) matchAddress, shiftPrefix);
-        }
+        matchPrefix =
+            shiftPrefix == null
+                ? null
+                : getEqualLengthPrefix((WildcardAddressSpecifier) matchAddress, shiftPrefix);
       } else if (shiftAddress instanceof WildcardAddressSpecifier
           && matchAddress instanceof NetworkObjectAddressSpecifier) {
         matchPrefix =
             getNetworkObjectPrefix((NetworkObjectAddressSpecifier) matchAddress, networkObjects, w);
-        if (matchPrefix != null) {
-          shiftPrefix = getEqualLengthPrefix((WildcardAddressSpecifier) shiftAddress, matchPrefix);
-        }
+        shiftPrefix =
+            matchPrefix == null
+                ? null
+                : getEqualLengthPrefix((WildcardAddressSpecifier) shiftAddress, matchPrefix);
       } else if (matchAddress instanceof NetworkObjectAddressSpecifier
           && shiftAddress instanceof NetworkObjectAddressSpecifier) {
         matchPrefix =
