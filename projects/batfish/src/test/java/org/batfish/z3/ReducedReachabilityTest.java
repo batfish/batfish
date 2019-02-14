@@ -2,7 +2,6 @@ package org.batfish.z3;
 
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
-import static org.batfish.datamodel.matchers.FlowHistoryInfoMatchers.hasFlow;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
@@ -11,7 +10,6 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
@@ -20,30 +18,21 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.regex.Pattern;
 import org.batfish.common.util.TracePruner;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.FlowHistory;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.main.Batfish;
-import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.differentialreachability.DifferentialReachabilityParameters;
 import org.batfish.question.differentialreachability.DifferentialReachabilityResult;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
-import org.batfish.specifier.IntersectionLocationSpecifier;
-import org.batfish.specifier.NameRegexInterfaceLocationSpecifier;
-import org.batfish.specifier.NameRegexNodeSpecifier;
-import org.batfish.specifier.NodeNameRegexInterfaceLocationSpecifier;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -122,31 +111,6 @@ public class ReducedReachabilityTest {
     _cb = _nf.configurationBuilder().setConfigurationFormat(CISCO_IOS);
     _vb = _nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
     _ib = _nf.interfaceBuilder();
-  }
-
-  /** Test that we detect reduced reachability caused by a removed static route. */
-  @Test
-  public void testStaticRouteRemoved() throws IOException {
-    Batfish batfish = initBatfish();
-    AnswerElement answer =
-        batfish.reducedReachability(
-            ReachabilityParameters.builder()
-                .setActions(ImmutableSortedSet.of(FlowDisposition.ACCEPTED))
-                .setFinalNodesSpecifier(new NameRegexNodeSpecifier(Pattern.compile(NODE2)))
-                .setHeaderSpace(
-                    HeaderSpace.builder().setDstIps(NODE2_ALTERNATE_IP.toIpSpace()).build())
-                .setSourceLocationSpecifier(
-                    /* Source = loopback0 on node1 */
-                    new IntersectionLocationSpecifier(
-                        new NodeNameRegexInterfaceLocationSpecifier(Pattern.compile(NODE1)),
-                        new NameRegexInterfaceLocationSpecifier(Pattern.compile(LOOPBACK))))
-                .build());
-    assertThat(answer, instanceOf(FlowHistory.class));
-    FlowHistory flowHistory = (FlowHistory) answer;
-    assertThat(flowHistory.getTraces().entrySet(), hasSize(1));
-    assertThat(
-        flowHistory.getTraces().values(),
-        contains(hasFlow(allOf(hasSrcIp(NODE1_LOOPBACK_IP), hasDstIp(NODE2_ALTERNATE_IP)))));
   }
 
   private static DifferentialReachabilityParameters parameters(Batfish batfish) {

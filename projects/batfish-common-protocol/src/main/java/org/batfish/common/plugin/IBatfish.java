@@ -23,7 +23,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -115,10 +114,6 @@ public interface IBatfish extends IPluginConsumer {
   @Nonnull
   NetworkSnapshot getNetworkSnapshot();
 
-  FlowHistory flowHistory(Set<Flow> flows, boolean ignoreFilters);
-
-  FlowHistory differentialFlowHistory(Set<Flow> flows, boolean ignoreFilters);
-
   NodeRolesData getNodeRolesData();
 
   Optional<NodeRoleDimension> getNodeRoleDimension(String roleDimension);
@@ -173,8 +168,6 @@ public interface IBatfish extends IPluginConsumer {
 
   AtomicInteger newBatch(String description, int jobs);
 
-  AnswerElement pathDiff(ReachabilityParameters reachabilityParameters);
-
   void popSnapshot();
 
   Set<BgpAdvertisement> loadExternalBgpAnnouncements(Map<String, Configuration> configurations);
@@ -188,8 +181,6 @@ public interface IBatfish extends IPluginConsumer {
 
   @Nullable
   String readExternalBgpAnnouncementsFile();
-
-  AnswerElement reducedReachability(ReachabilityParameters reachabilityParameters);
 
   void registerAnswerer(
       String questionName,

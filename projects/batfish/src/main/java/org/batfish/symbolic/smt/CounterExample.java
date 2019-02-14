@@ -26,7 +26,6 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.FlowTraceHop;
 import org.batfish.datamodel.Interface;
@@ -43,6 +42,7 @@ import org.batfish.symbolic.CommunityVar.Type;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
+import org.batfish.symbolic.answers.FlowHistory;
 import org.batfish.symbolic.utils.Tuple;
 
 class CounterExample {

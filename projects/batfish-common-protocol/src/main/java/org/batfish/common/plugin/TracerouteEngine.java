@@ -18,7 +18,6 @@ import org.batfish.datamodel.flow.TraceAndReverseFlow;
  * performing a traceroute.
  */
 public interface TracerouteEngine {
-  SortedMap<Flow, Set<FlowTrace>> processFlows(Set<Flow> flows, boolean ignoreFilters);
 
   /**
    * Builds the {@link Trace}s for a {@link Set} of {@link Flow}s

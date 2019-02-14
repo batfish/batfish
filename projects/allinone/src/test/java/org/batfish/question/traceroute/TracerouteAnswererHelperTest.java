@@ -19,11 +19,11 @@ import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.PacketHeaderConstraints;
-import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.junit.Before;
@@ -34,7 +34,7 @@ import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link TracerouteAnswererHelper}. */
 public class TracerouteAnswererHelperTest {
-  private Batfish _batfish;
+  private IBatfish _batfish;
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   @Rule public ExpectedException thrown = ExpectedException.none();

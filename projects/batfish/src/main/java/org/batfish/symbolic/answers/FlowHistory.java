@@ -1,4 +1,4 @@
-package org.batfish.datamodel;
+package org.batfish.symbolic.answers;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,6 +9,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.pojo.Environment;
 
