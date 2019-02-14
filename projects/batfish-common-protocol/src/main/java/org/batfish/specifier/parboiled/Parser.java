@@ -2,6 +2,7 @@ package org.batfish.specifier.parboiled;
 
 import static org.batfish.specifier.parboiled.Completion.Type.ADDRESS_GROUP_AND_BOOK;
 import static org.batfish.specifier.parboiled.Completion.Type.IP_ADDRESS;
+import static org.batfish.specifier.parboiled.Completion.Type.IP_ADDRESS_MASK;
 import static org.batfish.specifier.parboiled.Completion.Type.IP_PREFIX;
 import static org.batfish.specifier.parboiled.Completion.Type.IP_RANGE;
 import static org.batfish.specifier.parboiled.Completion.Type.IP_WILDCARD;
@@ -90,6 +91,15 @@ class Parser extends CommonParser {
   }
 
   /**
+   * Matched IP address mask (e.g., 255.255.255.0). It is syntactically similar to IP addresses but
+   * we have a separate rule that helps with error messages and auto completion.
+   */
+  @Completion(IP_ADDRESS_MASK)
+  public Rule IpAddressMask() {
+    return Sequence(IpAddressUnchecked(), push(new IpAstNode(match())));
+  }
+
+  /**
    * Matched IP prefixes. Throws an exception if something matches syntactically but is invalid
    * (e.g., 1.1.1.2/33)
    */
@@ -102,20 +112,17 @@ class Parser extends CommonParser {
   @Completion(IP_RANGE)
   public Rule IpRange() {
     return Sequence(
-        IpAddressUnchecked(),
-        push(new IpAstNode(match())),
+        IpAddress(),
         WhiteSpace(),
         "- ",
-        IpAddressUnchecked(),
-        push(new IpRangeAstNode(pop(), new IpAstNode(match()))),
+        IpAddress(),
+        push(new IpRangeAstNode(pop(1), pop())),
         WhiteSpace());
   }
 
   /** Matches Ip wildcards (e.g., 1.1.1.1:255.255.255.255) */
   @Completion(IP_WILDCARD)
   public Rule IpWildcard() {
-    return Sequence(
-        Sequence(IpAddressUnchecked(), ':', IpAddressUnchecked()),
-        push(new IpWildcardAstNode(match())));
+    return Sequence(IpAddress(), ':', IpAddressMask(), push(new IpWildcardAstNode(pop(1), pop())));
   }
 }

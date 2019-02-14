@@ -3,9 +3,6 @@ package org.batfish.specifier.parboiled;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.ImmutableSet;
-import java.util.Set;
-import org.batfish.specifier.parboiled.Completion.Type;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -26,23 +23,12 @@ public class ParserIpSpaceTest {
 
   /** This tests if we have proper completion annotations on the rules */
   @Test
-  public void testCompletions() {
+  public void testCompletionAnnotations() {
     ParsingResult<?> result = getRunner().run("");
 
-    Set<PartialMatch> partialMatches =
-        ParserUtils.getPartialMatches(
-            (InvalidInputError) result.parseErrors.get(0), Parser.COMPLETION_TYPES);
-
-    assertThat(
-        partialMatches,
-        equalTo(
-            ImmutableSet.of(
-                new PartialMatch(Type.STRING_LITERAL, "", "@addressgroup"),
-                new PartialMatch(Type.STRING_LITERAL, "", "ref.addressgroup"),
-                new PartialMatch(Type.IP_ADDRESS, "", null),
-                new PartialMatch(Type.IP_WILDCARD, "", null),
-                new PartialMatch(Type.IP_PREFIX, "", null),
-                new PartialMatch(Type.IP_RANGE, "", null))));
+    // not barfing = at least for empty input, all potential paths have completion annotation
+    ParserUtils.getPotentialMatches(
+        (InvalidInputError) result.parseErrors.get(0), Parser.COMPLETION_TYPES, false);
   }
 
   @Test

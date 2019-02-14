@@ -17,6 +17,7 @@ import java.lang.annotation.Target;
     ADDRESS_GROUP_AND_BOOK,
     EOI,
     IP_ADDRESS,
+    IP_ADDRESS_MASK,
     IP_PREFIX,
     IP_RANGE,
     IP_WILDCARD,
