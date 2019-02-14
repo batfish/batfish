@@ -11,6 +11,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Test;
 
+/** Tests for {@link IspConfiguration} */
 public class IspConfigurationTest {
 
   @Test

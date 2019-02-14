@@ -10,6 +10,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.junit.Test;
 
+/** Tests for {@link IspFilter} */
 public class IspFilterTest {
   @Test
   public void testEquals() {
