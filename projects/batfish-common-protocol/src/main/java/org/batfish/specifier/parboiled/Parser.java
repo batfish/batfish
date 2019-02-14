@@ -7,9 +7,6 @@ import static org.batfish.specifier.parboiled.Completion.Type.IP_RANGE;
 import static org.batfish.specifier.parboiled.Completion.Type.IP_WILDCARD;
 
 import java.util.Map;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.Prefix;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
 
@@ -75,11 +72,11 @@ class Parser extends CommonParser {
   public Rule AddressGroupAndBook() {
     return Sequence(
         ReferenceObjectNameLiteral(),
-        push(new StringAstNode(matchOrDefault("Error"))),
+        push(new StringAstNode(match())),
         WhiteSpace(),
         ", ",
         ReferenceObjectNameLiteral(),
-        push(new StringAstNode(matchOrDefault("Error"))),
+        push(new StringAstNode(match())),
         WhiteSpace());
   }
 
@@ -89,7 +86,7 @@ class Parser extends CommonParser {
    */
   @Completion(IP_ADDRESS)
   public Rule IpAddress() {
-    return Sequence(IpAddressUnchecked(), push(new IpAstNode(Ip.parse(matchOrDefault("Error")))));
+    return Sequence(IpAddressUnchecked(), push(new IpAstNode(match())));
   }
 
   /**
@@ -98,8 +95,7 @@ class Parser extends CommonParser {
    */
   @Completion(IP_PREFIX)
   public Rule IpPrefix() {
-    return Sequence(
-        IpPrefixUnchecked(), push(new PrefixAstNode(Prefix.parse(matchOrDefault("Error")))));
+    return Sequence(IpPrefixUnchecked(), push(new PrefixAstNode(match())));
   }
 
   /** Matches Ip ranges (e.g., 1.1.1.1 - 1.1.1.2) */
@@ -107,11 +103,11 @@ class Parser extends CommonParser {
   public Rule IpRange() {
     return Sequence(
         IpAddressUnchecked(),
-        push(new IpAstNode(Ip.parse(matchOrDefault("Error")))),
+        push(new IpAstNode(match())),
         WhiteSpace(),
         "- ",
         IpAddressUnchecked(),
-        push(new IpRangeAstNode(pop(), new IpAstNode(Ip.parse(matchOrDefault("Error"))))),
+        push(new IpRangeAstNode(pop(), new IpAstNode(match()))),
         WhiteSpace());
   }
 
@@ -120,6 +116,6 @@ class Parser extends CommonParser {
   public Rule IpWildcard() {
     return Sequence(
         Sequence(IpAddressUnchecked(), ':', IpAddressUnchecked()),
-        push(new IpWildcardAstNode(new IpWildcard(matchOrDefault("Error")))));
+        push(new IpWildcardAstNode(match())));
   }
 }

@@ -11,6 +11,10 @@ final class IpWildcardAstNode implements IpSpaceAstNode {
     _ipWildcard = ipWildcard;
   }
 
+  IpWildcardAstNode(String ipWildcard) {
+    _ipWildcard = new IpWildcard(ipWildcard);
+  }
+
   @Override
   public <T> T accept(AstNodeVisitor<T> visitor) {
     return visitor.visitIpWildcardAstNode(this);
