@@ -46,3 +46,8 @@ test tests/basic/routes-dc-as-reuse.ref get routes
 
 # iptables
 test -compareall tests/basic/example-iptables-init.ref init-snapshot networks/iptables-firewall
+
+# data-plane related diff tests
+test -compareall tests/basic/init-with-ba.ref init-snapshot networks/example/live-with-bgp-announcements example-with-ba
+set-reference-snapshot basic-example-candidate
+test tests/basic/routes-diff.ref get routes differential=true
