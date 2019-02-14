@@ -96,7 +96,6 @@ import org.batfish.coordinator.id.IdManager;
 import org.batfish.coordinator.resources.ForkSnapshotBean;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.SnapshotMetadataEntry;
 import org.batfish.datamodel.acl.AclTrace;
@@ -2618,6 +2617,18 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /**
+   * Promote snapshot's inferred node roles to network-wide node roles if latter does not yet exist
+   *
+   * @throws IOException if there is an error retrieving snapshot's inferred node roles
+   */
+  public void tryPromoteSnapshotNodeRoles(
+      @Nonnull NetworkId networkId, @Nonnull SnapshotId snapshotId) throws IOException {
+    if (!_idManager.hasNetworkNodeRolesId(networkId)) {
+      putNetworkNodeRoles(getSnapshotNodeRoles(networkId, snapshotId), networkId);
+    }
+  }
+
+  /**
    * Reads the {@link NodeRolesData} object for the provided network. If none previously set for
    * this network, first initialize node roles to the inferred roles of the earliest completed
    * snapshot if one exists, and return them. If no suitable snapshot exists, return empty node
@@ -2631,9 +2642,6 @@ public class WorkMgr extends AbstractCoordinator {
     }
     NetworkId networkId = _idManager.getNetworkId(network);
     if (!_idManager.hasNetworkNodeRolesId(networkId)) {
-      initializeNetworkNodeRolesFromEarliestSnapshot(network);
-    }
-    if (!_idManager.hasNetworkNodeRolesId(networkId)) {
       return NodeRolesData.builder().build();
     }
     NodeRolesId networkNodeRolesId = _idManager.getNetworkNodeRolesId(networkId);
@@ -2642,37 +2650,6 @@ public class WorkMgr extends AbstractCoordinator {
           .readValue(_storage.loadNodeRoles(networkNodeRolesId), NodeRolesData.class);
     } catch (IOException e) {
       throw new IOException("Failed to read network node roles", e);
-    }
-  }
-
-  private void initializeNetworkNodeRolesFromEarliestSnapshot(@Nonnull String network)
-      throws IOException {
-    Optional<String> snapshot =
-        listSnapshotsWithMetadata(network).stream()
-            .filter(WorkMgr::isParsed)
-            .sorted(Comparator.comparing(e -> e.getMetadata().getCreationTimestamp()))
-            .map(SnapshotMetadataEntry::getName)
-            .findFirst();
-    if (snapshot.isPresent()) {
-      putNetworkNodeRoles(getSnapshotNodeRoles(network, snapshot.get()), network);
-    }
-  }
-
-  private static boolean isParsed(@Nonnull SnapshotMetadataEntry snapshotMetadataEntry) {
-    ProcessingStatus processingStatus =
-        snapshotMetadataEntry.getMetadata().getInitializationMetadata().getProcessingStatus();
-    switch (processingStatus) {
-      case DATAPLANED:
-      case DATAPLANING:
-      case DATAPLANING_FAIL:
-      case PARSED:
-        return true;
-
-      case PARSING:
-      case PARSING_FAIL:
-      case UNINITIALIZED:
-      default:
-        return false;
     }
   }
 
@@ -2692,6 +2669,17 @@ public class WorkMgr extends AbstractCoordinator {
       return null;
     }
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    return getSnapshotNodeRoles(networkId, snapshotId);
+  }
+
+  /**
+   * Returns the {@link NodeRolesData} object containing only inferred roles for the provided
+   * networkId and snapshotId.
+   *
+   * @throws IOException If there is an error
+   */
+  private @Nonnull NodeRolesData getSnapshotNodeRoles(
+      @Nonnull NetworkId networkId, @Nonnull SnapshotId snapshotId) throws IOException {
     NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(networkId, snapshotId);
     return BatfishObjectMapper.mapper()
         .readValue(_storage.loadNodeRoles(snapshotNodeRolesId), NodeRolesData.class);
@@ -2941,15 +2929,28 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @throws IOException if there is an error
    */
-  public boolean putNetworkNodeRoles(NodeRolesData nodeRolesData, String network)
+  public boolean putNetworkNodeRoles(@Nonnull NodeRolesData nodeRolesData, @Nonnull String network)
       throws IOException {
     if (!_idManager.hasNetworkId(network)) {
       return false;
     }
     NetworkId networkId = _idManager.getNetworkId(network);
+    putNetworkNodeRoles(nodeRolesData, networkId);
     NodeRolesId networkNodeRolesId = _idManager.generateNetworkNodeRolesId();
     _storage.storeNodeRoles(nodeRolesData, networkNodeRolesId);
     _idManager.assignNetworkNodeRolesId(networkId, networkNodeRolesId);
     return true;
+  }
+
+  /**
+   * Writes the nodeRolesData for the given networkId.
+   *
+   * @throws IOException if there is an error
+   */
+  private void putNetworkNodeRoles(
+      @Nonnull NodeRolesData nodeRolesData, @Nonnull NetworkId networkId) throws IOException {
+    NodeRolesId networkNodeRolesId = _idManager.generateNetworkNodeRolesId();
+    _storage.storeNodeRoles(nodeRolesData, networkNodeRolesId);
+    _idManager.assignNetworkNodeRolesId(networkId, networkNodeRolesId);
   }
 }
