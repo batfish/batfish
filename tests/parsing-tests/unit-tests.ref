@@ -67031,7 +67031,7 @@
         "juniper_as_path_group" : "PASSED",
         "juniper_bgp" : "WARNINGS",
         "juniper_bgp_authentication" : "WARNINGS",
-        "juniper_bgp_remove_private_as" : "WARNINGS",
+        "juniper_bgp_remove_private_as" : "PASSED",
         "juniper_extended_community" : "PASSED",
         "juniper_firewall" : "WARNINGS",
         "juniper_forwarding_options" : "PASSED",
@@ -78148,10 +78148,6 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.2.3.5/32"
             },
             {
@@ -78184,14 +78180,6 @@
             }
           ]
         },
-        "juniper_bgp_remove_private_as" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
-            }
-          ]
-        },
         "juniper_firewall" : {
           "Red flags" : [
             {
@@ -78220,7 +78208,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
+              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -78228,23 +78216,7 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.1.1.1/32"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -78256,7 +78228,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
+              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -78264,23 +78236,7 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.1.1.1/32"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
             },
             {
               "tag" : "MISCELLANEOUS",
