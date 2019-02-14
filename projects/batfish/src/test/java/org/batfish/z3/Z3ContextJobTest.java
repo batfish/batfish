@@ -18,7 +18,11 @@ public class Z3ContextJobTest {
 
     try (Context ctx = new Context()) {
       Params p = Z3ContextJob.makeZ3Params(ctx, settings, true);
-      assertThat(p.toString(), containsString("params timeout 1"));
+      assertThat(p.toString(), containsString("params timeout 1 "));
+
+      settings.setZ3Timeout(37);
+      p = Z3ContextJob.makeZ3Params(ctx, settings, true);
+      assertThat(p.toString(), containsString("params timeout 37 "));
     }
   }
 }
