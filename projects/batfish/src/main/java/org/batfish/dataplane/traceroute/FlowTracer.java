@@ -16,7 +16,6 @@ import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionFor
 import static org.batfish.dataplane.traceroute.TracerouteUtils.resolveNextHopIpRoutes;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.returnFlow;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.sessionTransformation;
-import static org.batfish.specifier.DispositionSpecifier.SUCCESS_DISPOSITIONS;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -647,7 +646,7 @@ class FlowTracer {
     _hops.add(new Hop(_currentNode, _steps));
 
     Flow returnFlow =
-        SUCCESS_DISPOSITIONS.contains(disposition)
+        disposition.isSuccessful()
             ? returnFlow(_currentFlow, currentNodeName, null, outInterface)
             : null;
 

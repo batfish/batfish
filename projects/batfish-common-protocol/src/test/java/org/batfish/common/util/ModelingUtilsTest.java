@@ -383,7 +383,11 @@ public class ModelingUtilsTest {
   @Test
   public void testGetRoutingPolicyForInternet() {
     NetworkFactory nf = new NetworkFactory();
-    Configuration internet = nf.configurationBuilder().setHostname("fakeInternet").build();
+    Configuration internet =
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname("fakeInternet")
+            .build();
     RoutingPolicy internetRoutingPolicy = ModelingUtils.getRoutingPolicyForInternet(internet, nf);
 
     PrefixSpace prefixSpace = new PrefixSpace();
@@ -411,7 +415,11 @@ public class ModelingUtilsTest {
   @Test
   public void testGetRoutingPolicyForIsp() {
     NetworkFactory nf = new NetworkFactory();
-    Configuration isp = nf.configurationBuilder().setHostname("fakeIsp").build();
+    Configuration isp =
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname("fakeIsp")
+            .build();
     RoutingPolicy ispRoutingPolicy = ModelingUtils.getRoutingPolicyForIsp(isp, nf);
 
     RoutingPolicy expectedRoutingPolicy =
