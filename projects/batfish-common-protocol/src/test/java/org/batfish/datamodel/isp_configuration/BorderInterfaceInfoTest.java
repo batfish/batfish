@@ -9,9 +9,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Test;
 
-/**
- * Tests for {@link BorderInterfaceInfo}
- */
+/** Tests for {@link BorderInterfaceInfo} */
 public class BorderInterfaceInfoTest {
   @Test
   public void testEquals() {
