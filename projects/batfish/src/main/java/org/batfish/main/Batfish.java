@@ -1,6 +1,5 @@
 package org.batfish.main;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Verify.verify;
@@ -93,6 +92,8 @@ import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
+import org.batfish.common.ErrorDetails;
+import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
@@ -179,6 +180,7 @@ import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishParseException;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
@@ -307,6 +309,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String input,
       BatfishLogger logger,
       Settings settings,
+      Warnings warnings,
       ConfigurationFormat format,
       String header) {
     switch (format) {
@@ -318,7 +321,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
           ParserRuleContext tree = parse(parser, logger, settings);
           JuniperFlattener flattener = new JuniperFlattener(header);
           ParseTreeWalker walker = new BatfishParseTreeWalker();
-          walker.walk(flattener, tree);
+          try {
+            walker.walk(flattener, tree);
+          } catch (BatfishParseException e) {
+            warnings.setErrorDetails(
+                new ErrorDetails(
+                    Throwables.getStackTraceAsString(e),
+                    new ParseExceptionContext(e.getContext(), parser, input)));
+            throw new BatfishException(
+                String.format("Error flattening %s config", format.getVendorString()), e);
+          }
           return flattener;
         }
 
@@ -328,7 +340,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
           ParserRuleContext tree = parse(parser, logger, settings);
           VyosFlattener flattener = new VyosFlattener(header);
           ParseTreeWalker walker = new BatfishParseTreeWalker();
-          walker.walk(flattener, tree);
+          try {
+            walker.walk(flattener, tree);
+          } catch (BatfishParseException e) {
+            warnings.setErrorDetails(
+                new ErrorDetails(
+                    Throwables.getStackTraceAsString(e),
+                    new ParseExceptionContext(e.getContext(), parser, input)));
+            throw new BatfishException(
+                String.format("Error flattening %s config", format.getVendorString()), e);
+          }
           return flattener;
         }
 
@@ -2625,10 +2646,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     answerElement.getErrors().get(hostConfig.getHostname()).getException());
             answerElement.getErrors().put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
             answerElement
-                .getErrorMessages()
+                .getErrorDetails()
                 .put(
                     hostConfig.getHostname(),
-                    Throwables.getStackTraceAsString(firstNonNull(bfc.getCause(), bfc)));
+                    new ErrorDetails(Throwables.getStackTraceAsString(bfc)));
           } else {
             bfc = new BatfishException(failureMessage);
             if (_settings.getExitOnFirstError()) {
@@ -2638,10 +2659,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
               answerElement.getErrors().put(hostConfig.getHostname(), bfc.getBatfishStackTrace());
               answerElement.getParseStatus().put(hostConfig.getIptablesFile(), ParseStatus.FAILED);
               answerElement
-                  .getErrorMessages()
+                  .getErrorDetails()
                   .put(
                       hostConfig.getHostname(),
-                      Throwables.getStackTraceAsString(firstNonNull(bfc.getCause(), bfc)));
+                      new ErrorDetails(Throwables.getStackTraceAsString(bfc)));
             }
           }
         } else {

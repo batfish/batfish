@@ -1,7 +1,7 @@
 package org.batfish.question.filtertable;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;

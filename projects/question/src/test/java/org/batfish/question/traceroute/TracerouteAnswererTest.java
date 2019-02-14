@@ -12,12 +12,12 @@ import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACE_COUNT
 import static org.batfish.question.traceroute.TracerouteAnswerer.diffFlowTracesToRows;
 import static org.batfish.question.traceroute.TracerouteAnswerer.flowTracesToRows;
 import static org.batfish.question.traceroute.TracerouteAnswerer.metadata;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

@@ -90,10 +90,10 @@ import static org.batfish.datamodel.questions.Variable.Type.STRUCTURE_NAME;
 import static org.batfish.datamodel.questions.Variable.Type.SUBRANGE;
 import static org.batfish.datamodel.questions.Variable.Type.VRF;
 import static org.batfish.datamodel.questions.Variable.Type.ZONE;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;

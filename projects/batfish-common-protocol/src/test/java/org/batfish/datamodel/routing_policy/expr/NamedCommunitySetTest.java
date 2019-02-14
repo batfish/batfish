@@ -5,9 +5,9 @@ import static org.batfish.datamodel.matchers.CommunitySetExprMatchers.matchAnyCo
 import static org.batfish.datamodel.matchers.CommunitySetExprMatchers.matchCommunities;
 import static org.batfish.datamodel.matchers.CommunitySetExprMatchers.matchCommunity;
 import static org.batfish.datamodel.matchers.CommunitySetExprMatchers.matchedCommunities;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;

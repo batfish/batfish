@@ -3,8 +3,8 @@ package org.batfish.datamodel;
 import static org.batfish.datamodel.IntersectHeaderSpaces.intersect;
 import static org.batfish.datamodel.IntersectHeaderSpaces.intersectSimpleSets;
 import static org.batfish.datamodel.IntersectHeaderSpaces.intersectSubRangeSets;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;

@@ -1,9 +1,9 @@
 package org.batfish.datamodel.bgp;
 
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

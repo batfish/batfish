@@ -1,8 +1,9 @@
 package org.batfish.datamodel;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
@@ -30,7 +31,7 @@ public class NetworkConfigurationsTest {
     assertThat(nc.getVrf("foo", "missingVRF"), equalTo(Optional.empty()));
 
     // Actual get succeeds
-    assertThat("VRF is present", nc.getVrf("foo", "fooVRF").isPresent());
+    assertTrue("VRF is present", nc.getVrf("foo", "fooVRF").isPresent());
   }
 
   @Test

@@ -4,9 +4,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.LineAction.DENY;
 import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.question.comparefilters.CompareFiltersAnswerer.compareFilters;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;

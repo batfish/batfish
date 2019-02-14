@@ -11,6 +11,7 @@ filegroup(
         "src/main/java/org/batfish/common/util/BatfishObjectMapper.java",
         "src/main/java/org/batfish/datamodel/answers/AnswerElement.java",
         "src/main/java/org/batfish/datamodel/answers/AnswerSummary.java",
+        "src/main/java/org/batfish/grammar/BatfishParseException.java",
         "src/main/java/org/batfish/grammar/BatfishANTLRErrorStrategy.java",
         "src/main/java/org/batfish/grammar/BatfishCombinedParser.java",
         "src/main/java/org/batfish/grammar/BatfishGrammarErrorListener.java",

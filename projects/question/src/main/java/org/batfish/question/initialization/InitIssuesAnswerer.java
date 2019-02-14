@@ -1,17 +1,18 @@
 package org.batfish.question.initialization;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateErrors;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateParseWarnings;
-import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateStrings;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateWarnings;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
+import org.batfish.common.ErrorDetails;
+import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -52,44 +53,47 @@ public class InitIssuesAnswerer extends Answerer {
             (triplet, fileLines) ->
                 rows.add(
                     getRow(
-                        fileLines.keySet().stream()
-                            .collect(
-                                ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())),
+                        null,
                         fileLines.asMap().entrySet().stream()
                             .map(
                                 e ->
                                     new FileLines(
-                                        e.getKey(),
-                                        e.getValue().stream()
-                                            .collect(
-                                                ImmutableSortedSet.toImmutableSortedSet(
-                                                    Comparator.naturalOrder()))))
+                                        e.getKey(), ImmutableSortedSet.copyOf(e.getValue())))
                             .collect(ImmutableList.toImmutableList()),
                         IssueType.ParseWarning,
-                        String.format(
-                            "%s (%s)",
-                            firstNonNull(triplet._comment, "(details not provided)"),
-                            triplet._text),
+                        firstNonNull(triplet._comment, "(details not provided)"),
+                        triplet._text,
                         triplet._parserContext)));
 
-    // Aggregate stack traces after trimming to:
-    // 1) remove the redundant info like "Conversion error for node 'xyz'"
-    // 2) allow useful aggregation across similar issues (e.g. on node 'xyz' and 'abc')
-    aggregateDuplicateStrings(ccae.getErrorMessages())
+    aggregateDuplicateErrors(ccae.getErrorDetails())
         .forEach(
-            (stackTrace, nodeNames) ->
-                rows.add(getRow(nodeNames, null, IssueType.ConvertError, stackTrace)));
-    aggregateDuplicateStrings(pvcae.getErrorMessages())
+            (errorDetails, nodeNames) ->
+                rows.add(getRow(nodeNames, null, IssueType.ConvertError, errorDetails._message)));
+    aggregateDuplicateErrors(pvcae.getErrorDetails())
         .forEach(
-            (stackTrace, fileNames) ->
+            (errorDetails, fileNames) ->
                 rows.add(
                     getRow(
                         null,
                         fileNames.stream()
-                            .map(n -> new FileLines(n, ImmutableSortedSet.of()))
+                            .map(
+                                name -> {
+                                  ImmutableSortedSet<Integer> lines = ImmutableSortedSet.of();
+                                  ErrorDetails details = pvcae.getErrorDetails().get(name);
+                                  if (details != null) {
+                                    ParseExceptionContext context =
+                                        details.getParseExceptionContext();
+                                    if (context != null && context.getLineNumber() != null) {
+                                      lines = ImmutableSortedSet.of(context.getLineNumber());
+                                    }
+                                  }
+                                  return new FileLines(name, lines);
+                                })
                             .collect(ImmutableList.toImmutableList()),
                         IssueType.ParseError,
-                        stackTrace)));
+                        errorDetails._message,
+                        errorDetails._lineContent,
+                        errorDetails._parserContext)));
 
     TableAnswerElement answerElement = new TableAnswerElement(TABLE_METADATA);
     answerElement.postProcessAnswer(_question, rows.getData());
@@ -105,7 +109,7 @@ public class InitIssuesAnswerer extends Answerer {
       @Nullable Iterable<FileLines> fileLines,
       IssueType issueType,
       String issue) {
-    return getRow(nodes, fileLines, issueType, issue, null);
+    return getRow(nodes, fileLines, issueType, issue, null, null);
   }
 
   private static Row getRow(
@@ -113,20 +117,23 @@ public class InitIssuesAnswerer extends Answerer {
       Iterable<FileLines> fileLines,
       IssueType issueType,
       String issue,
+      @Nullable String lineText,
       @Nullable String parserContext) {
     return Row.builder(TABLE_METADATA.toColumnMap())
         .put(COL_NODES, nodes)
         .put(COL_FILELINES, fileLines)
-        .put(COL_ISSUE_TYPE, issueType.toString())
-        .put(COL_ISSUE, issue)
+        .put(COL_TYPE, issueType.toString())
+        .put(COL_DETAILS, issue)
+        .put(COL_LINE_TEXT, lineText)
         .put(COL_PARSER_CONTEXT, parserContext)
         .build();
   }
 
   static final String COL_NODES = "Nodes";
   static final String COL_FILELINES = "Source_Lines";
-  static final String COL_ISSUE_TYPE = "Issue_Type";
-  static final String COL_ISSUE = "Issue";
+  static final String COL_TYPE = "Type";
+  static final String COL_DETAILS = "Details";
+  static final String COL_LINE_TEXT = "Line_Text";
   static final String COL_PARSER_CONTEXT = "Parser_Context";
 
   private static final List<ColumnMetadata> METADATA =
@@ -143,9 +150,15 @@ public class InitIssuesAnswerer extends Answerer {
               "The files and lines that caused the issues (if applicable)",
               true,
               false),
+          new ColumnMetadata(COL_TYPE, Schema.STRING, "The type of issues identified", true, false),
           new ColumnMetadata(
-              COL_ISSUE_TYPE, Schema.STRING, "The type of issues identified", true, false),
-          new ColumnMetadata(COL_ISSUE, Schema.STRING, "The issues identified", false, true),
+              COL_DETAILS, Schema.STRING, "Details about the issues identified", false, true),
+          new ColumnMetadata(
+              COL_LINE_TEXT,
+              Schema.STRING,
+              "The text of the input files that caused the issues (if applicable)",
+              false,
+              true),
           new ColumnMetadata(
               COL_PARSER_CONTEXT,
               Schema.STRING,

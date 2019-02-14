@@ -3,12 +3,12 @@ package org.batfish.datamodel;
 import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.datamodel.PrefixTrieMultiMap.legalLeftChildPrefix;
 import static org.batfish.datamodel.PrefixTrieMultiMap.legalRightChildPrefix;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
@@ -59,7 +59,7 @@ public class PrefixTrieMultiMapTest {
   @Test
   public void testAdd() {
     PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>(Prefix.ZERO);
-    assertThat("Element was added", ptm1.put(Prefix.ZERO, 1));
+    assertTrue("Element was added", ptm1.put(Prefix.ZERO, 1));
     assertThat(ptm1.getAllElements(), contains(1));
     assertThat(ptm1.get(Prefix.ZERO), equalTo(ImmutableSet.of(1)));
   }
@@ -68,7 +68,7 @@ public class PrefixTrieMultiMapTest {
   public void testAddDeeper() {
     Prefix p = Prefix.parse("1.1.1.0/24");
     PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>(Prefix.ZERO);
-    assertThat("Element was added", ptm1.put(p, 1));
+    assertTrue("Element was added", ptm1.put(p, 1));
     assertThat(ptm1.get(p), equalTo(ImmutableSet.of(1)));
     assertThat(ptm1.get(Prefix.ZERO), empty());
   }
@@ -85,8 +85,8 @@ public class PrefixTrieMultiMapTest {
   public void testRemove() {
     PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>(Prefix.ZERO);
     ptm1.put(Prefix.ZERO, 1);
-    assertThat("Nothing to remove", !ptm1.remove(Prefix.ZERO, 2));
-    assertThat("Element removed", ptm1.remove(Prefix.ZERO, 1));
+    assertTrue("Nothing to remove", !ptm1.remove(Prefix.ZERO, 2));
+    assertTrue("Element removed", ptm1.remove(Prefix.ZERO, 1));
     assertThat(ptm1.getAllElements(), empty());
   }
 
@@ -96,8 +96,8 @@ public class PrefixTrieMultiMapTest {
     Prefix p = Prefix.parse("1.1.1.0/24");
     ptm1.put(p, 1);
     ptm1.put(p, 2);
-    assertThat("Nothing to remove", !ptm1.remove(Prefix.ZERO, 2));
-    assertThat("Element removed", ptm1.remove(p, 2));
+    assertTrue("Nothing to remove", !ptm1.remove(Prefix.ZERO, 2));
+    assertTrue("Element removed", ptm1.remove(p, 2));
     assertThat(ptm1.get(Prefix.ZERO), empty());
     assertThat(ptm1.get(p), equalTo(ImmutableSet.of(1)));
     assertThat(ptm1.getAllElements(), equalTo(ImmutableSet.of(1)));
