@@ -52,9 +52,9 @@ final class HopMatchersImpl {
     protected NodeInterfacePair featureValueOf(Hop hop) {
       List<Step<?>> steps = hop.getSteps();
       assertThat(steps, not(empty()));
-      Step<?> firstStep = steps.get(steps.size() - 1);
-      assertThat(firstStep, instanceOf(ExitOutputIfaceStep.class));
-      return ((ExitOutputIfaceStep) firstStep).getDetail().getOutputInterface();
+      Step<?> lastStep = steps.get(steps.size() - 1);
+      assertThat(lastStep, instanceOf(ExitOutputIfaceStep.class));
+      return ((ExitOutputIfaceStep) lastStep).getDetail().getOutputInterface();
     }
   }
 
