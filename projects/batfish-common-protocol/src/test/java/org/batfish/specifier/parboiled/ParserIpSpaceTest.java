@@ -7,7 +7,6 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableSet;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
-import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -63,7 +62,7 @@ public class ParserIpSpaceTest {
 
     assertThat(
         ImmutableSet.copyOf(pac.run()),
-        CoreMatchers.equalTo(
+        equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion("0", true, null, AutocompleteSuggestion.DEFAULT_RANK, 7),
                 new AutocompleteSuggestion("-", true, null, RANK_STRING_LITERAL, 7),

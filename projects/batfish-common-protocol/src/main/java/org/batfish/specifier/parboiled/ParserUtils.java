@@ -22,12 +22,20 @@ final class ParserUtils {
 
   /** Captures where in the matching path we can anchor errors reporting and auto completion. */
   private static class PathAnchor {
-    final org.batfish.specifier.parboiled.Anchor.Type completionType;
-    final Element element;
+    private final Anchor.Type _anchorType;
+    private final Element _element;
 
-    PathAnchor(Element element, org.batfish.specifier.parboiled.Anchor.Type completionType) {
-      this.element = element;
-      this.completionType = completionType;
+    PathAnchor(Element element, Anchor.Type anchorType) {
+      this._element = element;
+      this._anchorType = anchorType;
+    }
+
+    Anchor.Type getAnchorType() {
+      return _anchorType;
+    }
+
+    Element getElement() {
+      return _element;
     }
   }
 
@@ -110,7 +118,7 @@ final class ParserUtils {
       }
 
       // Ignore paths whose anchor is WHITESPACE -- nothing interesting to report there
-      if (pathAnchor.completionType.equals(Type.WHITESPACE)) {
+      if (pathAnchor._anchorType.equals(Type.WHITESPACE)) {
         continue;
       }
 
@@ -119,18 +127,22 @@ final class ParserUtils {
        literals, we remove the quotes inserted by parboiled.
       */
       String matchPrefix =
-          error.getInputBuffer().extract(pathAnchor.element.startIndex, path.element.startIndex);
+          error
+              .getInputBuffer()
+              .extract(pathAnchor.getElement().startIndex, path.element.startIndex);
 
-      if (pathAnchor.completionType.equals(Type.STRING_LITERAL)) {
-        String fullToken = pathAnchor.element.matcher.getLabel();
+      if (pathAnchor._anchorType.equals(Type.STRING_LITERAL)) {
+        String fullToken = pathAnchor.getElement().matcher.getLabel();
         if (fullToken.length() >= 2) { // remove surrounding quotes
           fullToken = fullToken.substring(1, fullToken.length() - 1);
         }
         potentialMatches.add(
             new PotentialMatch(
-                pathAnchor.completionType, matchPrefix, fullToken.substring(matchPrefix.length())));
+                pathAnchor.getAnchorType(),
+                matchPrefix,
+                fullToken.substring(matchPrefix.length())));
       } else {
-        potentialMatches.add(new PotentialMatch(pathAnchor.completionType, matchPrefix, null));
+        potentialMatches.add(new PotentialMatch(pathAnchor.getAnchorType(), matchPrefix, null));
       }
     }
 
