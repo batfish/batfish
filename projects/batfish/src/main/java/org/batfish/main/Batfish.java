@@ -233,10 +233,8 @@ import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.topology.TopologyProviderImpl;
 import org.batfish.vendor.VendorConfiguration;
-import org.batfish.z3.CompositeNodJob;
 import org.batfish.z3.IngressLocation;
 import org.batfish.z3.LocationToIngressLocation;
-import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import org.batfish.z3.NodJob;
 import org.batfish.z3.ReachabilityQuerySynthesizer;
 import org.batfish.z3.StandardReachabilityQuerySynthesizer;
@@ -738,21 +736,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
             && settings.getLogger().isActive(BatfishLogger.LEVEL_UNIMPLEMENTED));
   }
 
-  @Override
-  public void checkDataPlane() {
-    checkDataPlane(_testrigSettings);
-  }
-
   public static void checkDataPlane(TestrigSettings testrigSettings) {
     if (!Files.exists(testrigSettings.getDataPlanePath())) {
       throw new CleanBatfishException(
           "Missing data plane for testrig: \"" + testrigSettings.getName() + "\"\n");
     }
-  }
-
-  public void checkDifferentialDataPlaneQuestionDependencies() {
-    checkDataPlane(_baseTestrigSettings);
-    checkDataPlane(_deltaTestrigSettings);
   }
 
   @Override
@@ -765,17 +753,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         outputExists(testrigSettings),
         "Output directory does not exist for snapshot %s",
         testrigSettings.getName());
-  }
-
-  public Set<Flow> computeCompositeNodOutput(
-      List<CompositeNodJob> jobs, NodAnswerElement answerElement) {
-    _logger.info("\n*** EXECUTING COMPOSITE NOD JOBS ***\n");
-    _logger.resetTimer();
-    Set<Flow> flows = new TreeSet<>();
-    BatfishJobExecutor.runJobsInExecutor(
-        _settings, _logger, jobs, flows, answerElement, true, "Composite NOD");
-    _logger.printElapsedTime();
-    return flows;
   }
 
   private CompressDataPlaneResult computeCompressedDataPlane() {
@@ -1160,10 +1137,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators() {
     return toImmutableMap(_answererCreators, Entry::getKey, entry -> entry.getValue()::create);
-  }
-
-  public TestrigSettings getBaseTestrigSettings() {
-    return _baseTestrigSettings;
   }
 
   public Map<String, Configuration> getConfigurations(
@@ -1925,12 +1898,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     answerElement.setParseStatus(parseAnswer.getParseStatus());
     answerElement.setParseTrees(parseAnswer.getParseTrees());
     return answerElement;
-  }
-
-  @Override
-  public AnswerElement multipath(ReachabilityParameters reachabilityParameters) {
-    return singleReachability(
-        reachabilityParameters, MultipathInconsistencyQuerySynthesizer.builder());
   }
 
   @Override
@@ -3687,20 +3654,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
               return Stream.of(flow.build());
             })
         .collect(ImmutableSet.toImmutableSet());
-  }
-
-  @Nonnull
-  private Synthesizer synthesizeDataPlane(ResolvedReachabilityParameters parameters) {
-    Map<String, Configuration> configs = parameters.getConfigurations();
-    DataPlane dataPlane = parameters.getDataPlane();
-    return synthesizeDataPlane(
-        configs,
-        dataPlane,
-        parameters.getHeaderSpace(),
-        parameters.getForbiddenTransitNodes(),
-        parameters.getRequiredTransitNodes(),
-        parameters.getSourceIpAssignment(),
-        parameters.getSpecialize());
   }
 
   @Nonnull

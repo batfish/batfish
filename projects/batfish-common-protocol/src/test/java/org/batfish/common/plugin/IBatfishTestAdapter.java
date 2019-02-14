@@ -79,11 +79,6 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public void checkDataPlane() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public void checkSnapshotOutputReady() {
     throw new UnsupportedOperationException();
   }
@@ -326,11 +321,6 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement multipath(ReachabilityParameters reachabilityParameters) {
     throw new UnsupportedOperationException();
   }
 

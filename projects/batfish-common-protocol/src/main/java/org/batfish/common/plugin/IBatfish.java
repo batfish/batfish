@@ -69,8 +69,6 @@ public interface IBatfish extends IPluginConsumer {
    */
   SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreFilters);
 
-  void checkDataPlane();
-
   void checkSnapshotOutputReady();
 
   /** Compute the dataplane for the current {@link NetworkSnapshot} */
@@ -163,8 +161,6 @@ public interface IBatfish extends IPluginConsumer {
   ParseEnvironmentRoutingTablesAnswerElement loadParseEnvironmentRoutingTablesAnswerElement();
 
   ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement();
-
-  AnswerElement multipath(ReachabilityParameters reachabilityParameters);
 
   AtomicInteger newBatch(String description, int jobs);
 
