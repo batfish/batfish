@@ -52,6 +52,9 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.Variable.Type;
+import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.ReferenceBook;
+import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.junit.Rule;
@@ -82,6 +85,55 @@ public class AutoCompleteUtilsTest {
             ImmutableList.of(
                 new AutocompleteSuggestion(NodePropertySpecifier.NTP_SERVERS, false),
                 new AutocompleteSuggestion(NodePropertySpecifier.NTP_SOURCE_INTERFACE, false))));
+  }
+
+  @Test
+  public void testAddressGroupAndBookAutocomplete() throws IOException {
+    ReferenceLibrary library =
+        new ReferenceLibrary(
+            ImmutableList.of(
+                ReferenceBook.builder("b1")
+                    .setAddressGroups(
+                        ImmutableList.of(
+                            new AddressGroup(null, "g1"), new AddressGroup(null, "a1")))
+                    .build(),
+                ReferenceBook.builder("b2")
+                    .setAddressGroups(ImmutableList.of(new AddressGroup(null, "g2")))
+                    .build()));
+
+    // empty matches all possibilities
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.ADDRESS_GROUP_AND_BOOK, " ", 5, null, null, library)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("g1,b1", "a1,b1", "g2,b2")));
+
+    // 'g' matches two pairs
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network", "snapshot", Type.ADDRESS_GROUP_AND_BOOK, " G ", 5, null, null, library)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("1,b1", "2,b2")));
+
+    // 'g1' matches one pair
+    assertThat(
+        AutoCompleteUtils.autoComplete(
+                "network",
+                "snapshot",
+                Type.ADDRESS_GROUP_AND_BOOK,
+                " G1 , ",
+                5,
+                null,
+                null,
+                library)
+            .stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of("b1")));
   }
 
   @Test
@@ -155,7 +207,7 @@ public class AutoCompleteUtilsTest {
 
     assertThat(
         AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.FILTER, "fil", 5, completionMetadata, null)
+                network, snapshot, Type.FILTER, "fil", 5, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -186,7 +238,7 @@ public class AutoCompleteUtilsTest {
 
     assertThat(
         AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.INTERFACE, "int", 5, completionMetadata, null)
+                network, snapshot, Type.INTERFACE, "int", 5, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -209,19 +261,18 @@ public class AutoCompleteUtilsTest {
     String network = "network";
     String snapshot = "snapshot";
 
-    String suggested = "1.2.3.4";
-    String notSuggested = "1.3.2.4";
-
     CompletionMetadata completionMetadata =
-        CompletionMetadata.builder().setIps(ImmutableSet.of(suggested, notSuggested)).build();
+        CompletionMetadata.builder()
+            .setIps(ImmutableSet.of("1.2.3.4", "1.3.2.4", "1.23.4.5"))
+            .build();
 
     assertThat(
         AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.IP, "1.2", 5, completionMetadata, null)
+                network, snapshot, Type.IP, "1.2", 5, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of(suggested)));
+        equalTo(ImmutableSet.of(".3.4", "3.4.5")));
   }
 
   @Test
@@ -277,7 +328,7 @@ public class AutoCompleteUtilsTest {
 
     assertThat(
         AutoCompleteUtils.autoComplete(
-                network, "snapshot", Type.NODE_ROLE_DIMENSION, "dim", 5, null, nodeRolesData)
+                network, "snapshot", Type.NODE_ROLE_DIMENSION, "dim", 5, null, nodeRolesData, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -296,7 +347,7 @@ public class AutoCompleteUtilsTest {
 
     assertThat(
         AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.NODE_SPEC, "a", 5, completionMetadata, nodeRolesData)
+                network, snapshot, Type.NODE_SPEC, "a", 5, completionMetadata, nodeRolesData, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -317,19 +368,18 @@ public class AutoCompleteUtilsTest {
     String network = "network";
     String snapshot = "snapshot";
 
-    String suggested = "1.2.3.4/24";
-    String notSuggested = "1.3.2.4/30";
-
     CompletionMetadata completionMetadata =
-        CompletionMetadata.builder().setPrefixes(ImmutableSet.of(suggested, notSuggested)).build();
+        CompletionMetadata.builder()
+            .setPrefixes(ImmutableSet.of("1.2.3.4/24", "1.3.2.4/30"))
+            .build();
 
     assertThat(
         AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.PREFIX, "1.2", 5, completionMetadata, null)
+                network, snapshot, Type.PREFIX, "1.2", 5, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of(suggested)));
+        equalTo(ImmutableSet.of(".3.4/24")));
   }
 
   @Test
@@ -365,7 +415,7 @@ public class AutoCompleteUtilsTest {
 
     assertThat(
         AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.STRUCTURE_NAME, "str", 5, completionMetadata, null)
+                network, snapshot, Type.STRUCTURE_NAME, "str", 5, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -385,7 +435,7 @@ public class AutoCompleteUtilsTest {
 
     assertThat(
         AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.VRF, "v", 5, completionMetadata, null)
+                network, snapshot, Type.VRF, "v", 5, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -405,7 +455,7 @@ public class AutoCompleteUtilsTest {
 
     assertThat(
         AutoCompleteUtils.autoComplete(
-                network, snapshot, Type.ZONE, "z", 5, completionMetadata, null)
+                network, snapshot, Type.ZONE, "z", 5, completionMetadata, null, null)
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
@@ -419,6 +469,6 @@ public class AutoCompleteUtilsTest {
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Unsupported completion type: " + type);
 
-    AutoCompleteUtils.autoComplete("network", "snapshot", type, "blah", 5, null, null);
+    AutoCompleteUtils.autoComplete("network", "snapshot", type, "blah", 5, null, null, null);
   }
 }

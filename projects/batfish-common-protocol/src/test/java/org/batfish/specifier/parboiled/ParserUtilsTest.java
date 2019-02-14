@@ -22,10 +22,9 @@ public class ParserUtilsTest {
 
   @org.junit.Rule public ExpectedException _thrown = ExpectedException.none();
 
-  private static TestParser _parser = Parboiled.createParser(TestParser.class);
-
-  private static AbstractParseRunner<?> getRunner() {
-    return new ReportingParseRunner<>(_parser.input(_parser.TestExpression()));
+  private static AbstractParseRunner<AstNode> getRunner() {
+    return new ReportingParseRunner<>(
+        TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()));
   }
 
   @SuppressWarnings({
@@ -34,11 +33,9 @@ public class ParserUtilsTest {
   })
   static class TestParser extends CommonParser {
 
-    public static final Map<String, Type> COMPLETION_TYPES = initCompletionTypes(TestParser.class);
+    public static final TestParser INSTANCE = Parboiled.createParser(TestParser.class);
 
-    public Rule input(Rule expression) {
-      return Sequence(WhiteSpace(), expression, WhiteSpace(), EOI);
-    }
+    public static final Map<String, Type> COMPLETION_TYPES = initCompletionTypes(TestParser.class);
 
     /**
      * Test grammar
@@ -100,9 +97,6 @@ public class ParserUtilsTest {
     assertThat(
         getErrorString(new PartialMatch(Type.IP_ADDRESS, "", "b")),
         equalTo(Type.IP_ADDRESS.toString()));
-    assertThat(
-        getErrorString(new PartialMatch(Type.IP_ADDRESS, "a", null)),
-        equalTo(Type.IP_ADDRESS.toString() + " starting with 'a'"));
   }
 
   @Test
@@ -124,7 +118,16 @@ public class ParserUtilsTest {
   }
 
   @Test
-  public void testGetPartialMatchesDanglingList() {
+  public void testGetPartialMatchesIncompleteBase() {
+    ParsingResult<?> result = getRunner().run("(1.1.1");
+    assertThat(
+        getPartialMatches(
+            (InvalidInputError) result.parseErrors.get(0), TestParser.COMPLETION_TYPES),
+        equalTo(ImmutableSet.of(new PartialMatch(Type.IP_ADDRESS, "1.1.1", null))));
+  }
+
+  @Test
+  public void testGetPartialMatchesIncompleteList() {
     ParsingResult<?> resultEmpty = getRunner().run("a,");
     assertThat(
         getPartialMatches(

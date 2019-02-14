@@ -32,15 +32,6 @@ class Parser extends CommonParser {
   static final Map<String, Completion.Type> COMPLETION_TYPES = initCompletionTypes(Parser.class);
 
   /**
-   * Shared entry point for all expressions.
-   *
-   * <p>The parameter {@code expression} specifies the type of expression we want to parse.
-   */
-  public Rule input(Rule expression) {
-    return Sequence(WhiteSpace(), expression, WhiteSpace(), EOI);
-  }
-
-  /**
    * IpSpace grammar
    *
    * <pre>
@@ -115,11 +106,12 @@ class Parser extends CommonParser {
   @Completion(IP_RANGE)
   public Rule IpRange() {
     return Sequence(
-        IpAddress(),
+        IpAddressUnchecked(),
+        push(new IpAstNode(Ip.parse(matchOrDefault("Error")))),
         WhiteSpace(),
         "- ",
-        IpAddress(),
-        push(new IpRangeAstNode(pop(1), pop())),
+        IpAddressUnchecked(),
+        push(new IpRangeAstNode(pop(), new IpAstNode(Ip.parse(matchOrDefault("Error"))))),
         WhiteSpace());
   }
 

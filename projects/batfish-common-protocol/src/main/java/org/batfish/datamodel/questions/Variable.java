@@ -23,6 +23,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 public class Variable {
 
   public enum Type {
+    ADDRESS_GROUP_AND_BOOK("addressGroupAndBook", true),
     ANSWER_ELEMENT("answerElement", true),
     BGP_PEER_PROPERTY_SPEC("bgpPeerPropertySpec", true),
     BGP_PROCESS_PROPERTY_SPEC("bgpProcessPropertySpec", true),
@@ -44,6 +45,7 @@ public class Variable {
     IP("ip", true),
     IP_PROTOCOL("ipProtocol", true),
     IP_PROTOCOL_SPEC("ipProtocolSpec", true),
+    IP_SPACE_SPEC("ipSpaceSpec", true),
     IP_WILDCARD("ipWildcard", true),
     IPSEC_SESSION_STATUS("ipsecSessionStatus", true),
     JAVA_REGEX("javaRegex", true),

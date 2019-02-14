@@ -58,6 +58,7 @@ import static org.batfish.client.Command.SHOW_SNAPSHOT;
 import static org.batfish.client.Command.TEST;
 import static org.batfish.client.Command.UPLOAD_CUSTOM_OBJECT;
 import static org.batfish.common.CoordConsts.DEFAULT_API_KEY;
+import static org.batfish.datamodel.questions.Variable.Type.ADDRESS_GROUP_AND_BOOK;
 import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_STATUS;
 import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_TYPE;
 import static org.batfish.datamodel.questions.Variable.Type.BOOLEAN;
@@ -73,6 +74,7 @@ import static org.batfish.datamodel.questions.Variable.Type.INTERFACES_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.IP;
 import static org.batfish.datamodel.questions.Variable.Type.IPSEC_SESSION_STATUS;
 import static org.batfish.datamodel.questions.Variable.Type.IP_PROTOCOL;
+import static org.batfish.datamodel.questions.Variable.Type.IP_SPACE_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.IP_WILDCARD;
 import static org.batfish.datamodel.questions.Variable.Type.JAVA_REGEX;
 import static org.batfish.datamodel.questions.Variable.Type.JSON_PATH;
@@ -545,6 +547,17 @@ public final class ClientTest {
   }
 
   @Test
+  public void testInvalidAddressGroupAndBook() throws IOException {
+    String input = "\"addressGroup\""; // no book name
+    Type expectedType = ADDRESS_GROUP_AND_BOOK;
+    String expectedMessage =
+        String.format(
+            "A Batfish %s must be a JSON string with two comma-separated values",
+            expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
   public void testInvalidBgpSessionStatusValue() throws IOException {
     String input = "5";
     Type expectedType = BGP_SESSION_STATUS;
@@ -685,6 +698,16 @@ public final class ClientTest {
   public void testInvalidIPValue() throws IOException {
     validateTypeWithInvalidInput(
         "\"0.0.0\"", IllegalArgumentException.class, "Invalid IPv4 address: 0.0.0", IP);
+  }
+
+  @Test
+  public void testInvalidIpSpaceSpecValue() throws IOException {
+    String input = "5";
+    Type expectedType = IP_SPACE_SPEC;
+    String expectedMessage =
+        String.format(
+            "A Batfish %s must be a JSON string with IpSpaceSpec grammar", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
   @Test
@@ -1616,6 +1639,14 @@ public final class ClientTest {
   }
 
   @Test
+  public void testValidAddressGroupAndBook() throws IOException {
+    JsonNode addressGroupNode = _mapper.readTree("\"addressGroup, referenceBook\"");
+    Variable variable = new Variable();
+    variable.setType(ADDRESS_GROUP_AND_BOOK);
+    Client.validateType(addressGroupNode, variable);
+  }
+
+  @Test
   public void testValidBooleanValue() throws IOException {
     JsonNode booleanNode = _mapper.readTree("true");
     Variable variable = new Variable();
@@ -1718,6 +1749,14 @@ public final class ClientTest {
     Variable variable = new Variable();
     variable.setType(IP_PROTOCOL);
     Client.validateType(ipProtocolNode, variable);
+  }
+
+  @Test
+  public void testValidIpSpaceSpecValue() throws IOException {
+    JsonNode addressGroupNode = _mapper.readTree("\"1.1.1.1\"");
+    Variable variable = new Variable();
+    variable.setType(IP_SPACE_SPEC);
+    Client.validateType(addressGroupNode, variable);
   }
 
   @Test
