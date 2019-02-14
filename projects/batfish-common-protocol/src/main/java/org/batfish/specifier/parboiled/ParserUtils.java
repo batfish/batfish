@@ -1,38 +1,71 @@
 package org.batfish.specifier.parboiled;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Iterables;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.specifier.parboiled.Completion.Type;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.support.MatcherPath;
 import org.parboiled.support.MatcherPath.Element;
+import org.parboiled.support.ParsingResult;
 
 /** A helper class to interpret parser errors */
 @ParametersAreNonnullByDefault
 final class ParserUtils {
 
-  /** Generates a friendly message to explain what might be wrong with parser input */
-  static String getErrorString(
-      InvalidInputError error, Map<String, Completion.Type> completionTypes) {
-    return getErrorString(error.getStartIndex(), getPartialMatches(error, completionTypes));
+  /** A helper class that captures where in the matching path we can build auto completion off of */
+  private static class UsefulPointInPath {
+    public final Completion.Type completionType;
+    public final Element element;
+
+    public UsefulPointInPath(Element element, Completion.Type completionType) {
+      this.element = element;
+      this.completionType = completionType;
+    }
+  }
+
+  static AstNode getAst(ParsingResult<AstNode> result) {
+    checkArgument(
+        result.parseErrors.isEmpty(),
+        "Cannot get AST because parsing failed for '%s'",
+        result.inputBuffer);
+    return Iterables.getOnlyElement(result.valueStack);
   }
 
   /** Generates a friendly message to explain what might be wrong with parser input */
-  static String getErrorString(int startIndex, Set<PartialMatch> partialMatches) {
-    String retString = String.format("Error parsing input at index %d.", startIndex);
+  static String getErrorString(
+      String input,
+      String inputType,
+      InvalidInputError error,
+      Map<String, Completion.Type> completionTypes) {
+    return getErrorString(
+        input, inputType, error.getStartIndex(), getPartialMatches(error, completionTypes));
+  }
+
+  /** Generates a friendly message to explain what might be wrong with parser input */
+  static String getErrorString(
+      String input, String inputType, int startIndex, Set<PartialMatch> partialMatches) {
+    StringBuilder retString =
+        new StringBuilder(
+            String.format(
+                "Error parsing '%s' as %s after index %d. ", input, inputType, startIndex));
     if (!partialMatches.isEmpty()) {
-      retString +=
-          "Expected "
-              + partialMatches.stream()
-                  .map(ParserUtils::getErrorString)
-                  .collect(Collectors.joining(", "));
+      retString.append("Valid continuations are ");
+      retString.append(
+          partialMatches.stream()
+              .map(ParserUtils::getErrorString)
+              .collect(Collectors.joining(" or ")));
+      retString.append(".");
     }
-    return retString;
+    return retString.toString();
   }
 
   /** Generates a friendly message to explain what might be wrong with a particular partial match */
@@ -41,11 +74,7 @@ final class ParserUtils {
     if (pm.getCompletionType().equals(Completion.Type.STRING_LITERAL)) {
       return String.format("'%s'", pm.getMatchCompletion());
     }
-    if (pm.getMatchPrefix().equals("")) {
-      return String.format("%s", pm.getCompletionType());
-    } else {
-      return String.format("%s starting with '%s'", pm.getCompletionType(), pm.getMatchPrefix());
-    }
+    return String.format("%s", pm.getCompletionType());
   }
 
   /**
@@ -63,49 +92,52 @@ final class ParserUtils {
 
     Set<PartialMatch> partialMatches = new HashSet<>();
 
-    // For each path that failed to match we identify a useful point in the path that is closest to
-    // the end and can provide the basis for error reporting and completion suggestions.
+    /*
+     For each path that failed to match we identify a useful point in the path that is closest to
+     the end and can provide the basis for error reporting and completion suggestions.
+    */
     for (MatcherPath path : error.getFailedMatchers()) {
-      int level = path.length() - 1;
-      for (; level >= 0; level--) {
-        MatcherPath.Element element = path.getElementAtLevel(level);
-        String label = element.matcher.getLabel();
+      UsefulPointInPath usefulPoint =
+          getUsefulPointInPath(path, path.length() - 1, completionTypes);
 
-        // Ignore paths that end in WhiteSpace -- nothing interesting to report there because
-        // our grammar is not sensitive to whitespace
-        if (label.equals("WhiteSpace")) {
-          break;
-        }
-
-        if (completionTypes.containsKey(label)) {
-          partialMatches.add(
-              getPartialMatch(error, path, element, level, completionTypes.get(label)));
-          break;
-        }
-      }
-      if (level == -1) {
-        /**
-         * If you get here, that means the grammar is missing a Completion annotation on one or more
-         * rules. For each path from the top-level rule to the leaf, there should be at least one
-         * rule with a Completion annotation.
-         */
+      if (usefulPoint == null) {
+        /*
+         If you get here, that means the grammar is missing a Completion annotation on one or more
+         rules. For each path from the top-level rule to the leaf, there should be at least one
+         rule with a Completion annotation.
+        */
         throw new IllegalStateException(
             String.format("Useful completion not found in path %s", path));
       }
+
+      /*
+       Ignore paths that end in WHITESPACE -- nothing interesting to report there because our
+       grammar is not sensitive to whitespace
+      */
+      if (usefulPoint.completionType.equals(Type.WHITESPACE)) {
+        continue;
+      }
+
+      partialMatches.add(
+          getPartialMatch(error, path, usefulPoint.element, usefulPoint.completionType));
     }
 
     return partialMatches;
   }
 
+  /**
+   * Build a {@link PartialMatch} object from the inputs. This is straightforwward for everything
+   * else, but for string literals, we remove the quotes inserted by parboiled.
+   */
   @Nonnull
   private static PartialMatch getPartialMatch(
-      InvalidInputError error, MatcherPath path, Element element, int level, Completion.Type type) {
+      InvalidInputError error, MatcherPath path, Element element, Completion.Type type) {
 
     String matchPrefix =
         error.getInputBuffer().extract(element.startIndex, path.element.startIndex);
 
     if (type.equals(Type.STRING_LITERAL)) {
-      String fullToken = path.getElementAtLevel(level + 1).matcher.getLabel();
+      String fullToken = element.matcher.getLabel();
       if (fullToken.length() >= 2) {
         fullToken = fullToken.substring(1, fullToken.length() - 1);
       }
@@ -116,5 +148,42 @@ final class ParserUtils {
     } else {
       return new PartialMatch(type, matchPrefix, null);
     }
+  }
+
+  /**
+   * Working backwards from level, tries to find a useful label for error messages and auto
+   * completion. Returns null if none is found.
+   */
+  @Nullable
+  private static UsefulPointInPath getUsefulPointInPath(
+      MatcherPath path, int level, Map<String, Completion.Type> completionTypes) {
+
+    MatcherPath.Element element = path.getElementAtLevel(level);
+    String label = element.matcher.getLabel();
+
+    if (completionTypes.containsKey(label)) {
+      return new UsefulPointInPath(element, completionTypes.get(label));
+    } else if (isStringLiteralLabel(label)) {
+      return new UsefulPointInPath(element, Type.STRING_LITERAL);
+    } else if (isCharLiteralLabel(label)) {
+      if (level == 0) {
+        return new UsefulPointInPath(element, Type.STRING_LITERAL);
+      }
+      UsefulPointInPath usefulParent = getUsefulPointInPath(path, level - 1, completionTypes);
+      return usefulParent == null
+          ? new UsefulPointInPath(element, Type.STRING_LITERAL)
+          : usefulParent;
+    } else if (level == 0) {
+      return null;
+    }
+    return getUsefulPointInPath(path, level - 1, completionTypes);
+  }
+
+  private static boolean isCharLiteralLabel(String label) {
+    return label.startsWith("\'") && label.endsWith("\'");
+  }
+
+  private static boolean isStringLiteralLabel(String label) {
+    return label.startsWith("\"") && label.endsWith("\"");
   }
 }

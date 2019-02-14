@@ -115,6 +115,7 @@ import org.batfish.specifier.FlexibleNodeSpecifierFactory;
 import org.batfish.specifier.InterfaceSpecifierFactory;
 import org.batfish.specifier.NodeSpecifierFactory;
 import org.batfish.specifier.RoutingProtocolSpecifier;
+import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifierFactory;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -325,6 +326,14 @@ public class Client extends AbstractClient implements IClient {
     }
     Variable.Type expectedType = variable.getType();
     switch (expectedType) {
+      case ADDRESS_GROUP_AND_BOOK:
+        if (!value.isTextual() || value.asText().split(",").length != 2) {
+          throw new BatfishException(
+              String.format(
+                  "A Batfish %s must be a JSON string with two comma-separated values",
+                  expectedType.getName()));
+        }
+        break;
       case ANSWER_ELEMENT:
         // this will barf with JsonProcessingException if the value is not castable
         try {
@@ -463,7 +472,15 @@ public class Client extends AbstractClient implements IClient {
         } catch (IllegalArgumentException e) {
           throw new BatfishException(String.format("Unknown %s string", expectedType.getName()));
         }
-
+        break;
+      case IP_SPACE_SPEC:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format(
+                  "A Batfish %s must be a JSON string with IpSpaceSpec grammar",
+                  expectedType.getName()));
+        }
+        new ParboiledIpSpaceSpecifierFactory().buildIpSpaceSpecifier(value.asText());
         break;
       case IP_WILDCARD:
         if (!value.isTextual()) {

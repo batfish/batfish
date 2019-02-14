@@ -22,8 +22,9 @@ abstract class CommonParser extends BaseParser<AstNode> {
 
   static Map<String, Type> initCompletionTypes(Class<?> parserClass) {
     ImmutableMap.Builder<String, Completion.Type> completionTypes = ImmutableMap.builder();
-    // fromStringLiteral is not enumerated because its protected; so we add explicitly
-    completionTypes.put("fromStringLiteral", Completion.Type.STRING_LITERAL);
+    // Explicitly add WHITESPACE and EOI
+    completionTypes.put("WhiteSpace", Type.WHITESPACE);
+    completionTypes.put("EOI", Completion.Type.EOI);
     for (Method method : parserClass.getMethods()) {
       Completion annotation = method.getAnnotation(Completion.class);
       if (annotation != null) {
@@ -31,6 +32,15 @@ abstract class CommonParser extends BaseParser<AstNode> {
       }
     }
     return completionTypes.build();
+  }
+
+  /**
+   * Shared entry point for all expressions.
+   *
+   * <p>The parameter {@code expression} specifies the type of expression we want to parse.
+   */
+  public Rule input(Rule expression) {
+    return Sequence(WhiteSpace(), expression, WhiteSpace(), EOI);
   }
 
   /** [a-z] + [A-Z] */

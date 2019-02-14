@@ -15,11 +15,13 @@ import java.lang.annotation.Target;
 
   enum Type {
     ADDRESS_GROUP_AND_BOOK,
+    EOI,
     IP_ADDRESS,
     IP_PREFIX,
     IP_RANGE,
     IP_WILDCARD,
-    STRING_LITERAL
+    STRING_LITERAL,
+    WHITESPACE
   }
 
   Type value();

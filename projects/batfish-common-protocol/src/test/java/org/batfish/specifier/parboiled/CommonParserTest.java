@@ -17,19 +17,14 @@ public class CommonParserTest {
   })
   static class TestParser extends CommonParser {
 
-    public Rule input(Rule expression) {
-      return Sequence(WhiteSpace(), expression, WhiteSpace(), EOI);
-    }
-
     /**
      * Test grammar
      *
      * <pre>
      * testExpr := testTerm [, testTerm]*
      *
-     * testTerm := specifier(argument)
+     * testTerm := @specifier(argument)
      *               | (testTerm)
-     *               | ! testTerm
      *               | testBase
      * </pre>
      */
@@ -41,7 +36,7 @@ public class CommonParserTest {
 
     /* An Test term is one of these things */
     public Rule TestTerm() {
-      return FirstOf(TestParens(), TestSpecifier(), TestNotOp(), TestBase());
+      return FirstOf(TestParens(), TestSpecifier(), TestBase());
     }
 
     public Rule TestParens() {
@@ -50,10 +45,6 @@ public class CommonParserTest {
 
     public Rule TestSpecifier() {
       return Sequence("@specifier ", "( ", TestSpecifierInput(), ") ");
-    }
-
-    public Rule TestNotOp() {
-      return Sequence("! ", TestNot("! "), TestTerm());
     }
 
     @Completion(Type.ADDRESS_GROUP_AND_BOOK)
@@ -73,11 +64,13 @@ public class CommonParserTest {
         initCompletionTypes(TestParser.class),
         equalTo(
             ImmutableMap.of(
-                "TestBase",
-                Type.IP_ADDRESS,
                 "TestSpecifierInput",
                 Type.ADDRESS_GROUP_AND_BOOK,
-                "fromStringLiteral",
-                Type.STRING_LITERAL)));
+                "EOI",
+                Type.EOI,
+                "TestBase",
+                Type.IP_ADDRESS,
+                "WhiteSpace",
+                Type.WHITESPACE)));
   }
 }
