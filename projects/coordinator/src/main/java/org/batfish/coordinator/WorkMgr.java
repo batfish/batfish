@@ -2624,7 +2624,10 @@ public class WorkMgr extends AbstractCoordinator {
   public void tryPromoteSnapshotNodeRoles(
       @Nonnull NetworkId networkId, @Nonnull SnapshotId snapshotId) throws IOException {
     if (!_idManager.hasNetworkNodeRolesId(networkId)) {
-      putNetworkNodeRoles(getSnapshotNodeRoles(networkId, snapshotId), networkId);
+      putNetworkNodeRoles(
+          getSnapshotNodeRoles(networkId, snapshotId),
+          networkId,
+          _idManager.getSnapshotNodeRolesId(networkId, snapshotId));
     }
   }
 
@@ -2924,8 +2927,8 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /**
-   * Writes the nodeRolesData for the given network. Returns {@code true} if successful. Returns
-   * {@code false} if network does not exist.
+   * Writes the {@code nodeRolesData} for the given {@code network}. Returns {@code true} if
+   * successful. Returns {@code false} if {@code network} does not exist.
    *
    * @throws IOException if there is an error
    */
@@ -2935,22 +2938,23 @@ public class WorkMgr extends AbstractCoordinator {
       return false;
     }
     NetworkId networkId = _idManager.getNetworkId(network);
-    putNetworkNodeRoles(nodeRolesData, networkId);
     NodeRolesId networkNodeRolesId = _idManager.generateNetworkNodeRolesId();
-    _storage.storeNodeRoles(nodeRolesData, networkNodeRolesId);
-    _idManager.assignNetworkNodeRolesId(networkId, networkNodeRolesId);
+    putNetworkNodeRoles(nodeRolesData, networkId, networkNodeRolesId);
     return true;
   }
 
   /**
-   * Writes the nodeRolesData for the given networkId.
+   * Writes the {@code nodeRolesData} for the given {@code networkId} and assigns the given {@code
+   * nodeRolesId}.
    *
    * @throws IOException if there is an error
    */
   private void putNetworkNodeRoles(
-      @Nonnull NodeRolesData nodeRolesData, @Nonnull NetworkId networkId) throws IOException {
-    NodeRolesId networkNodeRolesId = _idManager.generateNetworkNodeRolesId();
-    _storage.storeNodeRoles(nodeRolesData, networkNodeRolesId);
-    _idManager.assignNetworkNodeRolesId(networkId, networkNodeRolesId);
+      @Nonnull NodeRolesData nodeRolesData,
+      @Nonnull NetworkId networkId,
+      @Nonnull NodeRolesId nodeRolesId)
+      throws IOException {
+    _storage.storeNodeRoles(nodeRolesData, nodeRolesId);
+    _idManager.assignNetworkNodeRolesId(networkId, nodeRolesId);
   }
 }
