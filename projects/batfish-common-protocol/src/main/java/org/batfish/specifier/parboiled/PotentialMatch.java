@@ -7,7 +7,7 @@ import java.util.Objects;
 class PotentialMatch {
 
   /** The type of completion this match indicates */
-  private final Completion.Type _completionType;
+  private final Anchor.Type _anchorType;
 
   /** The current rule would have matched if the input was followed by this */
   private final String _matchCompletion;
@@ -15,8 +15,8 @@ class PotentialMatch {
   /** What matched thus far when trying to match the current rule */
   private final String _matchPrefix;
 
-  PotentialMatch(Completion.Type completionType, String matchPrefix, String matchCompletion) {
-    _completionType = completionType;
+  PotentialMatch(Anchor.Type anchorType, String matchPrefix, String matchCompletion) {
+    _anchorType = anchorType;
     _matchPrefix = matchPrefix;
     _matchCompletion = matchCompletion;
   }
@@ -26,13 +26,13 @@ class PotentialMatch {
     if (!(o instanceof PotentialMatch)) {
       return false;
     }
-    return Objects.equals(_completionType, ((PotentialMatch) o)._completionType)
+    return Objects.equals(_anchorType, ((PotentialMatch) o)._anchorType)
         && Objects.equals(_matchCompletion, ((PotentialMatch) o)._matchCompletion)
         && Objects.equals(_matchPrefix, ((PotentialMatch) o)._matchPrefix);
   }
 
-  Completion.Type getCompletionType() {
-    return _completionType;
+  Anchor.Type getAnchorType() {
+    return _anchorType;
   }
 
   String getMatchCompletion() {
@@ -45,13 +45,13 @@ class PotentialMatch {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_completionType, _matchCompletion, _matchPrefix);
+    return Objects.hash(_anchorType, _matchCompletion, _matchPrefix);
   }
 
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this.getClass())
-        .add("completionType", _completionType)
+        .add("anchorType", _anchorType)
         .add("matchingPrefix", _matchPrefix)
         .add("matchingCompletion", _matchCompletion)
         .toString();

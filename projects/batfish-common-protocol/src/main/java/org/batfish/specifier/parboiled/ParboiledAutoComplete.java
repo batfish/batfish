@@ -28,7 +28,7 @@ public final class ParboiledAutoComplete {
 
   private final CommonParser _parser;
   private final Rule _expression;
-  private final Map<String, Completion.Type> _completionTypes;
+  private final Map<String, Anchor.Type> _completionTypes;
 
   private final String _network;
   private final String _snapshot;
@@ -41,7 +41,7 @@ public final class ParboiledAutoComplete {
   ParboiledAutoComplete(
       CommonParser parser,
       Rule expression,
-      Map<String, Completion.Type> completionTypes,
+      Map<String, Anchor.Type> completionTypes,
       String network,
       String snapshot,
       String query,
@@ -118,7 +118,7 @@ public final class ParboiledAutoComplete {
   List<AutocompleteSuggestion> autoCompletePotentialMatch(PotentialMatch pm, int startIndex) {
 
     List<AutocompleteSuggestion> suggestions = null;
-    switch (pm.getCompletionType()) {
+    switch (pm.getAnchorType()) {
       case STRING_LITERAL:
         /*
          String literals get a lower rank because there can be many suggestions for dynamic values
@@ -134,7 +134,7 @@ public final class ParboiledAutoComplete {
             AutoCompleteUtils.autoComplete(
                 _network,
                 _snapshot,
-                completionTypeToVariableType(pm.getCompletionType()),
+                anchorTypeToVariableType(pm.getAnchorType()),
                 pm.getMatchPrefix(),
                 _maxSuggestions,
                 _completionMetadata,
@@ -144,15 +144,14 @@ public final class ParboiledAutoComplete {
       case IP_RANGE:
       case IP_WILDCARD:
         // These depend on other completion types that should be kicking in
-        throw new IllegalStateException(
-            "Unexpected auto completion for type " + pm.getCompletionType());
+        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case EOI:
       case IP_ADDRESS_MASK:
       case WHITESPACE:
         // nothing useful to suggest for these completion types
         return ImmutableList.of();
       default:
-        throw new IllegalArgumentException("Unhandled completion type " + pm.getCompletionType());
+        throw new IllegalArgumentException("Unhandled completion type " + pm.getAnchorType());
     }
     return suggestions.stream()
         .map(
@@ -170,8 +169,8 @@ public final class ParboiledAutoComplete {
    * Converts completion type to variable type for cases. Throws an exception when the mapping does
    * not exist
    */
-  private static Variable.Type completionTypeToVariableType(Completion.Type cType) {
-    switch (cType) {
+  private static Variable.Type anchorTypeToVariableType(Anchor.Type anchorType) {
+    switch (anchorType) {
       case ADDRESS_GROUP_AND_BOOK:
         return Variable.Type.ADDRESS_GROUP_AND_BOOK;
       case IP_ADDRESS:
@@ -179,7 +178,7 @@ public final class ParboiledAutoComplete {
       case IP_PREFIX:
         return Variable.Type.PREFIX;
       default:
-        throw new IllegalArgumentException("No valid Variable type for Completion type" + cType);
+        throw new IllegalArgumentException("No valid Variable type for Anchor type" + anchorType);
     }
   }
 }

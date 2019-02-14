@@ -1,7 +1,7 @@
 package org.batfish.specifier.parboiled;
 
 import java.util.Map;
-import org.batfish.specifier.parboiled.Completion.Type;
+import org.batfish.specifier.parboiled.Anchor.Type;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
 
@@ -58,7 +58,7 @@ class TestParser extends CommonParser {
     return Sequence("! ", TestNot("! "), TestTerm());
   }
 
-  @Completion(Type.ADDRESS_GROUP_AND_BOOK)
+  @Anchor(Type.ADDRESS_GROUP_AND_BOOK)
   public Rule TestSpecifierInput() {
     return Sequence(
         ReferenceObjectNameLiteral(),
@@ -69,13 +69,13 @@ class TestParser extends CommonParser {
   }
 
   /** An instance of base dynamic value */
-  @Completion(Type.IP_ADDRESS)
+  @Anchor(Type.IP_ADDRESS)
   public Rule TestIpAddress() {
     return IpAddressUnchecked();
   }
 
   /** An instance of complex dynamic value */
-  @Completion(Type.IP_RANGE)
+  @Anchor(Type.IP_RANGE)
   public Rule TestIpRange() {
     return Sequence(TestIpAddress(), WhiteSpace(), "- ", TestIpAddress());
   }

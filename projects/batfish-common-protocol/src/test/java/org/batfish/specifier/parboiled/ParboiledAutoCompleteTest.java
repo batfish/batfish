@@ -14,7 +14,7 @@ import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
-import org.batfish.specifier.parboiled.Completion.Type;
+import org.batfish.specifier.parboiled.Anchor.Type;
 import org.junit.Test;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
@@ -77,11 +77,12 @@ public class ParboiledAutoCompleteTest {
 
     // 1.1.1.1 matches, but 2.2.2.2 does not
     assertThat(
-        getTestPAC(query, completionMetadata).run(),
+        ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
         equalTo(
-            ImmutableList.of(
+            ImmutableSet.of(
                 new AutocompleteSuggestion(
-                    ".1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 5))));
+                    ".1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 5),
+                new AutocompleteSuggestion(".", true, null, RANK_STRING_LITERAL, 5))));
   }
 
   /**
@@ -90,12 +91,12 @@ public class ParboiledAutoCompleteTest {
    */
   @Test
   public void testRunDynamicValueComplex() {
-    String query = "1.1.1.1"; // this should auto complete to 1.1.1.10, '-' (range), and ',' (list)
+    String query = "1.1.1.1";
 
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setIps(ImmutableSet.of("1.1.1.1", "1.1.1.10")).build();
 
-    // 1.1.1.1 matches, but 2.2.2.2 does not
+    // this should auto complete to 1.1.1.10, '-' (range), and ',' (list)
     assertThat(
         ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
         equalTo(

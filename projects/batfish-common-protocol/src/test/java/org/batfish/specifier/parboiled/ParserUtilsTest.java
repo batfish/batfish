@@ -7,7 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
-import org.batfish.specifier.parboiled.Completion.Type;
+import org.batfish.specifier.parboiled.Anchor.Type;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.parboiled.errors.InvalidInputError;
@@ -27,10 +27,10 @@ public class ParserUtilsTest {
   /** These represent all the ways valid input can start */
   private Set<PotentialMatch> _validStarts =
       ImmutableSet.of(
-          new PotentialMatch(Completion.Type.STRING_LITERAL, "", "@specifier"),
-          new PotentialMatch(Completion.Type.STRING_LITERAL, "", "!"),
+          new PotentialMatch(Anchor.Type.STRING_LITERAL, "", "@specifier"),
+          new PotentialMatch(Anchor.Type.STRING_LITERAL, "", "!"),
           new PotentialMatch(Type.IP_ADDRESS, "", null),
-          new PotentialMatch(Completion.Type.STRING_LITERAL, "", "("));
+          new PotentialMatch(Anchor.Type.STRING_LITERAL, "", "("));
 
   @Test
   public void testGetErrorString() {
@@ -60,11 +60,11 @@ public class ParserUtilsTest {
 
   @Test
   public void testGetPartialMatchesIncompleteBase() {
-    ParsingResult<?> result = getRunner().run("(1.1.1");
+    ParsingResult<?> result = getRunner().run("(1.1.1.");
     assertThat(
         getPotentialMatches(
             (InvalidInputError) result.parseErrors.get(0), TestParser.COMPLETION_TYPES, false),
-        equalTo(ImmutableSet.of(new PotentialMatch(Type.IP_ADDRESS, "1.1.1", null))));
+        equalTo(ImmutableSet.of(new PotentialMatch(Type.IP_ADDRESS, "1.1.1.", null))));
   }
 
   @Test
@@ -113,7 +113,7 @@ public class ParserUtilsTest {
     assertThat(
         getPotentialMatches(
             (InvalidInputError) result.parseErrors.get(0), TestParser.COMPLETION_TYPES, false),
-        equalTo(ImmutableSet.of(new PotentialMatch(Completion.Type.STRING_LITERAL, "", "("))));
+        equalTo(ImmutableSet.of(new PotentialMatch(Anchor.Type.STRING_LITERAL, "", "("))));
   }
 
   @Test
@@ -131,8 +131,7 @@ public class ParserUtilsTest {
     assertThat(
         getPotentialMatches(
             (InvalidInputError) result.parseErrors.get(0), TestParser.COMPLETION_TYPES, false),
-        equalTo(
-            ImmutableSet.of(new PotentialMatch(Completion.Type.STRING_LITERAL, "@specifi", "er"))));
+        equalTo(ImmutableSet.of(new PotentialMatch(Anchor.Type.STRING_LITERAL, "@specifi", "er"))));
   }
 
   @Test
@@ -141,7 +140,6 @@ public class ParserUtilsTest {
     assertThat(
         getPotentialMatches(
             (InvalidInputError) result.parseErrors.get(0), TestParser.COMPLETION_TYPES, false),
-        equalTo(
-            ImmutableSet.of(new PotentialMatch(Completion.Type.STRING_LITERAL, "@", "specifier"))));
+        equalTo(ImmutableSet.of(new PotentialMatch(Anchor.Type.STRING_LITERAL, "@", "specifier"))));
   }
 }

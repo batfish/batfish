@@ -1,8 +1,13 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.specifier.parboiled.ParboiledAutoComplete.RANK_STRING_LITERAL;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableSet;
+import org.batfish.common.CompletionMetadata;
+import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -26,9 +31,46 @@ public class ParserIpSpaceTest {
   public void testCompletionAnnotations() {
     ParsingResult<?> result = getRunner().run("");
 
-    // not barfing = at least for empty input, all potential paths have completion annotation
+    // not barfing means all potential paths have completion annotation at least for empty input
     ParserUtils.getPotentialMatches(
         (InvalidInputError) result.parseErrors.get(0), Parser.COMPLETION_TYPES, false);
+  }
+
+  /** This is a complex completion test that exercises a bunch of the grammar */
+  @Test
+  public void testIpCompletion() {
+    // should auto complete to 1.1.1.10, '-' (range), ':' (wildcard), and ',' (list)
+    String query = "1.1.1.1";
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder()
+            .setIps(ImmutableSet.of("1.1.1.1", "1.1.1.10"))
+            .setPrefixes(ImmutableSet.of("1.1.1.1/22"))
+            .build();
+
+    ParboiledAutoComplete pac =
+        new ParboiledAutoComplete(
+            Parser.INSTANCE,
+            Parser.INSTANCE.input(Parser.INSTANCE.IpSpaceExpression()),
+            Parser.COMPLETION_TYPES,
+            "network",
+            "snapshot",
+            query,
+            Integer.MAX_VALUE,
+            completionMetadata,
+            null,
+            null);
+
+    assertThat(
+        ImmutableSet.copyOf(pac.run()),
+        CoreMatchers.equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion("0", true, null, AutocompleteSuggestion.DEFAULT_RANK, 7),
+                new AutocompleteSuggestion("-", true, null, RANK_STRING_LITERAL, 7),
+                new AutocompleteSuggestion(":", true, null, RANK_STRING_LITERAL, 7),
+                new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, 7),
+                new AutocompleteSuggestion("/22", true, null, RANK_STRING_LITERAL, 7),
+                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, 7))));
   }
 
   @Test

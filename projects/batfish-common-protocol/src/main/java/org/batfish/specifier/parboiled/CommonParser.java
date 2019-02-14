@@ -1,11 +1,11 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.Completion.Type.STRING_LITERAL;
+import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 
 import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Method;
 import java.util.Map;
-import org.batfish.specifier.parboiled.Completion.Type;
+import org.batfish.specifier.parboiled.Anchor.Type;
 import org.parboiled.BaseParser;
 import org.parboiled.Rule;
 
@@ -13,6 +13,9 @@ import org.parboiled.Rule;
  * This class contains common matchers for different types of expressions.
  *
  * <p>The rules in this class should not put anything on the stack.
+ *
+ * <p>They should also not contain any explicit of implicit anchors. Because character literals are
+ * implicit anchors, we implement them using a character range below.
  */
 @SuppressWarnings({
   "checkstyle:methodname", // this class uses idiomatic names
@@ -21,12 +24,12 @@ import org.parboiled.Rule;
 abstract class CommonParser extends BaseParser<AstNode> {
 
   static Map<String, Type> initCompletionTypes(Class<?> parserClass) {
-    ImmutableMap.Builder<String, Completion.Type> completionTypes = ImmutableMap.builder();
+    ImmutableMap.Builder<String, Anchor.Type> completionTypes = ImmutableMap.builder();
     // Explicitly add WHITESPACE and EOI
     completionTypes.put("WhiteSpace", Type.WHITESPACE);
-    completionTypes.put("EOI", Completion.Type.EOI);
+    completionTypes.put("EOI", Anchor.Type.EOI);
     for (Method method : parserClass.getMethods()) {
-      Completion annotation = method.getAnnotation(Completion.class);
+      Anchor annotation = method.getAnnotation(Anchor.class);
       if (annotation != null) {
         completionTypes.put(method.getName(), annotation.value());
       }
@@ -41,6 +44,10 @@ abstract class CommonParser extends BaseParser<AstNode> {
    */
   public Rule input(Rule expression) {
     return Sequence(WhiteSpace(), expression, WhiteSpace(), EOI);
+  }
+
+  public Rule Dash() {
+    return CharRange('-', '-');
   }
 
   /** [a-z] + [A-Z] */
@@ -73,8 +80,12 @@ abstract class CommonParser extends BaseParser<AstNode> {
    */
   public Rule ReferenceObjectNameLiteral() {
     return Sequence(
-        FirstOf(AlphabetChar(), Ch('_')),
-        ZeroOrMore(FirstOf(AlphabetChar(), Ch('_'), Digit(), Ch('-'))));
+        FirstOf(AlphabetChar(), Underscore()),
+        ZeroOrMore(FirstOf(AlphabetChar(), Underscore(), Digit(), Dash())));
+  }
+
+  public Rule Underscore() {
+    return CharRange('_', '_');
   }
 
   public Rule WhiteSpace() {
@@ -87,7 +98,7 @@ abstract class CommonParser extends BaseParser<AstNode> {
    * <p>We automatically match trailing whitespace, so we don't have to insert extra Whitespace()
    * rules after each character or string literal
    */
-  @Completion(STRING_LITERAL)
+  @Anchor(STRING_LITERAL)
   @Override
   protected Rule fromStringLiteral(String string) {
     return string.endsWith(" ")
