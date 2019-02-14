@@ -3,10 +3,10 @@ package org.batfish.datamodel;
 import static org.batfish.datamodel.AclIpSpace.intersection;
 import static org.batfish.datamodel.AclIpSpace.union;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 

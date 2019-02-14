@@ -12,13 +12,13 @@ import static org.batfish.question.switchedvlanproperties.SwitchedVlanProperties
 import static org.batfish.question.switchedvlanproperties.SwitchedVlanPropertiesAnswerer.tryAddInterfaceToVlan;
 import static org.batfish.question.switchedvlanproperties.SwitchedVlanPropertiesAnswerer.tryAddInterfaceToVlans;
 import static org.batfish.question.switchedvlanproperties.SwitchedVlanPropertiesAnswerer.tryAddVlanVni;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableMap;

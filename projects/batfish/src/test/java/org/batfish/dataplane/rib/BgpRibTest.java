@@ -1,6 +1,5 @@
 package org.batfish.dataplane.rib;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
@@ -8,6 +7,7 @@ import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSortedSet;
@@ -93,7 +93,7 @@ public class BgpRibTest {
   @Test
   public void testIsMultipath() {
     BgpRib rib = new BgpRib(null, null, BgpTieBreaker.ARRIVAL_ORDER, 1, null);
-    assertThat("MaxPaths=1, not multipath", !rib.isMultipath());
+    assertTrue("MaxPaths=1, not multipath", !rib.isMultipath());
     rib =
         new BgpRib(
             null,
@@ -101,7 +101,7 @@ public class BgpRibTest {
             BgpTieBreaker.ARRIVAL_ORDER,
             2,
             MultipathEquivalentAsPathMatchMode.EXACT_PATH);
-    assertThat("Maxpaths=2 -> multipath", rib.isMultipath());
+    assertTrue("Maxpaths=2 -> multipath", rib.isMultipath());
     rib =
         new BgpRib(
             null,
@@ -109,7 +109,7 @@ public class BgpRibTest {
             BgpTieBreaker.ARRIVAL_ORDER,
             null,
             MultipathEquivalentAsPathMatchMode.EXACT_PATH);
-    assertThat("Maxpaths=null -> multipath", rib.isMultipath());
+    assertTrue("Maxpaths=null -> multipath", rib.isMultipath());
   }
 
   @Test
@@ -243,8 +243,8 @@ public class BgpRibTest {
         _rb.setAsPath(AsPath.ofSingletonAsSets(1L, 3L)).setNextHopIp(Ip.parse("5.5.5.6")).build();
 
     rib.mergeRoute(base);
-    assertThat("Exact AS path match, allow merge", rib.mergeRoute(candidate1));
-    assertThat("Not an exact AS path match, don't merge", !rib.mergeRoute(candidate2));
+    assertTrue("Exact AS path match, allow merge", rib.mergeRoute(candidate1));
+    assertTrue("Not an exact AS path match, don't merge", !rib.mergeRoute(candidate2));
     assertThat(rib.getRoutes(), hasSize(2));
     assertThat(rib.getBestPathRoutes(), hasSize(1));
   }
@@ -262,8 +262,8 @@ public class BgpRibTest {
         _rb.setAsPath(AsPath.ofSingletonAsSets(2L, 3L)).setNextHopIp(Ip.parse("5.5.5.6")).build();
 
     rib.mergeRoute(base);
-    assertThat("Exact AS path match, allow merge", rib.mergeRoute(candidate1));
-    assertThat("Not an exact AS path match, don't merge", !rib.mergeRoute(candidate2));
+    assertTrue("Exact AS path match, allow merge", rib.mergeRoute(candidate1));
+    assertTrue("Not an exact AS path match, don't merge", !rib.mergeRoute(candidate2));
     assertThat(rib.getRoutes(), hasSize(2));
     assertThat(rib.getBestPathRoutes(), hasSize(1));
   }

@@ -8,13 +8,13 @@ import static org.batfish.dataplane.traceroute.TracerouteUtils.transformationSte
 import static org.batfish.question.SrcNattedConstraint.REQUIRE_NOT_SRC_NATTED;
 import static org.batfish.question.SrcNattedConstraint.REQUIRE_SRC_NATTED;
 import static org.batfish.question.SrcNattedConstraint.UNCONSTRAINED;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

@@ -453,6 +453,15 @@
         "f5_bigip_structured_net" : [
           "configs/f5_bigip_structured_net"
         ],
+        "f5_bigip_structured_net_routing_bgp" : [
+          "configs/f5_bigip_structured_net_routing_bgp"
+        ],
+        "f5_bigip_structured_net_routing_prefix_list" : [
+          "configs/f5_bigip_structured_net_routing_prefix_list"
+        ],
+        "f5_bigip_structured_net_routing_route_map" : [
+          "configs/f5_bigip_structured_net_routing_route_map"
+        ],
         "f5_bigip_structured_sys" : [
           "configs/f5_bigip_structured_sys"
         ],
@@ -973,6 +982,9 @@
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
         "configs/f5_bigip_structured_net" : "PASSED",
+        "configs/f5_bigip_structured_net_routing_bgp" : "PASSED",
+        "configs/f5_bigip_structured_net_routing_prefix_list" : "PASSED",
+        "configs/f5_bigip_structured_net_routing_route_map" : "PASSED",
         "configs/f5_bigip_structured_sys" : "PASSED",
         "configs/foundry_access_list" : "PASSED",
         "configs/foundry_bgp" : "PASSED",
@@ -39923,13 +39935,9 @@
             "          WORD:'1.0')",
             "        BRACE_LEFT:'{'",
             "        NEWLINE:'\\n'",
-            "        (unrecognized",
-            "          (u_word",
-            "            (word",
-            "              WORD:'bundle'))",
-            "          (u_word",
-            "            (word",
-            "              WORD:'enabled'))",
+            "        (ni_bundle",
+            "          BUNDLE:'bundle'",
+            "          ENABLED:'enabled'",
             "          NEWLINE:'\\n')",
             "        (ni_bundle_speed",
             "          BUNDLE_SPEED:'bundle-speed'",
@@ -39976,7 +39984,7 @@
             "            (unrecognized",
             "              (u_word",
             "                (word",
-            "                  WORD:'enabled'))",
+            "                  ENABLED:'enabled'))",
             "              NEWLINE:'\\n')",
             "            BRACE_RIGHT:'}'))",
             "        NEWLINE:'\\n')))",
@@ -39986,7 +39994,7 @@
             "      (unrecognized",
             "        (u_word",
             "          (word",
-            "            WORD:'route-domain'))",
+            "            ROUTE_DOMAIN:'route-domain'))",
             "        (u_word",
             "          (word",
             "            WORD:'/Common/0'))",
@@ -40038,21 +40046,14 @@
             "          interface_address = (word",
             "            WORD:'10.0.0.1/24')",
             "          NEWLINE:'\\n')",
-            "        (unrecognized",
-            "          (u_word",
-            "            (word",
-            "              WORD:'allow-service'))",
-            "          (u_word",
-            "            (word",
-            "              WORD:'all'))",
+            "        (ns_allow_service",
+            "          ALLOW_SERVICE:'allow-service'",
+            "          ALL:'all'",
             "          NEWLINE:'\\n')",
-            "        (unrecognized",
-            "          (u_word",
-            "            (word",
-            "              WORD:'traffic-group'))",
-            "          (u_word",
-            "            (word",
-            "              WORD:'/Common/traffic-group-local-only'))",
+            "        (ns_traffic_group",
+            "          TRAFFIC_GROUP:'traffic-group'",
+            "          name = (word",
+            "            WORD:'/Common/traffic-group-local-only')",
             "          NEWLINE:'\\n')",
             "        (ns_vlan",
             "          VLAN:'vlan'",
@@ -40217,7 +40218,7 @@
             "            (unrecognized",
             "              (u_word",
             "                (word",
-            "                  WORD:'description'))",
+            "                  DESCRIPTION:'description'))",
             "              (u_word",
             "                (word",
             "                  DOUBLE_QUOTED_STRING:'\"my tunnel\"'))",
@@ -40260,6 +40261,628 @@
             "          NEWLINE:'\\n')",
             "        BRACE_RIGHT:'}'",
             "        NEWLINE:'\\n\\n\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "f5_bigip_structured_net_routing_bgp" : {
+          "sentences" : [
+            "(f5_bigip_structured_configuration",
+            "  (statement",
+            "    (s_sys",
+            "      SYS:'sys'",
+            "      (sys_global_settings",
+            "        GLOBAL_SETTINGS:'global-settings'",
+            "        BRACE_LEFT:'{'",
+            "        NEWLINE:'\\n'",
+            "        (sgs_hostname",
+            "          HOSTNAME:'hostname'",
+            "          hostname = (word",
+            "            WORD:'f5_bigip_structured_net_routing_bgp')",
+            "          NEWLINE:'\\n')",
+            "        BRACE_RIGHT:'}'",
+            "        NEWLINE:'\\n\\n')))",
+            "  (statement",
+            "    (s_net",
+            "      NET:'net'",
+            "      (net_routing",
+            "        ROUTING:'routing'",
+            "        (nr_bgp",
+            "          BGP:'bgp'",
+            "          name = (word",
+            "            WORD:'/Common/my_bgp')",
+            "          BRACE_LEFT:'{'",
+            "          NEWLINE:'\\n'",
+            "          (nrb_address_family",
+            "            ADDRESS_FAMILY:'address-family'",
+            "            BRACE_LEFT:'{'",
+            "            NEWLINE:'\\n'",
+            "            (nrbaf_ipv4",
+            "              IPV4:'ipv4'",
+            "              BRACE_LEFT:'{'",
+            "              NEWLINE:'\\n'",
+            "              (nrbaf_common",
+            "                (nrbafc_redistribute",
+            "                  REDISTRIBUTE:'redistribute'",
+            "                  BRACE_LEFT:'{'",
+            "                  NEWLINE:'\\n'",
+            "                  (nrbafcr_kernel",
+            "                    KERNEL:'kernel'",
+            "                    BRACE_LEFT:'{'",
+            "                    NEWLINE:'\\n'",
+            "                    (nrbafcrk_route_map",
+            "                      ROUTE_MAP:'route-map'",
+            "                      name = (word",
+            "                        WORD:'/Common/MY_KERNEL_OUT')",
+            "                      NEWLINE:'\\n')",
+            "                    BRACE_RIGHT:'}'",
+            "                    NEWLINE:'\\n')",
+            "                  BRACE_RIGHT:'}'",
+            "                  NEWLINE:'\\n'))",
+            "              BRACE_RIGHT:'}'",
+            "              NEWLINE:'\\n')",
+            "            (nrbaf_ipv6",
+            "              IPV6:'ipv6'",
+            "              BRACE_LEFT:'{'",
+            "              BRACE_RIGHT:'}'",
+            "              NEWLINE:'\\n')",
+            "            BRACE_RIGHT:'}'",
+            "            NEWLINE:'\\n')",
+            "          (nrb_local_as",
+            "            LOCAL_AS:'local-as'",
+            "            as = (word",
+            "              WORD:'123')",
+            "            NEWLINE:'\\n')",
+            "          (nrb_neighbor",
+            "            NEIGHBOR:'neighbor'",
+            "            BRACE_LEFT:'{'",
+            "            NEWLINE:'\\n'",
+            "            (nrbn_name",
+            "              name = (word",
+            "                WORD:'dead:beef::1')",
+            "              BRACE_LEFT:'{'",
+            "              NEWLINE:'\\n'",
+            "              (nrbnn_address_family",
+            "                ADDRESS_FAMILY:'address-family'",
+            "                BRACE_LEFT:'{'",
+            "                NEWLINE:'\\n'",
+            "                (nrbnnaf_ipv4",
+            "                  IPV4:'ipv4'",
+            "                  BRACE_LEFT:'{'",
+            "                  NEWLINE:'\\n'",
+            "                  (nrbnnaf_common",
+            "                    (nrbnnafc_activate",
+            "                      ACTIVATE:'activate'",
+            "                      DISABLED:'disabled'",
+            "                      NEWLINE:'\\n'))",
+            "                  BRACE_RIGHT:'}'",
+            "                  NEWLINE:'\\n')",
+            "                (nrbnnaf_ipv6",
+            "                  IPV6:'ipv6'",
+            "                  BRACE_LEFT:'{'",
+            "                  NEWLINE:'\\n'",
+            "                  (unrecognized",
+            "                    (u_word",
+            "                      (word",
+            "                        WORD:'capability'))",
+            "                    (list",
+            "                      (u_list",
+            "                        BRACE_LEFT:'{'",
+            "                        NEWLINE:'\\n'",
+            "                        (unrecognized",
+            "                          (u_word",
+            "                            (word",
+            "                              WORD:'graceful-restart'))",
+            "                          (u_word",
+            "                            (word",
+            "                              DISABLED:'disabled'))",
+            "                          NEWLINE:'\\n')",
+            "                        BRACE_RIGHT:'}'))",
+            "                    NEWLINE:'\\n')",
+            "                  (unrecognized",
+            "                    (u_word",
+            "                      (word",
+            "                        WORD:'maximum-prefix'))",
+            "                    (list",
+            "                      (u_list",
+            "                        BRACE_LEFT:'{'",
+            "                        NEWLINE:'\\n'",
+            "                        (unrecognized",
+            "                          (u_word",
+            "                            (word",
+            "                              VALUE:'value'))",
+            "                          (u_word",
+            "                            (word",
+            "                              WORD:'12345'))",
+            "                          NEWLINE:'\\n')",
+            "                        BRACE_RIGHT:'}'))",
+            "                    NEWLINE:'\\n')",
+            "                  (nrbnnaf_common",
+            "                    (nrbnnafc_route_map",
+            "                      ROUTE_MAP:'route-map'",
+            "                      BRACE_LEFT:'{'",
+            "                      NEWLINE:'\\n'",
+            "                      (nrbnnafcr_out",
+            "                        OUT:'out'",
+            "                        name = (word",
+            "                          WORD:'/Common/MY_IPV6_OUT')",
+            "                        NEWLINE:'\\n')",
+            "                      BRACE_RIGHT:'}'",
+            "                      NEWLINE:'\\n'))",
+            "                  BRACE_RIGHT:'}'",
+            "                  NEWLINE:'\\n')",
+            "                BRACE_RIGHT:'}'",
+            "                NEWLINE:'\\n')",
+            "              (nrbnn_description",
+            "                DESCRIPTION:'description'",
+            "                description = (word",
+            "                  DOUBLE_QUOTED_STRING:'\"Cool IPv6 BGP neighbor description\"')",
+            "                NEWLINE:'\\n')",
+            "              (unrecognized",
+            "                (u_word",
+            "                  (word",
+            "                    WORD:'fall-over'))",
+            "                (u_word",
+            "                  (word",
+            "                    WORD:'bfd'))",
+            "                NEWLINE:'\\n')",
+            "              (nrbnn_remote_as",
+            "                REMOTE_AS:'remote-as'",
+            "                as = (word",
+            "                  WORD:'234')",
+            "                NEWLINE:'\\n')",
+            "              (nrbnn_update_source",
+            "                UPDATE_SOURCE:'update-source'",
+            "                name = (word",
+            "                  WORD:'SOME_VLAN')",
+            "                NEWLINE:'\\n')",
+            "              BRACE_RIGHT:'}'",
+            "              NEWLINE:'\\n')",
+            "            (nrbn_name",
+            "              name = (word",
+            "                WORD:'192.0.2.1')",
+            "              BRACE_LEFT:'{'",
+            "              NEWLINE:'\\n'",
+            "              (nrbnn_address_family",
+            "                ADDRESS_FAMILY:'address-family'",
+            "                BRACE_LEFT:'{'",
+            "                NEWLINE:'\\n'",
+            "                (nrbnnaf_ipv4",
+            "                  IPV4:'ipv4'",
+            "                  BRACE_LEFT:'{'",
+            "                  NEWLINE:'\\n'",
+            "                  (unrecognized",
+            "                    (u_word",
+            "                      (word",
+            "                        WORD:'capability'))",
+            "                    (list",
+            "                      (u_list",
+            "                        BRACE_LEFT:'{'",
+            "                        NEWLINE:'\\n'",
+            "                        (unrecognized",
+            "                          (u_word",
+            "                            (word",
+            "                              WORD:'graceful-restart'))",
+            "                          (u_word",
+            "                            (word",
+            "                              DISABLED:'disabled'))",
+            "                          NEWLINE:'\\n')",
+            "                        BRACE_RIGHT:'}'))",
+            "                    NEWLINE:'\\n')",
+            "                  (unrecognized",
+            "                    (u_word",
+            "                      (word",
+            "                        WORD:'maximum-prefix'))",
+            "                    (list",
+            "                      (u_list",
+            "                        BRACE_LEFT:'{'",
+            "                        NEWLINE:'\\n'",
+            "                        (unrecognized",
+            "                          (u_word",
+            "                            (word",
+            "                              VALUE:'value'))",
+            "                          (u_word",
+            "                            (word",
+            "                              WORD:'23456'))",
+            "                          NEWLINE:'\\n')",
+            "                        BRACE_RIGHT:'}'))",
+            "                    NEWLINE:'\\n')",
+            "                  (nrbnnaf_common",
+            "                    (nrbnnafc_route_map",
+            "                      ROUTE_MAP:'route-map'",
+            "                      BRACE_LEFT:'{'",
+            "                      NEWLINE:'\\n'",
+            "                      (nrbnnafcr_out",
+            "                        OUT:'out'",
+            "                        name = (word",
+            "                          WORD:'/Common/MY_IPV4_OUT')",
+            "                        NEWLINE:'\\n')",
+            "                      BRACE_RIGHT:'}'",
+            "                      NEWLINE:'\\n'))",
+            "                  BRACE_RIGHT:'}'",
+            "                  NEWLINE:'\\n')",
+            "                (nrbnnaf_ipv6",
+            "                  IPV6:'ipv6'",
+            "                  BRACE_LEFT:'{'",
+            "                  NEWLINE:'\\n'",
+            "                  (nrbnnaf_common",
+            "                    (nrbnnafc_activate",
+            "                      ACTIVATE:'activate'",
+            "                      DISABLED:'disabled'",
+            "                      NEWLINE:'\\n'))",
+            "                  BRACE_RIGHT:'}'",
+            "                  NEWLINE:'\\n')",
+            "                BRACE_RIGHT:'}'",
+            "                NEWLINE:'\\n')",
+            "              (nrbnn_description",
+            "                DESCRIPTION:'description'",
+            "                description = (word",
+            "                  DOUBLE_QUOTED_STRING:'\"Cool IPv4 BGP neighbor description\"')",
+            "                NEWLINE:'\\n')",
+            "              (unrecognized",
+            "                (u_word",
+            "                  (word",
+            "                    WORD:'fall-over'))",
+            "                (u_word",
+            "                  (word",
+            "                    WORD:'bfd'))",
+            "                NEWLINE:'\\n')",
+            "              (nrbnn_remote_as",
+            "                REMOTE_AS:'remote-as'",
+            "                as = (word",
+            "                  WORD:'456')",
+            "                NEWLINE:'\\n')",
+            "              (nrbnn_update_source",
+            "                UPDATE_SOURCE:'update-source'",
+            "                name = (word",
+            "                  WORD:'SOME_VLAN')",
+            "                NEWLINE:'\\n')",
+            "              BRACE_RIGHT:'}'",
+            "              NEWLINE:'\\n')",
+            "            BRACE_RIGHT:'}'",
+            "            NEWLINE:'\\n')",
+            "          (unrecognized",
+            "            (u_word",
+            "              (word",
+            "                WORD:'profile'))",
+            "            (u_word",
+            "              (word",
+            "                WORD:'/Common/bgp'))",
+            "            NEWLINE:'\\n')",
+            "          (unrecognized",
+            "            (u_word",
+            "              (word",
+            "                ROUTE_DOMAIN:'route-domain'))",
+            "            (u_word",
+            "              (word",
+            "                WORD:'/Common/0'))",
+            "            NEWLINE:'\\n')",
+            "          BRACE_RIGHT:'}'",
+            "          NEWLINE:'\\n\\n\\n'))))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "f5_bigip_structured_net_routing_prefix_list" : {
+          "sentences" : [
+            "(f5_bigip_structured_configuration",
+            "  (statement",
+            "    (s_sys",
+            "      SYS:'sys'",
+            "      (sys_global_settings",
+            "        GLOBAL_SETTINGS:'global-settings'",
+            "        BRACE_LEFT:'{'",
+            "        NEWLINE:'\\n'",
+            "        (sgs_hostname",
+            "          HOSTNAME:'hostname'",
+            "          hostname = (word",
+            "            WORD:'f5_bigip_structured_net_routing_prefix_list')",
+            "          NEWLINE:'\\n')",
+            "        BRACE_RIGHT:'}'",
+            "        NEWLINE:'\\n\\n')))",
+            "  (statement",
+            "    (s_net",
+            "      NET:'net'",
+            "      (net_routing",
+            "        ROUTING:'routing'",
+            "        (nr_prefix_list",
+            "          PREFIX_LIST:'prefix-list'",
+            "          name = (word",
+            "            WORD:'/Common/MY_IPV4_PREFIX_LIST')",
+            "          BRACE_LEFT:'{'",
+            "          NEWLINE:'\\n'",
+            "          (nrp_entries",
+            "            ENTRIES:'entries'",
+            "            BRACE_LEFT:'{'",
+            "            NEWLINE:'\\n'",
+            "            (nrpe_entry",
+            "              num = (word",
+            "                WORD:'10')",
+            "              BRACE_LEFT:'{'",
+            "              NEWLINE:'\\n'",
+            "              (nrpee_action",
+            "                ACTION:'action'",
+            "                action = (prefix_list_action",
+            "                  DENY:'deny')",
+            "                NEWLINE:'\\n')",
+            "              (nrpee_prefix",
+            "                PREFIX:'prefix'",
+            "                prefix = (word",
+            "                  WORD:'192.0.2.0/31')",
+            "                NEWLINE:'\\n')",
+            "              (nrpee_prefix_len_range",
+            "                PREFIX_LEN_RANGE:'prefix-len-range'",
+            "                range = (word",
+            "                  WORD:'0:32')",
+            "                NEWLINE:'\\n')",
+            "              BRACE_RIGHT:'}'",
+            "              NEWLINE:'\\n')",
+            "            (nrpe_entry",
+            "              num = (word",
+            "                WORD:'20')",
+            "              BRACE_LEFT:'{'",
+            "              NEWLINE:'\\n'",
+            "              (nrpee_action",
+            "                ACTION:'action'",
+            "                action = (prefix_list_action",
+            "                  PERMIT:'permit')",
+            "                NEWLINE:'\\n')",
+            "              (nrpee_prefix",
+            "                PREFIX:'prefix'",
+            "                prefix = (word",
+            "                  WORD:'192.0.2.4/30')",
+            "                NEWLINE:'\\n')",
+            "              (nrpee_prefix_len_range",
+            "                PREFIX_LEN_RANGE:'prefix-len-range'",
+            "                range = (word",
+            "                  WORD:'1:31')",
+            "                NEWLINE:'\\n')",
+            "              BRACE_RIGHT:'}'",
+            "              NEWLINE:'\\n')",
+            "            BRACE_RIGHT:'}'",
+            "            NEWLINE:'\\n')",
+            "          (nrp_route_domain",
+            "            ROUTE_DOMAIN:'route-domain'",
+            "            name = (word",
+            "              WORD:'/Common/0')",
+            "            NEWLINE:'\\n')",
+            "          BRACE_RIGHT:'}'",
+            "          NEWLINE:'\\n'))))",
+            "  (statement",
+            "    (s_net",
+            "      NET:'net'",
+            "      (net_routing",
+            "        ROUTING:'routing'",
+            "        (nr_prefix_list",
+            "          PREFIX_LIST:'prefix-list'",
+            "          name = (word",
+            "            WORD:'/Common/MY_IPV6_PREFIX_LIST')",
+            "          BRACE_LEFT:'{'",
+            "          NEWLINE:'\\n'",
+            "          (nrp_entries",
+            "            ENTRIES:'entries'",
+            "            BRACE_LEFT:'{'",
+            "            NEWLINE:'\\n'",
+            "            (nrpe_entry",
+            "              num = (word",
+            "                WORD:'30')",
+            "              BRACE_LEFT:'{'",
+            "              NEWLINE:'\\n'",
+            "              (nrpee_action",
+            "                ACTION:'action'",
+            "                action = (prefix_list_action",
+            "                  DENY:'deny')",
+            "                NEWLINE:'\\n')",
+            "              (nrpee_prefix",
+            "                PREFIX:'prefix'",
+            "                prefix = (word",
+            "                  WORD:'dead:beef::/64')",
+            "                NEWLINE:'\\n')",
+            "              (nrpee_prefix_len_range",
+            "                PREFIX_LEN_RANGE:'prefix-len-range'",
+            "                range = (word",
+            "                  WORD:'0:128')",
+            "                NEWLINE:'\\n')",
+            "              BRACE_RIGHT:'}'",
+            "              NEWLINE:'\\n')",
+            "            (nrpe_entry",
+            "              num = (word",
+            "                WORD:'40')",
+            "              BRACE_LEFT:'{'",
+            "              NEWLINE:'\\n'",
+            "              (nrpee_action",
+            "                ACTION:'action'",
+            "                action = (prefix_list_action",
+            "                  PERMIT:'permit')",
+            "                NEWLINE:'\\n')",
+            "              (nrpee_prefix",
+            "                PREFIX:'prefix'",
+            "                prefix = (word",
+            "                  WORD:'deaf:beef:1::/64')",
+            "                NEWLINE:'\\n')",
+            "              (nrpee_prefix_len_range",
+            "                PREFIX_LEN_RANGE:'prefix-len-range'",
+            "                range = (word",
+            "                  WORD:'2:127')",
+            "                NEWLINE:'\\n')",
+            "              BRACE_RIGHT:'}'",
+            "              NEWLINE:'\\n')",
+            "            BRACE_RIGHT:'}'",
+            "            NEWLINE:'\\n')",
+            "          (nrp_route_domain",
+            "            ROUTE_DOMAIN:'route-domain'",
+            "            name = (word",
+            "              WORD:'/Common/0')",
+            "            NEWLINE:'\\n')",
+            "          BRACE_RIGHT:'}'",
+            "          NEWLINE:'\\n\\n\\n'))))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "f5_bigip_structured_net_routing_route_map" : {
+          "sentences" : [
+            "(f5_bigip_structured_configuration",
+            "  (statement",
+            "    (s_sys",
+            "      SYS:'sys'",
+            "      (sys_global_settings",
+            "        GLOBAL_SETTINGS:'global-settings'",
+            "        BRACE_LEFT:'{'",
+            "        NEWLINE:'\\n'",
+            "        (sgs_hostname",
+            "          HOSTNAME:'hostname'",
+            "          hostname = (word",
+            "            WORD:'f5_bigip_structured_net_routing_route_map')",
+            "          NEWLINE:'\\n')",
+            "        BRACE_RIGHT:'}'",
+            "        NEWLINE:'\\n\\n')))",
+            "  (statement",
+            "    (s_net",
+            "      NET:'net'",
+            "      (net_routing",
+            "        ROUTING:'routing'",
+            "        (nr_route_map",
+            "          ROUTE_MAP:'route-map'",
+            "          name = (word",
+            "            WORD:'/Common/MY_ROUTE_MAP')",
+            "          BRACE_LEFT:'{'",
+            "          NEWLINE:'\\n'",
+            "          (nrr_entries",
+            "            ENTRIES:'entries'",
+            "            BRACE_LEFT:'{'",
+            "            NEWLINE:'\\n'",
+            "            (nrre_entry",
+            "              num = (word",
+            "                WORD:'10')",
+            "              BRACE_LEFT:'{'",
+            "              NEWLINE:'\\n'",
+            "              (nrree_action",
+            "                ACTION:'action'",
+            "                action = (route_map_action",
+            "                  DENY:'deny')",
+            "                NEWLINE:'\\n')",
+            "              (nrree_match",
+            "                MATCH:'match'",
+            "                BRACE_LEFT:'{'",
+            "                NEWLINE:'\\n'",
+            "                (nreem_ipv4",
+            "                  IPV4:'ipv4'",
+            "                  BRACE_LEFT:'{'",
+            "                  NEWLINE:'\\n'",
+            "                  (nreem4_address",
+            "                    ADDRESS:'address'",
+            "                    BRACE_LEFT:'{'",
+            "                    NEWLINE:'\\n'",
+            "                    (nreem4a_prefix_list",
+            "                      PREFIX_LIST:'prefix-list'",
+            "                      name = (word",
+            "                        WORD:'/Common/MY_PREFIX_LIST')",
+            "                      NEWLINE:'\\n')",
+            "                    BRACE_RIGHT:'}'",
+            "                    NEWLINE:'\\n')",
+            "                  BRACE_RIGHT:'}'",
+            "                  NEWLINE:'\\n')",
+            "                BRACE_RIGHT:'}'",
+            "                NEWLINE:'\\n')",
+            "              (nrree_set",
+            "                SET:'set'",
+            "                BRACE_LEFT:'{'",
+            "                NEWLINE:'\\n'",
+            "                (nrrees_community",
+            "                  COMMUNITY:'community'",
+            "                  BRACE_LEFT:'{'",
+            "                  NEWLINE:'\\n'",
+            "                  (nreesc_value",
+            "                    VALUE:'value'",
+            "                    BRACE_LEFT:'{'",
+            "                    (standard_community",
+            "                      (word",
+            "                        WORD:'1:2'))",
+            "                    (standard_community",
+            "                      (word",
+            "                        WORD:'33:44'))",
+            "                    BRACE_RIGHT:'}'",
+            "                    NEWLINE:'\\n')",
+            "                  BRACE_RIGHT:'}'",
+            "                  NEWLINE:'\\n')",
+            "                BRACE_RIGHT:'}'",
+            "                NEWLINE:'\\n')",
+            "              BRACE_RIGHT:'}'",
+            "              NEWLINE:'\\n')",
+            "            (nrre_entry",
+            "              num = (word",
+            "                WORD:'20')",
+            "              BRACE_LEFT:'{'",
+            "              NEWLINE:'\\n'",
+            "              (nrree_action",
+            "                ACTION:'action'",
+            "                action = (route_map_action",
+            "                  PERMIT:'permit')",
+            "                NEWLINE:'\\n')",
+            "              (nrree_match",
+            "                MATCH:'match'",
+            "                BRACE_LEFT:'{'",
+            "                NEWLINE:'\\n'",
+            "                (nreem_ipv4",
+            "                  IPV4:'ipv4'",
+            "                  BRACE_LEFT:'{'",
+            "                  NEWLINE:'\\n'",
+            "                  (nreem4_address",
+            "                    ADDRESS:'address'",
+            "                    BRACE_LEFT:'{'",
+            "                    NEWLINE:'\\n'",
+            "                    (nreem4a_prefix_list",
+            "                      PREFIX_LIST:'prefix-list'",
+            "                      name = (word",
+            "                        WORD:'/Common/MY_PREFIX_LIST2')",
+            "                      NEWLINE:'\\n')",
+            "                    BRACE_RIGHT:'}'",
+            "                    NEWLINE:'\\n')",
+            "                  BRACE_RIGHT:'}'",
+            "                  NEWLINE:'\\n')",
+            "                BRACE_RIGHT:'}'",
+            "                NEWLINE:'\\n')",
+            "              (nrree_set",
+            "                SET:'set'",
+            "                BRACE_LEFT:'{'",
+            "                NEWLINE:'\\n'",
+            "                (nrrees_community",
+            "                  COMMUNITY:'community'",
+            "                  BRACE_LEFT:'{'",
+            "                  NEWLINE:'\\n'",
+            "                  (nreesc_value",
+            "                    VALUE:'value'",
+            "                    BRACE_LEFT:'{'",
+            "                    (standard_community",
+            "                      (word",
+            "                        WORD:'55:66'))",
+            "                    BRACE_RIGHT:'}'",
+            "                    NEWLINE:'\\n')",
+            "                  BRACE_RIGHT:'}'",
+            "                  NEWLINE:'\\n')",
+            "                BRACE_RIGHT:'}'",
+            "                NEWLINE:'\\n')",
+            "              BRACE_RIGHT:'}'",
+            "              NEWLINE:'\\n')",
+            "            (nrre_entry",
+            "              num = (word",
+            "                WORD:'999')",
+            "              BRACE_LEFT:'{'",
+            "              NEWLINE:'\\n'",
+            "              (nrree_action",
+            "                ACTION:'action'",
+            "                action = (route_map_action",
+            "                  DENY:'deny')",
+            "                NEWLINE:'\\n')",
+            "              BRACE_RIGHT:'}'",
+            "              NEWLINE:'\\n')",
+            "            BRACE_RIGHT:'}'",
+            "            NEWLINE:'\\n')",
+            "          (nrr_route_domain",
+            "            ROUTE_DOMAIN:'route-domain'",
+            "            name = (word",
+            "              WORD:'/Common/0')",
+            "            NEWLINE:'\\n')",
+            "          BRACE_RIGHT:'}'",
+            "          NEWLINE:'\\n\\n\\n'))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -40322,7 +40945,7 @@
             "            (unrecognized",
             "              (u_word",
             "                (word",
-            "                  WORD:'disabled'))",
+            "                  DISABLED:'disabled'))",
             "              NEWLINE:'\\n')",
             "            BRACE_RIGHT:'}'))",
             "        NEWLINE:'\\n')))",
@@ -40375,7 +40998,7 @@
             "            (unrecognized",
             "              (u_word",
             "                (word",
-            "                  WORD:'traffic-group'))",
+            "                  TRAFFIC_GROUP:'traffic-group'))",
             "              (u_word",
             "                (word",
             "                  WORD:'/Common/traffic-group-1'))",
@@ -40431,7 +41054,7 @@
             "            (unrecognized",
             "              (u_word",
             "                (word",
-            "                  WORD:'traffic-group'))",
+            "                  TRAFFIC_GROUP:'traffic-group'))",
             "              (u_word",
             "                (word",
             "                  WORD:'/Common/traffic-group-1'))",
@@ -40487,7 +41110,7 @@
             "            (unrecognized",
             "              (u_word",
             "                (word",
-            "                  WORD:'traffic-group'))",
+            "                  TRAFFIC_GROUP:'traffic-group'))",
             "              (u_word",
             "                (word",
             "                  WORD:'/Common/traffic-group-1'))",
@@ -40515,7 +41138,7 @@
             "              WORD:'gui-setup'))",
             "          (u_word",
             "            (word",
-            "              WORD:'disabled'))",
+            "              DISABLED:'disabled'))",
             "          NEWLINE:'\\n')",
             "        (sgs_hostname",
             "          HOSTNAME:'hostname'",
@@ -65588,10 +66211,10 @@
               "Text" : "fdb"
             },
             {
-              "Comment" : "This syntax is unrecognized",
+              "Comment" : "This feature is not currently supported",
               "Line" : 9,
-              "Parser_Context" : "[unrecognized net_interface s_net statement f5_bigip_structured_configuration]",
-              "Text" : "bundle"
+              "Parser_Context" : "[ni_bundle net_interface s_net statement f5_bigip_structured_configuration]",
+              "Text" : "bundle enabled"
             },
             {
               "Comment" : "This syntax is unrecognized",
@@ -65624,16 +66247,16 @@
               "Text" : "route-domain"
             },
             {
-              "Comment" : "This syntax is unrecognized",
+              "Comment" : "This feature is not currently supported",
               "Line" : 27,
-              "Parser_Context" : "[unrecognized net_self s_net statement f5_bigip_structured_configuration]",
-              "Text" : "allow-service"
+              "Parser_Context" : "[ns_allow_service net_self s_net statement f5_bigip_structured_configuration]",
+              "Text" : "allow-service all"
             },
             {
-              "Comment" : "This syntax is unrecognized",
+              "Comment" : "This feature is not currently supported",
               "Line" : 28,
-              "Parser_Context" : "[unrecognized net_self s_net statement f5_bigip_structured_configuration]",
-              "Text" : "traffic-group"
+              "Parser_Context" : "[ns_traffic_group net_self s_net statement f5_bigip_structured_configuration]",
+              "Text" : "traffic-group /Common/traffic-group-local-only"
             },
             {
               "Comment" : "This syntax is unrecognized",
@@ -65658,6 +66281,102 @@
               "Line" : 54,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "tunnels"
+            }
+          ]
+        },
+        "f5_bigip_structured_net_routing_bgp" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 12,
+              "Parser_Context" : "[nrbafcrk_route_map nrbafcr_kernel nrbafc_redistribute nrbaf_common nrbaf_ipv4 nrb_address_family nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "route-map /Common/MY_KERNEL_OUT"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 26,
+              "Parser_Context" : "[unrecognized nrbnnaf_ipv6 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "capability"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 29,
+              "Parser_Context" : "[unrecognized nrbnnaf_ipv6 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "maximum-prefix"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 33,
+              "Parser_Context" : "[nrbnnafcr_out nrbnnafc_route_map nrbnnaf_common nrbnnaf_ipv6 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "out /Common/MY_IPV6_OUT"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 38,
+              "Parser_Context" : "[unrecognized nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "fall-over"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 45,
+              "Parser_Context" : "[unrecognized nrbnnaf_ipv4 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "capability"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 48,
+              "Parser_Context" : "[unrecognized nrbnnaf_ipv4 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "maximum-prefix"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 52,
+              "Parser_Context" : "[nrbnnafcr_out nrbnnafc_route_map nrbnnaf_common nrbnnaf_ipv4 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "out /Common/MY_IPV4_OUT"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 60,
+              "Parser_Context" : "[unrecognized nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "fall-over"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 65,
+              "Parser_Context" : "[unrecognized nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "profile"
+            },
+            {
+              "Comment" : "This syntax is unrecognized",
+              "Line" : 66,
+              "Parser_Context" : "[unrecognized nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "route-domain"
+            }
+          ]
+        },
+        "f5_bigip_structured_net_routing_prefix_list" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 20,
+              "Parser_Context" : "[nrp_route_domain nr_prefix_list net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "route-domain /Common/0"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 35,
+              "Parser_Context" : "[nrp_route_domain nr_prefix_list net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "route-domain /Common/0"
+            }
+          ]
+        },
+        "f5_bigip_structured_net_routing_route_map" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 43,
+              "Parser_Context" : "[nrr_route_domain nr_route_map net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "route-domain /Common/0"
             }
           ]
         },
@@ -66266,6 +66985,9 @@
         "eos_mlag" : "PASSED",
         "eos_trunk_group" : "PASSED",
         "f5_bigip_structured_net" : "PASSED",
+        "f5_bigip_structured_net_routing_bgp" : "PASSED",
+        "f5_bigip_structured_net_routing_prefix_list" : "PASSED",
+        "f5_bigip_structured_net_routing_route_map" : "PASSED",
         "f5_bigip_structured_sys" : "PASSED",
         "foundry_access_list" : "PASSED",
         "foundry_bgp" : "PASSED",
@@ -66309,7 +67031,7 @@
         "juniper_as_path_group" : "PASSED",
         "juniper_bgp" : "WARNINGS",
         "juniper_bgp_authentication" : "WARNINGS",
-        "juniper_bgp_remove_private_as" : "WARNINGS",
+        "juniper_bgp_remove_private_as" : "PASSED",
         "juniper_extended_community" : "PASSED",
         "juniper_firewall" : "WARNINGS",
         "juniper_forwarding_options" : "PASSED",
@@ -68851,7 +69573,7 @@
                 13,
                 14
               ],
-              "numReferrers" : 0
+              "numReferrers" : 2
             }
           },
           "self" : {
@@ -68864,7 +69586,7 @@
                 29,
                 30
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           },
           "vlan" : {
@@ -68876,6 +69598,167 @@
                 61,
                 62,
                 63
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/f5_bigip_structured_net_routing_bgp" : {
+          "bgp process" : {
+            "/Common/my_bgp" : {
+              "definitionLines" : [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/f5_bigip_structured_net_routing_prefix_list" : {
+          "prefix-list" : {
+            "/Common/MY_IPV4_PREFIX_LIST" : {
+              "definitionLines" : [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21
+              ],
+              "numReferrers" : 0
+            },
+            "/Common/MY_IPV6_PREFIX_LIST" : {
+              "definitionLines" : [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "configs/f5_bigip_structured_net_routing_route_map" : {
+          "route-map" : {
+            "/Common/MY_ROUTE_MAP" : {
+              "definitionLines" : [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
               ],
               "numReferrers" : 0
             }
@@ -73426,6 +74309,46 @@
             }
           }
         },
+        "configs/f5_bigip_structured_net_routing_bgp" : {
+          "bgp process" : {
+            "/Common/my_bgp" : {
+              "bgp process self-reference" : [
+                7
+              ]
+            }
+          },
+          "route-map" : {
+            "/Common/MY_IPV4_OUT" : {
+              "bgp neighbor address-family ipv6 route-map out" : [
+                52
+              ]
+            },
+            "/Common/MY_IPV6_OUT" : {
+              "bgp neighbor address-family ipv6 route-map out" : [
+                33
+              ]
+            },
+            "/Common/MY_KERNEL_OUT" : {
+              "bgp address-family redistribute kernel route-map" : [
+                12
+              ]
+            }
+          }
+        },
+        "configs/f5_bigip_structured_net_routing_route_map" : {
+          "prefix-list" : {
+            "/Common/MY_PREFIX_LIST" : {
+              "route-map match ipv4 address prefix-list" : [
+                14
+              ]
+            },
+            "/Common/MY_PREFIX_LIST2" : {
+              "route-map match ipv4 address prefix-list" : [
+                29
+              ]
+            }
+          }
+        },
         "configs/foundry_bgp" : {
           "interface" : {
             "Loopback1" : {
@@ -76212,6 +77135,39 @@
             }
           }
         },
+        "configs/f5_bigip_structured_net_routing_bgp" : {
+          "route-map" : {
+            "/Common/MY_IPV4_OUT" : {
+              "bgp neighbor address-family ipv6 route-map out" : [
+                52
+              ]
+            },
+            "/Common/MY_IPV6_OUT" : {
+              "bgp neighbor address-family ipv6 route-map out" : [
+                33
+              ]
+            },
+            "/Common/MY_KERNEL_OUT" : {
+              "bgp address-family redistribute kernel route-map" : [
+                12
+              ]
+            }
+          }
+        },
+        "configs/f5_bigip_structured_net_routing_route_map" : {
+          "prefix-list" : {
+            "/Common/MY_PREFIX_LIST" : {
+              "route-map match ipv4 address prefix-list" : [
+                14
+              ]
+            },
+            "/Common/MY_PREFIX_LIST2" : {
+              "route-map match ipv4 address prefix-list" : [
+                29
+              ]
+            }
+          }
+        },
         "configs/foundry_bgp" : {
           "interface" : {
             "Loopback1" : {
@@ -77192,10 +78148,6 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.2.3.5/32"
             },
             {
@@ -77228,14 +78180,6 @@
             }
           ]
         },
-        "juniper_bgp_remove_private_as" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
-            }
-          ]
-        },
         "juniper_firewall" : {
           "Red flags" : [
             {
@@ -77264,7 +78208,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
+              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -77272,23 +78216,7 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.1.1.1/32"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -77300,7 +78228,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
+              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -77308,23 +78236,7 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.1.1.1/32"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -77601,6 +78513,9 @@
         "configs/eos_mlag" : "PASSED",
         "configs/eos_trunk_group" : "PASSED",
         "configs/f5_bigip_structured_net" : "PASSED",
+        "configs/f5_bigip_structured_net_routing_bgp" : "PASSED",
+        "configs/f5_bigip_structured_net_routing_prefix_list" : "PASSED",
+        "configs/f5_bigip_structured_net_routing_route_map" : "PASSED",
         "configs/f5_bigip_structured_sys" : "PASSED",
         "configs/foundry_access_list" : "PASSED",
         "configs/foundry_bgp" : "PASSED",

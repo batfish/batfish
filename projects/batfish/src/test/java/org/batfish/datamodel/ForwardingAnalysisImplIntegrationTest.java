@@ -1,8 +1,8 @@
 package org.batfish.datamodel;
 
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;

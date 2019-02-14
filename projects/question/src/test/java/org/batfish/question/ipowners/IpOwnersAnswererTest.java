@@ -8,13 +8,13 @@ import static org.batfish.question.ipowners.IpOwnersAnswerer.COL_IP;
 import static org.batfish.question.ipowners.IpOwnersAnswerer.COL_MASK;
 import static org.batfish.question.ipowners.IpOwnersAnswerer.COL_NODE;
 import static org.batfish.question.ipowners.IpOwnersAnswerer.COL_VRFNAME;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

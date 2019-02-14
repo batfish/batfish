@@ -7,9 +7,9 @@ import static org.batfish.bddreachability.TestNetworkSources.ORIGINATING_FROM_DE
 import static org.batfish.bddreachability.TestNetworkSources.PEER_IFACE_NAME;
 import static org.batfish.bddreachability.TestNetworkSources.PEER_NAME;
 import static org.batfish.bddreachability.TestNetworkSources.VRF_NAME;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.util.Map;

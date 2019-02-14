@@ -1,25 +1,18 @@
 package org.batfish.datamodel.questions;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.ComparableStructure;
-import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.Schema.Type;
 import org.batfish.datamodel.table.Row.RowBuilder;
@@ -43,35 +36,6 @@ public abstract class PropertySpecifier {
     public Schema getSchema() {
       return _schema;
     }
-  }
-
-  /**
-   * Returns a list of suggestions based on the query. The current implementation treats the query
-   * as a substring of the property string.
-   *
-   * @param query The query that came to the concrete child class
-   * @return The list of suggestions
-   */
-  public static List<AutocompleteSuggestion> baseAutoComplete(
-      @Nullable String query, Set<String> allProperties) {
-
-    String finalQuery = firstNonNull(query, "").toLowerCase();
-    ImmutableList.Builder<AutocompleteSuggestion> suggestions = new ImmutableList.Builder<>();
-    String queryWithStars = ".*" + (finalQuery.isEmpty() ? "" : finalQuery + ".*");
-    Pattern queryPattern = safeGetPattern(queryWithStars);
-
-    /*
-     * if queryWithStars is not a valid Pattern, finalQuery must be a funky string that will not
-     * match anything as string.contains or regex.matches; so we skip formalities altogether
-     */
-    if (queryPattern != null) {
-      suggestions.addAll(
-          allProperties.stream()
-              .filter(prop -> queryPattern.matcher(prop.toLowerCase()).matches())
-              .map(prop -> new AutocompleteSuggestion(prop, false))
-              .collect(Collectors.toList()));
-    }
-    return suggestions.build();
   }
 
   /** Converts {@code propertyValue} to {@code targetSchema} if needed */
@@ -156,13 +120,4 @@ public abstract class PropertySpecifier {
    * <p>Note: the returned list is expected to have unique entries.
    */
   public abstract List<String> getMatchingProperties();
-
-  /** Returns the Pattern if {@code candidateRegex} is a valid regex, and null otherwise */
-  private static Pattern safeGetPattern(String candidateRegex) {
-    try {
-      return Pattern.compile(candidateRegex);
-    } catch (PatternSyntaxException e) {
-      return null;
-    }
-  }
 }

@@ -1,7 +1,7 @@
 package org.batfish.datamodel.matchers;
 
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethods;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.datamodel.AaaAuthenticationLoginList;
 import org.batfish.datamodel.Line;

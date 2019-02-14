@@ -1,9 +1,9 @@
 package org.batfish.datamodel.matchers;
 
 import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasHops;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThat;
 
 import java.util.List;
 import javax.annotation.Nonnull;

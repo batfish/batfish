@@ -121,7 +121,6 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATI
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.contains;
@@ -134,6 +133,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.hasValue;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -288,7 +288,6 @@ import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
 import org.batfish.representation.juniper.Zone;
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -1532,6 +1531,72 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testFirewallZoneAddressUndefined() throws IOException {
+    Configuration c = parseConfig("firewall-zone-address-undefined");
+
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    String addrAccepted = "2.2.2.2";
+    String addrRejected = "2.2.2.3";
+
+    Flow flowAccepted = createFlow(addrAccepted, addrAccepted);
+    Flow flowRejected = createFlow(addrAccepted, addrRejected);
+
+    IpAccessList aclUntrust =
+        c.getAllInterfaces().get(interfaceNameUntrust).getPreTransformationOutgoingFilter();
+    IpAccessList aclTrust =
+        c.getAllInterfaces().get(interfaceNameTrust).getPreTransformationOutgoingFilter();
+
+    // Make sure flow matching address-book entry is accepted despite the rule having one undefined
+    // destination address
+    assertThat(
+        aclUntrust,
+        accepts(flowAccepted, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    // Make sure flow not matching address-book entry is rejected
+    assertThat(
+        aclUntrust,
+        rejects(flowRejected, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+
+    // Make sure both flows are rejected by rule with no defined destination address
+    assertThat(
+        aclTrust,
+        rejects(flowAccepted, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclTrust,
+        rejects(flowRejected, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
+  public void testFirewallZoneAddressBookAttachAndGlobal() throws IOException {
+    Configuration c = parseConfig("firewall-zone-address-book-attach-and-global");
+
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    // Destination address allowed by the address-book
+    String destAddr = "2.2.2.2";
+    // Source address allowed by the address-book
+    String sourceAddr = "3.3.3.3";
+
+    Flow flowAllowed = createFlow(sourceAddr, destAddr);
+    Flow flowRejected1 = createFlow(destAddr, destAddr);
+    Flow flowRejected2 = createFlow(sourceAddr, sourceAddr);
+
+    IpAccessList acl =
+        c.getAllInterfaces().get(interfaceNameUntrust).getPreTransformationOutgoingFilter();
+
+    // Confirm both global and attached address-book entries are processed properly
+    // Make sure the flow with source address matching global book and destination address matching
+    // attached book is accepted
+    assertThat(
+        acl, accepts(flowAllowed, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    // Make sure flow with different addresses is denied
+    assertThat(
+        acl, rejects(flowRejected1, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        acl, rejects(flowRejected2, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
   public void testFirewallZones() throws IOException {
     Configuration c = parseConfig("firewall-no-policies");
     String interfaceNameTrust = "ge-0/0/0.0";
@@ -1890,6 +1955,7 @@ public final class FlatJuniperGrammarTest {
             CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             new Settings(),
+            new Warnings(),
             ConfigurationFormat.JUNIPER,
             VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
     FlattenerLineMap lineMap = flattener.getOriginalLineMap();
@@ -2004,12 +2070,12 @@ public final class FlatJuniperGrammarTest {
     assertThat(policyPreference.getStatements(), hasSize(2));
 
     // Extracting the If statement
-    MatcherAssert.assertThat(policyPreference.getStatements().get(0), instanceOf(If.class));
+    assertThat(policyPreference.getStatements().get(0), instanceOf(If.class));
 
     If i = (If) policyPreference.getStatements().get(0);
 
-    MatcherAssert.assertThat(i.getTrueStatements(), hasSize(1));
-    MatcherAssert.assertThat(
+    assertThat(i.getTrueStatements(), hasSize(1));
+    assertThat(
         Iterables.getOnlyElement(i.getTrueStatements()), instanceOf(SetAdministrativeCost.class));
 
     assertThat(

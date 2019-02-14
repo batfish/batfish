@@ -17,11 +17,10 @@ public class CompletionMetadataTest {
   public void testJavaSerialization() throws IOException {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder()
-            .setAddressBooks(ImmutableSet.of("addressBook"))
-            .setAddressGroups(ImmutableSet.of("addressGroup"))
             .setFilterNames(ImmutableSet.of("filter"))
-            .setInterfaces(ImmutableSet.of(new NodeInterfacePair("interface", "node")))
+            .setInterfaces(ImmutableSet.of(new NodeInterfacePair("node", "interface")))
             .setIps(ImmutableSet.of("ip"))
+            .setNodes(ImmutableSet.of("node"))
             .setPrefixes(ImmutableSet.of("prefix"))
             .setStructureNames(ImmutableSet.of("structure"))
             .setVrfs(ImmutableSet.of("vrf"))
@@ -35,11 +34,10 @@ public class CompletionMetadataTest {
   public void testJsonSerialization() throws IOException {
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder()
-            .setAddressBooks(ImmutableSet.of("addressBook"))
-            .setAddressGroups(ImmutableSet.of("addressGroup"))
             .setFilterNames(ImmutableSet.of("filter"))
-            .setInterfaces(ImmutableSet.of(new NodeInterfacePair("interface", "node")))
+            .setInterfaces(ImmutableSet.of(new NodeInterfacePair("node", "interface")))
             .setIps(ImmutableSet.of("ip"))
+            .setNodes(ImmutableSet.of("node"))
             .setPrefixes(ImmutableSet.of("prefix"))
             .setStructureNames(ImmutableSet.of("structure"))
             .setVrfs(ImmutableSet.of("vrf"))
@@ -59,14 +57,13 @@ public class CompletionMetadataTest {
     new EqualsTester()
         .addEqualityGroup(new Object())
         .addEqualityGroup(initial, initial, builder.build(), CompletionMetadata.EMPTY)
-        .addEqualityGroup(builder.setAddressBooks(ImmutableSet.of("addressBook")).build())
-        .addEqualityGroup(builder.setAddressGroups(ImmutableSet.of("addressGroup")).build())
         .addEqualityGroup(builder.setFilterNames(ImmutableSet.of("filter")).build())
         .addEqualityGroup(
             builder
-                .setInterfaces(ImmutableSet.of(new NodeInterfacePair("interface", "node")))
+                .setInterfaces(ImmutableSet.of(new NodeInterfacePair("node", "interface")))
                 .build())
         .addEqualityGroup(builder.setIps(ImmutableSet.of("ip")).build())
+        .addEqualityGroup(builder.setNodes(ImmutableSet.of("node")).build())
         .addEqualityGroup(builder.setPrefixes(ImmutableSet.of("prefix")).build())
         .addEqualityGroup(builder.setStructureNames(ImmutableSet.of("structure")).build())
         .addEqualityGroup(builder.setVrfs(ImmutableSet.of("vrf")).build())
