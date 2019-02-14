@@ -10,6 +10,10 @@ final class IpAstNode implements IpSpaceAstNode {
     _ip = ip;
   }
 
+  IpAstNode(String ip) {
+    _ip = Ip.parse(ip);
+  }
+
   @Override
   public <T> T accept(AstNodeVisitor<T> visitor) {
     return visitor.visitIpAstNode(this);
