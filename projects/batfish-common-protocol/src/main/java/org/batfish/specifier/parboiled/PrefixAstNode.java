@@ -6,6 +6,10 @@ import org.batfish.datamodel.Prefix;
 final class PrefixAstNode implements IpSpaceAstNode {
   private final Prefix _prefix;
 
+  PrefixAstNode(Prefix prefix) {
+    _prefix = prefix;
+  }
+
   PrefixAstNode(String prefix) {
     _prefix = Prefix.parse(prefix);
   }

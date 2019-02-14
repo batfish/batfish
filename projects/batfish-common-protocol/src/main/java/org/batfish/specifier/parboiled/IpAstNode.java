@@ -6,6 +6,10 @@ import org.batfish.datamodel.Ip;
 final class IpAstNode implements IpSpaceAstNode {
   private final Ip _ip;
 
+  IpAstNode(Ip ip) {
+    _ip = ip;
+  }
+
   IpAstNode(String ip) {
     _ip = Ip.parse(ip);
   }

@@ -44,11 +44,11 @@ public class ParboiledIpSpaceSpecifierTest {
 
   @Test
   public void testComputeIpSpaceComma() {
-    String ip1 = "1.1.1.1";
-    String ip2 = "1.1.1.10";
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("1.1.1.10");
     assertThat(
         computeIpSpace(new CommaIpSpaceAstNode(new IpAstNode(ip1), new IpAstNode(ip2)), _emptyCtxt),
-        equalTo(AclIpSpace.union(Ip.parse(ip1).toIpSpace(), Ip.parse(ip2).toIpSpace())));
+        equalTo(AclIpSpace.union(ip1.toIpSpace(), ip2.toIpSpace())));
   }
 
   @Test
@@ -59,25 +59,22 @@ public class ParboiledIpSpaceSpecifierTest {
 
   @Test
   public void testComputeIpSpaceIpRange() {
-    String ip1 = "1.1.1.1";
-    String ip2 = "1.1.1.10";
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("1.1.1.10");
     assertThat(
-        computeIpSpace(new IpRangeAstNode(ip1, ip2), _emptyCtxt),
-        equalTo(IpRange.range(Ip.parse(ip1), Ip.parse(ip2))));
+        computeIpSpace(new IpRangeAstNode(ip1, ip2), _emptyCtxt), equalTo(IpRange.range(ip1, ip2)));
   }
 
   @Test
   public void testComputeIpSpaceIpWildcard() {
-    String wildcard = "1.1.1.1:255.255.255.255";
+    IpWildcard wildcard = new IpWildcard("1.1.1.1:255.255.255.255");
     assertThat(
-        computeIpSpace(new IpWildcardAstNode(wildcard), _emptyCtxt),
-        equalTo(new IpWildcard(wildcard).toIpSpace()));
+        computeIpSpace(new IpWildcardAstNode(wildcard), _emptyCtxt), equalTo(wildcard.toIpSpace()));
   }
 
   @Test
   public void testComputeIpSpacePrefix() {
-    String pfx = "1.1.1.1/24";
-    assertThat(
-        computeIpSpace(new PrefixAstNode(pfx), _emptyCtxt), equalTo(Prefix.parse(pfx).toIpSpace()));
+    Prefix pfx = Prefix.parse("1.1.1.1/24");
+    assertThat(computeIpSpace(new PrefixAstNode(pfx), _emptyCtxt), equalTo(pfx.toIpSpace()));
   }
 }
