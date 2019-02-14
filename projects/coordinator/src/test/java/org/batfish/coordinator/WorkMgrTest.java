@@ -2746,8 +2746,10 @@ public final class WorkMgrTest {
                 analysis));
     WorkDetails workDetails = _manager.computeWorkDetails(workItem);
 
-    assertThat(workDetails.baseTestrig, equalTo(snapshot));
-    assertThat(workDetails.workType, equalTo(WorkType.PARSING_DEPENDENT_ANSWERING));
+    assertThat(
+        workDetails.getSnapshotId(),
+        equalTo(_idManager.getSnapshotId(snapshot, _idManager.getNetworkId(network))));
+    assertThat(workDetails.getWorkType(), equalTo(WorkType.PARSING_DEPENDENT_ANSWERING));
   }
 
   @Test
@@ -2766,8 +2768,10 @@ public final class WorkMgrTest {
             ImmutableMap.of(BfConsts.COMMAND_ANSWER, "", BfConsts.ARG_QUESTION_NAME, question));
     WorkDetails workDetails = _manager.computeWorkDetails(workItem);
 
-    assertThat(workDetails.baseTestrig, equalTo(snapshot));
-    assertThat(workDetails.workType, equalTo(WorkType.PARSING_DEPENDENT_ANSWERING));
+    assertThat(
+        workDetails.getSnapshotId(),
+        equalTo(_idManager.getSnapshotId(snapshot, _idManager.getNetworkId(network))));
+    assertThat(workDetails.getWorkType(), equalTo(WorkType.PARSING_DEPENDENT_ANSWERING));
   }
 
   @Test

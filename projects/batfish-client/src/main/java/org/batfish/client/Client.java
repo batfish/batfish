@@ -2314,7 +2314,7 @@ public class Client extends AbstractClient implements IClient {
     // get the answer
     String ansFileName = wItem.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE;
     String downloadedAnsFile =
-        _workHelper.getObject(wItem.getContainerName(), wItem.getTestrigName(), ansFileName);
+        _workHelper.getObject(wItem.getNetwork(), wItem.getSnapshot(), ansFileName);
     if (downloadedAnsFile == null) {
       _logger.errorf("Failed to get answer file %s. (Was work killed?)\n", ansFileName);
     } else {
@@ -2361,7 +2361,7 @@ public class Client extends AbstractClient implements IClient {
       _logger.output("---------------- Service Log --------------\n");
       String logFileName = wItem.getId() + BfConsts.SUFFIX_LOG_FILE;
       String downloadedFileStr =
-          _workHelper.getObject(wItem.getContainerName(), wItem.getTestrigName(), logFileName);
+          _workHelper.getObject(wItem.getNetwork(), wItem.getSnapshot(), logFileName);
 
       if (downloadedFileStr == null) {
         _logger.errorf("Failed to get log file %s\n", logFileName);
