@@ -327,6 +327,7 @@ class FlowTracer {
     }
 
     Fib fib = _tracerouteContext.getFib(currentNodeName, _vrfName);
+    // Sort so that resulting traces will be in sensible deterministic order
     SortedSet<String> nextHopInterfaces =
         ImmutableSortedSet.copyOf(fib.getNextHopInterfaces(dstIp));
     if (nextHopInterfaces.isEmpty()) {
