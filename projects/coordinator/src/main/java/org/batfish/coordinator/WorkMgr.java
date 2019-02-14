@@ -2620,10 +2620,9 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /**
-   * Reads the {@link NodeRolesData} object for the provided network. If none previously set for
-   * this network, first initialize node roles to the inferred roles of the earliest completed
-   * snapshot if one exists, and return them. If no suitable snapshot exists, return empty node
-   * roles. Returns {@code null} if network does not exist.
+   * Reads the {@link NodeRolesData} object for the provided {@code network}. If none previously set
+   * for this {@code network}, returns empty {@link NodeRolesData}. If {@code network} does not
+   * exist, returns {@code null}.
    *
    * @throws IOException If there is an error
    */
