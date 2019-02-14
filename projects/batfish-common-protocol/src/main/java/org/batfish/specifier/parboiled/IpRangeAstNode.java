@@ -12,9 +12,9 @@ final class IpRangeAstNode implements IpSpaceAstNode {
     _high = ((IpAstNode) right).getIp();
   }
 
-  IpRangeAstNode(Ip low, Ip high) {
-    _low = low;
-    _high = high;
+  IpRangeAstNode(String low, String high) {
+    _low = Ip.parse(low);
+    _high = Ip.parse(high);
   }
 
   @Override

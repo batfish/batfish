@@ -7,8 +7,8 @@ final class IpWildcardAstNode implements IpSpaceAstNode {
 
   private final IpWildcard _ipWildcard;
 
-  IpWildcardAstNode(IpWildcard ipWildcard) {
-    _ipWildcard = ipWildcard;
+  IpWildcardAstNode(String ipWildcard) {
+    _ipWildcard = new IpWildcard(ipWildcard);
   }
 
   @Override

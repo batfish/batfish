@@ -44,37 +44,40 @@ public class ParboiledIpSpaceSpecifierTest {
 
   @Test
   public void testComputeIpSpaceComma() {
-    Ip ip1 = Ip.parse("1.1.1.1");
-    Ip ip2 = Ip.parse("1.1.1.10");
+    String ip1 = "1.1.1.1";
+    String ip2 = "1.1.1.10";
     assertThat(
         computeIpSpace(new CommaIpSpaceAstNode(new IpAstNode(ip1), new IpAstNode(ip2)), _emptyCtxt),
-        equalTo(AclIpSpace.union(ip1.toIpSpace(), ip2.toIpSpace())));
+        equalTo(AclIpSpace.union(Ip.parse(ip1).toIpSpace(), Ip.parse(ip2).toIpSpace())));
   }
 
   @Test
   public void testComputeIpSpaceIp() {
-    Ip ip = Ip.parse("1.1.1.1");
-    assertThat(computeIpSpace(new IpAstNode(ip), _emptyCtxt), equalTo(ip.toIpSpace()));
+    String ip = "1.1.1.1";
+    assertThat(computeIpSpace(new IpAstNode(ip), _emptyCtxt), equalTo(Ip.parse(ip).toIpSpace()));
   }
 
   @Test
   public void testComputeIpSpaceIpRange() {
-    Ip ip1 = Ip.parse("1.1.1.1");
-    Ip ip2 = Ip.parse("1.1.1.10");
+    String ip1 = "1.1.1.1";
+    String ip2 = "1.1.1.10";
     assertThat(
-        computeIpSpace(new IpRangeAstNode(ip1, ip2), _emptyCtxt), equalTo(IpRange.range(ip1, ip2)));
+        computeIpSpace(new IpRangeAstNode(ip1, ip2), _emptyCtxt),
+        equalTo(IpRange.range(Ip.parse(ip1), Ip.parse(ip2))));
   }
 
   @Test
   public void testComputeIpSpaceIpWildcard() {
-    IpWildcard wildcard = new IpWildcard("1.1.1.1:255.255.255.255");
+    String wildcard = "1.1.1.1:255.255.255.255";
     assertThat(
-        computeIpSpace(new IpWildcardAstNode(wildcard), _emptyCtxt), equalTo(wildcard.toIpSpace()));
+        computeIpSpace(new IpWildcardAstNode(wildcard), _emptyCtxt),
+        equalTo(new IpWildcard(wildcard).toIpSpace()));
   }
 
   @Test
   public void testComputeIpSpacePrefix() {
-    Prefix pfx = Prefix.parse("1.1.1.1/24");
-    assertThat(computeIpSpace(new PrefixAstNode(pfx), _emptyCtxt), equalTo(pfx.toIpSpace()));
+    String pfx = "1.1.1.1/24";
+    assertThat(
+        computeIpSpace(new PrefixAstNode(pfx), _emptyCtxt), equalTo(Prefix.parse(pfx).toIpSpace()));
   }
 }

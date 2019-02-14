@@ -53,7 +53,7 @@ public class ParboiledAutoCompleteTest {
 
     /* An Test expression is a comma-separated list of TestTerms */
     public Rule TestExpression() {
-      return Sequence(TestTerm(), WhiteSpace(), ZeroOrMore(", ", TestTerm(), WhiteSpace(), EOI));
+      return Sequence(TestTerm(), WhiteSpace(), ZeroOrMore(", ", TestTerm(), WhiteSpace()));
     }
 
     /* An Test term is one of these things */
@@ -92,7 +92,7 @@ public class ParboiledAutoCompleteTest {
   static ParboiledAutoComplete getTestPAC(String query) {
     return new ParboiledAutoComplete(
         TestParser.INSTANCE,
-        TestParser.INSTANCE.TestExpression(),
+        TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()),
         TestParser.COMPLETION_TYPES,
         "network",
         "snapshot",
@@ -106,7 +106,7 @@ public class ParboiledAutoCompleteTest {
   static ParboiledAutoComplete getTestPAC(String query, CompletionMetadata completionMetadata) {
     return new ParboiledAutoComplete(
         TestParser.INSTANCE,
-        TestParser.INSTANCE.TestExpression(),
+        TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()),
         TestParser.COMPLETION_TYPES,
         "network",
         "snapshot",
@@ -120,7 +120,7 @@ public class ParboiledAutoCompleteTest {
   static ParboiledAutoComplete getTestPAC(String query, ReferenceLibrary referenceLibrary) {
     return new ParboiledAutoComplete(
         TestParser.INSTANCE,
-        TestParser.INSTANCE.TestExpression(),
+        TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()),
         TestParser.COMPLETION_TYPES,
         "network",
         "snapshot",
@@ -215,7 +215,7 @@ public class ParboiledAutoCompleteTest {
   /** Test that we produce auto completion suggestions even for valid inputs */
   @Test
   public void testRunValidInput() {
-    String query = "1.1.1.1 "; // space at the end means that ip adresses won't match
+    String query = "1.1.1.1 "; // space at the end means that ip addresses won't match
 
     // first ensure that the query is valid input
     ParsingResult<?> result =

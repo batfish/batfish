@@ -5,9 +5,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.Prefix;
 import org.batfish.specifier.parboiled.Completion.Type;
 import org.junit.Rule;
 import org.junit.Test;
@@ -74,9 +71,7 @@ public class ParserIpSpaceTest {
 
   @Test
   public void testIpSpaceIpAddress() {
-    assertThat(
-        ParserUtils.getAst(getRunner().run("1.1.1.1")),
-        equalTo(new IpAstNode(Ip.parse("1.1.1.1"))));
+    assertThat(ParserUtils.getAst(getRunner().run("1.1.1.1")), equalTo(new IpAstNode("1.1.1.1")));
   }
 
   @Test
@@ -88,7 +83,7 @@ public class ParserIpSpaceTest {
 
   @Test
   public void testIpSpaceIpRange() {
-    IpSpaceAstNode expectedAst = new IpRangeAstNode(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"));
+    IpSpaceAstNode expectedAst = new IpRangeAstNode("1.1.1.1", "2.2.2.2");
 
     assertThat(ParserUtils.getAst(getRunner().run("1.1.1.1-2.2.2.2")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" 1.1.1.1 - 2.2.2.2 ")), equalTo(expectedAst));
@@ -98,14 +93,13 @@ public class ParserIpSpaceTest {
   public void testIpSpaceIpWildcard() {
     assertThat(
         ParserUtils.getAst(getRunner().run("1.1.1.1:2.2.2.2")),
-        equalTo(new IpWildcardAstNode(new IpWildcard("1.1.1.1:2.2.2.2"))));
+        equalTo(new IpWildcardAstNode("1.1.1.1:2.2.2.2")));
   }
 
   @Test
   public void testIpSpaceList2() {
     IpSpaceAstNode expectedNode =
-        new CommaIpSpaceAstNode(
-            new IpAstNode(Ip.parse("1.1.1.1")), new IpAstNode(Ip.parse("2.2.2.2")));
+        new CommaIpSpaceAstNode(new IpAstNode("1.1.1.1"), new IpAstNode("2.2.2.2"));
 
     assertThat(ParserUtils.getAst(getRunner().run("1.1.1.1,2.2.2.2")), equalTo(expectedNode));
     assertThat(ParserUtils.getAst(getRunner().run("1.1.1.1 , 2.2.2.2 ")), equalTo(expectedNode));
@@ -115,9 +109,8 @@ public class ParserIpSpaceTest {
   public void testIpSpaceList3() {
     IpSpaceAstNode expectedNode =
         new CommaIpSpaceAstNode(
-            new CommaIpSpaceAstNode(
-                new IpAstNode(Ip.parse("1.1.1.1")), new IpAstNode(Ip.parse("2.2.2.2"))),
-            new IpAstNode(Ip.parse("3.3.3.3")));
+            new CommaIpSpaceAstNode(new IpAstNode("1.1.1.1"), new IpAstNode("2.2.2.2")),
+            new IpAstNode("3.3.3.3"));
 
     assertThat(
         ParserUtils.getAst(getRunner().run("1.1.1.1,2.2.2.2,3.3.3.3")), equalTo(expectedNode));
@@ -126,9 +119,8 @@ public class ParserIpSpaceTest {
     IpSpaceAstNode expectedNode2 =
         new CommaIpSpaceAstNode(
             new CommaIpSpaceAstNode(
-                new IpAstNode(Ip.parse("1.1.1.1")),
-                new IpRangeAstNode(Ip.parse("2.2.2.2"), Ip.parse("2.2.2.3"))),
-            new IpAstNode(Ip.parse("3.3.3.3")));
+                new IpAstNode("1.1.1.1"), new IpRangeAstNode("2.2.2.2", "2.2.2.3")),
+            new IpAstNode("3.3.3.3"));
 
     assertThat(
         ParserUtils.getAst(getRunner().run("1.1.1.1,2.2.2.2-2.2.2.3,3.3.3.3")),
@@ -138,8 +130,7 @@ public class ParserIpSpaceTest {
   @Test
   public void testIpSpacePrefix() {
     assertThat(
-        ParserUtils.getAst(getRunner().run("1.1.1.1/1")),
-        equalTo(new PrefixAstNode(Prefix.parse("1.1.1.1/1"))));
+        ParserUtils.getAst(getRunner().run("1.1.1.1/1")), equalTo(new PrefixAstNode("1.1.1.1/1")));
   }
 
   @Test
