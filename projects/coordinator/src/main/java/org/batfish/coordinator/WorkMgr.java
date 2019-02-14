@@ -272,12 +272,10 @@ public class WorkMgr extends AbstractCoordinator {
             .startActive()) {
       assert assignWorkSpan != null; // avoid unused warning
       // get the task and add other standard stuff
-      JSONObject task = new JSONObject(work.getWorkItem().getRequestParams());
-      task.put(BfConsts.ARG_CONTAINER, work.getWorkItem().getContainerName());
+      JSONObject task = new JSONObject(work.resolveRequestParams());
       task.put(
           BfConsts.ARG_STORAGE_BASE,
           Main.getSettings().getContainersLocation().toAbsolutePath().toString());
-      task.put(BfConsts.ARG_TESTRIG, work.getWorkItem().getTestrigName());
 
       client =
           CommonUtil.createHttpClientBuilder(
@@ -508,6 +506,9 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   WorkDetails computeWorkDetails(WorkItem workItem) {
+    String referenceSnapshotName = WorkItemBuilder.getReferenceSnapshotName(workItem);
+    String questionName = WorkItemBuilder.getQuestionName(workItem);
+    String analysisName = WorkItemBuilder.getAnalysisName(workItem);
 
     WorkType workType = WorkType.UNKNOWN;
 
@@ -527,11 +528,7 @@ public class WorkMgr extends AbstractCoordinator {
         throw new BatfishException("Cannot do composite work. Separate ANSWER from other work.");
       }
       Question question =
-          Question.parseQuestion(
-              getQuestion(
-                  workItem.getContainerName(),
-                  WorkItemBuilder.getQuestionName(workItem),
-                  WorkItemBuilder.getAnalysisName(workItem)));
+          Question.parseQuestion(getQuestion(workItem.getNetwork(), questionName, analysisName));
       workType =
           question.getIndependent()
               ? WorkType.INDEPENDENT_ANSWERING
@@ -544,16 +541,15 @@ public class WorkMgr extends AbstractCoordinator {
       if (workType != WorkType.UNKNOWN) {
         throw new BatfishException("Cannot do composite work. Separate ANALYZE from other work.");
       }
-      String aName = WorkItemBuilder.getAnalysisName(workItem);
-      if (aName == null) {
+      if (analysisName == null) {
         throw new BatfishException("Analysis name not provided for ANALYZE work");
       }
-      Set<String> qNames = listAnalysisQuestions(workItem.getContainerName(), aName);
+      Set<String> qNames = listAnalysisQuestions(workItem.getNetwork(), analysisName);
       // compute the strongest dependency among the embedded questions
       workType = WorkType.INDEPENDENT_ANSWERING;
       for (String qName : qNames) {
         Question question =
-            Question.parseQuestion(getQuestion(workItem.getContainerName(), qName, aName));
+            Question.parseQuestion(getQuestion(workItem.getNetwork(), qName, analysisName));
         if (question.getDataPlane()) {
           workType = WorkType.DATAPLANE_DEPENDENT_ANSWERING;
           break;
@@ -564,14 +560,25 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
 
-    WorkDetails details =
-        new WorkDetails(
-            workItem.getTestrigName(),
-            workItem.getRequestParams().get(BfConsts.ARG_DELTA_TESTRIG),
-            WorkItemBuilder.isDifferential(workItem),
-            workType);
-
-    return details;
+    NetworkId networkId = _idManager.getNetworkId(workItem.getNetwork());
+    WorkDetails.Builder builder =
+        WorkDetails.builder()
+            .setNetworkId(networkId)
+            .setSnapshotId(_idManager.getSnapshotId(workItem.getSnapshot(), networkId))
+            .setWorkType(workType)
+            .setIsDifferential(WorkItemBuilder.isDifferential(workItem));
+    if (referenceSnapshotName != null) {
+      builder.setReferenceSnapshotId(_idManager.getSnapshotId(referenceSnapshotName, networkId));
+    }
+    AnalysisId analysisId = null;
+    if (analysisName != null) {
+      analysisId = _idManager.getAnalysisId(analysisName, networkId);
+      builder.setAnalysisId(analysisId);
+    }
+    if (questionName != null) {
+      builder.setQuestionId(_idManager.getQuestionId(questionName, networkId, analysisId));
+    }
+    return builder.build();
   }
 
   /**
@@ -1045,6 +1052,18 @@ public class WorkMgr extends AbstractCoordinator {
               networkNodeRolesId,
               referenceSnapshotId,
               analysisId);
+      if (question.equals("MLAG_Analyzer")) {
+        System.err.printf(
+            "%s %s %s %s %s %s %s %s\n",
+            networkId,
+            analysisId,
+            questionId,
+            snapshotId,
+            referenceSnapshotId,
+            questionSettingsId,
+            networkNodeRolesId,
+            baseAnswerId);
+      }
       if (!_storage.hasAnswerMetadata(baseAnswerId)) {
         return AnswerMetadata.forStatus(AnswerStatus.NOTFOUND);
       }
@@ -1459,7 +1478,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public QueuedWork getMatchingWork(WorkItem workItem, QueueType qType) {
-    return _workQueueMgr.getMatchingWork(resolveIds(workItem), qType);
+    return _workQueueMgr.getMatchingWork(workItem, qType);
   }
 
   public QueuedWork getWork(UUID workItemId) {
@@ -1980,8 +1999,10 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public List<QueuedWork> listIncompleteWork(
-      String networkName, @Nullable String snapshotName, @Nullable WorkType workType) {
-    return _workQueueMgr.listIncompleteWork(networkName, snapshotName, workType);
+      String network, @Nullable String snapshot, @Nullable WorkType workType) {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    SnapshotId snapshotId = snapshot != null ? _idManager.getSnapshotId(snapshot, networkId) : null;
+    return _workQueueMgr.listIncompleteWork(networkId, snapshotId, workType);
   }
 
   /**
@@ -2077,27 +2098,27 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public boolean queueWork(WorkItem workItem) {
-    NetworkId networkId = _idManager.getNetworkId(requireNonNull(workItem.getContainerName()));
+    NetworkId networkId = _idManager.getNetworkId(requireNonNull(workItem.getNetwork()));
     boolean success;
     try {
       workItem.setSourceSpan(GlobalTracer.get().activeSpan());
       WorkDetails workDetails = computeWorkDetails(workItem);
-      if (SnapshotMetadataMgr.getInitializationMetadata(
-              networkId, _idManager.getSnapshotId(workDetails.baseTestrig, networkId))
+      if (SnapshotMetadataMgr.getInitializationMetadata(networkId, workDetails.getSnapshotId())
           == null) {
         throw new BatfishException(
             String.format(
-                "Initialization metadata not found for snapshot %s", workDetails.baseTestrig));
+                "Initialization metadata not found for snapshot %s", workDetails.getSnapshotId()));
       }
-      if (workDetails.isDifferential
+      if (workDetails.isDifferential()
           && SnapshotMetadataMgr.getInitializationMetadata(
-                  networkId, _idManager.getSnapshotId(workDetails.deltaTestrig, networkId))
+                  networkId, workDetails.getReferenceSnapshotId())
               == null) {
         throw new BatfishException(
             String.format(
-                "Initialization metadata not found for snapshot %s", workDetails.deltaTestrig));
+                "Initialization metadata not found for snapshot %s",
+                workDetails.getReferenceSnapshotId()));
       }
-      success = _workQueueMgr.queueUnassignedWork(resolvedQueuedWork(workItem, workDetails));
+      success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem, workDetails));
     } catch (Exception e) {
       throw new BatfishException(String.format("Failed to queue work: %s", e.getMessage()), e);
     }
@@ -2107,67 +2128,6 @@ public class WorkMgr extends AbstractCoordinator {
       thread.start();
     }
     return success;
-  }
-
-  private static @Nonnull QueuedWork resolvedQueuedWork(
-      WorkItem workItem, WorkDetails workDetails) {
-    WorkItem resolvedWorkItem = resolveIds(workItem);
-    return new QueuedWork(resolvedWorkItem, resolveIds(resolvedWorkItem, workDetails));
-  }
-
-  private static @Nonnull WorkDetails resolveIds(
-      WorkItem resolvedWorkItem, WorkDetails workDetails) {
-    return new WorkDetails(
-        resolvedWorkItem.getTestrigName(),
-        resolvedWorkItem.getRequestParams().get(BfConsts.ARG_DELTA_TESTRIG),
-        workDetails.isDifferential,
-        workDetails.workType);
-  }
-
-  static @Nonnull WorkItem resolveIds(WorkItem workItem) {
-    IdManager idManager = Main.getWorkMgr().getIdManager();
-    Map<String, String> params = new HashMap<>(workItem.getRequestParams());
-
-    // network
-    String network = workItem.getContainerName();
-    if (network == null) {
-      return workItem;
-    }
-    NetworkId networkId = idManager.getNetworkId(network);
-    params.put(BfConsts.ARG_CONTAINER, networkId.getId());
-
-    // snapshot
-    String snapshot = workItem.getTestrigName();
-    if (snapshot == null) {
-      return workItem;
-    }
-    SnapshotId snapshotId = idManager.getSnapshotId(snapshot, networkId);
-    params.put(BfConsts.ARG_TESTRIG, snapshotId.getId());
-    params.put(BfConsts.ARG_SNAPSHOT_NAME, snapshot);
-
-    // referenceSnapshot
-    String referenceSnapshot = params.get(BfConsts.ARG_DELTA_TESTRIG);
-    if (referenceSnapshot != null) {
-      SnapshotId referenceSnapshotId = idManager.getSnapshotId(referenceSnapshot, networkId);
-      params.put(BfConsts.ARG_DELTA_TESTRIG, referenceSnapshotId.getId());
-    }
-
-    // analysis
-    AnalysisId analysisId = null;
-    String analysis = params.get(BfConsts.ARG_ANALYSIS_NAME);
-    if (analysis != null) {
-      analysisId = idManager.getAnalysisId(analysis, networkId);
-      params.put(BfConsts.ARG_ANALYSIS_NAME, analysisId.getId());
-    }
-
-    // question
-    String question = params.get(BfConsts.ARG_QUESTION_NAME);
-    if (question != null) {
-      QuestionId questionId = idManager.getQuestionId(question, networkId, analysisId);
-      params.put(BfConsts.ARG_QUESTION_NAME, questionId.getId());
-    }
-
-    return new WorkItem(workItem.getId(), networkId.getId(), snapshotId.getId(), params);
   }
 
   public void startWorkManager() {
