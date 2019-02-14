@@ -28,6 +28,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
+import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.transformation.TransformationEvaluator.TransformationResult;
 import org.junit.Before;
@@ -301,14 +302,11 @@ public class TransformationEvaluatorTest {
     assertThat(result.getOutputFlow(), equalTo(origFlow.toBuilder().setSrcPort(poolPort).build()));
 
     List<Step<?>> traceSteps = result.getTraceSteps();
-    assertThat(traceSteps, hasSize(1));
-    assertThat(
-        traceSteps.get(0),
-        equalTo(
-            new org.batfish.datamodel.flow.TransformationStep(
-                new TransformationStepDetail(
-                    SOURCE_NAT,
-                    ImmutableSortedSet.of(flowDiff(PortField.SOURCE, srcPort, poolPort))),
-                TRANSFORMED)));
+    TransformationStep step =
+        new TransformationStep(
+            new TransformationStepDetail(
+                SOURCE_NAT, ImmutableSortedSet.of(flowDiff(PortField.SOURCE, srcPort, poolPort))),
+            TRANSFORMED);
+    assertThat(traceSteps, contains(step));
   }
 }

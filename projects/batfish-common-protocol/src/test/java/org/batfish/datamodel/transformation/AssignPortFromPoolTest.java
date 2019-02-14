@@ -18,7 +18,8 @@ public class AssignPortFromPoolTest {
         .addEqualityGroup(new AssignPortFromPool(SOURCE_NAT, DESTINATION, 3000, 4000))
         .addEqualityGroup(new AssignPortFromPool(DEST_NAT, SOURCE, 3000, 4000))
         .addEqualityGroup(new AssignPortFromPool(DEST_NAT, DESTINATION, 3000, 5000))
-        .addEqualityGroup(new AssignPortFromPool(DEST_NAT, DESTINATION, 3000, 3000))
+        .addEqualityGroup(new AssignPortFromPool(DEST_NAT, DESTINATION, 5000, 4000))
+        .addEqualityGroup(new AssignPortFromPool(DEST_NAT, DESTINATION, 5000, 6000))
         .testEquals();
   }
 }

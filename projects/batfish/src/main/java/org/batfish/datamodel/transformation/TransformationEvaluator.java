@@ -109,7 +109,7 @@ public class TransformationEvaluator {
           .collect(ImmutableList.toImmutableList());
     }
 
-    private Boolean set(TransformationType type, IpField ipField, Ip oldValue, Ip newValue) {
+    private boolean set(TransformationType type, IpField ipField, Ip oldValue, Ip newValue) {
       if (oldValue.equals(newValue)) {
         getFlowDiffs(type);
         return false;
@@ -120,7 +120,7 @@ public class TransformationEvaluator {
       }
     }
 
-    private Boolean set(TransformationType type, PortField portField, int oldValue, int newValue) {
+    private boolean set(TransformationType type, PortField portField, int oldValue, int newValue) {
       if (oldValue == newValue) {
         getFlowDiffs(type);
         return false;
