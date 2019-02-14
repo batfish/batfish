@@ -52,7 +52,7 @@ public class ParserUtilsTest {
 
     /* An Test expression is a comma-separated list of TestTerms */
     public Rule TestExpression() {
-      return Sequence(TestTerm(), WhiteSpace(), ZeroOrMore(", ", TestTerm(), WhiteSpace(), EOI));
+      return Sequence(TestTerm(), WhiteSpace(), ZeroOrMore(", ", TestTerm(), WhiteSpace()));
     }
 
     /* An Test term is one of these things */
