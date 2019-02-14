@@ -141,6 +141,7 @@ public class BfConsts {
   public static final String RELPATH_ANSWERS_DIR = "answers";
   public static final String RELPATH_AWS_CONFIGS_DIR = "aws_configs";
   public static final String RELPATH_AWS_CONFIGS_FILE = "aws_configs";
+  public static final String RELPATH_BATFISH_CONFIGS_DIR = "batfish";
   public static final String RELPATH_CONFIGURATIONS_DIR = "configs";
   public static final String RELPATH_CONTAINER_SETTINGS = "settings";
   public static final String RELPATH_CONTAINER_SETTINGS_ISSUES = "issues";
@@ -161,6 +162,7 @@ public class BfConsts {
   public static final String RELPATH_INFERRED_NODE_ROLES_PATH = "node_roles_inferred.json";
   public static final String RELPATH_INPUT = "input";
   public static final String RELPATH_INTERFACE_BLACKLIST_FILE = "interface_blacklist";
+  public static final String RELPATH_ISP_CONFIG_FILE = "isp_config.json";
   public static final String RELPATH_L1_TOPOLOGY_PATH = "layer1_topology.json";
   public static final String RELPATH_METADATA_FILE = "metadata.json";
   public static final String RELPATH_NODE_BLACKLIST_FILE = "node_blacklist";

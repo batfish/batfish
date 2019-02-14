@@ -220,6 +220,7 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
     List<Trace> reverseTraces =
         traces.stream()
             .map(BidirectionalTrace::getReverseTrace)
+            .filter(Objects::nonNull)
             .distinct()
             .collect(ImmutableList.toImmutableList());
     List<String> sessionHops =

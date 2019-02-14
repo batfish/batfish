@@ -34,16 +34,22 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.BfConsts;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.Version;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
+import org.batfish.datamodel.isp_configuration.IspConfiguration;
+import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionSettingsId;
@@ -113,6 +119,33 @@ public final class FileBasedStorageTest {
     _storage.storeConfigurations(configs, oldConvertAnswer, network, snapshot);
 
     assertThat(_storage.loadConfigurations(network, snapshot), nullValue());
+  }
+
+  @Test
+  public void testLoadIspConfiguration() throws IOException {
+    NetworkId networkId = new NetworkId("network");
+    SnapshotId snapshotId = new SnapshotId("snapshot");
+
+    Path batfishConfigDir =
+        _storage
+            .getDirectoryProvider()
+            .getSnapshotInputObjectsDir(networkId, snapshotId)
+            .resolve(BfConsts.RELPATH_BATFISH_CONFIGS_DIR);
+    final boolean mkdirs = batfishConfigDir.toFile().mkdirs();
+    assertThat(mkdirs, equalTo(true));
+
+    IspConfiguration ispConfiguration =
+        new IspConfiguration(
+            ImmutableList.of(new BorderInterfaceInfo(new NodeInterfacePair("node", "interface"))),
+            new IspFilter(
+                ImmutableList.of(1L, 2L),
+                ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"))));
+    BatfishObjectMapper.mapper()
+        .writeValue(
+            batfishConfigDir.resolve(BfConsts.RELPATH_ISP_CONFIG_FILE).toFile(), ispConfiguration);
+
+    IspConfiguration readIspConfiguration = _storage.loadIspConfiguration(networkId, snapshotId);
+    assertThat(ispConfiguration, equalTo(readIspConfiguration));
   }
 
   @Test
