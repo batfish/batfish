@@ -1051,18 +1051,6 @@ public class WorkMgr extends AbstractCoordinator {
               networkNodeRolesId,
               referenceSnapshotId,
               analysisId);
-      if (question.equals("MLAG_Analyzer")) {
-        System.err.printf(
-            "%s %s %s %s %s %s %s %s\n",
-            networkId,
-            analysisId,
-            questionId,
-            snapshotId,
-            referenceSnapshotId,
-            questionSettingsId,
-            networkNodeRolesId,
-            baseAnswerId);
-      }
       if (!_storage.hasAnswerMetadata(baseAnswerId)) {
         return AnswerMetadata.forStatus(AnswerStatus.NOTFOUND);
       }
