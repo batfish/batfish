@@ -81,34 +81,6 @@ public final class TracerouteAnswerer extends Answerer {
     return table;
   }
 
-  public static TableMetadata createMetadata(boolean differential) {
-    List<ColumnMetadata> columnMetadata;
-    if (differential) {
-      columnMetadata =
-          ImmutableList.of(
-              new ColumnMetadata(COL_FLOW, Schema.FLOW, "The flow", true, false),
-              new ColumnMetadata(
-                  TableDiff.baseColumnName(COL_TRACES),
-                  Schema.set(Schema.FLOW_TRACE),
-                  "The flow traces in the BASE environment",
-                  false,
-                  true),
-              new ColumnMetadata(
-                  TableDiff.deltaColumnName(COL_TRACES),
-                  Schema.set(Schema.FLOW_TRACE),
-                  "The flow traces in the DELTA environment",
-                  false,
-                  true));
-    } else {
-      columnMetadata =
-          ImmutableList.of(
-              new ColumnMetadata(COL_FLOW, Schema.FLOW, "The flow", true, false),
-              new ColumnMetadata(
-                  COL_TRACES, Schema.set(Schema.FLOW_TRACE), "The flow traces", false, true));
-    }
-    return new TableMetadata(columnMetadata, String.format("Paths for flow ${%s}", COL_FLOW));
-  }
-
   /** Create metadata for the new traceroute v2 answer */
   public static TableMetadata metadata(boolean differential) {
     List<ColumnMetadata> columnMetadata;

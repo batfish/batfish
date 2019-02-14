@@ -1,4 +1,4 @@
-package org.batfish.datamodel;
+package org.batfish.symbolic.answers;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** Represents the result of performing a traceroute for a {@link Flow} */

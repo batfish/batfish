@@ -13,7 +13,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclTrace;
@@ -47,7 +46,6 @@ public class Schema {
           .put("Environment", getClassString(Environment.class))
           .put("FileLines", getClassString(FileLines.class))
           .put("Flow", getClassString(Flow.class))
-          .put("FlowTrace", getClassString(FlowTrace.class))
           .put("Integer", getClassString(Integer.class))
           .put("Interface", getClassString(NodeInterfacePair.class))
           .put("Ip", getClassString(Ip.class))
@@ -66,7 +64,6 @@ public class Schema {
   public static final Schema DOUBLE = new Schema("Double");
   public static final Schema FILE_LINES = new Schema("FileLines");
   public static final Schema FLOW = new Schema("Flow");
-  public static final Schema FLOW_TRACE = new Schema("FlowTrace");
   public static final Schema INTEGER = new Schema("Integer");
   public static final Schema INTERFACE = new Schema("Interface");
   public static final Schema IP = new Schema("Ip");

@@ -36,8 +36,6 @@ import org.batfish.datamodel.matchers.TraceMatchers;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
-import org.batfish.datamodel.table.TableDiff;
-import org.batfish.datamodel.table.TableMetadata;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -45,46 +43,6 @@ import org.junit.rules.ExpectedException;
 public class TracerouteAnswererTest {
 
   @Rule public ExpectedException thrown = ExpectedException.none();
-
-  @Test
-  public void testCreateMetadata() {
-    TableMetadata tableMetadata = TracerouteAnswerer.createMetadata(false);
-    List<String> columnNames =
-        tableMetadata.getColumnMetadata().stream()
-            .map(ColumnMetadata::getName)
-            .collect(ImmutableList.toImmutableList());
-    List<Schema> columnSchemas =
-        tableMetadata.getColumnMetadata().stream()
-            .map(ColumnMetadata::getSchema)
-            .collect(ImmutableList.toImmutableList());
-
-    assertThat(columnNames, equalTo(ImmutableList.of(COL_FLOW, COL_TRACES)));
-    assertThat(
-        columnSchemas, equalTo(ImmutableList.of(Schema.FLOW, Schema.set(Schema.FLOW_TRACE))));
-
-    TableMetadata diffTableMetadata = TracerouteAnswerer.createMetadata(true);
-    List<String> diffColumnNames =
-        diffTableMetadata.getColumnMetadata().stream()
-            .map(ColumnMetadata::getName)
-            .collect(ImmutableList.toImmutableList());
-    List<Schema> diffColumnSchemas =
-        diffTableMetadata.getColumnMetadata().stream()
-            .map(ColumnMetadata::getSchema)
-            .collect(ImmutableList.toImmutableList());
-
-    assertThat(
-        diffColumnNames,
-        equalTo(
-            ImmutableList.of(
-                COL_FLOW,
-                TableDiff.baseColumnName(COL_TRACES),
-                TableDiff.deltaColumnName(COL_TRACES))));
-    assertThat(
-        diffColumnSchemas,
-        equalTo(
-            ImmutableList.of(
-                Schema.FLOW, Schema.set(Schema.FLOW_TRACE), Schema.set(Schema.FLOW_TRACE))));
-  }
 
   @Test
   public void testDiffFlowTracesToRows() {

@@ -8,13 +8,12 @@ import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 
 /**
- * Indicates ability to process a set of {@link Flow} objects and return a set of {@link FlowTrace},
+ * Indicates ability to process a set of {@link Flow} objects and return a set of {@link Trace},
  * performing a traceroute.
  */
 public interface TracerouteEngine {

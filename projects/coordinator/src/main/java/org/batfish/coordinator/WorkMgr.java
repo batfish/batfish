@@ -2515,8 +2515,6 @@ public class WorkMgr extends AbstractCoordinator {
       return naturalOrder();
     } else if (schema.equals(Schema.FLOW)) {
       return naturalOrder();
-    } else if (schema.equals(Schema.FLOW_TRACE)) {
-      return naturalOrder();
     } else if (schema.equals(Schema.INTEGER)) {
       return naturalOrder();
     } else if (schema.equals(Schema.INTERFACE)) {
