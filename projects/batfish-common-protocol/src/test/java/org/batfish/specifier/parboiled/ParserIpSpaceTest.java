@@ -32,7 +32,7 @@ public class ParserIpSpaceTest {
 
     // not barfing means all potential paths have completion annotation at least for empty input
     ParserUtils.getPotentialMatches(
-        (InvalidInputError) result.parseErrors.get(0), Parser.COMPLETION_TYPES, false);
+        (InvalidInputError) result.parseErrors.get(0), Parser.ANCHORS, false);
   }
 
   /** This is a complex completion test that exercises a bunch of the grammar */
@@ -51,7 +51,7 @@ public class ParserIpSpaceTest {
         new ParboiledAutoComplete(
             Parser.INSTANCE,
             Parser.INSTANCE.input(Parser.INSTANCE.IpSpaceExpression()),
-            Parser.COMPLETION_TYPES,
+            Parser.ANCHORS,
             "network",
             "snapshot",
             query,

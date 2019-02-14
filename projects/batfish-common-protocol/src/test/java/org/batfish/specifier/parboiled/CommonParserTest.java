@@ -1,6 +1,6 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.Parser.initCompletionTypes;
+import static org.batfish.specifier.parboiled.Parser.initAnchors;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -11,9 +11,9 @@ import org.junit.Test;
 public class CommonParserTest {
 
   @Test
-  public void testInitCompletionTypes() {
+  public void testInitAnchors() {
     assertThat(
-        initCompletionTypes(TestParser.class),
+        initAnchors(TestParser.class),
         equalTo(
             ImmutableMap.of(
                 "TestSpecifierInput",

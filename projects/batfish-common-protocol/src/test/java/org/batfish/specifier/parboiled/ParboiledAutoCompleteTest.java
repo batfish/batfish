@@ -25,7 +25,7 @@ public class ParboiledAutoCompleteTest {
     return new ParboiledAutoComplete(
         TestParser.INSTANCE,
         TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()),
-        TestParser.COMPLETION_TYPES,
+        TestParser.ANCHORS,
         "network",
         "snapshot",
         query,
@@ -40,7 +40,7 @@ public class ParboiledAutoCompleteTest {
     return new ParboiledAutoComplete(
         TestParser.INSTANCE,
         TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()),
-        TestParser.COMPLETION_TYPES,
+        TestParser.ANCHORS,
         "network",
         "snapshot",
         query,
@@ -54,7 +54,7 @@ public class ParboiledAutoCompleteTest {
     return new ParboiledAutoComplete(
         TestParser.INSTANCE,
         TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()),
-        TestParser.COMPLETION_TYPES,
+        TestParser.ANCHORS,
         "network",
         "snapshot",
         query,

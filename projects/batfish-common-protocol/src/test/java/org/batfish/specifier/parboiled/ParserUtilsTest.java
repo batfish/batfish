@@ -45,7 +45,7 @@ public class ParserUtilsTest {
     ParsingResult<?> resultEmpty = getRunner().run("");
     assertThat(
         getPotentialMatches(
-            (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.COMPLETION_TYPES, false),
+            (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.ANCHORS, false),
         equalTo(_validStarts));
   }
 
@@ -54,7 +54,7 @@ public class ParserUtilsTest {
     ParsingResult<?> resultEmpty = getRunner().run("[");
     assertThat(
         getPotentialMatches(
-            (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.COMPLETION_TYPES, false),
+            (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.ANCHORS, false),
         equalTo(_validStarts));
   }
 
@@ -63,7 +63,7 @@ public class ParserUtilsTest {
     ParsingResult<?> result = getRunner().run("(1.1.1.");
     assertThat(
         getPotentialMatches(
-            (InvalidInputError) result.parseErrors.get(0), TestParser.COMPLETION_TYPES, false),
+            (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
         equalTo(ImmutableSet.of(new PotentialMatch(Type.IP_ADDRESS, "1.1.1.", null))));
   }
 
@@ -72,7 +72,7 @@ public class ParserUtilsTest {
     ParsingResult<?> resultEmpty = getRunner().run("a,");
     assertThat(
         getPotentialMatches(
-            (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.COMPLETION_TYPES, false),
+            (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.ANCHORS, false),
         equalTo(_validStarts));
   }
 
@@ -81,7 +81,7 @@ public class ParserUtilsTest {
     ParsingResult<?> resultEmpty = getRunner().run("(");
     assertThat(
         getPotentialMatches(
-            (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.COMPLETION_TYPES, false),
+            (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.ANCHORS, false),
         equalTo(_validStarts));
   }
 
@@ -90,7 +90,7 @@ public class ParserUtilsTest {
     ParsingResult<?> resultEmpty = getRunner().run("!");
     assertThat(
         getPotentialMatches(
-            (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.COMPLETION_TYPES, false),
+            (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.ANCHORS, false),
         equalTo(_validStarts));
   }
 
@@ -99,7 +99,7 @@ public class ParserUtilsTest {
     ParsingResult<?> result = getRunner().run("(1.1.1.1");
     assertThat(
         getPotentialMatches(
-            (InvalidInputError) result.parseErrors.get(0), TestParser.COMPLETION_TYPES, false),
+            (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
         equalTo(
             ImmutableSet.of(
                 new PotentialMatch(Type.STRING_LITERAL, "", ")"),
@@ -112,7 +112,7 @@ public class ParserUtilsTest {
     ParsingResult<?> result = getRunner().run("@specifier");
     assertThat(
         getPotentialMatches(
-            (InvalidInputError) result.parseErrors.get(0), TestParser.COMPLETION_TYPES, false),
+            (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
         equalTo(ImmutableSet.of(new PotentialMatch(Anchor.Type.STRING_LITERAL, "", "("))));
   }
 
@@ -121,7 +121,7 @@ public class ParserUtilsTest {
     ParsingResult<?> result = getRunner().run("@specifier(");
     assertThat(
         getPotentialMatches(
-            (InvalidInputError) result.parseErrors.get(0), TestParser.COMPLETION_TYPES, false),
+            (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
         equalTo(ImmutableSet.of(new PotentialMatch(Type.ADDRESS_GROUP_AND_BOOK, "", null))));
   }
 
@@ -130,7 +130,7 @@ public class ParserUtilsTest {
     ParsingResult<?> result = getRunner().run("@specifi");
     assertThat(
         getPotentialMatches(
-            (InvalidInputError) result.parseErrors.get(0), TestParser.COMPLETION_TYPES, false),
+            (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
         equalTo(ImmutableSet.of(new PotentialMatch(Anchor.Type.STRING_LITERAL, "@specifi", "er"))));
   }
 
@@ -139,7 +139,7 @@ public class ParserUtilsTest {
     ParsingResult<?> result = getRunner().run("@wrong");
     assertThat(
         getPotentialMatches(
-            (InvalidInputError) result.parseErrors.get(0), TestParser.COMPLETION_TYPES, false),
+            (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
         equalTo(ImmutableSet.of(new PotentialMatch(Anchor.Type.STRING_LITERAL, "@", "specifier"))));
   }
 }

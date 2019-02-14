@@ -16,10 +16,11 @@ import org.parboiled.support.MatcherPath;
  * A parboiled-based parser for flexible specifiers. The rules for all types of expressions are in
  * this file (not sure how to put them in different files when they point to each other).
  *
- * <p>@Anchor annotation: For each path from the top-level rule of an expression to leaf values,
- * there should be at least one rule with a Anchor annotation. This annotation is used for error
- * messages and generating auto completion suggestions. Character and string literals are treated as
- * implicit anchors (see {@link ParserUtils#findPathAnchor(MatcherPath, int, Map, boolean)}
+ * <p>{@link Anchor} annotation: For each path from the top-level rule of an expression to leaf
+ * values, there should be at least one rule with a Anchor annotation. This annotation is used for
+ * error messages and generating auto completion suggestions. Character and string literals are
+ * treated as implicit anchors (see {@link ParserUtils#findPathAnchor(MatcherPath, int, Map,
+ * boolean)}
  */
 @SuppressWarnings({
   "checkstyle:methodname", // this class uses idiomatic names
@@ -29,7 +30,7 @@ class Parser extends CommonParser {
 
   static final Parser INSTANCE = Parboiled.createParser(Parser.class);
 
-  static final Map<String, Anchor.Type> COMPLETION_TYPES = initCompletionTypes(Parser.class);
+  static final Map<String, Anchor.Type> ANCHORS = initAnchors(Parser.class);
 
   /**
    * IpSpace grammar

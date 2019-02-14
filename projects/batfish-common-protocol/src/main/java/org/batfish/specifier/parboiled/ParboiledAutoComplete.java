@@ -73,7 +73,7 @@ public final class ParboiledAutoComplete {
     return new ParboiledAutoComplete(
             Parser.INSTANCE,
             Parser.INSTANCE.IpSpaceExpression(),
-            Parser.COMPLETION_TYPES,
+            Parser.ANCHORS,
             network,
             snapshot,
             query,

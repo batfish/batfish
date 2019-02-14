@@ -14,8 +14,8 @@ import org.parboiled.Rule;
  *
  * <p>The rules in this class should not put anything on the stack.
  *
- * <p>They should also not contain any explicit of implicit anchors. Because character literals are
- * implicit anchors, we implement them using a character range below.
+ * <p>They should also not contain any explicit of implicit anchors. One implication of this:
+ * because character literals are implicit anchors, we implement them using a character range below.
  */
 @SuppressWarnings({
   "checkstyle:methodname", // this class uses idiomatic names
@@ -23,7 +23,7 @@ import org.parboiled.Rule;
 })
 abstract class CommonParser extends BaseParser<AstNode> {
 
-  static Map<String, Type> initCompletionTypes(Class<?> parserClass) {
+  static Map<String, Type> initAnchors(Class<?> parserClass) {
     ImmutableMap.Builder<String, Anchor.Type> completionTypes = ImmutableMap.builder();
     // Explicitly add WHITESPACE and EOI
     completionTypes.put("WhiteSpace", Type.WHITESPACE);
@@ -46,6 +46,7 @@ abstract class CommonParser extends BaseParser<AstNode> {
     return Sequence(WhiteSpace(), expression, WhiteSpace(), EOI);
   }
 
+  /** See class JavaDoc for why this is a CharRange and not Ch */
   public Rule Dash() {
     return CharRange('-', '-');
   }
@@ -84,6 +85,7 @@ abstract class CommonParser extends BaseParser<AstNode> {
         ZeroOrMore(FirstOf(AlphabetChar(), Underscore(), Digit(), Dash())));
   }
 
+  /** See class JavaDoc for why this is a CharRange and not Ch */
   public Rule Underscore() {
     return CharRange('_', '_');
   }

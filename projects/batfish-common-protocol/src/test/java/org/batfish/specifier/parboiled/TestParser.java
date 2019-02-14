@@ -17,7 +17,7 @@ class TestParser extends CommonParser {
 
   public static final TestParser INSTANCE = Parboiled.createParser(TestParser.class);
 
-  public static final Map<String, Type> COMPLETION_TYPES = initCompletionTypes(TestParser.class);
+  public static final Map<String, Type> ANCHORS = initAnchors(TestParser.class);
 
   /**
    * Test grammar

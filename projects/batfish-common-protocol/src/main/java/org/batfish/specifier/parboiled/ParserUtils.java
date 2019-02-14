@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.specifier.parboiled.Anchor.Type;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.support.MatcherPath;
 import org.parboiled.support.MatcherPath.Element;
@@ -20,7 +19,9 @@ import org.parboiled.support.ParsingResult;
 @ParametersAreNonnullByDefault
 final class ParserUtils {
 
-  /** Captures where in the matching path we can anchor errors reporting and auto completion. */
+  /**
+   * Captures anchors in potentially matching paths for anchor error reporting and auto completion.
+   */
   private static class PathAnchor {
     private final Anchor.Type _anchorType;
     private final Element _element;
@@ -52,7 +53,7 @@ final class ParserUtils {
       String input,
       String inputType,
       InvalidInputError error,
-      Map<String, org.batfish.specifier.parboiled.Anchor.Type> completionTypes) {
+      Map<String, Anchor.Type> completionTypes) {
     return getErrorString(
         input, inputType, error.getStartIndex(), getPotentialMatches(error, completionTypes, true));
   }
@@ -78,7 +79,7 @@ final class ParserUtils {
   /** Generates a friendly message to explain what might be wrong with a particular partial match */
   @VisibleForTesting
   static String getErrorString(PotentialMatch pm) {
-    if (pm.getAnchorType().equals(org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL)) {
+    if (pm.getAnchorType().equals(Anchor.Type.STRING_LITERAL)) {
       return String.format("'%s'", pm.getMatchCompletion());
     }
     return String.format("%s", pm.getAnchorType());
@@ -102,14 +103,12 @@ final class ParserUtils {
    * https://github.com/sirthias/parboiled/blob/07b6e2b5c583c7e258599650157a3b0d2b63667a/parboiled-core/src/main/java/org/parboiled/errors/DefaultInvalidInputErrorFormatter.java#L60.
    */
   static Set<PotentialMatch> getPotentialMatches(
-      InvalidInputError error,
-      Map<String, org.batfish.specifier.parboiled.Anchor.Type> completionTypes,
-      boolean fromTop) {
+      InvalidInputError error, Map<String, Anchor.Type> anchorTypes, boolean fromTop) {
     ImmutableSet.Builder<PotentialMatch> potentialMatches = ImmutableSet.builder();
 
     for (MatcherPath path : error.getFailedMatchers()) {
       PathAnchor pathAnchor =
-          findPathAnchor(path, fromTop ? 0 : path.length() - 1, completionTypes, fromTop);
+          findPathAnchor(path, fromTop ? 0 : path.length() - 1, anchorTypes, fromTop);
 
       if (pathAnchor == null) {
         // Getting here means the grammar is missing a Anchor annotation. See Parser's JavaDoc.
@@ -118,7 +117,7 @@ final class ParserUtils {
       }
 
       // Ignore paths whose anchor is WHITESPACE -- nothing interesting to report there
-      if (pathAnchor._anchorType.equals(Type.WHITESPACE)) {
+      if (pathAnchor._anchorType.equals(Anchor.Type.WHITESPACE)) {
         continue;
       }
 
@@ -131,7 +130,7 @@ final class ParserUtils {
               .getInputBuffer()
               .extract(pathAnchor.getElement().startIndex, path.element.startIndex);
 
-      if (pathAnchor._anchorType.equals(Type.STRING_LITERAL)) {
+      if (pathAnchor._anchorType.equals(Anchor.Type.STRING_LITERAL)) {
         String fullToken = pathAnchor.getElement().matcher.getLabel();
         if (fullToken.length() >= 2) { // remove surrounding quotes
           fullToken = fullToken.substring(1, fullToken.length() - 1);
@@ -152,7 +151,7 @@ final class ParserUtils {
   /** Finds the anchor in the path. Returns null if none is found. */
   @Nullable
   private static PathAnchor findPathAnchor(
-      MatcherPath path, int level, Map<String, Type> completionTypes, boolean fromTop) {
+      MatcherPath path, int level, Map<String, Anchor.Type> completionTypes, boolean fromTop) {
 
     MatcherPath.Element element = path.getElementAtLevel(level);
     String label = element.matcher.getLabel();
@@ -160,19 +159,19 @@ final class ParserUtils {
     if (completionTypes.containsKey(label)) {
       return new PathAnchor(element, completionTypes.get(label));
     } else if (isStringLiteralLabel(label)) {
-      return new PathAnchor(element, Type.STRING_LITERAL);
+      return new PathAnchor(element, Anchor.Type.STRING_LITERAL);
     } else if (isCharLiteralLabel(label)) {
       // char literals appear at the bottom; if we are searching from top, we've reached the end
       if (fromTop || level == 0) {
-        return new PathAnchor(element, Type.STRING_LITERAL);
+        return new PathAnchor(element, Anchor.Type.STRING_LITERAL);
       }
       // if the parent label is a literal string (e.g., "@specifier"), use that because we want to
       // autocomplete the entire string not just one of its characters
       MatcherPath.Element parentElement = path.getElementAtLevel(level - 1);
       if (isStringLiteralLabel(parentElement.matcher.getLabel())) {
-        return new PathAnchor(parentElement, Type.STRING_LITERAL);
+        return new PathAnchor(parentElement, Anchor.Type.STRING_LITERAL);
       }
-      return new PathAnchor(element, Type.STRING_LITERAL);
+      return new PathAnchor(element, Anchor.Type.STRING_LITERAL);
     } else if ((fromTop && level == path.length() - 1) || (!fromTop && level == 0)) {
       // we have reached the last element in the path
       return null;
