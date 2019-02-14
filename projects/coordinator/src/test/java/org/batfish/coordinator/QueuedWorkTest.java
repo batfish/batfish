@@ -8,13 +8,20 @@ import static org.junit.Assert.assertThat;
 import org.batfish.common.CoordConsts.WorkStatusCode;
 import org.batfish.common.WorkItem;
 import org.batfish.coordinator.WorkDetails.WorkType;
+import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.SnapshotId;
 import org.junit.Test;
 
 public final class QueuedWorkTest {
 
   private static QueuedWork createWork(String network, String snapshot) {
     return new QueuedWork(
-        new WorkItem(network, snapshot), new WorkDetails(snapshot, WorkType.UNKNOWN));
+        new WorkItem(network, snapshot),
+        WorkDetails.builder()
+            .setWorkType(WorkType.UNKNOWN)
+            .setNetworkId(new NetworkId(network + "-ID"))
+            .setSnapshotId(new SnapshotId(snapshot + "-ID"))
+            .build());
   }
 
   @Test
