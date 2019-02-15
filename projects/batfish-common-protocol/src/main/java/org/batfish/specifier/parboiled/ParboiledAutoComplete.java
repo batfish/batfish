@@ -142,8 +142,6 @@ public final class ParboiledAutoComplete {
 
   @VisibleForTesting
   List<AutocompleteSuggestion> autoCompletePotentialMatch(PotentialMatch pm, int startIndex) {
-
-    List<AutocompleteSuggestion> suggestions = null;
     switch (pm.getAnchorType()) {
       case ADDRESS_GROUP_AND_BOOK:
         return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);

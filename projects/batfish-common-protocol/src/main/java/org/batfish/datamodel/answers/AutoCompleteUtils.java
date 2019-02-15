@@ -317,9 +317,8 @@ public final class AutoCompleteUtils {
    * Returns a list of suggestions based on the query. The current implementation treats the query
    * as a substring of the property string.
    *
-   * <p>TODO: Get rid of this method in favor of methods below.
+   * <p>TODO: Get rid of this method in favor of methods below. Stop doing implicit regexes.
    */
-  @Deprecated
   @Nonnull
   public static List<AutocompleteSuggestion> baseAutoComplete(
       @Nullable String query, Set<String> allProperties) {
