@@ -1,6 +1,7 @@
 workspace(name = "batfish")
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_jar")
 
 ##########################################################
 # The Maven artifacts depended-upon by our Java projects #
@@ -25,10 +26,10 @@ maven_repositories()
 maven_repository(
     name = "antlr4_runtime",
     transitive_deps = [
-        "30b13b7efc55b7feea667691509cf59902375001:org.antlr:antlr4-runtime:4.7",
+        "e27d8ab4f984f9d186f54da984a6ab1cccac755e:org.antlr:antlr4-runtime:4.7.2",
     ],
     deps = [
-        "org.antlr:antlr4-runtime:4.7",
+        "org.antlr:antlr4-runtime:4.7.2",
     ],
 )
 
@@ -1179,3 +1180,13 @@ maven_repository(
 load("@xstream//:rules.bzl", "xstream_compile")
 
 xstream_compile()
+
+##########################################################
+## Third section: tools
+
+# ANTLR4 tool
+http_jar(
+    name="antlr4_tool",
+    sha256="6852386d7975eff29171dae002cc223251510d35f291ae277948f381a7b380b4",
+    url="https://search.maven.org/remotecontent?filepath=org/antlr/antlr4/4.7.2/antlr4-4.7.2-complete.jar"
+)

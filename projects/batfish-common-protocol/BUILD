@@ -180,7 +180,7 @@ genrule(
         "RecoveryParserListener.java",
     ],
     cmd = """
-java -cp $(location //third_party/org/antlr4/antlr4-complete) \
+java -cp $(location @antlr4_tool//jar) \
     org.antlr.v4.Tool \
     -Xexact-output-dir \
        $(location src/test/antlr4/org/batfish/grammar/recovery/RecoveryLexer.g4) \
@@ -189,7 +189,7 @@ java -cp $(location //third_party/org/antlr4/antlr4-complete) \
     -encoding UTF-8 \
     -Werror \
     -o $(@D)""",
-    tools = ["//third_party/org/antlr4/antlr4-complete"],
+    tools = ["@antlr4_tool//jar"],
 )
 
 genrule(
