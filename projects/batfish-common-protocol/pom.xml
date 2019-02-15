@@ -146,6 +146,11 @@
     </dependency>
 
     <dependency>
+      <groupId>com.ibm.icu</groupId>
+      <artifactId>icu4j</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>com.microsoft.z3</groupId>
       <artifactId>z3</artifactId>
     </dependency>
