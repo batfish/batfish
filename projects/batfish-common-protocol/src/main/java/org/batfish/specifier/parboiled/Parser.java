@@ -1,16 +1,23 @@
 package org.batfish.specifier.parboiled;
 
 import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_AND_BOOK;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_AND_BOOK;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_TYPE;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_ADDRESS;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_ADDRESS_MASK;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_PREFIX;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_RANGE;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
+import static org.batfish.specifier.parboiled.Anchor.Type.VRF;
+import static org.batfish.specifier.parboiled.Anchor.Type.ZONE;
 
 import java.util.Map;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
 import org.parboiled.support.MatcherPath;
+import org.parboiled.support.Var;
 
 /**
  * A parboiled-based parser for flexible specifiers. The rules for all types of expressions are in
@@ -33,12 +40,164 @@ class Parser extends CommonParser {
   static final Map<String, Anchor.Type> ANCHORS = initAnchors(Parser.class);
 
   /**
+   * Interface grammar
+   *
+   * <pre>
+   *   interfaceExpr := interfaceTerm [&/+/- interfaceTerm]*
+   *
+   *   interfaceTerm := @connectedTo(ipSpaceExpr)  // also, non-@ versions supported for back compat
+   *                        | @interfacegroup(a, b)
+   *                        | @type(interfaceType)
+   *                        | @vrf(vrfName)
+   *                        | @zone(zoneName)
+   *                        | interfaceName | interfaceRegex
+   *                        | ( interfaceTerm )
+   * </pre>
+   */
+
+  /* An Interface expression a list of of Interface separated by + or - */
+  public Rule InterfaceExpression() {
+    Var<Character> op = new Var<>();
+    return Sequence(
+        InterfaceIntersection(),
+        WhiteSpace(),
+        ZeroOrMore(
+            FirstOf("+ ", "- "),
+            op.set(matchedChar()),
+            InterfaceIntersection(),
+            push(SetOpInterfaceAstNode.create(op.get(), pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule InterfaceIntersection() {
+    return Sequence(
+        InterfaceTerm(),
+        WhiteSpace(),
+        ZeroOrMore(
+            "& ",
+            InterfaceTerm(),
+            push(new IntersectionInterfaceAstNode(pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule InterfaceTerm() {
+    return FirstOf(
+        InterfaceConnectedTo(),
+        InterfaceInterfaceGroup(),
+        InterfaceType(),
+        InterfaceVrf(),
+        InterfaceZone(),
+        InterfaceNameRegex(),
+        InterfaceName(),
+        InterfaceParens());
+  }
+
+  public Rule InterfaceConnectedTo() {
+    return Sequence(
+        FirstOf(IgnoreCase("@connectedTo"), IgnoreCase("connectedTo")),
+        WhiteSpace(),
+        "( ",
+        IpSpaceExpression(),
+        WhiteSpace(),
+        ") ",
+        push(new ConnectedToInterfaceAstNode(pop())));
+  }
+
+  public Rule InterfaceInterfaceGroup() {
+    return Sequence(
+        FirstOf(IgnoreCase("@interfacegroup"), IgnoreCase("ref.interfacegroup")),
+        WhiteSpace(),
+        "( ",
+        InterfaceGroupAndBook(),
+        ") ",
+        push(new InterfaceGroupInterfaceAstNode(pop(1), pop())));
+  }
+
+  /** Matches AddressGroup, ReferenceBook pair. Puts two values on stack */
+  @Anchor(INTERFACE_GROUP_AND_BOOK)
+  public Rule InterfaceGroupAndBook() {
+    return Sequence(
+        ReferenceObjectNameLiteral(),
+        push(new StringAstNode(match())),
+        WhiteSpace(),
+        ", ",
+        ReferenceObjectNameLiteral(),
+        push(new StringAstNode(match())),
+        WhiteSpace());
+  }
+
+  public Rule InterfaceType() {
+    return Sequence(
+        FirstOf(IgnoreCase("@type"), IgnoreCase("type")),
+        WhiteSpace(),
+        "( ",
+        InterfaceTypeExpr(),
+        WhiteSpace(),
+        ") ",
+        push(new TypeInterfaceAstNode(pop())));
+  }
+
+  @Anchor(INTERFACE_TYPE)
+  public Rule InterfaceTypeExpr() {
+    return Sequence(
+        OneOrMore(FirstOf(AlphabetChar(), Underscore())), push(new InterfaceTypeAstNode(match())));
+  }
+
+  public Rule InterfaceVrf() {
+    return Sequence(
+        FirstOf(IgnoreCase("@vrf"), IgnoreCase("vrf")),
+        WhiteSpace(),
+        "( ",
+        VrfName(),
+        WhiteSpace(),
+        ") ",
+        push(new VrfInterfaceAstNode(pop())));
+  }
+
+  @Anchor(VRF)
+  public Rule VrfName() {
+    return Sequence(OneOrMore(NameCharsAndDash()), push(new StringAstNode(match())));
+  }
+
+  public Rule InterfaceZone() {
+    return Sequence(
+        FirstOf(IgnoreCase("@zone"), IgnoreCase("zone")),
+        WhiteSpace(),
+        "( ",
+        ZoneName(),
+        WhiteSpace(),
+        ") ",
+        push(new ZoneInterfaceAstNode(pop())));
+  }
+
+  @Anchor(ZONE)
+  public Rule ZoneName() {
+    return Sequence(OneOrMore(NameCharsAndDash()), push(new StringAstNode(match())));
+  }
+
+  @Anchor(INTERFACE_NAME)
+  public Rule InterfaceName() {
+    return Sequence(
+        OneOrMore(FirstOf(NameChars(), Colon(), Slash())), push(new NameInterfaceAstNode(match())));
+  }
+
+  @Anchor(INTERFACE_NAME_REGEX)
+  public Rule InterfaceNameRegex() {
+    return Sequence('/', Regex(), push(new NameRegexInterfaceAstNode(match())), '/');
+  }
+
+  public Rule InterfaceParens() {
+    // Leave the stack as is -- no need to remember that this was a parenthetical term
+    return Sequence("( ", InterfaceTerm(), WhiteSpace(), ") ");
+  }
+
+  /**
    * IpSpace grammar
    *
    * <pre>
-   * ipSpec := ipSpecTerm [, ipSpecTerm]*
+   * ipSpaceSpec := ipSpecTerm [, ipSpecTerm]*
    *
-   * ipSpecTerm := addgressgroup(groupname, bookname)
+   * ipSpecTerm := @addgressgroup(groupname, bookname)  //ref.addressgroup for back compat
    *               | ipPrefix (e.g., 1.1.1.0/24)
    *               | ipWildcard (e.g., 1.1.1.1:255.255.255.0)
    *               | ipRange (e.g., 1.1.1.1-1.1.1.2)
@@ -68,7 +227,7 @@ class Parser extends CommonParser {
         "( ",
         AddressGroupAndBook(),
         ") ",
-        push(new AddressGroupAstNode(pop(1), pop())));
+        push(new AddressGroupIpSpaceAstNode(pop(1), pop())));
   }
 
   /** Matches AddressGroup, ReferenceBook pair. Puts two values on stack */

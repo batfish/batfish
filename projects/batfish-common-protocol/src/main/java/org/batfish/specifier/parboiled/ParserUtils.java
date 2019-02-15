@@ -1,7 +1,5 @@
 package org.batfish.specifier.parboiled;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -41,10 +39,13 @@ final class ParserUtils {
   }
 
   static AstNode getAst(ParsingResult<AstNode> result) {
-    checkArgument(
-        result.parseErrors.isEmpty(),
-        "Cannot get AST because parsing failed for '%s'",
-        result.inputBuffer);
+    if (!result.parseErrors.isEmpty()) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Cannot get AST. Parsing failed for '%s' at index %s",
+              result.inputBuffer.extract(0, Integer.MAX_VALUE),
+              result.parseErrors.get(0).getStartIndex()));
+    }
     return Iterables.getOnlyElement(result.valueStack);
   }
 

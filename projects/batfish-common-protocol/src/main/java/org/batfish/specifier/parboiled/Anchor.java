@@ -21,8 +21,14 @@ import java.lang.annotation.Target;
     IP_PREFIX,
     IP_RANGE,
     IP_WILDCARD,
+    INTERFACE_GROUP_AND_BOOK,
+    INTERFACE_NAME,
+    INTERFACE_NAME_REGEX,
+    INTERFACE_TYPE,
     STRING_LITERAL,
-    WHITESPACE
+    VRF,
+    WHITESPACE,
+    ZONE
   }
 
   Type value();
