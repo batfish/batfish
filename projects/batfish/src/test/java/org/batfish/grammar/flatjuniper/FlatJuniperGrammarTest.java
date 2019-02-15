@@ -4477,14 +4477,14 @@ public final class FlatJuniperGrammarTest {
     assertNotNull(pool1.getPatPool());
     assertThat(pool1.getPatPool().getFromPort(), equalTo(2000));
     assertThat(pool1.getPatPool().getToPort(), equalTo(3000));
-    assertNull(pool1.getPatPool().getPortTranslation());
+    assertTrue(pool1.getPatPool().getPortTranslation());
 
     // pool2 should have a pat pool specified with port translation equal false, but port range
     // configured
     assertNotNull(pool2);
     assertNotNull(pool2.getPatPool());
-    assertNull(pool2.getPatPool().getFromPort());
-    assertNull(pool2.getPatPool().getToPort());
+    assertThat(pool2.getPatPool().getFromPort(), equalTo(-1));
+    assertThat(pool2.getPatPool().getToPort(), equalTo(-1));
     assertFalse(pool2.getPatPool().getPortTranslation());
 
     // pool3 should have a pat pool with port translation equal false and range [10000,20000]
@@ -4492,7 +4492,7 @@ public final class FlatJuniperGrammarTest {
     assertNotNull(pool3.getPatPool());
     assertThat(pool3.getPatPool().getFromPort(), equalTo(10000));
     assertThat(pool3.getPatPool().getToPort(), equalTo(20000));
-    assertFalse(pool3.getPatPool().getPortTranslation());
+    assertTrue(pool3.getPatPool().getPortTranslation());
 
     Nat destNat = juniperConfiguration.getMasterLogicalSystem().getNatDestination();
     NatPool pool4 = destNat.getPools().get("POOL4");
