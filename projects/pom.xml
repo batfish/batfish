@@ -63,6 +63,7 @@
     <grizzly.version>2.4.3</grizzly.version>
     <guava.version>26.0-jre</guava.version>
     <guava-eea.version>0.0.1</guava-eea.version>
+    <icu4j.version>63.1</icu4j.version>
     <jackson.version>2.9.7</jackson.version>
     <javabdd.version>2018-07-26-36d0ed6-batfish-internal</javabdd.version>
     <java-hamcrest.version>2.0.0.0</java-hamcrest.version>
@@ -709,6 +710,12 @@
         <groupId>com.google.guava</groupId>
         <artifactId>guava-testlib</artifactId>
         <version>${guava.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.ibm.icu</groupId>
+        <artifactId>icu4j</artifactId>
+        <version>${icu4j.version}</version>
       </dependency>
 
       <dependency>

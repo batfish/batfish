@@ -74,6 +74,7 @@ java_library(
         "@grizzly_framework//:compile",
         "@grizzly_server//:compile",
         "@guava//:compile",
+        "@icu4j//:compile",
         "@jackson_annotations//:compile",
         "@jackson_core//:compile",
         "@jackson_databind//:compile",
