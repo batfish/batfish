@@ -443,10 +443,14 @@ public class WorkQueueMgr {
           WorkItem wItem = work.getWorkItem();
           WorkDetails wDetails = work.getDetails();
           if (wDetails.getWorkType() == WorkType.PARSING) {
-            ProcessingStatus status =
-                (task.getStatus() == TaskStatus.TerminatedNormally)
-                    ? ProcessingStatus.PARSED
-                    : ProcessingStatus.PARSING_FAIL;
+            ProcessingStatus status;
+            if (task.getStatus() == TaskStatus.TerminatedNormally) {
+              status = ProcessingStatus.PARSED;
+              Main.getWorkMgr()
+                  .tryPromoteSnapshotNodeRoles(wDetails.getNetworkId(), wDetails.getSnapshotId());
+            } else {
+              status = ProcessingStatus.PARSING_FAIL;
+            }
             SnapshotMetadataMgr.updateInitializationStatus(
                 wDetails.getNetworkId(), wDetails.getSnapshotId(), status, task.getErrMessage());
           } else if (wDetails.getWorkType() == WorkType.DATAPLANING) {

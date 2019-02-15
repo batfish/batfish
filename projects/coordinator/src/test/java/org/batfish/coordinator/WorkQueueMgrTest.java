@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 
@@ -28,7 +29,9 @@ import org.batfish.coordinator.queues.WorkQueue.Type;
 import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.role.NodeRolesData;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -1289,10 +1292,9 @@ public final class WorkQueueMgrTest {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
 
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId);
     WorkDetails.Builder builder =
-        WorkDetails.builder()
-            .setNetworkId(_networkId)
-            .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId));
+        WorkDetails.builder().setNetworkId(_networkId).setSnapshotId(snapshotId);
     QueuedWork work1 =
         new QueuedWork(
             new WorkItem(NETWORK, snapshot), builder.setWorkType(WorkType.PARSING).build());
@@ -1314,6 +1316,11 @@ public final class WorkQueueMgrTest {
 
     QueuedWork aWork1 =
         doAction(new Action(ActionType.ASSIGN_SUCCESS, null)); // should be parsing work
+    Main.getWorkMgr()
+        .getStorage()
+        .storeNodeRoles(
+            NodeRolesData.builder().build(),
+            _idManager.getSnapshotNodeRolesId(_networkId, snapshotId));
     doAction(new Action(ActionType.STATUS_TERMINATED_NORMALLY, aWork1));
 
     QueuedWork aWork2 = doAction(new Action(ActionType.ASSIGN_SUCCESS, null));
@@ -1333,10 +1340,9 @@ public final class WorkQueueMgrTest {
     String snapshot = "snapshot1";
     initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
 
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId);
     WorkDetails.Builder builder =
-        WorkDetails.builder()
-            .setNetworkId(_networkId)
-            .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId));
+        WorkDetails.builder().setNetworkId(_networkId).setSnapshotId(snapshotId);
     QueuedWork work1 =
         new QueuedWork(
             new WorkItem(NETWORK, snapshot), builder.setWorkType(WorkType.PARSING).build());
@@ -1358,6 +1364,11 @@ public final class WorkQueueMgrTest {
 
     QueuedWork aWork1 =
         doAction(new Action(ActionType.ASSIGN_SUCCESS, null)); // should be parsing work
+    Main.getWorkMgr()
+        .getStorage()
+        .storeNodeRoles(
+            NodeRolesData.builder().build(),
+            _idManager.getSnapshotNodeRolesId(_networkId, snapshotId));
     doAction(new Action(ActionType.STATUS_TERMINATED_NORMALLY, aWork1));
 
     QueuedWork aWork2 = doAction(new Action(ActionType.ASSIGN_SUCCESS, null));
@@ -1396,5 +1407,86 @@ public final class WorkQueueMgrTest {
      */
     assertThat(work1.getStatus(), equalTo(WorkStatusCode.TERMINATEDBYUSER));
     assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(0L));
+  }
+
+  @Test
+  public void testProcessTaskCheckResultPromoteSuccessfulParse() throws Exception {
+    String snapshot = "snapshot1";
+    initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId);
+    NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(_networkId, snapshotId);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeNodeRoles(NodeRolesData.builder().build(), snapshotNodeRolesId);
+
+    assertFalse(_idManager.hasNetworkNodeRolesId(_networkId));
+
+    QueuedWork work1 =
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot),
+            WorkDetails.builder()
+                .setWorkType(WorkType.PARSING)
+                .setNetworkId(_networkId)
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+                .build());
+
+    doAction(new Action(ActionType.QUEUE, work1));
+    _workQueueMgr.processTaskCheckResult(work1, new Task(TaskStatus.TerminatedNormally, "Fake"));
+
+    assertThat(_idManager.getNetworkNodeRolesId(_networkId), equalTo(snapshotNodeRolesId));
+  }
+
+  @Test
+  public void testProcessTaskCheckResultPromoteUnsuccessfulParse() throws Exception {
+    String snapshot = "snapshot1";
+    initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId);
+    NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(_networkId, snapshotId);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeNodeRoles(NodeRolesData.builder().build(), snapshotNodeRolesId);
+
+    assertFalse(_idManager.hasNetworkNodeRolesId(_networkId));
+
+    QueuedWork work1 =
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot),
+            WorkDetails.builder()
+                .setWorkType(WorkType.PARSING)
+                .setNetworkId(_networkId)
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+                .build());
+
+    doAction(new Action(ActionType.QUEUE, work1));
+    _workQueueMgr.processTaskCheckResult(work1, new Task(TaskStatus.TerminatedAbnormally, "Fake"));
+
+    assertFalse(_idManager.hasNetworkNodeRolesId(_networkId));
+  }
+
+  @Test
+  public void testProcessTaskCheckResultPromoteNoChange() throws Exception {
+    String snapshot = "snapshot1";
+    initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId);
+    NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(_networkId, snapshotId);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeNodeRoles(NodeRolesData.builder().build(), snapshotNodeRolesId);
+    NodeRolesId oldNodeRolesId = new NodeRolesId("old");
+    _idManager.assignNetworkNodeRolesId(_networkId, oldNodeRolesId);
+
+    QueuedWork work1 =
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot),
+            WorkDetails.builder()
+                .setWorkType(WorkType.PARSING)
+                .setNetworkId(_networkId)
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+                .build());
+
+    doAction(new Action(ActionType.QUEUE, work1));
+    _workQueueMgr.processTaskCheckResult(work1, new Task(TaskStatus.TerminatedNormally, "Fake"));
+
+    assertThat(_idManager.getNetworkNodeRolesId(_networkId), equalTo(oldNodeRolesId));
   }
 }
