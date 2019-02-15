@@ -21,27 +21,6 @@ maven_repositories()
 ##########################################################
 ## Second section: per-library, what we depend on
 
-# ANTLR 4
-maven_repository(
-    name = "antlr4",
-    transitive_deps = [
-        "db9fd4b4c189cf1518db14c67d14a2cfcfbe59f6:com.ibm.icu:icu4j:58.2",
-        "457216e8e6578099ae63667bb1e4439235892028:org.abego.treelayout:org.abego.treelayout.core:1.0.3",
-        "0a1c55e974f8a94d78e2348fa6ff63f4fa1fae64:org.antlr:ST4:4.0.8",
-        "cd6df46532bccabd8127c18c9ca5ef481962e931:org.antlr:antlr4:4.7",
-        "30b13b7efc55b7feea667691509cf59902375001:org.antlr:antlr4-runtime:4.7",
-        "cd9cd41361c155f3af0f653009dcecb08d8b4afd:org.antlr:antlr-runtime:3.5.2",
-        "3178f73569fd7a1e5ffc464e680f7a8cc784b85a:org.glassfish:javax.json:1.0.4",
-    ],
-    deps = [
-        "org.antlr:antlr4:4.7",
-    ],
-)
-
-load("@antlr4//:rules.bzl", "antlr4_compile")
-
-antlr4_compile()
-
 # ANTLR 4 Runtime
 maven_repository(
     name = "antlr4_runtime",
