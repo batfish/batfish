@@ -1,7 +1,5 @@
 package org.batfish.datamodel;
 
-import static com.google.common.base.Preconditions.checkState;
-
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Arrays;
@@ -39,13 +37,4 @@ public enum FlowDisposition {
       ImmutableSet.of(ACCEPTED, DELIVERED_TO_SUBNET, EXITS_NETWORK);
   public static final Set<FlowDisposition> FAILURE_DISPOSITIONS =
       ImmutableSet.copyOf(Sets.difference(ALL_DISPOSITIONS, SUCCESS_DISPOSITIONS));
-
-  static {
-    checkState(
-        Sets.intersection(SUCCESS_DISPOSITIONS, FAILURE_DISPOSITIONS).isEmpty(),
-        "A FlowDisposition cannot be both a success and a failure.");
-    checkState(
-        Sets.union(SUCCESS_DISPOSITIONS, FAILURE_DISPOSITIONS).equals(ALL_DISPOSITIONS),
-        "Every FlowDisposition must be either a success or a failure.");
-  }
 }
