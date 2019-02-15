@@ -2389,6 +2389,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterNat_pool(Nat_poolContext ctx) {
     String poolName = ctx.name.getText();
     _currentNatPool = _currentNat.getPools().computeIfAbsent(poolName, p -> new NatPool());
+    if (_currentNat.getType() == SOURCE && _currentNatPool.getPatPool() == null) {
+      PatPool patPool = new PatPool();
+      patPool.setPortTranslation(true);
+      _currentNatPool.setPatPool(patPool);
+    }
     defineStructure(NAT_POOL, poolName, ctx);
   }
 
@@ -4396,6 +4401,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (ctx.TO() != null) {
         _currentNatPool.getPatPool().setToPort(Integer.parseInt(ctx.to.getText()));
       }
+      _currentNatPool.getPatPool().setPortTranslation(true);
     } else {
       _w.redFlag(ctx.getText() + " cannot be recognized");
     }

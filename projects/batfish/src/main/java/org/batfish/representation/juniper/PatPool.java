@@ -6,23 +6,20 @@ public class PatPool implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
-  // null value means that no port is specified
-  private Integer _fromPort;
+  // -1 means that no port is specified; so we need to apply a default value
+  private int _fromPort;
 
-  // null value means that no port is specified
-  private Integer _toPort;
+  // -1 means that no port is specified; so we need to apply a default value
+  private int _toPort;
 
-  // 1. null value means no port translation related configuration is given. when the value is null,
-  // source nat
-  // will apply PAT and dest nat will not apply PAT by default
-  // 2. true means that a specific PAT command is found in the configuration that requires PAT
-  // 3. no means that a specific PAT command is found in the configuration that requires no PAT
-  private Boolean _portTranslation;
+  // 1. true means that we need to apply PAT
+  // 2. no means that we should not apply PAT
+  private boolean _portTranslation;
 
   public PatPool() {
-    _fromPort = null;
-    _toPort = null;
-    _portTranslation = null;
+    _fromPort = -1;
+    _toPort = -1;
+    _portTranslation = false;
   }
 
   public Integer getFromPort() {
