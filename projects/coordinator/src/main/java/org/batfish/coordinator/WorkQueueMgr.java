@@ -1,6 +1,5 @@
 package org.batfish.coordinator;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
@@ -81,23 +80,31 @@ public class WorkQueueMgr {
     }
   }
 
-  private void cleanUpInitMetaDataIfNeeded(String container, String testrig) throws IOException {
-    InitializationMetadata metadata = WorkQueueMgr.getInitializationMetadata(container, testrig);
+  private void cleanUpInitMetaDataIfNeeded(NetworkId networkId, SnapshotId snapshotId)
+      throws IOException {
+    InitializationMetadata metadata =
+        SnapshotMetadataMgr.getInitializationMetadata(networkId, snapshotId);
     if (metadata.getProcessingStatus() == ProcessingStatus.PARSING
-        && getIncompleteWork(container, testrig, WorkType.PARSING) == null) {
-      WorkQueueMgr.updateInitializationStatus(
-          container, testrig, ProcessingStatus.PARSING_FAIL, null);
+        && getIncompleteWork(networkId, snapshotId, WorkType.PARSING) == null) {
+      SnapshotMetadataMgr.updateInitializationStatus(
+          networkId, snapshotId, ProcessingStatus.PARSING_FAIL, null);
     } else if (metadata.getProcessingStatus() == ProcessingStatus.DATAPLANING
-        && getIncompleteWork(container, testrig, WorkType.DATAPLANING) == null) {
-      WorkQueueMgr.updateInitializationStatus(
-          container, testrig, ProcessingStatus.DATAPLANING_FAIL, null);
+        && getIncompleteWork(networkId, snapshotId, WorkType.DATAPLANING) == null) {
+      SnapshotMetadataMgr.updateInitializationStatus(
+          networkId, snapshotId, ProcessingStatus.DATAPLANING_FAIL, null);
     }
   }
 
-  private QueuedWork generateAndQueueDataplaneWork(String container, String testrig)
+  private QueuedWork generateAndQueueDataplaneWork(
+      String network, NetworkId networkId, String snapshot, SnapshotId snapshotId)
       throws Exception {
-    WorkItem newWItem = WorkItemBuilder.getWorkItemGenerateDataPlane(container, testrig);
-    WorkDetails details = new WorkDetails(testrig, null, false, WorkType.DATAPLANING);
+    WorkItem newWItem = WorkItemBuilder.getWorkItemGenerateDataPlane(network, snapshot);
+    WorkDetails details =
+        WorkDetails.builder()
+            .setWorkType(WorkType.DATAPLANING)
+            .setSnapshotId(snapshotId)
+            .setNetworkId(networkId)
+            .build();
     QueuedWork newWork = new QueuedWork(newWItem, details);
     boolean queued = queueUnassignedWork(newWork);
     if (!queued) {
@@ -107,15 +114,14 @@ public class WorkQueueMgr {
   }
 
   private QueuedWork getBlockerForDataplaningWork(QueuedWork work) throws IOException {
-
-    WorkItem wItem = work.getWorkItem();
     WorkDetails wDetails = work.getDetails();
 
     QueuedWork currentParsingWork =
-        getIncompleteWork(wItem.getContainerName(), wDetails.baseTestrig, WorkType.PARSING);
+        getIncompleteWork(wDetails.getNetworkId(), wDetails.getSnapshotId(), WorkType.PARSING);
 
     InitializationMetadata metadata =
-        WorkQueueMgr.getInitializationMetadata(wItem.getContainerName(), wDetails.baseTestrig);
+        SnapshotMetadataMgr.getInitializationMetadata(
+            wDetails.getNetworkId(), wDetails.getSnapshotId());
 
     switch (metadata.getProcessingStatus()) {
       case UNINITIALIZED:
@@ -125,7 +131,7 @@ public class WorkQueueMgr {
           throw new BatfishException(
               String.format(
                   "Cannot queue dataplane work for %s: Status is %s but no incomplete parsing work exists",
-                  wDetails.baseTestrig, metadata.getProcessingStatus()));
+                  wDetails.getSnapshotId(), metadata.getProcessingStatus()));
         }
         return currentParsingWork;
       case PARSED:
@@ -135,7 +141,7 @@ public class WorkQueueMgr {
         throw new BatfishException(
             String.format(
                 "Cannot queue dataplane work for %s: Status is %s but no incomplete dataplaning work exists",
-                wDetails.baseTestrig, metadata.getProcessingStatus()));
+                wDetails.getSnapshotId(), metadata.getProcessingStatus()));
       case DATAPLANED:
       case DATAPLANING_FAIL:
         return null;
@@ -149,18 +155,18 @@ public class WorkQueueMgr {
    * This function has a side effect It will inject a dataplane generation work in the queue if none
    * exists
    */
-  private QueuedWork getBlockerForDataplaneDependentWork(QueuedWork work, String testrig)
-      throws Exception {
+  private QueuedWork getBlockerForDataplaneDependentWork(
+      QueuedWork work, String snapshot, SnapshotId snapshotId) throws Exception {
 
     WorkItem wItem = work.getWorkItem();
+    NetworkId networkId = work.getDetails().getNetworkId();
 
     InitializationMetadata metadata =
-        WorkQueueMgr.getInitializationMetadata(wItem.getContainerName(), testrig);
+        SnapshotMetadataMgr.getInitializationMetadata(networkId, snapshotId);
 
-    QueuedWork parsingWork = getIncompleteWork(wItem.getContainerName(), testrig, WorkType.PARSING);
+    QueuedWork parsingWork = getIncompleteWork(networkId, snapshotId, WorkType.PARSING);
 
-    QueuedWork dataplaningWork =
-        getIncompleteWork(wItem.getContainerName(), testrig, WorkType.DATAPLANING);
+    QueuedWork dataplaningWork = getIncompleteWork(networkId, snapshotId, WorkType.DATAPLANING);
 
     switch (metadata.getProcessingStatus()) {
       case UNINITIALIZED:
@@ -171,7 +177,7 @@ public class WorkQueueMgr {
               String.format(
                   "Cannot queue dataplane dependent work for %s: "
                       + "Status is %s but no incomplete parsing work exists",
-                  testrig, metadata.getProcessingStatus()));
+                  snapshotId, metadata.getProcessingStatus()));
         }
         return parsingWork;
       case PARSED:
@@ -181,7 +187,8 @@ public class WorkQueueMgr {
         if (dataplaningWork != null) {
           return dataplaningWork;
         }
-        return generateAndQueueDataplaneWork(wItem.getContainerName(), testrig);
+        return generateAndQueueDataplaneWork(
+            wItem.getNetwork(), work.getDetails().getNetworkId(), snapshot, snapshotId);
       case DATAPLANING_FAIL:
       case DATAPLANING:
         if (dataplaningWork == null) {
@@ -189,7 +196,7 @@ public class WorkQueueMgr {
               String.format(
                   "Cannot queue dataplane dependent work for %s: "
                       + "Status is %s but no incomplete dataplaning work exists",
-                  testrig, metadata.getProcessingStatus()));
+                  snapshotId, metadata.getProcessingStatus()));
         }
         return dataplaningWork;
       case DATAPLANED:
@@ -206,15 +213,15 @@ public class WorkQueueMgr {
     }
   }
 
-  private QueuedWork getBlockerForParsingDependentWork(QueuedWork work, String testrig)
-      throws IOException {
+  private QueuedWork getBlockerForParsingDependentWork(
+      QueuedWork work, String snapshot, SnapshotId snapshotId) throws IOException {
 
-    WorkItem wItem = work.getWorkItem();
+    NetworkId networkId = work.getDetails().getNetworkId();
 
     InitializationMetadata metadata =
-        WorkQueueMgr.getInitializationMetadata(wItem.getContainerName(), testrig);
+        SnapshotMetadataMgr.getInitializationMetadata(networkId, snapshotId);
 
-    QueuedWork parsingWork = getIncompleteWork(wItem.getContainerName(), testrig, WorkType.PARSING);
+    QueuedWork parsingWork = getIncompleteWork(networkId, snapshotId, WorkType.PARSING);
 
     switch (metadata.getProcessingStatus()) {
       case UNINITIALIZED:
@@ -225,7 +232,7 @@ public class WorkQueueMgr {
               String.format(
                   "Cannot queue parsing dependent work for %s: "
                       + "Status is %s but no incomplete parsing work exists",
-                  testrig, metadata.getProcessingStatus()));
+                  snapshot, metadata.getProcessingStatus()));
         }
         return parsingWork;
       case PARSED:
@@ -242,15 +249,16 @@ public class WorkQueueMgr {
   /**
    * Get all completed work for the specified network and snapshot.
    *
-   * @param network {@link NetworkId} to get completed work for.
-   * @param snapshot {@link SnapshotId} to get completed work for.
+   * @param networkId {@link NetworkId} to get completed work for.
+   * @param snapshotId {@link SnapshotId} to get completed work for.
    * @return {@link List} of completed {@link QueuedWork}.
    */
-  public synchronized List<QueuedWork> getCompletedWork(NetworkId network, SnapshotId snapshot) {
+  public synchronized List<QueuedWork> getCompletedWork(
+      NetworkId networkId, SnapshotId snapshotId) {
     ImmutableList.Builder<QueuedWork> b = ImmutableList.builder();
     for (QueuedWork work : _queueCompletedWork) {
-      if (work.getWorkItem().getContainerName().equals(network.getId())
-          && work.getWorkItem().getTestrigName().equals(snapshot.getId())) {
+      if (work.getDetails().getNetworkId().equals(networkId)
+          && work.getDetails().getSnapshotId().equals(snapshotId)) {
         b.add(work);
       }
     }
@@ -258,13 +266,14 @@ public class WorkQueueMgr {
   }
 
   private synchronized QueuedWork getIncompleteWork(
-      String container, String testrig, WorkType wType) {
+      NetworkId networkId, SnapshotId snapshotId, WorkType wType) {
     for (QueuedWork work : _queueIncompleteWork) {
       WorkDetails wDetails = work.getDetails();
-      if (container.equals(work.getWorkItem().getContainerName())
-          && ((testrig.equals(wDetails.baseTestrig))
-              || (wDetails.isDifferential && testrig.equals(wDetails.deltaTestrig)))
-          && (wType == null || wDetails.workType == wType)) {
+      if (networkId.equals(work.getDetails().getNetworkId())
+          && ((snapshotId.equals(wDetails.getSnapshotId()))
+              || (wDetails.isDifferential()
+                  && snapshotId.equals(wDetails.getReferenceSnapshotId())))
+          && (wType == null || wDetails.getWorkType() == wType)) {
         return work;
       }
     }
@@ -365,13 +374,13 @@ public class WorkQueueMgr {
   }
 
   public synchronized List<QueuedWork> listIncompleteWork(
-      String containerName, @Nullable String testrigName, @Nullable WorkType workType) {
+      NetworkId networkId, @Nullable SnapshotId snapshotId, @Nullable WorkType workType) {
     List<QueuedWork> retList = new LinkedList<>();
     for (QueuedWork work : _queueIncompleteWork) {
       // Add to queue if it matches container, testrig if provided, and work type if provided
-      if (work.getWorkItem().getContainerName().equals(containerName)
-          && (testrigName == null || work.getDetails().baseTestrig.equals(testrigName))
-          && (workType == null || work.getDetails().workType == workType)) {
+      if (work.getDetails().getNetworkId().equals(networkId)
+          && (snapshotId == null || work.getDetails().getSnapshotId().equals(snapshotId))
+          && (workType == null || work.getDetails().getWorkType() == workType)) {
         retList.add(work);
       }
     }
@@ -398,14 +407,13 @@ public class WorkQueueMgr {
     work.setAssignment(assignedWorker);
 
     // update testrig metadata
-    WorkItem wItem = work.getWorkItem();
     WorkDetails wDetails = work.getDetails();
-    if (wDetails.workType == WorkType.PARSING) {
-      WorkQueueMgr.updateInitializationStatus(
-          wItem.getContainerName(), wDetails.baseTestrig, ProcessingStatus.PARSING, null);
-    } else if (wDetails.workType == WorkType.DATAPLANING) {
-      WorkQueueMgr.updateInitializationStatus(
-          wItem.getContainerName(), wDetails.baseTestrig, ProcessingStatus.DATAPLANING, null);
+    if (wDetails.getWorkType() == WorkType.PARSING) {
+      SnapshotMetadataMgr.updateInitializationStatus(
+          wDetails.getNetworkId(), wDetails.getSnapshotId(), ProcessingStatus.PARSING, null);
+    } else if (wDetails.getWorkType() == WorkType.DATAPLANING) {
+      SnapshotMetadataMgr.updateInitializationStatus(
+          wDetails.getNetworkId(), wDetails.getSnapshotId(), ProcessingStatus.DATAPLANING, null);
     }
   }
 
@@ -434,26 +442,30 @@ public class WorkQueueMgr {
           // update testrig metadata
           WorkItem wItem = work.getWorkItem();
           WorkDetails wDetails = work.getDetails();
-          if (wDetails.workType == WorkType.PARSING) {
-            ProcessingStatus status =
-                (task.getStatus() == TaskStatus.TerminatedNormally)
-                    ? ProcessingStatus.PARSED
-                    : ProcessingStatus.PARSING_FAIL;
-            WorkQueueMgr.updateInitializationStatus(
-                wItem.getContainerName(), wDetails.baseTestrig, status, task.getErrMessage());
-          } else if (wDetails.workType == WorkType.DATAPLANING) {
+          if (wDetails.getWorkType() == WorkType.PARSING) {
+            ProcessingStatus status;
+            if (task.getStatus() == TaskStatus.TerminatedNormally) {
+              status = ProcessingStatus.PARSED;
+              Main.getWorkMgr()
+                  .tryPromoteSnapshotNodeRoles(wDetails.getNetworkId(), wDetails.getSnapshotId());
+            } else {
+              status = ProcessingStatus.PARSING_FAIL;
+            }
+            SnapshotMetadataMgr.updateInitializationStatus(
+                wDetails.getNetworkId(), wDetails.getSnapshotId(), status, task.getErrMessage());
+          } else if (wDetails.getWorkType() == WorkType.DATAPLANING) {
             // no change in status needed if task.getStatus() is RequeueFailure
             if (task.getStatus() == TaskStatus.TerminatedAbnormally
                 || task.getStatus() == TaskStatus.TerminatedByUser) {
-              WorkQueueMgr.updateInitializationStatus(
-                  wItem.getContainerName(),
-                  wDetails.baseTestrig,
+              SnapshotMetadataMgr.updateInitializationStatus(
+                  wDetails.getNetworkId(),
+                  wDetails.getSnapshotId(),
                   ProcessingStatus.DATAPLANING_FAIL,
                   task.getErrMessage());
             } else if (task.getStatus() == TaskStatus.TerminatedNormally) {
-              WorkQueueMgr.updateInitializationStatus(
-                  wItem.getContainerName(),
-                  wDetails.baseTestrig,
+              SnapshotMetadataMgr.updateInitializationStatus(
+                  wDetails.getNetworkId(),
+                  wDetails.getSnapshotId(),
                   ProcessingStatus.DATAPLANED,
                   null);
             }
@@ -509,35 +521,34 @@ public class WorkQueueMgr {
             work.clearAssignment();
             work.recordTaskCheckResult(task);
 
-            // update testrig metadata
-            WorkItem wItem = work.getWorkItem();
+            // update snapshot metadata
             WorkDetails wDetails = work.getDetails();
-            if (wDetails.workType == WorkType.PARSING
-                || wDetails.workType == WorkType.DATAPLANING) {
+            if (wDetails.getWorkType() == WorkType.PARSING
+                || wDetails.getWorkType() == WorkType.DATAPLANING) {
               InitializationMetadata metadata =
-                  WorkQueueMgr.getInitializationMetadata(
-                      wItem.getContainerName(), wDetails.baseTestrig);
-              if (wDetails.workType == WorkType.PARSING) {
+                  SnapshotMetadataMgr.getInitializationMetadata(
+                      wDetails.getNetworkId(), wDetails.getSnapshotId());
+              if (wDetails.getWorkType() == WorkType.PARSING) {
                 if (metadata.getProcessingStatus() != ProcessingStatus.PARSING) {
                   _logger.errorf(
                       "Unexpected status %s when parsing failed for %s",
-                      metadata.getProcessingStatus(), wDetails.baseTestrig);
+                      metadata.getProcessingStatus(), wDetails.getSnapshotId());
                 } else {
-                  WorkQueueMgr.updateInitializationStatus(
-                      wItem.getContainerName(),
-                      wDetails.baseTestrig,
+                  SnapshotMetadataMgr.updateInitializationStatus(
+                      wDetails.getNetworkId(),
+                      wDetails.getSnapshotId(),
                       ProcessingStatus.UNINITIALIZED,
                       task.getErrMessage());
                 }
-              } else { // wDetails.workType == WorkType.DATAPLANING
+              } else { // wDetails.getWorkType() == WorkType.DATAPLANING
                 if (metadata.getProcessingStatus() != ProcessingStatus.DATAPLANING) {
                   _logger.errorf(
                       "Unexpected status %s when dataplaning failed for %s",
-                      metadata.getProcessingStatus(), wDetails.baseTestrig);
+                      metadata.getProcessingStatus(), wDetails.getSnapshotId());
                 } else {
-                  WorkQueueMgr.updateInitializationStatus(
-                      wItem.getContainerName(),
-                      wDetails.baseTestrig,
+                  SnapshotMetadataMgr.updateInitializationStatus(
+                      wDetails.getNetworkId(),
+                      wDetails.getSnapshotId(),
                       ProcessingStatus.PARSED,
                       task.getErrMessage());
                 }
@@ -561,16 +572,24 @@ public class WorkQueueMgr {
 
     QueuedWork baseBlocker =
         dataplaneDependent
-            ? getBlockerForDataplaneDependentWork(work, wDetails.baseTestrig)
-            : getBlockerForParsingDependentWork(work, wDetails.baseTestrig);
+            ? getBlockerForDataplaneDependentWork(
+                work, work.getWorkItem().getSnapshot(), wDetails.getSnapshotId())
+            : getBlockerForParsingDependentWork(
+                work, work.getWorkItem().getSnapshot(), wDetails.getSnapshotId());
 
     if (baseBlocker != null) {
       return queueBlockedWork(work, baseBlocker);
-    } else if (wDetails.isDifferential) {
+    } else if (wDetails.isDifferential()) {
       QueuedWork deltaBlocker =
           dataplaneDependent
-              ? getBlockerForDataplaneDependentWork(work, wDetails.deltaTestrig)
-              : getBlockerForParsingDependentWork(work, wDetails.deltaTestrig);
+              ? getBlockerForDataplaneDependentWork(
+                  work,
+                  WorkItemBuilder.getReferenceSnapshotName(work.getWorkItem()),
+                  wDetails.getReferenceSnapshotId())
+              : getBlockerForParsingDependentWork(
+                  work,
+                  WorkItemBuilder.getReferenceSnapshotName(work.getWorkItem()),
+                  wDetails.getReferenceSnapshotId());
       if (deltaBlocker != null) {
         return queueBlockedWork(work, deltaBlocker);
       }
@@ -585,12 +604,9 @@ public class WorkQueueMgr {
   }
 
   private synchronized boolean queueDataplaningWork(QueuedWork work) throws Exception {
-
-    WorkItem wItem = work.getWorkItem();
     WorkDetails wDetails = work.getDetails();
-
     QueuedWork currentDataplaningWork =
-        getIncompleteWork(wItem.getContainerName(), wDetails.baseTestrig, WorkType.DATAPLANING);
+        getIncompleteWork(wDetails.getNetworkId(), wDetails.getSnapshotId(), WorkType.DATAPLANING);
     if (currentDataplaningWork != null) {
       throw new BatfishException("Dataplaning is already in queue/progress");
     }
@@ -598,7 +614,9 @@ public class WorkQueueMgr {
     // see comment in queueParsingWork for justification
     QueuedWork ddWork =
         getIncompleteWork(
-            wItem.getContainerName(), wDetails.baseTestrig, WorkType.DATAPLANE_DEPENDENT_ANSWERING);
+            wDetails.getNetworkId(),
+            wDetails.getSnapshotId(),
+            WorkType.DATAPLANE_DEPENDENT_ANSWERING);
     if (ddWork != null) {
       throw new BatfishException("Cannot queue dataplaning work while other dependent work exists");
     }
@@ -613,7 +631,6 @@ public class WorkQueueMgr {
 
   private synchronized boolean queueParsingWork(QueuedWork work) throws Exception {
 
-    WorkItem wItem = work.getWorkItem();
     WorkDetails wDetails = work.getDetails();
 
     // if incomplete work for this testrig exists, lets just reject this parsing work.
@@ -621,24 +638,25 @@ public class WorkQueueMgr {
     // instead of rejecting, we could have queued it as BLOCKED but we risk cycles of BLOCKED work
     // this should not be a common case anyway, so we aren't losing much by rejecting it
     QueuedWork incompleteWork =
-        getIncompleteWork(wItem.getContainerName(), wDetails.baseTestrig, null);
+        getIncompleteWork(wDetails.getNetworkId(), wDetails.getSnapshotId(), null);
     if (incompleteWork != null) {
       throw new BatfishException("Cannot queue parsing work while other work is incomplete");
     } else {
       InitializationMetadata metadata =
-          WorkQueueMgr.getInitializationMetadata(wItem.getContainerName(), wDetails.baseTestrig);
+          SnapshotMetadataMgr.getInitializationMetadata(
+              wDetails.getNetworkId(), wDetails.getSnapshotId());
       if (metadata.getProcessingStatus() == ProcessingStatus.PARSING) {
         throw new BatfishException(
             String.format(
                 "Cannot queue parsing work for %s: "
                     + "Status is PARSING but no incomplete parsing work exists",
-                wDetails.baseTestrig));
+                wDetails.getSnapshotId()));
       } else if (metadata.getProcessingStatus() == ProcessingStatus.DATAPLANING) {
         throw new BatfishException(
             String.format(
                 "Cannot queue parsing work for %s: "
                     + "Status is DATAPLANING but no incomplete dataplaning work exists",
-                wDetails.baseTestrig));
+                wDetails.getSnapshotId()));
       }
     }
 
@@ -651,11 +669,12 @@ public class WorkQueueMgr {
       throw new BatfishException("Duplicate work item");
     }
     WorkDetails wDetails = work.getDetails();
-    cleanUpInitMetaDataIfNeeded(work.getWorkItem().getContainerName(), wDetails.baseTestrig);
-    if (work.getDetails().isDifferential) {
-      cleanUpInitMetaDataIfNeeded(work.getWorkItem().getContainerName(), wDetails.deltaTestrig);
+    cleanUpInitMetaDataIfNeeded(work.getDetails().getNetworkId(), wDetails.getSnapshotId());
+    if (work.getDetails().isDifferential()) {
+      cleanUpInitMetaDataIfNeeded(
+          work.getDetails().getNetworkId(), wDetails.getReferenceSnapshotId());
     }
-    switch (work.getDetails().workType) {
+    switch (work.getDetails().getWorkType()) {
       case PARSING:
         return queueParsingWork(work);
       case DATAPLANING:
@@ -670,23 +689,7 @@ public class WorkQueueMgr {
       case UNKNOWN:
         return _queueIncompleteWork.enque(work);
       default:
-        throw new BatfishException("Unknown WorkType " + work.getDetails().workType);
+        throw new BatfishException("Unknown WorkType " + work.getDetails().getWorkType());
     }
-  }
-
-  private static void updateInitializationStatus(
-      String network, String snapshot, ProcessingStatus status, String errMessage)
-      throws IOException {
-    // already resolved
-    SnapshotMetadataMgr.updateInitializationStatus(
-        new NetworkId(network), new SnapshotId(snapshot), status, errMessage);
-  }
-
-  @VisibleForTesting
-  static InitializationMetadata getInitializationMetadata(String network, String snapshot)
-      throws IOException {
-    // already resolved
-    return SnapshotMetadataMgr.getInitializationMetadata(
-        new NetworkId(network), new SnapshotId(snapshot));
   }
 }

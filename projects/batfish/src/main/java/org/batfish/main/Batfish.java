@@ -16,7 +16,6 @@ import static org.batfish.common.util.CompletionMetadataUtils.getPrefixes;
 import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
 import static org.batfish.common.util.CompletionMetadataUtils.getZones;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 
@@ -127,8 +126,6 @@ import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.FlowHistory;
-import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
@@ -226,7 +223,6 @@ import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.AllInterfaceLinksLocationSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
-import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.SpecifierContext;
@@ -239,20 +235,14 @@ import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.topology.TopologyProviderImpl;
 import org.batfish.vendor.VendorConfiguration;
-import org.batfish.z3.BlacklistDstIpQuerySynthesizer;
-import org.batfish.z3.CompositeNodJob;
 import org.batfish.z3.IngressLocation;
 import org.batfish.z3.LocationToIngressLocation;
-import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import org.batfish.z3.NodJob;
-import org.batfish.z3.QuerySynthesizer;
-import org.batfish.z3.ReachEdgeQuerySynthesizer;
 import org.batfish.z3.ReachabilityQuerySynthesizer;
 import org.batfish.z3.StandardReachabilityQuerySynthesizer;
 import org.batfish.z3.Synthesizer;
 import org.batfish.z3.SynthesizerInputImpl;
 import org.batfish.z3.expr.BooleanExpr;
-import org.batfish.z3.expr.OrExpr;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.jgrapht.Graph;
@@ -748,21 +738,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
             && settings.getLogger().isActive(BatfishLogger.LEVEL_UNIMPLEMENTED));
   }
 
-  @Override
-  public void checkDataPlane() {
-    checkDataPlane(_testrigSettings);
-  }
-
   public static void checkDataPlane(TestrigSettings testrigSettings) {
     if (!Files.exists(testrigSettings.getDataPlanePath())) {
       throw new CleanBatfishException(
           "Missing data plane for testrig: \"" + testrigSettings.getName() + "\"\n");
     }
-  }
-
-  public void checkDifferentialDataPlaneQuestionDependencies() {
-    checkDataPlane(_baseTestrigSettings);
-    checkDataPlane(_deltaTestrigSettings);
   }
 
   @Override
@@ -775,17 +755,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         outputExists(testrigSettings),
         "Output directory does not exist for snapshot %s",
         testrigSettings.getName());
-  }
-
-  public Set<Flow> computeCompositeNodOutput(
-      List<CompositeNodJob> jobs, NodAnswerElement answerElement) {
-    _logger.info("\n*** EXECUTING COMPOSITE NOD JOBS ***\n");
-    _logger.resetTimer();
-    Set<Flow> flows = new TreeSet<>();
-    BatfishJobExecutor.runJobsInExecutor(
-        _settings, _logger, jobs, flows, answerElement, true, "Composite NOD");
-    _logger.printElapsedTime();
-    return flows;
   }
 
   private CompressDataPlaneResult computeCompressedDataPlane() {
@@ -1172,10 +1141,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return toImmutableMap(_answererCreators, Entry::getKey, entry -> entry.getValue()::create);
   }
 
-  public TestrigSettings getBaseTestrigSettings() {
-    return _baseTestrigSettings;
-  }
-
   public Map<String, Configuration> getConfigurations(
       Path serializedVendorConfigPath, ConvertConfigurationAnswerElement answerElement) {
     Map<String, GenericConfigObject> vendorConfigurations =
@@ -1273,30 +1238,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } else {
       throw new BatfishException("Could not determine flow tag");
     }
-  }
-
-  @Override
-  public FlowHistory flowHistory(Set<Flow> flows, boolean ignoreFilters) {
-    String envTag = getFlowTag();
-    Environment env = getEnvironment();
-    Map<Flow, Set<FlowTrace>> traces = getTracerouteEngine().processFlows(flows, ignoreFilters);
-    return FlowHistory.forTraces(envTag, env, traces);
-  }
-
-  @Override
-  public FlowHistory differentialFlowHistory(Set<Flow> flows, boolean ignoreFilters) {
-    pushBaseSnapshot();
-    Environment baseEnv = getEnvironment();
-    Map<Flow, Set<FlowTrace>> baseTraces = getTracerouteEngine().processFlows(flows, ignoreFilters);
-    popSnapshot();
-    pushDeltaSnapshot();
-    Environment deltaEnv = getEnvironment();
-    Map<Flow, Set<FlowTrace>> deltaTraces = getTracerouteEngine().processFlows(flows, false);
-    popSnapshot();
-    String baseEnvTag = getFlowTag(_baseTestrigSettings);
-    String deltaEnvTag = getFlowTag(_deltaTestrigSettings);
-    return FlowHistory.forDifferentialTraces(
-        baseEnvTag, baseEnv, baseTraces, deltaEnvTag, deltaEnv, deltaTraces);
   }
 
   @Override
@@ -1974,12 +1915,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement multipath(ReachabilityParameters reachabilityParameters) {
-    return singleReachability(
-        reachabilityParameters, MultipathInconsistencyQuerySynthesizer.builder());
-  }
-
-  @Override
   public AtomicInteger newBatch(String description, int jobs) {
     return Driver.newBatch(_settings, description, jobs);
   }
@@ -2210,158 +2145,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         "Parse configurations");
     _logger.printElapsedTime();
     return vendorConfigurations;
-  }
-
-  @Override
-  public AnswerElement pathDiff(ReachabilityParameters reachabilityParameters) {
-    Settings settings = getSettings();
-    checkDifferentialDataPlaneQuestionDependencies();
-    String tag = getDifferentialFlowTag();
-
-    ResolvedReachabilityParameters baseParameters;
-
-    // load base configurations and generate base data plane
-    pushBaseSnapshot();
-    Topology baseTopology = getEnvironmentTopology();
-    try {
-      baseParameters =
-          resolveReachabilityParameters(this, reachabilityParameters, getNetworkSnapshot());
-    } catch (InvalidReachabilityParametersException e) {
-      return e.getInvalidParametersAnswer();
-    }
-
-    Map<String, Configuration> baseConfigurations = baseParameters.getConfigurations();
-    Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane(baseParameters);
-    popSnapshot();
-
-    // load delta configurations and generate delta data plane
-    ResolvedReachabilityParameters deltaParameters;
-    pushDeltaSnapshot();
-    try {
-      deltaParameters =
-          resolveReachabilityParameters(this, reachabilityParameters, getNetworkSnapshot());
-    } catch (InvalidReachabilityParametersException e) {
-      return e.getInvalidParametersAnswer();
-    }
-
-    Map<String, Configuration> diffConfigurations = deltaParameters.getConfigurations();
-    Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane(deltaParameters);
-    Topology diffTopology = getEnvironmentTopology();
-    popSnapshot();
-
-    pushDeltaSnapshot();
-    SortedSet<String> blacklistNodes = getNodeBlacklist();
-    Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
-    SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
-    popSnapshot();
-
-    BlacklistDstIpQuerySynthesizer blacklistQuery =
-        new BlacklistDstIpQuerySynthesizer(
-            null, blacklistNodes, blacklistInterfaces, blacklistEdges, baseConfigurations);
-
-    // compute composite program and flows
-    List<Synthesizer> commonEdgeSynthesizers =
-        ImmutableList.of(
-            baseDataPlaneSynthesizer, diffDataPlaneSynthesizer, baseDataPlaneSynthesizer);
-
-    List<CompositeNodJob> jobs = new ArrayList<>();
-
-    Map<IngressLocation, BooleanExpr> srcIpConstraints =
-        baseDataPlaneSynthesizer.getInput().getSrcIpConstraints();
-
-    Set<Location> sourceLocations =
-        baseParameters.getSourceIpAssignment().getEntries().stream()
-            .flatMap(entry -> entry.getLocations().stream())
-            .collect(ImmutableSet.toImmutableSet());
-
-    // generate local edge reachability and black hole queries
-    SortedSet<Edge> diffEdges = diffTopology.getEdges();
-    for (Edge edge : diffEdges) {
-      String ingressNode = edge.getNode1();
-      String outInterface = edge.getInt1();
-
-      // skip if the source interface is not specified by the user
-      if (!sourceLocations.contains(new InterfaceLocation(ingressNode, outInterface))) {
-        continue;
-      }
-
-      String vrf =
-          diffConfigurations
-              .get(ingressNode)
-              .getAllInterfaces()
-              .get(outInterface)
-              .getVrf()
-              .getName();
-      IngressLocation ingressLocation = IngressLocation.vrf(ingressNode, vrf);
-      BooleanExpr srcIpConstraint = srcIpConstraints.get(ingressLocation);
-
-      ReachEdgeQuerySynthesizer reachQuery =
-          new ReachEdgeQuerySynthesizer(
-              ingressNode, vrf, edge, true, reachabilityParameters.getHeaderSpace());
-      ReachEdgeQuerySynthesizer noReachQuery =
-          new ReachEdgeQuerySynthesizer(ingressNode, vrf, edge, true, TRUE);
-      noReachQuery.setNegate(true);
-      List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, noReachQuery, blacklistQuery);
-      CompositeNodJob job =
-          new CompositeNodJob(
-              settings,
-              commonEdgeSynthesizers,
-              queries,
-              ImmutableMap.of(ingressLocation, srcIpConstraint),
-              reachabilityParameters.getSpecialize(),
-              tag);
-      jobs.add(job);
-    }
-
-    // we also need queries for nodes next to edges that are now missing,
-    // in the case that those nodes still exist
-    List<Synthesizer> missingEdgeSynthesizers =
-        ImmutableList.of(baseDataPlaneSynthesizer, baseDataPlaneSynthesizer);
-    SortedSet<Edge> baseEdges = baseTopology.getEdges();
-    SortedSet<Edge> missingEdges = ImmutableSortedSet.copyOf(Sets.difference(baseEdges, diffEdges));
-    for (Edge missingEdge : missingEdges) {
-      String ingressNode = missingEdge.getNode1();
-      String outInterface = missingEdge.getInt1();
-
-      // skip if the source interface is not specified by the user
-      if (!sourceLocations.contains(new InterfaceLocation(ingressNode, outInterface))) {
-        continue;
-      }
-
-      // skip if the source node or interface has been removed
-      if (!diffConfigurations.containsKey(ingressNode)
-          || !diffConfigurations.get(ingressNode).getAllInterfaces().containsKey(outInterface)) {
-        continue;
-      }
-
-      String vrf =
-          diffConfigurations
-              .get(ingressNode)
-              .getAllInterfaces()
-              .get(outInterface)
-              .getVrf()
-              .getName();
-      IngressLocation ingressLocation = IngressLocation.vrf(ingressNode, vrf);
-      BooleanExpr srcIpConstraint = srcIpConstraints.get(ingressLocation);
-
-      ReachEdgeQuerySynthesizer reachQuery =
-          new ReachEdgeQuerySynthesizer(
-              ingressNode, vrf, missingEdge, true, reachabilityParameters.getHeaderSpace());
-      List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, blacklistQuery);
-      CompositeNodJob job =
-          new CompositeNodJob(
-              settings,
-              missingEdgeSynthesizers,
-              queries,
-              ImmutableMap.of(ingressLocation, srcIpConstraint),
-              reachabilityParameters.getSpecialize(),
-              tag);
-      jobs.add(job);
-    }
-
-    // TODO: maybe do something with nod answer element
-    Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
-    return differentialFlowHistory(flows, false);
   }
 
   @Override
@@ -2696,130 +2479,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       failureCauses.forEach(e::addSuppressed);
       throw e;
     }
-  }
-
-  @Override
-  public AnswerElement reducedReachability(ReachabilityParameters params) {
-    checkDifferentialDataPlaneQuestionDependencies();
-    pushBaseSnapshot();
-    ResolvedReachabilityParameters baseParams;
-    try {
-      baseParams = resolveReachabilityParameters(this, params, getNetworkSnapshot());
-    } catch (InvalidReachabilityParametersException e) {
-      return e.getInvalidParametersAnswer();
-    }
-    popSnapshot();
-
-    pushDeltaSnapshot();
-    ResolvedReachabilityParameters deltaParams;
-    try {
-      deltaParams = resolveReachabilityParameters(this, params, getNetworkSnapshot());
-    } catch (InvalidReachabilityParametersException e) {
-      return e.getInvalidParametersAnswer();
-    }
-    popSnapshot();
-
-    return reducedReachability(baseParams, deltaParams);
-  }
-
-  public AnswerElement reducedReachability(
-      ResolvedReachabilityParameters baseParams, ResolvedReachabilityParameters deltaParams) {
-    Settings settings = getSettings();
-    String tag = getDifferentialFlowTag();
-
-    /* Invaraint: baseParams should agree with deltaParams on all params
-     * other than those that are computed by resolution (i.e. those determined
-     * by specifiers).
-     */
-    assert baseParams.getActions().equals(deltaParams.getActions());
-    assert baseParams.getHeaderSpace() == deltaParams.getHeaderSpace()
-        || baseParams.getHeaderSpace().equals(deltaParams.getHeaderSpace());
-    assert baseParams.getSpecialize() == deltaParams.getSpecialize();
-    assert baseParams.getSrcNatted().equals(deltaParams.getSrcNatted());
-
-    // push environment so we use the right forwarding analysis.
-    pushBaseSnapshot();
-    Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane(baseParams);
-    popSnapshot();
-
-    pushDeltaSnapshot();
-    Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane(deltaParams);
-    popSnapshot();
-
-    /*
-    // TODO refine dstIp to exclude blacklisted destinations
-    pushDeltaSnapshot();
-    SortedSet<String> blacklistNodes = getNodeBlacklist();
-    Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
-    SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
-    popSnapshot();
-    */
-
-    // compute composite program and flows
-    List<Synthesizer> synthesizers =
-        ImmutableList.of(baseDataPlaneSynthesizer, diffDataPlaneSynthesizer);
-
-    /*
-     * Merge the srcIpConstraints
-     */
-    Map<IngressLocation, BooleanExpr> srcIpConstraints =
-        new HashMap<>(baseDataPlaneSynthesizer.getInput().getSrcIpConstraints());
-    diffDataPlaneSynthesizer
-        .getInput()
-        .getSrcIpConstraints()
-        .forEach(
-            (loc, expr) ->
-                srcIpConstraints.merge(
-                    loc, expr, (expr1, expr2) -> new OrExpr(ImmutableList.of(expr1, expr2))));
-
-    List<CompositeNodJob> jobs =
-        srcIpConstraints.entrySet().stream()
-            .map(
-                entry -> {
-                  Map<IngressLocation, BooleanExpr> srcIpConstraint =
-                      ImmutableMap.of(entry.getKey(), entry.getValue());
-                  // build the query for the base testrig
-                  StandardReachabilityQuerySynthesizer baseQuery =
-                      StandardReachabilityQuerySynthesizer.builder()
-                          .setActions(baseParams.getActions())
-                          .setHeaderSpace(baseParams.getHeaderSpace())
-                          .setFinalNodes(ImmutableSet.of())
-                          .setForbiddenTransitNodes(ImmutableSet.of())
-                          .setRequiredTransitNodes(ImmutableSet.of())
-                          .setSrcIpConstraints(srcIpConstraint)
-                          .setSrcNatted(baseParams.getSrcNatted())
-                          .build();
-                  // build the query for the delta testrig
-                  StandardReachabilityQuerySynthesizer deltaQuery =
-                      StandardReachabilityQuerySynthesizer.builder()
-                          .setActions(deltaParams.getActions())
-                          .setHeaderSpace(deltaParams.getHeaderSpace())
-                          .setFinalNodes(ImmutableSet.of())
-                          .setForbiddenTransitNodes(ImmutableSet.of())
-                          .setRequiredTransitNodes(ImmutableSet.of())
-                          .setSrcIpConstraints(srcIpConstraint)
-                          .setSrcNatted(deltaParams.getSrcNatted())
-                          .build();
-                  /*
-                   * "Reduced" means flows that match the constraints on the base testrig,
-                   * bot not on the delta testrig.
-                   */
-                  deltaQuery.setNegate(true);
-                  List<QuerySynthesizer> queries =
-                      ImmutableList.of(baseQuery, deltaQuery /*, blacklistQuery*/);
-                  return new CompositeNodJob(
-                      settings,
-                      synthesizers,
-                      queries,
-                      srcIpConstraint,
-                      baseParams.getSpecialize(),
-                      tag);
-                })
-            .collect(Collectors.toList());
-
-    // TODO: maybe do something with nod answer element
-    Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
-    return differentialFlowHistory(flows, false);
   }
 
   @Override
@@ -3667,7 +3326,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // run jobs and get resulting flows
     Set<Flow> flows = computeNodOutput(jobs);
-    return flowHistory(flows, false);
+    return new TraceWrapperAsAnswerElement(
+        buildFlows(flows, reachabilityParameters.getIgnoreFilters()));
   }
 
   @Override
@@ -3813,9 +3473,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 })
             .collect(ImmutableSet.toImmutableSet());
 
-    return _settings.debugFlagEnabled("oldtraceroute")
-        ? flowHistory(flows, ignoreFilters)
-        : new TraceWrapperAsAnswerElement(buildFlows(flows, ignoreFilters));
+    return new TraceWrapperAsAnswerElement(buildFlows(flows, ignoreFilters));
   }
 
   @Override
@@ -4012,20 +3670,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
               return Stream.of(flow.build());
             })
         .collect(ImmutableSet.toImmutableSet());
-  }
-
-  @Nonnull
-  private Synthesizer synthesizeDataPlane(ResolvedReachabilityParameters parameters) {
-    Map<String, Configuration> configs = parameters.getConfigurations();
-    DataPlane dataPlane = parameters.getDataPlane();
-    return synthesizeDataPlane(
-        configs,
-        dataPlane,
-        parameters.getHeaderSpace(),
-        parameters.getForbiddenTransitNodes(),
-        parameters.getRequiredTransitNodes(),
-        parameters.getSourceIpAssignment(),
-        parameters.getSpecialize());
   }
 
   @Nonnull
