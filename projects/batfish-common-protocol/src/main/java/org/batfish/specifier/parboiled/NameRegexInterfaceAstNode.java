@@ -39,6 +39,10 @@ final class NameRegexInterfaceAstNode implements InterfaceAstNode {
     return _regex;
   }
 
+  public Pattern getPattern() {
+    return _pattern;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(_regex);

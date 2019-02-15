@@ -16,7 +16,6 @@ import static org.batfish.specifier.parboiled.Anchor.Type.ZONE;
 import java.util.Map;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
-import org.parboiled.support.MatcherPath;
 import org.parboiled.support.Var;
 
 /**
@@ -26,8 +25,7 @@ import org.parboiled.support.Var;
  * <p>{@link Anchor} annotation: For each path from the top-level rule of an expression to leaf
  * values, there should be at least one rule with a Anchor annotation. This annotation is used for
  * error messages and generating auto completion suggestions. Character and string literals are
- * treated as implicit anchors (see {@link ParserUtils#findPathAnchor(MatcherPath, int, Map,
- * boolean)}
+ * treated as implicit anchors see findPathAnchor() in {@link ParserUtils}.
  */
 @SuppressWarnings({
   "checkstyle:methodname", // this class uses idiomatic names
