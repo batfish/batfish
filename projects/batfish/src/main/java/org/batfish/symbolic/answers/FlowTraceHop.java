@@ -1,4 +1,4 @@
-package org.batfish.datamodel;
+package org.batfish.symbolic.answers;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
@@ -14,6 +14,8 @@ import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.Flow;
 
 public final class FlowTraceHop implements Comparable<FlowTraceHop>, Serializable {
 

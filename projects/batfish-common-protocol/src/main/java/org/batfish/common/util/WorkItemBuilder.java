@@ -42,8 +42,8 @@ public class WorkItemBuilder {
     return wItem;
   }
 
-  public static WorkItem getWorkItemGenerateDataPlane(String containerName, String testrigName) {
-    WorkItem wItem = new WorkItem(containerName, testrigName);
+  public static WorkItem getWorkItemGenerateDataPlane(String network, String snapshot) {
+    WorkItem wItem = new WorkItem(network, snapshot);
     wItem.addRequestParam(BfConsts.COMMAND_DUMP_DP, "");
     return wItem;
   }
@@ -115,5 +115,9 @@ public class WorkItemBuilder {
 
   public static String getQuestionName(WorkItem workItem) {
     return workItem.getRequestParams().get(BfConsts.ARG_QUESTION_NAME);
+  }
+
+  public static String getReferenceSnapshotName(WorkItem workItem) {
+    return workItem.getRequestParams().get(BfConsts.ARG_DELTA_TESTRIG);
   }
 }

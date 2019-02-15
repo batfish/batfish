@@ -61,9 +61,6 @@ public final class TracerouteUtils {
    */
   static void validateInputs(Map<String, Configuration> configurations, Flow flow) {
     String ingressNodeName = flow.getIngressNode();
-    checkArgument(
-        ingressNodeName != null, "Cannot construct flow trace since ingressNode is not specified");
-
     Configuration ingressNode = configurations.get(ingressNodeName);
     checkArgument(
         ingressNode != null,
@@ -78,9 +75,6 @@ public final class TracerouteUtils {
           ingressIfaceName,
           ingressNodeName);
     }
-
-    checkArgument(
-        flow.getDstIp() != null, "Cannot construct flow trace since dstIp is not specified");
   }
 
   /**
@@ -121,8 +115,6 @@ public final class TracerouteUtils {
       Map<String, IpAccessList> aclDefinitions,
       Map<String, IpSpace> namedIpSpaces,
       boolean ignoreFilters) {
-    checkArgument(filter != null, "Missing filter");
-
     StepAction action = StepAction.PERMITTED;
     // check filter
     if (!ignoreFilters) {

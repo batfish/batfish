@@ -14,6 +14,7 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.SetMultimap;
 import com.google.common.hash.Hashing;
 import com.google.errorprone.annotations.MustBeClosed;
+import com.ibm.icu.text.CharsetDetector;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import io.opentracing.util.GlobalTracer;
 import java.io.BufferedReader;
@@ -27,6 +28,7 @@ import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
@@ -661,11 +663,18 @@ public class CommonUtil {
   public static String readFile(Path file) throws BatfishException {
     String text;
     try {
-      text = new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
+      byte[] bytes = Files.readAllBytes(file);
+      text = new String(bytes, detectCharset(bytes));
     } catch (IOException e) {
       throw new BatfishException("Failed to read file: " + file, e);
     }
     return text;
+  }
+
+  private static @Nonnull Charset detectCharset(byte[] bytes) {
+    CharsetDetector detector = new CharsetDetector();
+    detector.setText(bytes);
+    return Charset.forName(detector.detect().getName());
   }
 
   public static String readResource(String resourcePath) {
@@ -674,7 +683,8 @@ public class CommonUtil {
       if (is == null) {
         throw new BatfishException("Error opening resource: '" + resourcePath + "'");
       }
-      String output = IOUtils.toString(is, StandardCharsets.UTF_8);
+      byte[] bytes = IOUtils.toByteArray(is);
+      String output = new String(bytes, detectCharset(bytes));
       return output;
     } catch (IOException e) {
       throw new BatfishException("Could not open resource: '" + resourcePath + "'", e);

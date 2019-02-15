@@ -27,7 +27,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -76,11 +75,6 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreFilters) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void checkDataPlane() {
     throw new UnsupportedOperationException();
   }
 
@@ -331,17 +325,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public AnswerElement multipath(ReachabilityParameters reachabilityParameters) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public AtomicInteger newBatch(String description, int jobs) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement pathDiff(ReachabilityParameters reachabilityParameters) {
     throw new UnsupportedOperationException();
   }
 
@@ -368,11 +352,6 @@ public class IBatfishTestAdapter implements IBatfish {
   @Nullable
   @Override
   public String readExternalBgpAnnouncementsFile() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerElement reducedReachability(ReachabilityParameters reachabilityParameters) {
     throw new UnsupportedOperationException();
   }
 
@@ -499,16 +478,6 @@ public class IBatfishTestAdapter implements IBatfish {
   public NetworkSnapshot getNetworkSnapshot() {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
-  }
-
-  @Override
-  public FlowHistory flowHistory(Set<Flow> flows, boolean ignoreFilters) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public FlowHistory differentialFlowHistory(Set<Flow> flows, boolean ignoreFilters) {
-    throw new UnsupportedOperationException();
   }
 
   @Override

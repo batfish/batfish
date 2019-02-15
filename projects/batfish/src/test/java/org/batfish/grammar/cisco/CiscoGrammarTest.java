@@ -433,6 +433,12 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testEncoding() throws IOException {
+    // Don't crash with lexer error
+    parseConfig("encoding_test");
+  }
+
+  @Test
   public void testLineAuthenticationMethods() throws IOException {
     // test IOS
     Configuration iosConfiguration = parseConfig("aaaAuthenticationIos");

@@ -11,13 +11,13 @@ filegroup(
         "src/main/java/org/batfish/common/util/BatfishObjectMapper.java",
         "src/main/java/org/batfish/datamodel/answers/AnswerElement.java",
         "src/main/java/org/batfish/datamodel/answers/AnswerSummary.java",
-        "src/main/java/org/batfish/grammar/BatfishParseException.java",
         "src/main/java/org/batfish/grammar/BatfishANTLRErrorStrategy.java",
         "src/main/java/org/batfish/grammar/BatfishCombinedParser.java",
         "src/main/java/org/batfish/grammar/BatfishGrammarErrorListener.java",
         "src/main/java/org/batfish/grammar/BatfishLexer.java",
         "src/main/java/org/batfish/grammar/BatfishLexerErrorListener.java",
         "src/main/java/org/batfish/grammar/BatfishLexerRecoveryStrategy.java",
+        "src/main/java/org/batfish/grammar/BatfishParseException.java",
         "src/main/java/org/batfish/grammar/BatfishParseTreeWalker.java",
         "src/main/java/org/batfish/grammar/BatfishParser.java",
         "src/main/java/org/batfish/grammar/BatfishParserATNSimulator.java",
@@ -74,6 +74,7 @@ java_library(
         "@grizzly_framework//:compile",
         "@grizzly_server//:compile",
         "@guava//:compile",
+        "@icu4j//:compile",
         "@jackson_annotations//:compile",
         "@jackson_core//:compile",
         "@jackson_databind//:compile",
@@ -179,7 +180,7 @@ genrule(
         "RecoveryParserListener.java",
     ],
     cmd = """
-java -cp $(location //third_party/org/antlr4/antlr4-complete) \
+java -cp $(location @antlr4_tool//jar) \
     org.antlr.v4.Tool \
     -Xexact-output-dir \
        $(location src/test/antlr4/org/batfish/grammar/recovery/RecoveryLexer.g4) \
@@ -188,7 +189,7 @@ java -cp $(location //third_party/org/antlr4/antlr4-complete) \
     -encoding UTF-8 \
     -Werror \
     -o $(@D)""",
-    tools = ["//third_party/org/antlr4/antlr4-complete"],
+    tools = ["@antlr4_tool//jar"],
 )
 
 genrule(

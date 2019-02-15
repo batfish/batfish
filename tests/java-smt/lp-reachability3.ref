@@ -2,7 +2,7 @@
   {
     "class" : "org.batfish.symbolic.answers.SmtReachabilityAnswerElement",
     "flowHistory" : {
-      "class" : "org.batfish.datamodel.FlowHistory"
+      "class" : "org.batfish.symbolic.answers.FlowHistory"
     },
     "result" : {
       "verified" : true

@@ -1,5 +1,6 @@
 package org.batfish.z3;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -219,14 +220,20 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
         : answerAndSmtConstraint;
   }
 
-  protected Fixedpoint mkFixedpoint(NodProgram program, boolean printAnswer) {
+  @VisibleForTesting
+  static Params makeZ3Params(Context ctx, Settings settings, boolean printAnswer) {
     String fpModuleName = getFpModuleName();
-    Context ctx = program.getNodContext().getContext();
     Params p = ctx.mkParams();
-    p.add("timeout", _settings.getZ3timeout());
+    p.add("timeout", settings.getZ3timeout());
     p.add(String.format("%s.engine", fpModuleName), "datalog");
     p.add(String.format("%s.datalog.default_relation", fpModuleName), "doc");
     p.add(String.format("%s.print_answer", fpModuleName), printAnswer);
+    return p;
+  }
+
+  private Fixedpoint mkFixedpoint(NodProgram program, boolean printAnswer) {
+    Context ctx = program.getNodContext().getContext();
+    Params p = makeZ3Params(ctx, _settings, printAnswer);
     Fixedpoint fix = ctx.mkFixedpoint();
     fix.setParameters(p);
     for (FuncDecl relationDeclaration :
