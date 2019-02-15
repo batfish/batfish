@@ -337,6 +337,19 @@ load("@hamcrest//:rules.bzl", "hamcrest_compile")
 
 hamcrest_compile()
 
+# icu4j
+maven_repository(
+    name = "icu4j",
+    transitive_deps = [
+        "385682b7fff53cd5ac2cad0fdb4658a7b97e9475:com.ibm.icu:icu4j:63.1",
+    ],
+    deps = [
+        "com.ibm.icu:icu4j:63.1",
+    ],
+)
+
+load("@icu4j//:rules.bzl", "icu4j_compile")
+
 # jackson
 maven_repository(
     name = "jackson_annotations",
