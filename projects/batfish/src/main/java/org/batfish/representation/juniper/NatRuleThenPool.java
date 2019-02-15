@@ -1,6 +1,10 @@
 package org.batfish.representation.juniper;
 
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
+
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -9,6 +13,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
+import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.TransformationStep;
 
@@ -47,14 +52,24 @@ public final class NatRuleThenPool implements NatRuleThen, Serializable {
   }
 
   @Override
-  public Optional<TransformationStep> toTransformationStep(
+  public List<TransformationStep> toTransformationStep(
       TransformationType type, IpField field, Map<String, NatPool> pools, Ip interfaceIp) {
     NatPool pool = pools.get(_poolName);
     if (pool == null) {
       // pool is undefined.
-      return Optional.empty();
+      return ImmutableList.of();
     }
-    return Optional.of(
-        new AssignIpAddressFromPool(type, field, pool.getFromAddress(), pool.getToAddress()));
+
+    // TODO
+    if (pool.getPatPool() == null && type == SOURCE_NAT) {
+      // source nat enable PAT by default
+      return ImmutableList.of(
+          new AssignIpAddressFromPool(type, field, pool.getFromAddress(), pool.getToAddress()),
+          new AssignPortFromPool(type, field, pool.getPatPool().));
+
+    } else {
+      return ImmutableList.of(
+          new AssignIpAddressFromPool(type, field, pool.getFromAddress(), pool.getToAddress()));
+    }
   }
 }

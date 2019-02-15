@@ -1,7 +1,8 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.IpField;
@@ -13,8 +14,8 @@ public enum NatRuleThenOff implements NatRuleThen {
   INSTANCE;
 
   @Override
-  public Optional<TransformationStep> toTransformationStep(
+  public List<TransformationStep> toTransformationStep(
       TransformationType type, IpField field, Map<String, NatPool> pools, Ip interfaceIp) {
-    return Optional.of(new Noop(type));
+    return ImmutableList.of(new Noop(type));
   }
 }
