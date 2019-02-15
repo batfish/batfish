@@ -78,7 +78,6 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.FlowTraceHop;
-import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SnapshotMetadata;
@@ -2562,7 +2561,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetNetworkNodeRolesNoSnapshots() throws IOException {
+  public void testGetNetworkNodeRolesEmpty() throws IOException {
     String network = "network1";
     _manager.initNetwork(network, null);
 
@@ -2571,16 +2570,12 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetNetworkNodeRolesNoGoodSnapshots() throws IOException {
+  public void testGetNetworkNodeRolesPresent() throws IOException {
     String network = "network1";
-    String snapshot = "snapshot1";
     String node = "node1";
     _manager.initNetwork(network, null);
-    NetworkId networkId = _idManager.getNetworkId(network);
-    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, node, _folder);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
-    NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(networkId, snapshotId);
-    NodeRolesData snapshotInferredNodeRoles =
+    NodeRolesId networkNodeRolesId = new NodeRolesId("nr");
+    NodeRolesData networkNodeRoles =
         NodeRolesData.builder()
             .setRoleDimensions(
                 ImmutableSortedSet.of(
@@ -2589,68 +2584,11 @@ public final class WorkMgrTest {
                         .setRoles(ImmutableSet.of(new NodeRole("role1", node)))
                         .build()))
             .build();
-    _manager.getStorage().storeNodeRoles(snapshotInferredNodeRoles, snapshotNodeRolesId);
-    SnapshotMetadataMgr.updateInitializationStatus(
-        networkId, snapshotId, ProcessingStatus.PARSING_FAIL, null);
-
-    // should return empty node roles since snapshot parsing failed
-    assertThat(_manager.getNetworkNodeRoles(network), equalTo(NodeRolesData.builder().build()));
-  }
-
-  @Test
-  public void testGetNetworkNodeRolesGoodSnapshot() throws IOException {
-    String network = "network1";
-    String snapshot = "snapshot1";
-    String node = "node1";
-    _manager.initNetwork(network, null);
-    NetworkId networkId = _idManager.getNetworkId(network);
-    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, node, _folder);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
-    NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(networkId, snapshotId);
-    NodeRolesData snapshotInferredNodeRoles =
-        NodeRolesData.builder()
-            .setRoleDimensions(
-                ImmutableSortedSet.of(
-                    NodeRoleDimension.builder()
-                        .setName("dim1")
-                        .setRoles(ImmutableSet.of(new NodeRole("role1", node)))
-                        .build()))
-            .build();
-    _manager.getStorage().storeNodeRoles(snapshotInferredNodeRoles, snapshotNodeRolesId);
-    SnapshotMetadataMgr.updateInitializationStatus(
-        networkId, snapshotId, ProcessingStatus.PARSED, null);
+    _manager.getStorage().storeNodeRoles(networkNodeRoles, networkNodeRolesId);
+    _idManager.assignNetworkNodeRolesId(_idManager.getNetworkId(network), networkNodeRolesId);
 
     // inferred roles for first snapshot should have been set network-wide
-    assertThat(_manager.getNetworkNodeRoles(network), equalTo(snapshotInferredNodeRoles));
-  }
-
-  @Test
-  public void testGetNetworkNodeRolesUnchangedOnceSet() throws IOException {
-    String network = "network1";
-    String snapshot = "snapshot1";
-    String node = "node1";
-    _manager.initNetwork(network, null);
-    NetworkId networkId = _idManager.getNetworkId(network);
-    NodeRolesData manualRoles = NodeRolesData.builder().build();
-    _manager.putNetworkNodeRoles(manualRoles, network);
-    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, node, _folder);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
-    NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(networkId, snapshotId);
-    NodeRolesData snapshotInferredNodeRoles =
-        NodeRolesData.builder()
-            .setRoleDimensions(
-                ImmutableSortedSet.of(
-                    NodeRoleDimension.builder()
-                        .setName("dim1")
-                        .setRoles(ImmutableSet.of(new NodeRole("role1", node)))
-                        .build()))
-            .build();
-    _manager.getStorage().storeNodeRoles(snapshotInferredNodeRoles, snapshotNodeRolesId);
-    SnapshotMetadataMgr.updateInitializationStatus(
-        networkId, snapshotId, ProcessingStatus.PARSED, null);
-
-    // network node roles should not have changed since they had already been set
-    assertThat(_manager.getNetworkNodeRoles(network), equalTo(manualRoles));
+    assertThat(_manager.getNetworkNodeRoles(network), equalTo(networkNodeRoles));
   }
 
   @Test
