@@ -22,27 +22,6 @@ maven_repositories()
 ##########################################################
 ## Second section: per-library, what we depend on
 
-# ANTLR 4
-maven_repository(
-    name = "antlr4",
-    transitive_deps = [
-        "28d33b5e44e72edcc66a5da7a34a42147f38d987:com.ibm.icu:icu4j:63.1",
-        "457216e8e6578099ae63667bb1e4439235892028:org.abego.treelayout:org.abego.treelayout.core:1.0.3",
-        "467d508be07a542ad0a68ffcaed2d561c5fb2e0c:org.antlr:ST4:4.1",
-        "93058c41a6cbb7f5ca63edac837f42c002dbc556:org.antlr:antlr4:4.7.2",
-        "e27d8ab4f984f9d186f54da984a6ab1cccac755e:org.antlr:antlr4-runtime:4.7.2",
-        "cd9cd41361c155f3af0f653009dcecb08d8b4afd:org.antlr:antlr-runtime:3.5.2",
-        "3178f73569fd7a1e5ffc464e680f7a8cc784b85a:org.glassfish:javax.json:1.0.4",
-    ],
-    deps = [
-        "org.antlr:antlr4:4.7.2",
-    ],
-)
-
-load("@antlr4//:rules.bzl", "antlr4_compile")
-
-antlr4_compile()
-
 # ANTLR 4 Runtime
 maven_repository(
     name = "antlr4_runtime",
@@ -350,6 +329,8 @@ maven_repository(
 )
 
 load("@icu4j//:rules.bzl", "icu4j_compile")
+
+icu4j_compile()
 
 # jackson
 maven_repository(
