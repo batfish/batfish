@@ -9,6 +9,8 @@ import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.matchers.TraceMatchersImpl.HasDisposition;
 import org.batfish.datamodel.matchers.TraceMatchersImpl.HasHops;
+import org.batfish.datamodel.matchers.TraceMatchersImpl.HasLastHop;
+import org.batfish.datamodel.matchers.TraceMatchersImpl.HasNthHop;
 import org.hamcrest.Matcher;
 
 /** {@link Matcher Matchers} for {@link Trace}. */
@@ -34,6 +36,16 @@ public final class TraceMatchers {
   /** A {@link Matcher} for {@link Trace} {@link Hop hops}. */
   public static HasHops hasHops(Matcher<? super List<? extends Hop>> hopsMatcher) {
     return new HasHops(hopsMatcher);
+  }
+
+  /** A {@link Matcher} for the last hop in a {@link Trace}. */
+  public static HasLastHop hasLastHop(Matcher<? super Hop> hopMatcher) {
+    return new HasLastHop(hopMatcher);
+  }
+
+  /** A {@link Matcher} for the nth hop in a {@link Trace}. */
+  public static HasNthHop hasNthHop(int n, Matcher<? super Hop> hopMatcher) {
+    return new HasNthHop(n, hopMatcher);
   }
 
   private TraceMatchers() {}
