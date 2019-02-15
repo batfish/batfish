@@ -1,5 +1,7 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.datamodel.answers.AutocompleteSuggestion.DEFAULT_RANK;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -13,6 +15,7 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.answers.AutoCompleteUtils;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.questions.Variable;
+import org.batfish.datamodel.questions.Variable.Type;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.parboiled.Rule;
@@ -84,6 +87,29 @@ public final class ParboiledAutoComplete {
         .run();
   }
 
+  /** Auto completes Interface spec queries */
+  public static List<AutocompleteSuggestion> autoCompleteInterface(
+      String network,
+      String snapshot,
+      String query,
+      int maxSuggestions,
+      CompletionMetadata completionMetadata,
+      NodeRolesData nodeRolesData,
+      ReferenceLibrary referenceLibrary) {
+    return new ParboiledAutoComplete(
+            Parser.INSTANCE,
+            Parser.INSTANCE.InterfaceExpression(),
+            Parser.ANCHORS,
+            network,
+            snapshot,
+            query,
+            maxSuggestions,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary)
+        .run();
+  }
+
   /** This is the entry point for all auto completions */
   List<AutocompleteSuggestion> run() {
 
@@ -119,6 +145,28 @@ public final class ParboiledAutoComplete {
 
     List<AutocompleteSuggestion> suggestions = null;
     switch (pm.getAnchorType()) {
+      case ADDRESS_GROUP_AND_BOOK:
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
+      case EOI:
+        return ImmutableList.of();
+      case INTERFACE_GROUP_AND_BOOK:
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
+      case INTERFACE_NAME:
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
+      case INTERFACE_NAME_REGEX: // can't help with regexes
+        return ImmutableList.of();
+      case INTERFACE_TYPE:
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
+      case IP_ADDRESS:
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
+      case IP_ADDRESS_MASK: // can't help with masks
+        return ImmutableList.of();
+      case IP_PREFIX:
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
+      case IP_RANGE:
+      case IP_WILDCARD:
+        // These depend on other completion types that should be kicking in
+        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case STRING_LITERAL:
         /*
          String literals get a lower rank because there can be many suggestions for dynamic values
@@ -127,41 +175,28 @@ public final class ParboiledAutoComplete {
         return ImmutableList.of(
             new AutocompleteSuggestion(
                 pm.getMatchCompletion(), true, null, RANK_STRING_LITERAL, startIndex));
-      case ADDRESS_GROUP_AND_BOOK:
-      case IP_ADDRESS:
-      case IP_PREFIX:
-        suggestions =
-            AutoCompleteUtils.autoComplete(
-                _network,
-                _snapshot,
-                anchorTypeToVariableType(pm.getAnchorType()),
-                pm.getMatchPrefix(),
-                _maxSuggestions,
-                _completionMetadata,
-                _nodeRolesData,
-                _referenceLibrary);
-        break;
-      case IP_RANGE:
-      case IP_WILDCARD:
-        // These depend on other completion types that should be kicking in
-        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
-      case EOI:
-      case IP_ADDRESS_MASK:
       case WHITESPACE:
-        // nothing useful to suggest for these completion types
         return ImmutableList.of();
       default:
         throw new IllegalArgumentException("Unhandled completion type " + pm.getAnchorType());
     }
-    return suggestions.stream()
+  }
+
+  private List<AutocompleteSuggestion> autoCompletePotentialMatch(
+      PotentialMatch pm, int startIndex, int rank) {
+    return AutoCompleteUtils.autoComplete(
+            _network,
+            _snapshot,
+            anchorTypeToVariableType(pm.getAnchorType()),
+            pm.getMatchPrefix(),
+            _maxSuggestions,
+            _completionMetadata,
+            _nodeRolesData,
+            _referenceLibrary)
+        .stream()
         .map(
             s ->
-                new AutocompleteSuggestion(
-                    s.getText(),
-                    true,
-                    s.getDescription(),
-                    AutocompleteSuggestion.DEFAULT_RANK,
-                    startIndex))
+                new AutocompleteSuggestion(s.getText(), true, s.getDescription(), rank, startIndex))
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -173,6 +208,12 @@ public final class ParboiledAutoComplete {
     switch (anchorType) {
       case ADDRESS_GROUP_AND_BOOK:
         return Variable.Type.ADDRESS_GROUP_AND_BOOK;
+      case INTERFACE_GROUP_AND_BOOK:
+        return Variable.Type.INTERFACE_GROUP_AND_BOOK;
+      case INTERFACE_NAME:
+        return Type.INTERFACE_NAME;
+      case INTERFACE_TYPE:
+        return Variable.Type.INTERFACE_TYPE;
       case IP_ADDRESS:
         return Variable.Type.IP;
       case IP_PREFIX:
