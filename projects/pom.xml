@@ -26,7 +26,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- The versions of Apache Maven plugins used. Please keep alphabetical.-->
-    <antlr4-maven-plugin.version>4.7.1</antlr4-maven-plugin.version>
+    <antlr4-maven-plugin.version>4.7.2</antlr4-maven-plugin.version>
     <maven-artifact.version>3.5.4</maven-artifact.version>
     <maven-checkstyle-plugin.version>2.17</maven-checkstyle-plugin.version>
     <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
@@ -45,8 +45,8 @@
     <maven-surefire-plugin.version>3.0.0-M1</maven-surefire-plugin.version>
 
     <!-- The versions of Java libraries used. Please keep alphabetical. -->
-    <antlr4.version>4.7.1-batfish-internal</antlr4.version>
-    <antlr4-runtime.version>4.7.1</antlr4-runtime.version>
+    <antlr4.version>4.7.2</antlr4.version>
+    <antlr4-runtime.version>4.7.2</antlr4-runtime.version>
     <asm.version>7.0</asm.version>
     <autoservice.version>1.0-rc4</autoservice.version>
     <azure.version>2.0.0</azure.version>
@@ -451,21 +451,6 @@
               <packaging>jar</packaging>
               <file>${basedir}/lib/bdd/net.sf.javabdd-${javabdd.version}.jar</file>
               <sources>${basedir}/lib/bdd/net.sf.javabdd-${javabdd.version}-sources.jar</sources>
-            </configuration>
-          </execution>
-          <!-- Batfish includes a custom version of antlr4 that supports larger lexers. -->
-          <execution>
-            <phase>initialize</phase>
-            <goals>
-              <goal>install-file</goal>
-            </goals>
-            <id>install-antlr4</id>
-            <configuration>
-              <groupId>org.antlr</groupId>
-              <artifactId>antlr4</artifactId>
-              <packaging>jar</packaging>
-              <pomFile>${basedir}/lib/antlr4/antlr4-${antlr4.version}.pom</pomFile>
-              <file>${basedir}/lib/antlr4/antlr4-${antlr4.version}.jar</file>
             </configuration>
           </execution>
           <!-- Batfish includes a custom version of JsonPath with bugfixes to array handling. -->
