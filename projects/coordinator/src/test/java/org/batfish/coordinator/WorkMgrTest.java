@@ -76,8 +76,6 @@ import org.batfish.coordinator.resources.ForkSnapshotBean;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.FlowTrace;
-import org.batfish.datamodel.FlowTraceHop;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SnapshotMetadata;
@@ -2113,33 +2111,6 @@ public final class WorkMgrTest {
     Row r2 = Row.of(col, Flow.builder().setDstIp(Ip.MAX).setIngressNode("a").setTag("a").build());
 
     assertThat(comparator.compare(r1, r2), lessThan(0));
-  }
-
-  @Test
-  public void testColumnComparatorFlowTrace() {
-    String col = "col1";
-    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.FLOW_TRACE, "colDesc");
-    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
-    Row r1 = Row.of(col, new FlowTrace(FlowDisposition.ACCEPTED, ImmutableList.of(), ""));
-    Row r2 =
-        Row.of(col, new FlowTrace(FlowDisposition.DELIVERED_TO_SUBNET, ImmutableList.of(), ""));
-    Row r3 =
-        Row.of(
-            col,
-            new FlowTrace(
-                FlowDisposition.ACCEPTED,
-                ImmutableList.of(
-                    new FlowTraceHop(
-                        Edge.of("a", "a", "b", "b"),
-                        ImmutableSortedSet.of(),
-                        "a",
-                        "a",
-                        Flow.builder().setDstIp(Ip.ZERO).setIngressNode("a").setTag("a").build())),
-                ""));
-
-    assertThat(comparator.compare(r1, r2), lessThan(0));
-    assertThat(comparator.compare(r1, r3), lessThan(0));
-    assertThat(comparator.compare(r2, r3), lessThan(0));
   }
 
   @Test
