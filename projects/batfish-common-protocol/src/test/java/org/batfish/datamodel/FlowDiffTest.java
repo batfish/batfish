@@ -1,7 +1,9 @@
 package org.batfish.datamodel;
 
 import static org.batfish.datamodel.Flow.PROP_DST_IP;
+import static org.batfish.datamodel.Flow.PROP_DST_PORT;
 import static org.batfish.datamodel.Flow.PROP_SRC_IP;
+import static org.batfish.datamodel.Flow.PROP_SRC_PORT;
 import static org.batfish.datamodel.FlowDiff.flowDiffs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -45,6 +47,38 @@ public final class FlowDiffTest {
 
   @Test
   public void testJackson() throws IOException {
+    FlowDiff fd = new FlowDiff(PROP_DST_IP, "old", "new");
+    assertEquals(BatfishObjectMapper.clone(fd, FlowDiff.class), fd);
+  }
+
+  @Test
+  public void testFlowDiffPort() throws IOException {
+    int dstport1 = 2000;
+    int srcport1 = 3000;
+    int dstport2 = 4000;
+    int srcport2 = 5000;
+    Flow orig =
+        Flow.builder()
+            .setIngressNode("ingressNode")
+            .setTag("tag")
+            .setDstPort(dstport1)
+            .setSrcPort(srcport1)
+            .build();
+    Flow newDst = orig.toBuilder().setDstPort(dstport2).build();
+    Flow newSrc = orig.toBuilder().setSrcPort(srcport2).build();
+    Flow newDstAndSrc = newDst.toBuilder().setSrcPort(srcport2).build();
+
+    assertThat(flowDiffs(null, orig), empty());
+    assertThat(flowDiffs(orig, null), empty());
+    assertThat(flowDiffs(orig, orig), empty());
+
+    FlowDiff dstDiff =
+        new FlowDiff(PROP_DST_PORT, Integer.toString(dstport1), Integer.toString(dstport2));
+    FlowDiff srcDiff =
+        new FlowDiff(PROP_SRC_PORT, Integer.toString(srcport1), Integer.toString(srcport2));
+    assertThat(flowDiffs(orig, newDst), contains(dstDiff));
+    assertThat(flowDiffs(orig, newSrc), contains(srcDiff));
+    assertThat(flowDiffs(orig, newDstAndSrc), containsInAnyOrder(dstDiff, srcDiff));
     FlowDiff fd = new FlowDiff(PROP_DST_IP, "old", "new");
     assertEquals(BatfishObjectMapper.clone(fd, FlowDiff.class), fd);
   }

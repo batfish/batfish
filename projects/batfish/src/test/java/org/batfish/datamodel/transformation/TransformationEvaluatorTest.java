@@ -11,7 +11,9 @@ import static org.batfish.datamodel.transformation.IpField.SOURCE;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
+import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -26,6 +28,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
+import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.transformation.TransformationEvaluator.TransformationResult;
 import org.junit.Before;
@@ -256,5 +259,54 @@ public class TransformationEvaluatorTest {
                 new TransformationStepDetail(
                     DEST_NAT, ImmutableSortedSet.of(flowDiff(IpField.DESTINATION, ip2, ip3))),
                 TRANSFORMED)));
+  }
+
+  @Test
+  public void testAssignPortFromPoolDst() {
+    Ip srcIp = Ip.parse("1.1.1.1");
+    int dstPort = 3000;
+    int poolPort = 2000;
+    Transformation transformation =
+        when(matchSrc(srcIp)).apply(assignDestinationPort(poolPort, poolPort)).build();
+
+    _flowBuilder.setSrcIp(srcIp).setDstPort(dstPort);
+
+    Flow origFlow = _flowBuilder.build();
+    TransformationResult result = evalResult(transformation, origFlow);
+    assertThat(result.getOutputFlow(), equalTo(origFlow.toBuilder().setDstPort(poolPort).build()));
+
+    List<Step<?>> traceSteps = result.getTraceSteps();
+    assertThat(traceSteps, hasSize(1));
+    assertThat(
+        traceSteps.get(0),
+        equalTo(
+            new org.batfish.datamodel.flow.TransformationStep(
+                new TransformationStepDetail(
+                    DEST_NAT,
+                    ImmutableSortedSet.of(flowDiff(PortField.DESTINATION, dstPort, poolPort))),
+                TRANSFORMED)));
+  }
+
+  @Test
+  public void testAssignPortFromPoolSrc() {
+    Ip srcIp = Ip.parse("1.1.1.1");
+    int srcPort = 3000;
+    int poolPort = 2000;
+    Transformation transformation =
+        when(matchSrc(srcIp)).apply(assignSourcePort(poolPort, poolPort)).build();
+
+    _flowBuilder.setSrcIp(srcIp).setSrcPort(srcPort);
+
+    Flow origFlow = _flowBuilder.build();
+    TransformationResult result = evalResult(transformation, origFlow);
+    assertThat(result.getOutputFlow(), equalTo(origFlow.toBuilder().setSrcPort(poolPort).build()));
+
+    List<Step<?>> traceSteps = result.getTraceSteps();
+    TransformationStep step =
+        new TransformationStep(
+            new TransformationStepDetail(
+                SOURCE_NAT, ImmutableSortedSet.of(flowDiff(PortField.SOURCE, srcPort, poolPort))),
+            TRANSFORMED);
+    assertThat(traceSteps, contains(step));
   }
 }

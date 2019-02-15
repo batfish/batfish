@@ -58,6 +58,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
+import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
@@ -88,6 +89,7 @@ import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
+import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdge;
@@ -472,7 +474,9 @@ public final class BDDReachabilityAnalysisFactory {
         generateRules_NodeInterfaceInsufficientInfo_InsufficientInfo(finalNodes),
         generateRules_NodeInterfaceNeighborUnreachable_NeighborUnreachable(finalNodes),
         generateRules_PreInInterface_NodeDropAclIn(),
-        generateRules_PreInInterface_PostInVrf(),
+        generateRules_PreInInterface_PostInInterface(),
+        generateRules_PostInInterface_NodeDropAclIn(),
+        generateRules_PostInInterface_PostInVrf(),
         generateRules_PostInVrf_NodeAccept(),
         generateRules_PostInVrf_NodeDropNoRoute(),
         generateRules_PostInVrf_PreOutVrf(),
@@ -551,6 +555,50 @@ public final class BDDReachabilityAnalysisFactory {
       Set<String> finalNodes) {
     return generateRules_NodeInterfaceDisposition_Disposition(
         NodeInterfaceInsufficientInfo::new, InsufficientInfo.INSTANCE, finalNodes);
+  }
+
+  private Stream<Edge> generateRules_PostInInterface_NodeDropAclIn() {
+    return _configs.values().stream()
+        .map(Configuration::getVrfs)
+        .map(Map::values)
+        .flatMap(Collection::stream)
+        .flatMap(vrf -> vrf.getInterfaces().values().stream())
+        .filter(iface -> iface.getPostTransformationIncomingFilter() != null)
+        .map(
+            i -> {
+              String acl = i.getPostTransformationIncomingFilterName();
+              String node = i.getOwner().getHostname();
+              String iface = i.getName();
+
+              BDD aclDenyBDD = ignorableAclDenyBDD(node, acl);
+              return new Edge(
+                  new PostInInterface(node, iface),
+                  new NodeDropAclIn(node),
+                  compose(
+                      constraint(aclDenyBDD),
+                      removeSourceConstraint(_bddSourceManagers.get(node))));
+            });
+  }
+
+  private Stream<Edge> generateRules_PostInInterface_PostInVrf() {
+    return _configs.values().stream()
+        .map(Configuration::getVrfs)
+        .map(Map::values)
+        .flatMap(Collection::stream)
+        .flatMap(vrf -> vrf.getInterfaces().values().stream())
+        .map(
+            iface -> {
+              String aclName = iface.getPostTransformationIncomingFilterName();
+              String nodeName = iface.getOwner().getHostname();
+              String vrfName = iface.getVrfName();
+              String ifaceName = iface.getName();
+
+              PostInInterface preState = new PostInInterface(nodeName, ifaceName);
+              PostInVrf postState = new PostInVrf(nodeName, vrfName);
+
+              BDD inAclBDD = ignorableAclPermitBDD(nodeName, aclName);
+              return new Edge(preState, postState, constraint(inAclBDD));
+            });
   }
 
   private Stream<Edge> generateRules_PostInVrf_NodeAccept() {
@@ -649,7 +697,7 @@ public final class BDDReachabilityAnalysisFactory {
     return _ignoreFilters ? _one : aclPermitBDD(node, acl);
   }
 
-  private Stream<Edge> generateRules_PreInInterface_PostInVrf() {
+  private Stream<Edge> generateRules_PreInInterface_PostInInterface() {
     return _configs.values().stream()
         .map(Configuration::getVrfs)
         .map(Map::values)
@@ -659,11 +707,10 @@ public final class BDDReachabilityAnalysisFactory {
             iface -> {
               String aclName = iface.getIncomingFilterName();
               String nodeName = iface.getOwner().getHostname();
-              String vrfName = iface.getVrfName();
               String ifaceName = iface.getName();
 
               PreInInterface preState = new PreInInterface(nodeName, ifaceName);
-              PostInVrf postState = new PostInVrf(nodeName, vrfName);
+              PostInInterface postState = new PostInInterface(nodeName, ifaceName);
 
               BDD inAclBDD = ignorableAclPermitBDD(nodeName, aclName);
 
@@ -1174,6 +1221,12 @@ public final class BDDReachabilityAnalysisFactory {
             IpField ipField = shiftIpAddressIntoSubnet.getIpField();
             BDD bdd = getIpSpaceToBDD(ipField).toBDD(shiftIpAddressIntoSubnet.getSubnet());
             ranges.merge(ipField, bdd, BDD::or);
+            return null;
+          }
+
+          @Override
+          public Void visitAssignPortFromPool(AssignPortFromPool assignPortFromPool) {
+            // TODO
             return null;
           }
         };

@@ -18,6 +18,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -30,8 +31,7 @@ import com.google.common.collect.Maps;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import org.batfish.common.Warning;
-import org.batfish.common.Warnings;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.ModelingUtils.IspInfo;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -46,6 +46,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -117,7 +118,8 @@ public class ModelingUtilsTest {
     IspInfo ispInfo = new IspInfo(ImmutableList.of(interfaceAddress), ImmutableList.of(peer));
 
     Configuration ispConfiguration =
-        ModelingUtils.getIspConfigurationNode(2L, ispInfo, new Warnings());
+        ModelingUtils.getIspConfigurationNode(
+            2L, ispInfo, new NetworkFactory(), new BatfishLogger("output", false));
 
     assertThat(
         ispConfiguration,
@@ -160,15 +162,15 @@ public class ModelingUtilsTest {
             .build();
     IspInfo ispInfo =
         new IspInfo(ImmutableList.of(interfaceAddress, interfaceAddress2), ImmutableList.of(peer));
-    Warnings warnings = new Warnings(true, true, true);
-    Configuration ispConfiguration = ModelingUtils.getIspConfigurationNode(2L, ispInfo, warnings);
+    BatfishLogger logger = new BatfishLogger("debug", false);
+    Configuration ispConfiguration =
+        ModelingUtils.getIspConfigurationNode(2L, ispInfo, new NetworkFactory(), logger);
 
     assertThat(ispConfiguration, nullValue());
+
+    assertThat(logger.getHistory(), hasSize(1));
     assertThat(
-        warnings.getRedFlagWarnings(),
-        equalTo(
-            ImmutableList.of(
-                new Warning("ISP information for ASN '2' is not correct", Warnings.TAG_RED_FLAG))));
+        logger.getHistory().toString(300), equalTo("ISP information for ASN '2' is not correct"));
   }
 
   @Test
@@ -247,7 +249,7 @@ public class ModelingUtilsTest {
 
   @Test
   public void testCreateInternetNode() {
-    Configuration internet = ModelingUtils.createInternetNode();
+    Configuration internet = ModelingUtils.createInternetNode(new NetworkFactory());
     InterfaceAddress interfaceAddress =
         new InterfaceAddress(ModelingUtils.INTERNET_OUT_ADDRESS, ModelingUtils.INTERNET_OUT_SUBNET);
     assertThat(
@@ -310,7 +312,7 @@ public class ModelingUtilsTest {
             ImmutableList.of(new NodeInterfacePair("conf", "interface")),
             ImmutableList.of(),
             ImmutableList.of(),
-            new Warnings());
+            new BatfishLogger("output", false));
 
     assertThat(internetAndIsps, hasKey(ModelingUtils.INTERNET_HOST_NAME));
     Configuration internetNode = internetAndIsps.get(ModelingUtils.INTERNET_HOST_NAME);
@@ -320,7 +322,7 @@ public class ModelingUtilsTest {
         allOf(
             hasHostname(ModelingUtils.INTERNET_HOST_NAME),
             hasInterface(
-                "~Interface_0~",
+                "~Interface_1~",
                 hasAllAddresses(
                     equalTo(ImmutableSet.of(new InterfaceAddress(Ip.parse("240.1.1.2"), 31))))),
             hasVrf(
@@ -400,5 +402,71 @@ public class ModelingUtilsTest {
                             Statements.ExitAccept.toStaticStatement()))))
             .build();
     assertThat(defaultRoutingPolicy, equalTo(expectedRoutingPolicy));
+  }
+
+  @Test
+  public void testInterfaceNamesIsp() {
+    NetworkFactory nf = new NetworkFactory();
+
+    Configuration.Builder cb = nf.configurationBuilder();
+    Configuration configuration1 =
+        cb.setHostname("conf1").setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration1).build();
+    nf.interfaceBuilder()
+        .setName("interface1")
+        .setOwner(configuration1)
+        .setAddress(new InterfaceAddress(Ip.parse("1.1.1.1"), 24))
+        .build();
+    Vrf vrfConf1 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration1).build();
+    BgpProcess bgpProcess1 = nf.bgpProcessBuilder().setVrf(vrfConf1).build();
+    BgpActivePeerConfig.builder()
+        .setBgpProcess(bgpProcess1)
+        .setPeerAddress(Ip.parse("1.1.1.2"))
+        .setRemoteAs(1234L)
+        .setLocalIp(Ip.parse("1.1.1.1"))
+        .setLocalAs(1L)
+        .build();
+
+    Configuration configuration2 =
+        cb.setHostname("conf2").setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration2).build();
+    nf.interfaceBuilder()
+        .setName("interface2")
+        .setOwner(configuration2)
+        .setAddress(new InterfaceAddress(Ip.parse("2.2.2.2"), 24))
+        .build();
+    Vrf vrfConf2 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration2).build();
+    BgpProcess bgpProcess2 = nf.bgpProcessBuilder().setVrf(vrfConf2).build();
+    BgpActivePeerConfig.builder()
+        .setBgpProcess(bgpProcess2)
+        .setPeerAddress(Ip.parse("2.2.2.3"))
+        .setRemoteAs(1234L)
+        .setLocalIp(Ip.parse("2.2.2.2"))
+        .setLocalAs(1L)
+        .build();
+
+    Map<String, Configuration> internetAndIsps =
+        ModelingUtils.getInternetAndIspNodes(
+            ImmutableMap.of(
+                configuration1.getHostname(),
+                configuration1,
+                configuration2.getHostname(),
+                configuration2),
+            ImmutableList.of(
+                new NodeInterfacePair("conf1", "interface1"),
+                new NodeInterfacePair("conf2", "interface2")),
+            ImmutableList.of(),
+            ImmutableList.of(),
+            new BatfishLogger("output", false));
+
+    assertThat(internetAndIsps, hasKey("Isp_1234"));
+
+    Configuration isp = internetAndIsps.get("Isp_1234");
+    // two interfaces for peering with the two configurations and one interface for peering with
+    // internet
+    assertThat(isp.getAllInterfaces().entrySet(), hasSize(3));
+    assertThat(
+        isp.getAllInterfaces().keySet(),
+        equalTo(ImmutableSet.of("~Interface_0~", "~Interface_1~", "~Interface_3~")));
   }
 }

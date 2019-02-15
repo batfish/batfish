@@ -136,6 +136,24 @@ public final class DataModelMatchers {
   }
 
   /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
+   * Interface}'s {@code postTransformationIncomingFilterName}.
+   */
+  public static @Nonnull Matcher<Interface> hasPostTransformationIncomingFilter(
+      @Nonnull Matcher<? super IpAccessList> subMatcher) {
+    return new InterfaceMatchersImpl.HasPostTransformationIncomingFilter(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
+   * Interface}'s {@code preTransformationOutgoingFilterName}.
+   */
+  public static @Nonnull Matcher<Interface> hasPreTransformationOutgoingFilter(
+      @Nonnull Matcher<? super IpAccessList> subMatcher) {
+    return new InterfaceMatchersImpl.HasPreTransformationOutgoingFilter(subMatcher);
+  }
+
+  /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
    * {@link RouteFilterList} with specified name.
    */

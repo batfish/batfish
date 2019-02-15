@@ -50332,6 +50332,22 @@
             "            INTERFACES:'interfaces'",
             "            (int_named",
             "              (interface_id",
+            "                name = INTERFACE_NAME:'fab0'  <== mode:M_Interface)",
+            "              (i_common",
+            "                (i_description",
+            "                  (description",
+            "                    DESCRIPTION:'description'",
+            "                    text = M_Description_DESCRIPTION:'\"Fabric interface 0\"'  <== mode:M_Description))))))))",
+            "    NEWLINE:'\\n'  <== mode:M_Description)",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
             "                name = INTERFACE_NAME:'ge-0/0/0'  <== mode:M_Interface)",
             "              (i_common",
             "                (i_common_physical",
@@ -65957,7 +65973,7 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 18,
+              "Line" : 19,
               "Parser_Context" : "[ifi_tcp_mss if_inet i_family i_common i_unit int_named s_interfaces s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "tcp-mss 1400"
             }
@@ -70216,125 +70232,131 @@
               ],
               "numReferrers" : 1
             },
-            "ge-0/0/0" : {
+            "fab0" : {
               "definitionLines" : [
                 6
               ],
               "numReferrers" : 1
             },
-            "ge-1/0/0" : {
+            "ge-0/0/0" : {
               "definitionLines" : [
                 7
               ],
               "numReferrers" : 1
             },
-            "ge-2/0/0" : {
-              "definitionLines" : [
-                8,
-                9
-              ],
-              "numReferrers" : 2
-            },
-            "ge-2/0/0.0" : {
+            "ge-1/0/0" : {
               "definitionLines" : [
                 8
               ],
               "numReferrers" : 1
             },
-            "ge-2/0/0.1" : {
+            "ge-2/0/0" : {
+              "definitionLines" : [
+                9,
+                10
+              ],
+              "numReferrers" : 2
+            },
+            "ge-2/0/0.0" : {
               "definitionLines" : [
                 9
               ],
               "numReferrers" : 1
             },
-            "ge-3/0/0" : {
+            "ge-2/0/0.1" : {
               "definitionLines" : [
                 10
+              ],
+              "numReferrers" : 1
+            },
+            "ge-3/0/0" : {
+              "definitionLines" : [
+                11
               ],
               "numReferrers" : 1
             },
             "ge-3/0/0.0" : {
               "definitionLines" : [
-                10
+                11
               ],
               "numReferrers" : 1
             },
             "ge-4/0/0" : {
               "definitionLines" : [
-                11
+                12
               ],
               "numReferrers" : 1
             },
             "ge-4/0/0.0" : {
               "definitionLines" : [
-                11
+                12
               ],
               "numReferrers" : 1
             },
             "ge-5/0/0" : {
               "definitionLines" : [
-                12
+                13
               ],
               "numReferrers" : 1
             },
             "ge-5/0/0.0" : {
               "definitionLines" : [
-                12
+                13
               ],
               "numReferrers" : 1
             },
             "irb" : {
               "definitionLines" : [
-                15,
                 16,
                 17,
-                18
+                18,
+                19
               ],
               "numReferrers" : 4
             },
             "irb.5" : {
               "definitionLines" : [
-                15,
                 16,
                 17,
-                18
+                18,
+                19
               ],
               "numReferrers" : 4
             },
             "vme" : {
               "definitionLines" : [
-                20
+                21
               ],
               "numReferrers" : 1
             },
             "vme.0" : {
               "definitionLines" : [
-                20
+                21
               ],
               "numReferrers" : 1
             },
             "xe-0/0/0:0" : {
               "definitionLines" : [
-                13,
-                14
+                14,
+                15
               ],
               "numReferrers" : 2
             },
             "xe-0/0/0:0.0" : {
               "definitionLines" : [
-                14
+                15
               ],
               "numReferrers" : 1
             },
             "xe-0/0/5:0" : {
               "definitionLines" : [
-                19
+                20
               ],
               "numReferrers" : 1
             },
             "xe-0/0/5:0.0" : {
               "definitionLines" : [
-                19
+                20
               ],
               "numReferrers" : 1
             }
@@ -70342,7 +70364,7 @@
           "routing-instance" : {
             "SOME_INSTANCE" : {
               "definitionLines" : [
-                22
+                23
               ],
               "numReferrers" : 0
             }
@@ -70350,8 +70372,8 @@
           "vlan" : {
             "unused-vlan" : {
               "definitionLines" : [
-                24,
-                25
+                25,
+                26
               ],
               "numReferrers" : 0
             }
@@ -74227,119 +74249,124 @@
                 5
               ]
             },
-            "ge-0/0/0" : {
+            "fab0" : {
               "interface" : [
                 6
               ]
             },
-            "ge-0/0/1" : {
-              "routing-instance interface" : [
-                22
-              ]
-            },
-            "ge-1/0/0" : {
+            "ge-0/0/0" : {
               "interface" : [
                 7
               ]
             },
-            "ge-2/0/0" : {
-              "interface" : [
-                8,
-                9
+            "ge-0/0/1" : {
+              "routing-instance interface" : [
+                23
               ]
             },
-            "ge-2/0/0.0" : {
+            "ge-1/0/0" : {
               "interface" : [
                 8
               ]
             },
-            "ge-2/0/0.1" : {
+            "ge-2/0/0" : {
+              "interface" : [
+                9,
+                10
+              ]
+            },
+            "ge-2/0/0.0" : {
               "interface" : [
                 9
               ]
             },
-            "ge-3/0/0" : {
+            "ge-2/0/0.1" : {
               "interface" : [
                 10
+              ]
+            },
+            "ge-3/0/0" : {
+              "interface" : [
+                11
               ]
             },
             "ge-3/0/0.0" : {
               "interface" : [
-                10
+                11
               ]
             },
             "ge-4/0/0" : {
               "interface" : [
-                11
+                12
               ]
             },
             "ge-4/0/0.0" : {
               "interface" : [
-                11
+                12
               ]
             },
             "ge-5/0/0" : {
               "interface" : [
-                12
+                13
               ]
             },
             "ge-5/0/0.0" : {
               "interface" : [
-                12
+                13
               ]
             },
             "irb" : {
               "interface" : [
-                15,
                 16,
                 17,
-                18
+                18,
+                19
               ]
             },
             "irb.5" : {
               "interface" : [
-                15,
                 16,
                 17,
-                18
+                18,
+                19
               ]
             },
             "vme" : {
               "interface" : [
-                20
+                21
               ]
             },
             "vme.0" : {
               "interface" : [
-                20
+                21
               ]
             },
             "xe-0/0/0:0" : {
               "interface" : [
-                13,
-                14
+                14,
+                15
               ]
             },
             "xe-0/0/0:0.0" : {
               "interface" : [
-                14
+                15
               ]
             },
             "xe-0/0/5:0" : {
               "interface" : [
-                19
+                20
               ]
             },
             "xe-0/0/5:0.0" : {
               "interface" : [
-                19
+                20
               ]
             }
           },
           "vlan" : {
             "bippetyboppety" : {
               "interface vlan" : [
-                19
+                20
               ]
             }
           }
@@ -76661,14 +76688,14 @@
           "interface" : {
             "ge-0/0/1" : {
               "routing-instance interface" : [
-                22
+                23
               ]
             }
           },
           "vlan" : {
             "bippetyboppety" : {
               "interface vlan" : [
-                19
+                20
               ]
             }
           }

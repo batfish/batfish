@@ -803,17 +803,21 @@ public class DefaultTransitionGeneratorTest {
   public void testVisitNodeDropAclIn() {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
-            .setIncomingAcls(
+            .setPreTransformationIncomingAcls(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2),
                     NODE2,
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2)))
+            .setPostTransformationIncomingAcls(
+                ImmutableMap.of(NODE3, ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2)))
             .setTopologyInterfaces(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableSet.of(INTERFACE1, INTERFACE2),
                     NODE2,
+                    ImmutableSet.of(INTERFACE1, INTERFACE2),
+                    NODE3,
                     ImmutableSet.of(INTERFACE1, INTERFACE2)))
             .build();
     Set<RuleStatement> rules =
@@ -846,6 +850,20 @@ public class DefaultTransitionGeneratorTest {
             new BasicRuleStatement(
                 ImmutableSet.of(new AclDeny(NODE2, ACL2), new PreInInterface(NODE2, INTERFACE2)),
                 new NodeDropAclIn(NODE2))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                ImmutableSet.of(
+                    new AclDeny(NODE3, ACL1), new PostInInterfacePostNat(NODE3, INTERFACE1)),
+                new NodeDropAclIn(NODE3))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                ImmutableSet.of(
+                    new AclDeny(NODE3, ACL2), new PostInInterfacePostNat(NODE3, INTERFACE2)),
+                new NodeDropAclIn(NODE3))));
   }
 
   @Test
@@ -1107,7 +1125,7 @@ public class DefaultTransitionGeneratorTest {
   public void testVisitPostInInterface() {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
-            .setIncomingAcls(
+            .setPreTransformationIncomingAcls(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2),
@@ -1287,7 +1305,7 @@ public class DefaultTransitionGeneratorTest {
   }
 
   @Test
-  public void testVisitPostInVrf_PostInInterface() {
+  public void testVisitPostInVrf_PostInInterfacePostNat() {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
             .setEnabledInterfacesByNodeVrf(
@@ -1304,6 +1322,8 @@ public class DefaultTransitionGeneratorTest {
                         ImmutableSet.of(INTERFACE1, INTERFACE2),
                         VRF2,
                         ImmutableSet.of(INTERFACE3, INTERFACE4))))
+            .setPostTransformationIncomingAcls(
+                ImmutableMap.of(NODE2, ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2)))
             .build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
@@ -1335,12 +1355,16 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterfacePostNat(NODE2, INTERFACE1), new PostInVrf(NODE2, VRF1))));
+                ImmutableSet.of(
+                    new PostInInterfacePostNat(NODE2, INTERFACE1), new AclPermit(NODE2, ACL1)),
+                new PostInVrf(NODE2, VRF1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new PostInInterfacePostNat(NODE2, INTERFACE2), new PostInVrf(NODE2, VRF1))));
+                ImmutableSet.of(
+                    new PostInInterfacePostNat(NODE2, INTERFACE2), new AclPermit(NODE2, ACL2)),
+                new PostInVrf(NODE2, VRF1))));
     assertThat(
         rules,
         hasItem(

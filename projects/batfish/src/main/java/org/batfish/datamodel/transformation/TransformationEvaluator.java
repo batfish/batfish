@@ -56,6 +56,19 @@ public class TransformationEvaluator {
       }
     }
 
+    private void set(PortField field, int port) {
+      switch (field) {
+        case DESTINATION:
+          _flowBuilder.setDstPort(port);
+          break;
+        case SOURCE:
+          _flowBuilder.setSrcPort(port);
+          break;
+        default:
+          throw new IllegalArgumentException("unknown PortField " + field);
+      }
+    }
+
     private Ip get(IpField field) {
       switch (field) {
         case DESTINATION:
@@ -64,6 +77,17 @@ public class TransformationEvaluator {
           return _flowBuilder.getSrcIp();
         default:
           throw new IllegalArgumentException("unknown IpField " + field);
+      }
+    }
+
+    private int get(PortField field) {
+      switch (field) {
+        case DESTINATION:
+          return _flowBuilder.getDstPort();
+        case SOURCE:
+          return _flowBuilder.getSrcPort();
+        default:
+          throw new IllegalArgumentException("unknown PortField " + field);
       }
     }
 
@@ -85,13 +109,24 @@ public class TransformationEvaluator {
           .collect(ImmutableList.toImmutableList());
     }
 
-    private Boolean set(TransformationType type, IpField ipField, Ip oldValue, Ip newValue) {
+    private boolean set(TransformationType type, IpField ipField, Ip oldValue, Ip newValue) {
       if (oldValue.equals(newValue)) {
         getFlowDiffs(type);
         return false;
       } else {
         set(ipField, newValue);
         getFlowDiffs(type).add(flowDiff(ipField, oldValue, newValue));
+        return true;
+      }
+    }
+
+    private boolean set(TransformationType type, PortField portField, int oldValue, int newValue) {
+      if (oldValue == newValue) {
+        getFlowDiffs(type);
+        return false;
+      } else {
+        set(portField, newValue);
+        getFlowDiffs(type).add(flowDiff(portField, oldValue, newValue));
         return true;
       }
     }
@@ -119,6 +154,12 @@ public class TransformationEvaluator {
       long offset = oldValue.asLong() - currentSubnetPrefix.getStartIp().asLong();
       Ip newValue = Ip.create(targetSubnet.getStartIp().asLong() + offset);
       return set(step.getType(), field, oldValue, newValue);
+    }
+
+    @Override
+    public Boolean visitAssignPortFromPool(AssignPortFromPool step) {
+      return set(
+          step.getType(), step.getPortField(), get(step.getPortField()), step.getPoolStart());
     }
   }
 
