@@ -12,7 +12,8 @@ public class PatPool implements Serializable {
   // null value means that no port is specified
   private Integer _toPort;
 
-  // 1. null value means no PAT related configuration is given. when the value is null, source nat
+  // 1. null value means no port translation related configuration is given. when the value is null,
+  // source nat
   // will apply PAT and dest nat will not apply PAT by default
   // 2. true means that a specific PAT command is found in the configuration that requires PAT
   // 3. no means that a specific PAT command is found in the configuration that requires no PAT
