@@ -350,6 +350,8 @@ maven_repository(
 
 load("@icu4j//:rules.bzl", "icu4j_compile")
 
+icu4j_compile()
+
 # jackson
 maven_repository(
     name = "jackson_annotations",
