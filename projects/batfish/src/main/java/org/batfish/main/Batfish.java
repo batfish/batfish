@@ -114,6 +114,7 @@ import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.common.util.ModelingUtils;
 import org.batfish.config.Settings;
 import org.batfish.config.TestrigSettings;
 import org.batfish.datamodel.AbstractRoute;
@@ -169,6 +170,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
+import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.pojo.Environment;
@@ -1340,6 +1342,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Nonnull
   private SortedSet<NodeInterfacePair> getInterfaceBlacklist() {
     return getInterfaceBlacklist(getNetworkSnapshot());
+  }
+
+  @Nonnull
+  private Map<String, Configuration> getIspConfigurations(
+      Map<String, Configuration> configurations) {
+    NetworkSnapshot networkSnapshot = getNetworkSnapshot();
+    IspConfiguration ispConfiguration =
+        _storage.loadIspConfiguration(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot());
+    if (ispConfiguration == null) {
+      return ImmutableMap.of();
+    }
+    return ModelingUtils.getInternetAndIspNodes(configurations, ispConfiguration, _logger);
   }
 
   @Nonnull
@@ -3229,6 +3243,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         assert convertSpan != null; // avoid unused warning
         configurations = getConfigurations(vendorConfigPath, answerElement);
       }
+
+      configurations.putAll(getIspConfigurations(configurations));
 
       try (ActiveSpan storeSpan =
           GlobalTracer.get().buildSpan("Store vendor-independent configs").startActive()) {
