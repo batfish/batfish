@@ -299,7 +299,7 @@ public final class AutoCompleteUtils {
   /**
    * Returns a list of suggestions based on query strings.
    *
-   * <p>The query is considered to be a strict prefix and the search is case-insensitive
+   * <p>The search is case-insensitive
    *
    * <p>The returned list contains the tail of the match. If the query is "ab" and the matching
    * string is "abcd", "cd" is returned.
@@ -312,7 +312,7 @@ public final class AutoCompleteUtils {
     String testQuery = query == null ? "" : query.toLowerCase();
 
     return strings.stream()
-        .filter(s -> testQuery.length() < s.length() && s.toLowerCase().startsWith(testQuery))
+        .filter(s -> s.toLowerCase().startsWith(testQuery))
         .map(s -> new AutocompleteSuggestion(s.substring(testQuery.length()), false))
         .collect(ImmutableList.toImmutableList());
   }
@@ -336,7 +336,7 @@ public final class AutoCompleteUtils {
 
     return pairs.stream()
         .map(p -> String.join(",", p.s1, p.s2).toLowerCase())
-        .filter(p -> testQuery.length() < p.length() && p.startsWith(testQuery))
+        .filter(p -> p.startsWith(testQuery))
         .map(p -> new AutocompleteSuggestion(p.substring(testQuery.length()), false))
         .collect(ImmutableList.toImmutableList());
   }

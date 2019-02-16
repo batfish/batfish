@@ -101,6 +101,7 @@ public class ParboiledAutoCompleteTest {
         ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
         equalTo(
             ImmutableSet.of(
+                new AutocompleteSuggestion("", true, null, AutocompleteSuggestion.DEFAULT_RANK, 7),
                 new AutocompleteSuggestion("0", true, null, AutocompleteSuggestion.DEFAULT_RANK, 7),
                 new AutocompleteSuggestion("-", true, null, RANK_STRING_LITERAL, 7),
                 new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, 7))));
