@@ -154,7 +154,8 @@ public final class ParboiledAutoComplete {
       case INTERFACE_NAME_REGEX: // can't help with regexes
         return ImmutableList.of();
       case INTERFACE_TYPE:
-        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
+        // This one depends on string literal completion that should be kicking in
+        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case IP_ADDRESS:
         return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
       case IP_ADDRESS_MASK: // can't help with masks

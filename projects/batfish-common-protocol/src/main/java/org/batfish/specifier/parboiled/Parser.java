@@ -14,6 +14,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.VRF;
 import static org.batfish.specifier.parboiled.Anchor.Type.ZONE;
 
 import java.util.Map;
+import org.batfish.datamodel.InterfaceType;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
 import org.parboiled.support.Var;
@@ -31,11 +32,17 @@ import org.parboiled.support.Var;
   "checkstyle:methodname", // this class uses idiomatic names
   "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
 })
-class Parser extends CommonParser {
+public class Parser extends CommonParser {
 
   static final Parser INSTANCE = Parboiled.createParser(Parser.class);
 
   static final Map<String, Anchor.Type> ANCHORS = initAnchors(Parser.class);
+
+  /**
+   * An array of Rules for matching interface type values. It is supposed to be private with
+   * parboiled does not like private rules
+   */
+  final Rule[] INTERFACE_TYPE_RULES = initEnumRules(InterfaceType.values());
 
   /**
    * Interface grammar
@@ -137,8 +144,7 @@ class Parser extends CommonParser {
 
   @Anchor(INTERFACE_TYPE)
   public Rule InterfaceTypeExpr() {
-    return Sequence(
-        OneOrMore(FirstOf(AlphabetChar(), Underscore())), push(new InterfaceTypeAstNode(match())));
+    return Sequence(FirstOf(INTERFACE_TYPE_RULES), push(new InterfaceTypeAstNode(match())));
   }
 
   public Rule InterfaceVrf() {

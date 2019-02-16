@@ -38,6 +38,22 @@ abstract class CommonParser extends BaseParser<AstNode> {
   }
 
   /**
+   * Initialize an array of case-insenstive rules that match the array of provided values (e.g.,
+   * those belonging to an Enum).
+   *
+   * <p>We use an imperative approach because lambdas run into access violations.
+   */
+  Rule[] initEnumRules(Object[] values) {
+    Rule[] rules = new Rule[values.length];
+    int index = 0;
+    for (Object value : values) {
+      rules[index] = IgnoreCase(value.toString());
+      index++;
+    }
+    return rules;
+  }
+
+  /**
    * Shared entry point for all expressions.
    *
    * <p>The parameter {@code expression} specifies the type of expression we want to parse.
