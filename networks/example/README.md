@@ -15,3 +15,5 @@ There are several snapshots for this network which can be used to exercise and u
 1. `live-with-bgp-announcements`: This version has the same configuration as `live` and adds a snapshot of BGP announcements received from external networks. Batfish incorporates these routing announcements when computing the data plane of the network.
 
 1. `live-with-interface-outage`: The `live` snapshot, but with `as2border2` interface `GigabitEthernet0/0` down (connecting AS2 and AS3), specified in the `interface_blacklist` file.
+
+1. `live-with-isp`: The `live` snapshot augmented with representations of ISPs and the Internet. The border routers in AS2 peer with the same ISP to get to the Internet. The ISPs are formed based on the configuration in `batfish/isp_config.json`.
