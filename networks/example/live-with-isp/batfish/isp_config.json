@@ -3,13 +3,13 @@
 		{
 			"borderInterface": {
 				"hostname": "as2border1",
-				"interface": "GigabitEthernet3/0"
+				"interface": "GigabitEthernet0/0"
 			}
 		},
 		{
 			"borderInterface": {
 				"hostname": "as2border2",
-				"interface": "GigabitEthernet3/0"
+				"interface": "GigabitEthernet0/0"
 			}
 		}
 	],
