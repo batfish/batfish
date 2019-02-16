@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.util.NamesUtil;
 import org.batfish.datamodel.questions.FiltersSpecifier;
 
 public class FilterGroup implements Comparable<FilterGroup> {
@@ -22,7 +23,7 @@ public class FilterGroup implements Comparable<FilterGroup> {
       @Nullable @JsonProperty(PROP_FILTERS) List<FiltersSpecifier> filters,
       @Nullable @JsonProperty(PROP_NAME) String name) {
     checkArgument(name != null, "Filter group name cannot not be null");
-    ReferenceLibrary.checkValidName(name, "filter group");
+    NamesUtil.checkValidReferenceObjectName(name, "filter group");
 
     _name = name;
     _filters = firstNonNull(filters, new LinkedList<>());

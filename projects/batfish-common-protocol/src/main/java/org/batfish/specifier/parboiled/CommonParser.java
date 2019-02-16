@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import org.batfish.specifier.parboiled.Completion.Type;
 import org.parboiled.BaseParser;
+import org.parboiled.Parboiled;
 import org.parboiled.Rule;
 
 /**
@@ -18,7 +19,9 @@ import org.parboiled.Rule;
   "checkstyle:methodname", // this class uses idiomatic names
   "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
 })
-abstract class CommonParser extends BaseParser<AstNode> {
+public class CommonParser extends BaseParser<AstNode> {
+
+  public static final CommonParser INSTANCE = Parboiled.createParser(CommonParser.class);
 
   static Map<String, Type> initCompletionTypes(Class<?> parserClass) {
     ImmutableMap.Builder<String, Completion.Type> completionTypes = ImmutableMap.builder();
@@ -67,11 +70,10 @@ abstract class CommonParser extends BaseParser<AstNode> {
   }
 
   /**
-   * [a-zA-Z_][-a-zA-Z0-9_]*
-   *
-   * <p>This spec is based on {@link org.batfish.referencelibrary.ReferenceLibrary#NAME_PATTERN}
+   * Describes valid names for reference library objects. Must start with the alphabet or
+   * underscore, and only contain those letters plus digits and dash.
    */
-  public Rule ReferenceObjectNameLiteral() {
+  public Rule ReferenceObjectName() {
     return Sequence(
         FirstOf(AlphabetChar(), Ch('_')),
         ZeroOrMore(FirstOf(AlphabetChar(), Ch('_'), Digit(), Ch('-'))));

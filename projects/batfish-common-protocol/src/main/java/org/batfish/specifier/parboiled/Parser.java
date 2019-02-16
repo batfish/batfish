@@ -71,11 +71,11 @@ class Parser extends CommonParser {
   @Completion(ADDRESS_GROUP_AND_BOOK)
   public Rule AddressGroupAndBook() {
     return Sequence(
-        ReferenceObjectNameLiteral(),
+        ReferenceObjectName(),
         push(new StringAstNode(match())),
         WhiteSpace(),
         ", ",
-        ReferenceObjectNameLiteral(),
+        ReferenceObjectName(),
         push(new StringAstNode(match())),
         WhiteSpace());
   }

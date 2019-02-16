@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import org.batfish.common.util.NamesUtil;
 
 public class ServiceObjectGroup implements Comparable<ServiceObjectGroup> {
 
@@ -21,7 +22,7 @@ public class ServiceObjectGroup implements Comparable<ServiceObjectGroup> {
       @JsonProperty(PROP_NAME) String name,
       @JsonProperty(PROP_SERVICES) SortedSet<String> services) {
     checkArgument(name != null, "Service object group name cannot be null");
-    ReferenceLibrary.checkValidName(name, "service object group");
+    NamesUtil.checkValidReferenceObjectName(name, "service object group");
 
     _name = name;
     _services = firstNonNull(services, ImmutableSortedSet.of());
