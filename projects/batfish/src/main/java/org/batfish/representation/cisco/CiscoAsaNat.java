@@ -366,7 +366,7 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
      * _insideInterface for traffic with destination matching _realSourceObject would suffice.
      */
     if (_section.equals(Section.OBJECT)) {
-      Boolean identity = isIdentityObjectNat(this, networkObjects);
+      Boolean identity = isIdentityObjectNat(this, networkObjects, w);
       if (identity == null) {
         throw new BatfishException(
             "Failed to determine if identity NAT but created Transformation");

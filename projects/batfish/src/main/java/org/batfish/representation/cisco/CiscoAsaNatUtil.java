@@ -86,7 +86,7 @@ final class CiscoAsaNatUtil {
   private static Prefix getNetworkObjectPrefix(
       NetworkObjectAddressSpecifier specifier,
       Map<String, NetworkObject> networkObjects,
-      @Nullable Warnings w) {
+      Warnings w) {
     NetworkObject object = networkObjects.get(specifier.getName());
     if (object == null) {
       // Previously warned about undefined reference
@@ -105,9 +105,7 @@ final class CiscoAsaNatUtil {
     }
     if (object instanceof RangeNetworkObject) {
       // These are supported for dynamic NAT but not static NAT
-      if (w != null) {
-        w.redFlag("Ranges are not supported for static NAT");
-      }
+      w.redFlag("Ranges are not supported for static NAT");
       return null;
     }
     throw new BatfishException("Unexpected network object type");
@@ -120,11 +118,13 @@ final class CiscoAsaNatUtil {
    *
    * @param nat An object NAT
    * @param networkObjects Mapping of network object names to {@link NetworkObject}s
+   * @param w A logger for warnings about unsupported configuration
    * @return True if the object NAT is an identity NAT, or false if it is not. If the answer could
    *     not be determined because the NAT is not supported or invalid, returns null.
    */
   @Nullable
-  static Boolean isIdentityObjectNat(CiscoAsaNat nat, Map<String, NetworkObject> networkObjects) {
+  static Boolean isIdentityObjectNat(
+      CiscoAsaNat nat, Map<String, NetworkObject> networkObjects, Warnings w) {
     checkArgument(nat.getSection().equals(Section.OBJECT), "Only supports object NATs.");
 
     if (nat.getDynamic()) {
@@ -132,7 +132,7 @@ final class CiscoAsaNatUtil {
     }
     Prefix realPrefix =
         getNetworkObjectPrefix(
-            (NetworkObjectAddressSpecifier) nat.getRealSource(), networkObjects, null);
+            (NetworkObjectAddressSpecifier) nat.getRealSource(), networkObjects, w);
     if (realPrefix == null) {
       return null;
     }
@@ -147,8 +147,7 @@ final class CiscoAsaNatUtil {
     }
     if (mappedSource instanceof NetworkObjectAddressSpecifier) {
       return realPrefix.equals(
-          getNetworkObjectPrefix(
-              (NetworkObjectAddressSpecifier) mappedSource, networkObjects, null));
+          getNetworkObjectPrefix((NetworkObjectAddressSpecifier) mappedSource, networkObjects, w));
     }
     if (mappedSource instanceof WildcardAddressSpecifier) {
       // Specified as 'any'
