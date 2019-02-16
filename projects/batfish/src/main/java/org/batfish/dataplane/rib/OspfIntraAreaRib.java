@@ -1,11 +1,11 @@
 package org.batfish.dataplane.rib;
 
-import org.batfish.datamodel.AbstractRoute;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 
+@ParametersAreNonnullByDefault
 public class OspfIntraAreaRib extends AbstractRib<OspfIntraAreaRoute> {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public OspfIntraAreaRib() {
@@ -16,10 +16,5 @@ public class OspfIntraAreaRib extends AbstractRib<OspfIntraAreaRoute> {
   public int comparePreference(OspfIntraAreaRoute lhs, OspfIntraAreaRoute rhs) {
     // reversed on purpose
     return Long.compare(rhs.getMetric(), lhs.getMetric());
-  }
-
-  @Override
-  public AbstractRoute getAbstractRoute(OspfIntraAreaRoute route) {
-    return route;
   }
 }

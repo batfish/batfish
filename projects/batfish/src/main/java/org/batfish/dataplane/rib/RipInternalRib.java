@@ -1,9 +1,10 @@
 package org.batfish.dataplane.rib;
 
-import org.batfish.datamodel.AbstractRoute;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.RipInternalRoute;
 
 /** Rib that stores internal RIP routes */
+@ParametersAreNonnullByDefault
 public class RipInternalRib extends AbstractRib<RipInternalRoute> {
 
   private static final long serialVersionUID = 1L;
@@ -16,10 +17,5 @@ public class RipInternalRib extends AbstractRib<RipInternalRoute> {
   public int comparePreference(RipInternalRoute lhs, RipInternalRoute rhs) {
     // reversed on purpose, because lower metric is more preferable
     return Long.compare(rhs.getMetric(), lhs.getMetric());
-  }
-
-  @Override
-  public AbstractRoute getAbstractRoute(RipInternalRoute route) {
-    return route;
   }
 }

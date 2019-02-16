@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
@@ -121,7 +122,8 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   private final Map<String, Node> _nodes;
 
-  private transient SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> _ribs;
+  private transient SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
+      _ribs;
 
   private final Topology _topology;
 
@@ -152,7 +154,8 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     return new ForwardingAnalysisImpl(getConfigurations(), getRibs(), getFibs(), getTopology());
   }
 
-  private SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> computeRibs() {
+  private SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
+      computeRibs() {
     return toImmutableSortedMap(
         _nodes,
         Entry::getKey,
@@ -243,7 +246,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   }
 
   @Override
-  public SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> getRibs() {
+  public SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> getRibs() {
     if (_ribs == null) {
       _ribs = computeRibs();
     }

@@ -1,6 +1,5 @@
 package org.batfish.dataplane.rib;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
@@ -16,6 +15,9 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.HasAbstractRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
@@ -25,7 +27,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
  * @param <R> route type
  */
 @ParametersAreNonnullByDefault
-public final class RibDelta<R> {
+public final class RibDelta<R extends HasAbstractRoute> {
 
   /** Sorted for deterministic iteration order */
   private SortedMap<Prefix, List<RouteAdvertisement<R>>> _actions;
@@ -95,7 +97,7 @@ public final class RibDelta<R> {
 
   /** Builder for {@link RibDelta} */
   @ParametersAreNonnullByDefault
-  public static final class Builder<R> {
+  public static final class Builder<R extends HasAbstractRoute> {
 
     private Map<Prefix, LinkedHashMap<R, RouteAdvertisement<R>>> _actions;
 
@@ -114,6 +116,17 @@ public final class RibDelta<R> {
       LinkedHashMap<R, RouteAdvertisement<R>> l =
           _actions.computeIfAbsent(prefix, p -> new LinkedHashMap<>(10, 1, true));
       l.put(route, new RouteAdvertisement<>(route));
+      return this;
+    }
+
+    /**
+     * Indicate that a collection of routes with the same prefix was added to the RIB
+     *
+     * @param prefix {@link Prefix} representing shared destination network of all routes to add
+     * @param routes Routes to add
+     */
+    public <T extends R> Builder<R> add(Prefix prefix, Collection<T> routes) {
+      routes.forEach(r -> add(prefix, r));
       return this;
     }
 
@@ -149,66 +162,120 @@ public final class RibDelta<R> {
                               .collect(ImmutableList.toImmutableList()))));
     }
 
-    /**
-     * Process all added and removed routes from a collection of deltas
-     *
-     * @param prefixExtractor Function to extract destination network from routes of type {@link R}
-     */
-    public Builder<R> from(Collection<RibDelta<R>> deltas, Function<R, Prefix> prefixExtractor) {
-      deltas.forEach(d -> from(d, prefixExtractor));
+    /** Process all added and removed routes from a given delta */
+    @Nonnull
+    public <T extends R> Builder<R> from(RibDelta<T> delta) {
+      from(delta, Function.identity());
       return this;
     }
 
     /**
      * Process all added and removed routes from a given delta
      *
-     * @param prefixExtractor Function to extract destination network from routes of type {@link R}
+     * @param converter {@link Function} that converts type {@code U} to type {@code T}
      */
     @Nonnull
-    public <T extends R> Builder<R> from(RibDelta<T> delta, Function<R, Prefix> prefixExtractor) {
+    public <T extends HasAbstractRoute> Builder<R> from(
+        RibDelta<T> delta, Function<? super T, ? extends R> converter) {
       for (RouteAdvertisement<T> a : delta.getActions()) {
         LinkedHashMap<R, RouteAdvertisement<R>> l =
             _actions.computeIfAbsent(
-                prefixExtractor.apply(a.getRoute()), p -> new LinkedHashMap<>(10, 1, true));
+                a.getRoute().getAbstractRoute().getNetwork(),
+                p -> new LinkedHashMap<>(10, 1, true));
+        R routeR = converter.apply(a.getRoute());
         l.put(
-            a.getRoute(),
-            RouteAdvertisement.<R>builder()
-                .setRoute(a.getRoute())
-                .setReason(a.getReason())
-                .build());
+            routeR,
+            RouteAdvertisement.<R>builder().setRoute(routeR).setReason(a.getReason()).build());
       }
       return this;
     }
   }
 
   @Nonnull
-  public static <T> Builder<T> builder() {
+  public static <T extends HasAbstractRoute> Builder<T> builder() {
     return new Builder<>();
   }
 
   /** Return an empty RIB delta */
   @Nonnull
-  public static <T> RibDelta<T> empty() {
+  public static <T extends HasAbstractRoute> RibDelta<T> empty() {
     return RibDelta.<T>builder().build();
+  }
+
+  /** Returns an unannotated copy of the given {@link RibDelta} */
+  public static <T extends AbstractRoute> RibDelta<T> unannotateDelta(
+      RibDelta<AnnotatedRoute<T>> annotatedDelta) {
+    return RibDelta.<T>builder().from(annotatedDelta, AnnotatedRoute::getRoute).build();
+  }
+
+  /**
+   * Apply an annotated {@link RibDelta} to a given annotated RIB
+   *
+   * @param importingRib the {@link AnnotatedRib} to apply the delta to
+   * @param delta the delta to apply
+   * @param <T> Type of {@link AbstractRoute} in the RIB
+   * @param <U> type of {@link AbstractRoute} in the delta; must extend {@code T}
+   * @return the {@link RibDelta} that results from modifying {@code importingRib}
+   */
+  @Nonnull
+  public static <T extends AbstractRoute, U extends T> RibDelta<AnnotatedRoute<T>> importRibDelta(
+      AnnotatedRib<T> importingRib, RibDelta<AnnotatedRoute<U>> delta) {
+    return importRibDelta(
+        importingRib, delta, ar -> new AnnotatedRoute<>(ar.getRoute(), ar.getSourceVrf()));
+  }
+
+  /**
+   * Apply an unannotated {@link RibDelta} to a given unannotated RIB
+   *
+   * @param importingRib the {@link AbstractRoute} to apply the delta to
+   * @param delta the delta to apply
+   * @param <T> Type of {@link AbstractRoute} in the RIB
+   * @param <U> type of {@link AbstractRoute} in the delta; must extend {@code T}
+   * @return the {@link RibDelta} that results from modifying {@code importingRib}
+   */
+  @Nonnull
+  public static <T extends AbstractRoute, U extends T> RibDelta<T> importRibDelta(
+      AbstractRib<T> importingRib, RibDelta<U> delta) {
+    return importRibDelta(importingRib, delta, Function.identity());
+  }
+
+  /**
+   * Apply a {@link RibDelta} with unannotated routes to a given annotated RIB
+   *
+   * @param importingRib the {@link AnnotatedRib} to apply the delta to
+   * @param delta the delta to apply
+   * @param <T> Type of {@link AbstractRoute} in the RIB
+   * @param <U> type of {@link AbstractRoute} in the delta; must extend {@code T}
+   * @return the {@link RibDelta} that results from modifying {@code importingRib}
+   */
+  @Nonnull
+  public static <T extends AbstractRoute, U extends T>
+      RibDelta<AnnotatedRoute<T>> importUnannotatedRibDelta(
+          AnnotatedRib<T> importingRib, RibDelta<U> delta) {
+    return importRibDelta(
+        importingRib, delta, r -> new AnnotatedRoute<>(r, importingRib.getVrfName()));
   }
 
   /**
    * Apply a {@link RibDelta} to a given RIB
    *
-   * @param importingRib the RIB to apply the delta to
+   * @param importingRib the {@link AnnotatedRib} to apply the delta to
    * @param delta the delta to apply
-   * @param <U> Type of route in the RIB
-   * @param <T> type of route in the delta (must be more specific than {@link U}
+   * @param converter Function to convert RibDelta type {@code U} to importer route type {@code T}
+   * @param <T> Type of {@link AbstractRoute} in the RIB
+   * @param <U> type of {@link AbstractRoute} in the delta; does not need to extend {@code T}
+   * @param <RibT> Type of the RIB
    * @return the {@link RibDelta} that results from modifying {@code importingRib}
    */
-  @VisibleForTesting
   @Nonnull
-  public static <U, T extends U> RibDelta<U> importRibDelta(
-      @Nonnull AbstractRib<U> importingRib, @Nonnull RibDelta<T> delta) {
+  private static <
+          T extends HasAbstractRoute, U extends HasAbstractRoute, RibT extends AbstractRib<T>>
+      RibDelta<T> importRibDelta(
+          RibT importingRib, RibDelta<U> delta, Function<? super U, ? extends T> converter) {
     if (delta.isEmpty()) {
       return empty();
     }
-    Builder<U> builder = RibDelta.builder();
+    Builder<T> builder = RibDelta.builder();
     delta
         .getActionMap()
         .forEach(
@@ -217,17 +284,14 @@ public final class RibDelta<R> {
                     // TODO: uncomment after all route types properly implement equality
                     // .distinct()
                     .forEachOrdered(
-                        tRouteAdvertisement -> {
-                          if (tRouteAdvertisement.isWithdrawn()) {
+                        uRouteAdvertisement -> {
+                          T tRoute = converter.apply(uRouteAdvertisement.getRoute());
+                          if (uRouteAdvertisement.isWithdrawn()) {
                             builder.from(
                                 importingRib.removeRouteGetDelta(
-                                    tRouteAdvertisement.getRoute(),
-                                    tRouteAdvertisement.getReason()),
-                                importingRib::getNetwork);
+                                    tRoute, uRouteAdvertisement.getReason()));
                           } else {
-                            builder.from(
-                                importingRib.mergeRouteGetDelta(tRouteAdvertisement.getRoute()),
-                                importingRib::getNetwork);
+                            builder.from(importingRib.mergeRouteGetDelta(tRoute));
                           }
                         }));
     return builder.build();

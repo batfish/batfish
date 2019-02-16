@@ -15,6 +15,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpRoute;
@@ -32,7 +33,7 @@ public class BgpRib extends AbstractRib<BgpRoute> {
   private static final long serialVersionUID = 1L;
 
   /** Main RIB to use for IGP cost estimation */
-  @Nullable private final Rib _mainRib;
+  @Nullable private final AnnotatedRib<AbstractRoute> _mainRib;
 
   /** Tie breaker to use if all route attributes appear to be equal */
   @Nonnull private final BgpTieBreaker _tieBreaker;
@@ -269,12 +270,7 @@ public class BgpRib extends AbstractRib<BgpRoute> {
     if (nextHopIp == Ip.AUTO) {
       return Long.MAX_VALUE;
     }
-    Set<AbstractRoute> s = _mainRib.longestPrefixMatch(nextHopIp);
-    return s.isEmpty() ? Long.MAX_VALUE : s.iterator().next().getMetric();
-  }
-
-  @Override
-  public AbstractRoute getAbstractRoute(BgpRoute route) {
-    return route;
+    Set<AnnotatedRoute<AbstractRoute>> s = _mainRib.longestPrefixMatch(nextHopIp);
+    return s.isEmpty() ? Long.MAX_VALUE : s.iterator().next().getAbstractRoute().getMetric();
   }
 }

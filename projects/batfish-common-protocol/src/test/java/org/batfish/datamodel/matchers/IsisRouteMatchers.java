@@ -1,14 +1,14 @@
 package org.batfish.datamodel.matchers;
 
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasMetric;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasNextHopIp;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasProtocol;
+import static org.batfish.datamodel.matchers.HasAbstractRouteMatchers.hasMetric;
+import static org.batfish.datamodel.matchers.HasAbstractRouteMatchers.hasNextHopIp;
+import static org.batfish.datamodel.matchers.HasAbstractRouteMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.HasAbstractRouteMatchers.hasProtocol;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.HasAbstractRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.Prefix;
@@ -44,7 +44,7 @@ public final class IsisRouteMatchers {
         hasProtocol(protocol));
   }
 
-  public static @Nonnull Matcher<AbstractRoute> isIsisRouteThat(
+  public static @Nonnull Matcher<HasAbstractRoute> isIsisRouteThat(
       @Nonnull Matcher<? super IsisRoute> subMatcher) {
     return new IsIsisRouteThat(subMatcher);
   }

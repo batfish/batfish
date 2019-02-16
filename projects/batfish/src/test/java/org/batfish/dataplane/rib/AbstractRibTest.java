@@ -1,6 +1,6 @@
 package org.batfish.dataplane.rib;
 
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.HasAbstractRouteMatchers.hasPrefix;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;

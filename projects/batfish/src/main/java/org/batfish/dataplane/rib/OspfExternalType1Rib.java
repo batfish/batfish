@@ -4,10 +4,11 @@ import java.util.Map;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.AbstractRoute;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.Prefix;
 
+@ParametersAreNonnullByDefault
 public class OspfExternalType1Rib extends AbstractRib<OspfExternalType1Route> {
 
   private static final long serialVersionUID = 1L;
@@ -15,8 +16,7 @@ public class OspfExternalType1Rib extends AbstractRib<OspfExternalType1Route> {
   private final String _hostname;
 
   public OspfExternalType1Rib(
-      @Nonnull String hostname,
-      @Nullable Map<Prefix, SortedSet<OspfExternalType1Route>> backupRoutes) {
+      String hostname, @Nullable Map<Prefix, SortedSet<OspfExternalType1Route>> backupRoutes) {
     super(backupRoutes);
     _hostname = hostname;
   }
@@ -36,10 +36,5 @@ public class OspfExternalType1Rib extends AbstractRib<OspfExternalType1Route> {
     } else {
       return super.mergeRouteGetDelta(route);
     }
-  }
-
-  @Override
-  public AbstractRoute getAbstractRoute(OspfExternalType1Route route) {
-    return route;
   }
 }

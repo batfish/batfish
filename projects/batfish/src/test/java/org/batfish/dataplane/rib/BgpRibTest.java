@@ -1,5 +1,6 @@
 package org.batfish.dataplane.rib;
 
+import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
@@ -20,6 +21,7 @@ import java.util.Set;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
@@ -202,11 +204,13 @@ public class BgpRibTest {
 
   @Test
   public void testIgpCostPreference() {
-    Rib mainRib = new Rib();
+    Rib mainRib = new Rib(Configuration.DEFAULT_VRF_NAME);
     StaticRoute.Builder sb =
         StaticRoute.builder().setAdministrativeCost(1).setNextHopInterface("eth0");
-    mainRib.mergeRoute(sb.setNetwork(Prefix.parse("5.5.5.5/32")).setMetric(1).build());
-    mainRib.mergeRoute(sb.setNetwork(Prefix.parse("5.5.5.6/32")).setMetric(2).build());
+    mainRib.mergeRoute(
+        annotateRoute(sb.setNetwork(Prefix.parse("5.5.5.5/32")).setMetric(1).build()));
+    mainRib.mergeRoute(
+        annotateRoute(sb.setNetwork(Prefix.parse("5.5.5.6/32")).setMetric(2).build()));
 
     BgpRib rib =
         new BgpRib(

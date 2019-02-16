@@ -5,9 +5,11 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRoute6;
 import org.batfish.datamodel.AbstractRouteBuilder;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.HasAbstractRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
@@ -55,6 +57,8 @@ public class Environment {
 
   private boolean _readFromIntermediateBgpAttributes;
 
+  @Nullable private final String _routeSourceVrf;
+
   private final boolean _useOutputAttributes;
 
   private final Vrf _vrf;
@@ -74,7 +78,7 @@ public class Environment {
       boolean error,
       BgpRoute.Builder intermediateBgpAttributes,
       boolean localDefaultAction,
-      AbstractRoute originalRoute,
+      HasAbstractRoute originalRoute,
       @Nullable AbstractRoute6 originalRoute6,
       AbstractRouteBuilder<?, ?> outputRoute,
       @Nullable Ip peerAddress,
@@ -82,29 +86,33 @@ public class Environment {
       boolean readFromIntermediateBgpAttributes,
       Vrf vrf,
       boolean writeToIntermediateBgpAttributes) {
-    this._buffered = buffered;
-    this._callExprContext = callExprContext;
-    this._callStatementContext = callStatementContext;
-    this._configuration = configuration;
-    this._defaultAction = defaultAction;
-    this._defaultPolicy = defaultPolicy;
-    this._direction = direction;
-    this._error = error;
-    this._intermediateBgpAttributes = intermediateBgpAttributes;
-    this._localDefaultAction = localDefaultAction;
-    this._originalRoute = originalRoute;
-    this._originalRoute6 = originalRoute6;
-    this._outputRoute = outputRoute;
-    this._peerAddress = peerAddress;
-    this._peerPrefix = peerPrefix;
-    this._readFromIntermediateBgpAttributes = readFromIntermediateBgpAttributes;
+    _buffered = buffered;
+    _callExprContext = callExprContext;
+    _callStatementContext = callStatementContext;
+    _configuration = configuration;
+    _defaultAction = defaultAction;
+    _defaultPolicy = defaultPolicy;
+    _direction = direction;
+    _error = error;
+    _intermediateBgpAttributes = intermediateBgpAttributes;
+    _localDefaultAction = localDefaultAction;
+    _originalRoute = originalRoute == null ? null : originalRoute.getAbstractRoute();
+    _originalRoute6 = originalRoute6;
+    _outputRoute = outputRoute;
+    _peerAddress = peerAddress;
+    _peerPrefix = peerPrefix;
+    _readFromIntermediateBgpAttributes = readFromIntermediateBgpAttributes;
+    _routeSourceVrf =
+        originalRoute instanceof AnnotatedRoute
+            ? ((AnnotatedRoute) originalRoute).getSourceVrf()
+            : null;
     ConfigurationFormat format = configuration.getConfigurationFormat();
-    this._useOutputAttributes =
+    _useOutputAttributes =
         format == ConfigurationFormat.JUNIPER
             || format == ConfigurationFormat.JUNIPER_SWITCH
             || format == ConfigurationFormat.FLAT_JUNIPER;
-    this._vrf = vrf;
-    this._writeToIntermediateBgpAttributes = writeToIntermediateBgpAttributes;
+    _vrf = vrf;
+    _writeToIntermediateBgpAttributes = writeToIntermediateBgpAttributes;
   }
 
   public boolean getBuffered() {
@@ -175,6 +183,10 @@ public class Environment {
     return _readFromIntermediateBgpAttributes;
   }
 
+  public String getRouteSourceVrf() {
+    return _routeSourceVrf;
+  }
+
   public boolean getUseOutputAttributes() {
     return _useOutputAttributes;
   }
@@ -238,7 +250,7 @@ public class Environment {
     private boolean _error;
     private BgpRoute.Builder _intermediateBgpAttributes;
     private boolean _localDefaultAction;
-    private AbstractRoute _originalRoute;
+    private HasAbstractRoute _originalRoute;
     private AbstractRoute6 _originalRoute6;
     private AbstractRouteBuilder<?, ?> _outputRoute;
     @Nullable private Ip _peerAddress;
@@ -252,92 +264,92 @@ public class Environment {
     }
 
     public Builder setBuffered(boolean buffered) {
-      this._buffered = buffered;
+      _buffered = buffered;
       return this;
     }
 
     public Builder setCallExprContext(boolean callExprContext) {
-      this._callExprContext = callExprContext;
+      _callExprContext = callExprContext;
       return this;
     }
 
     public Builder setCallStatementContext(boolean callStatementContext) {
-      this._callStatementContext = callStatementContext;
+      _callStatementContext = callStatementContext;
       return this;
     }
 
     public Builder setConfiguration(Configuration configuration) {
-      this._configuration = configuration;
+      _configuration = configuration;
       return this;
     }
 
     public Builder setDefaultAction(boolean defaultAction) {
-      this._defaultAction = defaultAction;
+      _defaultAction = defaultAction;
       return this;
     }
 
     public Builder setDefaultPolicy(String defaultPolicy) {
-      this._defaultPolicy = defaultPolicy;
+      _defaultPolicy = defaultPolicy;
       return this;
     }
 
     public Builder setDirection(Direction direction) {
-      this._direction = direction;
+      _direction = direction;
       return this;
     }
 
     public Builder setError(boolean error) {
-      this._error = error;
+      _error = error;
       return this;
     }
 
     public Builder setIntermediateBgpAttributes(BgpRoute.Builder intermediateBgpAttributes) {
-      this._intermediateBgpAttributes = intermediateBgpAttributes;
+      _intermediateBgpAttributes = intermediateBgpAttributes;
       return this;
     }
 
     public Builder setLocalDefaultAction(boolean localDefaultAction) {
-      this._localDefaultAction = localDefaultAction;
+      _localDefaultAction = localDefaultAction;
       return this;
     }
 
-    public Builder setOriginalRoute(AbstractRoute originalRoute) {
-      this._originalRoute = originalRoute;
+    public Builder setOriginalRoute(HasAbstractRoute originalRoute) {
+      _originalRoute = originalRoute;
       return this;
     }
 
     public Builder setOriginalRoute6(AbstractRoute6 originalRoute6) {
-      this._originalRoute6 = originalRoute6;
+      _originalRoute6 = originalRoute6;
       return this;
     }
 
     public Builder setOutputRoute(AbstractRouteBuilder<?, ?> outputRoute) {
-      this._outputRoute = outputRoute;
+      _outputRoute = outputRoute;
       return this;
     }
 
     public Builder setPeerAddress(@Nullable Ip peerAddress) {
-      this._peerAddress = peerAddress;
+      _peerAddress = peerAddress;
       return this;
     }
 
     public Builder setPeerPrefix(@Nullable Prefix peerPrefix) {
-      this._peerPrefix = peerPrefix;
+      _peerPrefix = peerPrefix;
       return this;
     }
 
     public Builder setReadFromIntermediateBgpAttributes(boolean readFromIntermediateBgpAttributes) {
-      this._readFromIntermediateBgpAttributes = readFromIntermediateBgpAttributes;
+      _readFromIntermediateBgpAttributes = readFromIntermediateBgpAttributes;
       return this;
     }
 
     public Builder setVrf(String vrf) {
-      this._vrf = vrf;
+      _vrf = vrf;
       return this;
     }
 
     public Builder setWriteToIntermediateBgpAttributes(boolean writeToIntermediateBgpAttributes) {
-      this._writeToIntermediateBgpAttributes = writeToIntermediateBgpAttributes;
+      _writeToIntermediateBgpAttributes = writeToIntermediateBgpAttributes;
       return this;
     }
 

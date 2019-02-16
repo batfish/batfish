@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
-public interface GenericRib<R> extends Serializable {
+public interface GenericRib<R extends HasAbstractRoute> extends Serializable {
 
   /**
    * Compare the preferability of one route with anther
@@ -16,9 +16,6 @@ public interface GenericRib<R> extends Serializable {
    *     preferable (i.e. for multipath routing); 1 if lhs route is strictly more preferred than rhs
    */
   int comparePreference(R lhs, R rhs);
-
-  /** Returns the {@link AbstractRoute} contained in a route object of type {@link R}. */
-  AbstractRoute getAbstractRoute(R route);
 
   /**
    * Returns a mapping from prefixes of forwarding routes in the RIB to the IPs for which that
@@ -39,7 +36,7 @@ public interface GenericRib<R> extends Serializable {
    */
   IpSpace getRoutableIps();
 
-  /** Return a set of routes this RIB contains. */
+  /** Return a set of {@link HasAbstractRoute routes} this RIB contains. */
   Set<R> getRoutes();
 
   /**

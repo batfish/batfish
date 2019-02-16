@@ -1,11 +1,12 @@
 package org.batfish.dataplane.rib;
 
 import java.util.Comparator;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.EigrpRoute;
 
 /** Rib that stores internal and external EIGRP routes */
+@ParametersAreNonnullByDefault
 public class EigrpRib extends AbstractRib<EigrpRoute> {
 
   private static final long serialVersionUID = 1L;
@@ -31,10 +32,5 @@ public class EigrpRib extends AbstractRib<EigrpRoute> {
         .thenComparing(EigrpRoute::getCompositeCost)
         /* Flipped rhs & lhs because lower values are more preferred. */
         .compare(rhs, lhs);
-  }
-
-  @Override
-  public AbstractRoute getAbstractRoute(EigrpRoute route) {
-    return route;
   }
 }

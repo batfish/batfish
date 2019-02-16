@@ -14,6 +14,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.GenericRib;
+import org.batfish.datamodel.HasAbstractRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
@@ -31,7 +32,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
  * bit vector. E.g., 101010**, but not 1*001***
  */
 @ParametersAreNonnullByDefault
-final class RibTree<R> implements Serializable {
+final class RibTree<R extends HasAbstractRoute> implements Serializable {
 
   private static final long serialVersionUID = 1L;
 

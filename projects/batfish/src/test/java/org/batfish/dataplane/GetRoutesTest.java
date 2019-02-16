@@ -1,6 +1,6 @@
 package org.batfish.dataplane;
 
-import static org.hamcrest.Matchers.emptyIterableOf;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertThat;
 
@@ -13,6 +13,7 @@ import java.util.SortedSet;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
@@ -67,13 +68,12 @@ public class GetRoutesTest {
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     ComputeDataPlaneResult dp = dataPlanePlugin.computeDataPlane();
 
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>> routes =
         dataPlanePlugin.getRoutes(dp._dataPlane);
 
     assertThat(routes, hasKey(n1.getHostname()));
     // Empty VRF is there
     assertThat(routes.get(n1.getHostname()), hasKey(emptyVrf.getName()));
-    assertThat(
-        routes.get(n1.getHostname()).get(emptyVrf.getName()), emptyIterableOf(AbstractRoute.class));
+    assertThat(routes.get(n1.getHostname()).get(emptyVrf.getName()), empty());
   }
 }

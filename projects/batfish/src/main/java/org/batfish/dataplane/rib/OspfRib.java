@@ -1,10 +1,11 @@
 package org.batfish.dataplane.rib;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.OspfRoute;
 import org.batfish.datamodel.RoutingProtocol;
 
+@ParametersAreNonnullByDefault
 public class OspfRib extends AbstractRib<OspfRoute> {
 
   private static final long serialVersionUID = 1L;
@@ -34,10 +35,5 @@ public class OspfRib extends AbstractRib<OspfRoute> {
       default:
         throw new BatfishException("Invalid OSPF protocol: '" + protocol + "'");
     }
-  }
-
-  @Override
-  public AbstractRoute getAbstractRoute(OspfRoute route) {
-    return route;
   }
 }

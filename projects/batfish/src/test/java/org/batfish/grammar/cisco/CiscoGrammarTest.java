@@ -22,7 +22,6 @@ import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasListForKey;
 import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
 import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasAllowRemoteAsOut;
@@ -67,6 +66,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclT
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.EigrpMetricMatchers.hasDelay;
 import static org.batfish.datamodel.matchers.EigrpRouteMatchers.hasEigrpMetric;
+import static org.batfish.datamodel.matchers.HasAbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstPorts;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
@@ -154,6 +154,7 @@ import static org.batfish.datamodel.vendor_family.VendorFamilyMatchers.hasCisco;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasAaa;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasLogging;
 import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
+import static org.batfish.dataplane.ibdp.TestUtils.unannotateRoutes;
 import static org.batfish.grammar.cisco.CiscoControlPlaneExtractor.SERIAL_LINE;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
@@ -257,6 +258,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.IpsecUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpRoute;
@@ -1661,7 +1663,7 @@ public class CiscoGrammarTest {
     batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
     Set<AbstractRoute> routesOnListener =
-        dp.getRibs().get("listener").get(DEFAULT_VRF_NAME).getRoutes();
+        unannotateRoutes(dp.getRibs().get("listener").get(DEFAULT_VRF_NAME).getRoutes());
 
     // Ensure that default route is advertised to and installed on listener
     assertThat(routesOnListener, hasItem(hasPrefix(Prefix.ZERO)));
@@ -2578,16 +2580,16 @@ public class CiscoGrammarTest {
     batfish.computeDataPlane(); // compute and cache the dataPlane
 
     // Check that 1.1.1.1/32 appears on r3
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>> routes =
         dataPlanePlugin.getRoutes(batfish.loadDataPlane());
-    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(DEFAULT_VRF_NAME);
+    Set<AbstractRoute> r3Routes = unannotateRoutes(routes.get("r3").get(DEFAULT_VRF_NAME));
     Set<Prefix> r3Prefixes =
-        r3Routes.stream().map(AbstractRoute::getNetwork).collect(Collectors.toSet());
+        r3Routes.stream().map(r -> r.getAbstractRoute().getNetwork()).collect(Collectors.toSet());
     Prefix r1Loopback = Prefix.parse("1.1.1.1/32");
     assertTrue(r3Prefixes.contains(r1Loopback));
 
     // check that private AS is present in path in received 1.1.1.1/32 advert on r2
-    SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(DEFAULT_VRF_NAME);
+    Set<AbstractRoute> r2Routes = unannotateRoutes(routes.get("r2").get(DEFAULT_VRF_NAME));
     boolean r2HasPrivate =
         r2Routes.stream()
             .filter(r -> r.getNetwork().equals(r1Loopback))

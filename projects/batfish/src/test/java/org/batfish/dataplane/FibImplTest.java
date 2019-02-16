@@ -1,6 +1,6 @@
 package org.batfish.dataplane;
 
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.HasAbstractRouteMatchers.hasPrefix;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.contains;
@@ -166,7 +166,7 @@ public class FibImplTest {
 
   @Test
   public void testNonForwardingRouteNotInFib() {
-    Rib rib = new Rib();
+    Rib rib = new Rib(Configuration.DEFAULT_VRF_NAME);
 
     StaticRoute nonForwardingRoute =
         StaticRoute.builder()
@@ -186,7 +186,7 @@ public class FibImplTest {
     rib.mergeRoute(nonForwardingRoute);
     rib.mergeRoute(forwardingRoute);
 
-    Fib fib = new FibImpl(rib);
+    Fib fib = new FibImpl<>(rib);
     Set<AbstractRoute> fibRoutes = fib.getRoutesByNextHopInterface().get("Eth1");
 
     assertThat(fibRoutes, not(hasItem(hasPrefix(Prefix.parse("1.1.1.0/24")))));
@@ -195,7 +195,7 @@ public class FibImplTest {
 
   @Test
   public void testResolutionWhenNextHopMatchesNonForwardingRoute() {
-    Rib rib = new Rib();
+    Rib rib = new Rib(Configuration.DEFAULT_VRF_NAME);
 
     StaticRoute nonForwardingRoute =
         StaticRoute.builder()
@@ -225,7 +225,7 @@ public class FibImplTest {
     rib.mergeRoute(forwardingLessSpecificRoute);
     rib.mergeRoute(testRoute);
 
-    Fib fib = new FibImpl(rib);
+    Fib fib = new FibImpl<>(rib);
     Set<AbstractRoute> fibRoutesEth1 = fib.getRoutesByNextHopInterface().get("Eth1");
 
     /* 2.2.2.0/24 should resolve to the "forwardingLessSpecificRoute" and thus eth1 */
@@ -238,7 +238,7 @@ public class FibImplTest {
 
   @Test
   public void testResolutionWhenNextHopMatchesNonForwardingRouteWithECMP() {
-    Rib rib = new Rib();
+    Rib rib = new Rib(Configuration.DEFAULT_VRF_NAME);
 
     StaticRoute nonForwardingRoute =
         StaticRoute.builder()
@@ -286,7 +286,7 @@ public class FibImplTest {
     rib.mergeRoute(ecmpForwardingRoute1);
     rib.mergeRoute(ecmpForwardingRoute2);
 
-    Fib fib = new FibImpl(rib);
+    Fib fib = new FibImpl<>(rib);
 
     /* 2.2.2.0/24 should resolve to eth3 and eth4*/
     assertThat(fib.getRoutesByNextHopInterface().get("Eth3"), hasItem(hasPrefix(TEST_PREFIX)));

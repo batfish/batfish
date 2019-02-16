@@ -7,10 +7,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.GenericRib;
+import org.batfish.datamodel.HasAbstractRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
@@ -25,7 +29,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
  *     preferences.
  */
 @ParametersAreNonnullByDefault
-public abstract class AbstractRib<R> implements GenericRib<R> {
+public abstract class AbstractRib<R extends HasAbstractRoute> implements GenericRib<R> {
 
   private static final long serialVersionUID = 1L;
 
@@ -58,17 +62,64 @@ public abstract class AbstractRib<R> implements GenericRib<R> {
   }
 
   /**
-   * Import routes into this RIB from another
+   * Import routes from one unannotated RIB into another
    *
-   * @param exportingRib the RIB from which to import routes
-   * @param <T> type of routes in exportingRib (must be more specific than {@link R})
+   * @param importingRib the RIB that imports routes
+   * @param exportingRib the RIB that exports routes
+   * @param <U> type of {@link AbstractRoute} in importing RIB
+   * @param <T> type of {@link AbstractRoute} in exporting RIB; must extend {@code U}
+   */
+  @Nonnull
+  public static <U extends AbstractRoute, T extends U> RibDelta<U> importRib(
+      AbstractRib<U> importingRib, AbstractRib<T> exportingRib) {
+    return importingRib.importRoutesFrom(exportingRib, Function.identity());
+  }
+
+  /**
+   * Import routes from an unannotated RIB into an annotated RIB
+   *
+   * @param importingRib the RIB that imports routes
+   * @param exportingRib the RIB that exports routes
+   * @param <U> type of {@link AbstractRoute} in importing RIB
+   * @param <T> type of {@link AbstractRoute} in exporting RIB; must extend {@code U}
+   */
+  @Nonnull
+  public static <U extends AbstractRoute, T extends U> RibDelta<AnnotatedRoute<U>> importRib(
+      AnnotatedRib<U> importingRib, AbstractRib<T> exportingRib) {
+    return importingRib.importRoutesFrom(
+        exportingRib, r -> new AnnotatedRoute<>(r, importingRib.getVrfName()));
+  }
+
+  /**
+   * Import routes from one annotated RIB into another
+   *
+   * @param importingRib the RIB that imports routes
+   * @param exportingRib the RIB that exports routes
+   * @param <U> type of {@link AbstractRoute} in importing RIB
+   * @param <T> type of {@link AbstractRoute} in exporting RIB; must extend {@code U}
    * @return a {@link RibDelta}
    */
   @Nonnull
-  public <T extends R> RibDelta<R> importRoutesFrom(AbstractRib<T> exportingRib) {
+  public static <U extends AbstractRoute, T extends U> RibDelta<AnnotatedRoute<U>> importRib(
+      AnnotatedRib<U> importingRib, AnnotatedRib<T> exportingRib) {
+    return importingRib.importRoutesFrom(
+        exportingRib, ar -> new AnnotatedRoute<>(ar.getRoute(), ar.getSourceVrf()));
+  }
+
+  /**
+   * Import routes into this RIB from another
+   *
+   * @param exportingRib the RIB from which to import routes
+   * @param converter A function to convert exporting RIB's type {@code T} routes to type {@link R}
+   * @param <T> type of routes in exportingRib; does not need to extend {@link R}
+   * @return a {@link RibDelta}
+   */
+  @Nonnull
+  <T extends HasAbstractRoute, RibT extends AbstractRib<T>> RibDelta<R> importRoutesFrom(
+      RibT exportingRib, Function<? super T, ? extends R> converter) {
     RibDelta.Builder<R> builder = RibDelta.builder();
     for (T route : exportingRib.getRoutes()) {
-      builder.from(mergeRouteGetDelta(route), this::getNetwork);
+      builder.from(mergeRouteGetDelta(converter.apply(route)));
     }
     return builder.build();
   }
@@ -140,7 +191,7 @@ public abstract class AbstractRib<R> implements GenericRib<R> {
     for (int pl = maxPrefixLength; pl >= 0; pl--) {
       Set<R> routes =
           _tree.getLongestPrefixMatch(address, pl).stream()
-              .filter(this::getForwarding)
+              .filter(r -> !r.getAbstractRoute().getNonForwarding())
               .collect(ImmutableSet.toImmutableSet());
       if (!routes.isEmpty()) {
         return routes;
@@ -153,8 +204,8 @@ public abstract class AbstractRib<R> implements GenericRib<R> {
    * Add a new route to the RIB.
    *
    * @param route the route to add
-   * @return {@link RibDelta} if the route was added. {@code null} if the route already existed or
-   *     was discarded due to preference comparisons.
+   * @return {@link RibDelta} with the route if it was added, or empty if the route already existed
+   *     or was discarded due to preference comparisons.
    */
   @Nonnull
   public RibDelta<R> mergeRouteGetDelta(R route) {
@@ -252,20 +303,16 @@ public abstract class AbstractRib<R> implements GenericRib<R> {
 
   @Override
   public final Map<Prefix, IpSpace> getMatchingIps() {
-    return _tree.getMatchingIps(this::getForwarding);
+    return _tree.getMatchingIps(r -> !r.getAbstractRoute().getNonForwarding());
   }
 
   @Override
   public final IpSpace getRoutableIps() {
-    return _tree.getRoutableIps(this::getForwarding);
+    return _tree.getRoutableIps(r -> !r.getAbstractRoute().getNonForwarding());
   }
 
   @Nonnull
-  public Prefix getNetwork(R route) {
-    return getAbstractRoute(route).getNetwork();
-  }
-
-  private boolean getForwarding(R route) {
-    return !getAbstractRoute(route).getNonForwarding();
+  private Prefix getNetwork(R route) {
+    return route.getAbstractRoute().getNetwork();
   }
 }

@@ -1,7 +1,7 @@
 package org.batfish.dataplane;
 
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
@@ -234,41 +235,47 @@ public class BgpRibGroupsTest {
     DataPlane dp = batfish.loadDataPlane();
 
     // Only 2.2.2.0/24 in VRF2
-    Set<AbstractRoute> vrf2Routes = dp.getRibs().get("r1").get(VRF_2).getRoutes();
+    Set<AnnotatedRoute<AbstractRoute>> vrf2Routes = dp.getRibs().get("r1").get(VRF_2).getRoutes();
+    assertThat(vrf2Routes, hasSize(1));
     assertThat(
         vrf2Routes,
-        contains(
-            BgpRoute.builder()
-                .setNetwork(Prefix.parse("2.2.2.0/24"))
-                .setAdmin(ADMIN_OVERWRITE)
-                .setAsPath(AsPath.ofSingletonAsSets(2L))
-                .setOriginatorIp(Ip.parse("2.2.2.2"))
-                .setOriginType(OriginType.IGP)
-                .setProtocol(RoutingProtocol.BGP)
-                .setLocalPreference(100)
-                .setReceivedFromIp(Ip.parse("1.1.1.3"))
-                .setNextHopIp(Ip.parse("1.1.1.3"))
-                .setSrcProtocol(RoutingProtocol.BGP)
-                .build()));
+        hasItem(
+            new AnnotatedRoute<>(
+                BgpRoute.builder()
+                    .setNetwork(Prefix.parse("2.2.2.0/24"))
+                    .setAdmin(ADMIN_OVERWRITE)
+                    .setAsPath(AsPath.ofSingletonAsSets(2L))
+                    .setOriginatorIp(Ip.parse("2.2.2.2"))
+                    .setOriginType(OriginType.IGP)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setLocalPreference(100)
+                    .setReceivedFromIp(Ip.parse("1.1.1.3"))
+                    .setNextHopIp(Ip.parse("1.1.1.3"))
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .build(),
+                Configuration.DEFAULT_VRF_NAME))); // In VRF_2, but came from default VRF!
 
     // 3.3.3.0/24 as expected in default VRF
-    Set<AbstractRoute> defaultVrfRoutes =
+    Set<AnnotatedRoute<AbstractRoute>> defaultVrfRoutes =
         dp.getRibs().get("r1").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
     assertThat(
         defaultVrfRoutes,
         hasItem(
-            BgpRoute.builder()
-                .setNetwork(Prefix.parse("3.3.3.0/24"))
-                .setAdmin(
-                    RoutingProtocol.BGP.getDefaultAdministrativeCost(ConfigurationFormat.JUNIPER))
-                .setAsPath(AsPath.ofSingletonAsSets(3L))
-                .setOriginatorIp(Ip.parse("3.3.3.3"))
-                .setOriginType(OriginType.IGP)
-                .setProtocol(RoutingProtocol.BGP)
-                .setLocalPreference(100)
-                .setReceivedFromIp(Ip.parse("1.1.1.5"))
-                .setNextHopIp(Ip.parse("1.1.1.5"))
-                .setSrcProtocol(RoutingProtocol.BGP)
-                .build()));
+            new AnnotatedRoute<>(
+                BgpRoute.builder()
+                    .setNetwork(Prefix.parse("3.3.3.0/24"))
+                    .setAdmin(
+                        RoutingProtocol.BGP.getDefaultAdministrativeCost(
+                            ConfigurationFormat.JUNIPER))
+                    .setAsPath(AsPath.ofSingletonAsSets(3L))
+                    .setOriginatorIp(Ip.parse("3.3.3.3"))
+                    .setOriginType(OriginType.IGP)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setLocalPreference(100)
+                    .setReceivedFromIp(Ip.parse("1.1.1.5"))
+                    .setNextHopIp(Ip.parse("1.1.1.5"))
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .build(),
+                Configuration.DEFAULT_VRF_NAME)));
   }
 }

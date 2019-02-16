@@ -19,9 +19,9 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.HasAbstractRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
@@ -190,7 +190,7 @@ public class RoutingPolicy implements Serializable {
   }
 
   public boolean process(
-      AbstractRoute inputRoute,
+      HasAbstractRoute inputRoute,
       AbstractRouteBuilder<?, ?> outputRoute,
       @Nullable Ip peerAddress,
       String vrf,
@@ -199,7 +199,7 @@ public class RoutingPolicy implements Serializable {
   }
 
   public boolean process(
-      AbstractRoute inputRoute,
+      HasAbstractRoute inputRoute,
       AbstractRouteBuilder<?, ?> outputRoute,
       @Nullable Ip peerAddress,
       @Nullable Prefix peerPrefix,

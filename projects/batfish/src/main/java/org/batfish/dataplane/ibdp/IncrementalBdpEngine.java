@@ -6,6 +6,7 @@ import static org.batfish.common.topology.TopologyUtil.computeIpVrfOwners;
 import static org.batfish.common.topology.TopologyUtil.computeNodeInterfaces;
 import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
+import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.Network;
@@ -30,6 +31,7 @@ import org.batfish.common.BdpOscillationException;
 import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpRoute;
@@ -611,7 +613,7 @@ class IncrementalBdpEngine {
           .forEach(
               n -> {
                 for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                  vr._mainRib.importRoutesFrom(vr._independentRib);
+                  importRib(vr._mainRib, vr._independentRib);
                   vr.activateStaticRoutes();
                 }
                 staticRoutesAfterIgp.incrementAndGet();
@@ -875,7 +877,7 @@ class IncrementalBdpEngine {
    * Return the main RIB routes for each node. Map structure: Hostname -&gt; VRF name -&gt; Set of
    * routes
    */
-  static SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
+  static SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>> getRoutes(
       IncrementalDataPlane dp) {
     // Scan through all Nodes and their virtual routers, retrieve main rib routes
     return toImmutableSortedMap(
@@ -1081,8 +1083,8 @@ class IncrementalBdpEngine {
         .forEach(
             n -> {
               for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                vr._ripRib.importRoutesFrom(vr._ripInternalRib);
-                vr._independentRib.importRoutesFrom(vr._ripRib);
+                importRib(vr._ripRib, vr._ripInternalRib);
+                importRib(vr._independentRib, vr._ripRib);
               }
               ripInternalImportCompleted.incrementAndGet();
             });

@@ -1,23 +1,24 @@
 package org.batfish.dataplane.ibdp;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import org.batfish.datamodel.AbstractRoute;
+import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.HasAbstractRoute;
 import org.batfish.dataplane.rib.AbstractRib;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
-public class RouteDependencyTracker<R extends AbstractRoute, D extends AbstractRoute> {
+@ParametersAreNonnullByDefault
+public class RouteDependencyTracker<R extends HasAbstractRoute, D extends HasAbstractRoute> {
 
   /** Map of routes to the set of routes they depend on */
-  private Map<D, Set<R>> _routeDependents;
+  @Nonnull private Map<D, Set<R>> _routeDependents;
 
-  public RouteDependencyTracker() {
+  RouteDependencyTracker() {
     _routeDependents = new IdentityHashMap<>();
   }
 
@@ -29,8 +30,8 @@ public class RouteDependencyTracker<R extends AbstractRoute, D extends AbstractR
    * @param dependsOn the dependency
    */
   @VisibleForTesting
-  void addRouteDependency(@Nonnull R route, @Nonnull D dependsOn) {
-    _routeDependents.computeIfAbsent(dependsOn, r -> new TreeSet<>());
+  void addRouteDependency(R route, D dependsOn) {
+    _routeDependents.computeIfAbsent(dependsOn, r -> new HashSet<>());
     _routeDependents.get(dependsOn).add(route);
   }
 
@@ -42,16 +43,16 @@ public class RouteDependencyTracker<R extends AbstractRoute, D extends AbstractR
    * @param rib the RIB containing the dependencies
    * @return a {@link RibDelta} containing all removed dependencies
    */
-  @Nullable
+  @Nonnull
   RibDelta<R> deleteRoute(D route, AbstractRib<R> rib) {
     Set<R> dependents = _routeDependents.get(route);
     if (dependents == null) {
       // Nothing to process
-      return null;
+      return RibDelta.empty();
     }
     RibDelta.Builder<R> b = RibDelta.builder();
     for (R depRoute : dependents) {
-      b.from(rib.removeRouteGetDelta(depRoute, Reason.WITHDRAW), rib::getNetwork);
+      b.from(rib.removeRouteGetDelta(depRoute, Reason.WITHDRAW));
     }
     // Now the route is gone and will have no dependents
     _routeDependents.remove(route);

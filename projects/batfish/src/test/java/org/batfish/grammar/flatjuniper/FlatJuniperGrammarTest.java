@@ -4,12 +4,12 @@ import static org.batfish.common.util.CommonUtil.communityStringToLong;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
 import static org.batfish.datamodel.AuthenticationMethod.PASSWORD;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethods;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasAllowLocalAsIn;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasClusterId;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
@@ -43,6 +43,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLis
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReferenceWithReferenceLines;
 import static org.batfish.datamodel.matchers.GeneratedRouteMatchers.isDiscard;
+import static org.batfish.datamodel.matchers.HasAbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Key;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Proposals;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
@@ -103,6 +104,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignDest
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.AUXILIARY_LINE_NAME;
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.CONSOLE_LINE_NAME;
+import static org.batfish.dataplane.ibdp.TestUtils.unannotateRoutes;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_EXISTING_CONNECTION;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
@@ -169,6 +171,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
@@ -640,7 +643,7 @@ public final class FlatJuniperGrammarTest {
     batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
     Set<AbstractRoute> r1Routes =
-        dp.getRibs().get(c1Name).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+        unannotateRoutes(dp.getRibs().get(c1Name).get(DEFAULT_VRF_NAME).getRoutes());
 
     assertThat(r1Routes, not(hasItem(hasPrefix(Prefix.parse("10.20.20.0/24")))));
     assertThat(
@@ -837,7 +840,7 @@ public final class FlatJuniperGrammarTest {
             .setOriginatorIp(Ip.parse("2.2.2.2"))
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
-    p1.process(cr, b1, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
+    p1.process(cr, b1, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT);
     BgpRoute br1 = b1.build();
 
     assertThat(
@@ -857,7 +860,7 @@ public final class FlatJuniperGrammarTest {
             .setOriginatorIp(Ip.parse("2.2.2.2"))
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
-    p2.process(cr, b2, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
+    p2.process(cr, b2, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT);
     BgpRoute br2 = b2.build();
 
     assertThat(br2.getCommunities(), equalTo(ImmutableSet.of(2L, 3L)));
@@ -871,7 +874,7 @@ public final class FlatJuniperGrammarTest {
             .setOriginatorIp(Ip.parse("2.2.2.2"))
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
-    p3.process(cr, b3, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
+    p3.process(cr, b3, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT);
     BgpRoute br3 = b3.build();
 
     assertThat(br3.getCommunities(), equalTo(ImmutableSet.of(5L)));
@@ -892,7 +895,7 @@ public final class FlatJuniperGrammarTest {
             .setOriginatorIp(Ip.parse("2.2.2.2"))
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
-    p4.process(cr, b4, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
+    p4.process(cr, b4, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT);
     BgpRoute br4 = b4.build();
 
     assertThat(
@@ -913,7 +916,7 @@ public final class FlatJuniperGrammarTest {
             .setOriginatorIp(Ip.parse("2.2.2.2"))
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
-    p5.process(cr, b5, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
+    p5.process(cr, b5, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT);
     BgpRoute br5 = b5.build();
 
     assertThat(br5.getCommunities(), equalTo(ImmutableSet.of(2L, 3L, 5L)));
@@ -927,7 +930,7 @@ public final class FlatJuniperGrammarTest {
             .setOriginatorIp(Ip.parse("2.2.2.2"))
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
-    p6.process(cr, b6, Ip.ZERO, Configuration.DEFAULT_VRF_NAME, Direction.OUT);
+    p6.process(cr, b6, Ip.ZERO, DEFAULT_VRF_NAME, Direction.OUT);
     BgpRoute br6 = b6.build();
 
     assertThat(br6.getCommunities(), equalTo(ImmutableSet.of(5L)));
@@ -1750,10 +1753,10 @@ public final class FlatJuniperGrammarTest {
     ConnectedRoute cr31 = new ConnectedRoute(Prefix.parse("2.0.0.0/31"), "blah");
     ConnectedRoute cr32 = new ConnectedRoute(Prefix.parse("2.0.0.0/32"), "blah");
     assertThat(
-        rp2.process(cr31, BgpRoute.builder(), null, Configuration.DEFAULT_VRF_NAME, Direction.OUT),
+        rp2.process(cr31, BgpRoute.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
         equalTo(false));
     assertThat(
-        rp2.process(cr32, BgpRoute.builder(), null, Configuration.DEFAULT_VRF_NAME, Direction.OUT),
+        rp2.process(cr32, BgpRoute.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
         equalTo(true));
 
     // all should be discard routes
@@ -1767,22 +1770,20 @@ public final class FlatJuniperGrammarTest {
     RoutingPolicy rp4 = config.getRoutingPolicies().get(ar4.getGenerationPolicy());
     ConnectedRoute cr4 = new ConnectedRoute(Prefix.parse("4.0.0.0/32"), "blah");
     assertThat(
-        rp4.process(cr4, BgpRoute.builder(), null, Configuration.DEFAULT_VRF_NAME, Direction.OUT),
-        equalTo(true));
+        rp4.process(cr4, BgpRoute.builder(), null, DEFAULT_VRF_NAME, Direction.OUT), equalTo(true));
 
     // rejects first, so reject
     RoutingPolicy rp5 = config.getRoutingPolicies().get(ar5.getGenerationPolicy());
     ConnectedRoute cr5 = new ConnectedRoute(Prefix.parse("5.0.0.0/32"), "blah");
     assertThat(
-        rp5.process(cr5, BgpRoute.builder(), null, Configuration.DEFAULT_VRF_NAME, Direction.OUT),
+        rp5.process(cr5, BgpRoute.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
         equalTo(false));
 
     // accepts first, so accept
     RoutingPolicy rp6 = config.getRoutingPolicies().get(ar6.getGenerationPolicy());
     ConnectedRoute cr6 = new ConnectedRoute(Prefix.parse("6.0.0.0/32"), "blah");
     assertThat(
-        rp6.process(cr6, BgpRoute.builder(), null, Configuration.DEFAULT_VRF_NAME, Direction.OUT),
-        equalTo(true));
+        rp6.process(cr6, BgpRoute.builder(), null, DEFAULT_VRF_NAME, Direction.OUT), equalTo(true));
   }
 
   @Test
@@ -1887,10 +1888,10 @@ public final class FlatJuniperGrammarTest {
     ConnectedRoute cr31 = new ConnectedRoute(Prefix.parse("2.0.0.0/31"), "blah");
     ConnectedRoute cr32 = new ConnectedRoute(Prefix.parse("2.0.0.0/32"), "blah");
     assertThat(
-        rp2.process(cr31, BgpRoute.builder(), null, Configuration.DEFAULT_VRF_NAME, Direction.OUT),
+        rp2.process(cr31, BgpRoute.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
         equalTo(false));
     assertThat(
-        rp2.process(cr32, BgpRoute.builder(), null, Configuration.DEFAULT_VRF_NAME, Direction.OUT),
+        rp2.process(cr32, BgpRoute.builder(), null, DEFAULT_VRF_NAME, Direction.OUT),
         equalTo(true));
 
     // none should be discard routes
@@ -2850,7 +2851,7 @@ public final class FlatJuniperGrammarTest {
               .get("POLICY-NAME")
               .call(
                   Environment.builder(c)
-                      .setVrf(Configuration.DEFAULT_VRF_NAME)
+                      .setVrf(DEFAULT_VRF_NAME)
                       .setOriginalRoute(new ConnectedRoute(p, "nextHop"))
                       .build());
       assertThat(result.getBooleanValue(), equalTo(true));
@@ -2862,7 +2863,7 @@ public final class FlatJuniperGrammarTest {
             .get("POLICY-NAME")
             .call(
                 Environment.builder(c)
-                    .setVrf(Configuration.DEFAULT_VRF_NAME)
+                    .setVrf(DEFAULT_VRF_NAME)
                     .setOriginalRoute(
                         StaticRoute.builder()
                             .setAdministrativeCost(0)
@@ -2877,7 +2878,7 @@ public final class FlatJuniperGrammarTest {
             .get("POLICY-NAME")
             .call(
                 Environment.builder(c)
-                    .setVrf(Configuration.DEFAULT_VRF_NAME)
+                    .setVrf(DEFAULT_VRF_NAME)
                     .setOriginalRoute(new ConnectedRoute(Prefix.parse("3.3.3.0/24"), "nextHop"))
                     .build());
     assertThat(result.getBooleanValue(), equalTo(false));
@@ -2922,7 +2923,7 @@ public final class FlatJuniperGrammarTest {
     result =
         familyPolicy.call(
             Environment.builder(c)
-                .setVrf(Configuration.DEFAULT_VRF_NAME)
+                .setVrf(DEFAULT_VRF_NAME)
                 .setOriginalRoute6(new GeneratedRoute6(Prefix6.ZERO))
                 .build());
     assertThat(result.getBooleanValue(), equalTo(true));
@@ -3045,32 +3046,20 @@ public final class FlatJuniperGrammarTest {
     srb = StaticRoute.builder().setAdministrativeCost(100).setNetwork(testPrefix);
     result =
         tagPolicy.call(
-            Environment.builder(c)
-                .setVrf(Configuration.DEFAULT_VRF_NAME)
-                .setOutputRoute(srb.setTag(1))
-                .build());
+            Environment.builder(c).setVrf(DEFAULT_VRF_NAME).setOutputRoute(srb.setTag(1)).build());
     assertThat(result.getBooleanValue(), equalTo(true));
     result =
         tagPolicy.call(
-            Environment.builder(c)
-                .setVrf(Configuration.DEFAULT_VRF_NAME)
-                .setOutputRoute(srb.setTag(2))
-                .build());
+            Environment.builder(c).setVrf(DEFAULT_VRF_NAME).setOutputRoute(srb.setTag(2)).build());
     assertThat(result.getBooleanValue(), equalTo(true));
     result =
         tagPolicy.call(
-            Environment.builder(c)
-                .setVrf(Configuration.DEFAULT_VRF_NAME)
-                .setOutputRoute(srb.setTag(3))
-                .build());
+            Environment.builder(c).setVrf(DEFAULT_VRF_NAME).setOutputRoute(srb.setTag(3)).build());
     assertThat(result.getBooleanValue(), equalTo(false));
   }
 
   private static Environment envWithRoute(Configuration c, AbstractRoute route) {
-    return Environment.builder(c)
-        .setVrf(Configuration.DEFAULT_VRF_NAME)
-        .setOriginalRoute(route)
-        .build();
+    return Environment.builder(c).setVrf(DEFAULT_VRF_NAME).setOriginalRoute(route).build();
   }
 
   @Test
@@ -4195,7 +4184,7 @@ public final class FlatJuniperGrammarTest {
               .get("POLICY-NAME")
               .call(
                   Environment.builder(config)
-                      .setVrf(Configuration.DEFAULT_VRF_NAME)
+                      .setVrf(DEFAULT_VRF_NAME)
                       .setOriginalRoute(new ConnectedRoute(p, "iface"))
                       .build());
       assertThat(result.getBooleanValue(), equalTo(true));
@@ -4208,7 +4197,7 @@ public final class FlatJuniperGrammarTest {
             .get("POLICY-NAME")
             .call(
                 Environment.builder(config)
-                    .setVrf(Configuration.DEFAULT_VRF_NAME)
+                    .setVrf(DEFAULT_VRF_NAME)
                     .setOriginalRoute(new ConnectedRoute(Prefix.parse("3.3.3.3/24"), "iface"))
                     .build());
     assertThat(result.getBooleanValue(), equalTo(false));
@@ -4220,7 +4209,7 @@ public final class FlatJuniperGrammarTest {
             .get("POLICY-NAME")
             .call(
                 Environment.builder(config)
-                    .setVrf(Configuration.DEFAULT_VRF_NAME)
+                    .setVrf(DEFAULT_VRF_NAME)
                     .setOriginalRoute(
                         StaticRoute.builder()
                             .setNextHopInterface("iface")
@@ -4390,24 +4379,36 @@ public final class FlatJuniperGrammarTest {
     batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
 
-    ImmutableMap<String, Set<AbstractRoute>> routes =
+    ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibs().get(hostname).entrySet().stream()
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getRoutes()));
+    String vrf2Name = "VRF2";
 
-    Set<AbstractRoute> defaultExpectedRoutes =
+    Set<AnnotatedRoute<AbstractRoute>> defaultExpectedRoutes =
         ImmutableSet.of(
-            new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "lo0.0"),
-            new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0"),
-            new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0"));
-    Set<AbstractRoute> vrf2ExpectedRoutes =
+            new AnnotatedRoute<>(
+                new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "lo0.0"), DEFAULT_VRF_NAME),
+            new AnnotatedRoute<>(
+                new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0"), DEFAULT_VRF_NAME),
+            new AnnotatedRoute<>(
+                new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0"),
+                DEFAULT_VRF_NAME));
+    Set<AnnotatedRoute<AbstractRoute>> vrf2ExpectedRoutes =
         ImmutableSet.of(
-            new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "lo0.0"),
-            new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0"),
-            new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0"),
-            new ConnectedRoute(Prefix.parse("2.2.2.8/31"), "ge-0/0/3.0"),
-            new LocalRoute(new InterfaceAddress("2.2.2.8/31"), "ge-0/0/3.0"));
-    assertThat(routes.get(Configuration.DEFAULT_VRF_NAME), equalTo(defaultExpectedRoutes));
-    assertThat(routes.get("VRF2"), equalTo(vrf2ExpectedRoutes));
+            // From default VRF
+            new AnnotatedRoute<>(
+                new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "lo0.0"), DEFAULT_VRF_NAME),
+            new AnnotatedRoute<>(
+                new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0"), DEFAULT_VRF_NAME),
+            new AnnotatedRoute<>(
+                new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0"), DEFAULT_VRF_NAME),
+            // Present normally
+            new AnnotatedRoute<>(
+                new ConnectedRoute(Prefix.parse("2.2.2.8/31"), "ge-0/0/3.0"), vrf2Name),
+            new AnnotatedRoute<>(
+                new LocalRoute(new InterfaceAddress("2.2.2.8/31"), "ge-0/0/3.0"), vrf2Name));
+    assertThat(routes.get(DEFAULT_VRF_NAME), equalTo(defaultExpectedRoutes));
+    assertThat(routes.get(vrf2Name), equalTo(vrf2ExpectedRoutes));
   }
 
   @Test
@@ -4418,34 +4419,51 @@ public final class FlatJuniperGrammarTest {
     batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
 
-    ImmutableMap<String, Set<AbstractRoute>> routes =
+    ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibs().get(hostname).entrySet().stream()
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getRoutes()));
+    String vrf2Name = "VRF2";
 
-    assertThat(
-        routes.get(Configuration.DEFAULT_VRF_NAME),
-        containsInAnyOrder(
-            new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "lo0.0"),
-            new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0"),
-            new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0"),
-            new ConnectedRoute(Prefix.parse("2.2.2.4/31"), "ge-0/0/1.0"),
-            new LocalRoute(new InterfaceAddress("2.2.2.4/31"), "ge-0/0/1.0"),
-            new ConnectedRoute(Prefix.parse("2.2.2.6/31"), "ge-0/0/2.0"),
-            new LocalRoute(new InterfaceAddress("2.2.2.6/31"), "ge-0/0/2.0")));
-    assertThat(
-        routes.get("VRF2"),
-        containsInAnyOrder(
+    Set<AnnotatedRoute<AbstractRoute>> vrf2ExpectedRoutes =
+        ImmutableSet.of(
             // allowed Default policy
-            new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "lo0.0"),
-            new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0"),
-            new LocalRoute(new InterfaceAddress("2.2.2.4/31"), "ge-0/0/1.0"),
-            new LocalRoute(new InterfaceAddress("2.2.2.6/31"), "ge-0/0/2.0"),
+            new AnnotatedRoute<>(
+                new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "lo0.0"), DEFAULT_VRF_NAME),
+            new AnnotatedRoute<>(
+                new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0"), DEFAULT_VRF_NAME),
+            new AnnotatedRoute<>(
+                new LocalRoute(new InterfaceAddress("2.2.2.4/31"), "ge-0/0/1.0"), DEFAULT_VRF_NAME),
+            new AnnotatedRoute<>(
+                new LocalRoute(new InterfaceAddress("2.2.2.6/31"), "ge-0/0/2.0"), DEFAULT_VRF_NAME),
             // allowed by RIB_IN
-            new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0"),
-            new ConnectedRoute(Prefix.parse("2.2.2.4/31"), "ge-0/0/1.0"),
+            new AnnotatedRoute<>(
+                new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0"), DEFAULT_VRF_NAME),
+            new AnnotatedRoute<>(
+                new ConnectedRoute(Prefix.parse("2.2.2.4/31"), "ge-0/0/1.0"), DEFAULT_VRF_NAME),
             // Present normally
-            new ConnectedRoute(Prefix.parse("2.2.2.8/31"), "ge-0/0/3.0"),
-            new LocalRoute(new InterfaceAddress("2.2.2.8/31"), "ge-0/0/3.0")));
+            new AnnotatedRoute<>(
+                new ConnectedRoute(Prefix.parse("2.2.2.8/31"), "ge-0/0/3.0"), vrf2Name),
+            new AnnotatedRoute<>(
+                new LocalRoute(new InterfaceAddress("2.2.2.8/31"), "ge-0/0/3.0"), vrf2Name));
+    Set<AnnotatedRoute<AbstractRoute>> defaultExpectedRoutes =
+        ImmutableSet.of(
+            new AnnotatedRoute<>(
+                new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "lo0.0"), DEFAULT_VRF_NAME),
+            new AnnotatedRoute<>(
+                new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0"), DEFAULT_VRF_NAME),
+            new AnnotatedRoute<>(
+                new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0"), DEFAULT_VRF_NAME),
+            new AnnotatedRoute<>(
+                new ConnectedRoute(Prefix.parse("2.2.2.4/31"), "ge-0/0/1.0"), DEFAULT_VRF_NAME),
+            new AnnotatedRoute<>(
+                new LocalRoute(new InterfaceAddress("2.2.2.4/31"), "ge-0/0/1.0"), DEFAULT_VRF_NAME),
+            new AnnotatedRoute<>(
+                new ConnectedRoute(Prefix.parse("2.2.2.6/31"), "ge-0/0/2.0"), DEFAULT_VRF_NAME),
+            new AnnotatedRoute<>(
+                new LocalRoute(new InterfaceAddress("2.2.2.6/31"), "ge-0/0/2.0"),
+                DEFAULT_VRF_NAME));
+    assertThat(routes.get(DEFAULT_VRF_NAME), equalTo(defaultExpectedRoutes));
+    assertThat(routes.get(vrf2Name), equalTo(vrf2ExpectedRoutes));
   }
 
   @Test
@@ -4456,22 +4474,31 @@ public final class FlatJuniperGrammarTest {
     batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
 
-    ImmutableMap<String, Set<AbstractRoute>> routes =
+    ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibs().get(hostname).entrySet().stream()
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getRoutes()));
+    String vrf2Name = "VRF2";
 
-    assertThat(
-        routes.get(Configuration.DEFAULT_VRF_NAME),
-        containsInAnyOrder(
-            new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "lo0.0"),
-            new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0", 0),
-            new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0")));
-    assertThat(
-        routes.get("VRF2"),
-        containsInAnyOrder(
-            new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "lo0.0"),
-            new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0"),
-            new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0", 123)));
+    Set<AnnotatedRoute<AbstractRoute>> defaultExpectedRoutes =
+        ImmutableSet.of(
+            new AnnotatedRoute<>(
+                new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "lo0.0"), DEFAULT_VRF_NAME),
+            new AnnotatedRoute<>(
+                new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0", 0), DEFAULT_VRF_NAME),
+            new AnnotatedRoute<>(
+                new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0"),
+                DEFAULT_VRF_NAME));
+    Set<AnnotatedRoute<AbstractRoute>> vrf2ExpectedRoutes =
+        ImmutableSet.of(
+            new AnnotatedRoute<>(
+                new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "lo0.0"), DEFAULT_VRF_NAME),
+            new AnnotatedRoute<>(
+                new LocalRoute(new InterfaceAddress("2.2.2.2/31"), "ge-0/0/0.0"), DEFAULT_VRF_NAME),
+            new AnnotatedRoute<>(
+                new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "ge-0/0/0.0", 123),
+                DEFAULT_VRF_NAME));
+    assertThat(routes.get(DEFAULT_VRF_NAME), equalTo(defaultExpectedRoutes));
+    assertThat(routes.get(vrf2Name), equalTo(vrf2ExpectedRoutes));
   }
 
   @Test

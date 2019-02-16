@@ -131,9 +131,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     return new IpSpaceToBDD(bddPacket.getDstIp());
   }
 
-  public ForwardingAnalysisImpl(
+  public <T extends HasAbstractRoute> ForwardingAnalysisImpl(
       Map<String, Configuration> configurations,
-      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
+      SortedMap<String, SortedMap<String, GenericRib<T>>> ribs,
       Map<String, Map<String, Fib>> fibs,
       Topology topology) {
     try (ActiveSpan span =
@@ -251,9 +251,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
    * 3) (Proxy-ARP) PERMIT any other IP routable via the VRF of the interface.
    */
   @VisibleForTesting
-  Map<String, Map<String, IpSpace>> computeArpReplies(
+  <T extends HasAbstractRoute> Map<String, Map<String, IpSpace>> computeArpReplies(
       Map<String, Configuration> configurations,
-      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
+      SortedMap<String, SortedMap<String, GenericRib<T>>> ribs) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeArpReplies").startActive()) {
       assert span != null; // avoid unused warning
@@ -580,8 +580,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @VisibleForTesting
-  static Map<String, Map<String, IpSpace>> computeRoutableIps(
-      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
+  static <T extends HasAbstractRoute> Map<String, Map<String, IpSpace>> computeRoutableIps(
+      SortedMap<String, SortedMap<String, GenericRib<T>>> ribs) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeRoutableIps").startActive()) {
       assert span != null; // avoid unused warning
@@ -600,8 +600,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   /** Compute for each VRF of each node the IPs that are routable. */
   @VisibleForTesting
-  static Map<String, Map<String, IpSpace>> computeRoutableIpsByNodeVrf(
-      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
+  static <T extends HasAbstractRoute> Map<String, Map<String, IpSpace>> computeRoutableIpsByNodeVrf(
+      SortedMap<String, SortedMap<String, GenericRib<T>>> ribs) {
     try (ActiveSpan span =
         GlobalTracer.get()
             .buildSpan("ForwardingAnalysisImpl.computeRoutableIpsByNodeVrf")
@@ -621,8 +621,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @VisibleForTesting
-  static Map<String, Map<String, Map<Prefix, IpSpace>>> computeMatchingIps(
-      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
+  static <T extends HasAbstractRoute>
+      Map<String, Map<String, Map<Prefix, IpSpace>>> computeMatchingIps(
+          SortedMap<String, SortedMap<String, GenericRib<T>>> ribs) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeMatchingIps").startActive()) {
       assert span != null; // avoid unused warning

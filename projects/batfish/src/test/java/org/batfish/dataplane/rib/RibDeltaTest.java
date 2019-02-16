@@ -176,8 +176,8 @@ public class RibDeltaTest {
     BgpRoute newGoodRoute = routeBuilder.build();
 
     RibDelta.Builder<BgpRoute> builder = RibDelta.builder();
-    builder.from(rib.mergeRouteGetDelta(oldGoodRoute), rib::getNetwork);
-    builder.from(rib.mergeRouteGetDelta(newGoodRoute), rib::getNetwork);
+    builder.from(rib.mergeRouteGetDelta(oldGoodRoute));
+    builder.from(rib.mergeRouteGetDelta(newGoodRoute));
 
     RibDelta<BgpRoute> delta = builder.build();
     assertThat(delta.getActions(), hasSize(2));

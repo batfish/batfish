@@ -5,6 +5,7 @@ import static org.batfish.dataplane.protocols.StaticRouteHelper.shouldActivateNe
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -18,12 +19,12 @@ import org.junit.Test;
 /** Tests for {@link StaticRouteHelper} */
 public class StaticRouteHelperTest {
 
-  private Rib _rib = new Rib();
+  private Rib _rib;
 
   @Before
   public void setup() {
     // Empty rib before each test
-    _rib = new Rib();
+    _rib = new Rib(Configuration.DEFAULT_VRF_NAME);
   }
 
   /** Ensure we identify interface routes correctly. */

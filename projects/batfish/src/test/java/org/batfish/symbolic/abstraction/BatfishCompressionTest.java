@@ -4,6 +4,7 @@ import static junit.framework.TestCase.assertNotNull;
 import static org.batfish.datamodel.matchers.FibMatchers.hasNextHopInterfaces;
 import static org.batfish.datamodel.matchers.TopologyMatchers.isNeighborOfNode;
 import static org.batfish.datamodel.matchers.TopologyMatchers.withNode;
+import static org.batfish.dataplane.ibdp.TestUtils.unannotateRoutes;
 import static org.hamcrest.Matchers.either;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -26,6 +27,7 @@ import java.util.TreeMap;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
@@ -275,9 +277,9 @@ public class BatfishCompressionTest {
     SortedMap<String, Configuration> compressedConfigs =
         compressNetwork(compressibleNetwork(), new HeaderSpace());
     DataPlane compressedDataPlane = getDataPlane(compressedConfigs);
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> origRibs =
+    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> origRibs =
         origDataPlane.getRibs();
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> compressedRibs =
+    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> compressedRibs =
         compressedDataPlane.getRibs();
 
     /* Compression removed a node */
@@ -287,9 +289,10 @@ public class BatfishCompressionTest {
         (hostname, compressedRibsByVrf) ->
             compressedRibsByVrf.forEach(
                 (vrf, compressedRib) -> {
-                  GenericRib<AbstractRoute> origRib = origRibs.get(hostname).get(vrf);
-                  Set<AbstractRoute> origRoutes = origRib.getRoutes();
-                  Set<AbstractRoute> compressedRoutes = compressedRib.getRoutes();
+                  GenericRib<AnnotatedRoute<AbstractRoute>> origRib =
+                      origRibs.get(hostname).get(vrf);
+                  Set<AbstractRoute> origRoutes = unannotateRoutes(origRib.getRoutes());
+                  Set<AbstractRoute> compressedRoutes = unannotateRoutes(compressedRib.getRoutes());
                   for (AbstractRoute route : compressedRoutes) {
                     /* Every compressed route should appear in original RIB */
                     assertThat(origRoutes, hasItem(route));
@@ -333,17 +336,18 @@ public class BatfishCompressionTest {
 
     assertThat(compressedConfigs.values(), hasSize(3));
 
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> origRibs =
+    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> origRibs =
         origDataPlane.getRibs();
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> compressedRibs =
+    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> compressedRibs =
         compressedDataPlane.getRibs();
     compressedRibs.forEach(
         (hostname, compressedRibsByVrf) ->
             compressedRibsByVrf.forEach(
                 (vrf, compressedRib) -> {
-                  GenericRib<AbstractRoute> origRib = origRibs.get(hostname).get(vrf);
-                  Set<AbstractRoute> origRoutes = origRib.getRoutes();
-                  Set<AbstractRoute> compressedRoutes = compressedRib.getRoutes();
+                  GenericRib<AnnotatedRoute<AbstractRoute>> origRib =
+                      origRibs.get(hostname).get(vrf);
+                  Set<AbstractRoute> origRoutes = unannotateRoutes(origRib.getRoutes());
+                  Set<AbstractRoute> compressedRoutes = unannotateRoutes(compressedRib.getRoutes());
                   for (AbstractRoute route : compressedRoutes) {
                     /* Every compressed route should appear in original RIB */
                     assertThat(origRoutes, hasItem(route));
@@ -369,18 +373,19 @@ public class BatfishCompressionTest {
     SortedMap<String, Configuration> compressedConfigs =
         compressNetwork(simpleNetwork(), new HeaderSpace());
     DataPlane compressedDataPlane = getDataPlane(compressedConfigs);
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> origRibs =
+    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> origRibs =
         origDataPlane.getRibs();
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> compressedRibs =
+    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> compressedRibs =
         compressedDataPlane.getRibs();
 
     compressedRibs.forEach(
         (hostname, compressedRibsByVrf) ->
             compressedRibsByVrf.forEach(
                 (vrf, compressedRib) -> {
-                  GenericRib<AbstractRoute> origRib = origRibs.get(hostname).get(vrf);
-                  Set<AbstractRoute> origRoutes = origRib.getRoutes();
-                  Set<AbstractRoute> compressedRoutes = compressedRib.getRoutes();
+                  GenericRib<AnnotatedRoute<AbstractRoute>> origRib =
+                      origRibs.get(hostname).get(vrf);
+                  Set<AbstractRoute> origRoutes = unannotateRoutes(origRib.getRoutes());
+                  Set<AbstractRoute> compressedRoutes = unannotateRoutes(compressedRib.getRoutes());
                   for (AbstractRoute route : compressedRoutes) {
                     /* Every compressed route should appear in original RIB */
                     assertThat(origRoutes, hasItem(route));

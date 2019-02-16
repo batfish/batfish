@@ -18,12 +18,12 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * of route.
  *
  * <p><i>Note:</i> This class implements {@link Comparable} because we put AbstractRoute in ordered
- * collections all throughout the codebase. {@link #compareTo(AbstractRoute)} has <b>NO</b> impact
- * on route preference.
+ * collections all throughout the codebase. {@link #compareTo(HasAbstractRoute)} has <b>NO</b>
+ * impact on route preference.
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 @ParametersAreNonnullByDefault
-public abstract class AbstractRoute implements Serializable, Comparable<AbstractRoute> {
+public abstract class AbstractRoute implements HasAbstractRoute, Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -62,17 +62,23 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   }
 
   @Override
-  public final int compareTo(AbstractRoute rhs) {
-    return Comparator.comparing(AbstractRoute::getNetwork)
-        .thenComparingInt(AbstractRoute::getAdministrativeCost)
-        .thenComparing(AbstractRoute::getMetric)
-        .thenComparing(AbstractRoute::routeCompare)
-        .thenComparing(AbstractRoute::getNextHopIp)
-        .thenComparing(AbstractRoute::getNextHopInterface)
-        .thenComparingInt(AbstractRoute::getTag)
-        .thenComparing(AbstractRoute::getNonRouting)
-        .thenComparing(AbstractRoute::getNonForwarding)
-        .compare(this, rhs);
+  public final int compareTo(HasAbstractRoute rhs) {
+    int routeComparison =
+        Comparator.comparing(AbstractRoute::getNetwork)
+            .thenComparingInt(AbstractRoute::getAdministrativeCost)
+            .thenComparing(AbstractRoute::getMetric)
+            .thenComparing(AbstractRoute::routeCompare)
+            .thenComparing(AbstractRoute::getNextHopIp)
+            .thenComparing(AbstractRoute::getNextHopInterface)
+            .thenComparingInt(AbstractRoute::getTag)
+            .thenComparing(AbstractRoute::getNonRouting)
+            .thenComparing(AbstractRoute::getNonForwarding)
+            .compare(this, rhs.getAbstractRoute());
+    if (routeComparison != 0) {
+      return routeComparison;
+    }
+    // Routes are equal; AbstractRoutes arbitrarily come before AnnotatedRoutes
+    return rhs instanceof AbstractRoute ? 0 : -1;
   }
 
   @Override
@@ -80,6 +86,12 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
 
   @Override
   public abstract int hashCode();
+
+  @JsonIgnore
+  @Override
+  public AbstractRoute getAbstractRoute() {
+    return this;
+  }
 
   public final int getAdministrativeCost() {
     return _admin;

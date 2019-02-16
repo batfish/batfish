@@ -1,5 +1,6 @@
 package org.batfish.dataplane;
 
+import static org.batfish.dataplane.ibdp.TestUtils.unannotateRoutes;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 
@@ -11,6 +12,7 @@ import java.util.SortedSet;
 import java.util.stream.Collectors;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -42,11 +44,14 @@ public class RipAndBgpTest {
             _folder);
     batfish.computeDataPlane();
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>> routes =
         dataPlanePlugin.getRoutes(batfish.loadDataPlane());
-    SortedSet<AbstractRoute> r1Routes = routes.get("r1").get(Configuration.DEFAULT_VRF_NAME);
-    SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(Configuration.DEFAULT_VRF_NAME);
-    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
+    Set<AbstractRoute> r1Routes =
+        unannotateRoutes(routes.get("r1").get(Configuration.DEFAULT_VRF_NAME));
+    Set<AbstractRoute> r2Routes =
+        unannotateRoutes(routes.get("r2").get(Configuration.DEFAULT_VRF_NAME));
+    Set<AbstractRoute> r3Routes =
+        unannotateRoutes(routes.get("r3").get(Configuration.DEFAULT_VRF_NAME));
     Set<Prefix> r1Prefixes =
         r1Routes.stream()
             .filter(route -> route.getProtocol() != RoutingProtocol.LOCAL)

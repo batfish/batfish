@@ -1,10 +1,5 @@
 package org.batfish.grammar.palo_alto;
 
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasAdministrativeCost;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasMetric;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasNextHopInterface;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasNextHopIp;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
@@ -17,6 +12,11 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
+import static org.batfish.datamodel.matchers.HasAbstractRouteMatchers.hasAdministrativeCost;
+import static org.batfish.datamodel.matchers.HasAbstractRouteMatchers.hasMetric;
+import static org.batfish.datamodel.matchers.HasAbstractRouteMatchers.hasNextHopInterface;
+import static org.batfish.datamodel.matchers.HasAbstractRouteMatchers.hasNextHopIp;
+import static org.batfish.datamodel.matchers.HasAbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
