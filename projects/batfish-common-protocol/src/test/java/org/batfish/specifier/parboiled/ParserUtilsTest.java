@@ -74,7 +74,7 @@ public class ParserUtilsTest {
 
     @Completion(Type.ADDRESS_GROUP_AND_BOOK)
     public Rule TestSpecifierInput() {
-      return Sequence(ReferenceObjectNameLiteral(), WhiteSpace());
+      return Sequence(ReferenceObjectName(), WhiteSpace());
     }
 
     @Completion(Type.IP_ADDRESS)
