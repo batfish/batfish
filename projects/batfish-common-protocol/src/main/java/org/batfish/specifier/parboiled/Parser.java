@@ -26,7 +26,7 @@ import org.parboiled.support.Var;
  * <p>{@link Anchor} annotation: For each path from the top-level rule of an expression to leaf
  * values, there should be at least one rule with a Anchor annotation. This annotation is used for
  * error messages and generating auto completion suggestions. Character and string literals are
- * treated as implicit anchors see findPathAnchor() in {@link ParserUtils}.
+ * treated as implicit anchors. See findPathAnchor() in {@link ParserUtils}.
  */
 @SuppressWarnings({
   "checkstyle:methodname", // this class uses idiomatic names
@@ -39,16 +39,16 @@ public class Parser extends CommonParser {
   static final Map<String, Anchor.Type> ANCHORS = initAnchors(Parser.class);
 
   /**
-   * An array of Rules for matching interface type values. It is supposed to be private with
-   * parboiled does not like private rules
+   * An array of Rules for matching interface type values. It should have been private and static
+   * but parboiled does not like those things in this context.
    */
-  final Rule[] INTERFACE_TYPE_RULES = initEnumRules(InterfaceType.values());
+  final Rule[] _interfaceTypeRules = initEnumRules(InterfaceType.values());
 
   /**
    * Interface grammar
    *
    * <pre>
-   *   interfaceExpr := interfaceTerm [&/+/- interfaceTerm]*
+   *   interfaceExpr := interfaceTerm [{@literal &}/+/- interfaceTerm]*
    *
    *   interfaceTerm := @connectedTo(ipSpaceExpr)  // also, non-@ versions supported for back compat
    *                        | @interfacegroup(a, b)
@@ -144,7 +144,7 @@ public class Parser extends CommonParser {
 
   @Anchor(INTERFACE_TYPE)
   public Rule InterfaceTypeExpr() {
-    return Sequence(FirstOf(INTERFACE_TYPE_RULES), push(new StringAstNode(match())));
+    return Sequence(FirstOf(_interfaceTypeRules), push(new StringAstNode(match())));
   }
 
   public Rule InterfaceVrf() {
