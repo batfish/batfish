@@ -16,6 +16,7 @@ import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.PortField;
+import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 
 /** A {@link NatRule} that nats using the specified pool */
@@ -52,10 +53,6 @@ public final class NatRuleThenPool implements NatRuleThen, Serializable {
     return Objects.hash(_poolName);
   }
 
-  private void applyPAT() {
-
-  }
-
   @Override
   public List<TransformationStep> toTransformationStep(
       TransformationType type,
@@ -74,28 +71,14 @@ public final class NatRuleThenPool implements NatRuleThen, Serializable {
     builder.add(
         new AssignIpAddressFromPool(type, ipField, pool.getFromAddress(), pool.getToAddress()));
 
-    if (pool.getPatPool() != null && pool.getPatPool().getPortTranslation() || pool.getPatPool() == null && type == SOURCE_NAT) {
-      applyPAT();
-    }
-
-    return builder.build();
-    if (pool.getPatPool() != null && pool.getPatPool().getPortTranslation()) {
+    PortAddressTranslation pat = pool.getPortAddressTranslation();
+    if (pat != null) {
+      builder.add(pat.toTransformationStep());
+    } else if (type == SOURCE_NAT) {
       builder.add(
-                    new AssignPortFromPool(
+          new AssignPortFromPool(
               type, portField, nat.getDefaultFromPort(), nat.getDefaultToPort()));
-      )
     }
-
-    if (pool.getPatPool() == null) {
-      if (type == SOURCE_NAT) {
-        // source nat enable PAT by default
-        return ImmutableList.of(
-            new AssignIpAddressFromPool(type, ipField, pool.getFromAddress(), pool.getToAddress()),
-            new AssignPortFromPool(
-                type, portField, nat.getDefaultFromPort(), nat.getDefaultToPort()));
-      }
-    } else {
-
-    }
+    return builder.build();
   }
 }
