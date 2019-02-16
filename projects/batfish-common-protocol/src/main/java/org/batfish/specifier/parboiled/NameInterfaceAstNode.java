@@ -11,12 +11,12 @@ final class NameInterfaceAstNode implements InterfaceAstNode {
 
   @Override
   public <T> T accept(AstNodeVisitor<T> visitor) {
-    return visitor.visitNameInterfaceSpecAstNode(this);
+    return visitor.visitNameInterfaceAstNode(this);
   }
 
   @Override
   public <T> T accept(InterfaceAstNodeVisitor<T> visitor) {
-    return visitor.visitNameInterfaceSpecAstNode(this);
+    return visitor.visitNameInterfaceNode(this);
   }
 
   @Override

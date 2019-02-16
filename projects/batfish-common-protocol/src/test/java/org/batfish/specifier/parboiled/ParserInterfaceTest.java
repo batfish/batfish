@@ -98,7 +98,7 @@ public class ParserInterfaceTest {
   @Test
   public void testInterfaceType() {
     TypeInterfaceAstNode expectedAst =
-        new TypeInterfaceAstNode(new InterfaceTypeAstNode(InterfaceType.PHYSICAL));
+        new TypeInterfaceAstNode(new StringAstNode(InterfaceType.PHYSICAL.toString()));
 
     assertThat(ParserUtils.getAst(getRunner().run("@type(physical)")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" @type ( physical ) ")), equalTo(expectedAst));

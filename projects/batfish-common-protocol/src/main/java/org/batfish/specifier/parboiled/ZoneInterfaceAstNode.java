@@ -3,20 +3,24 @@ package org.batfish.specifier.parboiled;
 import java.util.Objects;
 
 final class ZoneInterfaceAstNode implements InterfaceAstNode {
-  private final StringAstNode _zoneNameAstNode;
+  private final String _zoneName;
 
-  ZoneInterfaceAstNode(AstNode zoneName) {
-    _zoneNameAstNode = (StringAstNode) zoneName;
+  ZoneInterfaceAstNode(AstNode zoneNameAstNode) {
+    this(((StringAstNode) zoneNameAstNode).getStr());
+  }
+
+  ZoneInterfaceAstNode(String zoneName) {
+    _zoneName = zoneName;
   }
 
   @Override
   public <T> T accept(AstNodeVisitor<T> visitor) {
-    return visitor.visitZoneInterfaceSpecAstNode(this);
+    return visitor.visitZoneInterfaceAstNode(this);
   }
 
   @Override
   public <T> T accept(InterfaceAstNodeVisitor<T> visitor) {
-    return visitor.visitZoneInterfaceSpecAstNode(this);
+    return visitor.visitZoneInterfaceAstNode(this);
   }
 
   @Override
@@ -28,15 +32,15 @@ final class ZoneInterfaceAstNode implements InterfaceAstNode {
       return false;
     }
     ZoneInterfaceAstNode that = (ZoneInterfaceAstNode) o;
-    return Objects.equals(_zoneNameAstNode, that._zoneNameAstNode);
+    return Objects.equals(_zoneName, that._zoneName);
   }
 
-  public StringAstNode getZoneNameAstNode() {
-    return _zoneNameAstNode;
+  public String getZoneName() {
+    return _zoneName;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_zoneNameAstNode);
+    return Objects.hash(_zoneName);
   }
 }

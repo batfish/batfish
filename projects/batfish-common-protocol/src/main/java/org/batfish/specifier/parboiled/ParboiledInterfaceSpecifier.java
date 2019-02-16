@@ -32,7 +32,6 @@ final class ParboiledInterfaceSpecifier implements InterfaceSpecifier {
 
   @Override
   public Set<Interface> resolve(Set<String> nodes, SpecifierContext ctxt) {
-    // TODO TODO TODO
-    return null;
+    return _ast.accept(new InterfaceAstNodeToInterfaces(nodes, ctxt));
   }
 }

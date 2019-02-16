@@ -22,12 +22,12 @@ class InterfaceGroupInterfaceAstNode implements InterfaceAstNode {
 
   @Override
   public <T> T accept(AstNodeVisitor<T> visitor) {
-    return visitor.visitInterfaceGroupInterfaceSpecAstNode(this);
+    return visitor.visitInterfaceGroupInterfaceAstNode(this);
   }
 
   @Override
   public <T> T accept(InterfaceAstNodeVisitor<T> visitor) {
-    return visitor.visitInterfaceGroupInterfaceSpecAstNode(this);
+    return visitor.visitInterfaceGroupInterfaceAstNode(this);
   }
 
   @Override
@@ -43,11 +43,11 @@ class InterfaceGroupInterfaceAstNode implements InterfaceAstNode {
         && Objects.equals(_referenceBook, that._referenceBook);
   }
 
-  String getAddressGroup() {
+  String getInterfaceGroup() {
     return _interfaceGroup;
   }
 
-  String getAddressBook() {
+  String getReferenceBook() {
     return _referenceBook;
   }
 

@@ -1,22 +1,27 @@
 package org.batfish.specifier.parboiled;
 
 import java.util.Objects;
+import org.batfish.datamodel.InterfaceType;
 
 final class TypeInterfaceAstNode implements InterfaceAstNode {
-  private final InterfaceTypeAstNode _interfaceTypeAstNode;
+  private final InterfaceType _interfaceType;
 
   TypeInterfaceAstNode(AstNode interfaceType) {
-    _interfaceTypeAstNode = (InterfaceTypeAstNode) interfaceType;
+    this(((StringAstNode) interfaceType).getStr());
+  }
+
+  TypeInterfaceAstNode(String interfaceTyeStr) {
+    _interfaceType = Enum.valueOf(InterfaceType.class, interfaceTyeStr.toUpperCase());
   }
 
   @Override
   public <T> T accept(AstNodeVisitor<T> visitor) {
-    return visitor.visitTypeInterfaceSpecAstNode(this);
+    return visitor.visitTypeInterfaceAstNode(this);
   }
 
   @Override
   public <T> T accept(InterfaceAstNodeVisitor<T> visitor) {
-    return visitor.visitTypeInterfaceSpecAstNode(this);
+    return visitor.visitTypeInterfaceNode(this);
   }
 
   @Override
@@ -28,15 +33,15 @@ final class TypeInterfaceAstNode implements InterfaceAstNode {
       return false;
     }
     TypeInterfaceAstNode that = (TypeInterfaceAstNode) o;
-    return Objects.equals(_interfaceTypeAstNode, that._interfaceTypeAstNode);
+    return Objects.equals(_interfaceType, that._interfaceType);
   }
 
-  public InterfaceTypeAstNode getInterfaceTypeAstNode() {
-    return _interfaceTypeAstNode;
+  public InterfaceType getInterfaceType() {
+    return _interfaceType;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_interfaceTypeAstNode);
+    return Objects.hash(_interfaceType);
   }
 }

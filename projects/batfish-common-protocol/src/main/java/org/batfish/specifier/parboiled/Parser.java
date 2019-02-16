@@ -144,7 +144,7 @@ public class Parser extends CommonParser {
 
   @Anchor(INTERFACE_TYPE)
   public Rule InterfaceTypeExpr() {
-    return Sequence(FirstOf(INTERFACE_TYPE_RULES), push(new InterfaceTypeAstNode(match())));
+    return Sequence(FirstOf(INTERFACE_TYPE_RULES), push(new StringAstNode(match())));
   }
 
   public Rule InterfaceVrf() {

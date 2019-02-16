@@ -11,12 +11,12 @@ class IntersectionInterfaceAstNode extends SetOpInterfaceAstNode {
 
   @Override
   public <T> T accept(AstNodeVisitor<T> visitor) {
-    return visitor.visitIntersectionInterfaceSpecAstNode(this);
+    return visitor.visitIntersectionInterfaceAstNode(this);
   }
 
   @Override
   public <T> T accept(InterfaceAstNodeVisitor<T> visitor) {
-    return visitor.visitIntersectionInterfaceSpecAstNode(this);
+    return visitor.visitIntersectionInterfaceAstNode(this);
   }
 
   @Override

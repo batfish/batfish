@@ -1,25 +1,24 @@
 package org.batfish.specifier.parboiled;
 
 interface InterfaceAstNodeVisitor<T> {
-  T visitUnionInterfaceSpecAstNode(UnionInterfaceAstNode unionInterfaceSpecAstNode);
+  T visitUnionInterfaceAstNode(UnionInterfaceAstNode unionInterfaceAstNode);
 
-  T visitDifferenceInterfaceSpecAstNode(DifferenceInterfaceAstNode differenceInterfaceAstNode);
+  T visitDifferenceInterfaceAstNode(DifferenceInterfaceAstNode differenceInterfaceAstNode);
 
-  T visitConnectedToInterfaceSpecAstNode(ConnectedToInterfaceAstNode connectedToInterfaceAstNode);
+  T visitConnectedToInterfaceAstNode(ConnectedToInterfaceAstNode connectedToInterfaceAstNode);
 
-  T visitTypeInterfaceSpecAstNode(TypeInterfaceAstNode typeInterfaceSpecAstNode);
+  T visitTypeInterfaceNode(TypeInterfaceAstNode typeInterfaceAstNode);
 
-  T visitNameInterfaceSpecAstNode(NameInterfaceAstNode nameInterfaceSpecAstNode);
+  T visitNameInterfaceNode(NameInterfaceAstNode nameInterfaceAstNode);
 
-  T visitNameRegexInterfaceSpecAstNode(NameRegexInterfaceAstNode nameRegexInterfaceSpecAstNode);
+  T visitNameRegexInterfaceAstNode(NameRegexInterfaceAstNode nameRegexInterfaceAstNode);
 
-  T visitVrfInterfaceSpecAstNode(VrfInterfaceAstNode vrfInterfaceSpecAstNode);
+  T visitVrfInterfaceAstNode(VrfInterfaceAstNode vrfInterfaceAstNode);
 
-  T visitZoneInterfaceSpecAstNode(ZoneInterfaceAstNode zoneInterfaceSpecAstNode);
+  T visitZoneInterfaceAstNode(ZoneInterfaceAstNode zoneInterfaceAstNode);
 
-  T visitInterfaceGroupInterfaceSpecAstNode(
+  T visitInterfaceGroupInterfaceAstNode(
       InterfaceGroupInterfaceAstNode interfaceGroupInterfaceAstNode);
 
-  T visitIntersectionInterfaceSpecAstNode(
-      IntersectionInterfaceAstNode intersectionInterfaceSpecAstNode);
+  T visitIntersectionInterfaceAstNode(IntersectionInterfaceAstNode intersectionInterfaceAstNode);
 }

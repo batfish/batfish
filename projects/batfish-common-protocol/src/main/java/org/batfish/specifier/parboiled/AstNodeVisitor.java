@@ -15,27 +15,24 @@ interface AstNodeVisitor<T> {
 
   T visitStringAstNode(StringAstNode stringAstNode);
 
-  T visitUnionInterfaceSpecAstNode(UnionInterfaceAstNode unionInterfaceSpecAstNode);
+  T visitUnionInterfaceAstNode(UnionInterfaceAstNode unionInterfaceAstNode);
 
-  T visitDifferenceInterfaceSpecAstNode(DifferenceInterfaceAstNode differenceInterfaceAstNode);
+  T visitDifferenceInterfaceAstNode(DifferenceInterfaceAstNode differenceInterfaceAstNode);
 
-  T visitConnectedToInterfaceSpecAstNode(ConnectedToInterfaceAstNode connectedToInterfaceAstNode);
+  T visitConnectedToInterfaceAstNode(ConnectedToInterfaceAstNode connectedToInterfaceAstNode);
 
-  T visitTypeInterfaceSpecAstNode(TypeInterfaceAstNode typeInterfaceSpecAstNode);
+  T visitTypeInterfaceAstNode(TypeInterfaceAstNode typeInterfaceAstNode);
 
-  T visitInterfaceTypeAstNode(InterfaceTypeAstNode interfaceTypeAstNode);
+  T visitNameInterfaceAstNode(NameInterfaceAstNode nameInterfaceAstNode);
 
-  T visitNameInterfaceSpecAstNode(NameInterfaceAstNode nameInterfaceSpecAstNode);
+  T visitNameRegexInterfaceAstNode(NameRegexInterfaceAstNode nameRegexInterfaceAstNode);
 
-  T visitNameRegexInterfaceSpecAstNode(NameRegexInterfaceAstNode nameRegexInterfaceSpecAstNode);
+  T visitVrfInterfaceAstNode(VrfInterfaceAstNode vrfInterfaceAstNode);
 
-  T visitVrfInterfaceSpecAstNode(VrfInterfaceAstNode vrfInterfaceSpecAstNode);
+  T visitZoneInterfaceAstNode(ZoneInterfaceAstNode zoneInterfaceAstNode);
 
-  T visitZoneInterfaceSpecAstNode(ZoneInterfaceAstNode zoneInterfaceSpecAstNode);
-
-  T visitInterfaceGroupInterfaceSpecAstNode(
+  T visitInterfaceGroupInterfaceAstNode(
       InterfaceGroupInterfaceAstNode interfaceGroupInterfaceAstNode);
 
-  T visitIntersectionInterfaceSpecAstNode(
-      IntersectionInterfaceAstNode intersectionInterfaceSpecAstNode);
+  T visitIntersectionInterfaceAstNode(IntersectionInterfaceAstNode intersectionInterfaceAstNode);
 }

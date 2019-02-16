@@ -4,20 +4,24 @@ import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
 final class VrfInterfaceAstNode implements InterfaceAstNode {
-  private final StringAstNode _vrfNameAstNode;
+  private final String _vrfName;
 
-  VrfInterfaceAstNode(AstNode vrfName) {
-    _vrfNameAstNode = (StringAstNode) vrfName;
+  VrfInterfaceAstNode(AstNode vrfNameAstNode) {
+    this(((StringAstNode) vrfNameAstNode).getStr());
+  }
+
+  VrfInterfaceAstNode(String vrfName) {
+    _vrfName = vrfName;
   }
 
   @Override
   public <T> T accept(AstNodeVisitor<T> visitor) {
-    return visitor.visitVrfInterfaceSpecAstNode(this);
+    return visitor.visitVrfInterfaceAstNode(this);
   }
 
   @Override
   public <T> T accept(InterfaceAstNodeVisitor<T> visitor) {
-    return visitor.visitVrfInterfaceSpecAstNode(this);
+    return visitor.visitVrfInterfaceAstNode(this);
   }
 
   @Override
@@ -29,22 +33,20 @@ final class VrfInterfaceAstNode implements InterfaceAstNode {
       return false;
     }
     VrfInterfaceAstNode that = (VrfInterfaceAstNode) o;
-    return Objects.equals(_vrfNameAstNode, that._vrfNameAstNode);
+    return Objects.equals(_vrfName, that._vrfName);
   }
 
-  public StringAstNode getVrfNameAstNode() {
-    return _vrfNameAstNode;
+  public String getVrfName() {
+    return _vrfName;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_vrfNameAstNode);
+    return Objects.hash(_vrfName);
   }
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this.getClass())
-        .add("vrfNameAstNode", _vrfNameAstNode)
-        .toString();
+    return MoreObjects.toStringHelper(this.getClass()).add("vrfName", _vrfName).toString();
   }
 }

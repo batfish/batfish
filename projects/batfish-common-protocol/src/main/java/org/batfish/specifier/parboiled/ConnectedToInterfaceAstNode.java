@@ -11,12 +11,12 @@ final class ConnectedToInterfaceAstNode implements InterfaceAstNode {
 
   @Override
   public <T> T accept(AstNodeVisitor<T> visitor) {
-    return visitor.visitConnectedToInterfaceSpecAstNode(this);
+    return visitor.visitConnectedToInterfaceAstNode(this);
   }
 
   @Override
   public <T> T accept(InterfaceAstNodeVisitor<T> visitor) {
-    return visitor.visitConnectedToInterfaceSpecAstNode(this);
+    return visitor.visitConnectedToInterfaceAstNode(this);
   }
 
   @Override

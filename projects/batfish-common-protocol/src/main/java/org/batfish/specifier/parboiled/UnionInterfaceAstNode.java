@@ -11,12 +11,12 @@ class UnionInterfaceAstNode extends SetOpInterfaceAstNode {
 
   @Override
   public <T> T accept(AstNodeVisitor<T> visitor) {
-    return visitor.visitUnionInterfaceSpecAstNode(this);
+    return visitor.visitUnionInterfaceAstNode(this);
   }
 
   @Override
   public <T> T accept(InterfaceAstNodeVisitor<T> visitor) {
-    return visitor.visitUnionInterfaceSpecAstNode(this);
+    return visitor.visitUnionInterfaceAstNode(this);
   }
 
   @Override

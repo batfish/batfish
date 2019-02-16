@@ -10,17 +10,18 @@ final class NameRegexInterfaceAstNode implements InterfaceAstNode {
 
   NameRegexInterfaceAstNode(String regex) {
     _regex = regex;
-    _pattern = Pattern.compile(regex); // this will barf on invalid regex
+    // treat the provided pattern as a case-insensitive substring match
+    _pattern = Pattern.compile(String.format(".*%s.*", regex), Pattern.CASE_INSENSITIVE);
   }
 
   @Override
   public <T> T accept(AstNodeVisitor<T> visitor) {
-    return visitor.visitNameRegexInterfaceSpecAstNode(this);
+    return visitor.visitNameRegexInterfaceAstNode(this);
   }
 
   @Override
   public <T> T accept(InterfaceAstNodeVisitor<T> visitor) {
-    return visitor.visitNameRegexInterfaceSpecAstNode(this);
+    return visitor.visitNameRegexInterfaceAstNode(this);
   }
 
   @Override
@@ -35,7 +36,7 @@ final class NameRegexInterfaceAstNode implements InterfaceAstNode {
     return Objects.equals(_regex, that._regex);
   }
 
-  public String getName() {
+  public String getRegex() {
     return _regex;
   }
 

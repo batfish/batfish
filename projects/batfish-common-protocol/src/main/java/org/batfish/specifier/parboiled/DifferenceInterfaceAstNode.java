@@ -12,12 +12,12 @@ class DifferenceInterfaceAstNode extends SetOpInterfaceAstNode {
 
   @Override
   public <T> T accept(AstNodeVisitor<T> visitor) {
-    return visitor.visitDifferenceInterfaceSpecAstNode(this);
+    return visitor.visitDifferenceInterfaceAstNode(this);
   }
 
   @Override
   public <T> T accept(InterfaceAstNodeVisitor<T> visitor) {
-    return visitor.visitDifferenceInterfaceSpecAstNode(this);
+    return visitor.visitDifferenceInterfaceAstNode(this);
   }
 
   @Override
