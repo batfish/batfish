@@ -3,11 +3,11 @@ package org.batfish.representation.juniper;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
@@ -15,6 +15,7 @@ import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.TransformationStep;
 
 /** A {@link NatRule} that nats using the specified pool */
@@ -51,25 +52,50 @@ public final class NatRuleThenPool implements NatRuleThen, Serializable {
     return Objects.hash(_poolName);
   }
 
+  private void applyPAT() {
+
+  }
+
   @Override
   public List<TransformationStep> toTransformationStep(
-      TransformationType type, IpField field, Map<String, NatPool> pools, Ip interfaceIp) {
+      TransformationType type,
+      Nat nat,
+      IpField ipField,
+      PortField portField,
+      Map<String, NatPool> pools,
+      Ip interfaceIp) {
     NatPool pool = pools.get(_poolName);
     if (pool == null) {
       // pool is undefined.
       return ImmutableList.of();
     }
 
-    // TODO
-    if (pool.getPatPool() == null && type == SOURCE_NAT) {
-      // source nat enable PAT by default
-      return ImmutableList.of(
-          new AssignIpAddressFromPool(type, field, pool.getFromAddress(), pool.getToAddress()),
-          new AssignPortFromPool(type, field, pool.getPatPool().));
+    ImmutableList.Builder<TransformationStep> builder = new Builder<>();
+    builder.add(
+        new AssignIpAddressFromPool(type, ipField, pool.getFromAddress(), pool.getToAddress()));
 
+    if (pool.getPatPool() != null && pool.getPatPool().getPortTranslation() || pool.getPatPool() == null && type == SOURCE_NAT) {
+      applyPAT();
+    }
+
+    return builder.build();
+    if (pool.getPatPool() != null && pool.getPatPool().getPortTranslation()) {
+      builder.add(
+                    new AssignPortFromPool(
+              type, portField, nat.getDefaultFromPort(), nat.getDefaultToPort()));
+      )
+    }
+
+    if (pool.getPatPool() == null) {
+      if (type == SOURCE_NAT) {
+        // source nat enable PAT by default
+        return ImmutableList.of(
+            new AssignIpAddressFromPool(type, ipField, pool.getFromAddress(), pool.getToAddress()),
+            new AssignPortFromPool(
+                type, portField, nat.getDefaultFromPort(), nat.getDefaultToPort()));
+      }
     } else {
-      return ImmutableList.of(
-          new AssignIpAddressFromPool(type, field, pool.getFromAddress(), pool.getToAddress()));
+
     }
   }
 }
