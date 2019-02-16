@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
@@ -16,7 +17,6 @@ import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.PortField;
-import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 
 /** A {@link NatRule} that nats using the specified pool */
@@ -73,7 +73,8 @@ public final class NatRuleThenPool implements NatRuleThen, Serializable {
 
     PortAddressTranslation pat = pool.getPortAddressTranslation();
     if (pat != null) {
-      builder.add(pat.toTransformationStep());
+      Optional<TransformationStep> patStep = pat.toTransformationStep(type, portField);
+      patStep.ifPresent(builder::add);
     } else if (type == SOURCE_NAT) {
       builder.add(
           new AssignPortFromPool(

@@ -15,6 +15,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation;
 
 /** Represents a nat rule for Juniper */
@@ -56,11 +57,17 @@ public final class NatRule implements Serializable {
 
   /** Convert to vendor-independent {@link Transformation}. */
   public Optional<Transformation.Builder> toTransformationBuilder(
-      TransformationType type, IpField field, Map<String, NatPool> pools, Ip interfaceIp) {
+      TransformationType type,
+      Nat nat,
+      IpField ipField,
+      PortField portField,
+      Map<String, NatPool> pools,
+      Ip interfaceIp) {
     return _then == null
         ? Optional.empty()
-        : _then
-            .toTransformationStep(type, field, pools, interfaceIp)
-            .map(step -> when(new MatchHeaderSpace(toHeaderSpace(_matches))).apply(step));
+        : Optional.of(
+            when(new MatchHeaderSpace(toHeaderSpace(_matches)))
+                .apply(
+                    _then.toTransformationStep(type, nat, ipField, portField, pools, interfaceIp)));
   }
 }
