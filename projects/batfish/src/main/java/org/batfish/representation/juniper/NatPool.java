@@ -17,13 +17,14 @@ public final class NatPool implements Serializable {
 
   private Ip _toAddress;
 
-  // null value means no pat is configured
-  @Nullable private PatPool _patPool;
+  // null value means no pat is configured; source nat will apply pat and dest nat will not apply
+  // pat by default
+  @Nullable private PortAddressTranslation _pat;
 
   public NatPool() {
     _fromAddress = Prefix.ZERO.getStartIp();
     _toAddress = Prefix.ZERO.getEndIp();
-    _patPool = null;
+    _pat = null;
   }
 
   @Nonnull
@@ -37,8 +38,8 @@ public final class NatPool implements Serializable {
   }
 
   @Nullable
-  public PatPool getPatPool() {
-    return _patPool;
+  public PortAddressTranslation getPortAddressTranslation() {
+    return _pat;
   }
 
   public void setFromAddress(Ip fromAddress) {
@@ -49,7 +50,7 @@ public final class NatPool implements Serializable {
     _toAddress = toAddress;
   }
 
-  public void setPatPool(PatPool patPool) {
-    _patPool = patPool;
+  public void setPortAddressTranslation(PortAddressTranslation pat) {
+    _pat = pat;
   }
 }

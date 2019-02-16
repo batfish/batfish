@@ -1,25 +1,19 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
+import java.util.Objects;
 
-public class PatPool implements Serializable {
+public class PatPool implements PortAddressTranslation, Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
-  // -1 means that no port is specified; so we need to apply a default value
   private int _fromPort;
 
-  // -1 means that no port is specified; so we need to apply a default value
   private int _toPort;
 
-  // 1. true means that we need to apply PAT
-  // 2. no means that we should not apply PAT
-  private boolean _portTranslation;
-
-  public PatPool() {
-    _fromPort = -1;
-    _toPort = -1;
-    _portTranslation = false;
+  public PatPool(int fromPort, int toPort) {
+    _fromPort = fromPort;
+    _toPort = toPort;
   }
 
   public Integer getFromPort() {
@@ -30,10 +24,6 @@ public class PatPool implements Serializable {
     return _toPort;
   }
 
-  public Boolean getPortTranslation() {
-    return _portTranslation;
-  }
-
   public void setFromPort(int fromPort) {
     _fromPort = fromPort;
   }
@@ -42,7 +32,19 @@ public class PatPool implements Serializable {
     _toPort = toPort;
   }
 
-  public void setPortTranslation(boolean portTranslation) {
-    _portTranslation = portTranslation;
+  @Override
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (!(o instanceof PatPool)) {
+      return false;
+    }
+    PatPool other = (PatPool) o;
+    return _fromPort == other.getFromPort() && _toPort == other.getToPort();
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_fromPort, _toPort);
   }
 }
