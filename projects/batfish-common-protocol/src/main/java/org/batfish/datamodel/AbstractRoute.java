@@ -113,7 +113,6 @@ public abstract class AbstractRoute implements HasAbstractRoute, Serializable {
    * Route#UNSET_NEXT_HOP_INTERFACE} must be returned.
    */
   @JsonIgnore
-  @Nonnull
   public abstract String getNextHopInterface();
 
   /**
@@ -121,7 +120,6 @@ public abstract class AbstractRoute implements HasAbstractRoute, Serializable {
    * returned.
    */
   @JsonIgnore
-  @Nonnull
   public abstract Ip getNextHopIp();
 
   /**

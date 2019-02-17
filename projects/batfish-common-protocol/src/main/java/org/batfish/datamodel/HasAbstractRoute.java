@@ -1,7 +1,5 @@
 package org.batfish.datamodel;
 
-import javax.annotation.Nonnull;
-
 /**
  * Interface for classes that contain an instance of an {@link AbstractRoute}.
  *
@@ -10,10 +8,8 @@ import javax.annotation.Nonnull;
  * <b>NO</b> impact on route preference.
  */
 public interface HasAbstractRoute extends Comparable<HasAbstractRoute> {
-  @Nonnull
   AbstractRoute getAbstractRoute();
 
-  @Nonnull
   Prefix getNetwork();
 
   @Override
