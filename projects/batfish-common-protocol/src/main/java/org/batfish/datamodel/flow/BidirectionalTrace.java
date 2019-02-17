@@ -1,5 +1,7 @@
 package org.batfish.datamodel.flow;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.ImmutableSet;
 import java.util.Objects;
 import java.util.Set;
@@ -72,6 +74,12 @@ public final class BidirectionalTrace {
       @Nonnull Set<FirewallSessionTraceInfo> newSessions,
       @Nullable Flow reverseFlow,
       @Nullable Trace reverseTrace) {
+    checkArgument(
+        forwardTrace.getDisposition().isSuccessful() == (reverseFlow != null),
+        "reverseFlow should be present if and only if Trace is successful");
+    checkArgument(
+        (reverseFlow == null) == (reverseTrace == null),
+        "reverseFlow should be present if and only if reverseTrace is present");
     _forwardFlow = forwardFlow;
     _forwardTrace = forwardTrace;
     _newSessions = ImmutableSet.copyOf(newSessions);

@@ -191,6 +191,7 @@ public final class ParboiledAutoComplete {
       case VRF_NAME:
         return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
       case WHITESPACE:
+        // nothing useful to suggest for these completion types
         return ImmutableList.of();
       case ZONE_NAME:
         return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
