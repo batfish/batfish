@@ -22,13 +22,12 @@ public class ParboiledNodeSpecifierTest {
 
   @Before
   public void init() {
-    Configuration _node1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
-    Configuration _node2 = new Configuration("node2", ConfigurationFormat.CISCO_IOS);
-    _node1.setDeviceType(DeviceType.HOST);
-    _node2.setDeviceType(DeviceType.ROUTER);
+    Configuration node1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
+    Configuration node2 = new Configuration("node2", ConfigurationFormat.CISCO_IOS);
+    node1.setDeviceType(DeviceType.HOST);
+    node2.setDeviceType(DeviceType.ROUTER);
     _ctxtB =
-        MockSpecifierContext.builder()
-            .setConfigs(ImmutableMap.of("node1", _node1, "node2", _node2));
+        MockSpecifierContext.builder().setConfigs(ImmutableMap.of("node1", node1, "node2", node2));
     _ctxt = _ctxtB.build();
   }
 

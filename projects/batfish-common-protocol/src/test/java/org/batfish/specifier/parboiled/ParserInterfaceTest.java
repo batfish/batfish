@@ -231,8 +231,8 @@ public class ParserInterfaceTest {
         new DifferenceInterfaceAstNode(
             new NameInterfaceAstNode("eth0"), new NameInterfaceAstNode("loopback0"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("eth0-loopback0")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" eth0 - loopback0 ")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run("eth0\\loopback0")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run(" eth0 \\ loopback0 ")), equalTo(expectedNode));
   }
 
   @Test
@@ -259,7 +259,7 @@ public class ParserInterfaceTest {
   @Test
   public void testParseInterfaceSetOpPrecedence() {
     assertThat(
-        ParserUtils.getAst(getRunner().run("eth0-loopback0&eth1")),
+        ParserUtils.getAst(getRunner().run("eth0\\loopback0&eth1")),
         equalTo(
             new DifferenceInterfaceAstNode(
                 new NameInterfaceAstNode("eth0"),
