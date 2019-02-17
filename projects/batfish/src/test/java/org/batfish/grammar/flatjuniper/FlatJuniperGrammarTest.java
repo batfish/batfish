@@ -4399,6 +4399,32 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         ((If) instanceImportStatements.get(1)).getGuard(),
         equalTo(new FirstMatchChain(ImmutableList.of(new CallExpr("PS1"), new CallExpr("PS2")))));
+
+    Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+
+    /*
+     * instance-import policies accept routes from VRF1, which has 1.1.1.1/30, but rejects routes
+     * from VRF2, which has 2.2.2.2/30. Default VRF should have only 1.1.1.1/30.
+     */
+    ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
+        dp.getRibs().get(hostname).entrySet().stream()
+            .collect(
+                ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getTypedRoutes()));
+    Set<AnnotatedRoute<AbstractRoute>> defaultVrfRoutes = routes.get(DEFAULT_VRF_NAME);
+    Set<AnnotatedRoute<AbstractRoute>> vrf2Routes = routes.get("VRF2");
+
+    assertThat(defaultVrfRoutes, hasSize(1));
+    AnnotatedRoute<AbstractRoute> leakedRoute = defaultVrfRoutes.iterator().next();
+    assertThat(leakedRoute.getNetwork(), equalTo(Prefix.parse("1.1.1.1/30")));
+    assertThat(leakedRoute.getSourceVrf(), equalTo("VRF1"));
+
+    // Ensure that VRF2 does in fact have 2.2.2.2/30, as expected
+    assertThat(vrf2Routes, hasSize(1));
+    AnnotatedRoute<AbstractRoute> vrf2Route = vrf2Routes.iterator().next();
+    assertThat(vrf2Route.getNetwork(), equalTo(Prefix.parse("2.2.2.2/30")));
+    assertThat(vrf2Route.getSourceVrf(), equalTo("VRF2"));
   }
 
   @Test

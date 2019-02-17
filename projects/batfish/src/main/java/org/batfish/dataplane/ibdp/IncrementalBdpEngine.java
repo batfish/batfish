@@ -527,7 +527,7 @@ class IncrementalBdpEngine {
           .parallelStream()
           .forEach(
               n -> {
-                n.getVirtualRouters().values().forEach(VirtualRouter::queueInstanceImports);
+                n.getVirtualRouters().values().forEach(VirtualRouter::queueCrossVrfImports);
                 enqueueCrossVrf.incrementAndGet();
               });
     }
@@ -703,7 +703,7 @@ class IncrementalBdpEngine {
             .parallelStream()
             .forEach(
                 n -> {
-                  n.getVirtualRouters().values().forEach(VirtualRouter::initInstanceImports);
+                  n.getVirtualRouters().values().forEach(VirtualRouter::initCrossVrfImports);
                   queueInitialRouteLeaking.incrementAndGet();
                 });
       }

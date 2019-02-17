@@ -413,20 +413,20 @@ public class VirtualRouter implements Serializable {
    * Goes through VRFs that can leak routes into this routing instance, and imports all routes from
    * their main ribs to {@link #_crossVrfIncomingRoutes}.
    */
-  void initInstanceImports() {
-    if (_vrf.getInstanceImportPolicy() == null || _vrf.getInstanceImportVrfs() == null) {
+  void initCrossVrfImports() {
+    if (_vrf.getCrossVrfImportPolicy() == null || _vrf.getCrossVrfImportVrfs() == null) {
       return;
     }
-    for (String vrfToImport : _vrf.getInstanceImportVrfs()) {
+    for (String vrfToImport : _vrf.getCrossVrfImportVrfs()) {
       VirtualRouter exportingVR = _node.getVirtualRouters().get(vrfToImport);
       CrossVrfEdgeId otherVrfToOurRib = new CrossVrfEdgeId(vrfToImport, RibId.DEFAULT_RIB_NAME);
       enqueueCrossVrfRoutes(
           otherVrfToOurRib,
-          // TODO Will need to update once support is added for instance export policies
-          exportingVR._mainRib.getRoutes().stream()
+          // TODO Will need to update once support is added for cross-VRF export policies
+          exportingVR._mainRib.getTypedRoutes().stream()
               .map(RouteAdvertisement::new)
               .collect(ImmutableList.toImmutableList()),
-          _vrf.getInstanceImportPolicy());
+          _vrf.getCrossVrfImportPolicy());
     }
   }
 
@@ -2778,18 +2778,18 @@ public class VirtualRouter implements Serializable {
    * Goes through VRFs that can leak routes into this routing instance, and enqueues all their new
    * routes in {@link #_crossVrfIncomingRoutes}.
    */
-  void queueInstanceImports() {
-    if (_vrf.getInstanceImportPolicy() == null || _vrf.getInstanceImportVrfs() == null) {
+  void queueCrossVrfImports() {
+    if (_vrf.getCrossVrfImportPolicy() == null || _vrf.getCrossVrfImportVrfs() == null) {
       return;
     }
-    for (String vrfToImport : _vrf.getInstanceImportVrfs()) {
+    for (String vrfToImport : _vrf.getCrossVrfImportVrfs()) {
       VirtualRouter exportingVR = _node.getVirtualRouters().get(vrfToImport);
       CrossVrfEdgeId otherVrfToOurRib = new CrossVrfEdgeId(vrfToImport, RibId.DEFAULT_RIB_NAME);
       enqueueCrossVrfRoutes(
           otherVrfToOurRib,
-          // TODO Will need to update once support is added for instance export policies
+          // TODO Will need to update once support is added for cross-VRF export policies
           exportingVR._mainRibRouteDeltaBuilder.build().getActions(),
-          _vrf.getInstanceImportPolicy());
+          _vrf.getCrossVrfImportPolicy());
     }
   }
 
