@@ -325,8 +325,6 @@ public class VirtualRouter implements Serializable {
     importRib(_mainRib, _independentRib);
 
     // Now check whether any rib groups are applied
-    // TODO Ascertain that routes leaked from other VRFs via RIB groups retain that provenance info
-    // https://github.com/batfish/batfish/issues/3173
     RibGroup connectedRibGroup = _vrf.getAppliedRibGroups().get(RoutingProtocol.CONNECTED);
     importRib(_mainRib, _connectedRib);
     if (connectedRibGroup != null) {
@@ -2726,8 +2724,7 @@ public class VirtualRouter implements Serializable {
                     AnnotatedRoute<AbstractRoute> annotatedRoute = ra.getRoute();
                     AbstractRouteBuilder<?, ?> routeBuilder = annotatedRoute.getRoute().toBuilder();
                     if (policy.process(annotatedRoute, routeBuilder, null, _name, IN)) {
-                      // Preserve original route's source VRF (TODO: check behavior for RibGroups)
-                      // https://github.com/batfish/batfish/issues/3173
+                      // Preserve original route's source VRF
                       return ra.toBuilder()
                           .setRoute(
                               new AnnotatedRoute<>(
