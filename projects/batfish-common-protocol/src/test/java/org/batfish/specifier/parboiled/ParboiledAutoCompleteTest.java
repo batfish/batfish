@@ -8,92 +8,24 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
-import java.util.Map;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
-import org.batfish.specifier.parboiled.Completion.Type;
+import org.batfish.specifier.parboiled.Anchor.Type;
 import org.junit.Test;
-import org.parboiled.Parboiled;
-import org.parboiled.Rule;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
 
 public class ParboiledAutoCompleteTest {
 
-  @SuppressWarnings({
-    "checkstyle:methodname", // this class uses idiomatic names
-    "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
-  })
-  static class TestParser extends CommonParser {
-
-    public static final TestParser INSTANCE = Parboiled.createParser(TestParser.class);
-
-    public static final Map<String, Type> COMPLETION_TYPES = initCompletionTypes(TestParser.class);
-
-    /**
-     * Test grammar
-     *
-     * <pre>
-     * testExpr := testTerm [, testTerm]*
-     *
-     * testTerm := @specifier(specifierInput)
-     *               | (testTerm)
-     *               | ! testTerm
-     *               | testBase
-     *
-     * specifierInput := REFERENCE_OBJECT_NAME_LITERAL
-     *
-     * testBase := IP_ADDRESS
-     * </pre>
-     */
-
-    /* An Test expression is a comma-separated list of TestTerms */
-    public Rule TestExpression() {
-      return Sequence(TestTerm(), WhiteSpace(), ZeroOrMore(", ", TestTerm(), WhiteSpace()));
-    }
-
-    /* An Test term is one of these things */
-    public Rule TestTerm() {
-      return FirstOf(TestParens(), TestSpecifier(), TestNotOp(), TestBase());
-    }
-
-    public Rule TestParens() {
-      return Sequence("( ", TestTerm(), ") ");
-    }
-
-    public Rule TestSpecifier() {
-      return Sequence("@specifier ", "( ", TestSpecifierInput(), ") ");
-    }
-
-    public Rule TestNotOp() {
-      return Sequence("! ", TestNot("! "), TestTerm());
-    }
-
-    @Completion(Type.ADDRESS_GROUP_AND_BOOK)
-    public Rule TestSpecifierInput() {
-      return Sequence(
-          ReferenceObjectNameLiteral(),
-          WhiteSpace(),
-          ", ",
-          ReferenceObjectNameLiteral(),
-          WhiteSpace());
-    }
-
-    @Completion(Type.IP_ADDRESS)
-    public Rule TestBase() {
-      return IpAddressUnchecked();
-    }
-  }
-
-  static ParboiledAutoComplete getTestPAC(String query) {
+  private static ParboiledAutoComplete getTestPAC(String query) {
     return new ParboiledAutoComplete(
         TestParser.INSTANCE,
         TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()),
-        TestParser.COMPLETION_TYPES,
+        TestParser.ANCHORS,
         "network",
         "snapshot",
         query,
@@ -103,11 +35,12 @@ public class ParboiledAutoCompleteTest {
         new ReferenceLibrary(null));
   }
 
-  static ParboiledAutoComplete getTestPAC(String query, CompletionMetadata completionMetadata) {
+  private static ParboiledAutoComplete getTestPAC(
+      String query, CompletionMetadata completionMetadata) {
     return new ParboiledAutoComplete(
         TestParser.INSTANCE,
         TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()),
-        TestParser.COMPLETION_TYPES,
+        TestParser.ANCHORS,
         "network",
         "snapshot",
         query,
@@ -117,11 +50,11 @@ public class ParboiledAutoCompleteTest {
         new ReferenceLibrary(null));
   }
 
-  static ParboiledAutoComplete getTestPAC(String query, ReferenceLibrary referenceLibrary) {
+  private static ParboiledAutoComplete getTestPAC(String query, ReferenceLibrary referenceLibrary) {
     return new ParboiledAutoComplete(
         TestParser.INSTANCE,
         TestParser.INSTANCE.input(TestParser.INSTANCE.TestExpression()),
-        TestParser.COMPLETION_TYPES,
+        TestParser.ANCHORS,
         "network",
         "snapshot",
         query,
@@ -131,21 +64,47 @@ public class ParboiledAutoCompleteTest {
         referenceLibrary);
   }
 
-  /** Test that we produce auto complete snapshot-based dynamic values like IP addresses */
+  /**
+   * Test that we produce auto complete snapshot-based base (i.e., those that do not depend on other
+   * values) dynamic values like IP addresses
+   */
   @Test
-  public void testRunDynamicValues() {
-    String query = "1.1.1.";
+  public void testRunDynamicValueBase() {
+    String query = "1.1.1";
 
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder().setIps(ImmutableSet.of("1.1.1.1", "2.2.2.2")).build();
 
     // 1.1.1.1 matches, but 2.2.2.2 does not
     assertThat(
-        getTestPAC(query, completionMetadata).run(),
+        ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
         equalTo(
-            ImmutableList.of(
+            ImmutableSet.of(
                 new AutocompleteSuggestion(
-                    "1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 6))));
+                    ".1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 5),
+                new AutocompleteSuggestion(".", true, null, RANK_STRING_LITERAL, 5))));
+  }
+
+  /**
+   * Test that we produce auto complete snapshot-based complex dynamic values (i.e., those that
+   * depend on other dynamic values) like IP ranges
+   */
+  @Test
+  public void testRunDynamicValueComplex() {
+    String query = "1.1.1.1";
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder().setIps(ImmutableSet.of("1.1.1.1", "1.1.1.10")).build();
+
+    // this should auto complete to 1.1.1.10, '-' (range), and ',' (list)
+    assertThat(
+        ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion("", true, null, AutocompleteSuggestion.DEFAULT_RANK, 7),
+                new AutocompleteSuggestion("0", true, null, AutocompleteSuggestion.DEFAULT_RANK, 7),
+                new AutocompleteSuggestion("-", true, null, RANK_STRING_LITERAL, 7),
+                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, 7))));
   }
 
   /** Test that we produce auto complete snapshot-based dynamic values like IP addresses */
@@ -215,7 +174,7 @@ public class ParboiledAutoCompleteTest {
   /** Test that we produce auto completion suggestions even for valid inputs */
   @Test
   public void testRunValidInput() {
-    String query = "1.1.1.1 "; // space at the end means that ip addresses won't match
+    String query = "(1.1.1.1)"; //
 
     // first ensure that the query is valid input
     ParsingResult<?> result =
@@ -227,51 +186,20 @@ public class ParboiledAutoCompleteTest {
     assertThat(
         getTestPAC(query).run(),
         equalTo(
-            ImmutableList.of(new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, 8))));
+            ImmutableList.of(new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, 9))));
   }
 
   @Test
-  public void testAutoCompletePartialMatchIpRange() {
-    CompletionMetadata completionMetadata =
-        CompletionMetadata.builder().setIps(ImmutableSet.of("1.1.1.1", "2.2.2.2")).build();
-
+  public void testAutoCompletePotentialMatchStringLiteral() {
+    PotentialMatch pm = new PotentialMatch(Type.STRING_LITERAL, "pfx", "comp");
     assertThat(
-        getTestPAC("1.1.1.", completionMetadata)
-            .autoCompletePartialMatch(new PartialMatch(Type.IP_RANGE, "1.1.1.", null), 2),
-        equalTo(ImmutableList.of()));
-
-    assertThat(
-        ImmutableSet.copyOf(
-            getTestPAC("1.1.1.", completionMetadata)
-                .autoCompletePartialMatch(new PartialMatch(Type.IP_RANGE, "1.1.1.1 - ", null), 2)),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion(
-                    "1.1.1.1-1.1.1.1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 2),
-                new AutocompleteSuggestion(
-                    "1.1.1.1-2.2.2.2", true, null, AutocompleteSuggestion.DEFAULT_RANK, 2))));
-
-    assertThat(
-        ImmutableSet.copyOf(
-            getTestPAC("1.1.1.", completionMetadata)
-                .autoCompletePartialMatch(new PartialMatch(Type.IP_RANGE, "1.1.1.1 - 2", null), 2)),
-        equalTo(
-            ImmutableSet.of(
-                new AutocompleteSuggestion(
-                    "1.1.1.1-2.2.2.2", true, null, AutocompleteSuggestion.DEFAULT_RANK, 2))));
-  }
-
-  @Test
-  public void testAutoCompletePartialMatchStringLiteral() {
-    PartialMatch pm = new PartialMatch(Type.STRING_LITERAL, "pfx", "comp");
-    assertThat(
-        getTestPAC(null).autoCompletePartialMatch(pm, 2),
+        getTestPAC(null).autoCompletePotentialMatch(pm, 2),
         equalTo(ImmutableList.of(new AutocompleteSuggestion("comp", true, null, -1, 2))));
   }
 
   @Test
-  public void testAutoCompletePartialMatchSkipLabel() {
-    PartialMatch pm = new PartialMatch(Type.IP_WILDCARD, "pfx", "comp");
-    assertThat(getTestPAC(null).autoCompletePartialMatch(pm, 2), equalTo(ImmutableList.of()));
+  public void testAutoCompletePotentialMatchSkipLabel() {
+    PotentialMatch pm = new PotentialMatch(Type.IP_ADDRESS_MASK, "pfx", "comp");
+    assertThat(getTestPAC(null).autoCompletePotentialMatch(pm, 2), equalTo(ImmutableList.of()));
   }
 }
