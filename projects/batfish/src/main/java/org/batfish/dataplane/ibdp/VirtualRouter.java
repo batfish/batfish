@@ -409,6 +409,27 @@ public class VirtualRouter implements Serializable {
     initCrossVrfQueues();
   }
 
+  /**
+   * Goes through VRFs that can leak routes into this routing instance, and imports all routes from
+   * their main ribs to {@link #_crossVrfIncomingRoutes}.
+   */
+  void initInstanceImports() {
+    if (_vrf.getInstanceImportPolicy() == null || _vrf.getInstanceImportVrfs() == null) {
+      return;
+    }
+    for (String vrfToImport : _vrf.getInstanceImportVrfs()) {
+      VirtualRouter exportingVR = _node.getVirtualRouters().get(vrfToImport);
+      CrossVrfEdgeId otherVrfToOurRib = new CrossVrfEdgeId(vrfToImport, RibId.DEFAULT_RIB_NAME);
+      enqueueCrossVrfRoutes(
+          otherVrfToOurRib,
+          // TODO Will need to update once support is added for instance export policies
+          exportingVR._mainRib.getRoutes().stream()
+              .map(RouteAdvertisement::new)
+              .collect(ImmutableList.toImmutableList()),
+          _vrf.getInstanceImportPolicy());
+    }
+  }
+
   private void initOspfQueues(OspfTopology topology) {
     OspfProcess proc = _vrf.getOspfProcess();
 
@@ -2751,6 +2772,25 @@ public class VirtualRouter implements Serializable {
             }
           }
         });
+  }
+
+  /**
+   * Goes through VRFs that can leak routes into this routing instance, and enqueues all their new
+   * routes in {@link #_crossVrfIncomingRoutes}.
+   */
+  void queueInstanceImports() {
+    if (_vrf.getInstanceImportPolicy() == null || _vrf.getInstanceImportVrfs() == null) {
+      return;
+    }
+    for (String vrfToImport : _vrf.getInstanceImportVrfs()) {
+      VirtualRouter exportingVR = _node.getVirtualRouters().get(vrfToImport);
+      CrossVrfEdgeId otherVrfToOurRib = new CrossVrfEdgeId(vrfToImport, RibId.DEFAULT_RIB_NAME);
+      enqueueCrossVrfRoutes(
+          otherVrfToOurRib,
+          // TODO Will need to update once support is added for instance export policies
+          exportingVR._mainRibRouteDeltaBuilder.build().getActions(),
+          _vrf.getInstanceImportPolicy());
+    }
   }
 
   /** Queue OSPF external routes on this VR's incoming queues. */

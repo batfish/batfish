@@ -468,6 +468,7 @@ class IncrementalBdpEngine {
       computeIterationOfBgpRoutes(
           nodes, iterationLabel, allNodes, bgpTopology, networkConfigurations);
 
+      queueRoutesForCrossVrfLeaking(nodes, iterationLabel);
       leakAcrossVrfs(nodes, iterationLabel);
     }
   }
@@ -508,6 +509,26 @@ class IncrementalBdpEngine {
                       deltas, allNodes, bgpTopology, networkConfigurations);
                 }
                 propagateBgpCompleted.incrementAndGet();
+              });
+    }
+  }
+
+  private void queueRoutesForCrossVrfLeaking(Map<String, Node> nodes, String iterationLabel) {
+    try (ActiveSpan span =
+        GlobalTracer.get()
+            .buildSpan(iterationLabel + ": Queueing routes to leak across VRFs")
+            .startActive()) {
+      assert span != null; // avoid unused warning
+
+      AtomicInteger enqueueCrossVrf =
+          _newBatch.apply(iterationLabel + ": Queueing routes to leak across VRFs", nodes.size());
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(
+              n -> {
+                n.getVirtualRouters().values().forEach(VirtualRouter::queueInstanceImports);
+                enqueueCrossVrf.incrementAndGet();
               });
     }
   }
@@ -669,6 +690,21 @@ class IncrementalBdpEngine {
                         nodes, bgpTopology, eigrpTopology, isisTopology, ospfTopology);
                   }
                   setupCompleted.incrementAndGet();
+                });
+      }
+
+      try (ActiveSpan innerSpan =
+          GlobalTracer.get().buildSpan("Queue initial cross-VRF leaking").startActive()) {
+        assert innerSpan != null; // avoid unused warning
+        AtomicInteger queueInitialRouteLeaking =
+            _newBatch.apply("Queue initial cross-VRF leaking", nodes.size());
+        nodes
+            .values()
+            .parallelStream()
+            .forEach(
+                n -> {
+                  n.getVirtualRouters().values().forEach(VirtualRouter::initInstanceImports);
+                  queueInitialRouteLeaking.incrementAndGet();
                 });
       }
 
