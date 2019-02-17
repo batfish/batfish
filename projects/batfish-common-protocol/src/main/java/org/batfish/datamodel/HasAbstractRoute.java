@@ -13,6 +13,9 @@ public interface HasAbstractRoute extends Comparable<HasAbstractRoute> {
   @Nonnull
   AbstractRoute getAbstractRoute();
 
+  @Nonnull
+  Prefix getNetwork();
+
   @Override
   int compareTo(HasAbstractRoute o);
 }

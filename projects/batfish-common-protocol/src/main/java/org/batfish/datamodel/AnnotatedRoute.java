@@ -42,6 +42,12 @@ public final class AnnotatedRoute<R extends AbstractRoute>
     return _route;
   }
 
+  @Override
+  @Nonnull
+  public Prefix getNetwork() {
+    return _route.getNetwork();
+  }
+
   @Nonnull
   public R getRoute() {
     return _route;

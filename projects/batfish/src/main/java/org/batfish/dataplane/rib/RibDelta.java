@@ -180,8 +180,7 @@ public final class RibDelta<R extends HasAbstractRoute> {
       for (RouteAdvertisement<T> a : delta.getActions()) {
         LinkedHashMap<R, RouteAdvertisement<R>> l =
             _actions.computeIfAbsent(
-                a.getRoute().getAbstractRoute().getNetwork(),
-                p -> new LinkedHashMap<>(10, 1, true));
+                a.getRoute().getNetwork(), p -> new LinkedHashMap<>(10, 1, true));
         R routeR = converter.apply(a.getRoute());
         l.put(
             routeR,

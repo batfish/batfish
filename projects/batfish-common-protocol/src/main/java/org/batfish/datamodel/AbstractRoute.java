@@ -102,6 +102,7 @@ public abstract class AbstractRoute implements HasAbstractRoute, Serializable {
 
   /** IPV4 network of this route */
   @JsonProperty(PROP_NETWORK)
+  @Override
   @Nonnull
   public final Prefix getNetwork() {
     return _network;

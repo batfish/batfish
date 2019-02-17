@@ -74,10 +74,7 @@ public class RouteReflectionTest {
     SortedSet<T> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
     assertThat(routes, hasItem(hasPrefix(prefix)));
     HasAbstractRoute route =
-        routes.stream()
-            .filter(r -> r.getAbstractRoute().getNetwork().equals(prefix))
-            .findAny()
-            .get();
+        routes.stream().filter(r -> r.getNetwork().equals(prefix)).findAny().get();
     assertThat(route, hasProtocol(RoutingProtocol.IBGP));
   }
 

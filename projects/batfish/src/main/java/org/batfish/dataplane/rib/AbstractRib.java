@@ -131,12 +131,12 @@ public abstract class AbstractRib<R extends HasAbstractRoute> implements Generic
    */
   public final void addBackupRoute(R route) {
     if (_backupRoutes != null) {
-      _backupRoutes.computeIfAbsent(getNetwork(route), k -> new TreeSet<>()).add(route);
+      _backupRoutes.computeIfAbsent(route.getNetwork(), k -> new TreeSet<>()).add(route);
     }
   }
 
   public final boolean containsRoute(R route) {
-    return _tree.containsRoute(getNetwork(route), route);
+    return _tree.containsRoute(route.getNetwork(), route);
   }
 
   @Override
@@ -144,7 +144,7 @@ public abstract class AbstractRib<R extends HasAbstractRoute> implements Generic
     SortedSet<Prefix> prefixes = new TreeSet<>();
     Set<R> routes = getRoutes();
     for (R route : routes) {
-      prefixes.add(getNetwork(route));
+      prefixes.add(route.getNetwork());
     }
     return prefixes;
   }
@@ -160,7 +160,7 @@ public abstract class AbstractRib<R extends HasAbstractRoute> implements Generic
   public final Set<R> getRoutes(Prefix p) {
     // Collect routes that match the prefix
     return getRoutes().stream()
-        .filter(r -> getNetwork(r).equals(p))
+        .filter(r -> r.getNetwork().equals(p))
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -171,7 +171,7 @@ public abstract class AbstractRib<R extends HasAbstractRoute> implements Generic
    */
   public final void removeBackupRoute(R route) {
     if (_backupRoutes != null) {
-      SortedSet<R> routes = _backupRoutes.get(getNetwork(route));
+      SortedSet<R> routes = _backupRoutes.get(route.getNetwork());
       if (routes != null) {
         routes.remove(route);
       }
@@ -209,7 +209,7 @@ public abstract class AbstractRib<R extends HasAbstractRoute> implements Generic
    */
   @Nonnull
   public RibDelta<R> mergeRouteGetDelta(R route) {
-    RibDelta<R> delta = _tree.mergeRoute(getNetwork(route), route);
+    RibDelta<R> delta = _tree.mergeRoute(route.getNetwork(), route);
     if (!delta.isEmpty()) {
       // A change to routes has been made
       _allRoutes = null;
@@ -241,7 +241,7 @@ public abstract class AbstractRib<R extends HasAbstractRoute> implements Generic
    */
   @Nonnull
   public RibDelta<R> removeRouteGetDelta(R route, Reason reason) {
-    RibDelta<R> delta = _tree.removeRouteGetDelta(getNetwork(route), route, reason);
+    RibDelta<R> delta = _tree.removeRouteGetDelta(route.getNetwork(), route, reason);
     if (!delta.isEmpty()) {
       // A change to routes has been made
       _allRoutes = null;
@@ -309,10 +309,5 @@ public abstract class AbstractRib<R extends HasAbstractRoute> implements Generic
   @Override
   public final IpSpace getRoutableIps() {
     return _tree.getRoutableIps(r -> !r.getAbstractRoute().getNonForwarding());
-  }
-
-  @Nonnull
-  private Prefix getNetwork(R route) {
-    return route.getAbstractRoute().getNetwork();
   }
 }

@@ -60,7 +60,7 @@ final class HasAbstractRouteMatchersImpl {
 
     @Override
     protected Prefix featureValueOf(HasAbstractRoute actual) {
-      return actual.getAbstractRoute().getNetwork();
+      return actual.getNetwork();
     }
   }
 

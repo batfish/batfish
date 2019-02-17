@@ -80,7 +80,7 @@ public class IsisTest {
     SortedSet<AnnotatedRoute<AbstractRoute>> routes = routesByVrf.get(DEFAULT_VRF_NAME);
     assertThat(routes, hasItem(hasPrefix(prefix)));
     AnnotatedRoute<AbstractRoute> route =
-        routes.stream().filter(r -> r.getRoute().getNetwork().equals(prefix)).findAny().get();
+        routes.stream().filter(r -> r.getNetwork().equals(prefix)).findAny().get();
     assertThat(route, hasMetric(expectedCost));
     assertThat(route, hasProtocol(ISIS_L1));
     assertThat(route, isIsisRouteThat(hasDown()));

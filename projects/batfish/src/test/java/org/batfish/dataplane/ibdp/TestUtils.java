@@ -110,9 +110,7 @@ public class TestUtils {
     assertThat(routesByVrf, hasKey(Configuration.DEFAULT_VRF_NAME));
     SortedSet<T> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
     assertThat(routes, hasItem(hasPrefix(prefix)));
-    return routes.stream()
-        .filter(r -> r.getAbstractRoute().getNetwork().equals(prefix))
-        .collect(Collectors.toList());
+    return routes.stream().filter(r -> r.getNetwork().equals(prefix)).collect(Collectors.toList());
   }
 
   public static Node makeIosRouter(String hostname) {

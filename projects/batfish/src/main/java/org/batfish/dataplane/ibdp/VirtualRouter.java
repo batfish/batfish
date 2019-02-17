@@ -1040,7 +1040,7 @@ public class VirtualRouter implements Serializable {
             .getOspfMetricType()
             .toRoutingProtocol()
             .getDefaultAdministrativeCost(_c.getConfigurationFormat()));
-    outputRouteBuilder.setNetwork(potentialExportRoute.getRoute().getNetwork());
+    outputRouteBuilder.setNetwork(potentialExportRoute.getNetwork());
     Long maxMetricExternalNetworks = proc.getMaxMetricExternalNetworks();
     long costToAdvertiser;
     if (maxMetricExternalNetworks != null) {
@@ -2492,7 +2492,7 @@ public class VirtualRouter implements Serializable {
     }
 
     // Note prefixes we tried to originate
-    _mainRib.getRoutes().forEach(r -> _prefixTracer.originated(r.getRoute().getNetwork()));
+    _mainRib.getRoutes().forEach(r -> _prefixTracer.originated(r.getNetwork()));
 
     /*
      * Export route advertisements by looking at main RIB
@@ -2677,7 +2677,7 @@ public class VirtualRouter implements Serializable {
     if (!shouldExport) {
       // This route could not be exported due to export policy
       _prefixTracer.filtered(
-          exportCandidate.getRoute().getNetwork(),
+          exportCandidate.getNetwork(),
           requireNonNull(remoteVr).getHostname(),
           remoteConfig.getLocalIp(),
           remoteConfigId.getVrfName(),
