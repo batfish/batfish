@@ -1,4 +1,4 @@
-set system host-name juniper-instance-import
+set system host-name instance-import
 #
 set routing-options instance-import PS1
 set routing-options instance-import PS2

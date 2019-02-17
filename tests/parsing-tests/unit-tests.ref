@@ -610,9 +610,6 @@
         "juniper_forwarding_options" : [
           "configs/juniper_forwarding_options"
         ],
-        "juniper_instance_import" : [
-          "configs/juniper_instance_import"
-        ],
         "juniper_interfaces" : [
           "configs/juniper_interfaces"
         ],
@@ -1042,7 +1039,6 @@
         "configs/juniper_extended_community" : "PASSED",
         "configs/juniper_firewall" : "PASSED",
         "configs/juniper_forwarding_options" : "PASSED",
-        "configs/juniper_instance_import" : "PASSED",
         "configs/juniper_interfaces" : "PASSED",
         "configs/juniper_isis" : "PASSED",
         "configs/juniper_l2_learning" : "PASSED",
@@ -50908,54 +50904,6 @@
             "  EOF:<EOF>)"
           ]
         },
-        "juniper_instance_import" : {
-          "sentences" : [
-            "(flat_juniper_configuration",
-            "  (set_line",
-            "    SET:'set'",
-            "    (set_line_tail",
-            "      (statement",
-            "        (s_common",
-            "          (s_system",
-            "            SYSTEM:'system'",
-            "            (sy_host_name",
-            "              HOST_NAME:'host-name'",
-            "              (variable",
-            "                text = VARIABLE:'juniper_instance_import'))))))",
-            "    NEWLINE:'\\n')",
-            "  (set_line",
-            "    SET:'set'",
-            "    (set_line_tail",
-            "      (statement",
-            "        (s_common",
-            "          (s_routing_options",
-            "            ROUTING_OPTIONS:'routing-options'",
-            "            (ro_instance_import",
-            "              INSTANCE_IMPORT:'instance-import'",
-            "              name = (variable",
-            "                text = VARIABLE:'POLICY'))))))",
-            "    NEWLINE:'\\n')",
-            "  (set_line",
-            "    SET:'set'",
-            "    (set_line_tail",
-            "      (statement",
-            "        (s_common",
-            "          (s_policy_options",
-            "            POLICY_OPTIONS:'policy-options'",
-            "            (po_policy_statement",
-            "              POLICY_STATEMENT:'policy-statement'",
-            "              name = (variable",
-            "                text = VARIABLE:'POLICY')",
-            "              (pops_common",
-            "                (pops_then",
-            "                  THEN:'then'",
-            "                  (popst_common",
-            "                    (popst_accept",
-            "                      ACCEPT:'accept')))))))))",
-            "    NEWLINE:'\\n\\n')",
-            "  EOF:<EOF>)"
-          ]
-        },
         "juniper_interfaces" : {
           "sentences" : [
             "(flat_juniper_configuration",
@@ -54539,6 +54487,36 @@
             "                (rog_common",
             "                  (rog_discard",
             "                    DISCARD:'discard'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'",
+            "            (ro_instance_import",
+            "              INSTANCE_IMPORT:'instance-import'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY'))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY')",
+            "              (pops_common",
+            "                (pops_then",
+            "                  THEN:'then'",
+            "                  (popst_common",
+            "                    (popst_accept",
+            "                      ACCEPT:'accept')))))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
@@ -67083,7 +67061,6 @@
         "juniper_extended_community" : "PASSED",
         "juniper_firewall" : "WARNINGS",
         "juniper_forwarding_options" : "PASSED",
-        "juniper_instance_import" : "PASSED",
         "juniper_interfaces" : "PASSED",
         "juniper_isis" : "PASSED",
         "juniper_l2_learning" : "PASSED",
@@ -71150,16 +71127,6 @@
             }
           }
         },
-        "configs/juniper_instance_import" : {
-          "policy-statement" : {
-            "POLICY" : {
-              "definitionLines" : [
-                6
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
         "configs/juniper_interfaces" : {
           "interface" : {
             "ae0" : {
@@ -71622,7 +71589,16 @@
             }
           }
         },
-        "configs/juniper_routing_options" : { },
+        "configs/juniper_routing_options" : {
+          "policy-statement" : {
+            "POLICY" : {
+              "definitionLines" : [
+                20
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/juniper_routing_policy" : {
           "interface" : {
             "ge-0/0/0" : {
@@ -75219,15 +75195,6 @@
             }
           }
         },
-        "configs/juniper_instance_import" : {
-          "policy-statement" : {
-            "POLICY" : {
-              "routing-options instance-import" : [
-                4
-              ]
-            }
-          }
-        },
         "configs/juniper_interfaces" : {
           "interface" : {
             "ae0" : {
@@ -75558,6 +75525,11 @@
             "AGGREGATE_ROUTE_POLICY" : {
               "aggregate route policy" : [
                 9
+              ]
+            },
+            "POLICY" : {
+              "routing-options instance-import" : [
+                17
               ]
             }
           }
@@ -78663,7 +78635,6 @@
         "configs/juniper_extended_community" : "PASSED",
         "configs/juniper_firewall" : "PASSED",
         "configs/juniper_forwarding_options" : "PASSED",
-        "configs/juniper_instance_import" : "PASSED",
         "configs/juniper_interfaces" : "PASSED",
         "configs/juniper_isis" : "PASSED",
         "configs/juniper_l2_learning" : "PASSED",

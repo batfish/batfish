@@ -4388,7 +4388,7 @@ public final class FlatJuniperGrammarTest {
 
   @Test
   public void testInstanceImport() throws IOException {
-    String hostname = "juniper-instance-import";
+    String hostname = "instance-import";
     Configuration c = parseConfig(hostname);
 
     /*
