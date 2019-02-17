@@ -70,8 +70,8 @@ public class Vrf extends ComparableStructure<String> {
   private static final String PROP_EIGRP_PROCESSES = "eigrpProcesses";
   private static final String PROP_OSPF_PROCESS = "ospfProcess";
   private static final String PROP_RIP_PROCESS = "ripProcess";
-  private static final String PROP_VNI_SETTINGS = "vniSettings";
   private static final String PROP_STATIC_ROUTES = "staticRoutes";
+  private static final String PROP_VNI_SETTINGS = "vniSettings";
 
   private static final long serialVersionUID = 1L;
 
