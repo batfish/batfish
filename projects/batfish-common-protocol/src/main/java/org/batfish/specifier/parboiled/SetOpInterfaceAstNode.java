@@ -10,7 +10,7 @@ abstract class SetOpInterfaceAstNode implements InterfaceAstNode {
     switch (c) {
       case '+':
         return new UnionInterfaceAstNode(leftSpec, rightSpec);
-      case '-':
+      case '\\':
         return new DifferenceInterfaceAstNode(leftSpec, rightSpec);
       default:
         throw new IllegalStateException("Unknown set operation for interface spec " + c);

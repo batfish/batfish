@@ -25,10 +25,14 @@ import java.lang.annotation.Target;
     INTERFACE_NAME,
     INTERFACE_NAME_REGEX,
     INTERFACE_TYPE,
+    NODE_NAME,
+    NODE_NAME_REGEX,
+    NODE_ROLE_NAME_AND_DIMENSION,
+    NODE_TYPE,
     STRING_LITERAL,
-    VRF,
+    VRF_NAME,
     WHITESPACE,
-    ZONE
+    ZONE_NAME
   }
 
   Type value();

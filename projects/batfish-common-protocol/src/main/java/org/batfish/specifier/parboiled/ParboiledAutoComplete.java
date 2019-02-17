@@ -151,20 +151,34 @@ public final class ParboiledAutoComplete {
         return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
       case INTERFACE_NAME:
         return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
-      case INTERFACE_NAME_REGEX: // can't help with regexes
+      case INTERFACE_NAME_REGEX:
+        // can't help with regexes
         return ImmutableList.of();
       case INTERFACE_TYPE:
-        // This one depends on string literal completion that should be kicking in
+        // Relies on string literal completion
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case IP_ADDRESS:
         return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
-      case IP_ADDRESS_MASK: // can't help with masks
+      case IP_ADDRESS_MASK:
+        // can't help with masks
         return ImmutableList.of();
       case IP_PREFIX:
         return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
       case IP_RANGE:
+        // Relies on IP completion
+        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case IP_WILDCARD:
-        // These depend on other completion types that should be kicking in
+        // Relies on IP and mask completion
+        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
+      case NODE_NAME:
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
+      case NODE_NAME_REGEX:
+        // can't help with regexes
+        return ImmutableList.of();
+      case NODE_ROLE_NAME_AND_DIMENSION:
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
+      case NODE_TYPE:
+        // Relies on string literal completion
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case STRING_LITERAL:
         /*
@@ -174,8 +188,12 @@ public final class ParboiledAutoComplete {
         return ImmutableList.of(
             new AutocompleteSuggestion(
                 pm.getMatchCompletion(), true, null, RANK_STRING_LITERAL, startIndex));
+      case VRF_NAME:
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
       case WHITESPACE:
         return ImmutableList.of();
+      case ZONE_NAME:
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
       default:
         throw new IllegalArgumentException("Unhandled completion type " + pm.getAnchorType());
     }
@@ -217,6 +235,14 @@ public final class ParboiledAutoComplete {
         return Variable.Type.IP;
       case IP_PREFIX:
         return Variable.Type.PREFIX;
+      case NODE_NAME:
+        return Variable.Type.NODE_NAME;
+      case NODE_ROLE_NAME_AND_DIMENSION:
+        return Variable.Type.NODE_ROLE_AND_DIMENSION;
+      case VRF_NAME:
+        return Variable.Type.VRF;
+      case ZONE_NAME:
+        return Variable.Type.ZONE;
       default:
         throw new IllegalArgumentException("No valid Variable type for Anchor type" + anchorType);
     }

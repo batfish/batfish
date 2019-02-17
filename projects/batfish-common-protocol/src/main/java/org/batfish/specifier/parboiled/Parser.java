@@ -10,10 +10,15 @@ import static org.batfish.specifier.parboiled.Anchor.Type.IP_ADDRESS_MASK;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_PREFIX;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_RANGE;
 import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
-import static org.batfish.specifier.parboiled.Anchor.Type.VRF;
-import static org.batfish.specifier.parboiled.Anchor.Type.ZONE;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_ROLE_NAME_AND_DIMENSION;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_TYPE;
+import static org.batfish.specifier.parboiled.Anchor.Type.VRF_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.ZONE_NAME;
 
 import java.util.Map;
+import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.InterfaceType;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
@@ -39,35 +44,38 @@ public class Parser extends CommonParser {
   static final Map<String, Anchor.Type> ANCHORS = initAnchors(Parser.class);
 
   /**
-   * An array of Rules for matching interface type values. It should have been private and static
-   * but parboiled does not like those things in this context.
+   * An array of Rules for matching enum values. They should have been private and static but
+   * parboiled does not like those things in this context.
    */
   final Rule[] _interfaceTypeRules = initEnumRules(InterfaceType.values());
+
+  final Rule[] _deviceTypeRules = initEnumRules(DeviceType.values());
 
   /**
    * Interface grammar
    *
    * <pre>
-   *   interfaceExpr := interfaceTerm [{@literal &}/+/- interfaceTerm]*
+   *   interfaceExpr := interfaceTerm [{@literal &} | + | \ interfaceTerm]*
    *
-   *   interfaceTerm := @connectedTo(ipSpaceExpr)  // also, non-@ versions supported for back compat
+   *   interfaceTerm := @connectedTo(ipSpaceExpr)  // non-@ versions also supported for back compat
    *                        | @interfacegroup(a, b)
    *                        | @type(interfaceType)
    *                        | @vrf(vrfName)
    *                        | @zone(zoneName)
-   *                        | interfaceName | interfaceRegex
+   *                        | interfaceName
+   *                        | interfaceNameRegex
    *                        | ( interfaceTerm )
    * </pre>
    */
 
-  /* An Interface expression a list of of Interface separated by + or - */
+  /* An Interface expression is union and difference of one or more intersections */
   public Rule InterfaceExpression() {
     Var<Character> op = new Var<>();
     return Sequence(
         InterfaceIntersection(),
         WhiteSpace(),
         ZeroOrMore(
-            FirstOf("+ ", "- "),
+            FirstOf("+ ", "\\ "),
             op.set(matchedChar()),
             InterfaceIntersection(),
             push(SetOpInterfaceAstNode.create(op.get(), pop(1), pop())),
@@ -110,7 +118,7 @@ public class Parser extends CommonParser {
 
   public Rule InterfaceInterfaceGroup() {
     return Sequence(
-        FirstOf(IgnoreCase("@interfacegroup"), IgnoreCase("ref.interfacegroup")),
+        FirstOf(IgnoreCase("@interfaceGroup"), IgnoreCase("ref.interfaceGroup")),
         WhiteSpace(),
         "( ",
         InterfaceGroupAndBook(),
@@ -158,7 +166,7 @@ public class Parser extends CommonParser {
         push(new VrfInterfaceAstNode(pop())));
   }
 
-  @Anchor(VRF)
+  @Anchor(VRF_NAME)
   public Rule VrfName() {
     return Sequence(OneOrMore(NameCharsAndDash()), push(new StringAstNode(match())));
   }
@@ -174,7 +182,7 @@ public class Parser extends CommonParser {
         push(new ZoneInterfaceAstNode(pop())));
   }
 
-  @Anchor(ZONE)
+  @Anchor(ZONE_NAME)
   public Rule ZoneName() {
     return Sequence(OneOrMore(NameCharsAndDash()), push(new StringAstNode(match())));
   }
@@ -182,7 +190,8 @@ public class Parser extends CommonParser {
   @Anchor(INTERFACE_NAME)
   public Rule InterfaceName() {
     return Sequence(
-        OneOrMore(FirstOf(NameChars(), Colon(), Slash())), push(new NameInterfaceAstNode(match())));
+        OneOrMore(FirstOf(NameChars(), Colon(), Dash(), Slash())),
+        push(new NameInterfaceAstNode(match())));
   }
 
   @Anchor(INTERFACE_NAME_REGEX)
@@ -248,8 +257,8 @@ public class Parser extends CommonParser {
   }
 
   /**
-   * Matched IP addresses. Throws an exception if something matches syntactically but is invalid
-   * (e.g., 1.1.1.256)
+   * Matches IP addresses. Throws an exception if something matches syntactically but is invalid
+   * semantically (e.g., 1.1.1.256)
    */
   @Anchor(IP_ADDRESS)
   public Rule IpAddress() {
@@ -257,7 +266,7 @@ public class Parser extends CommonParser {
   }
 
   /**
-   * Matched IP address mask (e.g., 255.255.255.0). It is syntactically similar to IP addresses but
+   * Matches IP address mask (e.g., 255.255.255.0). It is syntactically similar to IP addresses but
    * we have a separate rule that helps with error messages and auto completion.
    */
   @Anchor(IP_ADDRESS_MASK)
@@ -266,8 +275,8 @@ public class Parser extends CommonParser {
   }
 
   /**
-   * Matched IP prefixes. Throws an exception if something matches syntactically but is invalid
-   * (e.g., 1.1.1.2/33)
+   * Matches IP prefixes. Throws an exception if something matches syntactically but is invalid
+   * semantically (e.g., 1.1.1.2/33)
    */
   @Anchor(IP_PREFIX)
   public Rule IpPrefix() {
@@ -290,5 +299,99 @@ public class Parser extends CommonParser {
   @Anchor(IP_WILDCARD)
   public Rule IpWildcard() {
     return Sequence(IpAddress(), ':', IpAddressMask(), push(new IpWildcardAstNode(pop(1), pop())));
+  }
+
+  /**
+   * Node grammar
+   *
+   * <pre>
+   *   nodeExpr := nodeTerm [{@literal &} | + | \ nodeTerm]*
+   *
+   *   nodeTerm := @role(a, b) // ref.noderole is also supported for back compat
+   *               | @type(a)
+   *               | nodeName
+   *               | nodeNameRegex
+   *               | ( nodeTerm )
+   * </pre>
+   */
+
+  /* A Node expression is one or more intersection terms separated by + or - */
+  public Rule NodeExpression() {
+    Var<Character> op = new Var<>();
+    return Sequence(
+        NodeIntersection(),
+        WhiteSpace(),
+        ZeroOrMore(
+            FirstOf("+ ", "\\ "),
+            op.set(matchedChar()),
+            NodeIntersection(),
+            push(SetOpNodeAstNode.create(op.get(), pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule NodeIntersection() {
+    return Sequence(
+        NodeTerm(),
+        WhiteSpace(),
+        ZeroOrMore(
+            "& ", NodeTerm(), push(new IntersectionNodeAstNode(pop(1), pop())), WhiteSpace()));
+  }
+
+  public Rule NodeTerm() {
+    return FirstOf(NodeRole(), NodeType(), NodeNameRegex(), NodeName(), NodeParens());
+  }
+
+  public Rule NodeRole() {
+    return Sequence(
+        FirstOf(IgnoreCase("@role"), IgnoreCase("ref.nodeRole")),
+        WhiteSpace(),
+        "( ",
+        NodeRoleNameAndDimension(),
+        ") ",
+        push(new RoleNodeAstNode(pop(1), pop())));
+  }
+
+  /** Matches RoleName, DimensionName pair. Puts two values on stack */
+  @Anchor(NODE_ROLE_NAME_AND_DIMENSION)
+  public Rule NodeRoleNameAndDimension() {
+    return Sequence(
+        ReferenceObjectNameLiteral(),
+        push(new StringAstNode(match())),
+        WhiteSpace(),
+        ", ",
+        ReferenceObjectNameLiteral(),
+        push(new StringAstNode(match())),
+        WhiteSpace());
+  }
+
+  public Rule NodeType() {
+    return Sequence(
+        IgnoreCase("@type"),
+        WhiteSpace(),
+        "( ",
+        NodeTypeExpr(),
+        WhiteSpace(),
+        ") ",
+        push(new TypeNodeAstNode(pop())));
+  }
+
+  @Anchor(NODE_TYPE)
+  public Rule NodeTypeExpr() {
+    return Sequence(FirstOf(_deviceTypeRules), push(new StringAstNode(match())));
+  }
+
+  @Anchor(NODE_NAME)
+  public Rule NodeName() {
+    return Sequence(OneOrMore(FirstOf(NameChars(), Dash())), push(new NameNodeAstNode(match())));
+  }
+
+  @Anchor(NODE_NAME_REGEX)
+  public Rule NodeNameRegex() {
+    return Sequence('/', Regex(), push(new NameRegexNodeAstNode(match())), '/');
+  }
+
+  public Rule NodeParens() {
+    // Leave the stack as is -- no need to remember that this was a parenthetical term
+    return Sequence("( ", NodeTerm(), WhiteSpace(), ") ");
   }
 }

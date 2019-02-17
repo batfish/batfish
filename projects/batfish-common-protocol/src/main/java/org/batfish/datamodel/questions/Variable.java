@@ -57,6 +57,8 @@ public class Variable {
     LONG("long", false),
     NAMED_STRUCTURE_SPEC("namedStructureSpec", true),
     NODE_PROPERTY_SPEC("nodePropertySpec", true),
+    NODE_NAME("nodeName", true),
+    NODE_ROLE_AND_DIMENSION("nodeRoleAndDimension", true),
     NODE_ROLE_DIMENSION("nodeRoleDimension", true),
     NODE_SPEC("nodeSpec", true),
     OSPF_PROPERTY_SPEC("ospfPropertySpec", true),

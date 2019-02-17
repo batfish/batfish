@@ -3,21 +3,21 @@ package org.batfish.specifier.parboiled;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
-class DifferenceInterfaceAstNode extends SetOpInterfaceAstNode {
+class DifferenceNodeAstNode extends SetOpNodeAstNode {
 
-  DifferenceInterfaceAstNode(InterfaceAstNode left, InterfaceAstNode right) {
+  DifferenceNodeAstNode(NodeAstNode left, NodeAstNode right) {
     _left = left;
     _right = right;
   }
 
   @Override
   public <T> T accept(AstNodeVisitor<T> visitor) {
-    return visitor.visitDifferenceInterfaceAstNode(this);
+    return visitor.visitDifferenceNodeAstNode(this);
   }
 
   @Override
-  public <T> T accept(InterfaceAstNodeVisitor<T> visitor) {
-    return visitor.visitDifferenceInterfaceAstNode(this);
+  public <T> T accept(NodeAstNodeVisitor<T> visitor) {
+    return visitor.visitDifferenceNodeAstNode(this);
   }
 
   @Override
@@ -25,10 +25,10 @@ class DifferenceInterfaceAstNode extends SetOpInterfaceAstNode {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof DifferenceInterfaceAstNode)) {
+    if (!(o instanceof DifferenceNodeAstNode)) {
       return false;
     }
-    DifferenceInterfaceAstNode that = (DifferenceInterfaceAstNode) o;
+    DifferenceNodeAstNode that = (DifferenceNodeAstNode) o;
     return Objects.equals(_left, that._left) && Objects.equals(_right, that._right);
   }
 

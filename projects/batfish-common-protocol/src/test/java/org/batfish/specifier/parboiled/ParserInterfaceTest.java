@@ -1,9 +1,14 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.specifier.parboiled.ParboiledAutoComplete.RANK_STRING_LITERAL;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableSet;
+import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -12,7 +17,7 @@ import org.parboiled.parserunners.AbstractParseRunner;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
 
-/** Tests of {@link Parser} producing {@link IpSpaceAstNode}. */
+/** Tests of {@link Parser} producing {@link InterfaceAstNode}. */
 public class ParserInterfaceTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
@@ -21,7 +26,7 @@ public class ParserInterfaceTest {
     return new ReportingParseRunner<>(Parser.INSTANCE.input(Parser.INSTANCE.InterfaceExpression()));
   }
 
-  /** This tests if we have proper completion annotations on the rules */
+  /** This testParses if we have proper completion annotations on the rules */
   @Test
   public void testAnchorAnnotations() {
     ParsingResult<?> result = getRunner().run("");
@@ -31,10 +36,95 @@ public class ParserInterfaceTest {
         (InvalidInputError) result.parseErrors.get(0), Parser.ANCHORS, false);
   }
 
-  // TODO: Write complex completion tests that exercises a bunch of the grammar
+  @Test
+  public void testCompletionEmpty() {
+    String query = ""; // this could be a complete term or a partial name
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder()
+            .setInterfaces(ImmutableSet.of(new NodeInterfacePair("node1", "iface1")))
+            .build();
+
+    ParboiledAutoComplete pac =
+        new ParboiledAutoComplete(
+            Parser.INSTANCE,
+            Parser.INSTANCE.input(Parser.INSTANCE.InterfaceExpression()),
+            Parser.ANCHORS,
+            "network",
+            "snapshot",
+            query,
+            Integer.MAX_VALUE,
+            completionMetadata,
+            null,
+            null);
+
+    assertThat(
+        ImmutableSet.copyOf(pac.run()),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion(
+                    "iface1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+                new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion(
+                    "@connectedTo", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion(
+                    "connectedTo", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion(
+                    "@interfaceGroup", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion(
+                    "ref.interfaceGroup", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion(
+                    "@type", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("type", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("@vrf", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("vrf", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion(
+                    "@zone", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion(
+                    "zone", true, null, RANK_STRING_LITERAL, query.length()))));
+  }
 
   @Test
-  public void testInterfaceConnectedTo() {
+  public void testCompletionPartialName() {
+    String query = "iface1"; // this could be a complete term or a partial name
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder()
+            .setInterfaces(
+                ImmutableSet.of(
+                    new NodeInterfacePair("node1", "iface1"),
+                    new NodeInterfacePair("node1", "iface11")))
+            .build();
+
+    ParboiledAutoComplete pac =
+        new ParboiledAutoComplete(
+            Parser.INSTANCE,
+            Parser.INSTANCE.input(Parser.INSTANCE.InterfaceExpression()),
+            Parser.ANCHORS,
+            "network",
+            "snapshot",
+            query,
+            Integer.MAX_VALUE,
+            completionMetadata,
+            null,
+            null);
+
+    assertThat(
+        ImmutableSet.copyOf(pac.run()),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion(
+                    "", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+                new AutocompleteSuggestion(
+                    "1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+                new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("+", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()))));
+  }
+
+  @Test
+  public void testParseInterfaceConnectedTo() {
     ConnectedToInterfaceAstNode expectedAst =
         new ConnectedToInterfaceAstNode(new IpAstNode("1.1.1.1"));
 
@@ -50,7 +140,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testInterfaceInterfaceGroup() {
+  public void testParseInterfaceInterfaceGroup() {
     InterfaceGroupInterfaceAstNode expectedAst = new InterfaceGroupInterfaceAstNode("a", "b");
 
     assertThat(ParserUtils.getAst(getRunner().run("@interfacegroup(a, b)")), equalTo(expectedAst));
@@ -66,8 +156,8 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testInterfaceName() {
-    String ifaceName = "iface0:1/0.0";
+  public void testParseInterfaceName() {
+    String ifaceName = "ifa-ce0:1/0.0";
     NameInterfaceAstNode expectedAst = new NameInterfaceAstNode(ifaceName);
 
     assertThat(ParserUtils.getAst(getRunner().run(ifaceName)), equalTo(expectedAst));
@@ -75,8 +165,8 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testInterfaceNameRegex() {
-    String regex = "^iface 0:1\\/0.*.?$";
+  public void testParseInterfaceNameRegex() {
+    String regex = "^iface 0-0:1\\/0.*.?$";
     String regexWithSlashes = "/" + regex + "/";
     NameRegexInterfaceAstNode expectedAst = new NameRegexInterfaceAstNode(regex);
 
@@ -86,7 +176,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testInterfaceParens() {
+  public void testParseInterfaceParens() {
     String ifaceName = "Ethernet1/0";
     NameInterfaceAstNode expectedAst = new NameInterfaceAstNode(ifaceName);
 
@@ -96,7 +186,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testInterfaceType() {
+  public void testParseInterfaceType() {
     TypeInterfaceAstNode expectedAst =
         new TypeInterfaceAstNode(new StringAstNode(InterfaceType.PHYSICAL.toString()));
 
@@ -110,7 +200,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testInterfaceVrf() {
+  public void testParseInterfaceVrf() {
     VrfInterfaceAstNode expectedAst = new VrfInterfaceAstNode(new StringAstNode("vrf-name"));
 
     assertThat(ParserUtils.getAst(getRunner().run("@vrf(vrf-name)")), equalTo(expectedAst));
@@ -123,7 +213,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testInterfaceZone() {
+  public void testParseInterfaceZone() {
     ZoneInterfaceAstNode expectedAst = new ZoneInterfaceAstNode(new StringAstNode("zone-name"));
 
     assertThat(ParserUtils.getAst(getRunner().run("@zone(zone-name)")), equalTo(expectedAst));
@@ -136,7 +226,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testInterfaceDifference() {
+  public void testParseInterfaceDifference() {
     DifferenceInterfaceAstNode expectedNode =
         new DifferenceInterfaceAstNode(
             new NameInterfaceAstNode("eth0"), new NameInterfaceAstNode("loopback0"));
@@ -146,7 +236,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testInterfaceIntersection() {
+  public void testParseInterfaceIntersection() {
     IntersectionInterfaceAstNode expectedNode =
         new IntersectionInterfaceAstNode(
             new NameInterfaceAstNode("eth0"), new NameInterfaceAstNode("loopback0"));
@@ -156,7 +246,7 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testInterfaceUnion() {
+  public void testParseInterfaceUnion() {
     UnionInterfaceAstNode expectedNode =
         new UnionInterfaceAstNode(
             new NameInterfaceAstNode("eth0"), new NameInterfaceAstNode("loopback0"));
@@ -167,7 +257,7 @@ public class ParserInterfaceTest {
 
   /** Test if we got the precedence of set operators right. Intersection is higher priority. */
   @Test
-  public void testInterfaceSetOpPrecedence() {
+  public void testParseInterfaceSetOpPrecedence() {
     assertThat(
         ParserUtils.getAst(getRunner().run("eth0-loopback0&eth1")),
         equalTo(

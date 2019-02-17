@@ -241,9 +241,30 @@ public final class AutoCompleteUtils {
           suggestions = baseAutoComplete(query, NamedStructureSpecifier.JAVA_MAP.keySet());
           break;
         }
+      case NODE_NAME:
+        {
+          checkCompletionMetadata(completionMetadata, network, snapshot);
+          suggestions = stringAutoComplete(query, completionMetadata.getNodes());
+          break;
+        }
       case NODE_PROPERTY_SPEC:
         {
           suggestions = baseAutoComplete(query, NodePropertySpecifier.JAVA_MAP.keySet());
+          break;
+        }
+      case NODE_ROLE_AND_DIMENSION:
+        {
+          checkNodeRolesData(nodeRolesData, network);
+          ImmutableSet<StringPair> pairs =
+              nodeRolesData.getNodeRoleDimensions().stream()
+                  .map(
+                      d ->
+                          d.getRoles().stream()
+                              .map(r -> new StringPair(r.getName(), d.getName()))
+                              .collect(ImmutableSet.toImmutableSet()))
+                  .flatMap(Collection::stream)
+                  .collect(ImmutableSet.toImmutableSet());
+          suggestions = stringPairAutoComplete(query, pairs);
           break;
         }
       case NODE_ROLE_DIMENSION:
