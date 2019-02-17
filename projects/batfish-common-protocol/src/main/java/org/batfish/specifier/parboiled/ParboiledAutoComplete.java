@@ -8,7 +8,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.answers.AutoCompleteUtils;
@@ -29,7 +28,7 @@ public final class ParboiledAutoComplete {
 
   private final CommonParser _parser;
   private final Rule _expression;
-  private final Map<String, Completion.Type> _completionTypes;
+  private final Map<String, Anchor.Type> _completionTypes;
 
   private final String _network;
   private final String _snapshot;
@@ -42,7 +41,7 @@ public final class ParboiledAutoComplete {
   ParboiledAutoComplete(
       CommonParser parser,
       Rule expression,
-      Map<String, Completion.Type> completionTypes,
+      Map<String, Anchor.Type> completionTypes,
       String network,
       String snapshot,
       String query,
@@ -74,7 +73,7 @@ public final class ParboiledAutoComplete {
     return new ParboiledAutoComplete(
             Parser.INSTANCE,
             Parser.INSTANCE.IpSpaceExpression(),
-            Parser.COMPLETION_TYPES,
+            Parser.ANCHORS,
             network,
             snapshot,
             query,
@@ -101,11 +100,12 @@ public final class ParboiledAutoComplete {
 
     InvalidInputError error = (InvalidInputError) result.parseErrors.get(0);
 
-    Set<PartialMatch> partialMatches = ParserUtils.getPartialMatches(error, _completionTypes);
+    Set<PotentialMatch> potentialMatches =
+        ParserUtils.getPotentialMatches(error, _completionTypes, false);
 
     Set<AutocompleteSuggestion> allSuggestions =
-        partialMatches.stream()
-            .map(pm -> autoCompletePartialMatch(pm, error.getStartIndex()))
+        potentialMatches.stream()
+            .map(pm -> autoCompletePotentialMatch(pm, error.getStartIndex()))
             .flatMap(Collection::stream)
             .collect(ImmutableSet.toImmutableSet());
 
@@ -115,10 +115,10 @@ public final class ParboiledAutoComplete {
   }
 
   @VisibleForTesting
-  List<AutocompleteSuggestion> autoCompletePartialMatch(PartialMatch pm, int startIndex) {
+  List<AutocompleteSuggestion> autoCompletePotentialMatch(PotentialMatch pm, int startIndex) {
 
     List<AutocompleteSuggestion> suggestions = null;
-    switch (pm.getCompletionType()) {
+    switch (pm.getAnchorType()) {
       case STRING_LITERAL:
         /*
          String literals get a lower rank because there can be many suggestions for dynamic values
@@ -134,62 +134,24 @@ public final class ParboiledAutoComplete {
             AutoCompleteUtils.autoComplete(
                 _network,
                 _snapshot,
-                completionTypeToVariableType(pm.getCompletionType()),
+                anchorTypeToVariableType(pm.getAnchorType()),
                 pm.getMatchPrefix(),
                 _maxSuggestions,
                 _completionMetadata,
                 _nodeRolesData,
                 _referenceLibrary);
         break;
-        /*
-         IP ranges are address1  - address2. If address1 is not fully present in the query, it will
-         get auto completed by IP_ADDRESS autocompletion. If we are past the '-', we do
-         IP_ADDRESS autocompletion for address2.
-        */
       case IP_RANGE:
-        if (pm.getMatchPrefix().contains("-")) {
-          String matchPrefix = pm.getMatchPrefix().replaceAll("\\s+", "");
-          // pull out address2 portion for autocompletion
-          int dashIndex = matchPrefix.indexOf("-");
-          String address2Part =
-              dashIndex == matchPrefix.length() - 1 ? "" : matchPrefix.substring(dashIndex + 1);
-          List<AutocompleteSuggestion> address2Suggestions =
-              AutoCompleteUtils.autoComplete(
-                  _network,
-                  _snapshot,
-                  Variable.Type.IP,
-                  address2Part,
-                  _maxSuggestions,
-                  _completionMetadata,
-                  _nodeRolesData,
-                  _referenceLibrary);
-          // put back the "address1 -" part
-          suggestions =
-              address2Suggestions.stream()
-                  .map(
-                      s ->
-                          new AutocompleteSuggestion(
-                              matchPrefix + s.getText(),
-                              s.getIsPartial(),
-                              s.getDescription(),
-                              s.getRank(),
-                              s.getInsertionIndex()))
-                  .collect(Collectors.toList());
-        } else {
-          return ImmutableList.of();
-        }
-        break;
-        /*
-         IP wildcards are address:mask. If the address is not fully present in the query, it will
-         get auto completed by IP_ADDRESS autocompletion. If we are past the ';', we expect mask but we
-         can't help autocomplete that. So, net net, we don't need to do anything.
-        */
       case IP_WILDCARD:
+        // These depend on other completion types that should be kicking in
+        throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case EOI:
+      case IP_ADDRESS_MASK:
       case WHITESPACE:
+        // nothing useful to suggest for these completion types
         return ImmutableList.of();
-      default: // ignore things we do not know how to auto complete
-        throw new IllegalArgumentException("Unhandled completion type " + pm.getCompletionType());
+      default:
+        throw new IllegalArgumentException("Unhandled completion type " + pm.getAnchorType());
     }
     return suggestions.stream()
         .map(
@@ -207,8 +169,8 @@ public final class ParboiledAutoComplete {
    * Converts completion type to variable type for cases. Throws an exception when the mapping does
    * not exist
    */
-  private static Variable.Type completionTypeToVariableType(Completion.Type cType) {
-    switch (cType) {
+  private static Variable.Type anchorTypeToVariableType(Anchor.Type anchorType) {
+    switch (anchorType) {
       case ADDRESS_GROUP_AND_BOOK:
         return Variable.Type.ADDRESS_GROUP_AND_BOOK;
       case IP_ADDRESS:
@@ -216,7 +178,7 @@ public final class ParboiledAutoComplete {
       case IP_PREFIX:
         return Variable.Type.PREFIX;
       default:
-        throw new IllegalArgumentException("No valid Variable type for Completion type" + cType);
+        throw new IllegalArgumentException("No valid Variable type for Anchor type" + anchorType);
     }
   }
 }
