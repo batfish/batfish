@@ -6,9 +6,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
@@ -59,75 +61,46 @@ public class Vrf extends ComparableStructure<String> {
   }
 
   private static final String PROP_BGP_PROCESS = "bgpProcess";
-
   private static final String PROP_DESCRIPTION = "description";
-
   private static final String PROP_GENERATED_ROUTES = "aggregateRoutes";
-
+  private static final String PROP_INSTANCE_IMPORT_POLICY = "instanceImportPolicy";
+  private static final String PROP_INSTANCE_IMPORT_VRFS = "instanceImportVrfs";
   private static final String PROP_INTERFACES = "interfaces";
-
   private static final String PROP_ISIS_PROCESS = "isisProcess";
-
   private static final String PROP_EIGRP_PROCESSES = "eigrpProcesses";
-
   private static final String PROP_OSPF_PROCESS = "ospfProcess";
-
   private static final String PROP_RIP_PROCESS = "ripProcess";
-
   private static final String PROP_VNI_SETTINGS = "vniSettings";
+  private static final String PROP_STATIC_ROUTES = "staticRoutes";
 
   private static final long serialVersionUID = 1L;
 
-  private static final String PROP_STATIC_ROUTES = "staticRoutes";
-
   private SortedMap<RoutingProtocol, RibGroup> _appliedRibGroups;
-
   private transient NavigableSet<BgpAdvertisement> _bgpAdvertisements;
-
   private BgpProcess _bgpProcess;
-
   private String _description;
-
   private NavigableSet<GeneratedRoute6> _generatedIpv6Routes;
-
   private NavigableSet<GeneratedRoute> _generatedRoutes;
-
   private Map<Long, EigrpProcess> _eigrpProcesses;
-
+  private String _instanceImportPolicy;
+  private List<String> _instanceImportVrfs;
   private transient SortedSet<String> _interfaceNames;
-
   private NavigableMap<String, Interface> _interfaces;
-
   private IsisProcess _isisProcess;
-
   private transient NavigableSet<BgpAdvertisement> _originatedAdvertisements;
-
   private transient NavigableSet<BgpAdvertisement> _originatedEbgpAdvertisements;
-
   private transient NavigableSet<BgpAdvertisement> _originatedIbgpAdvertisements;
-
   @Nullable private OspfProcess _ospfProcess;
-
   private transient NavigableSet<BgpAdvertisement> _receivedAdvertisements;
-
   private transient NavigableSet<BgpAdvertisement> _receivedEbgpAdvertisements;
-
   private transient NavigableSet<BgpAdvertisement> _receivedIbgpAdvertisements;
-
   private RipProcess _ripProcess;
-
   private transient NavigableSet<Route> _routes;
-
   private transient NavigableSet<BgpAdvertisement> _sentAdvertisements;
-
   private transient NavigableSet<BgpAdvertisement> _sentEbgpAdvertisements;
-
   private transient NavigableSet<BgpAdvertisement> _sentIbgpAdvertisements;
-
   private SnmpServer _snmpServer;
-
   private SortedSet<StaticRoute> _staticRoutes;
-
   private NavigableMap<Integer, VniSettings> _vniSettings;
 
   @JsonCreator
@@ -179,6 +152,16 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_EIGRP_PROCESSES)
   public Map<Long, EigrpProcess> getEigrpProcesses() {
     return _eigrpProcesses;
+  }
+
+  @JsonProperty(PROP_INSTANCE_IMPORT_POLICY)
+  public String getInstanceImportPolicy() {
+    return _instanceImportPolicy;
+  }
+
+  @JsonProperty(PROP_INSTANCE_IMPORT_VRFS)
+  public List<String> getInstanceImportVrfs() {
+    return _instanceImportVrfs;
   }
 
   @JsonProperty(PROP_INTERFACES)
@@ -329,6 +312,16 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_EIGRP_PROCESSES)
   public void setEigrpProcesses(Map<Long, EigrpProcess> eigrpProcesses) {
     _eigrpProcesses = eigrpProcesses;
+  }
+
+  @JsonProperty(PROP_INSTANCE_IMPORT_POLICY)
+  public void setInstanceImportPolicy(String instanceImportPolicy) {
+    _instanceImportPolicy = instanceImportPolicy;
+  }
+
+  @JsonProperty(PROP_INSTANCE_IMPORT_VRFS)
+  public void setInstanceImportVrfs(List<String> instanceImportVrfs) {
+    _instanceImportVrfs = ImmutableList.copyOf(instanceImportVrfs);
   }
 
   @JsonProperty(PROP_INTERFACES)

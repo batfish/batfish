@@ -218,6 +218,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -248,8 +249,11 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.grammar.BatfishParseTreeWalker;
@@ -4380,6 +4384,29 @@ public final class FlatJuniperGrammarTest {
 
     assertThat(
         config.getAllInterfaces().get("ge-0/0/0.0").getIncomingFilter(), equalTo(combinedInAcl));
+  }
+
+  @Test
+  public void testInstanceImport() throws IOException {
+    String hostname = "juniper-instance-import";
+    Configuration c = parseConfig(hostname);
+
+    /*
+     * instance-import for default VRF imports two policies, PS1 followed by PS2.
+     * PS1 accepts VRF3, then VRF1. PS2 accepts VRF1, then an undefined MYSTERY_VRF, then VRF2.
+     * Resulting list of VRFs whose routes to import should have the referenced VRFs in the order
+     * they were referenced, ignoring second reference to VRF1, not including undefined MYSTERY_VRF.
+     */
+    Vrf defaultVrf = c.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
+    assertThat(defaultVrf.getInstanceImportVrfs(), contains("VRF3", "VRF1", "VRF2"));
+
+    // Instance import policy should start with SetDefaultPolicy, then FirstMatchChain with policies
+    List<Statement> instanceImportStatements =
+        c.getRoutingPolicies().get(defaultVrf.getInstanceImportPolicy()).getStatements();
+    assertThat(instanceImportStatements, hasSize(2));
+    assertThat(
+        ((If) instanceImportStatements.get(1)).getGuard(),
+        equalTo(new FirstMatchChain(ImmutableList.of(new CallExpr("PS1"), new CallExpr("PS2")))));
   }
 
   @Test

@@ -189,6 +189,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private static final String DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY_NAME =
       "~DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY~";
 
+  private static final String DEFAULT_REJECT_POLICY_NAME = "~DEFAULT_REJECT_POLICY~";
+
   private static final Map<RoutingProtocol, String> DEFAULT_IMPORT_POLICIES =
       ImmutableMap.<RoutingProtocol, String>builder()
           .put(RoutingProtocol.CONNECTED, DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY_NAME)
@@ -231,6 +233,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private Map<String, LogicalSystem> _logicalSystems;
 
   private LogicalSystem _masterLogicalSystem;
+
+  /** Map of policy name to routing instances referenced in the policy, in the order they appear */
+  private Map<String, List<String>> _vrfReferencesInPolicies = new TreeMap<>();
 
   public JuniperConfiguration() {
     _allStandardCommunities = new HashSet<>();
@@ -970,10 +975,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
    * @return the name of the initialized policy
    */
   private void initDefaultPseudoProtocolImportPolicy() {
-    if (_c.getRoutingPolicies().containsKey(DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY_NAME)) {
-      return;
+    if (!_c.getRoutingPolicies().containsKey(DEFAULT_PSEUDO_PROTOCOL_IMPORT_POLICY_NAME)) {
+      generateDefaultPseudoProtocolImportPolicy(_c);
     }
-    generateDefaultPseudoProtocolImportPolicy(_c);
+  }
+
+  private void initDefaultRejectPolicy() {
+    if (!_c.getRoutingPolicies().containsKey(DEFAULT_REJECT_POLICY_NAME)) {
+      RoutingPolicy defaultRejectPolicy = new RoutingPolicy(DEFAULT_REJECT_POLICY_NAME, _c);
+      _c.getRoutingPolicies().put(DEFAULT_REJECT_POLICY_NAME, defaultRejectPolicy);
+      PsThenReject.INSTANCE.applyTo(defaultRejectPolicy.getStatements(), this, _c, _w);
+    }
   }
 
   private void initFirstLoopbackInterface() {
@@ -1916,6 +1928,52 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return ipSpaces;
   }
 
+  /**
+   * Given a list of policy names, returns a list of the VRFs referenced in those policies, in the
+   * order in which they appear (within each policy and within the list of policies). The list will
+   * not have duplicates if a VRF is referenced multiple times, nor will it include undefined VRFs.
+   *
+   * <p>Used for generating the list of VRFs to be imported for instance-import policies.
+   */
+  @Nonnull
+  private List<String> getVrfsReferencedByPolicies(List<String> instanceImportPolicies) {
+    return instanceImportPolicies.stream()
+        .filter(pName -> _c.getRoutingPolicies().containsKey(pName))
+        .flatMap(pName -> _vrfReferencesInPolicies.getOrDefault(pName, ImmutableList.of()).stream())
+        .distinct()
+        .filter(vrfName -> _c.getVrfs().containsKey(vrfName))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  @Nonnull
+  private static RoutingPolicy buildInstanceImportRoutingPolicy(
+      RoutingInstance ri, Configuration c, String vrfName) {
+    String policyName = generateInstanceImportPolicyName(vrfName);
+    List<BooleanExpr> policyCalls =
+        ri.getInstanceImports().stream()
+            .filter(c.getRoutingPolicies()::containsKey)
+            .map(CallExpr::new)
+            .collect(Collectors.toList());
+    return RoutingPolicy.builder()
+        .setOwner(c)
+        .setName(policyName)
+        .setStatements(
+            ImmutableList.of(
+                // TODO implement default policy for instance-import. For now default reject.
+                // Once this is fixed, can throw away default reject policy infrastructure.
+                new SetDefaultPolicy(DEFAULT_REJECT_POLICY_NAME),
+                // Construct a policy chain based on defined instance-import policies
+                new If(
+                    new FirstMatchChain(policyCalls),
+                    ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+                    ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))))
+        .build();
+  }
+
+  private static String generateInstanceImportPolicyName(String vrfName) {
+    return String.format("~INSTANCE_IMPORT_POLICY_%s~", vrfName);
+  }
+
   @Nonnull
   private static org.batfish.datamodel.dataplane.rib.RibGroup toRibGroup(
       RibGroup rg, RoutingProtocol protocol, Configuration c, String vrfName, Warnings w) {
@@ -1955,7 +2013,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private static String generateRibGroupImportPolicyName(RibGroup rg, RoutingProtocol protocol) {
-    return String.format("~RIB_GROUP_IMPORT_POLICY_%s_%s", rg.getName(), protocol);
+    return String.format("~RIB_GROUP_IMPORT_POLICY_%s_%s~", rg.getName(), protocol);
   }
 
   @VisibleForTesting
@@ -2129,6 +2187,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
             }
           }
         }
+        if (froms.getFromInstance() != null) {
+          _vrfReferencesInPolicies
+              .computeIfAbsent(name, n -> new ArrayList<>())
+              .add(froms.getFromInstance().getRoutingInstanceName());
+        }
         ifStatement.setGuard(toGuard(froms));
         ifStatement.getTrueStatements().addAll(thens);
         statements.add(ifStatement);
@@ -2163,6 +2226,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     if (froms.getFromFamily() != null) {
       conj.getConjuncts().add(froms.getFromFamily().toBooleanExpr(this, _c, _w));
+    }
+    if (froms.getFromInstance() != null) {
+      conj.getConjuncts().add(froms.getFromInstance().toBooleanExpr(this, _c, _w));
     }
     if (!froms.getFromInterfaces().isEmpty()) {
       conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromInterfaces())));
@@ -2681,6 +2747,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
         vrf.getGeneratedRoutes().add(newGeneratedRoute);
       }
 
+      // Set up import policy for cross-VRF route leaking using instance-import
+      // At this point configured policy-statements have already been added to _c as RoutingPolicies
+      if (!ri.getInstanceImports().isEmpty()) {
+        // Only routes from these VRFs will be considered for import
+        List<String> referencedVrfs = getVrfsReferencedByPolicies(ri.getInstanceImports());
+        initDefaultRejectPolicy();
+        RoutingPolicy instanceImportPolicy = buildInstanceImportRoutingPolicy(ri, _c, riName);
+
+        vrf.setInstanceImportVrfs(referencedVrfs);
+        vrf.setInstanceImportPolicy(instanceImportPolicy.getName());
+        _c.getRoutingPolicies().put(instanceImportPolicy.getName(), instanceImportPolicy);
+      }
+
       /*
        * RIB groups applied to each protocol.
        *
@@ -2813,11 +2892,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.BGP_IMPORT_POLICY,
         JuniperStructureUsage.FORWARDING_TABLE_EXPORT_POLICY,
         JuniperStructureUsage.GENERATED_ROUTE_POLICY,
-        JuniperStructureUsage.INSTANCE_IMPORT_POLICY,
         JuniperStructureUsage.OSPF_EXPORT_POLICY,
         JuniperStructureUsage.POLICY_STATEMENT_POLICY,
         JuniperStructureUsage.ROUTING_INSTANCE_VRF_EXPORT,
-        JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT);
+        JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT,
+        JuniperStructureUsage.ROUTING_OPTIONS_INSTANCE_IMPORT);
     markConcreteStructure(
         JuniperStructureType.PREFIX_LIST,
         JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST,
@@ -2842,6 +2921,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureType.IPSEC_PROPOSAL, JuniperStructureUsage.IPSEC_POLICY_IPSEC_PROPOSAL);
     markConcreteStructure(
         JuniperStructureType.IPSEC_PROPOSAL, JuniperStructureUsage.IPSEC_VPN_IPSEC_POLICY);
+
+    markConcreteStructure(
+        JuniperStructureType.LOGICAL_SYSTEM,
+        JuniperStructureUsage.POLICY_STATEMENT_FROM_INSTANCE,
+        JuniperStructureUsage.SECURITY_PROFILE_LOGICAL_SYSTEM);
 
     markConcreteStructure(
         JuniperStructureType.NAT_POOL,

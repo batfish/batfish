@@ -51,7 +51,6 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.GENERATED
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_EXTERNAL_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_IKE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_POLICY_IKE_PROPOSAL;
-import static org.batfish.representation.juniper.JuniperStructureUsage.INSTANCE_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_INCOMING_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_OUTGOING_FILTER;
@@ -66,6 +65,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_INTE
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_EXPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_AS_PATH_GROUP;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST;
@@ -73,6 +73,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_ST
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_EXPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT;
+import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_OPTIONS_INSTANCE_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_PROFILE_LOGICAL_SYSTEM;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_ZONES_SECURITY_ZONES_INTERFACE;
@@ -652,6 +653,7 @@ import org.batfish.representation.juniper.PsFromAsPath;
 import org.batfish.representation.juniper.PsFromColor;
 import org.batfish.representation.juniper.PsFromCommunity;
 import org.batfish.representation.juniper.PsFromFamily;
+import org.batfish.representation.juniper.PsFromInstance;
 import org.batfish.representation.juniper.PsFromInterface;
 import org.batfish.representation.juniper.PsFromLocalPreference;
 import org.batfish.representation.juniper.PsFromMetric;
@@ -4557,11 +4559,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopsf_instance(Popsf_instanceContext ctx) {
-    _w.redFlag(
-        String.format(
-            "unimplemented 'policy-options policy-statement term' from clause: %s",
-            getFullText(ctx)));
-    _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
+    String instanceName = ctx.name.getText();
+    _configuration.referenceStructure(
+        LOGICAL_SYSTEM, instanceName, POLICY_STATEMENT_FROM_INSTANCE, getLine(ctx.name.getStart()));
+    _currentPsTerm.getFroms().setFromInstance(new PsFromInstance(instanceName));
   }
 
   @Override
@@ -4843,9 +4844,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitRo_instance_import(Ro_instance_importContext ctx) {
     String policyName = unquote(ctx.name.getText());
     _configuration.referenceStructure(
-        POLICY_STATEMENT, policyName, INSTANCE_IMPORT_POLICY, getLine(ctx.name.getStart()));
+        POLICY_STATEMENT,
+        policyName,
+        ROUTING_OPTIONS_INSTANCE_IMPORT,
+        getLine(ctx.name.getStart()));
     _currentRoutingInstance.getInstanceImports().add(policyName);
-    todo(ctx);
   }
 
   @Override

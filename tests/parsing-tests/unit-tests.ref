@@ -66740,16 +66740,6 @@
             }
           ]
         },
-        "juniper_instance_import" : {
-          "Parse warnings" : [
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 4,
-              "Parser_Context" : "[ro_instance_import s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "instance-import POLICY"
-            }
-          ]
-        },
         "juniper_interfaces" : {
           "Parse warnings" : [
             {
@@ -66819,10 +66809,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "unimplemented 'policy-options policy-statement term' from clause: family traffic-engineering"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: instance FORWARDING"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -75236,7 +75222,7 @@
         "configs/juniper_instance_import" : {
           "policy-statement" : {
             "POLICY" : {
-              "instance import policy" : [
+              "routing-options instance-import" : [
                 4
               ]
             }
@@ -75462,6 +75448,13 @@
             "AS_PATH_GROUP" : {
               "policy-statement from as-path-group" : [
                 4
+              ]
+            }
+          },
+          "logical-system" : {
+            "FORWARDING" : {
+              "policy-statement from instance" : [
+                17
               ]
             }
           }
@@ -77779,6 +77772,15 @@
             }
           }
         },
+        "configs/juniper_policy_statement" : {
+          "logical-system" : {
+            "FORWARDING" : {
+              "policy-statement from instance" : [
+                17
+              ]
+            }
+          }
+        },
         "configs/juniper_relay" : {
           "interface" : {
             "irb.10" : {
@@ -77807,6 +77809,15 @@
             "bippetyboo" : {
               "snmp community prefix-list" : [
                 5
+              ]
+            }
+          }
+        },
+        "configs/juniper_system" : {
+          "logical-system" : {
+            "ls905" : {
+              "security-profile logical-system" : [
+                21
               ]
             }
           }

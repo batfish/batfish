@@ -17577,6 +17577,63 @@
                 }
               }
             ]
+          },
+          "~DEFAULT_REJECT_POLICY~" : {
+            "name" : "~DEFAULT_REJECT_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          },
+          "~INSTANCE_IMPORT_POLICY_default~" : {
+            "name" : "~INSTANCE_IMPORT_POLICY_default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
+                "defaultPolicy" : "~DEFAULT_REJECT_POLICY~"
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain",
+                  "subroutines" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                      "calledPolicyName" : "POLICY"
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -17614,7 +17671,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "instanceImportPolicy" : "~INSTANCE_IMPORT_POLICY_default~"
           }
         }
       },
@@ -19555,8 +19613,8 @@
               }
             ]
           },
-          "~RIB_GROUP_IMPORT_POLICY_bgp-rib-group_BGP" : {
-            "name" : "~RIB_GROUP_IMPORT_POLICY_bgp-rib-group_BGP",
+          "~RIB_GROUP_IMPORT_POLICY_bgp-rib-group_BGP~" : {
+            "name" : "~RIB_GROUP_IMPORT_POLICY_bgp-rib-group_BGP~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
@@ -19582,8 +19640,8 @@
               }
             ]
           },
-          "~RIB_GROUP_IMPORT_POLICY_interface-routes-rib_CONNECTED" : {
-            "name" : "~RIB_GROUP_IMPORT_POLICY_interface-routes-rib_CONNECTED",
+          "~RIB_GROUP_IMPORT_POLICY_interface-routes-rib_CONNECTED~" : {
+            "name" : "~RIB_GROUP_IMPORT_POLICY_interface-routes-rib_CONNECTED~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
@@ -19619,8 +19677,8 @@
               }
             ]
           },
-          "~RIB_GROUP_IMPORT_POLICY_interface-routes-rib_LOCAL" : {
-            "name" : "~RIB_GROUP_IMPORT_POLICY_interface-routes-rib_LOCAL",
+          "~RIB_GROUP_IMPORT_POLICY_interface-routes-rib_LOCAL~" : {
+            "name" : "~RIB_GROUP_IMPORT_POLICY_interface-routes-rib_LOCAL~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
@@ -19710,7 +19768,7 @@
                   "ribname" : "inet.14",
                   "vrfname" : "RIB_OUT"
                 },
-                "importPolicies" : "~RIB_GROUP_IMPORT_POLICY_interface-routes-rib_CONNECTED",
+                "importPolicies" : "~RIB_GROUP_IMPORT_POLICY_interface-routes-rib_CONNECTED~",
                 "name" : "interface-routes-rib",
                 "ribIds" : [
                   {
@@ -19726,7 +19784,7 @@
                   "ribname" : "inet.14",
                   "vrfname" : "RIB_OUT"
                 },
-                "importPolicies" : "~RIB_GROUP_IMPORT_POLICY_interface-routes-rib_LOCAL",
+                "importPolicies" : "~RIB_GROUP_IMPORT_POLICY_interface-routes-rib_LOCAL~",
                 "name" : "interface-routes-rib",
                 "ribIds" : [
                   {
@@ -19937,8 +19995,8 @@
               }
             ]
           },
-          "~RIB_GROUP_IMPORT_POLICY_bgp-rib-group_BGP" : {
-            "name" : "~RIB_GROUP_IMPORT_POLICY_bgp-rib-group_BGP",
+          "~RIB_GROUP_IMPORT_POLICY_bgp-rib-group_BGP~" : {
+            "name" : "~RIB_GROUP_IMPORT_POLICY_bgp-rib-group_BGP~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
