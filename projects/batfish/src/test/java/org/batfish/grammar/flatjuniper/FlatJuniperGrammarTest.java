@@ -138,6 +138,8 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -281,6 +283,8 @@ import org.batfish.representation.juniper.NatRuleSet;
 import org.batfish.representation.juniper.NatRuleThenInterface;
 import org.batfish.representation.juniper.NatRuleThenOff;
 import org.batfish.representation.juniper.NatRuleThenPool;
+import org.batfish.representation.juniper.NoPortTranslation;
+import org.batfish.representation.juniper.PatPool;
 import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.ScreenAction;
 import org.batfish.representation.juniper.ScreenOption;
@@ -4524,5 +4528,46 @@ public final class FlatJuniperGrammarTest {
 
     // ge-0/0/0.3 is not part of any zoone, so no firewall session interface info.
     assertThat(c.getAllInterfaces().get(i3Name).getFirewallSessionInterfaceInfo(), nullValue());
+  }
+
+  @Test
+  public void testPortAddressTranslation() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-nat-pat");
+    Nat sourceNat = juniperConfiguration.getMasterLogicalSystem().getNatSource();
+    NatPool pool0 = sourceNat.getPools().get("POOL0");
+    NatPool pool1 = sourceNat.getPools().get("POOL1");
+    NatPool pool2 = sourceNat.getPools().get("POOL2");
+    NatPool pool3 = sourceNat.getPools().get("POOL3");
+
+    // pool0 should not have pat specified
+    assertNotNull(pool0);
+    assertNull(pool0.getPortAddressTranslation());
+
+    // pool1 should has a pat pool with range [2000,3000] with no port translation configured
+    assertNotNull(pool1);
+    assertNotNull(pool1.getPortAddressTranslation());
+    assertThat(pool1.getPortAddressTranslation(), equalTo(new PatPool(2000, 3000)));
+
+    // pool2 should specify no translation
+    assertNotNull(pool2);
+    assertNotNull(pool2.getPortAddressTranslation());
+    assertThat(pool2.getPortAddressTranslation(), equalTo(NoPortTranslation.INSTANCE));
+
+    // pool3 should have a pat pool ranging [10000,20000]
+    assertNotNull(pool3);
+    assertNotNull(pool3.getPortAddressTranslation());
+    assertThat(pool3.getPortAddressTranslation(), equalTo(new PatPool(10000, 20000)));
+
+    Nat destNat = juniperConfiguration.getMasterLogicalSystem().getNatDestination();
+    NatPool pool4 = destNat.getPools().get("POOL4");
+    NatPool pool5 = destNat.getPools().get("POOL5");
+
+    // pool4 should have a pat pool ranging [6000,6000]
+    assertNotNull(pool4);
+    assertThat(pool4.getPortAddressTranslation(), equalTo(new PatPool(6000, 6000)));
+
+    // pool5 should not have pat specified
+    assertNotNull(pool5);
+    assertNull(pool5.getPortAddressTranslation());
   }
 }
