@@ -227,7 +227,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private transient boolean _lo0Initialized;
 
   /** Map of policy name to routing instances referenced in the policy, in the order they appear */
-  private transient Map<String, List<String>> _vrfReferencesInPolicies = new TreeMap<>();
+  private transient Map<String, List<String>> _vrfReferencesInPolicies;
 
   private final Map<String, NodeDevice> _nodeDevices;
 
@@ -2148,6 +2148,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private RoutingPolicy toRoutingPolicy(PolicyStatement ps) {
+    // Ensure map of VRFs referenced in routing policies is initialized
+    if (_vrfReferencesInPolicies == null) {
+      _vrfReferencesInPolicies = new TreeMap<>();
+    }
     String name = ps.getName();
     RoutingPolicy routingPolicy = new RoutingPolicy(name, _c);
     List<Statement> statements = routingPolicy.getStatements();
