@@ -226,6 +226,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private transient boolean _lo0Initialized;
 
+  /** Map of policy name to routing instances referenced in the policy, in the order they appear */
+  private transient Map<String, List<String>> _vrfReferencesInPolicies = new TreeMap<>();
+
   private final Map<String, NodeDevice> _nodeDevices;
 
   private ConfigurationFormat _vendor;
@@ -233,9 +236,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private Map<String, LogicalSystem> _logicalSystems;
 
   private LogicalSystem _masterLogicalSystem;
-
-  /** Map of policy name to routing instances referenced in the policy, in the order they appear */
-  private Map<String, List<String>> _vrfReferencesInPolicies = new TreeMap<>();
 
   public JuniperConfiguration() {
     _allStandardCommunities = new HashSet<>();
@@ -2755,8 +2755,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         initDefaultRejectPolicy();
         RoutingPolicy instanceImportPolicy = buildInstanceImportRoutingPolicy(ri, _c, riName);
 
-        vrf.setInstanceImportVrfs(referencedVrfs);
-        vrf.setInstanceImportPolicy(instanceImportPolicy.getName());
+        vrf.setCrossVrfImportVrfs(referencedVrfs);
+        vrf.setCrossVrfImportPolicy(instanceImportPolicy.getName());
         _c.getRoutingPolicies().put(instanceImportPolicy.getName(), instanceImportPolicy);
       }
 
@@ -2921,17 +2921,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureType.IPSEC_PROPOSAL, JuniperStructureUsage.IPSEC_POLICY_IPSEC_PROPOSAL);
     markConcreteStructure(
         JuniperStructureType.IPSEC_PROPOSAL, JuniperStructureUsage.IPSEC_VPN_IPSEC_POLICY);
-
     markConcreteStructure(
-        JuniperStructureType.LOGICAL_SYSTEM,
-        JuniperStructureUsage.POLICY_STATEMENT_FROM_INSTANCE,
-        JuniperStructureUsage.SECURITY_PROFILE_LOGICAL_SYSTEM);
+        JuniperStructureType.LOGICAL_SYSTEM, JuniperStructureUsage.SECURITY_PROFILE_LOGICAL_SYSTEM);
 
     markConcreteStructure(
         JuniperStructureType.NAT_POOL,
         JuniperStructureUsage.NAT_DESTINATINATION_RULE_SET_RULE_THEN,
         JuniperStructureUsage.NAT_SOURCE_RULE_SET_RULE_THEN,
         JuniperStructureUsage.NAT_STATIC_RULE_SET_RULE_THEN);
+
+    markConcreteStructure(
+        JuniperStructureType.ROUTING_INSTANCE,
+        JuniperStructureUsage.POLICY_STATEMENT_FROM_INSTANCE);
 
     warnEmptyPrefixLists();
 

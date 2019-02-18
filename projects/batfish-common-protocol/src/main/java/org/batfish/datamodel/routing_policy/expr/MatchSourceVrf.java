@@ -1,8 +1,11 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Objects;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -11,6 +14,7 @@ import org.batfish.datamodel.routing_policy.Result;
  * Boolean expression that evaluates whether an {@link Environment} has a route that came from a
  * given source VRF.
  */
+@ParametersAreNonnullByDefault
 public final class MatchSourceVrf extends BooleanExpr {
 
   private static final long serialVersionUID = 1L;
@@ -20,7 +24,12 @@ public final class MatchSourceVrf extends BooleanExpr {
   private final String _sourceVrf;
 
   @JsonCreator
-  public MatchSourceVrf(@JsonProperty(PROP_SOURCE_VRF) String sourceVrf) {
+  private static MatchSourceVrf create(@Nullable @JsonProperty(PROP_SOURCE_VRF) String sourceVrf) {
+    checkArgument(sourceVrf != null, "%s must be provided", PROP_SOURCE_VRF);
+    return new MatchSourceVrf(sourceVrf);
+  }
+
+  public MatchSourceVrf(String sourceVrf) {
     _sourceVrf = sourceVrf;
   }
 
@@ -30,7 +39,7 @@ public final class MatchSourceVrf extends BooleanExpr {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(@Nullable Object obj) {
     if (this == obj) {
       return true;
     }
@@ -42,11 +51,11 @@ public final class MatchSourceVrf extends BooleanExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_sourceVrf);
+    return _sourceVrf.hashCode();
   }
 
   @Override
   public String toString() {
-    return toStringHelper().add("source VRF", _sourceVrf).toString();
+    return toStringHelper().add(PROP_SOURCE_VRF, _sourceVrf).toString();
   }
 }

@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -12,7 +13,7 @@ public class PsFromInstance extends PsFrom {
 
   private String _routingInstanceName;
 
-  public PsFromInstance(String routingInstanceName) {
+  public PsFromInstance(@Nonnull String routingInstanceName) {
     _routingInstanceName = routingInstanceName;
   }
 

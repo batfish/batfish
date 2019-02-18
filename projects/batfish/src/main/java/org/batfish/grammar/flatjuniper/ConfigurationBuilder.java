@@ -26,7 +26,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE_S
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.RIB_GROUP;
-import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_INSTNACE;
+import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_PROFILE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ADDRESS_BOOK_ATTACH_ZONE;
@@ -2747,7 +2747,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     name = ctx.name.getText();
     _currentRoutingInstance =
         _currentLogicalSystem.getRoutingInstances().computeIfAbsent(name, RoutingInstance::new);
-    defineStructure(ROUTING_INSTNACE, name, ctx);
+    defineStructure(ROUTING_INSTANCE, name, ctx);
   }
 
   @Override
@@ -3947,7 +3947,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = unquote(ctx.name.getText());
     _currentFwTerm.getThens().add(new FwThenRoutingInstance(name));
     _configuration.referenceStructure(
-        ROUTING_INSTNACE, name, FIREWALL_FILTER_THEN_ROUTING_INSTANCE, ctx.getStart().getLine());
+        ROUTING_INSTANCE, name, FIREWALL_FILTER_THEN_ROUTING_INSTANCE, ctx.getStart().getLine());
   }
 
   @Override
@@ -4561,7 +4561,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitPopsf_instance(Popsf_instanceContext ctx) {
     String instanceName = ctx.name.getText();
     _configuration.referenceStructure(
-        LOGICAL_SYSTEM, instanceName, POLICY_STATEMENT_FROM_INSTANCE, getLine(ctx.name.getStart()));
+        ROUTING_INSTANCE,
+        instanceName,
+        POLICY_STATEMENT_FROM_INSTANCE,
+        getLine(ctx.name.getStart()));
     _currentPsTerm.getFroms().setFromInstance(new PsFromInstance(instanceName));
   }
 

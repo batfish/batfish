@@ -18,6 +18,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
@@ -63,8 +64,8 @@ public class Vrf extends ComparableStructure<String> {
   private static final String PROP_BGP_PROCESS = "bgpProcess";
   private static final String PROP_DESCRIPTION = "description";
   private static final String PROP_GENERATED_ROUTES = "aggregateRoutes";
-  private static final String PROP_INSTANCE_IMPORT_POLICY = "instanceImportPolicy";
-  private static final String PROP_INSTANCE_IMPORT_VRFS = "instanceImportVrfs";
+  private static final String PROP_CROSS_VRF_IMPORT_POLICY = "crossVrfImportPolicy";
+  private static final String PROP_CROSS_VRF_IMPORT_VRFS = "crossVrfImportVrfs";
   private static final String PROP_INTERFACES = "interfaces";
   private static final String PROP_ISIS_PROCESS = "isisProcess";
   private static final String PROP_EIGRP_PROCESSES = "eigrpProcesses";
@@ -82,8 +83,8 @@ public class Vrf extends ComparableStructure<String> {
   private NavigableSet<GeneratedRoute6> _generatedIpv6Routes;
   private NavigableSet<GeneratedRoute> _generatedRoutes;
   private Map<Long, EigrpProcess> _eigrpProcesses;
-  private String _instanceImportPolicy;
-  private List<String> _instanceImportVrfs;
+  @Nullable private String _crossVrfImportPolicy;
+  @Nullable private List<String> _crossVrfImportVrfs;
   private transient SortedSet<String> _interfaceNames;
   private NavigableMap<String, Interface> _interfaces;
   private IsisProcess _isisProcess;
@@ -154,14 +155,18 @@ public class Vrf extends ComparableStructure<String> {
     return _eigrpProcesses;
   }
 
-  @JsonProperty(PROP_INSTANCE_IMPORT_POLICY)
-  public String getInstanceImportPolicy() {
-    return _instanceImportPolicy;
+  /** Name of policy used to filter incoming routes leaked from other VRFs */
+  @Nullable
+  @JsonProperty(PROP_CROSS_VRF_IMPORT_POLICY)
+  public String getCrossVrfImportPolicy() {
+    return _crossVrfImportPolicy;
   }
 
-  @JsonProperty(PROP_INSTANCE_IMPORT_VRFS)
-  public List<String> getInstanceImportVrfs() {
-    return _instanceImportVrfs;
+  /** Names of other VRFs that leak routes into this one */
+  @Nullable
+  @JsonProperty(PROP_CROSS_VRF_IMPORT_VRFS)
+  public List<String> getCrossVrfImportVrfs() {
+    return _crossVrfImportVrfs;
   }
 
   @JsonProperty(PROP_INTERFACES)
@@ -314,14 +319,14 @@ public class Vrf extends ComparableStructure<String> {
     _eigrpProcesses = eigrpProcesses;
   }
 
-  @JsonProperty(PROP_INSTANCE_IMPORT_POLICY)
-  public void setInstanceImportPolicy(String instanceImportPolicy) {
-    _instanceImportPolicy = instanceImportPolicy;
+  @JsonProperty(PROP_CROSS_VRF_IMPORT_POLICY)
+  public void setCrossVrfImportPolicy(@Nonnull String crossVrfImportPolicy) {
+    _crossVrfImportPolicy = crossVrfImportPolicy;
   }
 
-  @JsonProperty(PROP_INSTANCE_IMPORT_VRFS)
-  public void setInstanceImportVrfs(List<String> instanceImportVrfs) {
-    _instanceImportVrfs = ImmutableList.copyOf(instanceImportVrfs);
+  @JsonProperty(PROP_CROSS_VRF_IMPORT_VRFS)
+  public void setCrossVrfImportVrfs(@Nonnull List<String> crossVrfImportVrfs) {
+    _crossVrfImportVrfs = ImmutableList.copyOf(crossVrfImportVrfs);
   }
 
   @JsonProperty(PROP_INTERFACES)

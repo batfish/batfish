@@ -4398,11 +4398,12 @@ public final class FlatJuniperGrammarTest {
      * they were referenced, ignoring second reference to VRF1, not including undefined MYSTERY_VRF.
      */
     Vrf defaultVrf = c.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
-    assertThat(defaultVrf.getInstanceImportVrfs(), contains("VRF3", "VRF1", "VRF2"));
+    assertThat(defaultVrf.getCrossVrfImportVrfs(), contains("VRF3", "VRF1", "VRF2"));
 
     // Instance import policy should start with SetDefaultPolicy, then FirstMatchChain with policies
+    // TODO Test behavior of routing policy once MatchSourceVrf is fully implemented
     List<Statement> instanceImportStatements =
-        c.getRoutingPolicies().get(defaultVrf.getInstanceImportPolicy()).getStatements();
+        c.getRoutingPolicies().get(defaultVrf.getCrossVrfImportPolicy()).getStatements();
     assertThat(instanceImportStatements, hasSize(2));
     assertThat(
         ((If) instanceImportStatements.get(1)).getGuard(),
