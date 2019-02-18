@@ -4,6 +4,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 
 import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Map;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.parboiled.BaseParser;
@@ -40,17 +41,9 @@ abstract class CommonParser extends BaseParser<AstNode> {
   /**
    * Initialize an array of case-insenstive rules that match the array of provided values (e.g.,
    * those belonging to an Enum).
-   *
-   * <p>We use an imperative approach because lambdas run into access violations.
    */
   Rule[] initEnumRules(Object[] values) {
-    Rule[] rules = new Rule[values.length];
-    int index = 0;
-    for (Object value : values) {
-      rules[index] = IgnoreCase(value.toString());
-      index++;
-    }
-    return rules;
+    return Arrays.stream(values).map(Object::toString).map(this::IgnoreCase).toArray(Rule[]::new);
   }
 
   /**

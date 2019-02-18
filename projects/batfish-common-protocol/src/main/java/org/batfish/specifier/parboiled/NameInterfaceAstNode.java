@@ -24,7 +24,7 @@ final class NameInterfaceAstNode implements InterfaceAstNode {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o == null || getClass() != o.getClass()) {
       return false;
     }
     NameInterfaceAstNode that = (NameInterfaceAstNode) o;
