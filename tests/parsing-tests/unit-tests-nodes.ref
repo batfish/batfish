@@ -20638,7 +20638,7 @@
                 "nextHopIp" : "AUTO/NONE(-1l)"
               }
             ],
-            "instanceImportPolicy" : "~INSTANCE_IMPORT_POLICY_default~"
+            "crossVrfImportPolicy" : "~INSTANCE_IMPORT_POLICY_default~"
           }
         }
       },

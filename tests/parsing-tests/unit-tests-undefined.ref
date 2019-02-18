@@ -3324,7 +3324,7 @@
       },
       {
         "File_Name" : "configs/juniper_policy_statement",
-        "Struct_Type" : "logical-system",
+        "Struct_Type" : "routing-instance",
         "Ref_Name" : "FORWARDING",
         "Context" : "policy-statement from instance",
         "Lines" : {

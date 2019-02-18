@@ -66745,6 +66745,12 @@
               "Line" : 4,
               "Parser_Context" : "[popsf_as_path_group pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "as-path-group AS_PATH_GROUP"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 17,
+              "Parser_Context" : "[popsf_instance pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "instance FORWARDING"
             }
           ],
           "Red flags" : [
@@ -75418,7 +75424,7 @@
               ]
             }
           },
-          "logical-system" : {
+          "routing-instance" : {
             "FORWARDING" : {
               "policy-statement from instance" : [
                 17
@@ -77745,7 +77751,7 @@
           }
         },
         "configs/juniper_policy_statement" : {
-          "logical-system" : {
+          "routing-instance" : {
             "FORWARDING" : {
               "policy-statement from instance" : [
                 17
