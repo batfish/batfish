@@ -3,8 +3,7 @@ package org.batfish.specifier.parboiled;
 final class IntersectionInterfaceAstNode extends SetOpInterfaceAstNode {
 
   IntersectionInterfaceAstNode(AstNode left, AstNode right) {
-    _left = (InterfaceAstNode) left;
-    _right = (InterfaceAstNode) right;
+    super((InterfaceAstNode) left, (InterfaceAstNode) right);
   }
 
   @Override

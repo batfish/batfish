@@ -155,7 +155,7 @@ public final class ParboiledAutoComplete {
         // can't help with regexes
         return ImmutableList.of();
       case INTERFACE_TYPE:
-        // Relies on string literal completion
+        // Relies on STRING_LITERAL completion as it appears later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case IP_ADDRESS:
         return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
@@ -165,10 +165,10 @@ public final class ParboiledAutoComplete {
       case IP_PREFIX:
         return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
       case IP_RANGE:
-        // Relies on IP completion
+        // Relies on IP_ADDRESS completion as it appears later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case IP_WILDCARD:
-        // Relies on IP and mask completion
+        // Relies on IP_ADDRESS and IP_ADDRESS_MASK completions as they appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case NODE_NAME:
         return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
@@ -178,7 +178,7 @@ public final class ParboiledAutoComplete {
       case NODE_ROLE_NAME_AND_DIMENSION:
         return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
       case NODE_TYPE:
-        // Relies on string literal completion
+        // Relies on STRING_LITERAL completion as it appears later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case STRING_LITERAL:
         /*

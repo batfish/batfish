@@ -29,7 +29,7 @@ final class TypeInterfaceAstNode implements InterfaceAstNode {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof TypeInterfaceAstNode)) {
       return false;
     }
     TypeInterfaceAstNode that = (TypeInterfaceAstNode) o;

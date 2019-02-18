@@ -37,7 +37,7 @@ final class IpRangeAstNode implements IpSpaceAstNode {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof IpRangeAstNode)) {
       return false;
     }
     IpRangeAstNode that = (IpRangeAstNode) o;

@@ -4,8 +4,8 @@ import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
 abstract class SetOpNodeAstNode implements NodeAstNode {
-  protected NodeAstNode _left;
-  protected NodeAstNode _right;
+  private final NodeAstNode _left;
+  private final NodeAstNode _right;
 
   static SetOpNodeAstNode create(Character c, AstNode left, AstNode right) {
     NodeAstNode leftSpec = (NodeAstNode) left;
@@ -15,21 +15,27 @@ abstract class SetOpNodeAstNode implements NodeAstNode {
         return new UnionNodeAstNode(leftSpec, rightSpec);
       case '\\':
         return new DifferenceNodeAstNode(leftSpec, rightSpec);
+        // no case for intersection as it travels a different path in the parser
       default:
         throw new IllegalStateException("Unknown set operation for node spec " + c);
     }
   }
 
-  public NodeAstNode getLeft() {
+  SetOpNodeAstNode(NodeAstNode left, NodeAstNode right) {
+    _left = left;
+    _right = right;
+  }
+
+  public final NodeAstNode getLeft() {
     return _left;
   }
 
-  public NodeAstNode getRight() {
+  public final NodeAstNode getRight() {
     return _right;
   }
 
   @Override
-  public boolean equals(Object o) {
+  public final boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -41,12 +47,12 @@ abstract class SetOpNodeAstNode implements NodeAstNode {
   }
 
   @Override
-  public int hashCode() {
+  public final int hashCode() {
     return Objects.hash(getClass(), _left, _right);
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return MoreObjects.toStringHelper(getClass())
         .add("left", _left)
         .add("right", _right)

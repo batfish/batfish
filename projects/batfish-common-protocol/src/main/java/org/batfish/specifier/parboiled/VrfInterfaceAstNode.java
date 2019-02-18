@@ -29,7 +29,7 @@ final class VrfInterfaceAstNode implements InterfaceAstNode {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof VrfInterfaceAstNode)) {
       return false;
     }
     VrfInterfaceAstNode that = (VrfInterfaceAstNode) o;

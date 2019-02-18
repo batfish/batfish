@@ -29,7 +29,7 @@ final class TypeNodeAstNode implements NodeAstNode {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof TypeNodeAstNode)) {
       return false;
     }
     TypeNodeAstNode that = (TypeNodeAstNode) o;

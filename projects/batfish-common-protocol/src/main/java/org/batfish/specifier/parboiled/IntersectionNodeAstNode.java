@@ -3,8 +3,7 @@ package org.batfish.specifier.parboiled;
 final class IntersectionNodeAstNode extends SetOpNodeAstNode {
 
   IntersectionNodeAstNode(AstNode left, AstNode right) {
-    _left = (NodeAstNode) left;
-    _right = (NodeAstNode) right;
+    super((NodeAstNode) left, (NodeAstNode) right);
   }
 
   @Override

@@ -28,7 +28,7 @@ final class ZoneInterfaceAstNode implements InterfaceAstNode {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof ZoneInterfaceAstNode)) {
       return false;
     }
     ZoneInterfaceAstNode that = (ZoneInterfaceAstNode) o;
