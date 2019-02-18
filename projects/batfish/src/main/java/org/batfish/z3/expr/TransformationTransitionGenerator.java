@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -24,6 +25,7 @@ import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.datamodel.transformation.TransformationStepVisitor;
+import org.batfish.main.Batfish;
 import org.batfish.z3.AclLineMatchExprToBooleanExpr;
 import org.batfish.z3.Field;
 
@@ -116,7 +118,7 @@ public final class TransformationTransitionGenerator {
     @Override
     public BasicRuleStatement visitAssignPortFromPool(AssignPortFromPool assignPortFromPool) {
       // TODO
-      return null;
+      throw new BatfishException("PAT is not supported");
     }
   }
 
