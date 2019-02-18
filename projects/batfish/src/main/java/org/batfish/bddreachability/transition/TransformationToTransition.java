@@ -15,6 +15,7 @@ import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
+import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
@@ -78,6 +79,12 @@ public class TransformationToTransition {
     @Override
     public Transition visitShiftIpAddressIntoSubnet(ShiftIpAddressIntoSubnet step) {
       return shiftIpIntoPrefix(ipField(step.getIpField()), step.getSubnet());
+    }
+
+    @Override
+    public Transition visitAssignPortFromPool(AssignPortFromPool assignPortFromPool) {
+      // TODO
+      return null;
     }
   }
 
