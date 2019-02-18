@@ -197,6 +197,11 @@ ro_generate
   )
 ;
 
+ro_instance_import
+:
+   INSTANCE_IMPORT name = variable
+;
+
 ro_interface_routes
 :
    INTERFACE_ROUTES
@@ -696,6 +701,7 @@ s_routing_options
       | ro_confederation
       | ro_forwarding_table
       | ro_generate
+      | ro_instance_import
       | ro_interface_routes
       | ro_martians
       | ro_null
