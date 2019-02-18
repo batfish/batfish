@@ -28,7 +28,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclTrace;
@@ -288,10 +287,6 @@ public class Row implements Comparable<Row>, Serializable {
 
   public Flow getFlow(String column) {
     return (Flow) get(column, Schema.FLOW);
-  }
-
-  public @Nullable FlowTrace getFlowTrace(String column) {
-    return (FlowTrace) get(column, Schema.FLOW_TRACE);
   }
 
   public Integer getInteger(String column) {

@@ -1,6 +1,7 @@
 package org.batfish.specifier.parboiled;
 
 import java.util.Objects;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 
 final class IpWildcardAstNode implements IpSpaceAstNode {
@@ -9,6 +10,16 @@ final class IpWildcardAstNode implements IpSpaceAstNode {
 
   IpWildcardAstNode(IpWildcard ipWildcard) {
     _ipWildcard = ipWildcard;
+  }
+
+  IpWildcardAstNode(String ipWildcard) {
+    _ipWildcard = new IpWildcard(ipWildcard);
+  }
+
+  IpWildcardAstNode(AstNode addressNode, AstNode maskNode) {
+    Ip address = ((IpAstNode) addressNode).getIp();
+    Ip mask = ((IpAstNode) maskNode).getIp();
+    _ipWildcard = new IpWildcard(address, mask);
   }
 
   @Override

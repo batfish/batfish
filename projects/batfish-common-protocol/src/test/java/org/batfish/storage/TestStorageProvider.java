@@ -20,6 +20,7 @@ import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
@@ -59,6 +60,12 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public SortedSet<NodeInterfacePair> loadInterfaceBlacklist(
       NetworkId network, SnapshotId snapshot) {
+    throw new UnsupportedOperationException("no implementation for generated method");
+  }
+
+  @Nullable
+  @Override
+  public IspConfiguration loadIspConfiguration(NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 

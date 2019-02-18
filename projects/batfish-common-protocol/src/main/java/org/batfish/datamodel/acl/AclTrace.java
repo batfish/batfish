@@ -8,7 +8,6 @@ import java.io.Serializable;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.FilterResult;
 
 public final class AclTrace implements Serializable {
 
@@ -37,11 +36,6 @@ public final class AclTrace implements Serializable {
   @JsonProperty(PROP_EVENTS)
   public @Nonnull List<TraceEvent> getEvents() {
     return _events;
-  }
-
-  /** Computes the {@link FilterResult} based on the action implied by the final trace event. */
-  public @Nonnull FilterResult computeFilterResult() {
-    return ((TerminalTraceEvent) (_events.get(_events.size() - 1))).toFilterResult();
   }
 
   @Override

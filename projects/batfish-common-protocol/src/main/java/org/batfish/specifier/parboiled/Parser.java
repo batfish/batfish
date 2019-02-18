@@ -1,15 +1,13 @@
 package org.batfish.specifier.parboiled;
 
-import static org.batfish.specifier.parboiled.Completion.Type.ADDRESS_GROUP_AND_BOOK;
-import static org.batfish.specifier.parboiled.Completion.Type.IP_ADDRESS;
-import static org.batfish.specifier.parboiled.Completion.Type.IP_PREFIX;
-import static org.batfish.specifier.parboiled.Completion.Type.IP_RANGE;
-import static org.batfish.specifier.parboiled.Completion.Type.IP_WILDCARD;
+import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_AND_BOOK;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_ADDRESS;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_ADDRESS_MASK;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_PREFIX;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_RANGE;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_WILDCARD;
 
 import java.util.Map;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.Prefix;
 import org.parboiled.Parboiled;
 import org.parboiled.Rule;
 
@@ -17,9 +15,10 @@ import org.parboiled.Rule;
  * A parboiled-based parser for flexible specifiers. The rules for all types of expressions are in
  * this file (not sure how to put them in different files when they point to each other).
  *
- * <p>Completion annotation: For each path from the top-level rule of an expression to leaf values,
- * there should be at least one rule with a Completion annotation. This annotation is used for both
- * error messages and generating auto completion suggestions.
+ * <p>{@link Anchor} annotation: For each path from the top-level rule of an expression to leaf
+ * values, there should be at least one rule with a Anchor annotation. This annotation is used for
+ * error messages and generating auto completion suggestions. Character and string literals are
+ * treated as implicit anchors (see findPathAnchor() in {@link ParserUtils}.
  */
 @SuppressWarnings({
   "checkstyle:methodname", // this class uses idiomatic names
@@ -29,7 +28,7 @@ class Parser extends CommonParser {
 
   static final Parser INSTANCE = Parboiled.createParser(Parser.class);
 
-  static final Map<String, Completion.Type> COMPLETION_TYPES = initCompletionTypes(Parser.class);
+  static final Map<String, Anchor.Type> ANCHORS = initAnchors(Parser.class);
 
   /**
    * IpSpace grammar
@@ -71,15 +70,15 @@ class Parser extends CommonParser {
   }
 
   /** Matches AddressGroup, ReferenceBook pair. Puts two values on stack */
-  @Completion(ADDRESS_GROUP_AND_BOOK)
+  @Anchor(ADDRESS_GROUP_AND_BOOK)
   public Rule AddressGroupAndBook() {
     return Sequence(
         ReferenceObjectNameLiteral(),
-        push(new StringAstNode(matchOrDefault("Error"))),
+        push(new StringAstNode(match())),
         WhiteSpace(),
         ", ",
         ReferenceObjectNameLiteral(),
-        push(new StringAstNode(matchOrDefault("Error"))),
+        push(new StringAstNode(match())),
         WhiteSpace());
   }
 
@@ -87,39 +86,44 @@ class Parser extends CommonParser {
    * Matched IP addresses. Throws an exception if something matches syntactically but is invalid
    * (e.g., 1.1.1.256)
    */
-  @Completion(IP_ADDRESS)
+  @Anchor(IP_ADDRESS)
   public Rule IpAddress() {
-    return Sequence(IpAddressUnchecked(), push(new IpAstNode(Ip.parse(matchOrDefault("Error")))));
+    return Sequence(IpAddressUnchecked(), push(new IpAstNode(match())));
+  }
+
+  /**
+   * Matched IP address mask (e.g., 255.255.255.0). It is syntactically similar to IP addresses but
+   * we have a separate rule that helps with error messages and auto completion.
+   */
+  @Anchor(IP_ADDRESS_MASK)
+  public Rule IpAddressMask() {
+    return Sequence(IpAddressUnchecked(), push(new IpAstNode(match())));
   }
 
   /**
    * Matched IP prefixes. Throws an exception if something matches syntactically but is invalid
    * (e.g., 1.1.1.2/33)
    */
-  @Completion(IP_PREFIX)
+  @Anchor(IP_PREFIX)
   public Rule IpPrefix() {
-    return Sequence(
-        IpPrefixUnchecked(), push(new PrefixAstNode(Prefix.parse(matchOrDefault("Error")))));
+    return Sequence(IpPrefixUnchecked(), push(new PrefixAstNode(match())));
   }
 
   /** Matches Ip ranges (e.g., 1.1.1.1 - 1.1.1.2) */
-  @Completion(IP_RANGE)
+  @Anchor(IP_RANGE)
   public Rule IpRange() {
     return Sequence(
-        IpAddressUnchecked(),
-        push(new IpAstNode(Ip.parse(matchOrDefault("Error")))),
+        IpAddress(),
         WhiteSpace(),
         "- ",
-        IpAddressUnchecked(),
-        push(new IpRangeAstNode(pop(), new IpAstNode(Ip.parse(matchOrDefault("Error"))))),
+        IpAddress(),
+        push(new IpRangeAstNode(pop(1), pop())),
         WhiteSpace());
   }
 
   /** Matches Ip wildcards (e.g., 1.1.1.1:255.255.255.255) */
-  @Completion(IP_WILDCARD)
+  @Anchor(IP_WILDCARD)
   public Rule IpWildcard() {
-    return Sequence(
-        Sequence(IpAddressUnchecked(), ':', IpAddressUnchecked()),
-        push(new IpWildcardAstNode(new IpWildcard(matchOrDefault("Error")))));
+    return Sequence(IpAddress(), ':', IpAddressMask(), push(new IpWildcardAstNode(pop(1), pop())));
   }
 }

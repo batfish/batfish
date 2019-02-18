@@ -299,7 +299,7 @@ public final class AutoCompleteUtils {
   /**
    * Returns a list of suggestions based on query strings.
    *
-   * <p>The query is considered to be a prefix of the string and the search is case-insensitive
+   * <p>The search is case-insensitive
    *
    * <p>The returned list contains the tail of the match. If the query is "ab" and the matching
    * string is "abcd", "cd" is returned.

@@ -84,10 +84,6 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
     return IncrementalBdpEngine.getRoutes((IncrementalDataPlane) dp);
   }
 
-  private IncrementalDataPlane loadDataPlane() {
-    return (IncrementalDataPlane) _batfish.loadDataPlane();
-  }
-
   @Override
   public String getName() {
     return PLUGIN_NAME;

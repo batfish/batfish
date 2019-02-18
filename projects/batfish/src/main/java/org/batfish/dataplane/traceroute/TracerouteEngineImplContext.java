@@ -143,10 +143,6 @@ public class TracerouteEngineImplContext {
     return _configurations;
   }
 
-  public DataPlane getDataPlane() {
-    return _dataPlane;
-  }
-
   Fib getFib(String node, String vrf) {
     return _fibs.get(node).get(vrf);
   }

@@ -22,7 +22,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.HasAbstractRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Topology;
@@ -70,8 +69,6 @@ public interface IBatfish extends IPluginConsumer {
    */
   SortedMap<Flow, List<Trace>> buildFlows(Set<Flow> flows, boolean ignoreFilters);
 
-  void checkDataPlane();
-
   void checkSnapshotOutputReady();
 
   /** Compute the dataplane for the current {@link NetworkSnapshot} */
@@ -114,10 +111,6 @@ public interface IBatfish extends IPluginConsumer {
 
   @Nonnull
   NetworkSnapshot getNetworkSnapshot();
-
-  FlowHistory flowHistory(Set<Flow> flows, boolean ignoreFilters);
-
-  FlowHistory differentialFlowHistory(Set<Flow> flows, boolean ignoreFilters);
 
   NodeRolesData getNodeRolesData();
 
@@ -170,11 +163,7 @@ public interface IBatfish extends IPluginConsumer {
 
   ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement();
 
-  AnswerElement multipath(ReachabilityParameters reachabilityParameters);
-
   AtomicInteger newBatch(String description, int jobs);
-
-  AnswerElement pathDiff(ReachabilityParameters reachabilityParameters);
 
   void popSnapshot();
 
@@ -189,8 +178,6 @@ public interface IBatfish extends IPluginConsumer {
 
   @Nullable
   String readExternalBgpAnnouncementsFile();
-
-  AnswerElement reducedReachability(ReachabilityParameters reachabilityParameters);
 
   void registerAnswerer(
       String questionName,

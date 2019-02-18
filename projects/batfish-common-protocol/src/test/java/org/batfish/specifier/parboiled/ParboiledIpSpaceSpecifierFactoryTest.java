@@ -3,7 +3,6 @@ package org.batfish.specifier.parboiled;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import org.batfish.datamodel.Ip;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -23,7 +22,7 @@ public class ParboiledIpSpaceSpecifierFactoryTest {
   public void testBuildIpSpaceSpecifierGoodInput() {
     assertThat(
         new ParboiledIpSpaceSpecifierFactory().buildIpSpaceSpecifier("1.1.1.1"),
-        equalTo(new ParboiledIpSpaceSpecifier(new IpAstNode(Ip.parse("1.1.1.1")))));
+        equalTo(new ParboiledIpSpaceSpecifier(new IpAstNode("1.1.1.1"))));
   }
 
   @Test

@@ -76,9 +76,6 @@ import org.batfish.coordinator.resources.ForkSnapshotBean;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.FlowTrace;
-import org.batfish.datamodel.FlowTraceHop;
-import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SnapshotMetadata;
@@ -2117,33 +2114,6 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testColumnComparatorFlowTrace() {
-    String col = "col1";
-    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.FLOW_TRACE, "colDesc");
-    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
-    Row r1 = Row.of(col, new FlowTrace(FlowDisposition.ACCEPTED, ImmutableList.of(), ""));
-    Row r2 =
-        Row.of(col, new FlowTrace(FlowDisposition.DELIVERED_TO_SUBNET, ImmutableList.of(), ""));
-    Row r3 =
-        Row.of(
-            col,
-            new FlowTrace(
-                FlowDisposition.ACCEPTED,
-                ImmutableList.of(
-                    new FlowTraceHop(
-                        Edge.of("a", "a", "b", "b"),
-                        ImmutableSortedSet.of(),
-                        "a",
-                        "a",
-                        Flow.builder().setDstIp(Ip.ZERO).setIngressNode("a").setTag("a").build())),
-                ""));
-
-    assertThat(comparator.compare(r1, r2), lessThan(0));
-    assertThat(comparator.compare(r1, r3), lessThan(0));
-    assertThat(comparator.compare(r2, r3), lessThan(0));
-  }
-
-  @Test
   public void testColumnComparatorInteger() {
     String col = "col1";
     ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.INTEGER, "colDesc");
@@ -2562,7 +2532,7 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetNetworkNodeRolesNoSnapshots() throws IOException {
+  public void testGetNetworkNodeRolesEmpty() throws IOException {
     String network = "network1";
     _manager.initNetwork(network, null);
 
@@ -2571,16 +2541,12 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testGetNetworkNodeRolesNoGoodSnapshots() throws IOException {
+  public void testGetNetworkNodeRolesPresent() throws IOException {
     String network = "network1";
-    String snapshot = "snapshot1";
     String node = "node1";
     _manager.initNetwork(network, null);
-    NetworkId networkId = _idManager.getNetworkId(network);
-    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, node, _folder);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
-    NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(networkId, snapshotId);
-    NodeRolesData snapshotInferredNodeRoles =
+    NodeRolesId networkNodeRolesId = new NodeRolesId("nr");
+    NodeRolesData networkNodeRoles =
         NodeRolesData.builder()
             .setRoleDimensions(
                 ImmutableSortedSet.of(
@@ -2589,68 +2555,11 @@ public final class WorkMgrTest {
                         .setRoles(ImmutableSet.of(new NodeRole("role1", node)))
                         .build()))
             .build();
-    _manager.getStorage().storeNodeRoles(snapshotInferredNodeRoles, snapshotNodeRolesId);
-    SnapshotMetadataMgr.updateInitializationStatus(
-        networkId, snapshotId, ProcessingStatus.PARSING_FAIL, null);
-
-    // should return empty node roles since snapshot parsing failed
-    assertThat(_manager.getNetworkNodeRoles(network), equalTo(NodeRolesData.builder().build()));
-  }
-
-  @Test
-  public void testGetNetworkNodeRolesGoodSnapshot() throws IOException {
-    String network = "network1";
-    String snapshot = "snapshot1";
-    String node = "node1";
-    _manager.initNetwork(network, null);
-    NetworkId networkId = _idManager.getNetworkId(network);
-    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, node, _folder);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
-    NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(networkId, snapshotId);
-    NodeRolesData snapshotInferredNodeRoles =
-        NodeRolesData.builder()
-            .setRoleDimensions(
-                ImmutableSortedSet.of(
-                    NodeRoleDimension.builder()
-                        .setName("dim1")
-                        .setRoles(ImmutableSet.of(new NodeRole("role1", node)))
-                        .build()))
-            .build();
-    _manager.getStorage().storeNodeRoles(snapshotInferredNodeRoles, snapshotNodeRolesId);
-    SnapshotMetadataMgr.updateInitializationStatus(
-        networkId, snapshotId, ProcessingStatus.PARSED, null);
+    _manager.getStorage().storeNodeRoles(networkNodeRoles, networkNodeRolesId);
+    _idManager.assignNetworkNodeRolesId(_idManager.getNetworkId(network), networkNodeRolesId);
 
     // inferred roles for first snapshot should have been set network-wide
-    assertThat(_manager.getNetworkNodeRoles(network), equalTo(snapshotInferredNodeRoles));
-  }
-
-  @Test
-  public void testGetNetworkNodeRolesUnchangedOnceSet() throws IOException {
-    String network = "network1";
-    String snapshot = "snapshot1";
-    String node = "node1";
-    _manager.initNetwork(network, null);
-    NetworkId networkId = _idManager.getNetworkId(network);
-    NodeRolesData manualRoles = NodeRolesData.builder().build();
-    _manager.putNetworkNodeRoles(manualRoles, network);
-    WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, node, _folder);
-    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
-    NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(networkId, snapshotId);
-    NodeRolesData snapshotInferredNodeRoles =
-        NodeRolesData.builder()
-            .setRoleDimensions(
-                ImmutableSortedSet.of(
-                    NodeRoleDimension.builder()
-                        .setName("dim1")
-                        .setRoles(ImmutableSet.of(new NodeRole("role1", node)))
-                        .build()))
-            .build();
-    _manager.getStorage().storeNodeRoles(snapshotInferredNodeRoles, snapshotNodeRolesId);
-    SnapshotMetadataMgr.updateInitializationStatus(
-        networkId, snapshotId, ProcessingStatus.PARSED, null);
-
-    // network node roles should not have changed since they had already been set
-    assertThat(_manager.getNetworkNodeRoles(network), equalTo(manualRoles));
+    assertThat(_manager.getNetworkNodeRoles(network), equalTo(networkNodeRoles));
   }
 
   @Test
@@ -2775,8 +2684,10 @@ public final class WorkMgrTest {
                 analysis));
     WorkDetails workDetails = _manager.computeWorkDetails(workItem);
 
-    assertThat(workDetails.baseTestrig, equalTo(snapshot));
-    assertThat(workDetails.workType, equalTo(WorkType.PARSING_DEPENDENT_ANSWERING));
+    assertThat(
+        workDetails.getSnapshotId(),
+        equalTo(_idManager.getSnapshotId(snapshot, _idManager.getNetworkId(network))));
+    assertThat(workDetails.getWorkType(), equalTo(WorkType.PARSING_DEPENDENT_ANSWERING));
   }
 
   @Test
@@ -2795,8 +2706,10 @@ public final class WorkMgrTest {
             ImmutableMap.of(BfConsts.COMMAND_ANSWER, "", BfConsts.ARG_QUESTION_NAME, question));
     WorkDetails workDetails = _manager.computeWorkDetails(workItem);
 
-    assertThat(workDetails.baseTestrig, equalTo(snapshot));
-    assertThat(workDetails.workType, equalTo(WorkType.PARSING_DEPENDENT_ANSWERING));
+    assertThat(
+        workDetails.getSnapshotId(),
+        equalTo(_idManager.getSnapshotId(snapshot, _idManager.getNetworkId(network))));
+    assertThat(workDetails.getWorkType(), equalTo(WorkType.PARSING_DEPENDENT_ANSWERING));
   }
 
   @Test

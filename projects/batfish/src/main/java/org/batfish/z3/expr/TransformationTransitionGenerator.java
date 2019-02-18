@@ -13,10 +13,12 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
+import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
@@ -110,6 +112,12 @@ public final class TransformationTransitionGenerator {
               shiftIpAddressIntoSubnet.getSubnet()),
           _preState,
           _postState);
+    }
+
+    @Override
+    public BasicRuleStatement visitAssignPortFromPool(AssignPortFromPool assignPortFromPool) {
+      // TODO
+      throw new BatfishException("PAT is not supported");
     }
   }
 

@@ -20,6 +20,6 @@ public class WorkBean {
     dateTerminated = work.getDateTerminated();
     id = work.getId();
     status = work.getStatus();
-    workType = work.getDetails().workType;
+    workType = work.getDetails().getWorkType();
   }
 }

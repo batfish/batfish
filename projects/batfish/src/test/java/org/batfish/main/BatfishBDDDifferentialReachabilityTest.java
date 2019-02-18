@@ -33,6 +33,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,7 +43,6 @@ import org.batfish.common.util.TracePruner;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -121,21 +121,21 @@ public class BatfishBDDDifferentialReachabilityTest {
       Batfish batfish, Set<Flow> flows, FlowDisposition disposition) {
 
     batfish.pushBaseSnapshot();
-    Stream<FlowTrace> traces =
-        batfish.getTracerouteEngine().processFlows(flows, false).values().stream()
-            .flatMap(Set::stream);
+    Stream<Trace> traces =
+        batfish.getTracerouteEngine().computeTraces(flows, false).values().stream()
+            .flatMap(Collection::stream);
     assertTrue(
         String.format("all traces should have disposition %s in the base environment", disposition),
-        traces.allMatch(flowTrace -> flowTrace.getDisposition().equals(disposition)));
+        traces.allMatch(trace -> trace.getDisposition().equals(disposition)));
     batfish.popSnapshot();
 
     batfish.pushDeltaSnapshot();
     traces =
-        batfish.getTracerouteEngine().processFlows(flows, false).values().stream()
-            .flatMap(Set::stream);
+        batfish.getTracerouteEngine().computeTraces(flows, false).values().stream()
+            .flatMap(Collection::stream);
     assertTrue(
         String.format("no traces should have disposition %s in the delta environment", disposition),
-        traces.noneMatch(flowTrace -> flowTrace.getDisposition().equals(disposition)));
+        traces.noneMatch(trace -> trace.getDisposition().equals(disposition)));
     batfish.popSnapshot();
   }
 

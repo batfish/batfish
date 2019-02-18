@@ -14820,7 +14820,7 @@ F_NonNewline
 fragment
 F_NonWhitespace
 :
-   ~( ' ' | '\t' | '\u000C' | '\n' | '\r' )
+   ~( ' ' | '\t' | '\u000C' | '\u00A0' | '\n' | '\r' )
 ;
 
 F_PositiveHexDigit
@@ -14847,7 +14847,7 @@ F_UpperCaseLetter
 fragment
 F_Variable_RequiredVarChar
 :
-   ~( '0' .. '9' | '-' | [ \t\n\r(),!+$'"*#] | '[' | ']' | [/.] | ':' )
+   ~( '0' .. '9' | '-' | [ \t\u000C\u00A0\n\r(),!+$'"*#] | '[' | ']' | [/.] | ':' )
 ;
 
 fragment
@@ -14859,13 +14859,13 @@ F_Variable
 fragment
 F_Variable_VarChar
 :
-   ~( [ \t\n\r(),!$'"*#] | '[' | ']' )
+   ~( [ \t\u000C\u00A0\n\r(),!$'"*#] | '[' | ']' )
 ;
 
 fragment
 F_Variable_VarChar_Ipv6
 :
-   ~( [ \t\n\r(),!$'"*#] | '[' | ']' | ':' )
+   ~( [ \t\u000C\u00A0\n\r(),!$'"*#] | '[' | ']' | ':' )
 ;
 
 fragment
@@ -14874,6 +14874,7 @@ F_Whitespace
    ' '
    | '\t'
    | '\u000C'
+   | '\u00A0'
 ;
 
 mode M_Alias;
@@ -15343,7 +15344,7 @@ M_BannerText_HASH
 
 M_BannerText_ASA_BANNER_LINE
 :
-   ~[#^\r\n \t\u000C] F_NonNewline* -> type ( ASA_BANNER_LINE ) , popMode
+   ~[#^\r\n \t\u000C\u00A0] F_NonNewline* -> type ( ASA_BANNER_LINE ) , popMode
 ;
 
 M_BannerText_NEWLINE
