@@ -59,7 +59,7 @@ public class Parser extends CommonParser {
    *
    *   interfaceTerm := @connectedTo(ipSpaceExpr)  // non-@ versions also supported for back compat
    *                        | @interfacegroup(a, b)
-   *                        | @type(interfaceType)
+   *                        | @link(interfaceType)
    *                        | @vrf(vrfName)
    *                        | @zone(zoneName)
    *                        | interfaceName
@@ -141,7 +141,7 @@ public class Parser extends CommonParser {
 
   public Rule InterfaceType() {
     return Sequence(
-        FirstOf(IgnoreCase("@type"), IgnoreCase("type")),
+        FirstOf(IgnoreCase("@link"), IgnoreCase("type")),
         WhiteSpace(),
         "( ",
         InterfaceTypeExpr(),
@@ -308,7 +308,7 @@ public class Parser extends CommonParser {
    *   nodeExpr := nodeTerm [{@literal &} | + | \ nodeTerm]*
    *
    *   nodeTerm := @role(a, b) // ref.noderole is also supported for back compat
-   *               | @type(a)
+   *               | @device(a)
    *               | nodeName
    *               | nodeNameRegex
    *               | ( nodeTerm )
@@ -366,7 +366,7 @@ public class Parser extends CommonParser {
 
   public Rule NodeType() {
     return Sequence(
-        IgnoreCase("@type"),
+        IgnoreCase("@device"),
         WhiteSpace(),
         "( ",
         NodeTypeExpr(),
