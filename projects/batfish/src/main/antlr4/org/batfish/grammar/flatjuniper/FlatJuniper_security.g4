@@ -137,12 +137,18 @@ nat_pool
    (
       natp_address
       | natp_description
+      | natp_port
    )
 ;
 
 nat_pool_utilization_alarm
 :
     POOL_UTILIZATION_ALARM null_filler
+;
+
+nat_pool_default_port_range
+:
+   POOL_DEFAULT_PORT_RANGE low = DEC (TO high = DEC)?
 ;
 
 nat_port_randomization
@@ -182,6 +188,19 @@ natp_address
       (
          from = IP_PREFIX TO to = IP_PREFIX
       )
+      |
+      (
+         ip_address = IP_ADDRESS PORT port_num = DEC
+      )
+   )
+;
+
+natp_port
+:
+   PORT
+   (
+      NO_TRANSLATION
+      | RANGE from = DEC (TO to = DEC)?
    )
 ;
 
@@ -1004,6 +1023,7 @@ sen_source
       | nat_pool
       | nat_pool_utilization_alarm
       | nat_port_randomization
+      | nat_pool_default_port_range
    )
 ;
 

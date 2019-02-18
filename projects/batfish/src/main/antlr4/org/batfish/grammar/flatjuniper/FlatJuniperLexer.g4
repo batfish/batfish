@@ -4163,6 +4163,11 @@ NO_TCP_FORWARDING
    'no-tcp-forwarding'
 ;
 
+NO_TRANSLATION
+:
+   'no-translation'
+;
+
 NO_TRAPS
 :
    'no-traps'
@@ -4453,6 +4458,11 @@ POOL
    'pool'
 ;
 
+POOL_DEFAULT_PORT_RANGE
+:
+   'pool-default-port-range'
+;
+
 POOL_UTILIZATION_ALARM
 :
     'pool-utilization-alarm'
@@ -4736,6 +4746,11 @@ RADIUS_OPTIONS
 RADIUS_SERVER
 :
    'radius-server'
+;
+
+RANGE
+:
+   'range'
 ;
 
 RAS

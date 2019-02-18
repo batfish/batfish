@@ -79,6 +79,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMM
 import static org.batfish.representation.juniper.JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_L3_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VTEP_SOURCE_INTERFACE;
+import static org.batfish.representation.juniper.Nat.Type.SOURCE;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -301,8 +302,10 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_family_shortcutsCon
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_applicationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_application_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_poolContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_pool_default_port_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_rule_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_areaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_reference_bandwidthContext;
@@ -641,9 +644,11 @@ import org.batfish.representation.juniper.NatRuleSet;
 import org.batfish.representation.juniper.NatRuleThenInterface;
 import org.batfish.representation.juniper.NatRuleThenOff;
 import org.batfish.representation.juniper.NatRuleThenPool;
+import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.NodeDevice;
 import org.batfish.representation.juniper.NssaSettings;
 import org.batfish.representation.juniper.OspfArea;
+import org.batfish.representation.juniper.PatPool;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PrefixList;
 import org.batfish.representation.juniper.PsFromAsPath;
@@ -3159,7 +3164,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterSen_source(Sen_sourceContext ctx) {
-    _currentNat = _currentLogicalSystem.getOrCreateNat(Nat.Type.SOURCE);
+    _currentNat = _currentLogicalSystem.getOrCreateNat(SOURCE);
   }
 
   @Override
@@ -4359,10 +4364,41 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         _currentNatPool.setFromAddress(Ip.parse(ctx.from.getText()));
         _currentNatPool.setToAddress(Ip.parse(ctx.to.getText()));
       }
-    } else {
+    } else if (!ctx.IP_PREFIX().isEmpty()) {
+      // address IP_PREFIX
       Prefix prefix = Prefix.parse(ctx.prefix.getText());
       _currentNatPool.setFromAddress(prefix.getFirstHostIp());
       _currentNatPool.setToAddress(prefix.getLastHostIp());
+    } else if (ctx.PORT() != null) {
+      // this command can only happen for destination nat, and when port is given we need to enable
+      // port translation
+      _currentNatPool.setFromAddress(Ip.parse(ctx.ip_address.getText()));
+      _currentNatPool.setToAddress(Ip.parse(ctx.ip_address.getText()));
+      int port = Integer.parseInt(ctx.port_num.getText());
+      _currentNatPool.setPortAddressTranslation(new PatPool(port, port));
+    } else {
+      _w.redFlag(ctx.getText() + " cannot be recognized");
+    }
+  }
+
+  @Override
+  public void exitNatp_port(Natp_portContext ctx) {
+    if (ctx.NO_TRANSLATION() != null) {
+      _currentNatPool.setPortAddressTranslation(NoPortTranslation.INSTANCE);
+    } else if (ctx.RANGE() != null) {
+      int fromPort = Integer.parseInt(ctx.from.getText());
+      int toPort = Integer.parseInt(ctx.to.getText());
+      _currentNatPool.setPortAddressTranslation(new PatPool(fromPort, toPort));
+    } else {
+      _w.redFlag(ctx.getText() + " cannot be recognized");
+    }
+  }
+
+  @Override
+  public void exitNat_pool_default_port_range(Nat_pool_default_port_rangeContext ctx) {
+    _currentNat.setDefaultFromPort(Integer.parseInt(ctx.low.getText()));
+    if (ctx.TO() != null) {
+      _currentNat.setDefaultToPort(Integer.parseInt(ctx.high.getText()));
     }
   }
 
@@ -5017,7 +5053,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (ctx.FROM() != null) {
       packetLocation = _currentNatRuleSet.getFromLocation();
     } else { // TO
-      if (_currentNat.getType() != Nat.Type.SOURCE) {
+      if (_currentNat.getType() != SOURCE) {
         _w.addWarning(
             ctx,
             getFullText(ctx),
