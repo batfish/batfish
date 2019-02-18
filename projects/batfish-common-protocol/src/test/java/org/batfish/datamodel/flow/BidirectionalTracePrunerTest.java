@@ -1,11 +1,13 @@
 package org.batfish.datamodel.flow;
 
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
+import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
 import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
+import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
 import static org.batfish.datamodel.flow.BidirectionalTracePruner.prune;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -35,8 +37,8 @@ public class BidirectionalTracePrunerTest {
   @Test
   public void testForwardFlow() {
     Trace trace1 = new Trace(ACCEPTED, ImmutableList.of(HOP1));
-    Trace trace2 = new Trace(DENIED_IN, ImmutableList.of(HOP2));
-    Trace trace3 = new Trace(DENIED_OUT, ImmutableList.of(HOP3));
+    Trace trace2 = new Trace(EXITS_NETWORK, ImmutableList.of(HOP2));
+    Trace trace3 = new Trace(DELIVERED_TO_SUBNET, ImmutableList.of(HOP3));
 
     BidirectionalTrace bTrace1 =
         new BidirectionalTrace(FLOW1, trace1, ImmutableSet.of(), FLOW1, trace1);
@@ -57,8 +59,8 @@ public class BidirectionalTracePrunerTest {
   @Test
   public void testReverseFlow() {
     Trace trace1 = new Trace(ACCEPTED, ImmutableList.of(HOP1));
-    Trace trace2 = new Trace(DENIED_IN, ImmutableList.of(HOP2));
-    Trace trace3 = new Trace(DENIED_OUT, ImmutableList.of(HOP3));
+    Trace trace2 = new Trace(EXITS_NETWORK, ImmutableList.of(HOP2));
+    Trace trace3 = new Trace(DELIVERED_TO_SUBNET, ImmutableList.of(HOP3));
 
     BidirectionalTrace bTrace1 =
         new BidirectionalTrace(FLOW1, trace1, ImmutableSet.of(), FLOW1, trace1);
@@ -80,8 +82,8 @@ public class BidirectionalTracePrunerTest {
   public void testForwardDisposition() {
     Trace trace1 = new Trace(ACCEPTED, ImmutableList.of(HOP1));
     Trace trace2 = new Trace(ACCEPTED, ImmutableList.of(HOP2));
-    Trace trace3 = new Trace(DENIED_IN, ImmutableList.of(HOP3));
-    Trace trace4 = new Trace(DENIED_OUT, ImmutableList.of(HOP3));
+    Trace trace3 = new Trace(EXITS_NETWORK, ImmutableList.of(HOP3));
+    Trace trace4 = new Trace(DELIVERED_TO_SUBNET, ImmutableList.of(HOP3));
 
     BidirectionalTrace bTrace1 =
         new BidirectionalTrace(FLOW1, trace1, ImmutableSet.of(), FLOW1, trace1);

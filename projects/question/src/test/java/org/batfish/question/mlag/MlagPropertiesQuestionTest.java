@@ -1,7 +1,7 @@
 package org.batfish.question.mlag;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;

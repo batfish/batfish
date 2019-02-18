@@ -12,9 +12,9 @@ public class PatPool implements PortAddressTranslation, Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private int _fromPort;
+  private final int _fromPort;
 
-  private int _toPort;
+  private final int _toPort;
 
   public PatPool(int fromPort, int toPort) {
     _fromPort = fromPort;
@@ -27,14 +27,6 @@ public class PatPool implements PortAddressTranslation, Serializable {
 
   public Integer getToPort() {
     return _toPort;
-  }
-
-  public void setFromPort(int fromPort) {
-    _fromPort = fromPort;
-  }
-
-  public void setToPort(int toPort) {
-    _toPort = toPort;
   }
 
   @Override

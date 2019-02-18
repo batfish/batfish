@@ -4,9 +4,9 @@ import static org.batfish.common.topology.TopologyUtil.synthesizeL3Topology;
 import static org.batfish.datamodel.isis.IsisLevel.LEVEL_1_2;
 import static org.batfish.datamodel.isis.IsisLevel.LEVEL_2;
 import static org.batfish.dataplane.topology.matchers.IsisEdgeMatchers.hasCircuitType;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

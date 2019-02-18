@@ -1,9 +1,10 @@
 package org.batfish.datamodel.flow;
 
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
+import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -33,17 +34,20 @@ public final class BidirectionalTraceTest {
   public void testKey() {
     Flow flow1 = Flow.builder().setIngressNode("ingressNode").setTag("tag1").build();
     Flow flow2 = Flow.builder().setIngressNode("ingressNode").setTag("tag2").build();
-    Trace trace = new Trace(ACCEPTED, ImmutableList.of());
+    Trace successTrace = new Trace(ACCEPTED, ImmutableList.of());
     assertThat(
-        new BidirectionalTrace(flow1, trace, ImmutableSet.of(), flow2, trace).getKey(),
+        new BidirectionalTrace(flow1, successTrace, ImmutableSet.of(), flow2, successTrace)
+            .getKey(),
         equalTo(new Key(flow1, ImmutableSet.of(), flow2)));
     assertThat(
-        new BidirectionalTrace(flow2, trace, ImmutableSet.of(), flow1, trace).getKey(),
+        new BidirectionalTrace(flow2, successTrace, ImmutableSet.of(), flow1, successTrace)
+            .getKey(),
         equalTo(new Key(flow2, ImmutableSet.of(), flow1)));
     FirewallSessionTraceInfo session =
         new FirewallSessionTraceInfo("hostname", null, null, ImmutableSet.of(), TRUE, null);
+    Trace failTrace = new Trace(DENIED_IN, ImmutableList.of());
     assertThat(
-        new BidirectionalTrace(flow1, trace, ImmutableSet.of(session), null, null).getKey(),
+        new BidirectionalTrace(flow1, failTrace, ImmutableSet.of(session), null, null).getKey(),
         equalTo(new Key(flow1, ImmutableSet.of(session), null)));
   }
 }

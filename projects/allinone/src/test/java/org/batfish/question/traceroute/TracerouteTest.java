@@ -1,21 +1,21 @@
 package org.batfish.question.traceroute;
 
 import static org.batfish.common.util.TracePruner.DEFAULT_MAX_TRACES;
-import static org.batfish.datamodel.matchers.EdgeMatchers.hasNode1;
-import static org.batfish.datamodel.matchers.FlowTraceHopMatchers.hasEdge;
-import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasDisposition;
-import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasHop;
-import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasHops;
+import static org.batfish.datamodel.matchers.HopMatchers.hasNodeName;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
+import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
+import static org.batfish.datamodel.matchers.TraceMatchers.hasHops;
+import static org.batfish.datamodel.matchers.TraceMatchers.hasLastHop;
+import static org.batfish.datamodel.matchers.TraceMatchers.hasNthHop;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACES;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
@@ -38,7 +38,6 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.StaticRoute.Builder;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.matchers.TraceMatchers;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -109,7 +108,6 @@ public class TracerouteTest {
   public void testIgnoreFilters() throws IOException {
     SortedMap<String, Configuration> configs = aclNetwork();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
-    batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
     batfish.computeDataPlane();
     PacketHeaderConstraints header = PacketHeaderConstraints.builder().setDstIp("1.1.1.1").build();
 
@@ -125,7 +123,7 @@ public class TracerouteTest {
             hasColumn(
                 COL_TRACES,
                 everyItem(hasDisposition(FlowDisposition.DENIED_OUT)),
-                Schema.set(Schema.FLOW_TRACE))));
+                Schema.set(Schema.TRACE))));
 
     // with ignoreFilters we get DELIVERED_TO_SUBNET, since the dst ip is in the interface subnet
     question = new TracerouteQuestion(".*", header, true, DEFAULT_MAX_TRACES);
@@ -138,7 +136,7 @@ public class TracerouteTest {
             hasColumn(
                 COL_TRACES,
                 everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
-                Schema.set(Schema.FLOW_TRACE))));
+                Schema.set(Schema.TRACE))));
   }
 
   /*
@@ -198,7 +196,6 @@ public class TracerouteTest {
         .build();
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
-    batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
     batfish.computeDataPlane();
 
     TracerouteQuestion question =
@@ -216,8 +213,7 @@ public class TracerouteTest {
     // the trace should only traverse R1
     assertThat(
         answer.getRows().getData(),
-        everyItem(
-            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(1))), Schema.set(Schema.FLOW_TRACE))));
+        everyItem(hasColumn(COL_TRACES, everyItem(hasHops(hasSize(1))), Schema.set(Schema.TRACE))));
 
     assertThat(
         answer.getRows().getData(),
@@ -225,7 +221,7 @@ public class TracerouteTest {
             hasColumn(
                 COL_TRACES,
                 everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
-                Schema.set(Schema.FLOW_TRACE))));
+                Schema.set(Schema.TRACE))));
   }
 
   /*
@@ -286,7 +282,6 @@ public class TracerouteTest {
         .build();
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
-    batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
     batfish.computeDataPlane();
 
     TracerouteQuestion question =
@@ -301,8 +296,7 @@ public class TracerouteTest {
 
     assertThat(
         answer.getRows().getData(),
-        everyItem(
-            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(2))), Schema.set(Schema.FLOW_TRACE))));
+        everyItem(hasColumn(COL_TRACES, everyItem(hasHops(hasSize(2))), Schema.set(Schema.TRACE))));
 
     assertThat(
         answer.getRows().getData(),
@@ -310,7 +304,7 @@ public class TracerouteTest {
             hasColumn(
                 COL_TRACES,
                 everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
-                Schema.set(Schema.FLOW_TRACE))));
+                Schema.set(Schema.TRACE))));
   }
 
   /*
@@ -390,7 +384,6 @@ public class TracerouteTest {
                 .build()));
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
-    batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
     batfish.computeDataPlane();
 
     TracerouteQuestion question =
@@ -412,8 +405,7 @@ public class TracerouteTest {
 
     assertThat(
         answer.getRows().getData(),
-        everyItem(
-            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(1))), Schema.set(Schema.FLOW_TRACE))));
+        everyItem(hasColumn(COL_TRACES, everyItem(hasHops(hasSize(1))), Schema.set(Schema.TRACE))));
 
     assertThat(
         answer.getRows().getData(),
@@ -421,7 +413,7 @@ public class TracerouteTest {
             hasColumn(
                 COL_TRACES,
                 everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
-                Schema.set(Schema.FLOW_TRACE))));
+                Schema.set(Schema.TRACE))));
   }
 
   @Test
@@ -431,8 +423,7 @@ public class TracerouteTest {
 
     assertThat(
         answer.getRows().getData(),
-        everyItem(
-            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(2))), Schema.set(Schema.FLOW_TRACE))));
+        everyItem(hasColumn(COL_TRACES, everyItem(hasHops(hasSize(2))), Schema.set(Schema.TRACE))));
 
     // check packets traverse R2 as the last hop
     assertThat(
@@ -440,8 +431,8 @@ public class TracerouteTest {
         everyItem(
             hasColumn(
                 COL_TRACES,
-                everyItem(hasHop(1, hasEdge(hasNode1(equalTo("~Configuration_1~"))))),
-                Schema.set(Schema.FLOW_TRACE))));
+                everyItem(hasLastHop(hasNodeName("~Configuration_1~"))),
+                Schema.set(Schema.TRACE))));
 
     assertThat(
         answer.getRows().getData(),
@@ -449,7 +440,7 @@ public class TracerouteTest {
             hasColumn(
                 COL_TRACES,
                 everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
-                Schema.set(Schema.FLOW_TRACE))));
+                Schema.set(Schema.TRACE))));
   }
 
   /*
@@ -530,7 +521,6 @@ public class TracerouteTest {
                 .build()));
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
-    batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
     batfish.computeDataPlane();
 
     TracerouteQuestion question =
@@ -557,8 +547,7 @@ public class TracerouteTest {
     // check that packet should reach R1
     assertThat(
         answer.getRows().getData(),
-        everyItem(
-            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(1))), Schema.set(Schema.FLOW_TRACE))));
+        everyItem(hasColumn(COL_TRACES, everyItem(hasHops(hasSize(1))), Schema.set(Schema.TRACE))));
 
     assertThat(
         answer.getRows().getData(),
@@ -566,7 +555,7 @@ public class TracerouteTest {
             hasColumn(
                 COL_TRACES,
                 everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
-                Schema.set(Schema.FLOW_TRACE))));
+                Schema.set(Schema.TRACE))));
   }
 
   /*
@@ -677,7 +666,6 @@ public class TracerouteTest {
                 .build()));
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs.build(), _folder);
-    batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
     batfish.computeDataPlane();
 
     TracerouteQuestion question =
@@ -701,16 +689,15 @@ public class TracerouteTest {
     // check that packet should traverse R1 - R2 - R3 - R2
     assertThat(
         answer.getRows().getData(),
-        everyItem(
-            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(4))), Schema.set(Schema.FLOW_TRACE))));
+        everyItem(hasColumn(COL_TRACES, everyItem(hasHops(hasSize(4))), Schema.set(Schema.TRACE))));
 
     assertThat(
         answer.getRows().getData(),
         everyItem(
             hasColumn(
                 COL_TRACES,
-                everyItem(hasHop(3, hasEdge(hasNode1(equalTo("~Configuration_1~"))))),
-                Schema.set(Schema.FLOW_TRACE))));
+                everyItem(hasNthHop(3, hasNodeName("~Configuration_1~"))),
+                Schema.set(Schema.TRACE))));
 
     // check disposition
     assertThat(
@@ -719,7 +706,7 @@ public class TracerouteTest {
             hasColumn(
                 COL_TRACES,
                 everyItem(hasDisposition(FlowDisposition.LOOP)),
-                Schema.set(Schema.FLOW_TRACE))));
+                Schema.set(Schema.TRACE))));
   }
 
   @Test
@@ -730,8 +717,7 @@ public class TracerouteTest {
     // check that packet only traverse R1
     assertThat(
         answer.getRows().getData(),
-        everyItem(
-            hasColumn(COL_TRACES, everyItem(hasHops(hasSize(1))), Schema.set(Schema.FLOW_TRACE))));
+        everyItem(hasColumn(COL_TRACES, everyItem(hasHops(hasSize(1))), Schema.set(Schema.TRACE))));
 
     // check disposition
     assertThat(
@@ -740,7 +726,7 @@ public class TracerouteTest {
             hasColumn(
                 COL_TRACES,
                 everyItem(hasDisposition(FlowDisposition.DELIVERED_TO_SUBNET)),
-                Schema.set(Schema.FLOW_TRACE))));
+                Schema.set(Schema.TRACE))));
   }
 
   private Batfish maxTracesBatfish() throws IOException {
@@ -866,8 +852,7 @@ public class TracerouteTest {
                     hasColumn(
                         TracerouteAnswerer.COL_TRACES,
                         containsInAnyOrder(
-                            ImmutableList.of(
-                                TraceMatchers.hasDisposition(FlowDisposition.EXITS_NETWORK))),
+                            ImmutableList.of(hasDisposition(FlowDisposition.EXITS_NETWORK))),
                         Schema.set(Schema.TRACE))))));
   }
 
@@ -941,8 +926,7 @@ public class TracerouteTest {
                     hasColumn(
                         TracerouteAnswerer.COL_TRACES,
                         containsInAnyOrder(
-                            ImmutableList.of(
-                                TraceMatchers.hasDisposition(FlowDisposition.INSUFFICIENT_INFO))),
+                            ImmutableList.of(hasDisposition(FlowDisposition.INSUFFICIENT_INFO))),
                         Schema.set(Schema.TRACE))))));
   }
 }

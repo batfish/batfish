@@ -5,11 +5,11 @@ import static org.batfish.datamodel.Flow.PROP_DST_PORT;
 import static org.batfish.datamodel.Flow.PROP_SRC_IP;
 import static org.batfish.datamodel.Flow.PROP_SRC_PORT;
 import static org.batfish.datamodel.FlowDiff.flowDiffs;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;

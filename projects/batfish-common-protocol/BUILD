@@ -17,10 +17,11 @@ filegroup(
         "src/main/java/org/batfish/grammar/BatfishLexer.java",
         "src/main/java/org/batfish/grammar/BatfishLexerErrorListener.java",
         "src/main/java/org/batfish/grammar/BatfishLexerRecoveryStrategy.java",
+        "src/main/java/org/batfish/grammar/BatfishParseException.java",
+        "src/main/java/org/batfish/grammar/BatfishParseTreeWalker.java",
         "src/main/java/org/batfish/grammar/BatfishParser.java",
         "src/main/java/org/batfish/grammar/BatfishParserATNSimulator.java",
         "src/main/java/org/batfish/grammar/BatfishParserErrorListener.java",
-        "src/main/java/org/batfish/grammar/BatfishParseTreeWalker.java",
         "src/main/java/org/batfish/grammar/GrammarSettings.java",
         "src/main/java/org/batfish/grammar/ParseTreePrettyPrinter.java",
         "src/main/java/org/batfish/grammar/UnrecognizedLineToken.java",
@@ -73,6 +74,7 @@ java_library(
         "@grizzly_framework//:compile",
         "@grizzly_server//:compile",
         "@guava//:compile",
+        "@icu4j//:compile",
         "@jackson_annotations//:compile",
         "@jackson_core//:compile",
         "@jackson_databind//:compile",
@@ -91,6 +93,7 @@ java_library(
         "@opentracing_api//:compile",
         "@opentracing_contrib_jaxrs//:compile",
         "@opentracing_util//:compile",
+        "@parboiled//:compile",
         "@xstream//:compile",
     ],
 )
@@ -116,6 +119,7 @@ java_library(
         "@jackson_core//:compile",
         "@jsr305//:compile",
         "@junit//:compile",
+        "@parboiled//:compile",
     ],
 )
 
@@ -146,6 +150,7 @@ junit_tests(
         "@opentracing_api//:compile",
         "@opentracing_mock//:compile",
         "@opentracing_util//:compile",
+        "@parboiled//:compile",
     ],
 )
 
@@ -175,7 +180,7 @@ genrule(
         "RecoveryParserListener.java",
     ],
     cmd = """
-java -cp $(location //third_party/org/antlr4/antlr4-complete) \
+java -cp $(location @antlr4_tool//jar) \
     org.antlr.v4.Tool \
     -Xexact-output-dir \
        $(location src/test/antlr4/org/batfish/grammar/recovery/RecoveryLexer.g4) \
@@ -184,7 +189,7 @@ java -cp $(location //third_party/org/antlr4/antlr4-complete) \
     -encoding UTF-8 \
     -Werror \
     -o $(@D)""",
-    tools = ["//third_party/org/antlr4/antlr4-complete"],
+    tools = ["@antlr4_tool//jar"],
 )
 
 genrule(

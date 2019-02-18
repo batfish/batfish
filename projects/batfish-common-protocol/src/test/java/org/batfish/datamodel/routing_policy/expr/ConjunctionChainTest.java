@@ -27,7 +27,6 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -79,7 +78,7 @@ public class ConjunctionChainTest {
                       BooleanExprs.TRUE, ImmutableList.of(new SetMetric(new LiteralLong(500L))))))
           .build();
 
-  private Environment buildEnvironment(
+  private static Environment buildEnvironment(
       NavigableMap<String, RoutingPolicy> policies, String defaultPolicy, AbstractRoute route) {
     NetworkFactory nf = new NetworkFactory();
     Builder cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.JUNIPER);
@@ -162,32 +161,32 @@ public class ConjunctionChainTest {
         buildEnvironment(
             policiesMap, DEFAULT_POLICY.getName(), srb.setTag(1).setNetwork(NETWORK_1).build());
     Result result = conjunctionChain.evaluate(environment);
-    MatcherAssert.assertThat(environment.getOutputRoute().getMetric(), equalTo(10L));
-    MatcherAssert.assertThat(result, equalTo(new Result(true, false, false, false)));
+    assertThat(environment.getOutputRoute().getMetric(), equalTo(10L));
+    assertThat(result, equalTo(new Result(true, false, false, false)));
 
     // Route with tag 2 and NETWORK_1 should be rejected by first policy, no metric change
     environment =
         buildEnvironment(
             policiesMap, DEFAULT_POLICY.getName(), srb.setTag(2).setNetwork(NETWORK_1).build());
     result = conjunctionChain.evaluate(environment);
-    MatcherAssert.assertThat(environment.getOutputRoute().getMetric(), equalTo(10L));
-    MatcherAssert.assertThat(result, equalTo(new Result(false, false, false, false)));
+    assertThat(environment.getOutputRoute().getMetric(), equalTo(10L));
+    assertThat(result, equalTo(new Result(false, false, false, false)));
 
     // Route with tag 1 and NETWORK_2 should be rejected by second policy, no metric change
     environment =
         buildEnvironment(
             policiesMap, DEFAULT_POLICY.getName(), srb.setTag(1).setNetwork(NETWORK_2).build());
     result = conjunctionChain.evaluate(environment);
-    MatcherAssert.assertThat(environment.getOutputRoute().getMetric(), equalTo(10L));
-    MatcherAssert.assertThat(result, equalTo(new Result(false, false, false, false)));
+    assertThat(environment.getOutputRoute().getMetric(), equalTo(10L));
+    assertThat(result, equalTo(new Result(false, false, false, false)));
 
     // Route with tag 3 and NETWORK_3 should fall through both policies, hit default, update metric
     environment =
         buildEnvironment(
             policiesMap, DEFAULT_POLICY.getName(), srb.setTag(3).setNetwork(NETWORK_3).build());
     result = conjunctionChain.evaluate(environment);
-    MatcherAssert.assertThat(environment.getOutputRoute().getMetric(), equalTo(500L));
-    MatcherAssert.assertThat(result, equalTo(new Result(false, false, true, false)));
+    assertThat(environment.getOutputRoute().getMetric(), equalTo(500L));
+    assertThat(result, equalTo(new Result(false, false, true, false)));
   }
 
   @Test

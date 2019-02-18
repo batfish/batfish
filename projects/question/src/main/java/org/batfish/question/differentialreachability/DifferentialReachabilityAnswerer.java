@@ -8,7 +8,6 @@ import static org.batfish.question.traceroute.TracerouteAnswerer.metadata;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import java.util.List;
@@ -18,22 +17,16 @@ import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowHistory;
-import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.PathConstraints;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.datamodel.table.TableDiff;
-import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.specifier.FlexibleInferFromLocationIpSpaceSpecifierFactory;
 import org.batfish.specifier.IpSpaceAssignment;
@@ -46,16 +39,8 @@ import org.batfish.specifier.SpecifierContext;
 public class DifferentialReachabilityAnswerer extends Answerer {
   public static final String COL_FLOW = "flow";
 
-  static final String COL_BASE_TRACES = TableDiff.baseColumnName(getTracesColumnName());
-
-  static final String COL_DELTA_TRACES = TableDiff.deltaColumnName(getTracesColumnName());
-
   public DifferentialReachabilityAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
-  }
-
-  private static String getTracesColumnName() {
-    return "traces";
   }
 
   @Override
@@ -115,64 +100,19 @@ public class DifferentialReachabilityAnswerer extends Answerer {
         Sets.union(result.getDecreasedReachabilityFlows(), result.getIncreasedReachabilityFlows());
     Multiset<Row> rows;
     TableAnswerElement table;
-    if (_batfish.debugFlagEnabled("oldtraceroute")) {
-      FlowHistory flowHistory =
-          _batfish.differentialFlowHistory(flows, parameters.getIgnoreFilters());
-      rows = flowHistoryToRows(flowHistory);
-      table = new TableAnswerElement(createMetadata());
-    } else {
-      _batfish.pushBaseSnapshot();
-      Map<Flow, List<Trace>> baseFlowTraces =
-          _batfish.buildFlows(flows, parameters.getIgnoreFilters());
-      _batfish.popSnapshot();
+    _batfish.pushBaseSnapshot();
+    Map<Flow, List<Trace>> baseFlowTraces =
+        _batfish.buildFlows(flows, parameters.getIgnoreFilters());
+    _batfish.popSnapshot();
 
-      _batfish.pushDeltaSnapshot();
-      Map<Flow, List<Trace>> deltaFlowTraces =
-          _batfish.buildFlows(flows, parameters.getIgnoreFilters());
-      _batfish.popSnapshot();
+    _batfish.pushDeltaSnapshot();
+    Map<Flow, List<Trace>> deltaFlowTraces =
+        _batfish.buildFlows(flows, parameters.getIgnoreFilters());
+    _batfish.popSnapshot();
 
-      rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces, parameters.getMaxTraces());
-      table = new TableAnswerElement(metadata(true));
-    }
+    rows = diffFlowTracesToRows(baseFlowTraces, deltaFlowTraces, parameters.getMaxTraces());
+    table = new TableAnswerElement(metadata(true));
     table.postProcessAnswer(_question, rows);
     return table;
-  }
-
-  private static TableMetadata createMetadata() {
-    ImmutableList<ColumnMetadata> columnMetadata =
-        ImmutableList.of(
-            new ColumnMetadata(COL_FLOW, Schema.FLOW, "The flow", true, true),
-            new ColumnMetadata(
-                COL_BASE_TRACES,
-                Schema.set(Schema.FLOW_TRACE),
-                "The flow traces in the BASE environment",
-                false,
-                true),
-            new ColumnMetadata(
-                COL_DELTA_TRACES,
-                Schema.set(Schema.FLOW_TRACE),
-                "The flow traces in the DELTA environment",
-                false,
-                true));
-    return new TableMetadata(columnMetadata, "Flows with reduced reachability");
-  }
-
-  /**
-   * Converts a flowHistory object into a set of Rows. Expects that the traces correspond to only
-   * one environment.
-   */
-  private Multiset<Row> flowHistoryToRows(FlowHistory flowHistory) {
-    Multiset<Row> rows = LinkedHashMultiset.create();
-    for (FlowHistoryInfo historyInfo : flowHistory.getTraces().values()) {
-      rows.add(
-          Row.of(
-              COL_FLOW,
-              historyInfo.getFlow(),
-              COL_BASE_TRACES,
-              historyInfo.getPaths().get(Flow.BASE_FLOW_TAG),
-              COL_DELTA_TRACES,
-              historyInfo.getPaths().get(Flow.DELTA_FLOW_TAG)));
-    }
-    return rows;
   }
 }

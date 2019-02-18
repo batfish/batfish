@@ -20,13 +20,14 @@ import static org.batfish.question.traceroute.BidirectionalTracerouteAnswerer.to
 import static org.batfish.question.traceroute.MockTracerouteEngine.forFlow;
 import static org.batfish.question.traceroute.MockTracerouteEngine.forFlows;
 import static org.batfish.question.traceroute.MockTracerouteEngine.forSessions;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -381,6 +382,22 @@ public final class BidirectionalTracerouteAnswererTest {
                   COL_NEW_SESSIONS, contains("session1", "session2"), Schema.list(Schema.STRING)),
               hasColumn(COL_REVERSE_FLOW, equalTo(REVERSE_FLOW), Schema.FLOW),
               hasColumn(COL_REVERSE_TRACES, contains(t1), Schema.list(Schema.TRACE))));
+    }
+
+    {
+      // No return traces
+      Trace t = new Trace(DENIED_IN, ImmutableList.of());
+      BidirectionalTrace bt =
+          new BidirectionalTrace(FORWARD_FLOW, t, ImmutableSet.of(), null, null);
+      Row row = toRow(bt.getKey(), ImmutableList.of(bt));
+      assertThat(
+          row,
+          allOf(
+              hasColumn(COL_FORWARD_FLOW, equalTo(FORWARD_FLOW), Schema.FLOW),
+              hasColumn(COL_FORWARD_TRACES, contains(t), Schema.list(Schema.TRACE)),
+              hasColumn(COL_NEW_SESSIONS, empty(), Schema.list(Schema.STRING)),
+              hasColumn(COL_REVERSE_FLOW, nullValue(), Schema.FLOW),
+              hasColumn(COL_REVERSE_TRACES, empty(), Schema.list(Schema.TRACE))));
     }
   }
 }

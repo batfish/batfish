@@ -1,16 +1,8 @@
 package org.batfish.specifier;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
-import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
-import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
-import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
-import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
-import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
-import static org.batfish.datamodel.FlowDisposition.LOOP;
-import static org.batfish.datamodel.FlowDisposition.NEIGHBOR_UNREACHABLE;
-import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
-import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
+import static org.batfish.datamodel.FlowDisposition.FAILURE_DISPOSITIONS;
+import static org.batfish.datamodel.FlowDisposition.SUCCESS_DISPOSITIONS;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -29,8 +21,8 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.answers.AutoCompleteUtils;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
-import org.batfish.datamodel.questions.PropertySpecifier;
 
 /** A way to specify dispositions using a shorthand, such as "success" or "failure". */
 @ParametersAreNonnullByDefault
@@ -38,20 +30,6 @@ public final class DispositionSpecifier {
 
   @VisibleForTesting public static final String SUCCESS = "success";
   @VisibleForTesting public static final String FAILURE = "failure";
-
-  private static final Set<FlowDisposition> FAILURE_DISPOSITIONS =
-      ImmutableSet.<FlowDisposition>builder()
-          .add(DENIED_IN)
-          .add(DENIED_OUT)
-          .add(LOOP)
-          .add(NEIGHBOR_UNREACHABLE)
-          .add(INSUFFICIENT_INFO)
-          .add(NO_ROUTE)
-          .add(NULL_ROUTED)
-          .build();
-
-  public static final Set<FlowDisposition> SUCCESS_DISPOSITIONS =
-      ImmutableSet.of(ACCEPTED, DELIVERED_TO_SUBNET, EXITS_NETWORK);
 
   private static final Map<String, Set<FlowDisposition>> _expansions =
       ImmutableMap.of(
@@ -111,10 +89,10 @@ public final class DispositionSpecifier {
 
   /**
    * Returns a list of suggestions based on the query, based on {@link
-   * PropertySpecifier#baseAutoComplete}.
+   * AutoCompleteUtils#baseAutoComplete}.
    */
   public static List<AutocompleteSuggestion> autoComplete(String query) {
-    return PropertySpecifier.baseAutoComplete(query, _map.keySet());
+    return AutoCompleteUtils.baseAutoComplete(query, _map.keySet());
   }
 
   public Set<FlowDisposition> getDispositions() {

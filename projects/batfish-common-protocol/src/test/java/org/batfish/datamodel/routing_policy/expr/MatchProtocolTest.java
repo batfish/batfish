@@ -1,8 +1,9 @@
 package org.batfish.datamodel.routing_policy.expr;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
@@ -64,21 +65,21 @@ public class MatchProtocolTest {
     MatchProtocol mp = new MatchProtocol(RoutingProtocol.ISIS_ANY);
     Environment.Builder eb = Environment.builder(c).setVrf(Configuration.DEFAULT_VRF_NAME);
 
-    assertThat(
+    assertTrue(
         "Matches ISIS_L1",
         mp.evaluate(
                 eb.setOriginalRoute(
                         rb.setProtocol(RoutingProtocol.ISIS_L1).setLevel(IsisLevel.LEVEL_1).build())
                     .build())
             .getBooleanValue());
-    assertThat(
+    assertTrue(
         "Matches ISIS_L2",
         mp.evaluate(
                 eb.setOriginalRoute(
                         rb.setProtocol(RoutingProtocol.ISIS_L2).setLevel(IsisLevel.LEVEL_2).build())
                     .build())
             .getBooleanValue());
-    assertThat(
+    assertTrue(
         "Matches ISIS_EL1",
         mp.evaluate(
                 eb.setOriginalRoute(
@@ -87,7 +88,7 @@ public class MatchProtocolTest {
                             .build())
                     .build())
             .getBooleanValue());
-    assertThat(
+    assertTrue(
         "Matches ISIS_EL2",
         mp.evaluate(
                 eb.setOriginalRoute(

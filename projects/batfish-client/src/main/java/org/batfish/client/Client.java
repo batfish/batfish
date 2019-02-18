@@ -115,6 +115,7 @@ import org.batfish.specifier.FlexibleNodeSpecifierFactory;
 import org.batfish.specifier.InterfaceSpecifierFactory;
 import org.batfish.specifier.NodeSpecifierFactory;
 import org.batfish.specifier.RoutingProtocolSpecifier;
+import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifierFactory;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -325,16 +326,12 @@ public class Client extends AbstractClient implements IClient {
     }
     Variable.Type expectedType = variable.getType();
     switch (expectedType) {
-      case ADDRESS_BOOK:
-        if (!value.isTextual()) {
+      case ADDRESS_GROUP_AND_BOOK:
+        if (!value.isTextual() || value.asText().split(",").length != 2) {
           throw new BatfishException(
-              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
-        }
-        break;
-      case ADDRESS_GROUP:
-        if (!value.isTextual()) {
-          throw new BatfishException(
-              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+              String.format(
+                  "A Batfish %s must be a JSON string with two comma-separated values",
+                  expectedType.getName()));
         }
         break;
       case ANSWER_ELEMENT:
@@ -475,7 +472,15 @@ public class Client extends AbstractClient implements IClient {
         } catch (IllegalArgumentException e) {
           throw new BatfishException(String.format("Unknown %s string", expectedType.getName()));
         }
-
+        break;
+      case IP_SPACE_SPEC:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format(
+                  "A Batfish %s must be a JSON string with IpSpaceSpec grammar",
+                  expectedType.getName()));
+        }
+        new ParboiledIpSpaceSpecifierFactory().buildIpSpaceSpecifier(value.asText());
         break;
       case IP_WILDCARD:
         if (!value.isTextual()) {
@@ -2309,7 +2314,7 @@ public class Client extends AbstractClient implements IClient {
     // get the answer
     String ansFileName = wItem.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE;
     String downloadedAnsFile =
-        _workHelper.getObject(wItem.getContainerName(), wItem.getTestrigName(), ansFileName);
+        _workHelper.getObject(wItem.getNetwork(), wItem.getSnapshot(), ansFileName);
     if (downloadedAnsFile == null) {
       _logger.errorf("Failed to get answer file %s. (Was work killed?)\n", ansFileName);
     } else {
@@ -2356,7 +2361,7 @@ public class Client extends AbstractClient implements IClient {
       _logger.output("---------------- Service Log --------------\n");
       String logFileName = wItem.getId() + BfConsts.SUFFIX_LOG_FILE;
       String downloadedFileStr =
-          _workHelper.getObject(wItem.getContainerName(), wItem.getTestrigName(), logFileName);
+          _workHelper.getObject(wItem.getNetwork(), wItem.getSnapshot(), logFileName);
 
       if (downloadedFileStr == null) {
         _logger.errorf("Failed to get log file %s\n", logFileName);

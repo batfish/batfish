@@ -82,7 +82,7 @@ public class Ip implements Comparable<Ip>, Serializable {
             "Invalid IPv4 address: %s. %s is an invalid octet",
             addr,
             addrArray[i]);
-        num += segment << ((3 - i) * 8);
+        num = (num << 8) + segment;
       }
     } catch (NumberFormatException e) {
       throw new IllegalArgumentException("Invalid IPv4 address: " + addr, e);

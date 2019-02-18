@@ -16,9 +16,9 @@ import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionFor
 import static org.batfish.dataplane.traceroute.TracerouteUtils.resolveNextHopIpRoutes;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.returnFlow;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.sessionTransformation;
-import static org.batfish.specifier.DispositionSpecifier.SUCCESS_DISPOSITIONS;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -326,7 +326,9 @@ class FlowTracer {
     }
 
     Fib fib = _tracerouteContext.getFib(currentNodeName, _vrfName);
-    Set<String> nextHopInterfaces = fib.getNextHopInterfaces(dstIp);
+    // Sort so that resulting traces will be in sensible deterministic order
+    SortedSet<String> nextHopInterfaces =
+        ImmutableSortedSet.copyOf(fib.getNextHopInterfaces(dstIp));
     if (nextHopInterfaces.isEmpty()) {
       buildNoRouteTrace();
       return;
@@ -644,7 +646,7 @@ class FlowTracer {
     _hops.add(new Hop(_currentNode, _steps));
 
     Flow returnFlow =
-        SUCCESS_DISPOSITIONS.contains(disposition)
+        disposition.isSuccessful()
             ? returnFlow(_currentFlow, currentNodeName, null, outInterface)
             : null;
 

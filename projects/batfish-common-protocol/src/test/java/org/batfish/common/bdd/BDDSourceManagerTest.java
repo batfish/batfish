@@ -5,8 +5,10 @@ import static org.batfish.datamodel.IpAccessListLine.ACCEPT_ALL;
 import static org.batfish.datamodel.IpAccessListLine.accepting;
 import static org.batfish.datamodel.IpAccessListLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -21,9 +23,9 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
-import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 
+/** Tests of {@link BDDSourceManager}. */
 public class BDDSourceManagerTest {
   private static final String IFACE1 = "iface1";
   private static final String IFACE2 = "iface2";
@@ -54,7 +56,7 @@ public class BDDSourceManagerTest {
                 mgr.getSourceInterfaceBDD(IFACE1),
                 mgr.getSourceInterfaceBDD(IFACE2))
             .not();
-    MatcherAssert.assertThat(mgr.isValidValue().and(noSource), BDDMatchers.isZero());
+    assertThat(mgr.isValidValue().and(noSource), BDDMatchers.isZero());
   }
 
   @Test
@@ -99,10 +101,12 @@ public class BDDSourceManagerTest {
     BDD iface3BDD = mgr.getSourceInterfaceBDD(IFACE3);
     BDD origBDD = mgr.getOriginatingFromDeviceBDD();
 
-    assertThat("BDDs for IFACE1 and IFACE2 should be different", !iface1BDD.equals(iface2BDD));
+    assertThat(
+        "BDDs for IFACE1 and IFACE2 should be different", iface1BDD, not(equalTo(iface2BDD)));
     assertThat(
         "BDDs for all sources other than IFACE1 should be the same",
-        iface2BDD.equals(iface3BDD) && iface3BDD.equals(origBDD));
+        iface2BDD,
+        allOf(equalTo(iface3BDD), equalTo(origBDD)));
   }
 
   @Test

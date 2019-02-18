@@ -58,8 +58,7 @@ import static org.batfish.client.Command.SHOW_SNAPSHOT;
 import static org.batfish.client.Command.TEST;
 import static org.batfish.client.Command.UPLOAD_CUSTOM_OBJECT;
 import static org.batfish.common.CoordConsts.DEFAULT_API_KEY;
-import static org.batfish.datamodel.questions.Variable.Type.ADDRESS_BOOK;
-import static org.batfish.datamodel.questions.Variable.Type.ADDRESS_GROUP;
+import static org.batfish.datamodel.questions.Variable.Type.ADDRESS_GROUP_AND_BOOK;
 import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_STATUS;
 import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_TYPE;
 import static org.batfish.datamodel.questions.Variable.Type.BOOLEAN;
@@ -75,6 +74,7 @@ import static org.batfish.datamodel.questions.Variable.Type.INTERFACES_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.IP;
 import static org.batfish.datamodel.questions.Variable.Type.IPSEC_SESSION_STATUS;
 import static org.batfish.datamodel.questions.Variable.Type.IP_PROTOCOL;
+import static org.batfish.datamodel.questions.Variable.Type.IP_SPACE_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.IP_WILDCARD;
 import static org.batfish.datamodel.questions.Variable.Type.JAVA_REGEX;
 import static org.batfish.datamodel.questions.Variable.Type.JSON_PATH;
@@ -90,10 +90,10 @@ import static org.batfish.datamodel.questions.Variable.Type.STRUCTURE_NAME;
 import static org.batfish.datamodel.questions.Variable.Type.SUBRANGE;
 import static org.batfish.datamodel.questions.Variable.Type.VRF;
 import static org.batfish.datamodel.questions.Variable.Type.ZONE;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -547,20 +547,13 @@ public final class ClientTest {
   }
 
   @Test
-  public void testInvalidAddressBookValue() throws IOException {
-    String input = "5";
-    Type expectedType = ADDRESS_BOOK;
+  public void testInvalidAddressGroupAndBook() throws IOException {
+    String input = "\"addressGroup\""; // no book name
+    Type expectedType = ADDRESS_GROUP_AND_BOOK;
     String expectedMessage =
-        String.format("A Batfish %s must be a JSON string", expectedType.getName());
-    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
-  }
-
-  @Test
-  public void testInvalidAddressGroupValue() throws IOException {
-    String input = "5";
-    Type expectedType = ADDRESS_GROUP;
-    String expectedMessage =
-        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+        String.format(
+            "A Batfish %s must be a JSON string with two comma-separated values",
+            expectedType.getName());
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
@@ -705,6 +698,16 @@ public final class ClientTest {
   public void testInvalidIPValue() throws IOException {
     validateTypeWithInvalidInput(
         "\"0.0.0\"", IllegalArgumentException.class, "Invalid IPv4 address: 0.0.0", IP);
+  }
+
+  @Test
+  public void testInvalidIpSpaceSpecValue() throws IOException {
+    String input = "5";
+    Type expectedType = IP_SPACE_SPEC;
+    String expectedMessage =
+        String.format(
+            "A Batfish %s must be a JSON string with IpSpaceSpec grammar", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
   @Test
@@ -1636,18 +1639,10 @@ public final class ClientTest {
   }
 
   @Test
-  public void testValidAddressBookValue() throws IOException {
-    JsonNode addressBookNode = _mapper.readTree("\"addressBookName\"");
+  public void testValidAddressGroupAndBook() throws IOException {
+    JsonNode addressGroupNode = _mapper.readTree("\"addressGroup, referenceBook\"");
     Variable variable = new Variable();
-    variable.setType(ADDRESS_BOOK);
-    Client.validateType(addressBookNode, variable);
-  }
-
-  @Test
-  public void testValidAddressGroupValue() throws IOException {
-    JsonNode addressGroupNode = _mapper.readTree("\"addressGroupName\"");
-    Variable variable = new Variable();
-    variable.setType(ADDRESS_GROUP);
+    variable.setType(ADDRESS_GROUP_AND_BOOK);
     Client.validateType(addressGroupNode, variable);
   }
 
@@ -1754,6 +1749,14 @@ public final class ClientTest {
     Variable variable = new Variable();
     variable.setType(IP_PROTOCOL);
     Client.validateType(ipProtocolNode, variable);
+  }
+
+  @Test
+  public void testValidIpSpaceSpecValue() throws IOException {
+    JsonNode addressGroupNode = _mapper.readTree("\"1.1.1.1\"");
+    Variable variable = new Variable();
+    variable.setType(IP_SPACE_SPEC);
+    Client.validateType(addressGroupNode, variable);
   }
 
   @Test

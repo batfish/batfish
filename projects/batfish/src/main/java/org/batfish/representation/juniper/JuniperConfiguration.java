@@ -294,9 +294,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (routingInstanceAs == null) {
         routingInstanceAs = _masterLogicalSystem.getDefaultRoutingInstance().getAs();
       }
-      if (routingInstanceAs == null) {
-        _w.redFlag("BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system");
-      } else {
+      if (routingInstanceAs != null) {
         mg.setLocalAs(routingInstanceAs);
       }
     }

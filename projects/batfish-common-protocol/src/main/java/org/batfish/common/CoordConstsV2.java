@@ -19,6 +19,7 @@ public class CoordConstsV2 {
   public static final String RSC_INFERRED_NODE_ROLES = "inferred_node_roles";
   public static final String RSC_INPUT = "input";
   public static final String RSC_ISSUES = "issues";
+  public static final String RSC_LIST = "list";
   public static final String RSC_NETWORK = "network";
   public static final String RSC_NETWORKS = "networks";
   public static final String RSC_NODE_ROLES = "noderoles";

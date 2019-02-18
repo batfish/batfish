@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 
@@ -28,7 +29,9 @@ import org.batfish.coordinator.queues.WorkQueue.Type;
 import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.role.NodeRolesData;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -129,6 +132,8 @@ public final class WorkQueueMgrTest {
 
   private NetworkId _networkId;
 
+  private IdManager _idManager;
+
   @Before
   public void init() throws Exception {
     Main.mainInit(new String[0]);
@@ -136,7 +141,8 @@ public final class WorkQueueMgrTest {
     _workQueueMgr = new WorkQueueMgr(Type.memory, Main.getLogger());
     WorkMgrTestUtils.initWorkManager(_folder);
     Main.getWorkMgr().initNetwork(NETWORK, null);
-    _networkId = Main.getWorkMgr().getIdManager().getNetworkId(NETWORK);
+    _idManager = Main.getWorkMgr().getIdManager();
+    _networkId = _idManager.getNetworkId(NETWORK);
   }
 
   private void initSnapshotMetadata(String snapshot, ProcessingStatus status) throws IOException {
@@ -150,25 +156,43 @@ public final class WorkQueueMgrTest {
         new SnapshotMetadata(Instant.now(), null).updateStatus(status, null), network, snapshot);
   }
 
-  private void queueWork(String testrig, WorkType wType) throws Exception {
+  private void queueWork(String snapshot, WorkType wType) throws Exception {
     QueuedWork work =
-        resolvedQueuedWork(new WorkItem(NETWORK, testrig), new WorkDetails(testrig, wType));
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot),
+            WorkDetails.builder()
+                .setWorkType(wType)
+                .setNetworkId(_networkId)
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+                .build());
     _workQueueMgr.queueUnassignedWork(work);
   }
 
   private void queueWork(String snapshot, String referenceSnapshot, WorkType wType)
       throws Exception {
     QueuedWork work =
-        resolvedQueuedWork(
+        new QueuedWork(
             new WorkItem(NETWORK, snapshot),
-            new WorkDetails(snapshot, referenceSnapshot, true, wType));
+            WorkDetails.builder()
+                .setWorkType(wType)
+                .setNetworkId(_networkId)
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+                .setReferenceSnapshotId(_idManager.getSnapshotId(referenceSnapshot, _networkId))
+                .setIsDifferential(true)
+                .build());
     _workQueueMgr.queueUnassignedWork(work);
   }
 
   private void workIsRejected(ProcessingStatus trStatus, WorkType wType) throws Exception {
     initSnapshotMetadata(SNAPSHOT, trStatus);
     QueuedWork work =
-        resolvedQueuedWork(new WorkItem(NETWORK, SNAPSHOT), new WorkDetails(SNAPSHOT, wType));
+        new QueuedWork(
+            new WorkItem(NETWORK, SNAPSHOT),
+            WorkDetails.builder()
+                .setNetworkId(_networkId)
+                .setSnapshotId(_idManager.getSnapshotId(SNAPSHOT, _networkId))
+                .setWorkType(wType)
+                .build());
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Cannot queue ");
     doAction(new Action(ActionType.QUEUE, work));
@@ -180,9 +204,15 @@ public final class WorkQueueMgrTest {
     initSnapshotMetadata(SNAPSHOT, baseTrStatus);
     initSnapshotMetadata(REFERENCE_SNAPSHOT, deltaTrStatus);
     QueuedWork work =
-        resolvedQueuedWork(
+        new QueuedWork(
             new WorkItem(NETWORK, SNAPSHOT),
-            new WorkDetails(SNAPSHOT, REFERENCE_SNAPSHOT, true, wType));
+            WorkDetails.builder()
+                .setNetworkId(_networkId)
+                .setSnapshotId(_idManager.getSnapshotId(SNAPSHOT, _networkId))
+                .setReferenceSnapshotId(_idManager.getSnapshotId(REFERENCE_SNAPSHOT, _networkId))
+                .setIsDifferential(true)
+                .setWorkType(wType)
+                .build());
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Cannot queue ");
     doAction(new Action(ActionType.QUEUE, work));
@@ -193,7 +223,13 @@ public final class WorkQueueMgrTest {
       throws Exception {
     initSnapshotMetadata(SNAPSHOT, trStatus);
     QueuedWork work =
-        resolvedQueuedWork(new WorkItem(NETWORK, SNAPSHOT), new WorkDetails(SNAPSHOT, wType));
+        new QueuedWork(
+            new WorkItem(NETWORK, SNAPSHOT),
+            WorkDetails.builder()
+                .setNetworkId(_networkId)
+                .setSnapshotId(_idManager.getSnapshotId(SNAPSHOT, _networkId))
+                .setWorkType(wType)
+                .build());
     doAction(new Action(ActionType.QUEUE, work));
     assertThat(work.getStatus(), equalTo(qwStatus));
     assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(queueLength));
@@ -209,9 +245,15 @@ public final class WorkQueueMgrTest {
     initSnapshotMetadata(SNAPSHOT, baseTrStatus);
     initSnapshotMetadata(REFERENCE_SNAPSHOT, deltaTrStatus);
     QueuedWork work =
-        resolvedQueuedWork(
+        new QueuedWork(
             new WorkItem(NETWORK, SNAPSHOT),
-            new WorkDetails(SNAPSHOT, REFERENCE_SNAPSHOT, true, wType));
+            WorkDetails.builder()
+                .setNetworkId(_networkId)
+                .setSnapshotId(_idManager.getSnapshotId(SNAPSHOT, _networkId))
+                .setReferenceSnapshotId(_idManager.getSnapshotId(REFERENCE_SNAPSHOT, _networkId))
+                .setIsDifferential(true)
+                .setWorkType(wType)
+                .build());
     doAction(new Action(ActionType.QUEUE, work));
     assertThat(work.getStatus(), equalTo(qwStatus));
     assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(queueLength));
@@ -220,32 +262,29 @@ public final class WorkQueueMgrTest {
   @Test
   public void getCompletedWork() throws Exception {
     String snapshot = "snapshot";
-    String network = "network";
-    Main.getWorkMgr().initNetwork(network, null);
-    WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
-    IdManager idManager = Main.getWorkMgr().getIdManager();
-    NetworkId networkId = idManager.getNetworkId(network);
-    SnapshotId snapshot1Id = idManager.getSnapshotId(snapshot, networkId);
+    WorkMgrTestUtils.initSnapshotWithTopology(NETWORK, snapshot, ImmutableSet.of());
+    SnapshotId snapshot1Id = _idManager.getSnapshotId(snapshot, _networkId);
 
-    QueuedWork work1 =
-        resolvedQueuedWork(
-            new WorkItem(network, snapshot), new WorkDetails(snapshot, WorkType.UNKNOWN));
-    QueuedWork work2 =
-        resolvedQueuedWork(
-            new WorkItem(network, snapshot), new WorkDetails(snapshot, WorkType.UNKNOWN));
+    WorkDetails.Builder builder =
+        WorkDetails.builder()
+            .setNetworkId(_networkId)
+            .setSnapshotId(snapshot1Id)
+            .setWorkType(WorkType.UNKNOWN);
+    QueuedWork work1 = new QueuedWork(new WorkItem(NETWORK, snapshot), builder.build());
+    QueuedWork work2 = new QueuedWork(new WorkItem(NETWORK, snapshot), builder.build());
     _workQueueMgr.queueUnassignedWork(work1);
     _workQueueMgr.queueUnassignedWork(work2);
 
     // No items in complete queue yet
-    List<QueuedWork> works0 = _workQueueMgr.getCompletedWork(networkId, snapshot1Id);
+    List<QueuedWork> works0 = _workQueueMgr.getCompletedWork(_networkId, snapshot1Id);
 
     // Move one item from incomplete to complete queue
     _workQueueMgr.markAssignmentError(work1);
-    List<QueuedWork> works1 = _workQueueMgr.getCompletedWork(networkId, snapshot1Id);
+    List<QueuedWork> works1 = _workQueueMgr.getCompletedWork(_networkId, snapshot1Id);
 
     // Move a second item from incomplete to complete queue
     _workQueueMgr.markAssignmentError(work2);
-    List<QueuedWork> works2 = _workQueueMgr.getCompletedWork(networkId, snapshot1Id);
+    List<QueuedWork> works2 = _workQueueMgr.getCompletedWork(_networkId, snapshot1Id);
 
     // Confirm we don't see any work items when the complete queue is empty
     assertThat(works0, iterableWithSize(0));
@@ -282,73 +321,90 @@ public final class WorkQueueMgrTest {
     WorkMgrTestUtils.initSnapshotWithTopology(network1, snapshot2, ImmutableSet.of());
     WorkMgrTestUtils.initSnapshotWithTopology(network2, snapshot1, ImmutableSet.of());
 
-    IdManager idManager = Main.getWorkMgr().getIdManager();
-    NetworkId networkId = idManager.getNetworkId(network1);
-    SnapshotId snapshot1Id = idManager.getSnapshotId(snapshot1, networkId);
+    NetworkId network1Id = _idManager.getNetworkId(network1);
+    NetworkId network2Id = _idManager.getNetworkId(network2);
+    SnapshotId network1Snapshot1Id = _idManager.getSnapshotId(snapshot1, network1Id);
 
-    QueuedWork network1snapshot1work1 =
-        resolvedQueuedWork(
-            new WorkItem(network1, snapshot1), new WorkDetails(snapshot1, WorkType.UNKNOWN));
-    QueuedWork network1snapshot2work =
-        resolvedQueuedWork(
-            new WorkItem(network1, snapshot2), new WorkDetails(snapshot2, WorkType.UNKNOWN));
-    QueuedWork network2snapshot1work =
-        resolvedQueuedWork(
-            new WorkItem(network2, snapshot1), new WorkDetails(snapshot1, WorkType.UNKNOWN));
-    _workQueueMgr.queueUnassignedWork(network1snapshot1work1);
-    _workQueueMgr.queueUnassignedWork(network1snapshot2work);
-    _workQueueMgr.queueUnassignedWork(network2snapshot1work);
+    WorkDetails.Builder builder = WorkDetails.builder().setWorkType(WorkType.UNKNOWN);
+    QueuedWork network1Snapshot1Work1 =
+        new QueuedWork(
+            new WorkItem(network1, snapshot1),
+            builder.setNetworkId(network1Id).setSnapshotId(network1Snapshot1Id).build());
+    QueuedWork network1Snapshot2Work =
+        new QueuedWork(
+            new WorkItem(network1, snapshot2),
+            builder
+                .setNetworkId(network1Id)
+                .setSnapshotId(_idManager.getSnapshotId(snapshot2, network1Id))
+                .build());
+    QueuedWork network2Snapshot1Work =
+        new QueuedWork(
+            new WorkItem(network2, snapshot1),
+            builder
+                .setNetworkId(network2Id)
+                .setSnapshotId(_idManager.getSnapshotId(snapshot1, network2Id))
+                .build());
+    _workQueueMgr.queueUnassignedWork(network1Snapshot1Work1);
+    _workQueueMgr.queueUnassignedWork(network1Snapshot2Work);
+    _workQueueMgr.queueUnassignedWork(network2Snapshot1Work);
 
     // Move one item for each network and snapshot from incomplete to complete queue
-    _workQueueMgr.markAssignmentError(network1snapshot1work1);
-    _workQueueMgr.markAssignmentError(network1snapshot2work);
-    _workQueueMgr.markAssignmentError(network2snapshot1work);
-    List<QueuedWork> works1 = _workQueueMgr.getCompletedWork(networkId, snapshot1Id);
+    _workQueueMgr.markAssignmentError(network1Snapshot1Work1);
+    _workQueueMgr.markAssignmentError(network1Snapshot2Work);
+    _workQueueMgr.markAssignmentError(network2Snapshot1Work);
+    List<QueuedWork> works1 = _workQueueMgr.getCompletedWork(network1Id, network1Snapshot1Id);
 
     // Confirm we only see the network 1, snapshot 1 work item in the complete queue
     // i.e. make sure we don't see items from the other network or snapshot
-    assertThat(works1, contains(hasWorkItem(equalTo(network1snapshot1work1.getWorkItem()))));
+    assertThat(works1, contains(hasWorkItem(equalTo(network1Snapshot1Work1.getWorkItem()))));
   }
 
   @Test
   public void getMatchingWorkAbsent() throws Exception {
-    initSnapshotMetadata("testrig", ProcessingStatus.UNINITIALIZED);
-    WorkItem wItem = new WorkItem(NETWORK, "testrig");
+    String snapshot = "snapshot1";
+    initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
+    WorkItem wItem = new WorkItem(NETWORK, snapshot);
     wItem.addRequestParam("key", "value");
     // get matching work should be null on an empty queue
     QueuedWork matchingWork = _workQueueMgr.getMatchingWork(wItem, QueueType.INCOMPLETE);
     assertThat(matchingWork, equalTo(null));
 
     // build two work items that do not match
-    WorkItem wItem1 = new WorkItem(NETWORK, "testrig");
+    WorkItem wItem1 = new WorkItem(NETWORK, snapshot);
     wItem1.addRequestParam("key1", "value1");
-    QueuedWork work1 = resolvedQueuedWork(wItem1, new WorkDetails("testrig", WorkType.UNKNOWN));
-    QueuedWork work2 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
+    WorkDetails.Builder builder =
+        WorkDetails.builder()
+            .setWorkType(WorkType.UNKNOWN)
+            .setNetworkId(_networkId)
+            .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId));
+    QueuedWork work1 = new QueuedWork(wItem1, builder.build());
+    QueuedWork work2 = new QueuedWork(new WorkItem(NETWORK, snapshot), builder.build());
     _workQueueMgr.queueUnassignedWork(work1);
     _workQueueMgr.queueUnassignedWork(work2);
 
     // should be null again
-    QueuedWork matchingWorkAgain =
-        _workQueueMgr.getMatchingWork(WorkMgr.resolveIds(wItem), QueueType.INCOMPLETE);
+    QueuedWork matchingWorkAgain = _workQueueMgr.getMatchingWork(wItem, QueueType.INCOMPLETE);
     assertThat(matchingWorkAgain, equalTo(null));
   }
 
   @Test
   public void getMatchingWorkPresent() throws Exception {
-    initSnapshotMetadata("testrig", ProcessingStatus.UNINITIALIZED);
-    WorkItem wItem1 = new WorkItem(NETWORK, "testrig");
+    String snapshot = "snapshot1";
+    initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
+    WorkItem wItem1 = new WorkItem(NETWORK, snapshot);
     wItem1.addRequestParam("key1", "value1");
-    QueuedWork work1 = resolvedQueuedWork(wItem1, new WorkDetails("testrig", WorkType.UNKNOWN));
-    QueuedWork work2 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
+    WorkDetails.Builder builder =
+        WorkDetails.builder()
+            .setWorkType(WorkType.UNKNOWN)
+            .setNetworkId(_networkId)
+            .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId));
+    QueuedWork work1 = new QueuedWork(wItem1, builder.build());
+    QueuedWork work2 = new QueuedWork(new WorkItem(NETWORK, snapshot), builder.build());
     _workQueueMgr.queueUnassignedWork(work1);
     _workQueueMgr.queueUnassignedWork(work2);
 
     // build a work item that should match wItem1
-    WorkItem wItem3 = WorkMgr.resolveIds(new WorkItem(NETWORK, "testrig"));
+    WorkItem wItem3 = new WorkItem(NETWORK, snapshot);
     wItem3.addRequestParam("key1", "value1");
 
     QueuedWork matchingWork = _workQueueMgr.getMatchingWork(wItem3, QueueType.INCOMPLETE);
@@ -358,58 +414,80 @@ public final class WorkQueueMgrTest {
 
   @Test
   public void listIncompleteWork() throws Exception {
-    initSnapshotMetadata("testrig", ProcessingStatus.UNINITIALIZED);
-    Main.getWorkMgr().initNetwork("other", null);
-    WorkMgrTestUtils.initSnapshotWithTopology("other", "testrig", ImmutableSet.of());
-    initSnapshotMetadata("other", "testrig", ProcessingStatus.UNINITIALIZED);
+    String snapshot = "snapshot1";
+    String otherNetwork = "other";
+    initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
+    Main.getWorkMgr().initNetwork(otherNetwork, null);
+    WorkMgrTestUtils.initSnapshotWithTopology(otherNetwork, snapshot, ImmutableSet.of());
+    initSnapshotMetadata(otherNetwork, snapshot, ProcessingStatus.UNINITIALIZED);
+    NetworkId otherNetworkId = _idManager.getNetworkId(otherNetwork);
+    WorkDetails.Builder builder = WorkDetails.builder().setWorkType(WorkType.UNKNOWN);
     QueuedWork work1 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot),
+            builder
+                .setNetworkId(_networkId)
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+                .build());
     QueuedWork work2 =
-        resolvedQueuedWork(
-            new WorkItem("other", "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
+        new QueuedWork(
+            new WorkItem(otherNetwork, snapshot),
+            builder
+                .setNetworkId(otherNetworkId)
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, otherNetworkId))
+                .build());
     _workQueueMgr.queueUnassignedWork(work1);
     _workQueueMgr.queueUnassignedWork(work2);
 
-    List<QueuedWork> works = _workQueueMgr.listIncompleteWork(_networkId.getId(), null, null);
+    List<QueuedWork> works = _workQueueMgr.listIncompleteWork(_networkId, null, null);
 
     assertThat(works, equalTo(Collections.singletonList(work1)));
   }
 
   @Test
   public void listIncompleteWorkForSpecificStatus() throws Exception {
-    initSnapshotMetadata("testrig", ProcessingStatus.UNINITIALIZED);
+    String snapshot = "snapshot1";
+    initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
+    WorkDetails.Builder builder =
+        WorkDetails.builder()
+            .setNetworkId(_networkId)
+            .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId));
     QueuedWork work1 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.PARSING));
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot), builder.setWorkType(WorkType.PARSING).build());
     QueuedWork work2 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot), builder.setWorkType(WorkType.UNKNOWN).build());
     _workQueueMgr.queueUnassignedWork(work1);
     _workQueueMgr.queueUnassignedWork(work2);
 
     List<QueuedWork> parsingWorks =
-        _workQueueMgr.listIncompleteWork(_networkId.getId(), null, WorkType.PARSING);
+        _workQueueMgr.listIncompleteWork(_networkId, null, WorkType.PARSING);
 
     assertThat(parsingWorks, equalTo(Collections.singletonList(work1)));
   }
 
   @Test
-  public void listIncompleteWorkForSpecificTestrig() throws Exception {
-    initSnapshotMetadata("testrig", ProcessingStatus.UNINITIALIZED);
-    initSnapshotMetadata("testrig2", ProcessingStatus.UNINITIALIZED);
+  public void listIncompleteWorkForSpecificSnapshot() throws Exception {
+    String snapshot1 = "snapshot1";
+    String snapshot2 = "snapshot2";
+    initSnapshotMetadata(snapshot1, ProcessingStatus.UNINITIALIZED);
+    initSnapshotMetadata(snapshot2, ProcessingStatus.UNINITIALIZED);
+    WorkDetails.Builder builder =
+        WorkDetails.builder().setWorkType(WorkType.UNKNOWN).setNetworkId(_networkId);
     QueuedWork work1 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot1),
+            builder.setSnapshotId(_idManager.getSnapshotId(snapshot1, _networkId)).build());
     QueuedWork work2 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "testrig2"), new WorkDetails("testrig2", WorkType.UNKNOWN));
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot1),
+            builder.setSnapshotId(_idManager.getSnapshotId(snapshot2, _networkId)).build());
     _workQueueMgr.queueUnassignedWork(work1);
     _workQueueMgr.queueUnassignedWork(work2);
 
-    SnapshotId snapshotId = Main.getWorkMgr().getIdManager().getSnapshotId("testrig", _networkId);
-    List<QueuedWork> parsingWorks =
-        _workQueueMgr.listIncompleteWork(_networkId.getId(), snapshotId.getId(), null);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot1, _networkId);
+    List<QueuedWork> parsingWorks = _workQueueMgr.listIncompleteWork(_networkId, snapshotId, null);
 
     assertThat(parsingWorks, equalTo(Collections.singletonList(work1)));
   }
@@ -1075,14 +1153,18 @@ public final class WorkQueueMgrTest {
 
   @Test
   public void dataplaningAfterParsingFailure() throws Exception {
-    initSnapshotMetadata("other", ProcessingStatus.UNINITIALIZED);
+    String snapshot = "snapshot1";
+    initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId);
+    WorkDetails.Builder builder =
+        WorkDetails.builder().setNetworkId(_networkId).setSnapshotId(snapshotId);
     QueuedWork work1 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "other"), new WorkDetails("other", WorkType.PARSING));
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot), builder.setWorkType(WorkType.PARSING).build());
     _workQueueMgr.queueUnassignedWork(work1);
     QueuedWork work2 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "other"), new WorkDetails("other", WorkType.DATAPLANING));
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot), builder.setWorkType(WorkType.DATAPLANING).build());
     _workQueueMgr.queueUnassignedWork(work2);
 
     QueuedWork aWork1 =
@@ -1091,10 +1173,8 @@ public final class WorkQueueMgrTest {
 
     // work2 should be left with terminatedqueuefail status and the testrig in parsing_fail state
     assertThat(work2.getStatus(), equalTo(WorkStatusCode.REQUEUEFAILURE));
-    SnapshotId other = Main.getWorkMgr().getIdManager().getSnapshotId("other", _networkId);
     assertThat(
-        WorkQueueMgr.getInitializationMetadata(_networkId.getId(), other.getId())
-            .getProcessingStatus(),
+        SnapshotMetadataMgr.getInitializationMetadata(_networkId, snapshotId).getProcessingStatus(),
         equalTo(ProcessingStatus.PARSING_FAIL));
   }
 
@@ -1102,44 +1182,57 @@ public final class WorkQueueMgrTest {
 
   @Test
   public void queueUnassignedWork() throws Exception {
-    initSnapshotMetadata("testrig", ProcessingStatus.UNINITIALIZED);
+    String snapshot = "snapshot1";
+    initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
+    WorkDetails.Builder builder =
+        WorkDetails.builder()
+            .setNetworkId(_networkId)
+            .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId));
     QueuedWork work1 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.PARSING));
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot), builder.setWorkType(WorkType.PARSING).build());
     _workQueueMgr.queueUnassignedWork(work1);
     assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(1L));
     QueuedWork work2 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "testrig"),
-            new WorkDetails("testrig", WorkType.PARSING_DEPENDENT_ANSWERING));
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot),
+            builder.setWorkType(WorkType.PARSING_DEPENDENT_ANSWERING).build());
     _workQueueMgr.queueUnassignedWork(work2);
     assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(2L));
   }
 
   @Test
   public void queueUnassignedWorkUnknown() throws Exception {
-    initSnapshotMetadata("testrig", ProcessingStatus.UNINITIALIZED);
+    String snapshot = "snapshot1";
+    initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
     QueuedWork work1 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot),
+            WorkDetails.builder()
+                .setWorkType(WorkType.UNKNOWN)
+                .setNetworkId(_networkId)
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+                .build());
     _workQueueMgr.queueUnassignedWork(work1);
     assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(1L));
   }
 
   @Test
   public void testGetWorkForChecking() throws Exception {
-    initSnapshotMetadata("testrig", ProcessingStatus.UNINITIALIZED);
+    String snapshot = "snapshot1";
+    initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
     List<QueuedWork> workToCheck = _workQueueMgr.getWorkForChecking();
 
     // Make sure getWorkForChecking() returns no elements when the incomplete work queue is empty
     assertThat(workToCheck, empty());
 
-    QueuedWork work1 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
-    QueuedWork work2 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
+    WorkDetails.Builder builder =
+        WorkDetails.builder()
+            .setNetworkId(_networkId)
+            .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+            .setWorkType(WorkType.UNKNOWN);
+    QueuedWork work1 = new QueuedWork(new WorkItem(NETWORK, snapshot), builder.build());
+    QueuedWork work2 = new QueuedWork(new WorkItem(NETWORK, snapshot), builder.build());
     _workQueueMgr.queueUnassignedWork(work1);
     _workQueueMgr.queueUnassignedWork(work2);
     workToCheck = _workQueueMgr.getWorkForChecking();
@@ -1176,10 +1269,16 @@ public final class WorkQueueMgrTest {
 
   @Test
   public void queueUnassignedWorkDuplicate() throws Exception {
-    initSnapshotMetadata("testrig", ProcessingStatus.UNINITIALIZED);
+    String snapshot = "snapshot1";
+    initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
     QueuedWork work1 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.UNKNOWN));
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot),
+            WorkDetails.builder()
+                .setWorkType(WorkType.UNKNOWN)
+                .setNetworkId(_networkId)
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+                .build());
     _workQueueMgr.queueUnassignedWork(work1);
 
     _thrown.expect(BatfishException.class);
@@ -1190,19 +1289,23 @@ public final class WorkQueueMgrTest {
 
   @Test
   public void workIsUnblocked1() throws Exception {
-    initSnapshotMetadata("testrig", ProcessingStatus.UNINITIALIZED);
+    String snapshot = "snapshot1";
+    initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
 
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId);
+    WorkDetails.Builder builder =
+        WorkDetails.builder().setNetworkId(_networkId).setSnapshotId(snapshotId);
     QueuedWork work1 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.PARSING));
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot), builder.setWorkType(WorkType.PARSING).build());
     QueuedWork work2 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "testrig"),
-            new WorkDetails("testrig", WorkType.PARSING_DEPENDENT_ANSWERING));
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot),
+            builder.setWorkType(WorkType.PARSING_DEPENDENT_ANSWERING).build());
     QueuedWork work3 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "testrig"),
-            new WorkDetails("testrig", WorkType.DATAPLANE_DEPENDENT_ANSWERING));
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot),
+            builder.setWorkType(WorkType.DATAPLANE_DEPENDENT_ANSWERING).build());
 
     doAction(new Action(ActionType.QUEUE, work1));
     doAction(new Action(ActionType.QUEUE, work2));
@@ -1213,6 +1316,11 @@ public final class WorkQueueMgrTest {
 
     QueuedWork aWork1 =
         doAction(new Action(ActionType.ASSIGN_SUCCESS, null)); // should be parsing work
+    Main.getWorkMgr()
+        .getStorage()
+        .storeNodeRoles(
+            NodeRolesData.builder().build(),
+            _idManager.getSnapshotNodeRolesId(_networkId, snapshotId));
     doAction(new Action(ActionType.STATUS_TERMINATED_NORMALLY, aWork1));
 
     QueuedWork aWork2 = doAction(new Action(ActionType.ASSIGN_SUCCESS, null));
@@ -1229,19 +1337,23 @@ public final class WorkQueueMgrTest {
 
   @Test
   public void workIsUnblocked2() throws Exception {
-    initSnapshotMetadata("testrig", ProcessingStatus.UNINITIALIZED);
+    String snapshot = "snapshot1";
+    initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
 
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId);
+    WorkDetails.Builder builder =
+        WorkDetails.builder().setNetworkId(_networkId).setSnapshotId(snapshotId);
     QueuedWork work1 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.PARSING));
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot), builder.setWorkType(WorkType.PARSING).build());
     QueuedWork work2 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "testrig"),
-            new WorkDetails("testrig", WorkType.DATAPLANE_DEPENDENT_ANSWERING));
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot),
+            builder.setWorkType(WorkType.DATAPLANE_DEPENDENT_ANSWERING).build());
     QueuedWork work3 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "testrig"),
-            new WorkDetails("testrig", WorkType.DATAPLANE_DEPENDENT_ANSWERING));
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot),
+            builder.setWorkType(WorkType.DATAPLANE_DEPENDENT_ANSWERING).build());
 
     doAction(new Action(ActionType.QUEUE, work1));
     doAction(new Action(ActionType.QUEUE, work2));
@@ -1252,6 +1364,11 @@ public final class WorkQueueMgrTest {
 
     QueuedWork aWork1 =
         doAction(new Action(ActionType.ASSIGN_SUCCESS, null)); // should be parsing work
+    Main.getWorkMgr()
+        .getStorage()
+        .storeNodeRoles(
+            NodeRolesData.builder().build(),
+            _idManager.getSnapshotNodeRolesId(_networkId, snapshotId));
     doAction(new Action(ActionType.STATUS_TERMINATED_NORMALLY, aWork1));
 
     QueuedWork aWork2 = doAction(new Action(ActionType.ASSIGN_SUCCESS, null));
@@ -1268,11 +1385,17 @@ public final class WorkQueueMgrTest {
 
   @Test
   public void processTaskCheckTerminatedByUser() throws Exception {
-    initSnapshotMetadata("testrig", ProcessingStatus.UNINITIALIZED);
+    String snapshot = "snapshot1";
+    initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
 
     QueuedWork work1 =
-        resolvedQueuedWork(
-            new WorkItem(NETWORK, "testrig"), new WorkDetails("testrig", WorkType.PARSING));
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot),
+            WorkDetails.builder()
+                .setWorkType(WorkType.PARSING)
+                .setNetworkId(_networkId)
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+                .build());
 
     doAction(new Action(ActionType.QUEUE, work1));
     _workQueueMgr.processTaskCheckResult(work1, new Task(TaskStatus.TerminatedByUser, "Fake"));
@@ -1286,23 +1409,84 @@ public final class WorkQueueMgrTest {
     assertThat(_workQueueMgr.getLength(QueueType.INCOMPLETE), equalTo(0L));
   }
 
-  private QueuedWork resolvedQueuedWork(WorkItem workItem, WorkDetails workDetails) {
-    WorkItem resolvedWorkItem = WorkMgr.resolveIds(workItem);
-    return new QueuedWork(
-        WorkMgr.resolveIds(workItem),
-        resolveIds(new NetworkId(resolvedWorkItem.getContainerName()), workDetails));
+  @Test
+  public void testProcessTaskCheckResultPromoteSuccessfulParse() throws Exception {
+    String snapshot = "snapshot1";
+    initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId);
+    NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(_networkId, snapshotId);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeNodeRoles(NodeRolesData.builder().build(), snapshotNodeRolesId);
+
+    assertFalse(_idManager.hasNetworkNodeRolesId(_networkId));
+
+    QueuedWork work1 =
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot),
+            WorkDetails.builder()
+                .setWorkType(WorkType.PARSING)
+                .setNetworkId(_networkId)
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+                .build());
+
+    doAction(new Action(ActionType.QUEUE, work1));
+    _workQueueMgr.processTaskCheckResult(work1, new Task(TaskStatus.TerminatedNormally, "Fake"));
+
+    assertThat(_idManager.getNetworkNodeRolesId(_networkId), equalTo(snapshotNodeRolesId));
   }
 
-  /* Resolves IDs in workDetails independently of workItem (just for testing) */
-  private WorkDetails resolveIds(NetworkId networkId, WorkDetails workDetails) {
-    IdManager idm = Main.getWorkMgr().getIdManager();
-    SnapshotId snapshot = idm.getSnapshotId(workDetails.baseTestrig, networkId);
-    String referenceSnapshot = null;
-    if (workDetails.deltaTestrig != null) {
-      SnapshotId referenceSnapshotId = idm.getSnapshotId(workDetails.deltaTestrig, networkId);
-      referenceSnapshot = referenceSnapshotId.getId();
-    }
-    return new WorkDetails(
-        snapshot.getId(), referenceSnapshot, workDetails.isDifferential, workDetails.workType);
+  @Test
+  public void testProcessTaskCheckResultPromoteUnsuccessfulParse() throws Exception {
+    String snapshot = "snapshot1";
+    initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId);
+    NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(_networkId, snapshotId);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeNodeRoles(NodeRolesData.builder().build(), snapshotNodeRolesId);
+
+    assertFalse(_idManager.hasNetworkNodeRolesId(_networkId));
+
+    QueuedWork work1 =
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot),
+            WorkDetails.builder()
+                .setWorkType(WorkType.PARSING)
+                .setNetworkId(_networkId)
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+                .build());
+
+    doAction(new Action(ActionType.QUEUE, work1));
+    _workQueueMgr.processTaskCheckResult(work1, new Task(TaskStatus.TerminatedAbnormally, "Fake"));
+
+    assertFalse(_idManager.hasNetworkNodeRolesId(_networkId));
+  }
+
+  @Test
+  public void testProcessTaskCheckResultPromoteNoChange() throws Exception {
+    String snapshot = "snapshot1";
+    initSnapshotMetadata(snapshot, ProcessingStatus.UNINITIALIZED);
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, _networkId);
+    NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(_networkId, snapshotId);
+    Main.getWorkMgr()
+        .getStorage()
+        .storeNodeRoles(NodeRolesData.builder().build(), snapshotNodeRolesId);
+    NodeRolesId oldNodeRolesId = new NodeRolesId("old");
+    _idManager.assignNetworkNodeRolesId(_networkId, oldNodeRolesId);
+
+    QueuedWork work1 =
+        new QueuedWork(
+            new WorkItem(NETWORK, snapshot),
+            WorkDetails.builder()
+                .setWorkType(WorkType.PARSING)
+                .setNetworkId(_networkId)
+                .setSnapshotId(_idManager.getSnapshotId(snapshot, _networkId))
+                .build());
+
+    doAction(new Action(ActionType.QUEUE, work1));
+    _workQueueMgr.processTaskCheckResult(work1, new Task(TaskStatus.TerminatedNormally, "Fake"));
+
+    assertThat(_idManager.getNetworkNodeRolesId(_networkId), equalTo(oldNodeRolesId));
   }
 }

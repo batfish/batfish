@@ -2,10 +2,10 @@ package org.batfish.z3.expr.visitors;
 
 import static com.google.common.collect.ImmutableList.of;
 import static org.batfish.z3.expr.visitors.Simplifier.simplifyBooleanExpr;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.HeaderSpace;

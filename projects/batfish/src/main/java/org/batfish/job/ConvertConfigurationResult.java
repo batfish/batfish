@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
+import org.batfish.common.ErrorDetails;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -86,11 +87,12 @@ public class ConvertConfigurationResult
           .getErrors()
           .put(_name, ((BatfishException) _failureCause).getBatfishStackTrace());
       answerElement
-          .getErrorMessages()
+          .getErrorDetails()
           .put(
               _name,
-              Throwables.getStackTraceAsString(
-                  firstNonNull(_failureCause.getCause(), _failureCause)));
+              new ErrorDetails(
+                  Throwables.getStackTraceAsString(
+                      firstNonNull(_failureCause.getCause(), _failureCause))));
     }
   }
 

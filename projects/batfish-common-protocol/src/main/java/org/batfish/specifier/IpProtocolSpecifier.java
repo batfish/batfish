@@ -21,8 +21,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.answers.AutoCompleteUtils;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
-import org.batfish.datamodel.questions.PropertySpecifier;
 
 @ParametersAreNonnullByDefault
 public class IpProtocolSpecifier {
@@ -137,7 +137,7 @@ public class IpProtocolSpecifier {
 
   /**
    * Returns a list of suggestions based on the query, based on {@link
-   * PropertySpecifier#baseAutoComplete}. Since this specifier accepts comma-separated protocols,
+   * AutoCompleteUtils#baseAutoComplete}. Since this specifier accepts comma-separated protocols,
    * only the partial query after the final comma will be considered for matching against. Each
    * suggestion returned will contain everything before the final comma followed by an
    * autocompletion that matches the partial query after the final comma.
@@ -164,7 +164,7 @@ public class IpProtocolSpecifier {
     // need to remove exclamation point before matching
     String noExclamation = escaped.replaceFirst("!", "");
 
-    return PropertySpecifier.baseAutoComplete(noExclamation.trim(), COMPLETIONS).stream()
+    return AutoCompleteUtils.baseAutoComplete(noExclamation.trim(), COMPLETIONS).stream()
         .map(
             suggestion ->
                 new AutocompleteSuggestion(
