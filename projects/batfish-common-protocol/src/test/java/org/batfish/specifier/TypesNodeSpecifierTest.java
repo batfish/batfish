@@ -13,7 +13,7 @@ import org.junit.Test;
 public class TypesNodeSpecifierTest {
 
   @Test
-  public void resolve() {
+  public void testResolve() {
     Configuration c1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
     c1.setDeviceType(DeviceType.HOST);
 

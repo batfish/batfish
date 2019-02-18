@@ -4,7 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Objects;
 
-class RoleNodeAstNode implements NodeAstNode {
+final class RoleNodeAstNode implements NodeAstNode {
   private final String _roleName;
   private final String _dimensionName;
 

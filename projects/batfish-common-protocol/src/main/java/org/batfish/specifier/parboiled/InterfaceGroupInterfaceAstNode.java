@@ -4,7 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Objects;
 
-class InterfaceGroupInterfaceAstNode implements InterfaceAstNode {
+final class InterfaceGroupInterfaceAstNode implements InterfaceAstNode {
   private final String _interfaceGroup;
   private final String _referenceBook;
 

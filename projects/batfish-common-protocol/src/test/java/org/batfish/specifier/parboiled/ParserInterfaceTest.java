@@ -38,7 +38,7 @@ public class ParserInterfaceTest {
 
   @Test
   public void testCompletionEmpty() {
-    String query = ""; // this could be a complete term or a partial name
+    String query = "";
 
     CompletionMetadata completionMetadata =
         CompletionMetadata.builder()
@@ -75,7 +75,7 @@ public class ParserInterfaceTest {
                 new AutocompleteSuggestion(
                     "ref.interfaceGroup", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
-                    "@type", true, null, RANK_STRING_LITERAL, query.length()),
+                    "@link", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("type", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("@vrf", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("vrf", true, null, RANK_STRING_LITERAL, query.length()),
@@ -190,9 +190,9 @@ public class ParserInterfaceTest {
     TypeInterfaceAstNode expectedAst =
         new TypeInterfaceAstNode(new StringAstNode(InterfaceType.PHYSICAL.toString()));
 
-    assertThat(ParserUtils.getAst(getRunner().run("@type(physical)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" @type ( physical ) ")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("@TypE(PHYsical)")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run("@link(physical)")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" @link ( physical ) ")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run("@LinK(PHYsical)")), equalTo(expectedAst));
 
     // old style
     assertThat(ParserUtils.getAst(getRunner().run("type(physical)")), equalTo(expectedAst));

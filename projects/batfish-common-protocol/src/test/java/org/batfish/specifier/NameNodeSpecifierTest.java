@@ -12,7 +12,7 @@ import org.junit.Test;
 public class NameNodeSpecifierTest {
 
   @Test
-  public void resolve() {
+  public void testResolve() {
     MockSpecifierContext ctxt =
         MockSpecifierContext.builder()
             .setConfigs(

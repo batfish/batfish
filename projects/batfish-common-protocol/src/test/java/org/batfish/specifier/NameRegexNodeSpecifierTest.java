@@ -13,7 +13,7 @@ import org.junit.Test;
 public class NameRegexNodeSpecifierTest {
 
   @Test
-  public void resolve() {
+  public void testResolve() {
     MockSpecifierContext ctxt =
         MockSpecifierContext.builder()
             .setConfigs(

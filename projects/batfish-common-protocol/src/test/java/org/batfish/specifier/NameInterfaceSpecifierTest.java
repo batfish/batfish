@@ -14,7 +14,7 @@ import org.junit.Test;
 public class NameInterfaceSpecifierTest {
 
   @Test
-  public void resolve() {
+  public void testResolve() {
 
     Configuration node1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
     Configuration node2 = new Configuration("node2", ConfigurationFormat.CISCO_IOS);

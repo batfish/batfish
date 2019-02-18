@@ -33,7 +33,7 @@ public final class NameRegexInterfaceSpecifier implements InterfaceSpecifier {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_pattern);
+    return Objects.hash(_pattern.pattern());
   }
 
   @Override
