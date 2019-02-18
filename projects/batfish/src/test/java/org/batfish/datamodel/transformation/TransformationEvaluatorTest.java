@@ -279,7 +279,8 @@ public class TransformationEvaluatorTest {
     TransformationStep step =
         new TransformationStep(
             new TransformationStepDetail(
-                DEST_NAT, ImmutableSortedSet.of(flowDiff(PortField.DESTINATION, dstPort, poolPort))),
+                DEST_NAT,
+                ImmutableSortedSet.of(flowDiff(PortField.DESTINATION, dstPort, poolPort))),
             TRANSFORMED);
     assertThat(traceSteps, contains(step));
   }

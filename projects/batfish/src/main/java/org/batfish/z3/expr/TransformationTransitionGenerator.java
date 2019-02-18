@@ -25,7 +25,6 @@ import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.datamodel.transformation.TransformationStepVisitor;
-import org.batfish.main.Batfish;
 import org.batfish.z3.AclLineMatchExprToBooleanExpr;
 import org.batfish.z3.Field;
 
