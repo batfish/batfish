@@ -9160,17 +9160,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       CiscoStructureUsage realStructure,
       CiscoStructureUsage mappedStructure) {
     if (ctx == null) {
+      nat.setInsideInterface(ANY_INTERFACE);
+      nat.setOutsideInterface(ANY_INTERFACE);
       return;
     }
     String inside = ctx.real_if.getText();
     String outside = ctx.mapped_if.getText();
     int line = ctx.getStart().getLine();
+    nat.setInsideInterface(inside);
     if (!inside.equals(ANY_INTERFACE)) {
-      nat.setInsideInterface(inside);
       _configuration.referenceStructure(INTERFACE, inside, realStructure, line);
     }
+    nat.setOutsideInterface(outside);
     if (!outside.equals(ANY_INTERFACE)) {
-      nat.setOutsideInterface(outside);
       _configuration.referenceStructure(INTERFACE, outside, mappedStructure, line);
     }
   }
