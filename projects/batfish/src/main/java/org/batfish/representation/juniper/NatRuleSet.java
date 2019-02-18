@@ -16,6 +16,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.Transformation.Builder;
 
@@ -93,6 +94,7 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
   public Optional<Transformation> toOutgoingTransformation(
       TransformationType type,
       IpField ipField,
+      PortField portField,
       Map<String, NatPool> pools,
       Ip interfaceIp,
       Map<NatPacketLocation, AclLineMatchExpr> matchFromLocationExprs,
@@ -106,7 +108,7 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
       return Optional.empty();
     }
 
-    return rulesTransformation(type, ipField, pools, interfaceIp, andThen, orElse)
+    return rulesTransformation(type, ipField, portField, pools, interfaceIp, andThen, orElse)
         .map(
             rulesTransformation ->
                 when(matchFromLocation).setAndThen(rulesTransformation).setOrElse(orElse).build());
@@ -120,16 +122,18 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
   public Optional<Transformation> toIncomingTransformation(
       TransformationType type,
       IpField ipField,
+      PortField portField,
       Map<String, NatPool> pools,
       Ip interfaceIp,
       @Nullable Transformation andThen,
       @Nullable Transformation orElse) {
-    return rulesTransformation(type, ipField, pools, interfaceIp, andThen, orElse);
+    return rulesTransformation(type, ipField, portField, pools, interfaceIp, andThen, orElse);
   }
 
   private Optional<Transformation> rulesTransformation(
       TransformationType type,
       IpField ipField,
+      PortField portField,
       Map<String, NatPool> pools,
       Ip interfaceIp,
       @Nullable Transformation andThen,
@@ -137,7 +141,7 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
     Transformation transformation = orElse;
     for (NatRule rule : Lists.reverse(_rules)) {
       Optional<Builder> optionalBuilder =
-          rule.toTransformationBuilder(type, ipField, pools, interfaceIp);
+          rule.toTransformationBuilder(type, ipField, portField, pools, interfaceIp);
       if (optionalBuilder.isPresent()) {
         transformation =
             optionalBuilder.get().setAndThen(andThen).setOrElse(transformation).build();

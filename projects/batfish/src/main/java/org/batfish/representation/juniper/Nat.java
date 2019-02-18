@@ -70,4 +70,19 @@ public final class Nat implements Serializable {
   public void setDefaultToPort(int toPort) {
     _defaultToPort = toPort;
   }
+
+  public void populateDefaultPortRange() {
+    if (_type != Type.SOURCE) {
+      // only populate port range for source nat
+      return;
+    }
+    _pools.entrySet().stream()
+        .forEach(
+            entry -> {
+              NatPool pool = entry.getValue();
+              if (pool.getPortAddressTranslation() == null) {
+                pool.setPortAddressTranslation(new PatPool(_defaultFromPort, _defaultToPort));
+              }
+            });
+  }
 }

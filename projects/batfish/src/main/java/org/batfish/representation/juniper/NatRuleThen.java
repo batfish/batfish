@@ -13,7 +13,6 @@ import org.batfish.datamodel.transformation.TransformationStep;
 public interface NatRuleThen extends Serializable {
   List<TransformationStep> toTransformationStep(
       TransformationType type,
-      Nat nat,
       IpField ipField,
       PortField portField,
       Map<String, NatPool> pools,

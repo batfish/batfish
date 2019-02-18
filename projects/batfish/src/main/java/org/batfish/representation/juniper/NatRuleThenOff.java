@@ -17,7 +17,6 @@ public enum NatRuleThenOff implements NatRuleThen {
   @Override
   public List<TransformationStep> toTransformationStep(
       TransformationType type,
-      Nat nat,
       IpField ipField,
       PortField portField,
       Map<String, NatPool> pools,

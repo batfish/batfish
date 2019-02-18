@@ -141,6 +141,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 import org.batfish.representation.juniper.Interface.OspfInterfaceType;
@@ -1467,6 +1468,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
               .toOutgoingTransformation(
                   SOURCE_NAT,
                   SOURCE,
+                  PortField.SOURCE,
                   pools,
                   iface.getPrimaryAddress().getIp(),
                   matchFromLocationExprs,
@@ -1664,6 +1666,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
               .toIncomingTransformation(
                   DEST_NAT,
                   DESTINATION,
+                  PortField.DESTINATION,
                   pools,
                   iface.getPrimaryAddress().getIp(),
                   null,
@@ -2960,6 +2963,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     Nat snat = _masterLogicalSystem.getNatSource();
     if (snat != null) {
+      // populate port range
+      snat.populateDefaultPortRange();
+
       // sort ruleSets in source nat
       List<NatRuleSet> sourceNatRuleSetList =
           snat.getRuleSets().values().stream().sorted().collect(ImmutableList.toImmutableList());

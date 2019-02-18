@@ -1,7 +1,5 @@
 package org.batfish.representation.juniper;
 
-import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import java.io.Serializable;
@@ -14,7 +12,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
-import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.TransformationStep;
@@ -56,7 +53,6 @@ public final class NatRuleThenPool implements NatRuleThen, Serializable {
   @Override
   public List<TransformationStep> toTransformationStep(
       TransformationType type,
-      Nat nat,
       IpField ipField,
       PortField portField,
       Map<String, NatPool> pools,
@@ -75,10 +71,6 @@ public final class NatRuleThenPool implements NatRuleThen, Serializable {
     if (pat != null) {
       Optional<TransformationStep> patStep = pat.toTransformationStep(type, portField);
       patStep.ifPresent(builder::add);
-    } else if (type == SOURCE_NAT) {
-      builder.add(
-          new AssignPortFromPool(
-              type, portField, nat.getDefaultFromPort(), nat.getDefaultToPort()));
     }
     return builder.build();
   }

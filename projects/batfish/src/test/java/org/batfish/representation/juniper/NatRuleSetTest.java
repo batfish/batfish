@@ -29,6 +29,7 @@ import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Noop;
+import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationEvaluator;
 import org.batfish.datamodel.transformation.TransformationEvaluator.TransformationResult;
@@ -127,6 +128,7 @@ public class NatRuleSetTest {
             .toOutgoingTransformation(
                 DEST_NAT,
                 DESTINATION,
+                PortField.DESTINATION,
                 ImmutableMap.of("POOL", pool),
                 interfaceIp,
                 ImmutableMap.of(interfaceLocation(fromIface), matchFromIface),
@@ -140,7 +142,13 @@ public class NatRuleSetTest {
     assertThat(
         ruleSet
             .toIncomingTransformation(
-                DEST_NAT, DESTINATION, ImmutableMap.of("POOL", pool), interfaceIp, andThen, orElse)
+                DEST_NAT,
+                DESTINATION,
+                PortField.DESTINATION,
+                ImmutableMap.of("POOL", pool),
+                interfaceIp,
+                andThen,
+                orElse)
             .get(),
         equalTo(rulesTransformation));
   }
@@ -177,6 +185,7 @@ public class NatRuleSetTest {
             .toOutgoingTransformation(
                 SOURCE_NAT,
                 IpField.SOURCE,
+                PortField.SOURCE,
                 ImmutableMap.of("POOL", pool),
                 interfaceIp,
                 ImmutableMap.of(fromLocation, matchSrcInterface(fromIface)),

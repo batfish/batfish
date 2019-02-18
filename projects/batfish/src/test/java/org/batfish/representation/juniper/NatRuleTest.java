@@ -15,6 +15,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.transformation.Noop;
+import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation.Builder;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.junit.Test;
@@ -31,7 +32,8 @@ public class NatRuleTest {
 
     Ip interfaceIp = Ip.ZERO;
     assertThat(
-        rule.toTransformationBuilder(DEST_NAT, DESTINATION, ImmutableMap.of(), interfaceIp)
+        rule.toTransformationBuilder(
+                DEST_NAT, DESTINATION, PortField.DESTINATION, ImmutableMap.of(), interfaceIp)
             .map(Builder::build),
         equalTo(Optional.of(when(match(hs)).apply(new Noop(DEST_NAT)).build())));
 
@@ -39,7 +41,8 @@ public class NatRuleTest {
 
     // pool is undefined
     assertThat(
-        rule.toTransformationBuilder(DEST_NAT, DESTINATION, ImmutableMap.of(), interfaceIp)
+        rule.toTransformationBuilder(
+                DEST_NAT, DESTINATION, PortField.DESTINATION, ImmutableMap.of(), interfaceIp)
             .map(Builder::build),
         equalTo(Optional.empty()));
 
@@ -53,7 +56,11 @@ public class NatRuleTest {
     // destination NAT
     assertThat(
         rule.toTransformationBuilder(
-                DEST_NAT, DESTINATION, ImmutableMap.of("pool", pool), interfaceIp)
+                DEST_NAT,
+                DESTINATION,
+                PortField.DESTINATION,
+                ImmutableMap.of("pool", pool),
+                interfaceIp)
             .map(Builder::build),
         equalTo(
             Optional.of(
@@ -63,7 +70,8 @@ public class NatRuleTest {
 
     // source NAT
     assertThat(
-        rule.toTransformationBuilder(SOURCE_NAT, SOURCE, ImmutableMap.of("pool", pool), interfaceIp)
+        rule.toTransformationBuilder(
+                SOURCE_NAT, SOURCE, PortField.SOURCE, ImmutableMap.of("pool", pool), interfaceIp)
             .map(Builder::build),
         equalTo(
             Optional.of(

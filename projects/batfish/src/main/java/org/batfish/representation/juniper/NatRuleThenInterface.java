@@ -23,7 +23,6 @@ public final class NatRuleThenInterface implements NatRuleThen, Serializable {
   @Override
   public List<TransformationStep> toTransformationStep(
       TransformationType type,
-      Nat nat,
       IpField ipField,
       PortField portField,
       Map<String, NatPool> pools,

@@ -58,7 +58,6 @@ public final class NatRule implements Serializable {
   /** Convert to vendor-independent {@link Transformation}. */
   public Optional<Transformation.Builder> toTransformationBuilder(
       TransformationType type,
-      Nat nat,
       IpField ipField,
       PortField portField,
       Map<String, NatPool> pools,
@@ -68,6 +67,6 @@ public final class NatRule implements Serializable {
         : Optional.of(
             when(new MatchHeaderSpace(toHeaderSpace(_matches)))
                 .apply(
-                    _then.toTransformationStep(type, nat, ipField, portField, pools, interfaceIp)));
+                    _then.toTransformationStep(type, ipField, portField, pools, interfaceIp)));
   }
 }
