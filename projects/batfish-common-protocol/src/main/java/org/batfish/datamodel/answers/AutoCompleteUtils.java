@@ -123,6 +123,12 @@ public final class AutoCompleteUtils {
           suggestions = DispositionSpecifier.autoComplete(query);
           break;
         }
+      case FILTER_NAME:
+        {
+          checkCompletionMetadata(completionMetadata, network, snapshot);
+          suggestions = stringAutoComplete(query, completionMetadata.getFilterNames());
+          break;
+        }
       case FILTER:
         {
           checkCompletionMetadata(completionMetadata, network, snapshot);
