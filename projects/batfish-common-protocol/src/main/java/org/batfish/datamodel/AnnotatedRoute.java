@@ -11,7 +11,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** Represents an {@link AbstractRoute} annotated with additional information. */
 @ParametersAreNonnullByDefault
 public final class AnnotatedRoute<R extends AbstractRoute>
-    implements HasAbstractRoute, Serializable, Comparable<HasAbstractRoute> {
+    implements HasAbstractRoute, Serializable {
 
   private static final long serialVersionUID = 1L;
 
