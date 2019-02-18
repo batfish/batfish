@@ -2263,13 +2263,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
      * Currently, only static NATs have both incoming and outgoing transformations
      */
 
+    List<CiscoAsaNat> ciscoAsaNats = firstNonNull(_ciscoAsaNats, ImmutableList.of());
     List<CiscoIosNat> ciscoIosNats = firstNonNull(_ciscoIosNats, ImmutableList.of());
     List<AristaDynamicSourceNat> aristaDynamicSourceNats =
         firstNonNull(iface.getAristaNats(), ImmutableList.of());
-    if (!aristaDynamicSourceNats.isEmpty() && !ciscoIosNats.isEmpty()) {
-      _w.redFlag("Arista-style and IOS-style NATs should not both be present in configuration.");
+    int natTypes =
+        (aristaDynamicSourceNats.isEmpty() ? 0 : 1)
+            + (ciscoAsaNats.isEmpty() ? 0 : 1)
+            + (ciscoIosNats.isEmpty() ? 0 : 1);
+    if (natTypes > 1) {
+      _w.redFlag("Multiple NAT types should not be present in same configuration.");
     } else if (!aristaDynamicSourceNats.isEmpty()) {
       generateAristaDynamicSourceNats(newIface, aristaDynamicSourceNats);
+    } else if (!ciscoAsaNats.isEmpty()) {
+      generateCiscoAsaNatTransformations(ifaceName, newIface, ciscoAsaNats);
     } else if (!ciscoIosNats.isEmpty()) {
       generateCiscoIosNatTransformations(ifaceName, newIface, ipAccessLists, c);
     }
@@ -2277,6 +2284,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
     String routingPolicyName = iface.getRoutingPolicy();
     if (routingPolicyName != null) {
       newIface.setRoutingPolicy(routingPolicyName);
+    }
+
+    if (_vendor == ConfigurationFormat.CISCO_ASA) {
+      newIface.setPostTransformationIncomingFilter(newIface.getIncomingFilter());
+      newIface.setPreTransformationOutgoingFilter(newIface.getOutgoingFilter());
+      newIface.setIncomingFilter(null);
+      newIface.setOutgoingFilter((IpAccessList) null);
     }
     return newIface;
   }
@@ -2290,6 +2304,39 @@ public final class CiscoConfiguration extends VendorConfiguration {
       next = nat.toTransformation(interfaceIp, _natPools, next).orElse(next);
     }
     newIface.setOutgoingTransformation(next);
+  }
+
+  private void generateCiscoAsaNatTransformations(
+      String ifaceName, org.batfish.datamodel.Interface newIface, List<CiscoAsaNat> ciscoAsaNats) {
+
+    if (!ciscoAsaNats.stream().map(CiscoAsaNat::getSection).allMatch(Section.OBJECT::equals)) {
+      _w.unimplemented("No support for Twice NAT");
+    }
+
+    // ASA places incoming and outgoing object NATs as transformations on the outside interface.
+    // Each NAT rule specifies an outside interface or ANY_INTERFACE
+    SortedSet<CiscoAsaNat> objectNats =
+        ciscoAsaNats.stream()
+            .filter(nat -> nat.getSection().equals(Section.OBJECT))
+            .filter(
+                nat ->
+                    nat.getOutsideInterface().equals(CiscoAsaNat.ANY_INTERFACE)
+                        || nat.getOutsideInterface().equals(ifaceName))
+            .collect(Collectors.toCollection(TreeSet::new));
+
+    newIface.setIncomingTransformation(
+        objectNats.stream()
+            .map(nat -> nat.toIncomingTransformation(_networkObjects, _w))
+            .collect(
+                Collectors.collectingAndThen(
+                    Collectors.toList(), CiscoAsaNatUtil::toTransformationChain)));
+
+    newIface.setOutgoingTransformation(
+        objectNats.stream()
+            .map(nat -> nat.toOutgoingTransformation(_networkObjects, _w))
+            .collect(
+                Collectors.collectingAndThen(
+                    Collectors.toList(), CiscoAsaNatUtil::toTransformationChain)));
   }
 
   private void generateCiscoIosNatTransformations(
