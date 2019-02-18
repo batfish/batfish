@@ -12,10 +12,9 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
-import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.HasAbstractRoute;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.dataplane.ibdp.IncrementalDataPlanePlugin;
@@ -68,7 +67,7 @@ public class GetRoutesTest {
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     ComputeDataPlaneResult dp = dataPlanePlugin.computeDataPlane();
 
-    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>> routes =
+    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(dp._dataPlane);
 
     assertThat(routes, hasKey(n1.getHostname()));

@@ -116,9 +116,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.config.TestrigSettings;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -130,6 +128,7 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.GenericConfigObject;
+import org.batfish.datamodel.HasAbstractRoute;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
@@ -1462,7 +1461,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>> getRoutes(
+  public SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> getRoutes(
       boolean useCompression) {
     return getDataPlanePlugin().getRoutes(loadDataPlane(useCompression));
   }

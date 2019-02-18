@@ -258,7 +258,6 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.IpsecUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpRoute;
@@ -2581,7 +2580,7 @@ public class CiscoGrammarTest {
     batfish.computeDataPlane(); // compute and cache the dataPlane
 
     // Check that 1.1.1.1/32 appears on r3
-    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>> routes =
+    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(batfish.loadDataPlane());
     Set<AbstractRoute> r3Routes = unannotateRoutes(routes.get("r3").get(DEFAULT_VRF_NAME));
     Set<Prefix> r3Prefixes =

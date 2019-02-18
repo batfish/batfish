@@ -18,10 +18,9 @@ import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.topology.TopologyUtil;
-import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.HasAbstractRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -120,19 +119,18 @@ public class OspfTest {
    *  F: R3 E3/4, R4 E4/3
    *  G: R4 Loopback0
    */
-  private static SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>>
-      getOspfRoutes(
-          long areaA,
-          long areaB,
-          long areaC,
-          long areaD,
-          long areaE,
-          long areaF,
-          long areaG,
-          Long maxMetricExternalNetworks,
-          Long maxMetricStubNetworks,
-          Long maxMetricSummaryNetworks,
-          Long maxMetricTransitLinks) {
+  private static SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> getOspfRoutes(
+      long areaA,
+      long areaB,
+      long areaC,
+      long areaD,
+      long areaE,
+      long areaF,
+      long areaG,
+      Long maxMetricExternalNetworks,
+      Long maxMetricStubNetworks,
+      Long maxMetricSummaryNetworks,
+      Long maxMetricTransitLinks) {
 
     String l0Name = "Loopback0";
     String l1Name = "Loopback1";
@@ -291,7 +289,7 @@ public class OspfTest {
    *     ABR
    * @param nssaDefaultType The nature of the default route the ABR advertises to the NSSA.
    */
-  private static SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>>
+  private static SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>>
       getOspfStubBehavior(
           boolean noSummaryStub1,
           boolean noSummaryNssa2,
@@ -479,7 +477,7 @@ public class OspfTest {
 
   @Test
   public void testOspfArea0MaxMetricTransit() {
-    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>> routesByNode =
+    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routesByNode =
         getOspfRoutes(
             0L,
             0L,
@@ -526,7 +524,7 @@ public class OspfTest {
 
   @Test
   public void testOspfArea0MaxMetricTransitAndStub() {
-    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>> routesByNode =
+    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routesByNode =
         getOspfRoutes(
             0L,
             0L,
@@ -573,7 +571,7 @@ public class OspfTest {
 
   @Test
   public void testOspfDualAreaBackboneInterAreaPropagationMaxMetricTransitStubSummary() {
-    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>> routesByNode =
+    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routesByNode =
         getOspfRoutes(
             1L,
             1L,
@@ -620,7 +618,7 @@ public class OspfTest {
 
   @Test
   public void testOspfDualAreaNonBackboneInterAreaPropagationMaxMetricTransitStubSummary() {
-    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>> routesByNode =
+    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routesByNode =
         getOspfRoutes(
             0L,
             0L,
@@ -667,7 +665,7 @@ public class OspfTest {
 
   @Test
   public void testOspfMultiAreaThroughBackboneMaxMetricTransitStubSummary() {
-    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>> routesByNode =
+    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routesByNode =
         getOspfRoutes(
             1L,
             1L,
@@ -714,7 +712,7 @@ public class OspfTest {
 
   @Test
   public void testOspfMultiAreaThroughNonBackboneMaxMetricTransitStubSummary() {
-    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>> routesByNode =
+    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routesByNode =
         getOspfRoutes(
             0L,
             0L,
@@ -762,8 +760,8 @@ public class OspfTest {
   @Test
   public void testOspfStubBehaviorBackboneRoutes() {
     // NSSA args don't really matter
-    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>>
-        routesWithSummaries = getOspfStubBehavior(true, true, OspfDefaultOriginateType.INTER_AREA);
+    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routesWithSummaries =
+        getOspfStubBehavior(true, true, OspfDefaultOriginateType.INTER_AREA);
     assertNoRoute(routesWithSummaries, "R0", Prefix.ZERO);
     assertRoute(routesWithSummaries, OSPF, "R0", Prefix.parse("10.2.3.0/24"), 20L);
     assertRoute(routesWithSummaries, OSPF, "R0", Prefix.parse("10.4.5.0/24"), 20L);
@@ -779,7 +777,7 @@ public class OspfTest {
 
   @Test
   public void testOspfStubBehaviorNssaDefaultTypes() {
-    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>> routesInterArea =
+    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routesInterArea =
         getOspfStubBehavior(true, true, OspfDefaultOriginateType.INTER_AREA);
     assertRoute(routesInterArea, OSPF_IA, "R4", Prefix.ZERO, 10L);
     assertRoute(routesInterArea, OSPF_IA, "R5", Prefix.ZERO, 20L);
@@ -789,18 +787,18 @@ public class OspfTest {
      * https://github.com/batfish/batfish/issues/1644
      */
     /*
-    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>> routesExternalType1 =
+    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routesExternalType1 =
         getOspfStubBehavior(true, true, OspfDefaultOriginateType.EXTERNAL_TYPE1);
     assertRoute(routesExternalType1, OSPF_E1, "R4", Prefix.ZERO, 10L);
     assertRoute(routesExternalType1, OSPF_E1, "R5", Prefix.ZERO, 20L);
 
-    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>> routesExternalType2 =
+    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routesExternalType2 =
         getOspfStubBehavior(true, true, OspfDefaultOriginateType.EXTERNAL_TYPE2);
     assertRoute(routesExternalType2, OSPF_E2, "R4", Prefix.ZERO, 10L);
     assertRoute(routesExternalType2, OSPF_E2, "R5", Prefix.ZERO, 10L);
     */
 
-    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>> routesNone =
+    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routesNone =
         getOspfStubBehavior(true, true, OspfDefaultOriginateType.NONE);
     assertNoRoute(routesNone, "R4", Prefix.ZERO);
     assertNoRoute(routesNone, "R5", Prefix.ZERO);
@@ -809,8 +807,8 @@ public class OspfTest {
   @Test
   public void testOspfStubBehaviorNssaRoutes() {
     // stub args don't really matter
-    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>>
-        routesWithSummaries = getOspfStubBehavior(true, false, OspfDefaultOriginateType.NONE);
+    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routesWithSummaries =
+        getOspfStubBehavior(true, false, OspfDefaultOriginateType.NONE);
     assertRoute(routesWithSummaries, OSPF_IA, "R4", Prefix.parse("10.0.1.0/24"), 20L);
     assertRoute(routesWithSummaries, OSPF_IA, "R4", Prefix.parse("10.0.2.0/24"), 20L);
     assertRoute(routesWithSummaries, OSPF_IA, "R4", Prefix.parse("10.2.3.0/24"), 30L);
@@ -822,8 +820,8 @@ public class OspfTest {
     assertRoute(routesWithSummaries, OSPF_IA, "R5", Prefix.parse("10.0.6.0/24"), 30L);
     assertRoute(routesWithSummaries, OSPF_E2, "R5", Prefix.parse("10.10.10.10/32"), 33L);
 
-    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>>
-        routesWithoutSummaries = getOspfStubBehavior(true, true, OspfDefaultOriginateType.NONE);
+    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routesWithoutSummaries =
+        getOspfStubBehavior(true, true, OspfDefaultOriginateType.NONE);
     assertNoRoute(routesWithoutSummaries, "R4", Prefix.parse("10.0.1.0/24"));
     assertNoRoute(routesWithoutSummaries, "R4", Prefix.parse("10.0.2.0/24"));
     assertNoRoute(routesWithoutSummaries, "R4", Prefix.parse("10.2.3.0/24"));
@@ -839,8 +837,8 @@ public class OspfTest {
   @Test
   public void testOspfStubBehaviorRegularAreaRoutes() {
     // NSSA args don't really matter
-    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>>
-        routesWithSummaries = getOspfStubBehavior(true, true, OspfDefaultOriginateType.NONE);
+    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routesWithSummaries =
+        getOspfStubBehavior(true, true, OspfDefaultOriginateType.NONE);
     assertNoRoute(routesWithSummaries, "R6", Prefix.ZERO);
     assertRoute(routesWithSummaries, OSPF_IA, "R6", Prefix.parse("10.0.1.0/24"), 20L);
     assertRoute(routesWithSummaries, OSPF_IA, "R6", Prefix.parse("10.0.2.0/24"), 20L);
@@ -852,8 +850,8 @@ public class OspfTest {
   @Test
   public void testOspfStubBehaviorStubRoutes() {
     // NSSA args don't really matter
-    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>>
-        routesWithSummaries = getOspfStubBehavior(false, false, OspfDefaultOriginateType.NONE);
+    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routesWithSummaries =
+        getOspfStubBehavior(false, false, OspfDefaultOriginateType.NONE);
     assertRoute(routesWithSummaries, OSPF_IA, "R2", Prefix.parse("10.0.1.0/24"), 20L);
     assertRoute(routesWithSummaries, OSPF_IA, "R2", Prefix.parse("10.0.4.0/24"), 20L);
     assertRoute(routesWithSummaries, OSPF_IA, "R2", Prefix.parse("10.4.5.0/24"), 30L);
@@ -867,8 +865,8 @@ public class OspfTest {
     assertRoute(routesWithSummaries, OSPF_IA, "R3", Prefix.ZERO, 20L);
     assertNoRoute(routesWithSummaries, "R3", Prefix.parse("10.10.10.10/32"));
 
-    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>>
-        routesWithoutSummaries = getOspfStubBehavior(true, false, OspfDefaultOriginateType.NONE);
+    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routesWithoutSummaries =
+        getOspfStubBehavior(true, false, OspfDefaultOriginateType.NONE);
     assertNoRoute(routesWithoutSummaries, "R2", Prefix.parse("10.0.1.0/24"));
     assertNoRoute(routesWithoutSummaries, "R2", Prefix.parse("10.0.4.0/24"));
     assertNoRoute(routesWithoutSummaries, "R2", Prefix.parse("10.4.5.0/24"));
@@ -893,7 +891,7 @@ public class OspfTest {
             _folder);
     batfish.computeDataPlane();
     IncrementalDataPlane dataplane = (IncrementalDataPlane) batfish.loadDataPlane();
-    SortedMap<String, SortedMap<String, SortedSet<AnnotatedRoute<AbstractRoute>>>> routes =
+    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dataplane);
     assertRoute(routes, OSPF_E2, "a1", Prefix.ZERO, 1, Ip.parse("10.1.1.4"));
     assertRoute(routes, OSPF_E2, "a2", Prefix.ZERO, 1, Ip.parse("10.1.1.4"));
