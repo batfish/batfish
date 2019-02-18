@@ -2056,6 +2056,11 @@ INSTANCE
    'instance'
 ;
 
+INSTANCE_IMPORT
+:
+   'instance-import'
+;
+
 INSTANCE_TYPE
 :
    'instance-type'
