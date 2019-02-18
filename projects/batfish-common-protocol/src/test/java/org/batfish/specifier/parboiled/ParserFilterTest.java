@@ -113,7 +113,7 @@ public class ParserFilterTest {
 
     // old style
     assertThat(ParserUtils.getAst(getRunner().run("inFilterOf(eth0)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" inFilterOf ( eth0 ) ")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" InFilterOF ( eth0 ) ")), equalTo(expectedAst));
   }
 
   @Test
@@ -122,11 +122,11 @@ public class ParserFilterTest {
 
     assertThat(ParserUtils.getAst(getRunner().run("@out(eth0)")), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" @out ( eth0 ) ")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("@out(eth0)")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run("@OUT(eth0)")), equalTo(expectedAst));
 
     // old style
     assertThat(ParserUtils.getAst(getRunner().run("outFilterOf(eth0)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" outFilterOf ( eth0 ) ")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" OUTFilterOf ( eth0 ) ")), equalTo(expectedAst));
   }
 
   @Test
@@ -184,8 +184,8 @@ public class ParserFilterTest {
     UnionFilterAstNode expectedNode =
         new UnionFilterAstNode(new NameFilterAstNode("filter1"), new NameFilterAstNode("filter2"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("filter1&filter2")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" filter1 & filter2 ")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run("filter1+filter2")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run(" filter1 + filter2 ")), equalTo(expectedNode));
   }
 
   /** Test if we got the precedence of set operators right. Intersection is higher priority. */

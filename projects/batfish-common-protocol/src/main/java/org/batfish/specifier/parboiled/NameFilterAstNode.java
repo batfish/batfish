@@ -1,5 +1,6 @@
 package org.batfish.specifier.parboiled;
 
+import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
 final class NameFilterAstNode implements FilterAstNode {
@@ -38,5 +39,10 @@ final class NameFilterAstNode implements FilterAstNode {
   @Override
   public int hashCode() {
     return Objects.hash(_name);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(getClass()).add("name", _name).toString();
   }
 }
