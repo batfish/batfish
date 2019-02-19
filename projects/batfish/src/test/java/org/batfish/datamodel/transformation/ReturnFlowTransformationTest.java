@@ -70,6 +70,20 @@ public class ReturnFlowTransformationTest {
       assertEquals(shiftSrc.accept(STEP_VISITOR), shiftDst);
       assertEquals(shiftDst.accept(STEP_VISITOR), shiftSrc);
     }
+
+    // assign port from pool
+    {
+      int poolStart = 5;
+      int poolEnd = 17;
+      AssignPortFromPool assignSrc =
+          new AssignPortFromPool(
+              TransformationType.SOURCE_NAT, PortField.SOURCE, poolStart, poolEnd);
+      AssignPortFromPool assignDst =
+          new AssignPortFromPool(
+              TransformationType.SOURCE_NAT, PortField.DESTINATION, poolStart, poolEnd);
+      assertEquals(assignSrc.accept(STEP_VISITOR), assignDst);
+      assertEquals(assignDst.accept(STEP_VISITOR), assignSrc);
+    }
   }
 
   @Test

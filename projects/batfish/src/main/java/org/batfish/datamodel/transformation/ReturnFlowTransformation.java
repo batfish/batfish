@@ -52,6 +52,12 @@ public final class ReturnFlowTransformation {
       return new ShiftIpAddressIntoSubnet(
           step.getType(), step.getIpField().opposite(), step.getSubnet());
     }
+
+    @Override
+    public TransformationStep visitAssignPortFromPool(AssignPortFromPool step) {
+      return new AssignPortFromPool(
+          step.getType(), step.getPortField().opposite(), step.getPoolStart(), step.getPoolEnd());
+    }
   }
 
   /* GuardVisitor does two things:
