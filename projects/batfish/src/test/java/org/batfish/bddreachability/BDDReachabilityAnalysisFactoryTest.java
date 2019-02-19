@@ -791,7 +791,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
                 .build());
 
     HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
-    IpSpaceToBDD dstToBdd = toBDD.getDstIpSpaceToBdd();
     IpSpaceToBDD srcToBdd = toBDD.getSrcIpSpaceToBdd();
 
     BDD preNatOutAclBdd = toBDD.toBDD(preNatOutAclHeaderSpace);

@@ -1,13 +1,12 @@
 package org.batfish.z3.state;
 
-import org.batfish.datamodel.FlowDisposition;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 
 /**
  * A {@link StateExpr} for flows being forwarded out an interface with the {@link
- * FlowDisposition#EXITS_NETWORK} disposition, before the outgoing ACL(s) or transformation are
- * applied.
+ * org.batfish.datamodel.FlowDisposition#EXITS_NETWORK} disposition, before the outgoing ACL(s) or
+ * transformation are applied.
  */
 public final class PreOutInterfaceExitsNetwork extends StateExpr {
   private final String _hostname;

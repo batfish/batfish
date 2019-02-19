@@ -9,7 +9,6 @@ import static org.batfish.bddreachability.TestNetwork.DST_PREFIX_2;
 import static org.batfish.bddreachability.TestNetwork.LINK_1_NETWORK;
 import static org.batfish.bddreachability.TestNetwork.LINK_2_NETWORK;
 import static org.batfish.bddreachability.TestNetwork.POST_SOURCE_NAT_ACL_DEST_PORT;
-import static org.batfish.bddreachability.TestNetwork.SOURCE_NAT_ACL_IP;
 import static org.batfish.common.bdd.BDDMatchers.intersects;
 import static org.batfish.common.bdd.BDDMatchers.isOne;
 import static org.batfish.common.bdd.BDDMatchers.isZero;
@@ -65,6 +64,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+/** Tests of {@link BDDReachabilityAnalysis}. */
 public final class BDDReachabilityAnalysisTest {
   @Rule public TemporaryFolder temp = new TemporaryFolder();
 
@@ -104,7 +104,6 @@ public final class BDDReachabilityAnalysisTest {
   private String _link2DstName;
 
   private BDD _link2SrcIpBDD;
-  private BDD _srcNatAclIpBDD;
 
   private String _srcName;
   private NodeAccept _srcNodeAccept;
@@ -181,7 +180,6 @@ public final class BDDReachabilityAnalysisTest {
         new PreOutEdgePostNat(_srcName, _net._link1Src.getName(), _dstName, _link1DstName);
     _srcPreOutEdgePostNat2 = new PreOutEdgePostNat(_srcName, link2SrcName, _dstName, _link2DstName);
     _srcPreOutVrf = new PreOutVrf(_srcName, DEFAULT_VRF_NAME);
-    _srcNatAclIpBDD = srcIpBDD(SOURCE_NAT_ACL_IP);
   }
 
   private List<Ip> bddIps(BDD bdd) {
@@ -206,10 +204,6 @@ public final class BDDReachabilityAnalysisTest {
 
   private static BDD dstIpBDD(Ip ip) {
     return new IpSpaceToBDD(PKT.getDstIp()).toBDD(ip);
-  }
-
-  private static BDD srcIpBDD(Ip ip) {
-    return new IpSpaceToBDD(PKT.getSrcIp()).toBDD(ip);
   }
 
   private static BDD dstPortBDD(int destPort) {

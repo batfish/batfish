@@ -853,7 +853,6 @@ public final class BDDReachabilityAnalysisFactory {
               return nodeEntry.getValue().getVrfs().entrySet().stream()
                   .flatMap(
                       vrfEntry -> {
-                        String vrf = vrfEntry.getKey();
                         StateExpr postState = new NodeDropAclOut(node);
                         return vrfEntry.getValue().getInterfaces().values().stream()
                             .filter(iface -> iface.getOutgoingFilterName() != null)
