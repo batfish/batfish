@@ -94,6 +94,10 @@ import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
+import org.batfish.z3.state.PreOutInterfaceDeliveredToSubnet;
+import org.batfish.z3.state.PreOutInterfaceExitsNetwork;
+import org.batfish.z3.state.PreOutInterfaceInsufficientInfo;
+import org.batfish.z3.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.z3.state.PreOutVrf;
 import org.batfish.z3.state.Query;
 
@@ -484,12 +488,10 @@ public final class BDDReachabilityAnalysisFactory {
         generateRules_PreOutEdge_PreOutEdgePostNat(),
         generateRules_PreOutEdgePostNat_NodeDropAclOut(),
         generateRules_PreOutEdgePostNat_PreInInterface(),
-        generateRules_PreOutVrf_NodeDropAclOut(),
+        generateRules_PreOutInterfaceDisposition_NodeInterfaceDisposition(),
+        generateRules_PreOutInterfaceDisposition_NodeDropAclOut(),
         generateRules_PreOutVrf_NodeDropNullRoute(),
-        generateRules_PreOutVrf_NodeInterfaceNeighborUnreachable(),
-        generateRules_PreOutVrf_NodeInterfaceDeliveredToSubnet(),
-        generateRules_PreOutVrf_NodeInterfaceExitsNetwork(),
-        generateRules_PreOutVrf_NodeInterfaceInsufficientInfo(),
+        generateRules_PreOutVrf_PreOutInterfaceDisposition(),
         generateRules_PreOutVrf_PreOutEdge());
   }
 
@@ -839,7 +841,7 @@ public final class BDDReachabilityAnalysisFactory {
             });
   }
 
-  private Stream<Edge> generateRules_PreOutVrf_NodeDropAclOut() {
+  private Stream<Edge> generateRules_PreOutInterfaceDisposition_NodeDropAclOut() {
     if (_ignoreFilters) {
       return Stream.of();
     }
@@ -852,27 +854,12 @@ public final class BDDReachabilityAnalysisFactory {
                   .flatMap(
                       vrfEntry -> {
                         String vrf = vrfEntry.getKey();
-                        Map<String, BDD> deliveredToSubnetBDDs =
-                            _deliveredToSubnetBDDs.get(node).get(vrf);
-                        Map<String, BDD> exitsNetworkBDDs = _exitsNetworkBDDs.get(node).get(vrf);
-                        Map<String, BDD> neighborUnreachableBDDs =
-                            _neighborUnreachableBDDs.get(node).get(vrf);
-                        Map<String, BDD> insufficientInfoBDDs =
-                            _insufficientInfoBDDs.get(node).get(vrf);
-                        StateExpr preState = new PreOutVrf(node, vrf);
                         StateExpr postState = new NodeDropAclOut(node);
                         return vrfEntry.getValue().getInterfaces().values().stream()
                             .filter(iface -> iface.getOutgoingFilterName() != null)
-                            .map(
+                            .flatMap(
                                 iface -> {
                                   String ifaceName = iface.getName();
-                                  BDD forwardBDD =
-                                      Stream.of(
-                                              deliveredToSubnetBDDs.get(ifaceName),
-                                              exitsNetworkBDDs.get(ifaceName),
-                                              neighborUnreachableBDDs.get(ifaceName),
-                                              insufficientInfoBDDs.get(ifaceName))
-                                          .reduce(_zero, BDD::or);
                                   BDD denyPreAclBDD =
                                       ignorableAclDenyBDD(
                                           node, iface.getPreTransformationOutgoingFilterName());
@@ -884,17 +871,22 @@ public final class BDDReachabilityAnalysisFactory {
                                   Transition transformation =
                                       _bddOutgoingTransformations.get(node).get(ifaceName);
 
-                                  return new Edge(
-                                      preState,
-                                      postState,
+                                  Transition transition =
                                       compose(
                                           or(
-                                              constraint(forwardBDD.and(denyPreAclBDD)),
+                                              constraint(denyPreAclBDD),
                                               compose(
-                                                  constraint(forwardBDD.and(permitPreAclBDD)),
+                                                  constraint(permitPreAclBDD),
                                                   transformation,
                                                   constraint(denyPostAclBDD))),
-                                          removeSourceConstraint(_bddSourceManagers.get(node))));
+                                          removeSourceConstraint(_bddSourceManagers.get(node)));
+
+                                  return Stream.of(
+                                          new PreOutInterfaceDeliveredToSubnet(node, ifaceName),
+                                          new PreOutInterfaceExitsNetwork(node, ifaceName),
+                                          new PreOutInterfaceInsufficientInfo(node, ifaceName),
+                                          new PreOutInterfaceNeighborUnreachable(node, ifaceName))
+                                      .map(preState -> new Edge(preState, postState, transition));
                                 });
                       });
             });
@@ -919,79 +911,107 @@ public final class BDDReachabilityAnalysisFactory {
                         }));
   }
 
-  private Stream<Edge> generateRules_PreOutVrf_NodeInterfaceDisposition(
-      Map<String, Map<String, Map<String, BDD>>> bddMap,
-      BiFunction<String, String, StateExpr> dispositionNodeConstructor) {
-    return bddMap.entrySet().stream()
+  private Stream<Edge> generateRules_PreOutVrf_PreOutInterfaceDisposition() {
+    return _configs.values().stream()
+        .flatMap(node -> node.getAllInterfaces().values().stream())
         .flatMap(
-            nodeEntry -> {
-              String node = nodeEntry.getKey();
-              Map<String, Interface> nodeInterfaces = _configs.get(node).getAllInterfaces();
-              return nodeEntry.getValue().entrySet().stream()
-                  .flatMap(
-                      vrfEntry -> {
-                        String vrf = vrfEntry.getKey();
-                        return vrfEntry.getValue().entrySet().stream()
-                            .flatMap(
-                                ifaceEntry -> {
-                                  String ifaceName = ifaceEntry.getKey();
-                                  BDD forwardBdd = ifaceEntry.getValue();
-                                  Interface iface = nodeInterfaces.get(ifaceName);
-                                  BDD permitBeforeNatBDD =
-                                      ignorableAclPermitBDD(
-                                          node, iface.getPreTransformationOutgoingFilterName());
-                                  BDD permitAfterNatBDD =
-                                      ignorableAclPermitBDD(node, iface.getOutgoingFilterName());
-                                  Transition outgoingTransformation =
-                                      _bddOutgoingTransformations.get(node).get(ifaceName);
+            iface -> {
+              String hostname = iface.getOwner().getHostname();
+              String ifaceName = iface.getName();
+              String vrf = iface.getVrfName();
 
-                                  if (forwardBdd.isZero()
-                                      || permitBeforeNatBDD.isZero()
-                                      || permitAfterNatBDD.isZero()) {
-                                    return Stream.of();
-                                  }
+              StateExpr preState = new PreOutVrf(hostname, vrf);
 
-                                  StateExpr preState = new PreOutVrf(node, vrf);
-                                  StateExpr postState =
-                                      dispositionNodeConstructor.apply(node, ifaceName);
+              Stream.Builder<Edge> builder = Stream.builder();
 
-                                  /* 1a. forward out edge
-                                   * 1b. pre-transformation filter
-                                   * 2. outgoing transformation
-                                   * 3. post-transformation filter
-                                   * 4. erase source constraint
-                                   */
-                                  Transition transition =
-                                      compose(
-                                          constraint(forwardBdd.and(permitBeforeNatBDD)),
-                                          outgoingTransformation,
-                                          constraint(permitAfterNatBDD),
-                                          removeSourceConstraint(_bddSourceManagers.get(node)));
+              // delivered to subnet
+              BDD deliveredToSubnet = _deliveredToSubnetBDDs.get(hostname).get(vrf).get(ifaceName);
+              if (!deliveredToSubnet.isZero()) {
+                builder.add(
+                    new Edge(
+                        preState,
+                        new PreOutInterfaceDeliveredToSubnet(hostname, ifaceName),
+                        deliveredToSubnet));
+              }
 
-                                  return Stream.of(new Edge(preState, postState, transition));
-                                });
-                      });
+              BDD exitsNetwork = _exitsNetworkBDDs.get(hostname).get(vrf).get(ifaceName);
+              if (!exitsNetwork.isZero()) {
+                builder.add(
+                    new Edge(
+                        preState,
+                        new PreOutInterfaceExitsNetwork(hostname, ifaceName),
+                        exitsNetwork));
+              }
+
+              BDD insufficientInfo = _insufficientInfoBDDs.get(hostname).get(vrf).get(ifaceName);
+              if (!insufficientInfo.isZero()) {
+                builder.add(
+                    new Edge(
+                        preState,
+                        new PreOutInterfaceInsufficientInfo(hostname, ifaceName),
+                        insufficientInfo));
+              }
+
+              BDD neighborUnreachable =
+                  _neighborUnreachableBDDs.get(hostname).get(vrf).get(ifaceName);
+              if (!neighborUnreachable.isZero()) {
+                builder.add(
+                    new Edge(
+                        preState,
+                        new PreOutInterfaceNeighborUnreachable(hostname, ifaceName),
+                        neighborUnreachable));
+              }
+              return builder.build();
             });
   }
 
-  private Stream<Edge> generateRules_PreOutVrf_NodeInterfaceNeighborUnreachable() {
-    return generateRules_PreOutVrf_NodeInterfaceDisposition(
-        _neighborUnreachableBDDs, NodeInterfaceNeighborUnreachable::new);
-  }
+  private Stream<Edge> generateRules_PreOutInterfaceDisposition_NodeInterfaceDisposition() {
+    return _configs.values().stream()
+        .flatMap(config -> config.getAllInterfaces().values().stream())
+        .flatMap(
+            iface -> {
+              String node = iface.getOwner().getHostname();
+              String ifaceName = iface.getName();
+              BDD permitBeforeNatBDD =
+                  ignorableAclPermitBDD(node, iface.getPreTransformationOutgoingFilterName());
+              BDD permitAfterNatBDD = ignorableAclPermitBDD(node, iface.getOutgoingFilterName());
+              Transition outgoingTransformation =
+                  _bddOutgoingTransformations.get(node).get(ifaceName);
 
-  private Stream<Edge> generateRules_PreOutVrf_NodeInterfaceExitsNetwork() {
-    return generateRules_PreOutVrf_NodeInterfaceDisposition(
-        _exitsNetworkBDDs, NodeInterfaceExitsNetwork::new);
-  }
+              if (permitBeforeNatBDD.isZero() || permitAfterNatBDD.isZero()) {
+                return Stream.of();
+              }
 
-  private Stream<Edge> generateRules_PreOutVrf_NodeInterfaceDeliveredToSubnet() {
-    return generateRules_PreOutVrf_NodeInterfaceDisposition(
-        _deliveredToSubnetBDDs, NodeInterfaceDeliveredToSubnet::new);
-  }
+              /* 1. pre-transformation filter
+               * 2. outgoing transformation
+               * 3. post-transformation filter
+               * 4. erase source constraint
+               */
+              Transition transition =
+                  compose(
+                      constraint(permitBeforeNatBDD),
+                      outgoingTransformation,
+                      constraint(permitAfterNatBDD),
+                      removeSourceConstraint(_bddSourceManagers.get(node)));
 
-  private Stream<Edge> generateRules_PreOutVrf_NodeInterfaceInsufficientInfo() {
-    return generateRules_PreOutVrf_NodeInterfaceDisposition(
-        _insufficientInfoBDDs, NodeInterfaceInsufficientInfo::new);
+              return Stream.of(
+                  new Edge(
+                      new PreOutInterfaceDeliveredToSubnet(node, ifaceName),
+                      new NodeInterfaceDeliveredToSubnet(node, ifaceName),
+                      transition),
+                  new Edge(
+                      new PreOutInterfaceExitsNetwork(node, ifaceName),
+                      new NodeInterfaceExitsNetwork(node, ifaceName),
+                      transition),
+                  new Edge(
+                      new PreOutInterfaceInsufficientInfo(node, ifaceName),
+                      new NodeInterfaceInsufficientInfo(node, ifaceName),
+                      transition),
+                  new Edge(
+                      new PreOutInterfaceNeighborUnreachable(node, ifaceName),
+                      new NodeInterfaceNeighborUnreachable(node, ifaceName),
+                      transition));
+            });
   }
 
   private Stream<Edge> generateRules_PreOutVrf_PreOutEdge() {
