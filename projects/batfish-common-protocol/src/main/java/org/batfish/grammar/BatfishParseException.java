@@ -11,7 +11,7 @@ public class BatfishParseException extends BatfishException {
 
   private static final long serialVersionUID = 1L;
 
-  @Nonnull private final ParserRuleContext _context;
+  @Nullable private final transient ParserRuleContext _context;
 
   public BatfishParseException(String msg, @Nullable Throwable cause, ParserRuleContext context) {
     super(msg, cause);
