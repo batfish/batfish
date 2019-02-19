@@ -77,6 +77,6 @@ public final class AnnotatedRoute<R extends AbstractRoute>
 
   @Override
   public String toString() {
-    return toStringHelper(getClass()).add("Source VRF", _sourceVrf).add("Route", _route).toString();
+    return toStringHelper(getClass()).add("sourceVrf", _sourceVrf).add("route", _route).toString();
   }
 }
