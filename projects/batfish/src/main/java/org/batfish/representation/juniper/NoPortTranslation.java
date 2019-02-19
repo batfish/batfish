@@ -15,7 +15,8 @@ public class NoPortTranslation implements PortAddressTranslation, Serializable {
   private NoPortTranslation() {}
 
   @Override
-  public Optional<TransformationStep> toTransformationStep(TransformationType type, PortField field) {
+  public Optional<TransformationStep> toTransformationStep(
+      TransformationType type, PortField field) {
     return Optional.empty();
   }
 }

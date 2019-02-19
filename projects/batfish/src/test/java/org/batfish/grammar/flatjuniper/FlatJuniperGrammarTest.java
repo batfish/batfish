@@ -101,6 +101,7 @@ import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.AUXILIARY_LINE_NAME;
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.CONSOLE_LINE_NAME;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_EXISTING_CONNECTION;
@@ -253,6 +254,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
+import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
@@ -3596,10 +3598,14 @@ public final class FlatJuniperGrammarTest {
     AssignIpAddressFromPool transformationStep =
         assignSourceIp(Ip.parse("10.10.10.1"), Ip.parse("10.10.10.254"));
 
+    AssignPortFromPool portTransformationStep = assignSourcePort(1024, 63487);
+
     Transformation ruleSet1Transformation =
         when(matchSrcInterface("ge-0/0/0.0"))
             .setAndThen(
-                when(matchDst(Prefix.parse("1.1.1.1/24"))).apply(transformationStep).build())
+                when(matchDst(Prefix.parse("1.1.1.1/24")))
+                    .apply(transformationStep, portTransformationStep)
+                    .build())
             .build();
 
     // rule set 3 has a zone from location, so it goes second
@@ -3607,7 +3613,7 @@ public final class FlatJuniperGrammarTest {
         when(matchSrcInterface("ge-0/0/0.0", "ge-0/0/1.0"))
             .setAndThen(
                 when(matchDst(Prefix.parse("3.3.3.3/24")))
-                    .apply(transformationStep)
+                    .apply(transformationStep, portTransformationStep)
                     .setOrElse(ruleSet1Transformation)
                     .build())
             .setOrElse(ruleSet1Transformation)
@@ -3618,7 +3624,7 @@ public final class FlatJuniperGrammarTest {
         when(matchSrcInterface("ge-0/0/0.0"))
             .setAndThen(
                 when(matchDst(Prefix.parse("2.2.2.2/24")))
-                    .apply(transformationStep)
+                    .apply(transformationStep, portTransformationStep)
                     .setOrElse(
                         // routing instance rule set
                         ruleSet3Transformation)
@@ -4530,7 +4536,6 @@ public final class FlatJuniperGrammarTest {
     assertThat(c.getAllInterfaces().get(i3Name).getFirewallSessionInterfaceInfo(), nullValue());
   }
 
-
   @Test
   public void testPortAddressTranslation() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-nat-pat");
@@ -4562,53 +4567,6 @@ public final class FlatJuniperGrammarTest {
     Nat destNat = juniperConfiguration.getMasterLogicalSystem().getNatDestination();
     NatPool pool4 = destNat.getPools().get("POOL4");
     NatPool pool5 = destNat.getPools().get("POOL5");
-
-    // pool4 should have a pat pool ranging [6000,6000]
-    assertNotNull(pool4);
-    assertThat(pool4.getPortAddressTranslation(), equalTo(new PatPool(6000, 6000)));
-
-    // pool5 should not have pat specified
-    assertNotNull(pool5);
-    assertNull(pool5.getPortAddressTranslation());
-  }
-
-  @Test
-  public void testPortRangePopulating() {
-    JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-nat-pat");
-    Nat sourceNat = juniperConfiguration.getMasterLogicalSystem().getNatSource();
-    NatPool pool0 = sourceNat.getPools().get("POOL0");
-    NatPool pool1 = sourceNat.getPools().get("POOL1");
-    NatPool pool2 = sourceNat.getPools().get("POOL2");
-    NatPool pool3 = sourceNat.getPools().get("POOL3");
-
-    sourceNat.populateDefaultPortRange();
-
-    PatPool defaultPatPool = new PatPool(4000, 5000);
-
-    // pool0 should have default port range
-    assertNotNull(pool0);
-    assertThat(pool0.getPortAddressTranslation(), equalTo(defaultPatPool));
-
-    // pool1 should has a pat pool with range [2000,3000] with no port translation configured
-    assertNotNull(pool1);
-    assertNotNull(pool1.getPortAddressTranslation());
-    assertThat(pool1.getPortAddressTranslation(), equalTo(new PatPool(2000, 3000)));
-
-    // pool2 should specify no translation
-    assertNotNull(pool2);
-    assertNotNull(pool2.getPortAddressTranslation());
-    assertThat(pool2.getPortAddressTranslation(), equalTo(NoPortTranslation.INSTANCE));
-
-    // pool3 should have a pat pool ranging [10000,20000]
-    assertNotNull(pool3);
-    assertNotNull(pool3.getPortAddressTranslation());
-    assertThat(pool3.getPortAddressTranslation(), equalTo(new PatPool(10000, 20000)));
-
-    Nat destNat = juniperConfiguration.getMasterLogicalSystem().getNatDestination();
-    NatPool pool4 = destNat.getPools().get("POOL4");
-    NatPool pool5 = destNat.getPools().get("POOL5");
-
-    destNat.populateDefaultPortRange();
 
     // pool4 should have a pat pool ranging [6000,6000]
     assertNotNull(pool4);

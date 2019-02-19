@@ -2,10 +2,6 @@ package org.batfish.representation.juniper;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
-import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
-import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
-import static org.batfish.datamodel.transformation.IpField.DESTINATION;
-import static org.batfish.datamodel.transformation.IpField.SOURCE;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
@@ -141,7 +137,6 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 import org.batfish.representation.juniper.Interface.OspfInterfaceType;
@@ -1446,7 +1441,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .map(Zone::getName)
             .orElse(null);
     String routingInstance = iface.getRoutingInstance();
-    Map<String, NatPool> pools = _masterLogicalSystem.getNatSource().getPools();
+    Nat snat = _masterLogicalSystem.getNatSource();
 
     List<NatRuleSet> ruleSets =
         orderedRuleSetList.stream()
@@ -1464,10 +1459,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       transformation =
           ruleSet
               .toOutgoingTransformation(
-                  SOURCE_NAT,
-                  SOURCE,
-                  PortField.SOURCE,
-                  pools,
+                  snat,
                   iface.getPrimaryAddress().getIp(),
                   matchFromLocationExprs,
                   null,
@@ -1627,7 +1619,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (dnat == null) {
       return null;
     }
-    Map<String, NatPool> pools = dnat.getPools();
 
     String ifaceName = iface.getName();
     String zone =
@@ -1662,13 +1653,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       transformation =
           ruleSet
               .toIncomingTransformation(
-                  DEST_NAT,
-                  DESTINATION,
-                  PortField.DESTINATION,
-                  pools,
-                  iface.getPrimaryAddress().getIp(),
-                  null,
-                  transformation)
+                  dnat, iface.getPrimaryAddress().getIp(), null, transformation)
               .orElse(transformation);
     }
     return transformation;
@@ -2961,9 +2946,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     Nat snat = _masterLogicalSystem.getNatSource();
     if (snat != null) {
-      // populate port range
-      snat.populateDefaultPortRange();
-
       // sort ruleSets in source nat
       List<NatRuleSet> sourceNatRuleSetList =
           snat.getRuleSets().values().stream().sorted().collect(ImmutableList.toImmutableList());

@@ -6,17 +6,14 @@ import static org.batfish.representation.juniper.NatRuleMatchToHeaderSpace.toHea
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.flow.TransformationStep.TransformationType;
-import org.batfish.datamodel.transformation.IpField;
-import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.TransformationStep;
 
 /** Represents a nat rule for Juniper */
 @ParametersAreNonnullByDefault
@@ -56,17 +53,13 @@ public final class NatRule implements Serializable {
   }
 
   /** Convert to vendor-independent {@link Transformation}. */
-  public Optional<Transformation.Builder> toTransformationBuilder(
-      TransformationType type,
-      IpField ipField,
-      PortField portField,
-      Map<String, NatPool> pools,
-      Ip interfaceIp) {
-    return _then == null
+  public Optional<Transformation.Builder> toTransformationBuilder(Nat nat, Ip interfaceIp) {
+
+    List<TransformationStep> steps =
+        _then == null ? null : _then.toTransformationStep(nat, interfaceIp);
+
+    return (_then == null || steps.isEmpty())
         ? Optional.empty()
-        : Optional.of(
-            when(new MatchHeaderSpace(toHeaderSpace(_matches)))
-                .apply(
-                    _then.toTransformationStep(type, ipField, portField, pools, interfaceIp)));
+        : Optional.of(when(new MatchHeaderSpace(toHeaderSpace(_matches))).apply(steps));
   }
 }
