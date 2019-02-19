@@ -25,7 +25,7 @@ final class NameFilterAstNode implements FilterAstNode {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof NameFilterAstNode)) {
       return false;
     }
     NameFilterAstNode that = (NameFilterAstNode) o;

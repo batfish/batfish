@@ -29,7 +29,7 @@ final class NameRegexFilterAstNode implements FilterAstNode {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof NameRegexFilterAstNode)) {
       return false;
     }
     NameRegexFilterAstNode that = (NameRegexFilterAstNode) o;
