@@ -95,15 +95,72 @@ public class F5BigipConfiguration extends VendorConfiguration {
         F5BigipStructureUsage.INTERFACE_SELF_REFERENCE,
         F5BigipStructureUsage.BGP_NEIGHBOR_UPDATE_SOURCE,
         F5BigipStructureUsage.VLAN_INTERFACE);
+    markAbstractStructure(
+        F5BigipStructureType.MONITOR,
+        F5BigipStructureUsage.POOL_MONITOR,
+        ImmutableList.of(F5BigipStructureType.MONITOR_HTTP, F5BigipStructureType.MONITOR_HTTPS));
+    markConcreteStructure(
+        F5BigipStructureType.MONITOR_HTTP, F5BigipStructureUsage.MONITOR_HTTP_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.MONITOR_HTTPS, F5BigipStructureUsage.MONITOR_HTTPS_DEFAULTS_FROM);
+    markConcreteStructure(F5BigipStructureType.NODE, F5BigipStructureUsage.POOL_MEMBER);
+    markAbstractStructure(
+        F5BigipStructureType.PERSISTENCE,
+        F5BigipStructureUsage.VIRTUAL_PERSIST_PERSISTENCE,
+        ImmutableList.of(
+            F5BigipStructureType.PERSISTENCE_SOURCE_ADDR, F5BigipStructureType.PERSISTENCE_SSL));
+    markConcreteStructure(
+        F5BigipStructureType.PERSISTENCE_SOURCE_ADDR,
+        F5BigipStructureUsage.PERSISTENCE_SOURCE_ADDR_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PERSISTENCE_SSL, F5BigipStructureUsage.PERSISTENCE_SSL_DEFAULTS_FROM);
+    markConcreteStructure(F5BigipStructureType.POOL, F5BigipStructureUsage.VIRTUAL_POOL);
     markConcreteStructure(
         F5BigipStructureType.PREFIX_LIST,
         F5BigipStructureUsage.ROUTE_MAP_MATCH_IPV4_ADDRESS_PREFIX_LIST);
+    markAbstractStructure(
+        F5BigipStructureType.PROFILE,
+        F5BigipStructureUsage.VIRTUAL_PROFILE,
+        ImmutableList.of(
+            F5BigipStructureType.PROFILE_CLIENT_SSL,
+            F5BigipStructureType.PROFILE_HTTP,
+            F5BigipStructureType.PROFILE_ONE_CONNECT,
+            F5BigipStructureType.PROFILE_OCSP_STAPLING_PARAMS,
+            F5BigipStructureType.PROFILE_SERVER_SSL,
+            F5BigipStructureType.PROFILE_TCP));
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_CLIENT_SSL,
+        F5BigipStructureUsage.PROFILE_CLIENT_SSL_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_HTTP, F5BigipStructureUsage.PROFILE_HTTP_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_ONE_CONNECT,
+        F5BigipStructureUsage.PROFILE_ONE_CONNECT_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_OCSP_STAPLING_PARAMS,
+        F5BigipStructureUsage.PROFILE_OCSP_STAPLING_PARAMS_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_SERVER_SSL,
+        F5BigipStructureUsage.MONITOR_HTTPS_SSL_PROFILE,
+        F5BigipStructureUsage.PROFILE_SERVER_SSL_DEFAULTS_FROM);
+    markConcreteStructure(
+        F5BigipStructureType.PROFILE_TCP, F5BigipStructureUsage.PROFILE_TCP_DEFAULTS_FROM);
     markConcreteStructure(
         F5BigipStructureType.ROUTE_MAP,
         F5BigipStructureUsage.BGP_ADDRESS_FAMILY_REDISTRIBUTE_KERNEL_ROUTE_MAP,
         F5BigipStructureUsage.BGP_NEIGHBOR_IPV4_ROUTE_MAP_OUT,
         F5BigipStructureUsage.BGP_NEIGHBOR_IPV6_ROUTE_MAP_OUT);
+    markConcreteStructure(F5BigipStructureType.RULE, F5BigipStructureUsage.VIRTUAL_RULES_RULE);
     markConcreteStructure(F5BigipStructureType.SELF, F5BigipStructureUsage.SELF_SELF_REFERENCE);
+    markConcreteStructure(F5BigipStructureType.SNAT, F5BigipStructureUsage.SNAT_SELF_REFERENCE);
+    markConcreteStructure(
+        F5BigipStructureType.SNATPOOL,
+        F5BigipStructureUsage.SNAT_SNATPOOL,
+        F5BigipStructureUsage.VIRTUAL_SOURCE_ADDRESS_TRANSLATION_POOL);
+    markConcreteStructure(
+        F5BigipStructureType.VIRTUAL, F5BigipStructureUsage.VIRTUAL_SELF_REFERENCE);
+    markConcreteStructure(
+        F5BigipStructureType.VIRTUAL_ADDRESS, F5BigipStructureUsage.VIRTUAL_DESTINATION);
     markConcreteStructure(F5BigipStructureType.VLAN, F5BigipStructureUsage.SELF_VLAN);
   }
 

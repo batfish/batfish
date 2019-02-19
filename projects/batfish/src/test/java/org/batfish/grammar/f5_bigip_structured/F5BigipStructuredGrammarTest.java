@@ -17,9 +17,29 @@ import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.INTERFACE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_HTTP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_HTTPS;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.NODE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PERSISTENCE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PERSISTENCE_SOURCE_ADDR;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PERSISTENCE_SSL;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.POOL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PREFIX_LIST;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_CLIENT_SSL;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_HTTP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_OCSP_STAPLING_PARAMS;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_ONE_CONNECT;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_SERVER_SSL;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_TCP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE_MAP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.RULE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SELF;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNAT;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNATPOOL;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL_ADDRESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -141,6 +161,130 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testMonitorReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // monitor http
+    {
+      String undefined = "/Common/monitor_http_undefined";
+      String unused = "/Common/monitor_http_unused";
+      String used = "/Common/monitor_http_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, MONITOR, undefined));
+      assertThat(ans, hasUndefinedReference(file, MONITOR_HTTP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, MONITOR_HTTP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, MONITOR_HTTP, used, 2));
+    }
+
+    // monitor https
+    {
+      String undefined = "/Common/monitor_https_undefined";
+      String unused = "/Common/monitor_https_unused";
+      String used = "/Common/monitor_https_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, MONITOR, undefined));
+      assertThat(ans, hasUndefinedReference(file, MONITOR_HTTPS, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, MONITOR_HTTPS, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, MONITOR_HTTPS, used, 2));
+    }
+  }
+
+  @Test
+  public void testNodeReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    String undefined = "/Common/node_undefined";
+    String unused = "/Common/node_unused";
+    String used = "/Common/node_used";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // detect undefined reference
+    assertThat(ans, hasUndefinedReference(file, NODE, undefined));
+
+    // detected unused structure
+    assertThat(ans, hasNumReferrers(file, NODE, unused, 0));
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, NODE, used, 1));
+  }
+
+  @Test
+  public void testPersistenceReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // persistence source-addr
+    {
+      String undefined = "/Common/persistence_source_addr_undefined";
+      String unused = "/Common/persistence_source_addr_unused";
+      String used = "/Common/persistence_source_addr_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PERSISTENCE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PERSISTENCE_SOURCE_ADDR, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PERSISTENCE_SOURCE_ADDR, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PERSISTENCE_SOURCE_ADDR, used, 2));
+    }
+
+    // persistence ssl
+    {
+      String undefined = "/Common/persistence_ssl_undefined";
+      String unused = "/Common/persistence_ssl_unused";
+      String used = "/Common/persistence_ssl_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PERSISTENCE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PERSISTENCE_SSL, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PERSISTENCE_SSL, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PERSISTENCE_SSL, used, 2));
+    }
+  }
+
+  @Test
+  public void testPoolReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    String undefined = "/Common/pool_undefined";
+    String unused = "/Common/pool_unused";
+    String used = "/Common/pool_used";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // detect undefined reference
+    assertThat(ans, hasUndefinedReference(file, POOL, undefined));
+
+    // detected unused structure
+    assertThat(ans, hasNumReferrers(file, POOL, unused, 0));
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, POOL, used, 1));
+  }
+
+  @Test
   public void testPrefixList() throws IOException {
     String hostname = "f5_bigip_structured_net_routing_prefix_list";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -229,6 +373,111 @@ public final class F5BigipStructuredGrammarTest {
 
     // detect all structure references
     assertThat(ans, hasNumReferrers(file, PREFIX_LIST, used, 1));
+  }
+
+  @Test
+  public void testProfileReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // profile client-ssl
+    {
+      String undefined = "/Common/profile_client_ssl_undefined";
+      String unused = "/Common/profile_client_ssl_unused";
+      String used = "/Common/profile_client_ssl_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_CLIENT_SSL, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_CLIENT_SSL, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_CLIENT_SSL, used, 2));
+    }
+
+    // profile http
+    {
+      String undefined = "/Common/profile_http_undefined";
+      String unused = "/Common/profile_http_unused";
+      String used = "/Common/profile_http_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_HTTP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_HTTP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_HTTP, used, 2));
+    }
+
+    // profile ocsp-stapling-params
+    {
+      String undefined = "/Common/profile_ocsp_stapling_params_undefined";
+      String unused = "/Common/profile_ocsp_stapling_params_unused";
+      String used = "/Common/profile_ocsp_stapling_params_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_OCSP_STAPLING_PARAMS, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_OCSP_STAPLING_PARAMS, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_OCSP_STAPLING_PARAMS, used, 2));
+    }
+
+    // profile one-connect
+    {
+      String undefined = "/Common/profile_one_connect_undefined";
+      String unused = "/Common/profile_one_connect_unused";
+      String used = "/Common/profile_one_connect_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_ONE_CONNECT, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_ONE_CONNECT, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_ONE_CONNECT, used, 2));
+    }
+
+    // profile server-ssl
+    {
+      String undefined = "/Common/profile_server_ssl_undefined";
+      String unused = "/Common/profile_server_ssl_unused";
+      String used = "/Common/profile_server_ssl_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_SERVER_SSL, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_SERVER_SSL, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_SERVER_SSL, used, 3));
+    }
+
+    // profile tcp
+    {
+      String undefined = "/Common/profile_tcp_undefined";
+      String unused = "/Common/profile_tcp_unused";
+      String used = "/Common/profile_tcp_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_TCP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_TCP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_TCP, used, 2));
+    }
   }
 
   @Test
@@ -328,6 +577,27 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testRuleReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    String undefined = "/Common/rule_undefined";
+    String unused = "/Common/rule_unused";
+    String used = "/Common/rule_used";
+
+    // detect undefined references
+    assertThat(ans, hasUndefinedReference(file, RULE, undefined));
+
+    // detected unused structure
+    assertThat(ans, hasNumReferrers(file, RULE, unused, 0));
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, RULE, used, 1));
+  }
+
+  @Test
   public void testSelfReferences() throws IOException {
     String hostname = "f5_bigip_structured_self_references";
     String file = "configs/" + hostname;
@@ -338,6 +608,74 @@ public final class F5BigipStructuredGrammarTest {
 
     // detect all structure references
     assertThat(ans, hasNumReferrers(file, SELF, used, 1));
+  }
+
+  @Test
+  public void testSnatpoolReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    String undefined = "/Common/snatpool_undefined";
+    String unused = "/Common/snatpool_unused";
+    String used = "/Common/snatpool_used";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // detect undefined reference
+    assertThat(ans, hasUndefinedReference(file, SNATPOOL, undefined));
+
+    // detected unused structure
+    assertThat(ans, hasNumReferrers(file, SNATPOOL, unused, 0));
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, SNATPOOL, used, 2));
+  }
+
+  @Test
+  public void testSnatReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    String used = "/Common/snat_used";
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, SNAT, used, 1));
+  }
+
+  @Test
+  public void testVirtualAddressReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    String undefined = "/Common/192.0.2.9";
+    String unused = "/Common/192.0.2.8";
+    String used = "/Common/192.0.2.7";
+
+    // detect undefined references
+    assertThat(ans, hasUndefinedReference(file, VIRTUAL_ADDRESS, undefined));
+
+    // detected unused structure
+    assertThat(ans, hasNumReferrers(file, VIRTUAL_ADDRESS, unused, 0));
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, VIRTUAL_ADDRESS, used, 1));
+  }
+
+  @Test
+  public void testVirtualReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    String used = "/Common/virtual_used";
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, VIRTUAL, used, 1));
   }
 
   @Test
