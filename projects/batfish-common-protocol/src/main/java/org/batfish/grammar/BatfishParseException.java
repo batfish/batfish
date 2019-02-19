@@ -18,7 +18,7 @@ public class BatfishParseException extends BatfishException {
     _context = context;
   }
 
-  public @Nonnull ParserRuleContext getContext() {
+  public @Nullable ParserRuleContext getContext() {
     return _context;
   }
 }
