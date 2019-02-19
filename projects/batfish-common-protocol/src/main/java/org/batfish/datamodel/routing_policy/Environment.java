@@ -5,11 +5,11 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRoute6;
 import org.batfish.datamodel.AbstractRouteBuilder;
+import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.HasAbstractRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
@@ -78,7 +78,7 @@ public class Environment {
       boolean error,
       BgpRoute.Builder intermediateBgpAttributes,
       boolean localDefaultAction,
-      HasAbstractRoute originalRoute,
+      AbstractRouteDecorator originalRoute,
       @Nullable AbstractRoute6 originalRoute6,
       AbstractRouteBuilder<?, ?> outputRoute,
       @Nullable Ip peerAddress,
@@ -250,7 +250,7 @@ public class Environment {
     private boolean _error;
     private BgpRoute.Builder _intermediateBgpAttributes;
     private boolean _localDefaultAction;
-    private HasAbstractRoute _originalRoute;
+    private AbstractRouteDecorator _originalRoute;
     private AbstractRoute6 _originalRoute6;
     private AbstractRouteBuilder<?, ?> _outputRoute;
     @Nullable private Ip _peerAddress;
@@ -313,7 +313,7 @@ public class Environment {
       return this;
     }
 
-    public Builder setOriginalRoute(HasAbstractRoute originalRoute) {
+    public Builder setOriginalRoute(AbstractRouteDecorator originalRoute) {
       _originalRoute = originalRoute;
       return this;
     }

@@ -7,15 +7,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
-public class MockRib implements GenericRib<HasAbstractRoute> {
+public class MockRib implements GenericRib<AbstractRouteDecorator> {
 
   public static class Builder {
 
-    private Map<Ip, Set<HasAbstractRoute>> _longestPrefixMatchResults;
+    private Map<Ip, Set<AbstractRouteDecorator>> _longestPrefixMatchResults;
 
     private Map<Prefix, IpSpace> _matchingIps;
 
-    private Set<HasAbstractRoute> _mergeRouteTrues;
+    private Set<AbstractRouteDecorator> _mergeRouteTrues;
 
     private SortedSet<Prefix> _prefixes;
 
@@ -23,7 +23,7 @@ public class MockRib implements GenericRib<HasAbstractRoute> {
 
     private Comparator<AbstractRoute> _routePreferenceComparator;
 
-    private Set<HasAbstractRoute> _routes;
+    private Set<AbstractRouteDecorator> _routes;
 
     private Builder() {
       _longestPrefixMatchResults = ImmutableMap.of();
@@ -38,7 +38,7 @@ public class MockRib implements GenericRib<HasAbstractRoute> {
     }
 
     public Builder setLongestPrefixMatchResults(
-        Map<Ip, Set<HasAbstractRoute>> longestPrefixMatchResults) {
+        Map<Ip, Set<AbstractRouteDecorator>> longestPrefixMatchResults) {
       _longestPrefixMatchResults = longestPrefixMatchResults;
       return this;
     }
@@ -48,7 +48,7 @@ public class MockRib implements GenericRib<HasAbstractRoute> {
       return this;
     }
 
-    public Builder setMergeRouteTrues(Set<HasAbstractRoute> mergeRouteTrues) {
+    public Builder setMergeRouteTrues(Set<AbstractRouteDecorator> mergeRouteTrues) {
       _mergeRouteTrues = mergeRouteTrues;
       return this;
     }
@@ -69,7 +69,7 @@ public class MockRib implements GenericRib<HasAbstractRoute> {
       return this;
     }
 
-    public Builder setRoutes(Set<HasAbstractRoute> routes) {
+    public Builder setRoutes(Set<AbstractRouteDecorator> routes) {
       _routes = routes;
       return this;
     }
@@ -82,11 +82,11 @@ public class MockRib implements GenericRib<HasAbstractRoute> {
     return new Builder();
   }
 
-  private final Map<Ip, Set<HasAbstractRoute>> _longestPrefixMatchResults;
+  private final Map<Ip, Set<AbstractRouteDecorator>> _longestPrefixMatchResults;
 
   private final Map<Prefix, IpSpace> _matchingIps;
 
-  private final Set<HasAbstractRoute> _mergeRouteTrues;
+  private final Set<AbstractRouteDecorator> _mergeRouteTrues;
 
   private final SortedSet<Prefix> _prefixes;
 
@@ -94,7 +94,7 @@ public class MockRib implements GenericRib<HasAbstractRoute> {
 
   private final Comparator<AbstractRoute> _routePreferenceComparator;
 
-  private final Set<HasAbstractRoute> _routes;
+  private final Set<AbstractRouteDecorator> _routes;
 
   private MockRib(Builder builder) {
     _longestPrefixMatchResults = builder._longestPrefixMatchResults;
@@ -107,7 +107,7 @@ public class MockRib implements GenericRib<HasAbstractRoute> {
   }
 
   @Override
-  public int comparePreference(HasAbstractRoute lhs, HasAbstractRoute rhs) {
+  public int comparePreference(AbstractRouteDecorator lhs, AbstractRouteDecorator rhs) {
     return _routePreferenceComparator.compare(lhs.getAbstractRoute(), rhs.getAbstractRoute());
   }
 
@@ -127,22 +127,22 @@ public class MockRib implements GenericRib<HasAbstractRoute> {
   }
 
   @Override
-  public Set<HasAbstractRoute> getRoutes() {
+  public Set<AbstractRouteDecorator> getRoutes() {
     return _routes;
   }
 
   @Override
-  public Set<HasAbstractRoute> longestPrefixMatch(Ip address) {
+  public Set<AbstractRouteDecorator> longestPrefixMatch(Ip address) {
     return _longestPrefixMatchResults.get(address);
   }
 
   @Override
-  public Set<HasAbstractRoute> longestPrefixMatch(Ip address, int maxPrefixLength) {
+  public Set<AbstractRouteDecorator> longestPrefixMatch(Ip address, int maxPrefixLength) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public boolean mergeRoute(HasAbstractRoute route) {
+  public boolean mergeRoute(AbstractRouteDecorator route) {
     return _mergeRouteTrues.contains(route);
   }
 }

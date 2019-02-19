@@ -13,7 +13,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 
-public class FibImpl<R extends HasAbstractRoute> implements Fib {
+public class FibImpl<R extends AbstractRouteDecorator> implements Fib {
 
   private static final int MAX_DEPTH = 10;
 
@@ -28,7 +28,7 @@ public class FibImpl<R extends HasAbstractRoute> implements Fib {
     _rib = rib;
     _nextHopInterfaces =
         rib.getRoutes().stream()
-            .map(HasAbstractRoute::getAbstractRoute)
+            .map(AbstractRouteDecorator::getAbstractRoute)
             .collect(
                 ImmutableMap.toImmutableMap(
                     Function.identity(), route -> collectNextHopInterfaces(_rib, route)));
@@ -44,7 +44,7 @@ public class FibImpl<R extends HasAbstractRoute> implements Fib {
    *     an invalid route in the RIB has been encountered.
    */
   private static Map<String, Map<Ip, Set<AbstractRoute>>> collectNextHopInterfaces(
-      GenericRib<? extends HasAbstractRoute> rib, AbstractRoute route) {
+      GenericRib<? extends AbstractRouteDecorator> rib, AbstractRoute route) {
     Map<String, Map<Ip, Set<AbstractRoute>>> nextHopInterfaces = new HashMap<>();
     collectNextHopInterfaces(
         rib,
@@ -58,7 +58,7 @@ public class FibImpl<R extends HasAbstractRoute> implements Fib {
     return ImmutableMap.copyOf(nextHopInterfaces);
   }
 
-  private static <T extends HasAbstractRoute> void collectNextHopInterfaces(
+  private static <T extends AbstractRouteDecorator> void collectNextHopInterfaces(
       GenericRib<T> rib,
       AbstractRoute route,
       Ip mostRecentNextHopIp,
@@ -129,7 +129,7 @@ public class FibImpl<R extends HasAbstractRoute> implements Fib {
         /* Filter out any non-forwarding routes from the matches */
         Set<AbstractRoute> forwardingRoutes =
             nextHopLongestPrefixMatchRoutes.stream()
-                .map(HasAbstractRoute::getAbstractRoute)
+                .map(AbstractRouteDecorator::getAbstractRoute)
                 .filter(r -> !r.getNonForwarding())
                 .collect(ImmutableSet.toImmutableSet());
 
@@ -177,7 +177,7 @@ public class FibImpl<R extends HasAbstractRoute> implements Fib {
   @Override
   public @Nonnull Set<String> getNextHopInterfaces(Ip ip) {
     return _rib.longestPrefixMatch(ip).stream()
-        .map(HasAbstractRoute::getAbstractRoute)
+        .map(AbstractRouteDecorator::getAbstractRoute)
         .flatMap(nextHopRoute -> _nextHopInterfaces.get(nextHopRoute).keySet().stream())
         .collect(ImmutableSet.toImmutableSet());
   }
@@ -186,7 +186,7 @@ public class FibImpl<R extends HasAbstractRoute> implements Fib {
   public @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>
       getNextHopInterfacesByRoute(Ip dstIp) {
     return _rib.longestPrefixMatch(dstIp).stream()
-        .map(HasAbstractRoute::getAbstractRoute)
+        .map(AbstractRouteDecorator::getAbstractRoute)
         .collect(ImmutableMap.toImmutableMap(Function.identity(), _nextHopInterfaces::get));
   }
 

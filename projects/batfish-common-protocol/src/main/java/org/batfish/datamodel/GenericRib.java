@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
-public interface GenericRib<R extends HasAbstractRoute> extends Serializable {
+public interface GenericRib<R extends AbstractRouteDecorator> extends Serializable {
 
   /**
    * Compare the preferability of one route with anther
@@ -36,7 +36,7 @@ public interface GenericRib<R extends HasAbstractRoute> extends Serializable {
    */
   IpSpace getRoutableIps();
 
-  /** Return a set of {@link HasAbstractRoute routes} this RIB contains. */
+  /** Return a set of {@link AbstractRouteDecorator routes} this RIB contains. */
   Set<R> getRoutes();
 
   /**

@@ -5,8 +5,8 @@ import java.util.Comparator;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
-import org.batfish.datamodel.HasAbstractRoute;
 
 /**
  * Represents a general RIB, capable of storing routes across different protocols. Uses
@@ -39,7 +39,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
     return !route.getNonRouting() ? super.mergeRouteGetDelta(route) : RibDelta.empty();
   }
 
-  /** Overrides {@link AbstractRib#mergeRouteGetDelta(HasAbstractRoute)} */
+  /** Overrides {@link AbstractRib#mergeRouteGetDelta(AbstractRouteDecorator)} */
   @Override
   @Nonnull
   public RibDelta<AnnotatedRoute<AbstractRoute>> mergeRouteGetDelta(

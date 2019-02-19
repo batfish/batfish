@@ -46,9 +46,9 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.GenericRib;
-import org.batfish.datamodel.HasAbstractRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
@@ -126,7 +126,7 @@ public class RoutesAnswererUtil {
    * @param ipOwners {@link Map} of {@link Ip} to {@link Set} of owner nodes
    * @return {@link Multiset} of {@link Row}s representing the routes
    */
-  static <T extends HasAbstractRoute> Multiset<Row> getMainRibRoutes(
+  static <T extends AbstractRouteDecorator> Multiset<Row> getMainRibRoutes(
       SortedMap<String, SortedMap<String, GenericRib<T>>> ribs,
       Set<String> matchingNodes,
       @Nullable Prefix network,
@@ -144,7 +144,7 @@ public class RoutesAnswererUtil {
                 (vrfName, rib) -> {
                   if (compiledVrfRegex.matcher(vrfName).matches()) {
                     rib.getRoutes().stream()
-                        .map(HasAbstractRoute::getAbstractRoute)
+                        .map(AbstractRouteDecorator::getAbstractRoute)
                         .filter(
                             route ->
                                 (network == null || network.equals(route.getNetwork()))
@@ -481,7 +481,7 @@ public class RoutesAnswererUtil {
    * @return {@link Map} of {@link RouteRowKey}s to corresponding sub{@link Map}s of {@link
    *     RouteRowSecondaryKey} to {@link SortedSet} of {@link RouteRowAttribute}s
    */
-  static <T extends HasAbstractRoute>
+  static <T extends AbstractRouteDecorator>
       Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> groupRoutes(
           SortedMap<String, SortedMap<String, GenericRib<T>>> ribs,
           Set<String> matchingNodes,
@@ -499,7 +499,7 @@ public class RoutesAnswererUtil {
                 (vrfName, rib) -> {
                   if (compiledVrfRegex.matcher(vrfName).matches()) {
                     rib.getRoutes().stream()
-                        .map(HasAbstractRoute::getAbstractRoute)
+                        .map(AbstractRouteDecorator::getAbstractRoute)
                         .filter(
                             route ->
                                 (network == null || network.equals(route.getNetwork()))

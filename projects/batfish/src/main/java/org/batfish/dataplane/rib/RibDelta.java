@@ -16,8 +16,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
-import org.batfish.datamodel.HasAbstractRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
@@ -27,7 +27,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
  * @param <R> route type
  */
 @ParametersAreNonnullByDefault
-public final class RibDelta<R extends HasAbstractRoute> {
+public final class RibDelta<R extends AbstractRouteDecorator> {
 
   /** Sorted for deterministic iteration order */
   private SortedMap<Prefix, List<RouteAdvertisement<R>>> _actions;
@@ -97,7 +97,7 @@ public final class RibDelta<R extends HasAbstractRoute> {
 
   /** Builder for {@link RibDelta} */
   @ParametersAreNonnullByDefault
-  public static final class Builder<R extends HasAbstractRoute> {
+  public static final class Builder<R extends AbstractRouteDecorator> {
 
     private Map<Prefix, LinkedHashMap<R, RouteAdvertisement<R>>> _actions;
 
@@ -175,7 +175,7 @@ public final class RibDelta<R extends HasAbstractRoute> {
      * @param converter {@link Function} that converts type {@code U} to type {@code T}
      */
     @Nonnull
-    public <T extends HasAbstractRoute> Builder<R> from(
+    public <T extends AbstractRouteDecorator> Builder<R> from(
         RibDelta<T> delta, Function<? super T, ? extends R> converter) {
       for (RouteAdvertisement<T> a : delta.getActions()) {
         LinkedHashMap<R, RouteAdvertisement<R>> l =
@@ -191,20 +191,14 @@ public final class RibDelta<R extends HasAbstractRoute> {
   }
 
   @Nonnull
-  public static <T extends HasAbstractRoute> Builder<T> builder() {
+  public static <T extends AbstractRouteDecorator> Builder<T> builder() {
     return new Builder<>();
   }
 
   /** Return an empty RIB delta */
   @Nonnull
-  public static <T extends HasAbstractRoute> RibDelta<T> empty() {
+  public static <T extends AbstractRouteDecorator> RibDelta<T> empty() {
     return RibDelta.<T>builder().build();
-  }
-
-  /** Returns an unannotated copy of the given {@link RibDelta} */
-  public static <T extends AbstractRoute> RibDelta<T> unannotateDelta(
-      RibDelta<AnnotatedRoute<T>> annotatedDelta) {
-    return RibDelta.<T>builder().from(annotatedDelta, AnnotatedRoute::getRoute).build();
   }
 
   /**
@@ -268,7 +262,9 @@ public final class RibDelta<R extends HasAbstractRoute> {
    */
   @Nonnull
   private static <
-          T extends HasAbstractRoute, U extends HasAbstractRoute, RibT extends AbstractRib<T>>
+          T extends AbstractRouteDecorator,
+          U extends AbstractRouteDecorator,
+          RibT extends AbstractRib<T>>
       RibDelta<T> importRibDelta(
           RibT importingRib, RibDelta<U> delta, Function<? super U, ? extends T> converter) {
     if (delta.isEmpty()) {

@@ -12,9 +12,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.GenericRib;
-import org.batfish.datamodel.HasAbstractRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
@@ -29,7 +29,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
  *     preferences.
  */
 @ParametersAreNonnullByDefault
-public abstract class AbstractRib<R extends HasAbstractRoute> implements GenericRib<R> {
+public abstract class AbstractRib<R extends AbstractRouteDecorator> implements GenericRib<R> {
 
   private static final long serialVersionUID = 1L;
 
@@ -115,7 +115,7 @@ public abstract class AbstractRib<R extends HasAbstractRoute> implements Generic
    * @return a {@link RibDelta}
    */
   @Nonnull
-  <T extends HasAbstractRoute, RibT extends AbstractRib<T>> RibDelta<R> importRoutesFrom(
+  <T extends AbstractRouteDecorator, RibT extends AbstractRib<T>> RibDelta<R> importRoutesFrom(
       RibT exportingRib, Function<? super T, ? extends R> converter) {
     RibDelta.Builder<R> builder = RibDelta.builder();
     for (T route : exportingRib.getRoutes()) {

@@ -43,12 +43,12 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.GenericRib;
-import org.batfish.datamodel.HasAbstractRoute;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
@@ -74,7 +74,7 @@ public class RoutesAnswererTest {
 
   @Test
   public void testGetMainRibRoutesWhenEmptyRib() {
-    SortedMap<String, SortedMap<String, GenericRib<HasAbstractRoute>>> ribs =
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRouteDecorator>>> ribs =
         ImmutableSortedMap.of(
             "n1", ImmutableSortedMap.of(Configuration.DEFAULT_VRF_NAME, new MockRib<>()));
 
@@ -92,7 +92,7 @@ public class RoutesAnswererTest {
 
   @Test
   public void testHasNetworkFiltering() {
-    SortedMap<String, SortedMap<String, GenericRib<HasAbstractRoute>>> ribs =
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRouteDecorator>>> ribs =
         ImmutableSortedMap.of(
             "n1",
             ImmutableSortedMap.of(
@@ -126,7 +126,7 @@ public class RoutesAnswererTest {
 
   @Test
   public void testHasNodeFiltering() {
-    SortedMap<String, SortedMap<String, GenericRib<HasAbstractRoute>>> ribs =
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRouteDecorator>>> ribs =
         ImmutableSortedMap.of(
             "n1",
             ImmutableSortedMap.of(
@@ -153,7 +153,7 @@ public class RoutesAnswererTest {
 
   @Test
   public void testHasProtocolFiltering() {
-    SortedMap<String, SortedMap<String, GenericRib<HasAbstractRoute>>> ribs =
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRouteDecorator>>> ribs =
         ImmutableSortedMap.of(
             "n1",
             ImmutableSortedMap.of(
@@ -178,7 +178,7 @@ public class RoutesAnswererTest {
 
   @Test
   public void testHasVrfFiltering() {
-    SortedMap<String, SortedMap<String, GenericRib<HasAbstractRoute>>> ribs =
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRouteDecorator>>> ribs =
         ImmutableSortedMap.of(
             "n1",
             ImmutableSortedMap.of(
@@ -470,7 +470,7 @@ public class RoutesAnswererTest {
   }
 
   /** Mock rib that only supports one operation: returning pre-set routes. */
-  static class MockRib<R extends HasAbstractRoute> implements GenericRib<R> {
+  static class MockRib<R extends AbstractRouteDecorator> implements GenericRib<R> {
 
     private static final long serialVersionUID = 1L;
 

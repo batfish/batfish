@@ -1,9 +1,9 @@
 package org.batfish.dataplane.ibdp;
 
-import static org.batfish.datamodel.matchers.HasAbstractRouteMatchers.hasMetric;
-import static org.batfish.datamodel.matchers.HasAbstractRouteMatchers.hasNextHopIp;
-import static org.batfish.datamodel.matchers.HasAbstractRouteMatchers.hasPrefix;
-import static org.batfish.datamodel.matchers.HasAbstractRouteMatchers.hasProtocol;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -19,10 +19,10 @@ import java.util.SortedSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.HasAbstractRoute;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
@@ -32,14 +32,14 @@ import org.batfish.datamodel.matchers.IsisRouteMatchers;
 import org.hamcrest.Matchers;
 
 public class TestUtils {
-  public static <T extends HasAbstractRoute> void assertNoRoute(
+  public static <T extends AbstractRouteDecorator> void assertNoRoute(
       SortedMap<String, SortedMap<String, SortedSet<T>>> routesByNode,
       String hostname,
       InterfaceAddress address) {
     assertNoRoute(routesByNode, hostname, address.getPrefix());
   }
 
-  public static <T extends HasAbstractRoute> void assertNoRoute(
+  public static <T extends AbstractRouteDecorator> void assertNoRoute(
       SortedMap<String, SortedMap<String, SortedSet<T>>> routesByNode,
       String hostname,
       Prefix prefix) {
@@ -50,7 +50,7 @@ public class TestUtils {
     assertThat(routes, not(hasItem(hasPrefix(prefix))));
   }
 
-  public static <T extends HasAbstractRoute> void assertRoute(
+  public static <T extends AbstractRouteDecorator> void assertRoute(
       SortedMap<String, SortedMap<String, SortedSet<T>>> routesByNode,
       RoutingProtocol protocol,
       String hostname,
@@ -59,7 +59,7 @@ public class TestUtils {
     assertRoute(routesByNode, protocol, hostname, address.getPrefix(), expectedCost);
   }
 
-  public static <T extends HasAbstractRoute> void assertIsisRoute(
+  public static <T extends AbstractRouteDecorator> void assertIsisRoute(
       SortedMap<String, SortedMap<String, SortedSet<T>>> routesByNode,
       RoutingProtocol protocol,
       String hostname,
@@ -75,7 +75,7 @@ public class TestUtils {
             IsisRouteMatchers.isisRouteWith(prefix, nextHopIp, expectedCost, overload, protocol)));
   }
 
-  public static <T extends HasAbstractRoute> void assertRoute(
+  public static <T extends AbstractRouteDecorator> void assertRoute(
       SortedMap<String, SortedMap<String, SortedSet<T>>> routesByNode,
       RoutingProtocol protocol,
       String hostname,
@@ -84,7 +84,7 @@ public class TestUtils {
     assertRoute(routesByNode, protocol, hostname, prefix, expectedCost, null);
   }
 
-  public static <T extends HasAbstractRoute> void assertRoute(
+  public static <T extends AbstractRouteDecorator> void assertRoute(
       SortedMap<String, SortedMap<String, SortedSet<T>>> routesByNode,
       RoutingProtocol protocol,
       String hostname,
@@ -101,7 +101,7 @@ public class TestUtils {
                 hasNextHopIp(nextHopIp == null ? Matchers.any(Ip.class) : equalTo(nextHopIp)))));
   }
 
-  private static <T extends HasAbstractRoute> List<T> getRoutesForPrefix(
+  private static <T extends AbstractRouteDecorator> List<T> getRoutesForPrefix(
       SortedMap<String, SortedMap<String, SortedSet<T>>> routesByNode,
       String hostname,
       Prefix prefix) {
@@ -130,7 +130,9 @@ public class TestUtils {
   }
 
   public static Set<AbstractRoute> unannotateRoutes(
-      Collection<? extends HasAbstractRoute> annotated) {
-    return annotated.stream().map(HasAbstractRoute::getAbstractRoute).collect(Collectors.toSet());
+      Collection<? extends AbstractRouteDecorator> annotated) {
+    return annotated.stream()
+        .map(AbstractRouteDecorator::getAbstractRoute)
+        .collect(Collectors.toSet());
   }
 }

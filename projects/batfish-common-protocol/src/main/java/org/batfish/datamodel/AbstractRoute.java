@@ -18,12 +18,12 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * of route.
  *
  * <p><i>Note:</i> This class implements {@link Comparable} because we put AbstractRoute in ordered
- * collections all throughout the codebase. {@link #compareTo(HasAbstractRoute)} has <b>NO</b>
+ * collections all throughout the codebase. {@link #compareTo(AbstractRouteDecorator)} has <b>NO</b>
  * impact on route preference.
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 @ParametersAreNonnullByDefault
-public abstract class AbstractRoute implements HasAbstractRoute, Serializable {
+public abstract class AbstractRoute implements AbstractRouteDecorator, Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -62,7 +62,7 @@ public abstract class AbstractRoute implements HasAbstractRoute, Serializable {
   }
 
   @Override
-  public final int compareTo(HasAbstractRoute rhs) {
+  public final int compareTo(AbstractRouteDecorator rhs) {
     int routeComparison =
         Comparator.comparing(AbstractRoute::getNetwork)
             .thenComparingInt(AbstractRoute::getAdministrativeCost)

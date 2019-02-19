@@ -7,13 +7,14 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.HasAbstractRoute;
+import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.dataplane.rib.AbstractRib;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 @ParametersAreNonnullByDefault
-public class RouteDependencyTracker<R extends HasAbstractRoute, D extends HasAbstractRoute> {
+public class RouteDependencyTracker<
+    R extends AbstractRouteDecorator, D extends AbstractRouteDecorator> {
 
   /** Map of routes to the set of routes they depend on */
   @Nonnull private Map<D, Set<R>> _routeDependents;

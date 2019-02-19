@@ -22,6 +22,7 @@ import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasListForKey;
 import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
 import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasAllowRemoteAsOut;
@@ -67,7 +68,6 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclT
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.EigrpMetricMatchers.hasDelay;
 import static org.batfish.datamodel.matchers.EigrpRouteMatchers.hasEigrpMetric;
-import static org.batfish.datamodel.matchers.HasAbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstPorts;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
@@ -259,6 +259,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.IpsecUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpRoute;
@@ -275,7 +276,6 @@ import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowState;
-import org.batfish.datamodel.HasAbstractRoute;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
@@ -2620,11 +2620,11 @@ public class CiscoGrammarTest {
     batfish.computeDataPlane(); // compute and cache the dataPlane
 
     // Check that 1.1.1.1/32 appears on r3
-    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRouteDecorator>>> routes =
         dataPlanePlugin.getRoutes(batfish.loadDataPlane());
     Set<AbstractRoute> r3Routes = unannotateRoutes(routes.get("r3").get(DEFAULT_VRF_NAME));
     Set<Prefix> r3Prefixes =
-        r3Routes.stream().map(HasAbstractRoute::getNetwork).collect(Collectors.toSet());
+        r3Routes.stream().map(AbstractRouteDecorator::getNetwork).collect(Collectors.toSet());
     Prefix r1Loopback = Prefix.parse("1.1.1.1/32");
     assertTrue(r3Prefixes.contains(r1Loopback));
 

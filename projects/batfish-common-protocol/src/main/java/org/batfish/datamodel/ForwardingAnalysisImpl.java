@@ -131,7 +131,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     return new IpSpaceToBDD(bddPacket.getDstIp());
   }
 
-  public <T extends HasAbstractRoute> ForwardingAnalysisImpl(
+  public <T extends AbstractRouteDecorator> ForwardingAnalysisImpl(
       Map<String, Configuration> configurations,
       SortedMap<String, SortedMap<String, GenericRib<T>>> ribs,
       Map<String, Map<String, Fib>> fibs,
@@ -251,7 +251,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
    * 3) (Proxy-ARP) PERMIT any other IP routable via the VRF of the interface.
    */
   @VisibleForTesting
-  <T extends HasAbstractRoute> Map<String, Map<String, IpSpace>> computeArpReplies(
+  <T extends AbstractRouteDecorator> Map<String, Map<String, IpSpace>> computeArpReplies(
       Map<String, Configuration> configurations,
       SortedMap<String, SortedMap<String, GenericRib<T>>> ribs) {
     try (ActiveSpan span =
@@ -580,7 +580,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @VisibleForTesting
-  static <T extends HasAbstractRoute> Map<String, Map<String, IpSpace>> computeRoutableIps(
+  static <T extends AbstractRouteDecorator> Map<String, Map<String, IpSpace>> computeRoutableIps(
       SortedMap<String, SortedMap<String, GenericRib<T>>> ribs) {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeRoutableIps").startActive()) {
@@ -600,8 +600,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   /** Compute for each VRF of each node the IPs that are routable. */
   @VisibleForTesting
-  static <T extends HasAbstractRoute> Map<String, Map<String, IpSpace>> computeRoutableIpsByNodeVrf(
-      SortedMap<String, SortedMap<String, GenericRib<T>>> ribs) {
+  static <T extends AbstractRouteDecorator>
+      Map<String, Map<String, IpSpace>> computeRoutableIpsByNodeVrf(
+          SortedMap<String, SortedMap<String, GenericRib<T>>> ribs) {
     try (ActiveSpan span =
         GlobalTracer.get()
             .buildSpan("ForwardingAnalysisImpl.computeRoutableIpsByNodeVrf")
@@ -621,7 +622,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @VisibleForTesting
-  static <T extends HasAbstractRoute>
+  static <T extends AbstractRouteDecorator>
       Map<String, Map<String, Map<Prefix, IpSpace>>> computeMatchingIps(
           SortedMap<String, SortedMap<String, GenericRib<T>>> ribs) {
     try (ActiveSpan span =

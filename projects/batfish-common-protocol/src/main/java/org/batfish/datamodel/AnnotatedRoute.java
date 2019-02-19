@@ -11,7 +11,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** Represents an {@link AbstractRoute} annotated with additional information. */
 @ParametersAreNonnullByDefault
 public final class AnnotatedRoute<R extends AbstractRoute>
-    implements HasAbstractRoute, Serializable {
+    implements AbstractRouteDecorator, Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -24,7 +24,7 @@ public final class AnnotatedRoute<R extends AbstractRoute>
   }
 
   @Override
-  public final int compareTo(HasAbstractRoute o) {
+  public final int compareTo(AbstractRouteDecorator o) {
     int routeComparison = _route.compareTo(o.getAbstractRoute());
     if (routeComparison != 0) {
       return routeComparison;

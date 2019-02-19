@@ -12,8 +12,8 @@ import java.util.SortedSet;
 import java.util.stream.Collectors;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.HasAbstractRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.main.Batfish;
@@ -44,7 +44,7 @@ public class RipAndBgpTest {
             _folder);
     batfish.computeDataPlane();
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
-    SortedMap<String, SortedMap<String, SortedSet<HasAbstractRoute>>> routes =
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRouteDecorator>>> routes =
         dataPlanePlugin.getRoutes(batfish.loadDataPlane());
     Set<AbstractRoute> r1Routes =
         unannotateRoutes(routes.get("r1").get(Configuration.DEFAULT_VRF_NAME));
