@@ -136,7 +136,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   }
 
   public final boolean containsRoute(R route) {
-    return _tree.containsRoute(route.getNetwork(), route);
+    return _tree.containsRoute(route);
   }
 
   @Override
@@ -216,7 +216,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    */
   @Nonnull
   public RibDelta<R> mergeRouteGetDelta(R route) {
-    RibDelta<R> delta = _tree.mergeRoute(route.getNetwork(), route);
+    RibDelta<R> delta = _tree.mergeRoute(route);
     if (!delta.isEmpty()) {
       // A change to routes has been made
       _allRoutes = null;
@@ -248,7 +248,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    */
   @Nonnull
   public RibDelta<R> removeRouteGetDelta(R route, Reason reason) {
-    RibDelta<R> delta = _tree.removeRouteGetDelta(route.getNetwork(), route, reason);
+    RibDelta<R> delta = _tree.removeRouteGetDelta(route, reason);
     if (!delta.isEmpty()) {
       // A change to routes has been made
       _allRoutes = null;

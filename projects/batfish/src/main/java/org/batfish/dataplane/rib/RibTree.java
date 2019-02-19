@@ -47,26 +47,25 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
   /**
    * Remove a single route from the RIB, if it exists
    *
-   * @param p {@link Prefix} representing destination network of route to remove
    * @param route route to remove
    * @return {@link RibDelta} if the route was removed, otherwise {@code null};
    */
   @Nonnull
-  RibDelta<R> removeRouteGetDelta(Prefix p, R route, Reason reason) {
-    boolean removed = _root.remove(p, route);
+  RibDelta<R> removeRouteGetDelta(R route, Reason reason) {
+    boolean removed = _root.remove(route.getNetwork(), route);
     if (!removed) {
       return RibDelta.empty();
     }
 
     Builder<R> b = RibDelta.builder();
     b.remove(route, reason);
-    if (_root.get(p).isEmpty() && _owner._backupRoutes != null) {
+    if (_root.get(route.getNetwork()).isEmpty() && _owner._backupRoutes != null) {
       SortedSet<? extends R> backups =
-          _owner._backupRoutes.getOrDefault(p, ImmutableSortedSet.of());
+          _owner._backupRoutes.getOrDefault(route.getNetwork(), ImmutableSortedSet.of());
       if (backups.isEmpty()) {
         return b.build();
       }
-      _root.put(p, backups.first());
+      _root.put(route.getNetwork(), backups.first());
       b.add(backups.first());
     }
     // Return new delta
@@ -76,12 +75,11 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
   /**
    * Check if the route is present in the RIB
    *
-   * @param p {@link Prefix} representing destination network of route to check for
    * @param route route to find
    * @return true if the route exists in the RIB
    */
-  boolean containsRoute(Prefix p, R route) {
-    return _root.get(p).contains(route);
+  boolean containsRoute(R route) {
+    return _root.get(route.getNetwork()).contains(route);
   }
 
   /**
@@ -112,16 +110,15 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
   /**
    * Add a new route into the RIB, potentially replacing other routes
    *
-   * @param p {@link Prefix} representing destination network of route to add
    * @param route route to add
    * @return a {@link RibDelta} objects indicating which routes where added and evicted from this
    *     RIB
    */
   @Nonnull
-  RibDelta<R> mergeRoute(Prefix p, R route) {
-    Set<R> routes = _root.get(p);
+  RibDelta<R> mergeRoute(R route) {
+    Set<R> routes = _root.get(route.getNetwork());
     if (routes.isEmpty()) {
-      _root.put(p, route);
+      _root.put(route.getNetwork(), route);
       return RibDelta.<R>builder().add(route).build();
     }
     /*
@@ -138,7 +135,7 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     }
     if (preferenceComparison == 0) { // equal preference, so add for multipath routing
       // Otherwise add the route
-      if (_root.put(p, route)) {
+      if (_root.put(route.getNetwork(), route)) {
         return RibDelta.<R>builder().add(route).build();
       } else {
         return RibDelta.empty();
@@ -149,7 +146,7 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
      * Better than all existing routes for this prefix, so
      * replace them with this one.
      */
-    if (_root.replaceAll(p, route)) {
+    if (_root.replaceAll(route.getNetwork(), route)) {
       return RibDelta.<R>builder().remove(routes, REPLACE).add(route).build();
     } else {
       return RibDelta.empty();
