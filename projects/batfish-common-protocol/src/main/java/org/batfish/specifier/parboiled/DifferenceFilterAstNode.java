@@ -3,8 +3,7 @@ package org.batfish.specifier.parboiled;
 final class DifferenceFilterAstNode extends SetOpFilterAstNode {
 
   DifferenceFilterAstNode(FilterAstNode left, FilterAstNode right) {
-    _left = left;
-    _right = right;
+    super(left, right);
   }
 
   @Override

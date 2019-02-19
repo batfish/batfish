@@ -4,7 +4,7 @@ import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
 abstract class DirectionFilterAstNode implements FilterAstNode {
-  protected InterfaceAstNode _interfaceAst;
+  private final InterfaceAstNode _interfaceAst;
 
   static DirectionFilterAstNode create(String direction, AstNode interfaceAst) {
     if (direction.equalsIgnoreCase("@in") || direction.equalsIgnoreCase("inFilterOf")) {
@@ -16,12 +16,16 @@ abstract class DirectionFilterAstNode implements FilterAstNode {
     }
   }
 
-  public InterfaceAstNode getInterfaceAst() {
+  DirectionFilterAstNode(InterfaceAstNode interfaceAst) {
+    _interfaceAst = interfaceAst;
+  }
+
+  public final InterfaceAstNode getInterfaceAst() {
     return _interfaceAst;
   }
 
   @Override
-  public boolean equals(Object o) {
+  public final boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -33,12 +37,12 @@ abstract class DirectionFilterAstNode implements FilterAstNode {
   }
 
   @Override
-  public int hashCode() {
+  public final int hashCode() {
     return Objects.hash(getClass(), _interfaceAst);
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return MoreObjects.toStringHelper(getClass()).add("interfaceAst", _interfaceAst).toString();
   }
 }

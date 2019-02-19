@@ -2,8 +2,8 @@ package org.batfish.specifier.parboiled;
 
 final class OutFilterAstNode extends DirectionFilterAstNode {
 
-  public OutFilterAstNode(InterfaceAstNode interfaceAst) {
-    _interfaceAst = interfaceAst;
+  OutFilterAstNode(InterfaceAstNode interfaceAst) {
+    super(interfaceAst);
   }
 
   @Override

@@ -3,8 +3,7 @@ package org.batfish.specifier.parboiled;
 final class UnionFilterAstNode extends SetOpFilterAstNode {
 
   UnionFilterAstNode(FilterAstNode left, FilterAstNode right) {
-    _left = left;
-    _right = right;
+    super(left, right);
   }
 
   @Override

@@ -4,8 +4,8 @@ import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
 abstract class SetOpFilterAstNode implements FilterAstNode {
-  protected FilterAstNode _left;
-  protected FilterAstNode _right;
+  private final FilterAstNode _left;
+  private final FilterAstNode _right;
 
   static SetOpFilterAstNode create(Character c, AstNode left, AstNode right) {
     FilterAstNode leftSpec = (FilterAstNode) left;
@@ -20,16 +20,21 @@ abstract class SetOpFilterAstNode implements FilterAstNode {
     }
   }
 
-  public FilterAstNode getLeft() {
+  SetOpFilterAstNode(FilterAstNode left, FilterAstNode right) {
+    _left = left;
+    _right = right;
+  }
+
+  public final FilterAstNode getLeft() {
     return _left;
   }
 
-  public FilterAstNode getRight() {
+  public final FilterAstNode getRight() {
     return _right;
   }
 
   @Override
-  public boolean equals(Object o) {
+  public final boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -41,12 +46,12 @@ abstract class SetOpFilterAstNode implements FilterAstNode {
   }
 
   @Override
-  public int hashCode() {
+  public final int hashCode() {
     return Objects.hash(getClass(), _left, _right);
   }
 
   @Override
-  public String toString() {
+  public final String toString() {
     return MoreObjects.toStringHelper(getClass())
         .add("left", _left)
         .add("right", _right)

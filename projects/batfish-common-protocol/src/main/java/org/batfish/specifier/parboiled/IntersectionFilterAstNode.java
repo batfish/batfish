@@ -3,8 +3,7 @@ package org.batfish.specifier.parboiled;
 final class IntersectionFilterAstNode extends SetOpFilterAstNode {
 
   IntersectionFilterAstNode(AstNode left, AstNode right) {
-    _left = (FilterAstNode) left;
-    _right = (FilterAstNode) right;
+    super((FilterAstNode) left, (FilterAstNode) right);
   }
 
   @Override
