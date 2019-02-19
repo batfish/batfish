@@ -11,7 +11,7 @@ import org.hamcrest.Matcher;
 final class AbstractRouteDecoratorMatchersImpl {
   static final class HasAdministrativeCost extends FeatureMatcher<AbstractRouteDecorator, Integer> {
     HasAdministrativeCost(@Nonnull Matcher<? super Integer> subMatcher) {
-      super(subMatcher, "A AbstractRouteDecorator with administrativeCost:", "administrativeCost");
+      super(subMatcher, "An AbstractRouteDecorator with administrativeCost:", "administrativeCost");
     }
 
     @Override
@@ -22,7 +22,7 @@ final class AbstractRouteDecoratorMatchersImpl {
 
   static final class HasMetric extends FeatureMatcher<AbstractRouteDecorator, Long> {
     HasMetric(@Nonnull Matcher<? super Long> subMatcher) {
-      super(subMatcher, "A AbstractRouteDecorator with metric:", "metric");
+      super(subMatcher, "An AbstractRouteDecorator with metric:", "metric");
     }
 
     @Override
@@ -33,7 +33,7 @@ final class AbstractRouteDecoratorMatchersImpl {
 
   static final class HasNextHopInterface extends FeatureMatcher<AbstractRouteDecorator, String> {
     HasNextHopInterface(@Nonnull Matcher<? super String> subMatcher) {
-      super(subMatcher, "A AbstractRouteDecorator with nextHopInterface:", "nextHopInterface");
+      super(subMatcher, "An AbstractRouteDecorator with nextHopInterface:", "nextHopInterface");
     }
 
     @Override
@@ -44,7 +44,7 @@ final class AbstractRouteDecoratorMatchersImpl {
 
   static final class HasNextHopIp extends FeatureMatcher<AbstractRouteDecorator, Ip> {
     HasNextHopIp(@Nonnull Matcher<? super Ip> subMatcher) {
-      super(subMatcher, "A AbstractRouteDecorator with nextHopIp:", "nextHopIp");
+      super(subMatcher, "An AbstractRouteDecorator with nextHopIp:", "nextHopIp");
     }
 
     @Override
@@ -55,7 +55,7 @@ final class AbstractRouteDecoratorMatchersImpl {
 
   static final class HasPrefix extends FeatureMatcher<AbstractRouteDecorator, Prefix> {
     HasPrefix(@Nonnull Matcher<? super Prefix> subMatcher) {
-      super(subMatcher, "A AbstractRouteDecorator with network:", "network");
+      super(subMatcher, "An AbstractRouteDecorator with network:", "network");
     }
 
     @Override
@@ -66,7 +66,7 @@ final class AbstractRouteDecoratorMatchersImpl {
 
   static final class HasProtocol extends FeatureMatcher<AbstractRouteDecorator, RoutingProtocol> {
     HasProtocol(@Nonnull Matcher<? super RoutingProtocol> subMatcher) {
-      super(subMatcher, "A AbstractRouteDecorator with protocol:", "protocol");
+      super(subMatcher, "An AbstractRouteDecorator with protocol:", "protocol");
     }
 
     @Override
@@ -77,7 +77,7 @@ final class AbstractRouteDecoratorMatchersImpl {
 
   static final class IsNonForwarding extends FeatureMatcher<AbstractRouteDecorator, Boolean> {
     IsNonForwarding(@Nonnull Matcher<? super Boolean> subMatcher) {
-      super(subMatcher, "A AbstractRouteDecorator with nonRouting:", "nonRouting");
+      super(subMatcher, "An AbstractRouteDecorator with nonRouting:", "nonRouting");
     }
 
     @Override
