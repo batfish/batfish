@@ -16,13 +16,23 @@ import java.lang.annotation.Target;
   enum Type {
     ADDRESS_GROUP_AND_BOOK,
     EOI,
+    INTERFACE_GROUP_AND_BOOK,
+    INTERFACE_NAME,
+    INTERFACE_NAME_REGEX,
+    INTERFACE_TYPE,
     IP_ADDRESS,
     IP_ADDRESS_MASK,
     IP_PREFIX,
     IP_RANGE,
     IP_WILDCARD,
+    NODE_NAME,
+    NODE_NAME_REGEX,
+    NODE_ROLE_NAME_AND_DIMENSION,
+    NODE_TYPE,
     STRING_LITERAL,
-    WHITESPACE
+    VRF_NAME,
+    WHITESPACE,
+    ZONE_NAME
   }
 
   Type value();

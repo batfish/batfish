@@ -17,7 +17,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class TypeNameRegexInterfaceSpecifierTest {
+public class TypesInterfaceSpecifierTest {
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   private static final Interface AGGREGATED;
@@ -79,11 +79,11 @@ public class TypeNameRegexInterfaceSpecifierTest {
   @Test
   public void testBadRegex() {
     thrown.expect(IllegalArgumentException.class);
-    new TypeNameRegexInterfaceSpecifier(Pattern.compile("bad regex"));
+    new TypesInterfaceSpecifier(Pattern.compile("bad regex"));
   }
 
   private Set<Interface> specifiedInterfaces(String regex) {
-    return new TypeNameRegexInterfaceSpecifier(Pattern.compile(regex, Pattern.CASE_INSENSITIVE))
+    return new TypesInterfaceSpecifier(Pattern.compile(regex, Pattern.CASE_INSENSITIVE))
         .resolve(ImmutableSet.of(HOSTNAME), CTXT);
   }
 

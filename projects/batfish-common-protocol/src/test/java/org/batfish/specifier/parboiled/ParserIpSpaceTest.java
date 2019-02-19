@@ -75,7 +75,7 @@ public class ParserIpSpaceTest {
 
   @Test
   public void testIpSpaceAddressGroup() {
-    IpSpaceAstNode expectedAst = new AddressGroupAstNode("a", "b");
+    IpSpaceAstNode expectedAst = new AddressGroupIpSpaceAstNode("a", "b");
 
     assertThat(ParserUtils.getAst(getRunner().run("@addressgroup(a, b)")), equalTo(expectedAst));
     assertThat(
@@ -86,7 +86,7 @@ public class ParserIpSpaceTest {
 
   @Test
   public void testIpSpaceAddressGroupRef() {
-    IpSpaceAstNode expectedAst = new AddressGroupAstNode("a", "b");
+    IpSpaceAstNode expectedAst = new AddressGroupIpSpaceAstNode("a", "b");
 
     assertThat(ParserUtils.getAst(getRunner().run("ref.addressgroup(a, b)")), equalTo(expectedAst));
     assertThat(
