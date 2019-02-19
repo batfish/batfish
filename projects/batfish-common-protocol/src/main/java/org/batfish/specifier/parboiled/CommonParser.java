@@ -38,6 +38,22 @@ abstract class CommonParser extends BaseParser<AstNode> {
   }
 
   /**
+   * Initialize an array of case-insenstive rules that match the array of provided values (e.g.,
+   * those belonging to an Enum).
+   *
+   * <p>We use an imperative approach because lambdas run into access violations.
+   */
+  Rule[] initEnumRules(Object[] values) {
+    Rule[] rules = new Rule[values.length];
+    int index = 0;
+    for (Object value : values) {
+      rules[index] = IgnoreCase(value.toString());
+      index++;
+    }
+    return rules;
+  }
+
+  /**
    * Shared entry point for all expressions.
    *
    * <p>The parameter {@code expression} specifies the type of expression we want to parse.
@@ -46,19 +62,29 @@ abstract class CommonParser extends BaseParser<AstNode> {
     return Sequence(WhiteSpace(), expression, WhiteSpace(), EOI);
   }
 
-  /** See class JavaDoc for why this is a CharRange and not Ch */
-  public Rule Dash() {
-    return CharRange('-', '-');
-  }
-
   /** [a-z] + [A-Z] */
   public Rule AlphabetChar() {
     return FirstOf(CharRange('a', 'z'), CharRange('A', 'Z'));
   }
 
+  /** See class JavaDoc for why this is a CharRange and not Ch */
+  public Rule Colon() {
+    return CharRange(':', ':');
+  }
+
+  /** See class JavaDoc for why this is a CharRange and not Ch */
+  public Rule Dash() {
+    return CharRange('-', '-');
+  }
+
   /** [0-9] */
   public Rule Digit() {
     return CharRange('0', '9');
+  }
+
+  /** See class JavaDoc for why this is a CharRange and not Ch */
+  public Rule Dot() {
+    return CharRange('.', '.');
   }
 
   public Rule IpAddressUnchecked() {
@@ -67,6 +93,15 @@ abstract class CommonParser extends BaseParser<AstNode> {
 
   public Rule IpPrefixUnchecked() {
     return Sequence(IpAddressUnchecked(), '/', Number());
+  }
+
+  /** A generic rule for non-threatening characters. */
+  public Rule NameChars() {
+    return FirstOf(AlphabetChar(), Dot(), Digit(), Underscore());
+  }
+
+  public Rule NameCharsAndDash() {
+    return FirstOf(NameChars(), Dash());
   }
 
   /** [0-9]+ */
@@ -83,6 +118,17 @@ abstract class CommonParser extends BaseParser<AstNode> {
     return Sequence(
         FirstOf(AlphabetChar(), Underscore()),
         ZeroOrMore(FirstOf(AlphabetChar(), Underscore(), Digit(), Dash())));
+  }
+
+  /** Anything can appear in the interior of a regex except that '/' (47) should be escaped */
+  public Rule Regex() {
+    return OneOrMore(
+        FirstOf("\\/", CharRange((char) 0, (char) 46), CharRange((char) 48, (char) 127)));
+  }
+
+  /** See class JavaDoc for why this is a CharRange and not Ch */
+  public Rule Slash() {
+    return CharRange('/', '/');
   }
 
   /** See class JavaDoc for why this is a CharRange and not Ch */

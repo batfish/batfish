@@ -278,15 +278,13 @@ public class TransformationEvaluatorTest {
     assertThat(result.getOutputFlow(), equalTo(origFlow.toBuilder().setDstPort(poolPort).build()));
 
     List<Step<?>> traceSteps = result.getTraceSteps();
-    assertThat(traceSteps, hasSize(1));
-    assertThat(
-        traceSteps.get(0),
-        equalTo(
-            new org.batfish.datamodel.flow.TransformationStep(
-                new TransformationStepDetail(
-                    DEST_NAT,
-                    ImmutableSortedSet.of(flowDiff(PortField.DESTINATION, dstPort, poolPort))),
-                TRANSFORMED)));
+    TransformationStep step =
+        new TransformationStep(
+            new TransformationStepDetail(
+                DEST_NAT,
+                ImmutableSortedSet.of(flowDiff(PortField.DESTINATION, dstPort, poolPort))),
+            TRANSFORMED);
+    assertThat(traceSteps, contains(step));
   }
 
   @Test

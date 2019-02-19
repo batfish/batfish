@@ -26,7 +26,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE_S
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.RIB_GROUP;
-import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_INSTNACE;
+import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_PROFILE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ADDRESS_BOOK_ATTACH_ZONE;
@@ -65,6 +65,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_INTE
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_EXPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_AS_PATH_GROUP;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST;
@@ -72,6 +73,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_ST
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_EXPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT;
+import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_OPTIONS_INSTANCE_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_PROFILE_LOGICAL_SYSTEM;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_ZONES_SECURITY_ZONES_INTERFACE;
@@ -387,6 +389,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vtep_source_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_autonomous_systemContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_confederationContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_instance_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_rib_groupsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_router_idContext;
@@ -655,6 +658,7 @@ import org.batfish.representation.juniper.PsFromAsPath;
 import org.batfish.representation.juniper.PsFromColor;
 import org.batfish.representation.juniper.PsFromCommunity;
 import org.batfish.representation.juniper.PsFromFamily;
+import org.batfish.representation.juniper.PsFromInstance;
 import org.batfish.representation.juniper.PsFromInterface;
 import org.batfish.representation.juniper.PsFromLocalPreference;
 import org.batfish.representation.juniper.PsFromMetric;
@@ -2748,7 +2752,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     name = ctx.name.getText();
     _currentRoutingInstance =
         _currentLogicalSystem.getRoutingInstances().computeIfAbsent(name, RoutingInstance::new);
-    defineStructure(ROUTING_INSTNACE, name, ctx);
+    defineStructure(ROUTING_INSTANCE, name, ctx);
   }
 
   @Override
@@ -3948,7 +3952,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = unquote(ctx.name.getText());
     _currentFwTerm.getThens().add(new FwThenRoutingInstance(name));
     _configuration.referenceStructure(
-        ROUTING_INSTNACE, name, FIREWALL_FILTER_THEN_ROUTING_INSTANCE, ctx.getStart().getLine());
+        ROUTING_INSTANCE, name, FIREWALL_FILTER_THEN_ROUTING_INSTANCE, ctx.getStart().getLine());
   }
 
   @Override
@@ -4591,11 +4595,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopsf_instance(Popsf_instanceContext ctx) {
-    _w.redFlag(
-        String.format(
-            "unimplemented 'policy-options policy-statement term' from clause: %s",
-            getFullText(ctx)));
-    _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
+    String instanceName = ctx.name.getText();
+    _configuration.referenceStructure(
+        ROUTING_INSTANCE,
+        instanceName,
+        POLICY_STATEMENT_FROM_INSTANCE,
+        getLine(ctx.name.getStart()));
+    _currentPsTerm.getFroms().setFromInstance(new PsFromInstance(instanceName));
+    todo(ctx);
   }
 
   @Override
@@ -4871,6 +4878,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     // is not set.
     ctx.member.forEach(mctx -> _currentRoutingInstance.getConfederationMembers().add(toLong(mctx)));
     todo(ctx);
+  }
+
+  @Override
+  public void exitRo_instance_import(Ro_instance_importContext ctx) {
+    String policyName = unquote(ctx.name.getText());
+    _configuration.referenceStructure(
+        POLICY_STATEMENT,
+        policyName,
+        ROUTING_OPTIONS_INSTANCE_IMPORT,
+        getLine(ctx.name.getStart()));
+    _currentRoutingInstance.getInstanceImports().add(policyName);
   }
 
   @Override

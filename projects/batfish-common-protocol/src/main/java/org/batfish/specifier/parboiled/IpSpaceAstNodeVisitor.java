@@ -1,7 +1,7 @@
 package org.batfish.specifier.parboiled;
 
 interface IpSpaceAstNodeVisitor<T> {
-  T visitAddressGroupAstNode(AddressGroupAstNode addressGroupAstNode);
+  T visitAddressGroupAstNode(AddressGroupIpSpaceAstNode addressGroupIpSpaceAstNode);
 
   T visitCommaIpSpaceAstNode(CommaIpSpaceAstNode commaIpSpaceAstNode);
 

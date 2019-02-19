@@ -17,6 +17,7 @@ public final class PsFroms implements Serializable {
   private PsFromColor _fromColor;
   private final Set<PsFromCommunity> _fromCommunities;
   private PsFromFamily _fromFamily;
+  private PsFromInstance _fromInstance;
   private final Set<PsFromInterface> _fromInterfaces;
   private PsFromLocalPreference _fromLocalPreference;
   private PsFromMetric _fromMetric;
@@ -122,6 +123,10 @@ public final class PsFroms implements Serializable {
     return _fromFamily;
   }
 
+  PsFromInstance getFromInstance() {
+    return _fromInstance;
+  }
+
   @Nonnull
   Set<PsFromInterface> getFromInterfaces() {
     return _fromInterfaces;
@@ -194,6 +199,11 @@ public final class PsFroms implements Serializable {
   public void setFromFamily(@Nonnull PsFromFamily fromFamily) {
     _atLeastOneFrom = true;
     _fromFamily = fromFamily;
+  }
+
+  public void setFromInstance(@Nonnull PsFromInstance fromInstance) {
+    _atLeastOneFrom = true;
+    _fromInstance = fromInstance;
   }
 
   public void setFromLocalPreference(@Nonnull PsFromLocalPreference fromLocalPreference) {
