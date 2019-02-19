@@ -61,7 +61,7 @@ ltm snat /Common/SOME_SNAT {
     vlans-enabled
 }
 ltm snat-translation /Common/192.0.2.4 {
-    address 192.0.2.5
+    address 192.0.2.4
     traffic-group /Common/traffic-group-1
 }
 ltm snatpool /Common/SOME_SNATPOOL {
@@ -97,7 +97,7 @@ ltm virtual /Common/SOME_VIRTUAL {
     translate-port enabled
 }
 ltm virtual-address /Common/192.0.2.8 {
-    address 192.0.2.9
+    address 192.0.2.8
     arp enabled
     mask 255.255.255.255
     route-advertisement selective

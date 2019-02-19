@@ -38,6 +38,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.RULE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SELF;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNAT;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNATPOOL;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNAT_TRANSLATION;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL_ADDRESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN;
@@ -645,6 +646,27 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testSnatTranslationReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    String undefined = "/Common/192.0.2.6";
+    String unused = "/Common/192.0.2.5";
+    String used = "/Common/192.0.2.4";
+
+    // detect undefined references
+    assertThat(ans, hasUndefinedReference(file, SNAT_TRANSLATION, undefined));
+
+    // detected unused structure
+    assertThat(ans, hasNumReferrers(file, SNAT_TRANSLATION, unused, 0));
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, SNAT_TRANSLATION, used, 1));
+  }
+
+  @Test
   public void testVirtualAddressReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
@@ -717,6 +739,6 @@ public final class F5BigipStructuredGrammarTest {
     assertThat(ans, hasNumReferrers(file, VLAN, unused, 0));
 
     // detect all structure references
-    assertThat(ans, hasNumReferrers(file, VLAN, used, 1));
+    assertThat(ans, hasNumReferrers(file, VLAN, used, 2));
   }
 }

@@ -29,6 +29,7 @@ public enum F5BigipStructureType implements StructureType {
   RULE("rule"),
   SELF("self"),
   SNAT("snat"),
+  SNAT_TRANSLATION("snat-translation"),
   SNATPOOL("snatpool"),
   VIRTUAL("virtual"),
   VIRTUAL_ADDRESS("virtual-address"),

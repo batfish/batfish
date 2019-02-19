@@ -374,7 +374,7 @@ lsp_members
 
 lspm_member
 :
-  member = word NEWLINE
+  name = word NEWLINE
 ;
 
 l_virtual
@@ -569,7 +569,10 @@ ip_protocol
 
 route_advertisement_mode
 :
-  DISABLED
+  ALL
+  | ALWAYS
+  | ANY
+  | DISABLED
   | ENABLED
   | SELECTIVE
 ;
