@@ -165,8 +165,13 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
     /** Process all added and removed routes from a given delta */
     @Nonnull
     public <T extends R> Builder<R> from(RibDelta<T> delta) {
-      from(delta, Function.identity());
+      importDeltaToBuilder(this, delta, Function.identity());
       return this;
+    }
+
+    public static <T extends AbstractRoute, U extends T> void importDeltaToBuilder(
+        RibDelta.Builder<AnnotatedRoute<T>> importer, RibDelta<U> exporter, String vrfName) {
+      importDeltaToBuilder(importer, exporter, r -> new AnnotatedRoute<>(r, vrfName));
     }
 
     /**
@@ -175,18 +180,18 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
      * @param converter {@link Function} that converts type {@code U} to type {@code T}
      */
     @Nonnull
-    public <T extends AbstractRouteDecorator> Builder<R> from(
-        RibDelta<T> delta, Function<? super T, ? extends R> converter) {
-      for (RouteAdvertisement<T> a : delta.getActions()) {
-        LinkedHashMap<R, RouteAdvertisement<R>> l =
-            _actions.computeIfAbsent(
-                a.getRoute().getNetwork(), p -> new LinkedHashMap<>(10, 1, true));
-        R routeR = converter.apply(a.getRoute());
-        l.put(
-            routeR,
-            RouteAdvertisement.<R>builder().setRoute(routeR).setReason(a.getReason()).build());
+    private static <T extends AbstractRouteDecorator, U extends AbstractRouteDecorator>
+        void importDeltaToBuilder(
+            RibDelta.Builder<T> importer,
+            RibDelta<U> exporter,
+            Function<? super U, ? extends T> converter) {
+      for (RouteAdvertisement<U> a : exporter.getActions()) {
+        T tRoute = converter.apply(a.getRoute());
+        importer
+            ._actions
+            .computeIfAbsent(tRoute.getNetwork(), p -> new LinkedHashMap<>(10, 1, true))
+            .put(tRoute, new RouteAdvertisement<>(tRoute, a.getReason()));
       }
-      return this;
     }
   }
 

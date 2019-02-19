@@ -11,6 +11,7 @@ import static org.batfish.dataplane.protocols.IsisProtocolHelper.setOverloadOnAl
 import static org.batfish.dataplane.protocols.StaticRouteHelper.isInterfaceRoute;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.shouldActivateNextHopIpRoute;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
+import static org.batfish.dataplane.rib.RibDelta.Builder.importDeltaToBuilder;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 import static org.batfish.dataplane.rib.RibDelta.importUnannotatedRibDelta;
 
@@ -2067,7 +2068,7 @@ public class VirtualRouter implements Serializable {
         /*
          * Advertise external ensures that even if we withdrew an external route from the RIB
          */
-        preExportPolicyDeltaBuilder.from(ebgpBestPathDelta, this::annotateRoute);
+        importDeltaToBuilder(preExportPolicyDeltaBuilder, ebgpBestPathDelta, _name);
       }
       if (session.getAdvertiseInactive()) {
         /*
@@ -2085,7 +2086,7 @@ public class VirtualRouter implements Serializable {
         }
       }
       if (session.getAdditionalPaths()) {
-        preExportPolicyDeltaBuilder.from(bgpMultiPathDelta, this::annotateRoute);
+        importDeltaToBuilder(preExportPolicyDeltaBuilder, bgpMultiPathDelta, _name);
       }
       RibDelta<AnnotatedRoute<AbstractRoute>> routesToExport = preExportPolicyDeltaBuilder.build();
       if (routesToExport.isEmpty()) {
