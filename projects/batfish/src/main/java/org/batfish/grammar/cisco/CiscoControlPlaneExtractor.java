@@ -7577,6 +7577,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // In process context
     Ip address = toIp(ctx.address);
     Ip mask = (ctx.mask != null) ? toIp(ctx.mask) : address.getClassMask().inverted();
+    if (_format == CISCO_ASA) {
+      mask = mask.inverted();
+    }
     _currentEigrpProcess.getWildcardNetworks().add(new IpWildcard(address, mask));
   }
 
@@ -7588,7 +7591,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return;
     }
     boolean passive = (ctx.NO() == null);
-    String interfaceName = getCanonicalInterfaceName(ctx.i.getText());
+    String interfaceName = ctx.i.getText(); // Note: Interface alias is not canonicalized for ASA
+    if (_format != CISCO_ASA) {
+      interfaceName = getCanonicalInterfaceName(interfaceName);
+    }
     _currentEigrpProcess.getInterfacePassiveStatus().put(interfaceName, passive);
     _configuration.referenceStructure(
         INTERFACE, interfaceName, EIGRP_PASSIVE_INTERFACE, ctx.i.getStart().getLine());

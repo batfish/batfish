@@ -2144,7 +2144,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       boolean passive =
           eigrpProcess
               .getInterfacePassiveStatus()
-              .getOrDefault(iface.getName(), eigrpProcess.getPassiveInterfaceDefault());
+              .getOrDefault(getNewInterfaceName(iface), eigrpProcess.getPassiveInterfaceDefault());
 
       // For bandwidth/delay, defaults are separate from actuals to inform metric calculations
       EigrpMetric metric =
