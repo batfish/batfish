@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.topology.TopologyUtil;
-import org.batfish.datamodel.AbstractRouteDecorator;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
@@ -513,7 +513,7 @@ public class EigrpTest {
             EigrpProcessMode.CLASSIC,
             EigrpProcessMode.CLASSIC,
             "GigabitEthernet");
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRouteDecorator>>> routes =
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
 
     long scale = 256L;
@@ -569,7 +569,7 @@ public class EigrpTest {
             EigrpProcessMode.CLASSIC,
             "GigabitEthernet",
             OSPF);
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRouteDecorator>>> routes =
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
 
     long scale = 256L;
@@ -628,7 +628,7 @@ public class EigrpTest {
             EigrpProcessMode.CLASSIC,
             "GigabitEthernet",
             RoutingProtocol.EIGRP);
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRouteDecorator>>> routes =
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
 
     long scale = 256L;
@@ -675,7 +675,7 @@ public class EigrpTest {
             EigrpProcessMode.NAMED,
             EigrpProcessMode.NAMED,
             "GigabitEthernet");
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRouteDecorator>>> routes =
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
 
     // named scale / rib scale
@@ -737,7 +737,7 @@ public class EigrpTest {
             EigrpProcessMode.CLASSIC,
             EigrpProcessMode.NAMED,
             "GigabitEthernet");
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRouteDecorator>>> routes =
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         IncrementalBdpEngine.getRoutes(dp);
 
     // r1

@@ -520,7 +520,7 @@ public class BgpRibTest {
     /*
      * Initialize the matchers with respect to the output route set
      */
-    Set<BgpRoute> postMergeRoutes = bmr.getRoutes();
+    Set<BgpRoute> postMergeRoutes = bmr.getTypedRoutes();
     Matcher<BgpRoute> present = in(postMergeRoutes);
     Matcher<BgpRoute> absent = not(present);
 

@@ -7,15 +7,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
-public class MockRib implements GenericRib<AbstractRouteDecorator> {
+public class MockRib implements GenericRib<AbstractRoute> {
 
   public static class Builder {
 
-    private Map<Ip, Set<AbstractRouteDecorator>> _longestPrefixMatchResults;
+    private Map<Ip, Set<AbstractRoute>> _longestPrefixMatchResults;
 
     private Map<Prefix, IpSpace> _matchingIps;
 
-    private Set<AbstractRouteDecorator> _mergeRouteTrues;
+    private Set<AbstractRoute> _mergeRouteTrues;
 
     private SortedSet<Prefix> _prefixes;
 
@@ -23,7 +23,7 @@ public class MockRib implements GenericRib<AbstractRouteDecorator> {
 
     private Comparator<AbstractRoute> _routePreferenceComparator;
 
-    private Set<AbstractRouteDecorator> _routes;
+    private Set<AbstractRoute> _routes;
 
     private Builder() {
       _longestPrefixMatchResults = ImmutableMap.of();
@@ -38,7 +38,7 @@ public class MockRib implements GenericRib<AbstractRouteDecorator> {
     }
 
     public Builder setLongestPrefixMatchResults(
-        Map<Ip, Set<AbstractRouteDecorator>> longestPrefixMatchResults) {
+        Map<Ip, Set<AbstractRoute>> longestPrefixMatchResults) {
       _longestPrefixMatchResults = longestPrefixMatchResults;
       return this;
     }
@@ -48,7 +48,7 @@ public class MockRib implements GenericRib<AbstractRouteDecorator> {
       return this;
     }
 
-    public Builder setMergeRouteTrues(Set<AbstractRouteDecorator> mergeRouteTrues) {
+    public Builder setMergeRouteTrues(Set<AbstractRoute> mergeRouteTrues) {
       _mergeRouteTrues = mergeRouteTrues;
       return this;
     }
@@ -69,7 +69,7 @@ public class MockRib implements GenericRib<AbstractRouteDecorator> {
       return this;
     }
 
-    public Builder setRoutes(Set<AbstractRouteDecorator> routes) {
+    public Builder setRoutes(Set<AbstractRoute> routes) {
       _routes = routes;
       return this;
     }
@@ -82,11 +82,11 @@ public class MockRib implements GenericRib<AbstractRouteDecorator> {
     return new Builder();
   }
 
-  private final Map<Ip, Set<AbstractRouteDecorator>> _longestPrefixMatchResults;
+  private final Map<Ip, Set<AbstractRoute>> _longestPrefixMatchResults;
 
   private final Map<Prefix, IpSpace> _matchingIps;
 
-  private final Set<AbstractRouteDecorator> _mergeRouteTrues;
+  private final Set<AbstractRoute> _mergeRouteTrues;
 
   private final SortedSet<Prefix> _prefixes;
 
@@ -94,7 +94,7 @@ public class MockRib implements GenericRib<AbstractRouteDecorator> {
 
   private final Comparator<AbstractRoute> _routePreferenceComparator;
 
-  private final Set<AbstractRouteDecorator> _routes;
+  private final Set<AbstractRoute> _routes;
 
   private MockRib(Builder builder) {
     _longestPrefixMatchResults = builder._longestPrefixMatchResults;
@@ -107,8 +107,8 @@ public class MockRib implements GenericRib<AbstractRouteDecorator> {
   }
 
   @Override
-  public int comparePreference(AbstractRouteDecorator lhs, AbstractRouteDecorator rhs) {
-    return _routePreferenceComparator.compare(lhs.getAbstractRoute(), rhs.getAbstractRoute());
+  public int comparePreference(AbstractRoute lhs, AbstractRoute rhs) {
+    return _routePreferenceComparator.compare(lhs, rhs);
   }
 
   @Override
@@ -127,22 +127,27 @@ public class MockRib implements GenericRib<AbstractRouteDecorator> {
   }
 
   @Override
-  public Set<AbstractRouteDecorator> getRoutes() {
+  public Set<AbstractRoute> getRoutes() {
     return _routes;
   }
 
   @Override
-  public Set<AbstractRouteDecorator> longestPrefixMatch(Ip address) {
+  public Set<AbstractRoute> getTypedRoutes() {
+    return _routes;
+  }
+
+  @Override
+  public Set<AbstractRoute> longestPrefixMatch(Ip address) {
     return _longestPrefixMatchResults.get(address);
   }
 
   @Override
-  public Set<AbstractRouteDecorator> longestPrefixMatch(Ip address, int maxPrefixLength) {
+  public Set<AbstractRoute> longestPrefixMatch(Ip address, int maxPrefixLength) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public boolean mergeRoute(AbstractRouteDecorator route) {
+  public boolean mergeRoute(AbstractRoute route) {
     return _mergeRouteTrues.contains(route);
   }
 }

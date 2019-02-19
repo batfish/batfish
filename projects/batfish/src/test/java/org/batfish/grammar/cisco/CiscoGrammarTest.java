@@ -155,7 +155,6 @@ import static org.batfish.datamodel.vendor_family.VendorFamilyMatchers.hasCisco;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasAaa;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasLogging;
 import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
-import static org.batfish.dataplane.ibdp.TestUtils.unannotateRoutes;
 import static org.batfish.grammar.cisco.CiscoControlPlaneExtractor.SERIAL_LINE;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
@@ -259,7 +258,6 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.IpsecUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpRoute;
@@ -1703,7 +1701,7 @@ public class CiscoGrammarTest {
     batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
     Set<AbstractRoute> routesOnListener =
-        unannotateRoutes(dp.getRibs().get("listener").get(DEFAULT_VRF_NAME).getRoutes());
+        dp.getRibs().get("listener").get(DEFAULT_VRF_NAME).getRoutes();
 
     // Ensure that default route is advertised to and installed on listener
     assertThat(routesOnListener, hasItem(hasPrefix(Prefix.ZERO)));
@@ -2620,16 +2618,16 @@ public class CiscoGrammarTest {
     batfish.computeDataPlane(); // compute and cache the dataPlane
 
     // Check that 1.1.1.1/32 appears on r3
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRouteDecorator>>> routes =
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(batfish.loadDataPlane());
-    Set<AbstractRoute> r3Routes = unannotateRoutes(routes.get("r3").get(DEFAULT_VRF_NAME));
+    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(DEFAULT_VRF_NAME);
     Set<Prefix> r3Prefixes =
-        r3Routes.stream().map(AbstractRouteDecorator::getNetwork).collect(Collectors.toSet());
+        r3Routes.stream().map(AbstractRoute::getNetwork).collect(Collectors.toSet());
     Prefix r1Loopback = Prefix.parse("1.1.1.1/32");
     assertTrue(r3Prefixes.contains(r1Loopback));
 
     // check that private AS is present in path in received 1.1.1.1/32 advert on r2
-    Set<AbstractRoute> r2Routes = unannotateRoutes(routes.get("r2").get(DEFAULT_VRF_NAME));
+    SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(DEFAULT_VRF_NAME);
     boolean r2HasPrivate =
         r2Routes.stream()
             .filter(r -> r.getNetwork().equals(r1Loopback))

@@ -30,7 +30,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BdpOscillationException;
 import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
-import org.batfish.datamodel.AbstractRouteDecorator;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpRoute;
@@ -876,7 +876,7 @@ class IncrementalBdpEngine {
    * Return the main RIB routes for each node. Map structure: Hostname -&gt; VRF name -&gt; Set of
    * routes
    */
-  static SortedMap<String, SortedMap<String, SortedSet<AbstractRouteDecorator>>> getRoutes(
+  static SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
       IncrementalDataPlane dp) {
     // Scan through all Nodes and their virtual routers, retrieve main rib routes
     return toImmutableSortedMap(

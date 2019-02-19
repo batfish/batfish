@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.common.topology.TopologyUtil;
-import org.batfish.datamodel.AbstractRouteDecorator;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -62,7 +62,7 @@ public class RouteReflectionTest {
 
   private static final String RR2_NAME = "rr2";
 
-  private static <T extends AbstractRouteDecorator> void assertIbgpRoute(
+  private static <T extends AbstractRoute> void assertIbgpRoute(
       SortedMap<String, SortedMap<String, SortedSet<T>>> routesByNode,
       String hostname,
       Prefix prefix) {
@@ -71,12 +71,12 @@ public class RouteReflectionTest {
     assertThat(routesByVrf, hasKey(Configuration.DEFAULT_VRF_NAME));
     SortedSet<T> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
     assertThat(routes, hasItem(hasPrefix(prefix)));
-    AbstractRouteDecorator route =
+    AbstractRoute route =
         routes.stream().filter(r -> r.getNetwork().equals(prefix)).findAny().get();
     assertThat(route, hasProtocol(RoutingProtocol.IBGP));
   }
 
-  private static <T extends AbstractRouteDecorator> void assertNoRoute(
+  private static <T extends AbstractRoute> void assertNoRoute(
       SortedMap<String, SortedMap<String, SortedSet<T>>> routesByNode,
       String hostname,
       Prefix prefix) {
@@ -108,9 +108,8 @@ public class RouteReflectionTest {
   /*
    * See documentation of calling functions for information description of produced network
    */
-  private SortedMap<String, SortedMap<String, SortedSet<AbstractRouteDecorator>>>
-      generateRoutesOneReflector(
-          boolean edge1RouteReflectorClient, boolean edge2RouteReflectorClient) {
+  private SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> generateRoutesOneReflector(
+      boolean edge1RouteReflectorClient, boolean edge2RouteReflectorClient) {
     Ip as1PeeringIp = Ip.parse("10.12.11.1");
     Ip edge1EbgpIfaceIp = Ip.parse("10.12.11.2");
     Ip edge1IbgpIfaceIp = Ip.parse("10.1.12.1");
@@ -249,7 +248,7 @@ public class RouteReflectionTest {
     return IncrementalBdpEngine.getRoutes((IncrementalDataPlane) dpResult._dataPlane);
   }
 
-  private SortedMap<String, SortedMap<String, SortedSet<AbstractRouteDecorator>>>
+  private SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>
       generateRoutesTwoReflectors(boolean useSameClusterIds) {
     Ip as1PeeringIp = Ip.parse("10.12.11.1");
     Ip edge1EbgpIfaceIp = Ip.parse("10.12.11.2");
@@ -412,7 +411,7 @@ public class RouteReflectionTest {
    */
   @Test
   public void testAcceptDifferentCluster() {
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRouteDecorator>>> routes =
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         generateRoutesTwoReflectors(false);
 
     assertIbgpRoute(routes, RR1_NAME, AS1_PREFIX);
@@ -425,7 +424,7 @@ public class RouteReflectionTest {
    */
   @Test
   public void testNoRouteReflection() {
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRouteDecorator>>> routes =
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         generateRoutesOneReflector(false, false);
 
     assertNoRoute(routes, EDGE1_NAME, AS3_PREFIX);
@@ -440,7 +439,7 @@ public class RouteReflectionTest {
    */
   @Test
   public void testRejectSameCluster() {
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRouteDecorator>>> routes =
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         generateRoutesTwoReflectors(true);
 
     assertIbgpRoute(routes, RR1_NAME, AS1_PREFIX);
@@ -453,7 +452,7 @@ public class RouteReflectionTest {
    */
   @Test
   public void testSingleReflectorOneClient() {
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRouteDecorator>>> routes =
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         generateRoutesOneReflector(true, false);
 
     assertIbgpRoute(routes, EDGE1_NAME, AS3_PREFIX);
@@ -468,7 +467,7 @@ public class RouteReflectionTest {
    */
   @Test
   public void testSingleReflectorTwoClients() {
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRouteDecorator>>> routes =
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         generateRoutesOneReflector(true, true);
 
     assertIbgpRoute(routes, EDGE1_NAME, AS3_PREFIX);

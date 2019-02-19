@@ -104,7 +104,6 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignDest
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.AUXILIARY_LINE_NAME;
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.CONSOLE_LINE_NAME;
-import static org.batfish.dataplane.ibdp.TestUtils.unannotateRoutes;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_EXISTING_CONNECTION;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
@@ -646,8 +645,7 @@ public final class FlatJuniperGrammarTest {
             _folder);
     batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
-    Set<AbstractRoute> r1Routes =
-        unannotateRoutes(dp.getRibs().get(c1Name).get(DEFAULT_VRF_NAME).getRoutes());
+    Set<AbstractRoute> r1Routes = dp.getRibs().get(c1Name).get(DEFAULT_VRF_NAME).getRoutes();
 
     assertThat(r1Routes, not(hasItem(hasPrefix(Prefix.parse("10.20.20.0/24")))));
     assertThat(
@@ -4385,7 +4383,8 @@ public final class FlatJuniperGrammarTest {
 
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibs().get(hostname).entrySet().stream()
-            .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getRoutes()));
+            .collect(
+                ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getTypedRoutes()));
     String vrf2Name = "VRF2";
 
     Set<AnnotatedRoute<AbstractRoute>> defaultExpectedRoutes =
@@ -4425,7 +4424,8 @@ public final class FlatJuniperGrammarTest {
 
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibs().get(hostname).entrySet().stream()
-            .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getRoutes()));
+            .collect(
+                ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getTypedRoutes()));
     String vrf2Name = "VRF2";
 
     Set<AnnotatedRoute<AbstractRoute>> vrf2ExpectedRoutes =
@@ -4480,7 +4480,8 @@ public final class FlatJuniperGrammarTest {
 
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibs().get(hostname).entrySet().stream()
-            .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getRoutes()));
+            .collect(
+                ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getTypedRoutes()));
     String vrf2Name = "VRF2";
 
     Set<AnnotatedRoute<AbstractRoute>> defaultExpectedRoutes =

@@ -182,7 +182,7 @@ class VirtualEigrpProcess {
    * @return integer hashcode
    */
   int computeIterationHashCode() {
-    return _externalRib.getRoutes().hashCode()
+    return _externalRib.getTypedRoutes().hashCode()
         + _incomingRoutes.values().stream()
             .flatMap(Queue::stream)
             .mapToInt(RouteAdvertisement::hashCode)
@@ -334,7 +334,7 @@ class VirtualEigrpProcess {
     Ip nextHopIp = neighborInterface.getAddress().getIp();
     boolean changed = false;
     Set<EigrpInternalRoute> neighborRoutes =
-        requireNonNull(neighborVirtualRouter.getEigrpProcess(asn))._internalRib.getRoutes();
+        requireNonNull(neighborVirtualRouter.getEigrpProcess(asn))._internalRib.getTypedRoutes();
     for (EigrpInternalRoute neighborRoute : neighborRoutes) {
       EigrpMetric newMetric =
           connectingInterfaceMetric.accumulate(

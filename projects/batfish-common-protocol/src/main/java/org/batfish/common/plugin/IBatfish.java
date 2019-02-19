@@ -17,7 +17,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyProvider;
-import org.batfish.datamodel.AbstractRouteDecorator;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -121,8 +121,7 @@ public interface IBatfish extends IPluginConsumer {
 
   Map<String, String> getQuestionTemplates(boolean verbose);
 
-  SortedMap<String, SortedMap<String, SortedSet<AbstractRouteDecorator>>> getRoutes(
-      boolean useCompression);
+  SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(boolean useCompression);
 
   /**
    * Get batfish settings

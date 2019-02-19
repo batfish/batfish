@@ -144,7 +144,6 @@ public class RoutesAnswererUtil {
                 (vrfName, rib) -> {
                   if (compiledVrfRegex.matcher(vrfName).matches()) {
                     rib.getRoutes().stream()
-                        .map(AbstractRouteDecorator::getAbstractRoute)
                         .filter(
                             route ->
                                 (network == null || network.equals(route.getNetwork()))
@@ -499,7 +498,6 @@ public class RoutesAnswererUtil {
                 (vrfName, rib) -> {
                   if (compiledVrfRegex.matcher(vrfName).matches()) {
                     rib.getRoutes().stream()
-                        .map(AbstractRouteDecorator::getAbstractRoute)
                         .filter(
                             route ->
                                 (network == null || network.equals(route.getNetwork()))

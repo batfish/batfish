@@ -36,8 +36,11 @@ public interface GenericRib<R extends AbstractRouteDecorator> extends Serializab
    */
   IpSpace getRoutableIps();
 
-  /** Return a set of {@link AbstractRouteDecorator routes} this RIB contains. */
-  Set<R> getRoutes();
+  /** Return set of {@link AbstractRoute abstract routes} this RIB contains. */
+  Set<AbstractRoute> getRoutes();
+
+  /** Return set of {@link R typed routes} this RIB contains. */
+  Set<R> getTypedRoutes();
 
   /**
    * Execute the longest prefix match for a given IP address.

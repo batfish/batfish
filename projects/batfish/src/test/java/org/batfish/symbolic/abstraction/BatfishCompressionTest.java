@@ -4,7 +4,6 @@ import static junit.framework.TestCase.assertNotNull;
 import static org.batfish.datamodel.matchers.FibMatchers.hasNextHopInterfaces;
 import static org.batfish.datamodel.matchers.TopologyMatchers.isNeighborOfNode;
 import static org.batfish.datamodel.matchers.TopologyMatchers.withNode;
-import static org.batfish.dataplane.ibdp.TestUtils.unannotateRoutes;
 import static org.hamcrest.Matchers.either;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -291,8 +290,8 @@ public class BatfishCompressionTest {
                 (vrf, compressedRib) -> {
                   GenericRib<AnnotatedRoute<AbstractRoute>> origRib =
                       origRibs.get(hostname).get(vrf);
-                  Set<AbstractRoute> origRoutes = unannotateRoutes(origRib.getRoutes());
-                  Set<AbstractRoute> compressedRoutes = unannotateRoutes(compressedRib.getRoutes());
+                  Set<AbstractRoute> origRoutes = origRib.getRoutes();
+                  Set<AbstractRoute> compressedRoutes = compressedRib.getRoutes();
                   for (AbstractRoute route : compressedRoutes) {
                     /* Every compressed route should appear in original RIB */
                     assertThat(origRoutes, hasItem(route));
@@ -346,8 +345,8 @@ public class BatfishCompressionTest {
                 (vrf, compressedRib) -> {
                   GenericRib<AnnotatedRoute<AbstractRoute>> origRib =
                       origRibs.get(hostname).get(vrf);
-                  Set<AbstractRoute> origRoutes = unannotateRoutes(origRib.getRoutes());
-                  Set<AbstractRoute> compressedRoutes = unannotateRoutes(compressedRib.getRoutes());
+                  Set<AbstractRoute> origRoutes = origRib.getRoutes();
+                  Set<AbstractRoute> compressedRoutes = compressedRib.getRoutes();
                   for (AbstractRoute route : compressedRoutes) {
                     /* Every compressed route should appear in original RIB */
                     assertThat(origRoutes, hasItem(route));
@@ -384,8 +383,8 @@ public class BatfishCompressionTest {
                 (vrf, compressedRib) -> {
                   GenericRib<AnnotatedRoute<AbstractRoute>> origRib =
                       origRibs.get(hostname).get(vrf);
-                  Set<AbstractRoute> origRoutes = unannotateRoutes(origRib.getRoutes());
-                  Set<AbstractRoute> compressedRoutes = unannotateRoutes(compressedRib.getRoutes());
+                  Set<AbstractRoute> origRoutes = origRib.getRoutes();
+                  Set<AbstractRoute> compressedRoutes = compressedRib.getRoutes();
                   for (AbstractRoute route : compressedRoutes) {
                     /* Every compressed route should appear in original RIB */
                     assertThat(origRoutes, hasItem(route));

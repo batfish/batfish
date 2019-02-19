@@ -21,7 +21,7 @@ import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
-import org.batfish.datamodel.AbstractRouteDecorator;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -176,7 +176,7 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public SortedMap<String, SortedMap<String, SortedSet<AbstractRouteDecorator>>> getRoutes(
+  public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
       boolean useCompression) {
     throw new UnsupportedOperationException();
   }

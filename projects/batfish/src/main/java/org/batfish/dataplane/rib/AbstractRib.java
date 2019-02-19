@@ -118,7 +118,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   <T extends AbstractRouteDecorator, RibT extends AbstractRib<T>> RibDelta<R> importRoutesFrom(
       RibT exportingRib, Function<? super T, ? extends R> converter) {
     RibDelta.Builder<R> builder = RibDelta.builder();
-    for (T route : exportingRib.getRoutes()) {
+    for (T route : exportingRib.getTypedRoutes()) {
       builder.from(mergeRouteGetDelta(converter.apply(route)));
     }
     return builder.build();
@@ -142,7 +142,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   @Override
   public final SortedSet<Prefix> getPrefixes() {
     SortedSet<Prefix> prefixes = new TreeSet<>();
-    Set<R> routes = getRoutes();
+    Set<R> routes = getTypedRoutes();
     for (R route : routes) {
       prefixes.add(route.getNetwork());
     }
@@ -150,16 +150,23 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   }
 
   @Override
-  public Set<R> getRoutes() {
+  public Set<AbstractRoute> getRoutes() {
+    return getTypedRoutes().stream()
+        .map(AbstractRouteDecorator::getAbstractRoute)
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  @Override
+  public Set<R> getTypedRoutes() {
     if (_allRoutes == null) {
       _allRoutes = ImmutableSet.copyOf(_tree.getRoutes());
     }
     return _allRoutes;
   }
 
-  public final Set<R> getRoutes(Prefix p) {
+  public final Set<R> getTypedRoutes(Prefix p) {
     // Collect routes that match the prefix
-    return getRoutes().stream()
+    return getTypedRoutes().stream()
         .filter(r -> r.getNetwork().equals(p))
         .collect(ImmutableSet.toImmutableSet());
   }
@@ -284,8 +291,8 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   /**
    * Check if two RIBs have exactly same sets of routes.
    *
-   * <p>Designed to be faster (in an average case) than doing two calls to {@link #getRoutes} and
-   * then testing the sets for equality.
+   * <p>Designed to be faster (in an average case) than doing two calls to {@link #getTypedRoutes}
+   * and then testing the sets for equality.
    *
    * @param other the other RIB
    * @return True if both ribs contain identical routes

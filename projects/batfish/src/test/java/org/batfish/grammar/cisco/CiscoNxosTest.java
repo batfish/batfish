@@ -6,7 +6,6 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathIbgp
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
-import static org.batfish.dataplane.ibdp.TestUtils.unannotateRoutes;
 import static org.batfish.main.BatfishTestUtils.getBatfishForTextConfigs;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasItem;
@@ -100,8 +99,7 @@ public class CiscoNxosTest {
     batfish.computeDataPlane(); // compute and cache the dataPlane
     DataPlane dp = batfish.loadDataPlane();
 
-    return unannotateRoutes(
-        dp.getRibs().get(listenerName).get(Configuration.DEFAULT_VRF_NAME).getRoutes());
+    return dp.getRibs().get(listenerName).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
   }
 
   // Neighbor default-originate overrides outbound route map.

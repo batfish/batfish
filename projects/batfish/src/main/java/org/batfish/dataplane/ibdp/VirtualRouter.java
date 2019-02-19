@@ -343,7 +343,7 @@ public class VirtualRouter implements Serializable {
   private void applyRibGroup(@Nonnull RibGroup ribGroup, @Nonnull AnnotatedRib<?> sourceRib) {
     RoutingPolicy policy = _c.getRoutingPolicies().get(ribGroup.getImportPolicy());
     checkState(policy != null, "RIB group %s is missing import policy", ribGroup.getName());
-    sourceRib.getRoutes().stream()
+    sourceRib.getTypedRoutes().stream()
         .map(
             route -> {
               AbstractRouteBuilder<?, ?> builder = route.getRoute().toBuilder();
@@ -504,7 +504,7 @@ public class VirtualRouter implements Serializable {
           policyName != null ? _c.getRoutingPolicies().get(gr.getGenerationPolicy()) : null;
       GeneratedRoute.Builder grb =
           GeneratedRouteHelper.activateGeneratedRoute(
-              gr, generationPolicy, _mainRib.getRoutes(), _vrf.getName());
+              gr, generationPolicy, _mainRib.getTypedRoutes(), _vrf.getName());
 
       if (grb != null) {
         // Routes have been changed
@@ -551,7 +551,7 @@ public class VirtualRouter implements Serializable {
    * <p>Removes static route from the main RIB for which next-hop-ip has become unreachable.
    */
   void activateStaticRoutes() {
-    for (StaticRoute sr : _staticNextHopRib.getRoutes()) {
+    for (StaticRoute sr : _staticNextHopRib.getTypedRoutes()) {
       if (shouldActivateNextHopIpRoute(sr, _mainRib)) {
         _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(sr));
       } else {
@@ -600,12 +600,12 @@ public class VirtualRouter implements Serializable {
         Long metric = summary.getMetric();
         if (summary.getMetric() == null) {
           // No metric was configured; compute it from any possible contributing routes.
-          for (OspfIntraAreaRoute contributingRoute : _ospfIntraAreaRib.getRoutes()) {
+          for (OspfIntraAreaRoute contributingRoute : _ospfIntraAreaRib.getTypedRoutes()) {
             metric =
                 OspfProtocolHelper.computeUpdatedOspfSummaryMetric(
                     contributingRoute, prefix, metric, areaNum, useMin);
           }
-          for (OspfInterAreaRoute contributingRoute : _ospfInterAreaRib.getRoutes()) {
+          for (OspfInterAreaRoute contributingRoute : _ospfInterAreaRib.getTypedRoutes()) {
             metric =
                 OspfProtocolHelper.computeUpdatedOspfSummaryMetric(
                     contributingRoute, prefix, metric, areaNum, useMin);
@@ -968,8 +968,8 @@ public class VirtualRouter implements Serializable {
       default:
         break;
     }
-    for (AnnotatedRoute<AbstractRoute> grAbstract : _generatedRib.getRoutes()) {
-      GeneratedRoute gr = (GeneratedRoute) grAbstract.getRoute();
+    for (AbstractRoute grAbstract : _generatedRib.getRoutes()) {
+      GeneratedRoute gr = (GeneratedRoute) grAbstract;
 
       // Prevent route from being merged into the main RIB by marking it non-routing
       BgpRoute br =
@@ -1067,7 +1067,7 @@ public class VirtualRouter implements Serializable {
   void initEigrpExports(Map<String, Node> allNodes) {
     _virtualEigrpProcesses
         .values()
-        .forEach(proc -> proc.initExports(allNodes, _mainRib.getRoutes()));
+        .forEach(proc -> proc.initExports(allNodes, _mainRib.getTypedRoutes()));
   }
 
   void initIsisExports(Map<String, Node> allNodes, NetworkConfigurations nc) {
@@ -1191,7 +1191,7 @@ public class VirtualRouter implements Serializable {
     // RIB.
     RibDelta.Builder<OspfExternalType1Route> d1 = RibDelta.builder();
     RibDelta.Builder<OspfExternalType2Route> d2 = RibDelta.builder();
-    for (AnnotatedRoute<AbstractRoute> potentialExport : _mainRib.getRoutes()) {
+    for (AnnotatedRoute<AbstractRoute> potentialExport : _mainRib.getTypedRoutes()) {
       OspfExternalRoute outputRoute = computeOspfExportRoute(potentialExport, exportPolicy, proc);
       if (outputRoute == null) {
         continue; // no need to export
@@ -1758,7 +1758,8 @@ public class VirtualRouter implements Serializable {
         neighborConfiguration.getVrfs().get(neighborVrfName).getOspfProcess();
     VirtualRouter neighborVirtualRouter = neighbor.getVirtualRouters().get(neighborVrfName);
     boolean changed = false;
-    for (OspfIntraAreaRoute neighborRoute : neighborVirtualRouter._ospfIntraAreaRib.getRoutes()) {
+    for (OspfIntraAreaRoute neighborRoute :
+        neighborVirtualRouter._ospfIntraAreaRib.getTypedRoutes()) {
       changed |=
           propagateOspfIntraAreaRoute(
               neighborRoute, incrementalCost, neighborInterface, adminCost, linkAreaNum);
@@ -1772,7 +1773,8 @@ public class VirtualRouter implements Serializable {
               adminCost,
               linkAreaNum);
     }
-    for (OspfInterAreaRoute neighborRoute : neighborVirtualRouter._ospfInterAreaRib.getRoutes()) {
+    for (OspfInterAreaRoute neighborRoute :
+        neighborVirtualRouter._ospfInterAreaRib.getTypedRoutes()) {
       changed |=
           propagateOspfInterAreaRouteFromInterAreaRoute(
               proc,
@@ -2012,7 +2014,8 @@ public class VirtualRouter implements Serializable {
          * from this neighbor into our RIP internal staging rib, adding the incremental cost
          * (?), and using the neighborInterface's address as the next hop ip
          */
-        for (RipInternalRoute neighborRoute : neighborVirtualRouter._ripInternalRib.getRoutes()) {
+        for (RipInternalRoute neighborRoute :
+            neighborVirtualRouter._ripInternalRib.getTypedRoutes()) {
           long newCost = neighborRoute.getMetric() + RipProcess.DEFAULT_RIP_COST;
           Ip nextHopIp = neighborInterface.getAddress().getIp();
           RipInternalRoute newRoute =
@@ -2074,18 +2077,15 @@ public class VirtualRouter implements Serializable {
          * If the BGP routes are already active, this will have no effect.
          */
         for (Prefix p : mainDelta.getPrefixes()) {
-          if (_bgpRib.getRoutes(p) == null) {
-            continue;
-          }
           preExportPolicyDeltaBuilder.add(
               p,
-              _bgpRib.getRoutes(p).stream()
+              _bgpRib.getTypedRoutes(p).stream()
                   .map(r -> new AnnotatedRoute<AbstractRoute>(r, _name))
                   .collect(ImmutableSet.toImmutableSet()));
         }
       }
       if (session.getAdditionalPaths()) {
-        preExportPolicyDeltaBuilder.from(bgpMultiPathDelta, r -> new AnnotatedRoute<>(r, _name));
+        preExportPolicyDeltaBuilder.from(bgpMultiPathDelta, this::annotateRoute);
       }
       RibDelta<AnnotatedRoute<AbstractRoute>> routesToExport = preExportPolicyDeltaBuilder.build();
       if (routesToExport.isEmpty()) {
@@ -2498,7 +2498,7 @@ public class VirtualRouter implements Serializable {
      * Export route advertisements by looking at main RIB
      */
     Set<RouteAdvertisement<BgpRoute>> exportedRoutes =
-        _mainRib.getRoutes().stream()
+        _mainRib.getTypedRoutes().stream()
             // This performs transformations and filtering using the export policy
             .map(
                 r ->
@@ -2545,7 +2545,7 @@ public class VirtualRouter implements Serializable {
     RoutingPolicy policy = policyName != null ? _c.getRoutingPolicies().get(policyName) : null;
     GeneratedRoute.Builder builder =
         GeneratedRouteHelper.activateGeneratedRoute(
-            generatedRoute, policy, _mainRib.getRoutes(), _vrf.getName());
+            generatedRoute, policy, _mainRib.getTypedRoutes(), _vrf.getName());
     return builder != null
         ? BgpProtocolHelper.convertGeneratedRouteToBgp(
             builder.build(), _vrf.getBgpProcess().getRouterId(), false)
@@ -2594,9 +2594,9 @@ public class VirtualRouter implements Serializable {
    * @return integer hashcode
    */
   int computeIterationHashCode() {
-    return _mainRib.getRoutes().hashCode()
-        + _ospfExternalType1Rib.getRoutes().hashCode()
-        + _ospfExternalType2Rib.getRoutes().hashCode()
+    return _mainRib.getTypedRoutes().hashCode()
+        + _ospfExternalType1Rib.getTypedRoutes().hashCode()
+        + _ospfExternalType2Rib.getTypedRoutes().hashCode()
         + _bgpIncomingRoutes.values().stream()
             .flatMap(Queue::stream)
             .mapToInt(RouteAdvertisement::hashCode)

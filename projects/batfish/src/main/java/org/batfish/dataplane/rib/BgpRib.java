@@ -145,9 +145,9 @@ public class BgpRib extends AbstractRib<BgpRoute> {
   }
 
   @Override
-  public final Set<BgpRoute> getRoutes() {
+  public final Set<BgpRoute> getTypedRoutes() {
     if (isMultipath()) {
-      return super.getRoutes();
+      return super.getTypedRoutes();
     } else {
       return getBestPathRoutes();
     }

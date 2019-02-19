@@ -505,7 +505,14 @@ public class RoutesAnswererTest {
     }
 
     @Override
-    public Set<R> getRoutes() {
+    public Set<AbstractRoute> getRoutes() {
+      return _routes.stream()
+          .map(AbstractRouteDecorator::getAbstractRoute)
+          .collect(ImmutableSet.toImmutableSet());
+    }
+
+    @Override
+    public Set<R> getTypedRoutes() {
       return _routes;
     }
 

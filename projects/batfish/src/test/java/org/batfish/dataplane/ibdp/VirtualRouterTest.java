@@ -6,7 +6,6 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.batfish.datamodel.eigrp.EigrpTopology.initEigrpTopology;
 import static org.batfish.datamodel.isis.IsisTopology.initIsisTopology;
-import static org.batfish.dataplane.ibdp.TestUtils.unannotateRoutes;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -142,7 +141,7 @@ public class VirtualRouterTest {
     vr.activateStaticRoutes();
 
     // Assert dependent route is not there
-    assertThat(unannotateRoutes(vr.getMainRib().getRoutes()), not(hasItem(dependentRoute)));
+    assertThat(vr.getMainRib().getRoutes(), not(hasItem(dependentRoute)));
   }
 
   /** Check that initialization of Connected RIB is as expected */
@@ -158,7 +157,7 @@ public class VirtualRouterTest {
 
     // Assert that all interface prefixes have been processed
     assertThat(
-        vr.getConnectedRib().getRoutes(),
+        vr.getConnectedRib().getTypedRoutes(),
         equalTo(
             exampleInterfaceAddresses.entrySet().stream()
                 .map(
@@ -182,7 +181,7 @@ public class VirtualRouterTest {
 
     // Assert that all interface prefixes have been processed
     assertThat(
-        vr._localRib.getRoutes(),
+        vr._localRib.getTypedRoutes(),
         equalTo(
             exampleInterfaceAddresses.entrySet().stream()
                 .filter(e -> e.getValue().getPrefix().getPrefixLength() < Prefix.MAX_PREFIX_LENGTH)
@@ -260,9 +259,9 @@ public class VirtualRouterTest {
     vr.initStaticRibs();
 
     assertThat(
-        vr._staticInterfaceRib.getRoutes(),
+        vr._staticInterfaceRib.getTypedRoutes(),
         containsInAnyOrder(routes.get(0), routes.get(2), routes.get(3)));
-    assertThat(vr._staticNextHopRib.getRoutes(), containsInAnyOrder(routes.get(1)));
+    assertThat(vr._staticNextHopRib.getTypedRoutes(), containsInAnyOrder(routes.get(1)));
   }
 
   @Test
@@ -406,7 +405,7 @@ public class VirtualRouterTest {
     vr.initBaseRipRoutes();
 
     assertThat(
-        vr._ripInternalRib.getRoutes(),
+        vr._ripInternalRib.getTypedRoutes(),
         equalTo(
             exampleInterfaceAddresses.values().stream()
                 .map(
@@ -418,7 +417,6 @@ public class VirtualRouterTest {
                                 vr.getConfiguration().getConfigurationFormat()),
                             RipProcess.DEFAULT_RIP_COST))
                 .collect(ImmutableSet.toImmutableSet())));
-    vr._ripInternalRib.getRoutes();
   }
 
   /** Test that staging of a single OSPF Inter-Area route works as expected */
@@ -458,8 +456,7 @@ public class VirtualRouterTest {
                 .setMetric(metric + 10)
                 .setArea(area)
                 .build();
-    assertThat(vr._ospfInterAreaStagingRib.getRoutes(), contains(expected));
-    assertThat(vr._ospfInterAreaStagingRib.getRoutes(), not(contains(iaroute)));
+    assertThat(vr._ospfInterAreaStagingRib.getTypedRoutes(), contains(expected));
   }
 
   /** Test that the static RIB correctly pulls static routes from the VRF */
@@ -482,7 +479,7 @@ public class VirtualRouterTest {
     // Test
     vr.initStaticRibs();
 
-    assertThat(vr._staticNextHopRib.getRoutes(), equalTo(routeSet));
+    assertThat(vr._staticNextHopRib.getTypedRoutes(), equalTo(routeSet));
   }
 
   /** Test basic message queuing operations */

@@ -116,7 +116,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ModelingUtils;
 import org.batfish.config.Settings;
 import org.batfish.config.TestrigSettings;
-import org.batfish.datamodel.AbstractRouteDecorator;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
@@ -1416,7 +1416,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public SortedMap<String, SortedMap<String, SortedSet<AbstractRouteDecorator>>> getRoutes(
+  public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
       boolean useCompression) {
     return getDataPlanePlugin().getRoutes(loadDataPlane(useCompression));
   }

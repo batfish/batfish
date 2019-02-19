@@ -175,7 +175,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
             node.getVirtualRouters()
                 .forEach(
                     (vrfName, vr) -> {
-                      table.put(hostname, vrfName, vr.getBgpRib().getRoutes());
+                      table.put(hostname, vrfName, vr.getBgpRib().getTypedRoutes());
                     }));
     return table;
   }

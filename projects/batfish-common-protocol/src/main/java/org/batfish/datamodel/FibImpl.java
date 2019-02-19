@@ -28,7 +28,6 @@ public class FibImpl<R extends AbstractRouteDecorator> implements Fib {
     _rib = rib;
     _nextHopInterfaces =
         rib.getRoutes().stream()
-            .map(AbstractRouteDecorator::getAbstractRoute)
             .collect(
                 ImmutableMap.toImmutableMap(
                     Function.identity(), route -> collectNextHopInterfaces(_rib, route)));
