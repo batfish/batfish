@@ -57,14 +57,13 @@ public final class NatRuleThenPool implements NatRuleThen, Serializable {
   }
 
   @Override
-  public List<TransformationStep> toTransformationStep(Nat nat, Ip interfaceIp) {
+  public List<TransformationStep> toTransformationSteps(Nat nat, Ip interfaceIp) {
     if (nat.getType() == STATIC) {
       throw new BatfishException("Juniper static nat is not supported");
     }
 
     TransformationType type = nat.getType() == SOURCE ? SOURCE_NAT : DEST_NAT;
     IpField ipField = nat.getType() == SOURCE ? IpField.SOURCE : IpField.DESTINATION;
-    PortField portField = nat.getType() == SOURCE ? PortField.SOURCE : PortField.DESTINATION;
 
     NatPool pool = nat.getPools().get(_poolName);
     if (pool == null) {
@@ -79,12 +78,13 @@ public final class NatRuleThenPool implements NatRuleThen, Serializable {
     PortAddressTranslation pat = pool.getPortAddressTranslation();
 
     if (pat != null) {
+      PortField portField = nat.getType() == SOURCE ? PortField.SOURCE : PortField.DESTINATION;
       Optional<TransformationStep> patStep = pat.toTransformationStep(type, portField);
       patStep.ifPresent(builder::add);
     } else if (type == SOURCE_NAT) {
       builder.add(
           new AssignPortFromPool(
-              type, portField, nat.getDefaultFromPort(), nat.getDefaultToPort()));
+              type, PortField.SOURCE, nat.getDefaultFromPort(), nat.getDefaultToPort()));
     }
 
     return builder.build();

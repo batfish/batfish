@@ -80,6 +80,5 @@ public final class FlowDiffTest {
     assertThat(flowDiffs(orig, newSrc), contains(srcDiff));
     assertThat(flowDiffs(orig, newDstAndSrc), containsInAnyOrder(dstDiff, srcDiff));
     FlowDiff fd = new FlowDiff(PROP_DST_IP, "old", "new");
-    assertEquals(BatfishObjectMapper.clone(fd, FlowDiff.class), fd);
   }
 }

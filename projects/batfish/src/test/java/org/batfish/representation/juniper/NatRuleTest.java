@@ -66,7 +66,7 @@ public class NatRuleTest {
                 when(match(hs))
                     .apply(
                         TransformationStep.assignSourceIp(startIp, endIp),
-                        TransformationStep.assignSourcePort(1024, 63487))
+                        TransformationStep.assignSourcePort(Nat.DEFAULT_FROM_PORT, Nat.DEFAULT_TO_PORT))
                     .build())));
   }
 }

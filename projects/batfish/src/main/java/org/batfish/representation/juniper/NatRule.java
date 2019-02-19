@@ -56,8 +56,9 @@ public final class NatRule implements Serializable {
   public Optional<Transformation.Builder> toTransformationBuilder(Nat nat, Ip interfaceIp) {
 
     List<TransformationStep> steps =
-        _then == null ? null : _then.toTransformationStep(nat, interfaceIp);
+        _then == null ? null : _then.toTransformationSteps(nat, interfaceIp);
 
+    // steps can be empty when the pool used by the rule is not found
     return (_then == null || steps.isEmpty())
         ? Optional.empty()
         : Optional.of(when(new MatchHeaderSpace(toHeaderSpace(_matches))).apply(steps));

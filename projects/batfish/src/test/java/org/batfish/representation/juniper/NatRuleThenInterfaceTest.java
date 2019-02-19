@@ -21,16 +21,16 @@ public final class NatRuleThenInterfaceTest {
   public void testToTransformationStep() {
     Ip ip = Ip.parse("1.1.1.1");
     Nat snat = new Nat(Type.SOURCE);
-    List<TransformationStep> step = INSTANCE.toTransformationStep(snat, ip);
+    List<TransformationStep> step = INSTANCE.toTransformationSteps(snat, ip);
     assertThat(
         step,
         contains(
             new AssignIpAddressFromPool(SOURCE_NAT, SOURCE, ip, ip),
-            new AssignPortFromPool(SOURCE_NAT, PortField.SOURCE, 1024, 63487)));
+            new AssignPortFromPool(SOURCE_NAT, PortField.SOURCE, Nat.DEFAULT_FROM_PORT, Nat.DEFAULT_TO_PORT)));
 
     snat.setDefaultFromPort(10000);
     snat.setDefaultToPort(20000);
-    step = INSTANCE.toTransformationStep(snat, ip);
+    step = INSTANCE.toTransformationSteps(snat, ip);
     assertThat(
         step,
         contains(

@@ -28,23 +28,22 @@ public final class NatRuleThenInterface implements NatRuleThen, Serializable {
   private NatRuleThenInterface() {}
 
   @Override
-  public List<TransformationStep> toTransformationStep(Nat nat, Ip interfaceIp) {
+  public List<TransformationStep> toTransformationSteps(Nat nat, Ip interfaceIp) {
     if (nat.getType() == STATIC) {
       throw new BatfishException("Juniper static nat is not supported");
     }
 
     TransformationType type = nat.getType() == SOURCE ? SOURCE_NAT : DEST_NAT;
     IpField ipField = nat.getType() == SOURCE ? IpField.SOURCE : IpField.DESTINATION;
-    PortField portField = nat.getType() == SOURCE ? PortField.SOURCE : PortField.DESTINATION;
 
     ImmutableList.Builder<TransformationStep> builder = new Builder<>();
     builder.add(new AssignIpAddressFromPool(type, ipField, interfaceIp, interfaceIp));
 
-    // PAT is enabled by default for interface source NAT
+    // PAT is always enabled for interface source NAT
     if (type == SOURCE_NAT) {
       builder.add(
           new AssignPortFromPool(
-              type, portField, nat.getDefaultFromPort(), nat.getDefaultToPort()));
+              type, PortField.SOURCE, nat.getDefaultFromPort(), nat.getDefaultToPort()));
     }
 
     return builder.build();

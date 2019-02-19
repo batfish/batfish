@@ -18,7 +18,7 @@ public enum NatRuleThenOff implements NatRuleThen {
   INSTANCE;
 
   @Override
-  public List<TransformationStep> toTransformationStep(Nat nat, Ip interfaceIp) {
+  public List<TransformationStep> toTransformationSteps(Nat nat, Ip interfaceIp) {
     if (nat.getType() == STATIC) {
       throw new BatfishException("Juniper static nat is not supported");
     }
