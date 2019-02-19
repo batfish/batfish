@@ -54,7 +54,7 @@ public class Parser extends CommonParser {
   final Rule[] _deviceTypeRules = initEnumRules(DeviceType.values());
 
   /**
-   * <<<<<<< HEAD Filter grammar
+   * Filter grammar
    *
    * <pre>
    *   filterExpr := filterTerm [{@literal &} | + | \ filterTerm]*
@@ -126,7 +126,7 @@ public class Parser extends CommonParser {
   }
 
   /**
-   * ======= >>>>>>> origin/master Interface grammar
+   * Interface grammar
    *
    * <pre>
    *   interfaceExpr := interfaceTerm [{@literal &} | + | \ interfaceTerm]*
@@ -168,15 +168,19 @@ public class Parser extends CommonParser {
   }
 
   public Rule InterfaceTerm() {
+    return FirstOf(InterfaceSpecifier(), InterfaceNameRegex(), InterfaceName(), InterfaceParens());
+  }
+
+  /**
+   * To avoid ambiguity in location specification, interface and node specifiers should be distinct
+   */
+  public Rule InterfaceSpecifier() {
     return FirstOf(
         InterfaceConnectedTo(),
         InterfaceInterfaceGroup(),
         InterfaceType(),
         InterfaceVrf(),
-        InterfaceZone(),
-        InterfaceNameRegex(),
-        InterfaceName(),
-        InterfaceParens());
+        InterfaceZone());
   }
 
   public Rule InterfaceConnectedTo() {
@@ -373,6 +377,80 @@ public class Parser extends CommonParser {
   @Anchor(IP_WILDCARD)
   public Rule IpWildcard() {
     return Sequence(IpAddress(), ':', IpAddressMask(), push(new IpWildcardAstNode(pop(1), pop())));
+  }
+
+  /**
+   * Location grammar
+   *
+   * <pre>
+   *   locationExpr := locationTerm [{@literal &} | + | \ locationTerm]*
+   *
+   *   locationTerm := @role(a, b) // ref.noderole is also supported for back compat
+   *               | @device(a)
+   *               | nodeName
+   *               | nodeNameRegex
+   *               | ( nodeTerm )
+   * </pre>
+   */
+
+  /* A Node expression is one or more intersection terms separated by + or - */
+  public Rule LocationExpression() {
+    Var<Character> op = new Var<>();
+    return Sequence(
+        LocationIntersection(),
+        WhiteSpace(),
+        ZeroOrMore(
+            FirstOf("+ ", "\\ "),
+            op.set(matchedChar()),
+            LocationIntersection(),
+            push(SetOpLocationAstNode.create(op.get(), pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule LocationIntersection() {
+    return Sequence(
+        LocationTerm(),
+        WhiteSpace(),
+        ZeroOrMore(
+            "& ",
+            LocationTerm(),
+            push(new IntersectionLocationAstNode(pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule LocationTerm() {
+    return FirstOf(LocationEnter(), LocationInterface(), LocationParens());
+  }
+
+  public Rule LocationEnter() {
+    return Sequence(
+        FirstOf(IgnoreCase("@enter"), IgnoreCase("enter")),
+        "( ",
+        LocationInterface(),
+        ") ",
+        push(new EnterLocationAstNode(pop())));
+  }
+
+  public Rule LocationInterface() {
+    return FirstOf(
+        Sequence(
+            InterfaceSpecifier(),
+            WhiteSpace(),
+            push(InterfaceLocationAstNode.createFromInterface(pop()))),
+        Sequence(
+            NodeExpression(),
+            WhiteSpace(),
+            push(InterfaceLocationAstNode.createFromNode(pop())),
+            Optional(
+                "[ ",
+                InterfaceExpression(),
+                "] ",
+                push(InterfaceLocationAstNode.createFromNodeInterface(pop(1), pop())))));
+  }
+
+  public Rule LocationParens() {
+    // Leave the stack as is -- no need to remember that this was a parenthetical term
+    return Sequence("( ", LocationTerm(), WhiteSpace(), ") ");
   }
 
   /**
