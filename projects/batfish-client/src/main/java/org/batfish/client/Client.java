@@ -88,6 +88,7 @@ import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FlowState;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
@@ -439,12 +440,33 @@ public class Client extends AbstractClient implements IClient {
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         break;
+      case INTERFACE_GROUP_AND_BOOK:
+        if (!value.isTextual() || value.asText().split(",").length != 2) {
+          throw new BatfishException(
+              String.format(
+                  "A Batfish %s must be a JSON string with two comma-separated values",
+                  expectedType.getName()));
+        }
+        break;
+      case INTERFACE_NAME:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        break;
       case INTERFACE_PROPERTY_SPEC:
         if (!(value.isTextual())) {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         new InterfacePropertySpecifier(value.textValue());
+        break;
+      case INTERFACE_TYPE:
+        if (!(value.isTextual())) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        Enum.valueOf(InterfaceType.class, value.textValue().toUpperCase());
         break;
       case INTERFACES_SPEC:
         if (!(value.isTextual())) {

@@ -40,8 +40,10 @@ final class IpSpaceAstNodeToIpSpace implements IpSpaceAstNodeVisitor<IpSpace> {
   }
 
   @Override
-  public IpSpace visitAddressGroupAstNode(AddressGroupAstNode addressGroupAstNode) {
+  public IpSpace visitAddressGroupAstNode(AddressGroupIpSpaceAstNode addressGroupIpSpaceAstNode) {
     return ReferenceAddressGroupIpSpaceSpecifier.computeIpSpace(
-        addressGroupAstNode.getAddressGroup(), addressGroupAstNode.getAddressBook(), _ctxt);
+        addressGroupIpSpaceAstNode.getAddressGroup(),
+        addressGroupIpSpaceAstNode.getAddressBook(),
+        _ctxt);
   }
 }

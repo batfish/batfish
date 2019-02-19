@@ -4,25 +4,25 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Objects;
 
-class AddressGroupAstNode implements IpSpaceAstNode {
+class AddressGroupIpSpaceAstNode implements IpSpaceAstNode {
   private final String _addressGroup;
   private final String _referenceBook;
 
-  AddressGroupAstNode(AstNode addressGroup, AstNode referenceBook) {
+  AddressGroupIpSpaceAstNode(AstNode addressGroup, AstNode referenceBook) {
     checkArgument(addressGroup instanceof StringAstNode, "addressGroup must be a string");
     checkArgument(referenceBook instanceof StringAstNode, "referenceBook must be a string");
     _addressGroup = ((StringAstNode) addressGroup).getStr();
     _referenceBook = ((StringAstNode) referenceBook).getStr();
   }
 
-  AddressGroupAstNode(String addressGroup, String referenceBook) {
+  AddressGroupIpSpaceAstNode(String addressGroup, String referenceBook) {
     _addressGroup = addressGroup;
     _referenceBook = referenceBook;
   }
 
   @Override
   public <T> T accept(AstNodeVisitor<T> visitor) {
-    return visitor.visitAddressGroupAstNode(this);
+    return visitor.visitAddressGroupIpSpaceAstNode(this);
   }
 
   @Override
@@ -35,10 +35,10 @@ class AddressGroupAstNode implements IpSpaceAstNode {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof AddressGroupAstNode)) {
+    if (!(o instanceof AddressGroupIpSpaceAstNode)) {
       return false;
     }
-    AddressGroupAstNode that = (AddressGroupAstNode) o;
+    AddressGroupIpSpaceAstNode that = (AddressGroupIpSpaceAstNode) o;
     return Objects.equals(_addressGroup, that._addressGroup)
         && Objects.equals(_referenceBook, that._referenceBook);
   }

@@ -60,8 +60,7 @@ public class FlexibleInterfaceSpecifierFactoryTest {
   public void testType() {
     assertThat(
         new FlexibleInterfaceSpecifierFactory().buildInterfaceSpecifier("type(.*)"),
-        equalTo(
-            new TypeNameRegexInterfaceSpecifier(Pattern.compile(".*", Pattern.CASE_INSENSITIVE))));
+        equalTo(new TypesInterfaceSpecifier(Pattern.compile(".*", Pattern.CASE_INSENSITIVE))));
   }
 
   @Test
