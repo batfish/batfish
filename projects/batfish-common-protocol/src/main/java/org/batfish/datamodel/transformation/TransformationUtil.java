@@ -32,6 +32,11 @@ public final class TransformationUtil {
             ShiftIpAddressIntoSubnet shiftIpAddressIntoSubnet) {
           return shiftIpAddressIntoSubnet.getType() == SOURCE_NAT;
         }
+
+        @Override
+        public Boolean visitAssignPortFromPool(AssignPortFromPool assignPortFromPool) {
+          return assignPortFromPool.getType() == SOURCE_NAT;
+        }
       };
 
   private static final TransformationStepVisitor<Stream<Ip>> SOURCE_NAT_POOL_IPS =
@@ -56,6 +61,11 @@ public final class TransformationUtil {
         public Stream<Ip> visitShiftIpAddressIntoSubnet(
             ShiftIpAddressIntoSubnet shiftIpAddressIntoSubnet) {
           // not a pool
+          return Stream.of();
+        }
+
+        @Override
+        public Stream<Ip> visitAssignPortFromPool(AssignPortFromPool assignPortFromPool) {
           return Stream.of();
         }
       };

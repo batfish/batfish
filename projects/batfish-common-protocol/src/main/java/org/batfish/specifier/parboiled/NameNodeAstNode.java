@@ -24,7 +24,7 @@ final class NameNodeAstNode implements NodeAstNode {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof NameNodeAstNode)) {
       return false;
     }
     NameNodeAstNode that = (NameNodeAstNode) o;

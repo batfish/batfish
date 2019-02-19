@@ -24,7 +24,7 @@ final class ConnectedToInterfaceAstNode implements InterfaceAstNode {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof ConnectedToInterfaceAstNode)) {
       return false;
     }
     ConnectedToInterfaceAstNode that = (ConnectedToInterfaceAstNode) o;

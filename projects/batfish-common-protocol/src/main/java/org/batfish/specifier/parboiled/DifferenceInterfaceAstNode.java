@@ -3,8 +3,7 @@ package org.batfish.specifier.parboiled;
 final class DifferenceInterfaceAstNode extends SetOpInterfaceAstNode {
 
   DifferenceInterfaceAstNode(InterfaceAstNode left, InterfaceAstNode right) {
-    _left = left;
-    _right = right;
+    super(left, right);
   }
 
   @Override

@@ -50,13 +50,14 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasIncomingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIpProtocols;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilterName;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasPostTransformationIncomingFilter;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasPreTransformationOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
@@ -755,8 +756,13 @@ public class CiscoGrammarTest {
     Flow flowFail = createFlow(IpProtocol.TCP, 1, 1);
 
     // Confirm access list permits only traffic matching ACL
-    assertThat(c, hasInterface(ifaceAlias, hasOutgoingFilter(accepts(flowPass, null, c))));
-    assertThat(c, hasInterface(ifaceAlias, hasOutgoingFilter(not(accepts(flowFail, null, c)))));
+    assertThat(
+        c,
+        hasInterface(ifaceAlias, hasPreTransformationOutgoingFilter(accepts(flowPass, null, c))));
+    assertThat(
+        c,
+        hasInterface(
+            ifaceAlias, hasPreTransformationOutgoingFilter(not(accepts(flowFail, null, c)))));
   }
 
   @Test
@@ -771,10 +777,20 @@ public class CiscoGrammarTest {
     Flow flowFail = createFlow(IpProtocol.TCP, 1, 1);
 
     // Confirm global ACL affects all interfaces
-    assertThat(c, hasInterface(iface1Alias, hasIncomingFilter(accepts(flowPass, null, c))));
-    assertThat(c, hasInterface(iface2Alias, hasIncomingFilter(accepts(flowPass, null, c))));
-    assertThat(c, hasInterface(iface1Alias, hasIncomingFilter(not(accepts(flowFail, null, c)))));
-    assertThat(c, hasInterface(iface2Alias, hasIncomingFilter(not(accepts(flowFail, null, c)))));
+    assertThat(
+        c,
+        hasInterface(iface1Alias, hasPostTransformationIncomingFilter(accepts(flowPass, null, c))));
+    assertThat(
+        c,
+        hasInterface(iface2Alias, hasPostTransformationIncomingFilter(accepts(flowPass, null, c))));
+    assertThat(
+        c,
+        hasInterface(
+            iface1Alias, hasPostTransformationIncomingFilter(not(accepts(flowFail, null, c)))));
+    assertThat(
+        c,
+        hasInterface(
+            iface2Alias, hasPostTransformationIncomingFilter(not(accepts(flowFail, null, c)))));
   }
 
   @Test
@@ -826,22 +842,40 @@ public class CiscoGrammarTest {
     // highIface1 has inbound filter permitting all IP traffic
     // highIface1 has outbound filter permitting only TCP port 123
     // highIface1 rejects all traffic from lowIface2 due to security level restriction
-    assertThat(c, hasInterface(highIface1, hasOutgoingFilter(rejects(anyFlow, lowIface2, c))));
+    assertThat(
+        c,
+        hasInterface(
+            highIface1, hasPreTransformationOutgoingFilter(rejects(anyFlow, lowIface2, c))));
 
     // Confirm access list permits only traffic matching both ACL and security level restrictions
     // highIface1 has a higher security level than lowIface5
     // lowIface5 has no inbound filter
     // lowIface5 rejects all outbound traffic except TCP port 123
-    assertThat(c, hasInterface(lowIface5, hasOutgoingFilter(rejects(flowFail, highIface1, c))));
-    assertThat(c, hasInterface(lowIface5, hasOutgoingFilter(accepts(flowPass, highIface1, c))));
+    assertThat(
+        c,
+        hasInterface(
+            lowIface5, hasPreTransformationOutgoingFilter(rejects(flowFail, highIface1, c))));
+    assertThat(
+        c,
+        hasInterface(
+            lowIface5, hasPreTransformationOutgoingFilter(accepts(flowPass, highIface1, c))));
 
     // lowIface4 has inbound filter permitting only TCP port 123
     // highIface3 has no explicit outbound filter
-    assertThat(c, hasInterface(lowIface4, hasIncomingFilter(accepts(flowPass, lowIface4, c))));
-    assertThat(c, hasInterface(lowIface4, hasIncomingFilter(rejects(flowFail, lowIface4, c))));
+    assertThat(
+        c,
+        hasInterface(
+            lowIface4, hasPostTransformationIncomingFilter(accepts(flowPass, lowIface4, c))));
+    assertThat(
+        c,
+        hasInterface(
+            lowIface4, hasPostTransformationIncomingFilter(rejects(flowFail, lowIface4, c))));
     // any flow outbound on highIface3 from lowIface4 is allowed, assuming it was allowed incoming
     // security level restriction is removed because lowIface4 has an inbound ACL
-    assertThat(c, hasInterface(highIface3, hasOutgoingFilter(accepts(anyFlow, lowIface4, c))));
+    assertThat(
+        c,
+        hasInterface(
+            highIface3, hasPreTransformationOutgoingFilter(accepts(anyFlow, lowIface4, c))));
   }
 
   @Test
@@ -3973,68 +4007,93 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasInterface(
-            explicit100Interface, hasOutgoingFilter(rejects(newFlow, explicit100Interface, c))));
-    assertThat(
-        c, hasInterface(insideInterface, hasOutgoingFilter(rejects(newFlow, insideInterface, c))));
+            explicit100Interface,
+            hasPreTransformationOutgoingFilter(rejects(newFlow, explicit100Interface, c))));
     assertThat(
         c,
         hasInterface(
-            explicit45Interface, hasOutgoingFilter(rejects(newFlow, explicit45Interface, c))));
+            insideInterface,
+            hasPreTransformationOutgoingFilter(rejects(newFlow, insideInterface, c))));
     assertThat(
         c,
-        hasInterface(outsideInterface, hasOutgoingFilter(rejects(newFlow, outsideInterface, c))));
+        hasInterface(
+            explicit45Interface,
+            hasPreTransformationOutgoingFilter(rejects(newFlow, explicit45Interface, c))));
+    assertThat(
+        c,
+        hasInterface(
+            outsideInterface,
+            hasPreTransformationOutgoingFilter(rejects(newFlow, outsideInterface, c))));
 
     // No traffic between interfaces with same level
     assertThat(
         c,
         hasInterface(
-            insideInterface, hasOutgoingFilter(rejects(newFlow, explicit100Interface, c))));
+            insideInterface,
+            hasPreTransformationOutgoingFilter(rejects(newFlow, explicit100Interface, c))));
     assertThat(
         c,
         hasInterface(
-            explicit100Interface, hasOutgoingFilter(rejects(newFlow, insideInterface, c))));
+            explicit100Interface,
+            hasPreTransformationOutgoingFilter(rejects(newFlow, insideInterface, c))));
 
     // Allow traffic from 100 to others
     assertThat(
         c,
-        hasInterface(explicit45Interface, hasOutgoingFilter(accepts(newFlow, insideInterface, c))));
+        hasInterface(
+            explicit45Interface,
+            hasPreTransformationOutgoingFilter(accepts(newFlow, insideInterface, c))));
     assertThat(
-        c, hasInterface(outsideInterface, hasOutgoingFilter(accepts(newFlow, insideInterface, c))));
+        c,
+        hasInterface(
+            outsideInterface,
+            hasPreTransformationOutgoingFilter(accepts(newFlow, insideInterface, c))));
 
     // Mid level is accepted by lower, but not higher
     assertThat(
         c,
-        hasInterface(insideInterface, hasOutgoingFilter(rejects(newFlow, explicit45Interface, c))));
+        hasInterface(
+            insideInterface,
+            hasPreTransformationOutgoingFilter(rejects(newFlow, explicit45Interface, c))));
     assertThat(
         c,
         hasInterface(
-            outsideInterface, hasOutgoingFilter(accepts(newFlow, explicit45Interface, c))));
+            outsideInterface,
+            hasPreTransformationOutgoingFilter(accepts(newFlow, explicit45Interface, c))));
 
     // No traffic from outside
     assertThat(
-        c, hasInterface(insideInterface, hasOutgoingFilter(rejects(newFlow, outsideInterface, c))));
+        c,
+        hasInterface(
+            insideInterface,
+            hasPreTransformationOutgoingFilter(rejects(newFlow, outsideInterface, c))));
     assertThat(
         c,
         hasInterface(
-            explicit45Interface, hasOutgoingFilter(rejects(newFlow, outsideInterface, c))));
+            explicit45Interface,
+            hasPreTransformationOutgoingFilter(rejects(newFlow, outsideInterface, c))));
 
     // All established flows are accepted
     assertThat(
         c,
         hasInterface(
-            explicit45Interface, hasOutgoingFilter(accepts(establishedFlow, outsideInterface, c))));
+            explicit45Interface,
+            hasPreTransformationOutgoingFilter(accepts(establishedFlow, outsideInterface, c))));
     assertThat(
         c,
         hasInterface(
-            insideInterface, hasOutgoingFilter(accepts(establishedFlow, outsideInterface, c))));
+            insideInterface,
+            hasPreTransformationOutgoingFilter(accepts(establishedFlow, outsideInterface, c))));
     assertThat(
         c,
         hasInterface(
-            insideInterface, hasOutgoingFilter(accepts(establishedFlow, explicit45Interface, c))));
+            insideInterface,
+            hasPreTransformationOutgoingFilter(accepts(establishedFlow, explicit45Interface, c))));
     assertThat(
         c,
         hasInterface(
-            insideInterface, hasOutgoingFilter(accepts(establishedFlow, explicit100Interface, c))));
+            insideInterface,
+            hasPreTransformationOutgoingFilter(accepts(establishedFlow, explicit100Interface, c))));
   }
 
   @Test
@@ -4045,12 +4104,24 @@ public class CiscoGrammarTest {
     Flow newFlow = createFlow(IpProtocol.IP, 0, 0, FlowState.NEW);
 
     // Allow traffic in and out of the same interface
-    assertThat(c, hasInterface(ifaceAlias1, hasOutgoingFilter(accepts(newFlow, ifaceAlias1, c))));
-    assertThat(c, hasInterface(ifaceAlias2, hasOutgoingFilter(accepts(newFlow, ifaceAlias2, c))));
+    assertThat(
+        c,
+        hasInterface(
+            ifaceAlias1, hasPreTransformationOutgoingFilter(accepts(newFlow, ifaceAlias1, c))));
+    assertThat(
+        c,
+        hasInterface(
+            ifaceAlias2, hasPreTransformationOutgoingFilter(accepts(newFlow, ifaceAlias2, c))));
 
     // Allow traffic between interfaces with same level
-    assertThat(c, hasInterface(ifaceAlias1, hasOutgoingFilter(accepts(newFlow, ifaceAlias2, c))));
-    assertThat(c, hasInterface(ifaceAlias2, hasOutgoingFilter(accepts(newFlow, ifaceAlias1, c))));
+    assertThat(
+        c,
+        hasInterface(
+            ifaceAlias1, hasPreTransformationOutgoingFilter(accepts(newFlow, ifaceAlias2, c))));
+    assertThat(
+        c,
+        hasInterface(
+            ifaceAlias2, hasPreTransformationOutgoingFilter(accepts(newFlow, ifaceAlias1, c))));
   }
 
   @Test
@@ -4061,12 +4132,24 @@ public class CiscoGrammarTest {
     Flow newFlow = createFlow(IpProtocol.IP, 0, 0, FlowState.NEW);
 
     // No traffic in and out of the same interface
-    assertThat(c, hasInterface(ifaceAlias1, hasOutgoingFilter(rejects(newFlow, ifaceAlias1, c))));
-    assertThat(c, hasInterface(ifaceAlias2, hasOutgoingFilter(rejects(newFlow, ifaceAlias2, c))));
+    assertThat(
+        c,
+        hasInterface(
+            ifaceAlias1, hasPreTransformationOutgoingFilter(rejects(newFlow, ifaceAlias1, c))));
+    assertThat(
+        c,
+        hasInterface(
+            ifaceAlias2, hasPreTransformationOutgoingFilter(rejects(newFlow, ifaceAlias2, c))));
 
     // Allow traffic between interfaces with same level
-    assertThat(c, hasInterface(ifaceAlias1, hasOutgoingFilter(accepts(newFlow, ifaceAlias2, c))));
-    assertThat(c, hasInterface(ifaceAlias2, hasOutgoingFilter(accepts(newFlow, ifaceAlias1, c))));
+    assertThat(
+        c,
+        hasInterface(
+            ifaceAlias1, hasPreTransformationOutgoingFilter(accepts(newFlow, ifaceAlias2, c))));
+    assertThat(
+        c,
+        hasInterface(
+            ifaceAlias2, hasPreTransformationOutgoingFilter(accepts(newFlow, ifaceAlias1, c))));
   }
 
   @Test
@@ -4077,12 +4160,24 @@ public class CiscoGrammarTest {
     Flow newFlow = createFlow(IpProtocol.IP, 0, 0, FlowState.NEW);
 
     // Allow traffic in and out of the same interface
-    assertThat(c, hasInterface(ifaceAlias1, hasOutgoingFilter(accepts(newFlow, ifaceAlias1, c))));
-    assertThat(c, hasInterface(ifaceAlias2, hasOutgoingFilter(accepts(newFlow, ifaceAlias2, c))));
+    assertThat(
+        c,
+        hasInterface(
+            ifaceAlias1, hasPreTransformationOutgoingFilter(accepts(newFlow, ifaceAlias1, c))));
+    assertThat(
+        c,
+        hasInterface(
+            ifaceAlias2, hasPreTransformationOutgoingFilter(accepts(newFlow, ifaceAlias2, c))));
 
     // No traffic between interfaces with same level
-    assertThat(c, hasInterface(ifaceAlias1, hasOutgoingFilter(rejects(newFlow, ifaceAlias2, c))));
-    assertThat(c, hasInterface(ifaceAlias2, hasOutgoingFilter(rejects(newFlow, ifaceAlias1, c))));
+    assertThat(
+        c,
+        hasInterface(
+            ifaceAlias1, hasPreTransformationOutgoingFilter(rejects(newFlow, ifaceAlias2, c))));
+    assertThat(
+        c,
+        hasInterface(
+            ifaceAlias2, hasPreTransformationOutgoingFilter(rejects(newFlow, ifaceAlias1, c))));
   }
 
   @Test
@@ -4112,72 +4207,54 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testAsaObjectNatDynamic() {
-    // Test vendor-specific parsing of ASA dynamic object NATs
+  public void testAsaObjectNatDynamic() throws IOException {
+    // Test Transformations from ASA dynamic object NATs
     String hostname = "asa-nat-object-dynamic";
-    CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_ASA);
+    Configuration config = parseConfig(hostname);
 
-    List<CiscoAsaNat> nats = config.getCiscoAsaNats();
-    assertThat(nats, hasSize(4));
+    Transformation.Builder nat1 =
+        when(and(
+                matchSrc(
+                    new IpSpaceReference("source-real-1", "Match network object: 'source-real-1'")),
+                matchSrcInterface("inside")))
+            .apply(assignSourceIp(Ip.parse("192.168.1.1"), Ip.parse("192.168.1.10")));
+    Transformation.Builder nat2 =
+        when(and(
+                matchSrc(
+                    new IpSpaceReference("source-real-2", "Match network object: 'source-real-2'")),
+                matchSrcInterface("outside")))
+            .apply(assignSourceIp(Ip.parse("192.168.2.1"), Ip.parse("192.168.2.10")));
+    Transformation.Builder nat3 =
+        when(and(
+                matchSrc(
+                    new IpSpaceReference("source-real-3", "Match network object: 'source-real-3'")),
+                matchSrcInterface("inside")))
+            .apply(assignSourceIp(Ip.parse("192.168.3.1"), Ip.parse("192.168.3.10")));
+    Transformation.Builder nat4 =
+        when(matchSrc(
+                new IpSpaceReference("source-real-4", "Match network object: 'source-real-4'")))
+            .apply(assignSourceIp(Ip.parse("192.168.4.1"), Ip.parse("192.168.4.10")));
 
-    // dynamic source NAT, subnet -> range
-    CiscoAsaNat nat = config.getCiscoAsaNats().get(0);
-    Optional<Transformation.Builder> builder =
-        nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
-    Transformation object = builder.get().build();
-    assertThat(
-        object,
-        equalTo(
-            when(and(
-                    matchSrcInterface("inside"),
-                    matchSrc(
-                        new IpSpaceReference(
-                            "source-real-1", "Match network object: 'source-real-1'"))))
-                .apply(assignSourceIp(Ip.parse("192.168.1.1"), Ip.parse("192.168.1.10")))
-                .build()));
+    Transformation nat = config.getAllInterfaces().get("inside").getIncomingTransformation();
+    assertThat(nat, nullValue());
 
-    nat = config.getCiscoAsaNats().get(1);
-    builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
-    object = builder.get().build();
-    assertThat(
-        object,
-        equalTo(
-            when(and(
-                    matchSrcInterface("outside"),
-                    matchSrc(
-                        new IpSpaceReference(
-                            "source-real-2", "Match network object: 'source-real-2'"))))
-                .apply(assignSourceIp(Ip.parse("192.168.2.1"), Ip.parse("192.168.2.10")))
-                .build()));
+    // 'inside' is the mapped interface for nat rules 2, 3, and 4. Sorted as 2->3->4
+    nat = config.getAllInterfaces().get("inside").getOutgoingTransformation();
+    assertThat(nat, equalTo(nat2.setOrElse(nat3.setOrElse(nat4.build()).build()).build()));
 
-    nat = config.getCiscoAsaNats().get(2);
-    builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
-    object = builder.get().build();
-    assertThat(
-        object,
-        equalTo(
-            when(and(
-                    matchSrcInterface("inside"),
-                    matchSrc(
-                        new IpSpaceReference(
-                            "source-real-3", "Match network object: 'source-real-3'"))))
-                .apply(assignSourceIp(Ip.parse("192.168.3.1"), Ip.parse("192.168.3.10")))
-                .build()));
+    nat = config.getAllInterfaces().get("outside").getIncomingTransformation();
+    assertThat(nat, nullValue());
 
-    nat = config.getCiscoAsaNats().get(3);
-    builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
-    object = builder.get().build();
-    assertThat(
-        object,
-        equalTo(
-            when(matchSrc(
-                    new IpSpaceReference("source-real-4", "Match network object: 'source-real-4'")))
-                .apply(assignSourceIp(Ip.parse("192.168.4.1"), Ip.parse("192.168.4.10")))
-                .build()));
+    // 'outside' is the mapped interface for nat rules 1, 3, and 4. Sorted as 1->3->4
+    nat = config.getAllInterfaces().get("outside").getOutgoingTransformation();
+    assertThat(nat, equalTo(nat1.setOrElse(nat3.setOrElse(nat4.build()).build()).build()));
+
+    nat = config.getAllInterfaces().get("other").getIncomingTransformation();
+    assertThat(nat, nullValue());
+
+    // 'other' is the mapped interface for nat rules 3 and 4. Sorted as 3->4
+    nat = config.getAllInterfaces().get("other").getOutgoingTransformation();
+    assertThat(nat, equalTo(nat3.setOrElse(nat4.build()).build()));
   }
 
   @Test
@@ -4217,57 +4294,60 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testAsaObjectNatStatic() {
-    // Test vendor-specific parsing of ASA static object NATs
+  public void testAsaObjectNatStatic() throws IOException {
+    // Test Transformations from ASA static object NATs
     String hostname = "asa-nat-object-static";
-    CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_ASA);
+    Configuration config = parseConfig(hostname);
 
     Prefix realSource1 = Prefix.parse("1.1.1.1/32");
     Prefix realSource2 = Prefix.parse("2.2.2.0/29");
+    Prefix realSource3 = Prefix.parse("3.3.3.3/32");
     Prefix realSource4 = Prefix.parse("4.4.4.0/24");
     Prefix mappedSource1 = Prefix.parse("192.168.1.1/32");
     Prefix mappedSource2 = Prefix.parse("192.168.2.0/29");
+    Prefix mappedSource3 = Prefix.parse("192.168.3.0/32");
     Prefix mappedSource4 = Prefix.parse("192.168.4.0/24");
 
-    // Host source NAT outgoing
-    CiscoAsaNat nat = config.getCiscoAsaNats().get(0);
-    Optional<Transformation.Builder> builder =
-        nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
-    Transformation object = builder.get().build();
-    assertThat(
-        object,
-        equalTo(
-            when(and(matchSrcInterface("inside"), matchSrc(realSource1)))
-                .apply(shiftSourceIp(mappedSource1))
-                .build()));
+    Transformation.Builder natIn1 =
+        when(matchDst(mappedSource1)).apply(shiftDestinationIp(realSource1));
+    Transformation.Builder natIn2 =
+        when(matchDst(mappedSource2)).apply(shiftDestinationIp(realSource2));
+    Transformation.Builder natIn3 =
+        when(matchDst(mappedSource3)).apply(shiftDestinationIp(realSource3));
+    Transformation.Builder natIn4 =
+        when(matchDst(mappedSource4)).apply(shiftDestinationIp(realSource4));
+    Transformation.Builder natOut1 =
+        when(and(matchSrc(realSource1), matchSrcInterface("inside")))
+            .apply(shiftSourceIp(mappedSource1));
+    Transformation.Builder natOut2 =
+        when(and(matchSrc(realSource2), matchSrcInterface("outside")))
+            .apply(shiftSourceIp(mappedSource2));
+    Transformation.Builder natOut3 =
+        when(and(matchSrc(realSource3), matchSrcInterface("inside")))
+            .apply(shiftSourceIp(mappedSource3));
+    Transformation.Builder natOut4 =
+        when(matchSrc(realSource4)).apply(shiftSourceIp(mappedSource4));
 
-    // Host source NAT incoming
-    builder = nat.toIncomingTransformation(config.getNetworkObjects(), new Warnings());
-    assertThat("No incoming transformation", builder.isPresent(), equalTo(true));
-    object = builder.get().build();
-    assertThat(
-        object,
-        equalTo(when(matchDst(mappedSource1)).apply(shiftDestinationIp(realSource1)).build()));
+    // 'inside' is the mapped interface for nat rules 2, 3, and 4. Sorted as 3->2->4.
+    Transformation nat = config.getAllInterfaces().get("inside").getIncomingTransformation();
+    assertThat(nat, equalTo(natIn3.setOrElse(natIn2.setOrElse(natIn4.build()).build()).build()));
 
-    nat = config.getCiscoAsaNats().get(1);
-    builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
-    object = builder.get().build();
-    assertThat(
-        object,
-        equalTo(
-            when(and(matchSrcInterface("outside"), matchSrc(realSource2)))
-                .apply(shiftSourceIp(mappedSource2))
-                .build()));
+    nat = config.getAllInterfaces().get("inside").getOutgoingTransformation();
+    assertThat(nat, equalTo(natOut3.setOrElse(natOut2.setOrElse(natOut4.build()).build()).build()));
 
-    // inline IP used as subnet
-    nat = config.getCiscoAsaNats().get(3);
-    builder = nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
-    assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
-    object = builder.get().build();
-    assertThat(
-        object, equalTo(when(matchSrc(realSource4)).apply(shiftSourceIp(mappedSource4)).build()));
+    // 'outside' is the mapped interface for nat rules 1, 3, and 4. Sorted as 1->3->4
+    nat = config.getAllInterfaces().get("outside").getIncomingTransformation();
+    assertThat(nat, equalTo(natIn1.setOrElse(natIn3.setOrElse(natIn4.build()).build()).build()));
+
+    nat = config.getAllInterfaces().get("outside").getOutgoingTransformation();
+    assertThat(nat, equalTo(natOut1.setOrElse(natOut3.setOrElse(natOut4.build()).build()).build()));
+
+    // 'other' is the mapped interface for nat rules 3 and 4. Sorted as 3->4
+    nat = config.getAllInterfaces().get("other").getIncomingTransformation();
+    assertThat(nat, equalTo(natIn3.setOrElse(natIn4.build()).build()));
+
+    nat = config.getAllInterfaces().get("other").getOutgoingTransformation();
+    assertThat(nat, equalTo(natOut3.setOrElse(natOut4.build()).build()));
   }
 
   @Test
@@ -4439,8 +4519,8 @@ public class CiscoGrammarTest {
     nat = nats.get(2);
     assertThat(nat.getDynamic(), equalTo(false));
     assertThat(nat.getTwice(), equalTo(false));
-    assertThat(nat.getInsideInterface(), nullValue());
-    assertThat(nat.getOutsideInterface(), nullValue());
+    assertThat(nat.getInsideInterface(), equalTo(CiscoAsaNat.ANY_INTERFACE));
+    assertThat(nat.getOutsideInterface(), equalTo(CiscoAsaNat.ANY_INTERFACE));
     assertThat(
         nat.getRealSource(), equalTo(new NetworkObjectGroupAddressSpecifier("source-real-group")));
     assertThat(
@@ -4450,10 +4530,10 @@ public class CiscoGrammarTest {
     nat = nats.get(3);
     assertTrue("NAT is active", nat.getInactive());
     assertThat(nat.getInsideInterface(), equalTo("inside"));
-    assertThat(nat.getOutsideInterface(), nullValue());
+    assertThat(nat.getOutsideInterface(), equalTo(CiscoAsaNat.ANY_INTERFACE));
 
     nat = nats.get(4);
-    assertThat(nat.getInsideInterface(), nullValue());
+    assertThat(nat.getInsideInterface(), equalTo(CiscoAsaNat.ANY_INTERFACE));
     assertThat(nat.getOutsideInterface(), equalTo("outside"));
 
     nat = nats.get(5);

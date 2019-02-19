@@ -29,7 +29,7 @@ final class NameRegexInterfaceAstNode implements InterfaceAstNode {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof NameRegexInterfaceAstNode)) {
       return false;
     }
     NameRegexInterfaceAstNode that = (NameRegexInterfaceAstNode) o;

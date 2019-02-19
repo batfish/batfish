@@ -29,7 +29,7 @@ final class NameRegexNodeAstNode implements NodeAstNode {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof NameRegexNodeAstNode)) {
       return false;
     }
     NameRegexNodeAstNode that = (NameRegexNodeAstNode) o;

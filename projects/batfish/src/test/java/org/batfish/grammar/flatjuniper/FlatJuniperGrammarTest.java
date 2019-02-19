@@ -138,6 +138,8 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -218,6 +220,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -248,8 +251,11 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.grammar.BatfishParseTreeWalker;
@@ -281,6 +287,8 @@ import org.batfish.representation.juniper.NatRuleSet;
 import org.batfish.representation.juniper.NatRuleThenInterface;
 import org.batfish.representation.juniper.NatRuleThenOff;
 import org.batfish.representation.juniper.NatRuleThenPool;
+import org.batfish.representation.juniper.NoPortTranslation;
+import org.batfish.representation.juniper.PatPool;
 import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.ScreenAction;
 import org.batfish.representation.juniper.ScreenOption;
@@ -4383,6 +4391,30 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testInstanceImport() throws IOException {
+    String hostname = "instance-import";
+    Configuration c = parseConfig(hostname);
+
+    /*
+     * instance-import for default VRF imports two policies, PS1 followed by PS2.
+     * PS1 accepts VRF3, then VRF1. PS2 accepts VRF1, then an undefined MYSTERY_VRF, then VRF2.
+     * Resulting list of VRFs whose routes to import should have the referenced VRFs in the order
+     * they were referenced, ignoring second reference to VRF1, not including undefined MYSTERY_VRF.
+     */
+    Vrf defaultVrf = c.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
+    assertThat(defaultVrf.getCrossVrfImportVrfs(), contains("VRF3", "VRF1", "VRF2"));
+
+    // Instance import policy should start with SetDefaultPolicy, then FirstMatchChain with policies
+    // TODO Test behavior of routing policy once MatchSourceVrf is fully implemented
+    List<Statement> instanceImportStatements =
+        c.getRoutingPolicies().get(defaultVrf.getCrossVrfImportPolicy()).getStatements();
+    assertThat(instanceImportStatements, hasSize(2));
+    assertThat(
+        ((If) instanceImportStatements.get(1)).getGuard(),
+        equalTo(new FirstMatchChain(ImmutableList.of(new CallExpr("PS1"), new CallExpr("PS2")))));
+  }
+
+  @Test
   public void testInterfaceRibGroup() throws IOException {
     String hostname = "juniper-interface-ribgroup";
     Configuration c = parseConfig(hostname);
@@ -4524,5 +4556,46 @@ public final class FlatJuniperGrammarTest {
 
     // ge-0/0/0.3 is not part of any zoone, so no firewall session interface info.
     assertThat(c.getAllInterfaces().get(i3Name).getFirewallSessionInterfaceInfo(), nullValue());
+  }
+
+  @Test
+  public void testPortAddressTranslation() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-nat-pat");
+    Nat sourceNat = juniperConfiguration.getMasterLogicalSystem().getNatSource();
+    NatPool pool0 = sourceNat.getPools().get("POOL0");
+    NatPool pool1 = sourceNat.getPools().get("POOL1");
+    NatPool pool2 = sourceNat.getPools().get("POOL2");
+    NatPool pool3 = sourceNat.getPools().get("POOL3");
+
+    // pool0 should not have pat specified
+    assertNotNull(pool0);
+    assertNull(pool0.getPortAddressTranslation());
+
+    // pool1 should has a pat pool with range [2000,3000] with no port translation configured
+    assertNotNull(pool1);
+    assertNotNull(pool1.getPortAddressTranslation());
+    assertThat(pool1.getPortAddressTranslation(), equalTo(new PatPool(2000, 3000)));
+
+    // pool2 should specify no translation
+    assertNotNull(pool2);
+    assertNotNull(pool2.getPortAddressTranslation());
+    assertThat(pool2.getPortAddressTranslation(), equalTo(NoPortTranslation.INSTANCE));
+
+    // pool3 should have a pat pool ranging [10000,20000]
+    assertNotNull(pool3);
+    assertNotNull(pool3.getPortAddressTranslation());
+    assertThat(pool3.getPortAddressTranslation(), equalTo(new PatPool(10000, 20000)));
+
+    Nat destNat = juniperConfiguration.getMasterLogicalSystem().getNatDestination();
+    NatPool pool4 = destNat.getPools().get("POOL4");
+    NatPool pool5 = destNat.getPools().get("POOL5");
+
+    // pool4 should have a pat pool ranging [6000,6000]
+    assertNotNull(pool4);
+    assertThat(pool4.getPortAddressTranslation(), equalTo(new PatPool(6000, 6000)));
+
+    // pool5 should not have pat specified
+    assertNotNull(pool5);
+    assertNull(pool5.getPortAddressTranslation());
   }
 }

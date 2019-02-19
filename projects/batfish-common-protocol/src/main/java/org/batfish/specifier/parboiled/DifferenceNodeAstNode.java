@@ -3,8 +3,7 @@ package org.batfish.specifier.parboiled;
 final class DifferenceNodeAstNode extends SetOpNodeAstNode {
 
   DifferenceNodeAstNode(NodeAstNode left, NodeAstNode right) {
-    _left = left;
-    _right = right;
+    super(left, right);
   }
 
   @Override

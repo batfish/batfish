@@ -26,7 +26,7 @@ public enum JuniperStructureType implements StructureType {
   POLICY_STATEMENT("policy-statement"),
   PREFIX_LIST("prefix-list"),
   RIB_GROUP("rib-group"),
-  ROUTING_INSTNACE("routing-instance"),
+  ROUTING_INSTANCE("routing-instance"),
   SECURE_TUNNEL_INTERFACE("secure tunnel interface"),
   SECURITY_PROFILE("security-profile"),
   VLAN("vlan");
