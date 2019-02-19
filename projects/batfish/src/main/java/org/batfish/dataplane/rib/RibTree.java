@@ -9,7 +9,6 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -82,15 +81,27 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     return _root.get(route.getNetwork()).contains(route);
   }
 
+  private boolean hasForwardingRoute(Set<R> routes) {
+    return routes.stream().anyMatch(r -> !r.getAbstractRoute().getNonForwarding());
+  }
+
   /**
-   * Returns a set of routes in this tree that 1) match the given IP address, and 2) have the
-   * longest prefix length within the specified maximum. May include non-forwarding routes.
+   * Returns a set of routes in this tree which 1) are forwarding routes, 2) match the given IP
+   * address, and 3) have the longest prefix length within the specified maximum.
    *
-   * <p>Returns the empty set if there are no routes that match.
+   * <p>Returns the empty set if there are no forwarding routes that match.
    */
   @Nonnull
   Set<R> getLongestPrefixMatch(Ip address, int maxPrefixLength) {
-    return ImmutableSet.copyOf(_root.longestPrefixMatch(address, maxPrefixLength));
+    for (int pl = maxPrefixLength; pl >= 0; pl--) {
+      Set<R> routes = _root.longestPrefixMatch(address, pl);
+      if (hasForwardingRoute(routes)) {
+        return routes.stream()
+            .filter(r -> !r.getAbstractRoute().getNonForwarding())
+            .collect(ImmutableSet.toImmutableSet());
+      }
+    }
+    return ImmutableSet.of();
   }
 
   /**
@@ -163,17 +174,8 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     return (obj == this) || (obj instanceof RibTree && this._root.equals(((RibTree<?>) obj)._root));
   }
 
-  /**
-   * Returns a mapping from prefixes in the RIB that contain at least one element matching the given
-   * {@code matches} function to the IPs for which that prefix is the longest match in the RIB
-   * (among prefixes with elements that match the function).
-   *
-   * <p>Used for {@link GenericRib#getMatchingIps()}.
-   *
-   * @param matches Function to specify the condition routes must meet for their prefix to be added
-   *     to the returned map. Takes a route of type {@link R} and returns true if it matches.
-   */
-  Map<Prefix, IpSpace> getMatchingIps(Function<R, Boolean> matches) {
+  /** See {@link GenericRib#getMatchingIps()} */
+  Map<Prefix, IpSpace> getMatchingIps() {
     ImmutableMap.Builder<Prefix, IpSpace> builder = ImmutableMap.builder();
 
     /* We traverse the tree in post-order, so when we visit each intermediate node the blacklist
@@ -185,7 +187,7 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     ImmutableSortedSet.Builder<IpWildcard> blacklist = ImmutableSortedSet.naturalOrder();
     _root.traverseEntries(
         (prefix, elems) -> {
-          if (elems.stream().anyMatch(matches::apply)) {
+          if (hasForwardingRoute(elems)) {
             IpWildcard wc = new IpWildcard(prefix);
             builder.put(
                 prefix, new IpWildcardSetIpSpace(blacklist.build(), ImmutableSortedSet.of(wc)));
@@ -195,20 +197,12 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     return builder.build();
   }
 
-  /**
-   * Returns the {@link IpSpace} of IPs contained by prefixes with any route that matches the given
-   * matching condition.
-   *
-   * <p>Used for {@link GenericRib#getRoutableIps()}.
-   *
-   * @param matches Function to specify the condition routes must meet for IPs contained by their
-   *     prefix to be added to the returned {@link IpSpace}.
-   */
-  IpSpace getRoutableIps(Function<R, Boolean> matches) {
+  /** See {@link GenericRib#getRoutableIps()} */
+  IpSpace getRoutableIps() {
     IpWildcardSetIpSpace.Builder builder = IpWildcardSetIpSpace.builder();
     _root.traverseEntries(
         (prefix, elems) -> {
-          if (elems.stream().anyMatch(matches::apply)) {
+          if (hasForwardingRoute(elems)) {
             builder.including(new IpWildcard(prefix));
           }
         });

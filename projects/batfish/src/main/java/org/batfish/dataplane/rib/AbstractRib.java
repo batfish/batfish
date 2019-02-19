@@ -195,16 +195,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
 
   @Override
   public @Nonnull Set<R> longestPrefixMatch(Ip address, int maxPrefixLength) {
-    for (int pl = maxPrefixLength; pl >= 0; pl--) {
-      Set<R> routes =
-          _tree.getLongestPrefixMatch(address, pl).stream()
-              .filter(r -> !r.getAbstractRoute().getNonForwarding())
-              .collect(ImmutableSet.toImmutableSet());
-      if (!routes.isEmpty()) {
-        return routes;
-      }
-    }
-    return ImmutableSet.of();
+    return _tree.getLongestPrefixMatch(address, maxPrefixLength);
   }
 
   /**
@@ -310,11 +301,11 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
 
   @Override
   public final Map<Prefix, IpSpace> getMatchingIps() {
-    return _tree.getMatchingIps(r -> !r.getAbstractRoute().getNonForwarding());
+    return _tree.getMatchingIps();
   }
 
   @Override
   public final IpSpace getRoutableIps() {
-    return _tree.getRoutableIps(r -> !r.getAbstractRoute().getNonForwarding());
+    return _tree.getRoutableIps();
   }
 }
