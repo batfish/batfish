@@ -109,37 +109,48 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
     /**
      * Indicate that a route was added to the RIB
      *
-     * @param prefix {@link Prefix} representing destination network of route to add
-     * @param route Route to add
+     * @param route Route that was added
      */
-    public Builder<R> add(Prefix prefix, R route) {
+    public Builder<R> add(R route) {
       LinkedHashMap<R, RouteAdvertisement<R>> l =
-          _actions.computeIfAbsent(prefix, p -> new LinkedHashMap<>(10, 1, true));
+          _actions.computeIfAbsent(route.getNetwork(), p -> new LinkedHashMap<>(10, 1, true));
       l.put(route, new RouteAdvertisement<>(route));
       return this;
     }
 
     /**
-     * Indicate that a collection of routes with the same prefix was added to the RIB
+     * Indicate that multiple routes have been added to the RIB
      *
-     * @param prefix {@link Prefix} representing shared destination network of all routes to add
-     * @param routes Routes to add
+     * @param routes a collection of routes
      */
-    public <T extends R> Builder<R> add(Prefix prefix, Collection<T> routes) {
-      routes.forEach(r -> add(prefix, r));
+    public Builder<R> add(Collection<? extends R> routes) {
+      routes.forEach(this::add);
       return this;
     }
 
     /**
      * Indicate that a route was removed from the RIB
      *
-     * @param prefix {@link Prefix} representing destination network of route to remove
      * @param route that was removed
      */
-    public Builder<R> remove(Prefix prefix, R route, Reason reason) {
+    public Builder<R> remove(R route, Reason reason) {
       LinkedHashMap<R, RouteAdvertisement<R>> l =
-          _actions.computeIfAbsent(prefix, p -> new LinkedHashMap<>(10, 1, true));
+          _actions.computeIfAbsent(route.getNetwork(), p -> new LinkedHashMap<>(10, 1, true));
       l.put(route, RouteAdvertisement.<R>builder().setRoute(route).setReason(reason).build());
+      return this;
+    }
+
+    /**
+     * Indicate that multiple routes were removed from the RIB
+     *
+     * @param routes that were removed
+     */
+    public Builder<R> remove(Collection<R> routes, Reason reason) {
+      for (R route : routes) {
+        LinkedHashMap<R, RouteAdvertisement<R>> l =
+            _actions.computeIfAbsent(route.getNetwork(), p -> new LinkedHashMap<>(10, 1, true));
+        l.put(route, RouteAdvertisement.<R>builder().setRoute(route).setReason(reason).build());
+      }
       return this;
     }
 

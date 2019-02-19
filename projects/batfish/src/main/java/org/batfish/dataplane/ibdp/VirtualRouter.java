@@ -1407,7 +1407,6 @@ public class VirtualRouter implements Serializable {
           continue;
         }
         BgpRoute transformedIncomingRoute = transformedIncomingRouteBuilder.build();
-        Prefix routeNetwork = transformedIncomingRoute.getNetwork();
 
         // If new route gets leaked to other VRFs via RibGroup, this VRF should be its source
         AnnotatedRoute<AbstractRoute> annotatedTransformedRoute =
@@ -1415,14 +1414,13 @@ public class VirtualRouter implements Serializable {
 
         if (remoteRouteAdvert.isWithdrawn()) {
           // Note this route was removed
-          ribDeltas.get(targetRib).remove(routeNetwork, transformedIncomingRoute, Reason.WITHDRAW);
-          perNeighborDeltaForRibGroups.remove(
-              routeNetwork, annotatedTransformedRoute, Reason.WITHDRAW);
+          ribDeltas.get(targetRib).remove(transformedIncomingRoute, Reason.WITHDRAW);
+          perNeighborDeltaForRibGroups.remove(annotatedTransformedRoute, Reason.WITHDRAW);
           _bgpRib.removeBackupRoute(transformedIncomingRoute);
         } else {
           // Merge into staging rib, note delta
           ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
-          perNeighborDeltaForRibGroups.add(routeNetwork, annotatedTransformedRoute);
+          perNeighborDeltaForRibGroups.add(annotatedTransformedRoute);
           _bgpRib.addBackupRoute(transformedIncomingRoute);
           _prefixTracer.installed(
               transformedIncomingRoute.getNetwork(),
@@ -1499,7 +1497,7 @@ public class VirtualRouter implements Serializable {
                     .setProtocol(levelProtocol)
                     .build();
             if (withdraw) {
-              deltaBuilder.remove(newRoute.getNetwork(), newRoute, Reason.WITHDRAW);
+              deltaBuilder.remove(newRoute, Reason.WITHDRAW);
               levelRib.removeBackupRoute(newRoute);
             } else {
               IsisLevelRib levelStagingRib =
@@ -1614,7 +1612,7 @@ public class VirtualRouter implements Serializable {
                           .setCostToAdvertiser(newCostToAdvertiser)
                           .build();
               if (withdraw) {
-                builderType1.remove(newRoute.getNetwork(), newRoute, Reason.WITHDRAW);
+                builderType1.remove(newRoute, Reason.WITHDRAW);
                 _ospfExternalType1Rib.removeBackupRoute(newRoute);
               } else {
                 builderType1.from(_ospfExternalType1StagingRib.mergeRouteGetDelta(newRoute));
@@ -1642,7 +1640,7 @@ public class VirtualRouter implements Serializable {
                           .setCostToAdvertiser(newCostToAdvertiser)
                           .build();
               if (withdraw) {
-                builderType2.remove(newRoute.getNetwork(), newRoute, Reason.WITHDRAW);
+                builderType2.remove(newRoute, Reason.WITHDRAW);
                 _ospfExternalType2Rib.addBackupRoute(newRoute);
               } else {
                 builderType2.from(_ospfExternalType2StagingRib.mergeRouteGetDelta(newRoute));
@@ -2079,7 +2077,6 @@ public class VirtualRouter implements Serializable {
          */
         for (Prefix p : mainDelta.getPrefixes()) {
           preExportPolicyDeltaBuilder.add(
-              p,
               _bgpRib.getTypedRoutes(p).stream()
                   .map(r -> new AnnotatedRoute<AbstractRoute>(r, _name))
                   .collect(ImmutableSet.toImmutableSet()));
@@ -2205,11 +2202,10 @@ public class VirtualRouter implements Serializable {
                             RoutingProtocol.ISIS_L2.getDefaultAdministrativeCost(
                                 _c.getConfigurationFormat()));
                     if (newRoute.isPresent()) {
-                      IsisRoute route = newRoute.get();
                       if (ra.isWithdrawn()) {
-                        upgradedRoutes.remove(route.getNetwork(), route, ra.getReason());
+                        upgradedRoutes.remove(newRoute.get(), ra.getReason());
                       } else {
-                        upgradedRoutes.add(route.getNetwork(), route);
+                        upgradedRoutes.add(newRoute.get());
                       }
                     }
                   });

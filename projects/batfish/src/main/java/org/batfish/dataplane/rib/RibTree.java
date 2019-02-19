@@ -59,7 +59,7 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     }
 
     Builder<R> b = RibDelta.builder();
-    b.remove(p, route, reason);
+    b.remove(route, reason);
     if (_root.get(p).isEmpty() && _owner._backupRoutes != null) {
       SortedSet<? extends R> backups =
           _owner._backupRoutes.getOrDefault(p, ImmutableSortedSet.of());
@@ -67,7 +67,7 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
         return b.build();
       }
       _root.put(p, backups.first());
-      b.add(p, backups.first());
+      b.add(backups.first());
     }
     // Return new delta
     return b.build();
@@ -122,7 +122,7 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     Set<R> routes = _root.get(p);
     if (routes.isEmpty()) {
       _root.put(p, route);
-      return RibDelta.<R>builder().add(p, route).build();
+      return RibDelta.<R>builder().add(route).build();
     }
     /*
      * Check if the route we are adding is preferred to the routes we already have.
@@ -139,7 +139,7 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     if (preferenceComparison == 0) { // equal preference, so add for multipath routing
       // Otherwise add the route
       if (_root.put(p, route)) {
-        return RibDelta.<R>builder().add(p, route).build();
+        return RibDelta.<R>builder().add(route).build();
       } else {
         return RibDelta.empty();
       }
@@ -150,9 +150,7 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
      * replace them with this one.
      */
     if (_root.replaceAll(p, route)) {
-      RibDelta.Builder<R> deltaBuilder = RibDelta.builder();
-      routes.forEach(r -> deltaBuilder.remove(p, r, REPLACE));
-      return deltaBuilder.add(p, route).build();
+      return RibDelta.<R>builder().remove(routes, REPLACE).add(route).build();
     } else {
       return RibDelta.empty();
     }

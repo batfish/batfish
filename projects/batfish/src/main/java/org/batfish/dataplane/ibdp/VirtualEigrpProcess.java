@@ -270,7 +270,7 @@ class VirtualEigrpProcess {
             EigrpExternalRoute newRoute = routeBuilder.build();
 
             if (routeAdvert.isWithdrawn()) {
-              deltaBuilder.remove(newRoute.getNetwork(), newRoute, Reason.WITHDRAW);
+              deltaBuilder.remove(newRoute, Reason.WITHDRAW);
               _externalRib.removeBackupRoute(newRoute);
             } else {
               deltaBuilder.from(_externalStagingRib.mergeRouteGetDelta(newRoute));
