@@ -29,7 +29,7 @@ final class PrefixAstNode implements IpSpaceAstNode {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof PrefixAstNode)) {
       return false;
     }
     PrefixAstNode that = (PrefixAstNode) o;

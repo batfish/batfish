@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -18,6 +19,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.FlowState;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
@@ -123,9 +125,7 @@ public final class AutoCompleteUtils {
         }
       case FILTER:
         {
-          if (completionMetadata == null) {
-            return null;
-          }
+          checkCompletionMetadata(completionMetadata, network, snapshot);
           suggestions = baseAutoComplete(query, completionMetadata.getFilterNames());
           break;
         }
@@ -139,15 +139,62 @@ public final class AutoCompleteUtils {
         }
       case INTERFACE:
         {
-          if (completionMetadata == null) {
-            return null;
-          }
+          checkCompletionMetadata(completionMetadata, network, snapshot);
           suggestions =
               baseAutoComplete(
                   query,
                   completionMetadata.getInterfaces().stream()
                       .map(NodeInterfacePair::toString)
                       .collect(Collectors.toSet()));
+          break;
+        }
+      case INTERFACE_GROUP_AND_BOOK:
+        {
+          checkReferenceLibrary(referenceLibrary, network);
+          ImmutableSet<StringPair> pairs =
+              referenceLibrary.getReferenceBooks().stream()
+                  .map(
+                      b ->
+                          b.getInterfaceGroups().stream()
+                              .map(ag -> new StringPair(ag.getName(), b.getName()))
+                              .collect(ImmutableSet.toImmutableSet()))
+                  .flatMap(Collection::stream)
+                  .collect(ImmutableSet.toImmutableSet());
+          suggestions = stringPairAutoComplete(query, pairs);
+          break;
+        }
+      case INTERFACE_NAME:
+        {
+          checkCompletionMetadata(completionMetadata, network, snapshot);
+          suggestions =
+              stringAutoComplete(
+                  query,
+                  completionMetadata.getInterfaces().stream()
+                      .map(NodeInterfacePair::getInterface)
+                      .collect(Collectors.toSet()));
+          break;
+        }
+      case INTERFACE_TYPE:
+        {
+          suggestions =
+              stringAutoComplete(
+                  query,
+                  Arrays.stream(InterfaceType.values())
+                      .map(type -> type.toString())
+                      .collect(ImmutableSet.toImmutableSet()));
+          break;
+        }
+      case INTERFACES_SPEC:
+        {
+          suggestions =
+              ParboiledAutoComplete.autoCompleteInterface(
+                  network,
+                  snapshot,
+                  query,
+                  maxSuggestions,
+                  completionMetadata,
+                  nodeRolesData,
+                  referenceLibrary);
           break;
         }
       case INTERFACE_PROPERTY_SPEC:
@@ -194,9 +241,30 @@ public final class AutoCompleteUtils {
           suggestions = baseAutoComplete(query, NamedStructureSpecifier.JAVA_MAP.keySet());
           break;
         }
+      case NODE_NAME:
+        {
+          checkCompletionMetadata(completionMetadata, network, snapshot);
+          suggestions = stringAutoComplete(query, completionMetadata.getNodes());
+          break;
+        }
       case NODE_PROPERTY_SPEC:
         {
           suggestions = baseAutoComplete(query, NodePropertySpecifier.JAVA_MAP.keySet());
+          break;
+        }
+      case NODE_ROLE_AND_DIMENSION:
+        {
+          checkNodeRolesData(nodeRolesData, network);
+          ImmutableSet<StringPair> pairs =
+              nodeRolesData.getNodeRoleDimensions().stream()
+                  .map(
+                      d ->
+                          d.getRoles().stream()
+                              .map(r -> new StringPair(r.getName(), d.getName()))
+                              .collect(ImmutableSet.toImmutableSet()))
+                  .flatMap(Collection::stream)
+                  .collect(ImmutableSet.toImmutableSet());
+          suggestions = stringPairAutoComplete(query, pairs);
           break;
         }
       case NODE_ROLE_DIMENSION:
@@ -270,8 +338,7 @@ public final class AutoCompleteUtils {
    * Returns a list of suggestions based on the query. The current implementation treats the query
    * as a substring of the property string.
    *
-   * @param query The query that came to the concrete child class
-   * @return The list of suggestions
+   * <p>TODO: Get rid of this method in favor of methods below. Stop doing implicit regexes.
    */
   @Nonnull
   public static List<AutocompleteSuggestion> baseAutoComplete(
@@ -299,7 +366,7 @@ public final class AutoCompleteUtils {
   /**
    * Returns a list of suggestions based on query strings.
    *
-   * <p>The query is considered to be a prefix of the string and the search is case-insensitive
+   * <p>The search is case-insensitive
    *
    * <p>The returned list contains the tail of the match. If the query is "ab" and the matching
    * string is "abcd", "cd" is returned.

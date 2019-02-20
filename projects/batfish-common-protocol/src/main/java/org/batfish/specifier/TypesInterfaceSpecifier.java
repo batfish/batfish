@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
@@ -16,17 +17,20 @@ import org.batfish.datamodel.InterfaceType;
  * An {@link InterfaceSpecifier} that specifies interfaces by {@link InterfaceType type}. Uses a
  * regex to specify which types to include.
  */
-public final class TypeNameRegexInterfaceSpecifier implements InterfaceSpecifier {
+@ParametersAreNonnullByDefault
+public final class TypesInterfaceSpecifier implements InterfaceSpecifier {
   private final Set<InterfaceType> _interfaceTypes;
 
-  public TypeNameRegexInterfaceSpecifier(Pattern typeNameRegex) {
-    _interfaceTypes =
+  public TypesInterfaceSpecifier(Pattern typeNameRegex) {
+    this(
         Stream.of(InterfaceType.values())
             .filter(type -> typeNameRegex.matcher(type.name()).matches())
-            .collect(ImmutableSet.toImmutableSet());
-    checkArgument(
-        !_interfaceTypes.isEmpty(),
-        String.format("Interface type regex %s matches no types", typeNameRegex.pattern()));
+            .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  public TypesInterfaceSpecifier(Set<InterfaceType> types) {
+    checkArgument(!types.isEmpty(), "Set of interface types is empty");
+    _interfaceTypes = types;
   }
 
   @Override
@@ -45,10 +49,10 @@ public final class TypeNameRegexInterfaceSpecifier implements InterfaceSpecifier
     if (this == o) {
       return true;
     }
-    if (!(o instanceof TypeNameRegexInterfaceSpecifier)) {
+    if (!(o instanceof TypesInterfaceSpecifier)) {
       return false;
     }
-    TypeNameRegexInterfaceSpecifier that = (TypeNameRegexInterfaceSpecifier) o;
+    TypesInterfaceSpecifier that = (TypesInterfaceSpecifier) o;
     return Objects.equals(_interfaceTypes, that._interfaceTypes);
   }
 

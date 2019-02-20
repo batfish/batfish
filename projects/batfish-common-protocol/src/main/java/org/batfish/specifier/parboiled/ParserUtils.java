@@ -1,17 +1,13 @@
 package org.batfish.specifier.parboiled;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.specifier.parboiled.Completion.Type;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.support.MatcherPath;
 import org.parboiled.support.MatcherPath.Element;
@@ -21,22 +17,35 @@ import org.parboiled.support.ParsingResult;
 @ParametersAreNonnullByDefault
 final class ParserUtils {
 
-  /** A helper class that captures where in the matching path we can build auto completion off of */
-  private static class UsefulPointInPath {
-    public final Completion.Type completionType;
-    public final Element element;
+  /**
+   * Captures anchors in potentially matching paths for anchor error reporting and auto completion.
+   */
+  private static class PathAnchor {
+    private final Anchor.Type _anchorType;
+    private final Element _element;
 
-    public UsefulPointInPath(Element element, Completion.Type completionType) {
-      this.element = element;
-      this.completionType = completionType;
+    PathAnchor(Element element, Anchor.Type anchorType) {
+      this._element = element;
+      this._anchorType = anchorType;
+    }
+
+    Anchor.Type getAnchorType() {
+      return _anchorType;
+    }
+
+    Element getElement() {
+      return _element;
     }
   }
 
   static AstNode getAst(ParsingResult<AstNode> result) {
-    checkArgument(
-        result.parseErrors.isEmpty(),
-        "Cannot get AST because parsing failed for '%s'",
-        result.inputBuffer);
+    if (!result.parseErrors.isEmpty()) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Cannot get AST. Parsing failed for '%s' at index %s",
+              result.inputBuffer.extract(0, Integer.MAX_VALUE),
+              result.parseErrors.get(0).getStartIndex()));
+    }
     return Iterables.getOnlyElement(result.valueStack);
   }
 
@@ -45,22 +54,22 @@ final class ParserUtils {
       String input,
       String inputType,
       InvalidInputError error,
-      Map<String, Completion.Type> completionTypes) {
+      Map<String, Anchor.Type> completionTypes) {
     return getErrorString(
-        input, inputType, error.getStartIndex(), getPartialMatches(error, completionTypes));
+        input, inputType, error.getStartIndex(), getPotentialMatches(error, completionTypes, true));
   }
 
   /** Generates a friendly message to explain what might be wrong with parser input */
   static String getErrorString(
-      String input, String inputType, int startIndex, Set<PartialMatch> partialMatches) {
+      String input, String inputType, int startIndex, Set<PotentialMatch> potentialMatches) {
     StringBuilder retString =
         new StringBuilder(
             String.format(
                 "Error parsing '%s' as %s after index %d. ", input, inputType, startIndex));
-    if (!partialMatches.isEmpty()) {
+    if (!potentialMatches.isEmpty()) {
       retString.append("Valid continuations are ");
       retString.append(
-          partialMatches.stream()
+          potentialMatches.stream()
               .map(ParserUtils::getErrorString)
               .collect(Collectors.joining(" or ")));
       retString.append(".");
@@ -70,16 +79,23 @@ final class ParserUtils {
 
   /** Generates a friendly message to explain what might be wrong with a particular partial match */
   @VisibleForTesting
-  static String getErrorString(PartialMatch pm) {
-    if (pm.getCompletionType().equals(Completion.Type.STRING_LITERAL)) {
+  static String getErrorString(PotentialMatch pm) {
+    if (pm.getAnchorType().equals(Anchor.Type.STRING_LITERAL)) {
       return String.format("'%s'", pm.getMatchCompletion());
     }
-    return String.format("%s", pm.getCompletionType());
+    return String.format("%s", pm.getAnchorType());
   }
 
   /**
-   * When parsing fails, given its error, this function returns the set of matches that could have
-   * made things work.
+   * When parsing fails, this function returns potential matches that could have made things work.
+   *
+   * <p>Potential matches are anchored around either elements in the path (rules) that correspond to
+   * completion types or those that represent string/character literals.
+   *
+   * <p>The parameter {@code fromTop} determines if we find anchors from top of the rule hierarchy
+   * or the bottom. The former is useful for error reporting and the latter for auto completion. For
+   * example, if a potential matching path is input->ip_range->ip_address, we want to tell the user
+   * that we expect an ip_range but when auto completing we want to use ip_address.
    *
    * <p>This function has been tested with only {@link
    * org.parboiled.parserunners.ReportingParseRunner}. When using {@link
@@ -87,96 +103,81 @@ final class ParserUtils {
    * respect to indices. See
    * https://github.com/sirthias/parboiled/blob/07b6e2b5c583c7e258599650157a3b0d2b63667a/parboiled-core/src/main/java/org/parboiled/errors/DefaultInvalidInputErrorFormatter.java#L60.
    */
-  static Set<PartialMatch> getPartialMatches(
-      InvalidInputError error, Map<String, Completion.Type> completionTypes) {
+  static Set<PotentialMatch> getPotentialMatches(
+      InvalidInputError error, Map<String, Anchor.Type> anchorTypes, boolean fromTop) {
+    ImmutableSet.Builder<PotentialMatch> potentialMatches = ImmutableSet.builder();
 
-    Set<PartialMatch> partialMatches = new HashSet<>();
-
-    /*
-     For each path that failed to match we identify a useful point in the path that is closest to
-     the end and can provide the basis for error reporting and completion suggestions.
-    */
     for (MatcherPath path : error.getFailedMatchers()) {
-      UsefulPointInPath usefulPoint =
-          getUsefulPointInPath(path, path.length() - 1, completionTypes);
+      PathAnchor pathAnchor =
+          findPathAnchor(path, fromTop ? 0 : path.length() - 1, anchorTypes, fromTop);
 
-      if (usefulPoint == null) {
-        /*
-         If you get here, that means the grammar is missing a Completion annotation on one or more
-         rules. For each path from the top-level rule to the leaf, there should be at least one
-         rule with a Completion annotation.
-        */
+      if (pathAnchor == null) {
+        // Getting here means the grammar is missing a Anchor annotation. See Parser's JavaDoc.
         throw new IllegalStateException(
             String.format("Useful completion not found in path %s", path));
       }
 
-      /*
-       Ignore paths that end in WHITESPACE -- nothing interesting to report there because our
-       grammar is not sensitive to whitespace
-      */
-      if (usefulPoint.completionType.equals(Type.WHITESPACE)) {
+      // Ignore paths whose anchor is WHITESPACE -- nothing interesting to report there
+      if (pathAnchor._anchorType.equals(Anchor.Type.WHITESPACE)) {
         continue;
       }
 
-      partialMatches.add(
-          getPartialMatch(error, path, usefulPoint.element, usefulPoint.completionType));
-    }
+      /*
+       The PotentialMatch object is straightforward given the anchor. Except that for string
+       literals, we remove the quotes inserted by parboiled.
+      */
+      String matchPrefix =
+          error
+              .getInputBuffer()
+              .extract(pathAnchor.getElement().startIndex, path.element.startIndex);
 
-    return partialMatches;
-  }
-
-  /**
-   * Build a {@link PartialMatch} object from the inputs. This is straightforwward for everything
-   * else, but for string literals, we remove the quotes inserted by parboiled.
-   */
-  @Nonnull
-  private static PartialMatch getPartialMatch(
-      InvalidInputError error, MatcherPath path, Element element, Completion.Type type) {
-
-    String matchPrefix =
-        error.getInputBuffer().extract(element.startIndex, path.element.startIndex);
-
-    if (type.equals(Type.STRING_LITERAL)) {
-      String fullToken = element.matcher.getLabel();
-      if (fullToken.length() >= 2) {
-        fullToken = fullToken.substring(1, fullToken.length() - 1);
+      if (pathAnchor._anchorType.equals(Anchor.Type.STRING_LITERAL)) {
+        String fullToken = pathAnchor.getElement().matcher.getLabel();
+        if (fullToken.length() >= 2) { // remove surrounding quotes
+          fullToken = fullToken.substring(1, fullToken.length() - 1);
+        }
+        potentialMatches.add(
+            new PotentialMatch(
+                pathAnchor.getAnchorType(),
+                matchPrefix,
+                fullToken.substring(matchPrefix.length())));
+      } else {
+        potentialMatches.add(new PotentialMatch(pathAnchor.getAnchorType(), matchPrefix, null));
       }
-      String matchCompletion = fullToken.substring(matchPrefix.length());
-
-      return new PartialMatch(type, matchPrefix, matchCompletion);
-
-    } else {
-      return new PartialMatch(type, matchPrefix, null);
     }
+
+    return potentialMatches.build();
   }
 
-  /**
-   * Working backwards from level, tries to find a useful label for error messages and auto
-   * completion. Returns null if none is found.
-   */
+  /** Finds the anchor in the path. Returns null if none is found. */
   @Nullable
-  private static UsefulPointInPath getUsefulPointInPath(
-      MatcherPath path, int level, Map<String, Completion.Type> completionTypes) {
+  private static PathAnchor findPathAnchor(
+      MatcherPath path, int level, Map<String, Anchor.Type> completionTypes, boolean fromTop) {
 
     MatcherPath.Element element = path.getElementAtLevel(level);
     String label = element.matcher.getLabel();
 
     if (completionTypes.containsKey(label)) {
-      return new UsefulPointInPath(element, completionTypes.get(label));
+      return new PathAnchor(element, completionTypes.get(label));
     } else if (isStringLiteralLabel(label)) {
-      return new UsefulPointInPath(element, Type.STRING_LITERAL);
+      return new PathAnchor(element, Anchor.Type.STRING_LITERAL);
     } else if (isCharLiteralLabel(label)) {
-      if (level == 0) {
-        return new UsefulPointInPath(element, Type.STRING_LITERAL);
+      // char literals appear at the bottom; if we are searching from top, we've reached the end
+      if (fromTop || level == 0) {
+        return new PathAnchor(element, Anchor.Type.STRING_LITERAL);
       }
-      UsefulPointInPath usefulParent = getUsefulPointInPath(path, level - 1, completionTypes);
-      return usefulParent == null
-          ? new UsefulPointInPath(element, Type.STRING_LITERAL)
-          : usefulParent;
-    } else if (level == 0) {
+      // if the parent label is a literal string (e.g., "@specifier"), use that because we want to
+      // autocomplete the entire string not just one of its characters
+      MatcherPath.Element parentElement = path.getElementAtLevel(level - 1);
+      if (isStringLiteralLabel(parentElement.matcher.getLabel())) {
+        return new PathAnchor(parentElement, Anchor.Type.STRING_LITERAL);
+      }
+      return new PathAnchor(element, Anchor.Type.STRING_LITERAL);
+    } else if ((fromTop && level == path.length() - 1) || (!fromTop && level == 0)) {
+      // we have reached the last element in the path
       return null;
     }
-    return getUsefulPointInPath(path, level - 1, completionTypes);
+    return findPathAnchor(path, fromTop ? level + 1 : level - 1, completionTypes, fromTop);
   }
 
   private static boolean isCharLiteralLabel(String label) {

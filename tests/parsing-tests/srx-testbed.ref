@@ -19,7 +19,7 @@
         "configs/junos-srx-3.cfg" : "PASSED"
       },
       "parseTrees" : {
-        "junos-srx-1" : {
+        "configs/junos-srx-1.cfg" : {
           "sentences" : [
             "(flat_juniper_configuration",
             "  (set_line",
@@ -2429,7 +2429,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "junos-srx-2" : {
+        "configs/junos-srx-2.cfg" : {
           "sentences" : [
             "(flat_juniper_configuration",
             "  (set_line",
@@ -4340,7 +4340,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "junos-srx-3" : {
+        "configs/junos-srx-3.cfg" : {
           "sentences" : [
             "(flat_juniper_configuration",
             "  (set_line",
@@ -6029,7 +6029,7 @@
       },
       "version" : "0.36.0",
       "warnings" : {
-        "junos-srx-1" : {
+        "configs/junos-srx-1.cfg" : {
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
@@ -6087,7 +6087,7 @@
             }
           ]
         },
-        "junos-srx-2" : {
+        "configs/junos-srx-2.cfg" : {
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
@@ -6145,7 +6145,7 @@
             }
           ]
         },
-        "junos-srx-3" : {
+        "configs/junos-srx-3.cfg" : {
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",

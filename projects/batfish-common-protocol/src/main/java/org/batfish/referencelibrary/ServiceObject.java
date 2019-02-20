@@ -4,8 +4,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
-import org.batfish.common.util.NamesUtil;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.Names;
 import org.batfish.datamodel.SubRange;
 
 public class ServiceObject implements Comparable<ServiceObject> {
@@ -25,7 +25,7 @@ public class ServiceObject implements Comparable<ServiceObject> {
     checkArgument(ipProtocol != null, "Service object ipProtocol not be null");
     checkArgument(name != null, "Service object name cannot be null");
     checkArgument(ports != null, "Service object ports cannot be null");
-    NamesUtil.checkValidReferenceObjectName(name, "service object");
+    Names.checkValidReferenceObjectName(name, "service object");
 
     _ipProtocol = ipProtocol;
     _name = name;

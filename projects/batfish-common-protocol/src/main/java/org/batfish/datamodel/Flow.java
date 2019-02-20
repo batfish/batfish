@@ -360,7 +360,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
 
   private static final String PROP_DSCP = "dscp";
   static final String PROP_DST_IP = "dstIp";
-  private static final String PROP_DST_PORT = "dstPort";
+  static final String PROP_DST_PORT = "dstPort";
   private static final String PROP_ECN = "ecn";
   private static final String PROP_FRAGMENT_OFFSET = "fragmentOffset";
   private static final String PROP_ICMP_CODE = "icmpCode";
@@ -371,7 +371,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
   private static final String PROP_IP_PROTOCOL = "ipProtocol";
   private static final String PROP_PACKET_LENGTH = "packetLength";
   static final String PROP_SRC_IP = "srcIp";
-  private static final String PROP_SRC_PORT = "srcPort";
+  static final String PROP_SRC_PORT = "srcPort";
   private static final String PROP_STATE = "state";
   private static final String PROP_TAG = "tag";
   private static final String PROP_TCP_FLAGS_ACK = "tcpFlagsAck";

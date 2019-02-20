@@ -19,7 +19,6 @@ public abstract class EigrpRoute extends AbstractRoute {
 
   protected final int _admin;
   @Nonnull protected final EigrpMetric _metric;
-  @Nonnull protected final String _nextHopInterface;
   @Nonnull protected final Ip _nextHopIp;
 
   /** AS number of the EIGRP process that installed this route in the RIB */
@@ -28,7 +27,6 @@ public abstract class EigrpRoute extends AbstractRoute {
   EigrpRoute(
       int admin,
       Prefix network,
-      @Nullable String nextHopInterface,
       @Nullable Ip nextHopIp,
       @Nullable EigrpMetric metric,
       long processAsn,
@@ -38,7 +36,6 @@ public abstract class EigrpRoute extends AbstractRoute {
     checkArgument(metric != null, "Cannot create EIGRP route: missing %s", PROP_EIGRP_METRIC);
     _admin = admin;
     _metric = metric;
-    _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
     _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
     _processAsn = processAsn;
   }
@@ -60,11 +57,9 @@ public abstract class EigrpRoute extends AbstractRoute {
   }
 
   @Nonnull
-  @JsonIgnore(false)
-  @JsonProperty(PROP_NEXT_HOP_INTERFACE)
   @Override
   public String getNextHopInterface() {
-    return _nextHopInterface;
+    return Route.UNSET_NEXT_HOP_INTERFACE;
   }
 
   @Nonnull
