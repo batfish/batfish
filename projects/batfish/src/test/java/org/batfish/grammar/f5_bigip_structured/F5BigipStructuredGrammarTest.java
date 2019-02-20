@@ -162,6 +162,7 @@ public final class F5BigipStructuredGrammarTest {
 
     // detect all structure references
     assertThat(ans, hasNumReferrers(file, BGP_PROCESS, used, 1));
+    assertThat(ans, hasNumReferrers(file, BGP_NEIGHBOR, "192.0.2.1", 1));
 
     // bgp neighbor update-source
     assertThat(ans, hasNumReferrers(file, VLAN, "/Common/vlan_used", 1));

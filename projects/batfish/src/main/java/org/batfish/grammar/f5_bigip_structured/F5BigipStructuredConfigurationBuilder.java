@@ -32,6 +32,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_ADDRESS_FAMILY_REDISTRIBUTE_KERNEL_ROUTE_MAP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_IPV4_ROUTE_MAP_OUT;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_IPV6_ROUTE_MAP_OUT;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_UPDATE_SOURCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_PROCESS_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.INTERFACE_SELF_REFERENCE;
@@ -338,6 +339,12 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void enterL_snat_translation(L_snat_translationContext ctx) {
+    String name = unquote(ctx.name.getText());
+    defineStructure(SNAT_TRANSLATION, name, ctx);
+  }
+
+  @Override
   public void enterL_snatpool(L_snatpoolContext ctx) {
     String name = unquote(ctx.name.getText());
     defineStructure(SNATPOOL, name, ctx);
@@ -529,6 +536,8 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   public void enterNrbn_name(Nrbn_nameContext ctx) {
     String name = unquote(ctx.name.getText());
     defineStructure(BGP_NEIGHBOR, name, ctx);
+    _c.referenceStructure(
+        BGP_NEIGHBOR, name, BGP_NEIGHBOR_SELF_REFERENCE, ctx.name.getStart().getLine());
     _currentBgpNeighbor = _currentBgpProcess.getNeighbors().computeIfAbsent(name, BgpNeighbor::new);
   }
 
@@ -1007,6 +1016,12 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitNrbnnafc_activate(Nrbnnafc_activateContext ctx) {
     _currentBgpNeighborAddressFamily.setActivate(ctx.DISABLED() == null);
+  }
+
+  @Override
+  public void exitNrbnn_update_source(Nrbnn_update_sourceContext ctx) {
+    String name = unquote(ctx.name.getText());
+    _c.referenceStructure(VLAN, name, BGP_NEIGHBOR_UPDATE_SOURCE, ctx.name.getStart().getLine());
   }
 
   @Override
