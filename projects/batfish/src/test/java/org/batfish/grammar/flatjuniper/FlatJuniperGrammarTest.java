@@ -4406,7 +4406,7 @@ public final class FlatJuniperGrammarTest {
     DataPlane dp = batfish.loadDataPlane();
 
     /*
-     * instance-import policies accept routes from VRF1, which has 1.1.1.1/30, but rejects routes
+     * instance-import policies accept routes from VRF1, which has 1.1.1.1/30, but reject routes
      * from VRF2, which has 2.2.2.2/30. Default VRF should have only 1.1.1.1/30.
      */
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
