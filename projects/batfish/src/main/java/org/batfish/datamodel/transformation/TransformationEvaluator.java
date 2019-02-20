@@ -95,6 +95,11 @@ public class TransformationEvaluator {
       return _flowDiffs.computeIfAbsent(type, k -> ImmutableSortedSet.naturalOrder());
     }
 
+    // when no values change, simply apply noop
+    private void noop(TransformationType type) {
+      _flowDiffs.computeIfAbsent(type, k -> ImmutableSortedSet.naturalOrder());
+    }
+
     private List<Step<?>> getTraceSteps() {
       return _flowDiffs.entrySet().stream()
           .map(
@@ -111,7 +116,7 @@ public class TransformationEvaluator {
 
     private boolean set(TransformationType type, IpField ipField, Ip oldValue, Ip newValue) {
       if (oldValue.equals(newValue)) {
-        getFlowDiffs(type);
+        noop(type);
         return false;
       } else {
         set(ipField, newValue);
@@ -122,7 +127,7 @@ public class TransformationEvaluator {
 
     private boolean set(TransformationType type, PortField portField, int oldValue, int newValue) {
       if (oldValue == newValue) {
-        getFlowDiffs(type);
+        noop(type);
         return false;
       } else {
         set(portField, newValue);
@@ -141,7 +146,7 @@ public class TransformationEvaluator {
       /* getFlowDiffs makes sure the type is in the key set, which signals that we went through
        * the transformation
        */
-      getFlowDiffs(noop.getType());
+      this.noop(noop.getType());
       return false;
     }
 

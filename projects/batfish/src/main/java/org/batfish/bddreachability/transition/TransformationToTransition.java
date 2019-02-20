@@ -20,6 +20,7 @@ import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Noop;
+import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.ReturnFlowTransformation;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.Transformation;
@@ -57,6 +58,13 @@ public class TransformationToTransition {
     return new EraseAndSet(erase, setValue);
   }
 
+  private static EraseAndSet assignPortFromPool(BDDInteger var, int poolStart, int poolEnd) {
+    BDD erase = Arrays.stream(var.getBitvec()).reduce(var.getFactory().one(), BDD::and);
+    BDD setValue =
+        poolStart == poolEnd ? var.value(poolStart) : var.geq(poolStart).and(var.leq(poolEnd));
+    return new EraseAndSet(erase, setValue);
+  }
+
   private class TransformationStepToTransition implements TransformationStepVisitor<Transition> {
     private BDDInteger ipField(IpField ipField) {
       switch (ipField) {
@@ -66,6 +74,17 @@ public class TransformationToTransition {
           return _bddPacket.getSrcIp();
         default:
           throw new IllegalArgumentException("Unknown IpField: " + ipField);
+      }
+    }
+
+    private BDDInteger portField(PortField portField) {
+      switch (portField) {
+        case DESTINATION:
+          return _bddPacket.getDstPort();
+        case SOURCE:
+          return _bddPacket.getSrcPort();
+        default:
+          throw new IllegalArgumentException("Unknown PortField: " + portField);
       }
     }
 
@@ -85,9 +104,9 @@ public class TransformationToTransition {
     }
 
     @Override
-    public Transition visitAssignPortFromPool(AssignPortFromPool assignPortFromPool) {
-      // TODO
-      return null;
+    public Transition visitAssignPortFromPool(AssignPortFromPool step) {
+      return assignPortFromPool(
+          portField(step.getPortField()), step.getPoolStart(), step.getPoolEnd());
     }
   }
 
