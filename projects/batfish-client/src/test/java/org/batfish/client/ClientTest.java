@@ -58,6 +58,7 @@ import static org.batfish.client.Command.SHOW_SNAPSHOT;
 import static org.batfish.client.Command.TEST;
 import static org.batfish.client.Command.UPLOAD_CUSTOM_OBJECT;
 import static org.batfish.common.CoordConsts.DEFAULT_API_KEY;
+import static org.batfish.datamodel.questions.Variable.Type.ADDRESS_GROUP_AND_BOOK;
 import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_STATUS;
 import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_TYPE;
 import static org.batfish.datamodel.questions.Variable.Type.BOOLEAN;
@@ -70,9 +71,13 @@ import static org.batfish.datamodel.questions.Variable.Type.FLOW_STATE;
 import static org.batfish.datamodel.questions.Variable.Type.INTEGER;
 import static org.batfish.datamodel.questions.Variable.Type.INTERFACE;
 import static org.batfish.datamodel.questions.Variable.Type.INTERFACES_SPEC;
+import static org.batfish.datamodel.questions.Variable.Type.INTERFACE_GROUP_AND_BOOK;
+import static org.batfish.datamodel.questions.Variable.Type.INTERFACE_NAME;
+import static org.batfish.datamodel.questions.Variable.Type.INTERFACE_TYPE;
 import static org.batfish.datamodel.questions.Variable.Type.IP;
 import static org.batfish.datamodel.questions.Variable.Type.IPSEC_SESSION_STATUS;
 import static org.batfish.datamodel.questions.Variable.Type.IP_PROTOCOL;
+import static org.batfish.datamodel.questions.Variable.Type.IP_SPACE_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.IP_WILDCARD;
 import static org.batfish.datamodel.questions.Variable.Type.JAVA_REGEX;
 import static org.batfish.datamodel.questions.Variable.Type.JSON_PATH;
@@ -117,6 +122,7 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.Pair;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.questions.AllowedValue;
@@ -545,6 +551,17 @@ public final class ClientTest {
   }
 
   @Test
+  public void testInvalidAddressGroupAndBook() throws IOException {
+    String input = "\"addressGroup\""; // no book name
+    Type expectedType = ADDRESS_GROUP_AND_BOOK;
+    String expectedMessage =
+        String.format(
+            "A Batfish %s must be a JSON string with two comma-separated values",
+            expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
   public void testInvalidBgpSessionStatusValue() throws IOException {
     String input = "5";
     Type expectedType = BGP_SESSION_STATUS;
@@ -645,12 +662,51 @@ public final class ClientTest {
   }
 
   @Test
+  public void testInvalidInterfaceGroupAndBook() throws IOException {
+    String input = "\"interfaceGroup\""; // no book name
+    Type expectedType = INTERFACE_GROUP_AND_BOOK;
+    String expectedMessage =
+        String.format(
+            "A Batfish %s must be a JSON string with two comma-separated values",
+            expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidInterfaceNameValue() throws IOException {
+    String input = "5";
+    Type expectedType = INTERFACE_NAME;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
   public void testInvalidInterfaceValue() throws IOException {
     String input = "5";
     Type expectedType = INTERFACE;
     String expectedMessage =
         String.format("A Batfish %s must be a JSON string", expectedType.getName());
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidInterfaceTypeValueNonSting() throws IOException {
+    String input = "5";
+    Type expectedType = INTERFACE_TYPE;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidInterfaceTypeValueBadEnum() throws IOException {
+    String input = "\"XOXO\"";
+    Type expectedType = INTERFACE_TYPE;
+    String expectedMessage =
+        String.format("No enum constant %s.XOXO", InterfaceType.class.getName());
+    validateTypeWithInvalidInput(
+        input, IllegalArgumentException.class, expectedMessage, expectedType);
   }
 
   @Test
@@ -685,6 +741,16 @@ public final class ClientTest {
   public void testInvalidIPValue() throws IOException {
     validateTypeWithInvalidInput(
         "\"0.0.0\"", IllegalArgumentException.class, "Invalid IPv4 address: 0.0.0", IP);
+  }
+
+  @Test
+  public void testInvalidIpSpaceSpecValue() throws IOException {
+    String input = "5";
+    Type expectedType = IP_SPACE_SPEC;
+    String expectedMessage =
+        String.format(
+            "A Batfish %s must be a JSON string with IpSpaceSpec grammar", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
   @Test
@@ -1616,6 +1682,14 @@ public final class ClientTest {
   }
 
   @Test
+  public void testValidAddressGroupAndBook() throws IOException {
+    JsonNode addressGroupNode = _mapper.readTree("\"addressGroup, referenceBook\"");
+    Variable variable = new Variable();
+    variable.setType(ADDRESS_GROUP_AND_BOOK);
+    Client.validateType(addressGroupNode, variable);
+  }
+
+  @Test
   public void testValidBooleanValue() throws IOException {
     JsonNode booleanNode = _mapper.readTree("true");
     Variable variable = new Variable();
@@ -1697,11 +1771,35 @@ public final class ClientTest {
   }
 
   @Test
+  public void testValidInterfaceGroupAndBook() throws IOException {
+    JsonNode interfaceGroupNode = _mapper.readTree("\"interfaceGroup, referenceBook\"");
+    Variable variable = new Variable();
+    variable.setType(INTERFACE_GROUP_AND_BOOK);
+    Client.validateType(interfaceGroupNode, variable);
+  }
+
+  @Test
+  public void testValidInterfaceNameValue() throws IOException {
+    JsonNode interfaceNode = _mapper.readTree("\"interfaceName\"");
+    Variable variable = new Variable();
+    variable.setType(INTERFACE);
+    Client.validateType(interfaceNode, variable);
+  }
+
+  @Test
   public void testValidInterfaceValue() throws IOException {
     JsonNode interfaceNode = _mapper.readTree("\"interfaceName\"");
     Variable variable = new Variable();
     variable.setType(INTERFACE);
     Client.validateType(interfaceNode, variable);
+  }
+
+  @Test
+  public void testValidInterfaceTypeValue() throws IOException {
+    JsonNode interfaceTypeNode = _mapper.readTree("\"physical\"");
+    Variable variable = new Variable();
+    variable.setType(INTERFACE_TYPE);
+    Client.validateType(interfaceTypeNode, variable);
   }
 
   @Test
@@ -1718,6 +1816,14 @@ public final class ClientTest {
     Variable variable = new Variable();
     variable.setType(IP_PROTOCOL);
     Client.validateType(ipProtocolNode, variable);
+  }
+
+  @Test
+  public void testValidIpSpaceSpecValue() throws IOException {
+    JsonNode addressGroupNode = _mapper.readTree("\"1.1.1.1\"");
+    Variable variable = new Variable();
+    variable.setType(IP_SPACE_SPEC);
+    Client.validateType(addressGroupNode, variable);
   }
 
   @Test

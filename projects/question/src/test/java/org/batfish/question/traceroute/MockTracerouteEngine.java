@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 
@@ -41,11 +40,6 @@ public final class MockTracerouteEngine implements TracerouteEngine {
   static MockTracerouteEngine forSessions(
       Map<Set<FirewallSessionTraceInfo>, Map<Flow, List<TraceAndReverseFlow>>> resultsForSessions) {
     return new MockTracerouteEngine(resultsForSessions);
-  }
-
-  @Override
-  public SortedMap<Flow, Set<FlowTrace>> processFlows(Set<Flow> flows, boolean ignoreFilters) {
-    throw new UnsupportedOperationException();
   }
 
   @Override

@@ -2,7 +2,7 @@ package org.batfish.dataplane;
 
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
-import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasDisposition;
+import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -14,19 +14,17 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Iterables;
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.FlowHistory;
-import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
-import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -34,6 +32,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.MockFib;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
@@ -46,6 +45,29 @@ public class TracerouteEngineTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Rule public TemporaryFolder _tempFolder = new TemporaryFolder();
+
+  private static boolean interfaceRepliesToArpRequestForIp(
+      Interface iface, Fib ifaceFib, Ip arpIp) {
+    // interfaces without addresses never reply
+    if (iface.getAllAddresses().isEmpty()) {
+      return false;
+    }
+    // the interface that owns the arpIp always replies
+    if (iface.getAllAddresses().stream().anyMatch(addr -> addr.getIp().equals(arpIp))) {
+      return true;
+    }
+
+    /*
+     * iface does not own arpIp, so it replies if and only if:
+     * 1. proxy-arp is enabled
+     * 2. the interface's vrf has a route to the destination
+     * 3. the destination is not on the incoming edge.
+     */
+    Set<String> nextHopInterfaces = ifaceFib.getNextHopInterfaces(arpIp);
+    return iface.getProxyArp()
+        && !nextHopInterfaces.isEmpty()
+        && nextHopInterfaces.stream().noneMatch(iface.getName()::equals);
+  }
 
   /*
    * iface1 and iface2 are interfaces on the same node. Send traffic with dstIp=iface2's ip to
@@ -85,11 +107,11 @@ public class TracerouteEngineTest {
     Flow flow2 = fb.setIngressInterface(i2.getName()).setIngressVrf(vrf2.getName()).build();
 
     // Compute flow traces
-    SortedMap<Flow, Set<FlowTrace>> flowTraces =
-        new TracerouteEngineImpl(dp).processFlows(ImmutableSet.of(flow1, flow2), false);
+    SortedMap<Flow, List<Trace>> traces =
+        new TracerouteEngineImpl(dp).computeTraces(ImmutableSet.of(flow1, flow2), false);
 
-    assertThat(flowTraces, hasEntry(equalTo(flow1), contains(hasDisposition(NO_ROUTE))));
-    assertThat(flowTraces, hasEntry(equalTo(flow2), contains(hasDisposition(ACCEPTED))));
+    assertThat(traces, hasEntry(equalTo(flow1), contains(hasDisposition(NO_ROUTE))));
+    assertThat(traces, hasEntry(equalTo(flow2), contains(hasDisposition(ACCEPTED))));
   }
 
   @Test
@@ -128,8 +150,8 @@ public class TracerouteEngineTest {
             .setDstIp(Ip.parse("10.0.0.2"))
             .setTag("tag")
             .build();
-    Set<FlowTrace> traces =
-        new TracerouteEngineImpl(dp).processFlows(ImmutableSet.of(flow), false).get(flow);
+    List<Trace> traces =
+        new TracerouteEngineImpl(dp).computeTraces(ImmutableSet.of(flow), false).get(flow);
 
     /*
      *  Since the 'other' neighbor should not respond to ARP:
@@ -173,25 +195,25 @@ public class TracerouteEngineTest {
 
     assertFalse(
         "ARP request to interface on a different VRF should fail",
-        TracerouteEngineImplContext.interfaceRepliesToArpRequestForIp(i1, vrf1Fib, arpIp));
+        interfaceRepliesToArpRequestForIp(i1, vrf1Fib, arpIp));
     assertTrue(
         "ARP request to interface with proxy-arp enabled should succeed",
-        TracerouteEngineImplContext.interfaceRepliesToArpRequestForIp(i2, vrf2Fib, arpIp));
+        interfaceRepliesToArpRequestForIp(i2, vrf2Fib, arpIp));
     assertFalse(
         "ARP request to interface with proxy-arp disabled should fail",
-        TracerouteEngineImplContext.interfaceRepliesToArpRequestForIp(i3, vrf2Fib, arpIp));
+        interfaceRepliesToArpRequestForIp(i3, vrf2Fib, arpIp));
     assertTrue(
         "ARP request to interface that owns arpIp should succeed",
-        TracerouteEngineImplContext.interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp));
+        interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp));
     assertFalse(
         "ARP request to interface with no address should fail",
-        TracerouteEngineImplContext.interfaceRepliesToArpRequestForIp(i5, vrf2Fib, arpIp));
+        interfaceRepliesToArpRequestForIp(i5, vrf2Fib, arpIp));
 
     // arpIp isn't owned by the VRF, but is routable
     arpIp = Ip.parse("4.4.4.0");
     assertFalse(
         "ARP request for interface subnet to the same interface should fail",
-        TracerouteEngineImplContext.interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp));
+        interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp));
 
     /*
      * There are routes for arpIp through multiple interfaces, but i4 still doesn't reply because
@@ -207,7 +229,7 @@ public class TracerouteEngineTest {
     assertFalse(
         "ARP request for interface subnet to the same interface should fail, "
             + "even if other routes are available",
-        TracerouteEngineImplContext.interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp));
+        interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp));
   }
 
   @Test
@@ -235,12 +257,10 @@ public class TracerouteEngineTest {
             .setTag(Flow.BASE_FLOW_TAG)
             .setDstIp(Ip.parse("1.0.0.1"))
             .build();
-    FlowHistory history = b.flowHistory(ImmutableSet.of(flow), false);
-    FlowHistoryInfo info = history.getTraces().get(flow.toString());
-    FlowTrace trace = info.getPaths().get(Flow.BASE_FLOW_TAG).iterator().next();
+    Trace trace = Iterables.getOnlyElement(b.buildFlows(ImmutableSet.of(flow), false).get(flow));
 
     /* Flow should be blocked by ACL before ARP, which would otherwise result in unreachable neighbor */
-    assertThat(trace.getDisposition(), equalTo(FlowDisposition.DENIED_OUT));
+    assertThat(trace, hasDisposition(FlowDisposition.DENIED_OUT));
   }
 
   @Test
@@ -282,16 +302,14 @@ public class TracerouteEngineTest {
             .setTag(Flow.BASE_FLOW_TAG)
             .setDstIp(Ip.parse("1.0.0.1"))
             .build();
-    FlowHistory history = b.flowHistory(ImmutableSet.of(flow), false);
-    FlowHistoryInfo info = history.getTraces().get(flow.toString());
-    FlowTrace trace = info.getPaths().get(Flow.BASE_FLOW_TAG).iterator().next();
+    Trace trace = Iterables.getOnlyElement(b.buildFlows(ImmutableSet.of(flow), false).get(flow));
 
     /* Flow should be blocked by ACL before ARP, which would otherwise result in unreachable neighbor */
-    assertThat(trace.getDisposition(), equalTo(FlowDisposition.DENIED_OUT));
+    assertThat(trace, hasDisposition(FlowDisposition.DENIED_OUT));
   }
 
   /** When ingress node is non-existent, don't crash with null-pointer. */
-  @Test(expected = BatfishException.class)
+  @Test
   public void testTracerouteOutsideNetwork() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -301,8 +319,11 @@ public class TracerouteEngineTest {
         BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c1.getHostname(), c1), _tempFolder);
     batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
+
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage("Node missingNode is not in the network");
     new TracerouteEngineImpl(dp)
-        .processFlows(
+        .computeTraces(
             ImmutableSet.of(Flow.builder().setTag("tag").setIngressNode("missingNode").build()),
             false);
   }

@@ -10,6 +10,10 @@ final class PrefixAstNode implements IpSpaceAstNode {
     _prefix = prefix;
   }
 
+  PrefixAstNode(String prefix) {
+    _prefix = Prefix.parse(prefix);
+  }
+
   @Override
   public <T> T accept(AstNodeVisitor<T> visitor) {
     return visitor.visitPrefixAstNode(this);
@@ -25,7 +29,7 @@ final class PrefixAstNode implements IpSpaceAstNode {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof PrefixAstNode)) {
       return false;
     }
     PrefixAstNode that = (PrefixAstNode) o;

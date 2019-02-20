@@ -18,7 +18,7 @@ import org.batfish.datamodel.questions.InterfacesSpecifier;
  *       ReferenceInterfaceGroupInterfaceSpecifier};
  *   <li>vrf(regex): returns {@link VrfNameRegexInterfaceSpecifier}
  *   <li>zone(regex): returns {@link ZoneNameRegexInterfaceSpecifier}
- *   <li>type(regex): returns {@link TypeNameRegexInterfaceSpecifier}
+ *   <li>type(regex): returns {@link TypesInterfaceSpecifier}
  *   <li>all other inputs go directly to {@link ShorthandInterfaceSpecifier}
  * </ul>
  */
@@ -77,7 +77,7 @@ public class FlexibleInterfaceSpecifierFactory implements InterfaceSpecifierFact
     matcher = TYPE_PATTERN.matcher(str);
     if (matcher.find()) {
       Pattern typeRegex = Pattern.compile(matcher.group(1).trim(), Pattern.CASE_INSENSITIVE);
-      return new TypeNameRegexInterfaceSpecifier(typeRegex);
+      return new TypesInterfaceSpecifier(typeRegex);
     }
 
     // VRF pattern

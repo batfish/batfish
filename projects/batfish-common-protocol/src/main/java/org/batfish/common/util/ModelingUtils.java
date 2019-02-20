@@ -38,6 +38,8 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
+import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
@@ -105,23 +107,19 @@ public final class ModelingUtils {
    * Creates and returns internet and ISP nodes for a {@link Map} of {@link Configuration}s
    *
    * @param configurations {@link Configuration}s for the given network
-   * @param interfacesConnectedToIsps {@link List} of {@link NodeInterfacePair}s connected to ISPs
-   * @param asNumOfIsps {@link List} optional {@link List} of AS numbers of ISPs
-   * @param ipsOfIsps {@link List} optional {@link List} of {@link Ip}s of ISPs
+   * @param ispConfiguration {@link IspConfiguration} required to initialize the ISPs
    * @param logger {@link BatfishLogger} to log warnings and errors
    * @return {@link Map} of {@link Configuration}s for the ISPs and Internet
    */
-  @VisibleForTesting
-  static Map<String, Configuration> getInternetAndIspNodes(
+  public static Map<String, Configuration> getInternetAndIspNodes(
       @Nonnull Map<String, Configuration> configurations,
-      @Nonnull List<NodeInterfacePair> interfacesConnectedToIsps,
-      @Nonnull List<Long> asNumOfIsps,
-      @Nonnull List<Ip> ipsOfIsps,
+      @Nonnull IspConfiguration ispConfiguration,
       @Nonnull BatfishLogger logger) {
 
     NetworkFactory nf = new NetworkFactory();
     Map<String, Set<String>> interfaceSetByNodes =
-        interfacesConnectedToIsps.stream()
+        ispConfiguration.getBorderInterfaces().stream()
+            .map(BorderInterfaceInfo::getBorderInterface)
             .collect(
                 Collectors.groupingBy(
                     NodeInterfacePair::getHostname,
@@ -135,7 +133,11 @@ public final class ModelingUtils {
         continue;
       }
       populateIspInfos(
-          configuration, nodeAndInterfaces.getValue(), ipsOfIsps, asNumOfIsps, asnToIspInfos);
+          configuration,
+          nodeAndInterfaces.getValue(),
+          ispConfiguration.getfilter().getOnlyRemoteIps(),
+          ispConfiguration.getfilter().getOnlyRemoteAsns(),
+          asnToIspInfos);
     }
 
     Map<String, Configuration> ispConfigurations =

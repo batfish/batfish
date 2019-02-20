@@ -1,7 +1,6 @@
 package org.batfish.datamodel.flow;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.specifier.DispositionSpecifier.SUCCESS_DISPOSITIONS;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
@@ -31,7 +30,7 @@ public final class TraceAndReverseFlow {
       @Nullable Flow reverseFlow,
       @Nonnull Iterable<FirewallSessionTraceInfo> newFirewallSessions) {
     checkArgument(
-        !SUCCESS_DISPOSITIONS.contains(trace.getDisposition()) ^ reverseFlow != null,
+        !trace.getDisposition().isSuccessful() ^ reverseFlow != null,
         "reverseFlow should be present if and only if Trace is successful");
     _trace = trace;
     _reverseFlow = reverseFlow;

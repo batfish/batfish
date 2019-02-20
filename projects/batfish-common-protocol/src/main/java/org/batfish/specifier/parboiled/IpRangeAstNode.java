@@ -17,6 +17,11 @@ final class IpRangeAstNode implements IpSpaceAstNode {
     _high = high;
   }
 
+  IpRangeAstNode(String low, String high) {
+    _low = Ip.parse(low);
+    _high = Ip.parse(high);
+  }
+
   @Override
   public <T> T accept(IpSpaceAstNodeVisitor<T> visitor) {
     return visitor.visitIpRangeAstNode(this);
@@ -32,7 +37,7 @@ final class IpRangeAstNode implements IpSpaceAstNode {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof IpRangeAstNode)) {
       return false;
     }
     IpRangeAstNode that = (IpRangeAstNode) o;

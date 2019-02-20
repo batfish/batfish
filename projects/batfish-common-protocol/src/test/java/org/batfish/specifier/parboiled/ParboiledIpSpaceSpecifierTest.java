@@ -37,7 +37,8 @@ public class ParboiledIpSpaceSpecifierTest {
             .build();
     assertThat(
         computeIpSpace(
-            new AddressGroupAstNode(new StringAstNode(addressGroup), new StringAstNode(book)),
+            new AddressGroupIpSpaceAstNode(
+                new StringAstNode(addressGroup), new StringAstNode(book)),
             ctxt),
         equalTo(new IpWildcard(ip).toIpSpace()));
   }

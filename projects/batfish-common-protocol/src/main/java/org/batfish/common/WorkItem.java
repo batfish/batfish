@@ -19,18 +19,18 @@ import javax.annotation.Nullable;
 
 public class WorkItem {
 
-  private static final String PROP_CONTAINER_NAME = "containerName";
+  private static final String PROP_NETWORK = "containerName";
   private static final String PROP_ID = "id";
   private static final String PROP_REQUEST_PARAMS = "requestParams";
-  private static final String PROP_TESTRIG_NAME = "testrigName";
+  private static final String PROP_SNAPSHOT = "testrigName";
 
   // used for testing to force an UUID
   private static UUID FIXED_UUID = null;
 
-  private final String _containerName;
+  private final String _network;
   private final UUID _id;
   private Map<String, String> _requestParams;
-  private final String _testrigName;
+  private final String _snapshot;
   private Map<String, String> _spanData; /* Map used by the TextMap carrier for SpanContext */
 
   public WorkItem(String containerName, String testrigName) {
@@ -44,12 +44,12 @@ public class WorkItem {
   @JsonCreator
   public WorkItem(
       @JsonProperty(PROP_ID) UUID id,
-      @JsonProperty(PROP_CONTAINER_NAME) String containerName,
-      @JsonProperty(PROP_TESTRIG_NAME) String testrigName,
+      @JsonProperty(PROP_NETWORK) String network,
+      @JsonProperty(PROP_SNAPSHOT) String snapshot,
       @JsonProperty(PROP_REQUEST_PARAMS) Map<String, String> reqParams) {
     _id = id;
-    _containerName = containerName;
-    _testrigName = testrigName;
+    _network = network;
+    _snapshot = snapshot;
     _requestParams = firstNonNull(reqParams, new HashMap<>());
     _spanData = new HashMap<>();
   }
@@ -58,9 +58,9 @@ public class WorkItem {
     _requestParams.put(key, value);
   }
 
-  @JsonProperty(PROP_CONTAINER_NAME)
-  public String getContainerName() {
-    return _containerName;
+  @JsonProperty(PROP_NETWORK)
+  public String getNetwork() {
+    return _network;
   }
 
   @JsonProperty(PROP_ID)
@@ -90,21 +90,21 @@ public class WorkItem {
     return tracer.extract(Builtin.TEXT_MAP, new TextMapExtractAdapter(_spanData));
   }
 
-  @JsonProperty(PROP_TESTRIG_NAME)
-  public String getTestrigName() {
-    return _testrigName;
+  @JsonProperty(PROP_SNAPSHOT)
+  public String getSnapshot() {
+    return _snapshot;
   }
 
   /**
-   * The supplied workItem is a match if it has the same container, testrig, and request parameters
+   * The supplied workItem is a match if it has the same network, snapshot, and request parameters
    *
    * @param workItem The workItem that should be matched
    * @return {@link boolean} that indicates whether the supplied workItem is a match
    */
   public boolean matches(WorkItem workItem) {
     return (workItem != null
-        && workItem._containerName.equals(_containerName)
-        && workItem._testrigName.equals(_testrigName)
+        && workItem._network.equals(_network)
+        && workItem._snapshot.equals(_snapshot)
         && workItem._requestParams.equals(_requestParams));
   }
 
@@ -130,6 +130,6 @@ public class WorkItem {
 
   @Override
   public String toString() {
-    return String.format("[%s %s %s %s]", _id, _containerName, _testrigName, _requestParams);
+    return String.format("[%s %s %s %s]", _id, _network, _snapshot, _requestParams);
   }
 }

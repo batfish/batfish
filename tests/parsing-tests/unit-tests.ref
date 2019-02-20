@@ -58064,6 +58064,36 @@
             "                  (rog_discard",
             "                    DISCARD:'discard'))))))))",
             "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_routing_options",
+            "            ROUTING_OPTIONS:'routing-options'",
+            "            (ro_instance_import",
+            "              INSTANCE_IMPORT:'instance-import'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY'))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY')",
+            "              (pops_common",
+            "                (pops_then",
+            "                  THEN:'then'",
+            "                  (popst_common",
+            "                    (popst_accept",
+            "                      ACCEPT:'accept')))))))))",
+            "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -66699,6 +66729,12 @@
               "Line" : 4,
               "Parser_Context" : "[popsf_as_path_group pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "as-path-group AS_PATH_GROUP"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 17,
+              "Parser_Context" : "[popsf_instance pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "instance FORWARDING"
             }
           ],
           "Red flags" : [
@@ -66741,10 +66777,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "unimplemented 'policy-options policy-statement term' from clause: family traffic-engineering"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: instance FORWARDING"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -67031,7 +67063,7 @@
         "juniper_as_path_group" : "PASSED",
         "juniper_bgp" : "WARNINGS",
         "juniper_bgp_authentication" : "WARNINGS",
-        "juniper_bgp_remove_private_as" : "WARNINGS",
+        "juniper_bgp_remove_private_as" : "PASSED",
         "juniper_extended_community" : "PASSED",
         "juniper_firewall" : "WARNINGS",
         "juniper_forwarding_options" : "PASSED",
@@ -71563,7 +71595,16 @@
             }
           }
         },
-        "configs/juniper_routing_options" : { },
+        "configs/juniper_routing_options" : {
+          "policy-statement" : {
+            "POLICY" : {
+              "definitionLines" : [
+                20
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/juniper_routing_policy" : {
           "interface" : {
             "ge-0/0/0" : {
@@ -75382,6 +75423,13 @@
                 4
               ]
             }
+          },
+          "routing-instance" : {
+            "FORWARDING" : {
+              "policy-statement from instance" : [
+                17
+              ]
+            }
           }
         },
         "configs/juniper_relay" : {
@@ -75483,6 +75531,11 @@
             "AGGREGATE_ROUTE_POLICY" : {
               "aggregate route policy" : [
                 9
+              ]
+            },
+            "POLICY" : {
+              "routing-options instance-import" : [
+                17
               ]
             }
           }
@@ -77697,6 +77750,15 @@
             }
           }
         },
+        "configs/juniper_policy_statement" : {
+          "routing-instance" : {
+            "FORWARDING" : {
+              "policy-statement from instance" : [
+                17
+              ]
+            }
+          }
+        },
         "configs/juniper_relay" : {
           "interface" : {
             "irb.10" : {
@@ -77725,6 +77787,15 @@
             "bippetyboo" : {
               "snmp community prefix-list" : [
                 5
+              ]
+            }
+          }
+        },
+        "configs/juniper_system" : {
+          "logical-system" : {
+            "ls905" : {
+              "security-profile logical-system" : [
+                21
               ]
             }
           }
@@ -78148,10 +78219,6 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.2.3.5/32"
             },
             {
@@ -78184,14 +78251,6 @@
             }
           ]
         },
-        "juniper_bgp_remove_private_as" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
-            }
-          ]
-        },
         "juniper_firewall" : {
           "Red flags" : [
             {
@@ -78220,7 +78279,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
+              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -78228,23 +78287,7 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.1.1.1/32"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -78256,7 +78299,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
+              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -78264,23 +78307,7 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.1.1.1/32"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "BGP BROKEN FOR THIS ROUTER: Cannot determine local autonomous system"
             },
             {
               "tag" : "MISCELLANEOUS",

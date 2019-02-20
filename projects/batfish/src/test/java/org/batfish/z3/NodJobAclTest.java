@@ -3,12 +3,11 @@ package org.batfish.z3;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
-import static org.batfish.datamodel.matchers.EdgeMatchers.hasInt2;
-import static org.batfish.datamodel.matchers.FlowTraceHopMatchers.hasEdge;
-import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasDisposition;
-import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasHop;
+import static org.batfish.datamodel.matchers.HopMatchers.hasInputInterface;
+import static org.batfish.datamodel.matchers.HopMatchers.hasOutputInterface;
+import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
+import static org.batfish.datamodel.matchers.TraceMatchers.hasNthHop;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -20,9 +19,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Iterables;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Status;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,7 +33,6 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -51,6 +51,8 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.z3.expr.BooleanExpr;
@@ -67,6 +69,7 @@ public class NodJobAclTest {
    * srcNode if it arrived on one of the two interfaces dstNode can receive traffic from srcNode on.
    */
   @Test
+  @SuppressWarnings("unchecked")
   public void testMatchSrcInterface() throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -191,25 +194,26 @@ public class NodJobAclTest {
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), Ip.parse("1.1.1.1").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
-    Set<FlowTrace> flowTraces =
-        batfish.getTracerouteEngine().processFlows(flows, false).values().stream()
-            .flatMap(Set::stream)
+    Set<Trace> flowTraces =
+        batfish.getTracerouteEngine().computeTraces(flows, false).values().stream()
+            .flatMap(List::stream)
             .collect(Collectors.toSet());
     assertThat(flowTraces, hasSize(2));
+    NodeInterfacePair interface1 = new NodeInterfacePair(dstNode.getAllInterfaces().get(iface1));
+    NodeInterfacePair interface2 = new NodeInterfacePair(dstNode.getAllInterfaces().get(iface2));
     assertThat(
         flowTraces,
         containsInAnyOrder(
-            ImmutableList.of(
-                /* One trace should enter dstNode through iface1 and then pass the outgoing filter,
-                 * resulting in the DELIVERED_TO_SUBNET disposition.
-                 * Specifically, the first hop should have an edge with int2=iface1.
-                 */
-                allOf(hasDisposition(DELIVERED_TO_SUBNET), hasHop(0, hasEdge(hasInt2(iface1)))),
-                /* One trace should enter dstNode through iface2 and then be dropped by the outgoing
-                 * filter, resulting in the DENIED_OUT disposition. The first hop should have an
-                 * edge with int2=iface2.
-                 */
-                allOf(hasDisposition(DENIED_OUT), hasHop(0, hasEdge(hasInt2(iface2)))))));
+            /* One trace should enter dstNode through iface1 and then pass the outgoing filter,
+             * resulting in the DELIVERED_TO_SUBNET disposition.
+             * Specifically, the first hop should have an edge with int2=iface1.
+             */
+            allOf(hasDisposition(DELIVERED_TO_SUBNET), hasNthHop(1, hasInputInterface(interface1))),
+            /* One trace should enter dstNode through iface2 and then be dropped by the outgoing
+             * filter, resulting in the DENIED_OUT disposition. The first hop should have an
+             * edge with int2=iface2.
+             */
+            allOf(hasDisposition(DENIED_OUT), hasNthHop(1, hasInputInterface(interface2)))));
   }
 
   /**
@@ -333,18 +337,21 @@ public class NodJobAclTest {
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), Ip.parse("1.1.1.1").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
-    Set<FlowTrace> flowTraces =
-        batfish.getTracerouteEngine().processFlows(flows, false).values().stream()
-            .flatMap(Set::stream)
+    Set<Trace> flowTraces =
+        batfish.getTracerouteEngine().computeTraces(flows, false).values().stream()
+            .flatMap(List::stream)
             .collect(Collectors.toSet());
     assertThat(flowTraces, hasSize(1));
+    NodeInterfacePair interface1 = new NodeInterfacePair(node.getAllInterfaces().get(iface1));
+    NodeInterfacePair interface3 = new NodeInterfacePair(node.getAllInterfaces().get(iface3));
     assertThat(
-        flowTraces,
-        contains(
-            /* The trace should originate at iface1 and then pass the outgoing filter,
-             * resulting in the DELIVERED_TO_SUBNET disposition.
-             */
-            allOf(hasDisposition(DELIVERED_TO_SUBNET), hasHop(0, hasEdge(hasInt2(iface1))))));
+        Iterables.getOnlyElement(flowTraces),
+        /* The trace should originate at iface1 and then pass the outgoing filter on iface3,
+         * resulting in the DELIVERED_TO_SUBNET disposition.
+         */
+        allOf(
+            hasDisposition(DELIVERED_TO_SUBNET),
+            hasNthHop(0, allOf(hasInputInterface(interface1), hasOutputInterface(interface3)))));
   }
 
   @Test

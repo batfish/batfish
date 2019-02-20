@@ -56,6 +56,10 @@ import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
+import org.batfish.z3.state.PreOutInterfaceDeliveredToSubnet;
+import org.batfish.z3.state.PreOutInterfaceExitsNetwork;
+import org.batfish.z3.state.PreOutInterfaceInsufficientInfo;
+import org.batfish.z3.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.z3.state.PreOutVrf;
 import org.batfish.z3.state.Query;
 import org.batfish.z3.state.StateParameter;
@@ -334,6 +338,37 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
         new StateParameter(preOutEdgePostNat.getSrcIface(), INTERFACE),
         new StateParameter(preOutEdgePostNat.getDstNode(), NODE),
         new StateParameter(preOutEdgePostNat.getDstIface(), INTERFACE));
+  }
+
+  @Override
+  public List<StateParameter> visitPreOutInterfaceDeliveredToSubnet(
+      PreOutInterfaceDeliveredToSubnet state) {
+    return ImmutableList.of(
+        new StateParameter(state.getHostname(), NODE),
+        new StateParameter(state.getInterface(), INTERFACE));
+  }
+
+  @Override
+  public List<StateParameter> visitPreOutInterfaceExitsNetwork(PreOutInterfaceExitsNetwork state) {
+    return ImmutableList.of(
+        new StateParameter(state.getHostname(), NODE),
+        new StateParameter(state.getInterface(), INTERFACE));
+  }
+
+  @Override
+  public List<StateParameter> visitPreOutInterfaceInsufficientInfo(
+      PreOutInterfaceInsufficientInfo state) {
+    return ImmutableList.of(
+        new StateParameter(state.getHostname(), NODE),
+        new StateParameter(state.getInterface(), INTERFACE));
+  }
+
+  @Override
+  public List<StateParameter> visitPreOutInterfaceNeighborUnreachable(
+      PreOutInterfaceNeighborUnreachable state) {
+    return ImmutableList.of(
+        new StateParameter(state.getHostname(), NODE),
+        new StateParameter(state.getInterface(), INTERFACE));
   }
 
   @Override

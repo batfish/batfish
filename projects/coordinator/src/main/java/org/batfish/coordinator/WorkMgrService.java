@@ -54,6 +54,7 @@ import org.batfish.datamodel.answers.GetAnalysisAnswerMetricsAnswer;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Variable;
+import org.batfish.identifiers.NetworkId;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -546,8 +547,8 @@ public class WorkMgrService {
 
       if (!Strings.isNullOrEmpty(workItemStr)) {
         WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
-        if (!workItem.getContainerName().equals(networkName)
-            || !workItem.getTestrigName().equals(snapshotName)) {
+        if (!workItem.getNetwork().equals(networkName)
+            || !workItem.getSnapshot().equals(snapshotName)) {
           return failureResponse(
               "Mismatch in parameters: WorkItem is not for the supplied network or snapshot");
         }
@@ -621,8 +622,8 @@ public class WorkMgrService {
 
       if (!Strings.isNullOrEmpty(workItemStr)) {
         WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
-        if (!workItem.getContainerName().equals(networkName)
-            || !workItem.getTestrigName().equals(snapshotName)) {
+        if (!workItem.getNetwork().equals(networkName)
+            || !workItem.getSnapshot().equals(snapshotName)) {
           return failureResponse(
               "Mismatch in parameters: WorkItem is not for the supplied network or snapshot");
         }
@@ -706,8 +707,8 @@ public class WorkMgrService {
 
       if (!Strings.isNullOrEmpty(workItemStr)) {
         WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
-        if (!workItem.getContainerName().equals(networkName)
-            || !workItem.getTestrigName().equals(snapshotName)) {
+        if (!workItem.getNetwork().equals(networkName)
+            || !workItem.getSnapshot().equals(snapshotName)) {
           return failureResponse(
               "Mismatch in parameters: WorkItem is not for the supplied network or snapshot");
         }
@@ -792,8 +793,8 @@ public class WorkMgrService {
 
       if (!Strings.isNullOrEmpty(workItemStr)) {
         WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
-        if (!workItem.getContainerName().equals(networkName)
-            || !workItem.getTestrigName().equals(snapshotName)) {
+        if (!workItem.getNetwork().equals(networkName)
+            || !workItem.getSnapshot().equals(snapshotName)) {
           return failureResponse(
               "Mismatch in parameters: WorkItem is not for the supplied network or snapshot");
         }
@@ -872,8 +873,8 @@ public class WorkMgrService {
 
       if (!Strings.isNullOrEmpty(workItemStr)) {
         WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
-        if (!workItem.getContainerName().equals(networkName)
-            || !workItem.getTestrigName().equals(snapshotName)) {
+        if (!workItem.getNetwork().equals(networkName)
+            || !workItem.getSnapshot().equals(snapshotName)) {
           return failureResponse(
               "Mismatch in parameters: WorkItem is not for the supplied network or snapshot");
         }
@@ -961,8 +962,8 @@ public class WorkMgrService {
 
       if (!Strings.isNullOrEmpty(workItemStr)) {
         WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
-        if (!workItem.getContainerName().equals(networkName)
-            || !workItem.getTestrigName().equals(snapshotName)) {
+        if (!workItem.getNetwork().equals(networkName)
+            || !workItem.getSnapshot().equals(snapshotName)) {
           return failureResponse(
               "Mismatch in parameters: WorkItem is not for the supplied network or snapshot");
         }
@@ -1060,8 +1061,8 @@ public class WorkMgrService {
 
       if (!Strings.isNullOrEmpty(workItemStr)) {
         WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
-        if (!workItem.getContainerName().equals(networkName)
-            || !workItem.getTestrigName().equals(snapshotName)) {
+        if (!workItem.getNetwork().equals(networkName)
+            || !workItem.getSnapshot().equals(snapshotName)) {
           return failureResponse(
               "Mismatch in parameters: WorkItem is not for the supplied network or snapshot");
         }
@@ -1147,8 +1148,8 @@ public class WorkMgrService {
 
       if (!Strings.isNullOrEmpty(workItemStr)) {
         WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
-        if (!workItem.getContainerName().equals(networkName)
-            || !workItem.getTestrigName().equals(snapshotName)) {
+        if (!workItem.getNetwork().equals(networkName)
+            || !workItem.getSnapshot().equals(snapshotName)) {
           return failureResponse(
               "Mismatch in parameters: WorkItem is not for the supplied network or snapshot");
         }
@@ -1434,11 +1435,10 @@ public class WorkMgrService {
         return failureResponse("work with the specified id does not exist or is not inaccessible");
       }
 
-      String networkId = work.getWorkItem().getContainerName();
+      NetworkId networkId = work.getDetails().getNetworkId();
       Optional<String> networkOpt =
           Main.getWorkMgr().getNetworkNames().stream()
-              .filter(
-                  n -> Main.getWorkMgr().getIdManager().getNetworkId(n).getId().equals(networkId))
+              .filter(n -> Main.getWorkMgr().getIdManager().getNetworkId(n).equals(networkId))
               .findFirst();
       checkArgument(networkOpt.isPresent(), "Invalid network ID: %s", networkId);
 
@@ -1543,7 +1543,7 @@ public class WorkMgrService {
         return failureResponse("work with the specified id does not exist or is not inaccessible");
       }
 
-      checkNetworkAccessibility(apiKey, work.getWorkItem().getContainerName());
+      checkNetworkAccessibility(apiKey, work.getWorkItem().getNetwork());
 
       boolean killed = Main.getWorkMgr().killWork(work);
 
@@ -1908,7 +1908,7 @@ public class WorkMgrService {
 
       WorkItem workItem = BatfishObjectMapper.mapper().readValue(workItemStr, WorkItem.class);
 
-      checkNetworkAccessibility(apiKey, workItem.getContainerName());
+      checkNetworkAccessibility(apiKey, workItem.getNetwork());
 
       QueuedWork work = Main.getWorkMgr().getMatchingWork(workItem, QueueType.INCOMPLETE);
       if (work != null) {
