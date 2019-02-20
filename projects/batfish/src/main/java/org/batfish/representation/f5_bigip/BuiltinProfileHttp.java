@@ -29,6 +29,7 @@ public enum BuiltinProfileHttp implements BuiltinProfile {
     _name = name;
   }
 
+  @Override
   public @Nonnull String getName() {
     return _name;
   }

@@ -28,6 +28,7 @@ public enum BuiltinMonitorHttp implements BuiltinMonitor {
     _name = name;
   }
 
+  @Override
   public @Nonnull String getName() {
     return _name;
   }

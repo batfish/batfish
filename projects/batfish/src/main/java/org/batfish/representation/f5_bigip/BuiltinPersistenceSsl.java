@@ -28,6 +28,7 @@ public enum BuiltinPersistenceSsl implements BuiltinPersistence {
     _name = name;
   }
 
+  @Override
   public @Nonnull String getName() {
     return _name;
   }
