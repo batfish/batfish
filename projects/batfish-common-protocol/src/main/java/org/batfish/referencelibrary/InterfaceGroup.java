@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.Names;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** Represents a group of interfaces in {@link ReferenceBook} */
@@ -30,7 +31,7 @@ public class InterfaceGroup implements Comparable<InterfaceGroup> {
   }
 
   public InterfaceGroup(SortedSet<NodeInterfacePair> interfaces, String name) {
-    ReferenceLibrary.checkValidName(name, "interface group");
+    Names.checkValidReferenceObjectName(name, "interface group");
 
     _name = name;
     _interfaces = ImmutableSortedSet.copyOf(interfaces);
