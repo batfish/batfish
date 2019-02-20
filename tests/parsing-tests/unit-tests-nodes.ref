@@ -12075,6 +12075,19 @@
           }
         }
       },
+      "f5_bigip_structured_ltm" : {
+        "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "name" : "f5_bigip_structured_ltm",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : { },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "f5_bigip_structured_net" : {
         "configurationFormat" : "F5_BIGIP_STRUCTURED",
         "name" : "f5_bigip_structured_net",

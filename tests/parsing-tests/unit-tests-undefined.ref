@@ -2263,6 +2263,162 @@
         }
       },
       {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "monitor",
+        "Ref_Name" : "/Common/SOME_MONITOR",
+        "Context" : "pool monitor",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            29
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "node",
+        "Ref_Name" : "/Common/bar",
+        "Context" : "pool member",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            25
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "node",
+        "Ref_Name" : "/Common/foo",
+        "Context" : "pool member",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            22
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "persistence",
+        "Ref_Name" : "/Common/SOME_PROFILE",
+        "Context" : "virtual persist persistence",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            88
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "pool",
+        "Ref_Name" : "/Common/SOME_POOL",
+        "Context" : "virtual pool",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            92
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "profile",
+        "Ref_Name" : "/Common/P1",
+        "Context" : "virtual profile",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            94
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "profile",
+        "Ref_Name" : "/Common/P2",
+        "Context" : "virtual profile",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            95
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "profile",
+        "Ref_Name" : "/Common/P3",
+        "Context" : "virtual profile",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            96
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "profile server-ssl",
+        "Ref_Name" : "/Common/SOME_SSL_PROFILE",
+        "Context" : "monitor https ssl-profile",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            147
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "snat-translation",
+        "Ref_Name" : "/Common/192.0.2.5",
+        "Context" : "snatpool members member",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            79
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "snat-translation",
+        "Ref_Name" : "/Common/192.0.2.6",
+        "Context" : "snatpool members member",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            80
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "virtual-address",
+        "Ref_Name" : "/Common/192.0.2.7",
+        "Context" : "virtual destination",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            84
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_ltm",
+        "Struct_Type" : "vlan",
+        "Ref_Name" : "/Common/SOME_VLAN",
+        "Context" : "snat vlans vlan",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_ltm",
+          "lines" : [
+            69
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/f5_bigip_structured_net_routing_bgp",
         "Struct_Type" : "route-map",
         "Ref_Name" : "/Common/MY_IPV4_OUT",
@@ -2295,6 +2451,19 @@
           "filename" : "configs/f5_bigip_structured_net_routing_bgp",
           "lines" : [
             12
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip_structured_net_routing_bgp",
+        "Struct_Type" : "vlan",
+        "Ref_Name" : "SOME_VLAN",
+        "Context" : "bgp neighbor update-source",
+        "Lines" : {
+          "filename" : "configs/f5_bigip_structured_net_routing_bgp",
+          "lines" : [
+            40,
+            62
           ]
         }
       },
@@ -3828,10 +3997,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 310 results",
+      "notes" : "Found 324 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 310
+      "numResults" : 324
     }
   }
 ]

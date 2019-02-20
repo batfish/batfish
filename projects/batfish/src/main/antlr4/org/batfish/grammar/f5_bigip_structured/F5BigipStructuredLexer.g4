@@ -51,6 +51,11 @@ ALLOW_SERVICE
   'allow-service'
 ;
 
+ARP
+:
+  'arp'
+;
+
 BGP
 :
   'bgp'
@@ -66,9 +71,19 @@ BUNDLE_SPEED
   'bundle-speed'
 ;
 
+CLIENT_SSL
+:
+  'client-ssl'
+;
+
 COMMUNITY
 :
   'community'
+;
+
+DEFAULTS_FROM
+:
+  'defaults-from'
 ;
 
 DENY
@@ -79,6 +94,11 @@ DENY
 DESCRIPTION
 :
   'description'
+;
+
+DESTINATION
+:
+  'destination'
 ;
 
 DISABLED
@@ -111,6 +131,16 @@ HOSTNAME
   'hostname'
 ;
 
+HTTP
+:
+  'http'
+;
+
+HTTPS
+:
+  'https'
+;
+
 IF
 :
   'if'
@@ -124,6 +154,11 @@ INTERFACE
 INTERFACES
 :
   'interfaces'
+;
+
+IP_PROTOCOL
+:
+  'ip-protocol'
 ;
 
 IPV4
@@ -146,9 +181,29 @@ LOCAL_AS
   'local-as'
 ;
 
+LTM
+:
+  'ltm'
+;
+
+MASK
+:
+  'mask'
+;
+
 MATCH
 :
   'match'
+;
+
+MEMBERS
+:
+  'members'
+;
+
+MONITOR
+:
+  'monitor'
 ;
 
 NEIGHBOR
@@ -161,9 +216,29 @@ NET
   'net'
 ;
 
+NODE
+:
+  'node'
+;
+
+OCSP_STAPLING_PARAMS
+:
+  'ocsp-stapling-params'
+;
+
+ONE_CONNECT
+:
+  'one-connect'
+;
+
 ONE_HUNDRED_G
 :
   '100G'
+;
+
+ORIGINS
+:
+  'origins'
 ;
 
 OUT
@@ -174,6 +249,21 @@ OUT
 PERMIT
 :
   'permit'
+;
+
+PERSIST
+:
+  'persist'
+;
+
+PERSISTENCE
+:
+  'persistence'
+;
+
+POOL
+:
+  'pool'
 ;
 
 PREFIX
@@ -191,6 +281,16 @@ PREFIX_LIST
   'prefix-list'
 ;
 
+PROFILE
+:
+  'profile'
+;
+
+PROFILES
+:
+  'profiles'
+;
+
 REDISTRIBUTE
 :
   'redistribute'
@@ -199,6 +299,11 @@ REDISTRIBUTE
 REMOTE_AS
 :
   'remote-as'
+;
+
+ROUTE_ADVERTISEMENT
+:
+  'route-advertisement'
 ;
 
 ROUTE_DOMAIN
@@ -216,29 +321,74 @@ ROUTING
   'routing'
 ;
 
-SET
+RULE
 :
-  'set'
+  'rule'
 ;
 
-TRAFFIC_GROUP
+RULES
 :
-  'traffic-group'
+  'rules'
 ;
 
-UPDATE_SOURCE
+SELECTIVE
 :
-  'update-source'
-;
-
-VALUE
-:
-  'value'
+  'selective'
 ;
 
 SELF
 :
   'self'
+;
+
+SERVER_SSL
+:
+  'server-ssl'
+;
+
+SET
+:
+  'set'
+;
+
+SNAT
+:
+  'snat'
+;
+
+SNAT_TRANSLATION
+:
+  'snat-translation'
+;
+
+SNATPOOL
+:
+  'snatpool'
+;
+
+SOURCE
+:
+  'source'
+;
+
+SOURCE_ADDR
+:
+  'source-addr'
+;
+
+SOURCE_ADDRESS_TRANSLATION
+:
+  'source-address-translation'
+;
+
+SSL
+:
+  'ssl'
+;
+
+SSL_PROFILE
+:
+  'ssl-profile'
 ;
 
 SYS
@@ -251,9 +401,69 @@ TAG
   'tag'
 ;
 
+TCP
+:
+  'tcp'
+;
+
+TRAFFIC_GROUP
+:
+  'traffic-group'
+;
+
+TRANSLATE_ADDRESS
+:
+  'translate-address'
+;
+
+TRANSLATE_PORT
+:
+  'translate-port'
+;
+
+TYPE
+:
+  'type'
+;
+
+UDP
+:
+  'udp'
+;
+
+UPDATE_SOURCE
+:
+  'update-source'
+;
+
+VALUE
+:
+  'value'
+;
+
+VIRTUAL
+:
+  'virtual'
+;
+
+VIRTUAL_ADDRESS
+:
+  'virtual-address'
+;
+
 VLAN
 :
   'vlan'
+;
+
+VLANS
+:
+  'vlans'
+;
+
+VLANS_ENABLED
+:
+  'vlans-enabled'
 ;
 
 // Complex tokens
@@ -278,14 +488,24 @@ BRACKET_RIGHT
   ']'
 ;
 
+COMMENT_LINE
+:
+   (
+      F_Whitespace
+   )* '#'
+   {lastTokenType == NEWLINE || lastTokenType == -1}?
+
+   F_NonNewlineChar* F_Newline+ -> channel ( HIDDEN )
+;
+
+COMMENT_TAIL
+:
+  '#' F_NonNewlineChar* -> channel ( HIDDEN )
+;
+
 DOUBLE_QUOTED_STRING
 :
   '"' ~'"'* '"'
-;
-
-LINE_COMMENT
-:
-  '#' F_NonNewlineChar* F_Newline+ -> channel ( HIDDEN )
 ;
 
 NEWLINE
