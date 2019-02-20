@@ -40061,11 +40061,11 @@
             "          BRACE_LEFT:'{'",
             "          NEWLINE:'\\n'",
             "          (lspm_member",
-            "            member = (word",
+            "            name = (word",
             "              WORD:'/Common/192.0.2.5')",
             "            NEWLINE:'\\n')",
             "          (lspm_member",
-            "            member = (word",
+            "            name = (word",
             "              WORD:'/Common/192.0.2.6')",
             "            NEWLINE:'\\n')",
             "          BRACE_RIGHT:'}'",
@@ -40957,7 +40957,7 @@
             "                WORD:'ssl-sign-hash'))",
             "            (u_word",
             "              (word",
-            "                WORD:'any'))",
+            "                ANY:'any'))",
             "            NEWLINE:'\\n')",
             "          (unrecognized",
             "            (u_word",
@@ -41095,7 +41095,7 @@
             "                WORD:'source-mask'))",
             "            (u_word",
             "              (word",
-            "                WORD:'any'))",
+            "                ANY:'any'))",
             "            NEWLINE:'\\n')",
             "          BRACE_RIGHT:'}'",
             "          NEWLINE:'\\n'))))",
@@ -41348,7 +41348,7 @@
             "                WORD:'ssl-sign-hash'))",
             "            (u_word",
             "              (word",
-            "                WORD:'any'))",
+            "                ANY:'any'))",
             "            NEWLINE:'\\n')",
             "          (unrecognized",
             "            (u_word",
@@ -68175,12 +68175,6 @@
               "Text" : "load-balancing-mode"
             },
             {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 29,
-              "Parser_Context" : "[lp_monitor l_pool s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "monitor /Common/SOME_MONITOR"
-            },
-            {
               "Comment" : "This syntax is unrecognized",
               "Line" : 30,
               "Parser_Context" : "[unrecognized l_pool s_ltm statement f5_bigip_structured_configuration]",
@@ -69101,12 +69095,6 @@
         "configs/f5_bigip_structured_net_routing_bgp" : {
           "Parse warnings" : [
             {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 12,
-              "Parser_Context" : "[nrbafcrk_route_map nrbafcr_kernel nrbafc_redistribute nrbaf_common nrbaf_ipv4 nrb_address_family nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
-              "Text" : "route-map /Common/MY_KERNEL_OUT"
-            },
-            {
               "Comment" : "This syntax is unrecognized",
               "Line" : 26,
               "Parser_Context" : "[unrecognized nrbnnaf_ipv6 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
@@ -69117,12 +69105,6 @@
               "Line" : 29,
               "Parser_Context" : "[unrecognized nrbnnaf_ipv6 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
               "Text" : "maximum-prefix"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 33,
-              "Parser_Context" : "[nrbnnafcr_out nrbnnafc_route_map nrbnnaf_common nrbnnaf_ipv6 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
-              "Text" : "out /Common/MY_IPV6_OUT"
             },
             {
               "Comment" : "This syntax is unrecognized",
@@ -69141,12 +69123,6 @@
               "Line" : 48,
               "Parser_Context" : "[unrecognized nrbnnaf_ipv4 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
               "Text" : "maximum-prefix"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 52,
-              "Parser_Context" : "[nrbnnafcr_out nrbnnafc_route_map nrbnnaf_common nrbnnaf_ipv4 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
-              "Text" : "out /Common/MY_IPV4_OUT"
             },
             {
               "Comment" : "This syntax is unrecognized",
@@ -72685,6 +72661,17 @@
               "numReferrers" : 1
             }
           },
+          "snat-translation" : {
+            "/Common/192.0.2.4" : {
+              "definitionLines" : [
+                73,
+                74,
+                75,
+                76
+              ],
+              "numReferrers" : 0
+            }
+          },
           "snatpool" : {
             "/Common/SOME_SNATPOOL" : {
               "definitionLines" : [
@@ -72789,6 +72776,62 @@
           }
         },
         "configs/f5_bigip_structured_net_routing_bgp" : {
+          "bgp neighbor" : {
+            "192.0.2.1" : {
+              "definitionLines" : [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ],
+              "numReferrers" : 0
+            },
+            "dead:beef::1" : {
+              "definitionLines" : [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ],
+              "numReferrers" : 0
+            }
+          },
           "bgp process" : {
             "/Common/my_bgp" : {
               "definitionLines" : [
@@ -77549,6 +77592,18 @@
               ]
             }
           },
+          "snat-translation" : {
+            "/Common/192.0.2.5" : {
+              "snatpool members member" : [
+                79
+              ]
+            },
+            "/Common/192.0.2.6" : {
+              "snatpool members member" : [
+                80
+              ]
+            }
+          },
           "snatpool" : {
             "/Common/SOME_SNATPOOL" : {
               "snat snatpool" : [
@@ -77570,6 +77625,13 @@
             "/Common/192.0.2.7" : {
               "virtual destination" : [
                 84
+              ]
+            }
+          },
+          "vlan" : {
+            "/Common/SOME_VLAN" : {
+              "snat vlans vlan" : [
+                69
               ]
             }
           }
@@ -77622,6 +77684,14 @@
             "/Common/MY_KERNEL_OUT" : {
               "bgp address-family redistribute kernel route-map" : [
                 12
+              ]
+            }
+          },
+          "vlan" : {
+            "SOME_VLAN" : {
+              "bgp neighbor update-source" : [
+                40,
+                62
               ]
             }
           }
@@ -80496,10 +80566,29 @@
               ]
             }
           },
+          "snat-translation" : {
+            "/Common/192.0.2.5" : {
+              "snatpool members member" : [
+                79
+              ]
+            },
+            "/Common/192.0.2.6" : {
+              "snatpool members member" : [
+                80
+              ]
+            }
+          },
           "virtual-address" : {
             "/Common/192.0.2.7" : {
               "virtual destination" : [
                 84
+              ]
+            }
+          },
+          "vlan" : {
+            "/Common/SOME_VLAN" : {
+              "snat vlans vlan" : [
+                69
               ]
             }
           }
@@ -80519,6 +80608,14 @@
             "/Common/MY_KERNEL_OUT" : {
               "bgp address-family redistribute kernel route-map" : [
                 12
+              ]
+            }
+          },
+          "vlan" : {
+            "SOME_VLAN" : {
+              "bgp neighbor update-source" : [
+                40,
+                62
               ]
             }
           }
