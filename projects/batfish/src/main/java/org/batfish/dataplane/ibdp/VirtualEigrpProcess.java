@@ -116,7 +116,6 @@ class VirtualEigrpProcess {
                           c.getConfigurationFormat()))
                   .setEigrpMetric(iface.getEigrp().getMetric())
                   .setNetwork(prefix)
-                  .setNextHopInterface(iface.getName())
                   .setProcessAsn(_asn)
                   .build();
           _internalRib.mergeRoute(route);
@@ -252,9 +251,7 @@ class VirtualEigrpProcess {
           EigrpMetric nextHopIntfMetric = nextHopIntf.getEigrp().getMetric();
           EigrpMetric connectingIntfMetric = connectingIntf.getEigrp().getMetric();
 
-          routeBuilder
-              .setNextHopInterface(nextHopIntf.getName())
-              .setNextHopIp(nextHopIntf.getAddress().getIp());
+          routeBuilder.setNextHopIp(nextHopIntf.getAddress().getIp());
           while (queue.peek() != null) {
             RouteAdvertisement<EigrpExternalRoute> routeAdvert = queue.remove();
             EigrpExternalRoute neighborRoute = routeAdvert.getRoute();
@@ -341,7 +338,6 @@ class VirtualEigrpProcess {
               .setAdmin(_defaultInternalAdminCost)
               .setEigrpMetric(newMetric)
               .setNetwork(neighborRoute.getNetwork())
-              .setNextHopInterface(neighborInterface.getName())
               .setNextHopIp(nextHopIp)
               .setProcessAsn(_asn)
               .build();
