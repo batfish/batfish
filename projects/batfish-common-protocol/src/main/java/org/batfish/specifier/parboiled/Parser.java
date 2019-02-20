@@ -112,7 +112,7 @@ public class Parser extends CommonParser {
 
   @Anchor(FILTER_NAME)
   public Rule FilterName() {
-    return Sequence(OneOrMore(FirstOf(NameChars(), Dash())), push(new NameFilterAstNode(match())));
+    return Sequence(FilterNameLiteral(), push(new NameFilterAstNode(match())));
   }
 
   @Anchor(FILTER_NAME_REGEX)
@@ -246,7 +246,7 @@ public class Parser extends CommonParser {
 
   @Anchor(VRF_NAME)
   public Rule VrfName() {
-    return Sequence(OneOrMore(NameCharsAndDash()), push(new StringAstNode(match())));
+    return Sequence(VrfNameLiteral(), push(new StringAstNode(match())));
   }
 
   public Rule InterfaceZone() {
@@ -262,14 +262,12 @@ public class Parser extends CommonParser {
 
   @Anchor(ZONE_NAME)
   public Rule ZoneName() {
-    return Sequence(OneOrMore(NameCharsAndDash()), push(new StringAstNode(match())));
+    return Sequence(ZoneNameLiteral(), push(new StringAstNode(match())));
   }
 
   @Anchor(INTERFACE_NAME)
   public Rule InterfaceName() {
-    return Sequence(
-        OneOrMore(FirstOf(NameChars(), Colon(), Dash(), Slash())),
-        push(new NameInterfaceAstNode(match())));
+    return Sequence(InterfaceNameLiteral(), push(new NameInterfaceAstNode(match())));
   }
 
   @Anchor(INTERFACE_NAME_REGEX)
@@ -339,14 +337,15 @@ public class Parser extends CommonParser {
 
   public Rule IpSpaceLocation() {
     return FirstOf(
-        Sequence(LocationExpression(), push(new LocationIpSpaceAstNode(pop()))),
         Sequence(
-            "ofLocation ",
+            IgnoreCase("ofLocation"),
+            WhiteSpace(),
             "( ",
             LocationExpression(),
             WhiteSpace(),
             ") ",
-            push(new LocationIpSpaceAstNode(pop()))));
+            push(new LocationIpSpaceAstNode(pop()))),
+        Sequence(LocationExpression(), push(new LocationIpSpaceAstNode(pop()))));
   }
 
   /**
@@ -440,6 +439,7 @@ public class Parser extends CommonParser {
   public Rule LocationEnter() {
     return Sequence(
         FirstOf(IgnoreCase("@enter"), IgnoreCase("enter")),
+        WhiteSpace(),
         "( ",
         LocationInterface(),
         ") ",
@@ -549,7 +549,7 @@ public class Parser extends CommonParser {
 
   @Anchor(NODE_NAME)
   public Rule NodeName() {
-    return Sequence(OneOrMore(FirstOf(NameChars(), Dash())), push(new NameNodeAstNode(match())));
+    return Sequence(NodeNameLiteral(), push(new NameNodeAstNode(match())));
   }
 
   @Anchor(NODE_NAME_REGEX)

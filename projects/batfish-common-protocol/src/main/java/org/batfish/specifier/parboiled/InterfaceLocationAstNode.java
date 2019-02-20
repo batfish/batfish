@@ -2,6 +2,7 @@ package org.batfish.specifier.parboiled;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -84,5 +85,13 @@ final class InterfaceLocationAstNode implements LocationAstNode {
   @Override
   public int hashCode() {
     return Objects.hash(_nodeAst, _interfaceAst);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(getClass())
+        .add("nodeAst", _nodeAst)
+        .add("interfaceAst", _interfaceAst)
+        .toString();
   }
 }

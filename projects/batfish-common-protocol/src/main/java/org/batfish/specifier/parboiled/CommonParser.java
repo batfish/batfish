@@ -80,6 +80,18 @@ abstract class CommonParser extends BaseParser<AstNode> {
     return CharRange('.', '.');
   }
 
+  public Rule FilterNameLiteral() {
+    return Sequence(
+        AlphabetChar(), ZeroOrMore(FirstOf(AlphabetChar(), Dash(), Digit(), Underscore())));
+  }
+
+  public Rule InterfaceNameLiteral() {
+    return Sequence(
+        FirstOf(AlphabetChar(), Underscore()),
+        ZeroOrMore(
+            FirstOf(AlphabetChar(), Colon(), Dash(), Digit(), Dot(), Slash(), Underscore())));
+  }
+
   public Rule IpAddressUnchecked() {
     return Sequence(Number(), '.', Number(), '.', Number(), '.', Number());
   }
@@ -88,13 +100,8 @@ abstract class CommonParser extends BaseParser<AstNode> {
     return Sequence(IpAddressUnchecked(), '/', Number());
   }
 
-  /** A generic rule for non-threatening characters. */
-  public Rule NameChars() {
-    return FirstOf(AlphabetChar(), Dot(), Digit(), Underscore());
-  }
-
-  public Rule NameCharsAndDash() {
-    return FirstOf(NameChars(), Dash());
+  public Rule NodeNameLiteral() {
+    return Sequence(AlphabetChar(), ZeroOrMore(FirstOf(AlphabetChar(), Dash(), Dot(), Digit())));
   }
 
   /** [0-9]+ */
@@ -129,8 +136,18 @@ abstract class CommonParser extends BaseParser<AstNode> {
     return CharRange('_', '_');
   }
 
+  public Rule VrfNameLiteral() {
+    return Sequence(
+        AlphabetChar(), ZeroOrMore(FirstOf(AlphabetChar(), Dash(), Digit(), Underscore())));
+  }
+
   public Rule WhiteSpace() {
     return ZeroOrMore(AnyOf(" \t"));
+  }
+
+  public Rule ZoneNameLiteral() {
+    return Sequence(
+        AlphabetChar(), ZeroOrMore(FirstOf(AlphabetChar(), Dash(), Digit(), Underscore())));
   }
 
   /**
