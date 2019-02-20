@@ -16,6 +16,8 @@ import java.lang.annotation.Target;
   enum Type {
     ADDRESS_GROUP_AND_BOOK,
     EOI,
+    FILTER_NAME,
+    FILTER_NAME_REGEX,
     INTERFACE_GROUP_AND_BOOK,
     INTERFACE_NAME,
     INTERFACE_NAME_REGEX,

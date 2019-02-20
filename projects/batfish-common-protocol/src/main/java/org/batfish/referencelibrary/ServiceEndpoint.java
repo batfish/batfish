@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.Names;
 
 public class ServiceEndpoint implements Comparable<ServiceEndpoint> {
 
@@ -23,7 +24,7 @@ public class ServiceEndpoint implements Comparable<ServiceEndpoint> {
     checkArgument(address != null, "Service endpoint address cannot be null");
     checkArgument(name != null, "Service endpoint name cannot be null");
     checkArgument(service != null, "Service endpoint service cannot be null");
-    ReferenceLibrary.checkValidName(name, "service endpoint");
+    Names.checkValidReferenceObjectName(name, "service endpoint");
 
     _address = address;
     _name = name;

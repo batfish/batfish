@@ -23,7 +23,7 @@ public class MockDataPlane implements DataPlane {
 
     private ForwardingAnalysis _forwardingAnalysis;
 
-    private SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> _ribs;
+    private SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> _ribs;
 
     @Nullable private Topology _topology;
 
@@ -61,7 +61,8 @@ public class MockDataPlane implements DataPlane {
       return this;
     }
 
-    public Builder setRibs(SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
+    public Builder setRibs(
+        SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs) {
       _ribs = ribs;
       return this;
     }
@@ -97,7 +98,8 @@ public class MockDataPlane implements DataPlane {
 
   private final Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
 
-  private final SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> _ribs;
+  private final SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
+      _ribs;
 
   @Nullable private final Topology _topology;
 
@@ -141,7 +143,7 @@ public class MockDataPlane implements DataPlane {
   }
 
   @Override
-  public SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> getRibs() {
+  public SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> getRibs() {
     return _ribs;
   }
 

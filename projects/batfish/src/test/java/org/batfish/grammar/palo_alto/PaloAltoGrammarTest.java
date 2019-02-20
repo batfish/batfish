@@ -1,10 +1,10 @@
 package org.batfish.grammar.palo_alto;
 
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasAdministrativeCost;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasMetric;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasNextHopInterface;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasNextHopIp;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;

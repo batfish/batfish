@@ -2,7 +2,7 @@ package org.batfish.dataplane.protocols;
 
 import java.util.Set;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.StaticRoute;
@@ -23,23 +23,17 @@ public class StaticRouteHelper {
    * @param route a {@link StaticRoute} to check
    * @param rib the RIB to use for establishing routabilitity to next hop IP
    */
-  public static boolean shouldActivateNextHopIpRoute(
-      @Nonnull StaticRoute route, @Nonnull GenericRib<AbstractRoute> rib) {
-    Set<AbstractRoute> matchingRoutes = rib.longestPrefixMatch(route.getNextHopIp());
+  public static <R extends AbstractRouteDecorator> boolean shouldActivateNextHopIpRoute(
+      @Nonnull StaticRoute route, @Nonnull GenericRib<R> rib) {
+    Set<R> matchingRoutes = rib.longestPrefixMatch(route.getNextHopIp());
 
-    if (matchingRoutes.isEmpty()) {
-      // Cannot activate, next hop ip is unreachable
-      return false;
-    }
-
-    boolean shouldActivate = false;
-    for (AbstractRoute routeToNextHop : matchingRoutes) {
-      if (!routeToNextHop.getNetwork().equals(route.getNetwork()) || route.equals(routeToNextHop)) {
-        // Next hop has to be reachable through a route with a different prefix
-        shouldActivate = true;
-        break;
-      }
-    }
-    return shouldActivate;
+    // If matchingRoutes is empty, cannot activate because next hop ip is unreachable
+    return matchingRoutes.stream()
+        .map(AbstractRouteDecorator::getAbstractRoute)
+        .anyMatch(
+            routeToNextHop ->
+                // Next hop has to be reachable through a route with a different prefix
+                !routeToNextHop.getNetwork().equals(route.getNetwork())
+                    || route.equals(routeToNextHop));
   }
 }

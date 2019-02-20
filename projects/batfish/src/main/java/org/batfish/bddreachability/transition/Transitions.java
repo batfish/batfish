@@ -71,4 +71,12 @@ public final class Transitions {
   public static Transition removeSourceConstraint(BDDSourceManager mgr) {
     return mgr.isTrivial() ? IDENTITY : new RemoveSourceConstraint(mgr);
   }
+
+  public static Transition reverse(Transition transition) {
+    if (transition == IDENTITY || transition == ZERO || transition instanceof Constraint) {
+      // transition is bijective, so is its own reverse
+      return transition;
+    }
+    return new Reverse(transition);
+  }
 }

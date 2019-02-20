@@ -19,7 +19,6 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -27,14 +26,6 @@ import org.batfish.common.util.CommonUtil;
 
 /** Class that describes the reference library information */
 public class ReferenceLibrary {
-
-  /**
-   * Describes valid names for library objects. Must start with letters or underscore, and only
-   * contain {-,\w} ( i.e., [-a-zA-Z_0-9])
-   */
-  public static final String NAME_PATTERN = "[a-zA-Z_][-\\w]*";
-
-  private static final Pattern _NAME_PATTERN = Pattern.compile(NAME_PATTERN);
 
   private static final String PROP_BOOKS = "books";
 
@@ -65,16 +56,6 @@ public class ReferenceLibrary {
             .map(e -> e.getKey())
             .collect(Collectors.toList());
     checkArgument(duplicates.isEmpty(), "Duplicate %s name(s): %s", objectType, duplicates);
-  }
-
-  /** Is this is valid library object name? */
-  static void checkValidName(String name, String objectType) {
-    checkArgument(
-        _NAME_PATTERN.matcher(name).matches(),
-        "Invalid '%s' name '%s'. Valid names match '%s'",
-        objectType,
-        name,
-        ReferenceLibrary.NAME_PATTERN);
   }
 
   /** Deletes the book */

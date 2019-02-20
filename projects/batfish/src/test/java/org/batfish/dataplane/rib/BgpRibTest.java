@@ -1,5 +1,6 @@
 package org.batfish.dataplane.rib;
 
+import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
@@ -205,8 +206,10 @@ public class BgpRibTest {
     Rib mainRib = new Rib();
     StaticRoute.Builder sb =
         StaticRoute.builder().setAdministrativeCost(1).setNextHopInterface("eth0");
-    mainRib.mergeRoute(sb.setNetwork(Prefix.parse("5.5.5.5/32")).setMetric(1).build());
-    mainRib.mergeRoute(sb.setNetwork(Prefix.parse("5.5.5.6/32")).setMetric(2).build());
+    mainRib.mergeRoute(
+        annotateRoute(sb.setNetwork(Prefix.parse("5.5.5.5/32")).setMetric(1).build()));
+    mainRib.mergeRoute(
+        annotateRoute(sb.setNetwork(Prefix.parse("5.5.5.6/32")).setMetric(2).build()));
 
     BgpRib rib =
         new BgpRib(
@@ -516,7 +519,7 @@ public class BgpRibTest {
     /*
      * Initialize the matchers with respect to the output route set
      */
-    Set<BgpRoute> postMergeRoutes = bmr.getRoutes();
+    Set<BgpRoute> postMergeRoutes = bmr.getTypedRoutes();
     Matcher<BgpRoute> present = in(postMergeRoutes);
     Matcher<BgpRoute> absent = not(present);
 

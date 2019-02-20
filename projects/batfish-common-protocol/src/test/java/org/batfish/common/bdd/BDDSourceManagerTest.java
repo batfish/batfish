@@ -8,6 +8,8 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -33,6 +35,7 @@ public class BDDSourceManagerTest {
   private static final String IFACE4 = "iface4";
 
   private static final Set<String> IFACES_1_2 = ImmutableSet.of(IFACE1, IFACE2);
+  private static final Set<String> ALL_IFACES = ImmutableSet.of(IFACE1, IFACE2, IFACE3, IFACE4);
 
   private BDDPacket _pkt = new BDDPacket();
 
@@ -128,5 +131,33 @@ public class BDDSourceManagerTest {
      * The two managers use the same BDD values to track sources.
      */
     assertThat(mgr1.getSourceBDDs().values(), equalTo(mgr2.getSourceBDDs().values()));
+  }
+
+  @Test
+  public void testAllSourcesTracked() {
+    BDDSourceManager mgr = BDDSourceManager.forSources(_pkt, ALL_IFACES, ALL_IFACES);
+    assertTrue(mgr.allSourcesTracked());
+
+    mgr = BDDSourceManager.forSources(_pkt, ALL_IFACES, ImmutableSet.of(IFACE1));
+    assertFalse(mgr.allSourcesTracked());
+  }
+
+  @Test
+  public void testSourceBDDs() {
+    BDDSourceManager mgr = BDDSourceManager.forSources(_pkt, ALL_IFACES, ALL_IFACES);
+    Map<String, BDD> srcBdds = mgr.getSourceBDDs();
+    assertEquals(srcBdds.values().stream().distinct().count(), ALL_IFACES.size());
+
+    mgr = BDDSourceManager.forSources(_pkt, ALL_IFACES, ImmutableSet.of(IFACE1));
+    srcBdds = mgr.getSourceBDDs();
+    BDD iface1 = srcBdds.get(IFACE1);
+    BDD others = srcBdds.get(IFACE2); // some other source
+    assertEquals(
+        srcBdds,
+        ImmutableMap.of(
+            IFACE1, iface1,
+            IFACE2, others,
+            IFACE3, others,
+            IFACE4, others));
   }
 }

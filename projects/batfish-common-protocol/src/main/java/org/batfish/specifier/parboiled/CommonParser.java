@@ -4,9 +4,12 @@ import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 
 import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Map;
+import org.batfish.datamodel.Names;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.parboiled.BaseParser;
+import org.parboiled.Parboiled;
 import org.parboiled.Rule;
 
 /**
@@ -21,7 +24,9 @@ import org.parboiled.Rule;
   "checkstyle:methodname", // this class uses idiomatic names
   "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
 })
-abstract class CommonParser extends BaseParser<AstNode> {
+public class CommonParser extends BaseParser<AstNode> {
+
+  public static final CommonParser INSTANCE = Parboiled.createParser(CommonParser.class);
 
   static Map<String, Type> initAnchors(Class<?> parserClass) {
     ImmutableMap.Builder<String, Anchor.Type> completionTypes = ImmutableMap.builder();
@@ -40,17 +45,9 @@ abstract class CommonParser extends BaseParser<AstNode> {
   /**
    * Initialize an array of case-insenstive rules that match the array of provided values (e.g.,
    * those belonging to an Enum).
-   *
-   * <p>We use an imperative approach because lambdas run into access violations.
    */
   Rule[] initEnumRules(Object[] values) {
-    Rule[] rules = new Rule[values.length];
-    int index = 0;
-    for (Object value : values) {
-      rules[index] = IgnoreCase(value.toString());
-      index++;
-    }
-    return rules;
+    return Arrays.stream(values).map(Object::toString).map(this::IgnoreCase).toArray(Rule[]::new);
   }
 
   /**
@@ -109,11 +106,7 @@ abstract class CommonParser extends BaseParser<AstNode> {
     return OneOrMore(Digit());
   }
 
-  /**
-   * [a-zA-Z_][-a-zA-Z0-9_]*
-   *
-   * <p>This spec is based on {@link org.batfish.referencelibrary.ReferenceLibrary#NAME_PATTERN}
-   */
+  /** This should be in sync with {@link Names#REFERENCE_OBJECT_NAME_REGEX} */
   public Rule ReferenceObjectNameLiteral() {
     return Sequence(
         FirstOf(AlphabetChar(), Underscore()),

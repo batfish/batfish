@@ -40,29 +40,18 @@ public class RibDeltaTest {
 
   @Test
   public void testEquals() {
+    Prefix p1 = Prefix.parse("1.1.1.0/24");
+    Prefix p2 = Prefix.parse("2.2.2.0/24");
     StaticRoute sr1 =
-        StaticRoute.builder()
-            .setNetwork(Prefix.parse("1.1.1.0/24"))
-            .setAdmin(1)
-            .setNextHopIp(Ip.parse("2.2.2.2"))
-            .build();
+        StaticRoute.builder().setNetwork(p1).setAdmin(1).setNextHopIp(Ip.parse("2.2.2.2")).build();
     StaticRoute sr2 =
-        StaticRoute.builder()
-            .setNetwork(Prefix.parse("2.2.2.0/24"))
-            .setAdmin(1)
-            .setNextHopIp(Ip.parse("2.2.2.2"))
-            .build();
+        StaticRoute.builder().setNetwork(p2).setAdmin(1).setNextHopIp(Ip.parse("2.2.2.2")).build();
     StaticRoute sr3 =
-        StaticRoute.builder()
-            .setNetwork(Prefix.parse("2.2.2.0/24"))
-            .setAdmin(1)
-            .setNextHopIp(Ip.parse("3.3.3.3"))
-            .build();
+        StaticRoute.builder().setNetwork(p2).setAdmin(1).setNextHopIp(Ip.parse("3.3.3.3")).build();
     new EqualsTester()
         .addEqualityGroup(RibDelta.builder().build(), RibDelta.builder().build())
         .addEqualityGroup(
-            RibDelta.<AbstractRoute>builder().add(sr1).build(),
-            RibDelta.<StaticRoute>builder().add(sr1).build())
+            RibDelta.builder().add(sr1).build(), RibDelta.<StaticRoute>builder().add(sr1).build())
         .addEqualityGroup(RibDelta.builder().remove(sr1, Reason.WITHDRAW).build())
         .addEqualityGroup(RibDelta.builder().remove(sr1, Reason.REPLACE).build())
         .addEqualityGroup(RibDelta.builder().add(sr2))

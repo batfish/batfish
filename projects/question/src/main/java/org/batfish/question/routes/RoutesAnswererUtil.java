@@ -46,6 +46,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
@@ -125,8 +126,8 @@ public class RoutesAnswererUtil {
    * @param ipOwners {@link Map} of {@link Ip} to {@link Set} of owner nodes
    * @return {@link Multiset} of {@link Row}s representing the routes
    */
-  static Multiset<Row> getMainRibRoutes(
-      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
+  static <T extends AbstractRouteDecorator> Multiset<Row> getMainRibRoutes(
+      SortedMap<String, SortedMap<String, GenericRib<T>>> ribs,
       Set<String> matchingNodes,
       @Nullable Prefix network,
       RoutingProtocolSpecifier protocolSpec,
@@ -479,13 +480,14 @@ public class RoutesAnswererUtil {
    * @return {@link Map} of {@link RouteRowKey}s to corresponding sub{@link Map}s of {@link
    *     RouteRowSecondaryKey} to {@link SortedSet} of {@link RouteRowAttribute}s
    */
-  static Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> groupRoutes(
-      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
-      Set<String> matchingNodes,
-      @Nullable Prefix network,
-      String vrfRegex,
-      RoutingProtocolSpecifier protocolSpec,
-      @Nullable Map<Ip, Set<String>> ipOwners) {
+  static <T extends AbstractRouteDecorator>
+      Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> groupRoutes(
+          SortedMap<String, SortedMap<String, GenericRib<T>>> ribs,
+          Set<String> matchingNodes,
+          @Nullable Prefix network,
+          String vrfRegex,
+          RoutingProtocolSpecifier protocolSpec,
+          @Nullable Map<Ip, Set<String>> ipOwners) {
     Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> routesGroups =
         new HashMap<>();
     Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
