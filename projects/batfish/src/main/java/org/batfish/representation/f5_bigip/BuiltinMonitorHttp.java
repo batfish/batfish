@@ -8,11 +8,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Enumeration of built-in ltm http profiles */
+/** Enumeration of built-in ltm monitor http configurations */
 @ParametersAreNonnullByDefault
 public enum BuiltinMonitorHttp implements BuiltinMonitor {
   HTTP("http"),
-  HTTP_HEAD_F5("http-head-f5");
+  HTTP_HEAD_F5("http_head_f5");
 
   private static final Map<String, BuiltinMonitorHttp> FOR_NAME_MAP =
       Arrays.stream(values())

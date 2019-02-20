@@ -19,9 +19,12 @@ ltm pool /Common/pool_used {
         }
     }
     monitor /Common/http #builtin
+    monitor /Common/http_head_f5 #builtin
     monitor /Common/monitor_http_used
     monitor /Common/monitor_http_undefined
     monitor /Common/https #builtin
+    monitor /Common/https_443 #builtin
+    monitor /Common/https_head_f5 #builtin
     monitor /Common/monitor_https_used
     monitor /Common/monitor_https_undefined
 }
@@ -56,9 +59,16 @@ ltm virtual /Common/virtual_used {
     pool /Common/pool_undefined
     profiles {
         /Common/clientssl { } #builtin
+        /Common/clientssl-insecure-compatible { } #builtin
+        /Common/clientssl-secure { } #builtin
+        /Common/crypto-server-default-clientssl { } #builtin
+        /Common/splitsession-default-clientssl { } #builtin
+        /Common/wom-default-clientssl { } #builtin
         /Common/profile_client_ssl_used { }
         /Common/profile_client_ssl_undefined { }
         /Common/http { } #builtin
+        /Common/http-explicit { } #builtin
+        /Common/http-transparent { } #builtin
         /Common/profile_http_used { }
         /Common/profile_http_undefined { }
         # No builtin profile for ocsp-stapling-params
@@ -67,10 +77,31 @@ ltm virtual /Common/virtual_used {
         /Common/oneconnect { } #builtin
         /Common/profile_one_connect_used { }
         /Common/profile_one_connect_undefined { }
+        /Common/apm-default-serverssl { } #builtin
+        /Common/crypto-client-default-serverssl { } #builtin
+        /Common/pcoip-default-serverssl { } #builtin
         /Common/serverssl { } #builtin
+        /Common/serverssl-insecure-compatible { } #builtin
+        /Common/splitsession-default-serverssl { } #builtin
+        /Common/wom-default-serverssl { } #builtin
         /Common/profile_server_ssl_used { }
         /Common/profile_server_ssl_undefined { }
+        /Common/apm-forwarding-server-tcp { } #builtin
+        /Common/f5-tcp-lan { } #builtin
+        /Common/f5-tcp-mobile { } #builtin
+        /Common/f5-tcp-progressive { } #builtin
+        /Common/f5-tcp-wan { } #builtin
+        /Common/mptcp-mobile-optimized { } #builtin
+        /Common/splitsession-default-tcp { } #builtin
         /Common/tcp { } #builtin
+        /Common/tcp-lan-optimized { } #builtin
+        /Common/tcp-legacy { } #builtin
+        /Common/tcp-mobile-optimized { } #builtin
+        /Common/tcp-wan-optimized { } #builtin
+        /Common/wam-tcp-lan-optimized { } #builtin
+        /Common/wam-tcp-wan-optimized { } #builtin
+        /Common/wom-tcp-lan-optimized { } #builtin
+        /Common/wom-tcp-wan-optimized { } #builtin
         /Common/profile_tcp_used { }
         /Common/profile_tcp_undefined { }
     }

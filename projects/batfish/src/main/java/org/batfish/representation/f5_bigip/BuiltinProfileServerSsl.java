@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Enumeration of built-in ltm http profiles */
+/** Enumeration of built-in ltm profile server-ssl configurations */
 @ParametersAreNonnullByDefault
 public enum BuiltinProfileServerSsl implements BuiltinProfile {
   APM_DEFAULT_SERVERSSL("apm-default-serverssl"),

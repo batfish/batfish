@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Enumeration of built-in ltm http profiles */
+/** Enumeration of built-in ltm profile client-ssl configurations */
 @ParametersAreNonnullByDefault
 public enum BuiltinProfileClientSsl implements BuiltinProfile {
   CLIENTSSL("clientssl"),

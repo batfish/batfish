@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Enumeration of built-in ltm one-connect profiles */
+/** Enumeration of built-in ltm profile one-connect configurations */
 @ParametersAreNonnullByDefault
 public enum BuiltinProfileOneConnect implements BuiltinProfile {
   ONECONNECT("oneconnect");
