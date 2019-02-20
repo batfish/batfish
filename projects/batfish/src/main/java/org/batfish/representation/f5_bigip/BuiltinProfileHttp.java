@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Enumeration of built-in ltm http profiles */
+/** Enumeration of built-in ltm profile http configurations */
 @ParametersAreNonnullByDefault
 public enum BuiltinProfileHttp implements BuiltinProfile {
   HTTP("http"),
@@ -29,6 +29,7 @@ public enum BuiltinProfileHttp implements BuiltinProfile {
     _name = name;
   }
 
+  @Override
   public @Nonnull String getName() {
     return _name;
   }

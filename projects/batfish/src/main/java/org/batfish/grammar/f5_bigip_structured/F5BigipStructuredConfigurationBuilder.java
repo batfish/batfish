@@ -185,8 +185,6 @@ import org.batfish.representation.f5_bigip.BgpIpv4AddressFamily;
 import org.batfish.representation.f5_bigip.BgpNeighbor;
 import org.batfish.representation.f5_bigip.BgpNeighborAddressFamily;
 import org.batfish.representation.f5_bigip.BgpProcess;
-import org.batfish.representation.f5_bigip.BgpRedistributionPolicy;
-import org.batfish.representation.f5_bigip.BuiltinMonitor;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.representation.f5_bigip.F5BigipRoutingProtocol;
 import org.batfish.representation.f5_bigip.F5BigipStructureUsage;
@@ -448,7 +446,10 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void enterLv_profiles_profile(Lv_profiles_profileContext ctx) {
     String name = unquote(ctx.name.getText());
-    _c.referenceStructure(PROFILE, name, VIRTUAL_PROFILE, ctx.name.getStart().getLine());
+    if (BuiltinProfile.getBuiltinProfile(name) == null) {
+      _c.referenceStructure(PROFILE, name, VIRTUAL_PROFILE, ctx.name.getStart().getLine());
+    }
+    todo(ctx);
   }
 
   @Override
@@ -595,22 +596,31 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitLmh_defaults_from(Lmh_defaults_fromContext ctx) {
     String name = unquote(ctx.name.getText());
-    _c.referenceStructure(
-        MONITOR_HTTP, name, MONITOR_HTTP_DEFAULTS_FROM, ctx.name.getStart().getLine());
+    if (BuiltinMonitor.getBuiltinMonitor(name) == null) {
+      _c.referenceStructure(
+          MONITOR_HTTP, name, MONITOR_HTTP_DEFAULTS_FROM, ctx.name.getStart().getLine());
+    }
+    todo(ctx);
   }
 
   @Override
   public void exitLmhs_defaults_from(Lmhs_defaults_fromContext ctx) {
     String name = unquote(ctx.name.getText());
-    _c.referenceStructure(
-        MONITOR_HTTPS, name, MONITOR_HTTPS_DEFAULTS_FROM, ctx.name.getStart().getLine());
+    if (BuiltinMonitor.getBuiltinMonitor(name) == null) {
+      _c.referenceStructure(
+          MONITOR_HTTPS, name, MONITOR_HTTPS_DEFAULTS_FROM, ctx.name.getStart().getLine());
+    }
+    todo(ctx);
   }
 
   @Override
   public void exitLmhs_ssl_profile(Lmhs_ssl_profileContext ctx) {
     String name = unquote(ctx.name.getText());
-    _c.referenceStructure(
-        PROFILE_SERVER_SSL, name, MONITOR_HTTPS_SSL_PROFILE, ctx.name.getStart().getLine());
+    if (BuiltinProfile.getBuiltinProfile(name) == null) {
+      _c.referenceStructure(
+          PROFILE_SERVER_SSL, name, MONITOR_HTTPS_SSL_PROFILE, ctx.name.getStart().getLine());
+    }
+    todo(ctx);
   }
 
   @Override
@@ -642,18 +652,24 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitLpersa_defaults_from(Lpersa_defaults_fromContext ctx) {
     String name = unquote(ctx.name.getText());
-    _c.referenceStructure(
-        PERSISTENCE_SOURCE_ADDR,
-        name,
-        PERSISTENCE_SOURCE_ADDR_DEFAULTS_FROM,
-        ctx.name.getStart().getLine());
+    if (BuiltinPersistence.getBuiltinPersistence(name) == null) {
+      _c.referenceStructure(
+          PERSISTENCE_SOURCE_ADDR,
+          name,
+          PERSISTENCE_SOURCE_ADDR_DEFAULTS_FROM,
+          ctx.name.getStart().getLine());
+    }
+    todo(ctx);
   }
 
   @Override
   public void exitLperss_defaults_from(Lperss_defaults_fromContext ctx) {
     String name = unquote(ctx.name.getText());
-    _c.referenceStructure(
-        PERSISTENCE_SSL, name, PERSISTENCE_SSL_DEFAULTS_FROM, ctx.name.getStart().getLine());
+    if (BuiltinPersistence.getBuiltinPersistence(name) == null) {
+      _c.referenceStructure(
+          PERSISTENCE_SSL, name, PERSISTENCE_SSL_DEFAULTS_FROM, ctx.name.getStart().getLine());
+    }
+    todo(ctx);
   }
 
   @Override
@@ -681,49 +697,73 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitLprofcs_defaults_from(Lprofcs_defaults_fromContext ctx) {
     String name = unquote(ctx.name.getText());
-    _c.referenceStructure(
-        PROFILE_CLIENT_SSL, name, PROFILE_CLIENT_SSL_DEFAULTS_FROM, ctx.name.getStart().getLine());
+    if (BuiltinProfile.getBuiltinProfile(name) == null) {
+      _c.referenceStructure(
+          PROFILE_CLIENT_SSL,
+          name,
+          PROFILE_CLIENT_SSL_DEFAULTS_FROM,
+          ctx.name.getStart().getLine());
+    }
+    todo(ctx);
   }
 
   @Override
   public void exitLprofh_defaults_from(Lprofh_defaults_fromContext ctx) {
     String name = unquote(ctx.name.getText());
-    _c.referenceStructure(
-        PROFILE_HTTP, name, PROFILE_HTTP_DEFAULTS_FROM, ctx.name.getStart().getLine());
+    if (BuiltinProfile.getBuiltinProfile(name) == null) {
+      _c.referenceStructure(
+          PROFILE_HTTP, name, PROFILE_HTTP_DEFAULTS_FROM, ctx.name.getStart().getLine());
+    }
+    todo(ctx);
   }
 
   @Override
   public void exitLprofoc_defaults_from(Lprofoc_defaults_fromContext ctx) {
     String name = unquote(ctx.name.getText());
-    _c.referenceStructure(
-        PROFILE_OCSP_STAPLING_PARAMS,
-        name,
-        PROFILE_OCSP_STAPLING_PARAMS_DEFAULTS_FROM,
-        ctx.name.getStart().getLine());
+    if (BuiltinProfile.getBuiltinProfile(name) == null) {
+      _c.referenceStructure(
+          PROFILE_OCSP_STAPLING_PARAMS,
+          name,
+          PROFILE_OCSP_STAPLING_PARAMS_DEFAULTS_FROM,
+          ctx.name.getStart().getLine());
+    }
+    todo(ctx);
   }
 
   @Override
   public void exitLprofon_defaults_from(Lprofon_defaults_fromContext ctx) {
     String name = unquote(ctx.name.getText());
-    _c.referenceStructure(
-        PROFILE_ONE_CONNECT,
-        name,
-        PROFILE_ONE_CONNECT_DEFAULTS_FROM,
-        ctx.name.getStart().getLine());
+    if (BuiltinProfile.getBuiltinProfile(name) == null) {
+      _c.referenceStructure(
+          PROFILE_ONE_CONNECT,
+          name,
+          PROFILE_ONE_CONNECT_DEFAULTS_FROM,
+          ctx.name.getStart().getLine());
+    }
+    todo(ctx);
   }
 
   @Override
   public void exitLprofss_defaults_from(Lprofss_defaults_fromContext ctx) {
     String name = unquote(ctx.name.getText());
-    _c.referenceStructure(
-        PROFILE_SERVER_SSL, name, PROFILE_SERVER_SSL_DEFAULTS_FROM, ctx.name.getStart().getLine());
+    if (BuiltinProfile.getBuiltinProfile(name) == null) {
+      _c.referenceStructure(
+          PROFILE_SERVER_SSL,
+          name,
+          PROFILE_SERVER_SSL_DEFAULTS_FROM,
+          ctx.name.getStart().getLine());
+    }
+    todo(ctx);
   }
 
   @Override
   public void exitLproft_defaults_from(Lproft_defaults_fromContext ctx) {
     String name = unquote(ctx.name.getText());
-    _c.referenceStructure(
-        PROFILE_TCP, name, PROFILE_TCP_DEFAULTS_FROM, ctx.name.getStart().getLine());
+    if (BuiltinProfile.getBuiltinProfile(name) == null) {
+      _c.referenceStructure(
+          PROFILE_TCP, name, PROFILE_TCP_DEFAULTS_FROM, ctx.name.getStart().getLine());
+    }
+    todo(ctx);
   }
 
   @Override
@@ -847,8 +887,11 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitLvp_persistence(Lvp_persistenceContext ctx) {
     String name = unquote(ctx.name.getText());
-    _c.referenceStructure(
-        PERSISTENCE, name, VIRTUAL_PERSIST_PERSISTENCE, ctx.name.getStart().getLine());
+    if (BuiltinPersistence.getBuiltinPersistence(name) == null) {
+      _c.referenceStructure(
+          PERSISTENCE, name, VIRTUAL_PERSIST_PERSISTENCE, ctx.name.getStart().getLine());
+    }
+    todo(ctx);
   }
 
   @Override

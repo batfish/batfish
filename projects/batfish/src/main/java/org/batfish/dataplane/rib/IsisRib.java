@@ -2,10 +2,12 @@ package org.batfish.dataplane.rib;
 
 import java.util.Comparator;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.IsisRoute;
 
 /** Rib for storing {@link IsisRoute}s */
+@ParametersAreNonnullByDefault
 public class IsisRib extends AbstractRib<IsisRoute> {
 
   private static final long serialVersionUID = 1L;

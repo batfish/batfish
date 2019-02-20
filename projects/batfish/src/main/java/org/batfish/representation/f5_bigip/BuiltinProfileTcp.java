@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Enumeration of built-in ltm tcp profiles */
+/** Enumeration of built-in ltm profile tcp configurations */
 @ParametersAreNonnullByDefault
 public enum BuiltinProfileTcp implements BuiltinProfile {
   APM_FORWARDING_SERVER_TCP("apm-forwarding-server-tcp"),
@@ -42,6 +42,7 @@ public enum BuiltinProfileTcp implements BuiltinProfile {
     _name = name;
   }
 
+  @Override
   public @Nonnull String getName() {
     return _name;
   }

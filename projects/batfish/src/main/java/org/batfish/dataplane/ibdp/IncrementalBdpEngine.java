@@ -1083,7 +1083,7 @@ class IncrementalBdpEngine {
             n -> {
               for (VirtualRouter vr : n.getVirtualRouters().values()) {
                 importRib(vr._ripRib, vr._ripInternalRib);
-                importRib(vr._independentRib, vr._ripRib);
+                importRib(vr._independentRib, vr._ripRib, vr._name);
               }
               ripInternalImportCompleted.incrementAndGet();
             });

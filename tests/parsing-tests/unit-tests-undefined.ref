@@ -2276,30 +2276,6 @@
       },
       {
         "File_Name" : "configs/f5_bigip_structured_ltm",
-        "Struct_Type" : "monitor http",
-        "Ref_Name" : "/Common/http",
-        "Context" : "monitor http defaults-from",
-        "Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
-          "lines" : [
-            118
-          ]
-        }
-      },
-      {
-        "File_Name" : "configs/f5_bigip_structured_ltm",
-        "Struct_Type" : "monitor https",
-        "Ref_Name" : "/Common/https",
-        "Context" : "monitor https defaults-from",
-        "Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
-          "lines" : [
-            136
-          ]
-        }
-      },
-      {
-        "File_Name" : "configs/f5_bigip_structured_ltm",
         "Struct_Type" : "node",
         "Ref_Name" : "/Common/bar",
         "Context" : "pool member",
@@ -2331,30 +2307,6 @@
           "filename" : "configs/f5_bigip_structured_ltm",
           "lines" : [
             88
-          ]
-        }
-      },
-      {
-        "File_Name" : "configs/f5_bigip_structured_ltm",
-        "Struct_Type" : "persistence source-addr",
-        "Ref_Name" : "/Common/source_addr",
-        "Context" : "persistence source-addr defaults-from",
-        "Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
-          "lines" : [
-            153
-          ]
-        }
-      },
-      {
-        "File_Name" : "configs/f5_bigip_structured_ltm",
-        "Struct_Type" : "persistence ssl",
-        "Ref_Name" : "/Common/ssl",
-        "Context" : "persistence ssl defaults-from",
-        "Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
-          "lines" : [
-            158
           ]
         }
       },
@@ -2408,18 +2360,6 @@
       },
       {
         "File_Name" : "configs/f5_bigip_structured_ltm",
-        "Struct_Type" : "profile client-ssl",
-        "Ref_Name" : "/Common/clientssl",
-        "Context" : "profile client-ssl defaults-from",
-        "Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
-          "lines" : [
-            187
-          ]
-        }
-      },
-      {
-        "File_Name" : "configs/f5_bigip_structured_ltm",
         "Struct_Type" : "profile server-ssl",
         "Ref_Name" : "/Common/SOME_SSL_PROFILE",
         "Context" : "monitor https ssl-profile",
@@ -2427,18 +2367,6 @@
           "filename" : "configs/f5_bigip_structured_ltm",
           "lines" : [
             147
-          ]
-        }
-      },
-      {
-        "File_Name" : "configs/f5_bigip_structured_ltm",
-        "Struct_Type" : "profile server-ssl",
-        "Ref_Name" : "/Common/serverssl",
-        "Context" : "profile server-ssl defaults-from",
-        "Lines" : {
-          "filename" : "configs/f5_bigip_structured_ltm",
-          "lines" : [
-            248
           ]
         }
       },
@@ -4020,10 +3948,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 326 results",
+      "notes" : "Found 320 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 326
+      "numResults" : 320
     }
   }
 ]

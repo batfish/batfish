@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Enumeration of built-in ltm http profiles */
+/** Enumeration of built-in ltm persistence source-addr configurations */
 @ParametersAreNonnullByDefault
 public enum BuiltinPersistenceSourceAddr implements BuiltinPersistence {
   SOURCE_ADDR("source_addr");
@@ -29,6 +29,7 @@ public enum BuiltinPersistenceSourceAddr implements BuiltinPersistence {
     _name = name;
   }
 
+  @Override
   public @Nonnull String getName() {
     return _name;
   }

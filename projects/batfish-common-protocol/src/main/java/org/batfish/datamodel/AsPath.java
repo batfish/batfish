@@ -18,7 +18,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.StringUtils;
 
 @ParametersAreNonnullByDefault
-public class AsPath implements Serializable, Comparable<AsPath> {
+public final class AsPath implements Serializable, Comparable<AsPath> {
 
   private static final long serialVersionUID = 1L;
 

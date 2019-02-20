@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Enumeration of built-in ltm http profiles */
+/** Enumeration of built-in ltm persistence ssl configurations */
 @ParametersAreNonnullByDefault
 public enum BuiltinPersistenceSsl implements BuiltinPersistence {
   SSL("ssl");
@@ -28,6 +28,7 @@ public enum BuiltinPersistenceSsl implements BuiltinPersistence {
     _name = name;
   }
 
+  @Override
   public @Nonnull String getName() {
     return _name;
   }

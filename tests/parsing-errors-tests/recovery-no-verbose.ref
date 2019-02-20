@@ -9,18 +9,20 @@
       },
       "warnings" : {
         "as1r1" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '10.12.11.2'"
+            }
+          ]
+        },
+        "configs/as1r1.cfg" : {
           "Parse warnings" : [
             {
               "Comment" : "This syntax is unrecognized",
               "Line" : 5,
               "Parser_Context" : "[if_inner s_interface stanza cisco_configuration]",
               "Text" : "ip address 10.12.11.1 255.255.255.0aaaaa:wq"
-            }
-          ],
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine update source for BGP neighbor: '10.12.11.2'"
             }
           ]
         }
