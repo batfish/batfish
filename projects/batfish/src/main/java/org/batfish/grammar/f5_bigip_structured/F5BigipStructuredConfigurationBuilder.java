@@ -32,6 +32,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_ADDRESS_FAMILY_REDISTRIBUTE_KERNEL_ROUTE_MAP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_IPV4_ROUTE_MAP_OUT;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_IPV6_ROUTE_MAP_OUT;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_UPDATE_SOURCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_PROCESS_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.INTERFACE_SELF_REFERENCE;
@@ -437,6 +438,8 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   public void enterNrbn_name(Nrbn_nameContext ctx) {
     String name = unquote(ctx.name.getText());
     defineStructure(BGP_NEIGHBOR, name, ctx);
+    _c.referenceStructure(
+        BGP_NEIGHBOR, name, BGP_NEIGHBOR_SELF_REFERENCE, ctx.name.getStart().getLine());
   }
 
   @Override

@@ -11,6 +11,7 @@ public enum F5BigipStructureUsage implements StructureUsage {
       "bgp address-family redistribute kernel route-map"),
   BGP_NEIGHBOR_IPV4_ROUTE_MAP_OUT("bgp neighbor address-family ipv4 route-map out"),
   BGP_NEIGHBOR_IPV6_ROUTE_MAP_OUT("bgp neighbor address-family ipv6 route-map out"),
+  BGP_NEIGHBOR_SELF_REFERENCE("bgp neighbor self-reference"),
   BGP_NEIGHBOR_UPDATE_SOURCE("bgp neighbor update-source"),
   BGP_PROCESS_SELF_REFERENCE("bgp process self-reference"),
   INTERFACE_SELF_REFERENCE("interface self-reference"),

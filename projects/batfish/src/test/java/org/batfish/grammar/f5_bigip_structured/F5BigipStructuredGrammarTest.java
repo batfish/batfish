@@ -15,6 +15,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.INTERFACE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR;
@@ -159,6 +160,10 @@ public final class F5BigipStructuredGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, BGP_PROCESS, used, 1));
+    assertThat(ans, hasNumReferrers(file, BGP_NEIGHBOR, "192.0.2.1", 1));
 
     // detect all structure references
     assertThat(ans, hasNumReferrers(file, BGP_PROCESS, used, 1));
