@@ -5,6 +5,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
 import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Method;
 import java.util.Map;
+import org.batfish.datamodel.Names;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.parboiled.BaseParser;
 import org.parboiled.Parboiled;
@@ -112,10 +113,7 @@ public class CommonParser extends BaseParser<AstNode> {
     return OneOrMore(Digit());
   }
 
-  /**
-   * Describes valid names for reference library objects. Must start with the alphabet or
-   * underscore, and only contain those letters plus digits and dash.
-   */
+  /** This should be in sync with {@link Names#REFERENCE_OBJECT_NAME_REGEX} */
   public Rule ReferenceObjectNameLiteral() {
     return Sequence(
         FirstOf(AlphabetChar(), Underscore()),
