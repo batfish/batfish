@@ -339,12 +339,6 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
-  public void enterL_snat_translation(L_snat_translationContext ctx) {
-    String name = unquote(ctx.name.getText());
-    defineStructure(SNAT_TRANSLATION, name, ctx);
-  }
-
-  @Override
   public void enterL_snatpool(L_snatpoolContext ctx) {
     String name = unquote(ctx.name.getText());
     defineStructure(SNATPOOL, name, ctx);
@@ -1016,12 +1010,6 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitNrbnnafc_activate(Nrbnnafc_activateContext ctx) {
     _currentBgpNeighborAddressFamily.setActivate(ctx.DISABLED() == null);
-  }
-
-  @Override
-  public void exitNrbnn_update_source(Nrbnn_update_sourceContext ctx) {
-    String name = unquote(ctx.name.getText());
-    _c.referenceStructure(VLAN, name, BGP_NEIGHBOR_UPDATE_SOURCE, ctx.name.getStart().getLine());
   }
 
   @Override
