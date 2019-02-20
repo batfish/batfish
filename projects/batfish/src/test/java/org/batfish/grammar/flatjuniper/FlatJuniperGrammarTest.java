@@ -102,6 +102,7 @@ import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.AUXILIARY_LINE_NAME;
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.CONSOLE_LINE_NAME;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_EXISTING_CONNECTION;
@@ -259,6 +260,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
+import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
@@ -3587,10 +3589,15 @@ public final class FlatJuniperGrammarTest {
     AssignIpAddressFromPool transformationStep =
         assignSourceIp(Ip.parse("10.10.10.1"), Ip.parse("10.10.10.254"));
 
+    AssignPortFromPool portTransformationStep =
+        assignSourcePort(Nat.DEFAULT_FROM_PORT, Nat.DEFAULT_TO_PORT);
+
     Transformation ruleSet1Transformation =
         when(matchSrcInterface("ge-0/0/0.0"))
             .setAndThen(
-                when(matchDst(Prefix.parse("1.1.1.1/24"))).apply(transformationStep).build())
+                when(matchDst(Prefix.parse("1.1.1.1/24")))
+                    .apply(transformationStep, portTransformationStep)
+                    .build())
             .build();
 
     // rule set 3 has a zone from location, so it goes second
@@ -3598,7 +3605,7 @@ public final class FlatJuniperGrammarTest {
         when(matchSrcInterface("ge-0/0/0.0", "ge-0/0/1.0"))
             .setAndThen(
                 when(matchDst(Prefix.parse("3.3.3.3/24")))
-                    .apply(transformationStep)
+                    .apply(transformationStep, portTransformationStep)
                     .setOrElse(ruleSet1Transformation)
                     .build())
             .setOrElse(ruleSet1Transformation)
@@ -3609,7 +3616,7 @@ public final class FlatJuniperGrammarTest {
         when(matchSrcInterface("ge-0/0/0.0"))
             .setAndThen(
                 when(matchDst(Prefix.parse("2.2.2.2/24")))
-                    .apply(transformationStep)
+                    .apply(transformationStep, portTransformationStep)
                     .setOrElse(
                         // routing instance rule set
                         ruleSet3Transformation)
