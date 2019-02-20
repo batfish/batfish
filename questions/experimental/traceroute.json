@@ -41,7 +41,7 @@
                 "fields": {
                     "applications": { "optional": true },
                     "dscps": { "optional": true },
-                    "dstIps": { "optional": false },
+                    "dstIps": { "optional": false, "type": "ipSpaceSpec"},
                     "dstPorts": { "optional": true },
                     "ecns": { "optional": true },
                     "flowStates": { "optional": true },
@@ -50,7 +50,7 @@
                     "icmpTypes": { "optional": true },
                     "ipProtocols": { "optional": true },
                     "packetLengths": { "optional": true },
-                    "srcIps": { "optional": true },
+                    "srcIps": { "optional": true, "type": "ipSpaceSpec" },
                     "srcPorts": { "optional": true },
                     "tcpFlags": { "optional": true }
                 }
