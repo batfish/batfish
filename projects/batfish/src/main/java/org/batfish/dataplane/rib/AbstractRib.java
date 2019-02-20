@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -72,7 +71,9 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   @Nonnull
   public static <U extends AbstractRoute, T extends U> RibDelta<U> importRib(
       AbstractRib<U> importingRib, AbstractRib<T> exportingRib) {
-    return importingRib.importRoutesFrom(exportingRib, Function.identity());
+    RibDelta.Builder<U> builder = RibDelta.builder();
+    exportingRib.getTypedRoutes().forEach(r -> builder.from(importingRib.mergeRouteGetDelta(r)));
+    return builder.build();
   }
 
   /**
@@ -86,8 +87,9 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   @Nonnull
   public static <U extends AbstractRoute, T extends U> RibDelta<AnnotatedRoute<U>> importRib(
       AnnotatedRib<U> importingRib, AbstractRib<T> exportingRib) {
-    return importingRib.importRoutesFrom(
-        exportingRib, r -> new AnnotatedRoute<>(r, importingRib.getVrfName()));
+    RibDelta.Builder<AnnotatedRoute<U>> builder = RibDelta.builder();
+    exportingRib.getTypedRoutes().forEach(r -> builder.from(importingRib.mergeRouteGetDelta(r)));
+    return builder.build();
   }
 
   /**
@@ -102,25 +104,10 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   @Nonnull
   public static <U extends AbstractRoute, T extends U> RibDelta<AnnotatedRoute<U>> importRib(
       AnnotatedRib<U> importingRib, AnnotatedRib<T> exportingRib) {
-    return importingRib.importRoutesFrom(
-        exportingRib, ar -> new AnnotatedRoute<>(ar.getRoute(), ar.getSourceVrf()));
-  }
-
-  /**
-   * Import routes into this RIB from another
-   *
-   * @param exportingRib the RIB from which to import routes
-   * @param converter A function to convert exporting RIB's type {@code T} routes to type {@link R}
-   * @param <T> type of routes in exportingRib; does not need to extend {@link R}
-   * @return a {@link RibDelta}
-   */
-  @Nonnull
-  <T extends AbstractRouteDecorator, RibT extends AbstractRib<T>> RibDelta<R> importRoutesFrom(
-      RibT exportingRib, Function<? super T, ? extends R> converter) {
-    RibDelta.Builder<R> builder = RibDelta.builder();
-    for (T route : exportingRib.getTypedRoutes()) {
-      builder.from(mergeRouteGetDelta(converter.apply(route)));
-    }
+    RibDelta.Builder<AnnotatedRoute<U>> builder = RibDelta.builder();
+    exportingRib
+        .getTypedRoutes()
+        .forEach(r -> builder.from(importingRib.mergeRouteGetDelta(r.getRoute())));
     return builder.build();
   }
 

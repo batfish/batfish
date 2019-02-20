@@ -11,7 +11,7 @@ import static org.batfish.dataplane.protocols.IsisProtocolHelper.setOverloadOnAl
 import static org.batfish.dataplane.protocols.StaticRouteHelper.isInterfaceRoute;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.shouldActivateNextHopIpRoute;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
-import static org.batfish.dataplane.rib.RibDelta.Builder.importDeltaToBuilder;
+import static org.batfish.dataplane.rib.RibDelta.importDeltaToBuilder;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 import static org.batfish.dataplane.rib.RibDelta.importUnannotatedRibDelta;
 
