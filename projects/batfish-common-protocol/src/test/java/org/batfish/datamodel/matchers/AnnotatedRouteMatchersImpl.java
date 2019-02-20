@@ -5,7 +5,7 @@ import org.batfish.datamodel.AnnotatedRoute;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
-public class AnnotatedRouteMatchersImpl {
+final class AnnotatedRouteMatchersImpl {
 
   static final class HasSourceVrf extends FeatureMatcher<AnnotatedRoute<?>, String> {
     HasSourceVrf(@Nonnull Matcher<? super String> subMatcher) {
@@ -17,4 +17,6 @@ public class AnnotatedRouteMatchersImpl {
       return actual.getSourceVrf();
     }
   }
+
+  private AnnotatedRouteMatchersImpl() {}
 }

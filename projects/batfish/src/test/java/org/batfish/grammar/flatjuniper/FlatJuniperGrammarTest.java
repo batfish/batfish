@@ -11,6 +11,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethods;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AnnotatedRouteMatchers.hasSourceVrf;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasAllowLocalAsIn;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasClusterId;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
@@ -4412,19 +4413,15 @@ public final class FlatJuniperGrammarTest {
         dp.getRibs().get(hostname).entrySet().stream()
             .collect(
                 ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getTypedRoutes()));
-    Set<AnnotatedRoute<AbstractRoute>> defaultVrfRoutes = routes.get(DEFAULT_VRF_NAME);
-    Set<AnnotatedRoute<AbstractRoute>> vrf2Routes = routes.get("VRF2");
 
-    assertThat(defaultVrfRoutes, hasSize(1));
-    AnnotatedRoute<AbstractRoute> leakedRoute = defaultVrfRoutes.iterator().next();
-    assertThat(leakedRoute.getNetwork(), equalTo(Prefix.parse("1.1.1.1/30")));
-    assertThat(leakedRoute.getSourceVrf(), equalTo("VRF1"));
+    assertThat(
+        routes.get(DEFAULT_VRF_NAME),
+        hasItem(allOf(hasPrefix(Prefix.parse("1.1.1.1/30")), hasSourceVrf("VRF1"))));
 
     // Ensure that VRF2 does in fact have 2.2.2.2/30, as expected
-    assertThat(vrf2Routes, hasSize(1));
-    AnnotatedRoute<AbstractRoute> vrf2Route = vrf2Routes.iterator().next();
-    assertThat(vrf2Route.getNetwork(), equalTo(Prefix.parse("2.2.2.2/30")));
-    assertThat(vrf2Route.getSourceVrf(), equalTo("VRF2"));
+    assertThat(
+        routes.get("VRF2"),
+        hasItem(allOf(hasPrefix(Prefix.parse("2.2.2.2/30")), hasSourceVrf("VRF2"))));
   }
 
   @Test
