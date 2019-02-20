@@ -15,7 +15,6 @@ public final class PoolMember implements Serializable {
 
   private @Nullable Ip _address;
   private @Nullable Ip6 _address6;
-
   private final @Nonnull String _name;
   private final @Nonnull String _node;
   private final int _port;
@@ -36,6 +35,10 @@ public final class PoolMember implements Serializable {
 
   public @Nonnull String getName() {
     return _name;
+  }
+
+  public @Nonnull String getNode() {
+    return _node;
   }
 
   public int getPort() {
