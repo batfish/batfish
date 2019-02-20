@@ -26,7 +26,8 @@ public final class NatRuleThenInterfaceTest {
         step,
         contains(
             new AssignIpAddressFromPool(SOURCE_NAT, SOURCE, ip, ip),
-            new AssignPortFromPool(SOURCE_NAT, PortField.SOURCE, Nat.DEFAULT_FROM_PORT, Nat.DEFAULT_TO_PORT)));
+            new AssignPortFromPool(
+                SOURCE_NAT, PortField.SOURCE, Nat.DEFAULT_FROM_PORT, Nat.DEFAULT_TO_PORT)));
 
     snat.setDefaultFromPort(10000);
     snat.setDefaultToPort(20000);

@@ -3602,7 +3602,8 @@ public final class FlatJuniperGrammarTest {
     AssignIpAddressFromPool transformationStep =
         assignSourceIp(Ip.parse("10.10.10.1"), Ip.parse("10.10.10.254"));
 
-    AssignPortFromPool portTransformationStep = assignSourcePort(Nat.DEFAULT_FROM_PORT, Nat.DEFAULT_TO_PORT);
+    AssignPortFromPool portTransformationStep =
+        assignSourcePort(Nat.DEFAULT_FROM_PORT, Nat.DEFAULT_TO_PORT);
 
     Transformation ruleSet1Transformation =
         when(matchSrcInterface("ge-0/0/0.0"))

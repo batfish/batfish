@@ -18557,6 +18557,13 @@
                         "poolEnd" : "10.10.10.254",
                         "poolStart" : "10.10.10.1",
                         "transformationType" : "SOURCE_NAT"
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.transformation.AssignPortFromPool",
+                        "poolEnd" : 63487,
+                        "poolStart" : 1024,
+                        "portField" : "SOURCE",
+                        "transformationType" : "SOURCE_NAT"
                       }
                     ]
                   },
@@ -18566,6 +18573,13 @@
                       "ipField" : "SOURCE",
                       "poolEnd" : "1.0.0.1",
                       "poolStart" : "1.0.0.1",
+                      "transformationType" : "SOURCE_NAT"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.transformation.AssignPortFromPool",
+                      "poolEnd" : 63487,
+                      "poolStart" : 1024,
+                      "portField" : "SOURCE",
                       "transformationType" : "SOURCE_NAT"
                     }
                   ]
