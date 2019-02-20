@@ -122,7 +122,7 @@ public class Parser extends CommonParser {
 
   public Rule FilterParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
-    return Sequence("( ", FilterTerm(), WhiteSpace(), ") ");
+    return Sequence("( ", FilterExpression(), WhiteSpace(), ") ");
   }
 
   /**
@@ -277,7 +277,7 @@ public class Parser extends CommonParser {
 
   public Rule InterfaceParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
-    return Sequence("( ", InterfaceTerm(), WhiteSpace(), ") ");
+    return Sequence("( ", InterfaceExpression(), WhiteSpace(), ") ");
   }
 
   /**
@@ -449,23 +449,23 @@ public class Parser extends CommonParser {
   public Rule LocationInterface() {
     return FirstOf(
         Sequence(
+            NodeTerm(),
+            WhiteSpace(),
+            "[ ",
+            InterfaceExpression(),
+            WhiteSpace(),
+            "] ",
+            push(InterfaceLocationAstNode.createFromNodeInterface(pop(1), pop()))),
+        Sequence(NodeTerm(), WhiteSpace(), push(InterfaceLocationAstNode.createFromNode(pop()))),
+        Sequence(
             InterfaceSpecifier(),
             WhiteSpace(),
-            push(InterfaceLocationAstNode.createFromInterface(pop()))),
-        Sequence(
-            NodeExpression(),
-            WhiteSpace(),
-            push(InterfaceLocationAstNode.createFromNode(pop())),
-            Optional(
-                "[ ",
-                InterfaceExpression(),
-                "] ",
-                push(InterfaceLocationAstNode.createFromNodeInterface(pop(1), pop())))));
+            push(InterfaceLocationAstNode.createFromInterface(pop()))));
   }
 
   public Rule LocationParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
-    return Sequence("( ", LocationTerm(), WhiteSpace(), ") ");
+    return Sequence("( ", LocationExpression(), WhiteSpace(), ") ");
   }
 
   /**
@@ -559,6 +559,6 @@ public class Parser extends CommonParser {
 
   public Rule NodeParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
-    return Sequence("( ", NodeTerm(), WhiteSpace(), ") ");
+    return Sequence("( ", NodeExpression(), WhiteSpace(), ") ");
   }
 }

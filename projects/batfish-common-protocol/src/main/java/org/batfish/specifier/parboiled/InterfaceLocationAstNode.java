@@ -34,21 +34,11 @@ final class InterfaceLocationAstNode implements LocationAstNode {
   }
 
   static InterfaceLocationAstNode createFromNodeInterface(AstNode nodeAst, AstNode interfaceAst) {
-    checkArgument(
-        nodeAst instanceof InterfaceLocationAstNode, "Unexpected first argument: %s", nodeAst);
+    checkArgument(nodeAst instanceof NodeAstNode, "Unexpected first argument: %s", nodeAst);
     checkArgument(
         interfaceAst instanceof InterfaceAstNode, "Unexpected second argument: %s", nodeAst);
 
-    NodeAstNode internalNodeAst = ((InterfaceLocationAstNode) nodeAst)._nodeAst;
-    checkArgument(
-        internalNodeAst != null, "Unexpected internal null in first argument: %s", internalNodeAst);
-
-    return new InterfaceLocationAstNode(internalNodeAst, (InterfaceAstNode) interfaceAst);
-  }
-
-  static InterfaceLocationAstNode createFromNodeInterface(
-      NameNodeAstNode nodeAst, InterfaceAstNode interfaceAst) {
-    return new InterfaceLocationAstNode(nodeAst, interfaceAst);
+    return new InterfaceLocationAstNode((NodeAstNode) nodeAst, (InterfaceAstNode) interfaceAst);
   }
 
   @Override

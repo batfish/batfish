@@ -127,6 +127,58 @@ public class ParserLocationTest {
   }
 
   @Test
+  public void testParseLocationBrackets() {
+    // make sure that bracket binds more tightly than union
+    assertThat(
+        ParserUtils.getAst(getRunner().run("n1 + n2[e2]")),
+        equalTo(
+            new UnionLocationAstNode(
+                InterfaceLocationAstNode.createFromNode("n1"),
+                InterfaceLocationAstNode.createFromNodeInterface(
+                    new NameNodeAstNode("n2"), new NameInterfaceAstNode("e2")))));
+
+    // this should parse well too
+    assertThat(
+        ParserUtils.getAst(getRunner().run("n1[e1] + n2[e2]")),
+        equalTo(
+            new UnionLocationAstNode(
+                InterfaceLocationAstNode.createFromNodeInterface(
+                    new NameNodeAstNode("n1"), new NameInterfaceAstNode("e1")),
+                InterfaceLocationAstNode.createFromNodeInterface(
+                    new NameNodeAstNode("n2"), new NameInterfaceAstNode("e2")))));
+
+    // brackets after a complex node expression
+    assertThat(
+        ParserUtils.getAst(getRunner().run("(n1 + n2)[e1/0]")),
+        equalTo(
+            InterfaceLocationAstNode.createFromNodeInterface(
+                new UnionNodeAstNode(new NameNodeAstNode("n1"), new NameNodeAstNode("n2")),
+                new NameInterfaceAstNode("e1/0"))));
+
+    // brackets after a complex node expression and with complex interface expression
+    assertThat(
+        ParserUtils.getAst(getRunner().run("(n1 + n2)[e1 + e2]")),
+        equalTo(
+            InterfaceLocationAstNode.createFromNodeInterface(
+                new UnionNodeAstNode(new NameNodeAstNode("n1"), new NameNodeAstNode("n2")),
+                new UnionInterfaceAstNode(
+                    new NameInterfaceAstNode("e1"), new NameInterfaceAstNode("e2")))));
+  }
+
+  @Test
+  public void testParseLocationDifference() {
+    DifferenceLocationAstNode expectedNode =
+        new DifferenceLocationAstNode(
+            InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth1")),
+            InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth2")));
+
+    assertThat(
+        ParserUtils.getAst(getRunner().run("@vrf(eth1)\\@vrf(eth2)")), equalTo(expectedNode));
+    assertThat(
+        ParserUtils.getAst(getRunner().run(" @vrf(eth1) \\ @vrf(eth2) ")), equalTo(expectedNode));
+  }
+
+  @Test
   public void testParseLocationEnter() {
     EnterLocationAstNode expectedAst =
         new EnterLocationAstNode(
@@ -142,6 +194,18 @@ public class ParserLocationTest {
   }
 
   @Test
+  public void testParseLocationNodeInterface() {
+    String input = "node[@link(physical)]";
+    InterfaceLocationAstNode expectedAst =
+        InterfaceLocationAstNode.createFromNodeInterface(
+            new NameNodeAstNode("node"),
+            new TypeInterfaceAstNode(InterfaceType.PHYSICAL.toString()));
+
+    assertThat(ParserUtils.getAst(getRunner().run(input)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + input + " ")), equalTo(expectedAst));
+  }
+
+  @Test
   public void testParseLocationInterfaceSpecifier() {
     String input = "@link(physical)";
     InterfaceLocationAstNode expectedAst =
@@ -150,6 +214,18 @@ public class ParserLocationTest {
 
     assertThat(ParserUtils.getAst(getRunner().run(input)), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" " + input + " ")), equalTo(expectedAst));
+  }
+
+  @Test
+  public void testParseLocationIntersection() {
+    IntersectionLocationAstNode expectedNode =
+        new IntersectionLocationAstNode(
+            InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth1")),
+            InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth2")));
+
+    assertThat(ParserUtils.getAst(getRunner().run("@vrf(eth1)&@vrf(eth2)")), equalTo(expectedNode));
+    assertThat(
+        ParserUtils.getAst(getRunner().run(" @vrf(eth1) & @vrf(eth2) ")), equalTo(expectedNode));
   }
 
   @Test
@@ -162,77 +238,59 @@ public class ParserLocationTest {
   }
 
   @Test
-  public void testParseLocationNodeInterface() {
-    String input = "node[@link(physical)]";
-    InterfaceLocationAstNode expectedAst =
-        InterfaceLocationAstNode.createFromNodeInterface(
-            InterfaceLocationAstNode.createFromNode("node"),
-            new TypeInterfaceAstNode(InterfaceType.PHYSICAL.toString()));
-
-    assertThat(ParserUtils.getAst(getRunner().run(input)), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" " + input + " ")), equalTo(expectedAst));
-  }
-
-  @Test
   public void testParseLocationParens() {
-    String nodeName = "node";
-    InterfaceLocationAstNode expectedAst = InterfaceLocationAstNode.createFromNode(nodeName);
-
-    assertThat(ParserUtils.getAst(getRunner().run("(" + nodeName + ")")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" ( " + nodeName + " ) ")), equalTo(expectedAst));
-  }
-
-  @Test
-  public void testParseLocationDifference() {
-    DifferenceLocationAstNode expectedNode =
-        new DifferenceLocationAstNode(
-            InterfaceLocationAstNode.createFromNode("node1"),
-            InterfaceLocationAstNode.createFromNode("node2"));
-
-    assertThat(ParserUtils.getAst(getRunner().run("node1\\node2")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" node1 \\ node2 ")), equalTo(expectedNode));
-  }
-
-  @Test
-  public void testParseLocationIntersection() {
-    IntersectionLocationAstNode expectedNode =
-        new IntersectionLocationAstNode(
-            InterfaceLocationAstNode.createFromNode("node1"),
-            InterfaceLocationAstNode.createFromNode("node2"));
-
-    assertThat(ParserUtils.getAst(getRunner().run("node1&node2")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" node1 & node2 ")), equalTo(expectedNode));
-  }
-
-  @Test
-  public void testParseLocationUnion() {
-    UnionLocationAstNode expectedNode =
-        new UnionLocationAstNode(
-            InterfaceLocationAstNode.createFromNode("node1"),
-            InterfaceLocationAstNode.createFromNode("node2"));
-
-    assertThat(ParserUtils.getAst(getRunner().run("node1+node2")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" node1 + node2 ")), equalTo(expectedNode));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("(node)")),
+        equalTo(InterfaceLocationAstNode.createFromNode("node")));
+    assertThat(
+        ParserUtils.getAst(getRunner().run(" ( node ) ")),
+        equalTo(InterfaceLocationAstNode.createFromNode("node")));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("(node1&node2)")),
+        equalTo(
+            InterfaceLocationAstNode.createFromNode(
+                new IntersectionNodeAstNode(
+                    new NameNodeAstNode("node1"), new NameNodeAstNode("node2")))));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("(node1&node2[e1])")),
+        equalTo(
+            new IntersectionLocationAstNode(
+                InterfaceLocationAstNode.createFromNode("node1"),
+                InterfaceLocationAstNode.createFromNodeInterface(
+                    new NameNodeAstNode("node2"), new NameInterfaceAstNode("e1")))));
   }
 
   /** Test if we got the precedence of set operators right. Intersection is higher priority. */
   @Test
   public void testParseLocationSetOpPrecedence() {
     assertThat(
-        ParserUtils.getAst(getRunner().run("node1\\node2&node3")),
+        ParserUtils.getAst(getRunner().run("@vrf(eth1)\\@vrf(eth2)&@vrf(eth3)")),
         equalTo(
             new DifferenceLocationAstNode(
-                InterfaceLocationAstNode.createFromNode("node1"),
+                InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth1")),
                 new IntersectionLocationAstNode(
-                    InterfaceLocationAstNode.createFromNode("node2"),
-                    InterfaceLocationAstNode.createFromNode("node3")))));
+                    InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth2")),
+                    InterfaceLocationAstNode.createFromInterface(
+                        new VrfInterfaceAstNode("eth3"))))));
     assertThat(
-        ParserUtils.getAst(getRunner().run("Location1&Location2+Location3")),
+        ParserUtils.getAst(getRunner().run("@vrf(eth1)&@vrf(eth2)+@vrf(eth3)")),
         equalTo(
             new UnionLocationAstNode(
                 new IntersectionLocationAstNode(
-                    InterfaceLocationAstNode.createFromNode("node1"),
-                    InterfaceLocationAstNode.createFromNode("node2")),
-                InterfaceLocationAstNode.createFromNode("node3"))));
+                    InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth1")),
+                    InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth2"))),
+                InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth3")))));
+  }
+
+  @Test
+  public void testParseLocationUnion() {
+    UnionLocationAstNode expectedNode =
+        new UnionLocationAstNode(
+            InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth1")),
+            InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth2")));
+
+    assertThat(ParserUtils.getAst(getRunner().run("@vrf(eth1)+@vrf(eth2)")), equalTo(expectedNode));
+    assertThat(
+        ParserUtils.getAst(getRunner().run(" @vrf(eth1) + @vrf(eth2) ")), equalTo(expectedNode));
   }
 }

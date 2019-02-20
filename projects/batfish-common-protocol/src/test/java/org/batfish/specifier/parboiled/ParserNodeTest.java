@@ -182,6 +182,7 @@ public class ParserNodeTest {
 
     assertThat(ParserUtils.getAst(getRunner().run("node0+node1")), equalTo(expectedNode));
     assertThat(ParserUtils.getAst(getRunner().run(" node0 + node1 ")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run("(node0 + node1)")), equalTo(expectedNode));
   }
 
   /** Test if we got the precedence of set operators right. Intersection is higher priority. */
