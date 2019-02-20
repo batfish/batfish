@@ -93,20 +93,16 @@ public final class F5BigipStructuredGrammarTest {
   private static final String TESTCONFIGS_PREFIX =
       "org/batfish/grammar/f5_bigip_structured/testconfigs/";
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-
-  @Rule public ExpectedException _thrown = ExpectedException.none();
-
   /**
    * Assert that {@code ans} does not contain undefined references to builtins. This happens when
-   * builtins are not referenced but not correctly identified.
+   * builtins are referenced but not correctly identified.
    *
    * @param ans The answer element containing the map of undefined references
    * @param types The types using the namespace searched by {@code nameToBuiltIn}
    * @param nameToBuiltin A function that returns a {@link Builtin} for a given name, or {@code
    *     null} if the name does not correspond to a builtin.
    */
-  private void assertNoUndefinedReferencesToBuiltins(
+  private static void assertNoUndefinedReferencesToBuiltins(
       ConvertConfigurationAnswerElement ans,
       Stream<F5BigipStructureType> types,
       Function<String, ? extends Builtin> nameToBuiltin) {
@@ -132,6 +128,10 @@ public final class F5BigipStructuredGrammarTest {
                                       nullValue());
                                 })));
   }
+
+  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
     String[] names =
