@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
@@ -139,11 +140,13 @@ class VirtualEigrpProcess {
    * @return The computed export route or null if no route will be exported
    */
   @Nullable
-  private EigrpExternalRoute computeEigrpExportRoute(AbstractRoute potentialExportRoute) {
+  private EigrpExternalRoute computeEigrpExportRoute(
+      AnnotatedRoute<AbstractRoute> potentialExportRoute) {
+    AbstractRoute unannotatedPotentialRoute = potentialExportRoute.getRoute();
     EigrpExternalRoute.Builder outputRouteBuilder = EigrpExternalRoute.builder();
     // Set the metric to match the route metric by default for EIGRP into EIGRP
-    if (potentialExportRoute instanceof EigrpRoute) {
-      outputRouteBuilder.setEigrpMetric(((EigrpRoute) potentialExportRoute).getEigrpMetric());
+    if (unannotatedPotentialRoute instanceof EigrpRoute) {
+      outputRouteBuilder.setEigrpMetric(((EigrpRoute) unannotatedPotentialRoute).getEigrpMetric());
     }
     // Export based on the policy result of processing the potentialExportRoute
     boolean accept =
@@ -154,13 +157,13 @@ class VirtualEigrpProcess {
       return null;
     }
     outputRouteBuilder.setAdmin(_defaultExternalAdminCost);
-    if (potentialExportRoute instanceof EigrpExternalRoute) {
-      EigrpExternalRoute externalRoute = (EigrpExternalRoute) potentialExportRoute;
+    if (unannotatedPotentialRoute instanceof EigrpExternalRoute) {
+      EigrpExternalRoute externalRoute = (EigrpExternalRoute) unannotatedPotentialRoute;
       outputRouteBuilder.setDestinationAsn(externalRoute.getDestinationAsn());
     } else {
       outputRouteBuilder.setDestinationAsn(_asn);
     }
-    outputRouteBuilder.setNetwork(potentialExportRoute.getNetwork());
+    outputRouteBuilder.setNetwork(unannotatedPotentialRoute.getNetwork());
     outputRouteBuilder.setProcessAsn(_asn);
     outputRouteBuilder.setNonRouting(true);
     return outputRouteBuilder.build();
@@ -178,7 +181,7 @@ class VirtualEigrpProcess {
    * @return integer hashcode
    */
   int computeIterationHashCode() {
-    return _externalRib.getRoutes().hashCode()
+    return _externalRib.getTypedRoutes().hashCode()
         + _incomingRoutes.values().stream()
             .flatMap(Queue::stream)
             .mapToInt(RouteAdvertisement::hashCode)
@@ -190,17 +193,17 @@ class VirtualEigrpProcess {
   }
 
   /** Merge internal EIGRP RIB into a general EIGRP RIB, then merge that into the independent RIB */
-  void importInternalRoutes(Rib independentRib) {
+  void importInternalRoutes(Rib independentRib, String vrfName) {
     importRib(_rib, _internalRib);
-    importRib(independentRib, _rib);
+    importRib(independentRib, _rib, vrfName);
   }
 
-  void initExports(Map<String, Node> allNodes, Set<AbstractRoute> mainRoutes) {
+  void initExports(Map<String, Node> allNodes, Set<AnnotatedRoute<AbstractRoute>> mainRoutes) {
 
     // For each route in the previous RIB, compute an export route and add it
     RibDelta.Builder<EigrpExternalRoute> builder = RibDelta.builder();
 
-    for (AbstractRoute potentialExport : mainRoutes) {
+    for (AnnotatedRoute<AbstractRoute> potentialExport : mainRoutes) {
       EigrpExternalRoute outputRoute = computeEigrpExportRoute(potentialExport);
       if (outputRoute == null) {
         continue; // no need to export
@@ -328,7 +331,7 @@ class VirtualEigrpProcess {
     Ip nextHopIp = neighborInterface.getAddress().getIp();
     boolean changed = false;
     Set<EigrpInternalRoute> neighborRoutes =
-        requireNonNull(neighborVirtualRouter.getEigrpProcess(asn))._internalRib.getRoutes();
+        requireNonNull(neighborVirtualRouter.getEigrpProcess(asn))._internalRib.getTypedRoutes();
     for (EigrpInternalRoute neighborRoute : neighborRoutes) {
       EigrpMetric newMetric =
           connectingInterfaceMetric.accumulate(
@@ -388,13 +391,15 @@ class VirtualEigrpProcess {
   boolean unstageExternalRoutes(
       Map<String, Node> allNodes,
       @Nonnull RibDelta<EigrpExternalRoute> delta,
-      RibDelta.Builder<AbstractRoute> mainRibRouteDeltaBuilder,
-      Rib mainRib) {
+      RibDelta.Builder<AnnotatedRoute<AbstractRoute>> mainRibRouteDeltaBuilder,
+      Rib mainRib,
+      String vrfName) {
     RibDelta<EigrpExternalRoute> ribDelta = importRibDelta(_externalRib, delta);
     queueOutgoingExternalRoutes(allNodes, delta);
     RibDelta.Builder<EigrpRoute> eigrpDeltaBuilder = RibDelta.builder();
     eigrpDeltaBuilder.from(importRibDelta(_rib, ribDelta));
-    mainRibRouteDeltaBuilder.from(importRibDelta(mainRib, eigrpDeltaBuilder.build()));
+    mainRibRouteDeltaBuilder.from(
+        RibDelta.importRibDelta(mainRib, eigrpDeltaBuilder.build(), vrfName));
     return !ribDelta.isEmpty();
   }
 

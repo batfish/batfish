@@ -1,6 +1,7 @@
 package org.batfish.dataplane;
 
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.contains;
@@ -183,10 +184,10 @@ public class FibImplTest {
             .setNonForwarding(false)
             .build();
 
-    rib.mergeRoute(nonForwardingRoute);
-    rib.mergeRoute(forwardingRoute);
+    rib.mergeRoute(annotateRoute(nonForwardingRoute));
+    rib.mergeRoute(annotateRoute(forwardingRoute));
 
-    Fib fib = new FibImpl(rib);
+    Fib fib = new FibImpl<>(rib);
     Set<AbstractRoute> fibRoutes = fib.getRoutesByNextHopInterface().get("Eth1");
 
     assertThat(fibRoutes, not(hasItem(hasPrefix(Prefix.parse("1.1.1.0/24")))));
@@ -221,11 +222,11 @@ public class FibImplTest {
             .setNonForwarding(false)
             .build();
 
-    rib.mergeRoute(nonForwardingRoute);
-    rib.mergeRoute(forwardingLessSpecificRoute);
-    rib.mergeRoute(testRoute);
+    rib.mergeRoute(annotateRoute(nonForwardingRoute));
+    rib.mergeRoute(annotateRoute(forwardingLessSpecificRoute));
+    rib.mergeRoute(annotateRoute(testRoute));
 
-    Fib fib = new FibImpl(rib);
+    Fib fib = new FibImpl<>(rib);
     Set<AbstractRoute> fibRoutesEth1 = fib.getRoutesByNextHopInterface().get("Eth1");
 
     /* 2.2.2.0/24 should resolve to the "forwardingLessSpecificRoute" and thus eth1 */
@@ -280,13 +281,13 @@ public class FibImplTest {
             .setNonForwarding(false)
             .build();
 
-    rib.mergeRoute(nonForwardingRoute);
-    rib.mergeRoute(forwardingLessSpecificRoute);
-    rib.mergeRoute(testRoute);
-    rib.mergeRoute(ecmpForwardingRoute1);
-    rib.mergeRoute(ecmpForwardingRoute2);
+    rib.mergeRoute(annotateRoute(nonForwardingRoute));
+    rib.mergeRoute(annotateRoute(forwardingLessSpecificRoute));
+    rib.mergeRoute(annotateRoute(testRoute));
+    rib.mergeRoute(annotateRoute(ecmpForwardingRoute1));
+    rib.mergeRoute(annotateRoute(ecmpForwardingRoute2));
 
-    Fib fib = new FibImpl(rib);
+    Fib fib = new FibImpl<>(rib);
 
     /* 2.2.2.0/24 should resolve to eth3 and eth4*/
     assertThat(fib.getRoutesByNextHopInterface().get("Eth3"), hasItem(hasPrefix(TEST_PREFIX)));

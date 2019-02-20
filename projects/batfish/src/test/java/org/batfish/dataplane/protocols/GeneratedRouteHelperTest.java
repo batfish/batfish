@@ -1,5 +1,6 @@
 package org.batfish.dataplane.protocols;
 
+import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -92,14 +93,15 @@ public class GeneratedRouteHelperTest {
             gr,
             policy,
             ImmutableSet.of(
-                StaticRoute.builder()
-                    .setNetwork(Prefix.parse("2.2.2.2/32"))
-                    .setNextHopIp(null)
-                    .setNextHopInterface("eth0")
-                    .setAdministrativeCost(1)
-                    .setMetric(0L)
-                    .setTag(1)
-                    .build()),
+                annotateRoute(
+                    StaticRoute.builder()
+                        .setNetwork(Prefix.parse("2.2.2.2/32"))
+                        .setNextHopIp(null)
+                        .setNextHopInterface("eth0")
+                        .setAdministrativeCost(1)
+                        .setMetric(0L)
+                        .setTag(1)
+                        .build())),
             "vrf");
 
     assertThat(newRoute, notNullValue());

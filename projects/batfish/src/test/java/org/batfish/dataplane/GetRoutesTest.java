@@ -1,6 +1,6 @@
 package org.batfish.dataplane;
 
-import static org.hamcrest.Matchers.emptyIterableOf;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertThat;
 
@@ -73,7 +73,6 @@ public class GetRoutesTest {
     assertThat(routes, hasKey(n1.getHostname()));
     // Empty VRF is there
     assertThat(routes.get(n1.getHostname()), hasKey(emptyVrf.getName()));
-    assertThat(
-        routes.get(n1.getHostname()).get(emptyVrf.getName()), emptyIterableOf(AbstractRoute.class));
+    assertThat(routes.get(n1.getHostname()).get(emptyVrf.getName()), empty());
   }
 }
