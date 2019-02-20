@@ -50,7 +50,7 @@
                     "icmpTypes": { "optional": true },
                     "ipProtocols": { "optional": true },
                     "packetLengths": { "optional": true },
-                    "srcIps": { "optional": true, "type": "ipSpaceSpec" },
+                    "srcIps": { "optional": true, "type": "ipSpaceSpec"},
                     "srcPorts": { "optional": true },
                     "tcpFlags": { "optional": true }
                 }
