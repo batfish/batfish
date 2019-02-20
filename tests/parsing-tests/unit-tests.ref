@@ -72802,7 +72802,7 @@
                 62,
                 63
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "dead:beef::1" : {
               "definitionLines" : [
@@ -72829,7 +72829,7 @@
                 40,
                 41
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           },
           "bgp process" : {
@@ -77663,6 +77663,18 @@
           }
         },
         "configs/f5_bigip_structured_net_routing_bgp" : {
+          "bgp neighbor" : {
+            "192.0.2.1" : {
+              "bgp neighbor self-reference" : [
+                42
+              ]
+            },
+            "dead:beef::1" : {
+              "bgp neighbor self-reference" : [
+                20
+              ]
+            }
+          },
           "bgp process" : {
             "/Common/my_bgp" : {
               "bgp process self-reference" : [

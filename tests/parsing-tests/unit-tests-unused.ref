@@ -3432,10 +3432,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 227 results",
+      "notes" : "Found 225 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 227
+      "numResults" : 225
     }
   }
 ]
