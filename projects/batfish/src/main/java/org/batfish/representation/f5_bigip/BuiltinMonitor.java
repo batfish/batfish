@@ -10,9 +10,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public interface BuiltinMonitor extends Builtin {
 
   public static @Nullable BuiltinMonitor getBuiltinMonitor(String name) {
+    String unqualifiedName = Builtin.unqualify(name);
     return Stream.<Function<String, ? extends BuiltinMonitor>>of(
             BuiltinMonitorHttp::forName, BuiltinMonitorHttps::forName)
-        .map(f -> f.apply(name))
+        .map(f -> f.apply(unqualifiedName))
         .filter(Objects::nonNull)
         .findAny()
         .orElse(null);

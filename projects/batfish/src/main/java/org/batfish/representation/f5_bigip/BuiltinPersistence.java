@@ -10,9 +10,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public interface BuiltinPersistence extends Builtin {
 
   public static @Nullable BuiltinPersistence getBuiltinPersistence(String name) {
+    String unqualifiedName = Builtin.unqualify(name);
     return Stream.<Function<String, ? extends BuiltinPersistence>>of(
             BuiltinPersistenceSourceAddr::forName, BuiltinPersistenceSsl::forName)
-        .map(f -> f.apply(name))
+        .map(f -> f.apply(unqualifiedName))
         .filter(Objects::nonNull)
         .findAny()
         .orElse(null);

@@ -229,12 +229,14 @@ public final class F5BigipStructuredGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ans =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ImmutableSet.Builder<String> customReferencedStructures = ImmutableSet.builder();
 
     // persistence source-addr
     {
       String undefined = "/Common/persistence_source_addr_undefined";
       String unused = "/Common/persistence_source_addr_unused";
       String used = "/Common/persistence_source_addr_used";
+      customReferencedStructures.add(undefined).add(used);
       // detect undefined references
       assertThat(ans, hasUndefinedReference(file, PERSISTENCE, undefined));
       assertThat(ans, hasUndefinedReference(file, PERSISTENCE_SOURCE_ADDR, undefined));
@@ -244,6 +246,7 @@ public final class F5BigipStructuredGrammarTest {
 
       // detect all structure references
       assertThat(ans, hasNumReferrers(file, PERSISTENCE_SOURCE_ADDR, used, 2));
+
     }
 
     // persistence ssl
@@ -251,6 +254,7 @@ public final class F5BigipStructuredGrammarTest {
       String undefined = "/Common/persistence_ssl_undefined";
       String unused = "/Common/persistence_ssl_unused";
       String used = "/Common/persistence_ssl_used";
+      customReferencedStructures.add(undefined).add(used);
       // detect undefined references
       assertThat(ans, hasUndefinedReference(file, PERSISTENCE, undefined));
       assertThat(ans, hasUndefinedReference(file, PERSISTENCE_SSL, undefined));
@@ -261,6 +265,11 @@ public final class F5BigipStructuredGrammarTest {
       // detect all structure references
       assertThat(ans, hasNumReferrers(file, PERSISTENCE_SSL, used, 2));
     }
+
+    // Only custom structures should be referenced; references to builtins should be ignored. 
+    assertThat(
+        ans.getReferencedStructures().get(file).get(PERSISTENCE.getDescription()).keySet(),
+        equalTo(customReferencedStructures.build()));
   }
 
   @Test

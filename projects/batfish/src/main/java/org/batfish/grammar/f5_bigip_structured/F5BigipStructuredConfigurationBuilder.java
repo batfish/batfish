@@ -155,6 +155,9 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.WordConte
 import org.batfish.representation.f5_bigip.BgpAddressFamily;
 import org.batfish.representation.f5_bigip.BgpIpv4AddressFamily;
 import org.batfish.representation.f5_bigip.BgpProcess;
+import org.batfish.representation.f5_bigip.BuiltinMonitor;
+import org.batfish.representation.f5_bigip.BuiltinPersistence;
+import org.batfish.representation.f5_bigip.BuiltinProfile;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.representation.f5_bigip.F5BigipStructureUsage;
 import org.batfish.representation.f5_bigip.Interface;
