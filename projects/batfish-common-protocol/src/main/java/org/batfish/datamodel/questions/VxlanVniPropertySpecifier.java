@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.Schema;
 
 /**
@@ -71,11 +70,6 @@ public class VxlanVniPropertySpecifier extends PropertySpecifier {
     _expression =
         properties.stream().map(String::trim).map(Pattern::quote).collect(Collectors.joining("|"));
     _pattern = Pattern.compile(_expression, Pattern.CASE_INSENSITIVE);
-  }
-
-  /** Returns a list of suggestions based on the query, based on {@link PropertySpecifier}. */
-  public static List<AutocompleteSuggestion> autoComplete(String query) {
-    return PropertySpecifier.baseAutoComplete(query, JAVA_MAP.keySet());
   }
 
   @Override

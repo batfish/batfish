@@ -1,10 +1,9 @@
 package org.batfish.common.util;
 
-import static org.batfish.common.util.CompletionMetadataUtils.getAddressBooks;
-import static org.batfish.common.util.CompletionMetadataUtils.getAddressGroups;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
 import static org.batfish.common.util.CompletionMetadataUtils.getIps;
+import static org.batfish.common.util.CompletionMetadataUtils.getNodes;
 import static org.batfish.common.util.CompletionMetadataUtils.getPrefixes;
 import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
@@ -13,6 +12,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.HashMap;
@@ -38,9 +38,6 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.referencelibrary.AddressGroup;
-import org.batfish.referencelibrary.ReferenceBook;
-import org.batfish.referencelibrary.ReferenceLibrary;
 import org.junit.Test;
 
 public final class CompletionMetadataUtilsTest {
@@ -52,41 +49,6 @@ public final class CompletionMetadataUtilsTest {
       config.getAllInterfaces().put(interfaceName, new Interface(interfaceName, config));
     }
     return config;
-  }
-
-  @Test
-  public void testGetAddressBooks() {
-    String book1 = "book1";
-    String book2 = "book2";
-
-    ReferenceBook refBook1 = ReferenceBook.builder(book1).build();
-    ReferenceBook refBook2 = ReferenceBook.builder(book2).build();
-
-    ReferenceLibrary referenceLibrary = new ReferenceLibrary(ImmutableList.of(refBook1, refBook2));
-
-    assertThat(getAddressBooks(referenceLibrary), equalTo(ImmutableSet.of(book1, book2)));
-  }
-
-  @Test
-  public void testGetAddressGroups() {
-    String group1 = "group1";
-    String group2 = "group2";
-
-    AddressGroup addressGroup1 = new AddressGroup(null, group1);
-    AddressGroup addressGroup2 = new AddressGroup(null, group2);
-
-    ReferenceBook refBook1 =
-        ReferenceBook.builder("book1")
-            .setAddressGroups(ImmutableList.of(addressGroup1, addressGroup2))
-            .build();
-    ReferenceBook refBook2 =
-        ReferenceBook.builder("book2").setAddressGroups(ImmutableList.of(addressGroup1)).build();
-    ReferenceBook refBook3 = ReferenceBook.builder("book3").build();
-
-    ReferenceLibrary referenceLibrary =
-        new ReferenceLibrary(ImmutableList.of(refBook1, refBook2, refBook3));
-
-    assertThat(getAddressGroups(referenceLibrary), equalTo(ImmutableSet.of(group1, group2)));
   }
 
   @Test
@@ -157,6 +119,19 @@ public final class CompletionMetadataUtilsTest {
     configs.put(nodeName, config);
 
     assertThat(getIps(configs), equalTo(ImmutableSet.of(ip1, ip2, ip3)));
+  }
+
+  @Test
+  public void testGetNodes() {
+    String node1 = "node1";
+    String node2 = "node2";
+
+    Map<String, Configuration> configs =
+        ImmutableMap.of(
+            node1, createTestConfiguration(node1, ConfigurationFormat.HOST),
+            node2, createTestConfiguration(node2, ConfigurationFormat.HOST));
+
+    assertThat(getNodes(configs), equalTo(ImmutableSet.of(node1, node2)));
   }
 
   @Test

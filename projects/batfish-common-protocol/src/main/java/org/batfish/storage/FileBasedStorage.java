@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -61,6 +62,7 @@ import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
@@ -226,6 +228,30 @@ public final class FileBasedStorage implements StorageProvider {
     } catch (IOException e) {
       _logger.warnf(
           "Unexpected exception caught while loading interface blacklist for snapshot %s: %s",
+          snapshot, Throwables.getStackTraceAsString(e));
+      return null;
+    }
+  }
+
+  @Override
+  public @Nullable IspConfiguration loadIspConfiguration(NetworkId network, SnapshotId snapshot) {
+    Path path =
+        _d.getSnapshotDir(network, snapshot)
+            .resolve(
+                Paths.get(
+                    BfConsts.RELPATH_INPUT,
+                    BfConsts.RELPATH_BATFISH_CONFIGS_DIR,
+                    BfConsts.RELPATH_ISP_CONFIG_FILE));
+    if (!Files.exists(path)) {
+      return null;
+    }
+    String fileText = CommonUtil.readFile(path);
+    try {
+      return BatfishObjectMapper.mapper()
+          .readValue(fileText, new TypeReference<IspConfiguration>() {});
+    } catch (IOException e) {
+      _logger.warnf(
+          "Unexpected exception caught while loading ISP configuration for snapshot %s: %s",
           snapshot, Throwables.getStackTraceAsString(e));
       return null;
     }
@@ -823,6 +849,36 @@ public final class FileBasedStorage implements StorageProvider {
     return Files.isDirectory(objectPath)
         ? ZipUtility.zipFilesToInputStream(objectPath)
         : Files.newInputStream(objectPath);
+  }
+
+  @Override
+  public @Nonnull List<StoredObjectMetadata> getSnapshotInputObjectsMetadata(
+      NetworkId networkId, SnapshotId snapshotId) throws IOException {
+    Path objectPath = _d.getSnapshotInputObjectsDir(networkId, snapshotId);
+    if (!Files.exists(objectPath)) {
+      throw new FileNotFoundException(String.format("Could not load: %s", objectPath));
+    }
+
+    try {
+      return Files.walk(objectPath)
+          .filter(Files::isRegularFile)
+          .map(
+              path ->
+                  new StoredObjectMetadata(
+                      objectPath.relativize(path).toString(), getObjectSize(path)))
+          .collect(Collectors.toList());
+    } catch (BatfishException e) {
+      throw new IOException(e);
+    }
+  }
+
+  private long getObjectSize(Path objectPath) {
+    try {
+      return Files.size(objectPath);
+    } catch (IOException e) {
+      throw new BatfishException(
+          String.format("Could not get size of object at path: %s", objectPath), e);
+    }
   }
 
   @VisibleForTesting

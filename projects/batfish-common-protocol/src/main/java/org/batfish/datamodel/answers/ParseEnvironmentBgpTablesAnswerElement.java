@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.BatfishException;
+import org.batfish.common.ErrorDetails;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 
@@ -15,7 +16,7 @@ public class ParseEnvironmentBgpTablesAnswerElement extends ParseAnswerElement
 
   private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
 
-  private SortedMap<String, String> _errorMessages;
+  private SortedMap<String, ErrorDetails> _errorDetails;
 
   private SortedMap<String, ParseStatus> _parseStatus;
 
@@ -27,7 +28,7 @@ public class ParseEnvironmentBgpTablesAnswerElement extends ParseAnswerElement
 
   public ParseEnvironmentBgpTablesAnswerElement() {
     _errors = new TreeMap<>();
-    _errorMessages = new TreeMap<>();
+    _errorDetails = new TreeMap<>();
     _parseStatus = new TreeMap<>();
     _parseTrees = new TreeMap<>();
     _warnings = new TreeMap<>();
@@ -39,8 +40,8 @@ public class ParseEnvironmentBgpTablesAnswerElement extends ParseAnswerElement
   }
 
   @Override
-  public SortedMap<String, String> getErrorMessages() {
-    return _errorMessages;
+  public SortedMap<String, ErrorDetails> getErrorDetails() {
+    return _errorDetails;
   }
 
   @Override

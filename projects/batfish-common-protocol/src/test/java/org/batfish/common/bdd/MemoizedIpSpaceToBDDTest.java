@@ -1,7 +1,8 @@
 package org.batfish.common.bdd;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
@@ -39,8 +40,8 @@ public class MemoizedIpSpaceToBDDTest {
     assertThat(_toBdd.getMemoizedBdd(IP2_IP_SPACE), equalTo(Optional.empty()));
     assertThat(_toBdd.getMemoizedBdd(ACL_IP_SPACE), equalTo(Optional.empty()));
     BDD bdd = _toBdd.visit(ACL_IP_SPACE);
-    assertThat("IP1_IP_SPACE should be memoized", _toBdd.getMemoizedBdd(IP1_IP_SPACE).isPresent());
-    assertThat("IP2_IP_SPACE should be memoized", _toBdd.getMemoizedBdd(IP2_IP_SPACE).isPresent());
+    assertTrue("IP1_IP_SPACE should be memoized", _toBdd.getMemoizedBdd(IP1_IP_SPACE).isPresent());
+    assertTrue("IP2_IP_SPACE should be memoized", _toBdd.getMemoizedBdd(IP2_IP_SPACE).isPresent());
     assertThat(_toBdd.getMemoizedBdd(ACL_IP_SPACE), equalTo(Optional.of(bdd)));
   }
 }

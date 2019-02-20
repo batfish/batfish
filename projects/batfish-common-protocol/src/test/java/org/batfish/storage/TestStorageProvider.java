@@ -3,6 +3,7 @@ package org.batfish.storage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -19,6 +20,7 @@ import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
@@ -58,6 +60,12 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public SortedSet<NodeInterfacePair> loadInterfaceBlacklist(
       NetworkId network, SnapshotId snapshot) {
+    throw new UnsupportedOperationException("no implementation for generated method");
+  }
+
+  @Nullable
+  @Override
+  public IspConfiguration loadIspConfiguration(NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
@@ -272,6 +280,12 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public InputStream loadSnapshotInputObject(NetworkId networkId, SnapshotId snapshotId, String key)
       throws FileNotFoundException, IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public @Nonnull List<StoredObjectMetadata> getSnapshotInputObjectsMetadata(
+      NetworkId networkId, SnapshotId snapshotId) throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException();
   }
 

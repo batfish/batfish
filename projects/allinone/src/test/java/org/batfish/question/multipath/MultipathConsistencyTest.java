@@ -9,15 +9,14 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressVrf;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIpProtocol;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasTag;
-import static org.batfish.datamodel.matchers.FlowTraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_FLOW;
 import static org.batfish.question.traceroute.TracerouteAnswerer.COL_TRACES;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.oneOf;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
@@ -52,43 +51,6 @@ public class MultipathConsistencyTest {
     _testNetwork = new TestNetwork();
     _batfish = BatfishTestUtils.getBatfish(_testNetwork._configs, temp);
     _batfish.computeDataPlane();
-  }
-
-  @Test
-  public void testMultipath_oldtraceroute() {
-    _batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
-    MultipathConsistencyQuestion question = new MultipathConsistencyQuestion();
-    MultipathConsistencyAnswerer answerer = new MultipathConsistencyAnswerer(question, _batfish);
-    TableAnswerElement ae = (TableAnswerElement) answerer.answer();
-
-    assertThat(ae.getRows(), hasSize(1));
-
-    assertThat(
-        ae.getRows().getData().iterator().next(),
-        hasColumn(
-            COL_FLOW,
-            allOf(
-                ImmutableList.of(
-                    hasDstIp(Ip.parse("2.1.0.0")),
-                    hasDstPort(1234),
-                    hasIcmpCode(0),
-                    hasIcmpType(8),
-                    hasIngressNode("~Configuration_0~"),
-                    hasIngressVrf("default"),
-                    hasIpProtocol(IpProtocol.ICMP),
-                    hasSrcIp(oneOf(Ip.parse("2.0.0.0"), Ip.parse("1.0.0.0"))),
-                    hasTag("BASE"))),
-            Schema.FLOW));
-
-    assertThat(
-        ae.getRows().getData().iterator().next(),
-        hasColumn(
-            COL_TRACES,
-            containsInAnyOrder(
-                ImmutableList.of(
-                    hasDisposition(FlowDisposition.DENIED_IN),
-                    hasDisposition(FlowDisposition.ACCEPTED))),
-            Schema.set(Schema.FLOW_TRACE)));
   }
 
   @Test

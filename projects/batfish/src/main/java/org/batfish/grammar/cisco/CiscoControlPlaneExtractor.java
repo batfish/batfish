@@ -7577,6 +7577,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // In process context
     Ip address = toIp(ctx.address);
     Ip mask = (ctx.mask != null) ? toIp(ctx.mask) : address.getClassMask().inverted();
+    if (_format == CISCO_ASA) {
+      mask = mask.inverted();
+    }
     _currentEigrpProcess.getWildcardNetworks().add(new IpWildcard(address, mask));
   }
 
@@ -7588,7 +7591,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return;
     }
     boolean passive = (ctx.NO() == null);
-    String interfaceName = getCanonicalInterfaceName(ctx.i.getText());
+    String interfaceName = ctx.i.getText(); // Note: Interface alias is not canonicalized for ASA
+    if (_format != CISCO_ASA) {
+      interfaceName = getCanonicalInterfaceName(interfaceName);
+    }
     _currentEigrpProcess.getInterfacePassiveStatus().put(interfaceName, passive);
     _configuration.referenceStructure(
         INTERFACE, interfaceName, EIGRP_PASSIVE_INTERFACE, ctx.i.getStart().getLine());
@@ -9160,17 +9166,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       CiscoStructureUsage realStructure,
       CiscoStructureUsage mappedStructure) {
     if (ctx == null) {
+      nat.setInsideInterface(ANY_INTERFACE);
+      nat.setOutsideInterface(ANY_INTERFACE);
       return;
     }
     String inside = ctx.real_if.getText();
     String outside = ctx.mapped_if.getText();
     int line = ctx.getStart().getLine();
+    nat.setInsideInterface(inside);
     if (!inside.equals(ANY_INTERFACE)) {
-      nat.setInsideInterface(inside);
       _configuration.referenceStructure(INTERFACE, inside, realStructure, line);
     }
+    nat.setOutsideInterface(outside);
     if (!outside.equals(ANY_INTERFACE)) {
-      nat.setOutsideInterface(outside);
       _configuration.referenceStructure(INTERFACE, outside, mappedStructure, line);
     }
   }

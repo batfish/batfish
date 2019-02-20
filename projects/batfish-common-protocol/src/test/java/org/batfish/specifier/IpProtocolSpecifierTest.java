@@ -2,12 +2,12 @@ package org.batfish.specifier;
 
 import static org.batfish.specifier.IpProtocolSpecifier.NAME_AND_NUMBER_PATTERN;
 import static org.batfish.specifier.IpProtocolSpecifier.expandProtocols;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

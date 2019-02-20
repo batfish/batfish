@@ -21,69 +21,41 @@ import org.batfish.datamodel.SnmpServer;
 public class RoutingInstance implements Serializable {
 
   private static final double DEFAULT_OSPF_REFERENCE_BANDWIDTH = 1E9;
-
   private static final String MASTER_INTERFACE_NAME = "MASTER_INTERFACE";
 
   /** */
   private static final long serialVersionUID = 1L;
 
   @Nullable private Long _as;
-
   private AggregateRoute _aggregateRouteDefaults;
-
   @Nonnull private Map<RoutingProtocol, String> _appliedRibGroups;
-
-  private final SortedMap<String, DhcpRelayGroup> _dhcpRelayGroups;
-
-  private final SortedMap<String, DhcpRelayServerGroup> _dhcpRelayServerGroups;
-
-  private String _domainName;
-
-  private boolean _exportLocalRoutesLan;
-
-  private boolean _exportLocalRoutesPointToPoint;
-
-  private String _forwardingTableExportPolicy;
-
-  private GeneratedRoute _generatedRouteDefaults;
-
-  private final Interface _globalMasterInterface;
-
-  private String _hostname;
-
-  private final Map<String, Interface> _interfaces;
-
-  private Map<Prefix, IpBgpGroup> _ipBgpGroups;
-
-  @Nonnull private final IsisSettings _isisSettings;
-
-  @Nullable private Integer _loops;
-
-  private BgpGroup _masterBgpGroup;
-
-  private String _name;
-
-  private Map<String, NamedBgpGroup> _namedBgpGroups;
-
-  private final Map<String, NodeDevice> _nodeDevices;
-
-  private Map<Long, OspfArea> _ospfAreas;
-
-  private List<String> _ospfExportPolicies;
-
-  private double _ospfReferenceBandwidth;
-
-  private final Map<String, RoutingInformationBase> _ribs;
-
-  private Ip _routerId;
-
-  private SnmpServer _snmpServer;
-
-  private final JuniperSystem _system;
-
   private Long _confederation;
-
   private Set<Long> _confederationMembers;
+  private final SortedMap<String, DhcpRelayGroup> _dhcpRelayGroups;
+  private final SortedMap<String, DhcpRelayServerGroup> _dhcpRelayServerGroups;
+  private String _domainName;
+  private boolean _exportLocalRoutesLan;
+  private boolean _exportLocalRoutesPointToPoint;
+  private String _forwardingTableExportPolicy;
+  private GeneratedRoute _generatedRouteDefaults;
+  private final Interface _globalMasterInterface;
+  private String _hostname;
+  private final List<String> _instanceImports;
+  private final Map<String, Interface> _interfaces;
+  private Map<Prefix, IpBgpGroup> _ipBgpGroups;
+  @Nonnull private final IsisSettings _isisSettings;
+  @Nullable private Integer _loops;
+  private BgpGroup _masterBgpGroup;
+  private String _name;
+  private Map<String, NamedBgpGroup> _namedBgpGroups;
+  private final Map<String, NodeDevice> _nodeDevices;
+  private Map<Long, OspfArea> _ospfAreas;
+  private List<String> _ospfExportPolicies;
+  private double _ospfReferenceBandwidth;
+  private final Map<String, RoutingInformationBase> _ribs;
+  private Ip _routerId;
+  private SnmpServer _snmpServer;
+  private final JuniperSystem _system;
 
   public RoutingInstance(String name) {
     _aggregateRouteDefaults = initAggregateRouteDefaults();
@@ -93,6 +65,7 @@ public class RoutingInstance implements Serializable {
     _dhcpRelayServerGroups = new TreeMap<>();
     _generatedRouteDefaults = initGeneratedRouteDefaults();
     _isisSettings = new IsisSettings();
+    _instanceImports = new LinkedList<>();
     _interfaces = new TreeMap<>();
     _ipBgpGroups = new TreeMap<>();
     _masterBgpGroup = new BgpGroup();
@@ -172,6 +145,10 @@ public class RoutingInstance implements Serializable {
 
   public String getHostname() {
     return _hostname;
+  }
+
+  public List<String> getInstanceImports() {
+    return _instanceImports;
   }
 
   public Map<String, Interface> getInterfaces() {

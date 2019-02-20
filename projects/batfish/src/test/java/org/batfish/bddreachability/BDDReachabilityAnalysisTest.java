@@ -9,16 +9,16 @@ import static org.batfish.bddreachability.TestNetwork.DST_PREFIX_2;
 import static org.batfish.bddreachability.TestNetwork.LINK_1_NETWORK;
 import static org.batfish.bddreachability.TestNetwork.LINK_2_NETWORK;
 import static org.batfish.bddreachability.TestNetwork.POST_SOURCE_NAT_ACL_DEST_PORT;
-import static org.batfish.bddreachability.TestNetwork.SOURCE_NAT_ACL_IP;
 import static org.batfish.common.bdd.BDDMatchers.intersects;
 import static org.batfish.common.bdd.BDDMatchers.isOne;
 import static org.batfish.common.bdd.BDDMatchers.isZero;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -51,19 +51,20 @@ import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
 import org.batfish.z3.state.NodeInterfaceExitsNetwork;
 import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
-import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
+import org.batfish.z3.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.z3.state.PreOutVrf;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+/** Tests of {@link BDDReachabilityAnalysis}. */
 public final class BDDReachabilityAnalysisTest {
   @Rule public TemporaryFolder temp = new TemporaryFolder();
 
@@ -103,7 +104,6 @@ public final class BDDReachabilityAnalysisTest {
   private String _link2DstName;
 
   private BDD _link2SrcIpBDD;
-  private BDD _srcNatAclIpBDD;
 
   private String _srcName;
   private NodeAccept _srcNodeAccept;
@@ -180,7 +180,6 @@ public final class BDDReachabilityAnalysisTest {
         new PreOutEdgePostNat(_srcName, _net._link1Src.getName(), _dstName, _link1DstName);
     _srcPreOutEdgePostNat2 = new PreOutEdgePostNat(_srcName, link2SrcName, _dstName, _link2DstName);
     _srcPreOutVrf = new PreOutVrf(_srcName, DEFAULT_VRF_NAME);
-    _srcNatAclIpBDD = srcIpBDD(SOURCE_NAT_ACL_IP);
   }
 
   private List<Ip> bddIps(BDD bdd) {
@@ -205,10 +204,6 @@ public final class BDDReachabilityAnalysisTest {
 
   private static BDD dstIpBDD(Ip ip) {
     return new IpSpaceToBDD(PKT.getDstIp()).toBDD(ip);
-  }
-
-  private static BDD srcIpBDD(Ip ip) {
-    return new IpSpaceToBDD(PKT.getSrcIp()).toBDD(ip);
   }
 
   private static BDD dstPortBDD(int destPort) {
@@ -292,19 +287,18 @@ public final class BDDReachabilityAnalysisTest {
     String link2SrcName = _net._link2Src.getName();
     BDD nodeDropNullRoute = bddTransition(_srcPreOutVrf, new NodeDropNullRoute(_srcName));
     BDD nodeInterfaceNeighborUnreachable1 =
-        bddTransition(_srcPreOutVrf, new NodeInterfaceNeighborUnreachable(_srcName, link1SrcName));
+        bddTransition(
+            _srcPreOutVrf, new PreOutInterfaceNeighborUnreachable(_srcName, link1SrcName));
     BDD nodeInterfaceNeighborUnreachable2 =
-        bddTransition(_srcPreOutVrf, new NodeInterfaceNeighborUnreachable(_srcName, link2SrcName));
+        bddTransition(
+            _srcPreOutVrf, new PreOutInterfaceNeighborUnreachable(_srcName, link2SrcName));
     BDD preOutEdge1 = bddTransition(_srcPreOutVrf, _srcPreOutEdge1);
     BDD preOutEdge2 = bddTransition(_srcPreOutVrf, _srcPreOutEdge2);
-    BDD postNatAclBDD = dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT);
 
     assertThat(nodeDropNullRoute, isZero());
 
-    assertThat(nodeInterfaceNeighborUnreachable1, equalTo(_link1SrcIpBDD));
-    assertThat(
-        nodeInterfaceNeighborUnreachable2,
-        equalTo(_srcNatAclIpBDD.not().and(_link2SrcIpBDD).and(postNatAclBDD)));
+    assertEquals(nodeInterfaceNeighborUnreachable1, _link1SrcIpBDD);
+    assertEquals(nodeInterfaceNeighborUnreachable2, _link2SrcIpBDD);
 
     assertThat(
         bddIps(preOutEdge1),
@@ -373,17 +367,19 @@ public final class BDDReachabilityAnalysisTest {
     // neighbor unreachable
     assertThat(
         bddTransition(
-            _dstPreOutVrf, new NodeInterfaceNeighborUnreachable(_dstName, _dstIface1Name)),
+            _dstPreOutVrf, new PreOutInterfaceNeighborUnreachable(_dstName, _dstIface1Name)),
         equalTo(_dstIface1IpBDD));
     assertThat(
         bddTransition(
-            _dstPreOutVrf, new NodeInterfaceNeighborUnreachable(_dstName, _dstIface2Name)),
+            _dstPreOutVrf, new PreOutInterfaceNeighborUnreachable(_dstName, _dstIface2Name)),
         equalTo(_dstIface2IpBDD));
     assertThat(
-        bddTransition(_dstPreOutVrf, new NodeInterfaceNeighborUnreachable(_dstName, _link1DstName)),
+        bddTransition(
+            _dstPreOutVrf, new PreOutInterfaceNeighborUnreachable(_dstName, _link1DstName)),
         equalTo(_link1DstIpBDD));
     assertThat(
-        bddTransition(_dstPreOutVrf, new NodeInterfaceNeighborUnreachable(_dstName, _link2DstName)),
+        bddTransition(
+            _dstPreOutVrf, new PreOutInterfaceNeighborUnreachable(_dstName, _link2DstName)),
         equalTo(_link2DstIpBDD));
 
     // insufficient info

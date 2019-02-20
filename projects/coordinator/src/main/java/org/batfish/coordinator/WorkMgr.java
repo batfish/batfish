@@ -95,11 +95,7 @@ import org.batfish.coordinator.config.Settings;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.coordinator.resources.ForkSnapshotBean;
 import org.batfish.datamodel.AnalysisMetadata;
-import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.FlowState;
-import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
-import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.SnapshotMetadataEntry;
 import org.batfish.datamodel.acl.AclTrace;
@@ -110,6 +106,7 @@ import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerMetadataUtil;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AnswerSummary;
+import org.batfish.datamodel.answers.AutoCompleteUtils;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.Issue;
 import org.batfish.datamodel.answers.MajorIssueConfig;
@@ -124,16 +121,6 @@ import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
-import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
-import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
-import org.batfish.datamodel.questions.ConfiguredSessionStatus;
-import org.batfish.datamodel.questions.InterfacePropertySpecifier;
-import org.batfish.datamodel.questions.IpsecSessionStatus;
-import org.batfish.datamodel.questions.NamedStructureSpecifier;
-import org.batfish.datamodel.questions.NodePropertySpecifier;
-import org.batfish.datamodel.questions.NodesSpecifier;
-import org.batfish.datamodel.questions.OspfPropertySpecifier;
-import org.batfish.datamodel.questions.PropertySpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -152,13 +139,10 @@ import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
-import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
-import org.batfish.specifier.DispositionSpecifier;
-import org.batfish.specifier.IpProtocolSpecifier;
-import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.storage.FileBasedStorageDirectoryProvider;
 import org.batfish.storage.StorageProvider;
+import org.batfish.storage.StoredObjectMetadata;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -287,12 +271,10 @@ public class WorkMgr extends AbstractCoordinator {
             .startActive()) {
       assert assignWorkSpan != null; // avoid unused warning
       // get the task and add other standard stuff
-      JSONObject task = new JSONObject(work.getWorkItem().getRequestParams());
-      task.put(BfConsts.ARG_CONTAINER, work.getWorkItem().getContainerName());
+      JSONObject task = new JSONObject(work.resolveRequestParams());
       task.put(
           BfConsts.ARG_STORAGE_BASE,
           Main.getSettings().getContainersLocation().toAbsolutePath().toString());
-      task.put(BfConsts.ARG_TESTRIG, work.getWorkItem().getTestrigName());
 
       client =
           CommonUtil.createHttpClientBuilder(
@@ -427,219 +409,15 @@ public class WorkMgr extends AbstractCoordinator {
       int maxSuggestions)
       throws IOException {
 
-    List<AutocompleteSuggestion> suggestions;
-
-    switch (completionType) {
-      case ADDRESS_BOOK:
-        {
-          CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
-          if (completionMetadata == null) {
-            return null;
-          }
-          suggestions =
-              PropertySpecifier.baseAutoComplete(query, completionMetadata.getAddressBooks());
-
-          break;
-        }
-      case ADDRESS_GROUP:
-        {
-          CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
-          if (completionMetadata == null) {
-            return null;
-          }
-          suggestions =
-              PropertySpecifier.baseAutoComplete(query, completionMetadata.getAddressGroups());
-          break;
-        }
-      case BGP_PEER_PROPERTY_SPEC:
-        {
-          suggestions = BgpPeerPropertySpecifier.autoComplete(query);
-          break;
-        }
-      case BGP_PROCESS_PROPERTY_SPEC:
-        {
-          suggestions = BgpProcessPropertySpecifier.autoComplete(query);
-          break;
-        }
-      case BGP_SESSION_STATUS:
-        {
-          suggestions =
-              PropertySpecifier.baseAutoComplete(
-                  query,
-                  Stream.of(ConfiguredSessionStatus.values())
-                      .map(ConfiguredSessionStatus::name)
-                      .collect(Collectors.toSet()));
-          break;
-        }
-      case BGP_SESSION_TYPE:
-        {
-          suggestions =
-              PropertySpecifier.baseAutoComplete(
-                  query,
-                  Stream.of(SessionType.values())
-                      .map(SessionType::name)
-                      .collect(Collectors.toSet()));
-
-          break;
-        }
-      case DISPOSITION_SPEC:
-        {
-          suggestions = DispositionSpecifier.autoComplete(query);
-          break;
-        }
-      case FILTER:
-        {
-          CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
-          if (completionMetadata == null) {
-            return null;
-          }
-          suggestions =
-              PropertySpecifier.baseAutoComplete(query, completionMetadata.getFilterNames());
-          break;
-        }
-      case FLOW_STATE:
-        {
-          suggestions =
-              PropertySpecifier.baseAutoComplete(
-                  query,
-                  Stream.of(FlowState.values()).map(FlowState::name).collect(Collectors.toSet()));
-          break;
-        }
-      case INTERFACE:
-        {
-          CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
-          if (completionMetadata == null) {
-            return null;
-          }
-          suggestions =
-              PropertySpecifier.baseAutoComplete(
-                  query,
-                  completionMetadata.getInterfaces().stream()
-                      .map(NodeInterfacePair::toString)
-                      .collect(Collectors.toSet()));
-          break;
-        }
-      case INTERFACE_PROPERTY_SPEC:
-        {
-          suggestions = InterfacePropertySpecifier.autoComplete(query);
-          break;
-        }
-      case IP:
-        {
-          CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
-          if (completionMetadata == null) {
-            return null;
-          }
-          suggestions = PropertySpecifier.baseAutoComplete(query, completionMetadata.getIps());
-          break;
-        }
-      case IP_PROTOCOL_SPEC:
-        {
-          suggestions = IpProtocolSpecifier.autoComplete(query);
-          break;
-        }
-      case IPSEC_SESSION_STATUS:
-        {
-          suggestions =
-              PropertySpecifier.baseAutoComplete(
-                  query,
-                  Stream.of(IpsecSessionStatus.values())
-                      .map(IpsecSessionStatus::name)
-                      .collect(Collectors.toSet()));
-          break;
-        }
-      case NAMED_STRUCTURE_SPEC:
-        {
-          suggestions = NamedStructureSpecifier.autoComplete(query);
-          break;
-        }
-      case NODE_PROPERTY_SPEC:
-        {
-          suggestions = NodePropertySpecifier.autoComplete(query);
-          break;
-        }
-      case NODE_ROLE_DIMENSION:
-        {
-          checkArgument(
-              !isNullOrEmpty(network),
-              "Network name should be supplied for 'NODE_ROLE_DIMENSION' autoCompletion");
-          suggestions =
-              PropertySpecifier.baseAutoComplete(
-                  query,
-                  getNetworkNodeRoles(network).getNodeRoleDimensions().stream()
-                      .map(NodeRoleDimension::getName)
-                      .collect(Collectors.toSet()));
-          break;
-        }
-      case NODE_SPEC:
-        {
-          checkArgument(
-              !isNullOrEmpty(snapshot),
-              "Snapshot name should be supplied for 'NODE' autoCompletion");
-          suggestions =
-              NodesSpecifier.autoComplete(
-                  query, getNodes(network, snapshot), getNetworkNodeRoles(network));
-          break;
-        }
-      case OSPF_PROPERTY_SPEC:
-        {
-          suggestions = OspfPropertySpecifier.autoComplete(query);
-          break;
-        }
-      case PREFIX:
-        {
-          CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
-          if (completionMetadata == null) {
-            return null;
-          }
-          suggestions = PropertySpecifier.baseAutoComplete(query, completionMetadata.getPrefixes());
-          break;
-        }
-      case PROTOCOL:
-        {
-          suggestions =
-              PropertySpecifier.baseAutoComplete(
-                  query,
-                  Stream.of(Protocol.values()).map(Protocol::name).collect(Collectors.toSet()));
-          break;
-        }
-      case ROUTING_PROTOCOL_SPEC:
-        {
-          suggestions = RoutingProtocolSpecifier.autoComplete(query);
-          break;
-        }
-      case STRUCTURE_NAME:
-        {
-          CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
-          if (completionMetadata == null) {
-            return null;
-          }
-          suggestions =
-              PropertySpecifier.baseAutoComplete(query, completionMetadata.getStructureNames());
-          break;
-        }
-      case VRF:
-        {
-          CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
-          if (completionMetadata == null) {
-            return null;
-          }
-          suggestions = PropertySpecifier.baseAutoComplete(query, completionMetadata.getVrfs());
-          break;
-        }
-      case ZONE:
-        {
-          CompletionMetadata completionMetadata = getCompletionMetadata(network, snapshot);
-          if (completionMetadata == null) {
-            return null;
-          }
-          suggestions = PropertySpecifier.baseAutoComplete(query, completionMetadata.getZones());
-          break;
-        }
-      default:
-        throw new IllegalArgumentException("Unsupported completion type: " + completionType);
-    }
-    return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+    return AutoCompleteUtils.autoComplete(
+        network,
+        snapshot,
+        completionType,
+        query,
+        maxSuggestions,
+        getCompletionMetadata(network, snapshot),
+        getNetworkNodeRoles(network),
+        getReferenceLibrary(network));
   }
 
   private void checkTask(QueuedWork work, String worker) {
@@ -727,6 +505,9 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   WorkDetails computeWorkDetails(WorkItem workItem) {
+    String referenceSnapshotName = WorkItemBuilder.getReferenceSnapshotName(workItem);
+    String questionName = WorkItemBuilder.getQuestionName(workItem);
+    String analysisName = WorkItemBuilder.getAnalysisName(workItem);
 
     WorkType workType = WorkType.UNKNOWN;
 
@@ -746,11 +527,7 @@ public class WorkMgr extends AbstractCoordinator {
         throw new BatfishException("Cannot do composite work. Separate ANSWER from other work.");
       }
       Question question =
-          Question.parseQuestion(
-              getQuestion(
-                  workItem.getContainerName(),
-                  WorkItemBuilder.getQuestionName(workItem),
-                  WorkItemBuilder.getAnalysisName(workItem)));
+          Question.parseQuestion(getQuestion(workItem.getNetwork(), questionName, analysisName));
       workType =
           question.getIndependent()
               ? WorkType.INDEPENDENT_ANSWERING
@@ -763,16 +540,15 @@ public class WorkMgr extends AbstractCoordinator {
       if (workType != WorkType.UNKNOWN) {
         throw new BatfishException("Cannot do composite work. Separate ANALYZE from other work.");
       }
-      String aName = WorkItemBuilder.getAnalysisName(workItem);
-      if (aName == null) {
+      if (analysisName == null) {
         throw new BatfishException("Analysis name not provided for ANALYZE work");
       }
-      Set<String> qNames = listAnalysisQuestions(workItem.getContainerName(), aName);
+      Set<String> qNames = listAnalysisQuestions(workItem.getNetwork(), analysisName);
       // compute the strongest dependency among the embedded questions
       workType = WorkType.INDEPENDENT_ANSWERING;
       for (String qName : qNames) {
         Question question =
-            Question.parseQuestion(getQuestion(workItem.getContainerName(), qName, aName));
+            Question.parseQuestion(getQuestion(workItem.getNetwork(), qName, analysisName));
         if (question.getDataPlane()) {
           workType = WorkType.DATAPLANE_DEPENDENT_ANSWERING;
           break;
@@ -783,14 +559,25 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
 
-    WorkDetails details =
-        new WorkDetails(
-            workItem.getTestrigName(),
-            workItem.getRequestParams().get(BfConsts.ARG_DELTA_TESTRIG),
-            WorkItemBuilder.isDifferential(workItem),
-            workType);
-
-    return details;
+    NetworkId networkId = _idManager.getNetworkId(workItem.getNetwork());
+    WorkDetails.Builder builder =
+        WorkDetails.builder()
+            .setNetworkId(networkId)
+            .setSnapshotId(_idManager.getSnapshotId(workItem.getSnapshot(), networkId))
+            .setWorkType(workType)
+            .setIsDifferential(WorkItemBuilder.isDifferential(workItem));
+    if (referenceSnapshotName != null) {
+      builder.setReferenceSnapshotId(_idManager.getSnapshotId(referenceSnapshotName, networkId));
+    }
+    AnalysisId analysisId = null;
+    if (analysisName != null) {
+      analysisId = _idManager.getAnalysisId(analysisName, networkId);
+      builder.setAnalysisId(analysisId);
+    }
+    if (questionName != null) {
+      builder.setQuestionId(_idManager.getQuestionId(questionName, networkId, analysisId));
+    }
+    return builder.build();
   }
 
   /**
@@ -1678,7 +1465,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public QueuedWork getMatchingWork(WorkItem workItem, QueueType qType) {
-    return _workQueueMgr.getMatchingWork(resolveIds(workItem), qType);
+    return _workQueueMgr.getMatchingWork(workItem, qType);
   }
 
   public QueuedWork getWork(UUID workItemId) {
@@ -2199,8 +1986,10 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public List<QueuedWork> listIncompleteWork(
-      String networkName, @Nullable String snapshotName, @Nullable WorkType workType) {
-    return _workQueueMgr.listIncompleteWork(networkName, snapshotName, workType);
+      String network, @Nullable String snapshot, @Nullable WorkType workType) {
+    NetworkId networkId = _idManager.getNetworkId(network);
+    SnapshotId snapshotId = snapshot != null ? _idManager.getSnapshotId(snapshot, networkId) : null;
+    return _workQueueMgr.listIncompleteWork(networkId, snapshotId, workType);
   }
 
   /**
@@ -2296,27 +2085,27 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public boolean queueWork(WorkItem workItem) {
-    NetworkId networkId = _idManager.getNetworkId(requireNonNull(workItem.getContainerName()));
+    NetworkId networkId = _idManager.getNetworkId(requireNonNull(workItem.getNetwork()));
     boolean success;
     try {
       workItem.setSourceSpan(GlobalTracer.get().activeSpan());
       WorkDetails workDetails = computeWorkDetails(workItem);
-      if (SnapshotMetadataMgr.getInitializationMetadata(
-              networkId, _idManager.getSnapshotId(workDetails.baseTestrig, networkId))
+      if (SnapshotMetadataMgr.getInitializationMetadata(networkId, workDetails.getSnapshotId())
           == null) {
         throw new BatfishException(
             String.format(
-                "Initialization metadata not found for snapshot %s", workDetails.baseTestrig));
+                "Initialization metadata not found for snapshot %s", workDetails.getSnapshotId()));
       }
-      if (workDetails.isDifferential
+      if (workDetails.isDifferential()
           && SnapshotMetadataMgr.getInitializationMetadata(
-                  networkId, _idManager.getSnapshotId(workDetails.deltaTestrig, networkId))
+                  networkId, workDetails.getReferenceSnapshotId())
               == null) {
         throw new BatfishException(
             String.format(
-                "Initialization metadata not found for snapshot %s", workDetails.deltaTestrig));
+                "Initialization metadata not found for snapshot %s",
+                workDetails.getReferenceSnapshotId()));
       }
-      success = _workQueueMgr.queueUnassignedWork(resolvedQueuedWork(workItem, workDetails));
+      success = _workQueueMgr.queueUnassignedWork(new QueuedWork(workItem, workDetails));
     } catch (Exception e) {
       throw new BatfishException(String.format("Failed to queue work: %s", e.getMessage()), e);
     }
@@ -2326,67 +2115,6 @@ public class WorkMgr extends AbstractCoordinator {
       thread.start();
     }
     return success;
-  }
-
-  private static @Nonnull QueuedWork resolvedQueuedWork(
-      WorkItem workItem, WorkDetails workDetails) {
-    WorkItem resolvedWorkItem = resolveIds(workItem);
-    return new QueuedWork(resolvedWorkItem, resolveIds(resolvedWorkItem, workDetails));
-  }
-
-  private static @Nonnull WorkDetails resolveIds(
-      WorkItem resolvedWorkItem, WorkDetails workDetails) {
-    return new WorkDetails(
-        resolvedWorkItem.getTestrigName(),
-        resolvedWorkItem.getRequestParams().get(BfConsts.ARG_DELTA_TESTRIG),
-        workDetails.isDifferential,
-        workDetails.workType);
-  }
-
-  static @Nonnull WorkItem resolveIds(WorkItem workItem) {
-    IdManager idManager = Main.getWorkMgr().getIdManager();
-    Map<String, String> params = new HashMap<>(workItem.getRequestParams());
-
-    // network
-    String network = workItem.getContainerName();
-    if (network == null) {
-      return workItem;
-    }
-    NetworkId networkId = idManager.getNetworkId(network);
-    params.put(BfConsts.ARG_CONTAINER, networkId.getId());
-
-    // snapshot
-    String snapshot = workItem.getTestrigName();
-    if (snapshot == null) {
-      return workItem;
-    }
-    SnapshotId snapshotId = idManager.getSnapshotId(snapshot, networkId);
-    params.put(BfConsts.ARG_TESTRIG, snapshotId.getId());
-    params.put(BfConsts.ARG_SNAPSHOT_NAME, snapshot);
-
-    // referenceSnapshot
-    String referenceSnapshot = params.get(BfConsts.ARG_DELTA_TESTRIG);
-    if (referenceSnapshot != null) {
-      SnapshotId referenceSnapshotId = idManager.getSnapshotId(referenceSnapshot, networkId);
-      params.put(BfConsts.ARG_DELTA_TESTRIG, referenceSnapshotId.getId());
-    }
-
-    // analysis
-    AnalysisId analysisId = null;
-    String analysis = params.get(BfConsts.ARG_ANALYSIS_NAME);
-    if (analysis != null) {
-      analysisId = idManager.getAnalysisId(analysis, networkId);
-      params.put(BfConsts.ARG_ANALYSIS_NAME, analysisId.getId());
-    }
-
-    // question
-    String question = params.get(BfConsts.ARG_QUESTION_NAME);
-    if (question != null) {
-      QuestionId questionId = idManager.getQuestionId(question, networkId, analysisId);
-      params.put(BfConsts.ARG_QUESTION_NAME, questionId.getId());
-    }
-
-    return new WorkItem(workItem.getId(), networkId.getId(), snapshotId.getId(), params);
   }
 
   public void startWorkManager() {
@@ -2734,8 +2462,6 @@ public class WorkMgr extends AbstractCoordinator {
       return naturalOrder();
     } else if (schema.equals(Schema.FLOW)) {
       return naturalOrder();
-    } else if (schema.equals(Schema.FLOW_TRACE)) {
-      return naturalOrder();
     } else if (schema.equals(Schema.INTEGER)) {
       return naturalOrder();
     } else if (schema.equals(Schema.INTERFACE)) {
@@ -2877,10 +2603,24 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /**
-   * Reads the {@link NodeRolesData} object for the provided network. If none previously set for
-   * this network, first initialize node roles to the inferred roles of the earliest completed
-   * snapshot if one exists, and return them. If no suitable snapshot exists, return empty node
-   * roles. Returns {@code null} if network does not exist.
+   * Promote snapshot's inferred node roles to network-wide node roles if latter does not yet exist
+   *
+   * @throws IOException if there is an error retrieving snapshot's inferred node roles
+   */
+  public void tryPromoteSnapshotNodeRoles(
+      @Nonnull NetworkId networkId, @Nonnull SnapshotId snapshotId) throws IOException {
+    if (!_idManager.hasNetworkNodeRolesId(networkId)) {
+      putNetworkNodeRoles(
+          getSnapshotNodeRoles(networkId, snapshotId),
+          networkId,
+          _idManager.getSnapshotNodeRolesId(networkId, snapshotId));
+    }
+  }
+
+  /**
+   * Reads the {@link NodeRolesData} object for the provided {@code network}. If none previously set
+   * for this {@code network}, returns empty {@link NodeRolesData}. If {@code network} does not
+   * exist, returns {@code null}.
    *
    * @throws IOException If there is an error
    */
@@ -2890,9 +2630,6 @@ public class WorkMgr extends AbstractCoordinator {
     }
     NetworkId networkId = _idManager.getNetworkId(network);
     if (!_idManager.hasNetworkNodeRolesId(networkId)) {
-      initializeNetworkNodeRolesFromEarliestSnapshot(network);
-    }
-    if (!_idManager.hasNetworkNodeRolesId(networkId)) {
       return NodeRolesData.builder().build();
     }
     NodeRolesId networkNodeRolesId = _idManager.getNetworkNodeRolesId(networkId);
@@ -2901,37 +2638,6 @@ public class WorkMgr extends AbstractCoordinator {
           .readValue(_storage.loadNodeRoles(networkNodeRolesId), NodeRolesData.class);
     } catch (IOException e) {
       throw new IOException("Failed to read network node roles", e);
-    }
-  }
-
-  private void initializeNetworkNodeRolesFromEarliestSnapshot(@Nonnull String network)
-      throws IOException {
-    Optional<String> snapshot =
-        listSnapshotsWithMetadata(network).stream()
-            .filter(WorkMgr::isParsed)
-            .sorted(Comparator.comparing(e -> e.getMetadata().getCreationTimestamp()))
-            .map(SnapshotMetadataEntry::getName)
-            .findFirst();
-    if (snapshot.isPresent()) {
-      putNetworkNodeRoles(getSnapshotNodeRoles(network, snapshot.get()), network);
-    }
-  }
-
-  private static boolean isParsed(@Nonnull SnapshotMetadataEntry snapshotMetadataEntry) {
-    ProcessingStatus processingStatus =
-        snapshotMetadataEntry.getMetadata().getInitializationMetadata().getProcessingStatus();
-    switch (processingStatus) {
-      case DATAPLANED:
-      case DATAPLANING:
-      case DATAPLANING_FAIL:
-      case PARSED:
-        return true;
-
-      case PARSING:
-      case PARSING_FAIL:
-      case UNINITIALIZED:
-      default:
-        return false;
     }
   }
 
@@ -2951,6 +2657,17 @@ public class WorkMgr extends AbstractCoordinator {
       return null;
     }
     SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    return getSnapshotNodeRoles(networkId, snapshotId);
+  }
+
+  /**
+   * Returns the {@link NodeRolesData} object containing only inferred roles for the provided
+   * networkId and snapshotId.
+   *
+   * @throws IOException If there is an error
+   */
+  private @Nonnull NodeRolesData getSnapshotNodeRoles(
+      @Nonnull NetworkId networkId, @Nonnull SnapshotId snapshotId) throws IOException {
     NodeRolesId snapshotNodeRolesId = _idManager.getSnapshotNodeRolesId(networkId, snapshotId);
     return BatfishObjectMapper.mapper()
         .readValue(_storage.loadNodeRoles(snapshotNodeRolesId), NodeRolesData.class);
@@ -3154,6 +2871,27 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  @Nullable
+  public List<StoredObjectMetadata> getSnapshotInputObjectsMetadata(String network, String snapshot)
+      throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return null;
+    }
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    try {
+      return _storage.getSnapshotInputObjectsMetadata(networkId, snapshotId);
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not fetch input keys for network '%s', snapshot '%s'", network, snapshot),
+          e);
+    }
+  }
+
   /**
    * Returns the env topology for the given network and snapshot, or {@code null} if either does not
    * exist.
@@ -3174,20 +2912,34 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /**
-   * Writes the nodeRolesData for the given network. Returns {@code true} if successful. Returns
-   * {@code false} if network does not exist.
+   * Writes the {@code nodeRolesData} for the given {@code network}. Returns {@code true} if
+   * successful. Returns {@code false} if {@code network} does not exist.
    *
    * @throws IOException if there is an error
    */
-  public boolean putNetworkNodeRoles(NodeRolesData nodeRolesData, String network)
+  public boolean putNetworkNodeRoles(@Nonnull NodeRolesData nodeRolesData, @Nonnull String network)
       throws IOException {
     if (!_idManager.hasNetworkId(network)) {
       return false;
     }
     NetworkId networkId = _idManager.getNetworkId(network);
     NodeRolesId networkNodeRolesId = _idManager.generateNetworkNodeRolesId();
-    _storage.storeNodeRoles(nodeRolesData, networkNodeRolesId);
-    _idManager.assignNetworkNodeRolesId(networkId, networkNodeRolesId);
+    putNetworkNodeRoles(nodeRolesData, networkId, networkNodeRolesId);
     return true;
+  }
+
+  /**
+   * Writes the {@code nodeRolesData} for the given {@code networkId} and assigns the given {@code
+   * nodeRolesId}.
+   *
+   * @throws IOException if there is an error
+   */
+  private void putNetworkNodeRoles(
+      @Nonnull NodeRolesData nodeRolesData,
+      @Nonnull NetworkId networkId,
+      @Nonnull NodeRolesId nodeRolesId)
+      throws IOException {
+    _storage.storeNodeRoles(nodeRolesData, nodeRolesId);
+    _idManager.assignNetworkNodeRolesId(networkId, nodeRolesId);
   }
 }

@@ -24,10 +24,20 @@ public final class Nat implements Serializable {
 
   private final Type _type;
 
+  private static final int DEFAULT_FROM_PORT = 1024;
+
+  private static final int DEFAULT_TO_PORT = 63487;
+
+  private int _defaultFromPort;
+
+  private int _defaultToPort;
+
   public Nat(Type type) {
     _type = type;
     _pools = new TreeMap<>();
     _ruleSets = new TreeMap<>();
+    _defaultFromPort = DEFAULT_FROM_PORT;
+    _defaultToPort = DEFAULT_TO_PORT;
   }
 
   @Nonnull
@@ -43,5 +53,21 @@ public final class Nat implements Serializable {
   @Nonnull
   public Type getType() {
     return _type;
+  }
+
+  public int getDefaultFromPort() {
+    return _defaultFromPort;
+  }
+
+  public int getDefaultToPort() {
+    return _defaultToPort;
+  }
+
+  public void setDefaultFromPort(int fromPort) {
+    _defaultFromPort = fromPort;
+  }
+
+  public void setDefaultToPort(int toPort) {
+    _defaultToPort = toPort;
   }
 }

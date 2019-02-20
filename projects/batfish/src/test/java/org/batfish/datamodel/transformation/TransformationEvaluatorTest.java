@@ -15,10 +15,11 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignDest
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -128,7 +129,8 @@ public class TransformationEvaluatorTest {
     TransformationResult result = evalResult(transformation, origFlow);
     assertThat(
         "Noop transformations should return the original (==) flow",
-        result.getOutputFlow() == origFlow);
+        result.getOutputFlow(),
+        sameInstance(origFlow));
 
     assertThat(
         result.getTraceSteps(),
@@ -276,15 +278,13 @@ public class TransformationEvaluatorTest {
     assertThat(result.getOutputFlow(), equalTo(origFlow.toBuilder().setDstPort(poolPort).build()));
 
     List<Step<?>> traceSteps = result.getTraceSteps();
-    assertThat(traceSteps, hasSize(1));
-    assertThat(
-        traceSteps.get(0),
-        equalTo(
-            new org.batfish.datamodel.flow.TransformationStep(
-                new TransformationStepDetail(
-                    DEST_NAT,
-                    ImmutableSortedSet.of(flowDiff(PortField.DESTINATION, dstPort, poolPort))),
-                TRANSFORMED)));
+    TransformationStep step =
+        new TransformationStep(
+            new TransformationStepDetail(
+                DEST_NAT,
+                ImmutableSortedSet.of(flowDiff(PortField.DESTINATION, dstPort, poolPort))),
+            TRANSFORMED);
+    assertThat(traceSteps, contains(step));
   }
 
   @Test

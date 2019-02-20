@@ -1,7 +1,7 @@
 package org.batfish.referencelibrary;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import java.io.IOException;

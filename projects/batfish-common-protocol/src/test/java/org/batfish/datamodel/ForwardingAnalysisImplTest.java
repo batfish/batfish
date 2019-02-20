@@ -5,13 +5,13 @@ import static org.batfish.datamodel.ForwardingAnalysisImpl.computeMatchingIps;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.hasLines;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.isAclIpSpaceThat;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
@@ -1534,7 +1534,7 @@ public class ForwardingAnalysisImplTest {
             CONFIG1,
             ImmutableMap.of(INTERFACE1, ImmutableSet.of(ip1), INTERFACE2, ImmutableSet.of(ip2)));
     ForwardingAnalysisImpl fa = initForwardingAnalysisImpl();
-    assertThat("INTERFACE1 should be full", !fa.hasMissingDevicesOnInterface(CONFIG1, INTERFACE1));
+    assertTrue("INTERFACE1 should be full", !fa.hasMissingDevicesOnInterface(CONFIG1, INTERFACE1));
   }
 
   @Test
@@ -1550,7 +1550,7 @@ public class ForwardingAnalysisImplTest {
             CONFIG1,
             ImmutableMap.of(INTERFACE1, ImmutableSet.of(ip1), INTERFACE2, ImmutableSet.of(ip2)));
     ForwardingAnalysisImpl fa = initForwardingAnalysisImpl();
-    assertThat("INTERFACE1 should be full", !fa.hasMissingDevicesOnInterface(CONFIG1, INTERFACE1));
+    assertTrue("INTERFACE1 should be full", !fa.hasMissingDevicesOnInterface(CONFIG1, INTERFACE1));
   }
 
   @Test
@@ -1563,7 +1563,7 @@ public class ForwardingAnalysisImplTest {
     _interfaceOwnedIps =
         ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, ImmutableSet.of(ip1)));
     ForwardingAnalysisImpl fa = initForwardingAnalysisImpl();
-    assertThat("INTERFACE1 should be full", !fa.hasMissingDevicesOnInterface(CONFIG1, INTERFACE1));
+    assertTrue("INTERFACE1 should be full", !fa.hasMissingDevicesOnInterface(CONFIG1, INTERFACE1));
   }
 
   @Test
@@ -1576,7 +1576,7 @@ public class ForwardingAnalysisImplTest {
     _interfaceOwnedIps =
         ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, ImmutableSet.of(ip1)));
     ForwardingAnalysisImpl fa = initForwardingAnalysisImpl();
-    assertThat(
+    assertTrue(
         "INTERFACE1 should not be full", fa.hasMissingDevicesOnInterface(CONFIG1, INTERFACE1));
   }
 
@@ -1590,7 +1590,7 @@ public class ForwardingAnalysisImplTest {
     _interfaceOwnedIps =
         ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, ImmutableSet.of(ip1)));
     ForwardingAnalysisImpl fa = initForwardingAnalysisImpl();
-    assertThat(
+    assertTrue(
         "INTERFACE1 should not be full", fa.hasMissingDevicesOnInterface(CONFIG1, INTERFACE1));
   }
 

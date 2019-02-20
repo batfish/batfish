@@ -1,6 +1,7 @@
 package org.batfish.job;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import io.opentracing.ActiveSpan;
@@ -15,12 +16,15 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
+import org.batfish.common.ErrorDetails;
+import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishParseException;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
@@ -223,6 +227,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                       _fileText,
                       _logger,
                       _settings,
+                      _warnings,
                       ConfigurationFormat.VYOS,
                       VendorConfigurationFormatDetector.BATFISH_FLATTENED_VYOS_HEADER)
                   .getFlattenedConfigurationText();
@@ -240,6 +245,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                     _fileText,
                     _logger,
                     _settings,
+                    _warnings,
                     ConfigurationFormat.JUNIPER,
                     VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
             _fileText = flattener.getFlattenedConfigurationText();
@@ -276,6 +282,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                     _fileText,
                     _logger,
                     _settings,
+                    _warnings,
                     ConfigurationFormat.PALO_ALTO_NESTED,
                     VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
             _fileText = flattener.getFlattenedConfigurationText();
@@ -321,7 +328,17 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         GlobalTracer.get().buildSpan("Post-processing").startActive()) {
       assert postProcessSpan != null; // avoid unused warning
       _logger.info("\tPost-processing...");
-      extractor.processParseTree(tree);
+
+      try {
+        extractor.processParseTree(tree);
+      } catch (BatfishParseException e) {
+        _warnings.setErrorDetails(
+            new ErrorDetails(
+                Throwables.getStackTraceAsString(e),
+                new ParseExceptionContext(e.getContext(), combinedParser, _fileText)));
+        throw new BatfishException("Error processing parse tree", e);
+      }
+
       _logger.info("OK\n");
     } finally {
       Batfish.logWarnings(_logger, _warnings);

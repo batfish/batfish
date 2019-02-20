@@ -14,10 +14,11 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasTcpFlagsFin;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasTcpFlagsPsh;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasTcpFlagsRst;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasTcpFlagsUrg;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Optional;
 import net.sf.javabdd.BDD;
@@ -89,7 +90,7 @@ public class BDDPacketTest {
             .and(pkt.getTcpUrg().not());
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
-    assertThat("Unsat", flowBuilder.isPresent());
+    assertTrue("Unsat", flowBuilder.isPresent());
     Flow flow = flowBuilder.get().setIngressNode("ingressNode").setTag("tag").build();
 
     assertThat(flow, hasDstIp(dstIp));
@@ -117,7 +118,7 @@ public class BDDPacketTest {
     BDD bdd = pkt.getDstIp().value(dstIp.asLong()).and(pkt.getSrcIp().value(srcIp.asLong()));
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
-    assertThat("Unsat", flowBuilder.isPresent());
+    assertTrue("Unsat", flowBuilder.isPresent());
     Flow flow = flowBuilder.get().setIngressNode("ingressNode").setTag("tag").build();
 
     assertThat(flow, hasDstIp(dstIp));
@@ -140,7 +141,7 @@ public class BDDPacketTest {
     bdd = bdd.and(icmpbdd.not());
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
-    assertThat("Unsat", flowBuilder.isPresent());
+    assertTrue("Unsat", flowBuilder.isPresent());
     Flow flow = flowBuilder.get().setIngressNode("ingressNode").setTag("tag").build();
 
     assertThat(flow, hasDstIp(dstIp));
@@ -163,7 +164,7 @@ public class BDDPacketTest {
     bdd = bdd.and(icmpbdd.not()).and(udpbdd.not());
 
     Optional<Flow.Builder> flowBuilder = pkt.getFlow(bdd);
-    assertThat("Unsat", flowBuilder.isPresent());
+    assertTrue("Unsat", flowBuilder.isPresent());
     Flow flow = flowBuilder.get().setIngressNode("ingressNode").setTag("tag").build();
 
     assertThat(flow, hasDstIp(dstIp));

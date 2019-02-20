@@ -75,6 +75,9 @@ test -raw tests/questions/experimental/resolveInterfaceSpecifier.ref validate-te
 # validate resolveIpSpecifier
 test -raw tests/questions/experimental/resolveIpSpecifier.ref validate-template resolveIpSpecifier ips="1.1.1.1/24"
 
+# validate resolveIpSpecifier2
+test -raw tests/questions/experimental/resolveIpSpecifier2.ref validate-template resolveIpSpecifier2 ips="1.1.1.1/24"
+
 # validate resolveIpsOfLocationSpecifier
 test -raw tests/questions/experimental/resolveIpsOfLocationSpecifier.ref validate-template resolveIpsOfLocationSpecifier locations="input"
 

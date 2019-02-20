@@ -10,6 +10,7 @@ import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
+import org.batfish.common.ErrorDetails;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.answers.ParseStatus;
@@ -133,12 +134,20 @@ public class ParseVendorConfigurationResult
       answerElement
           .getErrors()
           .put(_filename, ((BatfishException) _failureCause).getBatfishStackTrace());
-      answerElement
-          .getErrorMessages()
-          .put(
-              _filename,
-              Throwables.getStackTraceAsString(
-                  firstNonNull(_failureCause.getCause(), _failureCause)));
+      ErrorDetails errorDetails = _warnings.getErrorDetails();
+      // Pass existing errorDetails through, if applicable (e.g. exception caught while walking
+      // parse tree and details [including parser context] already populated)
+      if (errorDetails != null) {
+        answerElement.getErrorDetails().put(_filename, errorDetails);
+      } else {
+        answerElement
+            .getErrorDetails()
+            .put(
+                _filename,
+                new ErrorDetails(
+                    Throwables.getStackTraceAsString(
+                        firstNonNull(_failureCause.getCause(), _failureCause))));
+      }
     }
   }
 

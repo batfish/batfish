@@ -121,7 +121,6 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATI
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.contains;
@@ -134,10 +133,13 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.hasValue;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -218,6 +220,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -248,8 +251,11 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.grammar.BatfishParseTreeWalker;
@@ -281,6 +287,8 @@ import org.batfish.representation.juniper.NatRuleSet;
 import org.batfish.representation.juniper.NatRuleThenInterface;
 import org.batfish.representation.juniper.NatRuleThenOff;
 import org.batfish.representation.juniper.NatRuleThenPool;
+import org.batfish.representation.juniper.NoPortTranslation;
+import org.batfish.representation.juniper.PatPool;
 import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.ScreenAction;
 import org.batfish.representation.juniper.ScreenOption;
@@ -288,7 +296,6 @@ import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
 import org.batfish.representation.juniper.Zone;
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -1532,6 +1539,72 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testFirewallZoneAddressUndefined() throws IOException {
+    Configuration c = parseConfig("firewall-zone-address-undefined");
+
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    String addrAccepted = "2.2.2.2";
+    String addrRejected = "2.2.2.3";
+
+    Flow flowAccepted = createFlow(addrAccepted, addrAccepted);
+    Flow flowRejected = createFlow(addrAccepted, addrRejected);
+
+    IpAccessList aclUntrust =
+        c.getAllInterfaces().get(interfaceNameUntrust).getPreTransformationOutgoingFilter();
+    IpAccessList aclTrust =
+        c.getAllInterfaces().get(interfaceNameTrust).getPreTransformationOutgoingFilter();
+
+    // Make sure flow matching address-book entry is accepted despite the rule having one undefined
+    // destination address
+    assertThat(
+        aclUntrust,
+        accepts(flowAccepted, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    // Make sure flow not matching address-book entry is rejected
+    assertThat(
+        aclUntrust,
+        rejects(flowRejected, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+
+    // Make sure both flows are rejected by rule with no defined destination address
+    assertThat(
+        aclTrust,
+        rejects(flowAccepted, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclTrust,
+        rejects(flowRejected, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
+  public void testFirewallZoneAddressBookAttachAndGlobal() throws IOException {
+    Configuration c = parseConfig("firewall-zone-address-book-attach-and-global");
+
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    // Destination address allowed by the address-book
+    String destAddr = "2.2.2.2";
+    // Source address allowed by the address-book
+    String sourceAddr = "3.3.3.3";
+
+    Flow flowAllowed = createFlow(sourceAddr, destAddr);
+    Flow flowRejected1 = createFlow(destAddr, destAddr);
+    Flow flowRejected2 = createFlow(sourceAddr, sourceAddr);
+
+    IpAccessList acl =
+        c.getAllInterfaces().get(interfaceNameUntrust).getPreTransformationOutgoingFilter();
+
+    // Confirm both global and attached address-book entries are processed properly
+    // Make sure the flow with source address matching global book and destination address matching
+    // attached book is accepted
+    assertThat(
+        acl, accepts(flowAllowed, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    // Make sure flow with different addresses is denied
+    assertThat(
+        acl, rejects(flowRejected1, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        acl, rejects(flowRejected2, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
   public void testFirewallZones() throws IOException {
     Configuration c = parseConfig("firewall-no-policies");
     String interfaceNameTrust = "ge-0/0/0.0";
@@ -1890,6 +1963,7 @@ public final class FlatJuniperGrammarTest {
             CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             new Settings(),
+            new Warnings(),
             ConfigurationFormat.JUNIPER,
             VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
     FlattenerLineMap lineMap = flattener.getOriginalLineMap();
@@ -2004,12 +2078,12 @@ public final class FlatJuniperGrammarTest {
     assertThat(policyPreference.getStatements(), hasSize(2));
 
     // Extracting the If statement
-    MatcherAssert.assertThat(policyPreference.getStatements().get(0), instanceOf(If.class));
+    assertThat(policyPreference.getStatements().get(0), instanceOf(If.class));
 
     If i = (If) policyPreference.getStatements().get(0);
 
-    MatcherAssert.assertThat(i.getTrueStatements(), hasSize(1));
-    MatcherAssert.assertThat(
+    assertThat(i.getTrueStatements(), hasSize(1));
+    assertThat(
         Iterables.getOnlyElement(i.getTrueStatements()), instanceOf(SetAdministrativeCost.class));
 
     assertThat(
@@ -4317,6 +4391,30 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testInstanceImport() throws IOException {
+    String hostname = "instance-import";
+    Configuration c = parseConfig(hostname);
+
+    /*
+     * instance-import for default VRF imports two policies, PS1 followed by PS2.
+     * PS1 accepts VRF3, then VRF1. PS2 accepts VRF1, then an undefined MYSTERY_VRF, then VRF2.
+     * Resulting list of VRFs whose routes to import should have the referenced VRFs in the order
+     * they were referenced, ignoring second reference to VRF1, not including undefined MYSTERY_VRF.
+     */
+    Vrf defaultVrf = c.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
+    assertThat(defaultVrf.getCrossVrfImportVrfs(), contains("VRF3", "VRF1", "VRF2"));
+
+    // Instance import policy should start with SetDefaultPolicy, then FirstMatchChain with policies
+    // TODO Test behavior of routing policy once MatchSourceVrf is fully implemented
+    List<Statement> instanceImportStatements =
+        c.getRoutingPolicies().get(defaultVrf.getCrossVrfImportPolicy()).getStatements();
+    assertThat(instanceImportStatements, hasSize(2));
+    assertThat(
+        ((If) instanceImportStatements.get(1)).getGuard(),
+        equalTo(new FirstMatchChain(ImmutableList.of(new CallExpr("PS1"), new CallExpr("PS2")))));
+  }
+
+  @Test
   public void testInterfaceRibGroup() throws IOException {
     String hostname = "juniper-interface-ribgroup";
     Configuration c = parseConfig(hostname);
@@ -4458,5 +4556,46 @@ public final class FlatJuniperGrammarTest {
 
     // ge-0/0/0.3 is not part of any zoone, so no firewall session interface info.
     assertThat(c.getAllInterfaces().get(i3Name).getFirewallSessionInterfaceInfo(), nullValue());
+  }
+
+  @Test
+  public void testPortAddressTranslation() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-nat-pat");
+    Nat sourceNat = juniperConfiguration.getMasterLogicalSystem().getNatSource();
+    NatPool pool0 = sourceNat.getPools().get("POOL0");
+    NatPool pool1 = sourceNat.getPools().get("POOL1");
+    NatPool pool2 = sourceNat.getPools().get("POOL2");
+    NatPool pool3 = sourceNat.getPools().get("POOL3");
+
+    // pool0 should not have pat specified
+    assertNotNull(pool0);
+    assertNull(pool0.getPortAddressTranslation());
+
+    // pool1 should has a pat pool with range [2000,3000] with no port translation configured
+    assertNotNull(pool1);
+    assertNotNull(pool1.getPortAddressTranslation());
+    assertThat(pool1.getPortAddressTranslation(), equalTo(new PatPool(2000, 3000)));
+
+    // pool2 should specify no translation
+    assertNotNull(pool2);
+    assertNotNull(pool2.getPortAddressTranslation());
+    assertThat(pool2.getPortAddressTranslation(), equalTo(NoPortTranslation.INSTANCE));
+
+    // pool3 should have a pat pool ranging [10000,20000]
+    assertNotNull(pool3);
+    assertNotNull(pool3.getPortAddressTranslation());
+    assertThat(pool3.getPortAddressTranslation(), equalTo(new PatPool(10000, 20000)));
+
+    Nat destNat = juniperConfiguration.getMasterLogicalSystem().getNatDestination();
+    NatPool pool4 = destNat.getPools().get("POOL4");
+    NatPool pool5 = destNat.getPools().get("POOL5");
+
+    // pool4 should have a pat pool ranging [6000,6000]
+    assertNotNull(pool4);
+    assertThat(pool4.getPortAddressTranslation(), equalTo(new PatPool(6000, 6000)));
+
+    // pool5 should not have pat specified
+    assertNotNull(pool5);
+    assertNull(pool5.getPortAddressTranslation());
   }
 }

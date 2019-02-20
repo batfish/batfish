@@ -1,9 +1,8 @@
 package org.batfish.question.loop;
 
 import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.Set;
 import java.util.SortedMap;
@@ -50,11 +49,6 @@ public class DetectLoopsTest {
 
     // we find 2 loopy flows, but they are for the same destination, so the answerer
     // only reports 1.
-    assertThat(ae.getRows(), hasSize(1));
-
-    // same result if we use the old traceroute engine
-    _batfish.getSettings().setDebugFlags(ImmutableList.of("oldtraceroute"));
-    ae = (TableAnswerElement) answerer.answer();
     assertThat(ae.getRows(), hasSize(1));
   }
 }

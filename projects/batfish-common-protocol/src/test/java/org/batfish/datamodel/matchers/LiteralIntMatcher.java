@@ -1,6 +1,6 @@
 package org.batfish.datamodel.matchers;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.matchers.LiteralIntMatchersImpl.HasVal;

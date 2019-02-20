@@ -14,3 +14,8 @@ set routing-options generate route 10.0.1.0/24 active
 set routing-options generate route 10.0.1.0/24 community 2:6
 set routing-options generate route 10.0.1.0/24 discard
 #
+set routing-options instance-import POLICY
+#
+# Avoid undefined reference warning; test structures generated for instance-import
+set policy-options policy-statement POLICY then accept
+#

@@ -1,11 +1,15 @@
 package org.batfish.representation.cisco;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
+import static org.batfish.representation.cisco.CiscoAsaNat.ANY_INTERFACE;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -21,12 +25,14 @@ import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
+import org.batfish.representation.cisco.CiscoAsaNat.Section;
 
 /** Utility methods related to {@link CiscoAsaNat}. */
 @ParametersAreNonnullByDefault
 final class CiscoAsaNatUtil {
   private CiscoAsaNatUtil() {}
 
+  @Nullable
   static Transformation.Builder dynamicTransformation(
       AccessListAddressSpecifier realSource,
       AccessListAddressSpecifier mappedSource,
@@ -65,12 +71,7 @@ final class CiscoAsaNatUtil {
       w.redFlag("Invalid network object for assigning addresses " + mappedSourceObj.getName());
       return null;
     }
-    if (insideInterface != null) {
-      /*
-       * Assuming for now that this transformation will be placed on the outside interface. If that
-       * is not true and the transformation is placed on the inside interface, this conjunction can
-       * be removed.
-       */
+    if (!insideInterface.equals(ANY_INTERFACE)) {
       matchExpr = and(matchExpr, matchSrcInterface(insideInterface));
     }
     return Transformation.when(matchExpr)
@@ -81,6 +82,7 @@ final class CiscoAsaNatUtil {
     return Prefix.create(specifier.getIpWildcard().getIp(), prefix.getPrefixLength());
   }
 
+  @Nullable
   private static Prefix getNetworkObjectPrefix(
       NetworkObjectAddressSpecifier specifier,
       Map<String, NetworkObject> networkObjects,
@@ -109,6 +111,57 @@ final class CiscoAsaNatUtil {
     throw new BatfishException("Unexpected network object type");
   }
 
+  /**
+   * Determine if an object NAT is an identity NAT. Identity NATs are NATs which do not transform
+   * packets, but can be used in conjunction with other NATs. NAT divert will not occur for object
+   * NATs unless there is an "actual" transformation, i.e. not an identity transformation.
+   *
+   * @param nat An object NAT
+   * @param networkObjects Mapping of network object names to {@link NetworkObject}s
+   * @param w A logger for warnings about unsupported configuration
+   * @return True if the object NAT is an identity NAT, or false if it is not. If the answer could
+   *     not be determined because the NAT is not supported or invalid, returns null.
+   */
+  @Nullable
+  static Boolean isIdentityObjectNat(
+      CiscoAsaNat nat, Map<String, NetworkObject> networkObjects, Warnings w) {
+    checkArgument(nat.getSection().equals(Section.OBJECT), "Only supports object NATs.");
+
+    if (nat.getDynamic()) {
+      return false;
+    }
+    Prefix realPrefix =
+        getNetworkObjectPrefix(
+            (NetworkObjectAddressSpecifier) nat.getRealSource(), networkObjects, w);
+    if (realPrefix == null) {
+      return null;
+    }
+    AccessListAddressSpecifier mappedSource = nat.getMappedSource();
+    if (mappedSource == null) {
+      // undefined reference to a network object or network object group, already warned
+      return null;
+    }
+    if (mappedSource instanceof NetworkObjectGroupAddressSpecifier) {
+      // Not supported, will warn about this when creating transformations
+      return null;
+    }
+    if (mappedSource instanceof NetworkObjectAddressSpecifier) {
+      return realPrefix.equals(
+          getNetworkObjectPrefix((NetworkObjectAddressSpecifier) mappedSource, networkObjects, w));
+    }
+    if (mappedSource instanceof WildcardAddressSpecifier) {
+      // Specified as 'any'
+      if (mappedSource.toIpSpace().equals(IpWildcard.ANY.toIpSpace())) {
+        return realPrefix.equals(Prefix.ZERO);
+      }
+      // Specified as inline IP, so only compare start IP
+      return realPrefix
+          .getStartIp()
+          .equals(((WildcardAddressSpecifier) mappedSource).getIpWildcard().getIp());
+    }
+    throw new BatfishException("Unexpected NetworkObject type");
+  }
+
   private static MatchHeaderSpace matchField(Prefix prefix, IpField field) {
     switch (field) {
       case DESTINATION:
@@ -121,21 +174,16 @@ final class CiscoAsaNatUtil {
   }
 
   static Optional<Transformation.Builder> secondTransformation(
-      @Nullable AccessListAddressSpecifier shiftDestination,
-      @Nullable AccessListAddressSpecifier matchDestination,
+      AccessListAddressSpecifier shiftDestination,
+      AccessListAddressSpecifier matchDestination,
       Transformation first,
       Map<String, NetworkObject> networkObjects,
       IpField field,
       Warnings w) {
 
-    if (shiftDestination == null || matchDestination == null) {
-      // Invalid reference or not supported
-      w.redFlag("Invalid match or shift destination.");
-      return Optional.empty();
-    }
-
     Transformation.Builder secondBuilder =
-        staticTransformation(matchDestination, shiftDestination, null, networkObjects, field, w);
+        staticTransformation(
+            matchDestination, shiftDestination, ANY_INTERFACE, networkObjects, field, w);
     if (secondBuilder == null) {
       return Optional.empty();
     }
@@ -158,10 +206,11 @@ final class CiscoAsaNatUtil {
     }
   }
 
+  @Nullable
   static Transformation.Builder staticTransformation(
       AccessListAddressSpecifier matchAddress,
       AccessListAddressSpecifier shiftAddress,
-      @Nullable String insideInterface,
+      String insideInterface,
       Map<String, NetworkObject> networkObjects,
       IpField field,
       Warnings w) {
@@ -206,12 +255,18 @@ final class CiscoAsaNatUtil {
         // at the time it was created. Get the correct prefix length.
         shiftPrefix =
             getNetworkObjectPrefix((NetworkObjectAddressSpecifier) shiftAddress, networkObjects, w);
-        matchPrefix = getEqualLengthPrefix((WildcardAddressSpecifier) matchAddress, shiftPrefix);
+        matchPrefix =
+            shiftPrefix == null
+                ? null
+                : getEqualLengthPrefix((WildcardAddressSpecifier) matchAddress, shiftPrefix);
       } else if (shiftAddress instanceof WildcardAddressSpecifier
           && matchAddress instanceof NetworkObjectAddressSpecifier) {
         matchPrefix =
             getNetworkObjectPrefix((NetworkObjectAddressSpecifier) matchAddress, networkObjects, w);
-        shiftPrefix = getEqualLengthPrefix((WildcardAddressSpecifier) shiftAddress, matchPrefix);
+        shiftPrefix =
+            matchPrefix == null
+                ? null
+                : getEqualLengthPrefix((WildcardAddressSpecifier) shiftAddress, matchPrefix);
       } else if (matchAddress instanceof NetworkObjectAddressSpecifier
           && shiftAddress instanceof NetworkObjectAddressSpecifier) {
         matchPrefix =
@@ -234,14 +289,29 @@ final class CiscoAsaNatUtil {
       }
     }
     AclLineMatchExpr matchExpr = matchField(matchPrefix, field);
-    if (insideInterface != null) {
-      /*
-       * Assuming for now that this transformation will be placed on the outside interface. If that
-       * is not true and the transformation is placed on the inside interface, this conjunction can
-       * be removed.
-       */
+    if (!insideInterface.equals(ANY_INTERFACE)) {
       matchExpr = and(matchExpr, matchSrcInterface(insideInterface));
     }
     return Transformation.when(matchExpr).apply(shiftIp(field, shiftPrefix));
+  }
+
+  /**
+   * Completes the conversion of Cisco ASA-specific NATs to a single {@link Transformation}.
+   *
+   * @param convertedNats A list of partially built {@link Transformation}s.
+   * @return A single {@link Transformation} or null if empty
+   */
+  @Nullable
+  static Transformation toTransformationChain(
+      List<Optional<Transformation.Builder>> convertedNats) {
+
+    // Start at the end of the chain and go backwards.
+    Transformation previous = null;
+    for (Optional<Transformation.Builder> t : Lists.reverse(convertedNats)) {
+      if (t.isPresent()) {
+        previous = t.get().setOrElse(previous).build();
+      }
+    }
+    return previous;
   }
 }

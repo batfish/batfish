@@ -34,16 +34,22 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.BfConsts;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.Version;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
+import org.batfish.datamodel.isp_configuration.IspConfiguration;
+import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionSettingsId;
@@ -113,6 +119,33 @@ public final class FileBasedStorageTest {
     _storage.storeConfigurations(configs, oldConvertAnswer, network, snapshot);
 
     assertThat(_storage.loadConfigurations(network, snapshot), nullValue());
+  }
+
+  @Test
+  public void testLoadIspConfiguration() throws IOException {
+    NetworkId networkId = new NetworkId("network");
+    SnapshotId snapshotId = new SnapshotId("snapshot");
+
+    Path batfishConfigDir =
+        _storage
+            .getDirectoryProvider()
+            .getSnapshotInputObjectsDir(networkId, snapshotId)
+            .resolve(BfConsts.RELPATH_BATFISH_CONFIGS_DIR);
+    final boolean mkdirs = batfishConfigDir.toFile().mkdirs();
+    assertThat(mkdirs, equalTo(true));
+
+    IspConfiguration ispConfiguration =
+        new IspConfiguration(
+            ImmutableList.of(new BorderInterfaceInfo(new NodeInterfacePair("node", "interface"))),
+            new IspFilter(
+                ImmutableList.of(1L, 2L),
+                ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"))));
+    BatfishObjectMapper.mapper()
+        .writeValue(
+            batfishConfigDir.resolve(BfConsts.RELPATH_ISP_CONFIG_FILE).toFile(), ispConfiguration);
+
+    IspConfiguration readIspConfiguration = _storage.loadIspConfiguration(networkId, snapshotId);
+    assertThat(ispConfiguration, equalTo(readIspConfiguration));
   }
 
   @Test
@@ -354,17 +387,55 @@ public final class FileBasedStorageTest {
   }
 
   @Test
+  public void testGetSnapshotInputKeysNonExistentInput() throws IOException {
+    NetworkId network = new NetworkId("network");
+    SnapshotId snapshot = new SnapshotId("snapshot");
+    _thrown.expect(FileNotFoundException.class);
+    _storage.getSnapshotInputObjectsMetadata(network, snapshot);
+  }
+
+  @Test
+  public void testGetSnapshotInputKeys() throws IOException {
+    NetworkId network = new NetworkId("network");
+    SnapshotId snapshot = new SnapshotId("snapshot");
+
+    String dir1 = "dir1";
+    String dir2 = "dir2";
+
+    Path dir1Path = _storage.getSnapshotInputObjectPath(network, snapshot, dir1);
+    dir1Path.toFile().mkdirs();
+
+    Path dir2Path = _storage.getSnapshotInputObjectPath(network, snapshot, dir2);
+    dir2Path.toFile().mkdirs();
+
+    String file1 = "file1";
+    String file1Contents = "some content";
+    Files.write(dir1Path.resolve(file1), file1Contents.getBytes());
+
+    String file2 = "file2";
+    String file2Contents = "some other content";
+    Files.write(dir2Path.resolve(file2), file2Contents.getBytes());
+
+    List<StoredObjectMetadata> keys = _storage.getSnapshotInputObjectsMetadata(network, snapshot);
+    assertThat(
+        keys.stream().collect(ImmutableSet.toImmutableSet()),
+        equalTo(
+            ImmutableSet.of(
+                new StoredObjectMetadata(dir2 + "/" + file2, file2Contents.getBytes().length),
+                new StoredObjectMetadata(dir1 + "/" + file1, file1Contents.getBytes().length))));
+  }
+
+  @Test
   public void testCompletionMetadataRoundtrip() throws IOException {
     NetworkId networkId = new NetworkId("network");
     SnapshotId snapshotId = new SnapshotId("snapshot");
 
     CompletionMetadata completionMetadata =
         new CompletionMetadata(
-            ImmutableSet.of("addressBook1"),
-            ImmutableSet.of("addressGroup1"),
             ImmutableSet.of("filter1"),
             ImmutableSet.of(new NodeInterfacePair("node", "iface")),
             ImmutableSet.of("1.1.1.1"),
+            ImmutableSet.of("node"),
             ImmutableSet.of("1.1.1.1/30"),
             ImmutableSet.of("structure1"),
             ImmutableSet.of("vrf1"),

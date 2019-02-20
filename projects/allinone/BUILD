@@ -64,6 +64,22 @@ junit_tests(
 )
 
 junit_tests(
+    name = "DetectLoopsTest",
+    size = "small",
+    srcs = [
+        "src/test/java/org/batfish/question/loop/DetectLoopsTest.java",
+    ],
+    deps = [
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
+        "//projects/question",
+        "@hamcrest//:compile",
+    ],
+)
+
+junit_tests(
     name = "MultipathConsistencyTest",
     size = "small",
     srcs = [
@@ -106,6 +122,23 @@ junit_tests(
     ],
     deps = [
         "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
+        "//projects/question",
+        "@guava//:compile",
+        "@hamcrest//:compile",
+    ],
+)
+
+junit_tests(
+    name = "TracerouteAnswererHelperTest",
+    size = "small",
+    srcs = [
+        "src/test/java/org/batfish/question/traceroute/TracerouteAnswererHelperTest.java",
+    ],
+    resources = glob(["src/test/resources/org/batfish/allinone/testrigs/specifiers-reachability/**"]),
+    deps = [
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
