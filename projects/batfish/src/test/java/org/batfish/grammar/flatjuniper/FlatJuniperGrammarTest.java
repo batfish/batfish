@@ -254,11 +254,8 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.CallExpr;
-import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
-import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.grammar.BatfishParseTreeWalker;
@@ -4385,30 +4382,48 @@ public final class FlatJuniperGrammarTest {
 
     /*
      * instance-import for default VRF imports two policies, PS1 followed by PS2.
-     * PS1 accepts VRF3, then VRF1. PS2 accepts VRF1, then an undefined MYSTERY_VRF, then VRF2.
+     * PS1 accepts VRF3, then VRF1. PS2 accepts VRF1 and an undefined MYSTERY_VRF, and rejects VRF2.
      * Resulting list of VRFs whose routes to import should have the referenced VRFs in the order
      * they were referenced, ignoring second reference to VRF1, not including undefined MYSTERY_VRF.
      */
-    Vrf defaultVrf = c.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
+    Vrf defaultVrf = c.getVrfs().get(DEFAULT_VRF_NAME);
     assertThat(defaultVrf.getCrossVrfImportVrfs(), contains("VRF3", "VRF1", "VRF2"));
 
-    // Instance import policy should start with SetDefaultPolicy, then FirstMatchChain with policies
-    // TODO Test behavior of routing policy once MatchSourceVrf is fully implemented
-    List<Statement> instanceImportStatements =
-        c.getRoutingPolicies().get(defaultVrf.getCrossVrfImportPolicy()).getStatements();
-    assertThat(instanceImportStatements, hasSize(2));
+    /*
+    Test instance import policy behavior.
+     - Routes from VRF1 and VRF3 should be accepted, but not routes from VRF2.
+     - Routes from arbitrary other VRFs should be rejected by default policy.
+    The only thing in the arguments to process that should get checked is source VRF.
+    */
+    RoutingPolicy instanceImportPolicy =
+        c.getRoutingPolicies().get(defaultVrf.getCrossVrfImportPolicy());
+    StaticRoute sr = StaticRoute.builder().setNetwork(Prefix.ZERO).setAdmin(5).build();
     assertThat(
-        ((If) instanceImportStatements.get(1)).getGuard(),
-        equalTo(new FirstMatchChain(ImmutableList.of(new CallExpr("PS1"), new CallExpr("PS2")))));
+        instanceImportPolicy.process(
+            new AnnotatedRoute<>(sr, "VRF1"), null, null, DEFAULT_VRF_NAME, null),
+        equalTo(true));
+    assertThat(
+        instanceImportPolicy.process(
+            new AnnotatedRoute<>(sr, "VRF2"), null, null, DEFAULT_VRF_NAME, null),
+        equalTo(false));
+    assertThat(
+        instanceImportPolicy.process(
+            new AnnotatedRoute<>(sr, "VRF3"), null, null, DEFAULT_VRF_NAME, null),
+        equalTo(true));
+    assertThat(
+        instanceImportPolicy.process(
+            new AnnotatedRoute<>(sr, "ANOTHER_VRF"), null, null, DEFAULT_VRF_NAME, null),
+        equalTo(false));
 
+    /*
+    Check resulting state of routes in snapshot.
+     - VRF1 has static 1.1.1.1/30, which should be in default VRF since VRF1 routes are accepted
+     - VRF2 has static 2.2.2.2/30, which should not be in default VRF since VRF2 routes are rejected
+     - VRF3 doesn't have any routes, so should have no impact on default VRF
+    */
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
     batfish.computeDataPlane();
     DataPlane dp = batfish.loadDataPlane();
-
-    /*
-     * instance-import policies accept routes from VRF1, which has 1.1.1.1/30, but reject routes
-     * from VRF2, which has 2.2.2.2/30. Default VRF should have only 1.1.1.1/30.
-     */
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibs().get(hostname).entrySet().stream()
             .collect(
@@ -4416,12 +4431,10 @@ public final class FlatJuniperGrammarTest {
 
     assertThat(
         routes.get(DEFAULT_VRF_NAME),
-        hasItem(allOf(hasPrefix(Prefix.parse("1.1.1.1/30")), hasSourceVrf("VRF1"))));
+        contains(allOf(hasPrefix(Prefix.parse("1.1.1.1/30")), hasSourceVrf("VRF1"))));
 
     // Ensure that VRF2 does in fact have 2.2.2.2/30, as expected
-    assertThat(
-        routes.get("VRF2"),
-        hasItem(allOf(hasPrefix(Prefix.parse("2.2.2.2/30")), hasSourceVrf("VRF2"))));
+    assertThat(routes.get("VRF2"), hasItem(hasPrefix(Prefix.parse("2.2.2.2/30"))));
   }
 
   @Test
