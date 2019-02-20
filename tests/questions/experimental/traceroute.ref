@@ -35,7 +35,8 @@
             "optional" : true
           },
           "dstIps" : {
-            "optional" : false
+            "optional" : false,
+            "type" : "ipSpaceSpec"
           },
           "dstPorts" : {
             "optional" : true
@@ -62,7 +63,8 @@
             "optional" : true
           },
           "srcIps" : {
-            "optional" : true
+            "optional" : true,
+            "type" : "ipSpaceSpec"
           },
           "srcPorts" : {
             "optional" : true
