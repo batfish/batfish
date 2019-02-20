@@ -342,6 +342,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   public void enterL_snatpool(L_snatpoolContext ctx) {
     String name = unquote(ctx.name.getText());
     defineStructure(SNATPOOL, name, ctx);
+    _currentSnatPool = _c.getSnatPools().computeIfAbsent(name, SnatPool::new);
   }
 
   @Override
@@ -591,6 +592,11 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void exitL_snatpool(L_snatpoolContext ctx) {
+    _currentSnatPool = null;
+  }
+
+  @Override
   public void exitL_virtual(L_virtualContext ctx) {
     _currentVirtual = null;
   }
@@ -801,6 +807,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     String name = unquote(ctx.name.getText());
     _c.referenceStructure(
         SNAT_TRANSLATION, name, SNATPOOL_MEMBERS_MEMBER, ctx.name.getStart().getLine());
+    _currentSnatPool.getMembers().add(name);
   }
 
   @Override
