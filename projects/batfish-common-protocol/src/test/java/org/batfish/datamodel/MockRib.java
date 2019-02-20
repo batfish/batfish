@@ -132,6 +132,11 @@ public class MockRib implements GenericRib<AbstractRoute> {
   }
 
   @Override
+  public Set<AbstractRoute> getTypedRoutes() {
+    return _routes;
+  }
+
+  @Override
   public Set<AbstractRoute> longestPrefixMatch(Ip address) {
     return _longestPrefixMatchResults.get(address);
   }

@@ -47,7 +47,7 @@ public final class LastHopOutgoingInterfaceManager {
 
   private static Map<NodeInterfacePair, BDDFiniteDomain<NodeInterfacePair>> computeFiniteDomains(
       BDDPacket pkt, Map<String, Configuration> configs, Topology topology) {
-    // Nodes that can have sessions (and thus need to track last hop outgoing interface.
+    // Nodes that can have sessions (and thus need to track last hop outgoing interface).
     Set<String> sessionNodes =
         configs.values().stream()
             .filter(
@@ -66,6 +66,11 @@ public final class LastHopOutgoingInterfaceManager {
     return lastHops.isEmpty()
         ? ImmutableMap.of()
         : domainsWithSharedVariable(pkt, VAR_NAME, lastHops);
+  }
+
+  public BDD existsLastHop(BDD bdd) {
+    // all domains have the same variable, so just pick one.
+    return _finiteDomains.values().iterator().next().existsValue(bdd);
   }
 
   public BDD getLastHopOutgoingInterfaceBdd(

@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
-public interface GenericRib<R extends AbstractRoute> extends Serializable {
+public interface GenericRib<R extends AbstractRouteDecorator> extends Serializable {
 
   /**
    * Compare the preferability of one route with anther
@@ -36,8 +36,11 @@ public interface GenericRib<R extends AbstractRoute> extends Serializable {
    */
   IpSpace getRoutableIps();
 
-  /** Return a set of routes this RIB contains. */
-  Set<R> getRoutes();
+  /** Return set of {@link AbstractRoute abstract routes} this RIB contains. */
+  Set<AbstractRoute> getRoutes();
+
+  /** Return set of {@link R typed routes} this RIB contains. */
+  Set<R> getTypedRoutes();
 
   /**
    * Execute the longest prefix match for a given IP address.

@@ -43,6 +43,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRouteDecorator;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
@@ -72,7 +74,7 @@ public class RoutesAnswererTest {
 
   @Test
   public void testGetMainRibRoutesWhenEmptyRib() {
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRouteDecorator>>> ribs =
         ImmutableSortedMap.of(
             "n1", ImmutableSortedMap.of(Configuration.DEFAULT_VRF_NAME, new MockRib<>()));
 
@@ -90,7 +92,7 @@ public class RoutesAnswererTest {
 
   @Test
   public void testHasNetworkFiltering() {
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRouteDecorator>>> ribs =
         ImmutableSortedMap.of(
             "n1",
             ImmutableSortedMap.of(
@@ -124,7 +126,7 @@ public class RoutesAnswererTest {
 
   @Test
   public void testHasNodeFiltering() {
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRouteDecorator>>> ribs =
         ImmutableSortedMap.of(
             "n1",
             ImmutableSortedMap.of(
@@ -151,7 +153,7 @@ public class RoutesAnswererTest {
 
   @Test
   public void testHasProtocolFiltering() {
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRouteDecorator>>> ribs =
         ImmutableSortedMap.of(
             "n1",
             ImmutableSortedMap.of(
@@ -176,7 +178,7 @@ public class RoutesAnswererTest {
 
   @Test
   public void testHasVrfFiltering() {
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
+    SortedMap<String, SortedMap<String, GenericRib<AbstractRouteDecorator>>> ribs =
         ImmutableSortedMap.of(
             "n1",
             ImmutableSortedMap.of(
@@ -396,18 +398,20 @@ public class RoutesAnswererTest {
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().setOwner(c).build();
-    SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
+    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
         ImmutableSortedMap.of(
             c.getHostname(),
             ImmutableSortedMap.of(
                 vrf.getName(),
                 new MockRib<>(
                     ImmutableSet.of(
-                        StaticRoute.builder()
-                            .setAdministrativeCost(1)
-                            .setNetwork(Prefix.parse("1.1.1.1/32"))
-                            .setNextHopInterface("Null")
-                            .build()))));
+                        new AnnotatedRoute<>(
+                            StaticRoute.builder()
+                                .setAdministrativeCost(1)
+                                .setNetwork(Prefix.parse("1.1.1.1/32"))
+                                .setNextHopInterface("Null")
+                                .build(),
+                            vrf.getName())))));
     NetworkConfigurations nc = NetworkConfigurations.of(ImmutableMap.of(c.getHostname(), c));
 
     AnswerElement el =
@@ -466,7 +470,7 @@ public class RoutesAnswererTest {
   }
 
   /** Mock rib that only supports one operation: returning pre-set routes. */
-  static class MockRib<R extends AbstractRoute> implements GenericRib<R> {
+  static class MockRib<R extends AbstractRouteDecorator> implements GenericRib<R> {
 
     private static final long serialVersionUID = 1L;
 
@@ -501,7 +505,14 @@ public class RoutesAnswererTest {
     }
 
     @Override
-    public Set<R> getRoutes() {
+    public Set<AbstractRoute> getRoutes() {
+      return _routes.stream()
+          .map(AbstractRouteDecorator::getAbstractRoute)
+          .collect(ImmutableSet.toImmutableSet());
+    }
+
+    @Override
+    public Set<R> getTypedRoutes() {
       return _routes;
     }
 

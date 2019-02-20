@@ -22,7 +22,7 @@ import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasListForKey;
 import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
 import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasAllowRemoteAsOut;
@@ -354,6 +354,7 @@ import org.batfish.main.TestrigText;
 import org.batfish.representation.cisco.CiscoAsaNat;
 import org.batfish.representation.cisco.CiscoAsaNat.Section;
 import org.batfish.representation.cisco.CiscoConfiguration;
+import org.batfish.representation.cisco.EigrpProcess;
 import org.batfish.representation.cisco.NetworkObject;
 import org.batfish.representation.cisco.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
@@ -732,6 +733,23 @@ public class CiscoGrammarTest {
         ccae,
         hasUndefinedReference(
             filename, NETWORK_OBJECT, "onfake1", EXTENDED_ACCESS_LIST_NETWORK_OBJECT));
+  }
+
+  @Test
+  public void testAsaEigrpNetwork() {
+    CiscoConfiguration config = parseCiscoConfig("asa-eigrp", ConfigurationFormat.CISCO_ASA);
+
+    // ASN is 1
+    EigrpProcess eigrpProcess = config.getDefaultVrf().getEigrpProcesses().get(1L);
+    assertThat(eigrpProcess.getWildcardNetworks(), contains(new IpWildcard("10.0.0.0/24")));
+  }
+
+  @Test
+  public void testAsaEigrpPassive() throws IOException {
+    Configuration config = parseConfig("asa-eigrp");
+
+    assertThat(
+        config, hasInterface("inside", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
   }
 
   @Test

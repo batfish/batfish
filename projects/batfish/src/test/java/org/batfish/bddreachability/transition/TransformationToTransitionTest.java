@@ -8,12 +8,15 @@ import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
+import static org.batfish.datamodel.transformation.TransformationStep.shiftSourceIp;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
@@ -328,5 +331,52 @@ public class TransformationToTransitionTest {
     assertThat(
         transition.transitForward(notMatchDstIpBdd.and(notMatchSrcIpBdd)),
         equalTo(notMatchDstIpBdd.and(notMatchSrcIpBdd)));
+  }
+
+  @Test
+  public void testReturnFlowTransition() {
+    IpAccessListToBddImpl aclToBdd =
+        new IpAccessListToBddImpl(
+            _pkt,
+            BDDSourceManager.forInterfaces(_pkt, ImmutableSet.of()),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+    TransformationToTransition toTransition = new TransformationToTransition(_pkt, aclToBdd);
+    IpSpaceToBDD dstToBdd = aclToBdd.getHeaderSpaceToBDD().getDstIpSpaceToBdd();
+
+    // Shift source into prefix
+    {
+      Prefix shiftPrefix = Prefix.parse("6.6.0.0/16");
+      Transition transition =
+          toTransition.toReturnFlowTransition(always().apply(shiftSourceIp(shiftPrefix)).build());
+
+      // everything gets shifted into the prefix
+      assertThat(transition.transitForward(dstToBdd.toBDD(shiftPrefix)), equalTo(_one));
+      assertThat(transition.transitForward(dstToBdd.toBDD(shiftPrefix).not()), equalTo(_zero));
+      assertThat(
+          transition.transitForward(dstToBdd.toBDD(Ip.parse("6.6.6.6"))),
+          equalTo(dstToBdd.toBDD(new IpWildcard(Ip.parse("0.0.6.6"), Ip.parse("255.255.0.0")))));
+
+      assertEquals(
+          transition.transitBackward(dstToBdd.toBDD(Ip.parse("5.5.6.6"))),
+          dstToBdd.toBDD(Ip.parse("6.6.6.6")));
+    }
+
+    // Assign source from pool
+    {
+      Ip poolStart = Ip.parse("6.6.6.3");
+      Ip poolEnd = Ip.parse("6.6.6.9");
+      Transition transition =
+          toTransition.toReturnFlowTransition(
+              always().apply(assignSourceIp(poolStart, poolEnd)).build());
+      BDDInteger dstIp = dstToBdd.getBDDInteger();
+      BDD poolBdd = dstIp.geq(poolStart.asLong()).and(dstIp.leq(poolEnd.asLong()));
+
+      // everything gets mapped into the pool
+      assertThat(transition.transitForward(poolBdd), equalTo(_one));
+      assertThat(transition.transitForward(poolBdd.not()), equalTo(_zero));
+
+      assertEquals(transition.transitBackward(dstToBdd.toBDD(Ip.parse("5.5.6.6"))), poolBdd);
+    }
   }
 }

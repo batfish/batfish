@@ -34,7 +34,7 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
 
   private String _version;
 
-  /* Map of hostname to warnings */
+  /* Map of filename to warnings */
   private SortedMap<String, Warnings> _warnings;
 
   public ParseVendorConfigurationAnswerElement() {

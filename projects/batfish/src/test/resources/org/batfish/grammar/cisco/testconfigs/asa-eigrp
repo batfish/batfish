@@ -1,0 +1,13 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-eigrp
+!
+interface GigabitEthernet0/1
+ nameif inside
+ ip address 10.0.0.1 255.255.255.0
+!
+router eigrp 1
+ network 10.0.0.0 255.255.255.0
+ passive-interface inside
+!

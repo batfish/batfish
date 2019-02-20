@@ -1,7 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasProtocol;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
@@ -62,28 +62,28 @@ public class RouteReflectionTest {
 
   private static final String RR2_NAME = "rr2";
 
-  private static void assertIbgpRoute(
-      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
+  private static <T extends AbstractRoute> void assertIbgpRoute(
+      SortedMap<String, SortedMap<String, SortedSet<T>>> routesByNode,
       String hostname,
       Prefix prefix) {
     assertThat(routesByNode, hasKey(hostname));
-    SortedMap<String, SortedSet<AbstractRoute>> routesByVrf = routesByNode.get(hostname);
+    SortedMap<String, SortedSet<T>> routesByVrf = routesByNode.get(hostname);
     assertThat(routesByVrf, hasKey(Configuration.DEFAULT_VRF_NAME));
-    SortedSet<AbstractRoute> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
+    SortedSet<T> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
     assertThat(routes, hasItem(hasPrefix(prefix)));
     AbstractRoute route =
         routes.stream().filter(r -> r.getNetwork().equals(prefix)).findAny().get();
     assertThat(route, hasProtocol(RoutingProtocol.IBGP));
   }
 
-  private static void assertNoRoute(
-      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
+  private static <T extends AbstractRoute> void assertNoRoute(
+      SortedMap<String, SortedMap<String, SortedSet<T>>> routesByNode,
       String hostname,
       Prefix prefix) {
     assertThat(routesByNode, hasKey(hostname));
-    SortedMap<String, SortedSet<AbstractRoute>> routesByVrf = routesByNode.get(hostname);
+    SortedMap<String, SortedSet<T>> routesByVrf = routesByNode.get(hostname);
     assertThat(routesByVrf, hasKey(Configuration.DEFAULT_VRF_NAME));
-    SortedSet<AbstractRoute> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
+    SortedSet<T> routes = routesByVrf.get(Configuration.DEFAULT_VRF_NAME);
     assertThat(routes, not(hasItem(hasPrefix(prefix))));
   }
 

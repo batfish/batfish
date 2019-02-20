@@ -3,9 +3,9 @@ package org.batfish.dataplane.ibdp;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.RoutingProtocol.ISIS_L1;
 import static org.batfish.datamodel.RoutingProtocol.ISIS_L2;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasMetric;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasProtocol;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.IsisRouteMatchers.hasDown;
 import static org.batfish.datamodel.matchers.IsisRouteMatchers.isIsisRouteThat;
 import static org.batfish.datamodel.matchers.IsisRouteMatchers.isisRouteWith;
@@ -164,13 +164,13 @@ public class IsisTest {
     Prefix isisInterfacePrefix = Prefix.create(R1_INTERFACE_IP, INTERFACE_PREFIX_LENGTH);
 
     Set<IsisRoute> r1L1RibRoutes =
-        dp.getNodes().get(R1).getVirtualRouters().get(DEFAULT_VRF_NAME)._isisL1Rib.getRoutes();
+        dp.getNodes().get(R1).getVirtualRouters().get(DEFAULT_VRF_NAME)._isisL1Rib.getTypedRoutes();
     Set<IsisRoute> r2L1RibRoutes =
-        dp.getNodes().get(R2).getVirtualRouters().get(DEFAULT_VRF_NAME)._isisL1Rib.getRoutes();
+        dp.getNodes().get(R2).getVirtualRouters().get(DEFAULT_VRF_NAME)._isisL1Rib.getTypedRoutes();
     Set<IsisRoute> r1L2RibRoutes =
-        dp.getNodes().get(R1).getVirtualRouters().get(DEFAULT_VRF_NAME)._isisL2Rib.getRoutes();
+        dp.getNodes().get(R1).getVirtualRouters().get(DEFAULT_VRF_NAME)._isisL2Rib.getTypedRoutes();
     Set<IsisRoute> r2L2RibRoutes =
-        dp.getNodes().get(R2).getVirtualRouters().get(DEFAULT_VRF_NAME)._isisL2Rib.getRoutes();
+        dp.getNodes().get(R2).getVirtualRouters().get(DEFAULT_VRF_NAME)._isisL2Rib.getTypedRoutes();
 
     // L1 RIBs lack the other's loopback, but have default route (see VirtualRouter.initIsisImports)
     assertThat(
@@ -224,13 +224,13 @@ public class IsisTest {
     Prefix isisInterfacePrefix = Prefix.create(R1_INTERFACE_IP, INTERFACE_PREFIX_LENGTH);
 
     Set<IsisRoute> r1L1RibRoutes =
-        dp.getNodes().get(R1).getVirtualRouters().get(DEFAULT_VRF_NAME)._isisL1Rib.getRoutes();
+        dp.getNodes().get(R1).getVirtualRouters().get(DEFAULT_VRF_NAME)._isisL1Rib.getTypedRoutes();
     Set<IsisRoute> r2L1RibRoutes =
-        dp.getNodes().get(R2).getVirtualRouters().get(DEFAULT_VRF_NAME)._isisL1Rib.getRoutes();
+        dp.getNodes().get(R2).getVirtualRouters().get(DEFAULT_VRF_NAME)._isisL1Rib.getTypedRoutes();
     Set<IsisRoute> r1L2RibRoutes =
-        dp.getNodes().get(R1).getVirtualRouters().get(DEFAULT_VRF_NAME)._isisL2Rib.getRoutes();
+        dp.getNodes().get(R1).getVirtualRouters().get(DEFAULT_VRF_NAME)._isisL2Rib.getTypedRoutes();
     Set<IsisRoute> r2L2RibRoutes =
-        dp.getNodes().get(R2).getVirtualRouters().get(DEFAULT_VRF_NAME)._isisL2Rib.getRoutes();
+        dp.getNodes().get(R2).getVirtualRouters().get(DEFAULT_VRF_NAME)._isisL2Rib.getTypedRoutes();
 
     // L1 RIBs have the other's loopback and default route (see VirtualRouter.initIsisImports)
     assertThat(
