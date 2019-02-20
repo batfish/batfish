@@ -27,7 +27,7 @@ public interface DataPlane extends Serializable {
   Map<Ip, Map<String, Set<String>>> getIpVrfOwners();
 
   /** Return the set of all (main) RIBs. Map structure: hostname -&gt; VRF name -&gt; GenericRib */
-  SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> getRibs();
+  SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> getRibs();
 
   /** Return the network (i.e., layer 3) topology */
   Topology getTopology();

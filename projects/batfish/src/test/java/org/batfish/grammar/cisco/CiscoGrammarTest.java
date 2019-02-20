@@ -22,7 +22,7 @@ import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasListForKey;
 import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
 import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasAllowRemoteAsOut;

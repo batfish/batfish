@@ -2,7 +2,6 @@ package org.batfish.dataplane.rib;
 
 import static org.batfish.dataplane.rib.RouteAdvertisement.Reason.REPLACE;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -11,7 +10,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.AbstractRoute;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
@@ -29,12 +30,13 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
  * where the wildcard symbols can appear only after (to-the-right-of) non wildcard symbols in the
  * bit vector. E.g., 101010**, but not 1*001***
  */
-final class RibTree<R extends AbstractRoute> implements Serializable {
+@ParametersAreNonnullByDefault
+final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private PrefixTrieMultiMap<R> _root;
-  private AbstractRib<R> _owner;
+  @Nonnull private final PrefixTrieMultiMap<R> _root;
+  @Nonnull private final AbstractRib<R> _owner;
 
   RibTree(AbstractRib<R> owner) {
     _root = new PrefixTrieMultiMap<>(Prefix.ZERO);
@@ -80,7 +82,7 @@ final class RibTree<R extends AbstractRoute> implements Serializable {
   }
 
   private boolean hasForwardingRoute(Set<R> routes) {
-    return routes.stream().anyMatch(Predicates.not(AbstractRoute::getNonForwarding));
+    return routes.stream().anyMatch(r -> !r.getAbstractRoute().getNonForwarding());
   }
 
   /**
@@ -95,7 +97,7 @@ final class RibTree<R extends AbstractRoute> implements Serializable {
       Set<R> routes = _root.longestPrefixMatch(address, pl);
       if (hasForwardingRoute(routes)) {
         return routes.stream()
-            .filter(r -> !r.getNonForwarding())
+            .filter(r -> !r.getAbstractRoute().getNonForwarding())
             .collect(ImmutableSet.toImmutableSet());
       }
     }
@@ -168,12 +170,12 @@ final class RibTree<R extends AbstractRoute> implements Serializable {
   }
 
   @Override
-  public boolean equals(Object obj) {
+  public boolean equals(@Nullable Object obj) {
     return (obj == this) || (obj instanceof RibTree && this._root.equals(((RibTree<?>) obj)._root));
   }
 
   /** See {@link GenericRib#getMatchingIps()} */
-  public Map<Prefix, IpSpace> getMatchingIps() {
+  Map<Prefix, IpSpace> getMatchingIps() {
     ImmutableMap.Builder<Prefix, IpSpace> builder = ImmutableMap.builder();
 
     /* We traverse the tree in post-order, so when we visit each intermediate node the blacklist

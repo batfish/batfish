@@ -1,7 +1,7 @@
 package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.IsisRoute;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
@@ -30,7 +30,7 @@ final class IsisRouteMatchersImpl {
     }
   }
 
-  static final class IsIsisRouteThat extends IsInstanceThat<AbstractRoute, IsisRoute> {
+  static final class IsIsisRouteThat extends IsInstanceThat<AbstractRouteDecorator, IsisRoute> {
     IsIsisRouteThat(Matcher<? super IsisRoute> subMatcher) {
       super(IsisRoute.class, subMatcher);
     }

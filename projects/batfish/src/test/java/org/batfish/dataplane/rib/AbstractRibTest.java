@@ -1,8 +1,7 @@
 package org.batfish.dataplane.rib;
 
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterableOf;
 import static org.hamcrest.Matchers.equalTo;
@@ -57,7 +56,7 @@ public class AbstractRibTest {
   @Test
   public void testRibConstructor() {
     // Assertions: Ensure that a new rib is empty upon construction
-    assertThat(_rib.getRoutes(), emptyIterableOf(StaticRoute.class));
+    assertThat(_rib.getTypedRoutes(), empty());
     assertThat(_rib.containsRoute(_mostGeneralRoute), equalTo(false));
   }
 
@@ -166,11 +165,11 @@ public class AbstractRibTest {
 
     // Assertions
     // Check that both routes exist
-    Set<StaticRoute> collectedRoutes = _rib.getRoutes();
+    Set<StaticRoute> collectedRoutes = _rib.getTypedRoutes();
     assertThat(collectedRoutes, hasSize(2));
     assertThat(_rib.containsRoute(r1), equalTo(true));
     assertThat(_rib.containsRoute(r2), equalTo(true));
-    // Also check route collection via getRoutes()
+    // Also check route collection via getTypedRoutes()
     assertThat(collectedRoutes, hasItem(r1));
     assertThat(collectedRoutes, hasItem(r2));
   }
@@ -185,7 +184,7 @@ public class AbstractRibTest {
     List<StaticRoute> routes = setupOverlappingRoutes();
 
     // Assertions
-    Set<StaticRoute> collectedRoutes = _rib.getRoutes();
+    Set<StaticRoute> collectedRoutes = _rib.getTypedRoutes();
     assertThat(collectedRoutes, hasSize(routes.size()));
     assertThat(_rib.containsRoute(_mostGeneralRoute), equalTo(false));
     for (StaticRoute r : routes) {
@@ -326,11 +325,11 @@ public class AbstractRibTest {
     assertThat(rib.getRoutes(), hasSize(2));
   }
 
-  /** Test that routes obtained from getRoutes() cannot be modified */
+  /** Test that routes obtained from getTypedRoutes() cannot be modified */
   @Test
   public void testGetRoutesCannotBeModified() {
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
-    Set<StaticRoute> routes = _rib.getRoutes();
+    Set<StaticRoute> routes = _rib.getTypedRoutes();
     StaticRoute r1 =
         StaticRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))
@@ -346,11 +345,13 @@ public class AbstractRibTest {
     routes.add(r1);
   }
 
-  /** Test that routes obtained from getRoutes() do NOT reflect subsequent changes to the RIB */
+  /**
+   * Test that routes obtained from getTypedRoutes() do NOT reflect subsequent changes to the RIB
+   */
   @Test
   public void testGetRoutesIsNotAView() {
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
-    Set<StaticRoute> routes = _rib.getRoutes();
+    Set<StaticRoute> routes = _rib.getTypedRoutes();
     StaticRoute r1 =
         StaticRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))
@@ -363,19 +364,19 @@ public class AbstractRibTest {
 
     _rib.mergeRouteGetDelta(r1);
 
-    assertThat(routes, not(containsInAnyOrder(r1)));
+    assertThat(routes, not(hasItem(r1)));
   }
 
   /**
-   * Test that multiple calls to getRoutes() return the same object, if the RIB has not been
+   * Test that multiple calls to getTypedRoutes() return the same object, if the RIB has not been
    * modified
    */
   @Test
   public void testGetRoutesSameObject() {
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
 
-    Set<StaticRoute> routes = _rib.getRoutes();
-    assertThat(_rib.getRoutes(), sameInstance(routes));
+    Set<StaticRoute> routes = _rib.getTypedRoutes();
+    assertThat(_rib.getTypedRoutes(), sameInstance(routes));
   }
 
   /** Test that correct delta is returned when adding a new route. */
@@ -426,16 +427,14 @@ public class AbstractRibTest {
     RibDelta<StaticRoute> d = _rib.removeRouteGetDelta(_mostGeneralRoute);
 
     // Check only route r remains
-    assertThat(_rib.getRoutes(), contains(r));
-    assertThat(_rib.getRoutes(), not(contains(_mostGeneralRoute)));
+    assertThat(_rib.getTypedRoutes(), contains(r));
     assertThat(
         d.getActions().contains(new RouteAdvertisement<>(_mostGeneralRoute, Reason.WITHDRAW)),
         equalTo(true));
 
     // Remove route r
     d = _rib.removeRouteGetDelta(r);
-    assertThat(_rib.getRoutes(), not(contains(r)));
-    assertThat(_rib.getRoutes(), emptyIterableOf(StaticRoute.class));
+    assertThat(_rib.getTypedRoutes(), empty());
     assertThat(
         d.getActions().contains(new RouteAdvertisement<>(r, Reason.WITHDRAW)), equalTo(true));
   }
@@ -473,7 +472,7 @@ public class AbstractRibTest {
 
     // Remove only r1, check that r2 remains
     _rib.removeRoute(r1);
-    assertThat(_rib.getRoutes(), contains(r2));
+    assertThat(_rib.getTypedRoutes(), contains(r2));
   }
 
   @Test

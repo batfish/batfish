@@ -44,9 +44,9 @@ public class RipAndBgpTest {
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(batfish.loadDataPlane());
-    SortedSet<AbstractRoute> r1Routes = routes.get("r1").get(Configuration.DEFAULT_VRF_NAME);
-    SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(Configuration.DEFAULT_VRF_NAME);
-    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
+    Set<AbstractRoute> r1Routes = routes.get("r1").get(Configuration.DEFAULT_VRF_NAME);
+    Set<AbstractRoute> r2Routes = routes.get("r2").get(Configuration.DEFAULT_VRF_NAME);
+    Set<AbstractRoute> r3Routes = routes.get("r3").get(Configuration.DEFAULT_VRF_NAME);
     Set<Prefix> r1Prefixes =
         r1Routes.stream()
             .filter(route -> route.getProtocol() != RoutingProtocol.LOCAL)
