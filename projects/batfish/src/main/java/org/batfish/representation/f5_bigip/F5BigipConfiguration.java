@@ -135,7 +135,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
     markConcreteStructure(
         F5BigipStructureType.INTERFACE,
         F5BigipStructureUsage.INTERFACE_SELF_REFERENCE,
-        F5BigipStructureUsage.BGP_NEIGHBOR_UPDATE_SOURCE,
         F5BigipStructureUsage.VLAN_INTERFACE);
     markAbstractStructure(
         F5BigipStructureType.MONITOR,
@@ -207,6 +206,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
         F5BigipStructureType.VIRTUAL_ADDRESS, F5BigipStructureUsage.VIRTUAL_DESTINATION);
     markConcreteStructure(
         F5BigipStructureType.VLAN,
+        F5BigipStructureUsage.BGP_NEIGHBOR_UPDATE_SOURCE,
         F5BigipStructureUsage.SELF_VLAN,
         F5BigipStructureUsage.SNAT_VLANS_VLAN);
   }

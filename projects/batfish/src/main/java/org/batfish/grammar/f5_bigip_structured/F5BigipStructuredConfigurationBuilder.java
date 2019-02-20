@@ -1,6 +1,7 @@
 package org.batfish.grammar.f5_bigip_structured;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.INTERFACE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR;
@@ -31,6 +32,7 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_ADDRESS_FAMILY_REDISTRIBUTE_KERNEL_ROUTE_MAP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_IPV4_ROUTE_MAP_OUT;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_IPV6_ROUTE_MAP_OUT;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_UPDATE_SOURCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_PROCESS_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.INTERFACE_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.MONITOR_HTTPS_DEFAULTS_FROM;
@@ -145,7 +147,15 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_prefix
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_route_mapContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbaf_ipv4Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbaf_ipv6Context;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbafcr_kernelContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbafcrk_route_mapContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbn_nameContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnn_descriptionContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnn_remote_asContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnn_update_sourceContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnnaf_ipv4Context;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnnaf_ipv6Context;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnnafc_activateContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnnafcr_outContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nreem4a_prefix_listContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nreesc_valueContext;
@@ -172,9 +182,13 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Unrecogni
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.WordContext;
 import org.batfish.representation.f5_bigip.BgpAddressFamily;
 import org.batfish.representation.f5_bigip.BgpIpv4AddressFamily;
+import org.batfish.representation.f5_bigip.BgpNeighbor;
+import org.batfish.representation.f5_bigip.BgpNeighborAddressFamily;
 import org.batfish.representation.f5_bigip.BgpProcess;
+import org.batfish.representation.f5_bigip.BgpRedistributionPolicy;
 import org.batfish.representation.f5_bigip.BuiltinMonitor;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
+import org.batfish.representation.f5_bigip.F5BigipRoutingProtocol;
 import org.batfish.representation.f5_bigip.F5BigipStructureUsage;
 import org.batfish.representation.f5_bigip.Interface;
 import org.batfish.representation.f5_bigip.Ipv4Origin;
@@ -202,6 +216,14 @@ import org.batfish.vendor.StructureType;
 @ParametersAreNonnullByDefault
 public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredParserBaseListener {
 
+  private static int toInteger(ParserRuleContext ctx) {
+    return Integer.parseUnsignedInt(ctx.getText(), 10);
+  }
+
+  private static long toLong(ParserRuleContext ctx) {
+    return Long.parseUnsignedLong(ctx.getText(), 10);
+  }
+
   static String unquote(String text) {
     if (text.length() == 0) {
       return text;
@@ -217,7 +239,10 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   private @Nullable F5BigipConfiguration _c;
   private @Nullable BgpAddressFamily _currentBgpAddressFamily;
+  private @Nullable BgpNeighbor _currentBgpNeighbor;
+  private @Nullable BgpNeighborAddressFamily _currentBgpNeighborAddressFamily;
   private @Nullable BgpProcess _currentBgpProcess;
+  private @Nullable BgpRedistributionPolicy _currentBgpRedistributionPolicy;
   private @Nullable Interface _currentInterface;
   private @Nullable Node _currentNode;
   private @Nullable Pool _currentPool;
@@ -235,7 +260,9 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   private @Nullable VirtualAddress _currentVirtualAddress;
   private @Nullable Vlan _currentVlan;
   private final @Nonnull F5BigipStructuredCombinedParser _parser;
+
   private final @Nonnull String _text;
+
   private final @Nonnull Warnings _w;
 
   public F5BigipStructuredConfigurationBuilder(
@@ -483,6 +510,31 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void enterNrbaf_ipv6(Nrbaf_ipv6Context ctx) {
     _currentBgpAddressFamily = _currentBgpProcess.getIpv6AddressFamily();
+  }
+
+  @Override
+  public void enterNrbafcr_kernel(Nrbafcr_kernelContext ctx) {
+    _currentBgpRedistributionPolicy =
+        _currentBgpAddressFamily
+            .getRedistributionPolicies()
+            .computeIfAbsent(F5BigipRoutingProtocol.KERNEL, BgpRedistributionPolicy::new);
+  }
+
+  @Override
+  public void enterNrbn_name(Nrbn_nameContext ctx) {
+    String name = unquote(ctx.name.getText());
+    defineStructure(BGP_NEIGHBOR, name, ctx);
+    _currentBgpNeighbor = _currentBgpProcess.getNeighbors().computeIfAbsent(name, BgpNeighbor::new);
+  }
+
+  @Override
+  public void enterNrbnnaf_ipv4(Nrbnnaf_ipv4Context ctx) {
+    _currentBgpNeighborAddressFamily = _currentBgpNeighbor.getIpv4AddressFamily();
+  }
+
+  @Override
+  public void enterNrbnnaf_ipv6(Nrbnnaf_ipv6Context ctx) {
+    _currentBgpNeighborAddressFamily = _currentBgpNeighbor.getIpv6AddressFamily();
   }
 
   @Override
@@ -858,6 +910,11 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void exitNrbafcr_kernel(Nrbafcr_kernelContext ctx) {
+    _currentBgpRedistributionPolicy = null;
+  }
+
+  @Override
   public void exitNrbafcrk_route_map(Nrbafcrk_route_mapContext ctx) {
     String name = unquote(ctx.name.getText());
     _c.referenceStructure(
@@ -865,7 +922,44 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
         name,
         BGP_ADDRESS_FAMILY_REDISTRIBUTE_KERNEL_ROUTE_MAP,
         ctx.name.getStart().getLine());
-    todo(ctx);
+    _currentBgpRedistributionPolicy.setRouteMap(name);
+  }
+
+  @Override
+  public void exitNrbn_name(Nrbn_nameContext ctx) {
+    _currentBgpNeighbor = null;
+  }
+
+  @Override
+  public void exitNrbnn_description(Nrbnn_descriptionContext ctx) {
+    _currentBgpNeighbor.setDescription(unquote(ctx.description.getText()));
+  }
+
+  @Override
+  public void exitNrbnn_remote_as(Nrbnn_remote_asContext ctx) {
+    _currentBgpNeighbor.setRemoteAs(toLong(ctx.as));
+  }
+
+  @Override
+  public void exitNrbnn_update_source(Nrbnn_update_sourceContext ctx) {
+    String name = unquote(ctx.name.getText());
+    _c.referenceStructure(VLAN, name, BGP_NEIGHBOR_UPDATE_SOURCE, ctx.name.getStart().getLine());
+    _currentBgpNeighbor.setUpdateSource(name);
+  }
+
+  @Override
+  public void exitNrbnnaf_ipv4(Nrbnnaf_ipv4Context ctx) {
+    _currentBgpNeighborAddressFamily = null;
+  }
+
+  @Override
+  public void exitNrbnnaf_ipv6(Nrbnnaf_ipv6Context ctx) {
+    _currentBgpNeighborAddressFamily = null;
+  }
+
+  @Override
+  public void exitNrbnnafc_activate(Nrbnnafc_activateContext ctx) {
+    _currentBgpNeighborAddressFamily.setActivate(ctx.DISABLED() == null);
   }
 
   @Override
@@ -876,7 +970,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
             ? BGP_NEIGHBOR_IPV4_ROUTE_MAP_OUT
             : BGP_NEIGHBOR_IPV6_ROUTE_MAP_OUT;
     _c.referenceStructure(ROUTE_MAP, name, usage, ctx.name.getStart().getLine());
-    todo(ctx);
+    _currentBgpNeighborAddressFamily.setRouteMapOut(name);
   }
 
   @Override
@@ -1019,10 +1113,6 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   private void todo(ParserRuleContext ctx) {
     _w.todo(ctx, getFullText(ctx), _parser);
-  }
-
-  private int toInteger(ParserRuleContext ctx) {
-    return Integer.parseUnsignedInt(ctx.getText(), 10);
   }
 
   private @Nullable LineAction toLineAction(Prefix_list_actionContext ctx) {
