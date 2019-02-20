@@ -95,10 +95,10 @@ public class ParseEnvironmentRoutingTableResult
       } else {
         routingTables.put(hostname, _routingTable);
         if (!_warnings.isEmpty()) {
-          answerElement.getWarnings().put(hostname, _warnings);
+          answerElement.getWarnings().put(filename, _warnings);
         }
         if (!_parseTree.isEmpty()) {
-          answerElement.getParseTrees().put(hostname, _parseTree);
+          answerElement.getParseTrees().put(filename, _parseTree);
         }
         if (_routingTable.getUnrecognized()) {
           answerElement.getParseStatus().put(filename, ParseStatus.PARTIALLY_UNRECOGNIZED);

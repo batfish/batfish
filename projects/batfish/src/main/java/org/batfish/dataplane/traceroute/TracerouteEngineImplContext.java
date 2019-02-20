@@ -18,6 +18,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Fib;
@@ -152,6 +153,7 @@ public class TracerouteEngineImplContext {
 
   List<RouteInfo> longestPrefixMatch(String node, String vrf, Ip ip) {
     return _dataPlane.getRibs().get(node).get(vrf).longestPrefixMatch(ip).stream()
+        .map(AnnotatedRoute::getRoute)
         .sorted()
         .map(rc -> new RouteInfo(rc.getProtocol(), rc.getNetwork(), rc.getNextHopIp()))
         .distinct()

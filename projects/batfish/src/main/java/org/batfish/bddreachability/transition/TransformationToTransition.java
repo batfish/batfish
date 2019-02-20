@@ -1,6 +1,8 @@
 package org.batfish.bddreachability.transition;
 
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
+import static org.batfish.bddreachability.transition.Transitions.reverse;
+import static org.batfish.datamodel.transformation.ReturnFlowTransformation.returnFlowTransformation;
 
 import java.util.Arrays;
 import java.util.IdentityHashMap;
@@ -19,6 +21,7 @@ import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.PortField;
+import org.batfish.datamodel.transformation.ReturnFlowTransformation;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
@@ -109,8 +112,19 @@ public class TransformationToTransition {
 
   public Transition toTransition(@Nullable Transformation transformation) {
     return transformation == null
-        ? Identity.INSTANCE
+        ? IDENTITY
         : _cache.computeIfAbsent(transformation, this::computeTransition);
+  }
+
+  /**
+   * The return flow transition applies the {@link ReturnFlowTransformation} (in which source and
+   * destination fields have been swapped) in the reverse direction (because the return flow travels
+   * in the opposite direction as the original).
+   */
+  public Transition toReturnFlowTransition(@Nullable Transformation transformation) {
+    return transformation == null
+        ? IDENTITY
+        : reverse(toTransition(returnFlowTransformation(transformation)));
   }
 
   private Transition computeTransition(Transformation transformation) {

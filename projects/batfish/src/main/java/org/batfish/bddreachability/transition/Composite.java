@@ -39,4 +39,20 @@ public final class Composite implements Transition {
     }
     return result;
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Composite)) {
+      return false;
+    }
+    return _transitions.equals(((Composite) o)._transitions);
+  }
+
+  @Override
+  public int hashCode() {
+    return _transitions.hashCode();
+  }
 }

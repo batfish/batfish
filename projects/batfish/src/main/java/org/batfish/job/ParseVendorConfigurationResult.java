@@ -124,10 +124,10 @@ public class ParseVendorConfigurationResult
       vendorConfigurations.put(hostname, _vc);
       answerElement.getFileMap().put(hostname, _filename);
       if (!_warnings.isEmpty()) {
-        answerElement.getWarnings().put(hostname, _warnings);
+        answerElement.getWarnings().put(_filename, _warnings);
       }
       if (!_parseTree.isEmpty()) {
-        answerElement.getParseTrees().put(hostname, _parseTree);
+        answerElement.getParseTrees().put(_filename, _parseTree);
       }
     } else if (_status == ParseStatus.FAILED) {
       assert _failureCause != null; // status == FAILED, failureCause must be non-null
