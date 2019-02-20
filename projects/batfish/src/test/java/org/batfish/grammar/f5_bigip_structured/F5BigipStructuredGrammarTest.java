@@ -54,6 +54,7 @@ import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
@@ -78,6 +79,11 @@ import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.representation.f5_bigip.Builtin;
+import org.batfish.representation.f5_bigip.BuiltinMonitor;
+import org.batfish.representation.f5_bigip.BuiltinPersistence;
+import org.batfish.representation.f5_bigip.BuiltinProfile;
+import org.batfish.representation.f5_bigip.F5BigipStructureType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -90,6 +96,42 @@ public final class F5BigipStructuredGrammarTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  /**
+   * Assert that {@code ans} does not contain undefined references to builtins. This happens when
+   * builtins are not referenced but not correctly identified.
+   *
+   * @param ans The answer element containing the map of undefined references
+   * @param types The types using the namespace searched by {@code nameToBuiltIn}
+   * @param nameToBuiltin A function that returns a {@link Builtin} for a given name, or {@code
+   *     null} if the name does not correspond to a builtin.
+   */
+  private void assertNoUndefinedReferencesToBuiltins(
+      ConvertConfigurationAnswerElement ans,
+      Stream<F5BigipStructureType> types,
+      Function<String, ? extends Builtin> nameToBuiltin) {
+    types.forEach(
+        type ->
+            ans.getUndefinedReferences()
+                .values()
+                .forEach(
+                    undefinedReferencesForFile ->
+                        undefinedReferencesForFile
+                            .get(type.getDescription())
+                            .keySet()
+                            .forEach(
+                                structureName -> {
+                                  String msg =
+                                      String.format(
+                                          "Reference to '%s' of type '%s' should not be undefined because '%s' is a builtin.",
+                                          structureName, type.getDescription(), structureName);
+                                  assertThat(msg, nameToBuiltin.apply(structureName), nullValue());
+                                  assertThat(
+                                      msg,
+                                      nameToBuiltin.apply(Builtin.COMMON_PREFIX + structureName),
+                                      nullValue());
+                                })));
+  }
 
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
     String[] names =
@@ -199,6 +241,9 @@ public final class F5BigipStructuredGrammarTest {
       // detect all structure references
       assertThat(ans, hasNumReferrers(file, MONITOR_HTTPS, used, 2));
     }
+
+    assertNoUndefinedReferencesToBuiltins(
+        ans, Stream.of(MONITOR, MONITOR_HTTP, MONITOR_HTTPS), BuiltinMonitor::getBuiltinMonitor);
   }
 
   @Test
@@ -246,7 +291,6 @@ public final class F5BigipStructuredGrammarTest {
 
       // detect all structure references
       assertThat(ans, hasNumReferrers(file, PERSISTENCE_SOURCE_ADDR, used, 2));
-
     }
 
     // persistence ssl
@@ -266,10 +310,10 @@ public final class F5BigipStructuredGrammarTest {
       assertThat(ans, hasNumReferrers(file, PERSISTENCE_SSL, used, 2));
     }
 
-    // Only custom structures should be referenced; references to builtins should be ignored. 
-    assertThat(
-        ans.getReferencedStructures().get(file).get(PERSISTENCE.getDescription()).keySet(),
-        equalTo(customReferencedStructures.build()));
+    assertNoUndefinedReferencesToBuiltins(
+        ans,
+        Stream.of(PERSISTENCE, PERSISTENCE_SOURCE_ADDR, PERSISTENCE_SSL),
+        BuiltinPersistence::getBuiltinPersistence);
   }
 
   @Test
@@ -487,6 +531,18 @@ public final class F5BigipStructuredGrammarTest {
       // detect all structure references
       assertThat(ans, hasNumReferrers(file, PROFILE_TCP, used, 2));
     }
+
+    assertNoUndefinedReferencesToBuiltins(
+        ans,
+        Stream.of(
+            PROFILE,
+            PROFILE_CLIENT_SSL,
+            PROFILE_HTTP,
+            PROFILE_OCSP_STAPLING_PARAMS,
+            PROFILE_ONE_CONNECT,
+            PROFILE_SERVER_SSL,
+            PROFILE_TCP),
+        BuiltinProfile::getBuiltinProfile);
   }
 
   @Test

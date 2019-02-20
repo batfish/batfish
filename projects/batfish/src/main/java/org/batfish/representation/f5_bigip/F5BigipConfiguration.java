@@ -372,14 +372,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _routeMaps.forEach(
         (name, routeMap) -> _c.getRoutingPolicies().put(name, toRoutingPolicy(routeMap)));
 
-    removeBuiltinReferences();
     markStructures();
 
     return _c;
-  }
-
-  private void removeBuiltinReferences() {
-    _structureReferences.
   }
 
   @Override
