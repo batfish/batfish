@@ -34,7 +34,6 @@ public class TransformationToTransitionTest {
   private IpSpaceToBDD _dstIpSpaceToBdd;
   private IpSpaceToBDD _srcIpSpaceToBdd;
   private TransformationToTransition _toTransition;
-  private TransformationToTransition _toReverseTransition;
   private BDD _one;
   private BDD _zero;
 
@@ -344,7 +343,6 @@ public class TransformationToTransitionTest {
             ImmutableMap.of());
     TransformationToTransition toTransition = new TransformationToTransition(_pkt, aclToBdd);
     IpSpaceToBDD dstToBdd = aclToBdd.getHeaderSpaceToBDD().getDstIpSpaceToBdd();
-    IpSpaceToBDD srcToBdd = aclToBdd.getHeaderSpaceToBDD().getSrcIpSpaceToBdd();
 
     // Shift source into prefix
     {
