@@ -40061,11 +40061,11 @@
             "          BRACE_LEFT:'{'",
             "          NEWLINE:'\\n'",
             "          (lspm_member",
-            "            member = (word",
+            "            name = (word",
             "              WORD:'/Common/192.0.2.5')",
             "            NEWLINE:'\\n')",
             "          (lspm_member",
-            "            member = (word",
+            "            name = (word",
             "              WORD:'/Common/192.0.2.6')",
             "            NEWLINE:'\\n')",
             "          BRACE_RIGHT:'}'",
@@ -72685,6 +72685,17 @@
               "numReferrers" : 1
             }
           },
+          "snat-translation" : {
+            "/Common/192.0.2.4" : {
+              "definitionLines" : [
+                73,
+                74,
+                75,
+                76
+              ],
+              "numReferrers" : 0
+            }
+          },
           "snatpool" : {
             "/Common/SOME_SNATPOOL" : {
               "definitionLines" : [
@@ -72789,6 +72800,62 @@
           }
         },
         "configs/f5_bigip_structured_net_routing_bgp" : {
+          "bgp neighbor" : {
+            "192.0.2.1" : {
+              "definitionLines" : [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ],
+              "numReferrers" : 1
+            },
+            "dead:beef::1" : {
+              "definitionLines" : [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ],
+              "numReferrers" : 1
+            }
+          },
           "bgp process" : {
             "/Common/my_bgp" : {
               "definitionLines" : [
@@ -77549,6 +77616,18 @@
               ]
             }
           },
+          "snat-translation" : {
+            "/Common/192.0.2.5" : {
+              "snatpool members member" : [
+                79
+              ]
+            },
+            "/Common/192.0.2.6" : {
+              "snatpool members member" : [
+                80
+              ]
+            }
+          },
           "snatpool" : {
             "/Common/SOME_SNATPOOL" : {
               "snat snatpool" : [
@@ -77570,6 +77649,13 @@
             "/Common/192.0.2.7" : {
               "virtual destination" : [
                 84
+              ]
+            }
+          },
+          "vlan" : {
+            "/Common/SOME_VLAN" : {
+              "snat vlans vlan" : [
+                69
               ]
             }
           }
@@ -77601,6 +77687,18 @@
           }
         },
         "configs/f5_bigip_structured_net_routing_bgp" : {
+          "bgp neighbor" : {
+            "192.0.2.1" : {
+              "bgp neighbor self-reference" : [
+                42
+              ]
+            },
+            "dead:beef::1" : {
+              "bgp neighbor self-reference" : [
+                20
+              ]
+            }
+          },
           "bgp process" : {
             "/Common/my_bgp" : {
               "bgp process self-reference" : [
@@ -77622,6 +77720,14 @@
             "/Common/MY_KERNEL_OUT" : {
               "bgp address-family redistribute kernel route-map" : [
                 12
+              ]
+            }
+          },
+          "vlan" : {
+            "SOME_VLAN" : {
+              "bgp neighbor update-source" : [
+                40,
+                62
               ]
             }
           }
@@ -80496,10 +80602,29 @@
               ]
             }
           },
+          "snat-translation" : {
+            "/Common/192.0.2.5" : {
+              "snatpool members member" : [
+                79
+              ]
+            },
+            "/Common/192.0.2.6" : {
+              "snatpool members member" : [
+                80
+              ]
+            }
+          },
           "virtual-address" : {
             "/Common/192.0.2.7" : {
               "virtual destination" : [
                 84
+              ]
+            }
+          },
+          "vlan" : {
+            "/Common/SOME_VLAN" : {
+              "snat vlans vlan" : [
+                69
               ]
             }
           }
@@ -80519,6 +80644,14 @@
             "/Common/MY_KERNEL_OUT" : {
               "bgp address-family redistribute kernel route-map" : [
                 12
+              ]
+            }
+          },
+          "vlan" : {
+            "SOME_VLAN" : {
+              "bgp neighbor update-source" : [
+                40,
+                62
               ]
             }
           }
