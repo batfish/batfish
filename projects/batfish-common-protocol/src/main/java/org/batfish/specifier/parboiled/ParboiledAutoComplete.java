@@ -110,6 +110,29 @@ public final class ParboiledAutoComplete {
         .run();
   }
 
+  /** Auto completes Location spec queries */
+  public static List<AutocompleteSuggestion> autoCompleteLocation(
+      String network,
+      String snapshot,
+      String query,
+      int maxSuggestions,
+      CompletionMetadata completionMetadata,
+      NodeRolesData nodeRolesData,
+      ReferenceLibrary referenceLibrary) {
+    return new ParboiledAutoComplete(
+            Parser.INSTANCE,
+            Parser.INSTANCE.LocationExpression(),
+            Parser.ANCHORS,
+            network,
+            snapshot,
+            query,
+            maxSuggestions,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary)
+        .run();
+  }
+
   /** This is the entry point for all auto completions */
   List<AutocompleteSuggestion> run() {
 
