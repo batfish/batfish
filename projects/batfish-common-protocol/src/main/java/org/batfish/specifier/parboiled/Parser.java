@@ -289,6 +289,8 @@ public class Parser extends CommonParser {
    * ipSpaceSpec := ipSpecTerm [, ipSpecTerm]*
    *
    * ipSpecTerm := @addgressgroup(groupname, bookname)  //ref.addressgroup for back compat
+   *               | locationExpr
+   *               | ofLocation(locationExpr)           // back compat
    *               | ipPrefix (e.g., 1.1.1.0/24)
    *               | ipWildcard (e.g., 1.1.1.1:255.255.255.0)
    *               | ipRange (e.g., 1.1.1.1-1.1.1.2)
@@ -307,7 +309,8 @@ public class Parser extends CommonParser {
 
   /* An IpSpace term is one of these things */
   public Rule IpSpaceTerm() {
-    return FirstOf(IpSpaceAddressGroup(), IpPrefix(), IpWildcard(), IpRange(), IpAddress());
+    return FirstOf(
+        IpPrefix(), IpWildcard(), IpRange(), IpAddress(), IpSpaceAddressGroup(), IpSpaceLocation());
   }
 
   /** Includes ref.addgressgroup for backward compatibility. Should be removed later */
@@ -332,6 +335,18 @@ public class Parser extends CommonParser {
         ReferenceObjectNameLiteral(),
         push(new StringAstNode(match())),
         WhiteSpace());
+  }
+
+  public Rule IpSpaceLocation() {
+    return FirstOf(
+        Sequence(LocationExpression(), push(new LocationIpSpaceAstNode(pop()))),
+        Sequence(
+            "ofLocation ",
+            "( ",
+            LocationExpression(),
+            WhiteSpace(),
+            ") ",
+            push(new LocationIpSpaceAstNode(pop()))));
   }
 
   /**

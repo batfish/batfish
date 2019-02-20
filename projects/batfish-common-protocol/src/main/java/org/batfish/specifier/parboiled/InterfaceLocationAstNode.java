@@ -45,6 +45,11 @@ final class InterfaceLocationAstNode implements LocationAstNode {
     return new InterfaceLocationAstNode(internalNodeAst, (InterfaceAstNode) interfaceAst);
   }
 
+  static InterfaceLocationAstNode createFromNodeInterface(
+      NameNodeAstNode nodeAst, InterfaceAstNode interfaceAst) {
+    return new InterfaceLocationAstNode(nodeAst, interfaceAst);
+  }
+
   @Override
   public <T> T accept(AstNodeVisitor<T> visitor) {
     return visitor.visitInterfaceLocationAstNode(this);

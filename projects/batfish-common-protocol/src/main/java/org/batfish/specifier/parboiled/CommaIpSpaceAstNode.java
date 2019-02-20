@@ -2,7 +2,7 @@ package org.batfish.specifier.parboiled;
 
 import java.util.Objects;
 
-class CommaIpSpaceAstNode implements IpSpaceAstNode {
+final class CommaIpSpaceAstNode implements IpSpaceAstNode {
   private final IpSpaceAstNode _left;
   private final IpSpaceAstNode _right;
 
