@@ -54,7 +54,7 @@ public class Parser extends CommonParser {
   final Rule[] _deviceTypeRules = initEnumRules(DeviceType.values());
 
   /**
-   * <<<<<<< HEAD Filter grammar
+   * Filter grammar
    *
    * <pre>
    *   filterExpr := filterTerm [{@literal &} | + | \ filterTerm]*
@@ -126,7 +126,7 @@ public class Parser extends CommonParser {
   }
 
   /**
-   * ======= >>>>>>> origin/master Interface grammar
+   * Interface grammar
    *
    * <pre>
    *   interfaceExpr := interfaceTerm [{@literal &} | + | \ interfaceTerm]*
