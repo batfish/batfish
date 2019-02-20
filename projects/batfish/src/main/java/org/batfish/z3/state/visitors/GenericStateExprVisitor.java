@@ -43,6 +43,10 @@ import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
+import org.batfish.z3.state.PreOutInterfaceDeliveredToSubnet;
+import org.batfish.z3.state.PreOutInterfaceExitsNetwork;
+import org.batfish.z3.state.PreOutInterfaceInsufficientInfo;
+import org.batfish.z3.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.z3.state.PreOutVrf;
 import org.batfish.z3.state.Query;
 
@@ -138,6 +142,17 @@ public interface GenericStateExprVisitor<R> {
   R visitPreOutEdge(PreOutEdge preOutEdge);
 
   R visitPreOutEdgePostNat(PreOutEdgePostNat preOutInterface);
+
+  R visitPreOutInterfaceDeliveredToSubnet(
+      PreOutInterfaceDeliveredToSubnet preOutInterfaceDeliveredToSubnet);
+
+  R visitPreOutInterfaceExitsNetwork(PreOutInterfaceExitsNetwork preOutInterfaceExitsNetwork);
+
+  R visitPreOutInterfaceInsufficientInfo(
+      PreOutInterfaceInsufficientInfo preOutInterfaceInsufficientInfo);
+
+  R visitPreOutInterfaceNeighborUnreachable(
+      PreOutInterfaceNeighborUnreachable preOutInterfaceNeighborUnreachable);
 
   R visitTransformation(TransformationExpr transformationExpr);
 
