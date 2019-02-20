@@ -34,6 +34,9 @@ ltm rule /Common/rule_unused { }
 ltm snat /Common/snat_used {
     snatpool /Common/snatpool_used
     snatpool /Common/snatpool_undefined
+    vlans {
+        /Common/vlan_used
+    }
 }
 ltm snat-translation /Common/192.0.2.4 { }
 ltm snat-translation /Common/192.0.2.5 { }

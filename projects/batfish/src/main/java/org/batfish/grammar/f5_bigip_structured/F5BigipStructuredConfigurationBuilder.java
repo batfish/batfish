@@ -1,6 +1,7 @@
 package org.batfish.grammar.f5_bigip_structured;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.INTERFACE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR;
@@ -24,12 +25,14 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.RULE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SELF;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNAT;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNATPOOL;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNAT_TRANSLATION;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL_ADDRESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_ADDRESS_FAMILY_REDISTRIBUTE_KERNEL_ROUTE_MAP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_IPV4_ROUTE_MAP_OUT;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_IPV6_ROUTE_MAP_OUT;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_NEIGHBOR_UPDATE_SOURCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.BGP_PROCESS_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.INTERFACE_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.MONITOR_HTTPS_DEFAULTS_FROM;
@@ -48,8 +51,10 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.PROFILE_
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.ROUTE_MAP_MATCH_IPV4_ADDRESS_PREFIX_LIST;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.SELF_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.SELF_VLAN;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.SNATPOOL_MEMBERS_MEMBER;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.SNAT_SELF_REFERENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.SNAT_SNATPOOL;
+import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.SNAT_VLANS_VLAN;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.VIRTUAL_DESTINATION;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.VIRTUAL_PERSIST_PERSISTENCE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureUsage.VIRTUAL_POOL;
@@ -86,6 +91,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_nodeCon
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_poolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_ruleContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_snatContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_snat_translationContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_snatpoolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_virtualContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_virtual_addressContext;
@@ -94,12 +100,14 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lm_httpsC
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lmh_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lmhs_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lmhs_ssl_profileContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ln_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lp_monitorContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lper_source_addrContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lper_sslContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lpersa_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lperss_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lpm_memberContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lpmm_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lprof_client_sslContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lprof_httpContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lprof_ocsp_stapling_paramsContext;
@@ -113,9 +121,18 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lprofon_d
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lprofss_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lproft_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ls_snatpoolContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lso_originContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lspm_memberContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lst_addressContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lsv_vlanContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_destinationContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_maskContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_poolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_profiles_profileContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_sourceContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_addressContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_maskContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_route_advertisementContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lvp_persistenceContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lvr_ruleContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lvsat_poolContext;
@@ -128,7 +145,15 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_prefix
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_route_mapContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbaf_ipv4Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbaf_ipv6Context;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbafcr_kernelContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbafcrk_route_mapContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbn_nameContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnn_descriptionContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnn_remote_asContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnn_update_sourceContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnnaf_ipv4Context;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnnaf_ipv6Context;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnnafc_activateContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbnnafcr_outContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nreem4a_prefix_listContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nreesc_valueContext;
@@ -147,6 +172,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ns_vlanCo
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nv_tagContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nvi_interfaceContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Prefix_list_actionContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Route_advertisement_modeContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Route_map_actionContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sgs_hostnameContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Standard_communityContext;
@@ -264,6 +290,12 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void enterL_snat_translation(L_snat_translationContext ctx) {
+    String name = unquote(ctx.name.getText());
+    defineStructure(SNAT_TRANSLATION, name, ctx);
+  }
+
+  @Override
   public void enterL_snatpool(L_snatpoolContext ctx) {
     String name = unquote(ctx.name.getText());
     defineStructure(SNATPOOL, name, ctx);
@@ -308,9 +340,11 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void enterLpm_member(Lpm_memberContext ctx) {
-    String name = toName(unquote(ctx.name.getText()), ctx);
-    if (name != null) {
-      _c.referenceStructure(NODE, name, POOL_MEMBER, ctx.name.getStart().getLine());
+    String combinedName = unquote(ctx.name.getText());
+    String node = toName(unquote(combinedName), ctx);
+    Integer port = toPort(unquote(combinedName), ctx);
+    if (node != null && port != null) {
+      _c.referenceStructure(NODE, node, POOL_MEMBER, ctx.name.getStart().getLine());
     }
   }
 
@@ -413,6 +447,12 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void enterNrbaf_ipv6(Nrbaf_ipv6Context ctx) {
     _currentBgpAddressFamily = _currentBgpProcess.getIpv6AddressFamily();
+  }
+
+  @Override
+  public void enterNrbn_name(Nrbn_nameContext ctx) {
+    String name = unquote(ctx.name.getText());
+    defineStructure(BGP_NEIGHBOR, name, ctx);
   }
 
   @Override
@@ -581,6 +621,19 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void exitLspm_member(Lspm_memberContext ctx) {
+    String name = unquote(ctx.name.getText());
+    _c.referenceStructure(
+        SNAT_TRANSLATION, name, SNATPOOL_MEMBERS_MEMBER, ctx.name.getStart().getLine());
+  }
+
+  @Override
+  public void exitLsv_vlan(Lsv_vlanContext ctx) {
+    String name = ctx.name.getText();
+    _c.referenceStructure(VLAN, name, SNAT_VLANS_VLAN, ctx.name.getStart().getLine());
+  }
+
+  @Override
   public void exitLv_destination(Lv_destinationContext ctx) {
     String name = toName(unquote(ctx.name.getText()), ctx);
     if (name != null) {
@@ -672,6 +725,12 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
         BGP_ADDRESS_FAMILY_REDISTRIBUTE_KERNEL_ROUTE_MAP,
         ctx.name.getStart().getLine());
     todo(ctx);
+  }
+
+  @Override
+  public void exitNrbnn_update_source(Nrbnn_update_sourceContext ctx) {
+    String name = unquote(ctx.name.getText());
+    _c.referenceStructure(VLAN, name, BGP_NEIGHBOR_UPDATE_SOURCE, ctx.name.getStart().getLine());
   }
 
   @Override
@@ -861,6 +920,25 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
       return null;
     }
     return parts[0];
+  }
+
+  private @Nullable Integer toPort(String nameWithPort, ParserRuleContext ctx) {
+    String[] parts = nameWithPort.split(":", -1);
+    if (parts.length != 2) {
+      _w.redFlag(
+          String.format(
+              "Expected node name with :port suffix but got '%s' in: %s",
+              nameWithPort, getFullText(ctx)));
+      return null;
+    }
+    try {
+      int port = Integer.parseInt(parts[1], 10);
+      checkArgument(0 <= port && port <= 0xFFFF);
+      return port;
+    } catch (IllegalArgumentException e) {
+      _w.redFlag(String.format("Expected port but got '%s' in: %s", parts[1], getFullText(ctx)));
+      return null;
+    }
   }
 
   private @Nullable Double toSpeed(Bundle_speedContext ctx) {

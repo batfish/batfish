@@ -32,6 +32,8 @@ public enum F5BigipStructureUsage implements StructureUsage {
   SELF_VLAN("self vlan"),
   SNAT_SELF_REFERENCE("snat self-reference"),
   SNAT_SNATPOOL("snat snatpool"),
+  SNAT_VLANS_VLAN("snat vlans vlan"),
+  SNATPOOL_MEMBERS_MEMBER("snatpool members member"),
   VIRTUAL_DESTINATION("virtual destination"),
   VIRTUAL_PERSIST_PERSISTENCE("virtual persist persistence"),
   VIRTUAL_POOL("virtual pool"),

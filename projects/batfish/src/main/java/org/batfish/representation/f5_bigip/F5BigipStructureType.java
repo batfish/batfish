@@ -7,6 +7,7 @@ import org.batfish.vendor.StructureType;
 /** Named structure-types for F5 BIG-IP device */
 @ParametersAreNonnullByDefault
 public enum F5BigipStructureType implements StructureType {
+  BGP_NEIGHBOR("bgp neighbor"),
   BGP_PROCESS("bgp process"),
   INTERFACE("interface"),
   MONITOR("monitor"),
@@ -29,6 +30,7 @@ public enum F5BigipStructureType implements StructureType {
   RULE("rule"),
   SELF("self"),
   SNAT("snat"),
+  SNAT_TRANSLATION("snat-translation"),
   SNATPOOL("snatpool"),
   VIRTUAL("virtual"),
   VIRTUAL_ADDRESS("virtual-address"),

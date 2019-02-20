@@ -93,7 +93,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
     markConcreteStructure(
         F5BigipStructureType.INTERFACE,
         F5BigipStructureUsage.INTERFACE_SELF_REFERENCE,
-        F5BigipStructureUsage.BGP_NEIGHBOR_UPDATE_SOURCE,
         F5BigipStructureUsage.VLAN_INTERFACE);
     markAbstractStructure(
         F5BigipStructureType.MONITOR,
@@ -154,6 +153,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
     markConcreteStructure(F5BigipStructureType.SELF, F5BigipStructureUsage.SELF_SELF_REFERENCE);
     markConcreteStructure(F5BigipStructureType.SNAT, F5BigipStructureUsage.SNAT_SELF_REFERENCE);
     markConcreteStructure(
+        F5BigipStructureType.SNAT_TRANSLATION, F5BigipStructureUsage.SNATPOOL_MEMBERS_MEMBER);
+    markConcreteStructure(
         F5BigipStructureType.SNATPOOL,
         F5BigipStructureUsage.SNAT_SNATPOOL,
         F5BigipStructureUsage.VIRTUAL_SOURCE_ADDRESS_TRANSLATION_POOL);
@@ -161,7 +162,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
         F5BigipStructureType.VIRTUAL, F5BigipStructureUsage.VIRTUAL_SELF_REFERENCE);
     markConcreteStructure(
         F5BigipStructureType.VIRTUAL_ADDRESS, F5BigipStructureUsage.VIRTUAL_DESTINATION);
-    markConcreteStructure(F5BigipStructureType.VLAN, F5BigipStructureUsage.SELF_VLAN);
+    markConcreteStructure(
+        F5BigipStructureType.VLAN,
+        F5BigipStructureUsage.BGP_NEIGHBOR_UPDATE_SOURCE,
+        F5BigipStructureUsage.SELF_VLAN,
+        F5BigipStructureUsage.SNAT_VLANS_VLAN);
   }
 
   private void processSelf(Self self) {

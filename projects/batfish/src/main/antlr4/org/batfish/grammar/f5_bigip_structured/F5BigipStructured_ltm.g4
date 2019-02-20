@@ -374,7 +374,7 @@ lsp_members
 
 lspm_member
 :
-  member = word NEWLINE
+  name = word NEWLINE
 ;
 
 l_virtual
