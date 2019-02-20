@@ -19,14 +19,26 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.PreInInterface;
 
-/** Implemention of valid ranges (outputs) of reversed transformations (for reverse flows). */
+/**
+ * Implemention of valid ranges (outputs) of reversed transformations (for reverse flows). The valid
+ * ranges correspond to the actual inputs the forward transformation was applied to in a forward
+ * pass of a bidirectional reachability query (modulo swapping of source/dest header fields).
+ */
 final class BDDReverseTransformationRangesImpl implements BDDReverseTransformationRanges {
   private final Map<String, Configuration> _configs;
 
-  // null when _ignoreFilters is true.
+  /**
+   * BDDs defining the set of flows permitted by each filter in the network. Node -> AclName -> BDD.
+   *
+   * <p>null when _ignoreFilters is true.
+   */
   private final @Nullable Map<String, Map<String, BDD>> _forwardFlowFilterBdds;
+
   private final Map<StateExpr, BDD> _forwardReachableSets;
+
+  /** Caches for ranges of reversed incoming and outgoing transformations. */
   private final Map<NodeInterfacePair, BDD> _incomingCache;
+
   private final Map<NodeInterfacePair, BDD> _outgoingCache;
 
   /**
@@ -64,6 +76,7 @@ final class BDDReverseTransformationRangesImpl implements BDDReverseTransformati
     _zero = bddPacket.getFactory().zero();
   }
 
+  /** Computes the valid outputs of a reversed incoming transformation on an interface. */
   @Override
   public BDD reverseIncomingTransformationRange(String node, String iface) {
     return _incomingCache.computeIfAbsent(
@@ -71,6 +84,7 @@ final class BDDReverseTransformationRangesImpl implements BDDReverseTransformati
         k -> computeReverseIncomingTransformationRange(node, iface));
   }
 
+  /** Computes the valid outputs of a reversed outgoing transformation on an interface. */
   @Override
   public BDD reverseOutgoingTransformationRange(String node, String iface) {
     return _outgoingCache.computeIfAbsent(
@@ -122,7 +136,6 @@ final class BDDReverseTransformationRangesImpl implements BDDReverseTransformati
             _forwardFlowFilterBdds.get(hostname).get(preTransformationOutgoingFilter.getName()));
   }
 
-  /** TODO: this currently only includes PreOutEdge states */
   private static Multimap<NodeInterfacePair, StateExpr> computeOutgoingTransformationRangeStates(
       Set<StateExpr> states) {
     ImmutableMultimap.Builder<NodeInterfacePair, StateExpr> builder = ImmutableMultimap.builder();
