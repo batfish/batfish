@@ -147,6 +147,11 @@ public final class ParboiledAutoComplete {
         return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
       case EOI:
         return ImmutableList.of();
+      case FILTER_NAME:
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
+      case FILTER_NAME_REGEX:
+        // can't help with regexes
+        return ImmutableList.of();
       case INTERFACE_GROUP_AND_BOOK:
         return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
       case INTERFACE_NAME:
@@ -226,6 +231,8 @@ public final class ParboiledAutoComplete {
     switch (anchorType) {
       case ADDRESS_GROUP_AND_BOOK:
         return Variable.Type.ADDRESS_GROUP_AND_BOOK;
+      case FILTER_NAME:
+        return Variable.Type.FILTER_NAME;
       case INTERFACE_GROUP_AND_BOOK:
         return Variable.Type.INTERFACE_GROUP_AND_BOOK;
       case INTERFACE_NAME:

@@ -1,6 +1,8 @@
 package org.batfish.specifier.parboiled;
 
 import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_AND_BOOK;
+import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_AND_BOOK;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME_REGEX;
@@ -50,6 +52,78 @@ public class Parser extends CommonParser {
   final Rule[] _interfaceTypeRules = initEnumRules(InterfaceType.values());
 
   final Rule[] _deviceTypeRules = initEnumRules(DeviceType.values());
+
+  /**
+   * Filter grammar
+   *
+   * <pre>
+   *   filterExpr := filterTerm [{@literal &} | + | \ filterTerm]*
+   *
+   *   filterTerm := @in(interfaceExpr)  // inFilterOf is also supported for back compat
+   *               | @out(interfaceExpr) // outFilterOf is also supported
+   *               | filterName
+   *               | filterNameRegex
+   *               | ( filterTerm )
+   * </pre>
+   */
+
+  /* A Filter expression is one or more intersection terms separated by + or \ */
+  public Rule FilterExpression() {
+    Var<Character> op = new Var<>();
+    return Sequence(
+        FilterIntersection(),
+        WhiteSpace(),
+        ZeroOrMore(
+            FirstOf("+ ", "\\ "),
+            op.set(matchedChar()),
+            FilterIntersection(),
+            push(SetOpFilterAstNode.create(op.get(), pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule FilterIntersection() {
+    return Sequence(
+        FilterTerm(),
+        WhiteSpace(),
+        ZeroOrMore(
+            "& ", FilterTerm(), push(new IntersectionFilterAstNode(pop(1), pop())), WhiteSpace()));
+  }
+
+  public Rule FilterTerm() {
+    return FirstOf(FilterDirection(), FilterNameRegex(), FilterName(), FilterParens());
+  }
+
+  public Rule FilterDirection() {
+    Var<String> direction = new Var<>();
+    return Sequence(
+        FirstOf(
+            IgnoreCase("@in"),
+            IgnoreCase("@out"),
+            IgnoreCase("inFilterOf"),
+            IgnoreCase("outFilterOf")),
+        direction.set(match()),
+        WhiteSpace(),
+        "( ",
+        InterfaceExpression(),
+        WhiteSpace(),
+        ") ",
+        push(DirectionFilterAstNode.create(direction.get(), pop())));
+  }
+
+  @Anchor(FILTER_NAME)
+  public Rule FilterName() {
+    return Sequence(OneOrMore(FirstOf(NameChars(), Dash())), push(new NameFilterAstNode(match())));
+  }
+
+  @Anchor(FILTER_NAME_REGEX)
+  public Rule FilterNameRegex() {
+    return Sequence('/', Regex(), push(new NameRegexFilterAstNode(match())), '/');
+  }
+
+  public Rule FilterParens() {
+    // Leave the stack as is -- no need to remember that this was a parenthetical term
+    return Sequence("( ", FilterTerm(), WhiteSpace(), ") ");
+  }
 
   /**
    * Interface grammar
