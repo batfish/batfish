@@ -1,0 +1,173 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+  hostname f5_bigip_structured_ltm
+}
+ltm node /Common/node_used {
+    address 192.0.2.1
+}
+ltm node /Common/node_unused {
+    address 192.0.2.2
+}
+ltm pool /Common/pool_used {
+    members {
+        /Common/node_used:80 {
+            address 192.0.2.1
+        }
+        /Common/node_undefined:80 {
+            address 192.0.2.3
+        }
+    }
+    monitor /Common/http #builtin
+    monitor /Common/http_head_f5 #builtin
+    monitor /Common/monitor_http_used
+    monitor /Common/monitor_http_undefined
+    monitor /Common/https #builtin
+    monitor /Common/https_443 #builtin
+    monitor /Common/https_head_f5 #builtin
+    monitor /Common/monitor_https_used
+    monitor /Common/monitor_https_undefined
+}
+ltm pool /Common/pool_unused { }
+ltm rule /Common/rule_used { }
+ltm rule /Common/rule_unused { }
+ltm snat /Common/snat_used {
+    snatpool /Common/snatpool_used
+    snatpool /Common/snatpool_undefined
+    vlans {
+        /Common/vlan_used
+    }
+}
+ltm snat-translation /Common/192.0.2.4 { }
+ltm snat-translation /Common/192.0.2.5 { }
+ltm snatpool /Common/snatpool_used {
+    members {
+        /Common/192.0.2.4 #snat-translation reference (used)
+        /Common/192.0.2.6 #snat-translation reference (undefined)
+    }
+}
+ltm snatpool /Common/snatpool_unused { }
+ltm virtual /Common/virtual_used {
+    destination /Common/192.0.2.7:80 #virtual-address reference (used)
+    destination /Common/192.0.2.9:80 #virtual-address reference (undefined)
+    persist {
+        /Common/source_addr { } #builtin
+        /Common/persistence_source_addr_used { }
+        /Common/persistence_source_addr_undefined { }
+        /Common/ssl { } #builtin
+        /Common/persistence_ssl_used { }
+        /Common/persistence_ssl_undefined { }
+    }
+    pool /Common/pool_used
+    pool /Common/pool_undefined
+    profiles {
+        /Common/clientssl { } #builtin
+        /Common/clientssl-insecure-compatible { } #builtin
+        /Common/clientssl-secure { } #builtin
+        /Common/crypto-server-default-clientssl { } #builtin
+        /Common/splitsession-default-clientssl { } #builtin
+        /Common/wom-default-clientssl { } #builtin
+        /Common/profile_client_ssl_used { }
+        /Common/profile_client_ssl_undefined { }
+        /Common/http { } #builtin
+        /Common/http-explicit { } #builtin
+        /Common/http-transparent { } #builtin
+        /Common/profile_http_used { }
+        /Common/profile_http_undefined { }
+        # No builtin profile for ocsp-stapling-params
+        /Common/profile_ocsp_stapling_params_used { }
+        /Common/profile_ocsp_stapling_params_undefined { }
+        /Common/oneconnect { } #builtin
+        /Common/profile_one_connect_used { }
+        /Common/profile_one_connect_undefined { }
+        /Common/apm-default-serverssl { } #builtin
+        /Common/crypto-client-default-serverssl { } #builtin
+        /Common/pcoip-default-serverssl { } #builtin
+        /Common/serverssl { } #builtin
+        /Common/serverssl-insecure-compatible { } #builtin
+        /Common/splitsession-default-serverssl { } #builtin
+        /Common/wom-default-serverssl { } #builtin
+        /Common/profile_server_ssl_used { }
+        /Common/profile_server_ssl_undefined { }
+        /Common/apm-forwarding-server-tcp { } #builtin
+        /Common/f5-tcp-lan { } #builtin
+        /Common/f5-tcp-mobile { } #builtin
+        /Common/f5-tcp-progressive { } #builtin
+        /Common/f5-tcp-wan { } #builtin
+        /Common/mptcp-mobile-optimized { } #builtin
+        /Common/splitsession-default-tcp { } #builtin
+        /Common/tcp { } #builtin
+        /Common/tcp-lan-optimized { } #builtin
+        /Common/tcp-legacy { } #builtin
+        /Common/tcp-mobile-optimized { } #builtin
+        /Common/tcp-wan-optimized { } #builtin
+        /Common/wam-tcp-lan-optimized { } #builtin
+        /Common/wam-tcp-wan-optimized { } #builtin
+        /Common/wom-tcp-lan-optimized { } #builtin
+        /Common/wom-tcp-wan-optimized { } #builtin
+        /Common/profile_tcp_used { }
+        /Common/profile_tcp_undefined { }
+    }
+    rules {
+        /Common/rule_used
+        /Common/rule_undefined
+    }
+    source-address-translation {
+        pool /Common/snatpool_used
+        pool /Common/snatpool_undefined
+    }
+}
+ltm virtual-address /Common/192.0.2.7 { }
+ltm virtual-address /Common/192.0.2.8 { }
+ltm monitor http /Common/monitor_http_used { }
+ltm monitor http /Common/monitor_http_unused {
+    defaults-from /Common/monitor_http_undefined
+    defaults-from /Common/monitor_http_used
+}
+ltm monitor https /Common/monitor_https_used {
+    ssl-profile /Common/profile_server_ssl_used
+}
+ltm monitor https /Common/monitor_https_unused {
+    defaults-from /Common/monitor_https_undefined
+    defaults-from /Common/monitor_https_used
+}
+ltm persistence source-addr /Common/persistence_source_addr_used { }
+ltm persistence source-addr /Common/persistence_source_addr_unused {
+    defaults-from /Common/persistence_source_addr_undefined
+    defaults-from /Common/persistence_source_addr_used
+}
+ltm persistence ssl /Common/persistence_ssl_used { }
+ltm persistence ssl /Common/persistence_ssl_unused {
+    defaults-from /Common/persistence_ssl_undefined
+    defaults-from /Common/persistence_ssl_used
+}
+ltm profile client-ssl /Common/profile_client_ssl_used { }
+ltm profile client-ssl /Common/profile_client_ssl_unused {
+    defaults-from /Common/profile_client_ssl_undefined
+    defaults-from /Common/profile_client_ssl_used
+}
+ltm profile http /Common/profile_http_used { }
+ltm profile http /Common/profile_http_unused {
+    defaults-from /Common/profile_http_undefined
+    defaults-from /Common/profile_http_used
+}
+ltm profile ocsp-stapling-params /Common/profile_ocsp_stapling_params_used { }
+ltm profile ocsp-stapling-params /Common/profile_ocsp_stapling_params_unused {
+    defaults-from /Common/profile_ocsp_stapling_params_undefined
+    defaults-from /Common/profile_ocsp_stapling_params_used
+}
+ltm profile one-connect /Common/profile_one_connect_used { }
+ltm profile one-connect /Common/profile_one_connect_unused {
+    defaults-from /Common/profile_one_connect_undefined
+    defaults-from /Common/profile_one_connect_used
+}
+ltm profile server-ssl /Common/profile_server_ssl_used { }
+ltm profile server-ssl /Common/profile_server_ssl_unused {
+    defaults-from /Common/profile_server_ssl_undefined
+    defaults-from /Common/profile_server_ssl_used
+}
+ltm profile tcp /Common/profile_tcp_used { }
+ltm profile tcp /Common/profile_tcp_unused {
+    defaults-from /Common/profile_tcp_undefined
+    defaults-from /Common/profile_tcp_used
+}
