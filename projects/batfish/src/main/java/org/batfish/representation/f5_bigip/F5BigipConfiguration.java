@@ -5,22 +5,30 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeSet;
+import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SwitchportMode;
@@ -264,6 +272,27 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return builder.add(toStatement(entry.getAction())).build();
   }
 
+  private @Nonnull org.batfish.datamodel.BgpProcess toBgpProcess(BgpProcess proc) {
+    org.batfish.datamodel.BgpProcess newProc = new org.batfish.datamodel.BgpProcess();
+    newProc.setNeighbors(
+        proc.getNeighbors().values().stream()
+            .map(this::toBgpActivePeerConfig)
+            .filter(pc -> pc != null && pc.getPeerAddress() != null)
+            .collect(
+                ImmutableSortedMap.toImmutableSortedMap(
+                    Comparator.naturalOrder(),
+                    pc -> Prefix.create(pc.getPeerAddress(), Prefix.MAX_PREFIX_LENGTH),
+                    Function.identity())));
+    return newProc;
+  }
+
+  private @Nullable BgpActivePeerConfig toBgpActivePeerConfig(BgpNeighbor neighbor) {
+    BgpActivePeerConfig.Builder builder = BgpActivePeerConfig.builder();
+    builder.setPeerAddress(neighbor.getAddress());
+    builder.setRemoteAs(neighbor.getRemoteAs());
+    return builder.build();
+  }
+
   private @Nonnull BooleanExpr toGuard(RouteMapEntry entry) {
     return new Conjunction(
         entry
@@ -420,6 +449,20 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // Convert route-maps to RoutingPolicies
     _routeMaps.forEach(
         (name, routeMap) -> _c.getRoutingPolicies().put(name, toRoutingPolicy(routeMap)));
+
+    if (!_bgpProcesses.isEmpty()) {
+      BgpProcess proc =
+          ImmutableSortedSet.copyOf(
+                  Comparator.comparing(BgpProcess::getName), _bgpProcesses.values())
+              .first();
+      if (_bgpProcesses.size() > 1) {
+        _w.redFlag(
+            String.format(
+                "Multiple BGP processes not supported. Only using first process alphabetically: '%s'",
+                proc.getName()));
+      }
+      _c.getDefaultVrf().setBgpProcess(toBgpProcess(proc));
+    }
 
     markStructures();
 
