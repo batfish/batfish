@@ -64,7 +64,7 @@
       },
       "version" : "0.36.0",
       "warnings" : {
-        "r1" : {
+        "configs/r1.cfg" : {
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
@@ -72,7 +72,7 @@
             }
           ]
         },
-        "r2" : {
+        "configs/r2.cfg" : {
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
@@ -80,7 +80,7 @@
             }
           ]
         },
-        "r3" : {
+        "configs/r3.cfg" : {
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
@@ -88,7 +88,7 @@
             }
           ]
         },
-        "z1-firewall" : {
+        "configs/z1-firewall.cfg" : {
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
@@ -96,7 +96,7 @@
             }
           ]
         },
-        "z2-firewall" : {
+        "configs/z2-firewall.cfg" : {
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
