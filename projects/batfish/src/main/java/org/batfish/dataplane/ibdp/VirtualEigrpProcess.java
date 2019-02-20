@@ -194,9 +194,9 @@ class VirtualEigrpProcess {
   }
 
   /** Merge internal EIGRP RIB into a general EIGRP RIB, then merge that into the independent RIB */
-  void importInternalRoutes(Rib independentRib) {
+  void importInternalRoutes(Rib independentRib, String vrfName) {
     importRib(_rib, _internalRib);
-    importRib(independentRib, _rib);
+    importRib(independentRib, _rib, vrfName);
   }
 
   void initExports(Map<String, Node> allNodes, Set<AnnotatedRoute<AbstractRoute>> mainRoutes) {
@@ -396,13 +396,14 @@ class VirtualEigrpProcess {
       Map<String, Node> allNodes,
       @Nonnull RibDelta<EigrpExternalRoute> delta,
       RibDelta.Builder<AnnotatedRoute<AbstractRoute>> mainRibRouteDeltaBuilder,
-      Rib mainRib) {
+      Rib mainRib,
+      String vrfName) {
     RibDelta<EigrpExternalRoute> ribDelta = importRibDelta(_externalRib, delta);
     queueOutgoingExternalRoutes(allNodes, delta);
     RibDelta.Builder<EigrpRoute> eigrpDeltaBuilder = RibDelta.builder();
     eigrpDeltaBuilder.from(importRibDelta(_rib, ribDelta));
     mainRibRouteDeltaBuilder.from(
-        RibDelta.importUnannotatedRibDelta(mainRib, eigrpDeltaBuilder.build()));
+        RibDelta.importRibDelta(mainRib, eigrpDeltaBuilder.build(), vrfName));
     return !ribDelta.isEmpty();
   }
 

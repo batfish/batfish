@@ -13,7 +13,6 @@ import static org.batfish.dataplane.protocols.StaticRouteHelper.shouldActivateNe
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 import static org.batfish.dataplane.rib.RibDelta.importDeltaToBuilder;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
-import static org.batfish.dataplane.rib.RibDelta.importUnannotatedRibDelta;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -211,7 +210,7 @@ public class VirtualRouter implements Serializable {
 
   @Nonnull private final Node _node;
 
-  @Nonnull private final String _name;
+  @Nonnull final String _name;
 
   transient OspfExternalType1Rib _ospfExternalType1Rib;
 
@@ -322,7 +321,7 @@ public class VirtualRouter implements Serializable {
     // Always import local and connected routes into your own rib
     importRib(_independentRib, _connectedRib);
     importRib(_independentRib, _localRib);
-    importRib(_independentRib, _staticInterfaceRib);
+    importRib(_independentRib, _staticInterfaceRib, _name);
     importRib(_mainRib, _independentRib);
 
     // Now check whether any rib groups are applied
@@ -509,7 +508,7 @@ public class VirtualRouter implements Serializable {
 
       if (grb != null) {
         // Routes have been changed
-        builder.from(_generatedRib.mergeRouteGetDelta(grb.build()));
+        builder.from(_generatedRib.mergeRouteGetDelta(annotateRoute(grb.build())));
       }
     }
     return builder.build();
@@ -554,7 +553,7 @@ public class VirtualRouter implements Serializable {
   void activateStaticRoutes() {
     for (StaticRoute sr : _staticNextHopRib.getTypedRoutes()) {
       if (shouldActivateNextHopIpRoute(sr, _mainRib)) {
-        _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(sr));
+        _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(annotateRoute(sr)));
       } else {
         /*
          * If the route is not in the RIB, this has no effect. But might add some overhead (TODO)
@@ -1210,13 +1209,13 @@ public class VirtualRouter implements Serializable {
   @VisibleForTesting
   final void initRibs() {
     // Non-learned-protocol RIBs
-    _connectedRib = new ConnectedRib(_name);
-    _localRib = new LocalRib(_name);
-    _generatedRib = new Rib(_name);
-    _independentRib = new Rib(_name);
+    _connectedRib = new ConnectedRib();
+    _localRib = new LocalRib();
+    _generatedRib = new Rib();
+    _independentRib = new Rib();
 
     // Main RIB + delta builder
-    _mainRibs = ImmutableMap.of(RibId.DEFAULT_RIB_NAME, new Rib(_name));
+    _mainRibs = ImmutableMap.of(RibId.DEFAULT_RIB_NAME, new Rib());
     _mainRib = _mainRibs.get(RibId.DEFAULT_RIB_NAME);
     _mainRibRouteDeltaBuilder = RibDelta.builder();
 
@@ -1887,7 +1886,8 @@ public class VirtualRouter implements Serializable {
                     allNodes,
                     proc.propagateExternalRoutes(nc),
                     _mainRibRouteDeltaBuilder,
-                    _mainRib))
+                    _mainRib,
+                    _name))
         .reduce(false, (a, b) -> a || b);
   }
 
@@ -2279,7 +2279,8 @@ public class VirtualRouter implements Serializable {
     RibDelta<BgpRoute> ibgpDelta = importRibDelta(_ibgpRib, ibgpStagingDelta);
     _bgpDeltaBuilder.from(importRibDelta(_bgpRib, ebgpDelta));
     _bgpDeltaBuilder.from(importRibDelta(_bgpRib, ibgpDelta));
-    _mainRibRouteDeltaBuilder.from(importUnannotatedRibDelta(_mainRib, _bgpDeltaBuilder.build()));
+    _mainRibRouteDeltaBuilder.from(
+        RibDelta.importRibDelta(_mainRib, _bgpDeltaBuilder.build(), _name));
 
     queueOutgoingBgpRoutes(
         ebgpDelta,
@@ -2316,7 +2317,7 @@ public class VirtualRouter implements Serializable {
     isisDeltaBuilder.from(importRibDelta(_isisRib, d1));
     isisDeltaBuilder.from(importRibDelta(_isisRib, d2));
     _mainRibRouteDeltaBuilder.from(
-        RibDelta.importUnannotatedRibDelta(_mainRib, isisDeltaBuilder.build()));
+        RibDelta.importRibDelta(_mainRib, isisDeltaBuilder.build(), _name));
     return !d1.isEmpty() || !d2.isEmpty();
   }
 
@@ -2339,7 +2340,7 @@ public class VirtualRouter implements Serializable {
     ospfDeltaBuilder.from(importRibDelta(_ospfRib, d1));
     ospfDeltaBuilder.from(importRibDelta(_ospfRib, d2));
     _mainRibRouteDeltaBuilder.from(
-        RibDelta.importUnannotatedRibDelta(_mainRib, ospfDeltaBuilder.build()));
+        RibDelta.importRibDelta(_mainRib, ospfDeltaBuilder.build(), _name));
     return !d1.isEmpty() || !d2.isEmpty();
   }
 
@@ -2402,7 +2403,7 @@ public class VirtualRouter implements Serializable {
   void importEigrpInternalRoutes() {
     _virtualEigrpProcesses
         .values()
-        .forEach(process -> process.importInternalRoutes(_independentRib));
+        .forEach(process -> process.importInternalRoutes(_independentRib, _name));
   }
 
   /**
@@ -2411,7 +2412,7 @@ public class VirtualRouter implements Serializable {
   void importOspfInternalRoutes() {
     importRib(_ospfRib, _ospfIntraAreaRib);
     importRib(_ospfRib, _ospfInterAreaRib);
-    importRib(_independentRib, _ospfRib);
+    importRib(_independentRib, _ospfRib, _name);
   }
 
   /**

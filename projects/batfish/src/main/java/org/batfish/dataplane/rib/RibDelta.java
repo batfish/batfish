@@ -253,16 +253,15 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
    *
    * @param importingRib the {@link AnnotatedRib} to apply the delta to
    * @param delta the delta to apply
+   * @param vrfName name of source VRF to put in {@code importingRib} route annotations
    * @param <T> Type of {@link AbstractRoute} in the RIB
    * @param <U> type of {@link AbstractRoute} in the delta; must extend {@code T}
    * @return the {@link RibDelta} that results from modifying {@code importingRib}
    */
   @Nonnull
-  public static <T extends AbstractRoute, U extends T>
-      RibDelta<AnnotatedRoute<T>> importUnannotatedRibDelta(
-          AnnotatedRib<T> importingRib, RibDelta<U> delta) {
-    return importRibDelta(
-        importingRib, delta, r -> new AnnotatedRoute<>(r, importingRib.getVrfName()));
+  public static <T extends AbstractRoute, U extends T> RibDelta<AnnotatedRoute<T>> importRibDelta(
+      AnnotatedRib<T> importingRib, RibDelta<U> delta, String vrfName) {
+    return importRibDelta(importingRib, delta, r -> new AnnotatedRoute<>(r, vrfName));
   }
 
   /**

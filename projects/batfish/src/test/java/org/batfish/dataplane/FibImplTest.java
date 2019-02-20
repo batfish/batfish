@@ -1,6 +1,7 @@
 package org.batfish.dataplane;
 
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.contains;
@@ -166,7 +167,7 @@ public class FibImplTest {
 
   @Test
   public void testNonForwardingRouteNotInFib() {
-    Rib rib = new Rib(Configuration.DEFAULT_VRF_NAME);
+    Rib rib = new Rib();
 
     StaticRoute nonForwardingRoute =
         StaticRoute.builder()
@@ -183,8 +184,8 @@ public class FibImplTest {
             .setNonForwarding(false)
             .build();
 
-    rib.mergeRoute(nonForwardingRoute);
-    rib.mergeRoute(forwardingRoute);
+    rib.mergeRoute(annotateRoute(nonForwardingRoute));
+    rib.mergeRoute(annotateRoute(forwardingRoute));
 
     Fib fib = new FibImpl<>(rib);
     Set<AbstractRoute> fibRoutes = fib.getRoutesByNextHopInterface().get("Eth1");
@@ -195,7 +196,7 @@ public class FibImplTest {
 
   @Test
   public void testResolutionWhenNextHopMatchesNonForwardingRoute() {
-    Rib rib = new Rib(Configuration.DEFAULT_VRF_NAME);
+    Rib rib = new Rib();
 
     StaticRoute nonForwardingRoute =
         StaticRoute.builder()
@@ -221,9 +222,9 @@ public class FibImplTest {
             .setNonForwarding(false)
             .build();
 
-    rib.mergeRoute(nonForwardingRoute);
-    rib.mergeRoute(forwardingLessSpecificRoute);
-    rib.mergeRoute(testRoute);
+    rib.mergeRoute(annotateRoute(nonForwardingRoute));
+    rib.mergeRoute(annotateRoute(forwardingLessSpecificRoute));
+    rib.mergeRoute(annotateRoute(testRoute));
 
     Fib fib = new FibImpl<>(rib);
     Set<AbstractRoute> fibRoutesEth1 = fib.getRoutesByNextHopInterface().get("Eth1");
@@ -238,7 +239,7 @@ public class FibImplTest {
 
   @Test
   public void testResolutionWhenNextHopMatchesNonForwardingRouteWithECMP() {
-    Rib rib = new Rib(Configuration.DEFAULT_VRF_NAME);
+    Rib rib = new Rib();
 
     StaticRoute nonForwardingRoute =
         StaticRoute.builder()
@@ -280,11 +281,11 @@ public class FibImplTest {
             .setNonForwarding(false)
             .build();
 
-    rib.mergeRoute(nonForwardingRoute);
-    rib.mergeRoute(forwardingLessSpecificRoute);
-    rib.mergeRoute(testRoute);
-    rib.mergeRoute(ecmpForwardingRoute1);
-    rib.mergeRoute(ecmpForwardingRoute2);
+    rib.mergeRoute(annotateRoute(nonForwardingRoute));
+    rib.mergeRoute(annotateRoute(forwardingLessSpecificRoute));
+    rib.mergeRoute(annotateRoute(testRoute));
+    rib.mergeRoute(annotateRoute(ecmpForwardingRoute1));
+    rib.mergeRoute(annotateRoute(ecmpForwardingRoute2));
 
     Fib fib = new FibImpl<>(rib);
 

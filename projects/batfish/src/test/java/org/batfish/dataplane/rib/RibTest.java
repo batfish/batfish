@@ -12,7 +12,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Map;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -22,19 +22,20 @@ import org.junit.Test;
 public class RibTest {
   @Test
   public void testCreatedEmpty() {
-    assertThat(new Rib(Configuration.DEFAULT_VRF_NAME).getRoutes(), empty());
+    assertThat(new Rib().getRoutes(), empty());
   }
 
   @Test
   public void testNonRoutingIsNotInstalled() {
-    Rib rib = new Rib(Configuration.DEFAULT_VRF_NAME);
-    AbstractRoute route =
-        StaticRoute.builder()
-            .setNextHopInterface("foo")
-            .setNetwork(Prefix.ZERO)
-            .setAdministrativeCost(1)
-            .setNonRouting(true)
-            .build();
+    Rib rib = new Rib();
+    AnnotatedRoute<AbstractRoute> route =
+        annotateRoute(
+            StaticRoute.builder()
+                .setNextHopInterface("foo")
+                .setNetwork(Prefix.ZERO)
+                .setAdministrativeCost(1)
+                .setNonRouting(true)
+                .build());
 
     assertThat(rib.mergeRouteGetDelta(route), equalTo(RibDelta.empty()));
     assertThat(rib.mergeRoute(route), equalTo(false));
@@ -42,7 +43,7 @@ public class RibTest {
 
   @Test
   public void testComparePreferenceAdmin() {
-    Rib rib = new Rib(Configuration.DEFAULT_VRF_NAME);
+    Rib rib = new Rib();
     // Identical routes, different admin distance.
     StaticRoute.Builder sb =
         StaticRoute.builder().setNextHopInterface("foo").setNetwork(Prefix.ZERO);
@@ -55,7 +56,7 @@ public class RibTest {
 
   @Test
   public void testComparePreferenceAdminEqual() {
-    Rib rib = new Rib(Configuration.DEFAULT_VRF_NAME);
+    Rib rib = new Rib();
     // Identical routes should be equally preferred
     StaticRoute.Builder sb =
         StaticRoute.builder()
@@ -70,29 +71,29 @@ public class RibTest {
 
   @Test
   public void testNonForwardingIsNotRoutable() {
-    Rib rib = new Rib(Configuration.DEFAULT_VRF_NAME);
+    Rib rib = new Rib();
     StaticRoute.Builder sb =
         StaticRoute.builder()
             .setNextHopInterface("foo")
             .setNetwork(Prefix.ZERO)
             .setNonForwarding(true)
             .setAdministrativeCost(100);
-    rib.mergeRoute(sb.build());
+    rib.mergeRoute(annotateRoute(sb.build()));
     assertThat(rib.getRoutableIps(), not(containsIp(Prefix.ZERO.getStartIp())));
   }
 
   @Test
   public void testNonForwardingMatchesNothing() {
-    Rib rib = new Rib(Configuration.DEFAULT_VRF_NAME);
+    Rib rib = new Rib();
     StaticRoute.Builder sb =
         StaticRoute.builder().setNextHopInterface("foo").setAdministrativeCost(100);
     Prefix prefix1 = Prefix.parse("1.0.0.0/8");
     Prefix prefix11 = Prefix.parse("1.1.0.0/16");
-    rib.mergeRoute(sb.setNetwork(prefix1).build());
+    rib.mergeRoute(annotateRoute(sb.setNetwork(prefix1).build()));
 
     sb.setNonForwarding(true);
-    rib.mergeRoute(sb.setNetwork(prefix11).build());
-    rib.mergeRoute(sb.setNetwork(Prefix.ZERO).build());
+    rib.mergeRoute(annotateRoute(sb.setNetwork(prefix11).build()));
+    rib.mergeRoute(annotateRoute(sb.setNetwork(Prefix.ZERO).build()));
 
     // no entries for non-forwarding routes
     Map<Prefix, IpSpace> matchingIps = rib.getMatchingIps();

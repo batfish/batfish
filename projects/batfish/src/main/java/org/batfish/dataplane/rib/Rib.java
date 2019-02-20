@@ -5,7 +5,6 @@ import java.util.Comparator;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
 
 /**
@@ -18,8 +17,8 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
   private static final long serialVersionUID = 1L;
 
   /** Create a new empty RIB. */
-  public Rib(String vrfName) {
-    super(null, vrfName);
+  public Rib() {
+    super(null);
   }
 
   @Override
@@ -31,15 +30,6 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
         .compare(rhs.getRoute(), lhs.getRoute());
   }
 
-  /** Overrides {@link AnnotatedRib#mergeRouteGetDelta(AbstractRoute)} */
-  @Override
-  @Nonnull
-  public <T extends AbstractRoute> RibDelta<AnnotatedRoute<AbstractRoute>> mergeRouteGetDelta(
-      T route) {
-    return !route.getNonRouting() ? super.mergeRouteGetDelta(route) : RibDelta.empty();
-  }
-
-  /** Overrides {@link AbstractRib#mergeRouteGetDelta(AbstractRouteDecorator)} */
   @Override
   @Nonnull
   public RibDelta<AnnotatedRoute<AbstractRoute>> mergeRouteGetDelta(

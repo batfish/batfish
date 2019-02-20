@@ -21,7 +21,6 @@ import java.util.Set;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpTieBreaker;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
@@ -204,7 +203,7 @@ public class BgpRibTest {
 
   @Test
   public void testIgpCostPreference() {
-    Rib mainRib = new Rib(Configuration.DEFAULT_VRF_NAME);
+    Rib mainRib = new Rib();
     StaticRoute.Builder sb =
         StaticRoute.builder().setAdministrativeCost(1).setNextHopInterface("eth0");
     mainRib.mergeRoute(

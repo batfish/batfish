@@ -1,11 +1,11 @@
 package org.batfish.dataplane.protocols;
 
+import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.isInterfaceRoute;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.shouldActivateNextHopIpRoute;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -24,7 +24,7 @@ public class StaticRouteHelperTest {
   @Before
   public void setup() {
     // Empty rib before each test
-    _rib = new Rib(Configuration.DEFAULT_VRF_NAME);
+    _rib = new Rib();
   }
 
   /** Ensure we identify interface routes correctly. */
@@ -79,7 +79,7 @@ public class StaticRouteHelperTest {
   /** Do not activate if no match for nextHop IP exists */
   @Test
   public void testShouldActivateNoMatch() {
-    _rib.mergeRoute(new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Eth0"));
+    _rib.mergeRoute(annotateRoute(new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "Eth0")));
 
     // Route in question
     StaticRoute sr =
@@ -97,11 +97,12 @@ public class StaticRouteHelperTest {
   @Test
   public void testShouldActivateMatch() {
     _rib.mergeRoute(
-        StaticRoute.builder()
-            .setNetwork(Prefix.parse("1.0.0.0/8"))
-            .setNextHopInterface("Eth0")
-            .setAdministrativeCost(1)
-            .build());
+        annotateRoute(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("1.0.0.0/8"))
+                .setNextHopInterface("Eth0")
+                .setAdministrativeCost(1)
+                .build()));
 
     // Route in question
     StaticRoute sr =
@@ -119,11 +120,12 @@ public class StaticRouteHelperTest {
   @Test
   public void testShouldActivateSelfReferential() {
     _rib.mergeRoute(
-        StaticRoute.builder()
-            .setNetwork(Prefix.parse("9.9.9.0/24"))
-            .setNextHopIp(Ip.parse("1.1.1.2"))
-            .setAdministrativeCost(1)
-            .build());
+        annotateRoute(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("9.9.9.0/24"))
+                .setNextHopIp(Ip.parse("1.1.1.2"))
+                .setAdministrativeCost(1)
+                .build()));
 
     // Route in question
     StaticRoute sr =
@@ -146,7 +148,7 @@ public class StaticRouteHelperTest {
             .setNextHopIp(Ip.parse("1.1.1.1"))
             .setAdministrativeCost(1)
             .build();
-    _rib.mergeRoute(sr);
+    _rib.mergeRoute(annotateRoute(sr));
 
     // Test & Assert
     assertThat(shouldActivateNextHopIpRoute(sr, _rib), equalTo(true));
@@ -157,18 +159,20 @@ public class StaticRouteHelperTest {
   public void testShouldActivateWithDiffNextHops() {
     // base route
     _rib.mergeRoute(
-        StaticRoute.builder()
-            .setNetwork(Prefix.parse("1.0.0.0/8"))
-            .setNextHopInterface("Eth0")
-            .setAdministrativeCost(1)
-            .build());
+        annotateRoute(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("1.0.0.0/8"))
+                .setNextHopInterface("Eth0")
+                .setAdministrativeCost(1)
+                .build()));
     // Static route 1, same network as sr, but different next hop ip
     _rib.mergeRoute(
-        StaticRoute.builder()
-            .setNetwork(Prefix.parse("9.9.9.0/24"))
-            .setNextHopIp(Ip.parse("1.1.1.2"))
-            .setAdministrativeCost(1)
-            .build());
+        annotateRoute(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("9.9.9.0/24"))
+                .setNextHopIp(Ip.parse("1.1.1.2"))
+                .setAdministrativeCost(1)
+                .build()));
 
     // Route in question
     StaticRoute sr =
@@ -190,17 +194,19 @@ public class StaticRouteHelperTest {
      * 9.9.9.0/24 (nh: 1.1.1.1) --> 1.1.1.0/24 (nh=2.2.2.2) -> 2.2.2.0/24 (nh=9.9.9.9) -> 9.9.9.0/24
      */
     _rib.mergeRoute(
-        StaticRoute.builder()
-            .setNetwork(Prefix.parse("1.1.1.0/24"))
-            .setNextHopIp(Ip.parse("2.2.2.2"))
-            .setAdministrativeCost(1)
-            .build());
+        annotateRoute(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("1.1.1.0/24"))
+                .setNextHopIp(Ip.parse("2.2.2.2"))
+                .setAdministrativeCost(1)
+                .build()));
     _rib.mergeRoute(
-        StaticRoute.builder()
-            .setNetwork(Prefix.parse("2.2.2.0/24"))
-            .setNextHopIp(Ip.parse("9.9.9.9"))
-            .setAdministrativeCost(1)
-            .build());
+        annotateRoute(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("2.2.2.0/24"))
+                .setNextHopIp(Ip.parse("9.9.9.9"))
+                .setAdministrativeCost(1)
+                .build()));
 
     // Route in question
     StaticRoute sr =
@@ -217,7 +223,7 @@ public class StaticRouteHelperTest {
   /** Allow installation of a covered/more specific route */
   @Test
   public void testShouldActivateIfCovered() {
-    _rib.mergeRoute(new ConnectedRoute(Prefix.parse("9.9.0.0/16"), "Eth0"));
+    _rib.mergeRoute(annotateRoute(new ConnectedRoute(Prefix.parse("9.9.0.0/16"), "Eth0")));
 
     // Route in question
     StaticRoute sr =

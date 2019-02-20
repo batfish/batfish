@@ -81,14 +81,18 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    *
    * @param importingRib the RIB that imports routes
    * @param exportingRib the RIB that exports routes
+   * @param vrfName Name of source VRF to put in route annotations
    * @param <U> type of {@link AbstractRoute} in importing RIB
    * @param <T> type of {@link AbstractRoute} in exporting RIB; must extend {@code U}
    */
   @Nonnull
   public static <U extends AbstractRoute, T extends U> RibDelta<AnnotatedRoute<U>> importRib(
-      AnnotatedRib<U> importingRib, AbstractRib<T> exportingRib) {
+      AnnotatedRib<U> importingRib, AbstractRib<T> exportingRib, String vrfName) {
     RibDelta.Builder<AnnotatedRoute<U>> builder = RibDelta.builder();
-    exportingRib.getTypedRoutes().forEach(r -> builder.from(importingRib.mergeRouteGetDelta(r)));
+    exportingRib
+        .getTypedRoutes()
+        .forEach(
+            r -> builder.from(importingRib.mergeRouteGetDelta(new AnnotatedRoute<>(r, vrfName))));
     return builder.build();
   }
 
@@ -107,7 +111,11 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
     RibDelta.Builder<AnnotatedRoute<U>> builder = RibDelta.builder();
     exportingRib
         .getTypedRoutes()
-        .forEach(r -> builder.from(importingRib.mergeRouteGetDelta(r.getRoute())));
+        .forEach(
+            r ->
+                builder.from(
+                    importingRib.mergeRouteGetDelta(
+                        new AnnotatedRoute<>(r.getRoute(), r.getSourceVrf()))));
     return builder.build();
   }
 

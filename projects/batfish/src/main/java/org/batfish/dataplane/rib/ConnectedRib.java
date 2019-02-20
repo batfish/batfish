@@ -10,8 +10,8 @@ public class ConnectedRib extends AnnotatedRib<ConnectedRoute> {
 
   private static final long serialVersionUID = 1L;
 
-  public ConnectedRib(String vrfName) {
-    super(null, vrfName);
+  public ConnectedRib() {
+    super(null);
   }
 
   @Override
