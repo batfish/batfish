@@ -2,6 +2,7 @@ package org.batfish.specifier.parboiled;
 
 import static org.batfish.specifier.parboiled.ParserUtils.getErrorString;
 import static org.batfish.specifier.parboiled.ParserUtils.getPotentialMatches;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -38,6 +39,25 @@ public class ParserUtilsTest {
     assertThat(
         getErrorString(new PotentialMatch(Type.IP_ADDRESS, "", "b")),
         equalTo(Type.IP_ADDRESS.toString()));
+  }
+
+  @Test
+  public void testGetErrorStringHasUrl() {
+    String input = new String(Character.toChars(0x26bd)); // invalid input
+
+    ParsingResult<AstNode> result =
+        new ReportingParseRunner<AstNode>(
+                Parser.INSTANCE.input(Grammar.IP_SPACE_SPECIFIER.getExpression()))
+            .run(input);
+
+    String errorString =
+        ParserUtils.getErrorString(
+            input,
+            Grammar.IP_SPACE_SPECIFIER,
+            (InvalidInputError) result.parseErrors.get(0),
+            Parser.ANCHORS);
+
+    assertThat(errorString, containsString(Grammar.IP_SPACE_SPECIFIER.getFullUrl()));
   }
 
   @Test
