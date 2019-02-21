@@ -25,7 +25,6 @@ import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.expr.StateExpr;
@@ -75,15 +74,12 @@ final class BDDReachabilityAnalysisSessionFactory {
   }
 
   /**
-   * @param bddPacket
-   * @param configs
-   * @param srcManagers
-   * @param lastHopManager
-   * @param forwardReachableStates
-   * @param transformationFactory
-   * @return
+   * Computes initialized firewall sessions for the return pass of bidirectional reachability query.
+   *
+   * @param forwardReachableStates The reachable packets to each state in the reachability analysis
+   *     graph. Must be computed using forward propagation (from origination to termination points).
    */
-  public static Map<String, List<BDDFirewallSessionTraceInfo>> computeInitializedSesssions(
+  static Map<String, List<BDDFirewallSessionTraceInfo>> computeInitializedSesssions(
       BDDPacket bddPacket,
       Map<String, Configuration> configs,
       Map<String, BDDSourceManager> srcManagers,
@@ -156,7 +152,7 @@ final class BDDReachabilityAnalysisSessionFactory {
 
   /**
    * Compute initialized sessions for an outgoing interface (that has a {@link
-   * FirewallSessionInterfaceInfo} object.
+   * org.batfish.datamodel.FirewallSessionInterfaceInfo} object).
    *
    * @param outIface this nodes' egress iface
    * @param srcBdds this node's ingress iface -> constraint
