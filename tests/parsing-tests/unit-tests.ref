@@ -69892,7 +69892,7 @@
         "juniper_isis" : "PASSED",
         "juniper_l2_learning" : "PASSED",
         "juniper_misc" : "PASSED",
-        "juniper_nat" : "WARNINGS",
+        "juniper_nat" : "PASSED",
         "juniper_ntp" : "PASSED",
         "juniper_ospf_stub_areas" : "WARNINGS",
         "juniper_passwords" : "PASSED",
@@ -81741,14 +81741,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "missing action in firewall filter: 'blah', term: 'blorp'"
-            }
-          ]
-        },
-        "juniper_nat" : {
-          "Unimplemented features" : [
-            {
-              "tag" : "UNIMPLEMENTED",
-              "text" : "Source NAT is not currently implemented"
             }
           ]
         },
