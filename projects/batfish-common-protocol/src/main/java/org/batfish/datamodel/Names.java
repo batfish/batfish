@@ -21,18 +21,27 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class Names {
 
   public enum ObjectType {
+    FILTER(
+        "^[~_a-zA-Z][-_\\.0-9~a-zA-Z]*$",
+        "start with an alphabetic letter, '~', or '_', and additionally only have '[-.0-9]'"),
     INTERFACE(
-        "[a-zA-Z][-\\./0-9a-zA-Z]*",
-        "start with an alphabetic letter and additionally only have 0-9, '.', '-', or '/'"),
+        "^[a-zA-Z][-\\./:0-9a-zA-Z]*$",
+        "start with an alphabetic letter, and additionally only have '[-./:0-9a-zA-Z]'"),
     NODE(
-        "[a-zA-Z][-\\.0-9a-zA-Z]*",
-        "start with an alphabetic letter and additionally only have 0-9, '.', or '-'"),
+        "^[a-zA-Z][-\\._a-zA-Z0-9]*$",
+        "start with an alphabetic letter, and additionally only have '[-._a-zA-Z0-9]]'"),
     REFERENCE_OBJECT(
-        "[a-zA-Z_][-\\w]*",
-        "start with an alphabetic letter or underscore and additionally only have digit or '-'"),
+        "^[a-zA-Z_][-\\w]*$",
+        "start with an alphabetic letter or underscore, and only have digits or '-'"),
     TABLE_COLUMN(
-        "[a-zA-Z0-9_~][-/\\w\\.:~@]*$",
-        "start with alphanumeric, underscore or tilde and additionally only have [-/.:~@]");
+        "^[a-zA-Z0-9_~][-/\\w\\.:~@]*$",
+        "start with alphanumeric, underscore or tilde and only have [-/.:~@]"),
+    VRF(
+        "^[_a-zA-Z][-_\\w]*$",
+        "start with an alphabetic letter or underscore, and additionally only have '[-0-9]'"),
+    ZONE(
+        "^[_a-zA-Z][-_\\w]*$",
+        "start with an alphabetic letter or underscore, and additionally only have '[-0-9]'");
 
     ObjectType(String regex, String explanation) {
       _regex = regex;

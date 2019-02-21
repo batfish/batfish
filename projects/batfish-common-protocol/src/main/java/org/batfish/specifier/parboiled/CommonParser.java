@@ -85,13 +85,15 @@ public class CommonParser extends BaseParser<AstNode> {
 
   public Rule FilterNameLiteral() {
     return Sequence(
-        AlphabetChar(), ZeroOrMore(FirstOf(AlphabetChar(), Dash(), Digit(), Underscore())));
+        FirstOf(AlphabetChar(), Tilde(), Underscore()),
+        ZeroOrMore(FirstOf(AlphabetChar(), Tilde(), Underscore(), Dash(), Digit(), Dot())));
   }
 
   /** Keep in sync with {@link org.batfish.datamodel.Names.ObjectType#INTERFACE} */
   public Rule InterfaceNameLiteral() {
     return Sequence(
-        AlphabetChar(), ZeroOrMore(FirstOf(AlphabetChar(), Dash(), Digit(), Dot(), Slash())));
+        AlphabetChar(),
+        ZeroOrMore(FirstOf(AlphabetChar(), Colon(), Dash(), Digit(), Dot(), Slash())));
   }
 
   public Rule IpAddressUnchecked() {
@@ -104,7 +106,8 @@ public class CommonParser extends BaseParser<AstNode> {
 
   /** Keep in sync with {@link org.batfish.datamodel.Names.ObjectType#NODE} */
   public Rule NodeNameLiteral() {
-    return Sequence(AlphabetChar(), ZeroOrMore(FirstOf(AlphabetChar(), Dash(), Dot(), Digit())));
+    return Sequence(
+        AlphabetChar(), ZeroOrMore(FirstOf(AlphabetChar(), Dash(), Dot(), Digit(), Underscore())));
   }
 
   /** [0-9]+ */
@@ -142,7 +145,8 @@ public class CommonParser extends BaseParser<AstNode> {
 
   public Rule VrfNameLiteral() {
     return Sequence(
-        AlphabetChar(), ZeroOrMore(FirstOf(AlphabetChar(), Dash(), Digit(), Underscore())));
+        FirstOf(AlphabetChar(), Underscore()),
+        ZeroOrMore(FirstOf(AlphabetChar(), Underscore(), Dash(), Digit())));
   }
 
   public Rule WhiteSpace() {
@@ -151,7 +155,8 @@ public class CommonParser extends BaseParser<AstNode> {
 
   public Rule ZoneNameLiteral() {
     return Sequence(
-        AlphabetChar(), ZeroOrMore(FirstOf(AlphabetChar(), Dash(), Digit(), Underscore())));
+        FirstOf(AlphabetChar(), Underscore()),
+        ZeroOrMore(FirstOf(AlphabetChar(), Underscore(), Dash(), Digit())));
   }
 
   /**

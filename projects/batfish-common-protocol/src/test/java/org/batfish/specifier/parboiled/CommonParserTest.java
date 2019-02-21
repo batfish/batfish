@@ -1,11 +1,17 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.datamodel.NamesTest.FILTER_INVALID_NAMES;
+import static org.batfish.datamodel.NamesTest.FILTER_VALID_NAMES;
 import static org.batfish.datamodel.NamesTest.INTERFACE_INVALID_NAMES;
 import static org.batfish.datamodel.NamesTest.INTERFACE_VALID_NAMES;
 import static org.batfish.datamodel.NamesTest.NODE_INVALID_NAMES;
 import static org.batfish.datamodel.NamesTest.NODE_VALID_NAMES;
 import static org.batfish.datamodel.NamesTest.REFERENCE_OBJECT_INVALID_NAMES;
 import static org.batfish.datamodel.NamesTest.REFERENCE_OBJECT_VALID_NAMES;
+import static org.batfish.datamodel.NamesTest.VRF_INVALID_NAMES;
+import static org.batfish.datamodel.NamesTest.VRF_VALID_NAMES;
+import static org.batfish.datamodel.NamesTest.ZONE_INVALID_NAMES;
+import static org.batfish.datamodel.NamesTest.ZONE_VALID_NAMES;
 import static org.batfish.specifier.parboiled.Parser.initAnchors;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -43,6 +49,19 @@ public class CommonParserTest {
   }
 
   @Test
+  public void testFilterNameLiteral() {
+    Rule rule = CommonParser.INSTANCE.FilterNameLiteral();
+
+    for (String name : FILTER_VALID_NAMES) {
+      assertTrue(name, matches(name, rule));
+    }
+
+    for (String name : FILTER_INVALID_NAMES) {
+      assertFalse(name, matches(name, rule));
+    }
+  }
+
+  @Test
   public void testInterfaceNameLiteral() {
     Rule rule = CommonParser.INSTANCE.InterfaceNameLiteral();
 
@@ -77,6 +96,32 @@ public class CommonParserTest {
     }
 
     for (String name : REFERENCE_OBJECT_INVALID_NAMES) {
+      assertFalse(name, matches(name, rule));
+    }
+  }
+
+  @Test
+  public void testVrfNameLiteral() {
+    Rule rule = CommonParser.INSTANCE.VrfNameLiteral();
+
+    for (String name : VRF_VALID_NAMES) {
+      assertTrue(name, matches(name, rule));
+    }
+
+    for (String name : VRF_INVALID_NAMES) {
+      assertFalse(name, matches(name, rule));
+    }
+  }
+
+  @Test
+  public void testZoneNameLiteral() {
+    Rule rule = CommonParser.INSTANCE.ZoneNameLiteral();
+
+    for (String name : ZONE_VALID_NAMES) {
+      assertTrue(name, matches(name, rule));
+    }
+
+    for (String name : ZONE_INVALID_NAMES) {
       assertFalse(name, matches(name, rule));
     }
   }
