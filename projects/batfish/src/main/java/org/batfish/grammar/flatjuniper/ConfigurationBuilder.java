@@ -3929,7 +3929,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     FwThenNextIp then = new FwThenNextIp(nextPrefix);
     _currentFwTerm.getThens().add(then);
     _currentFwTerm.getThens().add(FwThenAccept.INSTANCE);
-    _currentFilter.setRoutingPolicy(true);
+    _currentFilter.setUsedForFBF(true);
   }
 
   @Override
@@ -3951,6 +3951,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitFftt_routing_instance(Fftt_routing_instanceContext ctx) {
     String name = unquote(ctx.name.getText());
     _currentFwTerm.getThens().add(new FwThenRoutingInstance(name));
+    _currentFilter.setUsedForFBF(true);
     _configuration.referenceStructure(
         ROUTING_INSTANCE, name, FIREWALL_FILTER_THEN_ROUTING_INSTANCE, ctx.getStart().getLine());
   }
