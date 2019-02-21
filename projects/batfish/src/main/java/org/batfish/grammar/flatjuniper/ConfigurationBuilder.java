@@ -4602,7 +4602,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         POLICY_STATEMENT_FROM_INSTANCE,
         getLine(ctx.name.getStart()));
     _currentPsTerm.getFroms().setFromInstance(new PsFromInstance(instanceName));
-    todo(ctx);
   }
 
   @Override
