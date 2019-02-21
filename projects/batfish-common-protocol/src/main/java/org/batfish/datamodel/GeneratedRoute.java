@@ -55,21 +55,6 @@ public final class GeneratedRoute extends AbstractRoute {
       return this;
     }
 
-    public static Builder fromRoute(@Nonnull GeneratedRoute route) {
-      return new Builder()
-          // General route properties
-          .setNetwork(route.getNetwork())
-          .setMetric(firstNonNull(route.getMetric(), 0L))
-          .setAdmin(route.getAdministrativeCost())
-          // GeneratedRoute properties
-          .setAsPath(route.getAsPath())
-          .setAttributePolicy(route.getAttributePolicy())
-          .setCommunities(route.getCommunities())
-          .setDiscard(route.getDiscard())
-          .setGenerationPolicy(route.getGenerationPolicy())
-          .setNextHopInterface(route.getNextHopInterface());
-    }
-
     public Builder setAsPath(@Nullable AsPath asPath) {
       _asPath = asPath;
       return this;
@@ -325,8 +310,22 @@ public final class GeneratedRoute extends AbstractRoute {
   }
 
   @Override
-  public AbstractRouteBuilder<?, ?> toBuilder() {
-    throw new UnsupportedOperationException();
+  public Builder toBuilder() {
+    return new Builder()
+        // General route properties
+        .setNetwork(getNetwork())
+        .setAdmin(getAdministrativeCost())
+        .setNonForwarding(getNonForwarding())
+        .setNonRouting(getNonRouting())
+        .setMetric(firstNonNull(getMetric(), 0L))
+        .setNextHopIp(getNextHopIp())
+        // GeneratedRoute properties
+        .setAsPath(getAsPath())
+        .setAttributePolicy(getAttributePolicy())
+        .setCommunities(getCommunities())
+        .setDiscard(getDiscard())
+        .setGenerationPolicy(getGenerationPolicy())
+        .setNextHopInterface(getNextHopInterface());
   }
 
   @JsonProperty(PROP_ATTRIBUTE_POLICY_SOURCES)
