@@ -803,6 +803,10 @@ public final class FileBasedStorage implements StorageProvider {
     return Base64.getUrlEncoder().encodeToString(key.getBytes(StandardCharsets.UTF_8));
   }
 
+  private static @Nonnull String fromBase64(String key) {
+    return new String(Base64.getUrlDecoder().decode(key));
+  }
+
   @Override
   public @Nonnull InputStream loadSnapshotObject(
       NetworkId networkId, SnapshotId snapshotId, String key)
@@ -866,6 +870,27 @@ public final class FileBasedStorage implements StorageProvider {
               path ->
                   new StoredObjectMetadata(
                       objectPath.relativize(path).toString(), getObjectSize(path)))
+          .collect(Collectors.toList());
+    } catch (BatfishException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public @Nonnull List<StoredObjectMetadata> getSnapshotExtendedObjectsMetadata(
+      NetworkId networkId, SnapshotId snapshotId) throws IOException {
+    Path objectPath = _d.getSnapshotObjectsDir(networkId, snapshotId);
+    if (!Files.exists(objectPath)) {
+      throw new FileNotFoundException(String.format("Could not load: %s", objectPath));
+    }
+
+    try {
+      return Files.walk(objectPath)
+          .filter(Files::isRegularFile)
+          .map(
+              path ->
+                  new StoredObjectMetadata(
+                      fromBase64(objectPath.relativize(path).toString()), getObjectSize(path)))
           .collect(Collectors.toList());
     } catch (BatfishException e) {
       throw new IOException(e);

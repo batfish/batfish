@@ -426,6 +426,40 @@ public final class FileBasedStorageTest {
   }
 
   @Test
+  public void testGetSnapshotExtendedObjectsMetadataNonExistentInput() throws IOException {
+    NetworkId network = new NetworkId("network");
+    SnapshotId snapshot = new SnapshotId("snapshot");
+    _thrown.expect(FileNotFoundException.class);
+    _storage.getSnapshotExtendedObjectsMetadata(network, snapshot);
+  }
+
+  @Test
+  public void testGetSnapshotExtendedObjectsMetadata() throws IOException {
+    NetworkId network = new NetworkId("network");
+    SnapshotId snapshot = new SnapshotId("snapshot");
+
+    String key1 = "foo/bar";
+    String key2 = "bat/fish";
+    String content1 = "some content";
+    String content2 = "some other content";
+
+    InputStream inputStream1 = new ByteArrayInputStream(content1.getBytes());
+    InputStream inputStream2 = new ByteArrayInputStream(content2.getBytes());
+
+    _storage.storeSnapshotObject(inputStream1, network, snapshot, key1);
+    _storage.storeSnapshotObject(inputStream2, network, snapshot, key2);
+
+    List<StoredObjectMetadata> keys =
+        _storage.getSnapshotExtendedObjectsMetadata(network, snapshot);
+    assertThat(
+        keys.stream().collect(ImmutableSet.toImmutableSet()),
+        equalTo(
+            ImmutableSet.of(
+                new StoredObjectMetadata(key1, content1.getBytes().length),
+                new StoredObjectMetadata(key2, content2.getBytes().length))));
+  }
+
+  @Test
   public void testCompletionMetadataRoundtrip() throws IOException {
     NetworkId networkId = new NetworkId("network");
     SnapshotId snapshotId = new SnapshotId("snapshot");

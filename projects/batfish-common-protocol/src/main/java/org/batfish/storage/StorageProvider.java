@@ -446,6 +446,16 @@ public interface StorageProvider {
       NetworkId networkId, SnapshotId snapshotId) throws FileNotFoundException, IOException;
 
   /**
+   * Fetch the list of keys in the given snapshot's extended objects directory
+   *
+   * @throws FileNotFoundException if the given snapshot's extended objects directory is not found
+   * @throws IOException if there is an error retrieving the metadata
+   */
+  @Nonnull
+  List<StoredObjectMetadata> getSnapshotExtendedObjectsMetadata(
+      NetworkId networkId, SnapshotId snapshotId) throws FileNotFoundException, IOException;
+
+  /**
    * Loads the JSON-serialized POJO topology produced for a snapshot
    *
    * @throws IOException if there is an error reading the topology

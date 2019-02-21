@@ -34,6 +34,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -2866,6 +2867,52 @@ public final class WorkMgrTest {
         equalTo(
             ImmutableList.of(
                 new StoredObjectMetadata("configs/" + fileName, content.getBytes().length))));
+  }
+
+  @Test
+  public void testGetSnapshotExtendedObjectsMetadataInvalidNetwork() throws IOException {
+    assertThat(_manager.getSnapshotExtendedObjectsMetadata("network", "snapshot"), nullValue());
+  }
+
+  @Test
+  public void testGetSnapshotExtendedObjectsMetadataInvalidSnapshot() throws IOException {
+    String network = "network";
+    NetworkId networkId = _idManager.generateNetworkId();
+    _idManager.assignNetwork(network, networkId);
+    assertThat(_manager.getSnapshotExtendedObjectsMetadata(network, "snapshot"), nullValue());
+  }
+
+  @Test
+  public void testGetSnapshotExtendedObjectsMetadataIOException() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+
+    NetworkId networkId = _idManager.generateNetworkId();
+    SnapshotId snapshotId = _idManager.generateSnapshotId();
+
+    _idManager.assignNetwork(network, networkId);
+    _idManager.assignSnapshot(snapshot, networkId, snapshotId);
+
+    _thrown.expect(IOException.class);
+    _manager.getSnapshotExtendedObjectsMetadata(network, snapshot);
+  }
+
+  @Test
+  public void testGetSnapshotExtendedObjectsMetadata() throws IOException {
+    String network = "network";
+    String snapshot = "snapshot";
+    String fileName = "fileName";
+    String content = "some content";
+
+    _manager.initNetwork(network, null);
+    uploadTestSnapshot(network, snapshot);
+
+    InputStream inputStream = new ByteArrayInputStream(content.getBytes());
+    _manager.putSnapshotExtendedObject(inputStream, network, snapshot, fileName);
+
+    assertThat(
+        _manager.getSnapshotExtendedObjectsMetadata(network, snapshot),
+        equalTo(ImmutableList.of(new StoredObjectMetadata(fileName, content.getBytes().length))));
   }
 
   private void storeCompletionMetadata(
