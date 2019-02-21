@@ -2818,11 +2818,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
-    // source nats
-    if (_masterLogicalSystem.getNatSource() != null) {
-      _w.unimplemented("Source NAT is not currently implemented");
-    }
-
     // static nats
     if (_masterLogicalSystem.getNatStatic() != null) {
       _w.unimplemented("Static NAT is not currently implemented");
