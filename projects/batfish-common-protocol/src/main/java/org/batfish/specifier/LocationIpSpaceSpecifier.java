@@ -51,15 +51,17 @@ public final class LocationIpSpaceSpecifier implements IpSpaceSpecifier {
   @Override
   public IpSpaceAssignment resolve(Set<Location> key, SpecifierContext ctxt) {
     Set<Location> locations = _locationSpecifier.resolve(ctxt);
+    return IpSpaceAssignment.builder().assign(key, computeIpSpace(locations, ctxt)).build();
+  }
+
+  public static IpSpace computeIpSpace(Set<Location> locations, SpecifierContext ctxt) {
     checkArgument(!locations.isEmpty(), "No such locations");
-    IpSpace ipSpace =
+    return firstNonNull(
         AclIpSpace.union(
             InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(locations, ctxt).getEntries()
                 .stream()
                 .map(Entry::getIpSpace)
-                .collect(Collectors.toList()));
-    return IpSpaceAssignment.builder()
-        .assign(key, firstNonNull(ipSpace, EmptyIpSpace.INSTANCE))
-        .build();
+                .collect(Collectors.toList())),
+        EmptyIpSpace.INSTANCE);
   }
 }

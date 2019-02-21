@@ -55,6 +55,7 @@ public class Variable {
     JAVA_REGEX("javaRegex", true),
     JSON_PATH("jsonPath", true),
     JSON_PATH_REGEX("jsonPathRegex", true),
+    LOCATION_SPEC("locationSpec", true),
     LONG("long", false),
     NAMED_STRUCTURE_SPEC("namedStructureSpec", true),
     NODE_PROPERTY_SPEC("nodePropertySpec", true),

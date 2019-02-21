@@ -242,6 +242,19 @@ public final class AutoCompleteUtils {
                       .collect(Collectors.toSet()));
           break;
         }
+      case LOCATION_SPEC:
+        {
+          suggestions =
+              ParboiledAutoComplete.autoCompleteLocation(
+                  network,
+                  snapshot,
+                  query,
+                  maxSuggestions,
+                  completionMetadata,
+                  nodeRolesData,
+                  referenceLibrary);
+          break;
+        }
       case NAMED_STRUCTURE_SPEC:
         {
           suggestions = baseAutoComplete(query, NamedStructureSpecifier.JAVA_MAP.keySet());

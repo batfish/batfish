@@ -12,4 +12,6 @@ interface IpSpaceAstNodeVisitor<T> {
   T visitIpWildcardAstNode(IpWildcardAstNode ipWildcardAstNode);
 
   T visitPrefixAstNode(PrefixAstNode prefixAstNode);
+
+  T visitLocationIpSpaceAstNode(LocationIpSpaceAstNode locationIpSpaceAstNode);
 }
