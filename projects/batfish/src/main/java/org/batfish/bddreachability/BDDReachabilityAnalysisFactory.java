@@ -153,6 +153,7 @@ public final class BDDReachabilityAnalysisFactory {
 
   private final Map<String, Configuration> _configs;
 
+  // only use this for IpSpaces that have no references
   private final IpSpaceToBDD _dstIpSpaceToBDD;
   private final IpSpaceToBDD _srcIpSpaceToBDD;
 
@@ -282,13 +283,16 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private TransformationToTransition initTransformationToTransformation(Configuration node) {
+    IpSpaceToBDD dstIpSpaceToBdd =
+        new MemoizedIpSpaceToBDD(_bddPacket.getDstIp(), node.getIpSpaces());
+    IpSpaceToBDD srcIpSpaceToBdd =
+        new MemoizedIpSpaceToBDD(_bddPacket.getSrcIp(), node.getIpSpaces());
     return new TransformationToTransition(
         _bddPacket,
         new IpAccessListToBddImpl(
             _bddPacket,
             _bddSourceManagers.get(node.getHostname()),
-            new HeaderSpaceToBDD(
-                _bddPacket, node.getIpSpaces(), _dstIpSpaceToBDD, _srcIpSpaceToBDD),
+            new HeaderSpaceToBDD(_bddPacket, dstIpSpaceToBdd, srcIpSpaceToBdd),
             node.getIpAccessLists()));
   }
 
