@@ -29,11 +29,6 @@ public class FibEntryTest {
             new FibEntry(
                 Ip.parse("1.1.1.1"),
                 "Eth1",
-                ImmutableList.of(new ConnectedRoute(Prefix.parse("2.2.2.2/31"), "Eth100"))))
-        .addEqualityGroup(
-            new FibEntry(
-                Ip.parse("1.1.1.1"),
-                "Eth1",
                 ImmutableList.of(new ConnectedRoute(Prefix.parse("2.2.2.4/31"), "Eth100"))))
         .addEqualityGroup(new Object())
         .testEquals();

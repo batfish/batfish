@@ -29,28 +29,21 @@ public final class FibImpl implements Fib {
   /** Helps perform recursive route resolution and maintain the route chain */
   private static final class ResolutionTreeNode {
     private final @Nonnull AbstractRoute _route;
-    // Invariant: must be present for leaf nodes
     private final @Nullable Ip _finalNextHopIp;
 
-    private final @Nullable ResolutionTreeNode _parent;
     private final @Nonnull List<ResolutionTreeNode> _children;
 
     /** Use static factories for sanity */
     private ResolutionTreeNode(
-        AbstractRoute route,
-        @Nullable Ip finalNextHopIp,
-        @Nullable ResolutionTreeNode parent,
-        List<ResolutionTreeNode> children) {
+        AbstractRoute route, @Nullable Ip finalNextHopIp, List<ResolutionTreeNode> children) {
       _route = route;
       _finalNextHopIp = finalNextHopIp;
-      _parent = parent;
       _children = children;
     }
 
     static ResolutionTreeNode withParent(
         AbstractRoute route, @Nullable ResolutionTreeNode parent, @Nullable Ip finalNextHopIp) {
-      ResolutionTreeNode child =
-          new ResolutionTreeNode(route, finalNextHopIp, parent, new LinkedList<>());
+      ResolutionTreeNode child = new ResolutionTreeNode(route, finalNextHopIp, new LinkedList<>());
       if (parent != null) {
         parent.addChild(child);
       }
@@ -58,7 +51,7 @@ public final class FibImpl implements Fib {
     }
 
     static ResolutionTreeNode root(@Nonnull AbstractRoute route) {
-      return new ResolutionTreeNode(route, null, null, new LinkedList<>());
+      return new ResolutionTreeNode(route, null, new LinkedList<>());
     }
 
     @Nonnull
@@ -87,9 +80,7 @@ public final class FibImpl implements Fib {
   /** This trie is the source of truth for all resolved FIB routes */
   @Nonnull private final PrefixTrieMultiMap<FibEntry> _root;
 
-  @Nonnull private transient Supplier<Map<AbstractRoute, Set<FibEntry>>> _entries;
-
-  @Nonnull
+  private transient Supplier<Map<AbstractRoute, Set<FibEntry>>> _entries;
   private transient Supplier<Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>
       _nextHopInterfaces;
 
