@@ -23,6 +23,43 @@ net self /Common/SOME_SELF {
     vlan /Common/SOME_VLAN
 }
 
+net routing prefix-list /Common/MY_IPV4_PL {
+    entries {
+        10 {
+            action permit
+            prefix 10.0.0.0/24
+        }
+    }
+}
+
+net routing route-map /Common/MY_KERNEL_OUT {
+    entries {
+        10 {
+            action permit
+        }
+    }
+}
+
+net routing route-map /Common/MY_IPV4_OUT {
+    entries {
+        10 {
+            action permit
+            match {
+                ipv4 {
+                    address {
+                        prefix-list /Common/MY_IPV4_PL
+                    }
+                }
+            }
+            set {
+                community {
+                    value { 2:2 }
+                }
+            }
+        }
+    }
+}
+
 net routing bgp /Common/my_bgp {
     address-family {
         ipv4 {

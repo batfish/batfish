@@ -6,11 +6,15 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasAllowLocalAsIn;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasAllowRemoteAsOut;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasClusterId;
+import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasDescription;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasEnforceFirstAs;
+import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasExportPolicy;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasLocalAs;
+import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasLocalIp;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasRemoteAs;
 import org.hamcrest.Matcher;
 
@@ -61,7 +65,7 @@ public class BgpNeighborMatchers {
    * Provides a matcher that matches if the {@link BgpPeerConfig} has the specified {@code
    * expectedLocalIp}.
    */
-  public static @Nonnull Matcher<BgpPeerConfig> hasLocalIp(String expectedLocalIp) {
+  public static @Nonnull Matcher<BgpPeerConfig> hasLocalIp(Ip expectedLocalIp) {
     return new HasLocalIp(equalTo(expectedLocalIp));
   }
 

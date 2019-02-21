@@ -1,7 +1,14 @@
 package org.batfish.grammar.f5_bigip_structured;
 
+import static org.batfish.common.util.CommonUtil.communityStringToLong;
+import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalIp;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
@@ -47,11 +54,14 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNAT_TRAN
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL_ADDRESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -65,13 +75,12 @@ import java.util.stream.Stream;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.datamodel.BgpActivePeerConfig;
-import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -80,11 +89,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
-import org.batfish.datamodel.matchers.BgpNeighborMatchers;
-import org.batfish.datamodel.matchers.BgpProcessMatchers;
-import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.Route6FilterListMatchers;
-import org.batfish.datamodel.matchers.VrfMatchers;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
@@ -95,8 +100,8 @@ import org.batfish.representation.f5_bigip.Builtin;
 import org.batfish.representation.f5_bigip.BuiltinMonitor;
 import org.batfish.representation.f5_bigip.BuiltinPersistence;
 import org.batfish.representation.f5_bigip.BuiltinProfile;
+import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.representation.f5_bigip.F5BigipStructureType;
-import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -152,6 +157,14 @@ public final class F5BigipStructuredGrammarTest {
     return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
   }
 
+  private BgpRoute.Builder makeBgpOutputRouteBuilder() {
+    return BgpRoute.builder()
+        .setNetwork(Prefix.ZERO)
+        .setOriginType(OriginType.INCOMPLETE)
+        .setOriginatorIp(Ip.ZERO)
+        .setProtocol(RoutingProtocol.BGP);
+  }
+
   private Configuration parseConfig(String hostname) throws IOException {
     return parseTextConfigs(hostname).get(hostname.toLowerCase());
   }
@@ -168,6 +181,17 @@ public final class F5BigipStructuredGrammarTest {
     String hostname = "f5_bigip_structured_net_routing_bgp";
     Configuration c = parseConfig(hostname);
 
+    // process config
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasMultipathEquivalentAsPathMatchMode(EXACT_PATH))));
+
+    // peer config
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.strict("192.0.2.1/32"),
+                    hasDescription("Cool IPv4 BGP neighbor description")))));
     assertThat(
         c,
         hasDefaultVrf(
@@ -177,12 +201,147 @@ public final class F5BigipStructuredGrammarTest {
         hasDefaultVrf(
             hasBgpProcess(
                 hasActiveNeighbor(
-                    Prefix.strict("192.0.2.1/32"), BgpNeighborMatchers.hasRemoteAs(456L)))));
+                    Prefix.strict("192.0.2.1/32"), hasLocalIp(Ip.parse("192.0.2.2"))))));
     assertThat(
         c,
         hasDefaultVrf(
-            hasBgpProcess(
-                hasActiveNeighbor(Prefix.strict("192.0.2.1/32"), BgpNeighborMatchers.has))));
+            hasBgpProcess(hasActiveNeighbor(Prefix.strict("192.0.2.1/32"), hasRemoteAs(456L)))));
+
+    //// generated routing policies
+    String bgpProcessName = "/Common/my_bgp";
+    String commonExportPolicyName =
+        F5BigipConfiguration.computeBgpCommonExportPolicyName(bgpProcessName);
+    String peerExportPolicyName =
+        F5BigipConfiguration.computeBgpPeerExportPolicyName(bgpProcessName, Ip.parse("192.0.2.1"));
+
+    BgpRoute.Builder bgpRouteBuilder =
+        BgpRoute.builder()
+            .setAdmin(10)
+            .setMetric(10)
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("1.2.3.4"));
+    BgpRoute bgpRouteAllowedByPeerPolicy =
+        bgpRouteBuilder.setNetwork(Prefix.strict("10.0.0.0/24")).build();
+    BgpRoute bgpRouteAllowedOnlyByCommonPolicy =
+        bgpRouteBuilder.setNetwork(Prefix.strict("10.0.1.0/24")).build();
+    ConnectedRoute connectedRoute = new ConnectedRoute(Prefix.strict("10.0.0.0/24"), "blah");
+    KernelRoute kernelRoute = new KernelRoute(Prefix.strict("10.0.0.0/24"));
+
+    // common export policy
+    assertThat(c.getRoutingPolicies(), hasKey(commonExportPolicyName));
+    RoutingPolicy commonExportPolicy = c.getRoutingPolicies().get(commonExportPolicyName);
+
+    // peer export policy
+    assertThat(c.getRoutingPolicies(), hasKey(peerExportPolicyName));
+    RoutingPolicy peerExportPolicy = c.getRoutingPolicies().get(peerExportPolicyName);
+
+    {
+      // BGP input route acceptable to common export policy
+      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      assertTrue(
+          commonExportPolicy
+              .call(
+                  Environment.builder(c)
+                      .setOriginalRoute(bgpRouteAllowedByPeerPolicy)
+                      .setOutputRoute(outputBuilder)
+                      .setVrf(Configuration.DEFAULT_VRF_NAME)
+                      .build())
+              .getBooleanValue());
+      BgpRoute outputRoute = outputBuilder.build();
+      assertThat(outputRoute, hasCommunities(empty()));
+    }
+
+    {
+      // BGP input route acceptable to peer export policy
+      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      assertTrue(
+          peerExportPolicy
+              .call(
+                  Environment.builder(c)
+                      .setOriginalRoute(bgpRouteAllowedByPeerPolicy)
+                      .setOutputRoute(outputBuilder)
+                      .setVrf(Configuration.DEFAULT_VRF_NAME)
+                      .build())
+              .getBooleanValue());
+      BgpRoute outputRoute = outputBuilder.build();
+      assertThat(outputRoute, hasCommunities(contains(communityStringToLong("2:2"))));
+    }
+
+    {
+      // BGP input route unacceptable to peer export policy
+      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      assertFalse(
+          peerExportPolicy
+              .call(
+                  Environment.builder(c)
+                      .setOriginalRoute(bgpRouteAllowedOnlyByCommonPolicy)
+                      .setOutputRoute(outputBuilder)
+                      .setVrf(Configuration.DEFAULT_VRF_NAME)
+                      .build())
+              .getBooleanValue());
+    }
+
+    {
+      // Connected input route unacceptable to common export policy
+      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      assertFalse(
+          commonExportPolicy
+              .call(
+                  Environment.builder(c)
+                      .setOriginalRoute(connectedRoute)
+                      .setOutputRoute(outputBuilder)
+                      .setVrf(Configuration.DEFAULT_VRF_NAME)
+                      .build())
+              .getBooleanValue());
+    }
+
+    {
+      // Connected input route unacceptable to peer export policy
+      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      assertFalse(
+          peerExportPolicy
+              .call(
+                  Environment.builder(c)
+                      .setOriginalRoute(connectedRoute)
+                      .setOutputRoute(outputBuilder)
+                      .setVrf(Configuration.DEFAULT_VRF_NAME)
+                      .build())
+              .getBooleanValue());
+    }
+
+    {
+      // Kernel input route acceptable to common export policy
+      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      assertTrue(
+          commonExportPolicy
+              .call(
+                  Environment.builder(c)
+                      .setOriginalRoute(kernelRoute)
+                      .setOutputRoute(outputBuilder)
+                      .setVrf(Configuration.DEFAULT_VRF_NAME)
+                      .build())
+              .getBooleanValue());
+      BgpRoute outputRoute = outputBuilder.build();
+      assertThat(outputRoute, hasCommunities(empty()));
+    }
+
+    {
+      // Kernel input route acceptable to peer export policy
+      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      assertTrue(
+          peerExportPolicy
+              .call(
+                  Environment.builder(c)
+                      .setOriginalRoute(kernelRoute)
+                      .setOutputRoute(outputBuilder)
+                      .setVrf(Configuration.DEFAULT_VRF_NAME)
+                      .build())
+              .getBooleanValue());
+      BgpRoute outputRoute = outputBuilder.build();
+      assertThat(outputRoute, hasCommunities(contains(communityStringToLong("2:2"))));
+    }
   }
 
   @Test
