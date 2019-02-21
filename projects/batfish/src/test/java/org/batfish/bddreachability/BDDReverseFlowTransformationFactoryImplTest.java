@@ -347,6 +347,7 @@ public class BDDReverseFlowTransformationFactoryImplTest {
     assertThat(
         "flows natted to pool2 were matched by match1 and match2",
         transition.transitForward(pool2Bdd),
+        // match2Bdd implies matched by match1 and match2
         equalTo(pool2Bdd.and(match1Bdd.not()).or(match2Bdd)));
     assertThat(
         "flows not natted were not matched by match1",
@@ -361,6 +362,7 @@ public class BDDReverseFlowTransformationFactoryImplTest {
     assertThat(
         "flows natted to pool2 were matched by match1 and match2",
         transition.transitForward(pool2Bdd),
+        // match2Bdd implies matched by match1 and match2
         equalTo(pool2Bdd.and(match1Bdd.not()).or(match2Bdd)));
     assertThat(
         "flows not natted were not matched by match1",
