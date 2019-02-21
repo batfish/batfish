@@ -6,6 +6,7 @@ import static org.batfish.z3.expr.visitors.Simplifier.simplifyBooleanExpr;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
@@ -15,6 +16,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
@@ -91,9 +93,7 @@ public final class TransformationTransitionGenerator {
         AssignIpAddressFromPool assignIpAddressFromPool) {
       return new BasicRuleStatement(
           assignFromPoolExpr(
-              getField(assignIpAddressFromPool.getIpField()),
-              assignIpAddressFromPool.getPoolStart(),
-              assignIpAddressFromPool.getPoolEnd()),
+              getField(assignIpAddressFromPool.getIpField()), assignIpAddressFromPool.getPool()),
           _preState,
           _postState);
     }
@@ -230,10 +230,8 @@ public final class TransformationTransitionGenerator {
   }
 
   @VisibleForTesting
-  static BooleanExpr assignFromPoolExpr(Field field, Ip poolStart, Ip poolEnd) {
-    return new RangeMatchExpr(
-        new TransformedVarIntExpr(field),
-        field.getSize(),
-        ImmutableSet.of(Range.closed(poolStart.asLong(), poolEnd.asLong())));
+  static BooleanExpr assignFromPoolExpr(Field field, IpSpace pool) {
+    // TODO: support named IpSpaces
+    return new IpSpaceMatchExpr(pool, ImmutableMap.of(), new TransformedVarIntExpr(field));
   }
 }

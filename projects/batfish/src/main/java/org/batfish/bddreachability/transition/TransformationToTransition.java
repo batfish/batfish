@@ -15,6 +15,7 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
@@ -41,12 +42,9 @@ public class TransformationToTransition {
     _stepToTransition = new TransformationStepToTransition();
   }
 
-  private static EraseAndSet assignIpFromPool(BDDInteger var, Ip poolStart, Ip poolEnd) {
+  private static EraseAndSet assignIpFromPool(BDDInteger var, IpSpace pool) {
     BDD erase = Arrays.stream(var.getBitvec()).reduce(var.getFactory().one(), BDD::and);
-    BDD setValue =
-        poolStart.equals(poolEnd)
-            ? var.value(poolStart.asLong())
-            : var.geq(poolStart.asLong()).and(var.leq(poolEnd.asLong()));
+    BDD setValue = pool.accept(new IpSpaceToBDD(var));
     return new EraseAndSet(erase, setValue);
   }
 
@@ -71,7 +69,7 @@ public class TransformationToTransition {
 
     @Override
     public Transition visitAssignIpAddressFromPool(AssignIpAddressFromPool step) {
-      return assignIpFromPool(ipField(step.getIpField()), step.getPoolStart(), step.getPoolEnd());
+      return assignIpFromPool(ipField(step.getIpField()), step.getPool());
     }
 
     @Override

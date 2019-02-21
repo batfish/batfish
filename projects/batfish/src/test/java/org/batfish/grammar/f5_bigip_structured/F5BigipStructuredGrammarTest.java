@@ -26,6 +26,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasKernelRoutes;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.INTERFACE;
@@ -398,6 +399,16 @@ public final class F5BigipStructuredGrammarTest {
     assertThat(c.getAllInterfaces().keySet(), containsInAnyOrder("1.0", "2.0"));
     assertThat(c, hasInterface("1.0", hasSpeed(40E9D)));
     assertThat(c, hasInterface("2.0", hasSpeed(100E9D)));
+  }
+
+  @Test
+  public void testKernelRoutes() throws IOException {
+    String hostname = "f5_bigip_structured_ltm";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c,
+        hasDefaultVrf(hasKernelRoutes(contains(new KernelRoute(Prefix.strict("192.0.2.8/32"))))));
   }
 
   @Test

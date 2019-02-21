@@ -15,14 +15,30 @@ public final class Virtual implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  private @Nullable Ip _destinationIp;
+  private @Nullable Ip6 _destinationIp6;
+  private @Nullable Integer _destinationPort;
   private @Nullable Ip _mask;
   private @Nullable Ip6 _mask6;
   private final @Nonnull String _name;
+  private @Nullable String _pool;
   private @Nullable Prefix _source;
   private @Nullable Prefix6 _source6;
 
   public Virtual(String name) {
     _name = name;
+  }
+
+  public @Nullable Ip getDestinationIp() {
+    return _destinationIp;
+  }
+
+  public @Nullable Ip6 getDestinationIp6() {
+    return _destinationIp6;
+  }
+
+  public @Nullable Integer getDestinationPort() {
+    return _destinationPort;
   }
 
   public @Nullable Ip getMask() {
@@ -37,6 +53,10 @@ public final class Virtual implements Serializable {
     return _name;
   }
 
+  public @Nullable String getPool() {
+    return _pool;
+  }
+
   public @Nullable Prefix getSource() {
     return _source;
   }
@@ -45,12 +65,28 @@ public final class Virtual implements Serializable {
     return _source6;
   }
 
+  public void setDestinationIp(@Nullable Ip destinationIp) {
+    _destinationIp = destinationIp;
+  }
+
+  public void setDestinationIp6(@Nullable Ip6 destinationIp6) {
+    _destinationIp6 = destinationIp6;
+  }
+
+  public void setDestinationPort(@Nullable Integer destinationPort) {
+    _destinationPort = destinationPort;
+  }
+
   public void setMask(@Nullable Ip mask) {
     _mask = mask;
   }
 
   public void setMask6(@Nullable Ip6 mask6) {
     _mask6 = mask6;
+  }
+
+  public void setPool(@Nullable String pool) {
+    _pool = pool;
   }
 
   public void setSource(@Nullable Prefix source) {
