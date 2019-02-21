@@ -207,6 +207,9 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
 
     @Nullable
     Node<T> matchingChild(Prefix prefix) {
+      if (_prefix.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH) {
+        return null;
+      }
       Node<T> child =
           Ip.getBitAtPosition(prefix.getStartIp().asLong(), _prefix.getPrefixLength())
               ? _right
