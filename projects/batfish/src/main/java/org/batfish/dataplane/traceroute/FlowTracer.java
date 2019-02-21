@@ -13,15 +13,14 @@ import static org.batfish.datamodel.flow.StepAction.TRANSMITTED;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.buildEnterSrcIfaceStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createFilterStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
-import static org.batfish.dataplane.traceroute.TracerouteUtils.resolveNextHopIpRoutes;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.returnFlow;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.sessionTransformation;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Multimap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -33,9 +32,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -325,45 +323,38 @@ class FlowTracer {
       return;
     }
 
-    Fib fib = _tracerouteContext.getFib(currentNodeName, _vrfName);
-    // Sort so that resulting traces will be in sensible deterministic order
-    SortedSet<String> nextHopInterfaces =
-        ImmutableSortedSet.copyOf(fib.getNextHopInterfaces(dstIp));
-    if (nextHopInterfaces.isEmpty()) {
-      buildNoRouteTrace();
-      return;
-    }
-
     // Loop detection
     Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, _currentFlow);
     if (_breadcrumbs.contains(breadcrumb)) {
       buildLoopTrace();
       return;
     }
-
     _breadcrumbs.push(breadcrumb);
+
+    // Sort so that resulting traces will be in sensible deterministic order
+    SortedSet<FibEntry> fibEntries =
+        ImmutableSortedSet.copyOf(
+            Comparator.comparing(FibEntry::getInterfaceName)
+                .thenComparing(Comparator.nullsFirst(Comparator.comparing(FibEntry::getArpIP))),
+            _tracerouteContext.getFib(currentNodeName, _vrfName).get(dstIp));
+    if (fibEntries.isEmpty()) {
+      buildNoRouteTrace();
+      return;
+    }
+
     try {
       _steps.add(buildRoutingStep(currentNodeName, dstIp));
 
-      Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute =
-          fib.getNextHopInterfacesByRoute(dstIp);
-
       // For every interface with a route to the dst IP
-      for (String nextHopInterfaceName : nextHopInterfaces) {
-        if (nextHopInterfaceName.equals(Interface.NULL_INTERFACE_NAME)) {
+      for (FibEntry fibEntry : fibEntries) {
+        String interfaceName = fibEntry.getInterfaceName();
+        if (interfaceName.equals(Interface.NULL_INTERFACE_NAME)) {
           branch().buildNullRoutedTrace();
           continue;
         }
 
-        Interface nextHopInterface = _currentConfig.getAllInterfaces().get(nextHopInterfaceName);
-
-        Multimap<Ip, AbstractRoute> resolvedNextHopIpRoutes =
-            resolveNextHopIpRoutes(nextHopInterfaceName, nextHopInterfacesByRoute);
-        resolvedNextHopIpRoutes
-            .asMap()
-            .forEach(
-                (resolvedNextHopIp, routeCandidates) ->
-                    branch().forwardOutInterface(nextHopInterface, resolvedNextHopIp));
+        Interface nextHopInterface = _currentConfig.getAllInterfaces().get(interfaceName);
+        branch().forwardOutInterface(nextHopInterface, fibEntry.getArpIP());
       }
     } finally {
       _breadcrumbs.pop();
