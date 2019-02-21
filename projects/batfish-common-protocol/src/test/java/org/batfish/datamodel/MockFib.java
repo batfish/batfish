@@ -90,12 +90,6 @@ public class MockFib implements Fib {
     return _nextHopInterfacesByIp.getOrDefault(ip, ImmutableMap.of()).keySet();
   }
 
-  @Nonnull
-  @Override
-  public Set<FibEntry> get(Ip ip) {
-    throw new UnsupportedOperationException();
-  }
-
   @Override
   public @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>
       getNextHopInterfacesByRoute(Ip dstIp) {

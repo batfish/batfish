@@ -187,7 +187,7 @@ public class FibImplTest {
     rib.mergeRoute(annotateRoute(nonForwardingRoute));
     rib.mergeRoute(annotateRoute(forwardingRoute));
 
-    Fib fib = new FibImpl(rib);
+    Fib fib = new FibImpl<>(rib);
     Set<AbstractRoute> fibRoutes = fib.getRoutesByNextHopInterface().get("Eth1");
 
     assertThat(fibRoutes, not(hasItem(hasPrefix(Prefix.parse("1.1.1.0/24")))));
@@ -226,7 +226,7 @@ public class FibImplTest {
     rib.mergeRoute(annotateRoute(forwardingLessSpecificRoute));
     rib.mergeRoute(annotateRoute(testRoute));
 
-    Fib fib = new FibImpl(rib);
+    Fib fib = new FibImpl<>(rib);
     Set<AbstractRoute> fibRoutesEth1 = fib.getRoutesByNextHopInterface().get("Eth1");
 
     /* 2.2.2.0/24 should resolve to the "forwardingLessSpecificRoute" and thus eth1 */
@@ -287,7 +287,7 @@ public class FibImplTest {
     rib.mergeRoute(annotateRoute(ecmpForwardingRoute1));
     rib.mergeRoute(annotateRoute(ecmpForwardingRoute2));
 
-    Fib fib = new FibImpl(rib);
+    Fib fib = new FibImpl<>(rib);
 
     /* 2.2.2.0/24 should resolve to eth3 and eth4*/
     assertThat(fib.getRoutesByNextHopInterface().get("Eth3"), hasItem(hasPrefix(TEST_PREFIX)));
