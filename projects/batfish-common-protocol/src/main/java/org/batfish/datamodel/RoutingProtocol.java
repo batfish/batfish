@@ -21,6 +21,7 @@ public enum RoutingProtocol {
   ISIS_EL2("isisEL2"),
   ISIS_L1("isisL1"),
   ISIS_L2("isisL2"),
+  KERNEL("kernel"),
   LDP("ldp"),
   LISP("lisp"),
   LOCAL("local"),

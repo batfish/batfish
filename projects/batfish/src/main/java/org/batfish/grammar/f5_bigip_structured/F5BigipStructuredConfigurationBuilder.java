@@ -146,6 +146,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ni_bundle
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_bgpContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_prefix_listContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_route_mapContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrb_local_asContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbaf_ipv4Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbaf_ipv6Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbafcr_kernelContext;
@@ -954,6 +955,11 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitNr_route_map(Nr_route_mapContext ctx) {
     _currentRouteMap = null;
+  }
+
+  @Override
+  public void exitNrb_local_as(Nrb_local_asContext ctx) {
+    _currentBgpProcess.setLocalAs(toLong(ctx.as));
   }
 
   @Override

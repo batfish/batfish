@@ -26,6 +26,8 @@ public final class BgpNeighbor implements Serializable {
     _name = name;
     _ipv4AddressFamily = new BgpNeighborIpv4AddressFamily();
     _ipv6AddressFamily = new BgpNeighborIpv6AddressFamily();
+    Ip.tryParse(_name).ifPresent(this::setAddress);
+    Ip6.tryParse(_name).ifPresent(this::setAddress6);
   }
 
   public @Nullable Ip getAddress() {

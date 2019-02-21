@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasAllowLocalAsIn;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasAllowRemoteAsOut;
@@ -14,6 +15,7 @@ import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasRemoteAs;
 import org.hamcrest.Matcher;
 
 /** Matchers for {@link BgpPeerConfig} */
+@ParametersAreNonnullByDefault
 public class BgpNeighborMatchers {
 
   /**
@@ -37,6 +39,30 @@ public class BgpNeighborMatchers {
    */
   public static @Nonnull Matcher<BgpPeerConfig> hasClusterId(@Nullable Long expectedClusterId) {
     return new HasClusterId(equalTo(expectedClusterId));
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link BgpPeerConfig} has the specified {@code
+   * expectedExportPolicy}.
+   */
+  public static @Nonnull Matcher<BgpPeerConfig> hasExportPolicy(String expectedExportPolicy) {
+    return new HasExportPolicy(equalTo(expectedExportPolicy));
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link BgpPeerConfig} has the specified {@code
+   * expectedDescription}.
+   */
+  public static @Nonnull Matcher<BgpPeerConfig> hasDescription(String expectedDescription) {
+    return new HasDescription(equalTo(expectedDescription));
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link BgpPeerConfig} has the specified {@code
+   * expectedLocalIp}.
+   */
+  public static @Nonnull Matcher<BgpPeerConfig> hasLocalIp(String expectedLocalIp) {
+    return new HasLocalIp(equalTo(expectedLocalIp));
   }
 
   /** Provides a matcher that matches if the BGP neighbor has the specified localAs. */

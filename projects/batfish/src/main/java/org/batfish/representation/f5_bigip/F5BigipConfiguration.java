@@ -5,8 +5,6 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collection;
 import java.util.Comparator;
@@ -14,29 +12,36 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.TreeSet;
-import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.VendorConversionException;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.vendor.VendorConfiguration;
@@ -46,6 +51,30 @@ import org.batfish.vendor.VendorConfiguration;
 public class F5BigipConfiguration extends VendorConfiguration {
 
   private static final long serialVersionUID = 1L;
+
+  private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
+      BooleanExpr expr, OriginType originType) {
+    WithEnvironmentExpr we = new WithEnvironmentExpr();
+    we.setExpr(expr);
+    we.setPreStatements(
+        ImmutableList.of(Statements.SetWriteIntermediateBgpAttributes.toStaticStatement()));
+    we.setPostStatements(
+        ImmutableList.of(Statements.UnsetWriteIntermediateBgpAttributes.toStaticStatement()));
+    we.setPostTrueStatements(
+        ImmutableList.of(
+            Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
+            new SetOrigin(new LiteralOrigin(originType, null))));
+    return we;
+  }
+
+  public static @Nonnull String computeBgpCommonExportPolicyName(String bgpProcessName) {
+    return String.format("~BGP_COMMON_EXPORT_POLICY:%s~", bgpProcessName);
+  }
+
+  public static @Nonnull String computeBgpPeerExportPolicyName(
+      String bgpProcessName, Ip peerAddress) {
+    return String.format("~BGP_PEER_EXPORT_POLICY:%s:%s~", bgpProcessName, peerAddress);
+  }
 
   private final @Nonnull Map<String, BgpProcess> _bgpProcesses;
   private transient Configuration _c;
@@ -60,8 +89,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, SnatPool> _snatPools;
   private final @Nonnull Map<String, Snat> _snats;
   private final @Nonnull Map<String, SnatTranslation> _snatTranslations;
+
   private final @Nonnull Map<String, VirtualAddress> _virtualAddresses;
+
   private final @Nonnull Map<String, Virtual> _virtuals;
+
   private final @Nonnull Map<String, Vlan> _vlans;
 
   public F5BigipConfiguration() {
@@ -78,6 +110,73 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _virtualAddresses = new HashMap<>();
     _virtuals = new HashMap<>();
     _vlans = new HashMap<>();
+  }
+
+  private Ip getUpdateSource(BgpNeighbor neighbor, String updateSourceInterface) {
+    Ip updateSource = null;
+    if (updateSourceInterface != null) {
+      org.batfish.datamodel.Interface sourceInterface =
+          _c.getDefaultVrf().getInterfaces().get(updateSourceInterface);
+      if (sourceInterface != null) {
+        InterfaceAddress address = sourceInterface.getAddress();
+        if (address != null) {
+          Ip sourceIp = address.getIp();
+          updateSource = sourceIp;
+        } else {
+          _w.redFlag(
+              "bgp update source interface: '"
+                  + updateSourceInterface
+                  + "' not assigned an ip address");
+        }
+      }
+    }
+    if (updateSource == null) {
+      _w.redFlag(
+          "Could not determine update source for BGP neighbor: '" + neighbor.getName() + "'");
+    }
+    return updateSource;
+  }
+
+  private void addActivePeer(
+      BgpNeighbor neighbor, BgpProcess proc, org.batfish.datamodel.BgpProcess newProc) {
+    Ip updateSource = getUpdateSource(neighbor, neighbor.getUpdateSource());
+
+    RoutingPolicy.Builder peerExportPolicy =
+        RoutingPolicy.builder()
+            .setOwner(_c)
+            .setName(computeBgpPeerExportPolicyName(proc.getName(), neighbor.getAddress()));
+
+    Conjunction peerExportConditions = new Conjunction();
+    If peerExportConditional =
+        new If(
+            "peer-export policy main conditional: exitAccept if true / exitReject if false",
+            peerExportConditions,
+            ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+            ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+    peerExportPolicy.addStatement(peerExportConditional);
+    Disjunction localOrCommonOrigination = new Disjunction();
+    peerExportConditions.getConjuncts().add(localOrCommonOrigination);
+    localOrCommonOrigination
+        .getDisjuncts()
+        .add(new CallExpr(computeBgpCommonExportPolicyName(proc.getName())));
+    String outboundRouteMapName = neighbor.getIpv4AddressFamily().getRouteMapOut();
+    if (outboundRouteMapName != null) {
+      RouteMap outboundRouteMap = _routeMaps.get(outboundRouteMapName);
+      if (outboundRouteMap != null) {
+        peerExportConditions.getConjuncts().add(new CallExpr(outboundRouteMapName));
+      }
+    }
+
+    BgpActivePeerConfig.Builder builder =
+        BgpActivePeerConfig.builder()
+            .setBgpProcess(newProc)
+            .setDescription(neighbor.getDescription())
+            .setExportPolicy(peerExportPolicy.build().getName())
+            .setLocalAs(proc.getLocalAs())
+            .setLocalIp(updateSource)
+            .setPeerAddress(neighbor.getAddress())
+            .setRemoteAs(neighbor.getRemoteAs());
+    builder.build();
   }
 
   public @Nonnull Map<String, BgpProcess> getBgpProcesses() {
@@ -274,23 +373,59 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private @Nonnull org.batfish.datamodel.BgpProcess toBgpProcess(BgpProcess proc) {
     org.batfish.datamodel.BgpProcess newProc = new org.batfish.datamodel.BgpProcess();
-    newProc.setNeighbors(
-        proc.getNeighbors().values().stream()
-            .map(this::toBgpActivePeerConfig)
-            .filter(pc -> pc != null && pc.getPeerAddress() != null)
-            .collect(
-                ImmutableSortedMap.toImmutableSortedMap(
-                    Comparator.naturalOrder(),
-                    pc -> Prefix.create(pc.getPeerAddress(), Prefix.MAX_PREFIX_LENGTH),
-                    Function.identity())));
-    return newProc;
-  }
 
-  private @Nullable BgpActivePeerConfig toBgpActivePeerConfig(BgpNeighbor neighbor) {
-    BgpActivePeerConfig.Builder builder = BgpActivePeerConfig.builder();
-    builder.setPeerAddress(neighbor.getAddress());
-    builder.setRemoteAs(neighbor.getRemoteAs());
-    return builder.build();
+    // TODO: verify
+    newProc.setMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
+
+    /*
+     * Create common BGP export policy. This policy encompasses:
+     * - redistribution from other protocols
+     */
+    RoutingPolicy.Builder bgpCommonExportPolicy =
+        RoutingPolicy.builder()
+            .setOwner(_c)
+            .setName(computeBgpCommonExportPolicyName(proc.getName()));
+    // The body of the export policy is a huge disjunction over many reasons routes may be exported.
+    Disjunction routesShouldBeExported = new Disjunction();
+    bgpCommonExportPolicy.addStatement(
+        new If(
+            routesShouldBeExported,
+            ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+            ImmutableList.of()));
+    // This list of reasons to export a route will be built up over the remainder of this function.
+    List<BooleanExpr> exportConditions = routesShouldBeExported.getDisjuncts();
+
+    // Finally, the export policy ends with returning false: do not export unmatched routes.
+    bgpCommonExportPolicy.addStatement(Statements.ReturnFalse.toStaticStatement()).build();
+
+    // Export kernel routes that should be redistributed.
+    BgpRedistributionPolicy redistributeProtocolPolicy =
+        proc.getIpv4AddressFamily().getRedistributionPolicies().get(F5BigipRoutingProtocol.KERNEL);
+    if (redistributeProtocolPolicy != null) {
+      BooleanExpr weInterior = BooleanExprs.TRUE;
+      Conjunction exportProtocolConditions = new Conjunction();
+      exportProtocolConditions.setComment("Redistribute kernel routes into BGP");
+      exportProtocolConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.KERNEL));
+      String mapName = redistributeProtocolPolicy.getRouteMap();
+      if (mapName != null) {
+        RouteMap redistributeProtocolRouteMap = _routeMaps.get(mapName);
+        if (redistributeProtocolRouteMap != null) {
+          weInterior = new CallExpr(mapName);
+        }
+      }
+      BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
+      exportProtocolConditions.getConjuncts().add(we);
+      exportConditions.add(exportProtocolConditions);
+    }
+
+    // Export BGP and IBGP routes.
+    exportConditions.add(new MatchProtocol(RoutingProtocol.BGP));
+    exportConditions.add(new MatchProtocol(RoutingProtocol.IBGP));
+
+    proc.getNeighbors().values().stream()
+        .filter(neighbor -> neighbor.getAddress() != null) // must be IPv4 peer
+        .forEach(neighbor -> addActivePeer(neighbor, proc, newProc));
+    return newProc;
   }
 
   private @Nonnull BooleanExpr toGuard(RouteMapEntry entry) {

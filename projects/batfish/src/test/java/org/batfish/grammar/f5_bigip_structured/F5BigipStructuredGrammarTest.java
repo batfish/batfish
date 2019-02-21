@@ -61,6 +61,7 @@ import java.util.stream.Stream;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
@@ -86,6 +87,7 @@ import org.batfish.representation.f5_bigip.BuiltinMonitor;
 import org.batfish.representation.f5_bigip.BuiltinPersistence;
 import org.batfish.representation.f5_bigip.BuiltinProfile;
 import org.batfish.representation.f5_bigip.F5BigipStructureType;
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -150,6 +152,15 @@ public final class F5BigipStructuredGrammarTest {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.parseTextConfigs(_folder, names);
+  }
+
+  @Test
+  public void testBgpProcessConversion() throws IOException {
+    String hostname = "f5_bigip_structured_net_routing_bgp";
+    Configuration c = parseConfig(hostname);
+    BgpProcess proc = c.getDefaultVrf().getBgpProcess();
+
+    assertThat(proc, Matchers.notNullValue());
   }
 
   @Test
