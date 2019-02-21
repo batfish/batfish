@@ -83,6 +83,7 @@ public class CommonParser extends BaseParser<AstNode> {
     return CharRange('.', '.');
   }
 
+  /** Keep in Sync with {@link org.batfish.datamodel.Names.ObjectType#FILTER} */
   public Rule FilterNameLiteral() {
     return Sequence(
         FirstOf(AlphabetChar(), Tilde(), Underscore()),
@@ -143,6 +144,7 @@ public class CommonParser extends BaseParser<AstNode> {
     return CharRange('_', '_');
   }
 
+  /** Keep in Sync with {@link org.batfish.datamodel.Names.ObjectType#VRF} */
   public Rule VrfNameLiteral() {
     return Sequence(
         FirstOf(AlphabetChar(), Underscore()),
@@ -153,6 +155,7 @@ public class CommonParser extends BaseParser<AstNode> {
     return ZeroOrMore(AnyOf(" \t"));
   }
 
+  /** Keep in Sync with {@link org.batfish.datamodel.Names.ObjectType#ZONE} */
   public Rule ZoneNameLiteral() {
     return Sequence(
         FirstOf(AlphabetChar(), Underscore()),
