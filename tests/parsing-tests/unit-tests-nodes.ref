@@ -20915,8 +20915,8 @@
       "juniper_security" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_security",
-        "defaultCrossZoneAction" : "PERMIT",
-        "defaultInboundAction" : "PERMIT",
+        "defaultCrossZoneAction" : "DENY",
+        "defaultInboundAction" : "DENY",
         "deviceType" : "SWITCH",
         "ikePhase1Keys" : {
           "~IKE_PHASE1_KEY_1.2.3.4~" : {
@@ -21010,6 +21010,596 @@
             ],
             "sourceName" : "~GLOBAL_SECURITY_POLICY~",
             "sourceType" : "firewall filter"
+          },
+          "~INBOUND_ZONE_FILTER~ZONE-protocols" : {
+            "name" : "~INBOUND_ZONE_FILTER~ZONE-protocols",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "3784-3785"
+                    ],
+                    "ipProtocols" : [
+                      "TCP",
+                      "UDP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "179-179"
+                    ],
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "ipProtocols" : [
+                      "IGMP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "ipProtocols" : [
+                      "IGMP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "646-646"
+                    ],
+                    "ipProtocols" : [
+                      "TCP",
+                      "UDP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "639-639"
+                    ],
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "ipProtocols" : [
+                      "NARP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "ipProtocols" : [
+                      "OSPF"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "ipProtocols" : [
+                      "PGM"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "ipProtocols" : [
+                      "PIM"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "520-520"
+                    ],
+                    "ipProtocols" : [
+                      "UDP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "ipProtocols" : [
+                      "ICMP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "ipProtocols" : [
+                      "RSVP",
+                      "RSVP_E2E_IGNORE"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
+                      "whitelist" : [
+                        "224.2.127.254"
+                      ]
+                    },
+                    "dstPorts" : [
+                      "9875-9875"
+                    ],
+                    "ipProtocols" : [
+                      "UDP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "ipProtocols" : [
+                      "VRRP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              }
+            ],
+            "sourceName" : "~INBOUND_ZONE_FILTER~ZONE-protocols",
+            "sourceType" : "firewall filter"
+          },
+          "~INBOUND_ZONE_FILTER~ZONE-system-services" : {
+            "name" : "~INBOUND_ZONE_FILTER~ZONE-system-services",
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "67-68"
+                    ],
+                    "ipProtocols" : [
+                      "UDP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "53-53"
+                    ],
+                    "ipProtocols" : [
+                      "TCP",
+                      "UDP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "79-79"
+                    ],
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "21-21"
+                    ],
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "80-80"
+                    ],
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "443-443"
+                    ],
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "500-500",
+                      "4500-4500"
+                    ],
+                    "ipProtocols" : [
+                      "UDP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "830-830"
+                    ],
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "123-123"
+                    ],
+                    "ipProtocols" : [
+                      "UDP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "ipProtocols" : [
+                      "ICMP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "28762-28762"
+                    ],
+                    "ipProtocols" : [
+                      "UDP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "2901-2901"
+                    ],
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "2900-2900"
+                    ],
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "513-513"
+                    ],
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "514-514"
+                    ],
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "5060-5061"
+                    ],
+                    "ipProtocols" : [
+                      "TCP",
+                      "UDP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "161-161"
+                    ],
+                    "ipProtocols" : [
+                      "UDP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "162-162"
+                    ],
+                    "ipProtocols" : [
+                      "UDP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "22-22"
+                    ],
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "23-23"
+                    ],
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "69-69"
+                    ],
+                    "ipProtocols" : [
+                      "UDP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "33434-33434"
+                    ],
+                    "ipProtocols" : [
+                      "UDP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "3221-3221"
+                    ],
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              },
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstPorts" : [
+                      "3220-3220"
+                    ],
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
+                    "negate" : false
+                  }
+                }
+              }
+            ],
+            "sourceName" : "~INBOUND_ZONE_FILTER~ZONE-system-services",
+            "sourceType" : "firewall filter"
           }
         },
         "ipSpaceMetadata" : {
@@ -21084,6 +21674,14 @@
           },
           "B" : {
             "name" : "B"
+          },
+          "ZONE-protocols" : {
+            "name" : "ZONE-protocols",
+            "inboundFilter" : "~INBOUND_ZONE_FILTER~ZONE-protocols"
+          },
+          "ZONE-system-services" : {
+            "name" : "ZONE-system-services",
+            "inboundFilter" : "~INBOUND_ZONE_FILTER~ZONE-system-services"
           }
         }
       },

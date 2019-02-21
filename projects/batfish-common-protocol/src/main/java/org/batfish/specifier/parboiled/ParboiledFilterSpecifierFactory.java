@@ -22,17 +22,17 @@ public class ParboiledFilterSpecifierFactory implements FilterSpecifierFactory {
     checkArgument(input instanceof String, "%s requires String input", NAME);
 
     ParsingResult<AstNode> result =
-        new ReportingParseRunner<AstNode>(Parser.INSTANCE.input(Parser.INSTANCE.FilterExpression()))
+        new ReportingParseRunner<AstNode>(
+                Parser.INSTANCE.input(Grammar.FILTER_SPECIFIER.getExpression()))
             .run((String) input);
 
     if (!result.parseErrors.isEmpty()) {
-      String error =
+      throw new IllegalArgumentException(
           ParserUtils.getErrorString(
               (String) input,
-              "FilterSpecifier",
+              Grammar.FILTER_SPECIFIER,
               (InvalidInputError) result.parseErrors.get(0),
-              Parser.ANCHORS);
-      throw new IllegalArgumentException(error);
+              Parser.ANCHORS));
     }
 
     AstNode ast = ParserUtils.getAst(result);
