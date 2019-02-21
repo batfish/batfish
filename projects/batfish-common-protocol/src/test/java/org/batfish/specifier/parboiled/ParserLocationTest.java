@@ -121,7 +121,7 @@ public class ParserLocationTest {
                 new AutocompleteSuggestion(
                     "1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
                 new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("+", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("[", true, null, RANK_STRING_LITERAL, query.length()))));
   }
@@ -130,7 +130,7 @@ public class ParserLocationTest {
   public void testParseLocationBrackets() {
     // make sure that bracket binds more tightly than union
     assertThat(
-        ParserUtils.getAst(getRunner().run("n1 + n2[e2]")),
+        ParserUtils.getAst(getRunner().run("n1 , n2[e2]")),
         equalTo(
             new UnionLocationAstNode(
                 InterfaceLocationAstNode.createFromNode("n1"),
@@ -139,7 +139,7 @@ public class ParserLocationTest {
 
     // this should parse well too
     assertThat(
-        ParserUtils.getAst(getRunner().run("n1[e1] + n2[e2]")),
+        ParserUtils.getAst(getRunner().run("n1[e1] , n2[e2]")),
         equalTo(
             new UnionLocationAstNode(
                 InterfaceLocationAstNode.createFromNodeInterface(
@@ -149,7 +149,7 @@ public class ParserLocationTest {
 
     // brackets after a complex node expression
     assertThat(
-        ParserUtils.getAst(getRunner().run("(n1 + n2)[e1/0]")),
+        ParserUtils.getAst(getRunner().run("(n1 , n2)[e1/0]")),
         equalTo(
             InterfaceLocationAstNode.createFromNodeInterface(
                 new UnionNodeAstNode(new NameNodeAstNode("n1"), new NameNodeAstNode("n2")),
@@ -157,7 +157,7 @@ public class ParserLocationTest {
 
     // brackets after a complex node expression and with complex interface expression
     assertThat(
-        ParserUtils.getAst(getRunner().run("(n1 + n2)[e1 + e2]")),
+        ParserUtils.getAst(getRunner().run("(n1 , n2)[e1 , e2]")),
         equalTo(
             InterfaceLocationAstNode.createFromNodeInterface(
                 new UnionNodeAstNode(new NameNodeAstNode("n1"), new NameNodeAstNode("n2")),
@@ -273,7 +273,7 @@ public class ParserLocationTest {
                     InterfaceLocationAstNode.createFromInterface(
                         new VrfInterfaceAstNode("eth3"))))));
     assertThat(
-        ParserUtils.getAst(getRunner().run("@vrf(eth1)&@vrf(eth2)+@vrf(eth3)")),
+        ParserUtils.getAst(getRunner().run("@vrf(eth1)&@vrf(eth2),@vrf(eth3)")),
         equalTo(
             new UnionLocationAstNode(
                 new IntersectionLocationAstNode(
@@ -289,8 +289,8 @@ public class ParserLocationTest {
             InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth1")),
             InterfaceLocationAstNode.createFromInterface(new VrfInterfaceAstNode("eth2")));
 
-    assertThat(ParserUtils.getAst(getRunner().run("@vrf(eth1)+@vrf(eth2)")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run("@vrf(eth1),@vrf(eth2)")), equalTo(expectedNode));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" @vrf(eth1) + @vrf(eth2) ")), equalTo(expectedNode));
+        ParserUtils.getAst(getRunner().run(" @vrf(eth1) , @vrf(eth2) ")), equalTo(expectedNode));
   }
 }

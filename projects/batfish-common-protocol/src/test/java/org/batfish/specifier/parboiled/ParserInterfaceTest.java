@@ -119,7 +119,7 @@ public class ParserInterfaceTest {
                 new AutocompleteSuggestion(
                     "1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
                 new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("+", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()))));
   }
 
@@ -255,8 +255,8 @@ public class ParserInterfaceTest {
         new UnionInterfaceAstNode(
             new NameInterfaceAstNode("eth0"), new NameInterfaceAstNode("loopback0"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("eth0+loopback0")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" eth0 + loopback0 ")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run("eth0,loopback0")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run(" eth0 , loopback0 ")), equalTo(expectedNode));
   }
 
   /** Test if we got the precedence of set operators right. Intersection is higher priority. */
@@ -270,7 +270,7 @@ public class ParserInterfaceTest {
                 new IntersectionInterfaceAstNode(
                     new NameInterfaceAstNode("loopback0"), new NameInterfaceAstNode("eth1")))));
     assertThat(
-        ParserUtils.getAst(getRunner().run("eth0&loopback0+eth1")),
+        ParserUtils.getAst(getRunner().run("eth0&loopback0,eth1")),
         equalTo(
             new UnionInterfaceAstNode(
                 new IntersectionInterfaceAstNode(
