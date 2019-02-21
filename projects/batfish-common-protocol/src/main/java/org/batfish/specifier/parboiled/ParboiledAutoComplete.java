@@ -65,7 +65,8 @@ public final class ParboiledAutoComplete {
   }
 
   /** Auto completes IpSpace queries */
-  public static List<AutocompleteSuggestion> autoCompleteIpSpace(
+  public static List<AutocompleteSuggestion> autoComplete(
+      Grammar grammar,
       String network,
       String snapshot,
       String query,
@@ -75,53 +76,7 @@ public final class ParboiledAutoComplete {
       ReferenceLibrary referenceLibrary) {
     return new ParboiledAutoComplete(
             Parser.INSTANCE,
-            Parser.INSTANCE.IpSpaceExpression(),
-            Parser.ANCHORS,
-            network,
-            snapshot,
-            query,
-            maxSuggestions,
-            completionMetadata,
-            nodeRolesData,
-            referenceLibrary)
-        .run();
-  }
-
-  /** Auto completes Interface spec queries */
-  public static List<AutocompleteSuggestion> autoCompleteInterface(
-      String network,
-      String snapshot,
-      String query,
-      int maxSuggestions,
-      CompletionMetadata completionMetadata,
-      NodeRolesData nodeRolesData,
-      ReferenceLibrary referenceLibrary) {
-    return new ParboiledAutoComplete(
-            Parser.INSTANCE,
-            Parser.INSTANCE.InterfaceExpression(),
-            Parser.ANCHORS,
-            network,
-            snapshot,
-            query,
-            maxSuggestions,
-            completionMetadata,
-            nodeRolesData,
-            referenceLibrary)
-        .run();
-  }
-
-  /** Auto completes Location spec queries */
-  public static List<AutocompleteSuggestion> autoCompleteLocation(
-      String network,
-      String snapshot,
-      String query,
-      int maxSuggestions,
-      CompletionMetadata completionMetadata,
-      NodeRolesData nodeRolesData,
-      ReferenceLibrary referenceLibrary) {
-    return new ParboiledAutoComplete(
-            Parser.INSTANCE,
-            Parser.INSTANCE.LocationExpression(),
+            grammar.getExpression(),
             Parser.ANCHORS,
             network,
             snapshot,
