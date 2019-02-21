@@ -83,8 +83,19 @@ public class EigrpExternalRoute extends EigrpRoute {
   }
 
   @Override
-  public AbstractRouteBuilder<?, ?> toBuilder() {
-    throw new UnsupportedOperationException();
+  public Builder toBuilder() {
+    return builder()
+        // AbstractRoute properties
+        .setNetwork(getNetwork())
+        .setNextHopIp(getNextHopIp())
+        .setAdmin(getAdministrativeCost())
+        .setMetric(getMetric())
+        .setNonForwarding(getNonForwarding())
+        .setNonRouting(getNonRouting())
+        // EigrpExternalRoute properties
+        .setDestinationAsn(getDestinationAsn())
+        .setEigrpMetric(getEigrpMetric())
+        .setProcessAsn(getProcessAsn());
   }
 
   @Override

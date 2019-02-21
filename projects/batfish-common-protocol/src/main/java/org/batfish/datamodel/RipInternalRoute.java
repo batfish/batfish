@@ -69,8 +69,32 @@ public class RipInternalRoute extends RipRoute {
     return 0;
   }
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
   @Override
-  public AbstractRouteBuilder<?, ?> toBuilder() {
-    throw new UnsupportedOperationException();
+  public Builder toBuilder() {
+    return new Builder()
+        .setNetwork(getNetwork())
+        .setNextHopIp(getNextHopIp())
+        .setAdmin(getAdministrativeCost())
+        .setMetric(getMetric());
+  }
+
+  /** A {@link RipInternalRoute} builder */
+  public static class Builder extends AbstractRouteBuilder<Builder, RipInternalRoute> {
+
+    private Builder() {}
+
+    @Override
+    public RipInternalRoute build() {
+      return new RipInternalRoute(getNetwork(), getNextHopIp(), getAdmin(), getMetric());
+    }
+
+    @Override
+    protected Builder getThis() {
+      return this;
+    }
   }
 }

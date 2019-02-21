@@ -78,6 +78,13 @@ public class GeneratedRouteTest {
   }
 
   @Test
+  public void testToBuilder() {
+    GeneratedRoute gr =
+        GeneratedRoute.builder().setNetwork(Prefix.parse("1.1.1.0/24")).setMetric(1L).build();
+    assertThat(gr.toBuilder().build(), equalTo(gr));
+  }
+
+  @Test
   public void testThrowsNoNetwork() {
     thrown.expect(IllegalArgumentException.class);
     GeneratedRoute.builder().setMetric(1).build();
