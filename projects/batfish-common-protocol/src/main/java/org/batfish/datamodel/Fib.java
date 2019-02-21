@@ -16,6 +16,12 @@ public interface Fib extends Serializable {
   Set<String> getNextHopInterfaces(Ip ip);
 
   /**
+   * Return a set of {@link FibEntry fib entries} that match a given IP (using longest prefix match)
+   */
+  @Nonnull
+  Set<FibEntry> get(Ip ip);
+
+  /**
    * Mapping: matching route -&gt; nexthopinterface -&gt; resolved nextHopIP -&gt; interfaceRoutes
    */
   @Nonnull
