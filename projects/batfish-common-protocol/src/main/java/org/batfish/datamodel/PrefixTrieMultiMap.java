@@ -179,7 +179,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
       Node<T> node = this;
       while (true) {
         // Choose which child might have a longer match
-        Node<T> child = matchingChild(prefix);
+        Node<T> child = node.matchingChild(prefix);
         if (child == null) {
           return node;
         }
