@@ -156,6 +156,17 @@ public class ParserIpSpaceTest {
   }
 
   @Test
+  public void testIpSpaceLocationNode() {
+    IpSpaceAstNode expectedNode =
+        new LocationIpSpaceAstNode(InterfaceLocationAstNode.createFromNode("node"));
+
+    assertThat(ParserUtils.getAst(getRunner().run("node")), equalTo(expectedNode));
+
+    assertThat(ParserUtils.getAst(getRunner().run("ofLocation(node)")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run(" OFlocation ( node ) ")), equalTo(expectedNode));
+  }
+
+  @Test
   public void testIpSpacePrefix() {
     assertThat(
         ParserUtils.getAst(getRunner().run("1.1.1.1/1")), equalTo(new PrefixAstNode("1.1.1.1/1")));

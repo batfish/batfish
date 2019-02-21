@@ -112,7 +112,7 @@ public class Parser extends CommonParser {
 
   @Anchor(FILTER_NAME)
   public Rule FilterName() {
-    return Sequence(OneOrMore(FirstOf(NameChars(), Dash())), push(new NameFilterAstNode(match())));
+    return Sequence(FilterNameLiteral(), push(new NameFilterAstNode(match())));
   }
 
   @Anchor(FILTER_NAME_REGEX)
@@ -122,7 +122,7 @@ public class Parser extends CommonParser {
 
   public Rule FilterParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
-    return Sequence("( ", FilterTerm(), WhiteSpace(), ") ");
+    return Sequence("( ", FilterExpression(), WhiteSpace(), ") ");
   }
 
   /**
@@ -168,15 +168,19 @@ public class Parser extends CommonParser {
   }
 
   public Rule InterfaceTerm() {
+    return FirstOf(InterfaceSpecifier(), InterfaceNameRegex(), InterfaceName(), InterfaceParens());
+  }
+
+  /**
+   * To avoid ambiguity in location specification, interface and node specifiers should be distinct
+   */
+  public Rule InterfaceSpecifier() {
     return FirstOf(
         InterfaceConnectedTo(),
         InterfaceInterfaceGroup(),
         InterfaceType(),
         InterfaceVrf(),
-        InterfaceZone(),
-        InterfaceNameRegex(),
-        InterfaceName(),
-        InterfaceParens());
+        InterfaceZone());
   }
 
   public Rule InterfaceConnectedTo() {
@@ -242,7 +246,7 @@ public class Parser extends CommonParser {
 
   @Anchor(VRF_NAME)
   public Rule VrfName() {
-    return Sequence(OneOrMore(NameCharsAndDash()), push(new StringAstNode(match())));
+    return Sequence(VrfNameLiteral(), push(new StringAstNode(match())));
   }
 
   public Rule InterfaceZone() {
@@ -258,14 +262,12 @@ public class Parser extends CommonParser {
 
   @Anchor(ZONE_NAME)
   public Rule ZoneName() {
-    return Sequence(OneOrMore(NameCharsAndDash()), push(new StringAstNode(match())));
+    return Sequence(ZoneNameLiteral(), push(new StringAstNode(match())));
   }
 
   @Anchor(INTERFACE_NAME)
   public Rule InterfaceName() {
-    return Sequence(
-        OneOrMore(FirstOf(NameChars(), Colon(), Dash(), Slash())),
-        push(new NameInterfaceAstNode(match())));
+    return Sequence(InterfaceNameLiteral(), push(new NameInterfaceAstNode(match())));
   }
 
   @Anchor(INTERFACE_NAME_REGEX)
@@ -275,7 +277,7 @@ public class Parser extends CommonParser {
 
   public Rule InterfaceParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
-    return Sequence("( ", InterfaceTerm(), WhiteSpace(), ") ");
+    return Sequence("( ", InterfaceExpression(), WhiteSpace(), ") ");
   }
 
   /**
@@ -285,6 +287,8 @@ public class Parser extends CommonParser {
    * ipSpaceSpec := ipSpecTerm [, ipSpecTerm]*
    *
    * ipSpecTerm := @addgressgroup(groupname, bookname)  //ref.addressgroup for back compat
+   *               | locationExpr
+   *               | ofLocation(locationExpr)           // back compat
    *               | ipPrefix (e.g., 1.1.1.0/24)
    *               | ipWildcard (e.g., 1.1.1.1:255.255.255.0)
    *               | ipRange (e.g., 1.1.1.1-1.1.1.2)
@@ -303,7 +307,8 @@ public class Parser extends CommonParser {
 
   /* An IpSpace term is one of these things */
   public Rule IpSpaceTerm() {
-    return FirstOf(IpSpaceAddressGroup(), IpPrefix(), IpWildcard(), IpRange(), IpAddress());
+    return FirstOf(
+        IpPrefix(), IpWildcard(), IpRange(), IpAddress(), IpSpaceAddressGroup(), IpSpaceLocation());
   }
 
   /** Includes ref.addgressgroup for backward compatibility. Should be removed later */
@@ -328,6 +333,19 @@ public class Parser extends CommonParser {
         ReferenceObjectNameLiteral(),
         push(new StringAstNode(match())),
         WhiteSpace());
+  }
+
+  public Rule IpSpaceLocation() {
+    return FirstOf(
+        Sequence(
+            IgnoreCase("ofLocation"),
+            WhiteSpace(),
+            "( ",
+            LocationExpression(),
+            WhiteSpace(),
+            ") ",
+            push(new LocationIpSpaceAstNode(pop()))),
+        Sequence(LocationExpression(), push(new LocationIpSpaceAstNode(pop()))));
   }
 
   /**
@@ -373,6 +391,81 @@ public class Parser extends CommonParser {
   @Anchor(IP_WILDCARD)
   public Rule IpWildcard() {
     return Sequence(IpAddress(), ':', IpAddressMask(), push(new IpWildcardAstNode(pop(1), pop())));
+  }
+
+  /**
+   * Location grammar
+   *
+   * <pre>
+   *   locationExpr := locationTerm [{@literal &} | + | \ locationTerm]*
+   *
+   *   locationTerm := @role(a, b) // ref.noderole is also supported for back compat
+   *               | @device(a)
+   *               | nodeName
+   *               | nodeNameRegex
+   *               | ( nodeTerm )
+   * </pre>
+   */
+
+  /* A Node expression is one or more intersection terms separated by + or - */
+  public Rule LocationExpression() {
+    Var<Character> op = new Var<>();
+    return Sequence(
+        LocationIntersection(),
+        WhiteSpace(),
+        ZeroOrMore(
+            FirstOf("+ ", "\\ "),
+            op.set(matchedChar()),
+            LocationIntersection(),
+            push(SetOpLocationAstNode.create(op.get(), pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule LocationIntersection() {
+    return Sequence(
+        LocationTerm(),
+        WhiteSpace(),
+        ZeroOrMore(
+            "& ",
+            LocationTerm(),
+            push(new IntersectionLocationAstNode(pop(1), pop())),
+            WhiteSpace()));
+  }
+
+  public Rule LocationTerm() {
+    return FirstOf(LocationEnter(), LocationInterface(), LocationParens());
+  }
+
+  public Rule LocationEnter() {
+    return Sequence(
+        FirstOf(IgnoreCase("@enter"), IgnoreCase("enter")),
+        WhiteSpace(),
+        "( ",
+        LocationInterface(),
+        ") ",
+        push(new EnterLocationAstNode(pop())));
+  }
+
+  public Rule LocationInterface() {
+    return FirstOf(
+        Sequence(
+            NodeTerm(),
+            WhiteSpace(),
+            "[ ",
+            InterfaceExpression(),
+            WhiteSpace(),
+            "] ",
+            push(InterfaceLocationAstNode.createFromNodeInterface(pop(1), pop()))),
+        Sequence(NodeTerm(), WhiteSpace(), push(InterfaceLocationAstNode.createFromNode(pop()))),
+        Sequence(
+            InterfaceSpecifier(),
+            WhiteSpace(),
+            push(InterfaceLocationAstNode.createFromInterface(pop()))));
+  }
+
+  public Rule LocationParens() {
+    // Leave the stack as is -- no need to remember that this was a parenthetical term
+    return Sequence("( ", LocationExpression(), WhiteSpace(), ") ");
   }
 
   /**
@@ -456,7 +549,7 @@ public class Parser extends CommonParser {
 
   @Anchor(NODE_NAME)
   public Rule NodeName() {
-    return Sequence(OneOrMore(FirstOf(NameChars(), Dash())), push(new NameNodeAstNode(match())));
+    return Sequence(NodeNameLiteral(), push(new NameNodeAstNode(match())));
   }
 
   @Anchor(NODE_NAME_REGEX)
@@ -466,6 +559,6 @@ public class Parser extends CommonParser {
 
   public Rule NodeParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
-    return Sequence("( ", NodeTerm(), WhiteSpace(), ") ");
+    return Sequence("( ", NodeExpression(), WhiteSpace(), ") ");
   }
 }

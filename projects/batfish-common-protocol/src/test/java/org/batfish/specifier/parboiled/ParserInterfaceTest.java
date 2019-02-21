@@ -177,12 +177,16 @@ public class ParserInterfaceTest {
 
   @Test
   public void testParseInterfaceParens() {
-    String ifaceName = "Ethernet1/0";
-    NameInterfaceAstNode expectedAst = new NameInterfaceAstNode(ifaceName);
-
-    assertThat(ParserUtils.getAst(getRunner().run("(" + ifaceName + ")")), equalTo(expectedAst));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" ( " + ifaceName + " ) ")), equalTo(expectedAst));
+        ParserUtils.getAst(getRunner().run("(e1/0)")), equalTo(new NameInterfaceAstNode("e1/0")));
+    assertThat(
+        ParserUtils.getAst(getRunner().run(" ( e1/0 ) ")),
+        equalTo(new NameInterfaceAstNode("e1/0")));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("(e1/0&e1/1)")),
+        equalTo(
+            new IntersectionInterfaceAstNode(
+                new NameInterfaceAstNode("e1/0"), new NameInterfaceAstNode("e1/1"))));
   }
 
   @Test

@@ -3,10 +3,14 @@ package org.batfish.specifier.parboiled;
 import com.google.common.annotations.VisibleForTesting;
 import java.util.Objects;
 import java.util.Set;
+import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationIpSpaceSpecifier;
+import org.batfish.specifier.ReferenceAddressGroupIpSpaceSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
 /**
@@ -14,6 +18,56 @@ import org.batfish.specifier.SpecifierContext;
  * org.batfish.specifier.parboiled.Parser}.
  */
 final class ParboiledIpSpaceSpecifier implements IpSpaceSpecifier {
+
+  static final class IpSpaceAstNodeToIpSpace implements IpSpaceAstNodeVisitor<IpSpace> {
+    private final SpecifierContext _ctxt;
+
+    IpSpaceAstNodeToIpSpace(SpecifierContext ctxt) {
+      _ctxt = ctxt;
+    }
+
+    @Override
+    public IpSpace visitCommaIpSpaceAstNode(CommaIpSpaceAstNode commaIpSpaceAstNode) {
+      return AclIpSpace.union(
+          commaIpSpaceAstNode.getLeft().accept(this), commaIpSpaceAstNode.getRight().accept(this));
+    }
+
+    @Override
+    public IpSpace visitIpAstNode(IpAstNode ipAstNode) {
+      return ipAstNode.getIp().toIpSpace();
+    }
+
+    @Override
+    public IpSpace visitIpRangeAstNode(IpRangeAstNode rangeIpSpaceAstNode) {
+      return IpRange.range(rangeIpSpaceAstNode.getLow(), rangeIpSpaceAstNode.getHigh());
+    }
+
+    @Override
+    public IpSpace visitIpWildcardAstNode(IpWildcardAstNode ipWildcardAstNode) {
+      return ipWildcardAstNode.getIpWildcard().toIpSpace();
+    }
+
+    @Override
+    public IpSpace visitLocationIpSpaceAstNode(LocationIpSpaceAstNode locationIpSpaceAstNode) {
+      return LocationIpSpaceSpecifier.computeIpSpace(
+          new ParboiledLocationSpecifier(locationIpSpaceAstNode.getLocationAst()).resolve(_ctxt),
+          _ctxt);
+    }
+
+    @Override
+    public IpSpace visitPrefixAstNode(PrefixAstNode prefixAstNode) {
+      return prefixAstNode.getPrefix().toIpSpace();
+    }
+
+    @Override
+    public IpSpace visitAddressGroupAstNode(AddressGroupIpSpaceAstNode addressGroupIpSpaceAstNode) {
+      return ReferenceAddressGroupIpSpaceSpecifier.computeIpSpace(
+          addressGroupIpSpaceAstNode.getAddressGroup(),
+          addressGroupIpSpaceAstNode.getAddressBook(),
+          _ctxt);
+    }
+  }
+
   private final IpSpaceAstNode _ast;
 
   ParboiledIpSpaceSpecifier(IpSpaceAstNode ast) {

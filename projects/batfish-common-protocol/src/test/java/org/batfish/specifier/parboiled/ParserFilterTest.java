@@ -151,12 +151,16 @@ public class ParserFilterTest {
 
   @Test
   public void testParseFilterParens() {
-    String filterName = "filter";
-    NameFilterAstNode expectedAst = new NameFilterAstNode(filterName);
-
-    assertThat(ParserUtils.getAst(getRunner().run("(" + filterName + ")")), equalTo(expectedAst));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" ( " + filterName + " ) ")), equalTo(expectedAst));
+        ParserUtils.getAst(getRunner().run("(filter)")), equalTo(new NameFilterAstNode("filter")));
+    assertThat(
+        ParserUtils.getAst(getRunner().run(" ( filter ) ")),
+        equalTo(new NameFilterAstNode("filter")));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("(filter1&filter2)")),
+        equalTo(
+            new IntersectionFilterAstNode(
+                new NameFilterAstNode("filter1"), new NameFilterAstNode("filter2"))));
   }
 
   @Test
