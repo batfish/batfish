@@ -2,7 +2,6 @@ package org.batfish.common.bdd;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +22,6 @@ public final class HeaderSpaceToBDD {
   private final BDDFactory _bddFactory;
   private final BDDOps _bddOps;
   private final BDDPacket _bddPacket;
-  private final Map<String, IpSpace> _namedIpSpaces;
   private final IpSpaceToBDD _dstIpSpaceToBdd;
   private final IpSpaceToBDD _srcIpSpaceToBdd;
 
@@ -31,20 +29,15 @@ public final class HeaderSpaceToBDD {
     _bddFactory = bddPacket.getFactory();
     _bddOps = new BDDOps(_bddFactory);
     _bddPacket = bddPacket;
-    _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
-    _dstIpSpaceToBdd = new IpSpaceToBDD(_bddPacket.getDstIp(), _namedIpSpaces);
-    _srcIpSpaceToBdd = new IpSpaceToBDD(_bddPacket.getSrcIp(), _namedIpSpaces);
+    _dstIpSpaceToBdd = new IpSpaceToBDD(_bddPacket.getDstIp(), namedIpSpaces);
+    _srcIpSpaceToBdd = new IpSpaceToBDD(_bddPacket.getSrcIp(), namedIpSpaces);
   }
 
   public HeaderSpaceToBDD(
-      BDDPacket bddPacket,
-      Map<String, IpSpace> namedIpSpaces,
-      IpSpaceToBDD dstIpSpaceToBdd,
-      IpSpaceToBDD srcIpSpaceToBdd) {
+      BDDPacket bddPacket, IpSpaceToBDD dstIpSpaceToBdd, IpSpaceToBDD srcIpSpaceToBdd) {
     _bddFactory = bddPacket.getFactory();
     _bddOps = new BDDOps(_bddFactory);
     _bddPacket = bddPacket;
-    _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
     _dstIpSpaceToBdd = dstIpSpaceToBdd;
     _srcIpSpaceToBdd = srcIpSpaceToBdd;
   }
