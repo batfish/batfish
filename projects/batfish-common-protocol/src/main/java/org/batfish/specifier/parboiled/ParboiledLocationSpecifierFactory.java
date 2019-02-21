@@ -24,17 +24,16 @@ public class ParboiledLocationSpecifierFactory implements LocationSpecifierFacto
 
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(
-                Parser.INSTANCE.input(Parser.INSTANCE.LocationExpression()))
+                Parser.INSTANCE.input(Grammar.LOCATION_SPECIFIER.getExpression()))
             .run((String) input);
 
     if (!result.parseErrors.isEmpty()) {
-      String error =
+      throw new IllegalArgumentException(
           ParserUtils.getErrorString(
               (String) input,
-              "LocationSpecifier",
+              Grammar.LOCATION_SPECIFIER,
               (InvalidInputError) result.parseErrors.get(0),
-              Parser.ANCHORS);
-      throw new IllegalArgumentException(error);
+              Parser.ANCHORS));
     }
 
     AstNode ast = ParserUtils.getAst(result);
