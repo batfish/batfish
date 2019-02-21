@@ -10,7 +10,7 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Names;
-import org.batfish.datamodel.Names.ObjectType;
+import org.batfish.datamodel.Names.Type;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** Represents a group of interfaces in {@link ReferenceBook} */
@@ -32,7 +32,7 @@ public class InterfaceGroup implements Comparable<InterfaceGroup> {
   }
 
   public InterfaceGroup(SortedSet<NodeInterfacePair> interfaces, String name) {
-    Names.checkName(name, "interface group", ObjectType.REFERENCE_OBJECT);
+    Names.checkName(name, "interface group", Type.REFERENCE_OBJECT);
 
     _name = name;
     _interfaces = ImmutableSortedSet.copyOf(interfaces);

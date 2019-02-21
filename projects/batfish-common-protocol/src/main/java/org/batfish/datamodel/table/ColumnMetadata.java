@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Names;
-import org.batfish.datamodel.Names.ObjectType;
+import org.batfish.datamodel.Names.Type;
 import org.batfish.datamodel.answers.Schema;
 
 @ParametersAreNonnullByDefault
@@ -51,7 +51,7 @@ public final class ColumnMetadata {
       String description,
       @Nullable Boolean isKey,
       @Nullable Boolean isValue) {
-    Names.checkName(name, "table column", ObjectType.TABLE_COLUMN);
+    Names.checkName(name, "table column", Type.TABLE_COLUMN);
     _name = name;
     _schema = schema;
     _description = description;

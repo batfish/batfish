@@ -9,7 +9,7 @@ import java.util.regex.PatternSyntaxException;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Names;
-import org.batfish.datamodel.Names.ObjectType;
+import org.batfish.datamodel.Names.Type;
 
 /** Describes a role played by a node */
 @ParametersAreNonnullByDefault
@@ -46,7 +46,7 @@ public class NodeRole implements Comparable<NodeRole> {
   }
 
   public NodeRole(String name, String regex, boolean caseSensitive) {
-    Names.checkName(name, "role name", ObjectType.REFERENCE_OBJECT);
+    Names.checkName(name, "role name", Type.REFERENCE_OBJECT);
     _name = name;
     _regex = regex;
     _caseSensitive = caseSensitive;

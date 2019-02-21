@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Names;
-import org.batfish.datamodel.Names.ObjectType;
+import org.batfish.datamodel.Names.Type;
 
 public class ServiceEndpoint implements Comparable<ServiceEndpoint> {
 
@@ -25,7 +25,7 @@ public class ServiceEndpoint implements Comparable<ServiceEndpoint> {
     checkArgument(address != null, "Service endpoint address cannot be null");
     checkArgument(name != null, "Service endpoint name cannot be null");
     checkArgument(service != null, "Service endpoint service cannot be null");
-    Names.checkName(name, "service endpoint", ObjectType.REFERENCE_OBJECT);
+    Names.checkName(name, "service endpoint", Type.REFERENCE_OBJECT);
 
     _address = address;
     _name = name;

@@ -1,11 +1,11 @@
 package org.batfish.datamodel;
 
-import static org.batfish.datamodel.Names.ObjectType.INTERFACE;
-import static org.batfish.datamodel.Names.ObjectType.NODE;
-import static org.batfish.datamodel.Names.ObjectType.REFERENCE_OBJECT;
-import static org.batfish.datamodel.Names.ObjectType.TABLE_COLUMN;
-import static org.batfish.datamodel.Names.ObjectType.VRF;
-import static org.batfish.datamodel.Names.ObjectType.ZONE;
+import static org.batfish.datamodel.Names.Type.INTERFACE;
+import static org.batfish.datamodel.Names.Type.NODE;
+import static org.batfish.datamodel.Names.Type.REFERENCE_OBJECT;
+import static org.batfish.datamodel.Names.Type.TABLE_COLUMN;
+import static org.batfish.datamodel.Names.Type.VRF;
+import static org.batfish.datamodel.Names.Type.ZONE;
 import static org.batfish.datamodel.Names.VALID_PATTERNS;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.hamcrest.Matchers.equalTo;

@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
+import org.batfish.datamodel.Names;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.parboiled.BaseParser;
 import org.parboiled.Parboiled;
@@ -83,14 +84,14 @@ public class CommonParser extends BaseParser<AstNode> {
     return CharRange('.', '.');
   }
 
-  /** Keep in Sync with {@link org.batfish.datamodel.Names.ObjectType#FILTER} */
+  /** Keep in Sync with {@link Names.Type#FILTER} */
   public Rule FilterNameLiteral() {
     return Sequence(
         FirstOf(AlphabetChar(), Tilde(), Underscore()),
         ZeroOrMore(FirstOf(AlphabetChar(), Tilde(), Underscore(), Dash(), Digit(), Dot())));
   }
 
-  /** Keep in sync with {@link org.batfish.datamodel.Names.ObjectType#INTERFACE} */
+  /** Keep in sync with {@link Names.Type#INTERFACE} */
   public Rule InterfaceNameLiteral() {
     return Sequence(
         AlphabetChar(),
@@ -105,7 +106,7 @@ public class CommonParser extends BaseParser<AstNode> {
     return Sequence(IpAddressUnchecked(), '/', Number());
   }
 
-  /** Keep in sync with {@link org.batfish.datamodel.Names.ObjectType#NODE} */
+  /** Keep in sync with {@link Names.Type#NODE} */
   public Rule NodeNameLiteral() {
     return Sequence(
         AlphabetChar(), ZeroOrMore(FirstOf(AlphabetChar(), Dash(), Dot(), Digit(), Underscore())));
@@ -116,7 +117,7 @@ public class CommonParser extends BaseParser<AstNode> {
     return OneOrMore(Digit());
   }
 
-  /** Keep in sync with {@link org.batfish.datamodel.Names.ObjectType#REFERENCE_OBJECT} */
+  /** Keep in sync with {@link Names.Type#REFERENCE_OBJECT} */
   public Rule ReferenceObjectNameLiteral() {
     return Sequence(
         FirstOf(AlphabetChar(), Underscore()),
@@ -144,7 +145,7 @@ public class CommonParser extends BaseParser<AstNode> {
     return CharRange('_', '_');
   }
 
-  /** Keep in Sync with {@link org.batfish.datamodel.Names.ObjectType#VRF} */
+  /** Keep in Sync with {@link Names.Type#VRF} */
   public Rule VrfNameLiteral() {
     return Sequence(
         FirstOf(AlphabetChar(), Underscore()),
@@ -155,7 +156,7 @@ public class CommonParser extends BaseParser<AstNode> {
     return ZeroOrMore(AnyOf(" \t"));
   }
 
-  /** Keep in Sync with {@link org.batfish.datamodel.Names.ObjectType#ZONE} */
+  /** Keep in Sync with {@link Names.Type#ZONE} */
   public Rule ZoneNameLiteral() {
     return Sequence(
         FirstOf(AlphabetChar(), Underscore()),
