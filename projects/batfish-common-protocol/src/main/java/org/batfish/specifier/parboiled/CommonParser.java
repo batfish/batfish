@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
-import org.batfish.datamodel.Names;
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.parboiled.BaseParser;
 import org.parboiled.Parboiled;
@@ -89,11 +88,10 @@ public class CommonParser extends BaseParser<AstNode> {
         AlphabetChar(), ZeroOrMore(FirstOf(AlphabetChar(), Dash(), Digit(), Underscore())));
   }
 
+  /** Keep in sync with {@link org.batfish.datamodel.Names.ObjectType#INTERFACE} */
   public Rule InterfaceNameLiteral() {
     return Sequence(
-        FirstOf(AlphabetChar(), Underscore()),
-        ZeroOrMore(
-            FirstOf(AlphabetChar(), Colon(), Dash(), Digit(), Dot(), Slash(), Underscore())));
+        AlphabetChar(), ZeroOrMore(FirstOf(AlphabetChar(), Dash(), Digit(), Dot(), Slash())));
   }
 
   public Rule IpAddressUnchecked() {
@@ -104,6 +102,7 @@ public class CommonParser extends BaseParser<AstNode> {
     return Sequence(IpAddressUnchecked(), '/', Number());
   }
 
+  /** Keep in sync with {@link org.batfish.datamodel.Names.ObjectType#NODE} */
   public Rule NodeNameLiteral() {
     return Sequence(AlphabetChar(), ZeroOrMore(FirstOf(AlphabetChar(), Dash(), Dot(), Digit())));
   }
@@ -113,7 +112,7 @@ public class CommonParser extends BaseParser<AstNode> {
     return OneOrMore(Digit());
   }
 
-  /** This should be in sync with {@link Names#REFERENCE_OBJECT_NAME_REGEX} */
+  /** Keep in sync with {@link org.batfish.datamodel.Names.ObjectType#REFERENCE_OBJECT} */
   public Rule ReferenceObjectNameLiteral() {
     return Sequence(
         FirstOf(AlphabetChar(), Underscore()),
@@ -129,6 +128,11 @@ public class CommonParser extends BaseParser<AstNode> {
   /** See class JavaDoc for why this is a CharRange and not Ch */
   public Rule Slash() {
     return CharRange('/', '/');
+  }
+
+  /** See class JavaDoc for why this is a CharRange and not Ch */
+  public Rule Tilde() {
+    return CharRange('~', '~');
   }
 
   /** See class JavaDoc for why this is a CharRange and not Ch */

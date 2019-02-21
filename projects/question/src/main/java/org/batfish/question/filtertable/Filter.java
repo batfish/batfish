@@ -19,7 +19,8 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.table.ColumnMetadata;
+import org.batfish.datamodel.Names;
+import org.batfish.datamodel.Names.ObjectType;
 import org.batfish.datamodel.table.Row;
 import org.batfish.question.filtertable.Filter.Operand.Type;
 
@@ -93,9 +94,7 @@ public class Filter {
         @SuppressWarnings("unchecked")
         List<String> columns = (List<String>) _value;
         for (String column : columns) {
-          if (!ColumnMetadata.isLegalColumnName(column)) {
-            throw new IllegalArgumentException("Illegal operand: Bad column name: " + column);
-          }
+          Names.checkName(column, "table column", ObjectType.TABLE_COLUMN);
         }
       }
     }

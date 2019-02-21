@@ -22,6 +22,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.Names;
+import org.batfish.datamodel.Names.ObjectType;
 
 @ParametersAreNonnullByDefault
 public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
@@ -48,6 +50,7 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
           _type != Type.AUTO || _name.startsWith(AUTO_DIMENSION_PREFIX),
           "Name for a AUTO role dimension must begin with: %s",
           AUTO_DIMENSION_PREFIX);
+      Names.checkName(_name, "role dimension", ObjectType.REFERENCE_OBJECT);
       return new NodeRoleDimension(_name, _roles, firstNonNull(_type, Type.CUSTOM), _roleRegexes);
     }
 

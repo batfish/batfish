@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Names;
+import org.batfish.datamodel.Names.ObjectType;
 import org.batfish.datamodel.SubRange;
 
 public class ServiceObject implements Comparable<ServiceObject> {
@@ -25,7 +26,7 @@ public class ServiceObject implements Comparable<ServiceObject> {
     checkArgument(ipProtocol != null, "Service object ipProtocol not be null");
     checkArgument(name != null, "Service object name cannot be null");
     checkArgument(ports != null, "Service object ports cannot be null");
-    Names.checkValidReferenceObjectName(name, "service object");
+    Names.checkName(name, "service object", ObjectType.REFERENCE_OBJECT);
 
     _ipProtocol = ipProtocol;
     _name = name;

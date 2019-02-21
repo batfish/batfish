@@ -16,6 +16,8 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.Names;
+import org.batfish.datamodel.Names.ObjectType;
 
 /** Class that captures the node roles */
 @ParametersAreNonnullByDefault
@@ -58,6 +60,7 @@ public class NodeRolesData {
   private NodeRolesData(
       @Nullable String defaultDimension, SortedSet<NodeRoleDimension> roleDimensions) {
     checkNotNull(roleDimensions);
+    Names.checkName(defaultDimension, "role dimension", ObjectType.REFERENCE_OBJECT);
     _defaultDimension = defaultDimension;
     _roleDimensions = roleDimensions;
   }

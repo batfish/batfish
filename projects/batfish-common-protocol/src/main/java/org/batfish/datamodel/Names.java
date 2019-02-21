@@ -2,6 +2,11 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -15,23 +20,63 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class Names {
 
-  /**
-   * Valid names for reference library objects must start with a letter or underscore, and only
-   * contain {-,\w} ( i.e., [-a-zA-Z_0-9])
-   */
-  public static final String REFERENCE_OBJECT_NAME_REGEX = "[a-zA-Z_][-\\w]*";
+  public enum ObjectType {
+    INTERFACE(
+        "[a-zA-Z][-\\./0-9a-zA-Z]*",
+        "start with an alphabetic letter and additionally only have 0-9, '.', '-', or '/'"),
+    NODE(
+        "[a-zA-Z][-\\.0-9a-zA-Z]*",
+        "start with an alphabetic letter and additionally only have 0-9, '.', or '-'"),
+    REFERENCE_OBJECT(
+        "[a-zA-Z_][-\\w]*",
+        "start with an alphabetic letter or underscore and additionally only have digit or '-'"),
+    TABLE_COLUMN(
+        "[a-zA-Z0-9_~][-/\\w\\.:~@]*$",
+        "start with alphanumeric, underscore or tilde and additionally only have [-/.:~@]");
 
-  private static final Pattern _REFERENCE_OBJECT_NAME_PATTERN =
-      Pattern.compile(REFERENCE_OBJECT_NAME_REGEX);
+    ObjectType(String regex, String explanation) {
+      _regex = regex;
+      _explanation = explanation;
+    }
+
+    private final String _explanation;
+
+    private final String _regex;
+
+    public String getExplanation() {
+      return _explanation;
+    }
+
+    public String getRegex() {
+      return _regex;
+    }
+  }
+
+  @VisibleForTesting
+  static final Map<ObjectType, Pattern> VALID_PATTERNS =
+      Arrays.stream(ObjectType.values())
+          .collect(
+              ImmutableMap.toImmutableMap(Function.identity(), o -> Pattern.compile(o.getRegex())));
+
+  private static final String INVALID_NAME_ERROR_TEMPLATE =
+      "Invalid %s name '%s'. Valid names must %s.";
 
   private Names() {} // prevent instantiation by default.
 
-  public static void checkValidReferenceObjectName(String name, String objectType) {
+  /**
+   * Checks if {@code name} is valid for {@code objectType}.
+   *
+   * <p>{@code objectDescription} is the user-facing description of the object type.
+   *
+   * <p>Throws an exception if the name is invalid.
+   */
+  public static void checkName(String name, String objectDescription, ObjectType objectType) {
     checkArgument(
-        _REFERENCE_OBJECT_NAME_PATTERN.matcher(name).matches(),
-        "Invalid %s name '%s'. Valid names begin with the alphabetic letters or underscore and can additionally contain digits and dashes.",
-        objectType,
-        name);
+        VALID_PATTERNS.get(objectType).matcher(name).matches(),
+        INVALID_NAME_ERROR_TEMPLATE,
+        objectDescription,
+        name,
+        objectType.getExplanation());
   }
 
   /**

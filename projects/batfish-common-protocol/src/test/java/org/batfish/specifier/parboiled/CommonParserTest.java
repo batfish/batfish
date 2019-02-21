@@ -1,5 +1,11 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.datamodel.NamesTest.INTERFACE_INVALID_NAMES;
+import static org.batfish.datamodel.NamesTest.INTERFACE_VALID_NAMES;
+import static org.batfish.datamodel.NamesTest.NODE_INVALID_NAMES;
+import static org.batfish.datamodel.NamesTest.NODE_VALID_NAMES;
+import static org.batfish.datamodel.NamesTest.REFERENCE_OBJECT_INVALID_NAMES;
+import static org.batfish.datamodel.NamesTest.REFERENCE_OBJECT_VALID_NAMES;
 import static org.batfish.specifier.parboiled.Parser.initAnchors;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -37,17 +43,41 @@ public class CommonParserTest {
   }
 
   @Test
+  public void testInterfaceNameLiteral() {
+    Rule rule = CommonParser.INSTANCE.InterfaceNameLiteral();
+
+    for (String name : INTERFACE_VALID_NAMES) {
+      assertTrue(name, matches(name, rule));
+    }
+
+    for (String name : INTERFACE_INVALID_NAMES) {
+      assertFalse(name, matches(name, rule));
+    }
+  }
+
+  @Test
+  public void testNodeNameLiteral() {
+    Rule rule = CommonParser.INSTANCE.NodeNameLiteral();
+
+    for (String name : NODE_VALID_NAMES) {
+      assertTrue(name, matches(name, rule));
+    }
+
+    for (String name : NODE_INVALID_NAMES) {
+      assertFalse(name, matches(name, rule));
+    }
+  }
+
+  @Test
   public void testReferenceObjectNameLiteral() {
     Rule rule = CommonParser.INSTANCE.ReferenceObjectNameLiteral();
 
-    assertTrue(matches("_a", rule));
-    assertTrue(matches("a_", rule));
-    assertTrue(matches("a-", rule)); // dash is allowed
-    assertTrue(matches("a1", rule)); // digits are allowed
+    for (String name : REFERENCE_OBJECT_VALID_NAMES) {
+      assertTrue(name, matches(name, rule));
+    }
 
-    assertFalse(matches("1", rule)); // can't begin with a digit
-    assertFalse(matches("a/b", rule)); // slash not allowed
-    assertFalse(matches("a.b", rule)); // dot not allowed
-    assertFalse(matches("a:b", rule)); // colon not allowed
+    for (String name : REFERENCE_OBJECT_INVALID_NAMES) {
+      assertFalse(name, matches(name, rule));
+    }
   }
 }
