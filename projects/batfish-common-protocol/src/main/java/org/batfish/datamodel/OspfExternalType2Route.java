@@ -94,7 +94,20 @@ public class OspfExternalType2Route extends OspfExternalRoute {
   }
 
   @Override
-  public AbstractRouteBuilder<?, ?> toBuilder() {
-    throw new UnsupportedOperationException();
+  public OspfExternalRoute.Builder toBuilder() {
+    return OspfExternalRoute.builder()
+        // AbstractRoute properties
+        .setNetwork(getNetwork())
+        .setNextHopIp(getNextHopIp())
+        .setAdmin(getAdministrativeCost())
+        .setMetric(getMetric())
+        .setNonForwarding(getNonForwarding())
+        .setNonRouting(getNonRouting())
+        // OspfExternalType2Route properties
+        .setOspfMetricType(getOspfMetricType())
+        .setLsaMetric(getLsaMetric())
+        .setArea(getArea())
+        .setCostToAdvertiser(getCostToAdvertiser())
+        .setAdvertiser(getAdvertiser());
   }
 }
