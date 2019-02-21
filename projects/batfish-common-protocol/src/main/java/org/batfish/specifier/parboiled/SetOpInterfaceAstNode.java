@@ -11,7 +11,7 @@ abstract class SetOpInterfaceAstNode implements InterfaceAstNode {
     InterfaceAstNode leftSpec = (InterfaceAstNode) left;
     InterfaceAstNode rightSpec = (InterfaceAstNode) right;
     switch (c) {
-      case '+':
+      case ',':
         return new UnionInterfaceAstNode(leftSpec, rightSpec);
       case '\\':
         return new DifferenceInterfaceAstNode(leftSpec, rightSpec);

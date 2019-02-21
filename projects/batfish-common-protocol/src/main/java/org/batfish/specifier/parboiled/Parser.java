@@ -57,7 +57,7 @@ public class Parser extends CommonParser {
    * Filter grammar
    *
    * <pre>
-   *   filterExpr := filterTerm [{@literal &} | + | \ filterTerm]*
+   *   filterExpr := filterTerm [{@literal &} | , | \ filterTerm]*
    *
    *   filterTerm := @in(interfaceExpr)  // inFilterOf is also supported for back compat
    *               | @out(interfaceExpr) // outFilterOf is also supported
@@ -67,14 +67,14 @@ public class Parser extends CommonParser {
    * </pre>
    */
 
-  /* A Filter expression is one or more intersection terms separated by + or \ */
+  /* A Filter expression is one or more intersection terms separated by , or \ */
   public Rule FilterExpression() {
     Var<Character> op = new Var<>();
     return Sequence(
         FilterIntersection(),
         WhiteSpace(),
         ZeroOrMore(
-            FirstOf("+ ", "\\ "),
+            FirstOf(", ", "\\ "),
             op.set(matchedChar()),
             FilterIntersection(),
             push(SetOpFilterAstNode.create(op.get(), pop(1), pop())),
@@ -129,7 +129,7 @@ public class Parser extends CommonParser {
    * Interface grammar
    *
    * <pre>
-   *   interfaceExpr := interfaceTerm [{@literal &} | + | \ interfaceTerm]*
+   *   interfaceExpr := interfaceTerm [{@literal &} | , | \ interfaceTerm]*
    *
    *   interfaceTerm := @connectedTo(ipSpaceExpr)  // non-@ versions also supported for back compat
    *                        | @interfacegroup(a, b)
@@ -149,7 +149,7 @@ public class Parser extends CommonParser {
         InterfaceIntersection(),
         WhiteSpace(),
         ZeroOrMore(
-            FirstOf("+ ", "\\ "),
+            FirstOf(", ", "\\ "),
             op.set(matchedChar()),
             InterfaceIntersection(),
             push(SetOpInterfaceAstNode.create(op.get(), pop(1), pop())),
@@ -302,7 +302,7 @@ public class Parser extends CommonParser {
         IpSpaceTerm(),
         WhiteSpace(),
         ZeroOrMore(
-            ", ", IpSpaceTerm(), push(new CommaIpSpaceAstNode(pop(1), pop())), WhiteSpace()));
+            ", ", IpSpaceTerm(), push(new UnionIpSpaceAstNode(pop(1), pop())), WhiteSpace()));
   }
 
   /* An IpSpace term is one of these things */
@@ -397,7 +397,7 @@ public class Parser extends CommonParser {
    * Location grammar
    *
    * <pre>
-   *   locationExpr := locationTerm [{@literal &} | + | \ locationTerm]*
+   *   locationExpr := locationTerm [{@literal &} | , | \ locationTerm]*
    *
    *   locationTerm := @role(a, b) // ref.noderole is also supported for back compat
    *               | @device(a)
@@ -414,7 +414,7 @@ public class Parser extends CommonParser {
         LocationIntersection(),
         WhiteSpace(),
         ZeroOrMore(
-            FirstOf("+ ", "\\ "),
+            FirstOf(", ", "\\ "),
             op.set(matchedChar()),
             LocationIntersection(),
             push(SetOpLocationAstNode.create(op.get(), pop(1), pop())),
@@ -472,7 +472,7 @@ public class Parser extends CommonParser {
    * Node grammar
    *
    * <pre>
-   *   nodeExpr := nodeTerm [{@literal &} | + | \ nodeTerm]*
+   *   nodeExpr := nodeTerm [{@literal &} | , | \ nodeTerm]*
    *
    *   nodeTerm := @role(a, b) // ref.noderole is also supported for back compat
    *               | @device(a)
@@ -489,7 +489,7 @@ public class Parser extends CommonParser {
         NodeIntersection(),
         WhiteSpace(),
         ZeroOrMore(
-            FirstOf("+ ", "\\ "),
+            FirstOf(", ", "\\ "),
             op.set(matchedChar()),
             NodeIntersection(),
             push(SetOpNodeAstNode.create(op.get(), pop(1), pop())),

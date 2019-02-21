@@ -11,7 +11,7 @@ abstract class SetOpLocationAstNode implements LocationAstNode {
     LocationAstNode leftSpec = (LocationAstNode) left;
     LocationAstNode rightSpec = (LocationAstNode) right;
     switch (c) {
-      case '+':
+      case ',':
         return new UnionLocationAstNode(leftSpec, rightSpec);
       case '\\':
         return new DifferenceLocationAstNode(leftSpec, rightSpec);

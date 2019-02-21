@@ -27,9 +27,9 @@ final class ParboiledIpSpaceSpecifier implements IpSpaceSpecifier {
     }
 
     @Override
-    public IpSpace visitCommaIpSpaceAstNode(CommaIpSpaceAstNode commaIpSpaceAstNode) {
+    public IpSpace visitUnionIpSpaceAstNode(UnionIpSpaceAstNode unionIpSpaceAstNode) {
       return AclIpSpace.union(
-          commaIpSpaceAstNode.getLeft().accept(this), commaIpSpaceAstNode.getRight().accept(this));
+          unionIpSpaceAstNode.getLeft().accept(this), unionIpSpaceAstNode.getRight().accept(this));
     }
 
     @Override

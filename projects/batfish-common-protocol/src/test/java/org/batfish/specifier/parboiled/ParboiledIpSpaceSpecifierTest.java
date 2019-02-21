@@ -54,7 +54,7 @@ public class ParboiledIpSpaceSpecifierTest {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("1.1.1.10");
     assertThat(
-        computeIpSpace(new CommaIpSpaceAstNode(new IpAstNode(ip1), new IpAstNode(ip2)), _emptyCtxt),
+        computeIpSpace(new UnionIpSpaceAstNode(new IpAstNode(ip1), new IpAstNode(ip2)), _emptyCtxt),
         equalTo(AclIpSpace.union(ip1.toIpSpace(), ip2.toIpSpace())));
   }
 
