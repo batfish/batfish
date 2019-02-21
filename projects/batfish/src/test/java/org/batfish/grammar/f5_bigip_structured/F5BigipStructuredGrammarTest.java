@@ -1,5 +1,8 @@
 package org.batfish.grammar.f5_bigip_structured;
 
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterLists;
@@ -15,6 +18,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.INTERFACE;
@@ -61,6 +65,7 @@ import java.util.stream.Stream;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
@@ -75,7 +80,11 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.matchers.BgpNeighborMatchers;
+import org.batfish.datamodel.matchers.BgpProcessMatchers;
+import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.Route6FilterListMatchers;
+import org.batfish.datamodel.matchers.VrfMatchers;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
@@ -158,9 +167,22 @@ public final class F5BigipStructuredGrammarTest {
   public void testBgpProcessConversion() throws IOException {
     String hostname = "f5_bigip_structured_net_routing_bgp";
     Configuration c = parseConfig(hostname);
-    BgpProcess proc = c.getDefaultVrf().getBgpProcess();
 
-    assertThat(proc, Matchers.notNullValue());
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(hasActiveNeighbor(Prefix.strict("192.0.2.1/32"), hasLocalAs(123L)))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.strict("192.0.2.1/32"), BgpNeighborMatchers.hasRemoteAs(456L)))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(
+                hasActiveNeighbor(Prefix.strict("192.0.2.1/32"), BgpNeighborMatchers.has))));
   }
 
   @Test
