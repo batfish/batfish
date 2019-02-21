@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static org.batfish.datamodel.Names.Type.INTERFACE;
 import static org.batfish.datamodel.Names.Type.NODE;
+import static org.batfish.datamodel.Names.Type.NODE_ROLE;
 import static org.batfish.datamodel.Names.Type.REFERENCE_OBJECT;
 import static org.batfish.datamodel.Names.Type.TABLE_COLUMN;
 import static org.batfish.datamodel.Names.Type.VRF;
@@ -31,6 +32,11 @@ public class NamesTest {
 
   public static List<String> INTERFACE_INVALID_NAMES =
       ImmutableList.of("1startsWithDigit", ".startsWithDot", "-startsWithDash", "has_", "has@", "");
+
+  public static List<String> NODE_ROLE_VALID_NAMES =
+      ImmutableList.of("a", "_startsUnderscore", "has_", "has-", "has1", "1startsDigit");
+
+  public static List<String> NODE_ROLE_INVALID_NAMES = ImmutableList.of("has/", "has.", "has:", "");
 
   public static List<String> NODE_VALID_NAMES =
       ImmutableList.of("a", "has.", "has-", "has_", "has1digit");
@@ -90,6 +96,17 @@ public class NamesTest {
 
     for (String name : NODE_INVALID_NAMES) {
       assertFalse(name, VALID_PATTERNS.get(NODE).matcher(name).matches());
+    }
+  }
+
+  @Test
+  public void testNodeRoleNames() {
+    for (String name : NODE_ROLE_VALID_NAMES) {
+      assertTrue(name, VALID_PATTERNS.get(NODE_ROLE).matcher(name).matches());
+    }
+
+    for (String name : NODE_ROLE_INVALID_NAMES) {
+      assertFalse(name, VALID_PATTERNS.get(NODE_ROLE).matcher(name).matches());
     }
   }
 

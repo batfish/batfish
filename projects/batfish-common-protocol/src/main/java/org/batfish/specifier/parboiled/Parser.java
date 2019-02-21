@@ -399,11 +399,14 @@ public class Parser extends CommonParser {
    * <pre>
    *   locationExpr := locationTerm [{@literal &} | , | \ locationTerm]*
    *
-   *   locationTerm := @role(a, b) // ref.noderole is also supported for back compat
-   *               | @device(a)
-   *               | nodeName
-   *               | nodeNameRegex
-   *               | ( nodeTerm )
+   *   locationTerm := locationInterface
+   *               | @enter(locationInterface)   // non-@ versions also supported
+   *               | @exit(locationInteface)
+   *               | ( locationTerm )
+   *
+   *   locationInterface := nodeTerm[interfaceTerm]
+   *                        | nodeTerm
+   *                        | interfaceSpecifier
    * </pre>
    */
 
@@ -522,7 +525,7 @@ public class Parser extends CommonParser {
   @Anchor(NODE_ROLE_NAME_AND_DIMENSION)
   public Rule NodeRoleNameAndDimension() {
     return Sequence(
-        ReferenceObjectNameLiteral(),
+        NodeRoleNameLiteral(),
         push(new StringAstNode(match())),
         WhiteSpace(),
         ", ",

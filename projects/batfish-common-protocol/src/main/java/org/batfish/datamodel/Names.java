@@ -13,8 +13,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /**
  * Provides helper methods to auto-generate structure names and to check the validity of names of
  * different types of entities.
- *
- * <p>.
  */
 @ParametersAreNonnullByDefault
 public final class Names {
@@ -38,7 +36,14 @@ public final class Names {
     NODE(
         "^[a-zA-Z][-\\._a-zA-Z0-9]*$",
         "start with an alphabetic letter, and additionally only have '[-._a-zA-Z0-9]]'"),
-    /** All names that occur inside {@link org.batfish.referencelibrary.ReferenceLibrary} */
+    /** {@link org.batfish.role.NodeRole} */
+    NODE_ROLE(
+        "^[0-9a-zA-Z_][-\\w]*$",
+        "start with an alphanumeric letter or underscore, and additionally only have '-'"),
+    /**
+     * All names inside {@link org.batfish.referencelibrary.ReferenceLibrary} and {@link
+     * org.batfish.role.NodeRolesData} except {@link org.batfish.role.NodeRole}
+     */
     REFERENCE_OBJECT(
         "^[a-zA-Z_][-\\w]*$",
         "start with an alphabetic letter or underscore, and only have digits or '-'"),

@@ -60,7 +60,9 @@ public class NodeRolesData {
   private NodeRolesData(
       @Nullable String defaultDimension, SortedSet<NodeRoleDimension> roleDimensions) {
     checkNotNull(roleDimensions);
-    Names.checkName(defaultDimension, "role dimension", Type.REFERENCE_OBJECT);
+    if (defaultDimension != null) {
+      Names.checkName(defaultDimension, "role dimension", Type.REFERENCE_OBJECT);
+    }
     _defaultDimension = defaultDimension;
     _roleDimensions = roleDimensions;
   }
