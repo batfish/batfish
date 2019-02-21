@@ -2912,7 +2912,7 @@ public final class WorkMgrTest {
 
     assertThat(
         _manager.getSnapshotExtendedObjectsMetadata(network, snapshot),
-        equalTo(ImmutableList.of(new StoredObjectMetadata(fileName, content.getBytes().length))));
+        contains(new StoredObjectMetadata(fileName, content.getBytes().length)));
   }
 
   private void storeCompletionMetadata(

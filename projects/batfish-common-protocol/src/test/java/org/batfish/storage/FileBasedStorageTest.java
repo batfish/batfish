@@ -3,6 +3,7 @@ package org.batfish.storage;
 import static org.batfish.common.Version.INCOMPATIBLE_VERSION;
 import static org.batfish.storage.FileBasedStorage.mkdirs;
 import static org.batfish.storage.FileBasedStorage.objectKeyToRelativePath;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -452,11 +453,10 @@ public final class FileBasedStorageTest {
     List<StoredObjectMetadata> keys =
         _storage.getSnapshotExtendedObjectsMetadata(network, snapshot);
     assertThat(
-        keys.stream().collect(ImmutableSet.toImmutableSet()),
-        equalTo(
-            ImmutableSet.of(
-                new StoredObjectMetadata(key1, content1.getBytes().length),
-                new StoredObjectMetadata(key2, content2.getBytes().length))));
+        keys,
+        containsInAnyOrder(
+            new StoredObjectMetadata(key1, content1.getBytes().length),
+            new StoredObjectMetadata(key2, content2.getBytes().length)));
   }
 
   @Test

@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Closer;
 import com.google.errorprone.annotations.MustBeClosed;
 import java.io.FileInputStream;
@@ -804,7 +805,7 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private static @Nonnull String fromBase64(String key) {
-    return new String(Base64.getUrlDecoder().decode(key));
+    return new String(Base64.getUrlDecoder().decode(key), StandardCharsets.UTF_8);
   }
 
   @Override
@@ -870,7 +871,7 @@ public final class FileBasedStorage implements StorageProvider {
               path ->
                   new StoredObjectMetadata(
                       objectPath.relativize(path).toString(), getObjectSize(path)))
-          .collect(Collectors.toList());
+          .collect(ImmutableList.toImmutableList());
     } catch (BatfishException e) {
       throw new IOException(e);
     }
@@ -890,8 +891,8 @@ public final class FileBasedStorage implements StorageProvider {
           .map(
               path ->
                   new StoredObjectMetadata(
-                      fromBase64(objectPath.relativize(path).toString()), getObjectSize(path)))
-          .collect(Collectors.toList());
+                      fromBase64(path.getFileName().toString()), getObjectSize(path)))
+          .collect(ImmutableList.toImmutableList());
     } catch (BatfishException e) {
       throw new IOException(e);
     }
