@@ -53,12 +53,12 @@ public final class Names {
         "start with alphanumeric, underscore or tilde and only have  [-/.:~@]"),
     /** {@link Vrf} */
     VRF(
-        "^[_a-zA-Z][-_\\w]*$",
-        "start with an alphabetic letter or underscore, and additionally only have '[-0-9]'"),
+        "^[_a-zA-Z~][-_\\w~]*$",
+        "start with an alphabetic letter, underscore, or tilde, and additionally only have '[-0-9]'"),
     /** {@link Zone} */
     ZONE(
-        "^[_a-zA-Z][-_\\w]*$",
-        "start with an alphabetic letter or underscore, and additionally only have '[-0-9]'");
+        "^[_a-zA-Z~][-_\\w~]*$",
+        "start with an alphabetic letter or underscore, or tilde, and additionally only have '[-0-9]'");
 
     Type(String regex, String explanation) {
       _regex = regex;

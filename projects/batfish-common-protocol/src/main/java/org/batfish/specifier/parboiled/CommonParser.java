@@ -154,8 +154,8 @@ public class CommonParser extends BaseParser<AstNode> {
   /** Keep in Sync with {@link org.batfish.datamodel.Names.Type#VRF} */
   public Rule VrfNameLiteral() {
     return Sequence(
-        FirstOf(AlphabetChar(), Underscore()),
-        ZeroOrMore(FirstOf(AlphabetChar(), Underscore(), Dash(), Digit())));
+        FirstOf(AlphabetChar(), Tilde(), Underscore()),
+        ZeroOrMore(FirstOf(AlphabetChar(), Tilde(), Underscore(), Dash(), Digit())));
   }
 
   public Rule WhiteSpace() {
@@ -165,8 +165,8 @@ public class CommonParser extends BaseParser<AstNode> {
   /** Keep in Sync with {@link org.batfish.datamodel.Names.Type#ZONE} */
   public Rule ZoneNameLiteral() {
     return Sequence(
-        FirstOf(AlphabetChar(), Underscore()),
-        ZeroOrMore(FirstOf(AlphabetChar(), Underscore(), Dash(), Digit())));
+        FirstOf(AlphabetChar(), Tilde(), Underscore()),
+        ZeroOrMore(FirstOf(AlphabetChar(), Tilde(), Underscore(), Dash(), Digit())));
   }
 
   /**

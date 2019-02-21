@@ -22,21 +22,24 @@ import org.junit.Test;
 public class NamesTest {
 
   public static List<String> FILTER_VALID_NAMES =
-      ImmutableList.of("a", "has.", "has-", "has1", "_startsUnderscore", "~startTilde");
+      ImmutableList.of("a", "has.", "has-", "has1", "_startsUnderscore", "~startTilde", "has.");
 
   public static List<String> FILTER_INVALID_NAMES =
-      ImmutableList.of("1startsDigit", ".startsDot", "-startDash", "has:", "has/", "has@", "");
+      ImmutableList.of(
+          "1startsDigit", ".startsDot", "-startDash", "has:", "has/", "has@", "has\\", "");
 
   public static List<String> INTERFACE_VALID_NAMES =
       ImmutableList.of("a", "has.", "has-", "has1digit", "has/", "has:");
 
   public static List<String> INTERFACE_INVALID_NAMES =
-      ImmutableList.of("1startsWithDigit", ".startsWithDot", "-startsWithDash", "has_", "has@", "");
+      ImmutableList.of(
+          "1startsWithDigit", ".startsWithDot", "-startsWithDash", "has_", "has@", "has\\", "");
 
   public static List<String> NODE_ROLE_VALID_NAMES =
       ImmutableList.of("a", "_startsUnderscore", "has_", "has-", "has1", "1startsDigit");
 
-  public static List<String> NODE_ROLE_INVALID_NAMES = ImmutableList.of("has/", "has.", "has:", "");
+  public static List<String> NODE_ROLE_INVALID_NAMES =
+      ImmutableList.of("has/", "has.", "has:", "has\\", "");
 
   public static List<String> NODE_VALID_NAMES =
       ImmutableList.of("a", "has.", "has-", "has_", "has1digit");
@@ -52,6 +55,7 @@ public class NamesTest {
           "has]",
           "has,",
           "has@",
+          "has\\",
           "");
 
   public static List<String> REFERENCE_OBJECT_VALID_NAMES =
@@ -67,11 +71,11 @@ public class NamesTest {
   public static List<String> TABLE_COLUMN_INVALID_NAMES =
       ImmutableList.of("-startDash", "has space", ".startDot", "@startAt", "");
 
-  public static List<String> VRF_VALID_NAMES = ImmutableList.of("a", "_startUnderscore", "has-");
+  public static List<String> VRF_VALID_NAMES =
+      ImmutableList.of("a", "_startUnderscore", "has-", "~");
 
   public static List<String> VRF_INVALID_NAMES =
-      ImmutableList.of(
-          "-starDash", "~startTilde", "has space", ".startDot", "has@", "has/", "has.", "has@", "");
+      ImmutableList.of("-starDash", "has space", ".startDot", "has@", "has/", "has.", "has@", "");
 
   public static List<String> ZONE_VALID_NAMES = VRF_VALID_NAMES;
 
