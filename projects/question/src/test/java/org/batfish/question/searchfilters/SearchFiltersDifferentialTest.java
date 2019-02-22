@@ -77,7 +77,8 @@ public class SearchFiltersDifferentialTest {
     TableAnswerElement answer =
         (TableAnswerElement)
             new SearchFiltersAnswerer(
-                    SearchFiltersQuestion.builder().setStartLocation("enter(.*)").build(), batfish)
+                    SearchFiltersQuestion.builder().setStartLocation("@enter(/.*/)").build(),
+                    batfish)
                 .answerDiff();
     assertThat(
         answer,
@@ -115,7 +116,7 @@ public class SearchFiltersDifferentialTest {
         (TableAnswerElement)
             new SearchFiltersAnswerer(
                     SearchFiltersQuestion.builder()
-                        .setStartLocation("enter(.*)")
+                        .setStartLocation("@enter(/.*/)")
                         .setAction("deny")
                         .setGenerateExplanations(true)
                         .build(),
