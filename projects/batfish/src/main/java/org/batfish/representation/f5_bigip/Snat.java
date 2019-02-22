@@ -11,7 +11,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 
-/** Configuration for a pool of nodes. */
+/** Configuration for default SNAT to be applied when traffic does not match a virtual service. */
 @ParametersAreNonnullByDefault
 public final class Snat implements Serializable {
 
