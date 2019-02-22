@@ -84,6 +84,30 @@ public class ReturnFlowTransformationTest {
       assertEquals(assignSrc.accept(STEP_VISITOR), assignDst);
       assertEquals(assignDst.accept(STEP_VISITOR), assignSrc);
     }
+
+    // apply all
+    {
+      Ip ipPoolStart = Ip.parse("1.1.1.1");
+      Ip ipPoolEnd = Ip.parse("1.1.2.2");
+      int portPoolStart = 5;
+      int portPoolEnd = 17;
+      AssignIpAddressFromPool assignSrcIp =
+          new AssignIpAddressFromPool(
+              TransformationType.SOURCE_NAT, IpField.SOURCE, ipPoolStart, ipPoolEnd);
+      AssignIpAddressFromPool assignDstIp =
+          new AssignIpAddressFromPool(
+              TransformationType.SOURCE_NAT, IpField.DESTINATION, ipPoolStart, ipPoolEnd);
+      AssignPortFromPool assignSrcPort =
+          new AssignPortFromPool(
+              TransformationType.SOURCE_NAT, PortField.SOURCE, portPoolStart, portPoolEnd);
+      AssignPortFromPool assignDstPort =
+          new AssignPortFromPool(
+              TransformationType.SOURCE_NAT, PortField.DESTINATION, portPoolStart, portPoolEnd);
+      ApplyAll applyAllSrc = new ApplyAll(assignSrcIp, assignSrcPort);
+      ApplyAll applyAllDst = new ApplyAll(assignDstIp, assignDstPort);
+      assertEquals(applyAllSrc.accept(STEP_VISITOR), applyAllDst);
+      assertEquals(applyAllDst.accept(STEP_VISITOR), applyAllSrc);
+    }
   }
 
   @Test

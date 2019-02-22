@@ -42,4 +42,20 @@ public class ApplyAny implements TransformationStep, Serializable {
   public @Nonnull List<TransformationStep> getSteps() {
     return _steps;
   }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof ApplyAny)) {
+      return false;
+    }
+    return _steps.equals(((ApplyAny) obj)._steps);
+  }
+
+  @Override
+  public int hashCode() {
+    return _steps.hashCode();
+  }
 }
