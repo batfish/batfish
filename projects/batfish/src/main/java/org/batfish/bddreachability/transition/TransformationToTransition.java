@@ -1,6 +1,7 @@
 package org.batfish.bddreachability.transition;
 
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
+import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.reverse;
 import static org.batfish.datamodel.transformation.ReturnFlowTransformation.returnFlowTransformation;
 
@@ -9,7 +10,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import com.google.common.collect.ImmutableList;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
@@ -18,7 +18,7 @@ import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.transformation.ApplyAll;
-import org.batfish.datamodel.transformation.ApplyOne;
+import org.batfish.datamodel.transformation.ApplyAny;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
@@ -114,18 +114,14 @@ public class TransformationToTransition {
 
     @Override
     public Transition visitApplyAll(ApplyAll applyAll) {
-      return new Composite(
-          applyAll.getSteps().stream()
-              .map(step -> step.accept(this))
-              .collect(ImmutableList.toImmutableList()));
+      return compose(
+          applyAll.getSteps().stream().map(step -> step.accept(this)).toArray(Transition[]::new));
     }
 
     @Override
-    public Transition visitApplyOne(ApplyOne applyOne) {
-      return new Or(
-          applyOne.getSteps().stream()
-              .map(step -> step.accept(this))
-              .collect(ImmutableList.toImmutableList()));
+    public Transition visitApplyAny(ApplyAny applyAny) {
+      return Transitions.or(
+          applyAny.getSteps().stream().map(step -> step.accept(this)).toArray(Transition[]::new));
     }
   }
 

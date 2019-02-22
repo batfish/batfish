@@ -67,7 +67,6 @@ public final class AssignIpAddressFromPool implements TransformationStep, Serial
     return _poolEnd;
   }
 
-  @Override
   @JsonProperty(PROP_TRANSFORMATION_TYPE)
   public TransformationType getType() {
     return _type;

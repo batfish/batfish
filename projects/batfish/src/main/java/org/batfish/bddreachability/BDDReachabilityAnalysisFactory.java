@@ -58,7 +58,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.transformation.ApplyAll;
-import org.batfish.datamodel.transformation.ApplyOne;
+import org.batfish.datamodel.transformation.ApplyAny;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
@@ -1262,8 +1262,8 @@ public final class BDDReachabilityAnalysisFactory {
           }
 
           @Override
-          public Void visitApplyOne(ApplyOne applyOne) {
-            applyOne.getSteps().forEach(step -> step.accept(this));
+          public Void visitApplyAny(ApplyAny applyAny) {
+            applyAny.getSteps().forEach(step -> step.accept(this));
             return null;
           }
         };
