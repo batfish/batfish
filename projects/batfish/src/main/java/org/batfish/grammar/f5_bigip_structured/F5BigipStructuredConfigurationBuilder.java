@@ -784,6 +784,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   public void exitLs_snatpool(Ls_snatpoolContext ctx) {
     String name = unquote(ctx.name.getText());
     _c.referenceStructure(SNATPOOL, name, SNAT_SNATPOOL, ctx.name.getStart().getLine());
+    _currentSnat.setSnatpool(name);
   }
 
   @Override
