@@ -938,6 +938,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     String name = unquote(ctx.name.getText());
     _c.referenceStructure(
         SNATPOOL, name, VIRTUAL_SOURCE_ADDRESS_TRANSLATION_POOL, ctx.name.getStart().getLine());
+    _currentVirtual.setSourceAddressTranslationPool(name);
   }
 
   @Override
