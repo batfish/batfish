@@ -42,6 +42,11 @@ public final class TransformationUtil {
         public Boolean visitApplyAll(ApplyAll applyAll) {
           return applyAll.getType() == SOURCE_NAT;
         }
+
+        @Override
+        public Boolean visitApplyOne(ApplyOne applyOne) {
+          return applyOne.getType() == SOURCE_NAT;
+        }
       };
 
   private static final TransformationStepVisitor<Stream<Ip>> SOURCE_NAT_POOL_IPS =
@@ -80,6 +85,11 @@ public final class TransformationUtil {
         @Override
         public Stream<Ip> visitApplyAll(ApplyAll applyAll) {
           return applyAll.getSteps().stream().flatMap(step -> step.accept(this));
+        }
+
+        @Override
+        public Stream<Ip> visitApplyOne(ApplyOne applyOne) {
+          return applyOne.getSteps().stream().flatMap(step -> step.accept(this));
         }
       };
 

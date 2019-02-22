@@ -8,6 +8,8 @@ public interface TransformationStepVisitor<T> {
 
   T visitApplyAll(ApplyAll applyAll);
 
+  T visitApplyOne(ApplyOne applyOne);
+
   T visitAssignIpAddressFromPool(AssignIpAddressFromPool assignIpAddressFromPool);
 
   T visitAssignPortFromPool(AssignPortFromPool assignPortFromPool);

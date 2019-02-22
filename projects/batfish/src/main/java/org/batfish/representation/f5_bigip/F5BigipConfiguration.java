@@ -5,7 +5,9 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Range;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -36,6 +38,8 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -50,9 +54,14 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.transformation.ApplyAll;
+import org.batfish.datamodel.transformation.ApplyOne;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
+import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.vendor.VendorConfiguration;
 
 /** Vendor-specific configuration for F5 BIG-IP device */
@@ -100,6 +109,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, SnatTranslation> _snatTranslations;
 
   private final @Nonnull Map<String, VirtualAddress> _virtualAddresses;
+
+  private transient Collection<Transformation> _virtualIncomingTransformations;
+
+  private transient Collection<Transformation> _virtualOutgoingTransformations;
 
   private final @Nonnull Map<String, Virtual> _virtuals;
 
@@ -161,6 +174,74 @@ public class F5BigipConfiguration extends VendorConfiguration {
             .setPeerAddress(neighbor.getAddress())
             .setRemoteAs(neighbor.getRemoteAs());
     builder.build();
+  }
+
+  private void addNatRules(org.batfish.datamodel.Interface iface) {
+    String ifaceName = iface.getName();
+    ImmutableList.Builder<Transformation> incomingTransformations = ImmutableList.builder();
+  }
+
+  private TransformationStep computeVirtualIncomingPoolMemberTransformation(PoolMember member) {
+    return new ApplyAll(
+        TransformationType.DEST_NAT,
+        new AssignIpAddressFromPool(
+            TransformationType.DEST_NAT,
+            IpField.DESTINATION,
+            ImmutableRangeSet.of(Range.singleton(member.getAddress()))),
+        new AssignPortFromPool(
+            TransformationType.DEST_NAT,
+            PortField.DESTINATION,
+            member.getPort(),
+            member.getPort()));
+  }
+
+  private TransformationStep computeVirtualIncomingPoolTransformation(Pool pool) {
+    return new ApplyOne(
+        TransformationType.DEST_NAT,
+        pool.getMembers().values().stream()
+            .map(this::computeVirtualIncomingPoolMemberTransformation)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  private @Nonnull Optional<Transformation> computeVirtualIncomingTransformation(Virtual virtual) {
+    //// Perform DNAT if source IP is in range and destination IP and port match
+    // Retrieve pool of addresses to which destination IP may be translated
+    String poolName = virtual.getPool();
+    if (poolName == null) {
+      // Cannot translate without pool
+      return Optional.empty();
+    }
+    Pool pool = _pools.get(poolName);
+    if (pool == null) {
+      // Cannot translate without pool
+      return Optional.empty();
+    }
+
+    // Compute matching headers
+    int destinationPort = virtual.getDestinationPort();
+    AclLineMatchExpr matchCondition =
+        new MatchHeaderSpace(
+            HeaderSpace.builder()
+                .setDstIps(virtual.getDestinationIp().toIpSpace())
+                .setDstPorts(ImmutableList.of(new SubRange(destinationPort, destinationPort)))
+                .setSrcIps(virtual.getSource().toIpSpace())
+                .build(),
+            virtual.getName());
+    return Optional.of(
+        Transformation.when(matchCondition)
+            .apply(computeVirtualIncomingPoolTransformation(pool))
+            .build());
+  }
+
+  private @Nonnull Optional<Transformation> computeVirtualOutgoingTransformation(Virtual virtual) {
+    //    if (snatPoolName )
+    //    Transformation transformation =
+    //        new Transformation.Builder(matchedSpace)
+    //            .apply(
+    //                new AssignIpAddressFromPool(
+    //                    TransformationType.DEST_NAT, IpField.DESTINATION, pool)));
+    //    pool.getMembers().values().stream().map(PoolMember::getAddress).filter(Objects::nonNull);
+    //  String snatPoolName = virtual.getSourceAddressTranslationPool();
   }
 
   public @Nonnull Map<String, BgpProcess> getBgpProcesses() {
@@ -243,6 +324,21 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, Vlan> getVlans() {
     return _vlans;
+  }
+
+  private void initVirtualTransformations() {
+    _virtualIncomingTransformations =
+        _virtuals.values().stream()
+            .map(this::computeVirtualIncomingTransformation)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(ImmutableList.toImmutableList());
+    _virtualOutgoingTransformations =
+        _virtuals.values().stream()
+            .map(this::computeVirtualOutgoingTransformation)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(ImmutableList.toImmutableList());
   }
 
   private void markStructures() {
@@ -612,81 +708,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _virtualAddresses.values().forEach(this::tryAddKernelRoute);
 
     // Create NAT transformation rules
-    _virtualIncomingTransformations = new HashMap<>();
-    _virtualOutgoingTransformations = new HashMap<>();
     _vlans.keySet().stream().map(_c.getAllInterfaces()::get).forEach(this::addNatRules);
 
     markStructures();
 
     return _c;
-  }
-
-  private transient Collection<Transformation> _virtualIncomingTransformations;
-
-  private transient Collection<Transformation> _virtualOutgoingTransformations;
-
-  private void initVirtualTransformations() {
-    _virtuals.values().stream().map(this::computeVirtualIncomingTransformation)
-        (virtualName, virtual) -> {
-          _virtualIncomingTransformations.c
-              .compute(virtualName, this::computeVirtualIncomingTransformation)
-              .ifPresent(incomingTransformations::add);
-        });
-    _virtuals.forEach(
-        (virtualName, virtual) -> {
-          _virtualOutgoingTransformations
-              .computeIfAbsent(virtualName, this::computeVirtualOutgoingTransformation)
-              .ifPresent(incomingTransformations::add);
-        });
-  }
-  
-  private void addNatRules(org.batfish.datamodel.Interface iface) {
-    String ifaceName = iface.getName();
-    ImmutableList.Builder<Transformation> incomingTransformations = ImmutableList.builder();
-  }
-
-//  private @Nonnull Optional<Transformation> computeVirtualOutgoingTransformation(
-//      Virtual virtual) {
-//    if (snatPoolName )
-//    Transformation transformation =
-//        new Transformation.Builder(matchedSpace)
-//            .apply(
-//                new AssignIpAddressFromPool(
-//                    TransformationType.DEST_NAT, IpField.DESTINATION, pool)));
-//    pool.getMembers().values().stream().map(PoolMember::getAddress).filter(Objects::nonNull);
-//  }
-//  
-  private @Nonnull Optional<Transformation> computeVirtualIncomingTransformation(
-      Virtual virtual) {
-    //// Perform DNAT if source IP is in range and destination IP and port match
-    // Retrieve pool of addresses to which destination IP may be translated
-    String poolName = virtual.getPool();
-    if (poolName == null) {
-      // Cannot translate without pool
-      return Optional.empty();
-    }
-    Pool pool = _pools.get(poolName);
-    if (pool == null) {
-      // Cannot translate without pool
-      return Optional.empty();
-    }
-    
-    
-    int destinationPort = virtual.getDestinationPort();
-    // source IP matching
-    HeaderSpace matchedSpace =
-        HeaderSpace.builder()
-            .setDstIps(virtual.getDestinationIp().toIpSpace())
-            .setDstPorts(ImmutableList.of(new SubRange(destinationPort, destinationPort)))
-            .setSrcIps(virtual.getSource().toIpSpace())
-            .build();
-    String snatPoolName = virtual.getSourceAddressTranslationPool();
-  }
-
-  private @Nonnull Optional<Transformation> computeVirtualOutgoingTransformation(
-      String virtualName) {
-    // SNAT if applicable, else nothing
-    Virtual virtual = _virtuals.get(virtualName);
   }
 
   @Override

@@ -175,6 +175,16 @@ public class TransformationEvaluator {
           .map(step -> step.accept(this))
           .reduce(false, (a, b) -> a || b);
     }
+
+    @Override
+    public Boolean visitApplyOne(ApplyOne applyOne) {
+      // NOTE:
+      // - reduce is used instead of anyMatch to ensure all steps accept the visitor.
+      // - true return value may be an overapproximation
+      return applyOne.getSteps().stream()
+          .map(step -> step.accept(this))
+          .reduce(false, (a, b) -> a || b);
+    }
   }
 
   private TransformationEvaluator(
