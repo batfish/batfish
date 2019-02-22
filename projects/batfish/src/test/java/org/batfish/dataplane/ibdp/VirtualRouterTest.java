@@ -87,7 +87,6 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.batfish.dataplane.rib.Rib;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
@@ -905,7 +904,7 @@ public class VirtualRouterTest {
 
     // Clear emptyVr's RIB and queues and run intermediate leaking (i.e. what would happen in one
     // computeDependentRoutesIteration()); all routes should leak from vrWithRoutes' main RIB delta
-    emptyVr._mainRib = new Rib();
+    emptyVr._mainRib.clear();
     emptyVr.initCrossVrfQueues();
     emptyVr.queueCrossVrfImports();
     emptyVr.processCrossVrfRoutes();
