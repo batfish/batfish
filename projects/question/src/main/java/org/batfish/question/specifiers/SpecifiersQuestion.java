@@ -7,17 +7,19 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.questions.FiltersSpecifier;
+import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.specifier.AllInterfacesLocationSpecifier;
+import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.FilterSpecifier;
-import org.batfish.specifier.FilterSpecifierFactory;
+import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.InterfaceSpecifier;
-import org.batfish.specifier.InterfaceSpecifierFactory;
 import org.batfish.specifier.IpSpaceSpecifier;
-import org.batfish.specifier.IpSpaceSpecifierFactory;
 import org.batfish.specifier.LocationSpecifier;
-import org.batfish.specifier.LocationSpecifierFactory;
 import org.batfish.specifier.NodeSpecifier;
-import org.batfish.specifier.NodeSpecifierFactory;
+import org.batfish.specifier.ShorthandFilterSpecifier;
+import org.batfish.specifier.ShorthandInterfaceSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 
 /**
@@ -72,35 +74,44 @@ public final class SpecifiersQuestion extends Question {
   @JsonIgnore
   public FilterSpecifier getFilterSpecifier() {
     checkNotNull(_filterSpecifierFactory, PROP_FILTER_SPECIFIER_FACTORY + " is null");
-    return FilterSpecifierFactory.load(_filterSpecifierFactory)
-        .buildFilterSpecifier(_filterSpecifierInput);
+    return SpecifierFactories.getFilterSpecifierOrDefault(
+        _filterSpecifierInput,
+        new ShorthandFilterSpecifier(FiltersSpecifier.ALL),
+        _filterSpecifierFactory);
   }
 
   @JsonIgnore
   public InterfaceSpecifier getInterfaceSpecifier() {
     checkNotNull(_interfaceSpecifierFactory, PROP_INTERFACE_SPECIFIER_FACTORY + " is null");
-    return InterfaceSpecifierFactory.load(_interfaceSpecifierFactory)
-        .buildInterfaceSpecifier(_interfaceSpecifierInput);
+    return SpecifierFactories.getInterfaceSpecifierOrDefault(
+        _interfaceSpecifierInput,
+        new ShorthandInterfaceSpecifier(InterfacesSpecifier.ALL),
+        _interfaceSpecifierFactory);
   }
 
   @JsonIgnore
   public IpSpaceSpecifier getIpSpaceSpecifier() {
     checkNotNull(_ipSpaceSpecifierFactory, PROP_IP_SPACE_SPECIFIER_FACTORY + " is null");
-    return IpSpaceSpecifierFactory.load(_ipSpaceSpecifierFactory)
-        .buildIpSpaceSpecifier(_ipSpaceSpecifierInput);
+    return SpecifierFactories.getIpSpaceSpecifierOrDefault(
+        _ipSpaceSpecifierInput,
+        InferFromLocationIpSpaceSpecifier.INSTANCE,
+        _ipSpaceSpecifierFactory);
   }
 
   @JsonIgnore
   public LocationSpecifier getLocationSpecifier() {
     checkNotNull(_locationSpecifierFactory, PROP_LOCATION_SPECIFIER_FACTORY + " is null");
-    return LocationSpecifierFactory.load(_locationSpecifierFactory)
-        .buildLocationSpecifier(_locationSpecifierInput);
+    return SpecifierFactories.getLocationSpecifierOrDefault(
+        _locationSpecifierInput,
+        AllInterfacesLocationSpecifier.INSTANCE,
+        _locationSpecifierFactory);
   }
 
   @JsonIgnore
   public NodeSpecifier getNodeSpecifier() {
     checkNotNull(_nodeSpecifierFactory, PROP_NODE_SPECIFIER_FACTORY + " is null");
-    return NodeSpecifierFactory.load(_nodeSpecifierFactory).buildNodeSpecifier(_nodeSpecifierInput);
+    return SpecifierFactories.getNodeSpecifierOrDefault(
+        _nodeSpecifierInput, AllNodesNodeSpecifier.INSTANCE, _nodeSpecifierFactory);
   }
 
   @Override

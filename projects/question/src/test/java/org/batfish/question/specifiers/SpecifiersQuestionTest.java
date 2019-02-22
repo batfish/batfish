@@ -2,7 +2,6 @@ package org.batfish.question.specifiers;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.auto.service.AutoService;
@@ -65,12 +64,13 @@ public final class SpecifiersQuestionTest {
   public void testGetIpSpaceSpecifier_defaultInput() {
     SpecifiersQuestion question = new SpecifiersQuestion(QueryType.IP_SPACE);
     question.setIpSpaceSpecifierFactory(new TestIpSpaceSpecifierFactory().getName());
+    question.setIpSpaceSpecifierInput("foo");
 
     IpSpaceSpecifier ipSpaceSpecifier = question.getIpSpaceSpecifier();
     assertThat(ipSpaceSpecifier, instanceOf(TestIpSpaceSpecifier.class));
 
     TestIpSpaceSpecifier testIpSpaceSpecifier = (TestIpSpaceSpecifier) ipSpaceSpecifier;
-    assertThat(testIpSpaceSpecifier.getInput(), nullValue());
+    assertThat(testIpSpaceSpecifier.getInput(), equalTo("foo"));
   }
 
   @Test
