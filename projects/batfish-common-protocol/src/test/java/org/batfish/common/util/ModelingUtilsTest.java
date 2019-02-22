@@ -185,6 +185,7 @@ public class ModelingUtilsTest {
     Configuration.Builder cb = nf.configurationBuilder();
     Configuration configuration = cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(configuration).build();
+    nf.vrfBuilder().setName("emptyVRF").setOwner(configuration).build();
     nf.interfaceBuilder()
         .setName("interface")
         .setOwner(configuration)

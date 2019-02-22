@@ -589,7 +589,7 @@ public class VirtualRouter implements Serializable {
 
   /** Compute the FIB from the main RIB */
   public void computeFib() {
-    _fib = new FibImpl<>(_mainRib);
+    _fib = new FibImpl(_mainRib);
   }
 
   boolean computeInterAreaSummaries() {

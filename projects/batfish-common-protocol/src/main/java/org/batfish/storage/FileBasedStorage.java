@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Closer;
 import com.google.errorprone.annotations.MustBeClosed;
 import java.io.FileInputStream;
@@ -803,6 +804,10 @@ public final class FileBasedStorage implements StorageProvider {
     return Base64.getUrlEncoder().encodeToString(key.getBytes(StandardCharsets.UTF_8));
   }
 
+  private static @Nonnull String fromBase64(String key) {
+    return new String(Base64.getUrlDecoder().decode(key), StandardCharsets.UTF_8);
+  }
+
   @Override
   public @Nonnull InputStream loadSnapshotObject(
       NetworkId networkId, SnapshotId snapshotId, String key)
@@ -866,7 +871,28 @@ public final class FileBasedStorage implements StorageProvider {
               path ->
                   new StoredObjectMetadata(
                       objectPath.relativize(path).toString(), getObjectSize(path)))
-          .collect(Collectors.toList());
+          .collect(ImmutableList.toImmutableList());
+    } catch (BatfishException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public @Nonnull List<StoredObjectMetadata> getSnapshotExtendedObjectsMetadata(
+      NetworkId networkId, SnapshotId snapshotId) throws IOException {
+    Path objectPath = _d.getSnapshotObjectsDir(networkId, snapshotId);
+    if (!Files.exists(objectPath)) {
+      throw new FileNotFoundException(String.format("Could not load: %s", objectPath));
+    }
+
+    try {
+      return Files.walk(objectPath)
+          .filter(Files::isRegularFile)
+          .map(
+              path ->
+                  new StoredObjectMetadata(
+                      fromBase64(path.getFileName().toString()), getObjectSize(path)))
+          .collect(ImmutableList.toImmutableList());
     } catch (BatfishException e) {
       throw new IOException(e);
     }

@@ -276,6 +276,7 @@ public final class ModelingUtils {
     List<BgpActivePeerConfig> validBgpActivePeerConfigs =
         configuration.getVrfs().values().stream()
             .map(Vrf::getBgpProcess)
+            .filter(Objects::nonNull)
             .flatMap(bgpProcess -> bgpProcess.getActiveNeighbors().values().stream())
             .filter(
                 bgpActivePeerConfig ->
