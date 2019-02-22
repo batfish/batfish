@@ -625,9 +625,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private transient Map<String, Optional<Transformation>> _virtualOutgoingTransformations;
 
-  private void addNatRules(org.batfish.datamodel.Interface iface) {
-    String ifaceName = iface.getName();
-    ImmutableList.Builder<Transformation> incomingTransformations = ImmutableList.builder();
+  private void initVirtualTransformations() {
     _virtuals.forEach(
         (virtualName, virtual) -> {
           _virtualIncomingTransformations
@@ -640,6 +638,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
               .computeIfAbsent(virtualName, this::computeVirtualOutgoingTransformation)
               .ifPresent(incomingTransformations::add);
         });
+  }
+  
+  private void addNatRules(org.batfish.datamodel.Interface iface) {
+    String ifaceName = iface.getName();
+    ImmutableList.Builder<Transformation> incomingTransformations = ImmutableList.builder();
   }
 
   private @Nonnull Optional<Transformation> computeVirtualIncomingTransformation(
@@ -661,11 +664,13 @@ public class F5BigipConfiguration extends VendorConfiguration {
             .setDstPorts(ImmutableList.of(new SubRange(destinationPort, destinationPort)))
             .setSrcIps(virtual.getSource().toIpSpace())
             .build();
+    String snatPoolName = virtual.getSourceAddressTranslationPool();
+    if (snatPoolName )
     Transformation transformation =
         new Transformation.Builder(matchedSpace)
             .apply(
                 new AssignIpAddressFromPool(
-                    TransformationType.DEST_NAT, IpField.DESTINATION, poolStart, poolEnd));
+                    TransformationType.DEST_NAT, IpField.DESTINATION, pool)));
     pool.getMembers().values().stream().map(PoolMember::getAddress).filter(Objects::nonNull);
   }
 

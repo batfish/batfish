@@ -24,6 +24,7 @@ public final class Virtual implements Serializable {
   private @Nullable String _pool;
   private @Nullable Prefix _source;
   private @Nullable Prefix6 _source6;
+  private @Nullable String _sourceAddressTranslationPool;
 
   public Virtual(String name) {
     _name = name;
@@ -65,6 +66,10 @@ public final class Virtual implements Serializable {
     return _source6;
   }
 
+  public @Nullable String getSourceAddressTranslationPool() {
+    return _sourceAddressTranslationPool;
+  }
+
   public void setDestinationIp(@Nullable Ip destinationIp) {
     _destinationIp = destinationIp;
   }
@@ -95,5 +100,9 @@ public final class Virtual implements Serializable {
 
   public void setSource6(@Nullable Prefix6 source6) {
     _source6 = source6;
+  }
+
+  public void setSourceAddressTranslationPool(@Nullable String sourceAddressTranslationPool) {
+    _sourceAddressTranslationPool = sourceAddressTranslationPool;
   }
 }
