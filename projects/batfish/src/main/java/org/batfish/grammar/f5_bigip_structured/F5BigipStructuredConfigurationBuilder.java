@@ -784,6 +784,24 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   public void exitLs_snatpool(Ls_snatpoolContext ctx) {
     String name = unquote(ctx.name.getText());
     _c.referenceStructure(SNATPOOL, name, SNAT_SNATPOOL, ctx.name.getStart().getLine());
+    _currentSnat.setSnatpool(name);
+  }
+
+  @Override
+  public void exitLso_origin(Lso_originContext ctx) {
+    String text = ctx.origin.getText();
+    Optional<Prefix> prefix = Prefix.tryParse(text);
+    if (prefix.isPresent()) {
+      _currentSnat.getIpv4Origins().computeIfAbsent(prefix.get(), Ipv4Origin::new);
+      return;
+    }
+    Optional<Prefix6> prefix6 = Prefix6.tryParse(text);
+    if (prefix6.isPresent()) {
+      _currentSnat.getIpv6Origins().computeIfAbsent(prefix6.get(), Ipv6Origin::new);
+      return;
+    }
+    _w.redFlag(
+        String.format("'%s' is neither IPv4 nor IPv6 prefix in: %s", text, getFullText(ctx)));
   }
 
   @Override

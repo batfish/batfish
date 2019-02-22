@@ -29,6 +29,10 @@ public final class Virtual implements Serializable {
     _name = name;
   }
 
+  public @Nullable String getDestination() {
+    return _destination;
+  }
+
   public @Nullable Integer getDestinationPort() {
     return _destinationPort;
   }
