@@ -139,8 +139,8 @@ public class SpecifiersReachabilityTest {
         SpecifiersReachabilityQuestion.builder()
             .setPathConstraints(
                 PathConstraintsInput.builder()
-                    .setStartLocation(".*")
-                    .setForbiddenLocations(".*")
+                    .setStartLocation("/.*/")
+                    .setForbiddenLocations("/.*/")
                     .build())
             .build();
     AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
@@ -185,8 +185,8 @@ public class SpecifiersReachabilityTest {
         SpecifiersReachabilityQuestion.builder()
             .setPathConstraints(
                 PathConstraintsInput.builder()
-                    .setStartLocation(String.format("%s[%s]", ".*", LOOPBACK))
-                    .setTransitLocations(".*")
+                    .setStartLocation(String.format("%s[%s]", "/.*/", LOOPBACK))
+                    .setTransitLocations("/.*/")
                     .build())
             .build();
     AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
