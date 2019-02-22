@@ -2,6 +2,7 @@ package org.batfish.specifier;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,19 +20,22 @@ import javax.annotation.Nullable;
  *   <li>and inputs accepted by {@link ConstantWildcardSetIpSpaceSpecifierFactory}.
  * </ul>
  */
-public abstract class FlexibleIpSpaceSpecifierFactory implements IpSpaceSpecifierFactory {
+@AutoService(IpSpaceSpecifierFactory.class)
+public class FlexibleIpSpaceSpecifierFactory implements IpSpaceSpecifierFactory {
+  public static final String NAME = FlexibleIpSpaceSpecifierFactory.class.getSimpleName();
+
   private static final Pattern REF_PATTERN =
       Pattern.compile("ref\\.addressgroup\\((.*)\\)", Pattern.CASE_INSENSITIVE);
   private static final Pattern LOCATION_PATTERN =
       Pattern.compile("ofLocation\\((.*)\\)", Pattern.CASE_INSENSITIVE);
 
-  protected abstract IpSpaceSpecifier defaultIpSpaceSpecifier();
+  protected IpSpaceSpecifier defaultIpSpaceSpecifier() {
+    throw new IllegalStateException();
+  }
 
   @Override
   public IpSpaceSpecifier buildIpSpaceSpecifier(@Nullable Object input) {
-    if (input == null) {
-      return defaultIpSpaceSpecifier();
-    }
+    checkArgument(input != null, getName() + " requires non-null input");
     checkArgument(input instanceof String, getName() + " requires String input");
     String str = ((String) input).trim();
     return parse(str);
@@ -49,5 +53,10 @@ public abstract class FlexibleIpSpaceSpecifierFactory implements IpSpaceSpecifie
       return new FlexibleLocationIpSpaceSpecifierFactory().buildIpSpaceSpecifier(matcher.group(1));
     }
     return new ConstantWildcardSetIpSpaceSpecifierFactory().buildIpSpaceSpecifier(input);
+  }
+
+  @Override
+  public String getName() {
+    return NAME;
   }
 }

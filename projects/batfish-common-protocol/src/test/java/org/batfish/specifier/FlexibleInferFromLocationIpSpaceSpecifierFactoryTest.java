@@ -27,13 +27,6 @@ public class FlexibleInferFromLocationIpSpaceSpecifierFactoryTest {
   }
 
   @Test
-  public void testNull() {
-    assertThat(
-        new FlexibleInferFromLocationIpSpaceSpecifierFactory().buildIpSpaceSpecifier(null),
-        is(InferFromLocationIpSpaceSpecifier.INSTANCE));
-  }
-
-  @Test
   public void testRefAddressGroup() {
     assertThat(
         new FlexibleInferFromLocationIpSpaceSpecifierFactory()
