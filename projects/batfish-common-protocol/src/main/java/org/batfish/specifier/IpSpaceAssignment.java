@@ -2,11 +2,13 @@ package org.batfish.specifier;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.IpSpace;
@@ -33,6 +35,31 @@ public final class IpSpaceAssignment {
 
     public Set<Location> getLocations() {
       return _locations;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof Entry)) {
+        return false;
+      }
+      return Objects.equals(_ipSpace, ((Entry) o)._ipSpace)
+          && Objects.equals(_locations, ((Entry) o)._locations);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_ipSpace, _locations);
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(getClass())
+          .add("locations", _locations)
+          .add("ipSpace", _ipSpace)
+          .toString();
     }
   }
 
@@ -80,5 +107,26 @@ public final class IpSpaceAssignment {
 
   public static IpSpaceAssignment of(List<Entry> entries) {
     return new IpSpaceAssignment(entries);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof IpSpaceAssignment)) {
+      return false;
+    }
+    return Objects.equals(_entries, ((IpSpaceAssignment) o)._entries);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_entries);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(getClass()).add("entires", _entries).toString();
   }
 }

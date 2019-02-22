@@ -4,10 +4,18 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.questions.FiltersSpecifier;
-import org.batfish.specifier.ShorthandFilterSpecifier;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.NetworkFactory;
+import org.batfish.specifier.MockSpecifierContext;
+import org.batfish.specifier.SpecifierContext;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -22,11 +30,34 @@ public class TestFiltersQuestionTest {
    */
   @Test
   public void testDefaultSpecifierInput() {
-    TestFiltersQuestion question = new TestFiltersQuestion(null, "acl", null, null);
+    TestFiltersQuestion question = new TestFiltersQuestion(null, "filter1", null, null);
+
+    IpAccessList _filter1 =
+        IpAccessList.builder()
+            .setName("filter1")
+            .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL))
+            .build();
+
+    IpAccessList _filter2 =
+        IpAccessList.builder()
+            .setName("filter2")
+            .setLines(ImmutableList.of(IpAccessListLine.REJECT_ALL))
+            .build();
+
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb = nf.configurationBuilder().setHostname("node");
+    cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+
+    Configuration n1 = cb.build();
+
+    n1.getIpAccessLists()
+        .putAll(ImmutableMap.of(_filter1.getName(), _filter1, _filter2.getName(), _filter2));
+
+    SpecifierContext ctxt =
+        MockSpecifierContext.builder().setConfigs(ImmutableMap.of("node", n1)).build();
 
     assertThat(
-        question.getFilterSpecifier(),
-        equalTo(new ShorthandFilterSpecifier(new FiltersSpecifier("acl"))));
+        question.getFilterSpecifier().resolve("node", ctxt), equalTo(ImmutableSet.of(_filter1)));
   }
 
   @Test
