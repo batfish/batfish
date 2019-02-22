@@ -37,7 +37,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 /** Tests for {@link ReturnFlowTransformation}. */
-public class ReturnFlowTransformationTest {
+public final class ReturnFlowTransformationTest {
   @Rule public ExpectedException _expectedException = ExpectedException.none();
 
   @Test
@@ -107,6 +107,30 @@ public class ReturnFlowTransformationTest {
       ApplyAll applyAllDst = new ApplyAll(assignDstIp, assignDstPort);
       assertEquals(applyAllSrc.accept(STEP_VISITOR), applyAllDst);
       assertEquals(applyAllDst.accept(STEP_VISITOR), applyAllSrc);
+    }
+
+    // apply any
+    {
+      Ip ipPoolStart = Ip.parse("1.1.1.1");
+      Ip ipPoolEnd = Ip.parse("1.1.2.2");
+      int portPoolStart = 5;
+      int portPoolEnd = 17;
+      AssignIpAddressFromPool assignSrcIp =
+          new AssignIpAddressFromPool(
+              TransformationType.SOURCE_NAT, IpField.SOURCE, ipPoolStart, ipPoolEnd);
+      AssignIpAddressFromPool assignDstIp =
+          new AssignIpAddressFromPool(
+              TransformationType.SOURCE_NAT, IpField.DESTINATION, ipPoolStart, ipPoolEnd);
+      AssignPortFromPool assignSrcPort =
+          new AssignPortFromPool(
+              TransformationType.SOURCE_NAT, PortField.SOURCE, portPoolStart, portPoolEnd);
+      AssignPortFromPool assignDstPort =
+          new AssignPortFromPool(
+              TransformationType.SOURCE_NAT, PortField.DESTINATION, portPoolStart, portPoolEnd);
+      ApplyAny applyAnySrc = new ApplyAny(assignSrcIp, assignSrcPort);
+      ApplyAny applyAnyDst = new ApplyAny(assignDstIp, assignDstPort);
+      assertEquals(applyAnySrc.accept(STEP_VISITOR), applyAnyDst);
+      assertEquals(applyAnyDst.accept(STEP_VISITOR), applyAnySrc);
     }
   }
 
