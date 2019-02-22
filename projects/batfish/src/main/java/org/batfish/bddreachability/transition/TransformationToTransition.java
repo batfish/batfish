@@ -4,6 +4,7 @@ import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.reverse;
 import static org.batfish.datamodel.transformation.ReturnFlowTransformation.returnFlowTransformation;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.RangeSet;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
@@ -17,6 +18,7 @@ import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
@@ -113,6 +115,14 @@ public class TransformationToTransition {
     public Transition visitAssignPortFromPool(AssignPortFromPool step) {
       return assignPortFromPool(
           portField(step.getPortField()), step.getPoolStart(), step.getPoolEnd());
+    }
+
+    @Override
+    public Transition visitApplyAll(ApplyAll applyAll) {
+      return new Composite(
+          applyAll.getSteps().stream()
+              .map(step -> step.accept(this))
+              .collect(ImmutableList.toImmutableList()));
     }
   }
 

@@ -621,15 +621,15 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _c;
   }
 
-  private transient Map<String, Optional<Transformation>> _virtualIncomingTransformations;
+  private transient Collection<Transformation> _virtualIncomingTransformations;
 
-  private transient Map<String, Optional<Transformation>> _virtualOutgoingTransformations;
+  private transient Collection<Transformation> _virtualOutgoingTransformations;
 
   private void initVirtualTransformations() {
-    _virtuals.forEach(
+    _virtuals.values().stream().map(this::computeVirtualIncomingTransformation)
         (virtualName, virtual) -> {
-          _virtualIncomingTransformations
-              .computeIfAbsent(virtualName, this::computeVirtualIncomingTransformation)
+          _virtualIncomingTransformations.c
+              .compute(virtualName, this::computeVirtualIncomingTransformation)
               .ifPresent(incomingTransformations::add);
         });
     _virtuals.forEach(
@@ -645,19 +645,35 @@ public class F5BigipConfiguration extends VendorConfiguration {
     ImmutableList.Builder<Transformation> incomingTransformations = ImmutableList.builder();
   }
 
+//  private @Nonnull Optional<Transformation> computeVirtualOutgoingTransformation(
+//      Virtual virtual) {
+//    if (snatPoolName )
+//    Transformation transformation =
+//        new Transformation.Builder(matchedSpace)
+//            .apply(
+//                new AssignIpAddressFromPool(
+//                    TransformationType.DEST_NAT, IpField.DESTINATION, pool)));
+//    pool.getMembers().values().stream().map(PoolMember::getAddress).filter(Objects::nonNull);
+//  }
+//  
   private @Nonnull Optional<Transformation> computeVirtualIncomingTransformation(
-      String virtualName) {
-    // DNAT if applicable, else nothing
-    Virtual virtual = _virtuals.get(virtualName);
+      Virtual virtual) {
+    //// Perform DNAT if source IP is in range and destination IP and port match
+    // Retrieve pool of addresses to which destination IP may be translated
     String poolName = virtual.getPool();
     if (poolName == null) {
+      // Cannot translate without pool
       return Optional.empty();
     }
     Pool pool = _pools.get(poolName);
     if (pool == null) {
+      // Cannot translate without pool
       return Optional.empty();
     }
+    
+    
     int destinationPort = virtual.getDestinationPort();
+    // source IP matching
     HeaderSpace matchedSpace =
         HeaderSpace.builder()
             .setDstIps(virtual.getDestinationIp().toIpSpace())
@@ -665,13 +681,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
             .setSrcIps(virtual.getSource().toIpSpace())
             .build();
     String snatPoolName = virtual.getSourceAddressTranslationPool();
-    if (snatPoolName )
-    Transformation transformation =
-        new Transformation.Builder(matchedSpace)
-            .apply(
-                new AssignIpAddressFromPool(
-                    TransformationType.DEST_NAT, IpField.DESTINATION, pool)));
-    pool.getMembers().values().stream().map(PoolMember::getAddress).filter(Objects::nonNull);
   }
 
   private @Nonnull Optional<Transformation> computeVirtualOutgoingTransformation(
