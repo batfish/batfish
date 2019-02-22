@@ -66,7 +66,6 @@ public final class AssignIpAddressFromPool implements TransformationStep, Serial
     return _ipRanges;
   }
 
-  @Override
   @JsonProperty(PROP_TRANSFORMATION_TYPE)
   public TransformationType getType() {
     return _type;

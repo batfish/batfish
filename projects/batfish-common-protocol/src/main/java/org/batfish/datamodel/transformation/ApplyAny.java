@@ -11,32 +11,32 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** Composite {@link TransformationStep} that applies all provided steps */
+/** Composite {@link TransformationStep} that applies exactly one of the provided steps */
 @ParametersAreNonnullByDefault
-public class ApplyAll implements TransformationStep, Serializable {
+public class ApplyAny implements TransformationStep, Serializable {
 
   private static final String PROP_STEPS = "steps";
   private static final long serialVersionUID = 1L;
 
   @JsonCreator
-  private static final @Nonnull ApplyAll create(
+  private static final @Nonnull ApplyAny create(
       @JsonProperty(PROP_STEPS) @Nullable Iterable<TransformationStep> steps) {
-    return new ApplyAll(firstNonNull(steps, ImmutableList.of()));
+    return new ApplyAny(firstNonNull(steps, ImmutableList.of()));
   }
 
   private final @Nonnull List<TransformationStep> _steps;
 
-  public ApplyAll(Iterable<TransformationStep> steps) {
+  public ApplyAny(Iterable<TransformationStep> steps) {
     _steps = ImmutableList.copyOf(steps);
   }
 
-  public ApplyAll(TransformationStep... steps) {
+  public ApplyAny(TransformationStep... steps) {
     _steps = ImmutableList.copyOf(steps);
   }
 
   @Override
   public @Nullable <T> T accept(TransformationStepVisitor<T> visitor) {
-    return visitor.visitApplyAll(this);
+    return visitor.visitApplyAny(this);
   }
 
   public @Nonnull List<TransformationStep> getSteps() {

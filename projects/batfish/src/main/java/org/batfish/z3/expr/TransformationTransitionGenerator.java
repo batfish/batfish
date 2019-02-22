@@ -18,7 +18,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.transformation.ApplyAll;
-import org.batfish.datamodel.transformation.ApplyOne;
+import org.batfish.datamodel.transformation.ApplyAny;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
@@ -136,9 +136,9 @@ public final class TransformationTransitionGenerator {
     }
 
     @Override
-    public BasicRuleStatement visitApplyOne(ApplyOne applyOne) {
+    public BasicRuleStatement visitApplyAny(ApplyAny applyAny) {
       ImmutableList<BooleanExpr> disjuncts =
-          applyOne.getSteps().stream()
+          applyAny.getSteps().stream()
               .map(step -> step.accept(this))
               .map(BasicRuleStatement::getPreconditionStateIndependentConstraints)
               .collect(ImmutableList.toImmutableList());
