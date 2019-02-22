@@ -15,11 +15,11 @@ import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
-import org.batfish.specifier.FlexibleNodeSpecifierFactory;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.NoNodesNodeSpecifier;
-import org.batfish.specifier.NodeSpecifierFactory;
+import org.batfish.specifier.SpecifierFactories;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -128,13 +128,11 @@ public class SpecifiersReachabilityQuestionTest {
     assertThat(
         question.getReachabilityParameters().getRequiredTransitNodesSpecifier(),
         equalTo(
-            NodeSpecifierFactory.load(FlexibleNodeSpecifierFactory.NAME)
-                .buildNodeSpecifier("foo")));
+            SpecifierFactories.getNodeSpecifierOrDefault("foo", AllNodesNodeSpecifier.INSTANCE)));
     assertThat(
         question.getReachabilityParameters().getForbiddenTransitNodesSpecifier(),
         equalTo(
-            NodeSpecifierFactory.load(FlexibleNodeSpecifierFactory.NAME)
-                .buildNodeSpecifier("bar")));
+            SpecifierFactories.getNodeSpecifierOrDefault("bar", AllNodesNodeSpecifier.INSTANCE)));
   }
 
   @Test

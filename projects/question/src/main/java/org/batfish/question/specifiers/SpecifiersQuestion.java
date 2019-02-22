@@ -10,11 +10,6 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.FilterSpecifierFactory;
-import org.batfish.specifier.FlexibleFilterSpecifierFactory;
-import org.batfish.specifier.FlexibleInferFromLocationIpSpaceSpecifierFactory;
-import org.batfish.specifier.FlexibleInterfaceSpecifierFactory;
-import org.batfish.specifier.FlexibleLocationSpecifierFactory;
-import org.batfish.specifier.FlexibleNodeSpecifierFactory;
 import org.batfish.specifier.InterfaceSpecifier;
 import org.batfish.specifier.InterfaceSpecifierFactory;
 import org.batfish.specifier.IpSpaceSpecifier;
@@ -23,6 +18,7 @@ import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.LocationSpecifierFactory;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.NodeSpecifierFactory;
+import org.batfish.specifier.SpecifierFactories;
 
 /**
  * Allows users to see how different specifiers ({@link LocationSpecifier}, {@link
@@ -54,11 +50,11 @@ public final class SpecifiersQuestion extends Question {
 
   private static final String PROP_QUERY_TYPE = "queryType";
 
-  private String _filterSpecifierFactory = FlexibleFilterSpecifierFactory.NAME;
-  private String _interfaceSpecifierFactory = FlexibleInterfaceSpecifierFactory.NAME;
-  private String _ipSpaceSpecifierFactory = FlexibleInferFromLocationIpSpaceSpecifierFactory.NAME;
-  private String _locationSpecifierFactory = FlexibleLocationSpecifierFactory.NAME;
-  private String _nodeSpecifierFactory = FlexibleNodeSpecifierFactory.NAME;
+  private String _filterSpecifierFactory = SpecifierFactories.Filter;
+  private String _interfaceSpecifierFactory = SpecifierFactories.Interface;
+  private String _ipSpaceSpecifierFactory = SpecifierFactories.IpSpace;
+  private String _locationSpecifierFactory = SpecifierFactories.Location;
+  private String _nodeSpecifierFactory = SpecifierFactories.Node;
 
   @Nullable private String _filterSpecifierInput;
   @Nullable private String _interfaceSpecifierInput;
