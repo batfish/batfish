@@ -9,13 +9,13 @@ import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.questions.FiltersSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.FilterSpecifier;
-import org.batfish.specifier.FilterSpecifierFactory;
-import org.batfish.specifier.FlexibleFilterSpecifierFactory;
-import org.batfish.specifier.FlexibleNodeSpecifierFactory;
 import org.batfish.specifier.NodeSpecifier;
-import org.batfish.specifier.NodeSpecifierFactory;
+import org.batfish.specifier.ShorthandFilterSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 /**
  * A question that returns unreachable lines of ACLs in a tabular format. {@link
@@ -25,75 +25,44 @@ import org.batfish.specifier.NodeSpecifierFactory;
  */
 @ParametersAreNonnullByDefault
 public class FilterLineReachabilityQuestion extends Question {
-  private static final String DEFAULT_FILTER_SPECIFIER_FACTORY =
-      FlexibleFilterSpecifierFactory.NAME;
-
   private static final boolean DEFAULT_IGNORE_COMPOSITES = true;
-
-  private static final String DEFAULT_NODE_SPECIFIER_FACTORY = FlexibleNodeSpecifierFactory.NAME;
-
-  private static final String PROP_FILTER_SPECIFIER_FACTORY = "filterSpecifierFactory";
 
   private static final String PROP_FILTER_SPECIFIER_INPUT = "filters";
 
   private static final String PROP_IGNORE_COMPOSITES = "ignoreComposites";
 
-  private static final String PROP_NODE_SPECIFIER_FACTORY = "nodeSpecifierFactory";
-
   private static final String PROP_NODE_SPECIFIER_INPUT = "nodes";
-
-  @Nonnull private final String _filterSpecifierFactory;
 
   @Nullable private String _filterSpecifierInput;
 
   private final boolean _ignoreComposites;
 
-  @Nonnull private String _nodeSpecifierFactory;
-
   @Nullable private String _nodeSpecifierInput;
 
   @JsonCreator
   private static FilterLineReachabilityQuestion create(
-      @Nullable @JsonProperty(PROP_FILTER_SPECIFIER_FACTORY) String filterSpecifierFactory,
       @Nullable @JsonProperty(PROP_FILTER_SPECIFIER_INPUT) String filtersSpecifierInput,
-      @Nullable @JsonProperty(PROP_NODE_SPECIFIER_FACTORY) String nodeSpecifierFactory,
       @Nullable @JsonProperty(PROP_NODE_SPECIFIER_INPUT) String nodeSpecifierInput,
       @Nullable @JsonProperty(PROP_IGNORE_COMPOSITES) Boolean ignoreComposites) {
     return new FilterLineReachabilityQuestion(
-        filterSpecifierFactory,
-        filtersSpecifierInput,
-        nodeSpecifierFactory,
-        nodeSpecifierInput,
-        ignoreComposites);
+        filtersSpecifierInput, nodeSpecifierInput, ignoreComposites);
   }
 
   @VisibleForTesting
   FilterLineReachabilityQuestion() {
-    this(null, null, null, null, null);
+    this(null, null, null);
   }
 
   @VisibleForTesting
   FilterLineReachabilityQuestion(String filterSpecifierInput) {
-    this(null, filterSpecifierInput, null, null, null);
+    this(filterSpecifierInput, null, null);
   }
 
   public FilterLineReachabilityQuestion(
-      @Nullable String filterSpecifierInput,
-      @Nullable String nodeSpecifierInput,
-      boolean ignoreComposites) {
-    this(null, filterSpecifierInput, null, nodeSpecifierInput, ignoreComposites);
-  }
-
-  public FilterLineReachabilityQuestion(
-      @Nullable String filterSpecifierFactory,
       @Nullable String filtersSpecifierInput,
-      @Nullable String nodeSpecifierFactory,
       @Nullable String nodeSpecifierInput,
       @Nullable Boolean ignoreComposites) {
-    _filterSpecifierFactory =
-        firstNonNull(filterSpecifierFactory, DEFAULT_FILTER_SPECIFIER_FACTORY);
     _filterSpecifierInput = filtersSpecifierInput;
-    _nodeSpecifierFactory = firstNonNull(nodeSpecifierFactory, DEFAULT_NODE_SPECIFIER_FACTORY);
     _nodeSpecifierInput = nodeSpecifierInput;
     _ignoreComposites = firstNonNull(ignoreComposites, DEFAULT_IGNORE_COMPOSITES);
   }
@@ -101,12 +70,6 @@ public class FilterLineReachabilityQuestion extends Question {
   @Override
   public boolean getDataPlane() {
     return false;
-  }
-
-  @Nonnull
-  @JsonProperty(PROP_FILTER_SPECIFIER_FACTORY)
-  public String getFilterSpecifierFactory() {
-    return _filterSpecifierFactory;
   }
 
   @Nullable
@@ -125,12 +88,6 @@ public class FilterLineReachabilityQuestion extends Question {
     return "filterLineReachability";
   }
 
-  @Nonnull
-  @JsonProperty(PROP_NODE_SPECIFIER_FACTORY)
-  public String getNodeSpecifierFactory() {
-    return _nodeSpecifierFactory;
-  }
-
   @Nullable
   @JsonProperty(PROP_NODE_SPECIFIER_INPUT)
   public String getNodeSpecifierInput() {
@@ -140,13 +97,14 @@ public class FilterLineReachabilityQuestion extends Question {
   @Nonnull
   @JsonIgnore
   FilterSpecifier filterSpecifier() {
-    return FilterSpecifierFactory.load(_filterSpecifierFactory)
-        .buildFilterSpecifier(_filterSpecifierInput);
+    return SpecifierFactories.getFilterSpecifierOrDefault(
+        _filterSpecifierInput, new ShorthandFilterSpecifier(FiltersSpecifier.ALL));
   }
 
   @Nonnull
   @JsonIgnore
   NodeSpecifier nodeSpecifier() {
-    return NodeSpecifierFactory.load(_nodeSpecifierFactory).buildNodeSpecifier(_nodeSpecifierInput);
+    return SpecifierFactories.getNodeSpecifierOrDefault(
+        _nodeSpecifierInput, AllNodesNodeSpecifier.INSTANCE);
   }
 }
