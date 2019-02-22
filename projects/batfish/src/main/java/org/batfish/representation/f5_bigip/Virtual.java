@@ -23,11 +23,14 @@ public final class Virtual implements Serializable {
   private @Nullable String _pool;
   private @Nullable Prefix _source;
   private @Nullable Prefix6 _source6;
-
   private @Nullable String _sourceAddressTranslationPool;
 
   public Virtual(String name) {
     _name = name;
+  }
+
+  public @Nullable String getDestination() {
+    return _destination;
   }
 
   public @Nullable Integer getDestinationPort() {
