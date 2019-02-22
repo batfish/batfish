@@ -380,4 +380,9 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     elems.add(e);
     return true;
   }
+
+  /** Remove all elements from the multimap. */
+  public void clear() {
+    traverseNodes(n -> n._elements.clear());
+  }
 }
