@@ -9,6 +9,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import com.google.common.collect.ImmutableList;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
@@ -16,6 +17,8 @@ import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.transformation.ApplyAll;
+import org.batfish.datamodel.transformation.ApplyOne;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
@@ -107,6 +110,22 @@ public class TransformationToTransition {
     public Transition visitAssignPortFromPool(AssignPortFromPool step) {
       return assignPortFromPool(
           portField(step.getPortField()), step.getPoolStart(), step.getPoolEnd());
+    }
+
+    @Override
+    public Transition visitApplyAll(ApplyAll applyAll) {
+      return new Composite(
+          applyAll.getSteps().stream()
+              .map(step -> step.accept(this))
+              .collect(ImmutableList.toImmutableList()));
+    }
+
+    @Override
+    public Transition visitApplyOne(ApplyOne applyOne) {
+      return new Or(
+          applyOne.getSteps().stream()
+              .map(step -> step.accept(this))
+              .collect(ImmutableList.toImmutableList()));
     }
   }
 
