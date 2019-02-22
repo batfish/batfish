@@ -5,6 +5,7 @@ import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.reverse;
 import static org.batfish.datamodel.transformation.ReturnFlowTransformation.returnFlowTransformation;
 
+import com.google.common.collect.RangeSet;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;

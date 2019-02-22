@@ -55,7 +55,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.transformation.ApplyAll;
-import org.batfish.datamodel.transformation.ApplyOne;
+import org.batfish.datamodel.transformation.ApplyAny;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
@@ -183,7 +183,6 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private TransformationStep computeVirtualIncomingPoolMemberTransformation(PoolMember member) {
     return new ApplyAll(
-        TransformationType.DEST_NAT,
         new AssignIpAddressFromPool(
             TransformationType.DEST_NAT,
             IpField.DESTINATION,
@@ -196,8 +195,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   private TransformationStep computeVirtualIncomingPoolTransformation(Pool pool) {
-    return new ApplyOne(
-        TransformationType.DEST_NAT,
+    return new ApplyAny(
         pool.getMembers().values().stream()
             .map(this::computeVirtualIncomingPoolMemberTransformation)
             .collect(ImmutableList.toImmutableList()));
