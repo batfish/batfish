@@ -130,6 +130,12 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
     }
   }
 
+  /** Clear all routes from the RIB */
+  public final void clear() {
+    _tree.clear();
+    _allRoutes = null;
+  }
+
   public final boolean containsRoute(R route) {
     return _tree.containsRoute(route);
   }
