@@ -64,8 +64,18 @@ public class EigrpInternalRoute extends EigrpRoute {
   }
 
   @Override
-  public AbstractRouteBuilder<?, ?> toBuilder() {
-    throw new UnsupportedOperationException();
+  public Builder toBuilder() {
+    return builder()
+        // AbstractRoute properties
+        .setNetwork(getNetwork())
+        .setNextHopIp(getNextHopIp())
+        .setAdmin(getAdministrativeCost())
+        .setMetric(getMetric())
+        .setNonForwarding(getNonForwarding())
+        .setNonRouting(getNonRouting())
+        // EigrpInternalRoute properties
+        .setEigrpMetric(getEigrpMetric())
+        .setProcessAsn(getProcessAsn());
   }
 
   @Override
@@ -77,6 +87,8 @@ public class EigrpInternalRoute extends EigrpRoute {
 
     @Nullable private EigrpMetric _eigrpMetric;
     @Nullable Long _processAsn;
+
+    private Builder() {}
 
     @Override
     @Nonnull

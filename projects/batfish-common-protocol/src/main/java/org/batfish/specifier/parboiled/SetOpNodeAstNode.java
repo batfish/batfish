@@ -11,7 +11,7 @@ abstract class SetOpNodeAstNode implements NodeAstNode {
     NodeAstNode leftSpec = (NodeAstNode) left;
     NodeAstNode rightSpec = (NodeAstNode) right;
     switch (c) {
-      case '+':
+      case ',':
         return new UnionNodeAstNode(leftSpec, rightSpec);
       case '\\':
         return new DifferenceNodeAstNode(leftSpec, rightSpec);

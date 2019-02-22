@@ -11,7 +11,7 @@ abstract class SetOpFilterAstNode implements FilterAstNode {
     FilterAstNode leftSpec = (FilterAstNode) left;
     FilterAstNode rightSpec = (FilterAstNode) right;
     switch (c) {
-      case '+':
+      case ',':
         return new UnionFilterAstNode(leftSpec, rightSpec);
       case '\\':
         return new DifferenceFilterAstNode(leftSpec, rightSpec);

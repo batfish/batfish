@@ -268,4 +268,28 @@ public class PrefixTrieMultiMapTest {
             immutableEntry(Prefix.parse("0.0.0.0/8"), ImmutableSet.of()),
             immutableEntry(Prefix.ZERO, ImmutableSet.of())));
   }
+
+  @Test
+  public void test() {
+    PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>(Prefix.ZERO);
+    assertThat(entriesPostOrder(map), contains(immutableEntry(Prefix.ZERO, ImmutableSet.of())));
+
+    map.put(Prefix.ZERO, 0);
+    assertThat(entriesPostOrder(map), contains(immutableEntry(Prefix.ZERO, ImmutableSet.of(0))));
+
+    Prefix l = Prefix.parse("0.0.0.0/32");
+    Prefix r = Prefix.parse("0.0.0.1/32");
+    map.put(l, 1);
+    map.put(r, 2);
+    assertThat(
+        entriesPostOrder(map),
+        contains(
+            immutableEntry(l, ImmutableSet.of(1)),
+            immutableEntry(r, ImmutableSet.of(2)),
+            immutableEntry(Prefix.parse("0.0.0.0/31"), ImmutableSet.of()),
+            immutableEntry(Prefix.ZERO, ImmutableSet.of(0))));
+
+    // Since the entry for 0.0.0.0/31 has no elements, return the elements for Prefix.ZERO
+    assertThat(map.longestPrefixMatch(Ip.parse("0.0.0.0"), 31), equalTo(ImmutableSet.of(0)));
+  }
 }

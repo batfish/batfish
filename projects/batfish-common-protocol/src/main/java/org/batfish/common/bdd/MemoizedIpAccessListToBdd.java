@@ -26,7 +26,6 @@ public final class MemoizedIpAccessListToBdd extends IpAccessListToBdd {
         mgr,
         new HeaderSpaceToBDD(
             packet,
-            namedIpSpaces,
             new MemoizedIpSpaceToBDD(packet.getDstIp(), namedIpSpaces),
             new MemoizedIpSpaceToBDD(packet.getSrcIp(), namedIpSpaces)),
         aclEnv);
