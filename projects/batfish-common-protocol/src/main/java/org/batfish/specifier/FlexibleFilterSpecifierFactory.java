@@ -64,7 +64,7 @@ public class FlexibleFilterSpecifierFactory implements FilterSpecifierFactory {
 
     matcher = REF_PATTERN.matcher(str);
     if (matcher.find()) {
-      String[] words = ((String) input).split(",");
+      String[] words = matcher.group(1).split(",");
       checkArgument(
           words.length == 2, "Arguments to ref.filtergroup should be two words separated by ','");
       return new ReferenceFilterGroupFilterSpecifier(words[0].trim(), words[1].trim());
