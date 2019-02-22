@@ -99,7 +99,7 @@ public class ParserFilterTest {
                 new AutocompleteSuggestion(
                     "1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
                 new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("+", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()))));
   }
 
@@ -151,12 +151,16 @@ public class ParserFilterTest {
 
   @Test
   public void testParseFilterParens() {
-    String filterName = "filter";
-    NameFilterAstNode expectedAst = new NameFilterAstNode(filterName);
-
-    assertThat(ParserUtils.getAst(getRunner().run("(" + filterName + ")")), equalTo(expectedAst));
     assertThat(
-        ParserUtils.getAst(getRunner().run(" ( " + filterName + " ) ")), equalTo(expectedAst));
+        ParserUtils.getAst(getRunner().run("(filter)")), equalTo(new NameFilterAstNode("filter")));
+    assertThat(
+        ParserUtils.getAst(getRunner().run(" ( filter ) ")),
+        equalTo(new NameFilterAstNode("filter")));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("(filter1&filter2)")),
+        equalTo(
+            new IntersectionFilterAstNode(
+                new NameFilterAstNode("filter1"), new NameFilterAstNode("filter2"))));
   }
 
   @Test
@@ -184,8 +188,8 @@ public class ParserFilterTest {
     UnionFilterAstNode expectedNode =
         new UnionFilterAstNode(new NameFilterAstNode("filter1"), new NameFilterAstNode("filter2"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("filter1+filter2")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" filter1 + filter2 ")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run("filter1,filter2")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run(" filter1 , filter2 ")), equalTo(expectedNode));
   }
 
   /** Test if we got the precedence of set operators right. Intersection is higher priority. */
@@ -199,7 +203,7 @@ public class ParserFilterTest {
                 new IntersectionFilterAstNode(
                     new NameFilterAstNode("filter2"), new NameFilterAstNode("filter3")))));
     assertThat(
-        ParserUtils.getAst(getRunner().run("filter1&filter2+filter3")),
+        ParserUtils.getAst(getRunner().run("filter1&filter2,filter3")),
         equalTo(
             new UnionFilterAstNode(
                 new IntersectionFilterAstNode(

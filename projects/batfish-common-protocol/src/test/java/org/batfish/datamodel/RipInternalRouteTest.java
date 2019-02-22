@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -60,5 +61,12 @@ public class RipInternalRouteTest {
     assertThat(r1, not(equalTo(r5)));
     assertThat(r1, not(equalTo(null)));
     assertThat(r1, not(equalTo(Prefix.parse("1.1.1.1/32"))));
+  }
+
+  @Test
+  public void testToBuilder() {
+    RipInternalRoute r =
+        RipInternalRoute.builder().setNetwork(Prefix.parse("1.1.1.0/24")).setMetric(1L).build();
+    assertThat(r.toBuilder().build(), Matchers.equalTo(r));
   }
 }

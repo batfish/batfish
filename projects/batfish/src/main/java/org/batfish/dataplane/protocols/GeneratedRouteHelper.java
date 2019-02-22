@@ -34,7 +34,7 @@ public class GeneratedRouteHelper {
       Set<AnnotatedRoute<AbstractRoute>> contributingRoutes,
       String vrfName) {
     boolean active = true;
-    GeneratedRoute.Builder grb = GeneratedRoute.Builder.fromRoute(generatedRoute);
+    GeneratedRoute.Builder grb = generatedRoute.toBuilder();
 
     // Null route if necessary
     if (generatedRoute.getDiscard()) {

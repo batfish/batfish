@@ -177,27 +177,44 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
       assert this._prefix.containsPrefix(prefix);
 
       Node<T> node = this;
-      long prefixAsLong = prefix.getStartIp().asLong();
       while (true) {
-        if (node._prefix.equals(prefix)) {
-          // found an exact match
+        // Choose which child might have a longer match
+        Node<T> child = node.matchingChild(prefix);
+        if (child == null) {
           return node;
+        }
+        node = child;
+      }
+    }
+
+    @Nullable
+    Node<T> findLongestPrefixMatchNonEmptyNode(Prefix prefix) {
+      assert this._prefix.containsPrefix(prefix);
+
+      Node<T> longestNonEmpty = null;
+      Node<T> node = this;
+      while (node != null) {
+        if (!node._elements.isEmpty()) {
+          longestNonEmpty = node;
         }
 
         // Choose which child might have a longer match
-        Node<T> child =
-            Ip.getBitAtPosition(prefixAsLong, node._prefix.getPrefixLength())
-                ? node._right
-                : node._left;
-
-        // Check if the child exists and matches
-        if (child == null || !child._prefix.containsPrefix(prefix)) {
-          return node;
-        }
-
-        // Child does have a longer match, keep looking
-        node = child;
+        node = node.matchingChild(prefix);
       }
+
+      return longestNonEmpty;
+    }
+
+    @Nullable
+    Node<T> matchingChild(Prefix prefix) {
+      if (_prefix.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH) {
+        return null;
+      }
+      Node<T> child =
+          Ip.getBitAtPosition(prefix.getStartIp().asLong(), _prefix.getPrefixLength())
+              ? _right
+              : _left;
+      return child == null || !child._prefix.containsPrefix(prefix) ? null : child;
     }
 
     private void setLeft(@Nullable Node<T> left) {
@@ -289,6 +306,12 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
         : _root.findLongestPrefixMatchNode(p);
   }
 
+  private @Nullable Node<T> longestMatchNonEmptyNode(Prefix p) {
+    return _root == null || !_root._prefix.containsPrefix(p)
+        ? null
+        : _root.findLongestPrefixMatchNonEmptyNode(p);
+  }
+
   /** Find the elements associated with the longest matching prefix of a given IP address. */
   @Nonnull
   public Set<T> longestPrefixMatch(Ip address) {
@@ -301,7 +324,8 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
    */
   @Nonnull
   public Set<T> longestPrefixMatch(Ip address, int maxPrefixLength) {
-    Node<T> node = longestMatchNode(Prefix.create(address, maxPrefixLength));
+    Node<T> node = longestMatchNonEmptyNode(Prefix.create(address, maxPrefixLength));
+    assert node == null || !node._elements.isEmpty();
     return node == null ? ImmutableSet.of() : ImmutableSet.copyOf(node._elements);
   }
 

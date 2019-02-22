@@ -127,7 +127,7 @@ public class ParserIpSpaceTest {
   @Test
   public void testIpSpaceList2() {
     IpSpaceAstNode expectedNode =
-        new CommaIpSpaceAstNode(new IpAstNode("1.1.1.1"), new IpAstNode("2.2.2.2"));
+        new UnionIpSpaceAstNode(new IpAstNode("1.1.1.1"), new IpAstNode("2.2.2.2"));
 
     assertThat(ParserUtils.getAst(getRunner().run("1.1.1.1,2.2.2.2")), equalTo(expectedNode));
     assertThat(ParserUtils.getAst(getRunner().run("1.1.1.1 , 2.2.2.2 ")), equalTo(expectedNode));
@@ -136,8 +136,8 @@ public class ParserIpSpaceTest {
   @Test
   public void testIpSpaceList3() {
     IpSpaceAstNode expectedNode =
-        new CommaIpSpaceAstNode(
-            new CommaIpSpaceAstNode(new IpAstNode("1.1.1.1"), new IpAstNode("2.2.2.2")),
+        new UnionIpSpaceAstNode(
+            new UnionIpSpaceAstNode(new IpAstNode("1.1.1.1"), new IpAstNode("2.2.2.2")),
             new IpAstNode("3.3.3.3"));
 
     assertThat(
@@ -145,14 +145,25 @@ public class ParserIpSpaceTest {
 
     // a more complex list
     IpSpaceAstNode expectedNode2 =
-        new CommaIpSpaceAstNode(
-            new CommaIpSpaceAstNode(
+        new UnionIpSpaceAstNode(
+            new UnionIpSpaceAstNode(
                 new IpAstNode("1.1.1.1"), new IpRangeAstNode("2.2.2.2", "2.2.2.3")),
             new IpAstNode("3.3.3.3"));
 
     assertThat(
         ParserUtils.getAst(getRunner().run("1.1.1.1,2.2.2.2-2.2.2.3,3.3.3.3")),
         equalTo(expectedNode2));
+  }
+
+  @Test
+  public void testIpSpaceLocationNode() {
+    IpSpaceAstNode expectedNode =
+        new LocationIpSpaceAstNode(InterfaceLocationAstNode.createFromNode("node"));
+
+    assertThat(ParserUtils.getAst(getRunner().run("node")), equalTo(expectedNode));
+
+    assertThat(ParserUtils.getAst(getRunner().run("ofLocation(node)")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run(" OFlocation ( node ) ")), equalTo(expectedNode));
   }
 
   @Test

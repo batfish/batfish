@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.referencelibrary.ReferenceBook;
@@ -69,6 +70,9 @@ public class MockSpecifierContext implements SpecifierContext {
     }
 
     public MockSpecifierContext build() {
+      if (_interfaceOwnedIps.isEmpty() & !_configs.isEmpty()) {
+        _interfaceOwnedIps = new IpOwners(_configs).getInterfaceOwnedIpSpaces();
+      }
       return new MockSpecifierContext(this);
     }
   }

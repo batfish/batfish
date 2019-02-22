@@ -3,7 +3,7 @@ package org.batfish.specifier.parboiled;
 interface AstNodeVisitor<T> {
   T visitAddressGroupIpSpaceAstNode(AddressGroupIpSpaceAstNode addressGroupIpSpaceAstNode);
 
-  T visitCommaIpSpaceAstNode(CommaIpSpaceAstNode commaIpSpaceAstNode);
+  T visitUnionIpSpaceAstNode(UnionIpSpaceAstNode unionIpSpaceAstNode);
 
   T visitIpAstNode(IpAstNode ipAstNode);
 
@@ -63,4 +63,16 @@ interface AstNodeVisitor<T> {
   T visitInFilterAstNode(InFilterAstNode inFilterAstNode);
 
   T visitOutFilterAstNode(OutFilterAstNode outFilterAstNode);
+
+  T visitUnionLocationAstNode(UnionLocationAstNode unionLocationAstNode);
+
+  T visitDifferenceLocationAstNode(DifferenceLocationAstNode differenceLocationAstNode);
+
+  T visitIntersectionLocationAstNode(IntersectionLocationAstNode intersectionLocationAstNode);
+
+  T visitInterfaceLocationAstNode(InterfaceLocationAstNode interfaceLocationAstNode);
+
+  T visitEnterLocationAstNode(EnterLocationAstNode enterLocationAstNode);
+
+  T visitLocationIpSpaceAstNode(LocationIpSpaceAstNode locationIpSpaceAstNode);
 }
