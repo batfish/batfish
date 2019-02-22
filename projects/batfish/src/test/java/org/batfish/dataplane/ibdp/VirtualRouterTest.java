@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
@@ -38,17 +39,25 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.EigrpExternalRoute;
+import org.batfish.datamodel.EigrpInternalRoute;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.OspfExternalType1Route;
+import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.OspfInterAreaRoute;
 import org.batfish.datamodel.OspfInternalRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
@@ -62,6 +71,8 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpInterface;
+import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
@@ -70,7 +81,12 @@ import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisProcess;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
@@ -103,6 +119,77 @@ public class VirtualRouterTest {
   private static VirtualRouter makeIosVirtualRouter(String hostname) {
     Node n = TestUtils.makeIosRouter(hostname);
     return n.getVirtualRouters().get(DEFAULT_VRF_NAME);
+  }
+
+  private static Set<AbstractRoute> makeOneRouteOfEveryType() {
+    return ImmutableSet.of(
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("1.0.0.0/24"))
+            .setOriginatorIp(Ip.parse("8.8.8.8"))
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.IBGP)
+            .build(),
+        ConnectedRoute.builder()
+            .setNetwork(Prefix.parse("1.0.1.0/24"))
+            .setNextHopInterface("iface")
+            .build(),
+        EigrpExternalRoute.builder()
+            .setNetwork(Prefix.parse("1.0.2.0/24"))
+            .setDestinationAsn(1L)
+            .setEigrpMetric(
+                EigrpMetric.builder()
+                    .setBandwidth(1E8)
+                    .setDelay(1D)
+                    .setMode(EigrpProcessMode.CLASSIC)
+                    .build())
+            .setProcessAsn(2L)
+            .build(),
+        EigrpInternalRoute.builder()
+            .setNetwork(Prefix.parse("1.0.3.0/24"))
+            .setEigrpMetric(
+                EigrpMetric.builder()
+                    .setBandwidth(1E8)
+                    .setDelay(1D)
+                    .setMode(EigrpProcessMode.CLASSIC)
+                    .build())
+            .setProcessAsn(2L)
+            .build(),
+        GeneratedRoute.builder().setNetwork(Prefix.parse("1.0.4.0/24")).setAdmin(1).build(),
+        IsisRoute.builder()
+            .setNetwork(Prefix.parse("1.0.5.0/24"))
+            .setLevel(IsisLevel.LEVEL_1)
+            .setArea("0")
+            .setProtocol(RoutingProtocol.ISIS_L1)
+            .setSystemId("id")
+            .build(),
+        LocalRoute.builder()
+            .setNetwork(Prefix.parse("1.0.6.0/24"))
+            .setSourcePrefixLength(24)
+            .build(),
+        OspfInterAreaRoute.builder().setNetwork(Prefix.parse("1.0.7.0/24")).setArea(2L).build(),
+        OspfIntraAreaRoute.builder()
+            .setNetwork(Prefix.parse("1.0.8.0/24"))
+            .setProtocol(RoutingProtocol.OSPF)
+            .setArea(2L)
+            .build(),
+        OspfExternalType1Route.builder()
+            .setNetwork(Prefix.parse("1.0.9.0/24"))
+            .setOspfMetricType(OspfMetricType.E1)
+            .setLsaMetric(2L)
+            .setCostToAdvertiser(3L)
+            .setAdvertiser("advertiser")
+            .setArea(4L)
+            .build(),
+        OspfExternalType2Route.builder()
+            .setNetwork(Prefix.parse("1.1.0.0/24"))
+            .setOspfMetricType(OspfMetricType.E1)
+            .setLsaMetric(2L)
+            .setCostToAdvertiser(3L)
+            .setAdvertiser("advertiser")
+            .setArea(4L)
+            .build(),
+        RipInternalRoute.builder().setNetwork(Prefix.parse("1.1.1.0/24")).build(),
+        StaticRoute.builder().setNetwork(Prefix.parse("1.1.2.0/24")).setAdmin(1).build());
   }
 
   /**
@@ -756,5 +843,71 @@ public class VirtualRouterTest {
                     IsisLevel.LEVEL_1_2,
                     new IsisNode(c1.getHostname(), i1.getName()),
                     new IsisNode(c2.getHostname(), i2.getName())))));
+  }
+
+  @Test
+  public void testCrossVrfRouteLeaking() {
+    String vrfWithRoutesName = "VRF1";
+    String emptyVrfName = "VRF2";
+    String importPolicyName = "IMPORT-POLICY";
+
+    /*
+    Create configuration containing 2 VRFs:
+      - vrfWithRoutes has routes of every type, to ensure all route types get leaked correctly
+      - emptyVrf has no routes and is set up to import all routes from vrfWithRoutes
+    Tests:
+      - ensure initCrossVrfImports() correctly leaks all routes from vrfWithRoutes' main RIB
+      - ensure queueCrossVrfImports() correctly leaks all routes from vrfWithRoutes' main RIB delta
+    */
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+
+    // Create cross-VRF import policy to accept routes from vrfWithRoutes (and reject all others)
+    RoutingPolicy.builder()
+        .setOwner(c)
+        .setName(importPolicyName)
+        .setStatements(
+            ImmutableList.of(
+                new If(
+                    new MatchSourceVrf(vrfWithRoutesName),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
+        .build();
+
+    // Create VRFs in configuration and set up cross-VRF import VRF and policy for empty one
+    nf.vrfBuilder().setOwner(c).setName(vrfWithRoutesName).build();
+    Vrf emptyVrf = nf.vrfBuilder().setOwner(c).setName(emptyVrfName).build();
+    emptyVrf.setCrossVrfImportVrfs(ImmutableList.of(vrfWithRoutesName));
+    emptyVrf.setCrossVrfImportPolicy(importPolicyName);
+
+    // Create a Node based on the configuration and get its VirtualRouters
+    Node n = new Node(c);
+    VirtualRouter vrWithRoutes = n.getVirtualRouters().get(vrfWithRoutesName);
+    VirtualRouter emptyVr = n.getVirtualRouters().get(emptyVrfName);
+
+    // Create routes of every type and inject them into vrWithRoutes' main RIB and main RIB delta
+    Set<AnnotatedRoute<AbstractRoute>> annotatedRoutes =
+        makeOneRouteOfEveryType().stream()
+            .map(r -> new AnnotatedRoute<>(r, vrfWithRoutesName))
+            .collect(ImmutableSet.toImmutableSet());
+    for (AnnotatedRoute<AbstractRoute> r : annotatedRoutes) {
+      vrWithRoutes._mainRibRouteDeltaBuilder.from(vrWithRoutes._mainRib.mergeRouteGetDelta(r));
+    }
+
+    // Run initial leaking (i.e. what would happen at beginning of
+    // computeNonMonotonicPortionOfDataPlane()); all routes should leak from vrWithRoutes' main RIB
+    emptyVr.initCrossVrfQueues();
+    emptyVr.initCrossVrfImports();
+    emptyVr.processCrossVrfRoutes();
+    assertThat(emptyVr.getMainRib().getTypedRoutes(), equalTo(annotatedRoutes));
+
+    // Clear emptyVr's RIB and queues and run intermediate leaking (i.e. what would happen in one
+    // computeDependentRoutesIteration()); all routes should leak from vrWithRoutes' main RIB delta
+    emptyVr._mainRib.clear();
+    emptyVr.initCrossVrfQueues();
+    emptyVr.queueCrossVrfImports();
+    emptyVr.processCrossVrfRoutes();
+    assertThat(emptyVr.getMainRib().getTypedRoutes(), equalTo(annotatedRoutes));
   }
 }
