@@ -4,12 +4,14 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
@@ -44,11 +46,11 @@ public final class AssignIpAddressFromPool implements TransformationStep, Serial
   private static AssignIpAddressFromPool jsonCreator(
       @JsonProperty(PROP_TRANSFORMATION_TYPE) TransformationType type,
       @JsonProperty(PROP_IP_FIELD) IpField ipField,
-      @JsonProperty(PROP_IP_RANGES) RangeSet<Ip> ipRanges) {
+      @JsonProperty(PROP_IP_RANGES) Set<Range<Ip>> ipRanges) {
     checkNotNull(type, PROP_TRANSFORMATION_TYPE + " cannot be null");
     checkNotNull(ipField, PROP_IP_FIELD + " cannot be null");
     checkNotNull(ipRanges, PROP_IP_RANGES + " cannot be null");
-    return new AssignIpAddressFromPool(type, ipField, ipRanges);
+    return new AssignIpAddressFromPool(type, ipField, ImmutableRangeSet.copyOf(ipRanges));
   }
 
   @Override
@@ -61,9 +63,14 @@ public final class AssignIpAddressFromPool implements TransformationStep, Serial
     return _ipField;
   }
 
-  @JsonProperty(PROP_IP_RANGES)
+  @JsonIgnore
   public RangeSet<Ip> getIpRanges() {
     return _ipRanges;
+  }
+
+  @JsonProperty(PROP_IP_RANGES)
+  private Set<Range<Ip>> jsonPropertyIpRanges() {
+    return _ipRanges.asRanges();
   }
 
   @Override
