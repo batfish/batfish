@@ -12,7 +12,6 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
 
   public static final int MAX_PREFIX_LENGTH = 128;
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static final Prefix6 ZERO = new Prefix6(Ip6.ZERO, 0);
@@ -60,7 +59,7 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
     if (parts.length != 2) {
       throw new BatfishException("Invalid Prefix6 string: \"" + text + "\"");
     }
-    _address = new Ip6(parts[0]);
+    _address = Ip6.parse(parts[0]);
     try {
       _prefixLength = Integer.parseInt(parts[1]);
     } catch (NumberFormatException e) {

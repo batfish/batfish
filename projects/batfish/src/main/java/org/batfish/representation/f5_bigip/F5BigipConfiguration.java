@@ -44,17 +44,31 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private ConfigurationFormat _format;
   private String _hostname;
   private final @Nonnull Map<String, Interface> _interfaces;
+  private final @Nonnull Map<String, Node> _nodes;
+  private final @Nonnull Map<String, Pool> _pools;
   private final @Nonnull Map<String, PrefixList> _prefixLists;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
   private final @Nonnull Map<String, Self> _selves;
+  private final @Nonnull Map<String, SnatPool> _snatPools;
+  private final @Nonnull Map<String, Snat> _snats;
+  private final @Nonnull Map<String, SnatTranslation> _snatTranslations;
+  private final @Nonnull Map<String, VirtualAddress> _virtualAddresses;
+  private final @Nonnull Map<String, Virtual> _virtuals;
   private final @Nonnull Map<String, Vlan> _vlans;
 
   public F5BigipConfiguration() {
     _bgpProcesses = new HashMap<>();
     _interfaces = new HashMap<>();
+    _nodes = new HashMap<>();
+    _pools = new HashMap<>();
     _prefixLists = new HashMap<>();
     _routeMaps = new HashMap<>();
     _selves = new HashMap<>();
+    _snats = new HashMap<>();
+    _snatPools = new HashMap<>();
+    _snatTranslations = new HashMap<>();
+    _virtualAddresses = new HashMap<>();
+    _virtuals = new HashMap<>();
     _vlans = new HashMap<>();
   }
 
@@ -71,6 +85,14 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _interfaces;
   }
 
+  public @Nonnull Map<String, Node> getNodes() {
+    return _nodes;
+  }
+
+  public @Nonnull Map<String, Pool> getPools() {
+    return _pools;
+  }
+
   public @Nonnull Map<String, PrefixList> getPrefixLists() {
     return _prefixLists;
   }
@@ -81,6 +103,26 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, Self> getSelves() {
     return _selves;
+  }
+
+  public @Nonnull Map<String, SnatPool> getSnatPools() {
+    return _snatPools;
+  }
+
+  public @Nonnull Map<String, Snat> getSnats() {
+    return _snats;
+  }
+
+  public @Nonnull Map<String, SnatTranslation> getSnatTranslations() {
+    return _snatTranslations;
+  }
+
+  public @Nonnull Map<String, VirtualAddress> getVirtualAddresses() {
+    return _virtualAddresses;
+  }
+
+  public @Nonnull Map<String, Virtual> getVirtuals() {
+    return _virtuals;
   }
 
   public @Nonnull Map<String, Vlan> getVlans() {

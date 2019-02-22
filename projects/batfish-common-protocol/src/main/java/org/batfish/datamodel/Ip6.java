@@ -8,7 +8,10 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.batfish.common.BatfishException;
@@ -51,6 +54,18 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
     return new Ip6(mask);
   }
 
+  /**
+   * Return an {@link Optional} {@link Ip6} from a string, or {@link Optional#empty} if the string
+   * does not represent an {@link Ip6}.
+   */
+  public static @Nonnull Optional<Ip6> tryParse(@Nonnull String text) {
+    try {
+      return Optional.of(parse(text));
+    } catch (IllegalArgumentException | BatfishException e) {
+      return Optional.empty();
+    }
+  }
+
   private final BigInteger _ip6;
 
   public Ip6(BigInteger ip6AsBigInteger) {
@@ -58,7 +73,14 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
   }
 
   @JsonCreator
-  public Ip6(String ipAsString) {
+  private static @Nonnull Ip6 create(@Nullable String ipAsString) {
+    if (ipAsString == null) {
+      return null;
+    }
+    return parse(ipAsString);
+  }
+
+  public static @Nonnull Ip6 parse(@Nonnull String ipAsString) {
     boolean invalid = false;
     byte[] ip6AsByteArray = null;
     if (!ipAsString.contains(":")) {
@@ -73,7 +95,7 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
     if (invalid) {
       throw new BatfishException("Invalid ipv6 address literal: \"" + ipAsString + "\"");
     }
-    _ip6 = new BigInteger(ip6AsByteArray);
+    return new Ip6(new BigInteger(ip6AsByteArray));
   }
 
   public BigInteger asBigInteger() {
