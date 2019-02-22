@@ -1,7 +1,7 @@
 {
   "class" : "org.batfish.question.searchfilters.SearchFiltersQuestion",
   "explain" : false,
-  "filters" : ".*",
+  "filters" : "/.*/",
   "headers" : {
     "dstIps" : "2.2.2.2",
     "dstPorts" : "0-21,23-1000",
@@ -10,7 +10,7 @@
     "srcPorts" : "0"
   },
   "invertSearch" : false,
-  "nodes" : ".*",
+  "nodes" : "/.*/",
   "startLocation" : "somenode",
   "differential" : false,
   "includeOneTableKeys" : true,
@@ -42,7 +42,7 @@
         "displayName" : "Filters",
         "optional" : true,
         "type" : "filter",
-        "value" : ".*"
+        "value" : "/.*/"
       },
       "headers" : {
         "description" : "Packet header constraints on the flows being searched",
@@ -113,7 +113,7 @@
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",
-        "value" : ".*"
+        "value" : "/.*/"
       },
       "startLocation" : {
         "description" : "Only consider specified locations as possible sources",

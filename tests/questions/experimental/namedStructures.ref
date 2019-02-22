@@ -2,7 +2,7 @@
   "class" : "org.batfish.question.namedstructures.NamedStructuresQuestion",
   "ignoreGenerated" : false,
   "indicatePresence" : false,
-  "nodes" : ".*",
+  "nodes" : "/.*/",
   "structureNames" : ".*",
   "structureTypes" : ".*",
   "differential" : false,
@@ -30,7 +30,7 @@
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",
-        "value" : ".*"
+        "value" : "/.*/"
       },
       "structureNames" : {
         "description" : "Include structures matching this name or regex",

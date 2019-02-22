@@ -1,6 +1,6 @@
 {
   "class" : "org.batfish.question.ospfproperties.OspfPropertiesQuestion",
-  "nodes" : ".*",
+  "nodes" : "/.*/",
   "properties" : "maximum-.*",
   "differential" : false,
   "includeOneTableKeys" : true,
@@ -16,7 +16,7 @@
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",
-        "value" : ".*"
+        "value" : "/.*/"
       },
       "properties" : {
         "description" : "Include properties matching this regex",

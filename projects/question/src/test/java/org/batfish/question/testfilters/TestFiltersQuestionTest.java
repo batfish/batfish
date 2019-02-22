@@ -32,13 +32,13 @@ public class TestFiltersQuestionTest {
   public void testDefaultSpecifierInput() {
     TestFiltersQuestion question = new TestFiltersQuestion(null, "filter1", null, null);
 
-    IpAccessList _filter1 =
+    IpAccessList filter1 =
         IpAccessList.builder()
             .setName("filter1")
             .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL))
             .build();
 
-    IpAccessList _filter2 =
+    IpAccessList filter2 =
         IpAccessList.builder()
             .setName("filter2")
             .setLines(ImmutableList.of(IpAccessListLine.REJECT_ALL))
@@ -51,13 +51,13 @@ public class TestFiltersQuestionTest {
     Configuration n1 = cb.build();
 
     n1.getIpAccessLists()
-        .putAll(ImmutableMap.of(_filter1.getName(), _filter1, _filter2.getName(), _filter2));
+        .putAll(ImmutableMap.of(filter1.getName(), filter1, filter2.getName(), filter2));
 
     SpecifierContext ctxt =
         MockSpecifierContext.builder().setConfigs(ImmutableMap.of("node", n1)).build();
 
     assertThat(
-        question.getFilterSpecifier().resolve("node", ctxt), equalTo(ImmutableSet.of(_filter1)));
+        question.getFilterSpecifier().resolve("node", ctxt), equalTo(ImmutableSet.of(filter1)));
   }
 
   @Test
