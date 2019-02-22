@@ -4,7 +4,7 @@ sys global-settings {
     hostname f5_bigip_structured_net_routing_bgp
 }
 
-net interface 1.0 {                                                                                                                                                                                               
+net interface 1.0 {
     bundle enabled
     bundle-speed 40G
 }
@@ -16,7 +16,7 @@ net vlan /Common/SOME_VLAN {
     tag 100
 }
 
-net self /Common/SOME_SELF {                                                                                                                                                                                      
+net self /Common/SOME_SELF {
     address 192.0.2.2/24
     allow-service all
     traffic-group /Common/traffic-group-local-only

@@ -823,25 +823,13 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     String nameWithPort = unquote(ctx.name.getText());
     String name = toName(nameWithPort, ctx);
     Integer port = toPort(nameWithPort, ctx);
-    if (name != null || port == null) {
+    if (name == null || port == null) {
       return;
     }
     _c.referenceStructure(
         VIRTUAL_ADDRESS, name, VIRTUAL_DESTINATION, ctx.name.getStart().getLine());
-    Optional<Ip> ip = Ip.tryParse(name);
-    if (ip.isPresent()) {
-      _currentVirtual.setDestinationIp(ip.get());
-      _currentVirtual.setDestinationPort(port);
-      return;
-    }
-    Optional<Ip6> ip6 = Ip6.tryParse(name);
-    if (ip6.isPresent()) {
-      _currentVirtual.setDestinationIp6(ip6.get());
-      _currentVirtual.setDestinationPort(port);
-      return;
-    }
-    _w.redFlag(
-        String.format("'%s' is neither IPv4 nor IPv6 address in: %s", name, getFullText(ctx)));
+    _currentVirtual.setDestination(name);
+    _currentVirtual.setDestinationPort(port);
   }
 
   @Override

@@ -9,14 +9,13 @@ import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 
-/** Configuration for a pool of nodes. */
+/** Configuration for a pool of virtual services. */
 @ParametersAreNonnullByDefault
 public final class Virtual implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private @Nullable Ip _destinationIp;
-  private @Nullable Ip6 _destinationIp6;
+  private @Nullable String _destination;
   private @Nullable Integer _destinationPort;
   private @Nullable Ip _mask;
   private @Nullable Ip6 _mask6;
@@ -28,14 +27,6 @@ public final class Virtual implements Serializable {
 
   public Virtual(String name) {
     _name = name;
-  }
-
-  public @Nullable Ip getDestinationIp() {
-    return _destinationIp;
-  }
-
-  public @Nullable Ip6 getDestinationIp6() {
-    return _destinationIp6;
   }
 
   public @Nullable Integer getDestinationPort() {
@@ -70,12 +61,8 @@ public final class Virtual implements Serializable {
     return _sourceAddressTranslationPool;
   }
 
-  public void setDestinationIp(@Nullable Ip destinationIp) {
-    _destinationIp = destinationIp;
-  }
-
-  public void setDestinationIp6(@Nullable Ip6 destinationIp6) {
-    _destinationIp6 = destinationIp6;
+  public void setDestination(@Nullable String destination) {
+    _destination = destination;
   }
 
   public void setDestinationPort(@Nullable Integer destinationPort) {
