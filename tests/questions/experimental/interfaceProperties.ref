@@ -1,8 +1,8 @@
 {
   "class" : "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
   "excludeShutInterfaces" : false,
-  "interfaces" : "/.*/",
-  "nodes" : "/.*/",
+  "interfaces" : ".*",
+  "nodes" : ".*",
   "properties" : ".*",
   "differential" : false,
   "includeOneTableKeys" : true,
@@ -26,14 +26,14 @@
         "displayName" : "Interfaces",
         "optional" : true,
         "type" : "interfacesSpec",
-        "value" : "/.*/"
+        "value" : ".*"
       },
       "nodes" : {
         "description" : "Include nodes matching this specifier",
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",
-        "value" : "/.*/"
+        "value" : ".*"
       },
       "properties" : {
         "description" : "Include properties matching this specifier",

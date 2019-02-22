@@ -3,8 +3,8 @@
   "neighborTypes" : [
     "ebgp"
   ],
-  "nodes" : "/.*/",
-  "remoteNodes" : "/.*/",
+  "nodes" : ".*",
+  "remoteNodes" : ".*",
   "roleDimension" : "default",
   "style" : "summary",
   "differential" : false,
@@ -68,14 +68,14 @@
         "displayName" : "Nodes",
         "optional" : false,
         "type" : "nodeSpec",
-        "value" : "/.*/"
+        "value" : ".*"
       },
       "remoteNodes" : {
         "description" : "Include neighbors whose second node matches this specifier",
         "displayName" : "Remote Nodes",
         "optional" : false,
         "type" : "nodeSpec",
-        "value" : "/.*/"
+        "value" : ".*"
       },
       "roleDimension" : {
         "description" : "Role dimension to run the question on",

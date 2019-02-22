@@ -27,6 +27,8 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableDiff;
+import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.SpecifierFactories.FactoryGroup;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -77,7 +79,12 @@ public class SearchFiltersDifferentialTest {
     TableAnswerElement answer =
         (TableAnswerElement)
             new SearchFiltersAnswerer(
-                    SearchFiltersQuestion.builder().setStartLocation("@enter(/.*/)").build(),
+                    SearchFiltersQuestion.builder()
+                        .setStartLocation(
+                            SpecifierFactories.ACTIVE_GROUP == FactoryGroup.FLEXIBLE
+                                ? "enter(.*)"
+                                : "@enter(/.*/)")
+                        .build(),
                     batfish)
                 .answerDiff();
     assertThat(
@@ -116,7 +123,10 @@ public class SearchFiltersDifferentialTest {
         (TableAnswerElement)
             new SearchFiltersAnswerer(
                     SearchFiltersQuestion.builder()
-                        .setStartLocation("@enter(/.*/)")
+                        .setStartLocation(
+                            SpecifierFactories.ACTIVE_GROUP == FactoryGroup.FLEXIBLE
+                                ? "enter(.*)"
+                                : "@enter(/.*/)")
                         .setAction("deny")
                         .setGenerateExplanations(true)
                         .build(),

@@ -2,7 +2,7 @@
   "class" : "org.batfish.question.specifiers.SpecifiersQuestion",
   "queryType" : "INTERFACE",
   "differential" : false,
-  "filterSpecifierFactory" : "ParboiledFilterSpecifierFactory",
+  "filterSpecifierFactory" : "FlexibleFilterSpecifierFactory",
   "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Show the resolved values for interface specifier",
@@ -27,10 +27,10 @@
       }
     }
   },
-  "interfaceSpecifierFactory" : "ParboiledInterfaceSpecifierFactory",
+  "interfaceSpecifierFactory" : "FlexibleInterfaceSpecifierFactory",
   "interfaceSpecifierInput" : "input",
-  "ipSpaceSpecifierFactory" : "ParboiledIpSpaceSpecifierFactory",
-  "locationSpecifierFactory" : "ParboiledLocationSpecifierFactory",
-  "nodeSpecifierFactory" : "ParboiledNodeSpecifierFactory",
+  "ipSpaceSpecifierFactory" : "FlexibleInferFromLocationIpSpaceSpecifierFactory",
+  "locationSpecifierFactory" : "FlexibleLocationSpecifierFactory",
+  "nodeSpecifierFactory" : "FlexibleNodeSpecifierFactory",
   "nodeSpecifierInput" : "input"
 }

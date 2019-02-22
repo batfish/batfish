@@ -1,8 +1,10 @@
 {
   "class" : "org.batfish.question.filterlinereachability.FilterLineReachabilityQuestion",
-  "filters" : "/.*/",
+  "filterSpecifierFactory" : "FlexibleFilterSpecifierFactory",
+  "filters" : ".*",
   "ignoreComposites" : false,
-  "nodes" : "/.*/",
+  "nodeSpecifierFactory" : "FlexibleNodeSpecifierFactory",
+  "nodes" : ".*",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
@@ -19,7 +21,7 @@
         "displayName" : "Filters",
         "optional" : true,
         "type" : "filter",
-        "value" : "/.*/"
+        "value" : ".*"
       },
       "ignoreComposites" : {
         "description" : "Whether to ignore filters that are composed of multiple filters defined in the configs",
@@ -33,7 +35,7 @@
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",
-        "value" : "/.*/"
+        "value" : ".*"
       }
     }
   }

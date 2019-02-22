@@ -11,12 +11,12 @@ import org.batfish.specifier.parboiled.ParboiledNodeSpecifierFactory;
 @ParametersAreNonnullByDefault
 public class SpecifierFactories {
 
-  private enum FactoryGroup {
+  public enum FactoryGroup {
     FLEXIBLE,
     PARRBOILED
   }
 
-  private static final FactoryGroup ACTIVE_GROUP = FactoryGroup.PARRBOILED;
+  public static final FactoryGroup ACTIVE_GROUP = FactoryGroup.FLEXIBLE;
 
   public static final String Filter =
       ACTIVE_GROUP == FactoryGroup.FLEXIBLE

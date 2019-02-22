@@ -1,7 +1,7 @@
 load-questions questions/stable
 
 # validate aaaAuthenticationLogin
-test -raw tests/questions/stable/aaaAuthenticationLogin.ref validate-template aaaAuthenticationLogin nodes="/.*/"
+test -raw tests/questions/stable/aaaAuthenticationLogin.ref validate-template aaaAuthenticationLogin nodes=".*"
 
 # validate definedStructures
 test -raw tests/questions/stable/definedStructures.ref validate-template definedStructures nodes="n1", names="m1", types="t1"
@@ -16,7 +16,7 @@ test -raw tests/questions/stable/ipOwners.ref validate-template ipOwners duplica
 test -raw tests/questions/stable/initIssues.ref validate-template initIssues
 
 # validate edges
-test -raw tests/questions/stable/edges.ref validate-template edges edgeType="bgp", nodes="/.*/", remoteNodes="/.*/"
+test -raw tests/questions/stable/edges.ref validate-template edges edgeType="bgp", nodes=".*", remoteNodes=".*"
 
 # validate ipsecSessionStatus
 test -raw tests/questions/stable/ipsecSessionStatus.ref validate-template ipsecSessionStatus nodes="n1", remoteNodes="n2", status=".*"
@@ -31,13 +31,13 @@ test -raw tests/questions/stable/referencedStructures.ref validate-template refe
 test -raw tests/questions/stable/routes.ref validate-template routes network="1.1.1.1/24", nodes="n1", vrfs="default", rib="main", protocols="igp"
 
 # test testfilters
-test  -raw tests/questions/stable/testfilters.ref validate-template testfilters headers={"srcIps": "1.1.1.1/32"}, filters="/.*/",  nodes="/.*/", startLocation="node1"
+test  -raw tests/questions/stable/testfilters.ref validate-template testfilters headers={"srcIps": "1.1.1.1/32"}, filters=".*",  nodes=".*", startLocation="node1"
 
 # test undefinedReferences
-test -raw tests/questions/stable/undefinedReferences.ref validate-template undefinedreferences nodes="/.*/"
+test -raw tests/questions/stable/undefinedReferences.ref validate-template undefinedreferences nodes=".*"
 
 # validate unusedstructures
-test -raw tests/questions/stable/unusedStructures.ref validate-template unusedstructures nodes="/.*/"
+test -raw tests/questions/stable/unusedStructures.ref validate-template unusedstructures nodes=".*"
 
 # validate viConversionStatus
 test -raw tests/questions/stable/viConversionStatus.ref validate-template viConversionStatus

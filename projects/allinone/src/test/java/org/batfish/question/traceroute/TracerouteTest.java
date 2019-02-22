@@ -42,6 +42,8 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.SpecifierFactories.FactoryGroup;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -58,6 +60,9 @@ public class TracerouteTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   @Rule public ExpectedException thrown = ExpectedException.none();
+
+  private static final String _all =
+      SpecifierFactories.ACTIVE_GROUP == FactoryGroup.FLEXIBLE ? ".*" : "/.*/";
 
   private Batfish _batfish;
 
@@ -111,7 +116,7 @@ public class TracerouteTest {
     batfish.computeDataPlane();
     PacketHeaderConstraints header = PacketHeaderConstraints.builder().setDstIp("1.1.1.1").build();
 
-    TracerouteQuestion question = new TracerouteQuestion("/.*/", header, false, DEFAULT_MAX_TRACES);
+    TracerouteQuestion question = new TracerouteQuestion(_all, header, false, DEFAULT_MAX_TRACES);
 
     // without ignoreFilters we get DENIED_OUT
     TracerouteAnswerer answerer = new TracerouteAnswerer(question, batfish);
@@ -126,7 +131,7 @@ public class TracerouteTest {
                 Schema.set(Schema.TRACE))));
 
     // with ignoreFilters we get DELIVERED_TO_SUBNET, since the dst ip is in the interface subnet
-    question = new TracerouteQuestion("/.*/", header, true, DEFAULT_MAX_TRACES);
+    question = new TracerouteQuestion(_all, header, true, DEFAULT_MAX_TRACES);
     answerer = new TracerouteAnswerer(question, batfish);
     answer = (TableAnswerElement) answerer.answer();
     assertThat(answer.getRows().getData(), hasSize(1));
@@ -754,7 +759,7 @@ public class TracerouteTest {
 
     TracerouteQuestion question =
         new TracerouteQuestion(
-            "/.*/",
+            _all,
             PacketHeaderConstraints.builder().setSrcIp("1.1.1.0").setDstIp("1.1.1.1").build(),
             false,
             DEFAULT_MAX_TRACES);
@@ -775,7 +780,7 @@ public class TracerouteTest {
     Batfish batfish = maxTracesBatfish();
     TracerouteQuestion question =
         new TracerouteQuestion(
-            "/.*/",
+            _all,
             PacketHeaderConstraints.builder().setSrcIp("1.1.1.0").setDstIp("1.1.1.1").build(),
             false,
             1);
