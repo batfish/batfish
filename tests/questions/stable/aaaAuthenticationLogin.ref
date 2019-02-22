@@ -1,6 +1,6 @@
 {
   "class" : "org.batfish.question.aaaauthenticationlogin.AaaAuthenticationLoginQuestion",
-  "nodes" : ".*",
+  "nodes" : "/.*/",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
@@ -18,7 +18,7 @@
         "displayName" : "Nodes",
         "optional" : false,
         "type" : "nodeSpec",
-        "value" : ".*"
+        "value" : "/.*/"
       }
     }
   }

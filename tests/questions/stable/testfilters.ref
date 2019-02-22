@@ -1,10 +1,10 @@
 {
   "class" : "org.batfish.question.testfilters.TestFiltersQuestion",
-  "filters" : ".*",
+  "filters" : "/.*/",
   "headers" : {
     "srcIps" : "1.1.1.1/32"
   },
-  "nodes" : ".*",
+  "nodes" : "/.*/",
   "startLocation" : "node1",
   "differential" : false,
   "includeOneTableKeys" : true,
@@ -24,7 +24,7 @@
         "displayName" : "Filters",
         "optional" : false,
         "type" : "filter",
-        "value" : ".*"
+        "value" : "/.*/"
       },
       "headers" : {
         "description" : "Packet header constraints",
@@ -84,7 +84,7 @@
         "displayName" : "Nodes",
         "optional" : false,
         "type" : "nodeSpec",
-        "value" : ".*"
+        "value" : "/.*/"
       },
       "startLocation" : {
         "description" : "Location to start tracing from",

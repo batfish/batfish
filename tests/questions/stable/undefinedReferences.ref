@@ -15,9 +15,9 @@
         "displayName" : "Nodes",
         "optional" : false,
         "type" : "nodeSpec",
-        "value" : ".*"
+        "value" : "/.*/"
       }
     }
   },
-  "nodes" : ".*"
+  "nodes" : "/.*/"
 }
