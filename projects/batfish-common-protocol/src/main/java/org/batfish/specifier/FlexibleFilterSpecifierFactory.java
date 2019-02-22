@@ -6,6 +6,7 @@ import com.google.auto.service.AutoService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.questions.FiltersSpecifier;
 
 /**
  * A {@link FilterSpecifierFactory} that accepts three types of inputs:
@@ -40,7 +41,7 @@ public class FlexibleFilterSpecifierFactory implements FilterSpecifierFactory {
   @Override
   public FilterSpecifier buildFilterSpecifier(@Nullable Object input) {
     if (input == null) {
-      return new ShorthandFilterSpecifierFactory().buildFilterSpecifier(null);
+      return new ShorthandFilterSpecifier(FiltersSpecifier.ALL);
     }
     checkArgument(input instanceof String, NAME + " requires String input");
     String str = ((String) input).trim();
@@ -63,9 +64,12 @@ public class FlexibleFilterSpecifierFactory implements FilterSpecifierFactory {
 
     matcher = REF_PATTERN.matcher(str);
     if (matcher.find()) {
-      return new ReferenceFilterGroupFilterSpecifierFactory()
-          .buildFilterSpecifier(matcher.group(1));
+      String[] words = ((String) input).split(",");
+      checkArgument(
+          words.length == 2, "Arguments to ref.filtergroup should be two words separated by ','");
+      return new ReferenceFilterGroupFilterSpecifier(words[0].trim(), words[1].trim());
     }
-    return new ShorthandFilterSpecifierFactory().buildFilterSpecifier(str);
+    FiltersSpecifier specifier = new FiltersSpecifier(str);
+    return new ShorthandFilterSpecifier(specifier);
   }
 }

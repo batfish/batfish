@@ -15,8 +15,7 @@ import javax.annotation.Nullable;
  *   <li>{@code null}, which returns a default factory provided by the subclass.
  *   <li>{@code ref.addressgroup(foo, bar)}, which returns {@link
  *       ReferenceAddressGroupIpSpaceSpecifier};
- *   <li>{@code ofLocation(...)}, which processes its input using {@link
- *       FlexibleLocationIpSpaceSpecifierFactory};
+ *   <li>{@code ofLocation(...)}, which processes its input using {@link LocationIpSpaceSpecifier};
  *   <li>and inputs accepted by {@link ConstantWildcardSetIpSpaceSpecifierFactory}.
  * </ul>
  */
@@ -45,12 +44,15 @@ public class FlexibleIpSpaceSpecifierFactory implements IpSpaceSpecifierFactory 
   static IpSpaceSpecifier parse(String input) {
     Matcher matcher = REF_PATTERN.matcher(input);
     if (matcher.find()) {
-      return new ReferenceAddressGroupIpSpaceSpecifierFactory()
-          .buildIpSpaceSpecifier(matcher.group(1));
+      String[] words = input.split(",");
+      checkArgument(
+          words.length == 2, "Arguments to ref.addressgroup should be two words separated by ','");
+      return new ReferenceAddressGroupIpSpaceSpecifier(words[0].trim(), words[1].trim());
     }
     matcher = LOCATION_PATTERN.matcher(input);
     if (matcher.find()) {
-      return new FlexibleLocationIpSpaceSpecifierFactory().buildIpSpaceSpecifier(matcher.group(1));
+      return new LocationIpSpaceSpecifier(
+          new FlexibleLocationSpecifierFactory().buildLocationSpecifier(matcher.group(1)));
     }
     return new ConstantWildcardSetIpSpaceSpecifierFactory().buildIpSpaceSpecifier(input);
   }
