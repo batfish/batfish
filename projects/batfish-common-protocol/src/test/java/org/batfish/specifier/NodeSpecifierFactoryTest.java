@@ -1,10 +1,8 @@
 package org.batfish.specifier;
 
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
-import java.util.regex.Pattern;
 import org.batfish.common.BatfishException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,13 +12,10 @@ public class NodeSpecifierFactoryTest {
   @Rule public final ExpectedException exception = ExpectedException.none();
 
   @Test
-  public void testNameRegexNodeSpecifierFactory() {
+  public void testLoad() {
     assertThat(
-        NodeSpecifierFactory.load(NameRegexNodeSpecifierFactory.NAME),
-        instanceOf(NameRegexNodeSpecifierFactory.class));
-    assertThat(
-        NodeSpecifierFactory.load(NameRegexNodeSpecifierFactory.NAME).buildNodeSpecifier("foo"),
-        equalTo(new NameRegexNodeSpecifier(Pattern.compile("foo"))));
+        NodeSpecifierFactory.load(FlexibleNodeSpecifierFactory.NAME),
+        instanceOf(FlexibleNodeSpecifierFactory.class));
   }
 
   @Test

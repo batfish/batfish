@@ -162,7 +162,7 @@ public class TracerouteTest {
     ImmutableSortedMap.Builder<String, Configuration> configs =
         new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
 
-    Configuration c1 = cb.setHostname("c1").build();
+    Configuration c1 = cb.build();
     configs.put(c1.getHostname(), c1);
 
     Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
@@ -184,7 +184,7 @@ public class TracerouteTest {
                 .setAdministrativeCost(1)
                 .build()));
 
-    Configuration c2 = cb.setHostname("c2").build();
+    Configuration c2 = cb.build();
     configs.put(c2.getHostname(), c2);
 
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
@@ -247,7 +247,7 @@ public class TracerouteTest {
     ImmutableSortedMap.Builder<String, Configuration> configs =
         new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
 
-    Configuration c1 = cb.setHostname("c1").build();
+    Configuration c1 = cb.build();
     configs.put(c1.getHostname(), c1);
 
     Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
@@ -270,7 +270,7 @@ public class TracerouteTest {
                 .setAdministrativeCost(1)
                 .build()));
 
-    Configuration c2 = cb.setHostname("c2").build();
+    Configuration c2 = cb.build();
     configs.put(c2.getHostname(), c2);
 
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
@@ -335,7 +335,7 @@ public class TracerouteTest {
     ImmutableSortedMap.Builder<String, Configuration> configs =
         new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
 
-    Configuration c1 = cb.setHostname("c1").build();
+    Configuration c1 = cb.build();
     configs.put(c1.getHostname(), c1);
 
     Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
@@ -357,7 +357,7 @@ public class TracerouteTest {
                 .setAdministrativeCost(1)
                 .build()));
 
-    Configuration c2 = cb.setHostname("c2").build();
+    Configuration c2 = cb.build();
     configs.put(c2.getHostname(), c2);
 
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
@@ -432,7 +432,9 @@ public class TracerouteTest {
         answer.getRows().getData(),
         everyItem(
             hasColumn(
-                COL_TRACES, everyItem(hasLastHop(hasNodeName("c2"))), Schema.set(Schema.TRACE))));
+                COL_TRACES,
+                everyItem(hasLastHop(hasNodeName("~Configuration_1~"))),
+                Schema.set(Schema.TRACE))));
 
     assertThat(
         answer.getRows().getData(),
@@ -464,7 +466,7 @@ public class TracerouteTest {
     ImmutableSortedMap.Builder<String, Configuration> configs =
         new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
 
-    Configuration c1 = cb.setHostname("c1").build();
+    Configuration c1 = cb.build();
     configs.put(c1.getHostname(), c1);
 
     Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
@@ -492,7 +494,7 @@ public class TracerouteTest {
                 .setAdministrativeCost(1)
                 .build()));
 
-    Configuration c2 = cb.setHostname("c2").build();
+    Configuration c2 = cb.build();
     configs.put(c2.getHostname(), c2);
 
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
@@ -588,7 +590,7 @@ public class TracerouteTest {
     ImmutableSortedMap.Builder<String, Configuration> configs =
         new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
 
-    Configuration c1 = cb.setHostname("c1").build();
+    Configuration c1 = cb.build();
     configs.put(c1.getHostname(), c1);
 
     Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
@@ -609,7 +611,7 @@ public class TracerouteTest {
                 .setAdministrativeCost(1)
                 .build()));
 
-    Configuration c2 = cb.setHostname("c2").build();
+    Configuration c2 = cb.build();
     configs.put(c2.getHostname(), c2);
 
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
@@ -637,7 +639,7 @@ public class TracerouteTest {
                 .setAdministrativeCost(1)
                 .build()));
 
-    Configuration c3 = cb.setHostname("c3").build();
+    Configuration c3 = cb.build();
     configs.put(c3.getHostname(), c3);
 
     Vrf v3 = nf.vrfBuilder().setOwner(c3).build();
@@ -695,7 +697,9 @@ public class TracerouteTest {
         answer.getRows().getData(),
         everyItem(
             hasColumn(
-                COL_TRACES, everyItem(hasNthHop(3, hasNodeName("c2"))), Schema.set(Schema.TRACE))));
+                COL_TRACES,
+                everyItem(hasNthHop(3, hasNodeName("~Configuration_1~"))),
+                Schema.set(Schema.TRACE))));
 
     // check disposition
     assertThat(
@@ -806,7 +810,7 @@ public class TracerouteTest {
 
     ImmutableSortedMap.Builder<String, Configuration> configs =
         new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
-    Configuration c1 = cb.setHostname("c1").build();
+    Configuration c1 = cb.build();
     configs.put(c1.getHostname(), c1);
 
     Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
@@ -867,7 +871,7 @@ public class TracerouteTest {
 
     ImmutableSortedMap.Builder<String, Configuration> configs =
         new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
-    Configuration c1 = cb.setHostname("c1").build();
+    Configuration c1 = cb.build();
     configs.put(c1.getHostname(), c1);
 
     Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
@@ -881,7 +885,7 @@ public class TracerouteTest {
             .build();
 
     // set up another node
-    Configuration c2 = cb.setHostname("c2").build();
+    Configuration c2 = cb.build();
     configs.put(c2.getHostname(), c2);
 
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
