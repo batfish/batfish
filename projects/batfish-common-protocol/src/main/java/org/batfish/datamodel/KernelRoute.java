@@ -12,7 +12,26 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class KernelRoute extends AbstractRoute {
 
+  /** Builder for {@link KernelRoute} */
+  public static final class Builder extends AbstractRouteBuilder<Builder, KernelRoute> {
+    @Nonnull
+    @Override
+    public KernelRoute build() {
+      return new KernelRoute(getNetwork());
+    }
+
+    @Nonnull
+    @Override
+    protected Builder getThis() {
+      return this;
+    }
+  }
+
   private static final long serialVersionUID = 1L;
+
+  public static Builder builder() {
+    return new Builder();
+  }
 
   @JsonCreator
   private static KernelRoute create(
@@ -36,11 +55,6 @@ public final class KernelRoute extends AbstractRoute {
     }
     KernelRoute rhs = (KernelRoute) o;
     return _network.equals(rhs._network);
-  }
-
-  @Override
-  public int hashCode() {
-    return _network.hashCode();
   }
 
   @Override
@@ -72,6 +86,11 @@ public final class KernelRoute extends AbstractRoute {
   }
 
   @Override
+  public int hashCode() {
+    return _network.hashCode();
+  }
+
+  @Override
   public int routeCompare(@Nonnull AbstractRoute rhs) {
     return 0;
   }
@@ -79,24 +98,5 @@ public final class KernelRoute extends AbstractRoute {
   @Override
   public Builder toBuilder() {
     return builder().setNetwork(getNetwork());
-  }
-
-  /** Builder for {@link KernelRoute} */
-  public static final class Builder extends AbstractRouteBuilder<Builder, KernelRoute> {
-    @Nonnull
-    @Override
-    public KernelRoute build() {
-      return new KernelRoute(getNetwork());
-    }
-
-    @Nonnull
-    @Override
-    protected Builder getThis() {
-      return this;
-    }
-  }
-
-  public static Builder builder() {
-    return new Builder();
   }
 }
