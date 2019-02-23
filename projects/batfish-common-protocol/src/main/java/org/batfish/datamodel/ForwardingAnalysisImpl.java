@@ -251,13 +251,14 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                 nodeEntry.getValue().getAllInterfaces(),
                 Entry::getKey,
                 ifaceEntry -> {
-                    Set<Ip> additionalIps = ifaceEntry.getValue().getAdditionalArpIps();
-                    return additionalIps == null || additionalIps.isEmpty()
-                        ? EmptyIpSpace.INSTANCE
-                        : AclIpSpace.permitting(
-                                ifaceEntry.getValue().getAdditionalArpIps().stream()
-                                    .map(IpIpSpace::new))
-                            .build();}));
+                  Set<Ip> additionalIps = ifaceEntry.getValue().getAdditionalArpIps();
+                  return additionalIps == null || additionalIps.isEmpty()
+                      ? EmptyIpSpace.INSTANCE
+                      : AclIpSpace.permitting(
+                              ifaceEntry.getValue().getAdditionalArpIps().stream()
+                                  .map(IpIpSpace::new))
+                          .build();
+                }));
   }
 
   /**
