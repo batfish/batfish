@@ -205,7 +205,7 @@ final class ParserUtils {
   }
 
   /**
-   * Checks if an ancestor of element at {@code level) is of Anchor.Type == IGNORE. Returns the
+   * Checks if an ancestor of element at {@code level} is of Anchor.Type == IGNORE. Returns the
    * level of the ancestor if so. Returns -1 otherwise.
    */
   private static int descendedFromIgnore(
