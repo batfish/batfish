@@ -6933,6 +6933,12 @@ M_Interface_COLON
    ':' -> type (COLON)
 ;
 
+M_Interface_DEC
+:
+   DEC -> type ( DEC ) , popMode
+;
+
+
 M_Interface_ALL
 :
    'all' -> type ( ALL ) , popMode
