@@ -9,10 +9,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/**
- * Represents directly connected routes. These are typically generated based on interface
- * adjacencies.
- */
+/** Non-routing virtual route used for advertisement */
 @ParametersAreNonnullByDefault
 public final class KernelRoute extends AbstractRoute {
 
