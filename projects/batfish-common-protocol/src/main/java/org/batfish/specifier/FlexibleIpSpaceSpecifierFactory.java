@@ -44,7 +44,7 @@ public class FlexibleIpSpaceSpecifierFactory implements IpSpaceSpecifierFactory 
   static IpSpaceSpecifier parse(String input) {
     Matcher matcher = REF_PATTERN.matcher(input);
     if (matcher.find()) {
-      String[] words = input.split(",");
+      String[] words = matcher.group(1).split(",");
       checkArgument(
           words.length == 2, "Arguments to ref.addressgroup should be two words separated by ','");
       return new ReferenceAddressGroupIpSpaceSpecifier(words[0].trim(), words[1].trim());
