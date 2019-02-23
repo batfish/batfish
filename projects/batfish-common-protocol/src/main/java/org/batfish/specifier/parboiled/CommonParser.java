@@ -173,7 +173,7 @@ public class CommonParser extends BaseParser<AstNode> {
 
   /**
    * We infer deprecated (non-enclosed) regexes as strings that: 1) don't begin with double quote,
-   * digit, slash, or {@link #SPECIAL_CHARS}; and 2) don't contain space and contain '.*'.
+   * digit, slash, or {@link #SPECIAL_CHARS}; and 2) don't contain space and contain '*'.
    */
   public Rule RegexDeprecated() {
     return Sequence(
@@ -181,9 +181,7 @@ public class CommonParser extends BaseParser<AstNode> {
         TestNot(Digit()),
         TestNot(Slash()),
         TestNot(SPECIAL_CHARS),
-        TestNot(ContainsChar(' ')),
-        // Sequence(".*"),
-        ".*",
+        Sequence(AsciiButNot(" *"), "*", AsciiButNot(" *")),
         push(new StringAstNode(match())));
   }
 
