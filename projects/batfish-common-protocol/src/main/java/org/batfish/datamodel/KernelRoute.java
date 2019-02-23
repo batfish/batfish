@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -41,7 +40,7 @@ public final class KernelRoute extends AbstractRoute {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_network);
+    return _network.hashCode();
   }
 
   @Override
@@ -53,7 +52,7 @@ public final class KernelRoute extends AbstractRoute {
   @Nullable
   @Override
   public String getNextHopInterface() {
-    return null;
+    return Route.UNSET_NEXT_HOP_INTERFACE;
   }
 
   @Nonnull
