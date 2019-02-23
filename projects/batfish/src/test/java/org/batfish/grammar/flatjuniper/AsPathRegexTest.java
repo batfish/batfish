@@ -291,4 +291,31 @@ public class AsPathRegexTest {
     assertDoesNotMatch(regex, 5L, 2L);
     assertDoesNotMatch(regex, 2L, 5L);
   }
+
+  @Test
+  public void testGroupRepeatedWithRange() {
+    String regex = "(1 2 3)* 4-6";
+    assertMatches(regex, 4L);
+    assertMatches(regex, 5L);
+    assertMatches(regex, 6L);
+    assertMatches(regex, 1L, 2L, 3L, 6L);
+    assertMatches(regex, 1L, 2L, 3L, 1L, 2L, 3L, 6L);
+    assertDoesNotMatch(regex);
+    assertDoesNotMatch(regex, 1L);
+    assertDoesNotMatch(regex, 1L, 2L);
+    assertDoesNotMatch(regex, 1L, 2L, 3L);
+    assertDoesNotMatch(regex, 1L, 2L, 3L, 7L);
+    assertDoesNotMatch(regex, 1L, 2L, 3L, 3L, 6L);
+  }
+
+  @Test
+  public void testRangeInGroup() {
+    String regex = "1 3-4";
+    assertMatches(regex, 1L, 3L);
+    assertMatches(regex, 1L, 4L);
+    assertDoesNotMatch(regex);
+    assertDoesNotMatch(regex, 1L);
+    assertDoesNotMatch(regex, 3L);
+    assertDoesNotMatch(regex, 1L, 3L, 5L);
+  }
 }
