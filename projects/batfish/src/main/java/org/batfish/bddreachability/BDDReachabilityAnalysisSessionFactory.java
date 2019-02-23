@@ -78,6 +78,7 @@ final class BDDReachabilityAnalysisSessionFactory {
    *
    * @param forwardReachableStates The reachable packets to each state in the reachability analysis
    *     graph. Must be computed using forward propagation (from origination to termination points).
+   * @return Mapping from node name to the established sessions on that node.
    */
   static Map<String, List<BDDFirewallSessionTraceInfo>> computeInitializedSesssions(
       BDDPacket bddPacket,
@@ -123,8 +124,6 @@ final class BDDReachabilityAnalysisSessionFactory {
       return ImmutableList.of();
     }
 
-    BDDSourceManager srcManager = _srcManagers.get(hostname);
-    Map<String, BDD> sourceBdds = srcManager.getSourceBDDs();
     Map<String, Map<NodeInterfacePair, BDD>> lastHopOutgoingInterfaceBdds =
         toImmutableMap(
             config.activeInterfaces(),
@@ -143,8 +142,7 @@ final class BDDReachabilityAnalysisSessionFactory {
               BDD exitIfaceBdd = _sessionBdds.get(new NodeInterfacePair(hostname, iface.getName()));
               return exitIfaceBdd == null || exitIfaceBdd.isZero()
                   ? Stream.of()
-                  : computeInitializedSessions(
-                      iface, sourceBdds, lastHopOutgoingInterfaceBdds, exitIfaceBdd)
+                  : computeInitializedSessions(iface, lastHopOutgoingInterfaceBdds, exitIfaceBdd)
                       .stream();
             })
         .collect(ImmutableList.toImmutableList());
@@ -155,14 +153,12 @@ final class BDDReachabilityAnalysisSessionFactory {
    * org.batfish.datamodel.FirewallSessionInterfaceInfo} object).
    *
    * @param outIface this nodes' egress iface
-   * @param srcBdds this node's ingress iface -> constraint
    * @param lastHopOutIfaceBdds this node's ingress iface -> (last hop, out iface) -> constraint
    * @param outIfaceBdd BDD representing the set of packets for which sessions can be initiated
    *     exiting outIface.
    */
   private List<BDDFirewallSessionTraceInfo> computeInitializedSessions(
       Interface outIface,
-      Map<String, BDD> srcBdds,
       Map<String, Map<NodeInterfacePair, BDD>> lastHopOutIfaceBdds,
       BDD outIfaceBdd) {
     String hostname = outIface.getOwner().getHostname();
@@ -186,53 +182,56 @@ final class BDDReachabilityAnalysisSessionFactory {
             hostname, outIface.getName());
 
     ImmutableList.Builder<BDDFirewallSessionTraceInfo> builder = ImmutableList.builder();
-    srcBdds.forEach(
-        (srcIface, srcIfaceBdd) -> {
-          // Flows that entered srcIface and exited outIface
-          BDD srcIfaceToOutIfaceBdd = outIfaceBdd.and(srcIfaceBdd);
+    srcMgr
+        .getSourceBDDs()
+        .forEach(
+            (srcIface, srcIfaceBdd) -> {
+              // Flows that entered srcIface and exited outIface
+              BDD srcIfaceToOutIfaceBdd = outIfaceBdd.and(srcIfaceBdd);
 
-          if (srcIfaceToOutIfaceBdd.isZero()) {
-            return;
-          }
+              if (srcIfaceToOutIfaceBdd.isZero()) {
+                return;
+              }
 
-          /* srcIface's incoming transformation, applied in the reverse direction to the return
-           * flow.
-           */
-          Transition incomingTransformation =
-              _reverseFlowTransformationFactory.reverseFlowIncomingTransformation(
-                  hostname, srcIface);
+              /* srcIface's incoming transformation, applied in the reverse direction to the return
+               * flow.
+               */
+              Transition incomingTransformation =
+                  _reverseFlowTransformationFactory.reverseFlowIncomingTransformation(
+                      hostname, srcIface);
 
-          // reverse direction, so out comes before in.
-          Transition transformation = compose(outgoingTransformation, incomingTransformation);
+              // reverse direction, so out comes before in.
+              Transition transformation = compose(outgoingTransformation, incomingTransformation);
 
-          lastHopOutIfaceBdds
-              .get(srcIface)
-              .forEach(
-                  (lastHopOutIface, lastHopOutIfaceBdd) -> {
-                    // Flows that came from lastHopOutIface, entered srcIface and exited outIface
-                    BDD lastHopToSrcIfaceToOutIfaceBdd =
-                        srcIfaceToOutIfaceBdd.and(lastHopOutIfaceBdd);
-                    if (lastHopToSrcIfaceToOutIfaceBdd.isZero()) {
-                      return;
-                    }
+              lastHopOutIfaceBdds
+                  .get(srcIface)
+                  .forEach(
+                      (lastHopOutIface, lastHopOutIfaceBdd) -> {
+                        // Flows that came from lastHopOutIface, entered srcIface and exited
+                        // outIface
+                        BDD lastHopToSrcIfaceToOutIfaceBdd =
+                            srcIfaceToOutIfaceBdd.and(lastHopOutIfaceBdd);
+                        if (lastHopToSrcIfaceToOutIfaceBdd.isZero()) {
+                          return;
+                        }
 
-                    // Return flows for this session.
-                    BDD sessionBdd =
-                        srcMgr
-                            .existsSource(
-                                _lastHopManager.existsLastHop(lastHopToSrcIfaceToOutIfaceBdd))
-                            .replace(_reverseFlowPairing);
+                        // Return flows for this session.
+                        BDD sessionBdd =
+                            srcMgr
+                                .existsSource(
+                                    _lastHopManager.existsLastHop(lastHopToSrcIfaceToOutIfaceBdd))
+                                .replace(_reverseFlowPairing);
 
-                    builder.add(
-                        new BDDFirewallSessionTraceInfo(
-                            outIface.getOwner().getHostname(),
-                            outIface.getFirewallSessionInterfaceInfo().getSessionInterfaces(),
-                            lastHopOutIface,
-                            srcIface,
-                            sessionBdd,
-                            transformation));
-                  });
-        });
+                        builder.add(
+                            new BDDFirewallSessionTraceInfo(
+                                outIface.getOwner().getHostname(),
+                                outIface.getFirewallSessionInterfaceInfo().getSessionInterfaces(),
+                                lastHopOutIface,
+                                srcIface,
+                                sessionBdd,
+                                transformation));
+                      });
+            });
     return builder.build();
   }
 

@@ -180,7 +180,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
     return computeInitializedSesssions(
         PKT,
         _configs,
-        ImmutableMap.of(FW, _fwSrcMgr, R1, _fwSrcMgr, R2, _fwSrcMgr),
+        ImmutableMap.of(FW, _fwSrcMgr),
         _lastHopMgr,
         forwardReachableSets,
         _reverseFlowTransformationFactory);
@@ -224,7 +224,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
   @Test
   public void testSinglePath() {
-    // One path: R1:I1 -> FW:I1 -- FW:I2 -> R2:I1
+    // One path: R1:I1 -> FW:I1 -- FW:I3 -> BORDER_IFACE:BORDER
 
     // R1:I1 -> FW:I1
     BDD inBdd =
@@ -262,8 +262,8 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
   @Test
   public void testDifferentLastHops() {
     /* Two paths, different last-hops, same source interface:
-     * R1:I1 -> FW:I1 -- FW:I2 -> R2:I1
-     * R2:I1 -> FW:I1 -- FW:I2 -> R2:I1
+     * R1:I1 -> FW:I1 -- FW:I3 -> BORDER:BORDER_IFACE
+     * R2:I1 -> FW:I1 -- FW:I3 -> BORDER:BORDER_IFACE
      */
     Prefix routePrefix1 = Prefix.parse("1.0.0.0/8");
     Prefix routePrefix2 = Prefix.parse("2.0.0.0/8");
@@ -317,7 +317,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
                 hasSessionFlows(r1I1SessionFlows),
                 hasTransformation(_fwI3ToI1Transition)),
             allOf(
-                // R1:I2 -> FW:I1
+                // R2:I1 -> FW:I1
                 hasHostname(FW),
                 hasIncomingInterfaces(contains(FWI3)),
                 hasNextHop(new NodeInterfacePair(R2, R2I1)),
@@ -329,8 +329,8 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
   @Test
   public void testDifferentSourceInterfaces() {
     /* two paths, difference source interfaces
-     * R1:I1 -> FW:I1 -- FW:I2 -> R2:I1
-     * R3:I1 -> FW:I1 -- FW:I2 -> R2:I1
+     * R1:I1 -> FW:I1 -- FW:I3 -> BORDER:BORDER_IFACE
+     * R3:I1 -> FW:I2 -- FW:I3 -> BORDER:BORDER_IFACE
      */
     Prefix routePrefix1 = Prefix.parse("1.0.0.0/8");
     Prefix routePrefix2 = Prefix.parse("2.0.0.0/8");
@@ -387,7 +387,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
                 hasSessionFlows(r1I1SessionFlows),
                 hasTransformation(_fwI3ToI1Transition)),
             allOf(
-                // R1:I2 -> FW:I1
+                // R3:I1 -> FW:I2
                 hasHostname(FW),
                 hasIncomingInterfaces(contains(FWI3)),
                 hasNextHop(new NodeInterfacePair(R3, R3I1)),
