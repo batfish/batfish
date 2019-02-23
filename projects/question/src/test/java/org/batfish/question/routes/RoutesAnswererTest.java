@@ -34,7 +34,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multiset;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -266,14 +265,12 @@ public class RoutesAnswererTest {
         COL_TAG);
     List<String> expected = expectedBuilder.build();
 
-    for (RibProtocol rib : Arrays.asList(RibProtocol.BGP, RibProtocol.BGPMP)) {
-      List<ColumnMetadata> columnMetadata = getTableMetadata(rib).getColumnMetadata();
-      assertThat(
-          columnMetadata.stream()
-              .map(ColumnMetadata::getName)
-              .collect(ImmutableList.toImmutableList()),
-          equalTo(expected));
-    }
+    List<ColumnMetadata> columnMetadata = getTableMetadata(RibProtocol.BGP).getColumnMetadata();
+    assertThat(
+        columnMetadata.stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(expected));
   }
 
   @Test
@@ -374,20 +371,18 @@ public class RoutesAnswererTest {
         Schema.INTEGER,
         Schema.INTEGER);
 
-    for (RibProtocol rib : Arrays.asList(RibProtocol.BGP, RibProtocol.BGPMP)) {
-      List<ColumnMetadata> columnMetadata = getDiffTableMetadata(rib).getColumnMetadata();
-      assertThat(
-          columnMetadata.stream()
-              .map(ColumnMetadata::getName)
-              .collect(ImmutableList.toImmutableList()),
-          equalTo(expectedBuilder.build()));
+    List<ColumnMetadata> columnMetadata = getDiffTableMetadata(RibProtocol.BGP).getColumnMetadata();
+    assertThat(
+        columnMetadata.stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(expectedBuilder.build()));
 
-      assertThat(
-          columnMetadata.stream()
-              .map(ColumnMetadata::getSchema)
-              .collect(ImmutableList.toImmutableList()),
-          equalTo(schemaBuilderList.build()));
-    }
+    assertThat(
+        columnMetadata.stream()
+            .map(ColumnMetadata::getSchema)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(schemaBuilderList.build()));
   }
 
   /** Run through full pipeline (create question and answerer), */
