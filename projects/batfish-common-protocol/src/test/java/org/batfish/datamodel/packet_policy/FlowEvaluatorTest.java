@@ -16,7 +16,6 @@ import org.parboiled.common.ImmutableList;
 /** Tests of {@link FlowEvaluator} */
 public class FlowEvaluatorTest {
 
-  private FlowEvaluator _evaluator;
   private Flow _flow;
 
   @Before
@@ -29,7 +28,6 @@ public class FlowEvaluatorTest {
             .setSrcIp(Ip.parse("1.1.1.1"))
             .setDstIp(Ip.parse("2.2.2.2"))
             .build();
-    _evaluator = new FlowEvaluator(_flow, "Eth0");
   }
 
   private PacketPolicy singletonPolicy(Statement t) {
