@@ -53,7 +53,7 @@ public class AsPathRegex extends BaseParser<String> {
     return FirstOf(
         BareAsnRange(), // AsnRange without [] around it cannot be followed by an operator
         BareOr(), // Or Without () around it cannot be followed by an operator
-        Sequence(T_TopLevel(), Operator()));
+        Sequence(T_TopLevel(), Optional(Operator())));
   }
 
   Rule T_TopLevel() {
@@ -62,8 +62,8 @@ public class AsPathRegex extends BaseParser<String> {
 
   @SkipNode
   Rule Operator() {
-    return Optional(
-        FirstOf(Op_Asterisk(), Op_Plus(), Op_QuestionMark(), Op_Exact(), Op_OrMore(), Op_Range()));
+    return FirstOf(
+        Op_Asterisk(), Op_Plus(), Op_QuestionMark(), Op_Exact(), Op_OrMore(), Op_Range());
   }
 
   @SuppressSubnodes
