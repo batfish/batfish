@@ -432,7 +432,9 @@ public class TracerouteTest {
         answer.getRows().getData(),
         everyItem(
             hasColumn(
-                COL_TRACES, everyItem(hasLastHop(hasNodeName("c2"))), Schema.set(Schema.TRACE))));
+                COL_TRACES,
+                everyItem(hasLastHop(hasNodeName("~Configuration_1~"))),
+                Schema.set(Schema.TRACE))));
 
     assertThat(
         answer.getRows().getData(),
@@ -695,7 +697,9 @@ public class TracerouteTest {
         answer.getRows().getData(),
         everyItem(
             hasColumn(
-                COL_TRACES, everyItem(hasNthHop(3, hasNodeName("c2"))), Schema.set(Schema.TRACE))));
+                COL_TRACES,
+                everyItem(hasNthHop(3, hasNodeName("~Configuration_1~"))),
+                Schema.set(Schema.TRACE))));
 
     // check disposition
     assertThat(
