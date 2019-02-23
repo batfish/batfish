@@ -31,6 +31,8 @@ public class ParserUtilsTest {
           new PotentialMatch(Anchor.Type.STRING_LITERAL, "", "@specifier"),
           new PotentialMatch(Anchor.Type.STRING_LITERAL, "", "!"),
           new PotentialMatch(Type.IP_ADDRESS, "", null),
+          new PotentialMatch(Type.NODE_NAME, "", null),
+          new PotentialMatch(Anchor.Type.STRING_LITERAL, "", "\""),
           new PotentialMatch(Anchor.Type.STRING_LITERAL, "", "("));
 
   @Test
@@ -71,7 +73,8 @@ public class ParserUtilsTest {
 
   @Test
   public void testGetPartialMatchesBadStart() {
-    ParsingResult<?> resultEmpty = getRunner().run("[");
+    ParsingResult<?> resultEmpty =
+        getRunner().run(new String(Character.toChars(ParboiledAutoComplete.ILLEGAL_CHAR)));
     assertThat(
         getPotentialMatches(
             (InvalidInputError) resultEmpty.parseErrors.get(0), TestParser.ANCHORS, false),
@@ -125,6 +128,18 @@ public class ParserUtilsTest {
                 new PotentialMatch(Type.STRING_LITERAL, "", ")"),
                 new PotentialMatch(Type.IP_ADDRESS, "1.1.1.1", null),
                 new PotentialMatch(Type.STRING_LITERAL, "", "-"))));
+  }
+
+  @Test
+  public void testGetPartialMatchesQuoteOpenName() {
+    ParsingResult<?> result = getRunner().run("\"a");
+    assertThat(
+        getPotentialMatches(
+            (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
+        equalTo(
+            ImmutableSet.of(
+                new PotentialMatch(Type.STRING_LITERAL, "", "\""),
+                new PotentialMatch(Type.NODE_NAME, "\"a", null))));
   }
 
   @Test

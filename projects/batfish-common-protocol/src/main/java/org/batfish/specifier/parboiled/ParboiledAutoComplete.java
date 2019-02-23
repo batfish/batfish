@@ -27,6 +27,8 @@ import org.parboiled.support.ParsingResult;
 @ParametersAreNonnullByDefault
 public final class ParboiledAutoComplete {
 
+  static final char ILLEGAL_CHAR = (char) 0x26bd;
+
   public static final int RANK_STRING_LITERAL = 1;
 
   private final CommonParser _parser;
@@ -95,7 +97,7 @@ public final class ParboiledAutoComplete {
      * Before passing the query to the parser, we make it illegal by adding a funny, non-ascii
      * character (soccer ball :)). We will not get any errors backs if the string is legal.
      */
-    String testQuery = _query + new String(Character.toChars(0x26bd));
+    String testQuery = _query + new String(Character.toChars(ILLEGAL_CHAR));
     ParsingResult<AstNode> result =
         new ReportingParseRunner<AstNode>(_parser.input(_expression)).run(testQuery);
     if (result.parseErrors.isEmpty()) {
@@ -122,18 +124,18 @@ public final class ParboiledAutoComplete {
   List<AutocompleteSuggestion> autoCompletePotentialMatch(PotentialMatch pm, int startIndex) {
     switch (pm.getAnchorType()) {
       case ADDRESS_GROUP_AND_BOOK:
-        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK, false);
       case EOI:
         return ImmutableList.of();
       case FILTER_NAME:
-        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK, true);
       case FILTER_NAME_REGEX:
         // can't help with regexes
         return ImmutableList.of();
       case INTERFACE_GROUP_AND_BOOK:
-        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK, false);
       case INTERFACE_NAME:
-        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK, true);
       case INTERFACE_NAME_REGEX:
         // can't help with regexes
         return ImmutableList.of();
@@ -141,12 +143,12 @@ public final class ParboiledAutoComplete {
         // Relies on STRING_LITERAL completion as it appears later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case IP_ADDRESS:
-        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK, false);
       case IP_ADDRESS_MASK:
         // can't help with masks
         return ImmutableList.of();
       case IP_PREFIX:
-        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK, false);
       case IP_RANGE:
         // Relies on IP_ADDRESS completion as it appears later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
@@ -154,12 +156,12 @@ public final class ParboiledAutoComplete {
         // Relies on IP_ADDRESS and IP_ADDRESS_MASK completions as they appear later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case NODE_NAME:
-        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK, true);
       case NODE_NAME_REGEX:
         // can't help with regexes
         return ImmutableList.of();
       case NODE_ROLE_NAME_AND_DIMENSION:
-        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK, false);
       case NODE_TYPE:
         // Relies on STRING_LITERAL completion as it appears later in the path
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
@@ -172,29 +174,38 @@ public final class ParboiledAutoComplete {
             new AutocompleteSuggestion(
                 pm.getMatchCompletion(), true, null, RANK_STRING_LITERAL, startIndex));
       case VRF_NAME:
-        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK, true);
       case WHITESPACE:
         // nothing useful to suggest for these completion types
         return ImmutableList.of();
       case ZONE_NAME:
-        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK);
+        return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK, true);
       default:
         throw new IllegalArgumentException("Unhandled completion type " + pm.getAnchorType());
     }
   }
 
   private List<AutocompleteSuggestion> autoCompletePotentialMatch(
-      PotentialMatch pm, int startIndex, int rank) {
+      PotentialMatch pm, int startIndex, int rank, boolean isName) {
+    boolean nameWithQuote = false;
+    String matchPrefix = pm.getMatchPrefix();
+    if (isName && matchPrefix.startsWith("\"")) {
+      nameWithQuote = true;
+      matchPrefix = matchPrefix.substring(1);
+    }
+    final boolean finalNameWithQuote = nameWithQuote;
     return AutoCompleteUtils.autoComplete(
             _network,
             _snapshot,
             anchorTypeToVariableType(pm.getAnchorType()),
-            pm.getMatchPrefix(),
+            matchPrefix,
             _maxSuggestions,
             _completionMetadata,
             _nodeRolesData,
             _referenceLibrary)
         .stream()
+        // remove empty suggestions if we have an open-quote name
+        .filter(s -> !finalNameWithQuote || !s.getText().equals(""))
         .map(
             s ->
                 new AutocompleteSuggestion(s.getText(), true, s.getDescription(), rank, startIndex))

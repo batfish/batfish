@@ -24,18 +24,6 @@ public final class Names {
    * org.batfish.specifier.parboiled.CommonParser are also updated
    */
   public enum Type {
-    /** {@link IpAccessList} */
-    FILTER(
-        "^[~_a-zA-Z][-_\\.0-9~a-zA-Z]*$",
-        "start with an alphabetic letter, '~', or '_', and additionally only have '[-.0-9]'"),
-    /** {@link Interface} */
-    INTERFACE(
-        "^[a-zA-Z][-\\./:0-9a-zA-Z]*$",
-        "start with an alphabetic letter, and additionally only have '[-./:0-9a-zA-Z]'"),
-    /** {@link Configuration} */
-    NODE(
-        "^[a-zA-Z][-\\._a-zA-Z0-9]*$",
-        "start with an alphabetic letter, and additionally only have '[-._a-zA-Z0-9]]'"),
     /** {@link org.batfish.role.NodeRole} */
     NODE_ROLE(
         "^[0-9a-zA-Z_][-\\w]*$",
@@ -50,15 +38,7 @@ public final class Names {
     /** Column names in {@link org.batfish.datamodel.table.ColumnMetadata} */
     TABLE_COLUMN(
         "^[a-zA-Z0-9_~][-/\\w\\.:~@]*$",
-        "start with alphanumeric, underscore or tilde and only have  [-/.:~@]"),
-    /** {@link Vrf} */
-    VRF(
-        "^[_a-zA-Z~][-_\\w~]*$",
-        "start with an alphabetic letter, underscore, or tilde, and additionally only have '[-0-9]'"),
-    /** {@link Zone} */
-    ZONE(
-        "^[_a-zA-Z~][-_\\w~]*$",
-        "start with an alphabetic letter or underscore, or tilde, and additionally only have '[-0-9]'");
+        "start with alphanumeric, underscore or tilde and only have  [-/.:~@]");
 
     Type(String regex, String explanation) {
       _regex = regex;

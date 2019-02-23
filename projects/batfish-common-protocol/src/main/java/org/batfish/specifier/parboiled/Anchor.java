@@ -18,6 +18,7 @@ import java.lang.annotation.Target;
     EOI,
     FILTER_NAME,
     FILTER_NAME_REGEX,
+    IGNORE,
     INTERFACE_GROUP_AND_BOOK,
     INTERFACE_NAME,
     INTERFACE_NAME_REGEX,

@@ -62,6 +62,7 @@ public class ParserFilterTest {
                     "filter1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
                 new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("@in", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
                     "inFilterOf", true, null, RANK_STRING_LITERAL, query.length()),

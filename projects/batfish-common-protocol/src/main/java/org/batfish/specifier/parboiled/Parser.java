@@ -112,7 +112,7 @@ public class Parser extends CommonParser {
 
   @Anchor(FILTER_NAME)
   public Rule FilterName() {
-    return Sequence(FilterNameLiteral(), push(new NameFilterAstNode(match())));
+    return Sequence(NameLiteral(), push(new NameFilterAstNode(pop())));
   }
 
   @Anchor(FILTER_NAME_REGEX)
@@ -246,7 +246,7 @@ public class Parser extends CommonParser {
 
   @Anchor(VRF_NAME)
   public Rule VrfName() {
-    return Sequence(VrfNameLiteral(), push(new StringAstNode(match())));
+    return NameLiteral();
   }
 
   public Rule InterfaceZone() {
@@ -262,12 +262,12 @@ public class Parser extends CommonParser {
 
   @Anchor(ZONE_NAME)
   public Rule ZoneName() {
-    return Sequence(ZoneNameLiteral(), push(new StringAstNode(match())));
+    return NameLiteral();
   }
 
   @Anchor(INTERFACE_NAME)
   public Rule InterfaceName() {
-    return Sequence(InterfaceNameLiteral(), push(new NameInterfaceAstNode(match())));
+    return Sequence(NameLiteral(), push(new NameInterfaceAstNode(pop())));
   }
 
   @Anchor(INTERFACE_NAME_REGEX)
@@ -552,7 +552,7 @@ public class Parser extends CommonParser {
 
   @Anchor(NODE_NAME)
   public Rule NodeName() {
-    return Sequence(NodeNameLiteral(), push(new NameNodeAstNode(match())));
+    return Sequence(NameLiteral(), push(new NameNodeAstNode(pop())));
   }
 
   @Anchor(NODE_NAME_REGEX)

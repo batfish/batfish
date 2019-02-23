@@ -14,7 +14,8 @@ import org.parboiled.Rule;
 /**
  * This class contains common matchers for different types of expressions.
  *
- * <p>The rules in this class should not put anything on the stack.
+ * <p>As a general rule, the rules in this class should not put anything on the stack. In cases
+ * where they do, make sure that the rule javadoc says so.
  *
  * <p>They should also not contain any explicit of implicit anchors. One implication of this:
  * because character literals are implicit anchors, we implement them using a character range below.
@@ -29,8 +30,7 @@ public class CommonParser extends BaseParser<AstNode> {
 
   static Map<String, Type> initAnchors(Class<?> parserClass) {
     ImmutableMap.Builder<String, Anchor.Type> completionTypes = ImmutableMap.builder();
-    // Explicitly add WHITESPACE and EOI
-    completionTypes.put("WhiteSpace", Type.WHITESPACE);
+    // Explicitly add EOI
     completionTypes.put("EOI", Anchor.Type.EOI);
     for (Method method : parserClass.getMethods()) {
       Anchor annotation = method.getAnnotation(Anchor.class);
@@ -63,6 +63,12 @@ public class CommonParser extends BaseParser<AstNode> {
     return FirstOf(CharRange('a', 'z'), CharRange('A', 'Z'));
   }
 
+  /** A rule that allows for all ASCII characters except for those in {@code characters} */
+  @Anchor(Type.IGNORE)
+  public Rule AsciiButNot(String characters) {
+    return Sequence(Test(CharRange((char) 0, (char) 127)), NoneOf(characters));
+  }
+
   /** See class JavaDoc for why this is a CharRange and not Ch */
   public Rule Colon() {
     return CharRange(':', ':');
@@ -83,18 +89,9 @@ public class CommonParser extends BaseParser<AstNode> {
     return CharRange('.', '.');
   }
 
-  /** Keep in Sync with {@link org.batfish.datamodel.Names.Type#FILTER} */
-  public Rule FilterNameLiteral() {
-    return Sequence(
-        FirstOf(AlphabetChar(), Tilde(), Underscore()),
-        ZeroOrMore(FirstOf(AlphabetChar(), Tilde(), Underscore(), Dash(), Digit(), Dot())));
-  }
-
-  /** Keep in sync with {@link org.batfish.datamodel.Names.Type#INTERFACE} */
-  public Rule InterfaceNameLiteral() {
-    return Sequence(
-        AlphabetChar(),
-        ZeroOrMore(FirstOf(AlphabetChar(), Colon(), Dash(), Digit(), Dot(), Slash())));
+  @Anchor(Type.IGNORE)
+  public Rule EscapedQuote() {
+    return String("\\\"");
   }
 
   public Rule IpAddressUnchecked() {
@@ -105,10 +102,27 @@ public class CommonParser extends BaseParser<AstNode> {
     return Sequence(IpAddressUnchecked(), '/', Number());
   }
 
-  /** Keep in sync with {@link org.batfish.datamodel.Names.Type#NODE} */
-  public Rule NodeNameLiteral() {
-    return Sequence(
-        AlphabetChar(), ZeroOrMore(FirstOf(AlphabetChar(), Dash(), Dot(), Digit(), Underscore())));
+  /**
+   * A shared rule for a range of a names. Allow unquoted strings for names that 1) don't contain
+   * one of special characters in our grammar, 2) don't begin with a digit (to avoid confusion with
+   * IP addresses), and 3) don't begin with '/' (to avoid confusion with regexes). Otherwise, double
+   * quotes are needed.
+   *
+   * <p>This rule puts a {@link StringAstNode} with the parsed name on the stack.
+   */
+  public Rule NameLiteral() {
+    return FirstOf(
+        Sequence(
+            TestNot('"'),
+            TestNot(Digit()),
+            TestNot(Slash()),
+            OneOrMore(AsciiButNot(" \t,\\&()[]@!")),
+            push(new StringAstNode(match()))),
+        Sequence(
+            '"',
+            ZeroOrMore(FirstOf(EscapedQuote(), AsciiButNot("\""))),
+            push(new StringAstNode(match())),
+            '"'));
   }
 
   /** Keep in sync with {@link org.batfish.datamodel.Names.Type#NODE_ROLE} */
@@ -151,22 +165,9 @@ public class CommonParser extends BaseParser<AstNode> {
     return CharRange('_', '_');
   }
 
-  /** Keep in Sync with {@link org.batfish.datamodel.Names.Type#VRF} */
-  public Rule VrfNameLiteral() {
-    return Sequence(
-        FirstOf(AlphabetChar(), Tilde(), Underscore()),
-        ZeroOrMore(FirstOf(AlphabetChar(), Tilde(), Underscore(), Dash(), Digit())));
-  }
-
+  @Anchor(Type.WHITESPACE)
   public Rule WhiteSpace() {
     return ZeroOrMore(AnyOf(" \t"));
-  }
-
-  /** Keep in Sync with {@link org.batfish.datamodel.Names.Type#ZONE} */
-  public Rule ZoneNameLiteral() {
-    return Sequence(
-        FirstOf(AlphabetChar(), Tilde(), Underscore()),
-        ZeroOrMore(FirstOf(AlphabetChar(), Tilde(), Underscore(), Dash(), Digit())));
   }
 
   /**

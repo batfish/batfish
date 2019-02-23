@@ -8,9 +8,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.specifier.parboiled.Anchor.Type;
 import org.parboiled.errors.InvalidInputError;
 import org.parboiled.support.MatcherPath;
-import org.parboiled.support.MatcherPath.Element;
 import org.parboiled.support.ParsingResult;
 
 /** A helper class to interpret parser errors */
@@ -22,19 +22,19 @@ final class ParserUtils {
    */
   private static class PathAnchor {
     private final Anchor.Type _anchorType;
-    private final Element _element;
+    private final int _level;
 
-    PathAnchor(Element element, Anchor.Type anchorType) {
-      this._element = element;
+    PathAnchor(Anchor.Type anchorType, int level) {
       this._anchorType = anchorType;
+      this._level = level;
     }
 
     Anchor.Type getAnchorType() {
       return _anchorType;
     }
 
-    Element getElement() {
-      return _element;
+    int getLevel() {
+      return _level;
     }
   }
 
@@ -123,8 +123,9 @@ final class ParserUtils {
             String.format("Useful completion not found in path %s", path));
       }
 
-      // Ignore paths whose anchor is WHITESPACE -- nothing interesting to report there
-      if (pathAnchor._anchorType.equals(Anchor.Type.WHITESPACE)) {
+      // Ignore paths whose anchor is WHITESPACE or IGNORE
+      if (pathAnchor._anchorType.equals(Anchor.Type.WHITESPACE)
+          || pathAnchor._anchorType.equals(Anchor.Type.IGNORE)) {
         continue;
       }
 
@@ -135,10 +136,12 @@ final class ParserUtils {
       String matchPrefix =
           error
               .getInputBuffer()
-              .extract(pathAnchor.getElement().startIndex, path.element.startIndex);
+              .extract(
+                  path.getElementAtLevel(pathAnchor.getLevel()).startIndex,
+                  path.element.startIndex);
 
       if (pathAnchor._anchorType.equals(Anchor.Type.STRING_LITERAL)) {
-        String fullToken = pathAnchor.getElement().matcher.getLabel();
+        String fullToken = path.getElementAtLevel(pathAnchor.getLevel()).matcher.getLabel();
         if (fullToken.length() >= 2) { // remove surrounding quotes
           fullToken = fullToken.substring(1, fullToken.length() - 1);
         }
@@ -158,32 +161,64 @@ final class ParserUtils {
   /** Finds the anchor in the path. Returns null if none is found. */
   @Nullable
   private static PathAnchor findPathAnchor(
-      MatcherPath path, int level, Map<String, Anchor.Type> completionTypes, boolean fromTop) {
+      MatcherPath path, int level, Map<String, Anchor.Type> anchorTypes, boolean fromTop) {
 
     MatcherPath.Element element = path.getElementAtLevel(level);
     String label = element.matcher.getLabel();
 
-    if (completionTypes.containsKey(label)) {
-      return new PathAnchor(element, completionTypes.get(label));
+    if (anchorTypes.containsKey(label)) {
+      if (!fromTop && anchorTypes.get(label) == Type.IGNORE && level > 0) {
+        return findPathAnchor(path, level - 1, anchorTypes, fromTop);
+      }
+      return new PathAnchor(anchorTypes.get(label), level);
     } else if (isStringLiteralLabel(label)) {
-      return new PathAnchor(element, Anchor.Type.STRING_LITERAL);
+      // If we have descended from IGNORE go all the way up to IGNORE and return that
+      if (!fromTop) {
+        int ignoreLevel = descendedFromIgnore(path, level, anchorTypes);
+        if (ignoreLevel > 0) {
+          return findPathAnchor(path, ignoreLevel - 1, anchorTypes, fromTop);
+        }
+      }
+      return new PathAnchor(Anchor.Type.STRING_LITERAL, level);
     } else if (isCharLiteralLabel(label)) {
       // char literals appear at the bottom; if we are searching from top, we've reached the end
       if (fromTop || level == 0) {
-        return new PathAnchor(element, Anchor.Type.STRING_LITERAL);
+        return new PathAnchor(Anchor.Type.STRING_LITERAL, level);
+      }
+      // If we have descended from IGNORE, go past IGNORE
+      int ignoreLevel = descendedFromIgnore(path, level, anchorTypes);
+      if (ignoreLevel > 0) {
+        return findPathAnchor(path, ignoreLevel - 1, anchorTypes, fromTop);
       }
       // if the parent label is a literal string (e.g., "@specifier"), use that because we want to
       // autocomplete the entire string not just one of its characters
       MatcherPath.Element parentElement = path.getElementAtLevel(level - 1);
       if (isStringLiteralLabel(parentElement.matcher.getLabel())) {
-        return new PathAnchor(parentElement, Anchor.Type.STRING_LITERAL);
+        return new PathAnchor(Anchor.Type.STRING_LITERAL, level - 1);
       }
-      return new PathAnchor(element, Anchor.Type.STRING_LITERAL);
+      return new PathAnchor(Anchor.Type.STRING_LITERAL, level);
     } else if ((fromTop && level == path.length() - 1) || (!fromTop && level == 0)) {
       // we have reached the last element in the path
       return null;
     }
-    return findPathAnchor(path, fromTop ? level + 1 : level - 1, completionTypes, fromTop);
+    return findPathAnchor(path, fromTop ? level + 1 : level - 1, anchorTypes, fromTop);
+  }
+
+  /**
+   * Checks if an ancestor of element at {@code level) is of Anchor.Type == IGNORE. Returns the
+   * level of the ancestor if so. Returns -1 otherwise.
+   */
+  private static int descendedFromIgnore(
+      MatcherPath path, int level, Map<String, Anchor.Type> anchorTypes) {
+    if (level <= 0) {
+      return -1;
+    }
+    MatcherPath.Element parent = path.getElementAtLevel(level - 1);
+    String label = parent.matcher.getLabel();
+    if (anchorTypes.containsKey(label) && anchorTypes.get(label) == Type.IGNORE) {
+      return level - 1;
+    }
+    return descendedFromIgnore(path, level - 1, anchorTypes);
   }
 
   private static boolean isCharLiteralLabel(String label) {
