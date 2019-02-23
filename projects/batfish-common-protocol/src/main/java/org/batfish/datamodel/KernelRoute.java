@@ -8,8 +8,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+/** Non-routing virtual route used for advertisement */
 @ParametersAreNonnullByDefault
-public class KernelRoute extends AbstractRoute {
+public final class KernelRoute extends AbstractRoute {
 
   /** Builder for {@link KernelRoute} */
   public static final class Builder extends AbstractRouteBuilder<Builder, KernelRoute> {
@@ -37,8 +38,11 @@ public class KernelRoute extends AbstractRoute {
   @JsonCreator
   private static @Nonnull KernelRoute create(
       @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) @Nullable Integer adminCost,
-      @JsonProperty(PROP_NEXT_HOP_INTERFACE) @Nullable String nextHopInterface) {
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) @Nullable Integer admin) {
+    if (admin != null) {
+      // silence PMD
+      assert Boolean.TRUE;
+    }
     checkArgument(network != null, "Missing %s", PROP_NETWORK);
     return new KernelRoute(network);
   }
