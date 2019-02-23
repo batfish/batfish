@@ -20,17 +20,13 @@ import javax.annotation.Nullable;
  * </ul>
  */
 @AutoService(IpSpaceSpecifierFactory.class)
-public class FlexibleIpSpaceSpecifierFactory implements IpSpaceSpecifierFactory {
+public final class FlexibleIpSpaceSpecifierFactory implements IpSpaceSpecifierFactory {
   public static final String NAME = FlexibleIpSpaceSpecifierFactory.class.getSimpleName();
 
   private static final Pattern REF_PATTERN =
       Pattern.compile("ref\\.addressgroup\\((.*)\\)", Pattern.CASE_INSENSITIVE);
   private static final Pattern LOCATION_PATTERN =
       Pattern.compile("ofLocation\\((.*)\\)", Pattern.CASE_INSENSITIVE);
-
-  protected IpSpaceSpecifier defaultIpSpaceSpecifier() {
-    throw new IllegalStateException();
-  }
 
   @Override
   public IpSpaceSpecifier buildIpSpaceSpecifier(@Nullable Object input) {
