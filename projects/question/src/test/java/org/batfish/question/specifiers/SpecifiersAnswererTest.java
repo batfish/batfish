@@ -149,7 +149,7 @@ public class SpecifiersAnswererTest {
             ImmutableMultiset.of(
                 Row.of(
                     COL_IP_SPACE,
-                    SpecifierFactories.ACTIVE_GROUP == FactoryGroup.FLEXIBLE
+                    SpecifierFactories.ACTIVE_GROUP == FactoryGroup.V1
                         ? IpWildcardSetIpSpace.builder()
                             .including(new IpWildcard(prefix))
                             .build()

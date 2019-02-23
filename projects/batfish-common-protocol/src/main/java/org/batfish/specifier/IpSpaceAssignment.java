@@ -127,6 +127,6 @@ public final class IpSpaceAssignment {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(getClass()).add("entires", _entries).toString();
+    return MoreObjects.toStringHelper(getClass()).add("entries", _entries).toString();
   }
 }

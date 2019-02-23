@@ -8,38 +8,45 @@ import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifierFactory;
 import org.batfish.specifier.parboiled.ParboiledLocationSpecifierFactory;
 import org.batfish.specifier.parboiled.ParboiledNodeSpecifierFactory;
 
+/**
+ * This class enables a global choice of the grammar that is used by different question parameters.
+ * Questions call the static functions below to directly get the specifier and never explicitly pick
+ * the factory.
+ */
 @ParametersAreNonnullByDefault
-public class SpecifierFactories {
+public final class SpecifierFactories {
 
   public enum FactoryGroup {
-    FLEXIBLE,
-    PARRBOILED
+    V1, // original, regex-based parsing of "flexible" specifiers
+    V2 // newer parboiled-based implementation
   }
 
-  public static final FactoryGroup ACTIVE_GROUP = FactoryGroup.FLEXIBLE;
+  private SpecifierFactories() {}
+
+  public static final FactoryGroup ACTIVE_GROUP = FactoryGroup.V1;
 
   public static final String Filter =
-      ACTIVE_GROUP == FactoryGroup.FLEXIBLE
+      ACTIVE_GROUP == FactoryGroup.V1
           ? FlexibleFilterSpecifierFactory.NAME
           : ParboiledFilterSpecifierFactory.NAME;
 
   public static final String Interface =
-      ACTIVE_GROUP == FactoryGroup.FLEXIBLE
+      ACTIVE_GROUP == FactoryGroup.V1
           ? FlexibleInterfaceSpecifierFactory.NAME
           : ParboiledInterfaceSpecifierFactory.NAME;
 
   public static final String IpSpace =
-      ACTIVE_GROUP == FactoryGroup.FLEXIBLE
+      ACTIVE_GROUP == FactoryGroup.V1
           ? FlexibleIpSpaceSpecifierFactory.NAME
           : ParboiledIpSpaceSpecifierFactory.NAME;
 
   public static final String Location =
-      ACTIVE_GROUP == FactoryGroup.FLEXIBLE
+      ACTIVE_GROUP == FactoryGroup.V1
           ? FlexibleLocationSpecifierFactory.NAME
           : ParboiledLocationSpecifierFactory.NAME;
 
   public static final String Node =
-      ACTIVE_GROUP == FactoryGroup.FLEXIBLE
+      ACTIVE_GROUP == FactoryGroup.V1
           ? FlexibleNodeSpecifierFactory.NAME
           : ParboiledNodeSpecifierFactory.NAME;
 

@@ -27,8 +27,6 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableDiff;
-import org.batfish.specifier.SpecifierFactories;
-import org.batfish.specifier.SpecifierFactories.FactoryGroup;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,6 +35,8 @@ import org.junit.rules.TemporaryFolder;
 /** End-to-end tests of {@link SearchFiltersQuestion} in differential mode. */
 public class SearchFiltersDifferentialTest {
   @Rule public TemporaryFolder _tmp = new TemporaryFolder();
+
+  private static final String ENTER_ALL = "enter(.*)";
 
   private static final String HOSTNAME = "hostname";
   private static final String ACLNAME = "acl";
@@ -79,13 +79,7 @@ public class SearchFiltersDifferentialTest {
     TableAnswerElement answer =
         (TableAnswerElement)
             new SearchFiltersAnswerer(
-                    SearchFiltersQuestion.builder()
-                        .setStartLocation(
-                            SpecifierFactories.ACTIVE_GROUP == FactoryGroup.FLEXIBLE
-                                ? "enter(.*)"
-                                : "@enter(/.*/)")
-                        .build(),
-                    batfish)
+                    SearchFiltersQuestion.builder().setStartLocation(ENTER_ALL).build(), batfish)
                 .answerDiff();
     assertThat(
         answer,
@@ -123,10 +117,7 @@ public class SearchFiltersDifferentialTest {
         (TableAnswerElement)
             new SearchFiltersAnswerer(
                     SearchFiltersQuestion.builder()
-                        .setStartLocation(
-                            SpecifierFactories.ACTIVE_GROUP == FactoryGroup.FLEXIBLE
-                                ? "enter(.*)"
-                                : "@enter(/.*/)")
+                        .setStartLocation(ENTER_ALL)
                         .setAction("deny")
                         .setGenerateExplanations(true)
                         .build(),

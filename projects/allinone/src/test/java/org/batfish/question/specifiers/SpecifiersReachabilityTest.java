@@ -34,8 +34,6 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.question.traceroute.TracerouteAnswerer;
 import org.batfish.specifier.DispositionSpecifier;
-import org.batfish.specifier.SpecifierFactories;
-import org.batfish.specifier.SpecifierFactories.FactoryGroup;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
@@ -57,8 +55,7 @@ public class SpecifiersReachabilityTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
-  private static final String _all =
-      SpecifierFactories.ACTIVE_GROUP == FactoryGroup.FLEXIBLE ? ".*" : "/.*/";
+  private static final String ALL = ".*";
 
   private Batfish _batfish;
 
@@ -144,8 +141,8 @@ public class SpecifiersReachabilityTest {
         SpecifiersReachabilityQuestion.builder()
             .setPathConstraints(
                 PathConstraintsInput.builder()
-                    .setStartLocation(_all)
-                    .setForbiddenLocations(_all)
+                    .setStartLocation(ALL)
+                    .setForbiddenLocations(ALL)
                     .build())
             .build();
     AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
@@ -190,8 +187,8 @@ public class SpecifiersReachabilityTest {
         SpecifiersReachabilityQuestion.builder()
             .setPathConstraints(
                 PathConstraintsInput.builder()
-                    .setStartLocation(String.format("%s[%s]", _all, LOOPBACK))
-                    .setTransitLocations(_all)
+                    .setStartLocation(String.format("%s[%s]", ALL, LOOPBACK))
+                    .setTransitLocations(ALL)
                     .build())
             .build();
     AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();

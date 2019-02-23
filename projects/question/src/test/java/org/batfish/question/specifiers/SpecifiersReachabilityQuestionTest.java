@@ -82,7 +82,7 @@ public class SpecifiersReachabilityQuestionTest {
             IpSpaceAssignment.builder()
                 .assign(
                     locations,
-                    SpecifierFactories.ACTIVE_GROUP == FactoryGroup.FLEXIBLE
+                    SpecifierFactories.ACTIVE_GROUP == FactoryGroup.V1
                         ? IpWildcardSetIpSpace.builder()
                             .including(new IpWildcard("1.2.3.0/24"), new IpWildcard("1.2.3.4"))
                             .build()
@@ -139,7 +139,7 @@ public class SpecifiersReachabilityQuestionTest {
             IpSpaceAssignment.builder()
                 .assign(
                     locations,
-                    SpecifierFactories.ACTIVE_GROUP == FactoryGroup.FLEXIBLE
+                    SpecifierFactories.ACTIVE_GROUP == FactoryGroup.V1
                         ? IpWildcardSetIpSpace.builder()
                             .including(new IpWildcard("1.2.3.3"))
                             .excluding(new IpWildcard("1.2.3.4"))
