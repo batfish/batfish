@@ -281,15 +281,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   private @Nonnull Optional<Transformation> computeVirtualOutgoingTransformation(Virtual virtual) {
-    //    if (snatPoolName )
-    //    Transformation transformation =
-    //        new Transformation.Builder(matchedSpace)
-    //            .apply(
-    //                new AssignIpAddressFromPool(
-    //                    TransformationType.DEST_NAT, IpField.DESTINATION, pool)));
-    //    pool.getMembers().values().stream().map(PoolMember::getAddress).filter(Objects::nonNull);
-    //  String snatPoolName = virtual.getSourceAddressTranslationPool();
     // TODO: implement
+    assert virtual != null; // silence PMD
     return Optional.empty();
   }
 
