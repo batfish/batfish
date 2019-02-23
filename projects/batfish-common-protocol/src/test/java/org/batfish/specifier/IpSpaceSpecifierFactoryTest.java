@@ -28,16 +28,6 @@ public class IpSpaceSpecifierFactoryTest {
   }
 
   @Test
-  public void testFlexibleInferFromLocationIpSpaceSpecifierFactory() {
-    assertThat(
-        load(FlexibleInferFromLocationIpSpaceSpecifierFactory.NAME),
-        Matchers.instanceOf(FlexibleInferFromLocationIpSpaceSpecifierFactory.class));
-    assertThat(
-        new FlexibleInferFromLocationIpSpaceSpecifierFactory().buildIpSpaceSpecifier(null),
-        equalTo(InferFromLocationIpSpaceSpecifier.INSTANCE));
-  }
-
-  @Test
   public void testFlexibleLocationIpSpaceSpecifierFactory() {
     assertThat(
         load(FlexibleLocationIpSpaceSpecifierFactory.NAME),
@@ -50,16 +40,6 @@ public class IpSpaceSpecifierFactoryTest {
             new LocationIpSpaceSpecifier(
                 new InterfaceSpecifierInterfaceLocationSpecifier(
                     new VrfNameRegexInterfaceSpecifier(Pattern.compile("foo"))))));
-  }
-
-  @Test
-  public void testFlexibleUniverseIpSpaceSpecifierFactory() {
-    assertThat(
-        load(FlexibleUniverseIpSpaceSpecifierFactory.NAME),
-        instanceOf(FlexibleUniverseIpSpaceSpecifierFactory.class));
-    assertThat(
-        new FlexibleUniverseIpSpaceSpecifierFactory().buildIpSpaceSpecifier(null),
-        equalTo(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE)));
   }
 
   @Test
