@@ -620,6 +620,7 @@ import org.batfish.grammar.cisco.CiscoParser.Filter_list_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Flan_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Flan_unitContext;
 import org.batfish.grammar.cisco.CiscoParser.Hash_commentContext;
+import org.batfish.grammar.cisco.CiscoParser.Icmp_inline_object_typeContext;
 import org.batfish.grammar.cisco.CiscoParser.Icmp_object_typeContext;
 import org.batfish.grammar.cisco.CiscoParser.If_autostateContext;
 import org.batfish.grammar.cisco.CiscoParser.If_bandwidthContext;
@@ -5592,6 +5593,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.referenceStructure(
           SERVICE_OBJECT, name, EXTENDED_ACCESS_LIST_SERVICE_OBJECT, line);
       return new ServiceObjectServiceSpecifier(name);
+    } else if (ctx.inline_obj != null) {
+      String name = ctx.inline_obj.getText();
+
+      // Inline service object for a particular protocol
+      ServiceObject inline = new ServiceObject(name);
+      inline.addProtocol(toIpProtocol(ctx.inline_obj));
+      _configuration.getServiceObjects().putIfAbsent(name, inline);
+
+      return new ServiceObjectServiceSpecifier(name);
+    } else if (ctx.inline_obj_icmp != null) {
+      String name = ctx.inline_obj_icmp.getText();
+
+      // Inline service object for a particular ICMP type
+      ServiceObject inline = new ServiceObject(name);
+      inline.addProtocol(IpProtocol.ICMP);
+      inline.setIcmpType(toIcmpType(ctx.inline_obj_icmp));
+      _configuration.getServiceObjects().putIfAbsent(name, inline);
+
+      return new ServiceObjectServiceSpecifier(name);
     } else {
       return convProblem(
           AccessListServiceSpecifier.class, ctx, UnimplementedAccessListServiceSpecifier.INSTANCE);
@@ -10563,6 +10583,50 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return IcmpType.DESTINATION_UNREACHABLE;
     } else if (ctx.UNSET() != null) {
       return IcmpType.UNSET;
+    } else {
+      throw convError(IcmpType.class, ctx);
+    }
+  }
+
+  private Integer toIcmpType(Icmp_inline_object_typeContext ctx) {
+    if (ctx.ICMP_ALTERNATE_ADDRESS() != null) {
+      return IcmpType.ALTERNATE_ADDRESS;
+    } else if (ctx.ICMP_CONVERSION_ERROR() != null) {
+      return IcmpType.CONVERSION_ERROR;
+    } else if (ctx.ICMP_ECHO() != null) {
+      return IcmpType.ECHO_REQUEST;
+    } else if (ctx.ICMP_ECHO_REPLY() != null) {
+      return IcmpType.ECHO_REPLY;
+    } else if (ctx.ICMP_INFORMATION_REPLY() != null) {
+      return IcmpType.INFO_REPLY;
+    } else if (ctx.ICMP_INFORMATION_REQUEST() != null) {
+      return IcmpType.INFO_REQUEST;
+    } else if (ctx.ICMP_MASK_REPLY() != null) {
+      return IcmpType.MASK_REPLY;
+    } else if (ctx.ICMP_MASK_REQUEST() != null) {
+      return IcmpType.MASK_REQUEST;
+    } else if (ctx.ICMP_MOBILE_REDIRECT() != null) {
+      return IcmpType.MOBILE_REDIRECT;
+    } else if (ctx.ICMP_PARAMETER_PROBLEM() != null) {
+      return IcmpType.PARAMETER_PROBLEM;
+    } else if (ctx.ICMP_REDIRECT() != null) {
+      return IcmpType.REDIRECT_MESSAGE;
+    } else if (ctx.ICMP_ROUTER_ADVERTISEMENT() != null) {
+      return IcmpType.ROUTER_ADVERTISEMENT;
+    } else if (ctx.ICMP_ROUTER_SOLICITATION() != null) {
+      return IcmpType.ROUTER_SOLICITATION;
+    } else if (ctx.ICMP_SOURCE_QUENCH() != null) {
+      return IcmpType.SOURCE_QUENCH;
+    } else if (ctx.ICMP_TIME_EXCEEDED() != null) {
+      return IcmpType.TIME_EXCEEDED;
+    } else if (ctx.ICMP_TIMESTAMP_REPLY() != null) {
+      return IcmpType.TIMESTAMP_REPLY;
+    } else if (ctx.ICMP_TIMESTAMP_REQUEST() != null) {
+      return IcmpType.TIMESTAMP_REQUEST;
+    } else if (ctx.ICMP_TRACEROUTE() != null) {
+      return IcmpType.TRACEROUTE;
+    } else if (ctx.ICMP_UNREACHABLE() != null) {
+      return IcmpType.DESTINATION_UNREACHABLE;
     } else {
       throw convError(IcmpType.class, ctx);
     }
