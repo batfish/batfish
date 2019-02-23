@@ -238,7 +238,8 @@ public class ForwardingAnalysisImplTest {
     assertThat(
         result,
         hasEntry(
-            equalTo(c1.getHostname()), hasEntry(equalTo(i1.getName()), not(containsIp(additionalIp)))));
+            equalTo(c2.getHostname()),
+            hasEntry(equalTo(i2.getName()), not(containsIp(additionalIp)))));
   }
 
   @Test
