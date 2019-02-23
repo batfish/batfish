@@ -58,6 +58,11 @@ public final class KernelRoute extends AbstractRoute {
   }
 
   @Override
+  public int hashCode() {
+    return _network.hashCode();
+  }
+
+  @Override
   public Long getMetric() {
     return 0L;
   }
@@ -83,11 +88,6 @@ public final class KernelRoute extends AbstractRoute {
   @Override
   public int getTag() {
     return NO_TAG;
-  }
-
-  @Override
-  public int hashCode() {
-    return _network.hashCode();
   }
 
   @Override
