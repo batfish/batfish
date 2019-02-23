@@ -1,7 +1,7 @@
 {
   "class" : "org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityQuestion",
-  "nodes" : "/.*/",
-  "remoteNodes" : "/.*/",
+  "nodes" : ".*",
+  "remoteNodes" : ".*",
   "status" : ".*",
   "type" : ".*",
   "differential" : false,
@@ -19,14 +19,14 @@
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",
-        "value" : "/.*/"
+        "value" : ".*"
       },
       "remoteNodes" : {
         "description" : "Include sessions whose second node matches this specifier",
         "displayName" : "Remote Nodes",
         "optional" : true,
         "type" : "nodeSpec",
-        "value" : "/.*/"
+        "value" : ".*"
       },
       "status" : {
         "description" : "Only include sessions for which status matches this regex",

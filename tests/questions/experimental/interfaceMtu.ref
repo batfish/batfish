@@ -8,7 +8,7 @@
   "innerQuestion" : {
     "class" : "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion",
     "excludeShutInterfaces" : false,
-    "interfaces" : "/Gig.*/",
+    "interfaces" : "Gig.*",
     "nodes" : "as1core2",
     "properties" : ".*",
     "differential" : false,
@@ -39,7 +39,7 @@
         "displayName" : "Interfaces",
         "optional" : false,
         "type" : "interfacesSpec",
-        "value" : "/Gig.*/"
+        "value" : "Gig.*"
       },
       "mtuBytes" : {
         "description" : "The reference MTU in bytes against which to check the configured MTU",

@@ -206,7 +206,8 @@ public class VirtualRouter implements Serializable {
   private Map<String, Rib> _mainRibs;
 
   /** Keeps track of changes to the main RIB */
-  private transient RibDelta.Builder<AnnotatedRoute<AbstractRoute>> _mainRibRouteDeltaBuilder;
+  @VisibleForTesting
+  transient RibDelta.Builder<AnnotatedRoute<AbstractRoute>> _mainRibRouteDeltaBuilder;
 
   @Nonnull private final Node _node;
 
@@ -272,7 +273,8 @@ public class VirtualRouter implements Serializable {
     _virtualEigrpProcesses = ImmutableMap.of();
   }
 
-  private void initCrossVrfQueues() {
+  @VisibleForTesting
+  void initCrossVrfQueues() {
     // TODO: also handle non-default RIBs
     // https://github.com/batfish/batfish/issues/3050
     _crossVrfIncomingRoutes =
@@ -587,7 +589,7 @@ public class VirtualRouter implements Serializable {
 
   /** Compute the FIB from the main RIB */
   public void computeFib() {
-    _fib = new FibImpl<>(_mainRib);
+    _fib = new FibImpl(_mainRib);
   }
 
   boolean computeInterAreaSummaries() {

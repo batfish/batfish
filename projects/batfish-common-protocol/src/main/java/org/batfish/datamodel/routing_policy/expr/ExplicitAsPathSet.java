@@ -85,7 +85,7 @@ public final class ExplicitAsPathSet extends AsPathSetExpr {
     }
     // TODO: need to validate regexes against complex AS-Paths that contain sets. For now, regexes
     // will not match against AsPaths for which set components have non-trivial filters.
-    String asPathStr = asPath.getAsPathString();
+    String asPathStr = asPath.size() == 0 ? "" : " " + asPath.getAsPathString();
     return _elems.stream()
         .map(AsPathSetElem::regex)
         .anyMatch(r -> Pattern.compile(r).matcher(asPathStr).find());

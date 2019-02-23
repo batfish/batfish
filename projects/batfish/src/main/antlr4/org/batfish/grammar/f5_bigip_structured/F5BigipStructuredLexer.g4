@@ -51,6 +51,16 @@ ALLOW_SERVICE
   'allow-service'
 ;
 
+ALWAYS
+:
+  'always'
+;
+
+ANY
+:
+  'any'
+;
+
 ARP
 :
   'arp'
@@ -490,12 +500,12 @@ BRACKET_RIGHT
 
 COMMENT_LINE
 :
-   (
-      F_Whitespace
-   )* '#'
-   {lastTokenType == NEWLINE || lastTokenType == -1}?
+  (
+    F_Whitespace
+  )* '#'
+  {lastTokenType == NEWLINE || lastTokenType == -1}?
 
-   F_NonNewlineChar* F_Newline+ -> channel ( HIDDEN )
+  F_NonNewlineChar* F_Newline+ -> channel ( HIDDEN )
 ;
 
 COMMENT_TAIL

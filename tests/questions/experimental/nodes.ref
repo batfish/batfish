@@ -25,7 +25,7 @@
         "displayName" : "Nodes",
         "optional" : false,
         "type" : "nodeSpec",
-        "value" : "/.*/"
+        "value" : ".*"
       },
       "summary" : {
         "description" : "Whether to provide only summary information about each node rather than the full data model",
@@ -39,6 +39,6 @@
   "nodeTypes" : [
     "OSPF"
   ],
-  "nodes" : "/.*/",
+  "nodes" : ".*",
   "summary" : true
 }

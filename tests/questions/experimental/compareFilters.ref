@@ -1,7 +1,7 @@
 {
   "class" : "org.batfish.question.comparefilters.CompareFiltersQuestion",
-  "filters" : "/.*/",
-  "nodes" : "/.*/",
+  "filters" : ".*",
+  "nodes" : ".*",
   "differential" : true,
   "includeOneTableKeys" : true,
   "instance" : {
@@ -22,14 +22,14 @@
         "displayName" : "Filters",
         "optional" : true,
         "type" : "filter",
-        "value" : "/.*/"
+        "value" : ".*"
       },
       "nodes" : {
         "description" : "Only evaluate filters present on nodes matching this specifier",
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",
-        "value" : "/.*/"
+        "value" : ".*"
       }
     }
   }

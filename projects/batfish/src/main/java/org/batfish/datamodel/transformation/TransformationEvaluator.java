@@ -138,7 +138,8 @@ public class TransformationEvaluator {
 
     @Override
     public Boolean visitAssignIpAddressFromPool(AssignIpAddressFromPool step) {
-      return set(step.getType(), step.getIpField(), get(step.getIpField()), step.getPoolStart());
+      Ip ip = step.getIpRanges().asRanges().iterator().next().lowerEndpoint();
+      return set(step.getType(), step.getIpField(), get(step.getIpField()), ip);
     }
 
     @Override
@@ -165,6 +166,21 @@ public class TransformationEvaluator {
     public Boolean visitAssignPortFromPool(AssignPortFromPool step) {
       return set(
           step.getType(), step.getPortField(), get(step.getPortField()), step.getPoolStart());
+    }
+
+    @Override
+    public Boolean visitApplyAll(ApplyAll applyAll) {
+      // NOTE that reduce is used instead of anyMatch to ensure all steps accept the visitor.
+      return applyAll.getSteps().stream()
+          .map(step -> step.accept(this))
+          .reduce(false, (a, b) -> a || b);
+    }
+
+    @Override
+    public Boolean visitApplyAny(ApplyAny applyAny) {
+      // NOTE that short-circuiting with anyMatch is intended so no more than one non-identity
+      // transformation is performed.
+      return applyAny.getSteps().stream().anyMatch(step -> step.accept(this));
     }
   }
 

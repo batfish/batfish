@@ -1,6 +1,6 @@
 {
   "class" : "org.batfish.question.nodeproperties.NodePropertiesQuestion",
-  "nodes" : "/.*/",
+  "nodes" : ".*",
   "properties" : "ntp.*",
   "differential" : false,
   "includeOneTableKeys" : true,
@@ -13,7 +13,7 @@
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",
-        "value" : "/.*/"
+        "value" : ".*"
       },
       "properties" : {
         "description" : "Include properties matching this regex",

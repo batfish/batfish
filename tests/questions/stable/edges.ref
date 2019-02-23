@@ -1,8 +1,8 @@
 {
   "class" : "org.batfish.question.edges.EdgesQuestion",
   "edgeType" : "BGP",
-  "nodes" : "/.*/",
-  "remoteNodes" : "/.*/",
+  "nodes" : ".*",
+  "remoteNodes" : ".*",
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
@@ -69,14 +69,14 @@
         "displayName" : "Nodes",
         "optional" : false,
         "type" : "nodeSpec",
-        "value" : "/.*/"
+        "value" : ".*"
       },
       "remoteNodes" : {
         "description" : "Include edges whose second node matches this name or regex",
         "displayName" : "Remote Nodes",
         "optional" : false,
         "type" : "nodeSpec",
-        "value" : "/.*/"
+        "value" : ".*"
       }
     }
   }

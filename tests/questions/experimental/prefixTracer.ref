@@ -1,6 +1,6 @@
 {
   "class" : "org.batfish.question.prefixtracer.PrefixTracerQuestion",
-  "nodes" : "/.*/",
+  "nodes" : ".*",
   "prefix" : "0.0.0.0/0",
   "differential" : false,
   "includeOneTableKeys" : true,
@@ -16,7 +16,7 @@
         "displayName" : "Nodes",
         "optional" : true,
         "type" : "nodeSpec",
-        "value" : "/.*/"
+        "value" : ".*"
       },
       "prefix" : {
         "description" : "The prefix to trace. Expected format is A.B.C.D/Y",
