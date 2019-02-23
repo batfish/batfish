@@ -1,6 +1,11 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
@@ -27,6 +32,15 @@ public class KernelRoute extends AbstractRoute {
 
   public static Builder builder() {
     return new Builder();
+  }
+
+  @JsonCreator
+  private static @Nonnull KernelRoute create(
+      @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) @Nullable Integer adminCost,
+      @JsonProperty(PROP_NEXT_HOP_INTERFACE) @Nullable String nextHopInterface) {
+    checkArgument(network != null, "Missing %s", PROP_NETWORK);
+    return new KernelRoute(network);
   }
 
   public KernelRoute(Prefix network) {
