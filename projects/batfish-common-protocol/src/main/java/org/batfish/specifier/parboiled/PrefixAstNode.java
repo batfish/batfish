@@ -1,5 +1,6 @@
 package org.batfish.specifier.parboiled;
 
+import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import org.batfish.datamodel.Prefix;
 
@@ -43,5 +44,10 @@ final class PrefixAstNode implements IpSpaceAstNode {
   @Override
   public int hashCode() {
     return Objects.hash(_prefix);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(getClass()).add("prefix", _prefix).toString();
   }
 }

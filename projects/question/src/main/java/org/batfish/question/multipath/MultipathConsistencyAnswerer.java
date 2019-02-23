@@ -24,12 +24,12 @@ import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.question.traceroute.TracerouteAnswerer;
-import org.batfish.specifier.FlexibleInferFromLocationIpSpaceSpecifierFactory;
+import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
-import org.batfish.specifier.IpSpaceSpecifierFactory;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.SpecifierContext;
+import org.batfish.specifier.SpecifierFactories;
 
 public class MultipathConsistencyAnswerer extends Answerer {
   public MultipathConsistencyAnswerer(Question question, IBatfish batfish) {
@@ -59,16 +59,15 @@ public class MultipathConsistencyAnswerer extends Answerer {
     Set<Location> startLocations = pathConstraints.getStartLocation().resolve(ctxt);
     Set<String> finalNodes = pathConstraints.getEndLocation().resolve(ctxt);
 
-    IpSpaceSpecifierFactory flexibleIpSpaceSpecifierFactory =
-        new FlexibleInferFromLocationIpSpaceSpecifierFactory();
     IpSpaceAssignment ipSpaceAssignment =
-        flexibleIpSpaceSpecifierFactory
-            .buildIpSpaceSpecifier(headerConstraints.getSrcIps())
+        SpecifierFactories.getIpSpaceSpecifierOrDefault(
+                headerConstraints.getSrcIps(), InferFromLocationIpSpaceSpecifier.INSTANCE)
             .resolve(startLocations, ctxt);
     IpSpace dstIps =
         firstNonNull(
             AclIpSpace.union(
-                flexibleIpSpaceSpecifierFactory.buildIpSpaceSpecifier(headerConstraints.getDstIps())
+                SpecifierFactories.getIpSpaceSpecifierOrDefault(
+                        headerConstraints.getDstIps(), InferFromLocationIpSpaceSpecifier.INSTANCE)
                     .resolve(ImmutableSet.of(), ctxt).getEntries().stream()
                     .map(Entry::getIpSpace)
                     .collect(ImmutableList.toImmutableList())),
