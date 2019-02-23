@@ -8,23 +8,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.PacketHeaderConstraints;
+import org.batfish.datamodel.questions.FiltersSpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.FilterSpecifier;
-import org.batfish.specifier.FilterSpecifierFactory;
-import org.batfish.specifier.FlexibleFilterSpecifierFactory;
-import org.batfish.specifier.FlexibleLocationSpecifierFactory;
 import org.batfish.specifier.LocationSpecifier;
-import org.batfish.specifier.LocationSpecifierFactory;
+import org.batfish.specifier.ShorthandFilterSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 /**
  * Computes the fate of the flow at a filter. The set of filters to consider are controlled by
  * 'nodes' and 'filters' fields. By default, all filters on all nodes are considered.
  */
 public class TestFiltersQuestion extends Question {
-
-  private static final String FILTER_SPECIFIER_FACTORY = FlexibleFilterSpecifierFactory.NAME;
-  private static final String LOCATION_SPECIFIER_FACTORY = FlexibleLocationSpecifierFactory.NAME;
 
   private static final String PROP_FILTERS = "filters";
   private static final String PROP_HEADERS = "headers";
@@ -61,7 +58,8 @@ public class TestFiltersQuestion extends Question {
   @Nonnull
   @JsonIgnore
   public FilterSpecifier getFilterSpecifier() {
-    return FilterSpecifierFactory.load(FILTER_SPECIFIER_FACTORY).buildFilterSpecifier(_filters);
+    return SpecifierFactories.getFilterSpecifierOrDefault(
+        _filters, new ShorthandFilterSpecifier(FiltersSpecifier.ALL));
   }
 
   @Nonnull
@@ -88,7 +86,7 @@ public class TestFiltersQuestion extends Question {
   @Nonnull
   @JsonIgnore
   public LocationSpecifier getStartLocationSpecifier() {
-    return LocationSpecifierFactory.load(LOCATION_SPECIFIER_FACTORY)
-        .buildLocationSpecifier(_startLocation);
+    return SpecifierFactories.getLocationSpecifierOrDefault(
+        _startLocation, AllInterfacesLocationSpecifier.INSTANCE);
   }
 }
