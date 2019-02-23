@@ -59,7 +59,7 @@ public class ExplicitAsPathSetTest {
     assertTrue(expr.matches(buildEnvironment(AsPath.ofSingletonAsSets(13L, 113L))));
     assertFalse(expr.matches(buildEnvironment(AsPath.ofSingletonAsSets(11L, 12L, 13L, 14L))));
 
-    expr = new ExplicitAsPathSet(new RegexAsPathSetElem("(^| )13$"));
+    expr = new ExplicitAsPathSet(new RegexAsPathSetElem(" 13$"));
     assertTrue(expr.matches(buildEnvironment(AsPath.ofSingletonAsSets(13L))));
     assertTrue(expr.matches(buildEnvironment(AsPath.ofSingletonAsSets(11L, 12L, 13L))));
     assertFalse(expr.matches(buildEnvironment(AsPath.ofSingletonAsSets(13L, 113L))));
