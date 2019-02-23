@@ -2,6 +2,7 @@ package org.batfish.specifier;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
+import com.google.common.base.MoreObjects;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
@@ -70,5 +71,13 @@ public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceSpeci
                 .map(add -> new IpWildcard(add).toIpSpace())
                 .collect(Collectors.toList())),
         EmptyIpSpace.INSTANCE);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(getClass())
+        .add("addressGroup", _addressGroupName)
+        .add("referenceBook", _bookName)
+        .toString();
   }
 }
