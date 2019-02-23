@@ -26,6 +26,12 @@ import org.parboiled.Rule;
 })
 public class CommonParser extends BaseParser<AstNode> {
 
+  /**
+   * Characters that we deem special in our grammar and cannot appear in unquoted names. We are
+   * currently using the first bunch and setting aside some more for future use.
+   */
+  private static final String SPECIAL_CHARS = " \t,\\&()[]@" + "!*#$%^;?<>={}";
+
   public static final CommonParser INSTANCE = Parboiled.createParser(CommonParser.class);
 
   static Map<String, Type> initAnchors(Class<?> parserClass) {
@@ -70,8 +76,8 @@ public class CommonParser extends BaseParser<AstNode> {
   }
 
   /** See class JavaDoc for why this is a CharRange and not Ch */
-  public Rule Colon() {
-    return CharRange(':', ':');
+  public Rule At() {
+    return CharRange('@', '@');
   }
 
   /** See class JavaDoc for why this is a CharRange and not Ch */
@@ -84,9 +90,9 @@ public class CommonParser extends BaseParser<AstNode> {
     return CharRange('0', '9');
   }
 
-  /** See class JavaDoc for why this is a CharRange and not Ch */
-  public Rule Dot() {
-    return CharRange('.', '.');
+  @Anchor(Type.IGNORE)
+  public Rule EscapedSlash() {
+    return String("\\/");
   }
 
   @Anchor(Type.IGNORE)
@@ -104,9 +110,9 @@ public class CommonParser extends BaseParser<AstNode> {
 
   /**
    * A shared rule for a range of a names. Allow unquoted strings for names that 1) don't contain
-   * one of special characters in our grammar, 2) don't begin with a digit (to avoid confusion with
-   * IP addresses), and 3) don't begin with '/' (to avoid confusion with regexes). Otherwise, double
-   * quotes are needed.
+   * one of the {@link #SPECIAL_CHARS} in our grammar, 2) don't begin with a digit (to avoid
+   * confusion with IP addresses), and 3) don't begin with '/' (to avoid confusion with regexes).
+   * Otherwise, double quotes are needed.
    *
    * <p>This rule puts a {@link StringAstNode} with the parsed name on the stack.
    */
@@ -116,7 +122,7 @@ public class CommonParser extends BaseParser<AstNode> {
             TestNot('"'),
             TestNot(Digit()),
             TestNot(Slash()),
-            OneOrMore(AsciiButNot(" \t,\\&()[]@!")),
+            OneOrMore(AsciiButNot(SPECIAL_CHARS)),
             push(new StringAstNode(match()))),
         Sequence(
             '"',
@@ -144,10 +150,41 @@ public class CommonParser extends BaseParser<AstNode> {
         ZeroOrMore(FirstOf(AlphabetChar(), Underscore(), Digit(), Dash())));
   }
 
-  /** Anything can appear in the interior of a regex except that '/' (47) should be escaped */
+  /**
+   * A rule for regexes enclosed in slashes. Anything can appear in the interior of a regex except
+   * that '/' (47) should be escaped.
+   *
+   * <p>This rule puts in the regex on the stack (without the enclosing '/'s)
+   */
   public Rule Regex() {
-    return OneOrMore(
-        FirstOf("\\/", CharRange((char) 0, (char) 46), CharRange((char) 48, (char) 127)));
+    return Sequence(
+        '/',
+        OneOrMore(FirstOf(EscapedSlash(), AsciiButNot("/"))),
+        push(new StringAstNode(match())),
+        '/');
+  }
+
+  public Rule ContainsChar(char character) {
+    return Sequence(
+        ZeroOrMore(AsciiButNot(Character.toString(character))),
+        character,
+        ZeroOrMore(AsciiButNot(Character.toString(character))));
+  }
+
+  /**
+   * We infer deprecated (non-enclosed) regexes as strings that: 1) don't begin with double quote,
+   * digit, slash, or {@link #SPECIAL_CHARS}; and 2) don't contain space and contain '.*'.
+   */
+  public Rule RegexDeprecated() {
+    return Sequence(
+        TestNot('"'),
+        TestNot(Digit()),
+        TestNot(Slash()),
+        TestNot(SPECIAL_CHARS),
+        TestNot(ContainsChar(' ')),
+        // Sequence(".*"),
+        ".*",
+        push(new StringAstNode(match())));
   }
 
   /** See class JavaDoc for why this is a CharRange and not Ch */

@@ -21,6 +21,16 @@ public class CommonParserTest {
   }
 
   @Test
+  public void testContainsChar() {
+    assertTrue(matches("a", Parser.INSTANCE.ContainsChar('a')));
+    assertTrue(matches("a1", Parser.INSTANCE.ContainsChar('a')));
+    assertTrue(matches("1a", Parser.INSTANCE.ContainsChar('a')));
+    assertTrue(matches("1a1", Parser.INSTANCE.ContainsChar('a')));
+
+    assertFalse(matches("b", Parser.INSTANCE.ContainsChar('a')));
+  }
+
+  @Test
   public void testInitAnchors() {
     assertThat(
         initAnchors(TestParser.class),
@@ -29,6 +39,7 @@ public class CommonParserTest {
                 .put("TestSpecifierInput", Type.ADDRESS_GROUP_AND_BOOK)
                 .put("EOI", Type.EOI)
                 .put("AsciiButNot", Type.IGNORE)
+                .put("EscapedSlash", Type.IGNORE)
                 .put("EscapedQuote", Type.IGNORE)
                 .put("TestIpAddress", Type.IP_ADDRESS)
                 .put("TestIpRange", Type.IP_RANGE)
@@ -77,5 +88,21 @@ public class CommonParserTest {
     for (String name : REFERENCE_OBJECT_INVALID_NAMES) {
       assertFalse(name, matches(name, rule));
     }
+  }
+
+  @Test
+  public void testRegexDeprecated() {
+    Rule rule = Parser.INSTANCE.RegexDeprecated();
+
+    assertTrue(matches(".*", rule));
+    assertTrue(matches("host.*", rule));
+    assertTrue(matches("as1-.*", rule));
+    assertTrue(matches(".*-b", rule));
+    assertTrue(matches(".*border.*", rule));
+
+    assertFalse(matches("has space", rule));
+    assertFalse(matches("@start", rule));
+    assertFalse(matches("1startDigit", rule));
+    assertFalse(matches("/startSlash", rule));
   }
 }

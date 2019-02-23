@@ -139,6 +139,15 @@ public class ParserNodeTest {
   }
 
   @Test
+  public void testParseNodeNameRegexDeprecated() {
+    String regex = "node.*";
+    NameRegexNodeAstNode expectedAst = new NameRegexNodeAstNode(regex);
+
+    assertThat(ParserUtils.getAst(getRunner().run(regex)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + regex + " ")), equalTo(expectedAst));
+  }
+
+  @Test
   public void testParseNodeParens() {
     String ifaceName = "node-lhr";
     NameNodeAstNode expectedAst = new NameNodeAstNode(ifaceName);

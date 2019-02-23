@@ -41,6 +41,8 @@ import org.parboiled.support.Var;
 })
 public class Parser extends CommonParser {
 
+  static final boolean SUPPORT_DEPRECATED_UNENCLOSED_REGEXES = true;
+
   static final Parser INSTANCE = Parboiled.createParser(Parser.class);
 
   static final Map<String, Anchor.Type> ANCHORS = initAnchors(Parser.class);
@@ -117,7 +119,7 @@ public class Parser extends CommonParser {
 
   @Anchor(FILTER_NAME_REGEX)
   public Rule FilterNameRegex() {
-    return Sequence('/', Regex(), push(new NameRegexFilterAstNode(match())), '/');
+    return Sequence(Regex(), push(new NameRegexFilterAstNode(pop())));
   }
 
   public Rule FilterParens() {
@@ -272,7 +274,7 @@ public class Parser extends CommonParser {
 
   @Anchor(INTERFACE_NAME_REGEX)
   public Rule InterfaceNameRegex() {
-    return Sequence('/', Regex(), push(new NameRegexInterfaceAstNode(match())), '/');
+    return Sequence(Regex(), push(new NameRegexInterfaceAstNode(pop())));
   }
 
   public Rule InterfaceParens() {
@@ -557,7 +559,19 @@ public class Parser extends CommonParser {
 
   @Anchor(NODE_NAME_REGEX)
   public Rule NodeNameRegex() {
-    return Sequence('/', Regex(), push(new NameRegexNodeAstNode(match())), '/');
+    return Sequence(Regex(), push(new NameRegexNodeAstNode(pop())));
+  }
+
+  /** Anchor is node name so that autocomplete works */
+  @Anchor(NODE_NAME)
+  public Rule NodeNameRegexDeprecated() {
+    return Sequence(
+        RegexDeprecated(),
+        push(
+            match().contains("*")
+                ? new NameRegexNodeAstNode(match())
+                : new NameNodeAstNode(match())),
+        WhiteSpace());
   }
 
   public Rule NodeParens() {
