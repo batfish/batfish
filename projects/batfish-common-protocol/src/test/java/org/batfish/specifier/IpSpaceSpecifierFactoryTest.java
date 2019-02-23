@@ -3,7 +3,7 @@ package org.batfish.specifier;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
-import java.util.ServiceConfigurationError;
+import org.batfish.common.BatfishException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -20,7 +20,7 @@ public class IpSpaceSpecifierFactoryTest {
 
   @Test
   public void testLoadUnknown() {
-    exception.expect(ServiceConfigurationError.class);
+    exception.expect(BatfishException.class);
     IpSpaceSpecifierFactory.load("");
   }
 }
