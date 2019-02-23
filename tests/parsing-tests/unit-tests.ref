@@ -69827,7 +69827,7 @@
         "eos_trunk_group" : "PASSED",
         "f5_bigip_structured_ltm" : "PASSED",
         "f5_bigip_structured_net" : "PASSED",
-        "f5_bigip_structured_net_routing_bgp" : "PASSED",
+        "f5_bigip_structured_net_routing_bgp" : "WARNINGS",
         "f5_bigip_structured_net_routing_prefix_list" : "PASSED",
         "f5_bigip_structured_net_routing_route_map" : "PASSED",
         "f5_bigip_structured_sys" : "PASSED",
@@ -81630,6 +81630,14 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "No supported address-family configured for BGP neighbor 123.123.123.0/24 in vrf default"
+            }
+          ]
+        },
+        "f5_bigip_structured_net_routing_bgp" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '192.0.2.1'"
             }
           ]
         },
