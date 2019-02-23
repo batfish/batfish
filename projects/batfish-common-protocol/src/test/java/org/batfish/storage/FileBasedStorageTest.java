@@ -3,6 +3,7 @@ package org.batfish.storage;
 import static org.batfish.common.Version.INCOMPATIBLE_VERSION;
 import static org.batfish.storage.FileBasedStorage.mkdirs;
 import static org.batfish.storage.FileBasedStorage.objectKeyToRelativePath;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -423,6 +424,39 @@ public final class FileBasedStorageTest {
             ImmutableSet.of(
                 new StoredObjectMetadata(dir2 + "/" + file2, file2Contents.getBytes().length),
                 new StoredObjectMetadata(dir1 + "/" + file1, file1Contents.getBytes().length))));
+  }
+
+  @Test
+  public void testGetSnapshotExtendedObjectsMetadataNonExistentInput() throws IOException {
+    NetworkId network = new NetworkId("network");
+    SnapshotId snapshot = new SnapshotId("snapshot");
+    _thrown.expect(FileNotFoundException.class);
+    _storage.getSnapshotExtendedObjectsMetadata(network, snapshot);
+  }
+
+  @Test
+  public void testGetSnapshotExtendedObjectsMetadata() throws IOException {
+    NetworkId network = new NetworkId("network");
+    SnapshotId snapshot = new SnapshotId("snapshot");
+
+    String key1 = "foo/bar";
+    String key2 = "bat/fish";
+    String content1 = "some content";
+    String content2 = "some other content";
+
+    InputStream inputStream1 = new ByteArrayInputStream(content1.getBytes());
+    InputStream inputStream2 = new ByteArrayInputStream(content2.getBytes());
+
+    _storage.storeSnapshotObject(inputStream1, network, snapshot, key1);
+    _storage.storeSnapshotObject(inputStream2, network, snapshot, key2);
+
+    List<StoredObjectMetadata> keys =
+        _storage.getSnapshotExtendedObjectsMetadata(network, snapshot);
+    assertThat(
+        keys,
+        containsInAnyOrder(
+            new StoredObjectMetadata(key1, content1.getBytes().length),
+            new StoredObjectMetadata(key2, content2.getBytes().length)));
   }
 
   @Test

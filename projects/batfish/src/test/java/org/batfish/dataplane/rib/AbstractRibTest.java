@@ -526,4 +526,31 @@ public class AbstractRibTest {
     assertThat(routes, hasSize(1));
     assertThat(Iterables.getOnlyElement(routes), hasPrefix(Prefix.parse("1.2.3.4/30")));
   }
+
+  @Test
+  public void testClear() {
+    // Setup: just merge in a bunch of routes
+    StaticRoute.Builder b =
+        StaticRoute.builder()
+            .setNextHopIp(Ip.ZERO)
+            .setNextHopInterface(null)
+            .setAdministrativeCost(1)
+            .setMetric(0L)
+            .setTag(0);
+    _rib.mergeRouteGetDelta(
+        b.setNetwork(Prefix.parse("1.2.3.4/32")).setNonForwarding(true).build());
+    _rib.mergeRouteGetDelta(
+        b.setNetwork(Prefix.parse("1.2.3.4/31")).setNonForwarding(true).build());
+    _rib.mergeRouteGetDelta(
+        b.setNetwork(Prefix.parse("1.2.3.4/30")).setNonForwarding(true).build());
+    _rib.mergeRouteGetDelta(
+        b.setNetwork(Prefix.parse("1.2.3.4/30")).setNonForwarding(false).build());
+    _rib.mergeRouteGetDelta(
+        b.setNetwork(Prefix.parse("1.2.3.4/8")).setNonForwarding(false).build());
+
+    // Test:
+    _rib.clear();
+    assertThat(_rib.getRoutes(), empty());
+    assertThat(_rib.getTypedRoutes(), empty());
+  }
 }

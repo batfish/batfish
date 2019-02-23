@@ -71,6 +71,11 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     return b.build();
   }
 
+  /** Remove all routes from the tree */
+  public void clear() {
+    _root.clear();
+  }
+
   /**
    * Check if the route is present in the RIB
    *

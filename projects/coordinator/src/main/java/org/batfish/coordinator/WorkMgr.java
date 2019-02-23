@@ -2892,6 +2892,28 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  @Nullable
+  public List<StoredObjectMetadata> getSnapshotExtendedObjectsMetadata(
+      String network, String snapshot) throws IOException {
+    if (!_idManager.hasNetworkId(network)) {
+      return null;
+    }
+    NetworkId networkId = _idManager.getNetworkId(network);
+    if (!_idManager.hasSnapshotId(snapshot, networkId)) {
+      return null;
+    }
+    SnapshotId snapshotId = _idManager.getSnapshotId(snapshot, networkId);
+    try {
+      return _storage.getSnapshotExtendedObjectsMetadata(networkId, snapshotId);
+    } catch (IOException e) {
+      throw new IOException(
+          String.format(
+              "Could not fetch extended objects metadata for network '%s', snapshot '%s'",
+              network, snapshot),
+          e);
+    }
+  }
+
   /**
    * Returns the env topology for the given network and snapshot, or {@code null} if either does not
    * exist.

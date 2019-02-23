@@ -70,7 +70,17 @@ public class OspfInterAreaRoute extends OspfInternalRoute {
   }
 
   @Override
-  public AbstractRouteBuilder<?, ?> toBuilder() {
-    throw new UnsupportedOperationException();
+  public OspfInternalRoute.Builder toBuilder() {
+    return OspfInternalRoute.builder()
+        // AbstractRoute properties
+        .setNetwork(getNetwork())
+        .setNextHopIp(getNextHopIp())
+        .setAdmin(getAdministrativeCost())
+        .setMetric(getMetric())
+        .setNonForwarding(getNonForwarding())
+        .setNonRouting(getNonRouting())
+        // OspfInterAreaRoute properties
+        .setProtocol(getProtocol())
+        .setArea(getArea());
   }
 }

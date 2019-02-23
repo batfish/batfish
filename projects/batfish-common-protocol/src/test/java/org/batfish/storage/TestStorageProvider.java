@@ -290,6 +290,12 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
+  public @Nonnull List<StoredObjectMetadata> getSnapshotExtendedObjectsMetadata(
+      NetworkId networkId, SnapshotId snapshotId) throws FileNotFoundException, IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public String loadPojoTopology(NetworkId networkId, SnapshotId snapshotId) throws IOException {
     throw new UnsupportedOperationException();
   }

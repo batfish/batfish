@@ -19,3 +19,6 @@ set security policies from-zone A to-zone B policy 123-4 description "123-4 desc
 set security policies from-zone A to-zone B policy 123-4 then count
 set security policies from-zone A to-zone B policy 123-4 then trace
 #
+set security zones security-zone ZONE-protocols host-inbound-traffic protocols all
+set security zones security-zone ZONE-system-services host-inbound-traffic system-services all
+#
