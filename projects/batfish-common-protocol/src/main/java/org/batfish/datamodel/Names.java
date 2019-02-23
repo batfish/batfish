@@ -69,7 +69,7 @@ public final class Names {
   /**
    * Checks if {@code name} is valid for {@code type}.
    *
-   * <p>{@code objectescription} is the user-facing description of the object type.
+   * <p>{@code objectDescription} is the user-facing description of the object type.
    *
    * @throws IllegalArgumentException if the name is invalid.
    */
