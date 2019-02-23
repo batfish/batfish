@@ -1,6 +1,7 @@
 package org.batfish.bddreachability.transition;
 
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
+import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.reverse;
 import static org.batfish.datamodel.transformation.ReturnFlowTransformation.returnFlowTransformation;
 
@@ -17,6 +18,8 @@ import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.transformation.ApplyAll;
+import org.batfish.datamodel.transformation.ApplyAny;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
@@ -113,6 +116,18 @@ public class TransformationToTransition {
     public Transition visitAssignPortFromPool(AssignPortFromPool step) {
       return assignPortFromPool(
           portField(step.getPortField()), step.getPoolStart(), step.getPoolEnd());
+    }
+
+    @Override
+    public Transition visitApplyAll(ApplyAll applyAll) {
+      return compose(
+          applyAll.getSteps().stream().map(step -> step.accept(this)).toArray(Transition[]::new));
+    }
+
+    @Override
+    public Transition visitApplyAny(ApplyAny applyAny) {
+      return Transitions.or(
+          applyAny.getSteps().stream().map(step -> step.accept(this)).toArray(Transition[]::new));
     }
   }
 

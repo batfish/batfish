@@ -58,6 +58,22 @@ public final class ReturnFlowTransformation {
       return new AssignPortFromPool(
           step.getType(), step.getPortField().opposite(), step.getPoolStart(), step.getPoolEnd());
     }
+
+    @Override
+    public TransformationStep visitApplyAll(ApplyAll applyAll) {
+      return new ApplyAll(
+          applyAll.getSteps().stream()
+              .map(step -> step.accept(this))
+              .collect(ImmutableList.toImmutableList()));
+    }
+
+    @Override
+    public TransformationStep visitApplyAny(ApplyAny applyAny) {
+      return new ApplyAny(
+          applyAny.getSteps().stream()
+              .map(step -> step.accept(this))
+              .collect(ImmutableList.toImmutableList()));
+    }
   }
 
   /* GuardVisitor does two things:

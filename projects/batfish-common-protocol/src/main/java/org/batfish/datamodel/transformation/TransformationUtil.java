@@ -14,7 +14,7 @@ import org.batfish.datamodel.Ip;
 public final class TransformationUtil {
   private TransformationUtil() {}
 
-  private static final TransformationStepVisitor<Boolean> IS_SOURCE_NAT =
+  private static final TransformationStepVisitor<Boolean> HAS_SOURCE_NAT =
       new TransformationStepVisitor<Boolean>() {
         @Override
         public Boolean visitAssignIpAddressFromPool(
@@ -36,6 +36,16 @@ public final class TransformationUtil {
         @Override
         public Boolean visitAssignPortFromPool(AssignPortFromPool assignPortFromPool) {
           return assignPortFromPool.getType() == SOURCE_NAT;
+        }
+
+        @Override
+        public Boolean visitApplyAll(ApplyAll applyAll) {
+          return applyAll.getSteps().stream().anyMatch(step -> step.accept(this));
+        }
+
+        @Override
+        public Boolean visitApplyAny(ApplyAny applyAny) {
+          return applyAny.getSteps().stream().anyMatch(step -> step.accept(this));
         }
       };
 
@@ -71,6 +81,16 @@ public final class TransformationUtil {
         public Stream<Ip> visitAssignPortFromPool(AssignPortFromPool assignPortFromPool) {
           return Stream.of();
         }
+
+        @Override
+        public Stream<Ip> visitApplyAll(ApplyAll applyAll) {
+          return applyAll.getSteps().stream().flatMap(step -> step.accept(this));
+        }
+
+        @Override
+        public Stream<Ip> visitApplyAny(ApplyAny applyAny) {
+          return applyAny.getSteps().stream().flatMap(step -> step.accept(this));
+        }
       };
 
   public static boolean hasSourceNat(@Nullable Transformation transformation) {
@@ -78,7 +98,7 @@ public final class TransformationUtil {
       return false;
     }
 
-    return transformation.getTransformationSteps().stream().anyMatch(IS_SOURCE_NAT::visit)
+    return transformation.getTransformationSteps().stream().anyMatch(HAS_SOURCE_NAT::visit)
         || hasSourceNat(transformation.getAndThen())
         || hasSourceNat(transformation.getOrElse());
   }

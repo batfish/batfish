@@ -17,6 +17,8 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.transformation.ApplyAll;
+import org.batfish.datamodel.transformation.ApplyAny;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
@@ -120,6 +122,28 @@ public final class TransformationTransitionGenerator {
     public BasicRuleStatement visitAssignPortFromPool(AssignPortFromPool assignPortFromPool) {
       // TODO
       throw new BatfishException("PAT is not supported");
+    }
+
+    @Override
+    public BasicRuleStatement visitApplyAll(ApplyAll applyAll) {
+      ImmutableList<BooleanExpr> conjuncts =
+          applyAll.getSteps().stream()
+              .map(step -> step.accept(this))
+              .map(BasicRuleStatement::getPreconditionStateIndependentConstraints)
+              .collect(ImmutableList.toImmutableList());
+      BooleanExpr expr = conjuncts.size() == 1 ? conjuncts.get(0) : new AndExpr(conjuncts);
+      return new BasicRuleStatement(expr, _preState, _postState);
+    }
+
+    @Override
+    public BasicRuleStatement visitApplyAny(ApplyAny applyAny) {
+      ImmutableList<BooleanExpr> disjuncts =
+          applyAny.getSteps().stream()
+              .map(step -> step.accept(this))
+              .map(BasicRuleStatement::getPreconditionStateIndependentConstraints)
+              .collect(ImmutableList.toImmutableList());
+      BooleanExpr expr = disjuncts.size() == 1 ? disjuncts.get(0) : new OrExpr(disjuncts);
+      return new BasicRuleStatement(expr, _preState, _postState);
     }
   }
 

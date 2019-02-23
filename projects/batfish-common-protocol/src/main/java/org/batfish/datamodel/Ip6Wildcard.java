@@ -10,7 +10,6 @@ public class Ip6Wildcard extends Pair<Ip6, Ip6> {
 
   public static final Ip6Wildcard ANY = new Ip6Wildcard(Ip6.ZERO, Ip6.MAX);
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private static Ip6 parseAddress(String str) {
@@ -19,17 +18,17 @@ public class Ip6Wildcard extends Pair<Ip6, Ip6> {
       if (parts.length != 2) {
         throw new BatfishException("Invalid Ip6Wildcard string: '" + str + "'");
       } else {
-        return new Ip6(parts[0]);
+        return Ip6.parse(parts[0]);
       }
     } else if (str.contains("/")) {
       String[] parts = str.split("/");
       if (parts.length != 2) {
         throw new BatfishException("Invalid Ip6Wildcard string: '" + str + "'");
       } else {
-        return new Ip6(parts[0]);
+        return Ip6.parse(parts[0]);
       }
     } else {
-      return new Ip6(str);
+      return Ip6.parse(str);
     }
   }
 
@@ -39,7 +38,7 @@ public class Ip6Wildcard extends Pair<Ip6, Ip6> {
       if (parts.length != 2) {
         throw new BatfishException("Invalid Ip6Wildcard string: '" + str + "'");
       } else {
-        return new Ip6(parts[1]);
+        return Ip6.parse(parts[1]);
       }
     } else if (str.contains("/")) {
       String[] parts = str.split("/");
