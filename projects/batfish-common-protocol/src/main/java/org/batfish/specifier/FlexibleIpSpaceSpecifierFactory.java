@@ -21,7 +21,9 @@ import org.batfish.datamodel.IpWildcardSetIpSpace;
  *   <li>{@code ref.addressgroup(foo, bar)}, which returns {@link
  *       ReferenceAddressGroupIpSpaceSpecifier};
  *   <li>{@code ofLocation(...)}, which processes its input using {@link LocationIpSpaceSpecifier};
- *   <li>and inputs accepted by {@link ConstantWildcardSetIpSpaceSpecifierFactory}.
+ *   <li>and constant ip wildcards in the format {@code w1,w2,...wn-wn+1,wn+2,...}. Wildcards to the
+ *       left of - are * whitelisted (at least 1 is required). Wildcards to the right of the dash
+ *       (-), if present, are * blacklisted. Can also use backslash (\) instead of dash.
  * </ul>
  */
 @AutoService(IpSpaceSpecifierFactory.class)

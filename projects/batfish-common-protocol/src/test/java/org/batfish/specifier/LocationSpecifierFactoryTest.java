@@ -19,7 +19,7 @@ public class LocationSpecifierFactoryTest {
   }
 
   @Test
-  public void testUnknownNodeSpecifierFactory() {
+  public void testLoadUnknown() {
     exception.expect(BatfishException.class);
     LocationSpecifierFactory.load("");
   }
