@@ -13,15 +13,18 @@ import static org.batfish.datamodel.flow.StepAction.TRANSMITTED;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.buildEnterSrcIfaceStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createFilterStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
-import static org.batfish.dataplane.traceroute.TracerouteUtils.resolveNextHopIpRoutes;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.returnFlow;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.sessionTransformation;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.Ordering;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -33,9 +36,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -84,7 +86,18 @@ import org.batfish.datamodel.transformation.TransformationEvaluator.Transformati
  * node it entered (if any), the previously exited node/interface (if any), etc.
  */
 class FlowTracer {
+  /*
+   * A custom FibEntry comparator. It is **NOT** consistent with equals. Instead it only cares about
+   * the ARP Ip, outgoing interface and a subset of the properties of the top-level route that was
+   * matched.
+   */
+  private static final Comparator<FibEntry> FIB_ENTRY_COMPARATOR =
+      Comparator.comparing(FibEntry::getInterfaceName)
+          .thenComparing(Comparator.nullsFirst(Comparator.comparing(FibEntry::getArpIP)))
+          .thenComparing(e -> e.getTopLevelRoute().getNextHopIp());
+
   private final TracerouteEngineImplContext _tracerouteContext;
+
   private final Configuration _currentConfig;
   private final @Nullable String _ingressInterface;
   private final Map<String, IpAccessList> _aclDefinitions;
@@ -94,6 +107,7 @@ class FlowTracer {
   private final Set<FirewallSessionTraceInfo> _newSessions;
   private final NavigableMap<String, IpSpace> _namedIpSpaces;
   private final Flow _originalFlow;
+  private final Mediator _pipelineMediator;
   private final String _vrfName;
 
   // Mutable list of hops in the current trace
@@ -106,6 +120,8 @@ class FlowTracer {
 
   // The current flow can change as we process the packet.
   private Flow _currentFlow;
+  // VRF to use for the FIB lookups, can change as we process the packet.
+  private String _lookupVrfName;
 
   FlowTracer(
       TracerouteEngineImplContext tracerouteContext,
@@ -123,6 +139,7 @@ class FlowTracer {
     _newSessions = new HashSet<>();
     _namedIpSpaces = _currentConfig.getIpSpaces();
     _originalFlow = originalFlow;
+    _pipelineMediator = new Mediator();
 
     _breadcrumbs = new Stack<>();
     _hops = new ArrayList<>();
@@ -130,6 +147,7 @@ class FlowTracer {
 
     _currentFlow = originalFlow;
     _vrfName = initVrfName();
+    _lookupVrfName = _vrfName;
   }
 
   private FlowTracer(
@@ -151,6 +169,7 @@ class FlowTracer {
     _originalFlow = originalFlow;
     _currentFlow = currentFlow;
     _flowTraces = flowTraces;
+    _pipelineMediator = new Mediator();
 
     Configuration currentConfig = _tracerouteContext.getConfigurations().get(currentNode.getName());
     checkArgument(
@@ -169,6 +188,7 @@ class FlowTracer {
     _steps = new ArrayList<>(steps);
     _newSessions = new HashSet<>(newSessions);
     _vrfName = initVrfName();
+    _lookupVrfName = _vrfName;
   }
 
   private String initVrfName() {
@@ -278,8 +298,6 @@ class FlowTracer {
     checkState(
         _hops.size() == _breadcrumbs.size(), "Must have equal number of hops and breadcrumbs");
 
-    String currentNodeName = _currentNode.getName();
-
     if (processSessions()) {
       // flow was processed by a session.
       return;
@@ -317,57 +335,15 @@ class FlowTracer {
       _steps.add(buildOriginateStep());
     }
 
-    Ip dstIp = _currentFlow.getDstIp();
-
-    // Accept if the flow is destined for this vrf on this host.
-    if (_tracerouteContext.ownsIp(currentNodeName, _vrfName, dstIp)) {
-      buildAcceptTrace();
+    if (_pipelineMediator.acceptOnDevice(PipelineContext.of(_currentFlow))) {
       return;
     }
 
-    Fib fib = _tracerouteContext.getFib(currentNodeName, _vrfName);
-    // Sort so that resulting traces will be in sensible deterministic order
-    SortedSet<String> nextHopInterfaces =
-        ImmutableSortedSet.copyOf(fib.getNextHopInterfaces(dstIp));
-    if (nextHopInterfaces.isEmpty()) {
-      buildNoRouteTrace();
+    if (_pipelineMediator.detectLoops(PipelineContext.of(_currentFlow))) {
       return;
     }
 
-    // Loop detection
-    Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, _currentFlow);
-    if (_breadcrumbs.contains(breadcrumb)) {
-      buildLoopTrace();
-      return;
-    }
-
-    _breadcrumbs.push(breadcrumb);
-    try {
-      _steps.add(buildRoutingStep(currentNodeName, dstIp));
-
-      Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute =
-          fib.getNextHopInterfacesByRoute(dstIp);
-
-      // For every interface with a route to the dst IP
-      for (String nextHopInterfaceName : nextHopInterfaces) {
-        if (nextHopInterfaceName.equals(Interface.NULL_INTERFACE_NAME)) {
-          branch().buildNullRoutedTrace();
-          continue;
-        }
-
-        Interface nextHopInterface = _currentConfig.getAllInterfaces().get(nextHopInterfaceName);
-
-        Multimap<Ip, AbstractRoute> resolvedNextHopIpRoutes =
-            resolveNextHopIpRoutes(nextHopInterfaceName, nextHopInterfacesByRoute);
-        resolvedNextHopIpRoutes
-            .asMap()
-            .forEach(
-                (resolvedNextHopIp, routeCandidates) ->
-                    branch().forwardOutInterface(nextHopInterface, resolvedNextHopIp));
-      }
-    } finally {
-      _breadcrumbs.pop();
-    }
+    _pipelineMediator.destinationBasedLookup(PipelineContext.of(_currentFlow));
   }
 
   @Nonnull
@@ -379,9 +355,17 @@ class FlowTracer {
   }
 
   @Nonnull
-  private RoutingStep buildRoutingStep(String currentNodeName, Ip dstIp) {
-    List<RouteInfo> matchedRibRouteInfo =
-        _tracerouteContext.longestPrefixMatch(currentNodeName, _vrfName, dstIp);
+  private RoutingStep buildRoutingStep(SortedSet<FibEntry> fibEntries) {
+    ImmutableList<RouteInfo> matchedRibRouteInfo =
+        fibEntries.stream()
+            .map(FibEntry::getTopLevelRoute)
+            .map(rc -> new RouteInfo(rc.getProtocol(), rc.getNetwork(), rc.getNextHopIp()))
+            .sorted(
+                Comparator.comparing(RouteInfo::getNetwork)
+                    .thenComparing(RouteInfo::getNextHopIp)
+                    .thenComparing(RouteInfo::getProtocol))
+            .distinct()
+            .collect(ImmutableList.toImmutableList());
 
     return RoutingStep.builder()
         .setDetail(RoutingStepDetail.builder().setRoutes(matchedRibRouteInfo).build())
@@ -439,13 +423,11 @@ class FlowTracer {
     }
 
     // cycle detection
-    Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, flow);
-    if (_breadcrumbs.contains(breadcrumb)) {
-      buildLoopTrace();
+    if (_pipelineMediator.detectLoops(PipelineContext.of(flow))) {
       return true;
     }
 
-    _breadcrumbs.push(breadcrumb);
+    _breadcrumbs.push(new Breadcrumb(currentNodeName, _vrfName, flow));
     try {
       // apply transformation
       Transformation transformation = session.getTransformation();
@@ -652,5 +634,147 @@ class FlowTracer {
 
     Trace trace = new Trace(disposition, _hops);
     _flowTraces.accept(new TraceAndReverseFlow(trace, returnFlow, _newSessions));
+  }
+
+  /**
+   * Concrete mediator between several {@link TracePipeline pipelines}. Return value indicates
+   * whether the flow was processed by the pipeline/step.
+   */
+  private final class Mediator implements TracePipelineMediator<Boolean> {
+    private final LoopDetector _loopDetector;
+    private final Acceptor _acceptor;
+
+    Mediator() {
+      _loopDetector = new LoopDetector(this);
+      _acceptor = new Acceptor(this);
+    }
+
+    @Override
+    public Boolean acceptOnDevice(PipelineContext context) {
+      return _acceptor.process(context);
+    }
+
+    @Override
+    public Boolean destinationBasedLookup(PipelineContext context) {
+      return new DestinationBasedLookup(this).process(context);
+    }
+
+    @Override
+    public Boolean detectLoops(PipelineContext context) {
+      return _loopDetector.process(context);
+    }
+
+    @Override
+    public Boolean sendOutInterfaces(PipelineContext context) {
+      checkState(context.getExitPoint() != null);
+      return new SendOutInterface(this, context.getExitPoint()).process(context);
+    }
+  }
+
+  private final class Acceptor extends TracePipeline<Boolean> {
+
+    Acceptor(TracePipelineMediator<Boolean> mediator) {
+      super(mediator);
+    }
+
+    @Override
+    Boolean process(PipelineContext flow) {
+      // Accept if the flow is destined for this vrf on this host.
+      if (_tracerouteContext.ownsIp(_currentNode.getName(), _vrfName, flow.getFlow().getDstIp())) {
+        buildAcceptTrace();
+        return true;
+      }
+      return false;
+    }
+  }
+
+  /** Detects loops based on {@link FlowTracer#_breadcrumbs} */
+  private final class LoopDetector extends TracePipeline<Boolean> {
+
+    LoopDetector(TracePipelineMediator<Boolean> mediator) {
+      super(mediator);
+    }
+
+    @Override
+    Boolean process(PipelineContext context) {
+      Breadcrumb breadcrumb = new Breadcrumb(_currentNode.getName(), _vrfName, context.getFlow());
+      if (_breadcrumbs.contains(breadcrumb)) {
+        buildLoopTrace();
+        return true;
+      }
+      return false;
+    }
+  }
+
+  private final class DestinationBasedLookup extends TracePipeline<Boolean> {
+
+    DestinationBasedLookup(TracePipelineMediator<Boolean> mediator) {
+      super(mediator);
+    }
+
+    @Override
+    Boolean process(PipelineContext context) {
+      if (_mediator.acceptOnDevice(context)) {
+        return true;
+      }
+
+      _breadcrumbs.push(new Breadcrumb(_currentNode.getName(), _vrfName, context.getFlow()));
+      // Sort so that resulting traces will be in sensible deterministic order
+      SortedSet<FibEntry> fibEntries =
+          ImmutableSortedSet.copyOf(
+              FIB_ENTRY_COMPARATOR,
+              _tracerouteContext
+                  .getFib(_currentNode.getName(), _lookupVrfName)
+                  .map(fib -> fib.get(context.getFlow().getDstIp()))
+                  .orElse(ImmutableSet.of()));
+
+      try {
+        if (fibEntries.isEmpty()) {
+          buildNoRouteTrace();
+          return true;
+        }
+
+        _steps.add(buildRoutingStep(fibEntries));
+        // Group traces by outgoing interface (we do not want extra branching if there is branching
+        // in FIB resolution)
+        ImmutableSortedMap<String, Set<FibEntry>> groupedByInterface =
+            ImmutableSortedMap.copyOf(
+                fibEntries.stream()
+                    .collect(Collectors.groupingBy(FibEntry::getInterfaceName, Collectors.toSet())),
+                Ordering.natural());
+        // For every interface with a route to the dst IP
+        for (String outgoingInterface : groupedByInterface.keySet()) {
+          FibEntry fibEntry = groupedByInterface.get(outgoingInterface).iterator().next();
+          if (outgoingInterface.equals(Interface.NULL_INTERFACE_NAME)) {
+            branch().buildNullRoutedTrace();
+            continue;
+          }
+          _mediator.sendOutInterfaces(
+              PipelineContext.builder(context.getFlow())
+                  .setExitPoint(ExitPoint.from(fibEntry))
+                  .build());
+        }
+      } finally {
+        _breadcrumbs.pop();
+      }
+      return true;
+    }
+  }
+
+  private final class SendOutInterface extends TracePipeline<Boolean> {
+    private final ExitPoint _exitPoint;
+
+    SendOutInterface(TracePipelineMediator<Boolean> mediator, ExitPoint exitPoint) {
+      super(mediator);
+      _exitPoint = exitPoint;
+    }
+
+    @Override
+    Boolean process(PipelineContext context) {
+      Interface nextHopInterface =
+          _currentConfig.getAllInterfaces().get(_exitPoint.getInterfaceName());
+      branch().forwardOutInterface(nextHopInterface, _exitPoint.getArpIP());
+      return true;
+    }
   }
 }
