@@ -207,6 +207,16 @@ public class ParserLocationTest {
   }
 
   @Test
+  public void testParseLocationInterfaceDeprecated() {
+    String input = "[eth0/1]";
+    InterfaceLocationAstNode expectedAst =
+        InterfaceLocationAstNode.createFromInterface(new NameInterfaceAstNode("eth0/1"));
+
+    assertThat(ParserUtils.getAst(getRunner().run(input)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + input + " ")), equalTo(expectedAst));
+  }
+
+  @Test
   public void testParseLocationInterfaceSpecifier() {
     String input = "@link(physical)";
     InterfaceLocationAstNode expectedAst =

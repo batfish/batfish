@@ -459,7 +459,8 @@ public class Parser extends CommonParser {
   }
 
   public Rule LocationTerm() {
-    return FirstOf(LocationEnter(), LocationInterface(), LocationParens());
+    return FirstOf(
+        LocationEnter(), LocationInterfaceDeprecated(), LocationInterface(), LocationParens());
   }
 
   public Rule LocationEnter() {
@@ -487,6 +488,17 @@ public class Parser extends CommonParser {
             InterfaceSpecifier(),
             WhiteSpace(),
             push(InterfaceLocationAstNode.createFromInterface(pop()))));
+  }
+
+  @Anchor(IGNORE)
+  public Rule LocationInterfaceDeprecated() {
+    return Sequence(
+        // brackets without node expression
+        "[ ",
+        InterfaceExpression(),
+        WhiteSpace(),
+        "] ",
+        push(InterfaceLocationAstNode.createFromInterface(pop())));
   }
 
   public Rule LocationParens() {
