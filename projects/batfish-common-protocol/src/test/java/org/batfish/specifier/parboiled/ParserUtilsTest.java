@@ -1,14 +1,25 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_AND_BOOK;
+import static org.batfish.specifier.parboiled.Anchor.Type.CHAR_LITERAL;
+import static org.batfish.specifier.parboiled.Anchor.Type.IGNORE;
+import static org.batfish.specifier.parboiled.Anchor.Type.IP_ADDRESS;
+import static org.batfish.specifier.parboiled.Anchor.Type.NODE_NAME;
+import static org.batfish.specifier.parboiled.Anchor.Type.STRING_LITERAL;
+import static org.batfish.specifier.parboiled.ParserUtils.findPathAnchorFromBottom;
 import static org.batfish.specifier.parboiled.ParserUtils.getErrorString;
 import static org.batfish.specifier.parboiled.ParserUtils.getPotentialMatches;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-import org.batfish.specifier.parboiled.Anchor.Type;
+import org.batfish.specifier.parboiled.ParserUtils.PathElement;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.parboiled.errors.InvalidInputError;
@@ -28,19 +39,93 @@ public class ParserUtilsTest {
   /** These represent all the ways valid input can start */
   private Set<PotentialMatch> _validStarts =
       ImmutableSet.of(
-          new PotentialMatch(Anchor.Type.STRING_LITERAL, "", "@specifier"),
-          new PotentialMatch(Anchor.Type.STRING_LITERAL, "", "!"),
-          new PotentialMatch(Type.IP_ADDRESS, "", null),
-          new PotentialMatch(Type.NODE_NAME, "", null),
-          new PotentialMatch(Anchor.Type.STRING_LITERAL, "", "\""),
-          new PotentialMatch(Anchor.Type.STRING_LITERAL, "", "("));
+          new PotentialMatch(STRING_LITERAL, "", "@specifier"),
+          new PotentialMatch(CHAR_LITERAL, "", "!"),
+          new PotentialMatch(IP_ADDRESS, "", null),
+          new PotentialMatch(NODE_NAME, "", null),
+          new PotentialMatch(CHAR_LITERAL, "", "\""),
+          new PotentialMatch(CHAR_LITERAL, "", "/"),
+          new PotentialMatch(CHAR_LITERAL, "", "("));
+
+  @Test
+  public void testConstructorPathElement() {
+    // double quoted strings map to STRING_LITERAL
+    assertThat(new PathElement("\"@specifier\"", 0, null).getAnchorType(), equalTo(STRING_LITERAL));
+
+    // unquoted strings do not
+    assertThat(new PathElement("@specifier", 0, null).getAnchorType(), equalTo(null));
+
+    // single-quoted characters map to CHAR_LITERAL
+    assertThat(new PathElement("'a'", 0, null).getAnchorType(), equalTo(CHAR_LITERAL));
+
+    // unquoted characters do not
+    assertThat(new PathElement("a", 0, null).getAnchorType(), equalTo(null));
+
+    // anchor type is preserved if provided
+    assertThat(new PathElement("\"@specifier\"", 0, NODE_NAME).getAnchorType(), equalTo(NODE_NAME));
+  }
+
+  @Test
+  public void testFindPathAnchorFromBottomNoAnchor() {
+    List<PathElement> pathElements = ImmutableList.of();
+
+    assertFalse(findPathAnchorFromBottom(ImmutableList.of(), -1).isPresent());
+    assertFalse(
+        findPathAnchorFromBottom(ImmutableList.of(new PathElement("TestSomething", 0, null)), -1)
+            .isPresent());
+  }
+
+  @Test
+  public void testFindPathAnchorFromBottomCharAnchor() {
+    PathElement stringElement = new PathElement("aloha", 0, STRING_LITERAL);
+    PathElement charElement = new PathElement("a", 1, CHAR_LITERAL);
+    PathElement otherElement = new PathElement("TestName", 0, NODE_NAME);
+
+    // if parent is string, that should be returned
+    assertThat(
+        findPathAnchorFromBottom(ImmutableList.of(stringElement, charElement), 1),
+        equalTo(Optional.of(stringElement)));
+
+    // otherwise, the char literal itself should be returned
+    assertThat(
+        findPathAnchorFromBottom(ImmutableList.of(otherElement, charElement), 1),
+        equalTo(Optional.of(charElement)));
+  }
+
+  @Test
+  public void testFindPathAnchorFromBottomIgnoreIsIgnored() {
+    PathElement ignoreElement = new PathElement("aloha", 0, IGNORE);
+
+    assertThat(
+        findPathAnchorFromBottom(ImmutableList.of(ignoreElement), 0), equalTo(Optional.empty()));
+  }
+
+  @Test
+  public void testFindPathAnchorFromBottomIgnoreIsSkipped() {
+    PathElement element0 = new PathElement("aloha", 0, NODE_NAME);
+    PathElement element1 = new PathElement("aloha", 1, IGNORE);
+    PathElement element2 = new PathElement("aloha", 2, null);
+    PathElement element3 = new PathElement("aloha", 3, IGNORE);
+    PathElement element4 = new PathElement("aloha", 4, null);
+
+    assertThat(
+        findPathAnchorFromBottom(
+            ImmutableList.of(element0, element1, element2, element3, element4), 0),
+        equalTo(Optional.of(element0)));
+  }
+
+  @Test
+  public void testFindPathAnchorFromBottomStringAnchor() {
+    PathElement element = new PathElement("\"@specifier\"", 0, null);
+    assertThat(
+        findPathAnchorFromBottom(ImmutableList.of(element), 0), equalTo(Optional.of(element)));
+  }
 
   @Test
   public void testGetErrorString() {
-    assertThat(getErrorString(new PotentialMatch(Type.STRING_LITERAL, "a", "b")), equalTo("'b'"));
+    assertThat(getErrorString(new PotentialMatch(STRING_LITERAL, "a", "b")), equalTo("'b'"));
     assertThat(
-        getErrorString(new PotentialMatch(Type.IP_ADDRESS, "", "b")),
-        equalTo(Type.IP_ADDRESS.toString()));
+        getErrorString(new PotentialMatch(IP_ADDRESS, "", "b")), equalTo(IP_ADDRESS.toString()));
   }
 
   @Test
@@ -87,7 +172,7 @@ public class ParserUtilsTest {
     assertThat(
         getPotentialMatches(
             (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
-        equalTo(ImmutableSet.of(new PotentialMatch(Type.IP_ADDRESS, "1.1.1.", null))));
+        equalTo(ImmutableSet.of(new PotentialMatch(IP_ADDRESS, "1.1.1.", null))));
   }
 
   @Test
@@ -125,9 +210,9 @@ public class ParserUtilsTest {
             (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
         equalTo(
             ImmutableSet.of(
-                new PotentialMatch(Type.STRING_LITERAL, "", ")"),
-                new PotentialMatch(Type.IP_ADDRESS, "1.1.1.1", null),
-                new PotentialMatch(Type.STRING_LITERAL, "", "-"))));
+                new PotentialMatch(CHAR_LITERAL, "", ")"),
+                new PotentialMatch(IP_ADDRESS, "1.1.1.1", null),
+                new PotentialMatch(CHAR_LITERAL, "", "-"))));
   }
 
   @Test
@@ -138,8 +223,8 @@ public class ParserUtilsTest {
             (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
         equalTo(
             ImmutableSet.of(
-                new PotentialMatch(Type.STRING_LITERAL, "", "\""),
-                new PotentialMatch(Type.NODE_NAME, "\"a", null))));
+                new PotentialMatch(CHAR_LITERAL, "", "\""),
+                new PotentialMatch(NODE_NAME, "\"a", null))));
   }
 
   @Test
@@ -148,7 +233,7 @@ public class ParserUtilsTest {
     assertThat(
         getPotentialMatches(
             (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
-        equalTo(ImmutableSet.of(new PotentialMatch(Anchor.Type.STRING_LITERAL, "", "("))));
+        equalTo(ImmutableSet.of(new PotentialMatch(CHAR_LITERAL, "", "("))));
   }
 
   @Test
@@ -157,7 +242,7 @@ public class ParserUtilsTest {
     assertThat(
         getPotentialMatches(
             (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
-        equalTo(ImmutableSet.of(new PotentialMatch(Type.ADDRESS_GROUP_AND_BOOK, "", null))));
+        equalTo(ImmutableSet.of(new PotentialMatch(ADDRESS_GROUP_AND_BOOK, "", null))));
   }
 
   @Test
@@ -166,7 +251,7 @@ public class ParserUtilsTest {
     assertThat(
         getPotentialMatches(
             (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
-        equalTo(ImmutableSet.of(new PotentialMatch(Anchor.Type.STRING_LITERAL, "@specifi", "er"))));
+        equalTo(ImmutableSet.of(new PotentialMatch(STRING_LITERAL, "@specifi", "er"))));
   }
 
   @Test
@@ -175,6 +260,6 @@ public class ParserUtilsTest {
     assertThat(
         getPotentialMatches(
             (InvalidInputError) result.parseErrors.get(0), TestParser.ANCHORS, false),
-        equalTo(ImmutableSet.of(new PotentialMatch(Anchor.Type.STRING_LITERAL, "@", "specifier"))));
+        equalTo(ImmutableSet.of(new PotentialMatch(STRING_LITERAL, "@", "specifier"))));
   }
 }

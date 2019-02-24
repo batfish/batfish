@@ -206,21 +206,21 @@ public class ParboiledAutoCompleteTest {
     List<AutocompleteSuggestion> suggestions = getTestPAC(query, completionMetadata).run();
 
     /**
-     * The first three elements should should string literals and the last one should be dynamic. We
-     * do a 3-step dance to assert this because the ordering of first three completions is
-     * non-deterministic.
+     * The first 5 elements should be string literals and the last one should be dynamic. We do a
+     * 3-step dance because the ordering of string completions is non-deterministic.
      */
-    assertThat(suggestions.size(), equalTo(5));
+    assertThat(suggestions.size(), equalTo(6));
     assertThat(
-        ImmutableSet.copyOf(suggestions.subList(0, 4)),
+        ImmutableSet.copyOf(suggestions.subList(0, 5)),
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion("!", true, null, RANK_STRING_LITERAL, 0),
+                new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, 0),
                 new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, 0),
                 new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, 0),
                 new AutocompleteSuggestion("@specifier", true, null, RANK_STRING_LITERAL, 0))));
     assertThat(
-        suggestions.get(4),
+        suggestions.get(5),
         equalTo(
             new AutocompleteSuggestion(
                 "1.1.1.1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0)));

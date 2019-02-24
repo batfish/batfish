@@ -177,6 +177,15 @@ public class ParserInterfaceTest {
   }
 
   @Test
+  public void testParseInterfaceNameRegexDeprecated() {
+    String regex = "iface1/0.*";
+    InterfaceAstNode expectedAst = new NameRegexInterfaceAstNode(regex);
+
+    assertThat(ParserUtils.getAst(getRunner().run(regex)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + regex + " ")), equalTo(expectedAst));
+  }
+
+  @Test
   public void testParseInterfaceParens() {
     assertThat(
         ParserUtils.getAst(getRunner().run("(e1/0)")), equalTo(new NameInterfaceAstNode("e1/0")));

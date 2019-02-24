@@ -151,6 +151,15 @@ public class ParserFilterTest {
   }
 
   @Test
+  public void testParseFilterNameRegexDeprecated() {
+    String regex = "filter.*";
+    NameRegexFilterAstNode expectedAst = new NameRegexFilterAstNode(regex);
+
+    assertThat(ParserUtils.getAst(getRunner().run(regex)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + regex + " ")), equalTo(expectedAst));
+  }
+
+  @Test
   public void testParseFilterParens() {
     assertThat(
         ParserUtils.getAst(getRunner().run("(filter)")), equalTo(new NameFilterAstNode("filter")));

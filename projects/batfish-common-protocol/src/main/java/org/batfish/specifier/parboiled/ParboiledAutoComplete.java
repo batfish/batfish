@@ -116,7 +116,9 @@ public final class ParboiledAutoComplete {
             .collect(ImmutableSet.toImmutableSet());
 
     return allSuggestions.stream()
-        .sorted(Comparator.comparing(s -> s.getRank()))
+        .sorted(
+            Comparator.comparing(AutocompleteSuggestion::getRank)
+                .thenComparing(s -> s.getText().length()))
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -125,6 +127,14 @@ public final class ParboiledAutoComplete {
     switch (pm.getAnchorType()) {
       case ADDRESS_GROUP_AND_BOOK:
         return autoCompletePotentialMatch(pm, startIndex, DEFAULT_RANK, false);
+      case CHAR_LITERAL:
+        /*
+         Char and String literals get a lower rank so that the possibly many suggestions for dynamic values
+         (e.g., all nodes in the snapshot) do not drown everything else
+        */
+        return ImmutableList.of(
+            new AutocompleteSuggestion(
+                pm.getMatchCompletion(), true, null, RANK_STRING_LITERAL, startIndex));
       case EOI:
         return ImmutableList.of();
       case FILTER_NAME:
@@ -167,8 +177,8 @@ public final class ParboiledAutoComplete {
         throw new IllegalStateException(String.format("Unexpected auto completion for %s", pm));
       case STRING_LITERAL:
         /*
-         String literals get a lower rank because there can be many suggestions for dynamic values
-         (e.g., all nodes in the snapshot) and we do not want them to drown everything else
+         Char and String literals get a lower rank so that the possibly many suggestions for dynamic values
+         (e.g., all nodes in the snapshot) do not drown everything else
         */
         return ImmutableList.of(
             new AutocompleteSuggestion(

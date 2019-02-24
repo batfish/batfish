@@ -29,8 +29,11 @@ public class CommonParser extends BaseParser<AstNode> {
   /**
    * Characters that we deem special in our grammar and cannot appear in unquoted names. We are
    * currently using the first bunch and setting aside some more for future use.
+   *
+   * <p>Once we stop supporting now-deprecated regexes, '*' should probably added to the reserved
+   * list.
    */
-  private static final String SPECIAL_CHARS = " \t,\\&()[]@" + "!*#$%^;?<>={}";
+  private static final String SPECIAL_CHARS = " \t,\\&()[]@" + "!#$%^;?<>={}";
 
   public static final CommonParser INSTANCE = Parboiled.createParser(CommonParser.class);
 
@@ -173,15 +176,16 @@ public class CommonParser extends BaseParser<AstNode> {
 
   /**
    * We infer deprecated (non-enclosed) regexes as strings that: 1) don't begin with double quote,
-   * digit, slash, or {@link #SPECIAL_CHARS}; and 2) don't contain space and contain '*'.
+   * digit, slash, or {@link #SPECIAL_CHARS}; and 2) contain '*'.
    */
   public Rule RegexDeprecated() {
     return Sequence(
         TestNot('"'),
+        TestNot('@'),
         TestNot(Digit()),
         TestNot(Slash()),
         TestNot(SPECIAL_CHARS),
-        Sequence(AsciiButNot(" *"), "*", AsciiButNot(" *")),
+        Sequence(ZeroOrMore(AsciiButNot("*")), "*", ZeroOrMore(AsciiButNot(SPECIAL_CHARS))),
         push(new StringAstNode(match())));
   }
 

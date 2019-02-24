@@ -3,6 +3,7 @@ package org.batfish.specifier.parboiled;
 import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_AND_BOOK;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.IGNORE;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_AND_BOOK;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME_REGEX;
@@ -92,7 +93,12 @@ public class Parser extends CommonParser {
   }
 
   public Rule FilterTerm() {
-    return FirstOf(FilterDirection(), FilterNameRegex(), FilterName(), FilterParens());
+    return FirstOf(
+        FilterDirection(),
+        FilterNameRegexDeprecated(),
+        FilterNameRegex(),
+        FilterName(),
+        FilterParens());
   }
 
   public Rule FilterDirection() {
@@ -120,6 +126,11 @@ public class Parser extends CommonParser {
   @Anchor(FILTER_NAME_REGEX)
   public Rule FilterNameRegex() {
     return Sequence(Regex(), push(new NameRegexFilterAstNode(pop())));
+  }
+
+  @Anchor(IGNORE)
+  public Rule FilterNameRegexDeprecated() {
+    return Sequence(RegexDeprecated(), push(new NameRegexFilterAstNode(pop())));
   }
 
   public Rule FilterParens() {
@@ -170,7 +181,12 @@ public class Parser extends CommonParser {
   }
 
   public Rule InterfaceTerm() {
-    return FirstOf(InterfaceSpecifier(), InterfaceNameRegex(), InterfaceName(), InterfaceParens());
+    return FirstOf(
+        InterfaceSpecifier(),
+        InterfaceNameRegexDeprecated(),
+        InterfaceNameRegex(),
+        InterfaceName(),
+        InterfaceParens());
   }
 
   /**
@@ -275,6 +291,11 @@ public class Parser extends CommonParser {
   @Anchor(INTERFACE_NAME_REGEX)
   public Rule InterfaceNameRegex() {
     return Sequence(Regex(), push(new NameRegexInterfaceAstNode(pop())));
+  }
+
+  @Anchor(IGNORE)
+  public Rule InterfaceNameRegexDeprecated() {
+    return Sequence(RegexDeprecated(), push(new NameRegexInterfaceAstNode(pop())));
   }
 
   public Rule InterfaceParens() {
@@ -510,7 +531,13 @@ public class Parser extends CommonParser {
   }
 
   public Rule NodeTerm() {
-    return FirstOf(NodeRole(), NodeType(), NodeNameRegex(), NodeName(), NodeParens());
+    return FirstOf(
+        NodeRole(),
+        NodeType(),
+        NodeNameRegexDeprecated(),
+        NodeNameRegex(),
+        NodeName(),
+        NodeParens());
   }
 
   public Rule NodeRole() {
@@ -562,16 +589,9 @@ public class Parser extends CommonParser {
     return Sequence(Regex(), push(new NameRegexNodeAstNode(pop())));
   }
 
-  /** Anchor is node name so that autocomplete works */
-  @Anchor(NODE_NAME)
+  @Anchor(IGNORE)
   public Rule NodeNameRegexDeprecated() {
-    return Sequence(
-        RegexDeprecated(),
-        push(
-            match().contains("*")
-                ? new NameRegexNodeAstNode(match())
-                : new NameNodeAstNode(match())),
-        WhiteSpace());
+    return Sequence(RegexDeprecated(), push(new NameRegexNodeAstNode(pop())), WhiteSpace());
   }
 
   public Rule NodeParens() {

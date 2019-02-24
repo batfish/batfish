@@ -44,6 +44,8 @@ public class CommonParserTest {
                 .put("TestIpAddress", Type.IP_ADDRESS)
                 .put("TestIpRange", Type.IP_RANGE)
                 .put("TestName", Type.NODE_NAME)
+                .put("TestNameRegex", Type.NODE_NAME_REGEX)
+                .put("TestNameRegexDeprecated", Type.IGNORE)
                 .put("WhiteSpace", Type.WHITESPACE)
                 .build()));
   }
@@ -104,5 +106,7 @@ public class CommonParserTest {
     assertFalse(matches("@start", rule));
     assertFalse(matches("1startDigit", rule));
     assertFalse(matches("/startSlash", rule));
+    assertFalse(matches("has[", rule));
+    assertFalse(matches("has(", rule));
   }
 }
