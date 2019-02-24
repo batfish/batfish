@@ -16,7 +16,6 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.batfish.specifier.parboiled.ParserUtils.PathElement;
@@ -67,8 +66,6 @@ public class ParserUtilsTest {
 
   @Test
   public void testFindPathAnchorFromBottomNoAnchor() {
-    List<PathElement> pathElements = ImmutableList.of();
-
     assertFalse(findPathAnchorFromBottom(ImmutableList.of(), -1).isPresent());
     assertFalse(
         findPathAnchorFromBottom(ImmutableList.of(new PathElement("TestSomething", 0, null)), -1)
