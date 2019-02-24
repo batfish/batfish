@@ -77,6 +77,7 @@ public class CommonParserTest {
     assertFalse(matches("has]", rule));
     assertFalse(matches("1startDigit", rule));
     assertFalse(matches("/startSlash", rule));
+    assertFalse(matches("@startAt", rule));
   }
 
   @Test
