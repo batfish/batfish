@@ -1,5 +1,8 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.annotations.VisibleForTesting;
+import java.util.Map;
+import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -10,7 +13,7 @@ import org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem;
 import org.batfish.grammar.flatjuniper.AsPathRegex;
 
 /** Represents a "from as-path" line in a {@link PsTerm} */
-public class PsFromAsPath extends PsFrom {
+public final class PsFromAsPath extends PsFrom {
 
   private static final long serialVersionUID = 1L;
 
@@ -20,13 +23,14 @@ public class PsFromAsPath extends PsFrom {
     _asPathName = asPathName;
   }
 
-  public String getAsPathName() {
-    return _asPathName;
-  }
-
   @Override
   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c, Warnings warnings) {
-    AsPath asPath = jc.getMasterLogicalSystem().getAsPaths().get(_asPathName);
+    Map<String, AsPath> asPaths = jc.getMasterLogicalSystem().getAsPaths();
+    return toBooleanExpr(asPaths.get(_asPathName), warnings);
+  }
+
+  @VisibleForTesting
+  static BooleanExpr toBooleanExpr(@Nullable AsPath asPath, Warnings w) {
     if (asPath == null) {
       // Undefined reference, return false.
       return BooleanExprs.FALSE;
@@ -35,7 +39,7 @@ public class PsFromAsPath extends PsFrom {
       String javaRegex = AsPathRegex.convertToJavaRegex(asPath.getRegex());
       return new MatchAsPath(new ExplicitAsPathSet(new RegexAsPathSetElem(javaRegex)));
     } catch (Exception e) {
-      warnings.redFlag(
+      w.redFlag(
           String.format(
               "Error converting Juniper as-path regex %s, will assume no paths match instead: %s.",
               asPath.getRegex(), e.getMessage()));
