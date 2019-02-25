@@ -39,7 +39,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.collections4.list.TreeList;
 import org.apache.commons.lang3.SerializationUtils;
-import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
@@ -1365,7 +1364,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
           if (routingPolicy != null) {
             newIface.setRoutingPolicy(incomingFilterName);
           } else {
-            throw new BatfishException("Expected interface routing-policy to exist");
+            newIface.setRoutingPolicy(null);
+            _w.redFlag(
+                String.format(
+                    "Interface %s: cannot resolve applied filter %s, defaulting to no filter",
+                    name, incomingFilterName));
           }
         }
       }
@@ -2781,7 +2784,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     // Count and mark structure usages and identify undefined references
-    markConcreteStructure(ADDRESS_BOOK, JuniperStructureUsage.ADDRESS_BOOK_ATTACH_ZONE);
+    markConcreteStructure(
+        JuniperStructureType.ADDRESS_BOOK, JuniperStructureUsage.ADDRESS_BOOK_ATTACH_ZONE);
     markConcreteStructure(
         JuniperStructureType.AUTHENTICATION_KEY_CHAIN,
         JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY);

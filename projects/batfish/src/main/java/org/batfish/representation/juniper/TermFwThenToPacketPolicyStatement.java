@@ -3,17 +3,16 @@ package org.batfish.representation.juniper;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
-import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.datamodel.packet_policy.Statement;
 
 /**
- * Converts <i>then</i> statements in the {@link FirewallFilter} to statements in the {@link
- * PacketPolicy}
+ * Converts <em>then</em> statements in the {@link FirewallFilter} to statements in the {@link
+ * org.batfish.datamodel.packet_policy.PacketPolicy}
  *
- * <p><em>Note:</em>It can return {@code null} for statements that must be skipped or we currently
- * do not support. In particular, this visitor is stateful and will skip converting statements after
- * {@link FwThenNextTerm} has been encountered.
+ * <p><strong>Note:</strong>It can return {@code null} for statements that must be skipped or we
+ * currently do not support. In particular, this visitor is stateful and will skip converting
+ * statements after {@link FwThenNextTerm} has been encountered.
  */
 public final class TermFwThenToPacketPolicyStatement implements FwThenVisitor<Statement> {
 
