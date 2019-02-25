@@ -99,6 +99,11 @@ A specification for filters (ACLs or firewall rules) in the network.
 
 #### Filter Specifier Grammar
 
+<pre>
+<b>filterSpec</b> :=
+    <b>filterTerm</b> [(‘&’|’,’|’\’) <b>filterTerm</b>]
+</pre>
+
 ```
 filterSpec :=
     filterTerm [(‘&’|’,’|’\’) filterTerm]
