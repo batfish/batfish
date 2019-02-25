@@ -1,15 +1,25 @@
 package org.batfish.representation.juniper;
 
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
+import static org.batfish.representation.juniper.Nat.Type.SOURCE;
+import static org.batfish.representation.juniper.Nat.Type.STATIC;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import java.io.Serializable;
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
+import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.TransformationStep;
 
 /** A {@link NatRule} that nats using the specified pool */
@@ -47,14 +57,36 @@ public final class NatRuleThenPool implements NatRuleThen, Serializable {
   }
 
   @Override
-  public Optional<TransformationStep> toTransformationStep(
-      TransformationType type, IpField field, Map<String, NatPool> pools, Ip interfaceIp) {
-    NatPool pool = pools.get(_poolName);
+  public List<TransformationStep> toTransformationSteps(Nat nat, Ip interfaceIp) {
+    if (nat.getType() == STATIC) {
+      throw new BatfishException("Juniper static nat is not supported");
+    }
+
+    TransformationType type = nat.getType() == SOURCE ? SOURCE_NAT : DEST_NAT;
+    IpField ipField = nat.getType() == SOURCE ? IpField.SOURCE : IpField.DESTINATION;
+
+    NatPool pool = nat.getPools().get(_poolName);
     if (pool == null) {
       // pool is undefined.
-      return Optional.empty();
+      return ImmutableList.of();
     }
-    return Optional.of(
-        new AssignIpAddressFromPool(type, field, pool.getFromAddress(), pool.getToAddress()));
+
+    ImmutableList.Builder<TransformationStep> builder = new Builder<>();
+    builder.add(
+        new AssignIpAddressFromPool(type, ipField, pool.getFromAddress(), pool.getToAddress()));
+
+    PortAddressTranslation pat = pool.getPortAddressTranslation();
+
+    if (pat != null) {
+      PortField portField = nat.getType() == SOURCE ? PortField.SOURCE : PortField.DESTINATION;
+      Optional<TransformationStep> patStep = pat.toTransformationStep(type, portField);
+      patStep.ifPresent(builder::add);
+    } else if (type == SOURCE_NAT) {
+      builder.add(
+          new AssignPortFromPool(
+              type, PortField.SOURCE, nat.getDefaultFromPort(), nat.getDefaultToPort()));
+    }
+
+    return builder.build();
   }
 }

@@ -11,6 +11,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRouteDecorator;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
@@ -26,7 +28,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
  *     preferences.
  */
 @ParametersAreNonnullByDefault
-public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib<R> {
+public abstract class AbstractRib<R extends AbstractRouteDecorator> implements GenericRib<R> {
 
   private static final long serialVersionUID = 1L;
 
@@ -59,21 +61,61 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
   }
 
   /**
-   * Import routes from one RIB into another
+   * Import routes from one unannotated RIB into another
    *
    * @param importingRib the RIB that imports routes
    * @param exportingRib the RIB that exports routes
-   * @param <U> type of route
-   * @param <T> type of route (must be more specific than {@link U}
-   * @return a {@link RibDelta}
+   * @param <U> type of {@link AbstractRoute} in importing RIB
+   * @param <T> type of {@link AbstractRoute} in exporting RIB; must extend {@code U}
    */
   @Nonnull
   public static <U extends AbstractRoute, T extends U> RibDelta<U> importRib(
       AbstractRib<U> importingRib, AbstractRib<T> exportingRib) {
     RibDelta.Builder<U> builder = RibDelta.builder();
-    for (T route : exportingRib.getRoutes()) {
-      builder.from(importingRib.mergeRouteGetDelta(route));
-    }
+    exportingRib.getTypedRoutes().forEach(r -> builder.from(importingRib.mergeRouteGetDelta(r)));
+    return builder.build();
+  }
+
+  /**
+   * Import routes from an unannotated RIB into an annotated RIB
+   *
+   * @param importingRib the RIB that imports routes
+   * @param exportingRib the RIB that exports routes
+   * @param vrfName Name of source VRF to put in route annotations
+   * @param <U> type of {@link AbstractRoute} in importing RIB
+   * @param <T> type of {@link AbstractRoute} in exporting RIB; must extend {@code U}
+   */
+  @Nonnull
+  public static <U extends AbstractRoute, T extends U> RibDelta<AnnotatedRoute<U>> importRib(
+      AnnotatedRib<U> importingRib, AbstractRib<T> exportingRib, String vrfName) {
+    RibDelta.Builder<AnnotatedRoute<U>> builder = RibDelta.builder();
+    exportingRib
+        .getTypedRoutes()
+        .forEach(
+            r -> builder.from(importingRib.mergeRouteGetDelta(new AnnotatedRoute<>(r, vrfName))));
+    return builder.build();
+  }
+
+  /**
+   * Import routes from one annotated RIB into another
+   *
+   * @param importingRib the RIB that imports routes
+   * @param exportingRib the RIB that exports routes
+   * @param <U> type of {@link AbstractRoute} in importing RIB
+   * @param <T> type of {@link AbstractRoute} in exporting RIB; must extend {@code U}
+   * @return a {@link RibDelta}
+   */
+  @Nonnull
+  public static <U extends AbstractRoute, T extends U> RibDelta<AnnotatedRoute<U>> importRib(
+      AnnotatedRib<U> importingRib, AnnotatedRib<T> exportingRib) {
+    RibDelta.Builder<AnnotatedRoute<U>> builder = RibDelta.builder();
+    exportingRib
+        .getTypedRoutes()
+        .forEach(
+            r ->
+                builder.from(
+                    importingRib.mergeRouteGetDelta(
+                        new AnnotatedRoute<>(r.getRoute(), r.getSourceVrf()))));
     return builder.build();
   }
 
@@ -88,6 +130,12 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
     }
   }
 
+  /** Clear all routes from the RIB */
+  public final void clear() {
+    _tree.clear();
+    _allRoutes = null;
+  }
+
   public final boolean containsRoute(R route) {
     return _tree.containsRoute(route);
   }
@@ -95,7 +143,7 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
   @Override
   public final SortedSet<Prefix> getPrefixes() {
     SortedSet<Prefix> prefixes = new TreeSet<>();
-    Set<R> routes = getRoutes();
+    Set<R> routes = getTypedRoutes();
     for (R route : routes) {
       prefixes.add(route.getNetwork());
     }
@@ -103,16 +151,23 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
   }
 
   @Override
-  public Set<R> getRoutes() {
+  public Set<AbstractRoute> getRoutes() {
+    return getTypedRoutes().stream()
+        .map(AbstractRouteDecorator::getAbstractRoute)
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  @Override
+  public Set<R> getTypedRoutes() {
     if (_allRoutes == null) {
       _allRoutes = ImmutableSet.copyOf(_tree.getRoutes());
     }
     return _allRoutes;
   }
 
-  public final Set<R> getRoutes(Prefix p) {
+  public final Set<R> getTypedRoutes(Prefix p) {
     // Collect routes that match the prefix
-    return getRoutes().stream()
+    return getTypedRoutes().stream()
         .filter(r -> r.getNetwork().equals(p))
         .collect(ImmutableSet.toImmutableSet());
   }
@@ -148,8 +203,8 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
    * Add a new route to the RIB.
    *
    * @param route the route to add
-   * @return {@link RibDelta} if the route was added. {@code null} if the route already existed or
-   *     was discarded due to preference comparisons.
+   * @return {@link RibDelta} with the route if it was added, or empty if the route already existed
+   *     or was discarded due to preference comparisons.
    */
   @Nonnull
   public RibDelta<R> mergeRouteGetDelta(R route) {
@@ -228,8 +283,8 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
   /**
    * Check if two RIBs have exactly same sets of routes.
    *
-   * <p>Designed to be faster (in an average case) than doing two calls to {@link #getRoutes} and
-   * then testing the sets for equality.
+   * <p>Designed to be faster (in an average case) than doing two calls to {@link #getTypedRoutes}
+   * and then testing the sets for equality.
    *
    * @param other the other RIB
    * @return True if both ribs contain identical routes

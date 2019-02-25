@@ -4,7 +4,7 @@ import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.referencedSources;
 
-import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Comparator;
@@ -41,6 +41,8 @@ public final class BDDSourceManager {
    * not reference by {@link MatchSrcInterface} or {@link OriginatingFromDevice}. For efficiency,
    * the finite domain doesn't track each active but unreferenced source. Instead, it tracks a
    * single representative value that represents all of them.
+   *
+   * <p>{@code null} when there are no active but unreferenced sources.
    */
   private final @Nullable String _activeButUnreferencedRepresentative;
 
@@ -216,9 +218,19 @@ public final class BDDSourceManager {
     return getSourceBDD(iface);
   }
 
-  @VisibleForTesting
-  Map<String, BDD> getSourceBDDs() {
-    return _finiteDomain.getValueBdds();
+  public Map<String, BDD> getSourceBDDs() {
+    ImmutableMap.Builder<String, BDD> builder = ImmutableMap.builder();
+    builder.putAll(_finiteDomain.getValueBdds());
+
+    if (_activeButUnreferencedRepresentative != null) {
+      BDD representativeBdd =
+          _finiteDomain.getConstraintForValue(_activeButUnreferencedRepresentative);
+      _activeButUnreferenced.stream()
+          .filter(src -> !src.equals(_activeButUnreferencedRepresentative))
+          .forEach(src -> builder.put(src, representativeBdd));
+    }
+
+    return builder.build();
   }
 
   /**
@@ -271,5 +283,12 @@ public final class BDDSourceManager {
   /** Test if a {@link BDD} includes a constraint on the source variable. */
   public boolean hasSourceConstraint(BDD bdd) {
     return !bdd.equals(_finiteDomain.existsValue(bdd));
+  }
+
+  /**
+   * Return whether each source is tracked separately (i.e. each has its own value in the domain).
+   */
+  public boolean allSourcesTracked() {
+    return _activeButUnreferencedRepresentative == null;
   }
 }

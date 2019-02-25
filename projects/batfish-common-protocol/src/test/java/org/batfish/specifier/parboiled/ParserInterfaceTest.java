@@ -66,6 +66,7 @@ public class ParserInterfaceTest {
                     "iface1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
                 new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
                     "@connectedTo", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
@@ -119,7 +120,7 @@ public class ParserInterfaceTest {
                 new AutocompleteSuggestion(
                     "1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
                 new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("+", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()))));
   }
 
@@ -176,13 +177,26 @@ public class ParserInterfaceTest {
   }
 
   @Test
-  public void testParseInterfaceParens() {
-    String ifaceName = "Ethernet1/0";
-    NameInterfaceAstNode expectedAst = new NameInterfaceAstNode(ifaceName);
+  public void testParseInterfaceNameRegexDeprecated() {
+    String regex = "iface1/0.*";
+    InterfaceAstNode expectedAst = new NameRegexInterfaceAstNode(regex);
 
-    assertThat(ParserUtils.getAst(getRunner().run("(" + ifaceName + ")")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(regex)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + regex + " ")), equalTo(expectedAst));
+  }
+
+  @Test
+  public void testParseInterfaceParens() {
     assertThat(
-        ParserUtils.getAst(getRunner().run(" ( " + ifaceName + " ) ")), equalTo(expectedAst));
+        ParserUtils.getAst(getRunner().run("(e1/0)")), equalTo(new NameInterfaceAstNode("e1/0")));
+    assertThat(
+        ParserUtils.getAst(getRunner().run(" ( e1/0 ) ")),
+        equalTo(new NameInterfaceAstNode("e1/0")));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("(e1/0&e1/1)")),
+        equalTo(
+            new IntersectionInterfaceAstNode(
+                new NameInterfaceAstNode("e1/0"), new NameInterfaceAstNode("e1/1"))));
   }
 
   @Test
@@ -251,8 +265,8 @@ public class ParserInterfaceTest {
         new UnionInterfaceAstNode(
             new NameInterfaceAstNode("eth0"), new NameInterfaceAstNode("loopback0"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("eth0+loopback0")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" eth0 + loopback0 ")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run("eth0,loopback0")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run(" eth0 , loopback0 ")), equalTo(expectedNode));
   }
 
   /** Test if we got the precedence of set operators right. Intersection is higher priority. */
@@ -266,7 +280,7 @@ public class ParserInterfaceTest {
                 new IntersectionInterfaceAstNode(
                     new NameInterfaceAstNode("loopback0"), new NameInterfaceAstNode("eth1")))));
     assertThat(
-        ParserUtils.getAst(getRunner().run("eth0&loopback0+eth1")),
+        ParserUtils.getAst(getRunner().run("eth0&loopback0,eth1")),
         equalTo(
             new UnionInterfaceAstNode(
                 new IntersectionInterfaceAstNode(

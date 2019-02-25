@@ -62,7 +62,6 @@ public class AssignPortFromPool implements TransformationStep, Serializable {
     return _poolEnd;
   }
 
-  @Override
   @JsonProperty(PROP_TRANSFORMATION_TYPE)
   public TransformationType getType() {
     return _type;

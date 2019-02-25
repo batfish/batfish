@@ -60,7 +60,6 @@ public final class Noop implements TransformationStep, Serializable {
   }
 
   @JsonProperty(PROP_TRANSFORMATION_TYPE)
-  @Override
   public TransformationType getType() {
     return _type;
   }

@@ -62,7 +62,6 @@ public final class ShiftIpAddressIntoSubnet implements TransformationStep, Seria
   }
 
   @JsonProperty(PROP_TRANSFORMATION_TYPE)
-  @Override
   public TransformationType getType() {
     return _type;
   }

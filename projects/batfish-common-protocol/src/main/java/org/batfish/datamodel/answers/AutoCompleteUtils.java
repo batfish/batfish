@@ -38,6 +38,7 @@ import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.DispositionSpecifier;
 import org.batfish.specifier.IpProtocolSpecifier;
 import org.batfish.specifier.RoutingProtocolSpecifier;
+import org.batfish.specifier.parboiled.Grammar;
 import org.batfish.specifier.parboiled.ParboiledAutoComplete;
 
 @ParametersAreNonnullByDefault
@@ -123,6 +124,12 @@ public final class AutoCompleteUtils {
           suggestions = DispositionSpecifier.autoComplete(query);
           break;
         }
+      case FILTER_NAME:
+        {
+          checkCompletionMetadata(completionMetadata, network, snapshot);
+          suggestions = stringAutoComplete(query, completionMetadata.getFilterNames());
+          break;
+        }
       case FILTER:
         {
           checkCompletionMetadata(completionMetadata, network, snapshot);
@@ -187,7 +194,8 @@ public final class AutoCompleteUtils {
       case INTERFACES_SPEC:
         {
           suggestions =
-              ParboiledAutoComplete.autoCompleteInterface(
+              ParboiledAutoComplete.autoComplete(
+                  Grammar.INTERFACE_SPECIFIER,
                   network,
                   snapshot,
                   query,
@@ -216,7 +224,8 @@ public final class AutoCompleteUtils {
       case IP_SPACE_SPEC:
         {
           suggestions =
-              ParboiledAutoComplete.autoCompleteIpSpace(
+              ParboiledAutoComplete.autoComplete(
+                  Grammar.IP_SPACE_SPECIFIER,
                   network,
                   snapshot,
                   query,
@@ -234,6 +243,20 @@ public final class AutoCompleteUtils {
                   Stream.of(IpsecSessionStatus.values())
                       .map(IpsecSessionStatus::name)
                       .collect(Collectors.toSet()));
+          break;
+        }
+      case LOCATION_SPEC:
+        {
+          suggestions =
+              ParboiledAutoComplete.autoComplete(
+                  Grammar.LOCATION_SPECIFIER,
+                  network,
+                  snapshot,
+                  query,
+                  maxSuggestions,
+                  completionMetadata,
+                  nodeRolesData,
+                  referenceLibrary);
           break;
         }
       case NAMED_STRUCTURE_SPEC:

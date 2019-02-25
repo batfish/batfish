@@ -9,6 +9,8 @@ import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.Names;
+import org.batfish.datamodel.Names.Type;
 
 public class AddressGroup implements Comparable<AddressGroup> {
 
@@ -22,7 +24,7 @@ public class AddressGroup implements Comparable<AddressGroup> {
       @Nullable @JsonProperty(PROP_ADDRESSES) SortedSet<String> addresses,
       @Nullable @JsonProperty(PROP_NAME) String name) {
     checkArgument(name != null, "Address group name cannot not be null");
-    ReferenceLibrary.checkValidName(name, "address group");
+    Names.checkName(name, "address group", Type.REFERENCE_OBJECT);
 
     _name = name;
     _addresses = firstNonNull(addresses, new TreeSet<>());

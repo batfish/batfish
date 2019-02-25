@@ -237,29 +237,11 @@ public final class Configuration implements Serializable {
 
   private String _ntpSourceInterface;
 
-  private transient NavigableSet<BgpAdvertisement> _originatedAdvertisements;
-
-  private transient NavigableSet<BgpAdvertisement> _originatedEbgpAdvertisements;
-
-  private transient NavigableSet<BgpAdvertisement> _originatedIbgpAdvertisements;
-
-  private transient NavigableSet<BgpAdvertisement> _receivedAdvertisements;
-
-  private transient NavigableSet<BgpAdvertisement> _receivedEbgpAdvertisements;
-
-  private transient NavigableSet<BgpAdvertisement> _receivedIbgpAdvertisements;
-
   private NavigableMap<String, Route6FilterList> _route6FilterLists;
 
   private NavigableMap<String, RouteFilterList> _routeFilterLists;
 
   private NavigableMap<String, RoutingPolicy> _routingPolicies;
-
-  private transient NavigableSet<BgpAdvertisement> _sentAdvertisements;
-
-  private transient NavigableSet<BgpAdvertisement> _sentEbgpAdvertisements;
-
-  private transient NavigableSet<BgpAdvertisement> _sentIbgpAdvertisements;
 
   private String _snmpSourceInterface;
 
@@ -554,36 +536,6 @@ public final class Configuration implements Serializable {
     return _ntpSourceInterface;
   }
 
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getOriginatedAdvertisements() {
-    return _originatedAdvertisements;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getOriginatedEbgpAdvertisements() {
-    return _originatedEbgpAdvertisements;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getOriginatedIbgpAdvertisements() {
-    return _originatedIbgpAdvertisements;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getReceivedAdvertisements() {
-    return _receivedAdvertisements;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getReceivedEbgpAdvertisements() {
-    return _receivedEbgpAdvertisements;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getReceivedIbgpAdvertisements() {
-    return _receivedIbgpAdvertisements;
-  }
-
   @JsonPropertyDescription("Dictionary of all IPV6 route filter lists for this node.")
   @JsonProperty(PROP_ROUTE6_FILTER_LISTS)
   public NavigableMap<String, Route6FilterList> getRoute6FilterLists() {
@@ -613,21 +565,6 @@ public final class Configuration implements Serializable {
     return rp.getSources().stream()
         .filter(not(RoutingPolicy::isGenerated))
         .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getSentAdvertisements() {
-    return _sentAdvertisements;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getSentEbgpAdvertisements() {
-    return _sentEbgpAdvertisements;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getSentIbgpAdvertisements() {
-    return _sentIbgpAdvertisements;
   }
 
   @JsonProperty(PROP_SNMP_SOURCE_INTERFACE)
@@ -676,15 +613,6 @@ public final class Configuration implements Serializable {
 
   public void initBgpAdvertisements() {
     _bgpAdvertisements = new TreeSet<>();
-    _originatedAdvertisements = new TreeSet<>();
-    _originatedEbgpAdvertisements = new TreeSet<>();
-    _originatedIbgpAdvertisements = new TreeSet<>();
-    _receivedAdvertisements = new TreeSet<>();
-    _receivedEbgpAdvertisements = new TreeSet<>();
-    _receivedIbgpAdvertisements = new TreeSet<>();
-    _sentAdvertisements = new TreeSet<>();
-    _sentEbgpAdvertisements = new TreeSet<>();
-    _sentIbgpAdvertisements = new TreeSet<>();
     for (Vrf vrf : _vrfs.values()) {
       vrf.initBgpAdvertisements();
     }

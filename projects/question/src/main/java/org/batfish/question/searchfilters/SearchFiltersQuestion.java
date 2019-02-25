@@ -15,19 +15,19 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
+import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.questions.FiltersSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.SearchFiltersParameters;
+import org.batfish.specifier.AllInterfacesLocationSpecifier;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.FilterSpecifier;
-import org.batfish.specifier.FilterSpecifierFactory;
-import org.batfish.specifier.FlexibleFilterSpecifierFactory;
-import org.batfish.specifier.FlexibleLocationSpecifierFactory;
-import org.batfish.specifier.FlexibleNodeSpecifierFactory;
-import org.batfish.specifier.FlexibleUniverseIpSpaceSpecifierFactory;
 import org.batfish.specifier.IpSpaceSpecifier;
-import org.batfish.specifier.IpSpaceSpecifierFactory;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NodeSpecifier;
-import org.batfish.specifier.NodeSpecifierFactory;
+import org.batfish.specifier.ShorthandFilterSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 /** A question to determine which flows match a particular ACL action. */
 public final class SearchFiltersQuestion extends Question {
@@ -139,9 +139,9 @@ public final class SearchFiltersQuestion extends Question {
 
   @Nonnull
   @JsonIgnore
-  public FilterSpecifier getFilterSpecifier() {
-    return FilterSpecifierFactory.load(FlexibleFilterSpecifierFactory.NAME)
-        .buildFilterSpecifier(_filters);
+  FilterSpecifier getFilterSpecifier() {
+    return SpecifierFactories.getFilterSpecifierOrDefault(
+        _filters, new ShorthandFilterSpecifier(FiltersSpecifier.ALL));
   }
 
   @JsonIgnore
@@ -157,24 +157,25 @@ public final class SearchFiltersQuestion extends Question {
 
   @Nonnull
   private LocationSpecifier getStartLocationSpecifier() {
-    return new FlexibleLocationSpecifierFactory().buildLocationSpecifier(_startLocation);
+    return SpecifierFactories.getLocationSpecifierOrDefault(
+        _startLocation, AllInterfacesLocationSpecifier.INSTANCE);
   }
 
   @Nonnull
   private IpSpaceSpecifier getSourceSpecifier() {
-    return IpSpaceSpecifierFactory.load(FlexibleUniverseIpSpaceSpecifierFactory.NAME)
-        .buildIpSpaceSpecifier(_headerConstraints.getSrcIps());
+    return SpecifierFactories.getIpSpaceSpecifierOrDefault(
+        _headerConstraints.getSrcIps(), new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE));
   }
 
   @Nonnull
   private IpSpaceSpecifier getDestinationSpecifier() {
-    return IpSpaceSpecifierFactory.load(FlexibleUniverseIpSpaceSpecifierFactory.NAME)
-        .buildIpSpaceSpecifier(_headerConstraints.getDstIps());
+    return SpecifierFactories.getIpSpaceSpecifierOrDefault(
+        _headerConstraints.getDstIps(), new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE));
   }
 
   @Nonnull
   NodeSpecifier getNodesSpecifier() {
-    return NodeSpecifierFactory.load(FlexibleNodeSpecifierFactory.NAME).buildNodeSpecifier(_nodes);
+    return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
   }
 
   @VisibleForTesting

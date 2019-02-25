@@ -4,7 +4,9 @@ set routing-options instance-import PS1
 set routing-options instance-import PS2
 #
 set routing-instances VRF1 instance-type virtual-router
+set routing-instances VRF1 routing-options static route 1.1.1.1/30 discard
 set routing-instances VRF2 instance-type virtual-router
+set routing-instances VRF2 routing-options static route 2.2.2.2/30 discard
 set routing-instances VRF3 instance-type virtual-router
 #
 # Policy-statement PS1 accepts references VRFs 3 and 1 in that order
@@ -19,4 +21,4 @@ set policy-options policy-statement PS2 term T1 then accept
 set policy-options policy-statement PS2 term T2 from instance MYSTERY_VRF
 set policy-options policy-statement PS2 term T2 then accept
 set policy-options policy-statement PS2 from instance VRF2
-set policy-options policy-statement PS2 then accept
+set policy-options policy-statement PS2 then reject

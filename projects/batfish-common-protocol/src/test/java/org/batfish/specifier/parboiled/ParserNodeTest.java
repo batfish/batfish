@@ -63,6 +63,7 @@ public class ParserNodeTest {
                     "node1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
                 new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
                     "@role", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
@@ -100,7 +101,7 @@ public class ParserNodeTest {
                 new AutocompleteSuggestion(
                     "1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
                 new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("+", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()))));
   }
 
@@ -135,6 +136,15 @@ public class ParserNodeTest {
     assertThat(ParserUtils.getAst(getRunner().run(regexWithSlashes)), equalTo(expectedAst));
     assertThat(
         ParserUtils.getAst(getRunner().run(" " + regexWithSlashes + " ")), equalTo(expectedAst));
+  }
+
+  @Test
+  public void testParseNodeNameRegexDeprecated() {
+    String regex = "node.*";
+    NameRegexNodeAstNode expectedAst = new NameRegexNodeAstNode(regex);
+
+    assertThat(ParserUtils.getAst(getRunner().run(regex)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + regex + " ")), equalTo(expectedAst));
   }
 
   @Test
@@ -180,8 +190,9 @@ public class ParserNodeTest {
     UnionNodeAstNode expectedNode =
         new UnionNodeAstNode(new NameNodeAstNode("node0"), new NameNodeAstNode("node1"));
 
-    assertThat(ParserUtils.getAst(getRunner().run("node0+node1")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" node0 + node1 ")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run("node0,node1")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run(" node0 , node1 ")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run("(node0 , node1)")), equalTo(expectedNode));
   }
 
   /** Test if we got the precedence of set operators right. Intersection is higher priority. */
@@ -195,7 +206,7 @@ public class ParserNodeTest {
                 new IntersectionNodeAstNode(
                     new NameNodeAstNode("node1"), new NameNodeAstNode("eth1")))));
     assertThat(
-        ParserUtils.getAst(getRunner().run("node0&node1+eth1")),
+        ParserUtils.getAst(getRunner().run("node0&node1,eth1")),
         equalTo(
             new UnionNodeAstNode(
                 new IntersectionNodeAstNode(

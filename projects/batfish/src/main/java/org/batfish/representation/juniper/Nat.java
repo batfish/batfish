@@ -24,9 +24,9 @@ public final class Nat implements Serializable {
 
   private final Type _type;
 
-  private static final int DEFAULT_FROM_PORT = 1024;
+  public static final int DEFAULT_FROM_PORT = 1024;
 
-  private static final int DEFAULT_TO_PORT = 63487;
+  public static final int DEFAULT_TO_PORT = 63487;
 
   private int _defaultFromPort;
 

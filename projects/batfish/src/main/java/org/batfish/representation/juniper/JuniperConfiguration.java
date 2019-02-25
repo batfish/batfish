@@ -2,10 +2,6 @@ package org.batfish.representation.juniper;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
-import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
-import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
-import static org.batfish.datamodel.transformation.IpField.DESTINATION;
-import static org.batfish.datamodel.transformation.IpField.SOURCE;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
@@ -1457,7 +1453,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .map(Zone::getName)
             .orElse(null);
     String routingInstance = iface.getRoutingInstance();
-    Map<String, NatPool> pools = _masterLogicalSystem.getNatSource().getPools();
+    Nat snat = _masterLogicalSystem.getNatSource();
 
     List<NatRuleSet> ruleSets =
         orderedRuleSetList.stream()
@@ -1475,9 +1471,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       transformation =
           ruleSet
               .toOutgoingTransformation(
-                  SOURCE_NAT,
-                  SOURCE,
-                  pools,
+                  snat,
                   iface.getPrimaryAddress().getIp(),
                   matchFromLocationExprs,
                   null,
@@ -1637,7 +1631,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (dnat == null) {
       return null;
     }
-    Map<String, NatPool> pools = dnat.getPools();
 
     String ifaceName = iface.getName();
     String zone =
@@ -1672,12 +1665,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       transformation =
           ruleSet
               .toIncomingTransformation(
-                  DEST_NAT,
-                  DESTINATION,
-                  pools,
-                  iface.getPrimaryAddress().getIp(),
-                  null,
-                  transformation)
+                  dnat, iface.getPrimaryAddress().getIp(), null, transformation)
               .orElse(transformation);
     }
     return transformation;
@@ -2828,11 +2816,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         BgpProcess proc = createBgpProcess(ri);
         vrf.setBgpProcess(proc);
       }
-    }
-
-    // source nats
-    if (_masterLogicalSystem.getNatSource() != null) {
-      _w.unimplemented("Source NAT is not currently implemented");
     }
 
     // static nats

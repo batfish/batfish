@@ -10,11 +10,11 @@ import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.collection.IsEmptyIterable.emptyIterableOf;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -31,10 +31,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
@@ -42,23 +44,26 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.EigrpExternalRoute;
+import org.batfish.datamodel.EigrpInternalRoute;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.OspfInterAreaRoute;
 import org.batfish.datamodel.OspfInternalRoute;
 import org.batfish.datamodel.OspfIntraAreaRoute;
-import org.batfish.datamodel.OspfRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RipProcess;
-import org.batfish.datamodel.RipRoute;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
@@ -66,6 +71,8 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.eigrp.EigrpEdge;
 import org.batfish.datamodel.eigrp.EigrpInterface;
+import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.isis.IsisEdge;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
@@ -74,7 +81,12 @@ import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisProcess;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
@@ -109,6 +121,77 @@ public class VirtualRouterTest {
     return n.getVirtualRouters().get(DEFAULT_VRF_NAME);
   }
 
+  private static Set<AbstractRoute> makeOneRouteOfEveryType() {
+    return ImmutableSet.of(
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("1.0.0.0/24"))
+            .setOriginatorIp(Ip.parse("8.8.8.8"))
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.IBGP)
+            .build(),
+        ConnectedRoute.builder()
+            .setNetwork(Prefix.parse("1.0.1.0/24"))
+            .setNextHopInterface("iface")
+            .build(),
+        EigrpExternalRoute.builder()
+            .setNetwork(Prefix.parse("1.0.2.0/24"))
+            .setDestinationAsn(1L)
+            .setEigrpMetric(
+                EigrpMetric.builder()
+                    .setBandwidth(1E8)
+                    .setDelay(1D)
+                    .setMode(EigrpProcessMode.CLASSIC)
+                    .build())
+            .setProcessAsn(2L)
+            .build(),
+        EigrpInternalRoute.builder()
+            .setNetwork(Prefix.parse("1.0.3.0/24"))
+            .setEigrpMetric(
+                EigrpMetric.builder()
+                    .setBandwidth(1E8)
+                    .setDelay(1D)
+                    .setMode(EigrpProcessMode.CLASSIC)
+                    .build())
+            .setProcessAsn(2L)
+            .build(),
+        GeneratedRoute.builder().setNetwork(Prefix.parse("1.0.4.0/24")).setAdmin(1).build(),
+        IsisRoute.builder()
+            .setNetwork(Prefix.parse("1.0.5.0/24"))
+            .setLevel(IsisLevel.LEVEL_1)
+            .setArea("0")
+            .setProtocol(RoutingProtocol.ISIS_L1)
+            .setSystemId("id")
+            .build(),
+        LocalRoute.builder()
+            .setNetwork(Prefix.parse("1.0.6.0/24"))
+            .setSourcePrefixLength(24)
+            .build(),
+        OspfInterAreaRoute.builder().setNetwork(Prefix.parse("1.0.7.0/24")).setArea(2L).build(),
+        OspfIntraAreaRoute.builder()
+            .setNetwork(Prefix.parse("1.0.8.0/24"))
+            .setProtocol(RoutingProtocol.OSPF)
+            .setArea(2L)
+            .build(),
+        OspfExternalType1Route.builder()
+            .setNetwork(Prefix.parse("1.0.9.0/24"))
+            .setOspfMetricType(OspfMetricType.E1)
+            .setLsaMetric(2L)
+            .setCostToAdvertiser(3L)
+            .setAdvertiser("advertiser")
+            .setArea(4L)
+            .build(),
+        OspfExternalType2Route.builder()
+            .setNetwork(Prefix.parse("1.1.0.0/24"))
+            .setOspfMetricType(OspfMetricType.E1)
+            .setLsaMetric(2L)
+            .setCostToAdvertiser(3L)
+            .setAdvertiser("advertiser")
+            .setArea(4L)
+            .build(),
+        RipInternalRoute.builder().setNetwork(Prefix.parse("1.1.1.0/24")).build(),
+        StaticRoute.builder().setNetwork(Prefix.parse("1.1.2.0/24")).setAdmin(1).build());
+  }
+
   /**
    * Test that {@link VirtualRouter#activateStaticRoutes()} removes a route if a route to its
    * next-hop IP disappears.
@@ -141,11 +224,11 @@ public class VirtualRouterTest {
     vr.activateStaticRoutes();
 
     // Test: remove baseRoute, rerun activation
-    vr.getMainRib().removeRoute(baseRoute);
+    vr.getMainRib().removeRoute(new AnnotatedRoute<>(baseRoute, DEFAULT_VRF_NAME));
     vr.activateStaticRoutes();
 
     // Assert dependent route is not there
-    assertThat(vr.getMainRib().getRoutes(), not(containsInAnyOrder(dependentRoute)));
+    assertThat(vr.getMainRib().getRoutes(), not(hasItem(dependentRoute)));
   }
 
   /** Check that initialization of Connected RIB is as expected */
@@ -161,10 +244,14 @@ public class VirtualRouterTest {
 
     // Assert that all interface prefixes have been processed
     assertThat(
-        vr.getConnectedRib().getRoutes(),
+        vr.getConnectedRib().getTypedRoutes(),
         equalTo(
             exampleInterfaceAddresses.entrySet().stream()
-                .map(e -> new ConnectedRoute(e.getValue().getPrefix(), e.getKey()))
+                .map(
+                    e ->
+                        new AnnotatedRoute<>(
+                            new ConnectedRoute(e.getValue().getPrefix(), e.getKey()),
+                            DEFAULT_VRF_NAME))
                 .collect(ImmutableSet.toImmutableSet())));
   }
 
@@ -181,11 +268,14 @@ public class VirtualRouterTest {
 
     // Assert that all interface prefixes have been processed
     assertThat(
-        vr._localRib.getRoutes(),
+        vr._localRib.getTypedRoutes(),
         equalTo(
             exampleInterfaceAddresses.entrySet().stream()
                 .filter(e -> e.getValue().getPrefix().getPrefixLength() < Prefix.MAX_PREFIX_LENGTH)
-                .map(e -> new LocalRoute(e.getValue(), e.getKey()))
+                .map(
+                    e ->
+                        new AnnotatedRoute<>(
+                            new LocalRoute(e.getValue(), e.getKey()), DEFAULT_VRF_NAME))
                 .collect(ImmutableSet.toImmutableSet())));
   }
 
@@ -256,9 +346,9 @@ public class VirtualRouterTest {
     vr.initStaticRibs();
 
     assertThat(
-        vr._staticInterfaceRib.getRoutes(),
+        vr._staticInterfaceRib.getTypedRoutes(),
         containsInAnyOrder(routes.get(0), routes.get(2), routes.get(3)));
-    assertThat(vr._staticNextHopRib.getRoutes(), containsInAnyOrder(routes.get(1)));
+    assertThat(vr._staticNextHopRib.getTypedRoutes(), containsInAnyOrder(routes.get(1)));
   }
 
   @Test
@@ -269,48 +359,40 @@ public class VirtualRouterTest {
     vr.initRibs();
 
     // Simple RIBs
-    assertThat(vr.getConnectedRib().getRoutes(), is(emptyIterableOf(ConnectedRoute.class)));
-    assertThat(vr._staticNextHopRib.getRoutes(), is(emptyIterableOf(StaticRoute.class)));
-    assertThat(vr._staticInterfaceRib.getRoutes(), is(emptyIterableOf(StaticRoute.class)));
-    assertThat(vr._independentRib.getRoutes(), is(emptyIterableOf(AbstractRoute.class)));
+    assertThat(vr.getConnectedRib().getRoutes(), empty());
+    assertThat(vr._staticNextHopRib.getRoutes(), empty());
+    assertThat(vr._staticInterfaceRib.getRoutes(), empty());
+    assertThat(vr._independentRib.getRoutes(), empty());
 
     // RIP RIBs
-    assertThat(vr._ripInternalRib.getRoutes(), is(emptyIterableOf(RipInternalRoute.class)));
-    assertThat(vr._ripInternalStagingRib.getRoutes(), is(emptyIterableOf(RipInternalRoute.class)));
-    assertThat(vr._ripRib.getRoutes(), is(emptyIterableOf(RipRoute.class)));
+    assertThat(vr._ripInternalRib.getRoutes(), empty());
+    assertThat(vr._ripInternalStagingRib.getRoutes(), empty());
+    assertThat(vr._ripRib.getRoutes(), empty());
 
     // OSPF RIBs
-    assertThat(vr._ospfRib.getRoutes(), is(emptyIterableOf(OspfRoute.class)));
-    assertThat(
-        vr._ospfExternalType1Rib.getRoutes(), is(emptyIterableOf(OspfExternalType1Route.class)));
-    assertThat(
-        vr._ospfExternalType1StagingRib.getRoutes(),
-        is(emptyIterableOf(OspfExternalType1Route.class)));
-    assertThat(
-        vr._ospfExternalType2Rib.getRoutes(), is(emptyIterableOf(OspfExternalType2Route.class)));
-    assertThat(
-        vr._ospfExternalType2StagingRib.getRoutes(),
-        is(emptyIterableOf(OspfExternalType2Route.class)));
-    assertThat(vr._ospfInterAreaRib.getRoutes(), is(emptyIterableOf(OspfInterAreaRoute.class)));
-    assertThat(
-        vr._ospfInterAreaStagingRib.getRoutes(), is(emptyIterableOf(OspfInterAreaRoute.class)));
-    assertThat(vr._ospfIntraAreaRib.getRoutes(), is(emptyIterableOf(OspfIntraAreaRoute.class)));
-    assertThat(
-        vr._ospfIntraAreaStagingRib.getRoutes(), is(emptyIterableOf(OspfIntraAreaRoute.class)));
-    assertThat(vr._ospfRib.getRoutes(), is(emptyIterableOf(OspfRoute.class)));
+    assertThat(vr._ospfRib.getRoutes(), empty());
+    assertThat(vr._ospfExternalType1Rib.getRoutes(), empty());
+    assertThat(vr._ospfExternalType1StagingRib.getRoutes(), empty());
+    assertThat(vr._ospfExternalType2Rib.getRoutes(), empty());
+    assertThat(vr._ospfExternalType2StagingRib.getRoutes(), empty());
+    assertThat(vr._ospfInterAreaRib.getRoutes(), empty());
+    assertThat(vr._ospfInterAreaStagingRib.getRoutes(), empty());
+    assertThat(vr._ospfIntraAreaRib.getRoutes(), empty());
+    assertThat(vr._ospfIntraAreaStagingRib.getRoutes(), empty());
+    assertThat(vr._ospfRib.getRoutes(), empty());
 
     // BGP ribs
     // Ibgp
-    assertThat(vr._ibgpRib.getRoutes(), is(emptyIterableOf(BgpRoute.class)));
-    assertThat(vr._ibgpStagingRib.getRoutes(), is(emptyIterableOf(BgpRoute.class)));
+    assertThat(vr._ibgpRib.getRoutes(), empty());
+    assertThat(vr._ibgpStagingRib.getRoutes(), empty());
     // Ebgp
-    assertThat(vr._ebgpRib.getRoutes(), is(emptyIterableOf(BgpRoute.class)));
-    assertThat(vr._ebgpStagingRib.getRoutes(), is(emptyIterableOf(BgpRoute.class)));
+    assertThat(vr._ebgpRib.getRoutes(), empty());
+    assertThat(vr._ebgpStagingRib.getRoutes(), empty());
     // Combined bgp
-    assertThat(vr._bgpRib.getRoutes(), is(emptyIterableOf(BgpRoute.class)));
+    assertThat(vr._bgpRib.getRoutes(), empty());
 
     // Main RIB
-    assertThat(vr._mainRib.getRoutes(), is(emptyIterableOf(AbstractRoute.class)));
+    assertThat(vr._mainRib.getRoutes(), empty());
   }
 
   /** Ensure no route propagation when the interfaces are disabled or passive */
@@ -365,12 +447,8 @@ public class VirtualRouterTest {
         exportingRouter.getConfiguration().getAllInterfaces().get(exportingRouterInterfaceName),
         adminCost);
 
-    assertThat(
-        testRouter._ospfInterAreaStagingRib.getRoutes(),
-        is(emptyIterableOf(OspfInterAreaRoute.class)));
-    assertThat(
-        testRouter._ospfIntraAreaStagingRib.getRoutes(),
-        is(emptyIterableOf(OspfIntraAreaRoute.class)));
+    assertThat(testRouter._ospfInterAreaStagingRib.getRoutes(), empty());
+    assertThat(testRouter._ospfIntraAreaStagingRib.getRoutes(), empty());
 
     // Flip interfaces on router 2 to be passive now
     testRouter
@@ -390,12 +468,8 @@ public class VirtualRouterTest {
         exportingRouter.getConfiguration().getAllInterfaces().get(exportingRouterInterfaceName),
         adminCost);
 
-    assertThat(
-        testRouter._ospfInterAreaStagingRib.getRoutes(),
-        is(emptyIterableOf(OspfInterAreaRoute.class)));
-    assertThat(
-        testRouter._ospfIntraAreaStagingRib.getRoutes(),
-        is(emptyIterableOf(OspfIntraAreaRoute.class)));
+    assertThat(testRouter._ospfInterAreaStagingRib.getRoutes(), empty());
+    assertThat(testRouter._ospfIntraAreaStagingRib.getRoutes(), empty());
   }
 
   /** Check that initialization of RIP internal routes happens correctly */
@@ -408,7 +482,7 @@ public class VirtualRouterTest {
     vr.initBaseRipRoutes();
 
     // Check that nothing happens
-    assertThat(vr._ripInternalRib.getRoutes(), is(emptyIterableOf(RipInternalRoute.class)));
+    assertThat(vr._ripInternalRib.getRoutes(), empty());
 
     // Complete setup by adding a process
     RipProcess ripProcess = new RipProcess();
@@ -418,7 +492,7 @@ public class VirtualRouterTest {
     vr.initBaseRipRoutes();
 
     assertThat(
-        vr._ripInternalRib.getRoutes(),
+        vr._ripInternalRib.getTypedRoutes(),
         equalTo(
             exampleInterfaceAddresses.values().stream()
                 .map(
@@ -430,7 +504,6 @@ public class VirtualRouterTest {
                                 vr.getConfiguration().getConfigurationFormat()),
                             RipProcess.DEFAULT_RIP_COST))
                 .collect(ImmutableSet.toImmutableSet())));
-    vr._ripInternalRib.getRoutes();
   }
 
   /** Test that staging of a single OSPF Inter-Area route works as expected */
@@ -470,8 +543,7 @@ public class VirtualRouterTest {
                 .setMetric(metric + 10)
                 .setArea(area)
                 .build();
-    assertThat(vr._ospfInterAreaStagingRib.getRoutes(), contains(expected));
-    assertThat(vr._ospfInterAreaStagingRib.getRoutes(), not(contains(iaroute)));
+    assertThat(vr._ospfInterAreaStagingRib.getTypedRoutes(), contains(expected));
   }
 
   /** Test that the static RIB correctly pulls static routes from the VRF */
@@ -494,7 +566,7 @@ public class VirtualRouterTest {
     // Test
     vr.initStaticRibs();
 
-    assertThat(vr._staticNextHopRib.getRoutes(), equalTo(routeSet));
+    assertThat(vr._staticNextHopRib.getTypedRoutes(), equalTo(routeSet));
   }
 
   /** Test basic message queuing operations */
@@ -506,7 +578,7 @@ public class VirtualRouterTest {
     VirtualRouter.queueDelta(q, RibDelta.empty());
     assertThat(q, empty());
 
-    RibDelta<AbstractRoute> delta = RibDelta.builder().build();
+    RibDelta<AbstractRoute> delta = RibDelta.empty();
     VirtualRouter.queueDelta(q, delta);
     assertThat(q, empty());
 
@@ -529,7 +601,7 @@ public class VirtualRouterTest {
             .setMetric(0L)
             .setTag(1)
             .build();
-    RibDelta.Builder<AbstractRoute> builder = RibDelta.builder().add(sr1);
+    RibDelta.Builder<AbstractRoute> builder = RibDelta.<AbstractRoute>builder().add(sr1);
 
     // Add one route
     VirtualRouter.queueDelta(q, builder.build());
@@ -771,5 +843,71 @@ public class VirtualRouterTest {
                     IsisLevel.LEVEL_1_2,
                     new IsisNode(c1.getHostname(), i1.getName()),
                     new IsisNode(c2.getHostname(), i2.getName())))));
+  }
+
+  @Test
+  public void testCrossVrfRouteLeaking() {
+    String vrfWithRoutesName = "VRF1";
+    String emptyVrfName = "VRF2";
+    String importPolicyName = "IMPORT-POLICY";
+
+    /*
+    Create configuration containing 2 VRFs:
+      - vrfWithRoutes has routes of every type, to ensure all route types get leaked correctly
+      - emptyVrf has no routes and is set up to import all routes from vrfWithRoutes
+    Tests:
+      - ensure initCrossVrfImports() correctly leaks all routes from vrfWithRoutes' main RIB
+      - ensure queueCrossVrfImports() correctly leaks all routes from vrfWithRoutes' main RIB delta
+    */
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+
+    // Create cross-VRF import policy to accept routes from vrfWithRoutes (and reject all others)
+    RoutingPolicy.builder()
+        .setOwner(c)
+        .setName(importPolicyName)
+        .setStatements(
+            ImmutableList.of(
+                new If(
+                    new MatchSourceVrf(vrfWithRoutesName),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
+        .build();
+
+    // Create VRFs in configuration and set up cross-VRF import VRF and policy for empty one
+    nf.vrfBuilder().setOwner(c).setName(vrfWithRoutesName).build();
+    Vrf emptyVrf = nf.vrfBuilder().setOwner(c).setName(emptyVrfName).build();
+    emptyVrf.setCrossVrfImportVrfs(ImmutableList.of(vrfWithRoutesName));
+    emptyVrf.setCrossVrfImportPolicy(importPolicyName);
+
+    // Create a Node based on the configuration and get its VirtualRouters
+    Node n = new Node(c);
+    VirtualRouter vrWithRoutes = n.getVirtualRouters().get(vrfWithRoutesName);
+    VirtualRouter emptyVr = n.getVirtualRouters().get(emptyVrfName);
+
+    // Create routes of every type and inject them into vrWithRoutes' main RIB and main RIB delta
+    Set<AnnotatedRoute<AbstractRoute>> annotatedRoutes =
+        makeOneRouteOfEveryType().stream()
+            .map(r -> new AnnotatedRoute<>(r, vrfWithRoutesName))
+            .collect(ImmutableSet.toImmutableSet());
+    for (AnnotatedRoute<AbstractRoute> r : annotatedRoutes) {
+      vrWithRoutes._mainRibRouteDeltaBuilder.from(vrWithRoutes._mainRib.mergeRouteGetDelta(r));
+    }
+
+    // Run initial leaking (i.e. what would happen at beginning of
+    // computeNonMonotonicPortionOfDataPlane()); all routes should leak from vrWithRoutes' main RIB
+    emptyVr.initCrossVrfQueues();
+    emptyVr.initCrossVrfImports();
+    emptyVr.processCrossVrfRoutes();
+    assertThat(emptyVr.getMainRib().getTypedRoutes(), equalTo(annotatedRoutes));
+
+    // Clear emptyVr's RIB and queues and run intermediate leaking (i.e. what would happen in one
+    // computeDependentRoutesIteration()); all routes should leak from vrWithRoutes' main RIB delta
+    emptyVr._mainRib.clear();
+    emptyVr.initCrossVrfQueues();
+    emptyVr.queueCrossVrfImports();
+    emptyVr.processCrossVrfRoutes();
+    assertThat(emptyVr.getMainRib().getTypedRoutes(), equalTo(annotatedRoutes));
   }
 }

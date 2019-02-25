@@ -43,7 +43,15 @@ class TestParser extends CommonParser {
 
   /* An Test term is one of these things */
   public Rule TestTerm() {
-    return FirstOf(TestParens(), TestSpecifier(), TestNotOp(), TestIpRange(), TestIpAddress());
+    return FirstOf(
+        TestParens(),
+        TestSpecifier(),
+        TestNotOp(),
+        TestIpRange(),
+        TestIpAddress(),
+        TestNameRegexDeprecated(),
+        TestNameRegex(),
+        TestName());
   }
 
   public Rule TestParens() {
@@ -78,5 +86,20 @@ class TestParser extends CommonParser {
   @Anchor(Type.IP_RANGE)
   public Rule TestIpRange() {
     return Sequence(TestIpAddress(), WhiteSpace(), "- ", TestIpAddress());
+  }
+
+  @Anchor(Type.NODE_NAME)
+  public Rule TestName() {
+    return NameLiteral();
+  }
+
+  @Anchor(Type.NODE_NAME_REGEX)
+  public Rule TestNameRegex() {
+    return Regex();
+  }
+
+  @Anchor(Type.IGNORE)
+  public Rule TestNameRegexDeprecated() {
+    return RegexDeprecated();
   }
 }

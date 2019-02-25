@@ -5,6 +5,11 @@ sys global-settings {
 }
 net vlan /Common/vlan_unused { }
 net vlan /Common/vlan_used { }
+ltm snat /Common/SOME_SNAT {
+    vlans {
+        /Common/vlan_used
+    }
+}
 net self /Common/my_self {
     vlan /Common/vlan_used
 }

@@ -281,6 +281,16 @@
       <artifactId>jgrapht-core</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.parboiled</groupId>
+      <artifactId>parboiled-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.parboiled</groupId>
+      <artifactId>parboiled-java</artifactId>
+    </dependency>
+
     <!-- Runtime dependencies to add logging. -->
     <dependency>
       <groupId>org.slf4j</groupId>

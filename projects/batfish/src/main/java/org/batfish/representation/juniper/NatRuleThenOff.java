@@ -1,10 +1,15 @@
 package org.batfish.representation.juniper;
 
-import java.util.Map;
-import java.util.Optional;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
+import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
+import static org.batfish.representation.juniper.Nat.Type.SOURCE;
+import static org.batfish.representation.juniper.Nat.Type.STATIC;
+
+import com.google.common.collect.ImmutableList;
+import java.util.List;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
-import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.TransformationStep;
 
@@ -13,8 +18,13 @@ public enum NatRuleThenOff implements NatRuleThen {
   INSTANCE;
 
   @Override
-  public Optional<TransformationStep> toTransformationStep(
-      TransformationType type, IpField field, Map<String, NatPool> pools, Ip interfaceIp) {
-    return Optional.of(new Noop(type));
+  public List<TransformationStep> toTransformationSteps(Nat nat, Ip interfaceIp) {
+    if (nat.getType() == STATIC) {
+      throw new BatfishException("Juniper static nat is not supported");
+    }
+
+    TransformationType type = nat.getType() == SOURCE ? SOURCE_NAT : DEST_NAT;
+
+    return ImmutableList.of(new Noop(type));
   }
 }

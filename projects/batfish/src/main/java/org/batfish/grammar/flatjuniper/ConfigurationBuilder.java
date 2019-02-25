@@ -2648,7 +2648,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (ctx.IPV6_ADDRESS() != null) {
         Route6FilterLine line =
             new Route6FilterLineAddressMask(
-                _currentRoute6FilterPrefix, new Ip6(ctx.IPV6_ADDRESS().getText()).inverted());
+                _currentRoute6FilterPrefix, Ip6.parse(ctx.IPV6_ADDRESS().getText()).inverted());
         _currentRoute6FilterLine = _currentRouteFilter.insertLine(line, Route6FilterLine.class);
       } else {
         _w.redFlag(
@@ -4602,7 +4602,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         POLICY_STATEMENT_FROM_INSTANCE,
         getLine(ctx.name.getStart()));
     _currentPsTerm.getFroms().setFromInstance(new PsFromInstance(instanceName));
-    todo(ctx);
   }
 
   @Override
