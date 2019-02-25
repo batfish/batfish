@@ -8,6 +8,10 @@ final class NameRegexNodeAstNode implements NodeAstNode {
   private final String _regex;
   private final Pattern _pattern;
 
+  NameRegexNodeAstNode(AstNode regexAst) {
+    this(((StringAstNode) regexAst).getStr());
+  }
+
   NameRegexNodeAstNode(String regex) {
     _regex = regex;
     // treat the provided pattern as a case-insensitive substring match
