@@ -10,6 +10,9 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 
+/**
+ * A boolean expression that returns true if a packet/flow matches a given {@link AclLineMatchExpr}
+ */
 @ParametersAreNonnullByDefault
 public final class PacketMatchExpr implements BoolExpr {
   private static final long serialVersionUID = 1L;

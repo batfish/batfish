@@ -18,24 +18,30 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class PacketPolicy implements Serializable {
 
+  private static final String PROP_DEFAULT_ACTION = "defaultAction";
   private static final String PROP_NAME = "name";
   private static final String PROP_STATEMENTS = "statements";
+
   private static final long serialVersionUID = 1L;
 
   @Nonnull private final String _name;
   @Nonnull private final List<Statement> _statements;
+  @Nonnull private final Return _defaultAction;
 
-  public PacketPolicy(String name, List<Statement> statements) {
+  public PacketPolicy(String name, List<Statement> statements, Return defaultAction) {
     _name = name;
     _statements = ImmutableList.copyOf(statements);
+    _defaultAction = defaultAction;
   }
 
   @JsonCreator
   private static PacketPolicy jsonCreator(
+      @Nullable @JsonProperty(PROP_DEFAULT_ACTION) Return defaultAction,
       @Nullable @JsonProperty(PROP_NAME) String name,
       @Nullable @JsonProperty(PROP_STATEMENTS) List<Statement> statements) {
-    checkArgument(name != null, "Missing %s", PROP_NAME);
-    return new PacketPolicy(name, firstNonNull(statements, ImmutableList.of()));
+    checkArgument(name != null, "Missing %s", PROP_DEFAULT_ACTION);
+    checkArgument(defaultAction != null, "Missing %s", PROP_NAME);
+    return new PacketPolicy(name, firstNonNull(statements, ImmutableList.of()), defaultAction);
   }
 
   @Nonnull
@@ -50,6 +56,13 @@ public final class PacketPolicy implements Serializable {
     return _statements;
   }
 
+  /** Return the default action for this policy */
+  @Nonnull
+  @JsonProperty(PROP_DEFAULT_ACTION)
+  public Return getDefaultAction() {
+    return _defaultAction;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -60,12 +73,13 @@ public final class PacketPolicy implements Serializable {
     }
     PacketPolicy that = (PacketPolicy) o;
     return Objects.equals(getStatements(), that.getStatements())
-        && Objects.equals(getName(), that.getName());
+        && Objects.equals(getName(), that.getName())
+        && Objects.equals(getDefaultAction(), that.getDefaultAction());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getStatements(), getName());
+    return Objects.hash(getStatements(), getName(), getDefaultAction());
   }
 
   @Override

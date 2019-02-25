@@ -13,6 +13,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+/**
+ * A {@link PacketPolicy} If statement. Executes inner statements only if the {@link
+ * #getMatchCondition()} is true.
+ */
 @ParametersAreNonnullByDefault
 public final class If implements Statement {
 

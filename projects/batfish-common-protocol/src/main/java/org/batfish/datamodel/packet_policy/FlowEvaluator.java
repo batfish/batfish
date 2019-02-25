@@ -1,6 +1,5 @@
 package org.batfish.datamodel.packet_policy;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -40,6 +39,10 @@ public final class FlowEvaluator {
     }
   }
 
+  /**
+   * Evaluates statements in a packet policy. Can return {@code null} if the statement did not
+   * execute (e.g., an IF that did not match, or there was no action to return
+   */
   private final class StatementEvaluator implements StatementVisitor<Action> {
     StatementEvaluator() {}
 
@@ -62,8 +65,7 @@ public final class FlowEvaluator {
     }
   }
 
-  @VisibleForTesting
-  FlowEvaluator(Flow originalFlow, String srcInterface) {
+  private FlowEvaluator(Flow originalFlow, String srcInterface) {
     _currentFlow = originalFlow.toBuilder();
     _srcInterface = srcInterface;
   }
@@ -79,10 +81,7 @@ public final class FlowEvaluator {
             .map(_stmtEvaluator::visit)
             .filter(Objects::nonNull)
             .findFirst()
-            /* Fail-closed is the default behavior for filters in many vendors,
-             * but if we get here, the problem is likely in conversion.
-             */
-            .orElse(Drop.instance());
+            .orElse(policy.getDefaultAction().getAction());
     return new FlowResult(getTransformedFlow(), action);
   }
 

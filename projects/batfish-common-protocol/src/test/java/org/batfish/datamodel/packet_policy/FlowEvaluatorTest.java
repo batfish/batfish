@@ -17,6 +17,7 @@ import org.parboiled.common.ImmutableList;
 public class FlowEvaluatorTest {
 
   private Flow _flow;
+  private Return _defaultAction;
 
   @Before
   public void setup() {
@@ -28,10 +29,11 @@ public class FlowEvaluatorTest {
             .setSrcIp(Ip.parse("1.1.1.1"))
             .setDstIp(Ip.parse("2.2.2.2"))
             .build();
+    _defaultAction = new Return(Drop.instance());
   }
 
   private PacketPolicy singletonPolicy(Statement t) {
-    return new PacketPolicy("policyName", ImmutableList.of(t));
+    return new PacketPolicy("policyName", ImmutableList.of(t), _defaultAction);
   }
 
   @Test
@@ -88,6 +90,7 @@ public class FlowEvaluatorTest {
   @Test
   public void testEvaluateFindsFirstReachableTerminalAction() {
     // Setup policy
+    FibLookup action = new FibLookup("Matched");
     PacketPolicy policy =
         new PacketPolicy(
             "policyName",
@@ -96,14 +99,26 @@ public class FlowEvaluatorTest {
                     new PacketMatchExpr(FalseExpr.INSTANCE),
                     ImmutableList.of(new Return(new FibLookup("Unreachable")))),
                 new If(
-                    new PacketMatchExpr(TrueExpr.INSTANCE),
-                    ImmutableList.of(new Return(Drop.instance()))),
-                new Return(new FibLookup("lastVRF"))));
+                    new PacketMatchExpr(TrueExpr.INSTANCE), ImmutableList.of(new Return(action))),
+                new Return(new FibLookup("lastVRF"))),
+            _defaultAction);
 
     // Test:
     FlowResult result = FlowEvaluator.evaluate(_flow, "Eth0", policy);
 
-    assertThat(result.getAction(), equalTo(Drop.instance()));
+    assertThat(result.getAction(), equalTo(action));
+    // No transformations occurred
+    assertThat(result.getFinalFlow(), equalTo(_flow));
+  }
+
+  @Test
+  public void testReturnsDefaultActionWhenNoStatements() {
+    // Setup policy
+    PacketPolicy policy = new PacketPolicy("policyName", ImmutableList.of(), _defaultAction);
+    // Test:
+    FlowResult result = FlowEvaluator.evaluate(_flow, "Eth0", policy);
+
+    assertThat(result.getAction(), equalTo(_defaultAction.getAction()));
     // No transformations occurred
     assertThat(result.getFinalFlow(), equalTo(_flow));
   }
