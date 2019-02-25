@@ -60,7 +60,10 @@ Batfish questions have the following parameter types that support rich specifica
 
 * Case-insensitive names: All names and regexes use case-insensitive matching. Thus, `AS1BRODER1` is same as `as1border1` and `Ethernet0/0` is same as `ethernet0/0`.
 
-* Complex names and quotes: In general, the names of entities such as nodes and interfaces do not need to be quoted. However, if the name begins with a digit (0-9), double quote ('"'), or slash ('/'), or if it contains space or one of `[,&()[]@!#$%^;?<>={}]` characters, it must be surrounded by double quotes. Thus, we can use `as1border1` as a name directly but must quote a name like `1startsWithDigit andHasSpaceand[brackets]`.
+* Complex names and quotes: The names of entities such as nodes and interfaces do not need to be quoted, but if the name begins with a digit (0-9), double quote ('"'), or slash ('/'), or if it contains a space or one of `[,&()[]@!#$%^;?<>={}]` characters, it must be surrounded by double quotes. Thus, we can use `as1border1` as a name directly but must quote a name like `1startsWithDigit andHasSpaceand[brackets]`. Because Batfish enforces a simple naming convention for names of reference library objects (e.g., address groups) and node roles, their names never need to be quoted.
+
+* Regex semantics: Batfish uses Java's syntax and semantics for regular expressions. The full documentaion for that is [here](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html#sum), but for simple expressions, this language is similar to other regular expression languages. E.g., `abc`,`^abc`, and `abc$` matches, respectively, strings containing, beginning, and ending with 'abc', and `ab[c-e]` will match 'abc', 'abd', and 'abe'.
+
 
 ## Flow Disposition Specifier
 
@@ -191,10 +194,6 @@ ipTerm :=
 ipFunc := 
     @addressGroup(<address-group-name>, <reference-book-name>)
 ```
-
-## Java Regular Expression
-
-A Java regular expression. For information on the syntax of these strings, see the [Java documentation](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html#sum) for the `Pattern` class.
 
 ## Location Specifier
 
