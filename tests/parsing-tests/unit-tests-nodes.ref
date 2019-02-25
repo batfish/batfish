@@ -19129,6 +19129,43 @@
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "AS_PATH",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchAsPath",
+                  "expr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet",
+                    "elems" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem",
+                        "regex" : "^( \\d+)* 65535$"
+                      }
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ExitAccept"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "comment" : "__POLICY-NAME__DEFAULT_TERM__",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
