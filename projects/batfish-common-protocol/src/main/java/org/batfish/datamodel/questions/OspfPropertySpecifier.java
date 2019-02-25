@@ -27,6 +27,7 @@ public class OspfPropertySpecifier extends PropertySpecifier {
   public static final String AREA_BORDER_ROUTER = "Area_Border_Router";
   public static final String AREAS = "Areas";
   public static final String EXPORT_POLICY = "Export_Policy";
+  public static final String EXPORT_POLICY_SOURCES = "Export_Policy_Sources";
   public static final String GENERATED_ROUTES = "Generated_Routes";
   public static final String MAX_METRIC_EXTERNAL_NETWORKS = "Max_Metric_External_Networks";
   public static final String MAX_METRIC_STUB_NETWORKS = "Max_Metric_Stub_Networks";
@@ -45,6 +46,9 @@ public class OspfPropertySpecifier extends PropertySpecifier {
           // will go from Long to String --> area Ids are not integral anyway
           .put(AREAS, new PropertyDescriptor<>(OspfProcess::getAreas, Schema.set(Schema.STRING)))
           .put(EXPORT_POLICY, new PropertyDescriptor<>(OspfProcess::getExportPolicy, Schema.STRING))
+          .put(
+              EXPORT_POLICY_SOURCES,
+              new PropertyDescriptor<>(OspfProcess::getExportPolicySources, Schema.STRING))
           .put(
               GENERATED_ROUTES,
               new PropertyDescriptor<>(OspfProcess::getGeneratedRoutes, Schema.set(Schema.STRING)))
