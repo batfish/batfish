@@ -44,9 +44,6 @@
                     },
                     {
                         "name": "bgp"
-                    },
-                    {
-                        "name": "bgpmp"
                     }
                 ],
                 "displayName": "RIB"

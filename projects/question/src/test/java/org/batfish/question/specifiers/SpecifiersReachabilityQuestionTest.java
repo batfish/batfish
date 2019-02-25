@@ -14,6 +14,8 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpRange;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Protocol;
@@ -28,6 +30,7 @@ import org.batfish.specifier.Location;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.NoNodesNodeSpecifier;
 import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.SpecifierFactories.FactoryGroup;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -79,8 +82,13 @@ public class SpecifiersReachabilityQuestionTest {
             IpSpaceAssignment.builder()
                 .assign(
                     locations,
-                    AclIpSpace.union(
-                        Prefix.parse("1.2.3.0/24").toIpSpace(), Ip.parse("1.2.3.4").toIpSpace()))
+                    SpecifierFactories.ACTIVE_GROUP == FactoryGroup.V1
+                        ? IpWildcardSetIpSpace.builder()
+                            .including(new IpWildcard("1.2.3.0/24"), new IpWildcard("1.2.3.4"))
+                            .build()
+                        : AclIpSpace.union(
+                            Prefix.parse("1.2.3.0/24").toIpSpace(),
+                            Ip.parse("1.2.3.4").toIpSpace()))
                 .build()));
   }
 
@@ -129,7 +137,14 @@ public class SpecifiersReachabilityQuestionTest {
             .resolve(locations, MockSpecifierContext.builder().build()),
         equalTo(
             IpSpaceAssignment.builder()
-                .assign(locations, IpRange.range(Ip.parse("1.2.3.3"), Ip.parse("1.2.3.4")))
+                .assign(
+                    locations,
+                    SpecifierFactories.ACTIVE_GROUP == FactoryGroup.V1
+                        ? IpWildcardSetIpSpace.builder()
+                            .including(new IpWildcard("1.2.3.3"))
+                            .excluding(new IpWildcard("1.2.3.4"))
+                            .build()
+                        : IpRange.range(Ip.parse("1.2.3.3"), Ip.parse("1.2.3.4")))
                 .build()));
   }
 
