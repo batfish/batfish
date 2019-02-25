@@ -973,6 +973,9 @@ public final class Interface extends ComparableStructure<String> {
     if (!_proxyArp == other._proxyArp) {
       return false;
     }
+    if (!Objects.equals(_routingPolicyName, other._routingPolicyName)) {
+      return false;
+    }
     if (!Objects.equals(_speed, other._speed)) {
       return false;
     }
