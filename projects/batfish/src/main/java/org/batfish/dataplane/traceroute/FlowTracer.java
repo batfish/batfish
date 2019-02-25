@@ -21,7 +21,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Ordering;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -737,22 +736,20 @@ class FlowTracer {
         _steps.add(buildRoutingStep(fibEntries));
         // Group traces by outgoing interface (we do not want extra branching if there is branching
         // in FIB resolution)
-        ImmutableSortedMap<String, Set<FibEntry>> groupedByInterface =
+        ImmutableSortedMap<ExitPoint, Set<FibEntry>> groupedByInterface =
             ImmutableSortedMap.copyOf(
                 fibEntries.stream()
-                    .collect(Collectors.groupingBy(FibEntry::getInterfaceName, Collectors.toSet())),
-                Ordering.natural());
+                    .collect(Collectors.groupingBy(ExitPoint::from, Collectors.toSet())),
+                Comparator.comparing(ExitPoint::getInterfaceName)
+                    .thenComparing(ExitPoint::getArpIP));
         // For every interface with a route to the dst IP
-        for (String outgoingInterface : groupedByInterface.keySet()) {
-          FibEntry fibEntry = groupedByInterface.get(outgoingInterface).iterator().next();
-          if (outgoingInterface.equals(Interface.NULL_INTERFACE_NAME)) {
+        for (ExitPoint exitPoint : groupedByInterface.keySet()) {
+          if (exitPoint.getInterfaceName().equals(Interface.NULL_INTERFACE_NAME)) {
             branch().buildNullRoutedTrace();
             continue;
           }
           _mediator.sendOutInterfaces(
-              PipelineContext.builder(context.getFlow())
-                  .setExitPoint(ExitPoint.from(fibEntry))
-                  .build());
+              PipelineContext.builder(context.getFlow()).setExitPoint(exitPoint).build());
         }
       } finally {
         _breadcrumbs.pop();
