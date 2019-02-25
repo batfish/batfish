@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
@@ -36,6 +37,7 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
 /** Implements {@link OspfProcessConfigurationQuestion}. */
+@ParametersAreNonnullByDefault
 public class OspfProcessConfigurationAnswerer extends Answerer {
 
   static final String COL_NODE = "Node";
