@@ -113,6 +113,7 @@ public class AsPathRegexTest {
     assertMatches(regex, 1234L);
     assertMatches(regex, 1234L, 1234L);
     assertMatches(regex, 1234L, 1234L, 1234L);
+    assertMatches(regex, 1234L, 1234L, 1234L, 1234L);
     assertDoesNotMatch(regex);
     assertDoesNotMatch(regex, 1234L, 1234L, 1234L, 1234L, 1234L);
     assertDoesNotMatch(regex, 1L, 1234L);
@@ -208,7 +209,7 @@ public class AsPathRegexTest {
 
   @Test
   public void testMatchingPathLengthAtLeastOne() {
-    for (String regex : new String[] {". .*", ". .{0,}", ".{1,}"}) {
+    for (String regex : new String[] {".+", ". .*", ". .{0,}", ".{1,}"}) {
       assertMatches(regex, 123L);
       assertMatches(regex, 123L, 123L);
       assertMatches(regex, 123L, 123L, 123L);
