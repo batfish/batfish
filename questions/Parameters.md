@@ -1,4 +1,4 @@
-Batfish questions have the following parameter types that support rich specifications which are described below. 
+Batfish questions have the following parameter types that support rich specifications whose grammar is described below. Before reading those grammars, we recommend reading the general notes. 
 
 <!--
 [comment]: # (* `bgpPropertySpec`)
@@ -53,6 +53,14 @@ Batfish questions have the following parameter types that support rich specifica
 [comment]: # (* `string`)
 [comment]: # (* `subrange`)
 -->
+
+## General notes on the grammar 
+
+* Set semantics and operations: Specifiers denote to sets of entities (e.g., nodeSpec resolves to a set of nodes), and in many cases, the grammar allows for union, intersection, and difference of such sets. The respective operators are `','`, `'&'`, and `'\'`.
+
+* Case-insensitive names: All names and regexes use case-insensitive matching. Thus, `AS1BRODER1` is same as `as1border1` and `Ethernet0/0` is same as `ethernet0/0`.
+
+* Complex names and quotes: In general, the names of entities such as nodes and interfaces do not need to be quoted. However, if the name begins with a digit (0-9), double quote ('"'), or slash ('/'), or if it contains space or one of `[,&()[]@!#$%^;?<>={}]` characters, it must be surrounded by double quotes. Thus, we can use `as1border1` as a name directly but must quote a name like `1startsWithDigit andHasSpaceand[brackets]`.
 
 ## Flow Disposition Specifier
 
@@ -258,8 +266,8 @@ nodeFunc :=
 ```
 deviceType = 
   host,
-  internet,   // when the Internet is modeled
-  isp,        // when adjacent are modeled
+  internet,   // when the Internet is modeled 
+  isp,        // when ISPs are modeled
   router,
   switch
 ```

@@ -76,7 +76,7 @@ public class ParserInterfaceTest {
                 new AutocompleteSuggestion(
                     "ref.interfaceGroup", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
-                    "@link", true, null, RANK_STRING_LITERAL, query.length()),
+                    "@interfaceType", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("type", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("@vrf", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("vrf", true, null, RANK_STRING_LITERAL, query.length()),
@@ -204,9 +204,12 @@ public class ParserInterfaceTest {
     TypeInterfaceAstNode expectedAst =
         new TypeInterfaceAstNode(new StringAstNode(InterfaceType.PHYSICAL.toString()));
 
-    assertThat(ParserUtils.getAst(getRunner().run("@link(physical)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" @link ( physical ) ")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("@LinK(PHYsical)")), equalTo(expectedAst));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("@interfaceType(physical)")), equalTo(expectedAst));
+    assertThat(
+        ParserUtils.getAst(getRunner().run(" @interfaceType ( physical ) ")), equalTo(expectedAst));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("@interFAcetype(PHYsical)")), equalTo(expectedAst));
 
     // old style
     assertThat(ParserUtils.getAst(getRunner().run("type(physical)")), equalTo(expectedAst));

@@ -69,12 +69,12 @@ public class ParserLocationTest {
                         "\"",
                         "@connectedTo",
                         "connectedTo",
-                        "@device",
+                        "@deviceType",
                         "@enter",
                         "enter",
                         "@interfaceGroup",
                         "ref.interfaceGroup",
-                        "@link",
+                        "@interfaceType",
                         "type",
                         "@role",
                         "ref.nodeRole",
@@ -196,7 +196,7 @@ public class ParserLocationTest {
 
   @Test
   public void testParseLocationNodeInterface() {
-    String input = "node[@link(physical)]";
+    String input = "node[@interfaceType(physical)]";
     InterfaceLocationAstNode expectedAst =
         InterfaceLocationAstNode.createFromNodeInterface(
             new NameNodeAstNode("node"),
@@ -218,7 +218,7 @@ public class ParserLocationTest {
 
   @Test
   public void testParseLocationInterfaceSpecifier() {
-    String input = "@link(physical)";
+    String input = "@interfaceType(physical)";
     InterfaceLocationAstNode expectedAst =
         InterfaceLocationAstNode.createFromInterface(
             new TypeInterfaceAstNode(InterfaceType.PHYSICAL.toString()));
