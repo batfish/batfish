@@ -109,17 +109,14 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, SnatPool> _snatPools;
   private final @Nonnull Map<String, Snat> _snats;
   private final @Nonnull Map<String, SnatTranslation> _snatTranslations;
-
   private final @Nonnull Map<String, VirtualAddress> _virtualAddresses;
-
   private transient Map<String, Transformation> _virtualIncomingTransformations;
 
-  // TODO: implement outgoing transformations
+  // TODO: implement outgoing transformations https://github.com/batfish/batfish/issues/3243
   @SuppressWarnings("unused")
   private transient Map<String, Transformation> _virtualOutgoingTransformations;
 
   private final @Nonnull Map<String, Virtual> _virtuals;
-
   private final @Nonnull Map<String, Vlan> _vlans;
 
   public F5BigipConfiguration() {
@@ -165,6 +162,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
       RouteMap outboundRouteMap = _routeMaps.get(outboundRouteMapName);
       if (outboundRouteMap != null) {
         peerExportConditions.getConjuncts().add(new CallExpr(outboundRouteMapName));
+      } else {
+        _w.redFlag(
+            String.format(
+                "Ignoring reference to missing outbound route-map: %s", outboundRouteMap));
       }
     }
 
@@ -231,11 +232,16 @@ public class F5BigipConfiguration extends VendorConfiguration {
     String poolName = virtual.getPool();
     if (poolName == null) {
       // Cannot translate without pool
+      _w.redFlag(String.format("Cannot DNAT for virtual '%s' without pool", virtual.getName()));
       return Optional.empty();
     }
     Pool pool = _pools.get(poolName);
     if (pool == null) {
       // Cannot translate without pool
+      _w.redFlag(
+          String.format(
+              "Cannot DNAT for virtual '%s' using missing pool: '%s'",
+              virtual.getName(), poolName));
       return Optional.empty();
     }
 
@@ -243,26 +249,32 @@ public class F5BigipConfiguration extends VendorConfiguration {
     String destination = virtual.getDestination();
     if (destination == null) {
       // Cannot match without destination node
+      _w.redFlag(String.format("Virtual '%s' is missing destination", virtual.getName()));
       return Optional.empty();
     }
     Node node = _nodes.get(destination);
     if (node == null) {
       // Cannot match without destination node
+      _w.redFlag(
+          String.format(
+              "Virtual '%s' refers to missing destination '%s'", virtual.getName(), destination));
       return Optional.empty();
     }
     Ip destinationIp = node.getAddress();
     if (destinationIp == null) {
-      // Cannot match without destination IP
+      // Cannot match without destination IP (might be IPv6, so don't warn here)
       return Optional.empty();
     }
     Integer destinationPort = virtual.getDestinationPort();
     if (destinationPort == null) {
       // Cannot match without destination port
+      _w.redFlag(String.format("Virtual '%s' is missing destination port", virtual.getName()));
       return Optional.empty();
     }
     Prefix source = virtual.getSource();
     if (source == null) {
       // Cannot match without source range
+      _w.redFlag(String.format("Virtual '%s' is missing source range", virtual.getName()));
       return Optional.empty();
     }
     AclLineMatchExpr matchCondition =
@@ -274,6 +286,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
                 .build(),
             virtual.getName());
     // TODO: track information needed for SNAT in outgoing transformation
+    // https://github.com/batfish/batfish/issues/3243
     return Optional.of(
         Transformation.when(matchCondition)
             .apply(computeVirtualIncomingPoolTransformation(pool))
@@ -281,7 +294,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   private @Nonnull Optional<Transformation> computeVirtualOutgoingTransformation(Virtual virtual) {
-    // TODO: implement
+    // TODO: https://github.com/batfish/batfish/issues/3243
     assert virtual != null; // silence PMD
     return Optional.empty();
   }
