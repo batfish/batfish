@@ -40957,7 +40957,7 @@
             "                WORD:'ssl-sign-hash'))",
             "            (u_word",
             "              (word",
-            "                WORD:'any'))",
+            "                ANY:'any'))",
             "            NEWLINE:'\\n')",
             "          (unrecognized",
             "            (u_word",
@@ -41095,7 +41095,7 @@
             "                WORD:'source-mask'))",
             "            (u_word",
             "              (word",
-            "                WORD:'any'))",
+            "                ANY:'any'))",
             "            NEWLINE:'\\n')",
             "          BRACE_RIGHT:'}'",
             "          NEWLINE:'\\n'))))",
@@ -41348,7 +41348,7 @@
             "                WORD:'ssl-sign-hash'))",
             "            (u_word",
             "              (word",
-            "                WORD:'any'))",
+            "                ANY:'any'))",
             "            NEWLINE:'\\n')",
             "          (unrecognized",
             "            (u_word",
@@ -56635,6 +56635,19 @@
             "                  name = INTERFACE_NAME:'lo0'  <== mode:M_Interface",
             "                  PERIOD:'.'",
             "                  unit = DEC:'0')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_null",
+            "            VIRTUAL_CHASSIS:'virtual-chassis'",
+            "            (null_filler",
+            "              MEMBER:'member'",
+            "              DEC:'0'  <== mode:M_Interface",
+            "              VARIABLE:'role'",
+            "              VARIABLE:'routing-engine')))))",
             "    NEWLINE:'\\n\\n')",
             "  EOF:<EOF>)"
           ]
@@ -68217,12 +68230,6 @@
               "Text" : "load-balancing-mode"
             },
             {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 29,
-              "Parser_Context" : "[lp_monitor l_pool s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "monitor /Common/SOME_MONITOR"
-            },
-            {
               "Comment" : "This syntax is unrecognized",
               "Line" : 30,
               "Parser_Context" : "[unrecognized l_pool s_ltm statement f5_bigip_structured_configuration]",
@@ -69143,12 +69150,6 @@
         "configs/f5_bigip_structured_net_routing_bgp" : {
           "Parse warnings" : [
             {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 12,
-              "Parser_Context" : "[nrbafcrk_route_map nrbafcr_kernel nrbafc_redistribute nrbaf_common nrbaf_ipv4 nrb_address_family nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
-              "Text" : "route-map /Common/MY_KERNEL_OUT"
-            },
-            {
               "Comment" : "This syntax is unrecognized",
               "Line" : 26,
               "Parser_Context" : "[unrecognized nrbnnaf_ipv6 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
@@ -69159,12 +69160,6 @@
               "Line" : 29,
               "Parser_Context" : "[unrecognized nrbnnaf_ipv6 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
               "Text" : "maximum-prefix"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 33,
-              "Parser_Context" : "[nrbnnafcr_out nrbnnafc_route_map nrbnnaf_common nrbnnaf_ipv6 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
-              "Text" : "out /Common/MY_IPV6_OUT"
             },
             {
               "Comment" : "This syntax is unrecognized",
@@ -69183,12 +69178,6 @@
               "Line" : 48,
               "Parser_Context" : "[unrecognized nrbnnaf_ipv4 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
               "Text" : "maximum-prefix"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 52,
-              "Parser_Context" : "[nrbnnafcr_out nrbnnafc_route_map nrbnnaf_common nrbnnaf_ipv4 nrbnn_address_family nrbn_name nrb_neighbor nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
-              "Text" : "out /Common/MY_IPV4_OUT"
             },
             {
               "Comment" : "This syntax is unrecognized",

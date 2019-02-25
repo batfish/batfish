@@ -39,7 +39,7 @@ public final class ReturnFlowTransformation {
     @Override
     public TransformationStep visitAssignIpAddressFromPool(AssignIpAddressFromPool step) {
       return new AssignIpAddressFromPool(
-          step.getType(), step.getIpField().opposite(), step.getPoolStart(), step.getPoolEnd());
+          step.getType(), step.getIpField().opposite(), step.getIpRanges());
     }
 
     @Override
@@ -57,6 +57,22 @@ public final class ReturnFlowTransformation {
     public TransformationStep visitAssignPortFromPool(AssignPortFromPool step) {
       return new AssignPortFromPool(
           step.getType(), step.getPortField().opposite(), step.getPoolStart(), step.getPoolEnd());
+    }
+
+    @Override
+    public TransformationStep visitApplyAll(ApplyAll applyAll) {
+      return new ApplyAll(
+          applyAll.getSteps().stream()
+              .map(step -> step.accept(this))
+              .collect(ImmutableList.toImmutableList()));
+    }
+
+    @Override
+    public TransformationStep visitApplyAny(ApplyAny applyAny) {
+      return new ApplyAny(
+          applyAny.getSteps().stream()
+              .map(step -> step.accept(this))
+              .collect(ImmutableList.toImmutableList()));
     }
   }
 

@@ -569,7 +569,10 @@ ip_protocol
 
 route_advertisement_mode
 :
-  DISABLED
+  ALL
+  | ALWAYS
+  | ANY
+  | DISABLED
   | ENABLED
   | SELECTIVE
 ;

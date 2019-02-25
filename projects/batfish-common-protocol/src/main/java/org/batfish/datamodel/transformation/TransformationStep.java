@@ -20,8 +20,6 @@ import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 @ParametersAreNonnullByDefault
 public interface TransformationStep {
-  /** Which {@link TransformationType} this step is (partially) encoding. */
-  TransformationType getType();
 
   <T> T accept(TransformationStepVisitor<T> visitor);
 

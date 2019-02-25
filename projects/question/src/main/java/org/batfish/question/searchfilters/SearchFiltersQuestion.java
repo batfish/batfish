@@ -139,7 +139,7 @@ public final class SearchFiltersQuestion extends Question {
 
   @Nonnull
   @JsonIgnore
-  public FilterSpecifier getFilterSpecifier() {
+  FilterSpecifier getFilterSpecifier() {
     return SpecifierFactories.getFilterSpecifierOrDefault(
         _filters, new ShorthandFilterSpecifier(FiltersSpecifier.ALL));
   }

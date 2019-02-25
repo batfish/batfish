@@ -91,16 +91,6 @@ public class RoutesAnswerer extends Answerer {
                 vrfRegex);
         break;
 
-      case BGPMP:
-        rows =
-            getBgpRibRoutes(
-                dp.getBgpRoutes(true),
-                RibProtocol.BGPMP,
-                matchingNodes,
-                network,
-                protocolSpec,
-                vrfRegex);
-        break;
       case MAIN:
       default:
         rows =
@@ -149,22 +139,6 @@ public class RoutesAnswerer extends Answerer {
         rows = getBgpRouteRowsDiff(routesDiffRaw, RibProtocol.BGP);
         break;
 
-      case BGPMP:
-        _batfish.pushBaseSnapshot();
-        dp = _batfish.loadDataPlane();
-        routesGroupedByKeyInBase =
-            groupBgpRoutes(dp.getBgpRoutes(true), matchingNodes, vrfRegex, network, vrfRegex);
-        _batfish.popSnapshot();
-
-        _batfish.pushDeltaSnapshot();
-        dp = _batfish.loadDataPlane();
-        routesGroupedByKeyInDelta =
-            groupBgpRoutes(dp.getBgpRoutes(true), matchingNodes, vrfRegex, network, vrfRegex);
-        _batfish.popSnapshot();
-        routesDiffRaw = getRoutesDiff(routesGroupedByKeyInBase, routesGroupedByKeyInDelta);
-        rows = getBgpRouteRowsDiff(routesDiffRaw, RibProtocol.BGPMP);
-        break;
-
       case MAIN:
       default:
         _batfish.pushBaseSnapshot();
@@ -196,7 +170,6 @@ public class RoutesAnswerer extends Answerer {
     addCommonTableColumnsAtStart(columnBuilder);
     switch (rib) {
       case BGP:
-      case BGPMP:
         columnBuilder.add(
             new ColumnMetadata(
                 COL_NEXT_HOP_IP, Schema.IP, "Route's Next Hop IP", Boolean.FALSE, Boolean.TRUE));
@@ -295,7 +268,6 @@ public class RoutesAnswerer extends Answerer {
             Boolean.TRUE));
     switch (rib) {
       case BGP:
-      case BGPMP:
         columnBuilder.add(
             new ColumnMetadata(
                 COL_BASE_PREFIX + COL_NEXT_HOP_IP,

@@ -1026,8 +1026,14 @@
                 {
                   "class" : "org.batfish.datamodel.transformation.AssignIpAddressFromPool",
                   "ipField" : "SOURCE",
-                  "poolEnd" : "1.1.1.2",
-                  "poolStart" : "1.1.1.1",
+                  "ipRanges" : [
+                    {
+                      "lowerEndpoint" : "1.1.1.1",
+                      "lowerBoundType" : "CLOSED",
+                      "upperEndpoint" : "1.1.1.2",
+                      "upperBoundType" : "CLOSED"
+                    }
+                  ],
                   "transformationType" : "SOURCE_NAT"
                 }
               ]
@@ -7260,8 +7266,14 @@
                 {
                   "class" : "org.batfish.datamodel.transformation.AssignIpAddressFromPool",
                   "ipField" : "SOURCE",
-                  "poolEnd" : "1.2.3.4",
-                  "poolStart" : "1.2.3.4",
+                  "ipRanges" : [
+                    {
+                      "lowerEndpoint" : "1.2.3.4",
+                      "lowerBoundType" : "CLOSED",
+                      "upperEndpoint" : "1.2.3.4",
+                      "upperBoundType" : "CLOSED"
+                    }
+                  ],
                   "transformationType" : "SOURCE_NAT"
                 }
               ]
@@ -18513,8 +18525,14 @@
                 {
                   "class" : "org.batfish.datamodel.transformation.AssignIpAddressFromPool",
                   "ipField" : "DESTINATION",
-                  "poolEnd" : "10.10.10.254",
-                  "poolStart" : "10.10.10.1",
+                  "ipRanges" : [
+                    {
+                      "lowerEndpoint" : "10.10.10.1",
+                      "lowerBoundType" : "CLOSED",
+                      "upperEndpoint" : "10.10.10.254",
+                      "upperBoundType" : "CLOSED"
+                    }
+                  ],
                   "transformationType" : "DEST_NAT"
                 }
               ]
@@ -18567,8 +18585,14 @@
                       {
                         "class" : "org.batfish.datamodel.transformation.AssignIpAddressFromPool",
                         "ipField" : "SOURCE",
-                        "poolEnd" : "10.10.10.254",
-                        "poolStart" : "10.10.10.1",
+                        "ipRanges" : [
+                          {
+                            "lowerEndpoint" : "10.10.10.1",
+                            "lowerBoundType" : "CLOSED",
+                            "upperEndpoint" : "10.10.10.254",
+                            "upperBoundType" : "CLOSED"
+                          }
+                        ],
                         "transformationType" : "SOURCE_NAT"
                       },
                       {
@@ -18584,8 +18608,14 @@
                     {
                       "class" : "org.batfish.datamodel.transformation.AssignIpAddressFromPool",
                       "ipField" : "SOURCE",
-                      "poolEnd" : "1.0.0.1",
-                      "poolStart" : "1.0.0.1",
+                      "ipRanges" : [
+                        {
+                          "lowerEndpoint" : "1.0.0.1",
+                          "lowerBoundType" : "CLOSED",
+                          "upperEndpoint" : "1.0.0.1",
+                          "upperBoundType" : "CLOSED"
+                        }
+                      ],
                       "transformationType" : "SOURCE_NAT"
                     },
                     {

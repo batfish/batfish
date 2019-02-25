@@ -55,6 +55,8 @@ public class SpecifiersReachabilityTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
+  private static final String ALL = ".*";
+
   private Batfish _batfish;
 
   @Before
@@ -139,8 +141,8 @@ public class SpecifiersReachabilityTest {
         SpecifiersReachabilityQuestion.builder()
             .setPathConstraints(
                 PathConstraintsInput.builder()
-                    .setStartLocation(".*")
-                    .setForbiddenLocations(".*")
+                    .setStartLocation(ALL)
+                    .setForbiddenLocations(ALL)
                     .build())
             .build();
     AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
@@ -185,8 +187,8 @@ public class SpecifiersReachabilityTest {
         SpecifiersReachabilityQuestion.builder()
             .setPathConstraints(
                 PathConstraintsInput.builder()
-                    .setStartLocation(String.format("%s[%s]", ".*", LOOPBACK))
-                    .setTransitLocations(".*")
+                    .setStartLocation(String.format("%s[%s]", ALL, LOOPBACK))
+                    .setTransitLocations(ALL)
                     .build())
             .build();
     AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
