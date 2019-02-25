@@ -766,7 +766,13 @@ public class F5BigipConfiguration extends VendorConfiguration {
     }
 
     // Add kernel routes for each virtual-address if applicable
-    _virtualAddresses.values().forEach(this::tryAddKernelRoute);
+    _c.getDefaultVrf()
+        .setKernelRoutes(
+            _virtualAddresses.values().stream()
+                .map(this::tryAddKernelRoute)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
 
     initVirtualTransformations();
 
@@ -784,15 +790,14 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return ImmutableList.of(toVendorIndependentConfiguration());
   }
 
-  private void tryAddKernelRoute(VirtualAddress virtualAddress) {
+  private @Nonnull Optional<KernelRoute> tryAddKernelRoute(VirtualAddress virtualAddress) {
     if (virtualAddress.getRouteAdvertisementMode() == RouteAdvertisementMode.DISABLED
         || virtualAddress.getAddress() == null
         || virtualAddress.getMask() == null) {
-      return;
+      return Optional.empty();
     }
-    _c.getDefaultVrf()
-        .getKernelRoutes()
-        .add(new KernelRoute(Prefix.create(virtualAddress.getAddress(), virtualAddress.getMask())));
+    return Optional.of(
+        new KernelRoute(Prefix.create(virtualAddress.getAddress(), virtualAddress.getMask())));
   }
 
   private void warnInvalidPrefixList(PrefixList prefixList) {
