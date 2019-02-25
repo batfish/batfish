@@ -7,6 +7,7 @@ import static org.batfish.datamodel.questions.OspfPropertySpecifier.EXPORT_POLIC
 import static org.batfish.datamodel.questions.OspfPropertySpecifier.REFERENCE_BANDWIDTH;
 import static org.batfish.datamodel.questions.OspfPropertySpecifier.ROUTER_ID;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -34,14 +35,15 @@ import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
+/** Implements {@link OspfProcessConfigurationQuestion}. */
 public class OspfProcessConfigurationAnswerer extends Answerer {
 
-  public static final String COL_NODE = "Node";
-  public static final String COL_VRF = "VRF";
-  public static final String COL_PROCESS_ID = "Process_ID";
+  static final String COL_NODE = "Node";
+  static final String COL_VRF = "VRF";
+  static final String COL_PROCESS_ID = "Process_ID";
 
   // this list also ensures order of columns excluding keys
-  private static final List<String> COLUMNS_FROM_PROP_SPEC =
+  static final List<String> COLUMNS_FROM_PROP_SPEC =
       ImmutableList.of(
           AREAS,
           REFERENCE_BANDWIDTH,
@@ -80,7 +82,8 @@ public class OspfProcessConfigurationAnswerer extends Answerer {
     return answer;
   }
 
-  public static List<ColumnMetadata> createColumnMetadata(List<String> properties) {
+  @VisibleForTesting
+  static List<ColumnMetadata> createColumnMetadata(List<String> properties) {
     List<ColumnMetadata> columnMetadatas = new ArrayList<>();
     columnMetadatas.add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false));
     columnMetadatas.add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false));
@@ -99,21 +102,20 @@ public class OspfProcessConfigurationAnswerer extends Answerer {
   }
 
   /** Creates a {@link TableMetadata} object from the question. */
+  @VisibleForTesting
   static TableMetadata createTableMetadata(
       @Nullable String textDescription, List<String> propertiesList) {
     return new TableMetadata(
         createColumnMetadata(propertiesList),
         textDescription == null
             ? String.format(
-                "Properties of BGP peer ${%s}:${%s}: ${%s}", COL_NODE, COL_VRF, COL_PROCESS_ID)
+                "Configuration of OSPF process ${%s}:${%s}: ${%s}",
+                COL_NODE, COL_VRF, COL_PROCESS_ID)
             : textDescription);
   }
 
-  /**
-   * Returns a set of rows that contain the values of all the properties denoted by {@code
-   * propertySpecifier}.
-   */
-  public static Multiset<Row> getRows(
+  @VisibleForTesting
+  static Multiset<Row> getRows(
       List<String> properties,
       Map<String, Configuration> configurations,
       Set<String> nodes,
