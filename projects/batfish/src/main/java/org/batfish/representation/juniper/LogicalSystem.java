@@ -28,7 +28,7 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, ApplicationSet> _applicationSets;
 
-  private final Map<String, AsPath> _asPaths;
+  @Nonnull private final Map<String, AsPath> _asPaths;
 
   private final Map<String, AsPathGroup> _asPathGroups;
 
@@ -165,6 +165,7 @@ public class LogicalSystem implements Serializable {
     return _applicationSets;
   }
 
+  @Nonnull
   public Map<String, AsPath> getAsPaths() {
     return _asPaths;
   }
