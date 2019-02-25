@@ -114,7 +114,7 @@ public class Vrf extends ComparableStructure<String> {
     _generatedRoutes = new TreeSet<>();
     _generatedIpv6Routes = new TreeSet<>();
     _interfaces = new TreeMap<>();
-    _kernelRoutes = new TreeSet<>();
+    _kernelRoutes = ImmutableSortedSet.of();
     _staticRoutes = new TreeSet<>();
     _vniSettings = new TreeMap<>();
   }
