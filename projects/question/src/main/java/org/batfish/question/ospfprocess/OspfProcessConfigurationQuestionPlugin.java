@@ -8,7 +8,7 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.question.QuestionPlugin;
 
 @AutoService(Plugin.class)
-public class OspfProcessConfigurationQuestionPlugin extends QuestionPlugin {
+public final class OspfProcessConfigurationQuestionPlugin extends QuestionPlugin {
   @Override
   protected Answerer createAnswerer(Question question, IBatfish batfish) {
     return new OspfProcessConfigurationAnswerer(question, batfish);

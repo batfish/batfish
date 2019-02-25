@@ -2,7 +2,6 @@ package org.batfish.question.ospfprocess;
 
 import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREAS;
 import static org.batfish.datamodel.questions.OspfPropertySpecifier.AREA_BORDER_ROUTER;
-import static org.batfish.datamodel.questions.OspfPropertySpecifier.EXPORT_POLICY;
 import static org.batfish.datamodel.questions.OspfPropertySpecifier.EXPORT_POLICY_SOURCES;
 import static org.batfish.datamodel.questions.OspfPropertySpecifier.REFERENCE_BANDWIDTH;
 import static org.batfish.datamodel.questions.OspfPropertySpecifier.ROUTER_ID;
@@ -38,7 +37,7 @@ import org.batfish.datamodel.table.TableMetadata;
 
 /** Implements {@link OspfProcessConfigurationQuestion}. */
 @ParametersAreNonnullByDefault
-public class OspfProcessConfigurationAnswerer extends Answerer {
+public final class OspfProcessConfigurationAnswerer extends Answerer {
 
   static final String COL_NODE = "Node";
   static final String COL_VRF = "VRF";
@@ -47,12 +46,7 @@ public class OspfProcessConfigurationAnswerer extends Answerer {
   // this list also ensures order of columns excluding keys
   static final List<String> COLUMNS_FROM_PROP_SPEC =
       ImmutableList.of(
-          AREAS,
-          REFERENCE_BANDWIDTH,
-          ROUTER_ID,
-          EXPORT_POLICY_SOURCES,
-          EXPORT_POLICY,
-          AREA_BORDER_ROUTER);
+          AREAS, REFERENCE_BANDWIDTH, ROUTER_ID, EXPORT_POLICY_SOURCES, AREA_BORDER_ROUTER);
 
   public OspfProcessConfigurationAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -136,36 +130,45 @@ public class OspfProcessConfigurationAnswerer extends Answerer {
                     if (ospfProcess == null) {
                       return;
                     }
-                    RowBuilder rowBuilder =
-                        Row.builder(columnMetadata)
-                            .put(COL_NODE, new Node(nodeName))
-                            .put(COL_VRF, vrf.getName())
-                            .put(COL_PROCESS_ID, ospfProcess.getProcessId());
-
-                    for (String property : properties) {
-                      PropertyDescriptor<OspfProcess> propertyDescriptor =
-                          OspfPropertySpecifier.JAVA_MAP.get(property);
-                      try {
-                        PropertySpecifier.fillProperty(
-                            propertyDescriptor, ospfProcess, property, rowBuilder);
-                      } catch (ClassCastException e) {
-                        throw new BatfishException(
-                            String.format(
-                                "Type mismatch between property value ('%s') and Schema ('%s') for property '%s' for OSPF process '%s->%s-%s': %s",
-                                propertyDescriptor.getGetter().apply(ospfProcess),
-                                propertyDescriptor.getSchema(),
-                                property,
-                                nodeName,
-                                vrf.getName(),
-                                ospfProcess,
-                                e.getMessage()),
-                            e);
-                      }
-                    }
-
-                    rows.add(rowBuilder.build());
+                    rows.add(
+                        getRow(nodeName, vrf.getName(), ospfProcess, properties, columnMetadata));
                   });
         });
     return rows;
+  }
+
+  @VisibleForTesting
+  static Row getRow(
+      String nodeName,
+      String vrfName,
+      OspfProcess ospfProcess,
+      List<String> properties,
+      Map<String, ColumnMetadata> columnMetadataMap) {
+    RowBuilder rowBuilder =
+        Row.builder(columnMetadataMap)
+            .put(COL_NODE, new Node(nodeName))
+            .put(COL_VRF, vrfName)
+            .put(COL_PROCESS_ID, ospfProcess.getProcessId());
+
+    for (String property : properties) {
+      PropertyDescriptor<OspfProcess> propertyDescriptor =
+          OspfPropertySpecifier.JAVA_MAP.get(property);
+      try {
+        PropertySpecifier.fillProperty(propertyDescriptor, ospfProcess, property, rowBuilder);
+      } catch (ClassCastException e) {
+        throw new BatfishException(
+            String.format(
+                "Type mismatch between property value ('%s') and Schema ('%s') for property '%s' for OSPF process '%s->%s-%s': %s",
+                propertyDescriptor.getGetter().apply(ospfProcess),
+                propertyDescriptor.getSchema(),
+                property,
+                nodeName,
+                vrfName,
+                ospfProcess,
+                e.getMessage()),
+            e);
+      }
+    }
+    return rowBuilder.build();
   }
 }

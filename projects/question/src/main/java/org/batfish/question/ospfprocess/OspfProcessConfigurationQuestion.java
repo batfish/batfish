@@ -9,9 +9,9 @@ import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Question;
 
-/** A question that returns a table with the all OSPF processes configurations */
+/** A question that returns a table with all OSPF processes configurations */
 @ParametersAreNullableByDefault
-public class OspfProcessConfigurationQuestion extends Question {
+public final class OspfProcessConfigurationQuestion extends Question {
   private static final String PROP_NODES = "nodes";
   private static final String PROP_PROPERTIES = "properties";
 
