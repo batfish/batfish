@@ -54,18 +54,14 @@ public class NamesTest {
   @Test
   public void testTableColumnNames() {
 
-    List<String> valid_names =
-        ImmutableList.of(
-            "simple", "~startTilde", "_startsUnderScore", "has-", "has.", "has:", "has/");
-
-    List<String> invalid_names =
-        ImmutableList.of("-startDash", "has space", ".startDot", "@startAt", "");
-
-    for (String name : valid_names) {
+    for (String name :
+        new String[] {
+          "simple", "~startTilde", "_startsUnderScore", "has-", "has.", "has:", "has/"
+        }) {
       assertThat(name, matchesPattern(VALID_PATTERNS.get(TABLE_COLUMN)));
     }
 
-    for (String name : invalid_names) {
+    for (String name : new String[] {"-startDash", "has space", ".startDot", "@startAt", ""}) {
       assertThat(name, not(matchesPattern(VALID_PATTERNS.get(TABLE_COLUMN))));
     }
   }
