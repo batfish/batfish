@@ -6,9 +6,9 @@ import static org.batfish.datamodel.Names.Type.TABLE_COLUMN;
 import static org.batfish.datamodel.Names.VALID_PATTERNS;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
+import static org.hamcrest.Matchers.matchesPattern;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -29,44 +29,44 @@ public class NamesTest {
   public static List<String> REFERENCE_OBJECT_INVALID_NAMES =
       ImmutableList.of("1", "has/", "has.", "has:", "");
 
-  public static List<String> TABLE_COLUMN_VALID_NAMES =
-      ImmutableList.of(
-          "simple", "~startTilde", "_startsUnderScore", "has-", "has.", "has:", "has/");
-
-  public static List<String> TABLE_COLUMN_INVALID_NAMES =
-      ImmutableList.of("-startDash", "has space", ".startDot", "@startAt", "");
-
   @Test
   public void testNodeRoleNames() {
     for (String name : NODE_ROLE_VALID_NAMES) {
-      assertTrue(name, VALID_PATTERNS.get(NODE_ROLE).matcher(name).matches());
+      assertThat(name, matchesPattern(VALID_PATTERNS.get(NODE_ROLE)));
     }
 
     for (String name : NODE_ROLE_INVALID_NAMES) {
-      assertFalse(name, VALID_PATTERNS.get(NODE_ROLE).matcher(name).matches());
+      assertThat(name, not(matchesPattern(VALID_PATTERNS.get(NODE_ROLE))));
     }
   }
 
   @Test
   public void testReferenceObjectNames() {
     for (String name : REFERENCE_OBJECT_VALID_NAMES) {
-      assertTrue(name, VALID_PATTERNS.get(REFERENCE_OBJECT).matcher(name).matches());
+      assertThat(name, matchesPattern(VALID_PATTERNS.get(REFERENCE_OBJECT)));
     }
 
     for (String name : REFERENCE_OBJECT_INVALID_NAMES) {
-      assertFalse(name, VALID_PATTERNS.get(REFERENCE_OBJECT).matcher(name).matches());
+      assertThat(name, not(matchesPattern(VALID_PATTERNS.get(REFERENCE_OBJECT))));
     }
   }
 
   @Test
   public void testTableColumnNames() {
 
-    for (String name : TABLE_COLUMN_VALID_NAMES) {
-      assertTrue(name, VALID_PATTERNS.get(TABLE_COLUMN).matcher(name).matches());
+    List<String> valid_names =
+        ImmutableList.of(
+            "simple", "~startTilde", "_startsUnderScore", "has-", "has.", "has:", "has/");
+
+    List<String> invalid_names =
+        ImmutableList.of("-startDash", "has space", ".startDot", "@startAt", "");
+
+    for (String name : valid_names) {
+      assertThat(name, matchesPattern(VALID_PATTERNS.get(TABLE_COLUMN)));
     }
 
-    for (String name : TABLE_COLUMN_INVALID_NAMES) {
-      assertFalse(name, VALID_PATTERNS.get(TABLE_COLUMN).matcher(name).matches());
+    for (String name : invalid_names) {
+      assertThat(name, not(matchesPattern(VALID_PATTERNS.get(TABLE_COLUMN))));
     }
   }
 
