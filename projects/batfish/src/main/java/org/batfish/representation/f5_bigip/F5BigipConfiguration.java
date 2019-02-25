@@ -165,7 +165,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
       } else {
         _w.redFlag(
             String.format(
-                "Ignoring reference to missing outbound route-map: %s", outboundRouteMap));
+                "Ignoring reference to missing outbound route-map: %s", outboundRouteMapName));
       }
     }
 
