@@ -1,4 +1,4 @@
-Batfish questions have the following parameter types, with linked descriptions:
+Batfish questions have the following parameter types that support rich specifications which are described below. 
 
 <!--
 [comment]: # (* `bgpPropertySpec`)
@@ -10,7 +10,7 @@ Batfish questions have the following parameter types, with linked descriptions:
 [comment]: # (* `integer`)
 [comment]: # (* `interfacePropertySpec`)
 -->
-* [`dispositionSpec`](#disposition-specifier)
+* [`flowDispositionSpec`](#flow-disposition-specifier)
 
 * [`filterSpec`](#filter-specifier)
 
@@ -54,7 +54,7 @@ Batfish questions have the following parameter types, with linked descriptions:
 [comment]: # (* `subrange`)
 -->
 
-## Disposition specifier
+## Flow Disposition Specifier
 
 A specification of flow dispositions, used to identify desired flow actions. Used in questions like `reachability`.
 Disposition specifier takes as input a string of comma-separated disposition values, which are interpreted using logical OR.
@@ -80,44 +80,63 @@ The following fine-grained disposition values are also supported:
 
 A specification for filters (ACLs or firewall rules) in the network.
 
-* `inFilterOf` indicates filters that get applied when packets enter the interfaces denoted by the `interfaceSpec`. For example, `inFilterOf(Ethernet0/0)` includes filters for incoming packets on interfaces named `Ethernet0/0`.
+* Filter name or a regex over the names indicate filters on all nodes in the network with that name or matching regex. For example, `filter1` includes all filters with that name and `/acl/` includes all filters whose names contain `acl`.
 
-* `outFilterOf` is similar to above except that it indicates filters that get applied when packets exit the interfaces denoted by the `interfaceSpec`. For example, `outFilterOf(Ethernet0/0)` includes all filters for outgoing packets on interfaces named `Ethernet0/0`.
+* `@in(interfaceSpec)` indicates filters that get applied when packets enter the interfaces denoted by `interfaceSpec`. For example, `@in(Ethernet0/0)` includes filters for incoming packets on interfaces named `Ethernet0/0`.
 
-* and if none of the above are matched, the default behavior is to include filters with names that match the supplied `<javaRegex>`. For example, `acl-.*` includes all filters whose names begin with `acl-`.
+* `@out(intefaceSpec)` is similar except that it indicates filters that get applied when packets exit the interfaces denoted by the `interfaceSpec`. 
 
 #### Filter Specifier Grammar
 
 ```
-filterSpec =
-    inFilterOf(<interfaceSpec>)
-    | outFilterOf(<interfaceSpec>)
-    | <javaRegex>
+filterSpec := 
+    filterTerm [(‘&’|’,’|’\’) filterTerm]
+
+filterTerm := 
+    <filter-name>
+    | ‘/’<filter-name-regex>‘/’
+    | filterFunc
+    | ‘(‘filterTerm‘)’
+
+filterFunc :=  
+    @in(interfaceSpec)  
+    | @out(intefaceSpec) 
 ```
 
 ## Interface Specifier
 
 A specification for interfaces in the network.
 
-* `connectedTo` indicates all interfaces with configured IPv4 networks that overlap the specified IPs. For example, `connectedTo(1.2.3.4/30)` includes interfaces that overlap the specified IPv4 prefix.
+* Interface name or a regex over the names indicate interfaces on all nodes in the network with that name or matching regex. For example, `Ethernet0/1` includes all filters with that name and `/Ethernet0/` includes all filters whose names contain `Ethernet0`.
 
-* `type` indicates all interfaces with the specified type. For example, `type(loopback)` includes loopback interfaces.
+* `@connectedTo(ipSpec)` indicates all interfaces with configured IPv4 networks that overlap with IPs denoted with `ipSpec`. For example, `@connectedTo(1.2.3.4/30)` includes interfaces that overlap the specified IPv4 prefix.
 
-* `vrf` indicates all interfaces configured to be in the VRF with name matching the given `<javaRegex>`. For example, `vrf(default)` includes interfaces in the default VRF.
+* `@ainterfaceGroup` looks in the configured reference library for an interface group and book of the given string names.
 
-* `zone` indicates all interfaces configured to be in the (firewall) zone with name matching the given `<javaRegex>`. For example, `zone(admin)` includes interfaces in the zone named admin.
+* `@interfaceType(interfaceType)` indicates all interfaces with the specified link type. The types of interfaces are listed below. 
 
-* and if none of the above are matched, the default behavior is to include interfaces with names that match the supplied `<javaRegex>`. For example, `ae-.*` includes all Juniper aggregated ethernet interfaces.
+* `@vrf(<vrf-name>)` indicates all interfaces configured to be in the VRF with name `vrf-name`.
+
+* `@zone(<zone-name>)` indicates all interfaces configured to be in the zone with name `zone-name`.
 
 #### Interface Specifier Grammar
 
 ```
-interfaceSpec =
-    connectedTo(<ipSpec>)
-    | type(<interfaceType>)
-    | vrf(<javaRegex>)
-    | zone(<javaRegex>)
-    | <javaRegex>
+interfaceSpec := 
+    interfaceTerm [(‘&’|’,’|’\’) interfaceTerm]
+
+interfaceTerm :=
+    <interface name>
+    | ‘/’<interface-name-regex>‘/’
+    | interfaceFunc
+    | ‘(‘interfaceTerm‘)’
+
+interfaceFunc :=   
+    @connectedTo(ipSpec)
+    | @interfaceGroup(<address-group-name>, <reference-book-name>)    
+    | @interfaceType(interfaceType)
+    | @vrf(<vrf-name>)          
+    | @zone(<zone-name>)
 ```
 
 #### Interface Types
@@ -125,6 +144,8 @@ interfaceSpec =
 ```
 interfaceType = 
     aggregated
+    | aggregate_child
+    | logical
     | loopback
     | null
     | physical
@@ -137,29 +158,30 @@ interfaceType =
 
 ## IP Specifier
 
-A specification for IPv4 addresses. An `ipSpec` is a string with the following syntax:
+A specification for a set of IPv4 addresses.
 
-* `ref.addressbook` looks in the configured reference books for an address group and book of the given string names.
+* Constant values that denote addresses, prefixes, address ranges, and wildcards may be used.
 
-* `ofLocation` returns the IPv4 address or addresses corresponding to the specified location (see [`locationSpec`](#location-specifier)).  For example, `ofLocation(as1border1[Ethernet0/0])` includes all IPv4 addresses configured on `as1border1` interface `Ethernet0/0`.
+* `@addressGroup` looks in the configured reference library for an address group and book of the given string names.
 
-* and if none of the above are matched, the default behavior is to parse the supplied string as an IPv4 address, IPv4 prefix, or IPv4 wildcard. For example, `1.2.3.4` is an IPv4 address, `1.2.3.4/30` is an IPv4 prefix, and `1.2.3.4:0.0.0.3` is an IPv4 wildcard equivalent to `1.2.3.4/30`.
-
-    A difference of IPv4 literals is also supported. For example, `1.2.3.4/30 - 1.2.3.4` specifies every IPv4 address in that prefix except `1.2.3.4`, aka, `1.2.3.5`, `1.2.3.6`, and `1.2.3.7`.
+* `locationSpec` can be used to denote addresses corresponding to the specified location (see [`locationSpec`](#location-specifier)).  For example, `as1border1[Ethernet0/0]` includes all IPv4 addresses configured on `as1border1` interface `Ethernet0/0`.
 
 #### IP Specifier Grammar
 
 ```
-ipSpec =
-    ref.addressgroup(<group=string>,<book=string>)
-    | ofLocation(<locationSpec>)
-    | <ipv4spec>
-    | <ipv4spec> - <ipv4spec>
+ipSpec :=  
+    ipTerm [’,’ ipTerm]
 
-<ipv4spec> =
-    <IPv4 address in A.B.C.D form>
-    | <IPv4 prefix in A.B.C.D/L form>
-    | <IPv4 wildcard in A.B.C.D:M.N.O.P form>
+ipTerm :=  
+    <ip-address (e.g., 1.2.3.4)>
+    | <ip-prefix (e.g., 1.2.3.0/24)>
+    | <ip-address-low - ip-address-high (e.g., 1.1.1.1 - 1.1.1.3)>
+    | <ip wildcard (e.g., 1.2.3.4:255.255.255.0)>
+    | ipFunc
+    | locationSpec
+
+ipFunc := 
+    @addressGroup(<address-group-name>, <reference-book-name>)
 ```
 
 ## Java Regular Expression
@@ -168,50 +190,77 @@ A Java regular expression. For information on the syntax of these strings, see t
 
 ## Location Specifier
 
-A precise specification for locations of packets.
+A specification for locations of packets, including where they start or terminate.
 
 There are two types of `Location`:
-* `Interface Location` - at the interface, used to model packets that originate or terminate at the interface.
-* `InterfaceLinkLocation` - on the link connected to the interface, used to model packets before they enter the interface or after they exit.
+* `InterfaceLocation` - at the interface, used to model packets that originate or terminate at the interface.
+* `LinkLocation` - on the link connected to the interface, used to model packets before they enter the interface or after they exit.
 
 Some examples:
 
-* `as1border1[Ethernet0/0]` - specifies the `InterfaceLocation` for `Ethernet0/0` on node `as1border1`.
+* `as1border1[Ethernet0/0]` specifies the `InterfaceLocation` for `Ethernet0/0` on node `as1border1`.
 
-* `as1border1` - specifies the `InterfaceLocation` for *all* interfaces on node `as1border1`. It is interpreted as `as1border1[.*]`.
+* `as1border1` specifies the `InterfaceLocation` for *all* interfaces on node `as1border1`. It is same as `as1border1[/.*/]`.
 
-* `[Ethernet0/0]` - specifies the `InterfaceLocation` for any interface `Ethernet0/0` on any node. It is interpreted as `.*[Ethernet0/0]`.
+* `@vrf(vrf1)` specifies the `InterfaceLocation` for any interface in `vrf1` on *all* nodes. It is same as `/.*/[@vrf(vrf1)]`.
 
-* `enter([Ethernet0/0])` - specifies the `InterfaceLinkLocation` for any the link of interface `Ethernet0/0` on any node. It is interpreted as `enter(.*[Ethernet0/0])`.
+* `@enter(as1border1[Ethernet0/0])` specifies the `LinkLocation` for packets entering `Ethernet0/0` on `as1border1`. 
 
 #### Location Specifier Grammar
 
 ```
-locationSpec =
-    <interfaceLocationSpec>
-    | <interfaceLinkLocationSpec>
+locationSpec :=
+    locationTerm [(‘&’|’,’|’\’) locationTerm] 
 
-interfaceLocationSpec =
-    [<interfaceSpec>]
-    | <nodeSpec>[<interfaceSpec>]
+locationTerm :=     
+    locationInterface
+    | locationSpecifier
+    | ‘(‘ locationTerm ‘)’
 
-interfaceLinkSpec =
-    enter(<interfaceLocationSpec>)
-    | exit(<interfaceLocationSpec>)
+locationInterface :=    
+    nodeTerm
+    | interfaceFunc
+    | nodeTerm ‘[‘ interfaceExpr ‘]’        
+
+locationFunc := 
+    @enter(locationInterface)
 ```
 
 ## Node Specifier
 
 A specification for nodes in the network.
 
-* `ref.noderole` finds all nodes with the role whose name matches `roleRegex` in node role dimension `dimension`.
+* Node names or a regex over the names indicate nodes in the network with that name or matching regex. For example, `as1border1` indicates that node and `/as1/` indicates all nodes whose names contain `as1`.
 
-* and if none of the above are matched, the default behavior is to include nodes with hostnames that match the supplied `<javaRegex>`. For example, `as1.*` includes all devices in AS 1 in the example network.
+* `@deviceType(deviceType)` indicates all nodes of the specified type.  The types of devices are listed below. 
+
+* `@role` indicates all nodes with the specified role name in the specified dimension name.
 
 #### Node Specifier Grammar
 
 ```
-nodeSpec =
-    ref.noderole(<roleRegex=javaRegex>,<dimension=string>)
-    | <javaRegex>
+nodeExpr :=         
+    nodeTerm [(‘&’|’,’|’\’) nodeTerm]
+
+nodeTerm :=
+    <node-name>
+    | ‘/’<node-name-regex>‘/’
+    | nodeFunc
+    | ‘(‘ nodeTerm ‘)’
+
+nodeFunc :=
+    @deviceType(deviceType) 
+    | @role(<role-name>, <dimension-name>)   
 ```
+
+#### Device Types
+
+```
+deviceType = 
+  host,
+  internet,   // when the Internet is modeled
+  isp,        // when adjacent are modeled
+  router,
+  switch
+```
+
