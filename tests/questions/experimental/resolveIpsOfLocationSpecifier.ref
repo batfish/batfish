@@ -2,7 +2,6 @@
   "class" : "org.batfish.question.specifiers.SpecifiersQuestion",
   "queryType" : "IP_SPACE_OF_LOCATION",
   "differential" : false,
-  "filterSpecifierFactory" : "FlexibleFilterSpecifierFactory",
   "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Show IPs that are auto-assigned to locations",
@@ -11,6 +10,13 @@
       "specifiers"
     ],
     "variables" : {
+      "grammarVersion" : {
+        "description" : "Version of grammar to use for resolution",
+        "displayName" : "Grammar version",
+        "optional" : true,
+        "type" : "string",
+        "value" : "v2"
+      },
       "locations" : {
         "description" : "Input to the LocationSpecifier",
         "displayName" : "Locations",
@@ -20,9 +26,6 @@
       }
     }
   },
-  "interfaceSpecifierFactory" : "FlexibleInterfaceSpecifierFactory",
-  "ipSpaceSpecifierFactory" : "FlexibleIpSpaceSpecifierFactory",
-  "locationSpecifierFactory" : "FlexibleLocationSpecifierFactory",
   "locationSpecifierInput" : "input",
-  "nodeSpecifierFactory" : "FlexibleNodeSpecifierFactory"
+  "specifierFactoryVersion" : "V2"
 }

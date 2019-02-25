@@ -16,63 +16,98 @@ import org.batfish.specifier.parboiled.ParboiledNodeSpecifierFactory;
 @ParametersAreNonnullByDefault
 public final class SpecifierFactories {
 
-  public enum FactoryGroup {
+  public enum Version {
     V1, // original, regex-based parsing of "flexible" specifiers
     V2 // newer parboiled-based implementation
   }
 
+  public enum SpecifierType {
+    FILTER,
+    INTERFACE,
+    IP_SPACE,
+    LOCATION,
+    NODE
+  }
+
   private SpecifierFactories() {}
 
-  public static final FactoryGroup ACTIVE_GROUP = FactoryGroup.V1;
+  public static final Version ACTIVE_VERSION = Version.V1;
 
-  public static final String Filter =
-      ACTIVE_GROUP == FactoryGroup.V1
-          ? FlexibleFilterSpecifierFactory.NAME
-          : ParboiledFilterSpecifierFactory.NAME;
+  public static String getFactory(Version group, SpecifierType specifier) {
+    switch (group) {
+      case V1:
+        switch (specifier) {
+          case FILTER:
+            return FlexibleFilterSpecifierFactory.NAME;
+          case INTERFACE:
+            return FlexibleInterfaceSpecifierFactory.NAME;
+          case IP_SPACE:
+            return FlexibleIpSpaceSpecifierFactory.NAME;
+          case LOCATION:
+            return FlexibleLocationSpecifierFactory.NAME;
+          case NODE:
+            return FlexibleNodeSpecifierFactory.NAME;
+          default:
+            throw new IllegalStateException("Unhandled specifier type " + specifier);
+        }
+      case V2:
+        switch (specifier) {
+          case FILTER:
+            return ParboiledFilterSpecifierFactory.NAME;
+          case INTERFACE:
+            return ParboiledInterfaceSpecifierFactory.NAME;
+          case IP_SPACE:
+            return ParboiledIpSpaceSpecifierFactory.NAME;
+          case LOCATION:
+            return ParboiledLocationSpecifierFactory.NAME;
+          case NODE:
+            return ParboiledNodeSpecifierFactory.NAME;
+          default:
+            throw new IllegalStateException("Unhandled specifier type " + specifier);
+        }
+      default:
+        throw new IllegalStateException("Unhandled group type " + group);
+    }
+  }
 
-  public static final String Interface =
-      ACTIVE_GROUP == FactoryGroup.V1
-          ? FlexibleInterfaceSpecifierFactory.NAME
-          : ParboiledInterfaceSpecifierFactory.NAME;
+  /** Define these constants, so we don't have to keep computing them */
+  private static final String ActiveFilterFactory =
+      getFactory(ACTIVE_VERSION, SpecifierType.FILTER);
 
-  public static final String IpSpace =
-      ACTIVE_GROUP == FactoryGroup.V1
-          ? FlexibleIpSpaceSpecifierFactory.NAME
-          : ParboiledIpSpaceSpecifierFactory.NAME;
+  private static final String ActiveInterfaceFactory =
+      getFactory(ACTIVE_VERSION, SpecifierType.INTERFACE);
 
-  public static final String Location =
-      ACTIVE_GROUP == FactoryGroup.V1
-          ? FlexibleLocationSpecifierFactory.NAME
-          : ParboiledLocationSpecifierFactory.NAME;
+  private static final String ActiveIpSpaceFactory =
+      getFactory(ACTIVE_VERSION, SpecifierType.IP_SPACE);
 
-  public static final String Node =
-      ACTIVE_GROUP == FactoryGroup.V1
-          ? FlexibleNodeSpecifierFactory.NAME
-          : ParboiledNodeSpecifierFactory.NAME;
+  private static final String ActiveLocationFactory =
+      getFactory(ACTIVE_VERSION, SpecifierType.LOCATION);
+
+  private static final String ActiveNodeFactory = getFactory(ACTIVE_VERSION, SpecifierType.NODE);
 
   public static FilterSpecifier getFilterSpecifierOrDefault(
       @Nullable String input, FilterSpecifier defaultSpecifier) {
-    return getFilterSpecifierOrDefault(input, defaultSpecifier, Filter);
+    return getFilterSpecifierOrDefault(input, defaultSpecifier, ActiveFilterFactory);
   }
 
   public static InterfaceSpecifier getInterfaceSpecifierOrDefault(
       @Nullable String input, InterfaceSpecifier defaultSpecifier) {
-    return getInterfaceSpecifierOrDefault(input, defaultSpecifier, Interface);
+    return getInterfaceSpecifierOrDefault(input, defaultSpecifier, ActiveInterfaceFactory);
   }
 
   public static IpSpaceSpecifier getIpSpaceSpecifierOrDefault(
       @Nullable String input, IpSpaceSpecifier defaultSpecifier) {
-    return getIpSpaceSpecifierOrDefault(input, defaultSpecifier, IpSpace);
+    return getIpSpaceSpecifierOrDefault(input, defaultSpecifier, ActiveIpSpaceFactory);
   }
 
   public static LocationSpecifier getLocationSpecifierOrDefault(
       @Nullable String input, LocationSpecifier defaultSpecifier) {
-    return getLocationSpecifierOrDefault(input, defaultSpecifier, Location);
+    return getLocationSpecifierOrDefault(input, defaultSpecifier, ActiveLocationFactory);
   }
 
   public static NodeSpecifier getNodeSpecifierOrDefault(
       @Nullable String input, NodeSpecifier defaultSpecifier) {
-    return getNodeSpecifierOrDefault(input, defaultSpecifier, Node);
+    return getNodeSpecifierOrDefault(input, defaultSpecifier, ActiveNodeFactory);
   }
 
   public static FilterSpecifier getFilterSpecifierOrDefault(

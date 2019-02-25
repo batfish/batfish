@@ -1,12 +1,17 @@
 package org.batfish.question.specifiers;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static org.batfish.specifier.SpecifierFactories.SpecifierType.FILTER;
+import static org.batfish.specifier.SpecifierFactories.SpecifierType.INTERFACE;
+import static org.batfish.specifier.SpecifierFactories.SpecifierType.IP_SPACE;
+import static org.batfish.specifier.SpecifierFactories.SpecifierType.LOCATION;
+import static org.batfish.specifier.SpecifierFactories.SpecifierType.NODE;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.questions.FiltersSpecifier;
 import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.Question;
@@ -21,12 +26,14 @@ import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.ShorthandFilterSpecifier;
 import org.batfish.specifier.ShorthandInterfaceSpecifier;
 import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.SpecifierFactories.Version;
 
 /**
  * Allows users to see how different specifiers ({@link LocationSpecifier}, {@link
  * IpSpaceSpecifier}, {@link NodeSpecifier}, {@link FilterSpecifier}, and {@link
  * InterfaceSpecifier}) are resolved.
  */
+@ParametersAreNonnullByDefault
 public final class SpecifiersQuestion extends Question {
 
   public enum QueryType {
@@ -38,12 +45,6 @@ public final class SpecifiersQuestion extends Question {
     NODE
   }
 
-  private static final String PROP_FILTER_SPECIFIER_FACTORY = "filterSpecifierFactory";
-  private static final String PROP_INTERFACE_SPECIFIER_FACTORY = "interfaceSpecifierFactory";
-  private static final String PROP_IP_SPACE_SPECIFIER_FACTORY = "ipSpaceSpecifierFactory";
-  private static final String PROP_LOCATION_SPECIFIER_FACTORY = "locationSpecifierFactory";
-  private static final String PROP_NODE_SPECIFIER_FACTORY = "nodeSpecifierFactory";
-
   private static final String PROP_FILTER_SPECIFIER_INPUT = "filterSpecifierInput";
   private static final String PROP_INTERFACE_SPECIFIER_INPUT = "interfaceSpecifierInput";
   private static final String PROP_IP_SPACE_SPECIFIER_INPUT = "ipSpaceSpecifierInput";
@@ -52,11 +53,9 @@ public final class SpecifiersQuestion extends Question {
 
   private static final String PROP_QUERY_TYPE = "queryType";
 
-  private String _filterSpecifierFactory = SpecifierFactories.Filter;
-  private String _interfaceSpecifierFactory = SpecifierFactories.Interface;
-  private String _ipSpaceSpecifierFactory = SpecifierFactories.IpSpace;
-  private String _locationSpecifierFactory = SpecifierFactories.Location;
-  private String _nodeSpecifierFactory = SpecifierFactories.Node;
+  private static final String PROP_SPECIFIER_FACTORY_VERSION = "specifierFactoryVersion";
+
+  @Nonnull private Version _specifierFactoryVersion = SpecifierFactories.ACTIVE_VERSION;
 
   @Nullable private String _filterSpecifierInput;
   @Nullable private String _interfaceSpecifierInput;
@@ -66,52 +65,49 @@ public final class SpecifiersQuestion extends Question {
 
   @Nonnull private QueryType _queryType;
 
-  public SpecifiersQuestion(@JsonProperty(PROP_QUERY_TYPE) QueryType queryType) {
+  SpecifiersQuestion(@JsonProperty(PROP_QUERY_TYPE) QueryType queryType) {
     checkArgument(queryType != null, "'queryType must be specified");
     _queryType = queryType;
   }
 
   @JsonIgnore
-  public FilterSpecifier getFilterSpecifier() {
-    checkNotNull(_filterSpecifierFactory, PROP_FILTER_SPECIFIER_FACTORY + " is null");
+  FilterSpecifier getFilterSpecifier() {
     return SpecifierFactories.getFilterSpecifierOrDefault(
         _filterSpecifierInput,
         new ShorthandFilterSpecifier(FiltersSpecifier.ALL),
-        _filterSpecifierFactory);
+        SpecifierFactories.getFactory(_specifierFactoryVersion, FILTER));
   }
 
   @JsonIgnore
-  public InterfaceSpecifier getInterfaceSpecifier() {
-    checkNotNull(_interfaceSpecifierFactory, PROP_INTERFACE_SPECIFIER_FACTORY + " is null");
+  InterfaceSpecifier getInterfaceSpecifier() {
     return SpecifierFactories.getInterfaceSpecifierOrDefault(
         _interfaceSpecifierInput,
         new ShorthandInterfaceSpecifier(InterfacesSpecifier.ALL),
-        _interfaceSpecifierFactory);
+        SpecifierFactories.getFactory(_specifierFactoryVersion, INTERFACE));
   }
 
   @JsonIgnore
-  public IpSpaceSpecifier getIpSpaceSpecifier() {
-    checkNotNull(_ipSpaceSpecifierFactory, PROP_IP_SPACE_SPECIFIER_FACTORY + " is null");
+  IpSpaceSpecifier getIpSpaceSpecifier() {
     return SpecifierFactories.getIpSpaceSpecifierOrDefault(
         _ipSpaceSpecifierInput,
         InferFromLocationIpSpaceSpecifier.INSTANCE,
-        _ipSpaceSpecifierFactory);
+        SpecifierFactories.getFactory(_specifierFactoryVersion, IP_SPACE));
   }
 
   @JsonIgnore
-  public LocationSpecifier getLocationSpecifier() {
-    checkNotNull(_locationSpecifierFactory, PROP_LOCATION_SPECIFIER_FACTORY + " is null");
+  LocationSpecifier getLocationSpecifier() {
     return SpecifierFactories.getLocationSpecifierOrDefault(
         _locationSpecifierInput,
         AllInterfacesLocationSpecifier.INSTANCE,
-        _locationSpecifierFactory);
+        SpecifierFactories.getFactory(_specifierFactoryVersion, LOCATION));
   }
 
   @JsonIgnore
-  public NodeSpecifier getNodeSpecifier() {
-    checkNotNull(_nodeSpecifierFactory, PROP_NODE_SPECIFIER_FACTORY + " is null");
+  NodeSpecifier getNodeSpecifier() {
     return SpecifierFactories.getNodeSpecifierOrDefault(
-        _nodeSpecifierInput, AllNodesNodeSpecifier.INSTANCE, _nodeSpecifierFactory);
+        _nodeSpecifierInput,
+        AllNodesNodeSpecifier.INSTANCE,
+        SpecifierFactories.getFactory(_specifierFactoryVersion, NODE));
   }
 
   @Override
@@ -124,51 +120,31 @@ public final class SpecifiersQuestion extends Question {
     return "specifiers";
   }
 
-  @JsonProperty(PROP_FILTER_SPECIFIER_FACTORY)
-  public String getFilterSpecifierFactory() {
-    return _filterSpecifierFactory;
-  }
-
+  @Nullable
   @JsonProperty(PROP_FILTER_SPECIFIER_INPUT)
   public String getFilterSpecifierInput() {
     return _filterSpecifierInput;
   }
 
-  @JsonProperty(PROP_INTERFACE_SPECIFIER_FACTORY)
-  public String getInterfaceSpecifierFactory() {
-    return _interfaceSpecifierFactory;
-  }
-
+  @Nullable
   @JsonProperty(PROP_INTERFACE_SPECIFIER_INPUT)
   public String getInterfaceSpecifierInput() {
     return _interfaceSpecifierInput;
   }
 
-  @JsonProperty(PROP_IP_SPACE_SPECIFIER_FACTORY)
-  public String getIpSpaceSpecifierFactory() {
-    return _ipSpaceSpecifierFactory;
-  }
-
+  @Nullable
   @JsonProperty(PROP_IP_SPACE_SPECIFIER_INPUT)
   public String getIpSpaceSpecifierInput() {
     return _ipSpaceSpecifierInput;
   }
 
-  @JsonProperty(PROP_LOCATION_SPECIFIER_FACTORY)
-  public String getLocationSpecifierFactory() {
-    return _locationSpecifierFactory;
-  }
-
+  @Nullable
   @JsonProperty(PROP_LOCATION_SPECIFIER_INPUT)
   public String getLocationSpecifierInput() {
     return _locationSpecifierInput;
   }
 
-  @JsonProperty(PROP_NODE_SPECIFIER_FACTORY)
-  public String getNodeSpecifierFactory() {
-    return _nodeSpecifierFactory;
-  }
-
+  @Nullable
   @JsonProperty(PROP_NODE_SPECIFIER_INPUT)
   public String getNodeSpecifierInput() {
     return _nodeSpecifierInput;
@@ -179,9 +155,9 @@ public final class SpecifiersQuestion extends Question {
     return _queryType;
   }
 
-  @JsonProperty(PROP_FILTER_SPECIFIER_FACTORY)
-  public void setFilterSpecifierFactory(String filterSpecifierFactory) {
-    _filterSpecifierFactory = filterSpecifierFactory;
+  @JsonProperty(PROP_SPECIFIER_FACTORY_VERSION)
+  public Version getSpecifierVersion() {
+    return _specifierFactoryVersion;
   }
 
   @JsonProperty(PROP_FILTER_SPECIFIER_INPUT)
@@ -189,19 +165,9 @@ public final class SpecifiersQuestion extends Question {
     _filterSpecifierInput = filterSpecifierInput;
   }
 
-  @JsonProperty(PROP_INTERFACE_SPECIFIER_FACTORY)
-  public void setInterfaceSpecifierFactory(String interfaceSpecifierFactory) {
-    _interfaceSpecifierFactory = interfaceSpecifierFactory;
-  }
-
   @JsonProperty(PROP_INTERFACE_SPECIFIER_INPUT)
   public void setInterfaceSpecifierInput(String interfaceSpecifierInput) {
     _interfaceSpecifierInput = interfaceSpecifierInput;
-  }
-
-  @JsonProperty(PROP_IP_SPACE_SPECIFIER_FACTORY)
-  public void setIpSpaceSpecifierFactory(String ipSpaceSpecifierFactory) {
-    _ipSpaceSpecifierFactory = ipSpaceSpecifierFactory;
   }
 
   @JsonProperty(PROP_IP_SPACE_SPECIFIER_INPUT)
@@ -209,23 +175,18 @@ public final class SpecifiersQuestion extends Question {
     _ipSpaceSpecifierInput = ipSpaceSpecifierInput;
   }
 
-  @JsonProperty(PROP_LOCATION_SPECIFIER_FACTORY)
-  public void setLocationSpecifierFactory(String locationSpecifierFactory) {
-    _locationSpecifierFactory = locationSpecifierFactory;
-  }
-
   @JsonProperty(PROP_LOCATION_SPECIFIER_INPUT)
   public void setLocationSpecifierInput(String locationSpecifierInput) {
     _locationSpecifierInput = locationSpecifierInput;
   }
 
-  @JsonProperty(PROP_NODE_SPECIFIER_FACTORY)
-  public void setNodeSpecifierFactory(String nodeSpecifierFactory) {
-    _nodeSpecifierFactory = nodeSpecifierFactory;
-  }
-
   @JsonProperty(PROP_NODE_SPECIFIER_INPUT)
   public void setNodeSpecifierInput(String nodeSpecifierInput) {
     _nodeSpecifierInput = nodeSpecifierInput;
+  }
+
+  @JsonProperty(PROP_SPECIFIER_FACTORY_VERSION)
+  public void setSpecifierVersion(Version factoryVersion) {
+    _specifierFactoryVersion = factoryVersion;
   }
 }

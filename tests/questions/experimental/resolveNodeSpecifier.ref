@@ -2,7 +2,6 @@
   "class" : "org.batfish.question.specifiers.SpecifiersQuestion",
   "queryType" : "NODE",
   "differential" : false,
-  "filterSpecifierFactory" : "FlexibleFilterSpecifierFactory",
   "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Show the resolved values for node specifier",
@@ -11,6 +10,13 @@
       "specifiers"
     ],
     "variables" : {
+      "grammarVersion" : {
+        "description" : "Version of grammar to use for resolution",
+        "displayName" : "Grammar version",
+        "optional" : true,
+        "type" : "string",
+        "value" : "v2"
+      },
       "nodes" : {
         "description" : "Input to the NodeSpecifier",
         "displayName" : "Nodes",
@@ -20,9 +26,6 @@
       }
     }
   },
-  "interfaceSpecifierFactory" : "FlexibleInterfaceSpecifierFactory",
-  "ipSpaceSpecifierFactory" : "FlexibleIpSpaceSpecifierFactory",
-  "locationSpecifierFactory" : "FlexibleLocationSpecifierFactory",
-  "nodeSpecifierFactory" : "FlexibleNodeSpecifierFactory",
-  "nodeSpecifierInput" : "input"
+  "nodeSpecifierInput" : "input",
+  "specifierFactoryVersion" : "V2"
 }

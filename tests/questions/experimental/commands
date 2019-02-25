@@ -67,25 +67,22 @@ test -raw tests/questions/experimental/reachability.ref validate-template reacha
 test -raw tests/questions/experimental/differentialReachability.ref validate-template differentialReachability actions="success", pathConstraints={startLocation: "aaa", "endLocation":"bbb", "transitLocations": "ccc", forbiddenLocations:"ddd"}, headers={srcIps: "sss", dstIps="ddd"}, ignoreFilters=false, invertSearch=false, maxTraces=1
 
 # validate resolveFilterSpecifier
-test -raw tests/questions/experimental/resolveFilterSpecifier.ref validate-template resolveFilterSpecifier filters="input", nodes="input"
+test -raw tests/questions/experimental/resolveFilterSpecifier.ref validate-template resolveFilterSpecifier filters="input", grammarVersion="v2", nodes="input"
 
 # validate resolveInterfaceSpecifier
-test -raw tests/questions/experimental/resolveInterfaceSpecifier.ref validate-template resolveInterfaceSpecifier interfaces="input", nodes="input"
+test -raw tests/questions/experimental/resolveInterfaceSpecifier.ref validate-template resolveInterfaceSpecifier grammarVersion="v2", interfaces="input", nodes="input"
 
 # validate resolveIpSpecifier
-test -raw tests/questions/experimental/resolveIpSpecifier.ref validate-template resolveIpSpecifier ips="1.1.1.1/24"
-
-# validate resolveIpSpecifier2
-test -raw tests/questions/experimental/resolveIpSpecifier2.ref validate-template resolveIpSpecifier2 ips="1.1.1.1/24"
+test -raw tests/questions/experimental/resolveIpSpecifier.ref validate-template resolveIpSpecifier grammarVersion="v2", ips="1.1.1.1/24"
 
 # validate resolveIpsOfLocationSpecifier
-test -raw tests/questions/experimental/resolveIpsOfLocationSpecifier.ref validate-template resolveIpsOfLocationSpecifier locations="input"
+test -raw tests/questions/experimental/resolveIpsOfLocationSpecifier.ref validate-template resolveIpsOfLocationSpecifier grammarVersion="v2", locations="input"
 
 # validate resolveLocationSpecifier
-test -raw tests/questions/experimental/resolveLocationSpecifier.ref validate-template resolveLocationSpecifier locations="input"
+test -raw tests/questions/experimental/resolveLocationSpecifier.ref validate-template resolveLocationSpecifier grammarVersion="v2", locations="input"
 
 # validate resolveNodeSpecifier
-test -raw tests/questions/experimental/resolveNodeSpecifier.ref validate-template resolveNodeSpecifier nodes="input"
+test -raw tests/questions/experimental/resolveNodeSpecifier.ref validate-template resolveNodeSpecifier grammarVersion="v2", nodes="input"
 
 # validate searchfilters
 test -raw tests/questions/experimental/searchfilters.ref validate-template searchfilters invertSearch=false, filters=".*", action="matchLine 0", headers={dstIps="2.2.2.2", ipProtocols="tcp", srcIps="1.1.1.1", srcPorts="0", dstPorts="0-1000,!22"}, nodes=".*", startLocation="somenode", explain=false
