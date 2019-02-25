@@ -535,6 +535,12 @@ public class Client extends AbstractClient implements IClient {
         }
         validateJsonPathRegex(value.textValue());
         break;
+      case LOCATION_SPEC:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        break;
       case LONG:
         if (!value.isLong()) {
           throw new BatfishException(
