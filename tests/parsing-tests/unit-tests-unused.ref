@@ -2731,6 +2731,16 @@
         }
       },
       {
+        "Structure_Type" : "as-path",
+        "Structure_Name" : "UNUSED_ORIGINATED_IN_65535",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_policy_statement",
+          "lines" : [
+            39
+          ]
+        }
+      },
+      {
         "Structure_Type" : "policy-statement",
         "Structure_Name" : "POLICY-NAME",
         "Source_Lines" : {
@@ -2766,7 +2776,9 @@
             31,
             32,
             33,
-            34
+            34,
+            35,
+            36
           ]
         }
       },
@@ -3370,10 +3382,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 225 results",
+      "notes" : "Found 226 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 225
+      "numResults" : 226
     }
   }
 ]
