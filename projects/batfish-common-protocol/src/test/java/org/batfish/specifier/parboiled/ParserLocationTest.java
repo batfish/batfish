@@ -66,6 +66,7 @@ public class ParserLocationTest {
                 ImmutableList.of(
                         "(",
                         "/",
+                        "\"",
                         "@connectedTo",
                         "connectedTo",
                         "@device",

@@ -107,6 +107,60 @@ public class ParboiledAutoCompleteTest {
                 new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, 7))));
   }
 
+  /** Test that we produce auto complete snapshot-based names. */
+  @Test
+  public void testRunDynamicValueName() {
+    String query = "node1";
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder().setNodes(ImmutableSet.of("node1", "node10")).build();
+
+    // this should auto complete to 1.1.1.10, '-' (range), and ',' (list)
+    assertThat(
+        ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion(
+                    "", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+                new AutocompleteSuggestion(
+                    "0", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()))));
+  }
+
+  /** Test that we produce auto complete snapshot-based names even when we begin with a quote. */
+  @Test
+  public void testRunDynamicValueNameOpenQuote() {
+    String query = "\"node1";
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder().setNodes(ImmutableSet.of("node1", "node10")).build();
+
+    // this should auto complete to 1.1.1.10, '-' (range), and ',' (list)
+    assertThat(
+        ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion(
+                    "0", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()))));
+  }
+
+  /** Test that we produce auto complete snapshot-based names even when we begin with a quote. */
+  @Test
+  public void testRunDynamicValueNameDoubleQuoted() {
+    String query = "\"node1\"";
+
+    CompletionMetadata completionMetadata =
+        CompletionMetadata.builder().setNodes(ImmutableSet.of("node1", "node10")).build();
+
+    // this should auto complete to 1.1.1.10, '-' (range), and ',' (list)
+    assertThat(
+        ImmutableSet.copyOf(getTestPAC(query, completionMetadata).run()),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()))));
+  }
+
   /** Test that we produce auto complete snapshot-based dynamic values like IP addresses */
   @Test
   public void testRunSpecifierInput() {
@@ -152,20 +206,21 @@ public class ParboiledAutoCompleteTest {
     List<AutocompleteSuggestion> suggestions = getTestPAC(query, completionMetadata).run();
 
     /**
-     * The first three elements should should string literals and the last one should be dynamic. We
-     * do a 3-step dance to assert this because the ordering of first three completions is
-     * non-deterministic.
+     * The first 5 elements should be string literals and the last one should be dynamic. We do a
+     * 3-step dance because the ordering of string completions is non-deterministic.
      */
-    assertThat(suggestions.size(), equalTo(4));
+    assertThat(suggestions.size(), equalTo(6));
     assertThat(
-        ImmutableSet.copyOf(suggestions.subList(0, 3)),
+        ImmutableSet.copyOf(suggestions.subList(0, 5)),
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion("!", true, null, RANK_STRING_LITERAL, 0),
+                new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, 0),
                 new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, 0),
+                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, 0),
                 new AutocompleteSuggestion("@specifier", true, null, RANK_STRING_LITERAL, 0))));
     assertThat(
-        suggestions.get(3),
+        suggestions.get(5),
         equalTo(
             new AutocompleteSuggestion(
                 "1.1.1.1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0)));

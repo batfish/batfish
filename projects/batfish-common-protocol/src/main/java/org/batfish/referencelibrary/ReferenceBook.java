@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Names;
+import org.batfish.datamodel.Names.Type;
 
 public class ReferenceBook implements Comparable<ReferenceBook> {
 
@@ -100,7 +101,7 @@ public class ReferenceBook implements Comparable<ReferenceBook> {
       @JsonProperty(PROP_SERVICE_OBJECT_GROUPS) List<ServiceObjectGroup> serviceObjectGroups,
       @JsonProperty(PROP_SERVICE_OBJECTS) List<ServiceObject> serviceObjects) {
     checkArgument(name != null, "Reference book name cannot be null");
-    Names.checkValidReferenceObjectName(name, "book");
+    Names.checkName(name, "book", Type.REFERENCE_OBJECT);
 
     // non-null versions for easier follow on code
     List<AddressGroup> nnAddressGroups = firstNonNull(addressGroups, ImmutableList.of());
