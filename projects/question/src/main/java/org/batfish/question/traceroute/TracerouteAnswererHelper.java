@@ -18,19 +18,18 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.visitors.IpSpaceRepresentative;
-import org.batfish.specifier.FlexibleInferFromLocationIpSpaceSpecifierFactory;
-import org.batfish.specifier.FlexibleLocationSpecifierFactory;
+import org.batfish.specifier.AllInterfacesLocationSpecifier;
+import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
-import org.batfish.specifier.IpSpaceSpecifierFactory;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationSpecifier;
-import org.batfish.specifier.LocationSpecifierFactory;
 import org.batfish.specifier.LocationVisitor;
 import org.batfish.specifier.SpecifierContext;
+import org.batfish.specifier.SpecifierFactories;
 
 /**
  * Helper for {@link TracerouteAnswerer} and {@link BidirectionalTracerouteAnswerer}. Processes
@@ -57,11 +56,6 @@ public final class TracerouteAnswererHelper {
             _sourceLocationStr, _packetHeaderConstraints.getSrcIps(), _specifierContext);
   }
 
-  private static final String SRC_LOCATION_SPECIFIER_FACTORY =
-      FlexibleLocationSpecifierFactory.NAME;
-  private static final String IP_SPECIFIER_FACTORY =
-      FlexibleInferFromLocationIpSpaceSpecifierFactory.NAME;
-
   private static final int TRACEROUTE_PORT = 33434;
 
   @VisibleForTesting
@@ -69,11 +63,12 @@ public final class TracerouteAnswererHelper {
       String sourceLocation, String sourceIps, SpecifierContext specifierContext) {
     /* construct specifiers */
     LocationSpecifier sourceLocationSpecifier =
-        LocationSpecifierFactory.load(SRC_LOCATION_SPECIFIER_FACTORY)
-            .buildLocationSpecifier(sourceLocation);
+        SpecifierFactories.getLocationSpecifierOrDefault(
+            sourceLocation, AllInterfacesLocationSpecifier.INSTANCE);
 
     IpSpaceSpecifier sourceIpSpaceSpecifier =
-        IpSpaceSpecifierFactory.load(IP_SPECIFIER_FACTORY).buildIpSpaceSpecifier(sourceIps);
+        SpecifierFactories.getIpSpaceSpecifierOrDefault(
+            sourceIps, InferFromLocationIpSpaceSpecifier.INSTANCE);
 
     /* resolve specifiers */
     Set<Location> sourceLocations = sourceLocationSpecifier.resolve(specifierContext);
@@ -86,7 +81,8 @@ public final class TracerouteAnswererHelper {
     if (headerSrcIp != null) {
       // interpret given Src IP "flexibly"
       IpSpaceSpecifier srcIpSpecifier =
-          IpSpaceSpecifierFactory.load(IP_SPECIFIER_FACTORY).buildIpSpaceSpecifier(headerSrcIp);
+          SpecifierFactories.getIpSpaceSpecifierOrDefault(
+              headerSrcIp, InferFromLocationIpSpaceSpecifier.INSTANCE);
       // Resolve to set of locations/IPs
       IpSpaceAssignment srcIps = srcIpSpecifier.resolve(ImmutableSet.of(), _specifierContext);
       // Filter out empty IP assignments
@@ -131,7 +127,8 @@ public final class TracerouteAnswererHelper {
     checkArgument(
         constraints.getDstIps() != null, "Cannot perform traceroute without a destination");
     IpSpaceSpecifier dstIpSpecifier =
-        IpSpaceSpecifierFactory.load(IP_SPECIFIER_FACTORY).buildIpSpaceSpecifier(headerDstIp);
+        SpecifierFactories.getIpSpaceSpecifierOrDefault(
+            headerDstIp, InferFromLocationIpSpaceSpecifier.INSTANCE);
     IpSpaceAssignment dstIps = dstIpSpecifier.resolve(ImmutableSet.of(), _specifierContext);
     checkArgument(
         dstIps.getEntries().size() == 1,
@@ -175,8 +172,8 @@ public final class TracerouteAnswererHelper {
   @VisibleForTesting
   Set<Flow> getFlows(String tag) {
     Set<Location> srcLocations =
-        LocationSpecifierFactory.load(SRC_LOCATION_SPECIFIER_FACTORY)
-            .buildLocationSpecifier(_sourceLocationStr)
+        SpecifierFactories.getLocationSpecifierOrDefault(
+                _sourceLocationStr, AllInterfacesLocationSpecifier.INSTANCE)
             .resolve(_specifierContext);
 
     ImmutableSet.Builder<Flow> setBuilder = ImmutableSet.builder();

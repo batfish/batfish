@@ -1,5 +1,6 @@
 package org.batfish.specifier.parboiled;
 
+import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
 final class UnionIpSpaceAstNode implements IpSpaceAstNode {
@@ -44,5 +45,13 @@ final class UnionIpSpaceAstNode implements IpSpaceAstNode {
   @Override
   public int hashCode() {
     return Objects.hash(_left, _right);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(getClass())
+        .add("left", _left)
+        .add("right", _right)
+        .toString();
   }
 }

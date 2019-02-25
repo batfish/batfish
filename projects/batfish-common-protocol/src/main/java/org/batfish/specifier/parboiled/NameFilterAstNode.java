@@ -6,6 +6,10 @@ import java.util.Objects;
 final class NameFilterAstNode implements FilterAstNode {
   private final String _name;
 
+  NameFilterAstNode(AstNode nameAst) {
+    this(((StringAstNode) nameAst).getStr());
+  }
+
   NameFilterAstNode(String name) {
     _name = name;
   }

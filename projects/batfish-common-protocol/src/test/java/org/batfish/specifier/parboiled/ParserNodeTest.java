@@ -63,6 +63,7 @@ public class ParserNodeTest {
                     "node1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
                 new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
                     "@role", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
@@ -135,6 +136,15 @@ public class ParserNodeTest {
     assertThat(ParserUtils.getAst(getRunner().run(regexWithSlashes)), equalTo(expectedAst));
     assertThat(
         ParserUtils.getAst(getRunner().run(" " + regexWithSlashes + " ")), equalTo(expectedAst));
+  }
+
+  @Test
+  public void testParseNodeNameRegexDeprecated() {
+    String regex = "node.*";
+    NameRegexNodeAstNode expectedAst = new NameRegexNodeAstNode(regex);
+
+    assertThat(ParserUtils.getAst(getRunner().run(regex)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + regex + " ")), equalTo(expectedAst));
   }
 
   @Test
