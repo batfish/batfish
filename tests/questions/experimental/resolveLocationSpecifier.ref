@@ -2,7 +2,7 @@
   "class" : "org.batfish.question.specifiers.SpecifiersQuestion",
   "queryType" : "LOCATION",
   "differential" : false,
-  "filterSpecifierFactory" : "FlexibleFilterSpecifierFactory",
+  "filterSpecifierFactory" : "ParboiledFilterSpecifierFactory",
   "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Show the resolved values for location specifier",
@@ -20,9 +20,9 @@
       }
     }
   },
-  "interfaceSpecifierFactory" : "FlexibleInterfaceSpecifierFactory",
-  "ipSpaceSpecifierFactory" : "FlexibleIpSpaceSpecifierFactory",
-  "locationSpecifierFactory" : "FlexibleLocationSpecifierFactory",
+  "interfaceSpecifierFactory" : "ParboiledInterfaceSpecifierFactory",
+  "ipSpaceSpecifierFactory" : "ParboiledIpSpaceSpecifierFactory",
+  "locationSpecifierFactory" : "ParboiledLocationSpecifierFactory",
   "locationSpecifierInput" : "input",
-  "nodeSpecifierFactory" : "FlexibleNodeSpecifierFactory"
+  "nodeSpecifierFactory" : "ParboiledNodeSpecifierFactory"
 }
