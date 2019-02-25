@@ -69825,7 +69825,7 @@
         "community_set" : "PASSED",
         "eos_mlag" : "PASSED",
         "eos_trunk_group" : "PASSED",
-        "f5_bigip_structured_ltm" : "PASSED",
+        "f5_bigip_structured_ltm" : "WARNINGS",
         "f5_bigip_structured_net" : "PASSED",
         "f5_bigip_structured_net_routing_bgp" : "WARNINGS",
         "f5_bigip_structured_net_routing_prefix_list" : "PASSED",
@@ -81633,11 +81633,23 @@
             }
           ]
         },
+        "f5_bigip_structured_ltm" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot DNAT for virtual '/Common/SOME_VIRTUAL' using missing pool: '/Common/SOME_POOL'"
+            }
+          ]
+        },
         "f5_bigip_structured_net_routing_bgp" : {
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Could not determine update source for BGP neighbor: '192.0.2.1'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring reference to missing outbound route-map: /Common/MY_IPV4_OUT"
             }
           ]
         },
