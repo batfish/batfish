@@ -31,5 +31,9 @@ set policy-options policy-statement POLICY-NAME term TERM then next-hop self
 set policy-options policy-statement POLICY-NAME term TERM then next term
 set policy-options policy-statement POLICY-NAME term TERM then origin igp
 set policy-options policy-statement POLICY-NAME term TERM then preference 100
+set policy-options policy-statement POLICY-NAME term AS_PATH from as-path ORIGINATED_IN_65535
+set policy-options policy-statement POLICY-NAME term AS_PATH then accept
 set policy-options policy-statement POLICY-NAME from protocol evpn
 #
+set policy-options as-path ORIGINATED_IN_65535 ".* 65535"
+set policy-options as-path UNUSED_ORIGINATED_IN_65535 ".* 65535"
