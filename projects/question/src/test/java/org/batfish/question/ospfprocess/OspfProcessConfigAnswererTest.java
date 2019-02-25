@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
 import java.util.List;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
@@ -38,7 +39,11 @@ public class OspfProcessConfigAnswererTest {
   @Test
   public void testGetRows() {
     NetworkFactory nf = new NetworkFactory();
-    Configuration configuration = nf.configurationBuilder().setHostname("test_conf").build();
+    Configuration configuration =
+        nf.configurationBuilder()
+            .setHostname("test_conf")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
     Vrf vrf = nf.vrfBuilder().setName("test_vrf").setOwner(configuration).build();
 
     nf.ospfProcessBuilder()
@@ -72,7 +77,10 @@ public class OspfProcessConfigAnswererTest {
         rows.iterator().next(),
         allOf(
             hasColumn(ROUTER_ID, equalTo(Ip.parse("1.1.1.1")), Schema.IP),
-            hasColumn(EXPORT_POLICY_SOURCES, equalTo("[export_policy_source]"), Schema.STRING),
+            hasColumn(
+                EXPORT_POLICY_SOURCES,
+                equalTo(ImmutableSet.of("export_policy_source")),
+                Schema.set(Schema.STRING)),
             hasColumn(EXPORT_POLICY, equalTo("export_policy"), Schema.STRING),
             hasColumn(AREA_BORDER_ROUTER, equalTo(false), Schema.BOOLEAN)));
   }

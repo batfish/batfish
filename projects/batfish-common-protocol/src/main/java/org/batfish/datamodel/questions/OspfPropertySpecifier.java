@@ -48,7 +48,8 @@ public class OspfPropertySpecifier extends PropertySpecifier {
           .put(EXPORT_POLICY, new PropertyDescriptor<>(OspfProcess::getExportPolicy, Schema.STRING))
           .put(
               EXPORT_POLICY_SOURCES,
-              new PropertyDescriptor<>(OspfProcess::getExportPolicySources, Schema.STRING))
+              new PropertyDescriptor<>(
+                  OspfProcess::getExportPolicySources, Schema.set(Schema.STRING)))
           .put(
               GENERATED_ROUTES,
               new PropertyDescriptor<>(OspfProcess::getGeneratedRoutes, Schema.set(Schema.STRING)))
