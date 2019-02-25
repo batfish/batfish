@@ -18,7 +18,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -162,8 +161,8 @@ public class ForwardingAnalysisImplTest {
             .setProxyArp(false)
             .build();
     Ip additionalIp = Ip.parse("10.10.10.1");
-    i1.setAdditionalArpIps(ImmutableSortedSet.of(additionalIp));
-    i2.setAdditionalArpIps(ImmutableSortedSet.of(additionalIp));
+    i1.setAdditionalArpIps(additionalIp.toIpSpace());
+    i2.setAdditionalArpIps(additionalIp.toIpSpace());
     IpSpace ipsRoutedOutI1 =
         IpWildcardSetIpSpace.builder().including(new IpWildcard(P1), new IpWildcard(P3)).build();
     IpSpace ipsRoutedOutI2 = IpWildcardSetIpSpace.builder().including(new IpWildcard(P2)).build();
@@ -214,7 +213,7 @@ public class ForwardingAnalysisImplTest {
         result,
         hasEntry(
             equalTo(c1.getHostname()), hasEntry(equalTo(i1.getName()), containsIp(additionalIp))));
-    /* No proxy-arp: just match interface ip*/
+    /* No proxy-arp: just match interface ip and additional arp ip */
     assertThat(
         result,
         hasEntry(
@@ -238,8 +237,7 @@ public class ForwardingAnalysisImplTest {
     assertThat(
         result,
         hasEntry(
-            equalTo(c2.getHostname()),
-            hasEntry(equalTo(i2.getName()), not(containsIp(additionalIp)))));
+            equalTo(c2.getHostname()), hasEntry(equalTo(i2.getName()), containsIp(additionalIp))));
   }
 
   @Test
@@ -300,12 +298,12 @@ public class ForwardingAnalysisImplTest {
     assertThat(result, hasEntry(equalTo(i1.getName()), not(containsIp(P3.getStartIp()))));
     assertThat(result, hasEntry(equalTo(i1.getName()), containsIp(P2.getStartIp())));
     assertThat(result, hasEntry(equalTo(i1.getName()), containsIp(Ip.parse("10.10.10.1"))));
-    /* No proxy-arp: just match interface ip*/
+    /* No proxy-arp: just match interface ip and additional arp ip */
     assertThat(result, hasEntry(equalTo(i2.getName()), containsIp(P2.getStartIp())));
     assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P2.getEndIp()))));
     assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P3.getStartIp()))));
     assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P1.getStartIp()))));
-    assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(Ip.parse("10.10.10.2")))));
+    assertThat(result, hasEntry(equalTo(i2.getName()), containsIp(Ip.parse("10.10.10.2"))));
     /* No interface IPs: reject everything */
     assertThat(result, hasEntry(equalTo(i3.getName()), equalTo(EmptyIpSpace.INSTANCE)));
   }

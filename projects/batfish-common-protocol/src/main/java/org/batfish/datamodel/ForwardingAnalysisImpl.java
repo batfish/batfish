@@ -250,15 +250,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
             toImmutableMap(
                 nodeEntry.getValue().getAllInterfaces(),
                 Entry::getKey,
-                ifaceEntry -> {
-                  Set<Ip> additionalIps = ifaceEntry.getValue().getAdditionalArpIps();
-                  return additionalIps == null || additionalIps.isEmpty()
-                      ? EmptyIpSpace.INSTANCE
-                      : AclIpSpace.permitting(
-                              ifaceEntry.getValue().getAdditionalArpIps().stream()
-                                  .map(IpIpSpace::new))
-                          .build();
-                }));
+                ifaceEntry ->
+                    firstNonNull(
+                        ifaceEntry.getValue().getAdditionalArpIps(), EmptyIpSpace.INSTANCE)));
   }
 
   /**
@@ -412,11 +406,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
       /* Accept all other routable IPs */
       interfaceArpReplies.thenPermitting(routableIpsForThisVrf);
-
-      /* Accept IPs configured statically */
-      interfaceArpReplies.thenPermitting(arpAdditionalIps);
     }
 
+    /* Accept IPs configured statically */
+    interfaceArpReplies.thenPermitting(arpAdditionalIps);
     return interfaceArpReplies.build();
   }
 

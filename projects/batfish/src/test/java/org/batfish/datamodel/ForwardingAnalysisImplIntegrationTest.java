@@ -1,18 +1,13 @@
 package org.batfish.datamodel;
 
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
-import org.batfish.datamodel.flow.Trace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
@@ -173,7 +168,7 @@ public class ForwardingAnalysisImplIntegrationTest {
         containsIp(prefix.getStartIp()));
 
     // after setting the static arp on i2, should not be exits network anymore
-    i2.setAdditionalArpIps(ImmutableSortedSet.of(prefix.getStartIp()));
+    i2.setAdditionalArpIps(prefix.getStartIp().toIpSpace());
     batfish.computeDataPlane();
     forwardingAnalysis = batfish.loadDataPlane().getForwardingAnalysis();
     exitsNetwork = forwardingAnalysis.getExitsNetwork();
