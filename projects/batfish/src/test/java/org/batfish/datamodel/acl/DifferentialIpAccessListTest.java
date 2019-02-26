@@ -22,6 +22,7 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.Prefix;
 import org.junit.Test;
 
+/** Tests of {@link DifferentialIpAccessList}. */
 public class DifferentialIpAccessListTest {
   private static HeaderSpace createHeaderSpace(String ipSpaceName) {
     return HeaderSpace.builder().setDstIps(new IpSpaceReference(ipSpaceName)).build();
