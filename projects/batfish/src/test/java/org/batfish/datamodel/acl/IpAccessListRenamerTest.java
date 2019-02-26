@@ -22,6 +22,7 @@ import org.batfish.datamodel.acl.IpAccessListRenamer.Visitor;
 import org.batfish.datamodel.visitors.IpSpaceRenamer;
 import org.junit.Test;
 
+/** Tests of {@link IpAccessListRenamer}. */
 public class IpAccessListRenamerTest {
   private static final IpAccessListRenamer RENAMER =
       new IpAccessListRenamer(
@@ -98,18 +99,17 @@ public class IpAccessListRenamerTest {
 
   @Test
   public void testApply() {
-    String name = "acl name";
     assertThat(
         RENAMER.apply(
             IpAccessList.builder()
-                .setName(name)
+                .setName("a")
                 .setLines(
                     ImmutableList.of(
                         accepting(TRUE), rejecting(ACL_A), accepting(MATCH_HEADER_SPACE_ORIG)))
                 .build()),
         equalTo(
             IpAccessList.builder()
-                .setName(name)
+                .setName("b")
                 .setLines(
                     ImmutableList.of(
                         accepting(TRUE), rejecting(ACL_B), accepting(MATCH_HEADER_SPACE_RENAMED)))

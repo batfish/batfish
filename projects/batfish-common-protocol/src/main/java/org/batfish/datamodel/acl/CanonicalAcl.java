@@ -18,7 +18,7 @@ public final class CanonicalAcl {
   private final Set<Integer> _linesInCycles;
   private final Set<Integer> _linesWithUndefinedReferences;
   private final IpAccessList _acl;
-  private int _hashCode;
+  private volatile int _hashCode;
 
   /**
    * @param sanitizedAcl {@link IpAccessList} represented by this CanonicalAcl with lines containing
@@ -92,21 +92,21 @@ public final class CanonicalAcl {
       return false;
     }
     CanonicalAcl otherAcl = (CanonicalAcl) o;
-    return _acl.equals(otherAcl._acl)
+    // Field equality, except that for ACLs only the lines are considered.
+    return _acl.getLines().equals(otherAcl._acl.getLines())
         && _dependencies.equals(otherAcl._dependencies)
         && _interfaces.equals(otherAcl._interfaces)
-        && _sanitizedAcl.equals(otherAcl._sanitizedAcl)
+        && _sanitizedAcl.getLines().equals(otherAcl._sanitizedAcl.getLines())
         && _linesWithUndefinedReferences.equals(otherAcl._linesWithUndefinedReferences)
         && _linesInCycles.equals(otherAcl._linesInCycles);
   }
 
   @Override
   public int hashCode() {
-    if (_hashCode == 0) {
-      // Unfortunately IpAccessList's hashcode method only hashes the ACL's name, so it's necessary
-      // to hash each IpAccessList's lines rather than the object itself.
-      // Should be fixed after https://github.com/batfish/batfish/issues/1672 is resolved.
-      _hashCode =
+    int hashCode = _hashCode;
+    if (hashCode == 0) {
+      // cache hashCode
+      hashCode =
           Objects.hash(
               _acl.getLines(),
               _sanitizedAcl.getLines(),
@@ -115,7 +115,8 @@ public final class CanonicalAcl {
               _linesWithUndefinedReferences,
               _dependencies.entrySet().stream()
                   .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().getLines())));
+      _hashCode = hashCode;
     }
-    return _hashCode;
+    return hashCode;
   }
 }

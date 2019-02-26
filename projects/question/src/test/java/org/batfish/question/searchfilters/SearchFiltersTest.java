@@ -228,7 +228,7 @@ public final class SearchFiltersTest {
     assertThat(queryConfig, equalTo(_config.getHostname()));
     assertThat(queryAclName, equalTo(ACL.getName()));
     assertThat(queryAcl.getName(), equalTo(NEGATED_RENAMER.apply(ACL.getName())));
-    assertThat(queryAcl, is(DENY_ACL));
+    assertThat(queryAcl.getLines(), equalTo(DENY_ACL.getLines()));
   }
 
   @Test
@@ -247,7 +247,7 @@ public final class SearchFiltersTest {
     assertThat(queryConfig, equalTo(_config.getHostname()));
     assertThat(queryAclName, equalTo(ACL.getName()));
     assertThat(queryAcl.getName(), equalTo(MATCH_LINE_RENAMER.apply(2, ACL.getName())));
-    assertThat(queryAcl, is(MATCH_LINE2_ACL));
+    assertThat(queryAcl.getLines(), equalTo(MATCH_LINE2_ACL.getLines()));
   }
 
   @Test

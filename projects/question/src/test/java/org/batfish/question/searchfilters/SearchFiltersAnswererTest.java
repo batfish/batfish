@@ -1,6 +1,8 @@
 package org.batfish.question.searchfilters;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstIp;
+import static org.batfish.question.searchfilters.SearchFiltersAnswerer.MATCH_LINE_RENAMER;
+import static org.batfish.question.searchfilters.SearchFiltersAnswerer.NEGATED_RENAMER;
 import static org.batfish.question.searchfilters.SearchFiltersAnswerer.toMatchLineAcl;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -10,8 +12,9 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.junit.Test;
 
+/** Tests of {@link SearchFiltersAnswerer}. */
 public class SearchFiltersAnswererTest {
-  IpAccessList _acl =
+  private final IpAccessList _acl =
       IpAccessList.builder()
           .setName("foo")
           .setLines(
@@ -26,7 +29,7 @@ public class SearchFiltersAnswererTest {
   public void testToMatchLineAcl_0() {
     IpAccessList matchLine0Acl =
         IpAccessList.builder()
-            .setName("foo")
+            .setName(MATCH_LINE_RENAMER.apply(0, _acl.getName()))
             .setLines(
                 ImmutableList.of(
                     IpAccessListLine.accepting().setMatchCondition(matchDstIp("1.1.1.1")).build()))
@@ -38,7 +41,7 @@ public class SearchFiltersAnswererTest {
   public void testToMatchLineAcl_2() {
     IpAccessList matchLine2Acl =
         IpAccessList.builder()
-            .setName("foo")
+            .setName(MATCH_LINE_RENAMER.apply(2, _acl.getName()))
             .setLines(
                 ImmutableList.of(
                     IpAccessListLine.rejecting().setMatchCondition(matchDstIp("1.1.1.1")).build(),
@@ -52,7 +55,7 @@ public class SearchFiltersAnswererTest {
   public void testToDenyAcl() {
     IpAccessList denyAcl =
         IpAccessList.builder()
-            .setName("foo")
+            .setName(NEGATED_RENAMER.apply(_acl.getName()))
             .setLines(
                 ImmutableList.of(
                     IpAccessListLine.rejecting().setMatchCondition(matchDstIp("1.1.1.1")).build(),

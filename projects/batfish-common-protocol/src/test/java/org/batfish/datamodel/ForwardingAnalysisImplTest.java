@@ -160,9 +160,6 @@ public class ForwardingAnalysisImplTest {
             .setAddress(new InterfaceAddress(P2.getStartIp(), P2.getPrefixLength()))
             .setProxyArp(false)
             .build();
-    Ip additionalIp = Ip.parse("10.10.10.1");
-    i1.setAdditionalArpIps(additionalIp.toIpSpace());
-    i2.setAdditionalArpIps(additionalIp.toIpSpace());
     IpSpace ipsRoutedOutI1 =
         IpWildcardSetIpSpace.builder().including(new IpWildcard(P1), new IpWildcard(P3)).build();
     IpSpace ipsRoutedOutI2 = IpWildcardSetIpSpace.builder().including(new IpWildcard(P2)).build();
@@ -209,11 +206,7 @@ public class ForwardingAnalysisImplTest {
         hasEntry(
             equalTo(c1.getHostname()),
             hasEntry(equalTo(i1.getName()), containsIp(P2.getStartIp()))));
-    assertThat(
-        result,
-        hasEntry(
-            equalTo(c1.getHostname()), hasEntry(equalTo(i1.getName()), containsIp(additionalIp))));
-    /* No proxy-arp: just match interface ip and additional arp ip */
+    /* No proxy-arp: just match interface ip*/
     assertThat(
         result,
         hasEntry(
@@ -234,10 +227,6 @@ public class ForwardingAnalysisImplTest {
         hasEntry(
             equalTo(c2.getHostname()),
             hasEntry(equalTo(i2.getName()), not(containsIp(P1.getStartIp())))));
-    assertThat(
-        result,
-        hasEntry(
-            equalTo(c2.getHostname()), hasEntry(equalTo(i2.getName()), containsIp(additionalIp))));
   }
 
   @Test
@@ -276,34 +265,23 @@ public class ForwardingAnalysisImplTest {
             i3.getName(),
             ipsRoutedOutI3);
 
-    Map<String, IpSpace> additionalIps =
-        ImmutableMap.of(
-            i1.getName(),
-            new IpIpSpace(Ip.parse("10.10.10.1")),
-            i2.getName(),
-            new IpIpSpace(Ip.parse("10.10.10.2")),
-            i3.getName(),
-            new IpIpSpace(Ip.parse("10.10.10.3")));
-
     Map<String, Configuration> configs = ImmutableMap.of(config.getHostname(), config);
     _interfaceOwnedIps = TopologyUtil.computeInterfaceOwnedIps(configs, false);
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, IpSpace> result =
         forwardingAnalysisImpl.computeArpRepliesByInterface(
-            interfaces, routableIpsByVrf, ipsRoutedOutInterfaces, additionalIps);
+            interfaces, routableIpsByVrf, ipsRoutedOutInterfaces);
 
     /* Proxy-arp: Match interface IP, reject what's routed through i1, accept everything else*/
     assertThat(result, hasEntry(equalTo(i1.getName()), containsIp(P1.getStartIp())));
     assertThat(result, hasEntry(equalTo(i1.getName()), not(containsIp(P1.getEndIp()))));
     assertThat(result, hasEntry(equalTo(i1.getName()), not(containsIp(P3.getStartIp()))));
     assertThat(result, hasEntry(equalTo(i1.getName()), containsIp(P2.getStartIp())));
-    assertThat(result, hasEntry(equalTo(i1.getName()), containsIp(Ip.parse("10.10.10.1"))));
-    /* No proxy-arp: just match interface ip and additional arp ip */
+    /* No proxy-arp: just match interface ip*/
     assertThat(result, hasEntry(equalTo(i2.getName()), containsIp(P2.getStartIp())));
     assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P2.getEndIp()))));
     assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P3.getStartIp()))));
     assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P1.getStartIp()))));
-    assertThat(result, hasEntry(equalTo(i2.getName()), containsIp(Ip.parse("10.10.10.2"))));
     /* No interface IPs: reject everything */
     assertThat(result, hasEntry(equalTo(i3.getName()), equalTo(EmptyIpSpace.INSTANCE)));
   }
@@ -346,11 +324,9 @@ public class ForwardingAnalysisImplTest {
 
     IpSpace p1IpSpace = new IpWildcard(P1).toIpSpace();
     IpSpace i1ArpReplies =
-        forwardingAnalysisImpl.computeInterfaceArpReplies(
-            i1, UniverseIpSpace.INSTANCE, p1IpSpace, EmptyIpSpace.INSTANCE);
+        forwardingAnalysisImpl.computeInterfaceArpReplies(i1, UniverseIpSpace.INSTANCE, p1IpSpace);
     IpSpace i2ArpReplies =
-        forwardingAnalysisImpl.computeInterfaceArpReplies(
-            i2, UniverseIpSpace.INSTANCE, p1IpSpace, EmptyIpSpace.INSTANCE);
+        forwardingAnalysisImpl.computeInterfaceArpReplies(i2, UniverseIpSpace.INSTANCE, p1IpSpace);
 
     assertThat(i1ArpReplies, not(containsIp(Ip.parse("1.1.1.1"))));
     assertThat(i2ArpReplies, containsIp(Ip.parse("1.1.1.1")));
@@ -503,10 +479,10 @@ public class ForwardingAnalysisImplTest {
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     IpSpace noProxyArpResult =
         forwardingAnalysisImpl.computeInterfaceArpReplies(
-            iNoProxyArp, routableIpsForThisVrf, ipsRoutedThroughInterface, EmptyIpSpace.INSTANCE);
+            iNoProxyArp, routableIpsForThisVrf, ipsRoutedThroughInterface);
     IpSpace proxyArpResult =
         forwardingAnalysisImpl.computeInterfaceArpReplies(
-            iProxyArp, routableIpsForThisVrf, ipsRoutedThroughInterface, EmptyIpSpace.INSTANCE);
+            iProxyArp, routableIpsForThisVrf, ipsRoutedThroughInterface);
 
     /* No proxy-ARP */
     /* Accept IPs belonging to interface */

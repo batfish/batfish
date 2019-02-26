@@ -6,11 +6,14 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
@@ -72,8 +75,7 @@ public class TestFiltersAnswerer extends Answerer {
         initSourceIpAssignment((TestFiltersQuestion) question, batfish.specifierContext());
   }
 
-  @VisibleForTesting
-  static IpSpaceAssignment initSourceIpAssignment(
+  private static IpSpaceAssignment initSourceIpAssignment(
       TestFiltersQuestion question, SpecifierContext ctxt) {
     /* construct specifiers */
     LocationSpecifier sourceLocationSpecifier = question.getStartLocationSpecifier();
@@ -125,7 +127,7 @@ public class TestFiltersAnswerer extends Answerer {
     return answer;
   }
 
-  private Set<Flow> getFlows(Configuration c, ImmutableSet.Builder<String> allProblems) {
+  private SortedSet<Flow> getFlows(Configuration c, ImmutableSet.Builder<String> allProblems) {
     TestFiltersQuestion question = (TestFiltersQuestion) _question;
     String node = c.getHostname();
     Set<Location> srcLocations =
@@ -133,7 +135,7 @@ public class TestFiltersAnswerer extends Answerer {
             .filter(LocationVisitor.onNode(node)::visit)
             .collect(Collectors.toSet());
 
-    ImmutableSet.Builder<Flow> setBuilder = ImmutableSet.builder();
+    ImmutableSortedSet.Builder<Flow> setBuilder = ImmutableSortedSet.naturalOrder();
 
     // this will happen if the node has no interfaces, and someone is just testing their ACLs
     if (srcLocations.isEmpty() && question.getStartLocation() == null) {
@@ -203,7 +205,8 @@ public class TestFiltersAnswerer extends Answerer {
   Multiset<Row> getRows() {
     TestFiltersQuestion question = (TestFiltersQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> includeNodes = question.getNodes().getMatchingNodes(_batfish);
+    SortedSet<String> includeNodes =
+        ImmutableSortedSet.copyOf(question.getNodes().getMatchingNodes(_batfish));
     FilterSpecifier filterSpecifier = question.getFilterSpecifier();
 
     Multiset<Row> rows = HashMultiset.create();
@@ -216,10 +219,14 @@ public class TestFiltersAnswerer extends Answerer {
 
     for (String node : includeNodes) {
       Configuration c = configurations.get(node);
-      Set<Flow> flows = getFlows(c, allProblems);
+      SortedSet<Flow> flows = getFlows(c, allProblems);
 
       // there should be another for loop for v6 filters when we add v6 support
-      for (IpAccessList filter : filterSpecifier.resolve(node, _batfish.specifierContext())) {
+      SortedSet<IpAccessList> filtersByName =
+          ImmutableSortedSet.copyOf(
+              Comparator.comparing(IpAccessList::getName),
+              filterSpecifier.resolve(node, _batfish.specifierContext()));
+      for (IpAccessList filter : filtersByName) {
         foundMatchingFilter = true;
         for (Flow flow : flows) {
           rows.add(getRow(filter, flow, c));

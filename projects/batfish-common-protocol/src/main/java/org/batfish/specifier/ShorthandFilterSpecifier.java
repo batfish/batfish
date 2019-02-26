@@ -2,9 +2,9 @@ package org.batfish.specifier;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -49,6 +49,6 @@ public final class ShorthandFilterSpecifier implements FilterSpecifier {
     Configuration config = ctxt.getConfigs().get(node);
     return config.getIpAccessLists().values().stream()
         .filter(filter -> _shorthandSpecifier.matches(filter, config))
-        .collect(Collectors.toSet());
+        .collect(ImmutableSet.toImmutableSet());
   }
 }

@@ -201,9 +201,9 @@ public class VirtualRouter implements Serializable {
   transient LocalRib _localRib;
 
   /** The finalized RIB, a combination different protocol RIBs */
-  Rib _mainRib;
+  final Rib _mainRib;
 
-  private Map<String, Rib> _mainRibs;
+  private final Map<String, Rib> _mainRibs;
 
   /** Keeps track of changes to the main RIB */
   @VisibleForTesting
@@ -267,6 +267,11 @@ public class VirtualRouter implements Serializable {
     _c = node.getConfiguration();
     _name = name;
     _vrf = _c.getVrfs().get(name);
+    // Main RIB + delta builder
+    _mainRib = new Rib();
+    _mainRibs = ImmutableMap.of(RibId.DEFAULT_RIB_NAME, _mainRib);
+    _mainRibRouteDeltaBuilder = RibDelta.builder();
+    // Init rest of the RIBs
     initRibs();
     _bgpIncomingRoutes = new TreeMap<>();
     _prefixTracer = new PrefixTracer();
@@ -1236,11 +1241,6 @@ public class VirtualRouter implements Serializable {
     _localRib = new LocalRib();
     _generatedRib = new Rib();
     _independentRib = new Rib();
-
-    // Main RIB + delta builder
-    _mainRibs = ImmutableMap.of(RibId.DEFAULT_RIB_NAME, new Rib());
-    _mainRib = _mainRibs.get(RibId.DEFAULT_RIB_NAME);
-    _mainRibRouteDeltaBuilder = RibDelta.builder();
 
     // BGP
     BgpProcess proc = _vrf.getBgpProcess();
