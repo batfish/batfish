@@ -76,9 +76,6 @@
                 "Ethernet0/0" : {
                   "name" : "Ethernet0/0",
                   "active" : false,
-                  "additionalArpIps" : {
-                    "class" : "org.batfish.datamodel.EmptyIpSpace"
-                  },
                   "allowedVlans" : "",
                   "autostate" : true,
                   "bandwidth" : 1.0E7,
@@ -105,9 +102,6 @@
                 "GigabitEthernet0/0" : {
                   "name" : "GigabitEthernet0/0",
                   "active" : true,
-                  "additionalArpIps" : {
-                    "class" : "org.batfish.datamodel.EmptyIpSpace"
-                  },
                   "allPrefixes" : [
                     "10.12.11.2/24"
                   ],
@@ -140,9 +134,6 @@
                 "GigabitEthernet1/0" : {
                   "name" : "GigabitEthernet1/0",
                   "active" : true,
-                  "additionalArpIps" : {
-                    "class" : "org.batfish.datamodel.EmptyIpSpace"
-                  },
                   "allPrefixes" : [
                     "2.12.11.1/24"
                   ],
@@ -175,9 +166,6 @@
                 "GigabitEthernet2/0" : {
                   "name" : "GigabitEthernet2/0",
                   "active" : true,
-                  "additionalArpIps" : {
-                    "class" : "org.batfish.datamodel.EmptyIpSpace"
-                  },
                   "allPrefixes" : [
                     "2.12.12.1/24"
                   ],
@@ -210,9 +198,6 @@
                 "Loopback0" : {
                   "name" : "Loopback0",
                   "active" : true,
-                  "additionalArpIps" : {
-                    "class" : "org.batfish.datamodel.EmptyIpSpace"
-                  },
                   "allPrefixes" : [
                     "2.1.1.1/32"
                   ],

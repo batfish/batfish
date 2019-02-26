@@ -1327,9 +1327,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     newIface.setVrrpGroups(iface.getVrrpGroups());
     newIface.setVrf(_c.getVrfs().get(iface.getRoutingInstance()));
-    newIface.setAdditionalArpIps(
-        AclIpSpace.union(
-            iface.getAdditionalArpIps().stream().map(Ip::toIpSpace).collect(Collectors.toList())));
+    newIface.setAdditionalArpIps(iface.getAdditionalArpIps());
     Zone zone = _masterLogicalSystem.getInterfaceZones().get(iface.getName());
     if (zone != null) {
       // filter for interface in zone
