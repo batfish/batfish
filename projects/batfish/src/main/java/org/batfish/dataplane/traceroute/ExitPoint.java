@@ -2,6 +2,8 @@ package org.batfish.dataplane.traceroute;
 
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.Ip;
 
@@ -9,9 +11,10 @@ import org.batfish.datamodel.Ip;
  * A flow exit point out of a device. A combination of the IP to arp for and the interface name to
  * use.
  */
+@ParametersAreNonnullByDefault
 final class ExitPoint {
-  private final Ip _arpIp;
-  private final String _interfaceName;
+  @Nonnull private final Ip _arpIp;
+  @Nonnull private final String _interfaceName;
 
   ExitPoint(Ip arpIp, String interfaceName) {
     _arpIp = arpIp;
@@ -22,10 +25,12 @@ final class ExitPoint {
     return new ExitPoint(fibEntry.getArpIP(), fibEntry.getInterfaceName());
   }
 
+  @Nonnull
   public Ip getArpIP() {
     return _arpIp;
   }
 
+  @Nonnull
   public String getInterfaceName() {
     return _interfaceName;
   }
@@ -35,7 +40,7 @@ final class ExitPoint {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof ExitPoint)) {
       return false;
     }
     ExitPoint exitPoint = (ExitPoint) o;

@@ -4,7 +4,7 @@ package org.batfish.dataplane.traceroute;
  * Allows flexible interaction between different stages of the traceroute pipeline (at a single
  * hop).
  */
-public interface TracePipelineMediator<T> {
+interface TracePipelineMediator<T> {
 
   /**
    * Check if this flow should be accepted on this device (destined to one of the IPs this device

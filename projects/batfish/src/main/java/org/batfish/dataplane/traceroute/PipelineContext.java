@@ -6,8 +6,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
 
+/** The necessary context to be passed between different stages for the pipeline. */
 public final class PipelineContext {
 
+  /*
+   * The context is Minimal at this time (flow and optional exit interface) but can be expanded
+   * to include other state as we convert more code to pipelines.
+   */
   @Nonnull private final Flow _flow;
   @Nullable private final ExitPoint _exitPoint;
 
