@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -79,7 +78,6 @@ public class InterfacePropertiesAnswerer extends Answerer {
   @Override
   public TableAnswerElement answer() {
     InterfacePropertiesQuestion question = (InterfacePropertiesQuestion) _question;
-    Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Set<String> nodes = question.getNodes().resolve(_batfish.specifierContext());
 
     TableMetadata tableMetadata = createTableMetadata(question);
