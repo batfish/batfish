@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.Question;
@@ -35,11 +36,11 @@ public class InterfacePropertiesQuestion extends Question {
   @Nonnull private InterfacePropertySpecifier _properties;
 
   @JsonCreator
-  private static InterfacePropertiesQuestion create(
-      @JsonProperty(PROP_EXCLUDE_SHUT_INTERFACES) Boolean excludeShutInterfaces,
-      @JsonProperty(PROP_INTERFACES) String interfaces,
-      @JsonProperty(PROP_NODES) String nodes,
-      @JsonProperty(PROP_PROPERTIES) InterfacePropertySpecifier propertySpec) {
+  static InterfacePropertiesQuestion create(
+      @Nullable @JsonProperty(PROP_EXCLUDE_SHUT_INTERFACES) Boolean excludeShutInterfaces,
+      @Nullable @JsonProperty(PROP_INTERFACES) String interfaces,
+      @Nullable @JsonProperty(PROP_NODES) String nodes,
+      @Nullable @JsonProperty(PROP_PROPERTIES) InterfacePropertySpecifier propertySpec) {
     return new InterfacePropertiesQuestion(
         firstNonNull(excludeShutInterfaces, DEFAULT_EXCLUDE_SHUT_INTERFACES),
         SpecifierFactories.getInterfaceSpecifierOrDefault(

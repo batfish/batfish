@@ -17,6 +17,6 @@ public class NodePropertiesPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new NodePropertiesQuestion(null, null);
+    return NodePropertiesQuestion.create(null, null);
   }
 }

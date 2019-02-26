@@ -5,6 +5,8 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.AllNodesNodeSpecifier;
@@ -16,6 +18,7 @@ import org.batfish.specifier.SpecifierFactories;
  * #_properties} determine which nodes and properties are included. The default is to include
  * everything.
  */
+@ParametersAreNonnullByDefault
 public class OspfPropertiesQuestion extends Question {
 
   private static final String PROP_NODES = "nodes";
@@ -25,9 +28,9 @@ public class OspfPropertiesQuestion extends Question {
   @Nonnull private final OspfPropertySpecifier _properties;
 
   @JsonCreator
-  private static OspfPropertiesQuestion create(
-      @JsonProperty(PROP_NODES) String nodes,
-      @JsonProperty(PROP_PROPERTIES) OspfPropertySpecifier propertySpec) {
+  static OspfPropertiesQuestion create(
+      @Nullable @JsonProperty(PROP_NODES) String nodes,
+      @Nullable @JsonProperty(PROP_PROPERTIES) OspfPropertySpecifier propertySpec) {
     return new OspfPropertiesQuestion(
         SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),
         firstNonNull(propertySpec, OspfPropertySpecifier.ALL));

@@ -17,6 +17,6 @@ public class OspfPropertiesPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new OspfPropertiesQuestion(null, null);
+    return OspfPropertiesQuestion.create(null, null);
   }
 }

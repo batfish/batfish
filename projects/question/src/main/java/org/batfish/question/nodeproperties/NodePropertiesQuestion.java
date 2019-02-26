@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.commons.lang3.StringUtils;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
@@ -30,9 +31,9 @@ public class NodePropertiesQuestion extends Question {
   @Nonnull private NodePropertySpecifier _properties;
 
   @JsonCreator
-  private static NodePropertiesQuestion create(
-      @JsonProperty(PROP_NODES) String nodes,
-      @JsonProperty(PROP_PROPERTIES) NodePropertySpecifier propertySpec) {
+  static NodePropertiesQuestion create(
+      @Nullable @JsonProperty(PROP_NODES) String nodes,
+      @Nullable @JsonProperty(PROP_PROPERTIES) NodePropertySpecifier propertySpec) {
     return new NodePropertiesQuestion(
         SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),
         firstNonNull(propertySpec, NodePropertySpecifier.ALL));
@@ -53,11 +54,13 @@ public class NodePropertiesQuestion extends Question {
     return "nodeproperties";
   }
 
+  @Nonnull
   @JsonProperty(PROP_NODES)
   public NodeSpecifier getNodes() {
     return _nodes;
   }
 
+  @Nonnull
   @JsonProperty(PROP_PROPERTIES)
   public NodePropertySpecifier getProperties() {
     return _properties;
