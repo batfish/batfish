@@ -292,7 +292,7 @@ public final class OspfTopologyUtils {
   /** Ensure links in the graph are bi-directional */
   @VisibleForTesting
   static void trimLinks(MutableValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph) {
-    for (EndpointPair<OspfNeighborConfigId> edge : graph.edges()) {
+    for (EndpointPair<OspfNeighborConfigId> edge : ImmutableSet.copyOf(graph.edges())) {
       // Reverse edge must exist, otherwise remove existing edge
       if (!graph.hasEdgeConnecting(edge.target(), edge.source())) {
         graph.removeEdge(edge.source(), edge.target());
