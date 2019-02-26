@@ -27,6 +27,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row;
@@ -34,6 +35,8 @@ import org.batfish.question.specifiers.SpecifiersQuestion.QueryType;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
+import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.SpecifierFactories.FactoryGroup;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -139,17 +142,19 @@ public class SpecifiersAnswererTest {
     SpecifiersQuestion questionWithIp = new SpecifiersQuestion(QueryType.LOCATION);
     questionWithIp.setIpSpaceSpecifierInput(prefix);
 
-    // both interfacelocations should be mapped to 3.3.3.3/24
+    // both interface locations should be mapped to 3.3.3.3/24
     assertThat(
         resolveIpSpace(questionWithIp, _context).getRows().getData(),
         equalTo(
             ImmutableMultiset.of(
                 Row.of(
                     COL_IP_SPACE,
-                    IpWildcardSetIpSpace.builder()
-                        .including(new IpWildcard(prefix))
-                        .build()
-                        .toString()))));
+                    SpecifierFactories.ACTIVE_GROUP == FactoryGroup.V1
+                        ? IpWildcardSetIpSpace.builder()
+                            .including(new IpWildcard(prefix))
+                            .build()
+                            .toString()
+                        : Prefix.parse(prefix).toIpSpace().toString()))));
   }
 
   @Test

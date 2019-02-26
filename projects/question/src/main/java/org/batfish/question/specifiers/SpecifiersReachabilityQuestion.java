@@ -14,14 +14,15 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PacketHeaderConstraintsUtil;
 import org.batfish.datamodel.PathConstraints;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.ReachabilityParameters;
+import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.DispositionSpecifier;
-import org.batfish.specifier.FlexibleInferFromLocationIpSpaceSpecifierFactory;
-import org.batfish.specifier.FlexibleUniverseIpSpaceSpecifierFactory;
+import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceSpecifier;
-import org.batfish.specifier.IpSpaceSpecifierFactory;
 import org.batfish.specifier.LocationSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 /**
  * A version of reachability question that supports {@link LocationSpecifier location} and {@link
@@ -126,13 +127,13 @@ public final class SpecifiersReachabilityQuestion extends Question {
   }
 
   private IpSpaceSpecifier getDestinationIpSpaceSpecifier() {
-    return IpSpaceSpecifierFactory.load(FlexibleUniverseIpSpaceSpecifierFactory.NAME)
-        .buildIpSpaceSpecifier(_headerConstraints.getDstIps());
+    return SpecifierFactories.getIpSpaceSpecifierOrDefault(
+        _headerConstraints.getDstIps(), new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE));
   }
 
   private IpSpaceSpecifier getSourceIpSpaceSpecifier() {
-    return IpSpaceSpecifierFactory.load(FlexibleInferFromLocationIpSpaceSpecifierFactory.NAME)
-        .buildIpSpaceSpecifier(_headerConstraints.getSrcIps());
+    return SpecifierFactories.getIpSpaceSpecifierOrDefault(
+        _headerConstraints.getSrcIps(), InferFromLocationIpSpaceSpecifier.INSTANCE);
   }
 
   ReachabilityParameters getReachabilityParameters() {

@@ -10,9 +10,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.specifier.FlexibleNodeSpecifierFactory;
+import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
-import org.batfish.specifier.NodeSpecifierFactory;
+import org.batfish.specifier.SpecifierFactories;
 
 /** MLAG properties question */
 @ParametersAreNonnullByDefault
@@ -60,8 +60,8 @@ public final class MlagPropertiesQuestion extends Question {
   @JsonIgnore
   @Nonnull
   NodeSpecifier getNodeSpecifier() {
-    return NodeSpecifierFactory.load(FlexibleNodeSpecifierFactory.NAME)
-        .buildNodeSpecifier(_nodeSpecInput);
+    return SpecifierFactories.getNodeSpecifierOrDefault(
+        _nodeSpecInput, AllNodesNodeSpecifier.INSTANCE);
   }
 
   @JsonProperty(PROP_ID_REGEX)

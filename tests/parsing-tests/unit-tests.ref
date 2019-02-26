@@ -58675,6 +58675,51 @@
             "              POLICY_STATEMENT:'policy-statement'",
             "              name = (variable",
             "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'AS_PATH')",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'",
+            "                    (popsf_as_path",
+            "                      AS_PATH:'as-path'",
+            "                      name = (variable",
+            "                        text = VARIABLE:'ORIGINATED_IN_65535'  <== mode:M_AsPath))))))))))",
+            "    NEWLINE:'\\n'  <== mode:M_AsPathRegex)",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'AS_PATH')",
+            "                (pops_common",
+            "                  (pops_then",
+            "                    THEN:'then'",
+            "                    (popst_common",
+            "                      (popst_accept",
+            "                        ACCEPT:'accept'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
             "              (pops_common",
             "                (pops_from",
             "                  FROM:'from'",
@@ -58683,6 +58728,32 @@
             "                    protocol = (routing_protocol",
             "                      EVPN:'evpn')))))))))",
             "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_as_path",
+            "              AS_PATH:'as-path'",
+            "              name = (variable",
+            "                text = VARIABLE:'ORIGINATED_IN_65535'  <== mode:M_AsPath)",
+            "              regex = AS_PATH_REGEX:'.* 65535'  <== mode:M_AsPathRegex)))))",
+            "    NEWLINE:'\\n'  <== mode:M_AsPathRegex)",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_as_path",
+            "              AS_PATH:'as-path'",
+            "              name = (variable",
+            "                text = VARIABLE:'UNUSED_ORIGINATED_IN_65535'  <== mode:M_AsPath)",
+            "              regex = AS_PATH_REGEX:'.* 65535'  <== mode:M_AsPathRegex)))))",
+            "    NEWLINE:'\\n\\n'  <== mode:M_AsPathRegex)",
             "  EOF:<EOF>)"
           ]
         },
@@ -74661,6 +74732,20 @@
         "configs/juniper_ospf_stub_areas" : { },
         "configs/juniper_passwords" : { },
         "configs/juniper_policy_statement" : {
+          "as-path" : {
+            "ORIGINATED_IN_65535" : {
+              "definitionLines" : [
+                38
+              ],
+              "numReferrers" : 1
+            },
+            "UNUSED_ORIGINATED_IN_65535" : {
+              "definitionLines" : [
+                39
+              ],
+              "numReferrers" : 0
+            }
+          },
           "policy-statement" : {
             "POLICY-NAME" : {
               "definitionLines" : [
@@ -74694,7 +74779,9 @@
                 31,
                 32,
                 33,
-                34
+                34,
+                35,
+                36
               ],
               "numReferrers" : 0
             }
@@ -78798,6 +78885,13 @@
           }
         },
         "configs/juniper_policy_statement" : {
+          "as-path" : {
+            "ORIGINATED_IN_65535" : {
+              "policy-statement from as-path" : [
+                34
+              ]
+            }
+          },
           "as-path-group" : {
             "AS_PATH_GROUP" : {
               "policy-statement from as-path-group" : [

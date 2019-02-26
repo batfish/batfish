@@ -17462,6 +17462,132 @@
             "sourceType" : "firewall filter"
           }
         },
+        "packetPolicies" : {
+          "blah" : {
+            "defaultAction" : {
+              "class" : "org.batfish.datamodel.packet_policy.Return",
+              "action" : {
+                "class" : "org.batfish.datamodel.packet_policy.Drop"
+              }
+            },
+            "name" : "blah",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.packet_policy.If",
+                "trueStatements" : {
+                  "class" : "org.batfish.datamodel.packet_policy.PacketMatchExpr",
+                  "expression" : {
+                    "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                    "description" : "Firewall filter term blorp",
+                    "headerSpace" : {
+                      "dstIps" : {
+                        "class" : "org.batfish.datamodel.AclIpSpace",
+                        "lines" : [
+                          {
+                            "action" : "PERMIT",
+                            "ipSpace" : {
+                              "class" : "org.batfish.datamodel.AclIpSpace",
+                              "lines" : [
+                                {
+                                  "action" : "PERMIT",
+                                  "ipSpace" : {
+                                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                    "ipWildcard" : "1.2.3.4"
+                                  }
+                                },
+                                {
+                                  "action" : "PERMIT",
+                                  "ipSpace" : {
+                                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                    "ipWildcard" : "1.2.3.5"
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "action" : "PERMIT",
+                            "ipSpace" : {
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "1.2.3.8/30"
+                            }
+                          }
+                        ]
+                      },
+                      "icmpCodes" : [
+                        "2-2"
+                      ],
+                      "icmpTypes" : [
+                        "0-0",
+                        "1-1",
+                        "3-3",
+                        "4-4",
+                        "5-5",
+                        "8-8",
+                        "9-9",
+                        "10-10",
+                        "11-11",
+                        "12-12",
+                        "13-13",
+                        "14-14",
+                        "15-15",
+                        "16-16"
+                      ],
+                      "ipProtocols" : [
+                        "PIM"
+                      ],
+                      "negate" : false,
+                      "packetLengths" : [
+                        "70-12000"
+                      ],
+                      "srcIps" : {
+                        "class" : "org.batfish.datamodel.AclIpSpace",
+                        "lines" : [
+                          {
+                            "action" : "PERMIT",
+                            "ipSpace" : {
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "2.4.6.8/30"
+                            }
+                          },
+                          {
+                            "action" : "PERMIT",
+                            "ipSpace" : {
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "2.4.6.9"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.packet_policy.If",
+                "actions" : [
+                  {
+                    "class" : "org.batfish.datamodel.packet_policy.Return",
+                    "action" : {
+                      "class" : "org.batfish.datamodel.packet_policy.FibLookup",
+                      "vrfName" : "OTHER_INSTANCE"
+                    }
+                  }
+                ],
+                "trueStatements" : {
+                  "class" : "org.batfish.datamodel.packet_policy.PacketMatchExpr",
+                  "expression" : {
+                    "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                    "description" : "Firewall filter term t2",
+                    "headerSpace" : {
+                      "negate" : false
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
         "vendorFamily" : {
           "juniper" : {
             "lines" : {
@@ -19274,6 +19400,43 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                     "type" : "SetDefaultActionReject"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "AS_PATH",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchAsPath",
+                  "expr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet",
+                    "elems" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem",
+                        "regex" : "^( \\d+)* 65535$"
+                      }
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ExitAccept"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ]
                   }
                 ]
               },

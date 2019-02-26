@@ -29,6 +29,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.vendor_family.VendorFamily;
@@ -150,6 +151,8 @@ public final class Configuration implements Serializable {
 
   private static final String PROP_NTP_SOURCE_INTERFACE = "ntpSourceInterface";
 
+  private static final String PROP_PACKET_POLICIES = "packetPolicies";
+
   private static final String PROP_ROUTE6_FILTER_LISTS = "route6FilterLists";
 
   private static final String PROP_ROUTE_FILTER_LISTS = "routeFilterLists";
@@ -237,29 +240,13 @@ public final class Configuration implements Serializable {
 
   private String _ntpSourceInterface;
 
-  private transient NavigableSet<BgpAdvertisement> _originatedAdvertisements;
-
-  private transient NavigableSet<BgpAdvertisement> _originatedEbgpAdvertisements;
-
-  private transient NavigableSet<BgpAdvertisement> _originatedIbgpAdvertisements;
-
-  private transient NavigableSet<BgpAdvertisement> _receivedAdvertisements;
-
-  private transient NavigableSet<BgpAdvertisement> _receivedEbgpAdvertisements;
-
-  private transient NavigableSet<BgpAdvertisement> _receivedIbgpAdvertisements;
+  private NavigableMap<String, PacketPolicy> _packetPolicies;
 
   private NavigableMap<String, Route6FilterList> _route6FilterLists;
 
   private NavigableMap<String, RouteFilterList> _routeFilterLists;
 
   private NavigableMap<String, RoutingPolicy> _routingPolicies;
-
-  private transient NavigableSet<BgpAdvertisement> _sentAdvertisements;
-
-  private transient NavigableSet<BgpAdvertisement> _sentEbgpAdvertisements;
-
-  private transient NavigableSet<BgpAdvertisement> _sentIbgpAdvertisements;
 
   private String _snmpSourceInterface;
 
@@ -310,6 +297,7 @@ public final class Configuration implements Serializable {
     _mlags = ImmutableSortedMap.of();
     _normalVlanRange = new SubRange(VLAN_NORMAL_MIN_DEFAULT, VLAN_NORMAL_MAX_DEFAULT);
     _ntpServers = new TreeSet<>();
+    _packetPolicies = new TreeMap<>();
     _routeFilterLists = new TreeMap<>();
     _route6FilterLists = new TreeMap<>();
     _routingPolicies = new TreeMap<>();
@@ -554,34 +542,10 @@ public final class Configuration implements Serializable {
     return _ntpSourceInterface;
   }
 
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getOriginatedAdvertisements() {
-    return _originatedAdvertisements;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getOriginatedEbgpAdvertisements() {
-    return _originatedEbgpAdvertisements;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getOriginatedIbgpAdvertisements() {
-    return _originatedIbgpAdvertisements;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getReceivedAdvertisements() {
-    return _receivedAdvertisements;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getReceivedEbgpAdvertisements() {
-    return _receivedEbgpAdvertisements;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getReceivedIbgpAdvertisements() {
-    return _receivedIbgpAdvertisements;
+  /** Return the defined policies that can be used for policy-based routing */
+  @JsonProperty(PROP_PACKET_POLICIES)
+  public Map<String, PacketPolicy> getPacketPolicies() {
+    return _packetPolicies;
   }
 
   @JsonPropertyDescription("Dictionary of all IPV6 route filter lists for this node.")
@@ -613,21 +577,6 @@ public final class Configuration implements Serializable {
     return rp.getSources().stream()
         .filter(not(RoutingPolicy::isGenerated))
         .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getSentAdvertisements() {
-    return _sentAdvertisements;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getSentEbgpAdvertisements() {
-    return _sentEbgpAdvertisements;
-  }
-
-  @JsonIgnore
-  public NavigableSet<BgpAdvertisement> getSentIbgpAdvertisements() {
-    return _sentIbgpAdvertisements;
   }
 
   @JsonProperty(PROP_SNMP_SOURCE_INTERFACE)
@@ -676,15 +625,6 @@ public final class Configuration implements Serializable {
 
   public void initBgpAdvertisements() {
     _bgpAdvertisements = new TreeSet<>();
-    _originatedAdvertisements = new TreeSet<>();
-    _originatedEbgpAdvertisements = new TreeSet<>();
-    _originatedIbgpAdvertisements = new TreeSet<>();
-    _receivedAdvertisements = new TreeSet<>();
-    _receivedEbgpAdvertisements = new TreeSet<>();
-    _receivedIbgpAdvertisements = new TreeSet<>();
-    _sentAdvertisements = new TreeSet<>();
-    _sentEbgpAdvertisements = new TreeSet<>();
-    _sentIbgpAdvertisements = new TreeSet<>();
     for (Vrf vrf : _vrfs.values()) {
       vrf.initBgpAdvertisements();
     }
@@ -839,6 +779,11 @@ public final class Configuration implements Serializable {
   @JsonProperty(PROP_ROUTING_POLICIES)
   public void setRoutingPolicies(NavigableMap<String, RoutingPolicy> routingPolicies) {
     _routingPolicies = routingPolicies;
+  }
+
+  @JsonProperty(PROP_PACKET_POLICIES)
+  public void setPacketPolicies(NavigableMap<String, PacketPolicy> packetPolicies) {
+    _packetPolicies = packetPolicies;
   }
 
   @JsonProperty(PROP_SNMP_SOURCE_INTERFACE)

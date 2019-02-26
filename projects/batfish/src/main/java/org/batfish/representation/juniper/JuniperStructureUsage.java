@@ -41,6 +41,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   NAT_STATIC_RULE_SET_RULE_THEN("nat static rule-set rule then pool"),
   OSPF_AREA_INTERFACE("ospf area interface"),
   OSPF_EXPORT_POLICY("ospf export policy-statement"),
+  POLICY_STATEMENT_FROM_AS_PATH("policy-statement from as-path"),
   POLICY_STATEMENT_FROM_AS_PATH_GROUP("policy-statement from as-path-group"),
   POLICY_STATEMENT_FROM_INSTANCE("policy-statement from instance"),
   POLICY_STATEMENT_FROM_INTERFACE("policy-statement from interface"),
