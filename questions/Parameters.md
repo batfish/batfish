@@ -14,7 +14,7 @@ Batfish questions have the following parameter types that support rich specifica
 
 * [`filterSpec`](#filter-specifier)
 
-* [`interfaceSpec`](#interface-specifier)
+* [`<b>interfaceSpec</b>`](#interface-specifier)
 
 <!--
 [comment]: # (* `ip`)
@@ -56,13 +56,13 @@ Batfish questions have the following parameter types that support rich specifica
 
 ## General notes on the grammar 
 
-* Set semantics and operations: Specifiers denote to sets of entities (e.g., nodeSpec resolves to a set of nodes), and in many cases, the grammar allows for union, intersection, and difference of such sets. The respective operators are `','`, `'&'`, and `'\'`.
+* **Set operations:** Specifiers denote to sets of entities (e.g., nodeSpec resolves to a set of nodes), and in many cases, the grammar allows for union, intersection, and difference of such sets. The respective operators are `,`, `&`, and `\`.
 
-* Case-insensitive names: All names and regexes use case-insensitive matching. Thus, `AS1BORDER1` is same as `as1border1` and `Ethernet0/0` is same as `ethernet0/0`.
+* **Case-insensitive names:** All names and regexes use case-insensitive matching. Thus, `AS1BORDER1` is same as `as1border1` and `Ethernet0/0` is same as `ethernet0/0`.
 
-* Complex names and quotes: The names of entities such as nodes and interfaces do not need to be quoted, but if the name begins with a digit (0-9), double quote ('"'), or slash ('/'), or if it contains a space or one of `[,&()[]@!#$%^;?<>={}]` characters, it must be surrounded by double quotes. Thus, we can use `as1border1` as a name directly but must quote a name like `"1startsWithDigit andHasSpaceand[brackets]"`. Because Batfish enforces a simple naming convention for names of reference library objects (e.g., address groups) and node roles, their names never need to be quoted.
+* **Names and quotes:** The names of entities such as nodes and interfaces do not need to be quoted, but if the name begins with a digit (0-9), double quote ('"'), or slash ('/'), or if it contains a space or one of `[,&()[]@!#$%^;?<>={}]` characters, it must be surrounded by double quotes. Thus, we can use `as1border1` as a name directly but must quote a name like `"1startsWithDigit andHasSpaceand[brackets]"`. Because Batfish enforces a simple naming convention for names of reference library objects (e.g., address groups) and node roles, their names never need to be quoted.
 
-* Regex semantics: Batfish uses Java's syntax and semantics for regular expressions. The full documentaion for that is [here](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html#sum), but for simple expressions, this language is similar to other regular expression languages. E.g., `abc`,`^abc`, and `abc$` matches, respectively, strings containing, beginning, and ending with 'abc', and `ab[c-e]` will match 'abc', 'abd', and 'abe'.
+* **Regex semantics:** Batfish uses Java's syntax and semantics for regular expressions. The full documentaion for that is [here](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html#sum), but for simple expressions, this language is similar to other regular expression languages. E.g., `abc`,`^abc`, and `abc$` matches, respectively, strings containing, beginning, and ending with 'abc', and both of `ab[c-d]` and `ab(c|d)` will match strings 'abc' or 'abd'.
 
 
 ## Flow Disposition Specifier
@@ -93,26 +93,26 @@ A specification for filters (ACLs or firewall rules) in the network.
 
 * Filter name or a regex over the names indicate filters on all nodes in the network with that name or matching regex. For example, `filter1` includes all filters with that name and `/acl/` includes all filters whose names contain `acl`.
 
-* `@in(interfaceSpec)` indicates filters that get applied when packets enter the interfaces denoted by `interfaceSpec`. For example, `@in(Ethernet0/0)` includes filters for incoming packets on interfaces named `Ethernet0/0`.
+* `@in(<b>interfaceSpec</b>)` indicates filters that get applied when packets enter the interfaces denoted by `<b>interfaceSpec</b>`. For example, `@in(Ethernet0/0)` includes filters for incoming packets on interfaces named `Ethernet0/0`.
 
-* `@out(intefaceSpec)` is similar except that it indicates filters that get applied when packets exit the interfaces denoted by the `interfaceSpec`. 
+* `@out(intefaceSpec)` is similar except that it indicates filters that get applied when packets exit the interfaces denoted by the `<b>interfaceSpec</b>`. 
 
 #### Filter Specifier Grammar
 
-```
+<pre>
 filterSpec :=
-    filterTerm [(‘&’|’,’|’\’) filterTerm]
+    filterTerm [(&|,|\) filterTerm]
 
-filterTerm :=
-    <filter-name>
-    | ‘/’<filter-name-regex>‘/’
+filterTerm< :=
+    &lt;filter-name&gt;
+    | /&lt;filter-name-regex&gt;/
     | filterFunc
-    | ‘(‘filterTerm‘)’
+    | (filterTerm)
 
 filterFunc :=
-    @in(interfaceSpec)
-    | @out(interfaceSpec)
-```
+    <b>@in</b>(interfaceSpec)
+    | <b>@out</b>(interfaceSpec)
+</pre>
 
 ## Interface Specifier
 
@@ -132,40 +132,40 @@ A specification for interfaces in the network.
 
 #### Interface Specifier Grammar
 
-```
+<pre>
 interfaceSpec :=
-    interfaceTerm [(‘&’|’,’|’\’) interfaceTerm]
+    interfaceTerm [(&|,|\) interfaceTerm]
 
 interfaceTerm :=
-    <interface name>
-    | ‘/’<interface-name-regex>‘/’
+    &lt;interface-name&gt;
+    | /&lt;interface-name-regex&gt;/
     | interfaceFunc
-    | ‘(‘interfaceTerm‘)’
+    | (interfaceTerm)
 
 interfaceFunc :=
-    @connectedTo(ipSpec)
-    | @interfaceGroup(<address-group-name>, <reference-book-name>)
-    | @interfaceType(interfaceType)
-    | @vrf(<vrf-name>)
-    | @zone(<zone-name>)
-```
+    <b>@connectedTo</b>(ipSpec)
+    | <b>@interfaceGroup</b>(&lt;address-group-name&gt;, &lt;reference-book-name&gt;)
+    | <b>@interfaceType</b>(interfaceType)
+    | <b>@vrf</b>(&lt;vrf-name&gt;)
+    | <b>@zone</b>(&lt;zone-name&gt;)
+</pre>
 
 #### Interface Types
 
-```
+<pre>
 interfaceType :=
-    aggregated
-    | aggregate_child
-    | logical
-    | loopback
-    | null
-    | physical
-    | redundant
-    | tunnel
-    | unknown 
-    | vlan
-    | vpn
-```
+    <b>aggregated</b>
+    | <b>aggregate_child</b>
+    | <b>logical</b>
+    | <b>loopback</b>
+    | <b>null</b>
+    | <b>physical</b>
+    | <b>redundant</b>
+    | <b>tunnel</b>
+    | <b>unknown</b>
+    | <b>vlan</b>
+    | <b>vpn</b>
+</pre>
 
 ## IP Specifier
 
@@ -179,21 +179,21 @@ A specification for a set of IPv4 addresses.
 
 #### IP Specifier Grammar
 
-```
+<pre>
 ipSpec :=
-    ipTerm [’,’ ipTerm]
+    ipTerm [, ipTerm]
 
 ipTerm :=
-    <ip-address (e.g., 1.2.3.4)>
-    | <ip-prefix (e.g., 1.2.3.0/24)>
-    | <ip-address-low - ip-address-high (e.g., 1.1.1.1 - 1.1.1.3)>
-    | <ip wildcard (e.g., 1.2.3.4:255.255.255.0)>
+    &lt;ip-address (e.g., 1.2.3.4)&gt;
+    | &lt;ip-prefix (e.g., 1.2.3.0/24)&gt;
+    | &lt;ip-address-low - ip-address-high (e.g., 1.1.1.1 - 1.1.1.3)&gt;
+    | &lt;ip wildcard (e.g., 1.2.3.4:255.255.255.0)&gt;
     | ipFunc
     | locationSpec
 
 ipFunc :=
-    @addressGroup(<address-group-name>, <reference-book-name>)
-```
+    <b>@addressGroup</b>(&lt;address-group-name&gt;, &lt;reference-book-name&gt;)
+</pre>
 
 ## Location Specifier
 
@@ -215,23 +215,23 @@ Some examples:
 
 #### Location Specifier Grammar
 
-```
+<pre>
 locationSpec :=
-    locationTerm [(‘&’|’,’|’\’) locationTerm]
+    locationTerm [(&|,|\) locationTerm]
 
 locationTerm :=
     locationInterface
     | locationSpecifier
-    | ‘(‘ locationTerm ‘)’
+    | (locationTerm)
 
 locationInterface :=
     nodeTerm
     | interfaceFunc
-    | nodeTerm ‘[‘ interfaceExpr ‘]'
+    | nodeTerm[interfaceExpr]
 
 locationFunc :=
-    @enter(locationInterface)
-```
+    <b>@enter</b>(locationInterface)
+</pre>
 
 ## Node Specifier
 
@@ -245,28 +245,28 @@ A specification for nodes in the network.
 
 #### Node Specifier Grammar
 
-```
+<pre>
 nodeExpr :=
-    nodeTerm [(‘&’|’,’|’\’) nodeTerm]
+    nodeTerm [(&|,|\) nodeTerm]
 
 nodeTerm :=
-    <node-name>
-    | ‘/’<node-name-regex>‘/’
+    &lt;node-name&gt;
+    | /&lt;node-name-regex&gt;/
     | nodeFunc
-    | ‘(‘ nodeTerm ‘)’
+    | (nodeTerm)
 
 nodeFunc :=
-    @deviceType(deviceType)
-    | @role(<role-name>, <dimension-name>)
-```
+    <b>@deviceType</b>(deviceType)
+    | <b>@role</b>(&lt;role-name&gt;, &lt;dimension-name&gt;)
+</pre>
 
 #### Device Types
 
-```
+<pre>
 deviceType :=
-  host
-  | internet   // when the Internet is modeled 
-  | isp        // when ISPs are modeled
-  | router
-  | switch
-```
+  <b>host</b>
+  | <b>internet</b>   // when the Internet is modeled 
+  | <b>isp</b>        // when ISPs are modeled
+  | <b>router</b>
+  | <b>switch</b>
+</pre>
