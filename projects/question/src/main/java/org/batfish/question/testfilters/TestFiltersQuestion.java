@@ -42,7 +42,7 @@ public class TestFiltersQuestion extends Question {
       @JsonProperty(PROP_HEADERS) PacketHeaderConstraints headers,
       @JsonProperty(PROP_START_LOCATION) String startLocation) {
     return new TestFiltersQuestion(
-        SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),
+        nodes,
         filters,
         firstNonNull(headers, PacketHeaderConstraints.unconstrained()),
         startLocation);
@@ -50,11 +50,11 @@ public class TestFiltersQuestion extends Question {
 
   @JsonCreator
   public TestFiltersQuestion(
-      NodeSpecifier nodes,
+      @Nullable String nodes,
       @Nullable String filters,
       PacketHeaderConstraints headers,
       @Nullable String startLocation) {
-    _nodes = nodes;
+    _nodes = SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE);
     _filters = filters;
     _headers = firstNonNull(headers, PacketHeaderConstraints.unconstrained());
     _startLocation = startLocation;

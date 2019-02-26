@@ -1,8 +1,8 @@
 package org.batfish.specifier;
 
-import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpAccessList;
@@ -33,6 +33,6 @@ public final class AllFiltersFilterSpecifier implements FilterSpecifier {
         .filter(c -> c.getHostname().equalsIgnoreCase(node))
         .map(c -> c.getIpAccessLists().values())
         .flatMap(Collection::stream)
-        .collect(ImmutableSet.toImmutableSet());
+        .collect(Collectors.toSet());
   }
 }
