@@ -48,7 +48,6 @@ public class TestFiltersQuestion extends Question {
         startLocation);
   }
 
-  @JsonCreator
   public TestFiltersQuestion(
       @Nullable String nodes,
       @Nullable String filters,

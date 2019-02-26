@@ -2,11 +2,14 @@ package org.batfish.question.ospfproperties;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 /**
  * A question that returns properties of OSPF routing processes. {@link #_nodes} and {@link
@@ -18,14 +21,21 @@ public class OspfPropertiesQuestion extends Question {
   private static final String PROP_NODES = "nodes";
   private static final String PROP_PROPERTIES = "properties";
 
-  @Nonnull private NodesSpecifier _nodes;
-  @Nonnull private OspfPropertySpecifier _properties;
+  @Nonnull private final NodeSpecifier _nodes;
+  @Nonnull private final OspfPropertySpecifier _properties;
 
-  public OspfPropertiesQuestion(
-      @JsonProperty(PROP_NODES) NodesSpecifier nodeRegex,
+  @JsonCreator
+  private static OspfPropertiesQuestion create(
+      @JsonProperty(PROP_NODES) String nodes,
       @JsonProperty(PROP_PROPERTIES) OspfPropertySpecifier propertySpec) {
-    _nodes = firstNonNull(nodeRegex, NodesSpecifier.ALL);
-    _properties = firstNonNull(propertySpec, OspfPropertySpecifier.ALL);
+    return new OspfPropertiesQuestion(
+        SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),
+        firstNonNull(propertySpec, OspfPropertySpecifier.ALL));
+  }
+
+  public OspfPropertiesQuestion(NodeSpecifier nodes, OspfPropertySpecifier propertySpec) {
+    _nodes = nodes;
+    _properties = propertySpec;
   }
 
   @Override
@@ -39,7 +49,7 @@ public class OspfPropertiesQuestion extends Question {
   }
 
   @JsonProperty(PROP_NODES)
-  public NodesSpecifier getNodes() {
+  public NodeSpecifier getNodes() {
     return _nodes;
   }
 

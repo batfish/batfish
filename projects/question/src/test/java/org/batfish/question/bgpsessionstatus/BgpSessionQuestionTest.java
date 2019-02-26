@@ -4,8 +4,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus;
+import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.junit.Test;
 
 public class BgpSessionQuestionTest {
@@ -14,8 +14,8 @@ public class BgpSessionQuestionTest {
     BgpSessionStatusQuestion question = new BgpSessionStatusQuestion();
 
     assertThat(question.getDataPlane(), equalTo(true));
-    assertThat(question.getNodes(), equalTo(NodesSpecifier.ALL));
-    assertThat(question.getRemoteNodes(), equalTo(NodesSpecifier.ALL));
+    assertThat(question.getNodes(), equalTo(AllNodesNodeSpecifier.INSTANCE));
+    assertThat(question.getRemoteNodes(), equalTo(AllNodesNodeSpecifier.INSTANCE));
     assertThat(question.getName(), equalTo("bgpSessionStatusNew"));
   }
 
