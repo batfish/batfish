@@ -60,7 +60,6 @@ public final class SessionInstrumentationTest {
 
   // interface names
   private static String FW_I1 = "FW:I1";
-  private static String FW_I2 = "FW:I2";
   private static String SOURCE1_IFACE = "SOURCE1:IFACE";
   private static String SOURCE2_IFACE = "SOURCE2:IFACE";
   private static String FAKE_IFACE = "FAKE_IFACE";
@@ -88,9 +87,6 @@ public final class SessionInstrumentationTest {
   private BDD _invalidSrc;
 
   private Interface _fwI1;
-  private Interface _fwI2;
-  private Interface _source1Iface;
-  private Interface _source2Iface;
 
   private BDD _permitTcpBdd;
 
@@ -114,7 +110,7 @@ public final class SessionInstrumentationTest {
       _source1 = cb.setHostname(SOURCE1).build();
       Vrf vrf = nf.vrfBuilder().setOwner(_source1).build();
       Interface.Builder ib = nf.interfaceBuilder().setActive(true).setOwner(_source1).setVrf(vrf);
-      _source1Iface = ib.setName(SOURCE1_IFACE).build();
+      ib.setName(SOURCE1_IFACE).build();
     }
 
     // Setup source 2
@@ -122,7 +118,7 @@ public final class SessionInstrumentationTest {
       _source2 = cb.setHostname(SOURCE1).build();
       Vrf vrf = nf.vrfBuilder().setOwner(_source2).build();
       Interface.Builder ib = nf.interfaceBuilder().setActive(true).setOwner(_source2).setVrf(vrf);
-      _source2Iface = ib.setName(SOURCE2_IFACE).build();
+      ib.setName(SOURCE2_IFACE).build();
     }
 
     // Setup last hop manager

@@ -42,8 +42,6 @@ import org.batfish.z3.state.PreInInterface;
  * initialized firewall sessions}.
  */
 public class SessionInstrumentation {
-  private final BDDPacket _bddPacket;
-
   private final Map<String, Configuration> _configs;
   private final Map<String, BDDSourceManager> _srcMgrs;
   private final LastHopOutgoingInterfaceManager _lastHopMgr;
@@ -60,7 +58,6 @@ public class SessionInstrumentation {
       Map<String, BDDSourceManager> srcMgrs,
       LastHopOutgoingInterfaceManager lastHopMgr,
       @Nullable Map<String, Map<String, Supplier<BDD>>> filterBdds) {
-    _bddPacket = bddPacket;
     _configs = configs;
     _srcMgrs = srcMgrs;
     _lastHopMgr = lastHopMgr;
