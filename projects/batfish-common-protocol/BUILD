@@ -7,6 +7,7 @@ filegroup(
     srcs = [
         "src/main/java/org/batfish/common/BatfishException.java",
         "src/main/java/org/batfish/common/DebugBatfishException.java",
+        "src/main/java/org/batfish/common/ErrorDetails.java",
         "src/main/java/org/batfish/common/ParseTreeSentences.java",
         "src/main/java/org/batfish/common/util/BatfishObjectMapper.java",
         "src/main/java/org/batfish/common/util/serialization/BatfishThirdPartyDeserializers.java",

@@ -40,7 +40,7 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
 
   public static ParseTreeSentences getParseTreeSentences(
       ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser, boolean printLineNumbers) {
-    ParseTreeWalker walker = new BatfishParseTreeWalker();
+    ParseTreeWalker walker = new BatfishParseTreeWalker(combinedParser);
     ParseTreePrettyPrinter printer =
         new ParseTreePrettyPrinter(ctx, combinedParser, printLineNumbers);
     walker.walk(printer, ctx);
