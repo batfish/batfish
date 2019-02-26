@@ -203,7 +203,7 @@ public class TestFiltersAnswerer extends Answerer {
   Multiset<Row> getRows() {
     TestFiltersQuestion question = (TestFiltersQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> includeNodes = question.getNodes().getMatchingNodes(_batfish);
+    Set<String> includeNodes = question.getNodes().resolve(_batfish.specifierContext());
     FilterSpecifier filterSpecifier = question.getFilterSpecifier();
 
     Multiset<Row> rows = HashMultiset.create();
