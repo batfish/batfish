@@ -16,7 +16,6 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
-import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.PropertySpecifier;
 import org.batfish.datamodel.questions.PropertySpecifier.PropertyDescriptor;
 import org.batfish.datamodel.questions.Question;
@@ -25,6 +24,8 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.specifier.InterfaceSpecifier;
+import org.batfish.specifier.SpecifierContext;
 
 public class InterfacePropertiesAnswerer extends Answerer {
 
@@ -79,7 +80,7 @@ public class InterfacePropertiesAnswerer extends Answerer {
   public TableAnswerElement answer() {
     InterfacePropertiesQuestion question = (InterfacePropertiesQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);
+    Set<String> nodes = question.getNodes().resolve(_batfish.specifierContext());
 
     TableMetadata tableMetadata = createTableMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
@@ -87,7 +88,7 @@ public class InterfacePropertiesAnswerer extends Answerer {
     Multiset<Row> propertyRows =
         getProperties(
             question.getProperties(),
-            configurations,
+            _batfish.specifierContext(),
             nodes,
             question.getInterfaces(),
             question.getOnlyActive(),
@@ -104,15 +105,15 @@ public class InterfacePropertiesAnswerer extends Answerer {
 
   public static Multiset<Row> getProperties(
       InterfacePropertySpecifier propertySpecifier,
-      Map<String, Configuration> configurations,
+      SpecifierContext ctxt,
       Set<String> nodes,
-      InterfacesSpecifier interfacesSpecifier,
+      InterfaceSpecifier interfaceSpecifier,
       Map<String, ColumnMetadata> columns) {
     return getProperties(
         propertySpecifier,
-        configurations,
+        ctxt,
         nodes,
-        interfacesSpecifier,
+        interfaceSpecifier,
         InterfacePropertiesQuestion.DEFAULT_EXCLUDE_SHUT_INTERFACES,
         columns);
   }
@@ -121,51 +122,51 @@ public class InterfacePropertiesAnswerer extends Answerer {
    * Gets properties of interfaces.
    *
    * @param propertySpecifier Specifies which properties to get
-   * @param configurations configuration to use in extractions
+   * @param ctxt the specifier context to use in extractions
    * @param nodes the set of nodes to consider
-   * @param interfacesSpecifier Specifies which interfaces to consider
+   * @param interfaceSpecifier Specifies which interfaces to consider
    * @param columns a map from column name to {@link ColumnMetadata}
    * @return A multiset of {@link Row}s where each row corresponds to a node and columns correspond
    *     to property values.
    */
   public static Multiset<Row> getProperties(
       InterfacePropertySpecifier propertySpecifier,
-      Map<String, Configuration> configurations,
+      SpecifierContext ctxt,
       Set<String> nodes,
-      InterfacesSpecifier interfacesSpecifier,
+      InterfaceSpecifier interfaceSpecifier,
       boolean excludeShutInterfaces,
       Map<String, ColumnMetadata> columns) {
     Multiset<Row> rows = HashMultiset.create();
 
-    for (String nodeName : nodes) {
-      for (Interface iface : configurations.get(nodeName).getAllInterfaces().values()) {
-        if (!interfacesSpecifier.matches(iface) || (excludeShutInterfaces && !iface.getActive())) {
-          continue;
-        }
-        RowBuilder row =
-            Row.builder(columns)
-                .put(COL_INTERFACE, new NodeInterfacePair(nodeName, iface.getName()));
-
-        for (String property : propertySpecifier.getMatchingProperties()) {
-          PropertyDescriptor<Interface> propertyDescriptor =
-              InterfacePropertySpecifier.JAVA_MAP.get(property);
-          try {
-            PropertySpecifier.fillProperty(propertyDescriptor, iface, property, row);
-          } catch (ClassCastException e) {
-            throw new BatfishException(
-                String.format(
-                    "Type mismatch between property value ('%s') and Schema ('%s') for property '%s' for interface '%s': %s",
-                    propertyDescriptor.getGetter().apply(iface),
-                    propertyDescriptor.getSchema(),
-                    property,
-                    iface,
-                    e.getMessage()),
-                e);
-          }
-        }
-
-        rows.add(row.build());
+    for (Interface iface : interfaceSpecifier.resolve(nodes, ctxt)) {
+      if (excludeShutInterfaces && !iface.getActive()) {
+        continue;
       }
+      RowBuilder row =
+          Row.builder(columns)
+              .put(
+                  COL_INTERFACE,
+                  new NodeInterfacePair(iface.getOwner().getHostname(), iface.getName()));
+
+      for (String property : propertySpecifier.getMatchingProperties()) {
+        PropertyDescriptor<Interface> propertyDescriptor =
+            InterfacePropertySpecifier.JAVA_MAP.get(property);
+        try {
+          PropertySpecifier.fillProperty(propertyDescriptor, iface, property, row);
+        } catch (ClassCastException e) {
+          throw new BatfishException(
+              String.format(
+                  "Type mismatch between property value ('%s') and Schema ('%s') for property '%s' for interface '%s': %s",
+                  propertyDescriptor.getGetter().apply(iface),
+                  propertyDescriptor.getSchema(),
+                  property,
+                  iface,
+                  e.getMessage()),
+              e);
+        }
+      }
+
+      rows.add(row.build());
     }
 
     return rows;

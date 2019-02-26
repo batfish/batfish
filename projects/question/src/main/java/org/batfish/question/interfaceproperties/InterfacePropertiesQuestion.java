@@ -2,18 +2,24 @@ package org.batfish.question.interfaceproperties;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
-import org.batfish.datamodel.questions.InterfacesSpecifier;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.specifier.AllInterfacesInterfaceSpecifier;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.InterfaceSpecifier;
+import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 /**
  * A question that returns properties of interfaces in a tabular format. {@link #_nodes}, {@link
  * #_interfaces}, and {@link #_properties} determine which nodes, interfaces, and properties are
  * included. The default is to include everything.
  */
+@ParametersAreNonnullByDefault
 public class InterfacePropertiesQuestion extends Question {
 
   static final boolean DEFAULT_EXCLUDE_SHUT_INTERFACES = false;
@@ -23,20 +29,34 @@ public class InterfacePropertiesQuestion extends Question {
   private static final String PROP_NODES = "nodes";
   private static final String PROP_PROPERTIES = "properties";
 
-  @Nonnull private InterfacesSpecifier _interfaces;
-  @Nonnull private NodesSpecifier _nodes;
+  @Nonnull private InterfaceSpecifier _interfaces;
+  @Nonnull private NodeSpecifier _nodes;
   private boolean _onlyActive;
   @Nonnull private InterfacePropertySpecifier _properties;
 
-  public InterfacePropertiesQuestion(
+  @JsonCreator
+  private static InterfacePropertiesQuestion create(
       @JsonProperty(PROP_EXCLUDE_SHUT_INTERFACES) Boolean excludeShutInterfaces,
-      @JsonProperty(PROP_INTERFACES) InterfacesSpecifier interfaceRegex,
-      @JsonProperty(PROP_NODES) NodesSpecifier nodeRegex,
+      @JsonProperty(PROP_INTERFACES) String interfaces,
+      @JsonProperty(PROP_NODES) String nodes,
       @JsonProperty(PROP_PROPERTIES) InterfacePropertySpecifier propertySpec) {
-    _onlyActive = firstNonNull(excludeShutInterfaces, DEFAULT_EXCLUDE_SHUT_INTERFACES);
-    _interfaces = firstNonNull(interfaceRegex, InterfacesSpecifier.ALL);
-    _nodes = firstNonNull(nodeRegex, NodesSpecifier.ALL);
-    _properties = firstNonNull(propertySpec, InterfacePropertySpecifier.ALL);
+    return new InterfacePropertiesQuestion(
+        firstNonNull(excludeShutInterfaces, DEFAULT_EXCLUDE_SHUT_INTERFACES),
+        SpecifierFactories.getInterfaceSpecifierOrDefault(
+            interfaces, AllInterfacesInterfaceSpecifier.INSTANCE),
+        SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),
+        firstNonNull(propertySpec, InterfacePropertySpecifier.ALL));
+  }
+
+  public InterfacePropertiesQuestion(
+      Boolean excludeShutInterfaces,
+      InterfaceSpecifier interfaces,
+      NodeSpecifier nodes,
+      InterfacePropertySpecifier propertySpec) {
+    _onlyActive = excludeShutInterfaces;
+    _interfaces = interfaces;
+    _nodes = nodes;
+    _properties = propertySpec;
   }
 
   @Override
@@ -55,12 +75,12 @@ public class InterfacePropertiesQuestion extends Question {
   }
 
   @JsonProperty(PROP_INTERFACES)
-  public InterfacesSpecifier getInterfaces() {
+  public InterfaceSpecifier getInterfaces() {
     return _interfaces;
   }
 
   @JsonProperty(PROP_NODES)
-  public NodesSpecifier getNodes() {
+  public NodeSpecifier getNodes() {
     return _nodes;
   }
 

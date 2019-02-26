@@ -68,7 +68,7 @@ public class NodePropertiesAnswerer extends Answerer {
   public TableAnswerElement answer() {
     NodePropertiesQuestion question = (NodePropertiesQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);
+    Set<String> nodes = question.getNodes().resolve(_batfish.specifierContext());
 
     TableMetadata tableMetadata = createTableMetadata(question);
 
