@@ -23,14 +23,12 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.junit.Before;
 import org.junit.Test;
 
 /** Tests for {@link LastHopOutgoingInterfaceManager}. */
 public final class LastHopOutgoingInterfaceManagerTest {
-  private static final Topology EMPTY_TOPOLOGY = new Topology(ImmutableSortedSet.of());
 
   private static final String NODE1 = "NODE1";
   private static final String NODE2 = "NODE2";

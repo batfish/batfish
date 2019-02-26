@@ -120,8 +120,6 @@ final class BDDReachabilityAnalysisSessionFactory {
       return ImmutableList.of();
     }
 
-    BDDSourceManager srcManager = _srcManagers.get(hostname);
-    Map<String, BDD> sourceBdds = srcManager.getSourceBDDs();
     Map<String, Map<NodeInterfacePair, BDD>> lastHopOutgoingInterfaceBdds =
         toImmutableMap(
             config.activeInterfaces(),

@@ -32,8 +32,6 @@ import org.junit.Test;
 /** Tests for {@link BDDReverseTransformationRangesImpl}. */
 public class BDDReverseTransformationRangesImplTest {
   private static final String HOSTNAME = "HOSTNAME";
-  private static final String IFACE1 = "IFACE1";
-  private static final String IFACE2 = "IFACE2";
 
   private BDDPacket _bddPacket;
   private Map<String, Configuration> _configs;
