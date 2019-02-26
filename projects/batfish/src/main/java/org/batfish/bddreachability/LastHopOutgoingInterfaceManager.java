@@ -103,7 +103,6 @@ public final class LastHopOutgoingInterfaceManager {
 
   /** Return whether the input {@link BDD} has a constraint on the last hop variable. */
   public boolean hasLastHopConstraint(BDD bdd) {
-    // all domains have the same variable, so just pick one.
     return !existsLastHop(bdd).equals(bdd);
   }
 
