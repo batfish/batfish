@@ -2067,19 +2067,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
 
       // A term will become an If statement. If (matchCondition) -> execute "then" statements
-      TermFwThenToPacketPolicyStatement thenConverter =
-          new TermFwThenToPacketPolicyStatement(Configuration.DEFAULT_VRF_NAME);
       builder.add(
           new org.batfish.datamodel.packet_policy.If(
               new PacketMatchExpr(
                   new MatchHeaderSpace(
                       matchCondition.build(),
                       String.format("Firewall filter term %s", term.getName()))),
-              // Convert "then"s to action statements.
-              term.getThens().stream()
-                  .map(thenConverter::visit)
-                  .filter(Objects::nonNull)
-                  .collect(ImmutableList.toImmutableList())));
+              TermFwThenToPacketPolicyStatement.convert(term, Configuration.DEFAULT_VRF_NAME)));
     }
 
     // Make the policy, with an implicit deny all at the end as the default action
