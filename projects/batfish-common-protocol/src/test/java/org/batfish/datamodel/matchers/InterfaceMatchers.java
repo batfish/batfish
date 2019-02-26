@@ -5,12 +5,13 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
-import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
@@ -112,7 +113,7 @@ public final class InterfaceMatchers {
    * additional arp IPs.
    */
   public static HasAdditionalArpIps hasAdditionalArpIps(
-      @Nonnull Matcher<? super IpSpace> subMatcher) {
+      @Nonnull Matcher<? super SortedSet<Ip>> subMatcher) {
     return new HasAdditionalArpIps(subMatcher);
   }
 
