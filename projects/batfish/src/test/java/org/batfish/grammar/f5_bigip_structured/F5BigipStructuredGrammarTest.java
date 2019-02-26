@@ -169,52 +169,6 @@ public final class F5BigipStructuredGrammarTest {
     return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
   }
 
-  @Test
-  public void testDnat() throws IOException {
-    String hostname = "f5_bigip_structured_dnat";
-    String tag = "tag";
-    Flow flow =
-        Flow.builder()
-            .setTag(tag)
-            .setDstIp(Ip.parse("192.0.2.1"))
-            .setDstPort(80)
-            .setIngressInterface("/Common/SOME_VLAN")
-            .setIngressNode(hostname)
-            .setIpProtocol(IpProtocol.TCP)
-            .setSrcIp(Ip.parse("8.8.8.8"))
-            .setSrcPort(50000)
-            .build();
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    batfish.computeDataPlane();
-    SortedMap<Flow, List<Trace>> flowTraces =
-        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
-    List<Trace> traces = flowTraces.get(flow);
-    Optional<TransformationStepDetail> stepDetailOptional =
-        traces.stream()
-            .map(Trace::getHops)
-            .flatMap(Collection::stream)
-            .map(Hop::getSteps)
-            .flatMap(Collection::stream)
-            .map(Step::getDetail)
-            .filter(Predicates.instanceOf(TransformationStepDetail.class))
-            .map(TransformationStepDetail.class::cast)
-            .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
-            .findFirst();
-
-    // TODO: uncomment after resolution of https://github.com/batfish/batfish/pull/3248
-    assert stepDetailOptional != null;
-    //    assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
-    //
-    //    TransformationStepDetail detail = stepDetailOptional.get();
-    //
-    //    assertThat(
-    //        detail.getFlowDiffs(),
-    //        hasItem(
-    //            equalTo(
-    //                FlowDiff.flowDiff(
-    //                    IpField.DESTINATION, Ip.parse("192.0.2.1"), Ip.parse("192.0.2.10")))));
-  }
-
   private BgpRoute.Builder makeBgpOutputRouteBuilder() {
     return BgpRoute.builder()
         .setNetwork(Prefix.ZERO)
@@ -417,6 +371,52 @@ public final class F5BigipStructuredGrammarTest {
 
     // bgp neighbor update-source
     assertThat(ans, hasNumReferrers(file, VLAN, "/Common/vlan_used", 1));
+  }
+
+  @Test
+  public void testDnat() throws IOException {
+    String hostname = "f5_bigip_structured_dnat";
+    String tag = "tag";
+    Flow flow =
+        Flow.builder()
+            .setTag(tag)
+            .setDstIp(Ip.parse("192.0.2.1"))
+            .setDstPort(80)
+            .setIngressInterface("/Common/SOME_VLAN")
+            .setIngressNode(hostname)
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setSrcPort(50000)
+            .build();
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.computeDataPlane();
+    SortedMap<Flow, List<Trace>> flowTraces =
+        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
+    List<Trace> traces = flowTraces.get(flow);
+    Optional<TransformationStepDetail> stepDetailOptional =
+        traces.stream()
+            .map(Trace::getHops)
+            .flatMap(Collection::stream)
+            .map(Hop::getSteps)
+            .flatMap(Collection::stream)
+            .map(Step::getDetail)
+            .filter(Predicates.instanceOf(TransformationStepDetail.class))
+            .map(TransformationStepDetail.class::cast)
+            .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
+            .findFirst();
+
+    // TODO: uncomment after resolution of https://github.com/batfish/batfish/pull/3248
+    assert stepDetailOptional != null;
+    //    assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
+    //
+    //    TransformationStepDetail detail = stepDetailOptional.get();
+    //
+    //    assertThat(
+    //        detail.getFlowDiffs(),
+    //        hasItem(
+    //            equalTo(
+    //                FlowDiff.flowDiff(
+    //                    IpField.DESTINATION, Ip.parse("192.0.2.1"), Ip.parse("192.0.2.10")))));
   }
 
   @Test

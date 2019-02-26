@@ -2,12 +2,23 @@ package org.batfish.datamodel;
 
 import static org.junit.Assert.assertEquals;
 
+import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
 public final class KernelRouteTest {
+
+  @Test
+  public void testEquals() {
+    KernelRoute.Builder builder = KernelRoute.builder();
+    KernelRoute kr = builder.setNetwork(Prefix.strict("10.0.0.0/24")).build();
+    new EqualsTester()
+        .addEqualityGroup(kr, kr, builder.build())
+        .addEqualityGroup(builder.setNetwork(Prefix.ZERO).build())
+        .testEquals();
+  }
 
   @Test
   public void testJacksonSerialization() throws IOException {

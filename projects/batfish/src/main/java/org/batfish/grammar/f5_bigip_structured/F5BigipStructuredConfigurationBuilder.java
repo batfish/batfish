@@ -124,6 +124,8 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lprofon_d
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lprofss_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lproft_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ls_snatpoolContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ls_vlans_disabledContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ls_vlans_enabledContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lso_originContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lspm_memberContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lst_addressContext;
@@ -133,6 +135,8 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_maskCo
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_poolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_profiles_profileContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_sourceContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_vlans_disabledContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_vlans_enabledContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_maskContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_route_advertisementContext;
@@ -788,6 +792,16 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void exitLs_vlans_disabled(Ls_vlans_disabledContext ctx) {
+    _currentSnat.setVlansEnabled(false);
+  }
+
+  @Override
+  public void exitLs_vlans_enabled(Ls_vlans_enabledContext ctx) {
+    _currentSnat.setVlansEnabled(true);
+  }
+
+  @Override
   public void exitLso_origin(Lso_originContext ctx) {
     String text = ctx.origin.getText();
     Optional<Prefix> prefix = Prefix.tryParse(text);
@@ -871,6 +885,16 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     }
     _w.redFlag(
         String.format("'%s' is neither IPv4 nor IPv6 prefix in: %s", text, getFullText(ctx)));
+  }
+
+  @Override
+  public void exitLv_vlans_disabled(Lv_vlans_disabledContext ctx) {
+    _currentVirtual.setVlansEnabled(false);
+  }
+
+  @Override
+  public void exitLv_vlans_enabled(Lv_vlans_enabledContext ctx) {
+    _currentVirtual.setVlansEnabled(true);
   }
 
   @Override

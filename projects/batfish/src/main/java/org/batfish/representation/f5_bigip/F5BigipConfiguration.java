@@ -221,6 +221,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private TransformationStep computeVirtualIncomingPoolTransformation(Pool pool) {
     return new ApplyAny(
         pool.getMembers().values().stream()
+            .filter(member -> member.getAddress() != null) // IPv4 members only
             .map(this::computeVirtualIncomingPoolMemberTransformation)
             .collect(ImmutableList.toImmutableList()));
   }
@@ -252,15 +253,15 @@ public class F5BigipConfiguration extends VendorConfiguration {
       _w.redFlag(String.format("Virtual '%s' is missing destination", virtual.getName()));
       return Optional.empty();
     }
-    Node node = _nodes.get(destination);
-    if (node == null) {
-      // Cannot match without destination node
+    VirtualAddress virtualAddress = _virtualAddresses.get(destination);
+    if (virtualAddress == null) {
+      // Cannot match without destination virtual address
       _w.redFlag(
           String.format(
               "Virtual '%s' refers to missing destination '%s'", virtual.getName(), destination));
       return Optional.empty();
     }
-    Ip destinationIp = node.getAddress();
+    Ip destinationIp = virtualAddress.getAddress();
     if (destinationIp == null) {
       // Cannot match without destination IP (might be IPv6, so don't warn here)
       return Optional.empty();
