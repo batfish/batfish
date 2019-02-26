@@ -250,9 +250,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
             toImmutableMap(
                 nodeEntry.getValue().getAllInterfaces(),
                 Entry::getKey,
-                ifaceEntry ->
-                    firstNonNull(
-                        ifaceEntry.getValue().getAdditionalArpIps(), EmptyIpSpace.INSTANCE)));
+                ifaceEntry -> ifaceEntry.getValue().getAdditionalArpIps()));
   }
 
   /**

@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -93,7 +95,7 @@ public final class Interface extends ComparableStructure<String> {
 
     private Set<InterfaceAddress> _secondaryAddresses;
 
-    private IpSpace _additionalArpIps;
+    private @Nonnull IpSpace _additionalArpIps;
 
     private InterfaceType _type;
 
@@ -104,6 +106,7 @@ public final class Interface extends ComparableStructure<String> {
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, Interface.class);
       _active = true;
+      _additionalArpIps = EmptyIpSpace.INSTANCE;
       _declaredNames = ImmutableSortedSet.of();
       _hsrpGroups = ImmutableMap.of();
       _secondaryAddresses = ImmutableSet.of();
@@ -741,7 +744,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private boolean _active;
 
-  private IpSpace _additionalArpIps;
+  private @Nonnull IpSpace _additionalArpIps;
 
   private IntegerSpace _allowedVlans;
 
@@ -883,6 +886,7 @@ public final class Interface extends ComparableStructure<String> {
   public Interface(String name, Configuration owner, @Nonnull InterfaceType interfaceType) {
     super(name);
     _active = true;
+    _additionalArpIps = EmptyIpSpace.INSTANCE;
     _autoState = true;
     _allowedVlans = IntegerSpace.EMPTY;
     _allAddresses = ImmutableSortedSet.of();
@@ -1450,7 +1454,7 @@ public final class Interface extends ComparableStructure<String> {
 
   @JsonProperty(PROP_ADDITIONAL_ARP_IPS)
   public void setAdditionalArpIps(IpSpace additionalArpIps) {
-    _additionalArpIps = additionalArpIps;
+    _additionalArpIps = firstNonNull(additionalArpIps, EmptyIpSpace.INSTANCE);
   }
 
   @JsonProperty(PROP_ALLOWED_VLANS)
