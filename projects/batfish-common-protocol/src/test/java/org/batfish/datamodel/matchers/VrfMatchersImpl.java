@@ -5,6 +5,7 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.VniSettings;
@@ -69,6 +70,17 @@ final class VrfMatchersImpl {
     @Override
     protected IsisProcess featureValueOf(Vrf actual) {
       return actual.getIsisProcess();
+    }
+  }
+
+  static final class HasKernelRoutes extends FeatureMatcher<Vrf, SortedSet<KernelRoute>> {
+    HasKernelRoutes(@Nonnull Matcher<? super SortedSet<KernelRoute>> subMatcher) {
+      super(subMatcher, "A VRF with kernelRoutes:", "kernelRoutes");
+    }
+
+    @Override
+    protected SortedSet<KernelRoute> featureValueOf(Vrf actual) {
+      return actual.getKernelRoutes();
     }
   }
 

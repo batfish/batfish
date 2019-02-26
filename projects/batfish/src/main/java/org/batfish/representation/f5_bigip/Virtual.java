@@ -1,6 +1,8 @@
 package org.batfish.representation.f5_bigip;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -24,9 +26,12 @@ public final class Virtual implements Serializable {
   private @Nullable Prefix _source;
   private @Nullable Prefix6 _source6;
   private @Nullable String _sourceAddressTranslationPool;
+  private final @Nonnull Set<String> _vlans;
+  private boolean _vlansEnabled;
 
   public Virtual(String name) {
     _name = name;
+    _vlans = new HashSet<>();
   }
 
   public @Nullable String getDestination() {
@@ -65,6 +70,14 @@ public final class Virtual implements Serializable {
     return _sourceAddressTranslationPool;
   }
 
+  public @Nonnull Set<String> getVlans() {
+    return _vlans;
+  }
+
+  public boolean getVlansEnabled() {
+    return _vlansEnabled;
+  }
+
   public void setDestination(@Nullable String destination) {
     _destination = destination;
   }
@@ -95,5 +108,9 @@ public final class Virtual implements Serializable {
 
   public void setSourceAddressTranslationPool(@Nullable String sourceAddressTranslationPool) {
     _sourceAddressTranslationPool = sourceAddressTranslationPool;
+  }
+
+  public void setVlansEnabled(boolean vlansEnabled) {
+    _vlansEnabled = vlansEnabled;
   }
 }

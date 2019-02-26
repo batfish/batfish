@@ -471,6 +471,11 @@ VLANS
   'vlans'
 ;
 
+VLANS_DISABLED
+:
+  'vlans-disabled'
+;
+
 VLANS_ENABLED
 :
   'vlans-enabled'
