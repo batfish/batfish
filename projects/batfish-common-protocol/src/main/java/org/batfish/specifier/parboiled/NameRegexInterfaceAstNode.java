@@ -8,6 +8,10 @@ final class NameRegexInterfaceAstNode implements InterfaceAstNode {
   private final String _regex;
   private final Pattern _pattern;
 
+  NameRegexInterfaceAstNode(AstNode regexAst) {
+    this(((StringAstNode) regexAst).getStr());
+  }
+
   NameRegexInterfaceAstNode(String regex) {
     _regex = regex;
     // treat the provided pattern as a case-insensitive substring match

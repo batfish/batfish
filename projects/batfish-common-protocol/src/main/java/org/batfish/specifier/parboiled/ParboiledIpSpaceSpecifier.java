@@ -1,6 +1,7 @@
 package org.batfish.specifier.parboiled;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import java.util.Set;
 import org.batfish.datamodel.AclIpSpace;
@@ -99,5 +100,10 @@ final class ParboiledIpSpaceSpecifier implements IpSpaceSpecifier {
   @VisibleForTesting
   static IpSpace computeIpSpace(IpSpaceAstNode ast, SpecifierContext ctxt) {
     return ast.accept(new IpSpaceAstNodeToIpSpace(ctxt));
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(getClass()).add("ast", _ast).toString();
   }
 }

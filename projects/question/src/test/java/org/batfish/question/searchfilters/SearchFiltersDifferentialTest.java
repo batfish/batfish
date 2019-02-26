@@ -36,6 +36,8 @@ import org.junit.rules.TemporaryFolder;
 public class SearchFiltersDifferentialTest {
   @Rule public TemporaryFolder _tmp = new TemporaryFolder();
 
+  private static final String ENTER_ALL = "enter(.*)";
+
   private static final String HOSTNAME = "hostname";
   private static final String ACLNAME = "acl";
   private static final String IFACE = "iface";
@@ -77,7 +79,7 @@ public class SearchFiltersDifferentialTest {
     TableAnswerElement answer =
         (TableAnswerElement)
             new SearchFiltersAnswerer(
-                    SearchFiltersQuestion.builder().setStartLocation("enter(.*)").build(), batfish)
+                    SearchFiltersQuestion.builder().setStartLocation(ENTER_ALL).build(), batfish)
                 .answerDiff();
     assertThat(
         answer,
@@ -115,7 +117,7 @@ public class SearchFiltersDifferentialTest {
         (TableAnswerElement)
             new SearchFiltersAnswerer(
                     SearchFiltersQuestion.builder()
-                        .setStartLocation("enter(.*)")
+                        .setStartLocation(ENTER_ALL)
                         .setAction("deny")
                         .setGenerateExplanations(true)
                         .build(),

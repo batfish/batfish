@@ -66,6 +66,7 @@ public class ParserInterfaceTest {
                     "iface1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
                 new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
                     "@connectedTo", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
@@ -173,6 +174,15 @@ public class ParserInterfaceTest {
     assertThat(ParserUtils.getAst(getRunner().run(regexWithSlashes)), equalTo(expectedAst));
     assertThat(
         ParserUtils.getAst(getRunner().run(" " + regexWithSlashes + " ")), equalTo(expectedAst));
+  }
+
+  @Test
+  public void testParseInterfaceNameRegexDeprecated() {
+    String regex = "iface1/0.*";
+    InterfaceAstNode expectedAst = new NameRegexInterfaceAstNode(regex);
+
+    assertThat(ParserUtils.getAst(getRunner().run(regex)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + regex + " ")), equalTo(expectedAst));
   }
 
   @Test

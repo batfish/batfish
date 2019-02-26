@@ -105,17 +105,17 @@ import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.InstanceData;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
+import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
-import org.batfish.specifier.FlexibleInterfaceSpecifierFactory;
-import org.batfish.specifier.FlexibleNodeSpecifierFactory;
-import org.batfish.specifier.InterfaceSpecifierFactory;
-import org.batfish.specifier.NodeSpecifierFactory;
+import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.RoutingProtocolSpecifier;
+import org.batfish.specifier.ShorthandInterfaceSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifierFactory;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -473,8 +473,8 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        InterfaceSpecifierFactory.load(FlexibleInterfaceSpecifierFactory.NAME)
-            .buildInterfaceSpecifier(value.textValue());
+        SpecifierFactories.getInterfaceSpecifierOrDefault(
+            value.textValue(), new ShorthandInterfaceSpecifier(InterfacesSpecifier.ALL));
         break;
       case IP:
         // TODO: Need to double check isInetAddress()
@@ -535,6 +535,12 @@ public class Client extends AbstractClient implements IClient {
         }
         validateJsonPathRegex(value.textValue());
         break;
+      case LOCATION_SPEC:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        break;
       case LONG:
         if (!value.isLong()) {
           throw new BatfishException(
@@ -566,8 +572,8 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        NodeSpecifierFactory.load(FlexibleNodeSpecifierFactory.NAME)
-            .buildNodeSpecifier(value.textValue());
+        SpecifierFactories.getNodeSpecifierOrDefault(
+            value.textValue(), AllNodesNodeSpecifier.INSTANCE);
         break;
       case OSPF_PROPERTY_SPEC:
         if (!(value.isTextual())) {

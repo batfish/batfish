@@ -40,22 +40,19 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.datamodel.visitors.IpSpaceRepresentative;
 import org.batfish.specifier.FilterSpecifier;
-import org.batfish.specifier.FlexibleInferFromLocationIpSpaceSpecifierFactory;
+import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
-import org.batfish.specifier.IpSpaceSpecifierFactory;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.LocationVisitor;
 import org.batfish.specifier.SpecifierContext;
+import org.batfish.specifier.SpecifierFactories;
 
 public class TestFiltersAnswerer extends Answerer {
-
-  private static final String IP_SPECIFIER_FACTORY =
-      FlexibleInferFromLocationIpSpaceSpecifierFactory.NAME;
 
   public static final String COL_NODE = "Node";
   public static final String COL_FILTER_NAME = "Filter_Name";
@@ -82,8 +79,8 @@ public class TestFiltersAnswerer extends Answerer {
     LocationSpecifier sourceLocationSpecifier = question.getStartLocationSpecifier();
 
     IpSpaceSpecifier sourceIpSpaceSpecifier =
-        IpSpaceSpecifierFactory.load(IP_SPECIFIER_FACTORY)
-            .buildIpSpaceSpecifier(question.getHeaders().getSrcIps());
+        SpecifierFactories.getIpSpaceSpecifierOrDefault(
+            question.getHeaders().getSrcIps(), InferFromLocationIpSpaceSpecifier.INSTANCE);
 
     /* resolve specifiers */
     Set<Location> sourceLocations = sourceLocationSpecifier.resolve(ctxt);
@@ -269,7 +266,8 @@ public class TestFiltersAnswerer extends Answerer {
     String headerDstIp = constraints.getDstIps();
     if (headerDstIp != null) {
       IpSpaceSpecifier dstIpSpecifier =
-          IpSpaceSpecifierFactory.load(IP_SPECIFIER_FACTORY).buildIpSpaceSpecifier(headerDstIp);
+          SpecifierFactories.getIpSpaceSpecifierOrDefault(
+              headerDstIp, InferFromLocationIpSpaceSpecifier.INSTANCE);
       IpSpaceAssignment dstIps =
           dstIpSpecifier.resolve(ImmutableSet.of(), _batfish.specifierContext());
       // Filter out empty IP assignments
@@ -300,7 +298,8 @@ public class TestFiltersAnswerer extends Answerer {
     if (headerSrcIp != null) {
       // interpret given Src IP flexibly
       IpSpaceSpecifier srcIpSpecifier =
-          IpSpaceSpecifierFactory.load(IP_SPECIFIER_FACTORY).buildIpSpaceSpecifier(headerSrcIp);
+          SpecifierFactories.getIpSpaceSpecifierOrDefault(
+              headerSrcIp, InferFromLocationIpSpaceSpecifier.INSTANCE);
       // Resolve to set of locations/IPs
       IpSpaceAssignment srcIps =
           srcIpSpecifier.resolve(ImmutableSet.of(), _batfish.specifierContext());

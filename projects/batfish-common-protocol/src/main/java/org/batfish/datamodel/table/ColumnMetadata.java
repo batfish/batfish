@@ -6,10 +6,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
-import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.Names;
+import org.batfish.datamodel.Names.Type;
 import org.batfish.datamodel.answers.Schema;
 
 @ParametersAreNonnullByDefault
@@ -19,14 +20,6 @@ public final class ColumnMetadata {
   private static final String PROP_IS_VALUE = "isValue";
   private static final String PROP_NAME = "name";
   private static final String PROP_SCHEMA = "schema";
-
-  /**
-   * Must start with alpha numerical letters, underscore or tilde. In addition, following characters
-   * could include [-/.:~@].
-   */
-  public static final String COLUMN_NAME_PATTERN = "[a-zA-Z0-9_~][-/\\w\\.:~@]*$";
-
-  private static final Pattern _COLUMN_NAME_PATTERN = Pattern.compile(COLUMN_NAME_PATTERN);
 
   @Nonnull private String _description;
   private boolean _isKey;
@@ -58,12 +51,7 @@ public final class ColumnMetadata {
       String description,
       @Nullable Boolean isKey,
       @Nullable Boolean isValue) {
-    if (!isLegalColumnName(name)) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Illegal column name '%s'. Column names should match '%s",
-              name, COLUMN_NAME_PATTERN));
-    }
+    Names.checkName(name, "table column", Type.TABLE_COLUMN);
     _name = name;
     _schema = schema;
     _description = description;
@@ -111,11 +99,6 @@ public final class ColumnMetadata {
   @Override
   public int hashCode() {
     return Objects.hash(_description, _isKey, _isValue, _name, _schema);
-  }
-
-  /** Checks if the column name is legal, per the declared pattern */
-  public static boolean isLegalColumnName(String name) {
-    return _COLUMN_NAME_PATTERN.matcher(name).matches();
   }
 
   @Override

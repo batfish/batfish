@@ -39,7 +39,7 @@
                 "type": "headerConstraint",
                 "displayName": "Headers",
                 "fields": {
-                    "applications": { "optional": true },
+                    "applications": { "optional": true, "type": "protocol"},
                     "dscps": { "optional": true },
                     "dstIps": { "optional": false, "type": "ipSpaceSpec"},
                     "dstPorts": { "optional": true },
@@ -48,7 +48,7 @@
                     "fragmentOffsets": { "optional": true },
                     "icmpCodes": { "optional": true },
                     "icmpTypes": { "optional": true },
-                    "ipProtocols": { "optional": true },
+                    "ipProtocols": { "optional": true, "type": "ipProtocolSpec"},
                     "packetLengths": { "optional": true },
                     "srcIps": { "optional": true, "type": "ipSpaceSpec"},
                     "srcPorts": { "optional": true },
@@ -58,7 +58,7 @@
             "startLocation": {
                 "description": "Location (node and interface combination) to start tracing from",
                 "minLength": 1,
-                "type": "string",
+                "type": "locationSpec",
                 "displayName": "Start Location"
             }
         }

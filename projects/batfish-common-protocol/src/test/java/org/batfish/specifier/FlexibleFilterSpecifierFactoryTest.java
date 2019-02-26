@@ -34,13 +34,6 @@ public class FlexibleFilterSpecifierFactoryTest {
   }
 
   @Test
-  public void testNull() {
-    assertThat(
-        new FlexibleFilterSpecifierFactory().buildFilterSpecifier(null),
-        equalTo(new ShorthandFilterSpecifierFactory().buildFilterSpecifier(null)));
-  }
-
-  @Test
   public void testOutFilterOf() {
     assertThat(
         new FlexibleFilterSpecifierFactory().buildFilterSpecifier("outFilterOf(a)"),

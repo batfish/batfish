@@ -29,7 +29,7 @@
     }
   },
   "interfaceSpecifierFactory" : "FlexibleInterfaceSpecifierFactory",
-  "ipSpaceSpecifierFactory" : "FlexibleInferFromLocationIpSpaceSpecifierFactory",
+  "ipSpaceSpecifierFactory" : "FlexibleIpSpaceSpecifierFactory",
   "locationSpecifierFactory" : "FlexibleLocationSpecifierFactory",
   "nodeSpecifierFactory" : "FlexibleNodeSpecifierFactory",
   "nodeSpecifierInput" : "input"
