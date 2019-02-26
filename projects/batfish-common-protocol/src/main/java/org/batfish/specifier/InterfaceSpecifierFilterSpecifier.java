@@ -3,7 +3,6 @@ package org.batfish.specifier;
 import com.google.common.collect.ImmutableSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -51,6 +50,6 @@ public final class InterfaceSpecifierFilterSpecifier implements FilterSpecifier 
             iface ->
                 _type == Type.IN_FILTER ? iface.getIncomingFilter() : iface.getOutgoingFilter())
         .filter(Objects::nonNull)
-        .collect(Collectors.toSet());
+        .collect(ImmutableSet.toImmutableSet());
   }
 }

@@ -2,10 +2,10 @@ package org.batfish.specifier;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.referencelibrary.FilterGroup;
@@ -67,6 +67,6 @@ public final class ReferenceFilterGroupFilterSpecifier implements FilterSpecifie
             filter ->
                 filterGroup.getFilters().stream()
                     .anyMatch(specifier -> specifier.matches(filter, config)))
-        .collect(Collectors.toSet());
+        .collect(ImmutableSet.toImmutableSet());
   }
 }

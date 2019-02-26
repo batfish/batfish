@@ -120,7 +120,7 @@ public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList>
   @Override
   public IpAccessList apply(IpAccessList ipAccessList) {
     return IpAccessList.builder()
-        .setName(ipAccessList.getName())
+        .setName(_aclRenamer.apply(ipAccessList.getName()))
         .setLines(
             ipAccessList.getLines().stream()
                 .map(
