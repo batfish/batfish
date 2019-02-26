@@ -1,4 +1,4 @@
-package org.batfish.representation.f5_bigip;
+package org.batfish.datamodel.vendor_family.f5_bigip;
 
 import java.io.Serializable;
 import java.util.HashMap;

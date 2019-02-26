@@ -64,6 +64,12 @@ import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
+import org.batfish.datamodel.vendor_family.f5_bigip.F5BigipFamily;
+import org.batfish.datamodel.vendor_family.f5_bigip.Pool;
+import org.batfish.datamodel.vendor_family.f5_bigip.PoolMember;
+import org.batfish.datamodel.vendor_family.f5_bigip.RouteAdvertisementMode;
+import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
+import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
 import org.batfish.vendor.VendorConfiguration;
 
 /** Vendor-specific configuration for F5 BIG-IP device */
@@ -696,6 +702,15 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
     _c = new Configuration(_hostname, _format);
+
+    // store vendor-specific information
+    _c.getVendorFamily()
+        .setF5Bigip(
+            F5BigipFamily.builder()
+                .setPools(_pools)
+                .setVirtuals(_virtuals)
+                .setVirtualAddresses(_virtualAddresses)
+                .build());
 
     // TODO: alter as behavior fleshed out
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
