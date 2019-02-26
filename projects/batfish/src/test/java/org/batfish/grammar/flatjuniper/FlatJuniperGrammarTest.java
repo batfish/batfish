@@ -4357,7 +4357,7 @@ public final class FlatJuniperGrammarTest {
         ifaceScreenAcl,
         equalTo(
             IpAccessList.builder()
-                .setName("~SCREEN~ge-0/0/0.0")
+                .setName("~SCREEN_INTERFACE~ge-0/0/0.0")
                 .setLines(
                     ImmutableList.of(
                         IpAccessListLine.accepting(
