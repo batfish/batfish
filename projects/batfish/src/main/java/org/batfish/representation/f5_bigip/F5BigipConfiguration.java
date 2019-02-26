@@ -540,7 +540,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private @Nonnull org.batfish.datamodel.BgpProcess toBgpProcess(BgpProcess proc) {
     org.batfish.datamodel.BgpProcess newProc = new org.batfish.datamodel.BgpProcess();
 
-    // TODO: verify
+    // TODO: verify correct method of determining whether two AS-paths are equivalent
     newProc.setMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
 
     /*
