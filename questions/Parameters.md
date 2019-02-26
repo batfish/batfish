@@ -56,7 +56,7 @@ Batfish questions have the following parameter types that support rich specifica
 
 ## General notes on the grammar 
 
-* **Set operations:** Specifiers denote sets of entities (e.g., nodeSpec resolves to a set of nodes). In many cases, the grammar allows for union, intersection, and difference of such sets using, respecetively, `,`, `&`, and `\`. Thus, `(node1, node2)\node1` will resolve to `node1`.
+* **Set operations:** Specifiers denote sets of entities (e.g., nodeSpec resolves to a set of nodes). In many cases, the grammar allows for union, intersection, and difference of such sets, respectively, using ',', '&', and '\'. Thus, `(node1, node2)\node1` will resolve to `node1`.
 
 * **Case-insensitive names:** All names and regexes use case-insensitive matching. Thus, `AS1BORDER1` is same as `as1border1` and `Ethernet0/0` is same as `ethernet0/0`.
 
