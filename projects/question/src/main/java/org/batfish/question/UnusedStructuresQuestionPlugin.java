@@ -22,12 +22,13 @@ import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.questions.DisplayHints;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.NodeSpecifier;
 
 @AutoService(Plugin.class)
 public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
@@ -49,7 +50,7 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
       // Find all the filenames that produced the queried nodes. This might have false positives if
       // a file produced multiple nodes, but that was already mis-handled before. Need to rewrite
       // this question as a TableAnswerElement.
-      Set<String> includeNodes = question.getNodes().getMatchingNodes(_batfish);
+      Set<String> includeNodes = question.getNodes().resolve(_batfish.specifierContext());
       Multimap<String, String> hostnameFilenameMap =
           _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
       Set<String> includeFiles =
@@ -145,10 +146,10 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NODES = "nodes";
 
-    private NodesSpecifier _nodes;
+    private NodeSpecifier _nodes;
 
     public UnusedStructuresQuestion() {
-      _nodes = NodesSpecifier.ALL;
+      _nodes = AllNodesNodeSpecifier.INSTANCE;
     }
 
     @Override
@@ -162,12 +163,12 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODES)
-    public NodesSpecifier getNodes() {
+    public NodeSpecifier getNodes() {
       return _nodes;
     }
 
     @JsonProperty(PROP_NODES)
-    public void setNodes(NodesSpecifier nodes) {
+    public void setNodes(NodeSpecifier nodes) {
       _nodes = nodes;
     }
   }

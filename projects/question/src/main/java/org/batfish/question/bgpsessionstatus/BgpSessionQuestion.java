@@ -1,7 +1,5 @@
 package org.batfish.question.bgpsessionstatus;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import java.util.regex.Pattern;
@@ -12,6 +10,9 @@ import org.batfish.datamodel.questions.ConfiguredSessionStatus;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerer.SessionStatus;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 /** Based on node configurations, determines the status of IBGP and EBGP sessions. */
 public abstract class BgpSessionQuestion extends Question {
@@ -26,9 +27,9 @@ public abstract class BgpSessionQuestion extends Question {
 
   public static final String PROP_TYPE = "type";
 
-  @Nonnull protected NodesSpecifier _nodes;
+  @Nonnull protected NodeSpecifier _nodes;
 
-  @Nonnull protected NodesSpecifier _remoteNodes;
+  @Nonnull protected NodeSpecifier _remoteNodes;
 
   @Nonnull protected Pattern _status;
 
@@ -45,12 +46,13 @@ public abstract class BgpSessionQuestion extends Question {
    * @param type Regular expression to match session type (see {@link SessionType})
    */
   public BgpSessionQuestion(
-      @Nullable NodesSpecifier nodes,
-      @Nullable NodesSpecifier remoteNodes,
+      @Nullable String nodes,
+      @Nullable String remoteNodes,
       @Nullable String status,
       @Nullable String type) {
-    _nodes = firstNonNull(nodes, NodesSpecifier.ALL);
-    _remoteNodes = firstNonNull(remoteNodes, NodesSpecifier.ALL);
+    _nodes = SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE);
+    _remoteNodes =
+        SpecifierFactories.getNodeSpecifierOrDefault(remoteNodes, AllNodesNodeSpecifier.INSTANCE);
     _status =
         Strings.isNullOrEmpty(status)
             ? Pattern.compile(MATCH_ALL)
@@ -83,12 +85,12 @@ public abstract class BgpSessionQuestion extends Question {
   }
 
   @JsonProperty(PROP_NODES)
-  public NodesSpecifier getNodes() {
+  public NodeSpecifier getNodes() {
     return _nodes;
   }
 
   @JsonProperty(PROP_REMOTE_NODES)
-  public NodesSpecifier getRemoteNodes() {
+  public NodeSpecifier getRemoteNodes() {
     return _remoteNodes;
   }
 

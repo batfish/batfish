@@ -80,7 +80,7 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
   public AnswerElement answer() {
     BgpProcessConfigurationQuestion question = (BgpProcessConfigurationQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);
+    Set<String> nodes = question.getNodes().resolve(_batfish.specifierContext());
 
     TableMetadata tableMetadata = createTableMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);

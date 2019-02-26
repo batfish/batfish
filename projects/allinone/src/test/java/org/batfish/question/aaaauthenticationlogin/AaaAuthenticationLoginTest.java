@@ -14,12 +14,13 @@ import static org.junit.Assert.assertThat;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.regex.Pattern;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.specifier.NameRegexNodeSpecifier;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -47,7 +48,9 @@ public class AaaAuthenticationLoginTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname1, hostname2, hostname3, hostname4);
 
     AaaAuthenticationLoginQuestion question = new AaaAuthenticationLoginQuestion();
-    question.setNodes(new NodesSpecifier("((ios)|(juniper)).*", true));
+    question.setNodes(
+        new NameRegexNodeSpecifier(
+            Pattern.compile("((ios)|(juniper)).*", Pattern.CASE_INSENSITIVE)));
     AaaAuthenticationLoginAnswerer answerer = new AaaAuthenticationLoginAnswerer(question, batfish);
     TableAnswerElement answer = answerer.answer();
 

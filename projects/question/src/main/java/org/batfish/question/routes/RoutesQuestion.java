@@ -14,9 +14,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.RoutingProtocolSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 /** Returns computed routes after dataplane computation. */
 @ParametersAreNonnullByDefault
@@ -61,7 +63,7 @@ public class RoutesQuestion extends Question {
 
   @Nullable private Prefix _network;
 
-  @Nonnull private NodesSpecifier _nodes;
+  @Nonnull private NodeSpecifier _nodes;
 
   @Nonnull private String _protocols;
 
@@ -72,19 +74,20 @@ public class RoutesQuestion extends Question {
   /**
    * Create a new question.
    *
-   * @param nodes {@link NodesSpecifier} indicating which nodes' RIBs should be considered
+   * @param nodes String that servers as input to {@link org.batfish.specifier.NodeSpecifierFactory}
+   *     indicating which nodes' RIBs should be considered
    * @param vrfs a regex pattern indicating which VRFs should be considered
    * @param rib a specific protocol RIB to return routes from.
    */
   @JsonCreator
   private RoutesQuestion(
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_NODES) NodesSpecifier nodes,
+      @Nullable @JsonProperty(PROP_NODES) String nodes,
       @Nullable @JsonProperty(PROP_VRFS) String vrfs,
       @Nullable @JsonProperty(PROP_PROTOCOLS) String protocols,
       @Nullable @JsonProperty(PROP_RIB) RibProtocol rib) {
     _network = network;
-    _nodes = firstNonNull(nodes, NodesSpecifier.ALL);
+    _nodes = SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE);
     _protocols = firstNonNull(protocols, RoutingProtocolSpecifier.ALL);
     _rib = firstNonNull(rib, MAIN);
     _vrfs = firstNonNull(vrfs, ".*");
@@ -113,7 +116,7 @@ public class RoutesQuestion extends Question {
 
   @JsonProperty(PROP_NODES)
   @Nonnull
-  public NodesSpecifier getNodes() {
+  public NodeSpecifier getNodes() {
     return _nodes;
   }
 

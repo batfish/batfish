@@ -35,9 +35,11 @@ import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.bgpsessionstatus.BgpSessionStatusPlugin;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 /** @deprecated in favor of {@link BgpSessionStatusPlugin} */
 @AutoService(Plugin.class)
@@ -201,8 +203,8 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
       BgpSessionStatusQuestion question = (BgpSessionStatusQuestion) _question;
 
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
-      Set<String> includeNodes1 = question.getNode1Regex().getMatchingNodes(_batfish);
-      Set<String> includeNodes2 = question.getNode2Regex().getMatchingNodes(_batfish);
+      Set<String> includeNodes1 = question.getNodes1().resolve(_batfish.specifierContext());
+      Set<String> includeNodes2 = question.getNodes2().resolve(_batfish.specifierContext());
 
       BgpSessionStatusAnswerElement answerElement = new BgpSessionStatusAnswerElement();
       Set<Ip> allInterfaceIps = new HashSet<>();
@@ -348,9 +350,9 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
 
     @Nonnull private SortedSet<String> _foreignBgpGroups;
 
-    @Nonnull private NodesSpecifier _node1Regex;
+    @Nonnull private NodeSpecifier _nodes1;
 
-    @Nonnull private NodesSpecifier _node2Regex;
+    @Nonnull private NodeSpecifier _nodes2;
 
     @Nonnull private Pattern _statusRegex;
 
@@ -359,13 +361,15 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
     @JsonCreator
     public BgpSessionStatusQuestion(
         @JsonProperty(PROP_FOREIGN_BGP_GROUPS) SortedSet<String> foreignBgpGroups,
-        @JsonProperty(PROP_NODE1_REGEX) NodesSpecifier regex1,
-        @JsonProperty(PROP_NODE2_REGEX) NodesSpecifier regex2,
+        @JsonProperty(PROP_NODE1_REGEX) String nodes1,
+        @JsonProperty(PROP_NODE2_REGEX) String nodes2,
         @JsonProperty(PROP_STATUS) String statusRegex,
         @JsonProperty(PROP_TYPE_REGEX) String type) {
       _foreignBgpGroups = foreignBgpGroups == null ? new TreeSet<>() : foreignBgpGroups;
-      _node1Regex = regex1 == null ? NodesSpecifier.ALL : regex1;
-      _node2Regex = regex2 == null ? NodesSpecifier.ALL : regex2;
+      _nodes1 =
+          SpecifierFactories.getNodeSpecifierOrDefault(nodes1, AllNodesNodeSpecifier.INSTANCE);
+      _nodes2 =
+          SpecifierFactories.getNodeSpecifierOrDefault(nodes2, AllNodesNodeSpecifier.INSTANCE);
       _statusRegex =
           Strings.isNullOrEmpty(statusRegex)
               ? Pattern.compile(".*")
@@ -390,13 +394,13 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_NODE1_REGEX)
-    public NodesSpecifier getNode1Regex() {
-      return _node1Regex;
+    public NodeSpecifier getNodes1() {
+      return _nodes1;
     }
 
     @JsonProperty(PROP_NODE2_REGEX)
-    public NodesSpecifier getNode2Regex() {
-      return _node2Regex;
+    public NodeSpecifier getNodes2() {
+      return _nodes2;
     }
 
     @JsonProperty(PROP_STATUS)
