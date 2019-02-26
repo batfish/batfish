@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -23,7 +24,6 @@ import java.util.Objects;
 import java.util.Set;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Transition;
-import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
@@ -38,6 +38,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.z3.expr.StateExpr;
+import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PreInInterface;
 import org.batfish.z3.state.PreOutEdgePostNat;
 import org.junit.Before;
@@ -74,6 +75,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
   // transformations
   private MockBDDReverseFlowTransformationFactory _reverseFlowTransformationFactory;
+  private Transition _fwI3Transition;
   private Transition _fwI3ToI1Transition;
   private Transition _fwI3ToI2Transition;
 
@@ -159,9 +161,9 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
     // transformations
     Transition fwI1Transition = new MockTransition(FWI1);
     Transition fwI2Transition = new MockTransition(FWI2);
-    Transition fwI3Transition = new MockTransition(FWI3);
-    _fwI3ToI1Transition = compose(fwI3Transition, fwI1Transition);
-    _fwI3ToI2Transition = compose(fwI3Transition, fwI2Transition);
+    _fwI3Transition = new MockTransition(FWI3);
+    _fwI3ToI1Transition = compose(_fwI3Transition, fwI1Transition);
+    _fwI3ToI2Transition = compose(_fwI3Transition, fwI2Transition);
     _reverseFlowTransformationFactory =
         new MockBDDReverseFlowTransformationFactory(
             // incoming transformations
@@ -169,7 +171,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
                 new NodeInterfacePair(FW, FWI1), fwI1Transition,
                 new NodeInterfacePair(FW, FWI2), fwI2Transition),
             // outgoing transformations
-            ImmutableMap.of(new NodeInterfacePair(FW, FWI3), fwI3Transition));
+            ImmutableMap.of(new NodeInterfacePair(FW, FWI3), _fwI3Transition));
   }
 
   public Map<String, List<BDDFirewallSessionTraceInfo>> computeInitializedSessions(
@@ -396,11 +398,68 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
   @Test
   public void testOriginatingFromDevice() {
-    throw new BatfishException("TODO");
+    // FW -- FW:I3 -> BORDER_IFACE:BORDER
+    BDD inBdd = _fwSrcMgr.getOriginatingFromDeviceBDD();
+
+    Prefix routePrefix = Prefix.parse("1.0.0.0/8");
+    BDD fwdRouteBdd = dstBdd(routePrefix);
+    BDD outBdd = inBdd.and(fwdRouteBdd);
+
+    BDD sessionFlows = srcBdd(routePrefix);
+
+    Map<StateExpr, BDD> forwardReachableSets =
+        ImmutableMap.of(
+            new OriginateVrf(FW, Configuration.DEFAULT_VRF_NAME), inBdd,
+            new PreOutEdgePostNat(FW, FWI3, BORDER, BORDER_IFACE), outBdd);
+
+    Map<String, List<BDDFirewallSessionTraceInfo>> sessions =
+        computeInitializedSessions(forwardReachableSets);
+
+    assertThat(sessions.keySet(), contains(FW));
+    List<BDDFirewallSessionTraceInfo> fwSessions = sessions.get(FW);
+    assertThat(fwSessions, hasSize(1));
+    BDDFirewallSessionTraceInfo fwSession = fwSessions.get(0);
+
+    assertThat(fwSession, hasHostname(FW));
+    assertThat(fwSession, hasIncomingInterfaces(contains(FWI3)));
+    assertThat(fwSession, hasNextHop(nullValue()));
+    assertThat(fwSession, hasOutgoingInterface(nullValue()));
+    assertThat(fwSession, hasSessionFlows(sessionFlows));
+    assertThat(fwSession, hasTransformation(_fwI3Transition));
   }
 
   @Test
   public void testNoLastHopOutgoingInterface() {
-    throw new BatfishException("TODO");
+    // FW:I1 -- FW:I3 -> BORDER_IFACE:BORDER
+    BDD inBdd =
+        _fwSrcMgr
+            .getSourceInterfaceBDD(FWI1)
+            .and(_lastHopMgr.getNoLastHopOutgoingInterfaceBdd(FW, FWI1));
+
+    Prefix routePrefix = Prefix.parse("1.0.0.0/8");
+    BDD fwdRouteBdd = dstBdd(routePrefix);
+    BDD outBdd = inBdd.and(fwdRouteBdd);
+
+    BDD sessionFlows = srcBdd(routePrefix);
+
+    Map<StateExpr, BDD> forwardReachableSets =
+        ImmutableMap.of(
+            new OriginateVrf(FW, Configuration.DEFAULT_VRF_NAME), inBdd,
+            new PreOutEdgePostNat(FW, FWI3, BORDER, BORDER_IFACE), outBdd);
+
+    Map<String, List<BDDFirewallSessionTraceInfo>> sessions =
+        computeInitializedSessions(forwardReachableSets);
+
+    assertThat(sessions.keySet(), contains(FW));
+    List<BDDFirewallSessionTraceInfo> fwSessions = sessions.get(FW);
+    assertThat(fwSessions, hasSize(1));
+    BDDFirewallSessionTraceInfo fwSession = fwSessions.get(0);
+
+    assertThat(fwSession, hasHostname(FW));
+    assertThat(fwSession, hasIncomingInterfaces(contains(FWI3)));
+    assertThat(fwSession, hasNextHop(nullValue()));
+    assertThat(fwSession, hasOutgoingInterface(FWI1));
+    assertThat(fwSession, hasSessionFlows(sessionFlows));
+    assertThat(fwSession, hasTransformation(_fwI3ToI1Transition));
   }
 }

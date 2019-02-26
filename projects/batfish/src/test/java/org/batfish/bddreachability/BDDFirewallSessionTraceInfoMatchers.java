@@ -37,6 +37,10 @@ public final class BDDFirewallSessionTraceInfoMatchers {
     return new HasOutgoingInterface(equalTo(outIface));
   }
 
+  public static HasOutgoingInterface hasOutgoingInterface(Matcher<? super String> matcher) {
+    return new HasOutgoingInterface(matcher);
+  }
+
   public static HasSessionFlows hasSessionFlows(BDD bdd) {
     return new HasSessionFlows(equalTo(bdd));
   }
