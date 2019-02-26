@@ -1,14 +1,13 @@
 package org.batfish.datamodel.matchers;
 
 import java.util.Set;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
@@ -32,13 +31,13 @@ final class InterfaceMatchersImpl {
     }
   }
 
-  static final class HasAdditionalArpIps extends FeatureMatcher<Interface, SortedSet<Ip>> {
-    HasAdditionalArpIps(@Nonnull Matcher<? super SortedSet<Ip>> subMatcher) {
+  static final class HasAdditionalArpIps extends FeatureMatcher<Interface, IpSpace> {
+    HasAdditionalArpIps(@Nonnull Matcher<? super IpSpace> subMatcher) {
       super(subMatcher, "An interface with additionalArpIps:", "additionalArpIps");
     }
 
     @Override
-    protected SortedSet<Ip> featureValueOf(Interface actual) {
+    protected IpSpace featureValueOf(Interface actual) {
       return actual.getAdditionalArpIps();
     }
   }
