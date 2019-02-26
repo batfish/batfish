@@ -13407,6 +13407,9 @@
           "ge-0/0/0.0" : {
             "name" : "ge-0/0/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allPrefixes" : [
               "1.0.0.0/31"
             ],
@@ -13462,6 +13465,9 @@
           "ge-0/0/1.0" : {
             "name" : "ge-0/0/1.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allPrefixes" : [
               "1.0.0.1/31"
             ],
@@ -13520,6 +13526,9 @@
           "reth0.3" : {
             "name" : "reth0.3",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allPrefixes" : [
               "3.3.3.3/31"
             ],
@@ -13926,6 +13935,9 @@
           "xe-0/0/0:0.0" : {
             "name" : "xe-0/0/0:0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allPrefixes" : [
               "10.1.2.3/31"
             ],
@@ -15524,6 +15536,9 @@
           "ae16.0" : {
             "name" : "ae16.0",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 0.0,
@@ -15574,6 +15589,9 @@
           "xe-0/0/1.0" : {
             "name" : "xe-0/0/1.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -15624,6 +15642,9 @@
           "xe-0/0/20:0.0" : {
             "name" : "xe-0/0/20:0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -15674,6 +15695,9 @@
           "xe-0/0/21:0.0" : {
             "name" : "xe-0/0/21:0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -17374,6 +17398,9 @@
           "et-0/0/10.0" : {
             "name" : "et-0/0/10.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E11,
@@ -17424,6 +17451,9 @@
           "ge-0/2/5.0" : {
             "name" : "ge-0/2/5.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -17477,6 +17507,9 @@
           "xe-1/0/0.0" : {
             "name" : "xe-1/0/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -17585,6 +17618,9 @@
           "ae0.0" : {
             "name" : "ae0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -17737,6 +17773,9 @@
           "ge-2/0/0.0" : {
             "name" : "ge-2/0/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 5.0,
@@ -17762,6 +17801,9 @@
           "ge-2/0/0.1" : {
             "name" : "ge-2/0/0.1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1920.0,
@@ -17812,6 +17854,9 @@
           "ge-3/0/0.0" : {
             "name" : "ge-3/0/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 5000.0,
@@ -17862,6 +17907,9 @@
           "ge-4/0/0.0" : {
             "name" : "ge-4/0/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 5000000.0,
@@ -17912,6 +17960,9 @@
           "ge-5/0/0.0" : {
             "name" : "ge-5/0/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 5.0E9,
@@ -17937,6 +17988,9 @@
           "irb.5" : {
             "name" : "irb.5",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allPrefixes" : [
               "1.2.3.0/24",
               "1.2.3.1/24"
@@ -17999,6 +18053,9 @@
           "vme.0" : {
             "name" : "vme.0",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allPrefixes" : [
               "100.100.100.100/32"
             ],
@@ -18053,6 +18110,9 @@
           "xe-0/0/0:0.0" : {
             "name" : "xe-0/0/0:0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -18103,6 +18163,9 @@
           "xe-0/0/5:0.0" : {
             "name" : "xe-0/0/5:0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -18229,6 +18292,9 @@
           "ge-0/0/0.0" : {
             "name" : "ge-0/0/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -18376,6 +18442,9 @@
           "lo0.0" : {
             "name" : "lo0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
@@ -18480,6 +18549,9 @@
           "ge-0/0/0.0" : {
             "name" : "ge-0/0/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allPrefixes" : [
               "1.0.0.1/24"
             ],
@@ -19170,6 +19242,9 @@
           "irb.10" : {
             "name" : "irb.10",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -19198,6 +19273,9 @@
           "irb.20" : {
             "name" : "irb.20",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -20704,6 +20782,9 @@
           "ge-0/0/0.0" : {
             "name" : "ge-0/0/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allPrefixes" : [
               "1.1.1.1/24",
               "2.2.2.2/24"
@@ -20734,6 +20815,9 @@
           "ge-0/0/0.99" : {
             "name" : "ge-0/0/0.99",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E9,
@@ -21943,6 +22027,9 @@
           "xe-0/0/0.0" : {
             "name" : "xe-0/0/0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allowedVlans" : "30,40,50",
             "autostate" : true,
             "bandwidth" : 1.0E10,
@@ -29757,6 +29844,9 @@
           "fxp0.0" : {
             "name" : "fxp0.0",
             "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allPrefixes" : [
               "10.10.20.4/24"
             ],
@@ -29786,6 +29876,9 @@
           "irb.100" : {
             "name" : "irb.100",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allPrefixes" : [
               "10.200.100.254/24"
             ],
@@ -29840,6 +29933,9 @@
           "lo0.0" : {
             "name" : "lo0.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allPrefixes" : [
               "192.168.1.2/32"
             ],
@@ -29869,6 +29965,9 @@
           "lo0.1" : {
             "name" : "lo0.1",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allPrefixes" : [
               "192.168.100.200/32"
             ],
@@ -29923,6 +30022,9 @@
           "xe-0/0/2.0" : {
             "name" : "xe-0/0/2.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allPrefixes" : [
               "172.16.7.1/30"
             ],
@@ -29977,6 +30079,9 @@
           "xe-0/0/3.0" : {
             "name" : "xe-0/0/3.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allPrefixes" : [
               "172.16.5.1/30"
             ],
@@ -30031,6 +30136,9 @@
           "xe-0/0/4.0" : {
             "name" : "xe-0/0/4.0",
             "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.AclIpSpace"
+            },
             "allPrefixes" : [
               "172.16.3.1/30"
             ],
