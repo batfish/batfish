@@ -717,7 +717,6 @@ class FlowTracer {
         return true;
       }
 
-      _breadcrumbs.push(new Breadcrumb(_currentNode.getName(), _vrfName, context.getFlow()));
       // Sort so that resulting traces will be in sensible deterministic order
       SortedSet<FibEntry> fibEntries =
           ImmutableSortedSet.copyOf(
@@ -727,6 +726,7 @@ class FlowTracer {
                   .map(fib -> fib.get(context.getFlow().getDstIp()))
                   .orElse(ImmutableSet.of()));
 
+      _breadcrumbs.push(new Breadcrumb(_currentNode.getName(), _vrfName, context.getFlow()));
       try {
         if (fibEntries.isEmpty()) {
           buildNoRouteTrace();
