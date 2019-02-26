@@ -16,6 +16,9 @@
         "structDefinition" : {
           "name" : "GigabitEthernet2/0",
           "active" : true,
+          "additionalArpIps" : {
+            "class" : "org.batfish.datamodel.EmptyIpSpace"
+          },
           "allPrefixes" : [
             "2.23.11.2/24"
           ],
@@ -63,6 +66,9 @@
         "structDefinition" : {
           "name" : "GigabitEthernet3/0",
           "active" : true,
+          "additionalArpIps" : {
+            "class" : "org.batfish.datamodel.EmptyIpSpace"
+          },
           "allPrefixes" : [
             "2.23.12.2/24"
           ],

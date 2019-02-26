@@ -241,6 +241,18 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _unownedIpsBDD = computeUnownedIpsBDD();
   }
 
+  Map<String, Map<String, IpSpace>> computeArpAdditionalIps(
+      Map<String, Configuration> configurations) {
+    return toImmutableMap(
+        configurations,
+        Entry::getKey,
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue().getAllInterfaces(),
+                Entry::getKey,
+                ifaceEntry -> ifaceEntry.getValue().getAdditionalArpIps()));
+  }
+
   /**
    * Compute an IP address ACL for each interface of each node permitting only those IPs for which
    * the node would send out an ARP reply on that interface: <br>
@@ -248,7 +260,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
    * 1) PERMIT IPs belonging to the interface.<br>
    * 2) (Proxy-ARP) DENY any IP for which there is a longest-prefix match entry in the FIB that goes
    * through the interface.<br>
-   * 3) (Proxy-ARP) PERMIT any other IP routable via the VRF of the interface.
+   * 3) (Proxy-ARP) PERMIT any other IP routable via the VRF of the interface.<br>
+   * 4) (Proxy-ARP) PERMIT any statically configured arp IPs.
    */
   @VisibleForTesting
   <T extends AbstractRouteDecorator> Map<String, Map<String, IpSpace>> computeArpReplies(
@@ -258,6 +271,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
         GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeArpReplies").startActive()) {
       assert span != null; // avoid unused warning
       Map<String, Map<String, IpSpace>> routableIpsByNodeVrf = computeRoutableIpsByNodeVrf(ribs);
+      Map<String, Map<String, IpSpace>> arpAdditionalIps = computeArpAdditionalIps(configurations);
       return toImmutableMap(
           configurations,
           Entry::getKey,
@@ -266,8 +280,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
             Map<String, Interface> interfaces = nodeEntry.getValue().getAllInterfaces();
             Map<String, IpSpace> routableIpsByVrf = routableIpsByNodeVrf.get(hostname);
             Map<String, IpSpace> ipsRoutedOutInterfaces = _ipsRoutedOutInterfaces.get(hostname);
+            Map<String, IpSpace> arpAdditionalIpsPerInterface = arpAdditionalIps.get(hostname);
             return computeArpRepliesByInterface(
-                interfaces, routableIpsByVrf, ipsRoutedOutInterfaces);
+                interfaces, routableIpsByVrf, ipsRoutedOutInterfaces, arpAdditionalIpsPerInterface);
           });
     }
   }
@@ -276,7 +291,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   Map<String, IpSpace> computeArpRepliesByInterface(
       Map<String, Interface> interfaces,
       Map<String, IpSpace> routableIpsByVrf,
-      Map<String, IpSpace> ipsRoutedOutInterfaces) {
+      Map<String, IpSpace> ipsRoutedOutInterfaces,
+      Map<String, IpSpace> arpAdditionalIpsPerInterface) {
     return toImmutableMap(
         interfaces,
         Entry::getKey,
@@ -284,7 +300,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
             computeInterfaceArpReplies(
                 ifaceEntry.getValue(),
                 routableIpsByVrf.get(ifaceEntry.getValue().getVrfName()),
-                ipsRoutedOutInterfaces.get(ifaceEntry.getKey())));
+                ipsRoutedOutInterfaces.get(ifaceEntry.getKey()),
+                arpAdditionalIpsPerInterface.get(ifaceEntry.getKey())));
   }
 
   @VisibleForTesting
@@ -370,7 +387,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   @VisibleForTesting
   IpSpace computeInterfaceArpReplies(
-      Interface iface, IpSpace routableIpsForThisVrf, IpSpace ipsRoutedThroughInterface) {
+      Interface iface,
+      IpSpace routableIpsForThisVrf,
+      IpSpace ipsRoutedThroughInterface,
+      IpSpace arpAdditionalIps) {
     IpSpace ipsAssignedToThisInterface = computeIpsAssignedToThisInterface(iface);
     if (ipsAssignedToThisInterface == EmptyIpSpace.INSTANCE) {
       // if no IPs are assigned to this interface, it replies to no ARP requests.
@@ -385,6 +405,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       /* Accept all other routable IPs */
       interfaceArpReplies.thenPermitting(routableIpsForThisVrf);
     }
+
+    /* Accept IPs configured statically */
+    interfaceArpReplies.thenPermitting(arpAdditionalIps);
     return interfaceArpReplies.build();
   }
 
