@@ -2,6 +2,7 @@ package org.batfish.question.bgpproperties;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
@@ -23,10 +24,18 @@ public class BgpProcessConfigurationQuestion extends Question {
   @Nonnull private NodeSpecifier _nodes;
   @Nonnull private BgpProcessPropertySpecifier _properties;
 
-  public BgpProcessConfigurationQuestion(
+  @JsonCreator
+  private static BgpProcessConfigurationQuestion create(
       @JsonProperty(PROP_NODES) String nodes,
       @JsonProperty(PROP_PROPERTIES) BgpProcessPropertySpecifier propertySpec) {
-    _nodes = SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE);
+    return new BgpProcessConfigurationQuestion(
+        SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),
+        firstNonNull(propertySpec, BgpProcessPropertySpecifier.ALL));
+  }
+
+  public BgpProcessConfigurationQuestion(
+      NodeSpecifier nodes, BgpProcessPropertySpecifier propertySpec) {
+    _nodes = nodes;
     _properties = firstNonNull(propertySpec, BgpProcessPropertySpecifier.ALL);
   }
 

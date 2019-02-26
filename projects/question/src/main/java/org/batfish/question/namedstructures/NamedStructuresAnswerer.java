@@ -127,7 +127,7 @@ public class NamedStructuresAnswerer extends Answerer {
   public TableAnswerElement answer() {
     NamedStructuresQuestion question = (NamedStructuresQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> nodes = question.getNodes().getMatchingNodes(_batfish);
+    Set<String> nodes = question.getNodes().resolve(_batfish.specifierContext());
 
     TableMetadata tableMetadata = createMetadata(question);
 

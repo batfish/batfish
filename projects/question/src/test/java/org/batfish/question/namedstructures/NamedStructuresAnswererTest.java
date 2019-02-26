@@ -16,9 +16,9 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.Row;
+import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.junit.Test;
 
 public class NamedStructuresAnswererTest {
@@ -62,7 +62,7 @@ public class NamedStructuresAnswererTest {
     // only get routing policies
     NamedStructuresQuestion question =
         new NamedStructuresQuestion(
-            NodesSpecifier.ALL,
+            AllNodesNodeSpecifier.INSTANCE,
             new NamedStructureSpecifier(NamedStructureSpecifier.ROUTING_POLICY),
             null,
             null,
@@ -115,7 +115,7 @@ public class NamedStructuresAnswererTest {
 
     NamedStructuresQuestion question =
         new NamedStructuresQuestion(
-            NodesSpecifier.ALL, NamedStructureSpecifier.ALL, null, true, null);
+            AllNodesNodeSpecifier.INSTANCE, NamedStructureSpecifier.ALL, null, true, null);
 
     Multiset<Row> rows =
         NamedStructuresAnswerer.rawAnswer(
@@ -156,7 +156,7 @@ public class NamedStructuresAnswererTest {
 
     NamedStructuresQuestion question =
         new NamedStructuresQuestion(
-            NodesSpecifier.ALL, NamedStructureSpecifier.ALL, null, null, true);
+            AllNodesNodeSpecifier.INSTANCE, NamedStructureSpecifier.ALL, null, null, true);
 
     Multiset<Row> rows =
         NamedStructuresAnswerer.rawAnswer(
@@ -201,7 +201,7 @@ public class NamedStructuresAnswererTest {
 
     NamedStructuresQuestion question =
         new NamedStructuresQuestion(
-            NodesSpecifier.ALL, NamedStructureSpecifier.ALL, "selected.*", false, null);
+            AllNodesNodeSpecifier.INSTANCE, NamedStructureSpecifier.ALL, "selected.*", false, null);
 
     Multiset<Row> rows =
         NamedStructuresAnswerer.rawAnswer(
