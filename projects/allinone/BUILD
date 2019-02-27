@@ -80,6 +80,24 @@ junit_tests(
 )
 
 junit_tests(
+    name = "F5BigipVipConfigurationTest",
+    size = "small",
+    srcs = [
+        "src/test/java/org/batfish/question/f5_bigip/F5BigipVipConfigurationTest.java",
+    ],
+    resources = glob(["src/test/resources/org/batfish/allinone/testconfigs/*"]),
+    deps = [
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
+        "//projects/question",
+        "@guava//:compile",
+        "@hamcrest//:compile",
+    ],
+)
+
+junit_tests(
     name = "MultipathConsistencyTest",
     size = "small",
     srcs = [

@@ -41587,6 +41587,27 @@
             "  (statement",
             "    (s_net",
             "      NET:'net'",
+            "      (net_self",
+            "        SELF:'self'",
+            "        name = (word",
+            "          WORD:'/Common/MYSELF6')",
+            "        BRACE_LEFT:'{'",
+            "        NEWLINE:'\\n'",
+            "        (ns_address",
+            "          ADDRESS:'address'",
+            "          interface_address = (word",
+            "            WORD:'1::1/64')",
+            "          NEWLINE:'\\n')",
+            "        (ns_vlan",
+            "          VLAN:'vlan'",
+            "          name = (word",
+            "            WORD:'/Common/MYVLAN')",
+            "          NEWLINE:'\\n')",
+            "        BRACE_RIGHT:'}'",
+            "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_net",
+            "      NET:'net'",
             "      (unrecognized",
             "        (u_word",
             "          (word",
@@ -69223,26 +69244,32 @@
               "Text" : "traffic-group /Common/traffic-group-local-only"
             },
             {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 32,
+              "Parser_Context" : "[ns_address net_self s_net statement f5_bigip_structured_configuration]",
+              "Text" : "address 1::1/64"
+            },
+            {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 31,
+              "Line" : 35,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "self-allow"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 40,
+              "Line" : 44,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "stp"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 51,
+              "Line" : 55,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "stp-globals"
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 54,
+              "Line" : 58,
               "Parser_Context" : "[unrecognized s_net statement f5_bigip_structured_configuration]",
               "Text" : "tunnels"
             }
@@ -72915,19 +72942,28 @@
                 30
               ],
               "numReferrers" : 1
+            },
+            "/Common/MYSELF6" : {
+              "definitionLines" : [
+                31,
+                32,
+                33,
+                34
+              ],
+              "numReferrers" : 1
             }
           },
           "vlan" : {
             "/Common/MYVLAN" : {
               "definitionLines" : [
-                58,
-                59,
-                60,
-                61,
                 62,
-                63
+                63,
+                64,
+                65,
+                66,
+                67
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             }
           }
         },
@@ -77815,7 +77851,7 @@
                 8
               ],
               "vlan interface" : [
-                60
+                64
               ]
             }
           },
@@ -77824,12 +77860,18 @@
               "self self-reference" : [
                 25
               ]
+            },
+            "/Common/MYSELF6" : {
+              "self self-reference" : [
+                31
+              ]
             }
           },
           "vlan" : {
             "/Common/MYVLAN" : {
               "self vlan" : [
-                29
+                29,
+                33
               ]
             }
           }

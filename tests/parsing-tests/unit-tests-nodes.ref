@@ -12093,7 +12093,51 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : { },
+        "vendorFamily" : {
+          "f5Bigip" : {
+            "pools" : {
+              "/Common/SOME_LTM_POOL" : {
+                "members" : {
+                  "/Common/bar:80" : {
+                    "name" : "/Common/bar:80",
+                    "node" : "/Common/bar",
+                    "port" : 80,
+                    "address" : "192.0.2.3"
+                  },
+                  "/Common/foo:80" : {
+                    "name" : "/Common/foo:80",
+                    "node" : "/Common/foo",
+                    "port" : 80,
+                    "address" : "192.0.2.2"
+                  }
+                },
+                "name" : "/Common/SOME_LTM_POOL",
+                "monitor" : "/Common/SOME_MONITOR"
+              }
+            },
+            "virtualAddresses" : {
+              "/Common/192.0.2.8" : {
+                "name" : "/Common/192.0.2.8",
+                "address" : "192.0.2.9",
+                "mask" : "255.255.255.255",
+                "routeAdvertisementMode" : "SELECTIVE"
+              }
+            },
+            "virtuals" : {
+              "/Common/SOME_VIRTUAL" : {
+                "name" : "/Common/SOME_VIRTUAL",
+                "destination" : "/Common/192.0.2.7",
+                "destinationPort" : 80,
+                "ipProtocol" : "TCP",
+                "mask" : "255.255.255.255",
+                "pool" : "/Common/SOME_POOL",
+                "source" : "0.0.0.0/0",
+                "sourceAddressTranslationPool" : "/Common/SOME_SNATPOOL",
+                "vlansEnabled" : true
+              }
+            }
+          }
+        },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -12170,7 +12214,9 @@
             "vrf" : "default"
           }
         },
-        "vendorFamily" : { },
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -12297,7 +12343,9 @@
             ]
           }
         },
-        "vendorFamily" : { },
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -12372,7 +12420,9 @@
             "name" : "/Common/MY_IPV4_PREFIX_LIST"
           }
         },
-        "vendorFamily" : { },
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -12463,7 +12513,9 @@
             ]
           }
         },
-        "vendorFamily" : { },
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -12476,7 +12528,9 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : { },
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
         "vrfs" : {
           "default" : {
             "name" : "default"

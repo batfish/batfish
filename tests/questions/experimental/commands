@@ -24,6 +24,9 @@ test -raw tests/questions/experimental/compareFilters.ref validate-template comp
 # validate detectLoops
 test -raw tests/questions/experimental/detectLoops.ref validate-template detectLoops maxTraces=0
 
+# validate f5BigipVipConfiguration
+test -raw tests/questions/experimental/f5BigipVipConfiguration.ref validate-template f5BigipVipConfiguration nodes="abcd"
+
 # validate filterTable
 test -raw tests/questions/experimental/filterTable.ref validate-template filterTable filter = "mtu == 1500", innerQuestion={"class": "org.batfish.question.interfaceproperties.InterfacePropertiesQuestion"}, columns=["interface", "mtu"]
 
