@@ -23,7 +23,7 @@ public final class SpecifierFactories {
 
   private SpecifierFactories() {}
 
-  public static final FactoryGroup ACTIVE_GROUP = FactoryGroup.V1;
+  public static final FactoryGroup ACTIVE_GROUP = FactoryGroup.V2;
 
   public static final String Filter =
       ACTIVE_GROUP == FactoryGroup.V1

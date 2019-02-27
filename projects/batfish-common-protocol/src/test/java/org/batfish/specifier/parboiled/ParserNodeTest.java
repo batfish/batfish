@@ -69,7 +69,7 @@ public class ParserNodeTest {
                 new AutocompleteSuggestion(
                     "ref.nodeRole", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
-                    "@device", true, null, RANK_STRING_LITERAL, query.length()))));
+                    "@deviceType", true, null, RANK_STRING_LITERAL, query.length()))));
   }
 
   @Test
@@ -162,9 +162,10 @@ public class ParserNodeTest {
     TypeNodeAstNode expectedAst =
         new TypeNodeAstNode(new StringAstNode(DeviceType.ROUTER.toString()));
 
-    assertThat(ParserUtils.getAst(getRunner().run("@device(router)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" @device ( router ) ")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("@DeviCE(RouTer)")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run("@deviceType(router)")), equalTo(expectedAst));
+    assertThat(
+        ParserUtils.getAst(getRunner().run(" @deviceType ( router ) ")), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run("@DeviCEtype(RouTer)")), equalTo(expectedAst));
   }
 
   @Test

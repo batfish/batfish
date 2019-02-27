@@ -146,7 +146,7 @@ public class Parser extends CommonParser {
    *
    *   interfaceTerm := @connectedTo(ipSpaceExpr)  // non-@ versions also supported for back compat
    *                        | @interfacegroup(a, b)
-   *                        | @link(interfaceType)
+   *                        | @interfaceType(interfaceType)
    *                        | @vrf(vrfName)
    *                        | @zone(zoneName)
    *                        | interfaceName
@@ -237,7 +237,7 @@ public class Parser extends CommonParser {
 
   public Rule InterfaceType() {
     return Sequence(
-        FirstOf(IgnoreCase("@link"), IgnoreCase("type")),
+        FirstOf(IgnoreCase("@interfaceType"), IgnoreCase("type")),
         WhiteSpace(),
         "( ",
         InterfaceTypeExpr(),
@@ -459,7 +459,8 @@ public class Parser extends CommonParser {
   }
 
   public Rule LocationTerm() {
-    return FirstOf(LocationEnter(), LocationInterface(), LocationParens());
+    return FirstOf(
+        LocationEnter(), LocationInterfaceDeprecated(), LocationInterface(), LocationParens());
   }
 
   public Rule LocationEnter() {
@@ -489,6 +490,17 @@ public class Parser extends CommonParser {
             push(InterfaceLocationAstNode.createFromInterface(pop()))));
   }
 
+  @Anchor(IGNORE)
+  public Rule LocationInterfaceDeprecated() {
+    return Sequence(
+        // brackets without node expression
+        "[ ",
+        InterfaceExpression(),
+        WhiteSpace(),
+        "] ",
+        push(InterfaceLocationAstNode.createFromInterface(pop())));
+  }
+
   public Rule LocationParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
     return Sequence("( ", LocationExpression(), WhiteSpace(), ") ");
@@ -501,7 +513,7 @@ public class Parser extends CommonParser {
    *   nodeExpr := nodeTerm [{@literal &} | , | \ nodeTerm]*
    *
    *   nodeTerm := @role(a, b) // ref.noderole is also supported for back compat
-   *               | @device(a)
+   *               | @deviceType(a)
    *               | nodeName
    *               | nodeNameRegex
    *               | ( nodeTerm )
@@ -565,7 +577,7 @@ public class Parser extends CommonParser {
 
   public Rule NodeType() {
     return Sequence(
-        IgnoreCase("@device"),
+        IgnoreCase("@deviceType"),
         WhiteSpace(),
         "( ",
         NodeTypeExpr(),
