@@ -70,7 +70,6 @@ public class ParserLocationTest {
                         "@connectedTo",
                         "@deviceType",
                         "@enter",
-                        "enter",
                         "@interfaceGroup",
                         "@interfaceType",
                         "@role",
@@ -205,6 +204,18 @@ public class ParserLocationTest {
     String input = "[eth0/1]";
     InterfaceLocationAstNode expectedAst =
         InterfaceLocationAstNode.createFromInterface(new NameInterfaceAstNode("eth0/1"));
+
+    assertThat(ParserUtils.getAst(getRunner().run(input)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + input + " ")), equalTo(expectedAst));
+  }
+
+  @Test
+  public void testParseLocationInterfaceDeprecatedInsideFunc() {
+    String input = "enter([ref.interfacegroup(sea, host-iface)])";
+    LocationAstNode expectedAst =
+        new EnterLocationAstNode(
+            InterfaceLocationAstNode.createFromInterface(
+                new InterfaceGroupInterfaceAstNode("sea", "host-iface")));
 
     assertThat(ParserUtils.getAst(getRunner().run(input)), equalTo(expectedAst));
     assertThat(ParserUtils.getAst(getRunner().run(" " + input + " ")), equalTo(expectedAst));
