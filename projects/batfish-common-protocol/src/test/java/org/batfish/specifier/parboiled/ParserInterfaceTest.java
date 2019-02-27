@@ -70,20 +70,12 @@ public class ParserInterfaceTest {
                 new AutocompleteSuggestion(
                     "@connectedTo", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
-                    "connectedTo", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
                     "@interfaceGroup", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
-                    "ref.interfaceGroup", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
                     "@interfaceType", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("type", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("@vrf", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("vrf", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
-                    "@zone", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "zone", true, null, RANK_STRING_LITERAL, query.length()))));
+                    "@zone", true, null, RANK_STRING_LITERAL, query.length()))));
   }
 
   @Test

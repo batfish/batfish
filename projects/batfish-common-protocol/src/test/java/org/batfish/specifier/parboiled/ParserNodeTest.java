@@ -67,8 +67,6 @@ public class ParserNodeTest {
                 new AutocompleteSuggestion(
                     "@role", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
-                    "ref.nodeRole", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
                     "@deviceType", true, null, RANK_STRING_LITERAL, query.length()))));
   }
 

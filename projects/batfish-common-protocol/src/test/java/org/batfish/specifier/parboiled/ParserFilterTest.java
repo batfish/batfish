@@ -65,10 +65,7 @@ public class ParserFilterTest {
                 new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("@in", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
-                    "inFilterOf", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("@out", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "outFilterOf", true, null, RANK_STRING_LITERAL, query.length()))));
+                    "@out", true, null, RANK_STRING_LITERAL, query.length()))));
   }
 
   @Test

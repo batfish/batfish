@@ -68,20 +68,14 @@ public class ParserLocationTest {
                         "/",
                         "\"",
                         "@connectedTo",
-                        "connectedTo",
                         "@deviceType",
                         "@enter",
                         "enter",
                         "@interfaceGroup",
-                        "ref.interfaceGroup",
                         "@interfaceType",
-                        "type",
                         "@role",
-                        "ref.nodeRole",
                         "@vrf",
-                        "vrf",
-                        "@zone",
-                        "zone")
+                        "@zone")
                     .stream()
                     .map(
                         s ->
