@@ -122,6 +122,7 @@ NO_ORDERED_VARIABLE_NAMES_QUESTIONS = {
     'questions/experimental/prefixTracer.json',
     'questions/experimental/resolveFilterSpecifier.json',
     'questions/experimental/resolveInterfaceSpecifier.json',
+    'questions/experimental/resolveIpSpaceSpecifier.json',
     'questions/experimental/searchFilters.json',
     'questions/experimental/switchedVlanProperties.json',
     'questions/experimental/vxlanVniProperties.json',
