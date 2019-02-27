@@ -410,7 +410,7 @@ class FlowTracer {
         _steps.add(
             new FilterStep(new FilterStepDetail(policy.getName(), INGRESS_FILTER), PERMITTED));
         String lookupVrfName = fibLookup.getVrfName();
-        Ip dstIp = _currentFlow.getDstIp();
+        Ip dstIp = result.getFinalFlow().getDstIp();
 
         // Accept if the flow is destined for this vrf on this host.
         String currentNodeName = _currentNode.getName();
