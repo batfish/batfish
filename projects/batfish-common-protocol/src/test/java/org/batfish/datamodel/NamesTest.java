@@ -53,7 +53,6 @@ public class NamesTest {
 
   @Test
   public void testTableColumnNames() {
-
     for (String name :
         new String[] {
           "simple", "~startTilde", "_startsUnderScore", "has-", "has.", "has:", "has/"

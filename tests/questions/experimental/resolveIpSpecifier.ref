@@ -2,7 +2,7 @@
   "class" : "org.batfish.question.specifiers.SpecifiersQuestion",
   "queryType" : "IP_SPACE",
   "differential" : false,
-  "filterSpecifierFactory" : "FlexibleFilterSpecifierFactory",
+  "filterSpecifierFactory" : "ParboiledFilterSpecifierFactory",
   "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Show the resolved values for IP specifier",
@@ -20,9 +20,9 @@
       }
     }
   },
-  "interfaceSpecifierFactory" : "FlexibleInterfaceSpecifierFactory",
-  "ipSpaceSpecifierFactory" : "FlexibleIpSpaceSpecifierFactory",
+  "interfaceSpecifierFactory" : "ParboiledInterfaceSpecifierFactory",
+  "ipSpaceSpecifierFactory" : "ParboiledIpSpaceSpecifierFactory",
   "ipSpaceSpecifierInput" : "1.1.1.1/24",
-  "locationSpecifierFactory" : "FlexibleLocationSpecifierFactory",
-  "nodeSpecifierFactory" : "FlexibleNodeSpecifierFactory"
+  "locationSpecifierFactory" : "ParboiledLocationSpecifierFactory",
+  "nodeSpecifierFactory" : "ParboiledNodeSpecifierFactory"
 }
