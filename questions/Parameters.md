@@ -131,8 +131,6 @@ A specification for interfaces in the network.
 
 * `@interfaceGroup(group, book)` looks in the configured reference library for an interface group with name 'group' and book with name 'book'.
 
-* `@interfaceType(type1)` indicates all interfaces of type 'type1'. The types of interfaces are listed [here](#interface-types). 
-
 * `@vrf(vrf1)` indicates all interfaces configured to be in the VRF with name 'vrf1'.
 
 * `@zone(zone3)` indicates all interfaces configured to be in the zone with name 'zone3'.
@@ -152,26 +150,9 @@ interfaceTerm :=
 interfaceFunc :=
     <b>@connectedTo(</b>ipSpec<b>)</b>
     | <b>@interfaceGroup(</b>&lt;<i>address-group-name</i>&gt;<b>,</b> &lt;<i>reference-book-name</i>&gt;<b>)</b>
-    | <b>@interfaceType(</b><i>interface-type</i><b>)</b>
     | <b>@vrf(</b>&lt;<i>vrf-name</i>&gt;<b>)</b>
     | <b>@zone(</b>&lt;<i>zone-name</i>&gt;<b>)</b>
 </pre>
-
-#### Interface Types 
-
-Batfish has the following types of interfaces.
-
-* `Aggregated`: Logical interface that aggregates multiple (physical) interfaces
-* `Aggregate_Child`: Child of an `Aggregated` interface, that is, its logical sub-interface
-* `Logical`: Generic logical interface (e.g., units on Juniper devices)
-* `Loopback`: Logical loopback interface
-* `Null`: Special null interface
-* `Physical`: Physical port on a device
-* `Redundant`: Logical redundant ethernet interface (in Juniper parlance)
-* `Tunnel`: Logical tunnel interface (e.g., GRE, IP-in-IP encapsulation)
-* `Unknown`: Unknown interface type
-* `VLAN`: Logical VLAN/irb interface
-* `VPN`: Logical VPN interface, (i.e., IPSec tunnel)
 
 ## IP Specifier
 
