@@ -16,7 +16,7 @@ final class AddNoLastHopConstraint implements Transition {
   AddNoLastHopConstraint(LastHopOutgoingInterfaceManager mgr, String recvNode, String recvIface) {
     checkArgument(
         mgr.isTrackedReceivingNode(recvNode),
-        "LastHopOutgoingInterfaceManager doeesn't track %s. Use IDENTITY instead",
+        "LastHopOutgoingInterfaceManager doesn't track %s. Use IDENTITY instead",
         recvNode);
     _noLastHopConstraint = mgr.getNoLastHopOutgoingInterfaceBdd(recvNode, recvIface);
     _mgr = mgr;

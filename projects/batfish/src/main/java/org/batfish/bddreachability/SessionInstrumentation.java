@@ -39,7 +39,13 @@ import org.batfish.z3.state.PreInInterface;
 
 /**
  * Instruments a {@link BDDReachabilityAnalysis} graph to install {@link BDDFirewallSessionTraceInfo
- * initialized firewall sessions}.
+ * initialized firewall sessions} for the return pass of a bidirectional reachablility analysis.
+ * This consists of adding new edges to process session flows, and constraining some existing edges
+ * to exclude session flows. In particular, if a router has a session for a particular flow, it must
+ * use that session to process it (it cannot use the non-session pipeline for that flow). The "has
+ * session" check occurs at the {@link PreInInterface} state. We add new out-edges from {@link
+ * PreInInterface} for session flows, and constrain the preexisting out-edges (i.e. the non-session
+ * pipeline) to exclude session flows.
  */
 public class SessionInstrumentation {
   private final Map<String, Configuration> _configs;
@@ -77,17 +83,20 @@ public class SessionInstrumentation {
         new SessionInstrumentation(bddPacket, configs, srcMgrs, lastHopMgr, filterBdds);
     Stream<Edge> newEdges = instrumentation.computeNewEdges(initializedSessions);
 
-    // new constraints on existing out-edges from a particular state expr
-    Map<StateExpr, BDD> existingOutEdgeConstraints =
-        computeExistingOutEdgeConstraints(initializedSessions);
-
-    Stream<Edge> instrumentedEdges = instrumentEdges(originalEdges, existingOutEdgeConstraints);
+    /* Instrument the original graph by adding an additional constraint to the out-edges from
+     * PreInInterface. Those edges are for non-session flows, and the constraint ensures only
+     * non-session flows can traverse those edges.
+     */
+    Stream<Edge> instrumentedEdges =
+        constrainOutEdges(
+            originalEdges, computeNonSessionPreInInterfaceOutEdgeConstraints(initializedSessions));
 
     return Stream.concat(newEdges, instrumentedEdges);
   }
 
+  /** For each input edge, apply an additional constraint from the map if any. */
   @Nonnull
-  private static Stream<Edge> instrumentEdges(
+  private static Stream<Edge> constrainOutEdges(
       Stream<Edge> originalEdges, Map<StateExpr, BDD> existingOutEdgeConstraints) {
     return originalEdges.map(
         edge -> {
@@ -101,26 +110,29 @@ public class SessionInstrumentation {
         });
   }
 
-  /** State -> New constraints on out-edges of that state. */
-  private static Map<StateExpr, BDD> computeExistingOutEdgeConstraints(
+  /**
+   * For each incoming interface of all sessions, compute the non-session flow constraint that
+   * should be applied to non-session out-edges from {@link PreInInterface}.
+   */
+  private static Map<StateExpr, BDD> computeNonSessionPreInInterfaceOutEdgeConstraints(
       Map<String, List<BDDFirewallSessionTraceInfo>> initializedSessions) {
     return initializedSessions.values().stream()
         .flatMap(Collection::stream)
-        .flatMap(SessionInstrumentation::computeExistingOutEdgeConstraints)
+        .flatMap(SessionInstrumentation::computeNonSessionPreInInterfaceOutEdgeConstraints)
         .collect(Collectors.toMap(Entry::getKey, Entry::getValue, BDD::and));
   }
 
   /**
-   * For each incoming interface of a session, constrain existing out-edges from the {@link
-   * PreInInterface} state for that interface to exclude session flows.
+   * For each incoming interface of a session, compute the non-session flow constraint that should
+   * be applied to non-session out-edges from {@link PreInInterface}.
    */
-  private static Stream<Entry<StateExpr, BDD>> computeExistingOutEdgeConstraints(
+  private static Stream<Entry<StateExpr, BDD>> computeNonSessionPreInInterfaceOutEdgeConstraints(
       BDDFirewallSessionTraceInfo sessionInfo) {
+    BDD nonSessionFlows = sessionInfo.getSessionFlows().not();
     return sessionInfo.getIncomingInterfaces().stream()
         .map(
             incomingIface -> {
               String hostname = sessionInfo.getHostname();
-              BDD nonSessionFlows = sessionInfo.getSessionFlows().not();
               return Maps.immutableEntry(
                   new PreInInterface(hostname, incomingIface), nonSessionFlows);
             });
@@ -153,12 +165,14 @@ public class SessionInstrumentation {
     NodeInterfacePair nextHop = sessionInfo.getNextHop();
 
     if (outIface == null) {
+      // The forward flow originated from the device, so the session delivers it to the device.
       return nodeAcceptEdges(sessionInfo);
     } else if (nextHop == null) {
-      /* Forward query started with OriginateInterfaceLink(hostname, outIface).
-       * ReversePassOriginationState maps both NodeInterfaceDeliveredToSubnet
-       * and NodeInterfaceExitsNetwork to OriginateInterfaceLink, so we can use
-       * either here and they will match up.
+      /* Forward query started with OriginateInterfaceLink(hostname, outIface). As long as the
+       * return flow reaches that interface link, we don't care what it's disposition might be.
+       * In every case we say the flow is successfully returned to the origination point. So we can
+       * use any disposition state for that interface link, and choose DELIVERED_TO_SUBNET
+       * arbitrarily.
        */
       return nodeInterfaceDeliveredToSubnetEdges(sessionInfo);
     } else {
@@ -192,7 +206,6 @@ public class SessionInstrumentation {
               BDD sessionFlows = sessionInfo.getSessionFlows();
               BDD inAclBdd = getIncomingingSessionFilterBdd(hostname, inIface);
 
-              // TODO need drop edges for session ACLs
               Transition transition =
                   compose(
                       constraint(sessionFlows.and(inAclBdd)),
@@ -317,7 +330,6 @@ public class SessionInstrumentation {
               Transition transition =
                   compose(
                       constraint(sessionFlows.and(inAclDenyBdd)),
-                      sessionInfo.getTransformation(),
                       removeSourceConstraint(srcMgr),
                       removeLastHopConstraint(_lastHopMgr, hostname));
               return new Edge(preState, postState, transition);
