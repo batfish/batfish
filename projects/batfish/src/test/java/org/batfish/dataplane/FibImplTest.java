@@ -1,25 +1,25 @@
 package org.batfish.dataplane;
 
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.FibEntryMatchers.hasInterface;
 import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FibImpl;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -87,24 +87,14 @@ public class FibImplTest {
 
     // Should have one LocalRoute per interface (also one ConnectedRoute, but LocalRoute will have
     // longer prefix match). Should see only iface1 in interfaces to ip1.
-    Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopIfacesByRouteToIp1 =
-        fib.getNextHopInterfacesByRoute(ip1);
-    assertThat(nextHopIfacesByRouteToIp1, aMapWithSize(1));
-    Set<String> nextHopIfacesToIp1 =
-        nextHopIfacesByRouteToIp1.values().stream()
-            .flatMap(ifaceMap -> ifaceMap.keySet().stream())
-            .collect(Collectors.toSet());
-    assertThat(nextHopIfacesToIp1, contains(iface1));
+    Set<FibEntry> nextHopsToIp1 = fib.get(ip1);
+    assertThat(nextHopsToIp1, contains(hasInterface(iface1)));
 
     // Should see interfaces iface2 and iface3 in interfaces to ip2.
-    Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopIfacesByRouteToIp2 =
-        fib.getNextHopInterfacesByRoute(ip2);
-    assertThat(nextHopIfacesByRouteToIp2, aMapWithSize(2));
-    Set<String> nextHopIfacesToIp2 =
-        nextHopIfacesByRouteToIp2.values().stream()
-            .flatMap(ifaceMap -> ifaceMap.keySet().stream())
-            .collect(Collectors.toSet());
-    assertThat(nextHopIfacesToIp2, containsInAnyOrder(iface2, iface3));
+    Set<FibEntry> nextHopsIp2 = fib.get(ip2);
+    assertThat(
+        nextHopsIp2,
+        containsInAnyOrder(ImmutableList.of(hasInterface(iface2), hasInterface(iface3))));
   }
 
   @Test
@@ -134,7 +124,7 @@ public class FibImplTest {
             .get(_config.getHostname())
             .get(Configuration.DEFAULT_VRF_NAME);
 
-    assertThat(fib.getNextHopInterfaces(DST_IP), contains(FAST_ETHERNET_0));
+    assertThat(fib.get(DST_IP), contains(hasInterface(FAST_ETHERNET_0)));
   }
 
   @Test
@@ -162,7 +152,7 @@ public class FibImplTest {
             .get(_config.getHostname())
             .get(Configuration.DEFAULT_VRF_NAME);
 
-    assertThat(fib.getNextHopInterfaces(DST_IP), contains(FAST_ETHERNET_0));
+    assertThat(fib.get(DST_IP), contains(hasInterface(FAST_ETHERNET_0)));
   }
 
   @Test
