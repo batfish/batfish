@@ -29,9 +29,9 @@ public final class SpecifierFactories {
   public static FilterSpecifierFactory getFilterFactory(Version version) {
     switch (version) {
       case V1:
-        return FilterSpecifierFactory.load(FlexibleFilterSpecifierFactory.NAME);
+        return new FlexibleFilterSpecifierFactory();
       case V2:
-        return FilterSpecifierFactory.load(ParboiledFilterSpecifierFactory.NAME);
+        return new ParboiledFilterSpecifierFactory();
       default:
         throw new IllegalStateException("Unhandled grammar version " + version);
     }
@@ -40,9 +40,9 @@ public final class SpecifierFactories {
   public static InterfaceSpecifierFactory getInterfaceFactory(Version version) {
     switch (version) {
       case V1:
-        return InterfaceSpecifierFactory.load(FlexibleInterfaceSpecifierFactory.NAME);
+        return new FlexibleInterfaceSpecifierFactory();
       case V2:
-        return InterfaceSpecifierFactory.load(ParboiledInterfaceSpecifierFactory.NAME);
+        return new ParboiledInterfaceSpecifierFactory();
       default:
         throw new IllegalStateException("Unhandled grammar version " + version);
     }
@@ -51,9 +51,9 @@ public final class SpecifierFactories {
   public static IpSpaceSpecifierFactory getIpSpaceFactory(Version version) {
     switch (version) {
       case V1:
-        return IpSpaceSpecifierFactory.load(FlexibleIpSpaceSpecifierFactory.NAME);
+        return new FlexibleIpSpaceSpecifierFactory();
       case V2:
-        return IpSpaceSpecifierFactory.load(ParboiledIpSpaceSpecifierFactory.NAME);
+        return new ParboiledIpSpaceSpecifierFactory();
       default:
         throw new IllegalStateException("Unhandled grammar version " + version);
     }
@@ -62,9 +62,9 @@ public final class SpecifierFactories {
   public static LocationSpecifierFactory getLocationFactory(Version version) {
     switch (version) {
       case V1:
-        return LocationSpecifierFactory.load(FlexibleLocationSpecifierFactory.NAME);
+        return new FlexibleLocationSpecifierFactory();
       case V2:
-        return LocationSpecifierFactory.load(ParboiledLocationSpecifierFactory.NAME);
+        return new ParboiledLocationSpecifierFactory();
       default:
         throw new IllegalStateException("Unhandled grammar version " + version);
     }
@@ -73,9 +73,9 @@ public final class SpecifierFactories {
   public static NodeSpecifierFactory getNodeFactory(Version version) {
     switch (version) {
       case V1:
-        return NodeSpecifierFactory.load(FlexibleNodeSpecifierFactory.NAME);
+        return new FlexibleNodeSpecifierFactory();
       case V2:
-        return NodeSpecifierFactory.load(ParboiledNodeSpecifierFactory.NAME);
+        return new ParboiledNodeSpecifierFactory();
       default:
         throw new IllegalStateException("Unhandled grammar version " + version);
     }
