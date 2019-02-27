@@ -1,0 +1,25 @@
+{
+    "class": "org.batfish.question.f5_bigip.F5BigipVipConfigurationQuestion",
+    "differential": false,
+    "nodes": "${nodes}",
+    "instance": {
+        "description": "Report VIP mappings of F5 BIG-IP configurations",
+        "instanceName": "f5BigipVipConfiguration",
+        "orderedVariableNames": [
+          "nodes"
+        ],
+        "tags": [
+            "bigip",
+            "f5",
+            "vip"
+        ],
+        "variables": {
+            "nodes": {
+                "description": "Include nodes matching this name or regex",
+                "type": "nodeSpec",
+                "optional": true,
+                "displayName": "Nodes"
+            }
+        }
+    }
+}

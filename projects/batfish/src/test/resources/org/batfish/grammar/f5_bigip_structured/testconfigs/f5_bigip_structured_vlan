@@ -19,3 +19,9 @@ net self /Common/MYSELF {
     traffic-group /Common/traffic-group-local-only
     vlan /Common/MYVLAN
 }
+net self /Common/MYSELF6 {
+    address 1::1/64
+    allow-service all
+    traffic-group /Common/traffic-group-local-only
+    vlan /Common/MYVLAN
+}

@@ -1,0 +1,36 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+  hostname f5_bigip_vip_configuration
+}
+ltm node /Common/node1a {
+    address 172.16.0.1
+}
+ltm node /Common/node1b {
+    address 172.16.0.2
+}
+ltm pool /Common/pool1 {
+    members {
+        /Common/node1a:80 {
+            address 172.16.0.1
+        }
+        /Common/node1a:8080 {
+            address 172.16.0.2
+        }
+    }
+}
+ltm virtual /Common/virtual1 {
+    destination /Common/10.0.0.1:80
+    ip-protocol tcp
+    mask 255.255.255.255
+    pool /Common/pool1
+    source 0.0.0.0/0
+    translate-address enabled
+    translate-port enabled
+}
+ltm virtual-address /Common/10.0.0.1 {
+    address 10.0.0.1
+    arp enabled
+    mask 255.255.255.255
+    route-advertisement selective
+}
