@@ -1,4 +1,4 @@
-Batfish questions have the following parameter types, with linked descriptions:
+Batfish questions have the following parameter types that support rich specifications whose grammar is described below. Before reading those grammars, we recommend reading the general notes. 
 
 <!--
 [comment]: # (* `bgpPropertySpec`)
@@ -10,7 +10,7 @@ Batfish questions have the following parameter types, with linked descriptions:
 [comment]: # (* `integer`)
 [comment]: # (* `interfacePropertySpec`)
 -->
-* [`dispositionSpec`](#disposition-specifier)
+* [`flowDispositionSpec`](#flow-disposition-specifier)
 
 * [`filterSpec`](#filter-specifier)
 
@@ -54,164 +54,196 @@ Batfish questions have the following parameter types, with linked descriptions:
 [comment]: # (* `subrange`)
 -->
 
-## Disposition specifier
+## General notes on the grammar 
 
-A specification of flow dispositions, used to identify desired flow actions. Used in questions like `reachability`.
-Disposition specifier takes as input a string of comma-separated disposition values, which are interpreted using logical OR.
+* **Set operations:** Specifiers denote sets of entities (e.g., nodeSpec resolves to a set of nodes). In many cases, the grammar allows for union, intersection, and difference of such sets, respectively, using `,`, `&`, and `\`. Thus, `(node1, node2)\node1` will resolve to `node1`.
 
-There are two meta flow dispositions: `Success` and `Failure` used to indicate that a flow has been successfully delivered, 
-or alternatively, has been dropped somewhere in the network. 
+* **Escaping names:** Names of entities such as nodes and interfaces must be double-quoted if they begin with a digit (0-9), double quote ('"'), or slash ('/'), or they contain a space or one of `,&()[]@!#$%^;?<>={}`. Thus, the following names are legal: 
+  * `as1border1` (no quotes)
+  * `as1-border1`
+  * `"as1border1"` (quotes unnecessary, but OK)
+  * `"1startsWithADigit"` (quotes needed)
+  * `"has space"`
+  * `"has["`
+
+* **Regexes:** Regular expressions must be enclosed by `/`s like `/abc/`. Batfish uses [Java's syntax and semantics](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html#sum) for regular expressions. For simple expressions, this language is similar to others. For example:
+  * `/abc/`, `/^abc/`, `/abc$/` match strings strings containing, beginning with, and ending with 'abc'
+  * `/ab[c-d]/` and `/ab(c|d)/` match strings 'abc' and 'abd'.
+
+* **Case-insensitive names:** All names and regexes use case-insensitive matching. Thus, `AS1BORDER1` is same as `as1border1` and `Ethernet0/0` is same as `ethernet0/0`.
+
+## Flow Disposition Specifier
+
+Flow dispositions are used in questions like [reachability](https://pybatfish.readthedocs.io/en/latest/questions.html#pybatfish.question.bfq.reachability) to identify flow outcomes. The disposition specifier takes as input a comma-separated list of disposition values, which are interpreted using logical OR.
+
+There are two coarse-grained flow dispositions:
+  * `Success`: a flow has been successfully delivered
+  * `Failure`: a flow has been dropped somewhere in the network
 
 The following fine-grained disposition values are also supported:
 * Success dispositions:
-    * `Accepted` - a flow has been accepted by a device in the snapshot
-    * `Delivered_to_subnet` - a flow has been delivered to the host subnet
-    * `Exits_network` - a flow has been succesfully forwared to a device currently outside of the snapshot
+    * `Accepted`: a flow has been accepted by a device in the snapshot
+    * `Delivered_to_subnet`: a flow has been delivered to a host subnet
+    * `Exits_network`: a flow has been successfully forwarded to a device currently outside of the snapshot
 * Failure dispositions:
-    * `Denied_in` - a flow was denied by an input ACL on an interface
-    * `Denied_out` - a flow was denied by an output ACL on an interface
-    * `No_route` - a flow was dropped, no suitable route exists on device 
-    * `Null_routed` - a flow was dropped, since it matched a `null` route 
-    * `Neighbor_unreachable` - could not reach the next hop (e.g., an ARP failure)
-    * `Loop` - the flow encountered a forwarding loop
-    * `Insufficient_info` - Batfish does not have enough configuration info to make a determination with certainty (e.g., some device configs are missing)
+    * `Denied_in`: a flow was denied by an input filter (an ACL or a firewall rule) on an interface
+    * `Denied_out`: a flow was denied by an output filter on an interface
+    * `No_route`: a flow was dropped because no matching route exists on device 
+    * `Null_routed`: a flow was dropped because it matched a `null` route 
+    * `Neighbor_unreachable`: a flow was dropped because it could not reach the next hop (e.g., an ARP failure)
+    * `Loop`: the flow encountered a forwarding loop
+    * `Insufficient_info`: Batfish does not have enough information to make a determination with certainty (e.g., some device configs are missing)
 
 ## Filter Specifier
 
 A specification for filters (ACLs or firewall rules) in the network.
 
-* `inFilterOf` indicates filters that get applied when packets enter the interfaces denoted by the `interfaceSpec`. For example, `inFilterOf(Ethernet0/0)` includes filters for incoming packets on interfaces named `Ethernet0/0`.
+* Filter name or a regex over the names indicate filters on all nodes in the network with that name or matching regex. For example, `filter1` includes all filters with that name and `/acl/` includes all filters whose names contain 'acl'.
 
-* `outFilterOf` is similar to above except that it indicates filters that get applied when packets exit the interfaces denoted by the `interfaceSpec`. For example, `outFilterOf(Ethernet0/0)` includes all filters for outgoing packets on interfaces named `Ethernet0/0`.
+* `@in(interfaceSpec)` refers to filters that get applied when packets enter the specified interfaces. For example, `@in(Ethernet0/0)` includes filters for incoming packets on interfaces named `Ethernet0/0` on all nodes.
 
-* and if none of the above are matched, the default behavior is to include filters with names that match the supplied `<javaRegex>`. For example, `acl-.*` includes all filters whose names begin with `acl-`.
+* `@out(interfaceSpec)` is similar except that it indicates filters that get applied when packets exit the specified interfaces. 
 
 #### Filter Specifier Grammar
 
-```
-filterSpec =
-    inFilterOf(<interfaceSpec>)
-    | outFilterOf(<interfaceSpec>)
-    | <javaRegex>
-```
+<pre>
+filterSpec :=
+    filterTerm [(<b>&</b>|<b>,</b>|<b>\</b>) filterTerm]
+
+filterTerm :=
+    &lt;<i>filter-name</i>&gt;
+    | <b>/</b>&lt;<i>filter-name-regex</i>&gt;<b>/</b>
+    | <b>@in(</b>interfaceSpec<b>)</b>
+    | <b>@out(</b>interfaceSpec<b>)</b>
+    | <b>(</b>filterSpec<b>)</b>
+</pre>
 
 ## Interface Specifier
 
 A specification for interfaces in the network.
 
-* `connectedTo` indicates all interfaces with configured IPv4 networks that overlap the specified IPs. For example, `connectedTo(1.2.3.4/30)` includes interfaces that overlap the specified IPv4 prefix.
+* Interface name or a regex over the names indicate interfaces on all nodes in the network with that name or matching regex. For example, `Ethernet0/1` includes all interfaces with that name and `/Ethernet0/` includes all interfaces whose names contain 'Ethernet0'.
 
-* `type` indicates all interfaces with the specified type. For example, `type(loopback)` includes loopback interfaces.
+* `@connectedTo(ipSpec)` indicates all interfaces with configured IPv4 networks that overlap with specified IPs (see [`ipSpec`](#ip-specifier))
 
-* `vrf` indicates all interfaces configured to be in the VRF with name matching the given `<javaRegex>`. For example, `vrf(default)` includes interfaces in the default VRF.
+* `@interfaceGroup(group, book)` looks in the configured reference library for an interface group with name 'group' and book with name 'book'.
 
-* `zone` indicates all interfaces configured to be in the (firewall) zone with name matching the given `<javaRegex>`. For example, `zone(admin)` includes interfaces in the zone named admin.
+* `@vrf(vrf1)` indicates all interfaces configured to be in the VRF with name 'vrf1'.
 
-* and if none of the above are matched, the default behavior is to include interfaces with names that match the supplied `<javaRegex>`. For example, `ae-.*` includes all Juniper aggregated ethernet interfaces.
+* `@zone(zone3)` indicates all interfaces configured to be in the zone with name 'zone3'.
 
 #### Interface Specifier Grammar
 
-```
-interfaceSpec =
-    connectedTo(<ipSpec>)
-    | type(<interfaceType>)
-    | vrf(<javaRegex>)
-    | zone(<javaRegex>)
-    | <javaRegex>
-```
+<pre>
+interfaceSpec :=
+    interfaceTerm [(<b>&</b>|<b>,</b>|<b>\</b>) interfaceTerm]
 
-#### Interface Types
+interfaceTerm :=
+    &lt;<i>interface-name</i>&gt;
+    | <b>/</b>&lt;<i>interface-name-regex</i>&gt;<b>/</b>
+    | interfaceFunc
+    | <b>(</b>interfaceSpec<b>)</b>
 
-```
-interfaceType = 
-    aggregated
-    | loopback
-    | null
-    | physical
-    | redundant
-    | tunnel
-    | unknown 
-    | vlan
-    | vpn
-```
+interfaceFunc :=
+    <b>@connectedTo(</b>ipSpec<b>)</b>
+    | <b>@interfaceGroup(</b>&lt;<i>address-group-name</i>&gt;<b>,</b> &lt;<i>reference-book-name</i>&gt;<b>)</b>
+    | <b>@vrf(</b>&lt;<i>vrf-name</i>&gt;<b>)</b>
+    | <b>@zone(</b>&lt;<i>zone-name</i>&gt;<b>)</b>
+</pre>
 
 ## IP Specifier
 
-A specification for IPv4 addresses. An `ipSpec` is a string with the following syntax:
+A specification for a set of IPv4 addresses.
 
-* `ref.addressbook` looks in the configured reference books for an address group and book of the given string names.
+* Constant values that denote addresses (e.g., `1.2.3.4`), prefixes (e.g., `1.2.3.0/24`), address ranges (e.g., `1.2.3.4 - 1.2.3.7`), and wildcards (e.g., `1.2.3.4:255.255.255.0`) may be used.
 
-* `ofLocation` returns the IPv4 address or addresses corresponding to the specified location (see [`locationSpec`](#location-specifier)).  For example, `ofLocation(as1border1[Ethernet0/0])` includes all IPv4 addresses configured on `as1border1` interface `Ethernet0/0`.
+* `@addressGroup(group, book)` looks in the configured reference library for an address group name 'group' and book name 'book'.
 
-* and if none of the above are matched, the default behavior is to parse the supplied string as an IPv4 address, IPv4 prefix, or IPv4 wildcard. For example, `1.2.3.4` is an IPv4 address, `1.2.3.4/30` is an IPv4 prefix, and `1.2.3.4:0.0.0.3` is an IPv4 wildcard equivalent to `1.2.3.4/30`.
-
-    A difference of IPv4 literals is also supported. For example, `1.2.3.4/30 - 1.2.3.4` specifies every IPv4 address in that prefix except `1.2.3.4`, aka, `1.2.3.5`, `1.2.3.6`, and `1.2.3.7`.
+* `locationSpec` can be used to denote addresses corresponding to the specified location (see [`locationSpec`](#location-specifier)).  For example, `as1border1[Ethernet0/0]` includes all IPv4 addresses configured on `as1border1` interface `Ethernet0/0`.
 
 #### IP Specifier Grammar
 
-```
-ipSpec =
-    ref.addressgroup(<group=string>,<book=string>)
-    | ofLocation(<locationSpec>)
-    | <ipv4spec>
-    | <ipv4spec> - <ipv4spec>
+<pre>
+ipSpec :=
+    ipTerm [<b>,</b> ipTerm]
 
-<ipv4spec> =
-    <IPv4 address in A.B.C.D form>
-    | <IPv4 prefix in A.B.C.D/L form>
-    | <IPv4 wildcard in A.B.C.D:M.N.O.P form>
-```
-
-## Java Regular Expression
-
-A Java regular expression. For information on the syntax of these strings, see the [Java documentation](https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html#sum) for the `Pattern` class.
+ipTerm :=
+    &lt;<i>ip-address</i>&gt;
+    | &lt;<i>ip-prefix</i>&gt;
+    | &lt;<i>ip-address-low</i>&gt; <b>-</b> &lt;<i>ip-address-high</i>&gt;
+    | &lt;<i>ip wildcard</i>&gt;
+    | <b>@addressGroup</b>(&lt;<i>address-group-name</i>&gt;<b>,</b> &lt;<i>reference-book-name</i>&gt;<b>)</b>
+    | locationSpec
+</pre>
 
 ## Location Specifier
 
-A precise specification for locations of packets.
+A specification for locations of packets, including where they start or terminate.
 
-There are two types of `Location`:
-* `Interface Location` - at the interface, used to model packets that originate or terminate at the interface.
-* `InterfaceLinkLocation` - on the link connected to the interface, used to model packets before they enter the interface or after they exit.
+There are two types of locations:
+* `InterfaceLocation`: at the interface, used to model packets that originate or terminate at the interface
+* `InterfaceLinkLocation`: on the link connected to the interface, used to model packets before they enter the interface or after they exit
 
 Some examples:
 
-* `as1border1[Ethernet0/0]` - specifies the `InterfaceLocation` for `Ethernet0/0` on node `as1border1`.
+* `as1border1` specifies the `InterfaceLocation` for *all* interfaces on node `as1border1`. Any `nodeTerm` (see [node specifier grammar](#node-specifier-grammar)) can be used as a location specifier.
 
-* `as1border1` - specifies the `InterfaceLocation` for *all* interfaces on node `as1border1`. It is interpreted as `as1border1[.*]`.
+* `as1border1[Ethernet0/0]` specifies the `InterfaceLocation` for `Ethernet0/0` on node `as1border1`. A `nodeTerm` and an `interfaceSpec` can be combined this way as a location specifier.  
 
-* `[Ethernet0/0]` - specifies the `InterfaceLocation` for any interface `Ethernet0/0` on any node. It is interpreted as `.*[Ethernet0/0]`.
+* `@vrf(vrf1)` specifies the `InterfaceLocation` for any interface in `vrf1` on *all* nodes. Any `interfaceFunc` can be used as a location specifier.
 
-* `enter([Ethernet0/0])` - specifies the `InterfaceLinkLocation` for any the link of interface `Ethernet0/0` on any node. It is interpreted as `enter(.*[Ethernet0/0])`.
+* `@enter(as1border1[Ethernet0/0])` specifies the `InterfaceLinkLocation` for packets entering `Ethernet0/0` on `as1border1`. 
 
 #### Location Specifier Grammar
 
-```
-locationSpec =
-    <interfaceLocationSpec>
-    | <interfaceLinkLocationSpec>
+<pre>
+locationSpec :=
+    locationTerm [(<b>&</b>|<b>,</b>|<b>\</b>) locationTerm]
 
-interfaceLocationSpec =
-    [<interfaceSpec>]
-    | <nodeSpec>[<interfaceSpec>]
+locationTerm :=
+    locationInterface
+    | <b>@enter(</b>locationInterface<b>)</b>
+    | (locationSpec)
 
-interfaceLinkSpec =
-    enter(<interfaceLocationSpec>)
-    | exit(<interfaceLocationSpec>)
-```
+locationInterface :=
+    nodeTerm
+    | interfaceFunc
+    | nodeTerm<b>[</b>interfaceSpec<b>]</b>
+</pre>
 
 ## Node Specifier
 
 A specification for nodes in the network.
 
-* `ref.noderole` finds all nodes with the role whose name matches `roleRegex` in node role dimension `dimension`.
+* Node names or a regex over the names indicate nodes in the network with that name or matching regex. For example, `as1border1` indicates that node and `/as1/` indicates all nodes whose names contain `as1`.
 
-* and if none of the above are matched, the default behavior is to include nodes with hostnames that match the supplied `<javaRegex>`. For example, `as1.*` includes all devices in AS 1 in the example network.
+* `@deviceType(type1)` indicates all nodes of the type 'type1'. The types of devices are listed [here](#device-types).
+
+* `@role(role, dim)` indicates all nodes with role name 'role' in dimension name 'dim'.
 
 #### Node Specifier Grammar
 
-```
-nodeSpec =
-    ref.noderole(<roleRegex=javaRegex>,<dimension=string>)
-    | <javaRegex>
-```
+<pre>
+nodeSpec :=
+    nodeTerm [(<b>&</b>|<b>,</b>|<b>\</b>) nodeTerm]
+
+nodeTerm :=
+    &lt;<i>node-name</i>&gt;
+    | /&lt;<i>node-name-regex</i>&gt;/
+    | nodeFunc
+    | <b>(</b>nodeSpec<b>)</b>
+
+nodeFunc :=
+    <b>@deviceType(</b><i>device-type</i><b>)</b>
+    | <b>@role(</b>&lt;<i>role-name</i>&gt;<b>,</b> &lt;<i>dimension-name</i>&gt;<b>)</b>
+</pre>
+
+#### Device Types
+
+Batfish has the following device types.
+
+* `Host`: An end host. 
+* `Internet`: A logical device that represents the Internet. It is present when external connectivity is modeled. 
+* `ISP`: A logical devie that represents a neighboring ISP. It is present when external connectivity is modeled.
+* `Router`: A device that does L3 routing and forwarding.
+* `Switch`: A device that only does L2 forwarding.

@@ -2,6 +2,10 @@
   "class" : "org.batfish.question.specifiers.SpecifiersQuestion",
   "queryType" : "NODE",
   "differential" : false,
+<<<<<<< HEAD
+=======
+  "filterSpecifierFactory" : "ParboiledFilterSpecifierFactory",
+>>>>>>> origin/master
   "includeOneTableKeys" : true,
   "instance" : {
     "description" : "Show the resolved values for node specifier",
@@ -26,6 +30,14 @@
       }
     }
   },
+<<<<<<< HEAD
   "nodeSpecifierInput" : "input",
   "specifierFactoryVersion" : "V2"
+=======
+  "interfaceSpecifierFactory" : "ParboiledInterfaceSpecifierFactory",
+  "ipSpaceSpecifierFactory" : "ParboiledIpSpaceSpecifierFactory",
+  "locationSpecifierFactory" : "ParboiledLocationSpecifierFactory",
+  "nodeSpecifierFactory" : "ParboiledNodeSpecifierFactory",
+  "nodeSpecifierInput" : "input"
+>>>>>>> origin/master
 }

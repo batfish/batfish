@@ -1,12 +1,9 @@
 package org.batfish.question.specifiers;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.specifier.SpecifierFactories.SpecifierType.FILTER;
-import static org.batfish.specifier.SpecifierFactories.SpecifierType.INTERFACE;
-import static org.batfish.specifier.SpecifierFactories.SpecifierType.IP_SPACE;
-import static org.batfish.specifier.SpecifierFactories.SpecifierType.LOCATION;
-import static org.batfish.specifier.SpecifierFactories.SpecifierType.NODE;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
@@ -50,12 +47,9 @@ public final class SpecifiersQuestion extends Question {
   private static final String PROP_IP_SPACE_SPECIFIER_INPUT = "ipSpaceSpecifierInput";
   private static final String PROP_LOCATION_SPECIFIER_INPUT = "locationSpecifierInput";
   private static final String PROP_NODE_SPECIFIER_INPUT = "nodeSpecifierInput";
-
-  private static final String PROP_QUERY_TYPE = "queryType";
-
   private static final String PROP_SPECIFIER_FACTORY_VERSION = "specifierFactoryVersion";
 
-  @Nonnull private Version _specifierFactoryVersion = SpecifierFactories.ACTIVE_VERSION;
+  private static final String PROP_QUERY_TYPE = "queryType";
 
   @Nullable private String _filterSpecifierInput;
   @Nullable private String _interfaceSpecifierInput;
@@ -64,10 +58,23 @@ public final class SpecifiersQuestion extends Question {
   @Nullable private String _nodeSpecifierInput;
 
   @Nonnull private QueryType _queryType;
+  @Nonnull private Version _specifierFactoryVersion;
 
-  SpecifiersQuestion(@JsonProperty(PROP_QUERY_TYPE) QueryType queryType) {
+  @JsonCreator
+  static SpecifiersQuestion create(
+      @JsonProperty(PROP_QUERY_TYPE) QueryType queryType,
+      @JsonProperty(PROP_SPECIFIER_FACTORY_VERSION) Version version) {
+    return new SpecifiersQuestion(queryType, version);
+  }
+
+  public SpecifiersQuestion(QueryType queryType) {
+    this(queryType, null);
+  }
+
+  public SpecifiersQuestion(QueryType queryType, @Nullable Version version) {
     checkArgument(queryType != null, "'queryType must be specified");
     _queryType = queryType;
+    _specifierFactoryVersion = firstNonNull(version, SpecifierFactories.ACTIVE_VERSION);
   }
 
   @JsonIgnore
@@ -75,7 +82,7 @@ public final class SpecifiersQuestion extends Question {
     return SpecifierFactories.getFilterSpecifierOrDefault(
         _filterSpecifierInput,
         new ShorthandFilterSpecifier(FiltersSpecifier.ALL),
-        SpecifierFactories.getFactory(_specifierFactoryVersion, FILTER));
+        SpecifierFactories.getFilterFactory(_specifierFactoryVersion));
   }
 
   @JsonIgnore
@@ -83,7 +90,7 @@ public final class SpecifiersQuestion extends Question {
     return SpecifierFactories.getInterfaceSpecifierOrDefault(
         _interfaceSpecifierInput,
         new ShorthandInterfaceSpecifier(InterfacesSpecifier.ALL),
-        SpecifierFactories.getFactory(_specifierFactoryVersion, INTERFACE));
+        SpecifierFactories.getInterfaceFactory(_specifierFactoryVersion));
   }
 
   @JsonIgnore
@@ -91,7 +98,7 @@ public final class SpecifiersQuestion extends Question {
     return SpecifierFactories.getIpSpaceSpecifierOrDefault(
         _ipSpaceSpecifierInput,
         InferFromLocationIpSpaceSpecifier.INSTANCE,
-        SpecifierFactories.getFactory(_specifierFactoryVersion, IP_SPACE));
+        SpecifierFactories.getIpSpaceFactory(_specifierFactoryVersion));
   }
 
   @JsonIgnore
@@ -99,7 +106,7 @@ public final class SpecifiersQuestion extends Question {
     return SpecifierFactories.getLocationSpecifierOrDefault(
         _locationSpecifierInput,
         AllInterfacesLocationSpecifier.INSTANCE,
-        SpecifierFactories.getFactory(_specifierFactoryVersion, LOCATION));
+        SpecifierFactories.getLocationFactory(_specifierFactoryVersion));
   }
 
   @JsonIgnore
@@ -107,7 +114,7 @@ public final class SpecifiersQuestion extends Question {
     return SpecifierFactories.getNodeSpecifierOrDefault(
         _nodeSpecifierInput,
         AllNodesNodeSpecifier.INSTANCE,
-        SpecifierFactories.getFactory(_specifierFactoryVersion, NODE));
+        SpecifierFactories.getNodeFactory(_specifierFactoryVersion));
   }
 
   @Override
@@ -183,10 +190,5 @@ public final class SpecifiersQuestion extends Question {
   @JsonProperty(PROP_NODE_SPECIFIER_INPUT)
   public void setNodeSpecifierInput(String nodeSpecifierInput) {
     _nodeSpecifierInput = nodeSpecifierInput;
-  }
-
-  @JsonProperty(PROP_SPECIFIER_FACTORY_VERSION)
-  public void setSpecifierVersion(Version factoryVersion) {
-    _specifierFactoryVersion = factoryVersion;
   }
 }

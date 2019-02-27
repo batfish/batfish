@@ -5,6 +5,7 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.VniSettings;
@@ -14,6 +15,7 @@ import org.batfish.datamodel.matchers.VrfMatchersImpl.HasBgpProcess;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasEigrpProcesses;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasGeneratedRoutes;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasInterfaces;
+import org.batfish.datamodel.matchers.VrfMatchersImpl.HasKernelRoutes;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasName;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasOspfProcess;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasSnmpServer;
@@ -64,6 +66,14 @@ public class VrfMatchers {
    */
   public static HasOspfProcess hasOspfProcess(Matcher<? super OspfProcess> subMatcher) {
     return new HasOspfProcess(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the VRF's kernel
+   * routes.
+   */
+  public static Matcher<Vrf> hasKernelRoutes(Matcher<? super SortedSet<KernelRoute>> subMatcher) {
+    return new HasKernelRoutes(subMatcher);
   }
 
   /** Provides a matcher that matches if the provided {@code subMatcher} matches the VRF's name. */

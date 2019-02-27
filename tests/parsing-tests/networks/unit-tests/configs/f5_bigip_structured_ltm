@@ -68,6 +68,7 @@ ltm snat /Common/SOME_SNAT {
     vlans {
         /Common/SOME_VLAN
     }
+    vlans-disabled
     vlans-enabled
 }
 ltm snat-translation /Common/192.0.2.4 {
@@ -105,6 +106,11 @@ ltm virtual /Common/SOME_VIRTUAL {
     }
     translate-address enabled
     translate-port enabled
+    vlans {
+        /Common/MY_VLAN
+    }
+    vlans-disabled
+    vlans-enabled
 }
 ltm virtual-address /Common/192.0.2.8 {
     address 192.0.2.9

@@ -28,6 +28,8 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, ApplicationSet> _applicationSets;
 
+  @Nonnull private final Map<String, AsPath> _asPaths;
+
   private final Map<String, AsPathGroup> _asPathGroups;
 
   private final NavigableMap<String, JuniperAuthenticationKeyChain> _authenticationKeyChains;
@@ -103,6 +105,7 @@ public class LogicalSystem implements Serializable {
     _addressBooks.put(GLOBAL_ADDRESS_BOOK_NAME, new AddressBook(GLOBAL_ADDRESS_BOOK_NAME, null));
     _applications = new TreeMap<>();
     _applicationSets = new TreeMap<>();
+    _asPaths = new TreeMap<>();
     _asPathGroups = new TreeMap<>();
     _authenticationKeyChains = new TreeMap<>();
     _communityLists = new TreeMap<>();
@@ -160,6 +163,11 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, ApplicationSet> getApplicationSets() {
     return _applicationSets;
+  }
+
+  @Nonnull
+  public Map<String, AsPath> getAsPaths() {
+    return _asPaths;
   }
 
   public Map<String, AsPathGroup> getAsPathGroups() {

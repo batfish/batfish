@@ -22,6 +22,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.Names;
 
 @ParametersAreNonnullByDefault
 public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
@@ -39,16 +40,18 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
     private Builder() {
       _roleRegexes = ImmutableList.of();
       _roles = ImmutableSortedSet.of();
-      _type = Type.CUSTOM;
+      _type = NodeRoleDimension.Type.CUSTOM;
     }
 
     public @Nonnull NodeRoleDimension build() {
       checkArgument(_name != null, "Name of node role cannot be null");
       checkArgument(
-          _type != Type.AUTO || _name.startsWith(AUTO_DIMENSION_PREFIX),
+          _type != NodeRoleDimension.Type.AUTO || _name.startsWith(AUTO_DIMENSION_PREFIX),
           "Name for a AUTO role dimension must begin with: %s",
           AUTO_DIMENSION_PREFIX);
-      return new NodeRoleDimension(_name, _roles, firstNonNull(_type, Type.CUSTOM), _roleRegexes);
+      Names.checkName(_name, "role dimension", Names.Type.REFERENCE_OBJECT);
+      return new NodeRoleDimension(
+          _name, _roles, firstNonNull(_type, NodeRoleDimension.Type.CUSTOM), _roleRegexes);
     }
 
     public @Nonnull Builder setName(String name) {
@@ -123,13 +126,13 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
       @Nullable @JsonProperty(PROP_ROLE_REGEXES) List<String> roleRegexes) {
     checkArgument(name != null, "Name of node role cannot be null");
     checkArgument(
-        type != Type.AUTO || name.startsWith(AUTO_DIMENSION_PREFIX),
+        type != NodeRoleDimension.Type.AUTO || name.startsWith(AUTO_DIMENSION_PREFIX),
         "Name for a AUTO role dimension must begin with: %s",
         AUTO_DIMENSION_PREFIX);
     return new NodeRoleDimension(
         name,
         firstNonNull(roles, ImmutableSortedSet.of()),
-        firstNonNull(type, Type.CUSTOM),
+        firstNonNull(type, NodeRoleDimension.Type.CUSTOM),
         firstNonNull(roleRegexes, ImmutableList.of()));
   }
 

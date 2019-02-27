@@ -31,7 +31,7 @@ public class F5BigipStructuredControlPlaneExtractor implements ControlPlaneExtra
   public void processParseTree(ParserRuleContext tree) {
     F5BigipStructuredConfigurationBuilder cb =
         new F5BigipStructuredConfigurationBuilder(_parser, _text, _w);
-    ParseTreeWalker walker = new BatfishParseTreeWalker();
+    ParseTreeWalker walker = new BatfishParseTreeWalker(_parser);
     walker.walk(cb, tree);
     _configuration = cb.getConfiguration();
   }

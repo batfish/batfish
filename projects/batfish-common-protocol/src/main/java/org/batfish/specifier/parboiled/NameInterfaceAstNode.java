@@ -6,6 +6,10 @@ import java.util.Objects;
 final class NameInterfaceAstNode implements InterfaceAstNode {
   private final String _name;
 
+  NameInterfaceAstNode(AstNode nameAst) {
+    this(((StringAstNode) nameAst).getStr());
+  }
+
   NameInterfaceAstNode(String name) {
     _name = name;
   }

@@ -2,6 +2,7 @@ package org.batfish.bddreachability;
 
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -12,6 +13,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
@@ -21,14 +23,12 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.junit.Before;
 import org.junit.Test;
 
 /** Tests for {@link LastHopOutgoingInterfaceManager}. */
 public final class LastHopOutgoingInterfaceManagerTest {
-  private static final Topology EMPTY_TOPOLOGY = new Topology(ImmutableSortedSet.of());
 
   private static final String NODE1 = "NODE1";
   private static final String NODE2 = "NODE2";
@@ -74,7 +74,7 @@ public final class LastHopOutgoingInterfaceManagerTest {
   @Test
   public void testTrivial() {
     LastHopOutgoingInterfaceManager mgr =
-        new LastHopOutgoingInterfaceManager(_pkt, ImmutableMap.of(), EMPTY_TOPOLOGY);
+        new LastHopOutgoingInterfaceManager(_pkt, ImmutableMap.of(), ImmutableSet.of());
     assertThat(mgr.getFiniteDomains().values(), empty());
     assertThat(mgr.getLastHopOutgoingInterfaceBdd("", "", "", ""), equalTo(_trueBdd));
   }
@@ -83,7 +83,7 @@ public final class LastHopOutgoingInterfaceManagerTest {
   public void testNoEdges() {
     Configuration c = configurationWithSession();
     LastHopOutgoingInterfaceManager mgr =
-        new LastHopOutgoingInterfaceManager(_pkt, configs(c), EMPTY_TOPOLOGY);
+        new LastHopOutgoingInterfaceManager(_pkt, configs(c), ImmutableSet.of());
     assertThat(mgr.getFiniteDomains().values(), empty());
     assertThat(
         mgr.getLastHopOutgoingInterfaceBdd(
@@ -96,11 +96,19 @@ public final class LastHopOutgoingInterfaceManagerTest {
     Configuration c = configurationWithSession();
     String node = c.getHostname();
     String iface = c.getAllInterfaces().firstKey();
-    Topology topology = new Topology(ImmutableSortedSet.of(Edge.of(NODE1, IFACE1, node, iface)));
+    Set<Edge> edges = ImmutableSortedSet.of(Edge.of(NODE1, IFACE1, node, iface));
     LastHopOutgoingInterfaceManager mgr =
-        new LastHopOutgoingInterfaceManager(_pkt, configs(c), topology);
-    assertThat(mgr.getFiniteDomains().values(), not(empty()));
-    assertThat(mgr.getLastHopOutgoingInterfaceBdd(NODE1, IFACE1, node, iface), equalTo(_trueBdd));
+        new LastHopOutgoingInterfaceManager(_pkt, configs(c), edges);
+    assertThat(mgr.getFiniteDomains().entrySet(), hasSize(1));
+    BDD lastHopBdd = mgr.getLastHopOutgoingInterfaceBdd(NODE1, IFACE1, node, iface);
+    assertFalse(lastHopBdd.isZero());
+    assertFalse(lastHopBdd.isOne());
+
+    BDD noLastHopBdd = mgr.getNoLastHopOutgoingInterfaceBdd(node, iface);
+    assertFalse(noLastHopBdd.isZero());
+    assertFalse(noLastHopBdd.isOne());
+
+    assertThat(lastHopBdd, not(equalTo(noLastHopBdd)));
   }
 
   @Test
@@ -108,12 +116,10 @@ public final class LastHopOutgoingInterfaceManagerTest {
     Configuration c = configurationWithSession();
     String node = c.getHostname();
     String iface = c.getAllInterfaces().firstKey();
-    Topology topology =
-        new Topology(
-            ImmutableSortedSet.of(
-                Edge.of(NODE1, IFACE1, node, iface), Edge.of(NODE2, IFACE2, node, iface)));
+    Set<Edge> edges =
+        ImmutableSet.of(Edge.of(NODE1, IFACE1, node, iface), Edge.of(NODE2, IFACE2, node, iface));
     LastHopOutgoingInterfaceManager mgr =
-        new LastHopOutgoingInterfaceManager(_pkt, configs(c), topology);
+        new LastHopOutgoingInterfaceManager(_pkt, configs(c), edges);
     assertThat(mgr.getFiniteDomains().values(), not(empty()));
     BDD bdd1 = mgr.getLastHopOutgoingInterfaceBdd(NODE1, IFACE1, node, iface);
     BDD bdd2 = mgr.getLastHopOutgoingInterfaceBdd(NODE2, IFACE2, node, iface);

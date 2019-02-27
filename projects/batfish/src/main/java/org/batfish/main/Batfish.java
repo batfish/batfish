@@ -92,7 +92,6 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.common.ErrorDetails;
-import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
@@ -312,14 +311,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
           JuniperCombinedParser parser = new JuniperCombinedParser(input, settings);
           ParserRuleContext tree = parse(parser, logger, settings);
           JuniperFlattener flattener = new JuniperFlattener(header);
-          ParseTreeWalker walker = new BatfishParseTreeWalker();
+          ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
           try {
             walker.walk(flattener, tree);
           } catch (BatfishParseException e) {
-            warnings.setErrorDetails(
-                new ErrorDetails(
-                    Throwables.getStackTraceAsString(e),
-                    new ParseExceptionContext(e.getContext(), parser, input)));
+            warnings.setErrorDetails(e.getErrorDetails());
             throw new BatfishException(
                 String.format("Error flattening %s config", format.getVendorString()), e);
           }
@@ -331,14 +327,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
           VyosCombinedParser parser = new VyosCombinedParser(input, settings);
           ParserRuleContext tree = parse(parser, logger, settings);
           VyosFlattener flattener = new VyosFlattener(header);
-          ParseTreeWalker walker = new BatfishParseTreeWalker();
+          ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
           try {
             walker.walk(flattener, tree);
           } catch (BatfishParseException e) {
-            warnings.setErrorDetails(
-                new ErrorDetails(
-                    Throwables.getStackTraceAsString(e),
-                    new ParseExceptionContext(e.getContext(), parser, input)));
+            warnings.setErrorDetails(e.getErrorDetails());
             throw new BatfishException(
                 String.format("Error flattening %s config", format.getVendorString()), e);
           }

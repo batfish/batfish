@@ -285,6 +285,7 @@ l_snat
       ls_origins
       | ls_snatpool
       | ls_vlans
+      | ls_vlans_disabled
       | ls_vlans_enabled
     )*
   )? BRACE_RIGHT NEWLINE
@@ -322,6 +323,11 @@ ls_vlans
 lsv_vlan
 :
   name = word NEWLINE
+;
+
+ls_vlans_disabled
+:
+  VLANS_DISABLED NEWLINE
 ;
 
 ls_vlans_enabled
@@ -394,6 +400,8 @@ l_virtual
       | lv_source_address_translation
       | lv_translate_address
       | lv_translate_port
+      | lv_vlans_disabled
+      | lv_vlans_enabled
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -500,6 +508,16 @@ lv_translate_address
 lv_translate_port
 :
   TRANSLATE_PORT ENABLED NEWLINE
+;
+
+lv_vlans_disabled
+:
+  VLANS_DISABLED NEWLINE
+;
+
+lv_vlans_enabled
+:
+  VLANS_ENABLED NEWLINE
 ;
 
 l_virtual_address

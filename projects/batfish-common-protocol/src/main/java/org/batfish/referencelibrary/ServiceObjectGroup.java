@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Names;
+import org.batfish.datamodel.Names.Type;
 
 public class ServiceObjectGroup implements Comparable<ServiceObjectGroup> {
 
@@ -22,7 +23,7 @@ public class ServiceObjectGroup implements Comparable<ServiceObjectGroup> {
       @JsonProperty(PROP_NAME) String name,
       @JsonProperty(PROP_SERVICES) SortedSet<String> services) {
     checkArgument(name != null, "Service object group name cannot be null");
-    Names.checkValidReferenceObjectName(name, "service object group");
+    Names.checkName(name, "service object group", Type.REFERENCE_OBJECT);
 
     _name = name;
     _services = firstNonNull(services, ImmutableSortedSet.of());

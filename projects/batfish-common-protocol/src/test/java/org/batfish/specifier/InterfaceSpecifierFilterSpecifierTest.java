@@ -14,6 +14,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+/** Tests of {@link InterfaceSpecifierFilterSpecifier}. */
 public class InterfaceSpecifierFilterSpecifierTest {
   @Rule public final ExpectedException exception = ExpectedException.none();
 
