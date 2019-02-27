@@ -36,6 +36,7 @@ import org.batfish.datamodel.Vrf;
 import org.junit.Before;
 import org.junit.Test;
 
+/** Tests of {@link TopologyUtil}. */
 public final class TopologyUtilTest {
 
   private Builder _cb;
@@ -489,15 +490,17 @@ public final class TopologyUtilTest {
     // n2:iTrunk:
     // - native 20
     // - allowed: 10,20
-    // n2 has three IRB interfaces:
+    // n2 has four IRB interfaces:
     // - n2:ia - vlan 10
     // - n2:ib - vlan 20
     // - n2:ic - vlan 30
+    // - n2:id - null vlan
 
     // we expect:
     // D(n1:ia)=D(n2:ia) // tags match (10=10)
     // D(n1:ib)!=D(n2:ib) // trunk does not send tag on native vlan
     // D(n1:ic)!=D(n2:ic) // trunk does not allow traffic with this tag
+    // nothing crashes with null vlan on id
 
     String n1Name = "n1";
     String n2Name = "n2";
@@ -507,6 +510,7 @@ public final class TopologyUtilTest {
     String iaName = "ia";
     String ibName = "ib";
     String icName = "ic";
+    String idName = "id";
     int iaVlan = 10;
     int ibVlan = 20;
     int icVlan = 30;
@@ -529,6 +533,7 @@ public final class TopologyUtilTest {
     _ib.setName(iaName).setEncapsulationVlan(iaVlan).build();
     _ib.setName(ibName).setEncapsulationVlan(ibVlan).build();
     _ib.setName(icName).setEncapsulationVlan(icVlan).build();
+    _ib.setName(idName).setEncapsulationVlan(null).build();
     // n2 interfaces
     _ib.setOwner(n2).setVrf(v2);
     _ib.setDependencies(ImmutableList.of()).setEncapsulationVlan(null);
@@ -541,6 +546,9 @@ public final class TopologyUtilTest {
     Interface vlanC = _ib.setName(icName).build();
     vlanC.setInterfaceType(InterfaceType.VLAN);
     vlanC.setVlan(icVlan);
+    Interface vlanD = _ib.setName(idName).build();
+    vlanD.setInterfaceType(InterfaceType.VLAN);
+    vlanD.setVlan(null);
     _ib.setName(iTrunkParentName).build();
     Interface trunk =
         _ib.setName(iTrunkName)

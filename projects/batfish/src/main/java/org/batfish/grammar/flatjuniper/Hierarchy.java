@@ -42,7 +42,8 @@ public final class Hierarchy {
 
     private static boolean isHostnameStatement(StatementContext ctx) {
       IsHostnameStatement listener = new IsHostnameStatement();
-      ParseTreeWalker walker = new BatfishParseTreeWalker();
+      // Use simple ParseTreeWalker since exception should not occur during walk
+      ParseTreeWalker walker = new ParseTreeWalker();
       walker.walk(listener, ctx);
       return listener._isHostname;
     }
@@ -517,7 +518,7 @@ public final class Hierarchy {
       }
       Flat_juniper_configurationContext newConfiguration =
           parser.getParser().flat_juniper_configuration();
-      markTokenInputs(newConfiguration, newStatementText, tokenInputs);
+      markTokenInputs(newConfiguration, newStatementText, tokenInputs, parser);
       if (markWildcards) {
         parser.setMarkWildcards(false);
       }
@@ -596,9 +597,10 @@ public final class Hierarchy {
     private static void markTokenInputs(
         Flat_juniper_configurationContext newConfiguration,
         String newStatementText,
-        Map<Token, String> tokenInputs) {
+        Map<Token, String> tokenInputs,
+        FlatJuniperCombinedParser parser) {
       TokenInputMarker listener = new TokenInputMarker(newStatementText, tokenInputs);
-      ParseTreeWalker walker = new BatfishParseTreeWalker();
+      ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
       walker.walk(listener, newConfiguration);
     }
 

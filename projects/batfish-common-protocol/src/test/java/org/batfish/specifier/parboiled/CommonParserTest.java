@@ -1,5 +1,7 @@
 package org.batfish.specifier.parboiled;
 
+import static org.batfish.datamodel.NamesTest.NODE_ROLE_INVALID_NAMES;
+import static org.batfish.datamodel.NamesTest.NODE_ROLE_VALID_NAMES;
 import static org.batfish.datamodel.NamesTest.REFERENCE_OBJECT_INVALID_NAMES;
 import static org.batfish.datamodel.NamesTest.REFERENCE_OBJECT_VALID_NAMES;
 import static org.batfish.specifier.parboiled.Parser.initAnchors;
@@ -78,6 +80,19 @@ public class CommonParserTest {
     assertFalse(matches("1startDigit", rule));
     assertFalse(matches("/startSlash", rule));
     assertFalse(matches("@startAt", rule));
+  }
+
+  @Test
+  public void testNodeRoleNameLiteral() {
+    Rule rule = CommonParser.INSTANCE.NodeRoleNameLiteral();
+
+    for (String name : NODE_ROLE_VALID_NAMES) {
+      assertTrue(name, matches(name, rule));
+    }
+
+    for (String name : NODE_ROLE_INVALID_NAMES) {
+      assertFalse(name, matches(name, rule));
+    }
   }
 
   @Test

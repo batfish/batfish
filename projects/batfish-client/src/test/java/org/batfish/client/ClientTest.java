@@ -82,6 +82,7 @@ import static org.batfish.datamodel.questions.Variable.Type.IP_WILDCARD;
 import static org.batfish.datamodel.questions.Variable.Type.JAVA_REGEX;
 import static org.batfish.datamodel.questions.Variable.Type.JSON_PATH;
 import static org.batfish.datamodel.questions.Variable.Type.JSON_PATH_REGEX;
+import static org.batfish.datamodel.questions.Variable.Type.LOCATION_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.LONG;
 import static org.batfish.datamodel.questions.Variable.Type.NODE_ROLE_DIMENSION;
 import static org.batfish.datamodel.questions.Variable.Type.PREFIX;
@@ -802,6 +803,15 @@ public final class ClientTest {
     String input = "{\"variable\" : \"I am variable\"}";
     Type expectedType = JSON_PATH;
     String expectedMessage = String.format("Missing 'path' element of %s", JSON_PATH.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidLocationSpec() throws IOException {
+    String input = "5";
+    Type expectedType = LOCATION_SPEC;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
@@ -1878,6 +1888,14 @@ public final class ClientTest {
     Variable variable = new Variable();
     variable.setType(JSON_PATH);
     Client.validateType(jsonPathNode, variable);
+  }
+
+  @Test
+  public void testValidLocationSpecValue() throws IOException {
+    JsonNode location = _mapper.readTree("\"as1border1\"");
+    Variable variable = new Variable();
+    variable.setType(LOCATION_SPEC);
+    Client.validateType(location, variable);
   }
 
   @Test

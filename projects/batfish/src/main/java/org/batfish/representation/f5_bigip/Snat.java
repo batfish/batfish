@@ -18,14 +18,11 @@ public final class Snat implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private final @Nonnull Map<Prefix, Ipv4Origin> _ipv4Origins;
-
   private final @Nonnull Map<Prefix6, Ipv6Origin> _ipv6Origins;
-
   private final @Nonnull String _name;
-
   private @Nullable String _snatpool;
-
   private @Nonnull Set<String> _vlans;
+  private boolean _vlansEnabled;
 
   public Snat(String name) {
     _name = name;
@@ -54,7 +51,15 @@ public final class Snat implements Serializable {
     return _vlans;
   }
 
+  public boolean getVlansEnabled() {
+    return _vlansEnabled;
+  }
+
   public void setSnatpool(@Nullable String snatpool) {
     _snatpool = snatpool;
+  }
+
+  public void setVlansEnabled(boolean vlansEnabled) {
+    _vlansEnabled = vlansEnabled;
   }
 }

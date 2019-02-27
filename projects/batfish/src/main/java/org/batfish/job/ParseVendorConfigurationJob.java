@@ -1,7 +1,6 @@
 package org.batfish.job;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import io.opentracing.ActiveSpan;
@@ -16,8 +15,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
-import org.batfish.common.ErrorDetails;
-import org.batfish.common.ErrorDetails.ParseExceptionContext;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
@@ -332,10 +329,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       try {
         extractor.processParseTree(tree);
       } catch (BatfishParseException e) {
-        _warnings.setErrorDetails(
-            new ErrorDetails(
-                Throwables.getStackTraceAsString(e),
-                new ParseExceptionContext(e.getContext(), combinedParser, _fileText)));
+        _warnings.setErrorDetails(e.getErrorDetails());
         throw new BatfishException("Error processing parse tree", e);
       }
 

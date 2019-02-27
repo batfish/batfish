@@ -5,9 +5,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 
+/** A firewall filter on Juniper */
 public final class FirewallFilter implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final Family _family;
@@ -17,11 +17,8 @@ public final class FirewallFilter implements Serializable {
    * apply to specific from-zones)
    */
   private String _fromZone;
-
   private final String _name;
-
-  private boolean _routingPolicy;
-
+  private boolean _usedForFBF;
   private final Map<String, FwTerm> _terms;
 
   public FirewallFilter(String name, Family family) {
@@ -43,16 +40,17 @@ public final class FirewallFilter implements Serializable {
     return _name;
   }
 
-  public boolean getRoutingPolicy() {
-    return _routingPolicy;
+  /** Whether or not this filter is used for Filter-Based Forwarding (FBF) */
+  public boolean isUsedForFBF() {
+    return _usedForFBF;
   }
 
   public Map<String, FwTerm> getTerms() {
     return _terms;
   }
 
-  public void setRoutingPolicy(boolean routingPolicy) {
-    _routingPolicy = routingPolicy;
+  public void setUsedForFBF(boolean usedForFBF) {
+    _usedForFBF = usedForFBF;
   }
 
   public void setFromZone(String fromZone) {

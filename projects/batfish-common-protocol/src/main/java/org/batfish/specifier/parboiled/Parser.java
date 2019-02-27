@@ -42,6 +42,8 @@ import org.parboiled.support.Var;
 })
 public class Parser extends CommonParser {
 
+  static final boolean SUPPORT_DEPRECATED_UNENCLOSED_REGEXES = true;
+
   static final Parser INSTANCE = Parboiled.createParser(Parser.class);
 
   static final Map<String, Anchor.Type> ANCHORS = initAnchors(Parser.class);

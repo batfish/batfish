@@ -1,15 +1,21 @@
 package org.batfish.grammar;
 
+import com.google.common.base.Throwables;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.RuleNode;
+import org.batfish.common.ErrorDetails;
+import org.batfish.common.ErrorDetails.ParseExceptionContext;
 
 /** Custom ParseTreeWalker that adds some additional context when exceptions occur */
 public class BatfishParseTreeWalker extends ParseTreeWalker {
 
-  public BatfishParseTreeWalker() {
+  private final BatfishCombinedParser<?, ?> _parser;
+
+  public BatfishParseTreeWalker(BatfishCombinedParser<?, ?> parser) {
     super();
+    _parser = parser;
   }
 
   @Override
@@ -20,7 +26,11 @@ public class BatfishParseTreeWalker extends ParseTreeWalker {
       ctx.enterRule(listener);
     } catch (Exception e) {
       throw new BatfishParseException(
-          String.format("Exception while walking parse tree: %s", e.getMessage()), e, ctx);
+          String.format("Exception while walking parse tree: %s", e.getMessage()),
+          e,
+          new ErrorDetails(
+              Throwables.getStackTraceAsString(e),
+              new ParseExceptionContext(ctx, _parser, _parser.getInput())));
     }
   }
 
@@ -32,7 +42,11 @@ public class BatfishParseTreeWalker extends ParseTreeWalker {
       listener.exitEveryRule(ctx);
     } catch (Exception e) {
       throw new BatfishParseException(
-          String.format("Exception while walking parse tree: %s", e.getMessage()), e, ctx);
+          String.format("Exception while walking parse tree: %s", e.getMessage()),
+          e,
+          new ErrorDetails(
+              Throwables.getStackTraceAsString(e),
+              new ParseExceptionContext(ctx, _parser, _parser.getInput())));
     }
   }
 }
