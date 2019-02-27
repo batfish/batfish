@@ -206,7 +206,7 @@ public class TestFiltersAnswerer extends Answerer {
     TestFiltersQuestion question = (TestFiltersQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     SortedSet<String> includeNodes =
-        ImmutableSortedSet.copyOf(question.getNodes().getMatchingNodes(_batfish));
+        ImmutableSortedSet.copyOf(question.getNodeSpecifier().resolve(_batfish.specifierContext()));
     FilterSpecifier filterSpecifier = question.getFilterSpecifier();
 
     Multiset<Row> rows = HashMultiset.create();
