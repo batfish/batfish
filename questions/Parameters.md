@@ -61,7 +61,8 @@ Batfish questions have the following parameter types that support rich specifica
 * **Escaping names:** Names of entities such as nodes and interfaces must be double-quoted if they begin with a digit (0-9), double quote ('"'), or slash ('/'), or they contain a space or one of `,&()[]@!#$%^;?<>={}`. Thus, the following names are legal: 
   * `as1border1` (no quotes)
   * `as1-border1`
-  * `"1startsWithADigit"` (quotes)
+  * `"as1border1"` (quotes unnecessary, but OK)
+  * `"1startsWithADigit"` (quotes needed)
   * `"has space"`
   * `"has["`
 
@@ -124,7 +125,7 @@ filterFunc :=
 
 A specification for interfaces in the network.
 
-* Interface name or a regex over the names indicate interfaces on all nodes in the network with that name or matching regex. For example, `Ethernet0/1` includes all filters with that name and `/Ethernet0/` includes all filters whose names contain 'Ethernet0'.
+* Interface name or a regex over the names indicate interfaces on all nodes in the network with that name or matching regex. For example, `Ethernet0/1` includes all interfaces with that name and `/Ethernet0/` includes all interfaces whose names contain 'Ethernet0'.
 
 * `@connectedTo(ipSpec)` indicates all interfaces with configured IPv4 networks that overlap with specified IPs (see [`ipSpec`](#ip-specifier))
 
@@ -161,14 +162,14 @@ interfaceFunc :=
 Batfish has the following types of interfaces.
 
 * `Aggregated`: Logical interface that aggregates multiple (physical) interfaces
-* `Aggregate_Child`: Child of an `Aggregated` interface, that is, its logical, sub-interface
-* `Logical`: Generic logical interface, (e.g., units on Juniper devices)
+* `Aggregate_Child`: Child of an `Aggregated` interface, that is, its logical sub-interface
+* `Logical`: Generic logical interface (e.g., units on Juniper devices)
 * `Loopback`: Logical loopback interface
 * `Null`: Special null interface
 * `Physical`: Physical port on a device
 * `Redundant`: Logical redundant ethernet interface (in Juniper parlance)
 * `Tunnel`: Logical tunnel interface (e.g., GRE, IP-in-IP encapsulation)
-* `Unknown`: Uknknown interface type
+* `Unknown`: Unknown interface type
 * `VLAN`: Logical VLAN/irb interface
 * `VPN`: Logical VPN interface, (i.e., IPSec tunnel)
 
@@ -207,7 +208,7 @@ There are two types of locations:
 
 Some examples:
 
-* `as1border1` specifies the `InterfaceLocation` for *all* interfaces on node `as1border1`. Any `nodeTerm` (see [node speficier grammar](#node-specifier-grammar)) can be used as a location specifier.
+* `as1border1` specifies the `InterfaceLocation` for *all* interfaces on node `as1border1`. Any `nodeTerm` (see [node specifier grammar](#node-specifier-grammar)) can be used as a location specifier.
 
 * `as1border1[Ethernet0/0]` specifies the `InterfaceLocation` for `Ethernet0/0` on node `as1border1`. A `nodeTerm` and an `interfaceSpec` can be combined this way as a location specifier.  
 
