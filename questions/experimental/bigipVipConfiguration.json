@@ -4,7 +4,7 @@
     "nodes": "${nodes}",
     "instance": {
         "description": "Report VIP mappings of F5 BIG-IP configurations",
-        "instanceName": "f5BigipVipConfiguration",
+        "instanceName": "bigipVipConfiguration",
         "orderedVariableNames": [
           "nodes"
         ],
