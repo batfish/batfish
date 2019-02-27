@@ -70,9 +70,7 @@ public class F5BigipVipConfigurationAnswerer extends Answerer {
       Map<String, Configuration> configurations,
       Set<String> nodes,
       Map<String, ColumnMetadata> columnMetadata) {
-
     Multiset<Row> rows = HashMultiset.create();
-
     for (String nodeName : nodes) {
       F5BigipFamily f5 = configurations.get(nodeName).getVendorFamily().getF5Bigip();
       if (f5 == null) {
@@ -107,12 +105,9 @@ public class F5BigipVipConfigurationAnswerer extends Answerer {
     F5BigipVipConfigurationQuestion question = (F5BigipVipConfigurationQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Set<String> nodes = question.getNodesSpecifier().resolve(_batfish.specifierContext());
-
     TableMetadata tableMetadata = createTableMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
-
     Multiset<Row> propertyRows = getAnswerRows(configurations, nodes, tableMetadata.toColumnMap());
-
     answer.postProcessAnswer(question, propertyRows);
     return answer;
   }
