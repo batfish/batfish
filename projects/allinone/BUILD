@@ -185,6 +185,23 @@ junit_tests(
 )
 
 junit_tests(
+    name = "TraceroutePolicyBasedRoutingTest",
+    size = "small",
+    srcs = [
+        "src/test/java/org/batfish/question/traceroute/TraceroutePolicyBasedRoutingTest.java",
+    ],
+    deps = [
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
+        "//projects/question",
+        "@guava//:compile",
+        "@hamcrest//:compile",
+    ],
+)
+
+junit_tests(
     name = "smt_tests",
     size = "small",
     srcs = glob([

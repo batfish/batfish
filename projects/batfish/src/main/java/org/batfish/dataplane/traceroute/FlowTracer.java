@@ -9,6 +9,7 @@ import static org.batfish.datamodel.flow.FilterStep.FilterType.INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.POST_TRANSFORMATION_INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.PRE_TRANSFORMATION_EGRESS_FILTER;
 import static org.batfish.datamodel.flow.StepAction.DENIED;
+import static org.batfish.datamodel.flow.StepAction.PERMITTED;
 import static org.batfish.datamodel.flow.StepAction.TRANSMITTED;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.buildEnterSrcIfaceStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createFilterStep;
@@ -49,6 +50,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 import org.batfish.datamodel.flow.FilterStep;
+import org.batfish.datamodel.flow.FilterStep.FilterStepDetail;
 import org.batfish.datamodel.flow.FilterStep.FilterType;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
@@ -66,6 +68,12 @@ import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
+import org.batfish.datamodel.packet_policy.ActionVisitor;
+import org.batfish.datamodel.packet_policy.Drop;
+import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.FlowEvaluator;
+import org.batfish.datamodel.packet_policy.FlowEvaluator.FlowResult;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationEvaluator;
@@ -291,6 +299,12 @@ class FlowTracer {
 
       // apply ingress filter
       Interface incomingInterface = _currentConfig.getAllInterfaces().get(_ingressInterface);
+      // if defined, use routing/packet policy applied to the interface
+      if (processPBR(incomingInterface)) {
+        return;
+      }
+
+      // if wasn't processed by packet policy, just apply ingress filter
       IpAccessList inputFilter = incomingInterface.getIncomingFilter();
       if (inputFilter != null) {
         if (applyFilter(inputFilter, INGRESS_FILTER) == DENIED) {
@@ -334,13 +348,67 @@ class FlowTracer {
       return;
     }
 
+    fibLookup(dstIp, currentNodeName, fib, nextHopInterfaces);
+  }
+
+  private boolean processPBR(Interface incomingInterface) {
+
+    // apply routing/packet policy applied to the interface, if defined.
+    String policyName = incomingInterface.getRoutingPolicyName();
+    if (policyName == null) {
+      return false;
+    }
+    PacketPolicy policy = _currentConfig.getPacketPolicies().get(policyName);
+    if (policy == null) {
+      return false;
+    }
+
+    FlowResult result = FlowEvaluator.evaluate(_currentFlow, incomingInterface.getName(), policy);
+    return new ActionVisitor<Boolean>() {
+
+      @Override
+      public Boolean visitDrop(Drop drop) {
+        _steps.add(new FilterStep(new FilterStepDetail(policy.getName(), INGRESS_FILTER), DENIED));
+        return true;
+      }
+
+      @Override
+      public Boolean visitFibLookup(FibLookup fibLookup) {
+        _steps.add(
+            new FilterStep(new FilterStepDetail(policy.getName(), INGRESS_FILTER), PERMITTED));
+        String lookupVrfName = fibLookup.getVrfName();
+        Ip dstIp = result.getFinalFlow().getDstIp();
+
+        // Accept if the flow is destined for this vrf on this host.
+        String currentNodeName = _currentNode.getName();
+        if (_tracerouteContext.ownsIp(currentNodeName, _vrfName, dstIp)) {
+          buildAcceptTrace();
+          return true;
+        }
+
+        Fib fib = _tracerouteContext.getFib(currentNodeName, lookupVrfName);
+        // Sort so that resulting traces will be in sensible deterministic order
+        SortedSet<String> nextHopInterfaces =
+            ImmutableSortedSet.copyOf(fib.getNextHopInterfaces(dstIp));
+        if (nextHopInterfaces.isEmpty()) {
+          buildNoRouteTrace();
+          return true;
+        }
+
+        fibLookup(dstIp, currentNodeName, fib, nextHopInterfaces);
+        return true;
+      }
+    }.visit(result.getAction());
+  }
+
+  private void fibLookup(
+      Ip dstIp, String currentNodeName, Fib fib, SortedSet<String> nextHopInterfaces) {
     // Loop detection
     Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, _currentFlow);
     if (_breadcrumbs.contains(breadcrumb)) {
       buildLoopTrace();
       return;
     }
-
     _breadcrumbs.push(breadcrumb);
     try {
       _steps.add(buildRoutingStep(currentNodeName, dstIp));
