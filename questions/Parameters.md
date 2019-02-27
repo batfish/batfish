@@ -83,12 +83,12 @@ There are two coarse-grained flow dispositions:
 The following fine-grained disposition values are also supported:
 * Success dispositions:
     * `Accepted`: a flow has been accepted by a device in the snapshot
-    * `Delivered_to_subnet`: a flow has been delivered to the host subnet
-    * `Exits_network`: a flow has been succesfully forwared to a device currently outside of the snapshot
+    * `Delivered_to_subnet`: a flow has been delivered to a host subnet
+    * `Exits_network`: a flow has been successfully forwarded to a device currently outside of the snapshot
 * Failure dispositions:
     * `Denied_in`: a flow was denied by an input filter (an ACL or a firewall rule) on an interface
     * `Denied_out`: a flow was denied by an output filter on an interface
-    * `No_route`: a flow was dropped because no suitable route exists on device 
+    * `No_route`: a flow was dropped because no matching route exists on device 
     * `Null_routed`: a flow was dropped because it matched a `null` route 
     * `Neighbor_unreachable`: a flow was dropped because it could not reach the next hop (e.g., an ARP failure)
     * `Loop`: the flow encountered a forwarding loop
@@ -113,12 +113,9 @@ filterSpec :=
 filterTerm :=
     &lt;<i>filter-name</i>&gt;
     | <b>/</b>&lt;<i>filter-name-regex</i>&gt;<b>/</b>
-    | filterFunc
-    | <b>(</b>filterSpec<b>)</b>
-
-filterFunc :=
-    <b>@in(</b>interfaceSpec<b>)</b>
+    | <b>@in(</b>interfaceSpec<b>)</b>
     | <b>@out(</b>interfaceSpec<b>)</b>
+    | <b>(</b>filterSpec<b>)</b>
 </pre>
 
 ## Interface Specifier
