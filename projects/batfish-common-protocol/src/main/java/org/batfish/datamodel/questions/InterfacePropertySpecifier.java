@@ -73,9 +73,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
       new ImmutableMap.Builder<String, PropertyDescriptor<Interface>>()
           .put(ACCESS_VLAN, new PropertyDescriptor<>(Interface::getAccessVlan, Schema.INTEGER))
           .put(ACTIVE, new PropertyDescriptor<>(Interface::getActive, Schema.BOOLEAN))
-          .put(
-              ADDITIONAL_ARP_IPS,
-              new PropertyDescriptor<>(Interface::getAdditionalArpIps, Schema.list(Schema.IP)))
           .put(ALLOWED_VLANS, new PropertyDescriptor<>(Interface::getAllowedVlans, Schema.STRING))
           .put(
               ALL_PREFIXES,
