@@ -12128,6 +12128,7 @@
                 "name" : "/Common/SOME_VIRTUAL",
                 "destination" : "/Common/192.0.2.7",
                 "destinationPort" : 80,
+                "ipProtocol" : "TCP",
                 "mask" : "255.255.255.255",
                 "pool" : "/Common/SOME_POOL",
                 "source" : "0.0.0.0/0",
