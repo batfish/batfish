@@ -1,11 +1,8 @@
 {
   "class" : "org.batfish.question.specifiers.SpecifiersQuestion",
   "queryType" : "FILTER",
+  "specifierFactoryVersion" : "V2",
   "differential" : false,
-<<<<<<< HEAD
-=======
-  "filterSpecifierFactory" : "ParboiledFilterSpecifierFactory",
->>>>>>> origin/master
   "filterSpecifierInput" : "input",
   "includeOneTableKeys" : true,
   "instance" : {
@@ -38,14 +35,5 @@
       }
     }
   },
-<<<<<<< HEAD
-  "nodeSpecifierInput" : "input",
-  "specifierFactoryVersion" : "V2"
-=======
-  "interfaceSpecifierFactory" : "ParboiledInterfaceSpecifierFactory",
-  "ipSpaceSpecifierFactory" : "ParboiledIpSpaceSpecifierFactory",
-  "locationSpecifierFactory" : "ParboiledLocationSpecifierFactory",
-  "nodeSpecifierFactory" : "ParboiledNodeSpecifierFactory",
   "nodeSpecifierInput" : "input"
->>>>>>> origin/master
 }
