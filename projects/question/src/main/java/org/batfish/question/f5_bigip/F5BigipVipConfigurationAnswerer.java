@@ -35,9 +35,10 @@ public class F5BigipVipConfigurationAnswerer extends Answerer {
 
   public static final String COL_NODE = "Node";
   public static final String COL_SERVERS = "Servers";
-  public static final String COL_VIRTUAL = "Virtual";
+  public static final String COL_VIRTUAL_ENDPOINT = "VIP_Endpoint";
+  public static final String COL_VIRTUAL_NAME = "VIP_Name";
   private static final List<String> COLUMN_ORDER =
-      ImmutableList.of(COL_NODE, COL_VIRTUAL, COL_SERVERS);
+      ImmutableList.of(COL_NODE, COL_VIRTUAL_NAME, COL_VIRTUAL_ENDPOINT, COL_SERVERS);
 
   /**
    * Creates {@link ColumnMetadata}s that the answer should have.
@@ -52,8 +53,13 @@ public class F5BigipVipConfigurationAnswerer extends Answerer {
                 COL_SERVERS,
                 new ColumnMetadata(COL_SERVERS, Schema.set(Schema.STRING), "Servers", false, false))
             .put(
-                COL_VIRTUAL,
-                new ColumnMetadata(COL_VIRTUAL, Schema.STRING, "Virtual IP/Server", true, false))
+                COL_VIRTUAL_NAME,
+                new ColumnMetadata(
+                    COL_VIRTUAL_NAME, Schema.STRING, "Virtual Service Name", true, false))
+            .put(
+                COL_VIRTUAL_ENDPOINT,
+                new ColumnMetadata(
+                    COL_VIRTUAL_ENDPOINT, Schema.STRING, "Virtual Service Endpoint", true, false))
             .build();
 
     // List the metadatas in order, with any unknown columns tacked onto the end of the table
@@ -65,7 +71,9 @@ public class F5BigipVipConfigurationAnswerer extends Answerer {
   /** Creates a {@link TableMetadata} object from the question. */
   static TableMetadata createTableMetadata(F5BigipVipConfigurationQuestion question) {
     String textDesc =
-        String.format("Configuration of Virtual IP/Server ${%s}: ${%s}", COL_NODE, COL_VIRTUAL);
+        String.format(
+            "Configuration of Virtual IP/Server ${%s}: ${%s}: ${%s}",
+            COL_NODE, COL_VIRTUAL_NAME, COL_VIRTUAL_ENDPOINT);
     DisplayHints dhints = question.getDisplayHints();
     if (dhints != null && dhints.getTextDesc() != null) {
       textDesc = dhints.getTextDesc();
@@ -107,20 +115,25 @@ public class F5BigipVipConfigurationAnswerer extends Answerer {
           // malformed or unsupported
           continue;
         }
-        String virtualStr =
-            String.format("%s %s:%d", protocol.name(), destinationAddress, destinationPort);
+        String virtualEndpointStr =
+            String.format("%s:%d %s", destinationAddress, destinationPort, protocol.name());
         Set<String> servers = toServers(f5, virtual.getPool());
-        rows.add(getRow(node, virtualStr, servers, columnMetadata));
+        rows.add(getRow(node, virtual.getName(), virtualEndpointStr, servers, columnMetadata));
       }
     }
     return rows;
   }
 
   private static Row getRow(
-      Node node, String virtual, Set<String> servers, Map<String, ColumnMetadata> columnMetadata) {
+      Node node,
+      String virtualName,
+      String virtualEndpoint,
+      Set<String> servers,
+      Map<String, ColumnMetadata> columnMetadata) {
     return Row.builder(columnMetadata)
         .put(COL_NODE, node)
-        .put(COL_VIRTUAL, virtual)
+        .put(COL_VIRTUAL_NAME, virtualName)
+        .put(COL_VIRTUAL_ENDPOINT, virtualEndpoint)
         .put(COL_SERVERS, servers)
         .build();
   }

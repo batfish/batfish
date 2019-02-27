@@ -1148,7 +1148,18 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitNs_address(Ns_addressContext ctx) {
-    _currentSelf.setAddress(new InterfaceAddress(ctx.interface_address.getText()));
+    String text = ctx.interface_address.getText();
+    if (Prefix.tryParse(text).isPresent()) {
+      _currentSelf.setAddress(new InterfaceAddress(text));
+      return;
+    }
+    if (Prefix6.tryParse(text).isPresent()) {
+      // TODO: implement IPv6 interface address
+      return;
+    }
+    _w.redFlag(
+        String.format(
+            "'%s' is neither IPv4 nor IPv6 interface address in: %s", text, getFullText(ctx)));
   }
 
   @Override

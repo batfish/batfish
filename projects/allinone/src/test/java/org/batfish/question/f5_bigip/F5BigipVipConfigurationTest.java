@@ -5,7 +5,7 @@ import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.question.f5_bigip.F5BigipVipConfigurationAnswerer.COL_NODE;
 import static org.batfish.question.f5_bigip.F5BigipVipConfigurationAnswerer.COL_SERVERS;
-import static org.batfish.question.f5_bigip.F5BigipVipConfigurationAnswerer.COL_VIRTUAL;
+import static org.batfish.question.f5_bigip.F5BigipVipConfigurationAnswerer.COL_VIRTUAL_ENDPOINT;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -56,7 +56,7 @@ public final class F5BigipVipConfigurationTest {
             contains(
                 allOf(
                     hasColumn(COL_NODE, equalTo(new Node(hostname1.toLowerCase())), Schema.NODE),
-                    hasColumn(COL_VIRTUAL, equalTo("TCP 10.0.0.1:80"), Schema.STRING),
+                    hasColumn(COL_VIRTUAL_ENDPOINT, equalTo("TCP 10.0.0.1:80"), Schema.STRING),
                     hasColumn(
                         COL_SERVERS,
                         equalTo(ImmutableSet.of("172.16.0.1:80", "172.16.0.2:8080")),

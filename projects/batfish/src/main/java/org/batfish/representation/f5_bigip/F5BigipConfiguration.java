@@ -504,9 +504,12 @@ public class F5BigipConfiguration extends VendorConfiguration {
       return;
     }
     InterfaceAddress address = self.getAddress();
+    if (address == null) {
+      // IPv6
+      return;
+    }
     vlanIface.setAddress(address);
-    vlanIface.setAllAddresses(
-        address != null ? ImmutableSortedSet.of(address) : ImmutableSortedSet.of());
+    vlanIface.setAllAddresses(ImmutableSortedSet.of(address));
   }
 
   private void processVlanSettings(Vlan vlan) {
