@@ -117,7 +117,7 @@ public class F5BigipVipConfigurationAnswerer extends Answerer {
         }
         String virtualEndpointStr =
             String.format("%s:%d %s", destinationAddress, destinationPort, protocol.name());
-        Set<String> servers = toServers(f5, virtual.getPool());
+        Set<String> servers = toServers(f5.getPools().get(virtual.getPool()));
         rows.add(getRow(node, virtual.getName(), virtualEndpointStr, servers, columnMetadata));
       }
     }
@@ -138,7 +138,7 @@ public class F5BigipVipConfigurationAnswerer extends Answerer {
         .build();
   }
 
-  private static @Nullable String toServer(F5BigipFamily f5, PoolMember member) {
+  private static @Nullable String toServer(PoolMember member) {
     Ip address = member.getAddress();
     if (address == null) {
       // IPv6 or malformed
@@ -147,14 +147,13 @@ public class F5BigipVipConfigurationAnswerer extends Answerer {
     return String.format("%s:%d", address, member.getPort());
   }
 
-  private static @Nonnull Set<String> toServers(F5BigipFamily f5, String poolName) {
-    Pool pool = f5.getPools().get(poolName);
+  private static @Nonnull Set<String> toServers(Pool pool) {
     if (pool == null) {
       // undefined reference
       return ImmutableSet.of();
     }
     return pool.getMembers().values().stream()
-        .map(member -> toServer(f5, member))
+        .map(member -> toServer(member))
         .filter(Objects::nonNull)
         .collect(ImmutableSet.toImmutableSet());
   }

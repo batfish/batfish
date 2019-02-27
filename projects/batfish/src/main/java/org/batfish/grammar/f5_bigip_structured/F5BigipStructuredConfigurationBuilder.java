@@ -1155,6 +1155,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     }
     if (Prefix6.tryParse(text).isPresent()) {
       // TODO: implement IPv6 interface address
+      todo(ctx);
       return;
     }
     _w.redFlag(
