@@ -348,14 +348,7 @@ class FlowTracer {
       return;
     }
 
-    // Loop detection
-    Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, _currentFlow);
-    if (_breadcrumbs.contains(breadcrumb)) {
-      buildLoopTrace();
-      return;
-    }
-
-    fibLookup(dstIp, currentNodeName, fib, nextHopInterfaces, breadcrumb);
+    fibLookup(dstIp, currentNodeName, fib, nextHopInterfaces);
   }
 
   private boolean processPBR(Interface incomingInterface) {
@@ -402,25 +395,20 @@ class FlowTracer {
           return true;
         }
 
-        // Loop detection
-        Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, _currentFlow);
-        if (_breadcrumbs.contains(breadcrumb)) {
-          buildLoopTrace();
-          return true;
-        }
-
-        fibLookup(dstIp, currentNodeName, fib, nextHopInterfaces, breadcrumb);
+        fibLookup(dstIp, currentNodeName, fib, nextHopInterfaces);
         return true;
       }
     }.visit(result.getAction());
   }
 
   private void fibLookup(
-      Ip dstIp,
-      String currentNodeName,
-      Fib fib,
-      SortedSet<String> nextHopInterfaces,
-      Breadcrumb breadcrumb) {
+      Ip dstIp, String currentNodeName, Fib fib, SortedSet<String> nextHopInterfaces) {
+    // Loop detection
+    Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, _currentFlow);
+    if (_breadcrumbs.contains(breadcrumb)) {
+      buildLoopTrace();
+      return;
+    }
     _breadcrumbs.push(breadcrumb);
     try {
       _steps.add(buildRoutingStep(currentNodeName, dstIp));
