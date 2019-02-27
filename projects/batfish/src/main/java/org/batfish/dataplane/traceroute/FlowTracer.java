@@ -355,33 +355,7 @@ class FlowTracer {
       return;
     }
 
-    _breadcrumbs.push(breadcrumb);
-    try {
-      _steps.add(buildRoutingStep(currentNodeName, dstIp));
-
-      Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute =
-          fib.getNextHopInterfacesByRoute(dstIp);
-
-      // For every interface with a route to the dst IP
-      for (String nextHopInterfaceName : nextHopInterfaces) {
-        if (nextHopInterfaceName.equals(Interface.NULL_INTERFACE_NAME)) {
-          branch().buildNullRoutedTrace();
-          continue;
-        }
-
-        Interface nextHopInterface = _currentConfig.getAllInterfaces().get(nextHopInterfaceName);
-
-        Multimap<Ip, AbstractRoute> resolvedNextHopIpRoutes =
-            resolveNextHopIpRoutes(nextHopInterfaceName, nextHopInterfacesByRoute);
-        resolvedNextHopIpRoutes
-            .asMap()
-            .forEach(
-                (resolvedNextHopIp, routeCandidates) ->
-                    branch().forwardOutInterface(nextHopInterface, resolvedNextHopIp));
-      }
-    } finally {
-      _breadcrumbs.pop();
-    }
+    fibLookup(dstIp, currentNodeName, fib, nextHopInterfaces, breadcrumb);
   }
 
   private boolean processPBR(Interface incomingInterface) {
@@ -435,37 +409,45 @@ class FlowTracer {
           return true;
         }
 
-        _breadcrumbs.push(breadcrumb);
-        try {
-          _steps.add(buildRoutingStep(currentNodeName, dstIp));
-
-          Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute =
-              fib.getNextHopInterfacesByRoute(dstIp);
-
-          // For every interface with a route to the dst IP
-          for (String nextHopInterfaceName : nextHopInterfaces) {
-            if (nextHopInterfaceName.equals(Interface.NULL_INTERFACE_NAME)) {
-              branch().buildNullRoutedTrace();
-              continue;
-            }
-
-            Interface nextHopInterface =
-                _currentConfig.getAllInterfaces().get(nextHopInterfaceName);
-
-            Multimap<Ip, AbstractRoute> resolvedNextHopIpRoutes =
-                resolveNextHopIpRoutes(nextHopInterfaceName, nextHopInterfacesByRoute);
-            resolvedNextHopIpRoutes
-                .asMap()
-                .forEach(
-                    (resolvedNextHopIp, routeCandidates) ->
-                        branch().forwardOutInterface(nextHopInterface, resolvedNextHopIp));
-          }
-        } finally {
-          _breadcrumbs.pop();
-        }
+        fibLookup(dstIp, currentNodeName, fib, nextHopInterfaces, breadcrumb);
         return true;
       }
     }.visit(result.getAction());
+  }
+
+  private void fibLookup(
+      Ip dstIp,
+      String currentNodeName,
+      Fib fib,
+      SortedSet<String> nextHopInterfaces,
+      Breadcrumb breadcrumb) {
+    _breadcrumbs.push(breadcrumb);
+    try {
+      _steps.add(buildRoutingStep(currentNodeName, dstIp));
+
+      Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute =
+          fib.getNextHopInterfacesByRoute(dstIp);
+
+      // For every interface with a route to the dst IP
+      for (String nextHopInterfaceName : nextHopInterfaces) {
+        if (nextHopInterfaceName.equals(Interface.NULL_INTERFACE_NAME)) {
+          branch().buildNullRoutedTrace();
+          continue;
+        }
+
+        Interface nextHopInterface = _currentConfig.getAllInterfaces().get(nextHopInterfaceName);
+
+        Multimap<Ip, AbstractRoute> resolvedNextHopIpRoutes =
+            resolveNextHopIpRoutes(nextHopInterfaceName, nextHopInterfacesByRoute);
+        resolvedNextHopIpRoutes
+            .asMap()
+            .forEach(
+                (resolvedNextHopIp, routeCandidates) ->
+                    branch().forwardOutInterface(nextHopInterface, resolvedNextHopIp));
+      }
+    } finally {
+      _breadcrumbs.pop();
+    }
   }
 
   @Nonnull
