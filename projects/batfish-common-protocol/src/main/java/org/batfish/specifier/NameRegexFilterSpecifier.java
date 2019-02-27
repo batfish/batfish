@@ -1,10 +1,10 @@
 package org.batfish.specifier;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -43,7 +43,6 @@ public final class NameRegexFilterSpecifier implements FilterSpecifier {
         .map(c -> c.getIpAccessLists().values())
         .flatMap(Collection::stream)
         .filter(f -> _pattern.matcher(f.getName()).matches())
-        // change this to immutable set once the equality for ipaccesslist is fixed
-        .collect(Collectors.toSet());
+        .collect(ImmutableSet.toImmutableSet());
   }
 }
