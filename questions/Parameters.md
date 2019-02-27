@@ -74,7 +74,7 @@ Batfish questions have the following parameter types that support rich specifica
 
 ## Flow Disposition Specifier
 
-Flow dispositions identify flow actions. Used in questions like [reachability](https://pybatfish.readthedocs.io/en/latest/questions.html#pybatfish.question.bfq.reachability), the disposition specifier takes as input a comma-separated list of disposition values, which are interpreted using logical OR.
+Flow dispositions are used in questions like [reachability](https://pybatfish.readthedocs.io/en/latest/questions.html#pybatfish.question.bfq.reachability) to identify flow outcomes. The disposition specifier takes as input a comma-separated list of disposition values, which are interpreted using logical OR.
 
 There are two coarse-grained flow dispositions:
   * `Success`: a flow has been successfully delivered
@@ -202,16 +202,13 @@ locationSpec :=
 
 locationTerm :=
     locationInterface
-    | locationSpecifier
+    | <b>@enter(</b>locationInterface<b>)</b>
     | (locationSpec)
 
 locationInterface :=
     nodeTerm
     | interfaceFunc
     | nodeTerm<b>[</b>interfaceSpec<b>]</b>
-
-locationFunc :=
-    <b>@enter(</b>locationInterface<b>)</b>
 </pre>
 
 ## Node Specifier
