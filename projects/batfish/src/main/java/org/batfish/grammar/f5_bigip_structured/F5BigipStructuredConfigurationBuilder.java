@@ -84,6 +84,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -95,6 +96,7 @@ import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
 import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Bundle_speedContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.F5_bigip_structured_configurationContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ip_protocolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_nodeContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_poolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_ruleContext;
@@ -136,6 +138,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lspm_memb
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lst_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lsv_vlanContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_destinationContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_ip_protocolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_maskContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_poolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_profiles_profileContext;
@@ -848,6 +851,11 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void exitLv_ip_protocol(Lv_ip_protocolContext ctx) {
+    _currentVirtual.setIpProtocol(toIpProtocol(ctx.ip_protocol()));
+  }
+
+  @Override
   public void exitLv_mask(Lv_maskContext ctx) {
     String text = ctx.mask.getText();
     Optional<Ip> ip = Ip.tryParse(text);
@@ -1208,6 +1216,16 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   private void todo(ParserRuleContext ctx) {
     _w.todo(ctx, getFullText(ctx), _parser);
+  }
+
+  private @Nullable IpProtocol toIpProtocol(Ip_protocolContext ctx) {
+    if (ctx.TCP() != null) {
+      return IpProtocol.TCP;
+    } else if (ctx.UDP() != null) {
+      return IpProtocol.UDP;
+    } else {
+      return convProblem(IpProtocol.class, ctx, null);
+    }
   }
 
   private @Nullable LineAction toLineAction(Prefix_list_actionContext ctx) {

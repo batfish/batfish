@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 
@@ -23,6 +24,7 @@ public final class Virtual implements Serializable {
 
   private static final String PROP_DESTINATION = "destination";
   private static final String PROP_DESTINATION_PORT = "destinationPort";
+  private static final String PROP_IP_PROTOCOL = "ipProtocol";
   private static final String PROP_MASK = "mask";
   private static final String PROP_MASK6 = "mask6";
   private static final String PROP_NAME = "name";
@@ -44,6 +46,7 @@ public final class Virtual implements Serializable {
 
   private @Nullable String _destination;
   private @Nullable Integer _destinationPort;
+  private @Nullable IpProtocol _ipProtocol;
   private @Nullable Ip _mask;
   private @Nullable Ip6 _mask6;
   private final @Nonnull String _name;
@@ -72,6 +75,11 @@ public final class Virtual implements Serializable {
   @JsonProperty(PROP_DESTINATION_PORT)
   public @Nullable Integer getDestinationPort() {
     return _destinationPort;
+  }
+
+  @JsonProperty(PROP_IP_PROTOCOL)
+  public @Nullable IpProtocol getIpProtocol() {
+    return _ipProtocol;
   }
 
   @JsonProperty(PROP_MASK)
@@ -127,6 +135,11 @@ public final class Virtual implements Serializable {
   @JsonProperty(PROP_DESTINATION_PORT)
   public void setDestinationPort(@Nullable Integer destinationPort) {
     _destinationPort = destinationPort;
+  }
+
+  @JsonProperty(PROP_IP_PROTOCOL)
+  public void setIpProtocol(@Nullable IpProtocol ipProtocol) {
+    _ipProtocol = ipProtocol;
   }
 
   @JsonProperty(PROP_MASK)

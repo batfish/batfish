@@ -8,11 +8,15 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
@@ -22,6 +26,10 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.datamodel.vendor_family.f5_bigip.F5BigipFamily;
+import org.batfish.datamodel.vendor_family.f5_bigip.Pool;
+import org.batfish.datamodel.vendor_family.f5_bigip.PoolMember;
+import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
+import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
 
 public class F5BigipVipConfigurationAnswerer extends Answerer {
 
@@ -77,14 +85,35 @@ public class F5BigipVipConfigurationAnswerer extends Answerer {
         continue;
       }
       Node node = new Node(nodeName);
-      rows.add(getRow(node, "", ImmutableSet.of(), columnMetadata));
+      for (Virtual virtual : f5.getVirtuals().values()) {
+        String destination = virtual.getDestination();
+        VirtualAddress virtualAddress = f5.getVirtualAddresses().get(destination);
+        if (virtualAddress == null) {
+          // undefined reference
+          continue;
+        }
+        Integer destinationPort = virtual.getDestinationPort();
+        if (destinationPort == null) {
+          // malformed
+          continue;
+        }
+        Ip destinationAddress = virtualAddress.getAddress();
+        if (destinationAddress == null) {
+          // IPv6 or malformed
+          continue;
+        }
+        IpProtocol protocol = virtual.getIpProtocol();
+        if (protocol == null) {
+          // malformed or unsupported
+          continue;
+        }
+        String virtualStr =
+            String.format("%s %s:%d", protocol.name(), destinationAddress, destinationPort);
+        Set<String> servers = toServers(f5, virtual.getPool());
+        rows.add(getRow(node, virtualStr, servers, columnMetadata));
+      }
     }
     return rows;
-  }
-
-  /** Returns the name of the column that contains the value of property {@code property} */
-  public static String getColumnName(String property) {
-    return property;
   }
 
   private static Row getRow(
@@ -96,12 +125,33 @@ public class F5BigipVipConfigurationAnswerer extends Answerer {
         .build();
   }
 
+  private static @Nullable String toServer(F5BigipFamily f5, PoolMember member) {
+    Ip address = member.getAddress();
+    if (address == null) {
+      // IPv6 or malformed
+      return null;
+    }
+    return String.format("%s:%d", address, member.getPort());
+  }
+
+  private static @Nonnull Set<String> toServers(F5BigipFamily f5, String poolName) {
+    Pool pool = f5.getPools().get(poolName);
+    if (pool == null) {
+      // undefined reference
+      return ImmutableSet.of();
+    }
+    return pool.getMembers().values().stream()
+        .map(member -> toServer(f5, member))
+        .filter(Objects::nonNull)
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
   public F5BigipVipConfigurationAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
 
   @Override
-  public AnswerElement answer() {
+  public TableAnswerElement answer() {
     F5BigipVipConfigurationQuestion question = (F5BigipVipConfigurationQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Set<String> nodes = question.getNodesSpecifier().resolve(_batfish.specifierContext());
