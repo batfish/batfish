@@ -123,6 +123,9 @@ public enum RoutingProtocol {
           case FORCE10:
           case FOUNDRY:
             return 20;
+          case F5:
+          case F5_BIGIP_STRUCTURED:
+            return 20;
           case FLAT_JUNIPER:
           case JUNIPER:
           case JUNIPER_SWITCH:
@@ -134,7 +137,6 @@ public enum RoutingProtocol {
           case EMPTY:
           case IGNORED:
           case BLADENETWORK:
-          case F5:
           case HOST:
           case IPTABLES:
           case MRV:
@@ -248,6 +250,9 @@ public enum RoutingProtocol {
           case FORCE10:
           case FOUNDRY:
             return 200;
+          case F5:
+          case F5_BIGIP_STRUCTURED:
+            return 200;
           case FLAT_JUNIPER:
           case JUNIPER:
           case JUNIPER_SWITCH:
@@ -259,7 +264,6 @@ public enum RoutingProtocol {
           case EMPTY:
           case IGNORED:
           case BLADENETWORK:
-          case F5:
           case HOST:
           case IPTABLES:
           case MRV:
@@ -436,6 +440,9 @@ public enum RoutingProtocol {
             break;
         }
         break;
+
+      case KERNEL:
+        return 0;
 
       case OSPF:
         switch (vendor) {
