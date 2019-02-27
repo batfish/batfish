@@ -1,10 +1,10 @@
 package org.batfish.dataplane.ibdp;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -106,16 +106,17 @@ public class PrefixTracer implements Serializable {
   private final Map<Prefix, Set<Neighbor>> _sent;
 
   PrefixTracer() {
-    _originated = new HashSet<>();
-    _installed = new HashMap<>();
-    _sent = new HashMap<>();
-    _filteredOnImport = new HashMap<>();
-    _filteredOnExport = new HashMap<>();
+    _originated = ImmutableSet.of();
+    _installed = ImmutableMap.of();
+    _sent = ImmutableMap.of();
+    _filteredOnImport = ImmutableMap.of();
+    _filteredOnExport = ImmutableMap.of();
   }
 
   /** Note that we considered given prefix for origination */
   void originated(Prefix prefix) {
-    _originated.add(prefix);
+    return;
+    //    _originated.add(prefix);
   }
 
   /** Note that we exported given prefix to a given {@link Neighbor} */
@@ -125,8 +126,9 @@ public class PrefixTracer implements Serializable {
       Ip neighborIp,
       String neighborVrf,
       @Nullable String exportPolicy) {
-    Set<Neighbor> set = _sent.computeIfAbsent(prefix, p -> new HashSet<>());
-    set.add(new Neighbor(neighborHostname, neighborIp, neighborVrf, exportPolicy));
+    return;
+    //    Set<Neighbor> set = _sent.computeIfAbsent(prefix, p -> new HashSet<>());
+    //    set.add(new Neighbor(neighborHostname, neighborIp, neighborVrf, exportPolicy));
   }
 
   /** Note that we installed a prefix received from a given {@link Neighbor} */
@@ -136,8 +138,9 @@ public class PrefixTracer implements Serializable {
       Ip neighborIp,
       String neighborVrf,
       @Nullable String importPolicy) {
-    Set<Neighbor> set = _installed.computeIfAbsent(prefix, p -> new HashSet<>());
-    set.add(new Neighbor(neighborHostname, neighborIp, neighborVrf, importPolicy));
+    return;
+    //    Set<Neighbor> set = _installed.computeIfAbsent(prefix, p -> new HashSet<>());
+    //    set.add(new Neighbor(neighborHostname, neighborIp, neighborVrf, importPolicy));
   }
 
   /**
@@ -153,15 +156,16 @@ public class PrefixTracer implements Serializable {
       String neighborVrf,
       @Nullable String policyName,
       Direction direction) {
-    if (direction == Direction.IN) {
-      Set<Neighbor> set = _filteredOnImport.computeIfAbsent(prefix, p -> new HashSet<>());
-      set.add(new Neighbor(neighborHostname, neighborIp, neighborVrf, policyName));
-    } else if (direction == Direction.OUT) {
-      Set<Neighbor> set = _filteredOnExport.computeIfAbsent(prefix, p -> new HashSet<>());
-      set.add(new Neighbor(neighborHostname, neighborIp, neighborVrf, policyName));
-    } else {
-      throw new UnsupportedOperationException("Unknown filtering direction");
-    }
+    return;
+    //    if (direction == Direction.IN) {
+    //      Set<Neighbor> set = _filteredOnImport.computeIfAbsent(prefix, p -> new HashSet<>());
+    //      set.add(new Neighbor(neighborHostname, neighborIp, neighborVrf, policyName));
+    //    } else if (direction == Direction.OUT) {
+    //      Set<Neighbor> set = _filteredOnExport.computeIfAbsent(prefix, p -> new HashSet<>());
+    //      set.add(new Neighbor(neighborHostname, neighborIp, neighborVrf, policyName));
+    //    } else {
+    //      throw new UnsupportedOperationException("Unknown filtering direction");
+    //    }
   }
 
   /** Return the set of prefixes we attempted to originate */
@@ -197,40 +201,41 @@ public class PrefixTracer implements Serializable {
 
   /** Structure: prefix -&gt; action -&gt; set of hostnames */
   public Map<Prefix, Map<String, Set<String>>> summarize() {
-    Map<Prefix, Map<String, Set<String>>> result = new HashMap<>();
-    _sent.forEach(
-        (prefix, neighbors) ->
-            neighbors.forEach(
-                neighbor ->
-                    result
-                        .computeIfAbsent(prefix, p -> new HashMap<>())
-                        .computeIfAbsent(SENT, a -> new HashSet<>())
-                        .add(neighbor.getHostname())));
-
-    _filteredOnExport.forEach(
-        (prefix, neighbors) ->
-            neighbors.forEach(
-                neighbor ->
-                    result
-                        .computeIfAbsent(prefix, p -> new HashMap<>())
-                        .computeIfAbsent(FILTERED_OUT, a -> new HashSet<>())
-                        .add(neighbor.getHostname())));
-    _filteredOnImport.forEach(
-        (prefix, neighbors) ->
-            neighbors.forEach(
-                neighbor ->
-                    result
-                        .computeIfAbsent(prefix, p -> new HashMap<>())
-                        .computeIfAbsent(FILTERED_IN, a -> new HashSet<>())
-                        .add(neighbor.getHostname())));
-    _installed.forEach(
-        (prefix, neighbors) ->
-            neighbors.forEach(
-                neighbor ->
-                    result
-                        .computeIfAbsent(prefix, p -> new HashMap<>())
-                        .computeIfAbsent(RECEIVED, a -> new HashSet<>())
-                        .add(neighbor.getHostname())));
-    return result;
+    return ImmutableMap.of();
+    //    Map<Prefix, Map<String, Set<String>>> result = new HashMap<>();
+    //    _sent.forEach(
+    //        (prefix, neighbors) ->
+    //            neighbors.forEach(
+    //                neighbor ->
+    //                    result
+    //                        .computeIfAbsent(prefix, p -> new HashMap<>())
+    //                        .computeIfAbsent(SENT, a -> new HashSet<>())
+    //                        .add(neighbor.getHostname())));
+    //
+    //    _filteredOnExport.forEach(
+    //        (prefix, neighbors) ->
+    //            neighbors.forEach(
+    //                neighbor ->
+    //                    result
+    //                        .computeIfAbsent(prefix, p -> new HashMap<>())
+    //                        .computeIfAbsent(FILTERED_OUT, a -> new HashSet<>())
+    //                        .add(neighbor.getHostname())));
+    //    _filteredOnImport.forEach(
+    //        (prefix, neighbors) ->
+    //            neighbors.forEach(
+    //                neighbor ->
+    //                    result
+    //                        .computeIfAbsent(prefix, p -> new HashMap<>())
+    //                        .computeIfAbsent(FILTERED_IN, a -> new HashSet<>())
+    //                        .add(neighbor.getHostname())));
+    //    _installed.forEach(
+    //        (prefix, neighbors) ->
+    //            neighbors.forEach(
+    //                neighbor ->
+    //                    result
+    //                        .computeIfAbsent(prefix, p -> new HashMap<>())
+    //                        .computeIfAbsent(RECEIVED, a -> new HashSet<>())
+    //                        .add(neighbor.getHostname())));
+    //    return result;
   }
 }
