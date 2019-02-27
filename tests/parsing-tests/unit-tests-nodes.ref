@@ -1038,8 +1038,14 @@
                 {
                   "class" : "org.batfish.datamodel.transformation.AssignIpAddressFromPool",
                   "ipField" : "SOURCE",
-                  "poolEnd" : "1.1.1.2",
-                  "poolStart" : "1.1.1.1",
+                  "ipRanges" : [
+                    {
+                      "lowerEndpoint" : "1.1.1.1",
+                      "lowerBoundType" : "CLOSED",
+                      "upperEndpoint" : "1.1.1.2",
+                      "upperBoundType" : "CLOSED"
+                    }
+                  ],
                   "transformationType" : "SOURCE_NAT"
                 }
               ]
@@ -7353,8 +7359,14 @@
                 {
                   "class" : "org.batfish.datamodel.transformation.AssignIpAddressFromPool",
                   "ipField" : "SOURCE",
-                  "poolEnd" : "1.2.3.4",
-                  "poolStart" : "1.2.3.4",
+                  "ipRanges" : [
+                    {
+                      "lowerEndpoint" : "1.2.3.4",
+                      "lowerBoundType" : "CLOSED",
+                      "upperEndpoint" : "1.2.3.4",
+                      "upperBoundType" : "CLOSED"
+                    }
+                  ],
                   "transformationType" : "SOURCE_NAT"
                 }
               ]
@@ -12267,10 +12279,61 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : { },
+        "vendorFamily" : {
+          "f5Bigip" : {
+            "pools" : {
+              "/Common/SOME_LTM_POOL" : {
+                "members" : {
+                  "/Common/bar:80" : {
+                    "name" : "/Common/bar:80",
+                    "node" : "/Common/bar",
+                    "port" : 80,
+                    "address" : "192.0.2.3"
+                  },
+                  "/Common/foo:80" : {
+                    "name" : "/Common/foo:80",
+                    "node" : "/Common/foo",
+                    "port" : 80,
+                    "address" : "192.0.2.2"
+                  }
+                },
+                "name" : "/Common/SOME_LTM_POOL",
+                "monitor" : "/Common/SOME_MONITOR"
+              }
+            },
+            "virtualAddresses" : {
+              "/Common/192.0.2.8" : {
+                "name" : "/Common/192.0.2.8",
+                "address" : "192.0.2.9",
+                "mask" : "255.255.255.255",
+                "routeAdvertisementMode" : "SELECTIVE"
+              }
+            },
+            "virtuals" : {
+              "/Common/SOME_VIRTUAL" : {
+                "name" : "/Common/SOME_VIRTUAL",
+                "destination" : "/Common/192.0.2.7",
+                "destinationPort" : 80,
+                "ipProtocol" : "TCP",
+                "mask" : "255.255.255.255",
+                "pool" : "/Common/SOME_POOL",
+                "source" : "0.0.0.0/0",
+                "sourceAddressTranslationPool" : "/Common/SOME_SNATPOOL",
+                "vlansEnabled" : true
+              }
+            }
+          }
+        },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "kernelRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.KernelRoute",
+                "administrativeCost" : 0,
+                "network" : "192.0.2.9/32"
+              }
+            ]
           }
         }
       },
@@ -12293,6 +12356,11 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
+            "incomingTransformation" : {
+              "guard" : {
+                "class" : "org.batfish.datamodel.acl.FalseExpr"
+              }
+            },
             "mtu" : 1500,
             "ospfDeadInterval" : 0,
             "ospfEnabled" : false,
@@ -12338,7 +12406,9 @@
             "vrf" : "default"
           }
         },
-        "vendorFamily" : { },
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
         "vrfs" : {
           "default" : {
             "name" : "default",
@@ -12354,11 +12424,151 @@
         "name" : "f5_bigip_structured_net_routing_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceType" : "SWITCH",
-        "vendorFamily" : { },
+        "deviceType" : "ROUTER",
+        "routingPolicies" : {
+          "~BGP_COMMON_EXPORT_POLICY:/Common/my_bgp~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:/Common/my_bgp~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "comment" : "Redistribute kernel routes into BGP",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocol" : "kernel"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "incomplete"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "bgp"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocol" : "ibgp"
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
+          },
+          "~BGP_PEER_EXPORT_POLICY:/Common/my_bgp:192.0.2.1~" : {
+            "name" : "~BGP_PEER_EXPORT_POLICY:/Common/my_bgp:192.0.2.1~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "peer-export policy main conditional: exitAccept if true / exitReject if false",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                      "disjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                          "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:/Common/my_bgp~"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "bgpProcess" : {
+              "multipathEbgp" : false,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : false,
+              "neighbors" : {
+                "192.0.2.1/32" : {
+                  "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "additionalPathsReceive" : false,
+                  "additionalPathsSelectAll" : false,
+                  "additionalPathsSend" : false,
+                  "advertiseExternal" : false,
+                  "advertiseInactive" : false,
+                  "allowLocalAsIn" : false,
+                  "allowRemoteAsOut" : false,
+                  "defaultMetric" : 0,
+                  "description" : "Cool IPv4 BGP neighbor description",
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:/Common/my_bgp:192.0.2.1~",
+                  "localAs" : 123,
+                  "peerAddress" : "192.0.2.1",
+                  "remoteAs" : 456,
+                  "routeReflectorClient" : false,
+                  "sendCommunity" : false
+                }
+              },
+              "tieBreaker" : "ARRIVAL_ORDER"
+            }
           }
         }
       },
@@ -12402,7 +12612,9 @@
             "name" : "/Common/MY_IPV4_PREFIX_LIST"
           }
         },
-        "vendorFamily" : { },
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -12493,7 +12705,9 @@
             ]
           }
         },
-        "vendorFamily" : { },
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -12506,7 +12720,9 @@
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
-        "vendorFamily" : { },
+        "vendorFamily" : {
+          "f5Bigip" : { }
+        },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -17612,6 +17828,132 @@
             "sourceType" : "firewall filter"
           }
         },
+        "packetPolicies" : {
+          "blah" : {
+            "defaultAction" : {
+              "class" : "org.batfish.datamodel.packet_policy.Return",
+              "action" : {
+                "class" : "org.batfish.datamodel.packet_policy.Drop"
+              }
+            },
+            "name" : "blah",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.packet_policy.If",
+                "trueStatements" : {
+                  "class" : "org.batfish.datamodel.packet_policy.PacketMatchExpr",
+                  "expression" : {
+                    "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                    "description" : "Firewall filter term blorp",
+                    "headerSpace" : {
+                      "dstIps" : {
+                        "class" : "org.batfish.datamodel.AclIpSpace",
+                        "lines" : [
+                          {
+                            "action" : "PERMIT",
+                            "ipSpace" : {
+                              "class" : "org.batfish.datamodel.AclIpSpace",
+                              "lines" : [
+                                {
+                                  "action" : "PERMIT",
+                                  "ipSpace" : {
+                                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                    "ipWildcard" : "1.2.3.4"
+                                  }
+                                },
+                                {
+                                  "action" : "PERMIT",
+                                  "ipSpace" : {
+                                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                                    "ipWildcard" : "1.2.3.5"
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "action" : "PERMIT",
+                            "ipSpace" : {
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "1.2.3.8/30"
+                            }
+                          }
+                        ]
+                      },
+                      "icmpCodes" : [
+                        "2-2"
+                      ],
+                      "icmpTypes" : [
+                        "0-0",
+                        "1-1",
+                        "3-3",
+                        "4-4",
+                        "5-5",
+                        "8-8",
+                        "9-9",
+                        "10-10",
+                        "11-11",
+                        "12-12",
+                        "13-13",
+                        "14-14",
+                        "15-15",
+                        "16-16"
+                      ],
+                      "ipProtocols" : [
+                        "PIM"
+                      ],
+                      "negate" : false,
+                      "packetLengths" : [
+                        "70-12000"
+                      ],
+                      "srcIps" : {
+                        "class" : "org.batfish.datamodel.AclIpSpace",
+                        "lines" : [
+                          {
+                            "action" : "PERMIT",
+                            "ipSpace" : {
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "2.4.6.8/30"
+                            }
+                          },
+                          {
+                            "action" : "PERMIT",
+                            "ipSpace" : {
+                              "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                              "ipWildcard" : "2.4.6.9"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.packet_policy.If",
+                "actions" : [
+                  {
+                    "class" : "org.batfish.datamodel.packet_policy.Return",
+                    "action" : {
+                      "class" : "org.batfish.datamodel.packet_policy.FibLookup",
+                      "vrfName" : "OTHER_INSTANCE"
+                    }
+                  }
+                ],
+                "trueStatements" : {
+                  "class" : "org.batfish.datamodel.packet_policy.PacketMatchExpr",
+                  "expression" : {
+                    "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                    "description" : "Firewall filter term t2",
+                    "headerSpace" : {
+                      "negate" : false
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
         "vendorFamily" : {
           "juniper" : {
             "lines" : {
@@ -18927,8 +19269,14 @@
                 {
                   "class" : "org.batfish.datamodel.transformation.AssignIpAddressFromPool",
                   "ipField" : "DESTINATION",
-                  "poolEnd" : "10.10.10.254",
-                  "poolStart" : "10.10.10.1",
+                  "ipRanges" : [
+                    {
+                      "lowerEndpoint" : "10.10.10.1",
+                      "lowerBoundType" : "CLOSED",
+                      "upperEndpoint" : "10.10.10.254",
+                      "upperBoundType" : "CLOSED"
+                    }
+                  ],
                   "transformationType" : "DEST_NAT"
                 }
               ]
@@ -18981,8 +19329,14 @@
                       {
                         "class" : "org.batfish.datamodel.transformation.AssignIpAddressFromPool",
                         "ipField" : "SOURCE",
-                        "poolEnd" : "10.10.10.254",
-                        "poolStart" : "10.10.10.1",
+                        "ipRanges" : [
+                          {
+                            "lowerEndpoint" : "10.10.10.1",
+                            "lowerBoundType" : "CLOSED",
+                            "upperEndpoint" : "10.10.10.254",
+                            "upperBoundType" : "CLOSED"
+                          }
+                        ],
                         "transformationType" : "SOURCE_NAT"
                       },
                       {
@@ -18998,8 +19352,14 @@
                     {
                       "class" : "org.batfish.datamodel.transformation.AssignIpAddressFromPool",
                       "ipField" : "SOURCE",
-                      "poolEnd" : "1.0.0.1",
-                      "poolStart" : "1.0.0.1",
+                      "ipRanges" : [
+                        {
+                          "lowerEndpoint" : "1.0.0.1",
+                          "lowerBoundType" : "CLOSED",
+                          "upperEndpoint" : "1.0.0.1",
+                          "upperBoundType" : "CLOSED"
+                        }
+                      ],
                       "transformationType" : "SOURCE_NAT"
                     },
                     {
@@ -19508,6 +19868,43 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                     "type" : "SetDefaultActionReject"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "AS_PATH",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchAsPath",
+                  "expr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet",
+                    "elems" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem",
+                        "regex" : "^( \\d+)* 65535$"
+                      }
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ExitAccept"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ]
                   }
                 ]
               },

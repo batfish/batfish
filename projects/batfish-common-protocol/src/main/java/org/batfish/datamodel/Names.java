@@ -2,36 +2,84 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * Provides helper methods to auto-generate structure names and to check the validity of names of
  * different types of entities.
- *
- * <p>If the regex of any of the names here is changed, ensure that corresponding grammar rules in
- * package org.batfish.specifier.parboiled.CommonParser are also updated.
  */
 @ParametersAreNonnullByDefault
 public final class Names {
 
   /**
-   * Valid names for reference library objects must start with a letter or underscore, and only
-   * contain {-,\w} ( i.e., [-a-zA-Z_0-9])
+   * Enum for different types of names with regexes that describes valid names.
+   *
+   * <p>If the regex of any of the names here is changed, ensure that corresponding grammar rules in
+   * org.batfish.specifier.parboiled.CommonParser are also updated
    */
-  public static final String REFERENCE_OBJECT_NAME_REGEX = "[a-zA-Z_][-\\w]*";
+  public enum Type {
+    /** {@link org.batfish.role.NodeRole} */
+    NODE_ROLE(
+        "^[0-9a-zA-Z_][-\\w]*$",
+        "start with an alphanumeric letter or underscore, and additionally only have '-'"),
+    /**
+     * All names inside {@link org.batfish.referencelibrary.ReferenceLibrary} and {@link
+     * org.batfish.role.NodeRolesData} except {@link org.batfish.role.NodeRole}
+     */
+    REFERENCE_OBJECT(
+        "^[a-zA-Z_][-\\w]*$",
+        "start with an alphabetic letter or underscore, and only have digits or '-'"),
+    /** Column names in {@link org.batfish.datamodel.table.ColumnMetadata} */
+    TABLE_COLUMN(
+        "^[a-zA-Z0-9_~][-/\\w\\.:~@]*$",
+        "start with alphanumeric, underscore or tilde and only have  [-/.:~@]");
 
-  private static final Pattern _REFERENCE_OBJECT_NAME_PATTERN =
-      Pattern.compile(REFERENCE_OBJECT_NAME_REGEX);
+    Type(String regex, String explanation) {
+      _regex = regex;
+      _explanation = explanation;
+    }
+
+    private final String _explanation;
+
+    private final String _regex;
+
+    public String getExplanation() {
+      return _explanation;
+    }
+
+    public String getRegex() {
+      return _regex;
+    }
+  }
+
+  @VisibleForTesting
+  static final Map<Type, Pattern> VALID_PATTERNS =
+      Arrays.stream(Type.values())
+          .collect(
+              ImmutableMap.toImmutableMap(Function.identity(), o -> Pattern.compile(o.getRegex())));
 
   private Names() {} // prevent instantiation by default.
 
-  public static void checkValidReferenceObjectName(String name, String objectType) {
+  /**
+   * Checks if {@code name} is valid for {@code type}.
+   *
+   * <p>{@code objectDescription} is the user-facing description of the object type.
+   *
+   * @throws IllegalArgumentException if the name is invalid.
+   */
+  public static void checkName(String name, String objectDescription, Type type) {
     checkArgument(
-        _REFERENCE_OBJECT_NAME_PATTERN.matcher(name).matches(),
-        "Invalid %s name '%s'. Valid names begin with the alphabetic letters or underscore and can additionally contain digits and dashes.",
-        objectType,
-        name);
+        VALID_PATTERNS.get(type).matcher(name).matches(),
+        "Invalid %s name '%s'. Valid names must %s.",
+        objectDescription,
+        name,
+        type.getExplanation());
   }
 
   /**

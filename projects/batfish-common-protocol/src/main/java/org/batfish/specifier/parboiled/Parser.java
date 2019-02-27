@@ -3,6 +3,7 @@ package org.batfish.specifier.parboiled;
 import static org.batfish.specifier.parboiled.Anchor.Type.ADDRESS_GROUP_AND_BOOK;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME_REGEX;
+import static org.batfish.specifier.parboiled.Anchor.Type.IGNORE;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_GROUP_AND_BOOK;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME_REGEX;
@@ -40,6 +41,8 @@ import org.parboiled.support.Var;
   "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
 })
 public class Parser extends CommonParser {
+
+  static final boolean SUPPORT_DEPRECATED_UNENCLOSED_REGEXES = true;
 
   static final Parser INSTANCE = Parboiled.createParser(Parser.class);
 
@@ -90,17 +93,33 @@ public class Parser extends CommonParser {
   }
 
   public Rule FilterTerm() {
-    return FirstOf(FilterDirection(), FilterNameRegex(), FilterName(), FilterParens());
+    return FirstOf(
+        FilterDirection(),
+        FilterDirectionDeprecated(),
+        FilterNameRegexDeprecated(),
+        FilterNameRegex(),
+        FilterName(),
+        FilterParens());
   }
 
   public Rule FilterDirection() {
     Var<String> direction = new Var<>();
     return Sequence(
-        FirstOf(
-            IgnoreCase("@in"),
-            IgnoreCase("@out"),
-            IgnoreCase("inFilterOf"),
-            IgnoreCase("outFilterOf")),
+        FirstOf(IgnoreCase("@in"), IgnoreCase("@out")),
+        direction.set(match()),
+        WhiteSpace(),
+        "( ",
+        InterfaceExpression(),
+        WhiteSpace(),
+        ") ",
+        push(DirectionFilterAstNode.create(direction.get(), pop())));
+  }
+
+  @Anchor(IGNORE)
+  public Rule FilterDirectionDeprecated() {
+    Var<String> direction = new Var<>();
+    return Sequence(
+        FirstOf(IgnoreCase("inFilterOf"), IgnoreCase("outFilterOf")),
         direction.set(match()),
         WhiteSpace(),
         "( ",
@@ -112,12 +131,17 @@ public class Parser extends CommonParser {
 
   @Anchor(FILTER_NAME)
   public Rule FilterName() {
-    return Sequence(FilterNameLiteral(), push(new NameFilterAstNode(match())));
+    return Sequence(NameLiteral(), push(new NameFilterAstNode(pop())));
   }
 
   @Anchor(FILTER_NAME_REGEX)
   public Rule FilterNameRegex() {
-    return Sequence('/', Regex(), push(new NameRegexFilterAstNode(match())), '/');
+    return Sequence(Regex(), push(new NameRegexFilterAstNode(pop())));
+  }
+
+  @Anchor(IGNORE)
+  public Rule FilterNameRegexDeprecated() {
+    return Sequence(RegexDeprecated(), push(new NameRegexFilterAstNode(pop())));
   }
 
   public Rule FilterParens() {
@@ -133,7 +157,7 @@ public class Parser extends CommonParser {
    *
    *   interfaceTerm := @connectedTo(ipSpaceExpr)  // non-@ versions also supported for back compat
    *                        | @interfacegroup(a, b)
-   *                        | @link(interfaceType)
+   *                        | @interfaceType(interfaceType)
    *                        | @vrf(vrfName)
    *                        | @zone(zoneName)
    *                        | interfaceName
@@ -168,7 +192,12 @@ public class Parser extends CommonParser {
   }
 
   public Rule InterfaceTerm() {
-    return FirstOf(InterfaceSpecifier(), InterfaceNameRegex(), InterfaceName(), InterfaceParens());
+    return FirstOf(
+        InterfaceSpecifier(),
+        InterfaceNameRegexDeprecated(),
+        InterfaceNameRegex(),
+        InterfaceName(),
+        InterfaceParens());
   }
 
   /**
@@ -177,15 +206,32 @@ public class Parser extends CommonParser {
   public Rule InterfaceSpecifier() {
     return FirstOf(
         InterfaceConnectedTo(),
+        InterfaceConnectedToDeprecated(),
         InterfaceInterfaceGroup(),
+        InterfaceInterfaceGroupDeprecated(),
         InterfaceType(),
+        InterfaceTypeDeprecated(),
         InterfaceVrf(),
-        InterfaceZone());
+        InterfaceVrfDeprecated(),
+        InterfaceZone(),
+        InterfaceZoneDeprecated());
   }
 
   public Rule InterfaceConnectedTo() {
     return Sequence(
-        FirstOf(IgnoreCase("@connectedTo"), IgnoreCase("connectedTo")),
+        IgnoreCase("@connectedTo"),
+        WhiteSpace(),
+        "( ",
+        IpSpaceExpression(),
+        WhiteSpace(),
+        ") ",
+        push(new ConnectedToInterfaceAstNode(pop())));
+  }
+
+  @Anchor(IGNORE)
+  public Rule InterfaceConnectedToDeprecated() {
+    return Sequence(
+        IgnoreCase("connectedTo"),
         WhiteSpace(),
         "( ",
         IpSpaceExpression(),
@@ -196,7 +242,18 @@ public class Parser extends CommonParser {
 
   public Rule InterfaceInterfaceGroup() {
     return Sequence(
-        FirstOf(IgnoreCase("@interfaceGroup"), IgnoreCase("ref.interfaceGroup")),
+        IgnoreCase("@interfaceGroup"),
+        WhiteSpace(),
+        "( ",
+        InterfaceGroupAndBook(),
+        ") ",
+        push(new InterfaceGroupInterfaceAstNode(pop(1), pop())));
+  }
+
+  @Anchor(IGNORE)
+  public Rule InterfaceInterfaceGroupDeprecated() {
+    return Sequence(
+        IgnoreCase("ref.interfaceGroup"),
         WhiteSpace(),
         "( ",
         InterfaceGroupAndBook(),
@@ -219,7 +276,19 @@ public class Parser extends CommonParser {
 
   public Rule InterfaceType() {
     return Sequence(
-        FirstOf(IgnoreCase("@link"), IgnoreCase("type")),
+        IgnoreCase("@interfaceType"),
+        WhiteSpace(),
+        "( ",
+        InterfaceTypeExpr(),
+        WhiteSpace(),
+        ") ",
+        push(new TypeInterfaceAstNode(pop())));
+  }
+
+  @Anchor(IGNORE)
+  public Rule InterfaceTypeDeprecated() {
+    return Sequence(
+        IgnoreCase("type"),
         WhiteSpace(),
         "( ",
         InterfaceTypeExpr(),
@@ -235,7 +304,19 @@ public class Parser extends CommonParser {
 
   public Rule InterfaceVrf() {
     return Sequence(
-        FirstOf(IgnoreCase("@vrf"), IgnoreCase("vrf")),
+        IgnoreCase("@vrf"),
+        WhiteSpace(),
+        "( ",
+        VrfName(),
+        WhiteSpace(),
+        ") ",
+        push(new VrfInterfaceAstNode(pop())));
+  }
+
+  @Anchor(IGNORE)
+  public Rule InterfaceVrfDeprecated() {
+    return Sequence(
+        IgnoreCase("vrf"),
         WhiteSpace(),
         "( ",
         VrfName(),
@@ -246,12 +327,24 @@ public class Parser extends CommonParser {
 
   @Anchor(VRF_NAME)
   public Rule VrfName() {
-    return Sequence(VrfNameLiteral(), push(new StringAstNode(match())));
+    return NameLiteral();
   }
 
   public Rule InterfaceZone() {
     return Sequence(
-        FirstOf(IgnoreCase("@zone"), IgnoreCase("zone")),
+        IgnoreCase("@zone"),
+        WhiteSpace(),
+        "( ",
+        ZoneName(),
+        WhiteSpace(),
+        ") ",
+        push(new ZoneInterfaceAstNode(pop())));
+  }
+
+  @Anchor(IGNORE)
+  public Rule InterfaceZoneDeprecated() {
+    return Sequence(
+        IgnoreCase("zone"),
         WhiteSpace(),
         "( ",
         ZoneName(),
@@ -262,17 +355,22 @@ public class Parser extends CommonParser {
 
   @Anchor(ZONE_NAME)
   public Rule ZoneName() {
-    return Sequence(ZoneNameLiteral(), push(new StringAstNode(match())));
+    return NameLiteral();
   }
 
   @Anchor(INTERFACE_NAME)
   public Rule InterfaceName() {
-    return Sequence(InterfaceNameLiteral(), push(new NameInterfaceAstNode(match())));
+    return Sequence(NameLiteral(), push(new NameInterfaceAstNode(pop())));
   }
 
   @Anchor(INTERFACE_NAME_REGEX)
   public Rule InterfaceNameRegex() {
-    return Sequence('/', Regex(), push(new NameRegexInterfaceAstNode(match())), '/');
+    return Sequence(Regex(), push(new NameRegexInterfaceAstNode(pop())));
+  }
+
+  @Anchor(IGNORE)
+  public Rule InterfaceNameRegexDeprecated() {
+    return Sequence(RegexDeprecated(), push(new NameRegexInterfaceAstNode(pop())));
   }
 
   public Rule InterfaceParens() {
@@ -308,13 +406,30 @@ public class Parser extends CommonParser {
   /* An IpSpace term is one of these things */
   public Rule IpSpaceTerm() {
     return FirstOf(
-        IpPrefix(), IpWildcard(), IpRange(), IpAddress(), IpSpaceAddressGroup(), IpSpaceLocation());
+        IpPrefix(),
+        IpWildcard(),
+        IpRange(),
+        IpAddress(),
+        IpSpaceAddressGroup(),
+        IpSpaceAddressGroupDeprecated(),
+        IpSpaceLocationDeprecated(),
+        IpSpaceLocation());
   }
 
-  /** Includes ref.addgressgroup for backward compatibility. Should be removed later */
   public Rule IpSpaceAddressGroup() {
     return Sequence(
-        FirstOf(IgnoreCase("@addressgroup"), IgnoreCase("ref.addressgroup")),
+        IgnoreCase("@addressgroup"),
+        WhiteSpace(),
+        "( ",
+        AddressGroupAndBook(),
+        ") ",
+        push(new AddressGroupIpSpaceAstNode(pop(1), pop())));
+  }
+
+  @Anchor(IGNORE)
+  public Rule IpSpaceAddressGroupDeprecated() {
+    return Sequence(
+        IgnoreCase("ref.addressgroup"),
         WhiteSpace(),
         "( ",
         AddressGroupAndBook(),
@@ -336,16 +451,19 @@ public class Parser extends CommonParser {
   }
 
   public Rule IpSpaceLocation() {
-    return FirstOf(
-        Sequence(
-            IgnoreCase("ofLocation"),
-            WhiteSpace(),
-            "( ",
-            LocationExpression(),
-            WhiteSpace(),
-            ") ",
-            push(new LocationIpSpaceAstNode(pop()))),
-        Sequence(LocationExpression(), push(new LocationIpSpaceAstNode(pop()))));
+    return Sequence(LocationExpression(), push(new LocationIpSpaceAstNode(pop())));
+  }
+
+  @Anchor(IGNORE)
+  public Rule IpSpaceLocationDeprecated() {
+    return Sequence(
+        IgnoreCase("ofLocation"),
+        WhiteSpace(),
+        "( ",
+        LocationExpression(),
+        WhiteSpace(),
+        ") ",
+        push(new LocationIpSpaceAstNode(pop())));
   }
 
   /**
@@ -399,11 +517,14 @@ public class Parser extends CommonParser {
    * <pre>
    *   locationExpr := locationTerm [{@literal &} | , | \ locationTerm]*
    *
-   *   locationTerm := @role(a, b) // ref.noderole is also supported for back compat
-   *               | @device(a)
-   *               | nodeName
-   *               | nodeNameRegex
-   *               | ( nodeTerm )
+   *   locationTerm := locationInterface
+   *               | @enter(locationInterface)   // non-@ versions also supported
+   *               | @exit(locationInteface)
+   *               | ( locationTerm )
+   *
+   *   locationInterface := nodeTerm[interfaceTerm]
+   *                        | nodeTerm
+   *                        | interfaceSpecifier
    * </pre>
    */
 
@@ -433,7 +554,8 @@ public class Parser extends CommonParser {
   }
 
   public Rule LocationTerm() {
-    return FirstOf(LocationEnter(), LocationInterface(), LocationParens());
+    return FirstOf(
+        LocationEnter(), LocationInterfaceDeprecated(), LocationInterface(), LocationParens());
   }
 
   public Rule LocationEnter() {
@@ -463,6 +585,17 @@ public class Parser extends CommonParser {
             push(InterfaceLocationAstNode.createFromInterface(pop()))));
   }
 
+  @Anchor(IGNORE)
+  public Rule LocationInterfaceDeprecated() {
+    return Sequence(
+        // brackets without node expression
+        "[ ",
+        InterfaceExpression(),
+        WhiteSpace(),
+        "] ",
+        push(InterfaceLocationAstNode.createFromInterface(pop())));
+  }
+
   public Rule LocationParens() {
     // Leave the stack as is -- no need to remember that this was a parenthetical term
     return Sequence("( ", LocationExpression(), WhiteSpace(), ") ");
@@ -475,7 +608,7 @@ public class Parser extends CommonParser {
    *   nodeExpr := nodeTerm [{@literal &} | , | \ nodeTerm]*
    *
    *   nodeTerm := @role(a, b) // ref.noderole is also supported for back compat
-   *               | @device(a)
+   *               | @deviceType(a)
    *               | nodeName
    *               | nodeNameRegex
    *               | ( nodeTerm )
@@ -505,12 +638,30 @@ public class Parser extends CommonParser {
   }
 
   public Rule NodeTerm() {
-    return FirstOf(NodeRole(), NodeType(), NodeNameRegex(), NodeName(), NodeParens());
+    return FirstOf(
+        NodeRole(),
+        NodeRoleDeprecated(),
+        NodeType(),
+        NodeNameRegexDeprecated(),
+        NodeNameRegex(),
+        NodeName(),
+        NodeParens());
   }
 
   public Rule NodeRole() {
     return Sequence(
-        FirstOf(IgnoreCase("@role"), IgnoreCase("ref.nodeRole")),
+        IgnoreCase("@role"),
+        WhiteSpace(),
+        "( ",
+        NodeRoleNameAndDimension(),
+        ") ",
+        push(new RoleNodeAstNode(pop(1), pop())));
+  }
+
+  @Anchor(IGNORE)
+  public Rule NodeRoleDeprecated() {
+    return Sequence(
+        IgnoreCase("ref.noderole"),
         WhiteSpace(),
         "( ",
         NodeRoleNameAndDimension(),
@@ -522,7 +673,7 @@ public class Parser extends CommonParser {
   @Anchor(NODE_ROLE_NAME_AND_DIMENSION)
   public Rule NodeRoleNameAndDimension() {
     return Sequence(
-        ReferenceObjectNameLiteral(),
+        NodeRoleNameLiteral(),
         push(new StringAstNode(match())),
         WhiteSpace(),
         ", ",
@@ -533,7 +684,7 @@ public class Parser extends CommonParser {
 
   public Rule NodeType() {
     return Sequence(
-        IgnoreCase("@device"),
+        IgnoreCase("@deviceType"),
         WhiteSpace(),
         "( ",
         NodeTypeExpr(),
@@ -549,12 +700,17 @@ public class Parser extends CommonParser {
 
   @Anchor(NODE_NAME)
   public Rule NodeName() {
-    return Sequence(NodeNameLiteral(), push(new NameNodeAstNode(match())));
+    return Sequence(NameLiteral(), push(new NameNodeAstNode(pop())));
   }
 
   @Anchor(NODE_NAME_REGEX)
   public Rule NodeNameRegex() {
-    return Sequence('/', Regex(), push(new NameRegexNodeAstNode(match())), '/');
+    return Sequence(Regex(), push(new NameRegexNodeAstNode(pop())));
+  }
+
+  @Anchor(IGNORE)
+  public Rule NodeNameRegexDeprecated() {
+    return Sequence(RegexDeprecated(), push(new NameRegexNodeAstNode(pop())), WhiteSpace());
   }
 
   public Rule NodeParens() {

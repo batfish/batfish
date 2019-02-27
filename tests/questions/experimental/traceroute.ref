@@ -29,7 +29,8 @@
         "displayName" : "Headers",
         "fields" : {
           "applications" : {
-            "optional" : true
+            "optional" : true,
+            "type" : "protocol"
           },
           "dscps" : {
             "optional" : true
@@ -57,7 +58,8 @@
             "optional" : true
           },
           "ipProtocols" : {
-            "optional" : true
+            "optional" : true,
+            "type" : "ipProtocolSpec"
           },
           "packetLengths" : {
             "optional" : true
@@ -98,7 +100,7 @@
         "displayName" : "Start Location",
         "minLength" : 1,
         "optional" : false,
-        "type" : "string",
+        "type" : "locationSpec",
         "value" : "location"
       }
     }

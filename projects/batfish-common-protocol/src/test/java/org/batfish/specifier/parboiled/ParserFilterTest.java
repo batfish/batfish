@@ -62,12 +62,10 @@ public class ParserFilterTest {
                     "filter1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
                 new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("@in", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
-                    "inFilterOf", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("@out", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "outFilterOf", true, null, RANK_STRING_LITERAL, query.length()))));
+                    "@out", true, null, RANK_STRING_LITERAL, query.length()))));
   }
 
   @Test
@@ -147,6 +145,15 @@ public class ParserFilterTest {
     assertThat(ParserUtils.getAst(getRunner().run(regexWithSlashes)), equalTo(expectedAst));
     assertThat(
         ParserUtils.getAst(getRunner().run(" " + regexWithSlashes + " ")), equalTo(expectedAst));
+  }
+
+  @Test
+  public void testParseFilterNameRegexDeprecated() {
+    String regex = "filter.*";
+    NameRegexFilterAstNode expectedAst = new NameRegexFilterAstNode(regex);
+
+    assertThat(ParserUtils.getAst(getRunner().run(regex)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + regex + " ")), equalTo(expectedAst));
   }
 
   @Test

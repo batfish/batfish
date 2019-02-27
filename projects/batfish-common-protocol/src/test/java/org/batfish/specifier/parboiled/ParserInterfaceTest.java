@@ -66,23 +66,16 @@ public class ParserInterfaceTest {
                     "iface1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
                 new AutocompleteSuggestion("(", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, query.length()),
+                new AutocompleteSuggestion("\"", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
                     "@connectedTo", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
-                    "connectedTo", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
                     "@interfaceGroup", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
-                    "ref.interfaceGroup", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "@link", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("type", true, null, RANK_STRING_LITERAL, query.length()),
+                    "@interfaceType", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("@vrf", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion("vrf", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(
-                    "@zone", true, null, RANK_STRING_LITERAL, query.length()),
-                new AutocompleteSuggestion(
-                    "zone", true, null, RANK_STRING_LITERAL, query.length()))));
+                    "@zone", true, null, RANK_STRING_LITERAL, query.length()))));
   }
 
   @Test
@@ -176,6 +169,15 @@ public class ParserInterfaceTest {
   }
 
   @Test
+  public void testParseInterfaceNameRegexDeprecated() {
+    String regex = "iface1/0.*";
+    InterfaceAstNode expectedAst = new NameRegexInterfaceAstNode(regex);
+
+    assertThat(ParserUtils.getAst(getRunner().run(regex)), equalTo(expectedAst));
+    assertThat(ParserUtils.getAst(getRunner().run(" " + regex + " ")), equalTo(expectedAst));
+  }
+
+  @Test
   public void testParseInterfaceParens() {
     assertThat(
         ParserUtils.getAst(getRunner().run("(e1/0)")), equalTo(new NameInterfaceAstNode("e1/0")));
@@ -194,9 +196,12 @@ public class ParserInterfaceTest {
     TypeInterfaceAstNode expectedAst =
         new TypeInterfaceAstNode(new StringAstNode(InterfaceType.PHYSICAL.toString()));
 
-    assertThat(ParserUtils.getAst(getRunner().run("@link(physical)")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run(" @link ( physical ) ")), equalTo(expectedAst));
-    assertThat(ParserUtils.getAst(getRunner().run("@LinK(PHYsical)")), equalTo(expectedAst));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("@interfaceType(physical)")), equalTo(expectedAst));
+    assertThat(
+        ParserUtils.getAst(getRunner().run(" @interfaceType ( physical ) ")), equalTo(expectedAst));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("@interFAcetype(PHYsical)")), equalTo(expectedAst));
 
     // old style
     assertThat(ParserUtils.getAst(getRunner().run("type(physical)")), equalTo(expectedAst));

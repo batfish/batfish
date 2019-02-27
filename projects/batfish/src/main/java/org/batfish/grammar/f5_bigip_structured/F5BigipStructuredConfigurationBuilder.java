@@ -84,12 +84,19 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.vendor_family.f5_bigip.Pool;
+import org.batfish.datamodel.vendor_family.f5_bigip.PoolMember;
+import org.batfish.datamodel.vendor_family.f5_bigip.RouteAdvertisementMode;
+import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
+import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Bundle_speedContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.F5_bigip_structured_configurationContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ip_protocolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_nodeContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_poolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.L_ruleContext;
@@ -124,15 +131,20 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lprofon_d
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lprofss_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lproft_defaults_fromContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ls_snatpoolContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ls_vlans_disabledContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Ls_vlans_enabledContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lso_originContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lspm_memberContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lst_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lsv_vlanContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_destinationContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_ip_protocolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_maskContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_poolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_profiles_profileContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_sourceContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_vlans_disabledContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lv_vlans_enabledContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_addressContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_maskContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Lva_route_advertisementContext;
@@ -198,11 +210,8 @@ import org.batfish.representation.f5_bigip.Interface;
 import org.batfish.representation.f5_bigip.Ipv4Origin;
 import org.batfish.representation.f5_bigip.Ipv6Origin;
 import org.batfish.representation.f5_bigip.Node;
-import org.batfish.representation.f5_bigip.Pool;
-import org.batfish.representation.f5_bigip.PoolMember;
 import org.batfish.representation.f5_bigip.PrefixList;
 import org.batfish.representation.f5_bigip.PrefixListEntry;
-import org.batfish.representation.f5_bigip.RouteAdvertisementMode;
 import org.batfish.representation.f5_bigip.RouteMap;
 import org.batfish.representation.f5_bigip.RouteMapEntry;
 import org.batfish.representation.f5_bigip.RouteMapMatchPrefixList;
@@ -211,8 +220,6 @@ import org.batfish.representation.f5_bigip.Self;
 import org.batfish.representation.f5_bigip.Snat;
 import org.batfish.representation.f5_bigip.SnatPool;
 import org.batfish.representation.f5_bigip.SnatTranslation;
-import org.batfish.representation.f5_bigip.Virtual;
-import org.batfish.representation.f5_bigip.VirtualAddress;
 import org.batfish.representation.f5_bigip.Vlan;
 import org.batfish.representation.f5_bigip.VlanInterface;
 import org.batfish.vendor.StructureType;
@@ -788,6 +795,16 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void exitLs_vlans_disabled(Ls_vlans_disabledContext ctx) {
+    _currentSnat.setVlansEnabled(false);
+  }
+
+  @Override
+  public void exitLs_vlans_enabled(Ls_vlans_enabledContext ctx) {
+    _currentSnat.setVlansEnabled(true);
+  }
+
+  @Override
   public void exitLso_origin(Lso_originContext ctx) {
     String text = ctx.origin.getText();
     Optional<Prefix> prefix = Prefix.tryParse(text);
@@ -834,6 +851,11 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void exitLv_ip_protocol(Lv_ip_protocolContext ctx) {
+    _currentVirtual.setIpProtocol(toIpProtocol(ctx.ip_protocol()));
+  }
+
+  @Override
   public void exitLv_mask(Lv_maskContext ctx) {
     String text = ctx.mask.getText();
     Optional<Ip> ip = Ip.tryParse(text);
@@ -871,6 +893,16 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     }
     _w.redFlag(
         String.format("'%s' is neither IPv4 nor IPv6 prefix in: %s", text, getFullText(ctx)));
+  }
+
+  @Override
+  public void exitLv_vlans_disabled(Lv_vlans_disabledContext ctx) {
+    _currentVirtual.setVlansEnabled(false);
+  }
+
+  @Override
+  public void exitLv_vlans_enabled(Lv_vlans_enabledContext ctx) {
+    _currentVirtual.setVlansEnabled(true);
   }
 
   @Override
@@ -1116,7 +1148,19 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitNs_address(Ns_addressContext ctx) {
-    _currentSelf.setAddress(new InterfaceAddress(ctx.interface_address.getText()));
+    String text = ctx.interface_address.getText();
+    if (Prefix.tryParse(text).isPresent()) {
+      _currentSelf.setAddress(new InterfaceAddress(text));
+      return;
+    }
+    if (Prefix6.tryParse(text).isPresent()) {
+      // TODO: implement IPv6 interface address
+      todo(ctx);
+      return;
+    }
+    _w.redFlag(
+        String.format(
+            "'%s' is neither IPv4 nor IPv6 interface address in: %s", text, getFullText(ctx)));
   }
 
   @Override
@@ -1184,6 +1228,16 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   private void todo(ParserRuleContext ctx) {
     _w.todo(ctx, getFullText(ctx), _parser);
+  }
+
+  private @Nullable IpProtocol toIpProtocol(Ip_protocolContext ctx) {
+    if (ctx.TCP() != null) {
+      return IpProtocol.TCP;
+    } else if (ctx.UDP() != null) {
+      return IpProtocol.UDP;
+    } else {
+      return convProblem(IpProtocol.class, ctx, null);
+    }
   }
 
   private @Nullable LineAction toLineAction(Prefix_list_actionContext ctx) {

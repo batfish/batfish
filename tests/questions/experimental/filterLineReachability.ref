@@ -1,9 +1,7 @@
 {
   "class" : "org.batfish.question.filterlinereachability.FilterLineReachabilityQuestion",
-  "filterSpecifierFactory" : "FlexibleFilterSpecifierFactory",
   "filters" : ".*",
   "ignoreComposites" : false,
-  "nodeSpecifierFactory" : "FlexibleNodeSpecifierFactory",
   "nodes" : ".*",
   "differential" : false,
   "includeOneTableKeys" : true,

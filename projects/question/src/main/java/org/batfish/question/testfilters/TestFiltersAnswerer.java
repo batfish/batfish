@@ -6,11 +6,14 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
@@ -40,22 +43,19 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.datamodel.visitors.IpSpaceRepresentative;
 import org.batfish.specifier.FilterSpecifier;
-import org.batfish.specifier.FlexibleInferFromLocationIpSpaceSpecifierFactory;
+import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.batfish.specifier.IpSpaceSpecifier;
-import org.batfish.specifier.IpSpaceSpecifierFactory;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.LocationVisitor;
 import org.batfish.specifier.SpecifierContext;
+import org.batfish.specifier.SpecifierFactories;
 
 public class TestFiltersAnswerer extends Answerer {
-
-  private static final String IP_SPECIFIER_FACTORY =
-      FlexibleInferFromLocationIpSpaceSpecifierFactory.NAME;
 
   public static final String COL_NODE = "Node";
   public static final String COL_FILTER_NAME = "Filter_Name";
@@ -75,15 +75,14 @@ public class TestFiltersAnswerer extends Answerer {
         initSourceIpAssignment((TestFiltersQuestion) question, batfish.specifierContext());
   }
 
-  @VisibleForTesting
-  static IpSpaceAssignment initSourceIpAssignment(
+  private static IpSpaceAssignment initSourceIpAssignment(
       TestFiltersQuestion question, SpecifierContext ctxt) {
     /* construct specifiers */
     LocationSpecifier sourceLocationSpecifier = question.getStartLocationSpecifier();
 
     IpSpaceSpecifier sourceIpSpaceSpecifier =
-        IpSpaceSpecifierFactory.load(IP_SPECIFIER_FACTORY)
-            .buildIpSpaceSpecifier(question.getHeaders().getSrcIps());
+        SpecifierFactories.getIpSpaceSpecifierOrDefault(
+            question.getHeaders().getSrcIps(), InferFromLocationIpSpaceSpecifier.INSTANCE);
 
     /* resolve specifiers */
     Set<Location> sourceLocations = sourceLocationSpecifier.resolve(ctxt);
@@ -128,7 +127,7 @@ public class TestFiltersAnswerer extends Answerer {
     return answer;
   }
 
-  private Set<Flow> getFlows(Configuration c, ImmutableSet.Builder<String> allProblems) {
+  private SortedSet<Flow> getFlows(Configuration c, ImmutableSet.Builder<String> allProblems) {
     TestFiltersQuestion question = (TestFiltersQuestion) _question;
     String node = c.getHostname();
     Set<Location> srcLocations =
@@ -136,7 +135,7 @@ public class TestFiltersAnswerer extends Answerer {
             .filter(LocationVisitor.onNode(node)::visit)
             .collect(Collectors.toSet());
 
-    ImmutableSet.Builder<Flow> setBuilder = ImmutableSet.builder();
+    ImmutableSortedSet.Builder<Flow> setBuilder = ImmutableSortedSet.naturalOrder();
 
     // this will happen if the node has no interfaces, and someone is just testing their ACLs
     if (srcLocations.isEmpty() && question.getStartLocation() == null) {
@@ -206,7 +205,8 @@ public class TestFiltersAnswerer extends Answerer {
   Multiset<Row> getRows() {
     TestFiltersQuestion question = (TestFiltersQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> includeNodes = question.getNodes().getMatchingNodes(_batfish);
+    SortedSet<String> includeNodes =
+        ImmutableSortedSet.copyOf(question.getNodes().getMatchingNodes(_batfish));
     FilterSpecifier filterSpecifier = question.getFilterSpecifier();
 
     Multiset<Row> rows = HashMultiset.create();
@@ -219,10 +219,14 @@ public class TestFiltersAnswerer extends Answerer {
 
     for (String node : includeNodes) {
       Configuration c = configurations.get(node);
-      Set<Flow> flows = getFlows(c, allProblems);
+      SortedSet<Flow> flows = getFlows(c, allProblems);
 
       // there should be another for loop for v6 filters when we add v6 support
-      for (IpAccessList filter : filterSpecifier.resolve(node, _batfish.specifierContext())) {
+      SortedSet<IpAccessList> filtersByName =
+          ImmutableSortedSet.copyOf(
+              Comparator.comparing(IpAccessList::getName),
+              filterSpecifier.resolve(node, _batfish.specifierContext()));
+      for (IpAccessList filter : filtersByName) {
         foundMatchingFilter = true;
         for (Flow flow : flows) {
           rows.add(getRow(filter, flow, c));
@@ -269,7 +273,8 @@ public class TestFiltersAnswerer extends Answerer {
     String headerDstIp = constraints.getDstIps();
     if (headerDstIp != null) {
       IpSpaceSpecifier dstIpSpecifier =
-          IpSpaceSpecifierFactory.load(IP_SPECIFIER_FACTORY).buildIpSpaceSpecifier(headerDstIp);
+          SpecifierFactories.getIpSpaceSpecifierOrDefault(
+              headerDstIp, InferFromLocationIpSpaceSpecifier.INSTANCE);
       IpSpaceAssignment dstIps =
           dstIpSpecifier.resolve(ImmutableSet.of(), _batfish.specifierContext());
       // Filter out empty IP assignments
@@ -300,7 +305,8 @@ public class TestFiltersAnswerer extends Answerer {
     if (headerSrcIp != null) {
       // interpret given Src IP flexibly
       IpSpaceSpecifier srcIpSpecifier =
-          IpSpaceSpecifierFactory.load(IP_SPECIFIER_FACTORY).buildIpSpaceSpecifier(headerSrcIp);
+          SpecifierFactories.getIpSpaceSpecifierOrDefault(
+              headerSrcIp, InferFromLocationIpSpaceSpecifier.INSTANCE);
       // Resolve to set of locations/IPs
       IpSpaceAssignment srcIps =
           srcIpSpecifier.resolve(ImmutableSet.of(), _batfish.specifierContext());

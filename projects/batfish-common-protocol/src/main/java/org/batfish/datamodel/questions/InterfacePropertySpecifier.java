@@ -69,7 +69,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
   public static final String VRRP_GROUPS = "VRRP_Groups";
   public static final String ZONE_NAME = "Zone_Name";
 
-  public static Map<String, PropertyDescriptor<Interface>> JAVA_MAP =
+  public static final Map<String, PropertyDescriptor<Interface>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<Interface>>()
           .put(ACCESS_VLAN, new PropertyDescriptor<>(Interface::getAccessVlan, Schema.INTEGER))
           .put(ACTIVE, new PropertyDescriptor<>(Interface::getActive, Schema.BOOLEAN))

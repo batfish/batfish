@@ -5,32 +5,71 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableRangeSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Range;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.FalseExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.transformation.ApplyAll;
+import org.batfish.datamodel.transformation.ApplyAny;
+import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
+import org.batfish.datamodel.transformation.AssignPortFromPool;
+import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.PortField;
+import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.TransformationStep;
+import org.batfish.datamodel.vendor_family.f5_bigip.F5BigipFamily;
+import org.batfish.datamodel.vendor_family.f5_bigip.Pool;
+import org.batfish.datamodel.vendor_family.f5_bigip.PoolMember;
+import org.batfish.datamodel.vendor_family.f5_bigip.RouteAdvertisementMode;
+import org.batfish.datamodel.vendor_family.f5_bigip.Virtual;
+import org.batfish.datamodel.vendor_family.f5_bigip.VirtualAddress;
 import org.batfish.vendor.VendorConfiguration;
 
 /** Vendor-specific configuration for F5 BIG-IP device */
@@ -38,6 +77,30 @@ import org.batfish.vendor.VendorConfiguration;
 public class F5BigipConfiguration extends VendorConfiguration {
 
   private static final long serialVersionUID = 1L;
+
+  private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
+      BooleanExpr expr, OriginType originType) {
+    WithEnvironmentExpr we = new WithEnvironmentExpr();
+    we.setExpr(expr);
+    we.setPreStatements(
+        ImmutableList.of(Statements.SetWriteIntermediateBgpAttributes.toStaticStatement()));
+    we.setPostStatements(
+        ImmutableList.of(Statements.UnsetWriteIntermediateBgpAttributes.toStaticStatement()));
+    we.setPostTrueStatements(
+        ImmutableList.of(
+            Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
+            new SetOrigin(new LiteralOrigin(originType, null))));
+    return we;
+  }
+
+  public static @Nonnull String computeBgpCommonExportPolicyName(String bgpProcessName) {
+    return String.format("~BGP_COMMON_EXPORT_POLICY:%s~", bgpProcessName);
+  }
+
+  public static @Nonnull String computeBgpPeerExportPolicyName(
+      String bgpProcessName, Ip peerAddress) {
+    return String.format("~BGP_PEER_EXPORT_POLICY:%s:%s~", bgpProcessName, peerAddress);
+  }
 
   private final @Nonnull Map<String, BgpProcess> _bgpProcesses;
   private transient Configuration _c;
@@ -53,6 +116,12 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Snat> _snats;
   private final @Nonnull Map<String, SnatTranslation> _snatTranslations;
   private final @Nonnull Map<String, VirtualAddress> _virtualAddresses;
+  private transient Map<String, Transformation> _virtualIncomingTransformations;
+
+  // TODO: implement outgoing transformations https://github.com/batfish/batfish/issues/3243
+  @SuppressWarnings("unused")
+  private transient Map<String, Transformation> _virtualOutgoingTransformations;
+
   private final @Nonnull Map<String, Virtual> _virtuals;
   private final @Nonnull Map<String, Vlan> _vlans;
 
@@ -70,6 +139,171 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _virtualAddresses = new HashMap<>();
     _virtuals = new HashMap<>();
     _vlans = new HashMap<>();
+  }
+
+  private void addActivePeer(
+      BgpNeighbor neighbor, BgpProcess proc, org.batfish.datamodel.BgpProcess newProc) {
+    Ip updateSource = getUpdateSource(neighbor, neighbor.getUpdateSource());
+
+    RoutingPolicy.Builder peerExportPolicy =
+        RoutingPolicy.builder()
+            .setOwner(_c)
+            .setName(computeBgpPeerExportPolicyName(proc.getName(), neighbor.getAddress()));
+
+    Conjunction peerExportConditions = new Conjunction();
+    If peerExportConditional =
+        new If(
+            "peer-export policy main conditional: exitAccept if true / exitReject if false",
+            peerExportConditions,
+            ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+            ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+    peerExportPolicy.addStatement(peerExportConditional);
+    Disjunction localOrCommonOrigination = new Disjunction();
+    peerExportConditions.getConjuncts().add(localOrCommonOrigination);
+    localOrCommonOrigination
+        .getDisjuncts()
+        .add(new CallExpr(computeBgpCommonExportPolicyName(proc.getName())));
+    String outboundRouteMapName = neighbor.getIpv4AddressFamily().getRouteMapOut();
+    if (outboundRouteMapName != null) {
+      RouteMap outboundRouteMap = _routeMaps.get(outboundRouteMapName);
+      if (outboundRouteMap != null) {
+        peerExportConditions.getConjuncts().add(new CallExpr(outboundRouteMapName));
+      } else {
+        _w.redFlag(
+            String.format(
+                "Ignoring reference to missing outbound route-map: %s", outboundRouteMapName));
+      }
+    }
+
+    BgpActivePeerConfig.Builder builder =
+        BgpActivePeerConfig.builder()
+            .setBgpProcess(newProc)
+            .setDescription(neighbor.getDescription())
+            .setExportPolicy(peerExportPolicy.build().getName())
+            .setLocalAs(proc.getLocalAs())
+            .setLocalIp(updateSource)
+            .setPeerAddress(neighbor.getAddress())
+            .setRemoteAs(neighbor.getRemoteAs());
+    builder.build();
+  }
+
+  private void addNatRules(org.batfish.datamodel.Interface iface) {
+    String ifaceName = iface.getName();
+    iface.setIncomingTransformation(computeInterfaceIncomingTransformation(ifaceName));
+  }
+
+  private Transformation computeInterfaceIncomingTransformation(String ifaceName) {
+    return ImmutableSortedMap.copyOf(_virtuals, Comparator.reverseOrder()).values().stream()
+        .filter(
+            virtual ->
+                !virtual.getVlansEnabled()
+                    || virtual.getVlans() == null
+                    || !virtual.getVlans().contains(ifaceName))
+        .map(Virtual::getName)
+        .map(_virtualIncomingTransformations::get)
+        .filter(Objects::nonNull)
+        .reduce(
+            Transformation.when(FalseExpr.INSTANCE).build(),
+            (transformation, otherTransformation) ->
+                Transformation.when(otherTransformation.getGuard())
+                    .apply(otherTransformation.getTransformationSteps())
+                    .setOrElse(transformation)
+                    .build());
+  }
+
+  private TransformationStep computeVirtualIncomingPoolMemberTransformation(PoolMember member) {
+    return new ApplyAll(
+        new AssignIpAddressFromPool(
+            TransformationType.DEST_NAT,
+            IpField.DESTINATION,
+            ImmutableRangeSet.of(Range.singleton(member.getAddress()))),
+        new AssignPortFromPool(
+            TransformationType.DEST_NAT,
+            PortField.DESTINATION,
+            member.getPort(),
+            member.getPort()));
+  }
+
+  private TransformationStep computeVirtualIncomingPoolTransformation(Pool pool) {
+    return new ApplyAny(
+        pool.getMembers().values().stream()
+            .filter(member -> member.getAddress() != null) // IPv4 members only
+            .map(this::computeVirtualIncomingPoolMemberTransformation)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  private @Nonnull Optional<Transformation> computeVirtualIncomingTransformation(Virtual virtual) {
+    //// Perform DNAT if source IP is in range and destination IP and port match
+
+    // Retrieve pool of addresses to which destination IP may be translated
+    String poolName = virtual.getPool();
+    if (poolName == null) {
+      // Cannot translate without pool
+      _w.redFlag(String.format("Cannot DNAT for virtual '%s' without pool", virtual.getName()));
+      return Optional.empty();
+    }
+    Pool pool = _pools.get(poolName);
+    if (pool == null) {
+      // Cannot translate without pool
+      _w.redFlag(
+          String.format(
+              "Cannot DNAT for virtual '%s' using missing pool: '%s'",
+              virtual.getName(), poolName));
+      return Optional.empty();
+    }
+
+    // Compute matching headers
+    String destination = virtual.getDestination();
+    if (destination == null) {
+      // Cannot match without destination node
+      _w.redFlag(String.format("Virtual '%s' is missing destination", virtual.getName()));
+      return Optional.empty();
+    }
+    VirtualAddress virtualAddress = _virtualAddresses.get(destination);
+    if (virtualAddress == null) {
+      // Cannot match without destination virtual address
+      _w.redFlag(
+          String.format(
+              "Virtual '%s' refers to missing destination '%s'", virtual.getName(), destination));
+      return Optional.empty();
+    }
+    Ip destinationIp = virtualAddress.getAddress();
+    if (destinationIp == null) {
+      // Cannot match without destination IP (might be IPv6, so don't warn here)
+      return Optional.empty();
+    }
+    Integer destinationPort = virtual.getDestinationPort();
+    if (destinationPort == null) {
+      // Cannot match without destination port
+      _w.redFlag(String.format("Virtual '%s' is missing destination port", virtual.getName()));
+      return Optional.empty();
+    }
+    Prefix source = virtual.getSource();
+    if (source == null) {
+      // Cannot match without source range
+      _w.redFlag(String.format("Virtual '%s' is missing source range", virtual.getName()));
+      return Optional.empty();
+    }
+    AclLineMatchExpr matchCondition =
+        new MatchHeaderSpace(
+            HeaderSpace.builder()
+                .setDstIps(destinationIp.toIpSpace())
+                .setDstPorts(ImmutableList.of(new SubRange(destinationPort, destinationPort)))
+                .setSrcIps(source.toIpSpace())
+                .build(),
+            virtual.getName());
+    // TODO: track information needed for SNAT in outgoing transformation
+    // https://github.com/batfish/batfish/issues/3243
+    return Optional.of(
+        Transformation.when(matchCondition)
+            .apply(computeVirtualIncomingPoolTransformation(pool))
+            .build());
+  }
+
+  private @Nonnull Optional<Transformation> computeVirtualOutgoingTransformation(Virtual virtual) {
+    // TODO: https://github.com/batfish/batfish/issues/3243
+    assert virtual != null; // silence PMD
+    return Optional.empty();
   }
 
   public @Nonnull Map<String, BgpProcess> getBgpProcesses() {
@@ -117,6 +351,31 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _snatTranslations;
   }
 
+  private Ip getUpdateSource(BgpNeighbor neighbor, String updateSourceInterface) {
+    Ip updateSource = null;
+    if (updateSourceInterface != null) {
+      org.batfish.datamodel.Interface sourceInterface =
+          _c.getDefaultVrf().getInterfaces().get(updateSourceInterface);
+      if (sourceInterface != null) {
+        InterfaceAddress address = sourceInterface.getAddress();
+        if (address != null) {
+          Ip sourceIp = address.getIp();
+          updateSource = sourceIp;
+        } else {
+          _w.redFlag(
+              "bgp update source interface: '"
+                  + updateSourceInterface
+                  + "' not assigned an ip address");
+        }
+      }
+    }
+    if (updateSource == null) {
+      _w.redFlag(
+          "Could not determine update source for BGP neighbor: '" + neighbor.getName() + "'");
+    }
+    return updateSource;
+  }
+
   public @Nonnull Map<String, VirtualAddress> getVirtualAddresses() {
     return _virtualAddresses;
   }
@@ -127,6 +386,27 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, Vlan> getVlans() {
     return _vlans;
+  }
+
+  private void initVirtualTransformations() {
+    ImmutableSortedMap.Builder<String, Transformation> virtualIncomingTransformations =
+        ImmutableSortedMap.naturalOrder();
+    _virtuals.forEach(
+        (virtualName, virtual) ->
+            computeVirtualIncomingTransformation(virtual)
+                .ifPresent(
+                    transformation ->
+                        virtualIncomingTransformations.put(virtualName, transformation)));
+    _virtualIncomingTransformations = virtualIncomingTransformations.build();
+    ImmutableSortedMap.Builder<String, Transformation> virtualOutgoingTransformations =
+        ImmutableSortedMap.naturalOrder();
+    _virtuals.forEach(
+        (virtualName, virtual) ->
+            computeVirtualOutgoingTransformation(virtual)
+                .ifPresent(
+                    transformation ->
+                        virtualOutgoingTransformations.put(virtualName, transformation)));
+    _virtualOutgoingTransformations = virtualOutgoingTransformations.build();
   }
 
   private void markStructures() {
@@ -224,9 +504,12 @@ public class F5BigipConfiguration extends VendorConfiguration {
       return;
     }
     InterfaceAddress address = self.getAddress();
+    if (address == null) {
+      // IPv6
+      return;
+    }
     vlanIface.setAddress(address);
-    vlanIface.setAllAddresses(
-        address != null ? ImmutableSortedSet.of(address) : ImmutableSortedSet.of());
+    vlanIface.setAllAddresses(ImmutableSortedSet.of(address));
   }
 
   private void processVlanSettings(Vlan vlan) {
@@ -262,6 +545,63 @@ public class F5BigipConfiguration extends VendorConfiguration {
     ImmutableList.Builder<Statement> builder = ImmutableList.builder();
     entry.getSets().flatMap(set -> set.toStatements(_c, this, _w)).forEach(builder::add);
     return builder.add(toStatement(entry.getAction())).build();
+  }
+
+  private @Nonnull org.batfish.datamodel.BgpProcess toBgpProcess(BgpProcess proc) {
+    org.batfish.datamodel.BgpProcess newProc = new org.batfish.datamodel.BgpProcess();
+
+    // TODO: verify correct method of determining whether two AS-paths are equivalent
+    newProc.setMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
+
+    /*
+     * Create common BGP export policy. This policy encompasses:
+     * - redistribution from other protocols
+     */
+    RoutingPolicy.Builder bgpCommonExportPolicy =
+        RoutingPolicy.builder()
+            .setOwner(_c)
+            .setName(computeBgpCommonExportPolicyName(proc.getName()));
+    // The body of the export policy is a huge disjunction over many reasons routes may be exported.
+    Disjunction routesShouldBeExported = new Disjunction();
+    bgpCommonExportPolicy.addStatement(
+        new If(
+            routesShouldBeExported,
+            ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+            ImmutableList.of()));
+    // This list of reasons to export a route will be built up over the remainder of this function.
+    List<BooleanExpr> exportConditions = routesShouldBeExported.getDisjuncts();
+
+    // Finally, the export policy ends with returning false: do not export unmatched routes.
+    bgpCommonExportPolicy.addStatement(Statements.ReturnFalse.toStaticStatement()).build();
+
+    // Export kernel routes that should be redistributed.
+    BgpRedistributionPolicy redistributeProtocolPolicy =
+        proc.getIpv4AddressFamily().getRedistributionPolicies().get(F5BigipRoutingProtocol.KERNEL);
+    if (redistributeProtocolPolicy != null) {
+      BooleanExpr weInterior = BooleanExprs.TRUE;
+      Conjunction exportProtocolConditions = new Conjunction();
+      exportProtocolConditions.setComment("Redistribute kernel routes into BGP");
+      exportProtocolConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.KERNEL));
+      String mapName = redistributeProtocolPolicy.getRouteMap();
+      if (mapName != null) {
+        RouteMap redistributeProtocolRouteMap = _routeMaps.get(mapName);
+        if (redistributeProtocolRouteMap != null) {
+          weInterior = new CallExpr(mapName);
+        }
+      }
+      BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
+      exportProtocolConditions.getConjuncts().add(we);
+      exportConditions.add(exportProtocolConditions);
+    }
+
+    // Export BGP and IBGP routes.
+    exportConditions.add(new MatchProtocol(RoutingProtocol.BGP));
+    exportConditions.add(new MatchProtocol(RoutingProtocol.IBGP));
+
+    proc.getNeighbors().values().stream()
+        .filter(neighbor -> neighbor.getAddress() != null) // must be IPv4 peer
+        .forEach(neighbor -> addActivePeer(neighbor, proc, newProc));
+    return newProc;
   }
 
   private @Nonnull BooleanExpr toGuard(RouteMapEntry entry) {
@@ -366,6 +706,15 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private @Nonnull Configuration toVendorIndependentConfiguration() {
     _c = new Configuration(_hostname, _format);
 
+    // store vendor-specific information
+    _c.getVendorFamily()
+        .setF5Bigip(
+            F5BigipFamily.builder()
+                .setPools(_pools)
+                .setVirtuals(_virtuals)
+                .setVirtualAddresses(_virtualAddresses)
+                .build());
+
     // TODO: alter as behavior fleshed out
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
     _c.setDefaultInboundAction(LineAction.PERMIT);
@@ -421,6 +770,34 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _routeMaps.forEach(
         (name, routeMap) -> _c.getRoutingPolicies().put(name, toRoutingPolicy(routeMap)));
 
+    if (!_bgpProcesses.isEmpty()) {
+      BgpProcess proc =
+          ImmutableSortedSet.copyOf(
+                  Comparator.comparing(BgpProcess::getName), _bgpProcesses.values())
+              .first();
+      if (_bgpProcesses.size() > 1) {
+        _w.redFlag(
+            String.format(
+                "Multiple BGP processes not supported. Only using first process alphabetically: '%s'",
+                proc.getName()));
+      }
+      _c.getDefaultVrf().setBgpProcess(toBgpProcess(proc));
+    }
+
+    // Add kernel routes for each virtual-address if applicable
+    _c.getDefaultVrf()
+        .setKernelRoutes(
+            _virtualAddresses.values().stream()
+                .map(this::tryAddKernelRoute)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
+
+    initVirtualTransformations();
+
+    // Create NAT transformation rules
+    _vlans.keySet().stream().map(_c.getAllInterfaces()::get).forEach(this::addNatRules);
+
     markStructures();
 
     return _c;
@@ -430,6 +807,16 @@ public class F5BigipConfiguration extends VendorConfiguration {
   public @Nonnull List<Configuration> toVendorIndependentConfigurations()
       throws VendorConversionException {
     return ImmutableList.of(toVendorIndependentConfiguration());
+  }
+
+  private @Nonnull Optional<KernelRoute> tryAddKernelRoute(VirtualAddress virtualAddress) {
+    if (virtualAddress.getRouteAdvertisementMode() == RouteAdvertisementMode.DISABLED
+        || virtualAddress.getAddress() == null
+        || virtualAddress.getMask() == null) {
+      return Optional.empty();
+    }
+    return Optional.of(
+        new KernelRoute(Prefix.create(virtualAddress.getAddress(), virtualAddress.getMask())));
   }
 
   private void warnInvalidPrefixList(PrefixList prefixList) {
