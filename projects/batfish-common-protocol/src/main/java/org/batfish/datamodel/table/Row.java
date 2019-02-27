@@ -12,6 +12,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
@@ -105,12 +107,14 @@ public class Row implements Comparable<Row>, Serializable {
     }
   }
 
-  public static class TypedRowBuilder extends RowBuilder {
+  public static final class TypedRowBuilder extends RowBuilder {
 
-    Map<String, ColumnMetadata> _columns;
+    private final Map<String, ColumnMetadata> _columns;
+    private final Set<String> _columnNames;
 
     private TypedRowBuilder(Map<String, ColumnMetadata> columns) {
-      _columns = columns;
+      _columns = ImmutableMap.copyOf(columns);
+      _columnNames = ImmutableSortedSet.copyOf(columns.keySet());
     }
 
     /**
@@ -120,12 +124,17 @@ public class Row implements Comparable<Row>, Serializable {
     @Override
     public TypedRowBuilder put(String column, @Nullable Object object) {
       checkArgument(
-          _columns.containsKey(column), Row.missingColumnErrorMessage(column, _columns.keySet()));
+          _columnNames.contains(column),
+          "Column '%s' is not present. Valid columns are: %s",
+          column,
+          _columnNames);
       Schema expectedSchema = _columns.get(column).getSchema();
       checkArgument(
           SchemaUtils.isValidObject(object, expectedSchema),
-          String.format(
-              "Cannot convert '%s' to Schema '%s' of column '%s'", object, expectedSchema, column));
+          "Cannot convert '%s' to Schema '%s' of column '%s'",
+          object,
+          expectedSchema,
+          column);
       super.put(column, object);
       return this;
     }
@@ -133,7 +142,7 @@ public class Row implements Comparable<Row>, Serializable {
     @Override
     public Row build() {
       // Fill in missing columns with null entries
-      _columns.keySet().stream().filter(c -> !_data.has(c)).forEach(c -> super.put(c, null));
+      _columnNames.stream().filter(c -> !_data.has(c)).forEach(c -> super.put(c, null));
       return super.build();
     }
   }
