@@ -1,6 +1,9 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -18,11 +21,14 @@ public class MockFib implements Fib {
 
     private Map<String, Set<AbstractRoute>> _routesByNextHopInterface;
 
+    private Map<Ip, Set<FibEntry>> _fibEntries;
+
     private Builder() {
       _nextHopInterfaces = ImmutableMap.of();
       _nextHopInterfacesByIp = ImmutableMap.of();
       _nextHopInterfacesByRoute = ImmutableMap.of();
       _routesByNextHopInterface = ImmutableMap.of();
+      _fibEntries = ImmutableMap.of();
     }
 
     public MockFib build() {
@@ -35,12 +41,14 @@ public class MockFib implements Fib {
       return this;
     }
 
+    @Deprecated
     public Builder setNextHopInterfacesByIp(
         @Nonnull Map<Ip, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByIp) {
       _nextHopInterfacesByIp = nextHopInterfacesByIp;
       return this;
     }
 
+    @Deprecated
     public Builder setNextHopInterfacesByRoute(
         @Nonnull
             Map<Ip, Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>
@@ -52,6 +60,11 @@ public class MockFib implements Fib {
     public Builder setRoutesByNextHopInterface(
         @Nonnull Map<String, Set<AbstractRoute>> routesByNextHopInterface) {
       _routesByNextHopInterface = routesByNextHopInterface;
+      return this;
+    }
+
+    public Builder setFibEntries(@Nonnull Map<Ip, Set<FibEntry>> fibEntries) {
+      _fibEntries = fibEntries;
       return this;
     }
   }
@@ -72,11 +85,14 @@ public class MockFib implements Fib {
 
   private final Map<String, Set<AbstractRoute>> _routesByNextHopInterface;
 
+  private Map<Ip, Set<FibEntry>> _fibEntries;
+
   private MockFib(Builder builder) {
     _nextHopInterfaces = ImmutableMap.copyOf(builder._nextHopInterfaces);
     _nextHopInterfacesByIp = ImmutableMap.copyOf(builder._nextHopInterfacesByIp);
     _nextHopInterfacesByRoute = ImmutableMap.copyOf(builder._nextHopInterfacesByRoute);
     _routesByNextHopInterface = ImmutableMap.copyOf(builder._routesByNextHopInterface);
+    _fibEntries = ImmutableMap.copyOf(builder._fibEntries);
   }
 
   @Override
@@ -86,6 +102,7 @@ public class MockFib implements Fib {
   }
 
   @Override
+  @Deprecated
   public @Nonnull Set<String> getNextHopInterfaces(Ip ip) {
     return _nextHopInterfacesByIp.getOrDefault(ip, ImmutableMap.of()).keySet();
   }
@@ -93,10 +110,11 @@ public class MockFib implements Fib {
   @Nonnull
   @Override
   public Set<FibEntry> get(Ip ip) {
-    throw new UnsupportedOperationException();
+    return firstNonNull(_fibEntries.get(ip), ImmutableSet.of());
   }
 
   @Override
+  @Deprecated
   public @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>
       getNextHopInterfacesByRoute(Ip dstIp) {
     return _nextHopInterfacesByRoute.get(dstIp);
