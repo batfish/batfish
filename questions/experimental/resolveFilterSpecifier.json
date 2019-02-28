@@ -14,7 +14,7 @@
             "filters": {
                 "description": "Input to the FilterSpecifier",
                 "optional": true,
-                "type": "string",
+                "type": "filterSpec",
                 "displayName": "Filters"
             },
             "grammarVersion": {
