@@ -104,7 +104,7 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   }
 
   public BDD toBDD(Ip ip) {
-    return toBDD(Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH));
+    return visit(Prefix.create(ip, Prefix.MAX_PREFIX_LENGTH).toIpSpace());
   }
 
   public BDD toBDD(IpWildcard ipWildcard) {
@@ -172,13 +172,13 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
     BDD whitelist =
         _bddOps.or(
             ipWildcardSetIpSpace.getWhitelist().stream()
-                .map(this::toBDD)
+                .map((IpWildcard wc) -> this.visit(wc.toIpSpace()))
                 .collect(Collectors.toList()));
 
     BDD blacklist =
         _bddOps.or(
             ipWildcardSetIpSpace.getBlacklist().stream()
-                .map(this::toBDD)
+                .map((IpWildcard wc) -> this.visit(wc.toIpSpace()))
                 .collect(Collectors.toList()));
 
     return whitelist.and(blacklist.not());
