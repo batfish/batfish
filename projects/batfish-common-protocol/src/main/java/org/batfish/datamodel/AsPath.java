@@ -68,6 +68,9 @@ public final class AsPath implements Serializable, Comparable<AsPath> {
 
   /** Create and return a new {@link AsPath} of the given {@link AsSet AsSets}. */
   public static AsPath of(List<AsSet> asSets) {
+    if (asSets.isEmpty()) {
+      return empty();
+    }
     ImmutableList<AsSet> immutableValue = ImmutableList.copyOf(asSets);
     try {
       return CACHE.get(immutableValue, () -> new AsPath(immutableValue));
