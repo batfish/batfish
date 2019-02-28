@@ -2,6 +2,7 @@ package org.batfish.question.ospfproperties;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
@@ -28,7 +29,7 @@ public class OspfPropertiesQuestion extends Question {
   @Nonnull private final NodeSpecifier _nodeSpecifier;
   @Nonnull private final OspfPropertySpecifier _properties;
 
-  @JsonIgnore
+  @JsonCreator
   static OspfPropertiesQuestion create(
       @JsonProperty(PROP_NODES) String nodes,
       @JsonProperty(PROP_PROPERTIES) OspfPropertySpecifier propertySpec) {

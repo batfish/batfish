@@ -100,8 +100,7 @@ public class InterfacePropertiesQuestion extends Question {
 
   @JsonIgnore
   public InterfaceSpecifier getInterfaceSpecifier() {
-    return SpecifierFactories.getInterfaceSpecifierOrDefault(
-        _interfaces, AllInterfacesInterfaceSpecifier.INSTANCE);
+    return _interfaceSpecifier;
   }
 
   @Nullable
@@ -112,7 +111,7 @@ public class InterfacePropertiesQuestion extends Question {
 
   @JsonIgnore
   public NodeSpecifier getNodeSpecifier() {
-    return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
+    return _nodeSpecifier;
   }
 
   @JsonProperty(PROP_PROPERTIES)
