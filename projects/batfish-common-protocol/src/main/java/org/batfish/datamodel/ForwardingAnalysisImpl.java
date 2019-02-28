@@ -296,18 +296,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
           .collect(
               ImmutableMap.toImmutableMap(
                   Function.identity(),
-                  edge -> {
-                    AclIpSpace.Builder ipSpace = AclIpSpace.builder();
-                    IpSpace dstIp = _arpTrueEdgeDestIp.get(edge);
-                    if (dstIp != null) {
-                      ipSpace.thenPermitting(dstIp);
-                    }
-                    IpSpace nextHopIp = _arpTrueEdgeNextHopIp.get(edge);
-                    if (nextHopIp != null) {
-                      ipSpace.thenPermitting(nextHopIp);
-                    }
-                    return ipSpace.build();
-                  }));
+                  edge ->
+                      AclIpSpace.union(
+                          _arpTrueEdgeDestIp.get(edge), _arpTrueEdgeNextHopIp.get(edge))));
     }
   }
 
