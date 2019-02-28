@@ -27,6 +27,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -76,7 +77,10 @@ public class OspfInterfaceConfigAnswererTest {
         allOf(
             hasColumn(COL_VRF, equalTo("test_vrf"), Schema.STRING),
             hasColumn(COL_PROCESS_ID, equalTo("ospf_1"), Schema.STRING),
-            hasColumn(COL_INTERFACE, equalTo("int1"), Schema.STRING),
+            hasColumn(
+                COL_INTERFACE,
+                equalTo(new NodeInterfacePair("test_conf", "int1")),
+                Schema.INTERFACE),
             hasColumn(OSPF_AREA_NAME, equalTo(1), Schema.INTEGER)));
     assertThat(
         rows.iterator().next(),

@@ -25,6 +25,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.PropertySpecifier;
@@ -82,7 +83,8 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
   @VisibleForTesting
   static List<ColumnMetadata> createColumnMetadata(List<String> properties) {
     List<ColumnMetadata> columnMetadatas = new ArrayList<>();
-    columnMetadatas.add(new ColumnMetadata(COL_INTERFACE, Schema.STRING, "Interface", true, false));
+    columnMetadatas.add(
+        new ColumnMetadata(COL_INTERFACE, Schema.INTERFACE, "Interface", true, false));
     columnMetadatas.add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false));
     columnMetadatas.add(
         new ColumnMetadata(COL_PROCESS_ID, Schema.STRING, "Process ID", true, false));
@@ -160,7 +162,7 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
       Map<String, ColumnMetadata> columnMetadataMap) {
     RowBuilder rowBuilder =
         Row.builder(columnMetadataMap)
-            .put(COL_INTERFACE, iface.getName())
+            .put(COL_INTERFACE, new NodeInterfacePair(nodeName, iface.getName()))
             .put(COL_VRF, iface.getVrfName())
             .put(COL_PROCESS_ID, ospfProcessId);
 
