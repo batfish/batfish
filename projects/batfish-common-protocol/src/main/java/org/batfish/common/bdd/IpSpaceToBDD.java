@@ -45,9 +45,15 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   private final Map<String, Supplier<BDD>> _namedIpSpaceBDDs;
 
+  private final BDD _one;
+
+  private final BDD _zero;
+
   public IpSpaceToBDD(BDDInteger var) {
     _bddInteger = var;
     _factory = var.getFactory();
+    _one = _factory.one();
+    _zero = _factory.zero();
     _bddOps = new BDDOps(_factory);
     _namedIpSpaceBDDs = ImmutableMap.of();
   }
@@ -55,6 +61,8 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   public IpSpaceToBDD(BDDInteger var, Map<String, IpSpace> namedIpSpaces) {
     _bddInteger = var;
     _factory = var.getFactory();
+    _one = _factory.one();
+    _zero = _factory.zero();
     _bddOps = new BDDOps(_factory);
     _namedIpSpaceBDDs =
         toImmutableMap(
@@ -83,9 +91,9 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
    */
   private BDD firstBitsEqual(Ip ip, int length) {
     long b = ip.asLong();
-    BDD acc = _factory.one();
+    BDD acc = _one;
     BDD[] bitBDDs = _bddInteger.getBitvec();
-    for (int i = 0; i < length; i++) {
+    for (int i = length - 1; i >= 0; i--) {
       boolean bitValue = Ip.getBitAtPosition(b, i);
       if (bitValue) {
         acc = acc.and(bitBDDs[i]);
@@ -110,9 +118,9 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   public BDD toBDD(IpWildcard ipWildcard) {
     long ip = ipWildcard.getIp().asLong();
     long wildcard = ipWildcard.getWildcard().asLong();
-    BDD acc = _factory.one();
+    BDD acc = _one;
     BDD[] bitBDDs = _bddInteger.getBitvec();
-    for (int i = 0; i < Prefix.MAX_PREFIX_LENGTH; i++) {
+    for (int i = Prefix.MAX_PREFIX_LENGTH - 1; i >= 0; i--) {
       boolean significant = !Ip.getBitAtPosition(wildcard, i);
       if (significant) {
         boolean bitValue = Ip.getBitAtPosition(ip, i);
@@ -128,22 +136,18 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   @Override
   public BDD visitAclIpSpace(AclIpSpace aclIpSpace) {
-    BDD bdd = _factory.zero();
+    BDD bdd = _zero;
     for (AclIpSpaceLine aclIpSpaceLine : Lists.reverse(aclIpSpace.getLines())) {
       bdd =
           visit(aclIpSpaceLine.getIpSpace())
-              .ite(
-                  aclIpSpaceLine.getAction() == LineAction.PERMIT
-                      ? _factory.one()
-                      : _factory.zero(),
-                  bdd);
+              .ite(aclIpSpaceLine.getAction() == LineAction.PERMIT ? _one : _zero, bdd);
     }
     return bdd;
   }
 
   @Override
   public BDD visitEmptyIpSpace(EmptyIpSpace emptyIpSpace) {
-    return _factory.zero();
+    return _zero;
   }
 
   @Override
@@ -195,6 +199,6 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   @Override
   public BDD visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
-    return _factory.one();
+    return _one;
   }
 }
