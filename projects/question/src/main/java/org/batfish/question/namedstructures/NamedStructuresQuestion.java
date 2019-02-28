@@ -38,6 +38,8 @@ public class NamedStructuresQuestion extends Question {
 
   @Nullable private final String _nodes;
 
+  @Nonnull private final NodeSpecifier _nodeSpecifier;
+
   @Nullable private final String _structureNameRegex;
 
   @Nonnull private final Pattern _structureNamePattern;
@@ -45,7 +47,7 @@ public class NamedStructuresQuestion extends Question {
   @Nonnull private final NamedStructureSpecifier _structureTypes;
 
   @JsonCreator
-  private static NamedStructuresQuestion create(
+  static NamedStructuresQuestion create(
       @JsonProperty(PROP_NODES) @Nullable String nodes,
       @JsonProperty(PROP_STRUCTURE_TYPES) @Nullable NamedStructureSpecifier structureTypes,
       @JsonProperty(PROP_STRUCTURE_NAMES) @Nullable String structureNameRegex,
@@ -55,17 +57,40 @@ public class NamedStructuresQuestion extends Question {
         nodes, structureTypes, structureNameRegex, ignoreGenerated, indicatePresence);
   }
 
-  public NamedStructuresQuestion(@Nullable String nodes, NamedStructureSpecifier structureTypes) {
-    this(nodes, structureTypes, null, null, null);
-  }
-
-  public NamedStructuresQuestion(
+  NamedStructuresQuestion(
       @Nullable String nodes,
       @Nullable NamedStructureSpecifier structureTypes,
       @Nullable String structureNameRegex,
       @Nullable Boolean ignoreGenerated,
       @Nullable Boolean indicatePresence) {
+    this(
+        nodes,
+        SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),
+        structureTypes,
+        structureNameRegex,
+        ignoreGenerated,
+        indicatePresence);
+  }
+
+  public NamedStructuresQuestion(
+      @Nonnull NodeSpecifier nodeSpecifier,
+      @Nullable NamedStructureSpecifier structureTypes,
+      @Nullable String structureNameRegex,
+      @Nullable Boolean ignoreGenerated,
+      @Nullable Boolean indicatePresence) {
+    this(
+        null, nodeSpecifier, structureTypes, structureNameRegex, ignoreGenerated, indicatePresence);
+  }
+
+  private NamedStructuresQuestion(
+      @Nullable String nodes,
+      @Nonnull NodeSpecifier nodeSpecifier,
+      @Nullable NamedStructureSpecifier structureTypes,
+      @Nullable String structureNameRegex,
+      @Nullable Boolean ignoreGenerated,
+      @Nullable Boolean indicatePresence) {
     _nodes = nodes;
+    _nodeSpecifier = nodeSpecifier;
     _structureTypes = firstNonNull(structureTypes, NamedStructureSpecifier.ALL);
     _structureNameRegex = structureNameRegex;
     _structureNamePattern =
@@ -103,7 +128,7 @@ public class NamedStructuresQuestion extends Question {
   @Nonnull
   @JsonIgnore
   public NodeSpecifier getNodeSpecifier() {
-    return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
+    return _nodeSpecifier;
   }
 
   @Nullable
