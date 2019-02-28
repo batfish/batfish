@@ -59,6 +59,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -84,6 +85,7 @@ import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -106,6 +108,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.transformation.IpField;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.f5_bigip.Builtin;
@@ -405,18 +408,16 @@ public final class F5BigipStructuredGrammarTest {
             .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
             .findFirst();
 
-    // TODO: uncomment after resolution of https://github.com/batfish/batfish/pull/3248
-    assert stepDetailOptional != null;
-    //    assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
-    //
-    //    TransformationStepDetail detail = stepDetailOptional.get();
-    //
-    //    assertThat(
-    //        detail.getFlowDiffs(),
-    //        hasItem(
-    //            equalTo(
-    //                FlowDiff.flowDiff(
-    //                    IpField.DESTINATION, Ip.parse("192.0.2.1"), Ip.parse("192.0.2.10")))));
+    assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
+
+    TransformationStepDetail detail = stepDetailOptional.get();
+
+    assertThat(
+        detail.getFlowDiffs(),
+        hasItem(
+            equalTo(
+                FlowDiff.flowDiff(
+                    IpField.DESTINATION, Ip.parse("192.0.2.1"), Ip.parse("192.0.2.10")))));
   }
 
   @Test
