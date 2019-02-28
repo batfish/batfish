@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 public final class AsPath implements Serializable, Comparable<AsPath> {
 
   private static final long serialVersionUID = 1L;
+  private static final AsPath EMPTY = new AsPath(ImmutableList.of());
 
   /**
    * Returns true iff the provided AS number is reserved for private use by RFC 6696:
@@ -57,7 +58,7 @@ public final class AsPath implements Serializable, Comparable<AsPath> {
 
   /** Create and return a new empty {@link AsPath}. */
   public static AsPath empty() {
-    return AsPath.of(ImmutableList.of());
+    return EMPTY;
   }
 
   /** Create and return a new {@link AsPath} of length 1 using the given {@link AsSet}. */
