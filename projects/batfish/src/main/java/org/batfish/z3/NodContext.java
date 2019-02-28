@@ -2,7 +2,6 @@ package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Streams;
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BitVecSort;
@@ -104,8 +103,7 @@ public class NodContext {
                                 RelationCollector.collectRelations(program.getInput(), statement))
                         .map(Map::entrySet)
                         .flatMap(Collection::stream))
-            .collect(ImmutableSet.toImmutableSet())
-            .stream()
+            .distinct()
             .collect(
                 ImmutableMap.toImmutableMap(
                     Entry::getKey,

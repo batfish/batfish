@@ -152,7 +152,7 @@ public final class AutoCompleteUtils {
                   query,
                   completionMetadata.getInterfaces().stream()
                       .map(NodeInterfacePair::toString)
-                      .collect(Collectors.toSet()));
+                      .collect(ImmutableSet.toImmutableSet()));
           break;
         }
       case INTERFACE_GROUP_AND_BOOK:
@@ -160,12 +160,10 @@ public final class AutoCompleteUtils {
           checkReferenceLibrary(referenceLibrary, network);
           ImmutableSet<StringPair> pairs =
               referenceLibrary.getReferenceBooks().stream()
-                  .map(
+                  .flatMap(
                       b ->
                           b.getInterfaceGroups().stream()
-                              .map(ag -> new StringPair(ag.getName(), b.getName()))
-                              .collect(ImmutableSet.toImmutableSet()))
-                  .flatMap(Collection::stream)
+                              .map(ag -> new StringPair(ag.getName(), b.getName())))
                   .collect(ImmutableSet.toImmutableSet());
           suggestions = stringPairAutoComplete(query, pairs);
           break;
@@ -280,12 +278,8 @@ public final class AutoCompleteUtils {
           checkNodeRolesData(nodeRolesData, network);
           ImmutableSet<StringPair> pairs =
               nodeRolesData.getNodeRoleDimensions().stream()
-                  .map(
-                      d ->
-                          d.getRoles().stream()
-                              .map(r -> new StringPair(r.getName(), d.getName()))
-                              .collect(ImmutableSet.toImmutableSet()))
-                  .flatMap(Collection::stream)
+                  .flatMap(
+                      d -> d.getRoles().stream().map(r -> new StringPair(r.getName(), d.getName())))
                   .collect(ImmutableSet.toImmutableSet());
           suggestions = stringPairAutoComplete(query, pairs);
           break;

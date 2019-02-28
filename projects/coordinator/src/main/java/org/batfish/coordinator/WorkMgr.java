@@ -1381,8 +1381,7 @@ public class WorkMgr extends AbstractCoordinator {
         String[] subdirEntryNames =
             CommonUtil.getEntries(entry).stream()
                 .map(subdirEntry -> subdirEntry.getFileName().toString())
-                .collect(Collectors.toList())
-                .toArray(new String[] {});
+                .toArray(String[]::new);
         retStringBuilder.append("/\n");
         // now append a maximum of MAX_SHOWN_SNAPSHOT_INFO_SUBDIR_ENTRIES
         for (int index = 0;
