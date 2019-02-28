@@ -10,8 +10,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 /**
  * A question that returns named structures of nodes in a tabular format. {@link
@@ -34,7 +36,7 @@ public class NamedStructuresQuestion extends Question {
 
   private final boolean _indicatePresence;
 
-  @Nonnull private final NodesSpecifier _nodes;
+  @Nullable private final String _nodes;
 
   @Nullable private final String _structureNameRegex;
 
@@ -44,7 +46,7 @@ public class NamedStructuresQuestion extends Question {
 
   @JsonCreator
   private static NamedStructuresQuestion create(
-      @JsonProperty(PROP_NODES) @Nullable NodesSpecifier nodes,
+      @JsonProperty(PROP_NODES) @Nullable String nodes,
       @JsonProperty(PROP_STRUCTURE_TYPES) @Nullable NamedStructureSpecifier structureTypes,
       @JsonProperty(PROP_STRUCTURE_NAMES) @Nullable String structureNameRegex,
       @JsonProperty(PROP_IGNORE_GENERATED) @Nullable Boolean ignoreGenerated,
@@ -53,21 +55,17 @@ public class NamedStructuresQuestion extends Question {
         nodes, structureTypes, structureNameRegex, ignoreGenerated, indicatePresence);
   }
 
-  public NamedStructuresQuestion() {
-    this(null, null, null, null, null);
-  }
-
-  public NamedStructuresQuestion(NodesSpecifier nodes, NamedStructureSpecifier structureTypes) {
+  public NamedStructuresQuestion(@Nullable String nodes, NamedStructureSpecifier structureTypes) {
     this(nodes, structureTypes, null, null, null);
   }
 
   public NamedStructuresQuestion(
-      @Nullable NodesSpecifier nodes,
+      @Nullable String nodes,
       @Nullable NamedStructureSpecifier structureTypes,
       @Nullable String structureNameRegex,
       @Nullable Boolean ignoreGenerated,
       @Nullable Boolean indicatePresence) {
-    _nodes = firstNonNull(nodes, NodesSpecifier.ALL);
+    _nodes = nodes;
     _structureTypes = firstNonNull(structureTypes, NamedStructureSpecifier.ALL);
     _structureNameRegex = structureNameRegex;
     _structureNamePattern =
@@ -96,10 +94,16 @@ public class NamedStructuresQuestion extends Question {
     return "namedStructures";
   }
 
-  @Nonnull
+  @Nullable
   @JsonProperty(PROP_NODES)
-  public NodesSpecifier getNodes() {
+  public String getNodes() {
     return _nodes;
+  }
+
+  @Nonnull
+  @JsonIgnore
+  public NodeSpecifier getNodeSpecifier() {
+    return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
   }
 
   @Nullable

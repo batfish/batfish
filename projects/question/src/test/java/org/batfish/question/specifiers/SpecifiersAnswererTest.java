@@ -36,7 +36,7 @@ import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
-import org.batfish.specifier.SpecifierFactories.FactoryGroup;
+import org.batfish.specifier.SpecifierFactories.Version;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -149,7 +149,7 @@ public class SpecifiersAnswererTest {
             ImmutableMultiset.of(
                 Row.of(
                     COL_IP_SPACE,
-                    SpecifierFactories.ACTIVE_GROUP == FactoryGroup.V1
+                    SpecifierFactories.ACTIVE_VERSION == Version.V1
                         ? IpWildcardSetIpSpace.builder()
                             .including(new IpWildcard(prefix))
                             .build()

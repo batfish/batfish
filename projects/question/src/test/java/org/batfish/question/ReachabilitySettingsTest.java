@@ -6,22 +6,24 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.questions.InterfacesSpecifier;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.specifier.IntersectionLocationSpecifier;
 import org.batfish.specifier.LocationSpecifiers;
+import org.batfish.specifier.NameNodeSpecifier;
+import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.NodeSpecifierInterfaceLocationSpecifier;
 import org.junit.Test;
 
 public class ReachabilitySettingsTest {
 
   @Test
   public void testToReachabilityParameters_ingressNodes_ingressInterface() {
-    NodesSpecifier nodesSpecifier = new NodesSpecifier("nodes");
+    NodeSpecifier nodeSpecifier = new NameNodeSpecifier("nodes");
     InterfacesSpecifier interfacesSpecifier = new InterfacesSpecifier("interfaces");
     ReachabilitySettings settings =
         ReachabilitySettings.builder()
             .setActions(ImmutableList.of())
             .setHeaderSpace(HeaderSpace.builder().build())
-            .setIngressNodes(nodesSpecifier)
+            .setIngressNodes(nodeSpecifier)
             .setIngressInterfaces(interfacesSpecifier)
             .build();
     ReachabilityParameters params = settings.toReachabilityParameters();
@@ -30,6 +32,6 @@ public class ReachabilitySettingsTest {
         equalTo(
             new IntersectionLocationSpecifier(
                 LocationSpecifiers.from(interfacesSpecifier),
-                LocationSpecifiers.from(nodesSpecifier))));
+                new NodeSpecifierInterfaceLocationSpecifier(nodeSpecifier))));
   }
 }

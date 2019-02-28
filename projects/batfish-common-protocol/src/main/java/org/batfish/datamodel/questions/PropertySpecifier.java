@@ -3,12 +3,12 @@ package org.batfish.datamodel.questions;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -73,7 +73,7 @@ public abstract class PropertySpecifier {
                             : e.toString());
         outputPropertyValue =
             targetSchema.getType() == Type.LIST
-                ? stream.collect(Collectors.toList())
+                ? stream.collect(ImmutableList.toImmutableList())
                 : stream.collect(ImmutableSet.toImmutableSet());
       }
     }

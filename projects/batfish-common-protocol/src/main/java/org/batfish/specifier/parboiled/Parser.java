@@ -555,15 +555,30 @@ public class Parser extends CommonParser {
 
   public Rule LocationTerm() {
     return FirstOf(
-        LocationEnter(), LocationInterfaceDeprecated(), LocationInterface(), LocationParens());
+        LocationEnterDeprecated(),
+        LocationEnter(),
+        LocationInterfaceDeprecated(),
+        LocationInterface(),
+        LocationParens());
   }
 
   public Rule LocationEnter() {
     return Sequence(
-        FirstOf(IgnoreCase("@enter"), IgnoreCase("enter")),
+        IgnoreCase("@enter"),
         WhiteSpace(),
         "( ",
         LocationInterface(),
+        ") ",
+        push(new EnterLocationAstNode(pop())));
+  }
+
+  @Anchor(IGNORE)
+  public Rule LocationEnterDeprecated() {
+    return Sequence(
+        IgnoreCase("enter"),
+        WhiteSpace(),
+        "( ",
+        FirstOf(LocationInterfaceDeprecated(), LocationInterface()),
         ") ",
         push(new EnterLocationAstNode(pop())));
   }

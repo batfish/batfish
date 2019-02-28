@@ -2,6 +2,7 @@
     "class": "org.batfish.question.specifiers.SpecifiersQuestion",
     "locationSpecifierInput": "${locations}",
     "queryType": "location",
+    "specifierFactoryVersion": "${grammarVersion}", 
     "instance": {
         "description": "Show the resolved values for location specifier",
         "instanceName": "resolveLocationSpecifier",
@@ -9,6 +10,12 @@
             "specifiers"
         ],
         "variables": {
+            "grammarVersion": {
+                "description": "Version of grammar to use for resolution",
+                "optional": true,
+                "type": "string",
+                "displayName": "Grammar version"               
+            },
             "locations": {
                 "description": "Input to the LocationSpecifier",
                 "optional": true,

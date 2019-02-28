@@ -309,11 +309,9 @@ public final class BgpTopologyUtils {
     Flow backwardFlow = fb.build();
     traces = tracerouteEngine.computeTraces(ImmutableSet.of(backwardFlow), false);
 
-    /*
-     * If backward traceroutes fail, do not consider the neighbor reachable
-     */
-    return !traces.get(backwardFlow).stream()
-        .filter(
+    // Consider neighbor reachable if any backward flow is accepted.
+    return traces.get(backwardFlow).stream()
+        .anyMatch(
             trace ->
                 trace.getDisposition() == FlowDisposition.ACCEPTED
                     && trace.getHops().size() > 0
@@ -322,9 +320,7 @@ public final class BgpTopologyUtils {
                         .get(trace.getHops().size() - 1)
                         .getNode()
                         .getName()
-                        .equals(initiator.getHostname()))
-        .collect(Collectors.toList())
-        .isEmpty();
+                        .equals(initiator.getHostname()));
   }
 
   private BgpTopologyUtils() {}
