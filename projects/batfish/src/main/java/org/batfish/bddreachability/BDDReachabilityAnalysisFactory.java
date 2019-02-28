@@ -251,8 +251,8 @@ public final class BDDReachabilityAnalysisFactory {
     _sourcePortVars = Arrays.stream(_bddPacket.getSrcPort().getBitvec()).reduce(_one, BDD::and);
 
     RangeComputer rangeComputer = computeTransformationRanges();
-    _transformationPortRanges = ImmutableMap.copyOf(rangeComputer.getPortRanges());
-    _transformationIpRanges = ImmutableMap.copyOf(rangeComputer.getIpRanges());
+    _transformationPortRanges = rangeComputer.getPortRanges();
+    _transformationIpRanges = rangeComputer.getIpRanges();
   }
 
   /**
@@ -1193,8 +1193,8 @@ public final class BDDReachabilityAnalysisFactory {
     BDD noDstIp = finalHeaderSpace.exist(_dstIpVars);
     if (!noDstIp.equals(finalHeaderSpace)) {
       // there's a constraint on dst Ip, so include nat pool Ips
-      BDD dstTransformationRange = _transformationIpRanges.getOrDefault(IpField.DESTINATION, _zero);
-      if (!dstTransformationRange.isZero()) {
+      BDD dstTransformationRange = _transformationIpRanges.get(IpField.DESTINATION);
+      if (dstTransformationRange != null) {
         // dst IP is either the initial one, or one of that NAT pool IPs.
         finalHeaderSpace = finalHeaderSpace.or(noDstIp.and(dstTransformationRange));
       }
@@ -1217,7 +1217,7 @@ public final class BDDReachabilityAnalysisFactory {
     BDD noDstPort = finalHeaderSpace.exist(_dstPortVars);
     if (!noDstPort.equals(finalHeaderSpace)) {
       BDD dstTransformationRange = _transformationPortRanges.get(PortField.DESTINATION);
-      if (dstTransformationRange != null && !dstTransformationRange.isZero()) {
+      if (dstTransformationRange != null) {
         finalHeaderSpace = finalHeaderSpace.or(noDstPort.and(dstTransformationRange));
       }
     }
@@ -1243,11 +1243,11 @@ public final class BDDReachabilityAnalysisFactory {
     }
 
     public Map<IpField, BDD> getIpRanges() {
-      return _ipRanges;
+      return ImmutableMap.copyOf(_ipRanges);
     }
 
     public Map<PortField, BDD> getPortRanges() {
-      return _portRanges;
+      return ImmutableMap.copyOf(_portRanges);
     }
 
     private IpSpaceToBDD getIpSpaceToBDD(IpField ipField) {
