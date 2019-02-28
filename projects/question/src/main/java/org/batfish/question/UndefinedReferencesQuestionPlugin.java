@@ -1,5 +1,7 @@
 package org.batfish.question;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
@@ -14,17 +16,21 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.FileLines;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.SpecifierFactories;
 
 @AutoService(Plugin.class)
 public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
@@ -48,7 +54,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
       // Find all the filenames that produced the queried nodes. This might have false positives if
       // a file produced multiple nodes, but that was already mis-handled before. Need to rewrite
       // this question as a TableAnswerElement.
-      Set<String> includeNodes = question.getNodes().getMatchingNodes(_batfish);
+      Set<String> includeNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
       Multimap<String, String> hostnameFilenameMap =
           _batfish.loadParseVendorConfigurationAnswerElement().getFileMap();
       Set<String> includeFiles =
@@ -129,26 +135,29 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
     }
   }
 
-  // <question_page_comment>
-  /*
+  /**
    * Outputs cases where undefined structures (e.g., ACL, routemaps) are referenced.
    *
    * <p>Such occurrences indicate configuration errors and can have serious consequences with some
    * vendors.
-   *
-   * @type UndefinedReferences onefile
-   * @param nodes Regular expression for names of nodes to include. Default value is '.*' (all
-   *     nodes).
-   * @example bf_answer("Nodes", nodeRegex="as1.*") Analyze all nodes whose names begin with "as1".
    */
   public static class UndefinedReferencesQuestion extends Question {
 
     private static final String PROP_NODES = "nodes";
 
-    private NodesSpecifier _nodes;
+    @Nullable private final String _nodes;
 
-    public UndefinedReferencesQuestion() {
-      _nodes = NodesSpecifier.ALL;
+    @JsonCreator
+    private static UndefinedReferencesQuestion create(@JsonProperty(PROP_NODES) String nodes) {
+      return new UndefinedReferencesQuestion(nodes);
+    }
+
+    UndefinedReferencesQuestion() {
+      this(null);
+    }
+
+    UndefinedReferencesQuestion(@Nullable String nodes) {
+      _nodes = nodes;
     }
 
     @Override
@@ -161,14 +170,16 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
       return "undefinedReferences";
     }
 
+    @Nullable
     @JsonProperty(PROP_NODES)
-    public NodesSpecifier getNodes() {
+    public String getNodes() {
       return _nodes;
     }
 
-    @JsonProperty(PROP_NODES)
-    public void setNodes(NodesSpecifier nodes) {
-      _nodes = nodes;
+    @Nonnull
+    @JsonIgnore
+    public NodeSpecifier getNodeSpecifier() {
+      return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
     }
   }
 
