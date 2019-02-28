@@ -9,11 +9,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.questions.FiltersSpecifier;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
+import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.LocationSpecifier;
+import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.ShorthandFilterSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 
@@ -30,16 +31,16 @@ public class TestFiltersQuestion extends Question {
 
   @Nullable private final String _filters;
   @Nonnull private final PacketHeaderConstraints _headers;
-  @Nonnull private final NodesSpecifier _nodes;
+  @Nullable private final String _nodes;
   @Nullable private final String _startLocation;
 
   @JsonCreator
   public TestFiltersQuestion(
-      @JsonProperty(PROP_NODES) NodesSpecifier nodes,
+      @JsonProperty(PROP_NODES) String nodes,
       @JsonProperty(PROP_FILTERS) String filters,
       @JsonProperty(PROP_HEADERS) PacketHeaderConstraints headers,
       @JsonProperty(PROP_START_LOCATION) String startLocation) {
-    _nodes = nodes == null ? NodesSpecifier.ALL : nodes;
+    _nodes = nodes;
     _filters = filters;
     _headers = firstNonNull(headers, PacketHeaderConstraints.unconstrained());
     _startLocation = startLocation;
@@ -50,6 +51,7 @@ public class TestFiltersQuestion extends Question {
     return false;
   }
 
+  @Nullable
   @JsonProperty(PROP_FILTERS)
   private String getFilters() {
     return _filters;
@@ -63,6 +65,12 @@ public class TestFiltersQuestion extends Question {
   }
 
   @Nonnull
+  @JsonIgnore
+  public NodeSpecifier getNodeSpecifier() {
+    return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
+  }
+
+  @Nonnull
   @JsonProperty(PROP_HEADERS)
   public PacketHeaderConstraints getHeaders() {
     return _headers;
@@ -73,8 +81,9 @@ public class TestFiltersQuestion extends Question {
     return "testFilters";
   }
 
+  @Nullable
   @JsonProperty(PROP_NODES)
-  public NodesSpecifier getNodes() {
+  public String getNodes() {
     return _nodes;
   }
 

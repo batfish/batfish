@@ -68,6 +68,6 @@ public class TestFiltersQuestionTest {
         BatfishObjectMapper.mapper().readValue(serialized, TestFiltersQuestion.class);
 
     assertThat(q.getFilterSpecifier(), notNullValue());
-    assertThat(q.getNodes(), notNullValue());
+    assertThat(q.getNodeSpecifier(), notNullValue());
   }
 }
