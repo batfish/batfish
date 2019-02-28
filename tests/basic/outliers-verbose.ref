@@ -23,6 +23,9 @@
         "structDefinition" : {
           "name" : "Ethernet0/0",
           "active" : false,
+          "additionalArpIps" : {
+            "class" : "org.batfish.datamodel.EmptyIpSpace"
+          },
           "allowedVlans" : "",
           "autostate" : true,
           "bandwidth" : 1.0E7,
@@ -1376,6 +1379,9 @@
         "structDefinition" : {
           "name" : "eth0",
           "active" : true,
+          "additionalArpIps" : {
+            "class" : "org.batfish.datamodel.EmptyIpSpace"
+          },
           "allPrefixes" : [
             "2.128.0.101/24"
           ],
@@ -2065,6 +2071,9 @@
         "structDefinition" : {
           "name" : "GigabitEthernet3/0",
           "active" : true,
+          "additionalArpIps" : {
+            "class" : "org.batfish.datamodel.EmptyIpSpace"
+          },
           "allPrefixes" : [
             "2.23.12.2/24"
           ],
@@ -2116,6 +2125,9 @@
         "structDefinition" : {
           "name" : "GigabitEthernet2/0",
           "active" : true,
+          "additionalArpIps" : {
+            "class" : "org.batfish.datamodel.EmptyIpSpace"
+          },
           "allPrefixes" : [
             "10.14.22.1/24"
           ],
@@ -2168,6 +2180,9 @@
         "structDefinition" : {
           "name" : "GigabitEthernet0/0",
           "active" : true,
+          "additionalArpIps" : {
+            "class" : "org.batfish.datamodel.EmptyIpSpace"
+          },
           "allPrefixes" : [
             "1.0.1.1/24"
           ],
@@ -2222,6 +2237,9 @@
         "structDefinition" : {
           "name" : "GigabitEthernet1/0",
           "active" : true,
+          "additionalArpIps" : {
+            "class" : "org.batfish.datamodel.EmptyIpSpace"
+          },
           "allPrefixes" : [
             "10.12.11.1/24"
           ],
@@ -2274,6 +2292,9 @@
         "structDefinition" : {
           "name" : "Loopback0",
           "active" : true,
+          "additionalArpIps" : {
+            "class" : "org.batfish.datamodel.EmptyIpSpace"
+          },
           "allPrefixes" : [
             "1.1.1.1/32"
           ],
