@@ -218,10 +218,15 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
             }
 
             IpWildcard wc = new IpWildcard(prefix);
-            // Ips matching prefix are those in prefix and not in any subtrie prefixes.
-            IpWildcardSetIpSpace matchingIps =
-                new IpWildcardSetIpSpace(subTriePrefixes, ImmutableSortedSet.of(wc));
-            builder.put(prefix, matchingIps);
+
+            if (subTriePrefixes.isEmpty()) {
+              builder.put(prefix, prefix.toIpSpace());
+            } else {
+              // Ips matching prefix are those in prefix and not in any subtrie prefixes.
+              builder.put(
+                  prefix, new IpWildcardSetIpSpace(subTriePrefixes, ImmutableSortedSet.of(wc)));
+            }
+
             return ImmutableSortedSet.of(wc);
           }
         });
