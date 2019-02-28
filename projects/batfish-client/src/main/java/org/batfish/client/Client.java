@@ -402,6 +402,12 @@ public class Client extends AbstractClient implements IClient {
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         break;
+      case FILTER_SPEC:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        break;
       case FLOAT:
         if (!value.isFloat()) {
           throw new BatfishException(
