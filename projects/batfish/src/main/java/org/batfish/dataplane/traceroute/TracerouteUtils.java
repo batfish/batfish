@@ -13,16 +13,13 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.TreeMultimap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
@@ -33,7 +30,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
@@ -201,34 +197,6 @@ public final class TracerouteUtils {
                         builder.put(
                             new NodeInterfacePair(session.getHostname(), incomingIface), session)));
     return builder.build();
-  }
-
-  @Nonnull
-  static Multimap<Ip, AbstractRoute> resolveNextHopIpRoutes(
-      String nextHopInterfaceName,
-      Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute) {
-    TreeMultimap<Ip, AbstractRoute> resolvedNextHopWithRoutes = TreeMultimap.create();
-
-    // Loop over all matching routes that use nextHopInterfaceName as one of the next hop
-    // interfaces.
-    for (Entry<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> e :
-        nextHopInterfacesByRoute.entrySet()) {
-      Map<Ip, Set<AbstractRoute>> finalNextHops = e.getValue().get(nextHopInterfaceName);
-      if (finalNextHops == null || finalNextHops.isEmpty()) {
-        continue;
-      }
-
-      AbstractRoute routeCandidate = e.getKey();
-      Ip nextHopIp = routeCandidate.getNextHopIp();
-      if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
-        resolvedNextHopWithRoutes.put(nextHopIp, routeCandidate);
-      } else {
-        for (Ip resolvedNextHopIp : finalNextHops.keySet()) {
-          resolvedNextHopWithRoutes.put(resolvedNextHopIp, routeCandidate);
-        }
-      }
-    }
-    return resolvedNextHopWithRoutes;
   }
 
   @Nullable

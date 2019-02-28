@@ -9,34 +9,36 @@ import static org.batfish.datamodel.flow.FilterStep.FilterType.INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.POST_TRANSFORMATION_INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.PRE_TRANSFORMATION_EGRESS_FILTER;
 import static org.batfish.datamodel.flow.StepAction.DENIED;
+import static org.batfish.datamodel.flow.StepAction.FORWARDED;
 import static org.batfish.datamodel.flow.StepAction.PERMITTED;
 import static org.batfish.datamodel.flow.StepAction.TRANSMITTED;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.buildEnterSrcIfaceStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createFilterStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.getFinalActionForDisposition;
-import static org.batfish.dataplane.traceroute.TracerouteUtils.resolveNextHopIpRoutes;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.returnFlow;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.sessionTransformation;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.ImmutableSortedMap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.Stack;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -339,16 +341,8 @@ class FlowTracer {
       return;
     }
 
-    Fib fib = _tracerouteContext.getFib(currentNodeName, _vrfName);
-    // Sort so that resulting traces will be in sensible deterministic order
-    SortedSet<String> nextHopInterfaces =
-        ImmutableSortedSet.copyOf(fib.getNextHopInterfaces(dstIp));
-    if (nextHopInterfaces.isEmpty()) {
-      buildNoRouteTrace();
-      return;
-    }
-
-    fibLookup(dstIp, currentNodeName, fib, nextHopInterfaces);
+    Fib fib = _tracerouteContext.getFib(currentNodeName, _vrfName).get();
+    fibLookup(dstIp, currentNodeName, fib);
   }
 
   private boolean processPBR(Interface incomingInterface) {
@@ -386,23 +380,14 @@ class FlowTracer {
           return true;
         }
 
-        Fib fib = _tracerouteContext.getFib(currentNodeName, lookupVrfName);
-        // Sort so that resulting traces will be in sensible deterministic order
-        SortedSet<String> nextHopInterfaces =
-            ImmutableSortedSet.copyOf(fib.getNextHopInterfaces(dstIp));
-        if (nextHopInterfaces.isEmpty()) {
-          buildNoRouteTrace();
-          return true;
-        }
-
-        fibLookup(dstIp, currentNodeName, fib, nextHopInterfaces);
+        Fib fib = _tracerouteContext.getFib(currentNodeName, lookupVrfName).get();
+        fibLookup(dstIp, currentNodeName, fib);
         return true;
       }
     }.visit(result.getAction());
   }
 
-  private void fibLookup(
-      Ip dstIp, String currentNodeName, Fib fib, SortedSet<String> nextHopInterfaces) {
+  private void fibLookup(Ip dstIp, String currentNodeName, Fib fib) {
     // Loop detection
     Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, _currentFlow);
     if (_breadcrumbs.contains(breadcrumb)) {
@@ -411,27 +396,35 @@ class FlowTracer {
     }
     _breadcrumbs.push(breadcrumb);
     try {
-      _steps.add(buildRoutingStep(currentNodeName, dstIp));
+      Set<FibEntry> fibEntries = fib.get(dstIp);
 
-      Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute =
-          fib.getNextHopInterfacesByRoute(dstIp);
+      if (fibEntries.isEmpty()) {
+        buildNoRouteTrace();
+        return;
+      }
+
+      _steps.add(buildRoutingStep(fibEntries));
+
+      // Group traces by outgoing interface (we do not want extra branching if there is branching
+      // in FIB resolution)
+      SortedMap<ExitPoint, Set<FibEntry>> groupedByExitPoint =
+          // Sort so that resulting traces will be in sensible deterministic order
+          ImmutableSortedMap.copyOf(
+              fibEntries.stream()
+                  .collect(Collectors.groupingBy(ExitPoint::from, Collectors.toSet())),
+              Comparator.comparing(ExitPoint::getInterfaceName).thenComparing(ExitPoint::getArpIP));
 
       // For every interface with a route to the dst IP
-      for (String nextHopInterfaceName : nextHopInterfaces) {
-        if (nextHopInterfaceName.equals(Interface.NULL_INTERFACE_NAME)) {
+      for (ExitPoint exitPoint : groupedByExitPoint.keySet()) {
+        if (exitPoint.getInterfaceName().equals(Interface.NULL_INTERFACE_NAME)) {
           branch().buildNullRoutedTrace();
           continue;
         }
 
-        Interface nextHopInterface = _currentConfig.getAllInterfaces().get(nextHopInterfaceName);
-
-        Multimap<Ip, AbstractRoute> resolvedNextHopIpRoutes =
-            resolveNextHopIpRoutes(nextHopInterfaceName, nextHopInterfacesByRoute);
-        resolvedNextHopIpRoutes
-            .asMap()
-            .forEach(
-                (resolvedNextHopIp, routeCandidates) ->
-                    branch().forwardOutInterface(nextHopInterface, resolvedNextHopIp));
+        branch()
+            .forwardOutInterface(
+                _currentConfig.getAllInterfaces().get(exitPoint.getInterfaceName()),
+                exitPoint.getArpIP());
       }
     } finally {
       _breadcrumbs.pop();
@@ -446,14 +439,20 @@ class FlowTracer {
         .build();
   }
 
-  @Nonnull
-  private RoutingStep buildRoutingStep(String currentNodeName, Ip dstIp) {
+  private RoutingStep buildRoutingStep(Set<FibEntry> fibEntries) {
     List<RouteInfo> matchedRibRouteInfo =
-        _tracerouteContext.longestPrefixMatch(currentNodeName, _vrfName, dstIp);
-
+        fibEntries.stream()
+            .map(FibEntry::getTopLevelRoute)
+            .map(rc -> new RouteInfo(rc.getProtocol(), rc.getNetwork(), rc.getNextHopIp()))
+            .sorted(
+                Comparator.comparing(RouteInfo::getNetwork)
+                    .thenComparing(RouteInfo::getNextHopIp)
+                    .thenComparing(RouteInfo::getProtocol))
+            .distinct()
+            .collect(ImmutableList.toImmutableList());
     return RoutingStep.builder()
         .setDetail(RoutingStepDetail.builder().setRoutes(matchedRibRouteInfo).build())
-        .setAction(StepAction.FORWARDED)
+        .setAction(FORWARDED)
         .build();
   }
 
