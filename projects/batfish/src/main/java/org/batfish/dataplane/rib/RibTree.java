@@ -9,7 +9,6 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -201,14 +200,17 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
               @Nullable Set<IpWildcard> rightPrefixes) {
             Set<IpWildcard> subTriePrefixes;
             if (leftPrefixes == null && rightPrefixes == null) {
-              subTriePrefixes = new TreeSet<>();
+              subTriePrefixes = ImmutableSortedSet.of();
             } else if (leftPrefixes == null) {
               subTriePrefixes = rightPrefixes;
             } else if (rightPrefixes == null) {
               subTriePrefixes = leftPrefixes;
             } else {
-              subTriePrefixes = leftPrefixes;
-              subTriePrefixes.addAll(rightPrefixes);
+              subTriePrefixes =
+                  ImmutableSortedSet.<IpWildcard>naturalOrder()
+                      .addAll(leftPrefixes)
+                      .addAll(rightPrefixes)
+                      .build();
             }
 
             if (!hasForwardingRoute(elems)) {
@@ -220,8 +222,7 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
             IpWildcardSetIpSpace matchingIps =
                 new IpWildcardSetIpSpace(subTriePrefixes, ImmutableSortedSet.of(wc));
             builder.put(prefix, matchingIps);
-            subTriePrefixes.add(wc);
-            return subTriePrefixes;
+            return ImmutableSortedSet.of(wc);
           }
         });
 

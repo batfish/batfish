@@ -95,6 +95,11 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
         && Ip.getBitAtPosition(childPrefix.getStartIp(), parentPrefix.getPrefixLength());
   }
 
+  /**
+   * Interface of fold operations. A fold applies the same operation at each node of the trie,
+   * bottom-up. The operation's inputs are the return values of the recursive calls on the subtries,
+   * plus the prefix and values at that node.
+   */
   public interface FoldOperator<T, R> {
     @Nonnull
     R fold(Prefix prefix, Set<T> elems, @Nullable R leftResult, @Nullable R rightResult);
@@ -256,6 +261,11 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     traverseNodes(node -> consumer.accept(node._prefix, ImmutableSet.copyOf(node._elements)));
   }
 
+  /**
+   * Perform a fold over the trie. The fold applies the same operation at each node of the trie,
+   * bottom-up. The operation's inputs are the return values of the recursive calls on the subtries,
+   * plus the prefix and values at that node.
+   */
   public <R> R fold(FoldOperator<T, R> operator) {
     if (_root == null) {
       return null;
