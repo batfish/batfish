@@ -37,13 +37,15 @@
         "displayName" : "Headers",
         "fields" : {
           "applications" : {
-            "optional" : true
+            "optional" : true,
+            "type" : "protocol"
           },
           "dscps" : {
             "optional" : true
           },
           "dstIps" : {
-            "optional" : true
+            "optional" : true,
+            "type" : "ipSpaceSpec"
           },
           "dstPorts" : {
             "optional" : true
@@ -64,13 +66,15 @@
             "optional" : true
           },
           "ipProtocols" : {
-            "optional" : true
+            "optional" : true,
+            "type" : "ipProtocolSpec"
           },
           "packetLengths" : {
             "optional" : true
           },
           "srcIps" : {
-            "optional" : true
+            "optional" : true,
+            "type" : "ipSpaceSpec"
           },
           "srcPorts" : {
             "optional" : true
@@ -112,16 +116,20 @@
         "displayName" : "Path Constraints",
         "fields" : {
           "startLocation" : {
-            "optional" : true
+            "optional" : true,
+            "type" : "locationSpec"
           },
           "endLocation" : {
-            "optional" : true
+            "optional" : true,
+            "type" : "nodeSpec"
           },
           "transitLocations" : {
-            "optional" : true
+            "optional" : true,
+            "type" : "nodeSpec"
           },
           "forbiddenLocations" : {
-            "optional" : true
+            "optional" : true,
+            "type" : "nodeSpec"
           }
         },
         "optional" : true,
