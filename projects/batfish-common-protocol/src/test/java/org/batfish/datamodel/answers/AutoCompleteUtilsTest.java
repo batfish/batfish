@@ -351,7 +351,7 @@ public class AutoCompleteUtilsTest {
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of("a", "a.*")));
+        equalTo(ImmutableSet.of("a", "&", ",", "\\")));
   }
 
   @Test

@@ -66,6 +66,7 @@ import static org.batfish.datamodel.questions.Variable.Type.COMPARATOR;
 import static org.batfish.datamodel.questions.Variable.Type.DISPOSITION_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.DOUBLE;
 import static org.batfish.datamodel.questions.Variable.Type.FILTER;
+import static org.batfish.datamodel.questions.Variable.Type.FILTER_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.FLOAT;
 import static org.batfish.datamodel.questions.Variable.Type.FLOW_STATE;
 import static org.batfish.datamodel.questions.Variable.Type.INTEGER;
@@ -618,6 +619,15 @@ public final class ClientTest {
   public void testInvalidFilterValue() throws IOException {
     String input = "5";
     Type expectedType = FILTER;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidFilterSpecValue() throws IOException {
+    String input = "5";
+    Type expectedType = FILTER_SPEC;
     String expectedMessage =
         String.format("A Batfish %s must be a JSON string", expectedType.getName());
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
@@ -1752,6 +1762,14 @@ public final class ClientTest {
     JsonNode filterNode = _mapper.readTree("\"filterName\"");
     Variable variable = new Variable();
     variable.setType(FILTER);
+    Client.validateType(filterNode, variable);
+  }
+
+  @Test
+  public void testValidFilterSpecValue() throws IOException {
+    JsonNode filterNode = _mapper.readTree("\"@in(eth0)\"");
+    Variable variable = new Variable();
+    variable.setType(FILTER_SPEC);
     Client.validateType(filterNode, variable);
   }
 

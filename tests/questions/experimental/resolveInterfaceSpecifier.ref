@@ -22,7 +22,7 @@
         "description" : "Input to the interfaceSpecifier",
         "displayName" : "Interfaces",
         "optional" : true,
-        "type" : "string",
+        "type" : "interfacesSpec",
         "value" : "input"
       },
       "nodes" : {

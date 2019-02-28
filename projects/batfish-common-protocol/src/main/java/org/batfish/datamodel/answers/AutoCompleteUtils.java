@@ -29,7 +29,6 @@ import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.IpsecSessionStatus;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.referencelibrary.ReferenceLibrary;
@@ -134,6 +133,20 @@ public final class AutoCompleteUtils {
         {
           checkCompletionMetadata(completionMetadata, network, snapshot);
           suggestions = baseAutoComplete(query, completionMetadata.getFilterNames());
+          break;
+        }
+      case FILTER_SPEC:
+        {
+          suggestions =
+              ParboiledAutoComplete.autoComplete(
+                  Grammar.FILTER_SPECIFIER,
+                  network,
+                  snapshot,
+                  query,
+                  maxSuggestions,
+                  completionMetadata,
+                  nodeRolesData,
+                  referenceLibrary);
           break;
         }
       case FLOW_STATE:
@@ -297,10 +310,16 @@ public final class AutoCompleteUtils {
         }
       case NODE_SPEC:
         {
-          checkCompletionMetadata(completionMetadata, network, snapshot);
-          checkNodeRolesData(nodeRolesData, network);
           suggestions =
-              NodesSpecifier.autoComplete(query, completionMetadata.getNodes(), nodeRolesData);
+              ParboiledAutoComplete.autoComplete(
+                  Grammar.NODE_SPECIFIER,
+                  network,
+                  snapshot,
+                  query,
+                  maxSuggestions,
+                  completionMetadata,
+                  nodeRolesData,
+                  referenceLibrary);
           break;
         }
       case OSPF_PROPERTY_SPEC:
