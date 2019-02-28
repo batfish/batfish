@@ -310,6 +310,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_pool_default_port_r
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_rule_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_areaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_reference_bandwidthContext;
@@ -1928,6 +1929,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private NatPool _currentNatPool;
 
+  private String _currentNatPoolName;
+
   private NatRule _currentNatRule;
 
   private NatRuleSet _currentNatRuleSet;
@@ -2397,12 +2400,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterNat_pool(Nat_poolContext ctx) {
     String poolName = ctx.name.getText();
     _currentNatPool = _currentNat.getPools().computeIfAbsent(poolName, p -> new NatPool());
+    _currentNatPoolName = poolName;
     defineStructure(NAT_POOL, poolName, ctx);
   }
 
   @Override
   public void exitNat_pool(Nat_poolContext ctx) {
     _currentNatPool = null;
+    _currentNatPoolName = null;
   }
 
   @Override
@@ -4409,6 +4414,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else {
       _w.redFlag(ctx.getText() + " cannot be recognized");
     }
+  }
+
+  @Override
+  public void exitNatp_routing_instance(Natp_routing_instanceContext ctx) {
+    RoutingInstance ri = _currentLogicalSystem.getRoutingInstances().get(ctx.name.getText());
+    if (ri == null) {
+      _w.redFlag("The routing instance " + ctx.name + " is not defined.");
+      return;
+    }
+    ri.getNatPools().put(_currentNatPoolName, _currentNatPool);
   }
 
   @Override
