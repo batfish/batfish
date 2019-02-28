@@ -2,9 +2,7 @@ package org.batfish.datamodel.questions;
 
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -49,16 +47,5 @@ public class InterfacePropertySpecifierTest {
 
     // should not match shorter
     assertThat(new InterfacePropertySpecifier(shorter).getMatchingProperties(), emptyIterable());
-  }
-
-  /**
-   * Right now additional arp ips are not supported in interface properties. When it is supported,
-   * this test case can be removed
-   */
-  @Test
-  public void testNoAdditionalArpIps() {
-    assertThat(
-        InterfacePropertySpecifier.JAVA_MAP.keySet(),
-        not(hasItem(InterfacePropertySpecifier.ADDITIONAL_ARP_IPS)));
   }
 }
