@@ -95,6 +95,11 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
         && Ip.getBitAtPosition(childPrefix.getStartIp(), parentPrefix.getPrefixLength());
   }
 
+  public interface FoldOperator<T, R> {
+    @Nonnull
+    R fold(Prefix prefix, Set<T> elems, @Nullable R leftResult, @Nullable R rightResult);
+  }
+
   private static final class Node<T> implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -149,6 +154,13 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
 
       Node<T> node = findLongestPrefixMatchNode(prefix);
       return node._prefix.equals(prefix) ? node : node.createChild(prefix);
+    }
+
+    @Nonnull
+    <R> R fold(FoldOperator<T, R> operator) {
+      R leftResult = _left == null ? null : _left.fold(operator);
+      R rightResult = _right == null ? null : _right.fold(operator);
+      return operator.fold(_prefix, _elements, leftResult, rightResult);
     }
 
     /** Returns the list of non-null children for this node */
@@ -242,6 +254,13 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
    */
   public void traverseEntries(BiConsumer<Prefix, Set<T>> consumer) {
     traverseNodes(node -> consumer.accept(node._prefix, ImmutableSet.copyOf(node._elements)));
+  }
+
+  public <R> R fold(FoldOperator<T, R> operator) {
+    if (_root == null) {
+      return null;
+    }
+    return _root.fold(operator);
   }
 
   private void traverseNodes(Consumer<Node<T>> consumer) {

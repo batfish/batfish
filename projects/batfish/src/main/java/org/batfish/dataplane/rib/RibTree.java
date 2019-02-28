@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -20,6 +21,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixTrieMultiMap;
+import org.batfish.datamodel.PrefixTrieMultiMap.FoldOperator;
 import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
@@ -183,22 +185,46 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
   Map<Prefix, IpSpace> getMatchingIps() {
     ImmutableMap.Builder<Prefix, IpSpace> builder = ImmutableMap.builder();
 
-    /* We traverse the tree in post-order, so when we visit each intermediate node the blacklist
-     * will contain all prefixes from each of its children. However, when we are visiting the right
-     * subtree of a node, the blacklist will already contain all the prefixes of the left subtree.
-     * This is wasteful, as the blacklist can include potentially many redundant prefixes. Consider
-     * rewriting to avoid this (e.g. use a fold).
+    /* Do a fold over the trie. At each node, create the matching Ips for that prefix (adding it
+     * to the builder) and return the set of all prefixes in that subtrie. To create the matching
+     * Ips of the prefix, whitelist the prefix and blacklist all prefixes of the node's subtries.
+     *
      */
-    ImmutableSortedSet.Builder<IpWildcard> blacklist = ImmutableSortedSet.naturalOrder();
-    _root.traverseEntries(
-        (prefix, elems) -> {
-          if (hasForwardingRoute(elems)) {
+    _root.fold(
+        new FoldOperator<R, Set<IpWildcard>>() {
+          @Nonnull
+          @Override
+          public Set<IpWildcard> fold(
+              Prefix prefix,
+              Set<R> elems,
+              @Nullable Set<IpWildcard> leftPrefixes,
+              @Nullable Set<IpWildcard> rightPrefixes) {
+            Set<IpWildcard> subTriePrefixes;
+            if (leftPrefixes == null && rightPrefixes == null) {
+              subTriePrefixes = new TreeSet<>();
+            } else if (leftPrefixes == null) {
+              subTriePrefixes = rightPrefixes;
+            } else if (rightPrefixes == null) {
+              subTriePrefixes = leftPrefixes;
+            } else {
+              subTriePrefixes = leftPrefixes;
+              subTriePrefixes.addAll(rightPrefixes);
+            }
+
+            if (!hasForwardingRoute(elems)) {
+              return subTriePrefixes;
+            }
+
             IpWildcard wc = new IpWildcard(prefix);
-            builder.put(
-                prefix, new IpWildcardSetIpSpace(blacklist.build(), ImmutableSortedSet.of(wc)));
-            blacklist.add(wc);
+            // Ips matching prefix are those in prefix and not in any subtrie prefixes.
+            IpWildcardSetIpSpace matchingIps =
+                new IpWildcardSetIpSpace(subTriePrefixes, ImmutableSortedSet.of(wc));
+            builder.put(prefix, matchingIps);
+            subTriePrefixes.add(wc);
+            return subTriePrefixes;
           }
         });
+
     return builder.build();
   }
 

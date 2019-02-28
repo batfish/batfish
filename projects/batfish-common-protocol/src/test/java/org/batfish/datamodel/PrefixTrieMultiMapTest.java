@@ -18,6 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.batfish.datamodel.PrefixTrieMultiMap.FoldOperator;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -313,5 +316,50 @@ public class PrefixTrieMultiMapTest {
     map.clear();
 
     assertThat(map.getAllElements(), hasSize(0));
+  }
+
+  @Test
+  public void testFold() {
+    // Use a fold to construct a postorder list of prefixes
+    PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>(Prefix.ZERO);
+    Prefix l = Prefix.parse("0.0.0.0/8");
+    Prefix ll = Prefix.parse("0.0.0.0/16");
+    Prefix lr = Prefix.parse("0.128.0.0/16");
+    Prefix r = Prefix.parse("128.0.0.0/8");
+    Prefix rl = Prefix.parse("128.0.0.0/16");
+    Prefix rr = Prefix.parse("128.128.0.0/16");
+
+    map.put(l, 0);
+    map.put(ll, 0);
+    map.put(lr, 0);
+
+    // adding in different order just for fun
+    map.put(rr, 0);
+    map.put(rl, 0);
+    map.put(r, 0);
+
+    List<Prefix> prefixes =
+        map.fold(
+            new FoldOperator<Integer, List<Prefix>>() {
+              @Nonnull
+              @Override
+              public List<Prefix> fold(
+                  Prefix prefix,
+                  Set<Integer> elems,
+                  @Nullable List<Prefix> leftResult,
+                  @Nullable List<Prefix> rightResult) {
+                List<Prefix> result = new ArrayList<>();
+                if (leftResult != null) {
+                  result.addAll(leftResult);
+                }
+                if (rightResult != null) {
+                  result.addAll(rightResult);
+                }
+                result.add(prefix);
+                return result;
+              }
+            });
+
+    assertThat(prefixes, contains(ll, lr, l, rl, rr, r, Prefix.ZERO));
   }
 }
