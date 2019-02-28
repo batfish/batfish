@@ -67965,6 +67965,24 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
+              "Line" : 10,
+              "Parser_Context" : "[filter_list_bgp_tail neighbor_flat_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+              "Text" : "filter-list 10 out"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 14,
+              "Parser_Context" : "[filter_list_bgp_tail neighbor_flat_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+              "Text" : "filter-list 20 in"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 18,
+              "Parser_Context" : "[filter_list_bgp_tail neighbor_flat_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
+              "Text" : "filter-list 40 in"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
               "Line" : 29,
               "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
               "Text" : "redistribute ospf abc"

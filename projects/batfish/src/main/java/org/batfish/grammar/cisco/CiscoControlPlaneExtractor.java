@@ -5242,6 +5242,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitDistribute_list_bgp_tail(Distribute_list_bgp_tailContext ctx) {
+    // Note: Mutually exclusive with Prefix_list_bgp_tail
+    // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5816-bgpfaq-5816.html
     todo(ctx);
   }
 
@@ -5821,6 +5823,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST,
         ctx.getStart().getLine());
     // TODO: Handle filter-list in batfish
+    todo(ctx);
   }
 
   @Override
