@@ -5,17 +5,14 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 
 /** An IP wildcard consisting of a IP address and a wildcard (also expressed as an IP address) */
-@ParametersAreNonnullByDefault
 public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
 
-  @Nonnull private final Ip _ip;
-  @Nonnull private final Ip _mask;
+  private final Ip _ip;
+  private final Ip _mask;
 
   public static final IpWildcard ANY = new IpWildcard(Ip.ZERO, Ip.MAX);
 
@@ -116,12 +113,10 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
         .compare(this, o);
   }
 
-  @Nonnull
   public Ip getIp() {
     return _ip;
   }
 
-  @Nonnull
   public Ip getWildcard() {
     return _mask;
   }
