@@ -8,7 +8,6 @@ import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_PA
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_POINT_TO_POINT;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COLUMNS_FROM_PROP_SPEC;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_INTERFACE;
-import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_NODE;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_PROCESS_ID;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_VRF;
 import static org.hamcrest.Matchers.allOf;
@@ -29,7 +28,6 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.ospf.OspfArea;
-import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.junit.Test;
@@ -76,7 +74,6 @@ public class OspfInterfaceConfigAnswererTest {
     assertThat(
         rows.iterator().next(),
         allOf(
-            hasColumn(COL_NODE, equalTo(new Node("test_conf")), Schema.NODE),
             hasColumn(COL_VRF, equalTo("test_vrf"), Schema.STRING),
             hasColumn(COL_PROCESS_ID, equalTo("ospf_1"), Schema.STRING),
             hasColumn(COL_INTERFACE, equalTo("int1"), Schema.STRING),
@@ -99,10 +96,9 @@ public class OspfInterfaceConfigAnswererTest {
         metas.stream().map(ColumnMetadata::getName).collect(ImmutableList.toImmutableList()),
         equalTo(
             ImmutableList.builder()
-                .add(COL_NODE)
+                .add(COL_INTERFACE)
                 .add(COL_VRF)
                 .add(COL_PROCESS_ID)
-                .add(COL_INTERFACE)
                 .add(OSPF_AREA_NAME)
                 .add(OSPF_PASSIVE)
                 .add(OSPF_COST)

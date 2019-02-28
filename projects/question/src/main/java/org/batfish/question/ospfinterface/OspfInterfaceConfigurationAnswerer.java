@@ -26,7 +26,6 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.ospf.OspfProcess;
-import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.PropertySpecifier;
 import org.batfish.datamodel.questions.PropertySpecifier.PropertyDescriptor;
@@ -41,10 +40,9 @@ import org.batfish.datamodel.table.TableMetadata;
 @ParametersAreNonnullByDefault
 public final class OspfInterfaceConfigurationAnswerer extends Answerer {
 
-  static final String COL_NODE = "Node";
+  static final String COL_INTERFACE = "Interface";
   static final String COL_VRF = "VRF";
   static final String COL_PROCESS_ID = "Process_ID";
-  static final String COL_INTERFACE = "Interface";
 
   // this list also ensures order of columns excluding keys
   static final List<String> COLUMNS_FROM_PROP_SPEC =
@@ -84,12 +82,10 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
   @VisibleForTesting
   static List<ColumnMetadata> createColumnMetadata(List<String> properties) {
     List<ColumnMetadata> columnMetadatas = new ArrayList<>();
-    columnMetadatas.add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false));
+    columnMetadatas.add(new ColumnMetadata(COL_INTERFACE, Schema.STRING, "Interface", true, false));
     columnMetadatas.add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false));
     columnMetadatas.add(
         new ColumnMetadata(COL_PROCESS_ID, Schema.STRING, "Process ID", true, false));
-    columnMetadatas.add(
-        new ColumnMetadata(COL_INTERFACE, Schema.STRING, "Interface Name", true, false));
     for (String property : properties) {
       columnMetadatas.add(
           new ColumnMetadata(
@@ -109,9 +105,7 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
     return new TableMetadata(
         createColumnMetadata(propertiesList),
         textDescription == null
-            ? String.format(
-                "Configuration of OSPF Interface {%s}:${%s}:${%s}:${%s}",
-                COL_NODE, COL_VRF, COL_PROCESS_ID, COL_INTERFACE)
+            ? String.format("Configuration of OSPF Interface {%s}", COL_INTERFACE)
             : textDescription);
   }
 
@@ -166,10 +160,9 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
       Map<String, ColumnMetadata> columnMetadataMap) {
     RowBuilder rowBuilder =
         Row.builder(columnMetadataMap)
-            .put(COL_NODE, new Node(nodeName))
+            .put(COL_INTERFACE, iface.getName())
             .put(COL_VRF, iface.getVrfName())
-            .put(COL_PROCESS_ID, ospfProcessId)
-            .put(COL_INTERFACE, iface.getName());
+            .put(COL_PROCESS_ID, ospfProcessId);
 
     for (String property : properties) {
       PropertyDescriptor<Interface> propertyDescriptor =

@@ -5,7 +5,7 @@
   "differential" : false,
   "includeOneTableKeys" : true,
   "instance" : {
-    "description" : "Return configuration parameters of OSPF interfaces",
+    "description" : "Returns configuration parameters of OSPF interfaces",
     "instanceName" : "qname",
     "orderedVariableNames" : [
       "nodes",
