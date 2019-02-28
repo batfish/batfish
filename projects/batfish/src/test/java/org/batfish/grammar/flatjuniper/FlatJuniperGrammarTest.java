@@ -2134,7 +2134,7 @@ public final class FlatJuniperGrammarTest {
     Configuration c = parseConfig("interface-arp");
 
     /* The additional ARP IP set for irb.0 should appear in the data model */
-    assertThat(c, hasInterface("irb.0", hasAdditionalArpIps(hasItem(Ip.parse("1.0.0.2")))));
+    assertThat(c, hasInterface("irb.0", hasAdditionalArpIps(containsIp(Ip.parse("1.0.0.2")))));
   }
 
   @Test
