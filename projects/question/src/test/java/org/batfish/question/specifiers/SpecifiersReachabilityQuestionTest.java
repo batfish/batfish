@@ -30,7 +30,7 @@ import org.batfish.specifier.Location;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.NoNodesNodeSpecifier;
 import org.batfish.specifier.SpecifierFactories;
-import org.batfish.specifier.SpecifierFactories.FactoryGroup;
+import org.batfish.specifier.SpecifierFactories.Version;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -82,7 +82,7 @@ public class SpecifiersReachabilityQuestionTest {
             IpSpaceAssignment.builder()
                 .assign(
                     locations,
-                    SpecifierFactories.ACTIVE_GROUP == FactoryGroup.V1
+                    SpecifierFactories.ACTIVE_VERSION == Version.V1
                         ? IpWildcardSetIpSpace.builder()
                             .including(new IpWildcard("1.2.3.0/24"), new IpWildcard("1.2.3.4"))
                             .build()
@@ -139,7 +139,7 @@ public class SpecifiersReachabilityQuestionTest {
             IpSpaceAssignment.builder()
                 .assign(
                     locations,
-                    SpecifierFactories.ACTIVE_GROUP == FactoryGroup.V1
+                    SpecifierFactories.ACTIVE_VERSION == Version.V1
                         ? IpWildcardSetIpSpace.builder()
                             .including(new IpWildcard("1.2.3.3"))
                             .excluding(new IpWildcard("1.2.3.4"))

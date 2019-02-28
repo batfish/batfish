@@ -3,6 +3,7 @@
     "filterSpecifierInput": "${filters}",
     "nodeSpecifierInput": "${nodes}",
     "queryType": "filter",
+    "specifierFactoryVersion": "${grammarVersion}", 
     "instance": {
         "description": "Show the resolved values for filter specifier",
         "instanceName": "resolveFilterSpecifier",
@@ -16,12 +17,19 @@
                 "type": "string",
                 "displayName": "Filters"
             },
+            "grammarVersion": {
+                "description": "Version of grammar to use for resolution",
+                "optional": true,
+                "type": "string",
+                "displayName": "Grammar version"               
+            },
             "nodes": {
                 "description": "Input to the NodeSpecifier",
                 "optional": true,
                 "type": "nodeSpec",
                 "displayName": "Nodes"
             }
+
         }
     }
 }

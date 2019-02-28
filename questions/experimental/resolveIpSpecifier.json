@@ -2,19 +2,26 @@
     "class": "org.batfish.question.specifiers.SpecifiersQuestion",
     "ipSpaceSpecifierInput": "${ips}",
     "queryType": "ip_space",
+    "specifierFactoryVersion": "${grammarVersion}", 
     "instance": {
-        "description": "Show the resolved values for IP specifier",
+        "description": "Show the resolved values for IP space specifier",
         "instanceName": "resolveIpSpecifier",
         "tags": [
             "specifiers"
         ],
         "variables": {
-            "ips": {
-                "description": "Input to the IpSpaceSpecifier",
+            "grammarVersion": {
+                "description": "Version of grammar to use for resolution",
                 "optional": true,
-                "value": "0.0.0.0/0",
                 "type": "string",
-                "displayName": "IPs"
+                "displayName": "Grammar version"               
+            },
+            "ips": {
+                "description": "Input to the IP space specifier",
+                "optional": true,
+                "value": "",
+                "type": "ipSpaceSpec",
+                "displayName": "IP specifier input"
             }
         }
     }
