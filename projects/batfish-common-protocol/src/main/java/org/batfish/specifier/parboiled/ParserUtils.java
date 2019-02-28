@@ -173,10 +173,7 @@ final class ParserUtils {
         continue;
       }
 
-      /*
-       The PotentialMatch object is straightforward given the anchor. Except that for string
-       literals, we remove the quotes inserted by parboiled.
-      */
+      // Build PotentialMatch objects from path anchor
       PathElement pathAnchor = pathAnchorOpt.get();
       String matchPrefix =
           error
@@ -187,6 +184,7 @@ final class ParserUtils {
 
       if (pathAnchor.getAnchorType() == STRING_LITERAL
           || pathAnchor.getAnchorType() == CHAR_LITERAL) {
+        // Remove quotes inserted by parboiled for completion suggestions
         String fullToken = path.getElementAtLevel(pathAnchor.getLevel()).matcher.getLabel();
         if (fullToken.length() >= 2) { // remove surrounding quotes
           fullToken = fullToken.substring(1, fullToken.length() - 1);
@@ -195,9 +193,15 @@ final class ParserUtils {
             new PotentialMatch(
                 pathAnchor.getAnchorType(),
                 matchPrefix,
-                fullToken.substring(matchPrefix.length())));
+                fullToken.substring(matchPrefix.length()),
+                path.getElementAtLevel(pathAnchor.getLevel()).startIndex));
       } else {
-        potentialMatches.add(new PotentialMatch(pathAnchor.getAnchorType(), matchPrefix, null));
+        potentialMatches.add(
+            new PotentialMatch(
+                pathAnchor.getAnchorType(),
+                matchPrefix,
+                null,
+                path.getElementAtLevel(pathAnchor.getLevel()).startIndex));
       }
     }
 

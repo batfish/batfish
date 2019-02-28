@@ -108,9 +108,9 @@ public class ParserInterfaceTest {
         equalTo(
             ImmutableSet.of(
                 new AutocompleteSuggestion(
-                    "", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+                    "iface1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
                 new AutocompleteSuggestion(
-                    "1", true, null, AutocompleteSuggestion.DEFAULT_RANK, query.length()),
+                    "iface11", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
                 new AutocompleteSuggestion("\\", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, query.length()),
                 new AutocompleteSuggestion("&", true, null, RANK_STRING_LITERAL, query.length()))));

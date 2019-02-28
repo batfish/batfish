@@ -117,7 +117,7 @@ public class AutoCompleteUtilsTest {
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of("1,b1", "2,b2")));
+        equalTo(ImmutableSet.of("g1,b1", "g2,b2")));
 
     // 'g1' matches one pair
     assertThat(
@@ -133,7 +133,7 @@ public class AutoCompleteUtilsTest {
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of("b1")));
+        equalTo(ImmutableSet.of("g1,b1")));
   }
 
   @Test
@@ -272,7 +272,7 @@ public class AutoCompleteUtilsTest {
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of(".3.4", "3.4.5")));
+        equalTo(ImmutableSet.of("1.2.3.4", "1.23.4.5")));
   }
 
   @Test
@@ -379,7 +379,7 @@ public class AutoCompleteUtilsTest {
             .stream()
             .map(AutocompleteSuggestion::getText)
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of(".3.4/24")));
+        equalTo(ImmutableSet.of("1.2.3.4/24")));
   }
 
   @Test

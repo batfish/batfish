@@ -384,9 +384,6 @@ public final class AutoCompleteUtils {
    * Returns a list of suggestions based on query strings.
    *
    * <p>The search is case-insensitive
-   *
-   * <p>The returned list contains the tail of the match. If the query is "ab" and the matching
-   * string is "abcd", "cd" is returned.
    */
   @Nonnull
   public static List<AutocompleteSuggestion> stringAutoComplete(
@@ -397,7 +394,7 @@ public final class AutoCompleteUtils {
 
     return strings.stream()
         .filter(s -> s.toLowerCase().startsWith(testQuery))
-        .map(s -> new AutocompleteSuggestion(s.substring(testQuery.length()), false))
+        .map(s -> new AutocompleteSuggestion(s, false))
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -407,9 +404,6 @@ public final class AutoCompleteUtils {
    * <p>The pairs are converted to "a,b" lowercase strings and the query is considered to be a
    * prefix over those strings. We assume that neither "a" not "b" contain whitespace, consistent
    * with valid names per {@link ReferenceLibrary#NAME_PATTERN}.
-   *
-   * <p>The returned list contains the tail of the matching pair. If the query is "aa" and a
-   * matching pair is "aa,bb", ",bb" is returned.
    */
   @Nonnull
   private static List<AutocompleteSuggestion> stringPairAutoComplete(
@@ -421,7 +415,7 @@ public final class AutoCompleteUtils {
     return pairs.stream()
         .map(p -> String.join(",", p.s1, p.s2).toLowerCase())
         .filter(p -> p.startsWith(testQuery))
-        .map(p -> new AutocompleteSuggestion(p.substring(testQuery.length()), false))
+        .map(p -> new AutocompleteSuggestion(p, false))
         .collect(ImmutableList.toImmutableList());
   }
 
