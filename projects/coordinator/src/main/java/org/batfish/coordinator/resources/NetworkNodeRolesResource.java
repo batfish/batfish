@@ -35,12 +35,12 @@ public final class NetworkNodeRolesResource {
     if (nodeRolesDataBean.roleDimensions == null) {
       return false;
     }
-    int uniqueSize =
+    long uniqueSize =
         nodeRolesDataBean.roleDimensions.stream()
             .map(bean -> bean.name)
             .map(String::toLowerCase)
-            .collect(ImmutableSet.toImmutableSet())
-            .size();
+            .distinct()
+            .count();
     return uniqueSize == nodeRolesDataBean.roleDimensions.size();
   }
 

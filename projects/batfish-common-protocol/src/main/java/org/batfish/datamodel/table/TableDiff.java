@@ -76,11 +76,9 @@ public final class TableDiff {
     }
     String dhintText =
         "["
-            + String.join(
-                ", ",
-                diffColumnMetatadata.build().stream()
-                    .map(ColumnMetadata::getName)
-                    .collect(Collectors.toList()))
+            + diffColumnMetatadata.build().stream()
+                .map(ColumnMetadata::getName)
+                .collect(Collectors.joining(", "))
             + "]";
 
     // 2. Insert the key status column
