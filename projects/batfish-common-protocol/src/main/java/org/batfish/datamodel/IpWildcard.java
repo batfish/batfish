@@ -2,23 +2,16 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import java.io.Serializable;
-import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
+import org.batfish.common.Pair;
 
-/** An IP wildcard consisting of a IP address and a wildcard (also expressed as an IP address) */
-@ParametersAreNonnullByDefault
-public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
-
-  @Nonnull private final Ip _ip;
-  @Nonnull private final Ip _mask;
+public class IpWildcard extends Pair<Ip, Ip> {
 
   public static final IpWildcard ANY = new IpWildcard(Ip.ZERO, Ip.MAX);
 
+  /** */
   private static final long serialVersionUID = 1L;
 
   private static Ip parseAddress(String str) {
@@ -68,8 +61,7 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
 
   public IpWildcard(Ip address, Ip wildcardMask) {
     // Canonicalize the address before passing it to parent, so that #equals works.
-    _ip = Ip.create(address.asLong() & ~wildcardMask.asLong());
-    _mask = wildcardMask;
+    super(Ip.create(address.asLong() & ~wildcardMask.asLong()), wildcardMask);
     if (!wildcardMask.valid()) {
       throw new BatfishException("Invalid wildcard: " + wildcardMask);
     }
@@ -84,7 +76,7 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
     this(parseAddress(str), parseMask(str));
   }
 
-  public boolean containsIp(Ip ip) {
+  public boolean containsIp(@Nonnull Ip ip) {
     long wildcardIpAsLong = getIp().asLong();
     long wildcardMask = getWildcard().asLong();
     long ipAsLong = ip.asLong();
@@ -94,36 +86,23 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
   }
 
   @Override
-  public boolean equals(@Nullable Object o) {
+  public boolean equals(Object o) {
     if (o == this) {
       return true;
     } else if (!(o instanceof IpWildcard)) {
       return false;
     }
     IpWildcard other = (IpWildcard) o;
-    return Objects.equals(this._ip, other._ip) && Objects.equals(this._mask, other._mask);
+    return Objects.equals(this.getFirst(), other.getFirst())
+        && Objects.equals(this.getSecond(), other.getSecond());
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(_ip, _mask);
-  }
-
-  @Override
-  public int compareTo(IpWildcard o) {
-    return Comparator.comparing(IpWildcard::getIp)
-        .thenComparing(IpWildcard::getWildcard)
-        .compare(this, o);
-  }
-
-  @Nonnull
   public Ip getIp() {
-    return _ip;
+    return _first;
   }
 
-  @Nonnull
   public Ip getWildcard() {
-    return _mask;
+    return _second;
   }
 
   /**
@@ -141,7 +120,7 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
   }
 
   public boolean isPrefix() {
-    long w = _mask.asLong();
+    long w = _second.asLong();
     long wp = w + 1L;
     int numTrailingZeros = Long.numberOfTrailingZeros(wp);
     long check = 1L << numTrailingZeros;
@@ -180,21 +159,21 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
 
   public Prefix toPrefix() {
     if (isPrefix()) {
-      return Prefix.create(_ip, _mask.inverted());
+      return Prefix.create(_first, _second.inverted());
     } else {
-      throw new BatfishException("Invalid wildcard format for conversion to prefix: " + _mask);
+      throw new BatfishException("Invalid wildcard format for conversion to prefix: " + _second);
     }
   }
 
   @JsonValue
   @Override
   public String toString() {
-    if (_mask.equals(Ip.ZERO)) {
-      return _ip.toString();
+    if (_second.equals(Ip.ZERO)) {
+      return _first.toString();
     } else if (isPrefix()) {
       return toPrefix().toString();
     } else {
-      return _ip + ":" + _mask;
+      return _first + ":" + _second;
     }
   }
 }
