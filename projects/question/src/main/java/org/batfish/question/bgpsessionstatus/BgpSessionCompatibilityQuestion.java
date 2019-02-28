@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
-import org.batfish.datamodel.questions.NodesSpecifier;
 
 /** Based on node configurations, determines the compatibility of IBGP and EBGP sessions. */
 public class BgpSessionCompatibilityQuestion extends BgpSessionQuestion {
@@ -27,8 +26,8 @@ public class BgpSessionCompatibilityQuestion extends BgpSessionQuestion {
    */
   @JsonCreator
   public BgpSessionCompatibilityQuestion(
-      @Nullable @JsonProperty(PROP_NODES) NodesSpecifier nodes,
-      @Nullable @JsonProperty(PROP_REMOTE_NODES) NodesSpecifier remoteNodes,
+      @Nullable @JsonProperty(PROP_NODES) String nodes,
+      @Nullable @JsonProperty(PROP_REMOTE_NODES) String remoteNodes,
       @Nullable @JsonProperty(PROP_STATUS) String status,
       @Nullable @JsonProperty(PROP_TYPE) String type) {
     super(nodes, remoteNodes, status, type);

@@ -23,9 +23,9 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.Row;
+import org.batfish.specifier.AllNodesNodeSpecifier;
 
 /** Captures the configuration state of a BGP session. */
 public abstract class BgpSessionAnswerer extends Answerer {
@@ -119,13 +119,13 @@ public abstract class BgpSessionAnswerer extends Answerer {
    */
   protected static boolean matchesNodesAndType(
       Row row, Set<String> nodes, Set<String> remoteNodes, BgpSessionQuestion question) {
-    if (!question.getNodes().equals(NodesSpecifier.ALL)) {
+    if (!question.getNodeSpecifier().equals(AllNodesNodeSpecifier.INSTANCE)) {
       Node node = (Node) row.get(COL_NODE, Schema.NODE);
       if (node == null || !nodes.contains(node.getName())) {
         return false;
       }
     }
-    if (!question.getRemoteNodes().equals(NodesSpecifier.ALL)) {
+    if (!question.getRemoteNodeSpecifier().equals(AllNodesNodeSpecifier.INSTANCE)) {
       Node remoteNode = (Node) row.get(COL_REMOTE_NODE, Schema.NODE);
       if (remoteNode == null || !remoteNodes.contains(remoteNode.getName())) {
         return false;
