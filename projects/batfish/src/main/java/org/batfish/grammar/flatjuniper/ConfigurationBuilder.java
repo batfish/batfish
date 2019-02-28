@@ -2406,6 +2406,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitNat_pool(Nat_poolContext ctx) {
+    // if not routing instance is configured for this nat, assign it to the default routing instance
+    if (_currentNatPool.getOwner() == null) {
+      RoutingInstance defaultRoutingInstance =
+          _configuration.getMasterLogicalSystem().getDefaultRoutingInstance();
+      _currentNatPool.setOwner(defaultRoutingInstance);
+      defaultRoutingInstance.getNatPools().put(_currentNatPoolName, _currentNatPool);
+    }
+
     _currentNatPool = null;
     _currentNatPoolName = null;
   }
@@ -4423,7 +4431,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _w.redFlag("The routing instance " + ctx.name + " is not defined.");
       return;
     }
+
+    RoutingInstance defaultRoutingInstance =
+        _configuration.getMasterLogicalSystem().getDefaultRoutingInstance();
+    if (defaultRoutingInstance.getNatPools().containsKey(_currentNatPoolName)) {
+      defaultRoutingInstance.getNatPools().remove(_currentNatPoolName);
+    }
+
+    _currentNatPool.setOwner(ri);
     ri.getNatPools().put(_currentNatPoolName, _currentNatPool);
+    _currentNatPool.setOwner(ri);
   }
 
   @Override

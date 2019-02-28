@@ -4672,9 +4672,15 @@ public final class FlatJuniperGrammarTest {
 
   @Test
   public void testVrfSpecificPoolPortAddressTranslation() {
-    JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-nat-pat");
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-nat-vrf");
     Nat sourceNat = juniperConfiguration.getMasterLogicalSystem().getNatSource();
     NatPool pool0 = sourceNat.getPools().get("POOL0");
     NatPool pool1 = sourceNat.getPools().get("POOL1");
+    assertThat(
+        pool0.getOwner(),
+        equalTo(juniperConfiguration.getMasterLogicalSystem().getRoutingInstances().get("R1")));
+    assertThat(
+        pool1.getOwner(),
+        equalTo(juniperConfiguration.getMasterLogicalSystem().getDefaultRoutingInstance()));
   }
 }
