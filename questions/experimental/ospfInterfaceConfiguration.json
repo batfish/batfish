@@ -4,7 +4,7 @@
     "nodes": "${nodes}",
     "properties": "${properties}",
     "instance": {
-        "description": "Return configuration parameters of OSPF interfaces",
+        "description": "Returns configuration parameters of OSPF interfaces",
         "instanceName": "ospfInterfaceConfiguration",
          "orderedVariableNames": [
             "nodes",
