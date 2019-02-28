@@ -1,9 +1,14 @@
 package org.batfish.specifier.parboiled;
 
+import com.google.common.base.MoreObjects;
 import java.util.Objects;
 
 final class NameInterfaceAstNode implements InterfaceAstNode {
   private final String _name;
+
+  NameInterfaceAstNode(AstNode nameAst) {
+    this(((StringAstNode) nameAst).getStr());
+  }
 
   NameInterfaceAstNode(String name) {
     _name = name;
@@ -38,5 +43,10 @@ final class NameInterfaceAstNode implements InterfaceAstNode {
   @Override
   public int hashCode() {
     return Objects.hash(_name);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(getClass()).add("name", _name).toString();
   }
 }

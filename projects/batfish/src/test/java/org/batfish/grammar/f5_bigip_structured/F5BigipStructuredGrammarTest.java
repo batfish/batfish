@@ -1,5 +1,15 @@
 package org.batfish.grammar.f5_bigip_structured;
 
+import static org.batfish.common.util.CommonUtil.communityStringToLong;
+import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalIp;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterLists;
@@ -15,17 +25,44 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasKernelRoutes;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.INTERFACE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_HTTP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.MONITOR_HTTPS;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.NODE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PERSISTENCE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PERSISTENCE_SOURCE_ADDR;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PERSISTENCE_SSL;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.POOL;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.PREFIX_LIST;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_CLIENT_SSL;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_HTTP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_OCSP_STAPLING_PARAMS;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_ONE_CONNECT;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_SERVER_SSL;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.PROFILE_TCP;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE_MAP;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.RULE;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.SELF;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNAT;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNATPOOL;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.SNAT_TRANSLATION;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL;
+import static org.batfish.representation.f5_bigip.F5BigipStructureType.VIRTUAL_ADDRESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.VLAN;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -33,7 +70,12 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.SortedMap;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
@@ -41,8 +83,11 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -51,6 +96,11 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.Step;
+import org.batfish.datamodel.flow.Trace;
+import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.matchers.Route6FilterListMatchers;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -58,6 +108,12 @@ import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.representation.f5_bigip.Builtin;
+import org.batfish.representation.f5_bigip.BuiltinMonitor;
+import org.batfish.representation.f5_bigip.BuiltinPersistence;
+import org.batfish.representation.f5_bigip.BuiltinProfile;
+import org.batfish.representation.f5_bigip.F5BigipConfiguration;
+import org.batfish.representation.f5_bigip.F5BigipStructureType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -67,6 +123,42 @@ public final class F5BigipStructuredGrammarTest {
   private static final String TESTCONFIGS_PREFIX =
       "org/batfish/grammar/f5_bigip_structured/testconfigs/";
 
+  /**
+   * Assert that {@code ans} does not contain undefined references to builtins. This happens when
+   * builtins are referenced but not correctly identified.
+   *
+   * @param ans The answer element containing the map of undefined references
+   * @param types The types using the namespace searched by {@code nameToBuiltIn}
+   * @param nameToBuiltin A function that returns a {@link Builtin} for a given name, or {@code
+   *     null} if the name does not correspond to a builtin.
+   */
+  private static void assertNoUndefinedReferencesToBuiltins(
+      ConvertConfigurationAnswerElement ans,
+      Stream<F5BigipStructureType> types,
+      Function<String, ? extends Builtin> nameToBuiltin) {
+    types.forEach(
+        type ->
+            ans.getUndefinedReferences()
+                .values()
+                .forEach(
+                    undefinedReferencesForFile ->
+                        undefinedReferencesForFile
+                            .get(type.getDescription())
+                            .keySet()
+                            .forEach(
+                                structureName -> {
+                                  String msg =
+                                      String.format(
+                                          "Reference to '%s' of type '%s' should not be undefined because '%s' is a builtin.",
+                                          structureName, type.getDescription(), structureName);
+                                  assertThat(msg, nameToBuiltin.apply(structureName), nullValue());
+                                  assertThat(
+                                      msg,
+                                      nameToBuiltin.apply(Builtin.COMMON_PREFIX + structureName),
+                                      nullValue());
+                                })));
+  }
+
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
@@ -75,6 +167,14 @@ public final class F5BigipStructuredGrammarTest {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
+  }
+
+  private BgpRoute.Builder makeBgpOutputRouteBuilder() {
+    return BgpRoute.builder()
+        .setNetwork(Prefix.ZERO)
+        .setOriginType(OriginType.INCOMPLETE)
+        .setOriginatorIp(Ip.ZERO)
+        .setProtocol(RoutingProtocol.BGP);
   }
 
   private Configuration parseConfig(String hostname) throws IOException {
@@ -89,6 +189,174 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testBgpProcessConversion() throws IOException {
+    String hostname = "f5_bigip_structured_net_routing_bgp";
+    Configuration c = parseConfig(hostname);
+
+    // process config
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasMultipathEquivalentAsPathMatchMode(EXACT_PATH))));
+
+    // peer config
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.strict("192.0.2.1/32"),
+                    hasDescription("Cool IPv4 BGP neighbor description")))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(hasActiveNeighbor(Prefix.strict("192.0.2.1/32"), hasLocalAs(123L)))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    Prefix.strict("192.0.2.1/32"), hasLocalIp(Ip.parse("192.0.2.2"))))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(hasActiveNeighbor(Prefix.strict("192.0.2.1/32"), hasRemoteAs(456L)))));
+
+    //// generated routing policies
+    String bgpProcessName = "/Common/my_bgp";
+    String commonExportPolicyName =
+        F5BigipConfiguration.computeBgpCommonExportPolicyName(bgpProcessName);
+    String peerExportPolicyName =
+        F5BigipConfiguration.computeBgpPeerExportPolicyName(bgpProcessName, Ip.parse("192.0.2.1"));
+
+    BgpRoute.Builder bgpRouteBuilder =
+        BgpRoute.builder()
+            .setAdmin(10)
+            .setMetric(10)
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("1.2.3.4"));
+    BgpRoute bgpRouteAllowedByPeerPolicy =
+        bgpRouteBuilder.setNetwork(Prefix.strict("10.0.0.0/24")).build();
+    BgpRoute bgpRouteAllowedOnlyByCommonPolicy =
+        bgpRouteBuilder.setNetwork(Prefix.strict("10.0.1.0/24")).build();
+    ConnectedRoute connectedRoute = new ConnectedRoute(Prefix.strict("10.0.0.0/24"), "blah");
+    KernelRoute kernelRoute = new KernelRoute(Prefix.strict("10.0.0.0/24"));
+
+    // common export policy
+    assertThat(c.getRoutingPolicies(), hasKey(commonExportPolicyName));
+    RoutingPolicy commonExportPolicy = c.getRoutingPolicies().get(commonExportPolicyName);
+
+    // peer export policy
+    assertThat(c.getRoutingPolicies(), hasKey(peerExportPolicyName));
+    RoutingPolicy peerExportPolicy = c.getRoutingPolicies().get(peerExportPolicyName);
+
+    {
+      // BGP input route acceptable to common export policy
+      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      assertTrue(
+          commonExportPolicy
+              .call(
+                  Environment.builder(c)
+                      .setOriginalRoute(bgpRouteAllowedByPeerPolicy)
+                      .setOutputRoute(outputBuilder)
+                      .setVrf(Configuration.DEFAULT_VRF_NAME)
+                      .build())
+              .getBooleanValue());
+      BgpRoute outputRoute = outputBuilder.build();
+      assertThat(outputRoute, hasCommunities(empty()));
+    }
+
+    {
+      // BGP input route acceptable to peer export policy
+      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      assertTrue(
+          peerExportPolicy
+              .call(
+                  Environment.builder(c)
+                      .setOriginalRoute(bgpRouteAllowedByPeerPolicy)
+                      .setOutputRoute(outputBuilder)
+                      .setVrf(Configuration.DEFAULT_VRF_NAME)
+                      .build())
+              .getBooleanValue());
+      BgpRoute outputRoute = outputBuilder.build();
+      assertThat(outputRoute, hasCommunities(contains(communityStringToLong("2:2"))));
+    }
+
+    {
+      // BGP input route unacceptable to peer export policy
+      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      assertFalse(
+          peerExportPolicy
+              .call(
+                  Environment.builder(c)
+                      .setOriginalRoute(bgpRouteAllowedOnlyByCommonPolicy)
+                      .setOutputRoute(outputBuilder)
+                      .setVrf(Configuration.DEFAULT_VRF_NAME)
+                      .build())
+              .getBooleanValue());
+    }
+
+    {
+      // Connected input route unacceptable to common export policy
+      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      assertFalse(
+          commonExportPolicy
+              .call(
+                  Environment.builder(c)
+                      .setOriginalRoute(connectedRoute)
+                      .setOutputRoute(outputBuilder)
+                      .setVrf(Configuration.DEFAULT_VRF_NAME)
+                      .build())
+              .getBooleanValue());
+    }
+
+    {
+      // Connected input route unacceptable to peer export policy
+      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      assertFalse(
+          peerExportPolicy
+              .call(
+                  Environment.builder(c)
+                      .setOriginalRoute(connectedRoute)
+                      .setOutputRoute(outputBuilder)
+                      .setVrf(Configuration.DEFAULT_VRF_NAME)
+                      .build())
+              .getBooleanValue());
+    }
+
+    {
+      // Kernel input route acceptable to common export policy
+      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      assertTrue(
+          commonExportPolicy
+              .call(
+                  Environment.builder(c)
+                      .setOriginalRoute(kernelRoute)
+                      .setOutputRoute(outputBuilder)
+                      .setVrf(Configuration.DEFAULT_VRF_NAME)
+                      .build())
+              .getBooleanValue());
+      BgpRoute outputRoute = outputBuilder.build();
+      assertThat(outputRoute, hasCommunities(empty()));
+    }
+
+    {
+      // Kernel input route acceptable to peer export policy
+      BgpRoute.Builder outputBuilder = makeBgpOutputRouteBuilder();
+      assertTrue(
+          peerExportPolicy
+              .call(
+                  Environment.builder(c)
+                      .setOriginalRoute(kernelRoute)
+                      .setOutputRoute(outputBuilder)
+                      .setVrf(Configuration.DEFAULT_VRF_NAME)
+                      .build())
+              .getBooleanValue());
+      BgpRoute outputRoute = outputBuilder.build();
+      assertThat(outputRoute, hasCommunities(contains(communityStringToLong("2:2"))));
+    }
+  }
+
+  @Test
   public void testBgpProcessReferences() throws IOException {
     String hostname = "f5_bigip_structured_bgp_process_references";
     String file = "configs/" + hostname;
@@ -99,6 +367,56 @@ public final class F5BigipStructuredGrammarTest {
 
     // detect all structure references
     assertThat(ans, hasNumReferrers(file, BGP_PROCESS, used, 1));
+    assertThat(ans, hasNumReferrers(file, BGP_NEIGHBOR, "192.0.2.1", 1));
+
+    // bgp neighbor update-source
+    assertThat(ans, hasNumReferrers(file, VLAN, "/Common/vlan_used", 1));
+  }
+
+  @Test
+  public void testDnat() throws IOException {
+    String hostname = "f5_bigip_structured_dnat";
+    String tag = "tag";
+    Flow flow =
+        Flow.builder()
+            .setTag(tag)
+            .setDstIp(Ip.parse("192.0.2.1"))
+            .setDstPort(80)
+            .setIngressInterface("/Common/SOME_VLAN")
+            .setIngressNode(hostname)
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setSrcPort(50000)
+            .build();
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.computeDataPlane();
+    SortedMap<Flow, List<Trace>> flowTraces =
+        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
+    List<Trace> traces = flowTraces.get(flow);
+    Optional<TransformationStepDetail> stepDetailOptional =
+        traces.stream()
+            .map(Trace::getHops)
+            .flatMap(Collection::stream)
+            .map(Hop::getSteps)
+            .flatMap(Collection::stream)
+            .map(Step::getDetail)
+            .filter(Predicates.instanceOf(TransformationStepDetail.class))
+            .map(TransformationStepDetail.class::cast)
+            .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
+            .findFirst();
+
+    // TODO: uncomment after resolution of https://github.com/batfish/batfish/pull/3248
+    assert stepDetailOptional != null;
+    //    assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
+    //
+    //    TransformationStepDetail detail = stepDetailOptional.get();
+    //
+    //    assertThat(
+    //        detail.getFlowDiffs(),
+    //        hasItem(
+    //            equalTo(
+    //                FlowDiff.flowDiff(
+    //                    IpField.DESTINATION, Ip.parse("192.0.2.1"), Ip.parse("192.0.2.10")))));
   }
 
   @Test
@@ -138,6 +456,148 @@ public final class F5BigipStructuredGrammarTest {
     assertThat(c.getAllInterfaces().keySet(), containsInAnyOrder("1.0", "2.0"));
     assertThat(c, hasInterface("1.0", hasSpeed(40E9D)));
     assertThat(c, hasInterface("2.0", hasSpeed(100E9D)));
+  }
+
+  @Test
+  public void testKernelRoutes() throws IOException {
+    String hostname = "f5_bigip_structured_ltm";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c,
+        hasDefaultVrf(hasKernelRoutes(contains(new KernelRoute(Prefix.strict("192.0.2.8/32"))))));
+  }
+
+  @Test
+  public void testMonitorReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // monitor http
+    {
+      String undefined = "/Common/monitor_http_undefined";
+      String unused = "/Common/monitor_http_unused";
+      String used = "/Common/monitor_http_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, MONITOR, undefined));
+      assertThat(ans, hasUndefinedReference(file, MONITOR_HTTP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, MONITOR_HTTP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, MONITOR_HTTP, used, 2));
+    }
+
+    // monitor https
+    {
+      String undefined = "/Common/monitor_https_undefined";
+      String unused = "/Common/monitor_https_unused";
+      String used = "/Common/monitor_https_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, MONITOR, undefined));
+      assertThat(ans, hasUndefinedReference(file, MONITOR_HTTPS, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, MONITOR_HTTPS, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, MONITOR_HTTPS, used, 2));
+    }
+
+    assertNoUndefinedReferencesToBuiltins(
+        ans, Stream.of(MONITOR, MONITOR_HTTP, MONITOR_HTTPS), BuiltinMonitor::getBuiltinMonitor);
+  }
+
+  @Test
+  public void testNodeReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    String undefined = "/Common/node_undefined";
+    String unused = "/Common/node_unused";
+    String used = "/Common/node_used";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // detect undefined reference
+    assertThat(ans, hasUndefinedReference(file, NODE, undefined));
+
+    // detected unused structure
+    assertThat(ans, hasNumReferrers(file, NODE, unused, 0));
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, NODE, used, 1));
+  }
+
+  @Test
+  public void testPersistenceReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // persistence source-addr
+    {
+      String undefined = "/Common/persistence_source_addr_undefined";
+      String unused = "/Common/persistence_source_addr_unused";
+      String used = "/Common/persistence_source_addr_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PERSISTENCE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PERSISTENCE_SOURCE_ADDR, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PERSISTENCE_SOURCE_ADDR, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PERSISTENCE_SOURCE_ADDR, used, 2));
+    }
+
+    // persistence ssl
+    {
+      String undefined = "/Common/persistence_ssl_undefined";
+      String unused = "/Common/persistence_ssl_unused";
+      String used = "/Common/persistence_ssl_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PERSISTENCE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PERSISTENCE_SSL, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PERSISTENCE_SSL, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PERSISTENCE_SSL, used, 2));
+    }
+
+    assertNoUndefinedReferencesToBuiltins(
+        ans,
+        Stream.of(PERSISTENCE, PERSISTENCE_SOURCE_ADDR, PERSISTENCE_SSL),
+        BuiltinPersistence::getBuiltinPersistence);
+  }
+
+  @Test
+  public void testPoolReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    String undefined = "/Common/pool_undefined";
+    String unused = "/Common/pool_unused";
+    String used = "/Common/pool_used";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // detect undefined reference
+    assertThat(ans, hasUndefinedReference(file, POOL, undefined));
+
+    // detected unused structure
+    assertThat(ans, hasNumReferrers(file, POOL, unused, 0));
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, POOL, used, 1));
   }
 
   @Test
@@ -229,6 +689,123 @@ public final class F5BigipStructuredGrammarTest {
 
     // detect all structure references
     assertThat(ans, hasNumReferrers(file, PREFIX_LIST, used, 1));
+  }
+
+  @Test
+  public void testProfileReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // profile client-ssl
+    {
+      String undefined = "/Common/profile_client_ssl_undefined";
+      String unused = "/Common/profile_client_ssl_unused";
+      String used = "/Common/profile_client_ssl_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_CLIENT_SSL, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_CLIENT_SSL, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_CLIENT_SSL, used, 2));
+    }
+
+    // profile http
+    {
+      String undefined = "/Common/profile_http_undefined";
+      String unused = "/Common/profile_http_unused";
+      String used = "/Common/profile_http_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_HTTP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_HTTP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_HTTP, used, 2));
+    }
+
+    // profile ocsp-stapling-params
+    {
+      String undefined = "/Common/profile_ocsp_stapling_params_undefined";
+      String unused = "/Common/profile_ocsp_stapling_params_unused";
+      String used = "/Common/profile_ocsp_stapling_params_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_OCSP_STAPLING_PARAMS, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_OCSP_STAPLING_PARAMS, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_OCSP_STAPLING_PARAMS, used, 2));
+    }
+
+    // profile one-connect
+    {
+      String undefined = "/Common/profile_one_connect_undefined";
+      String unused = "/Common/profile_one_connect_unused";
+      String used = "/Common/profile_one_connect_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_ONE_CONNECT, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_ONE_CONNECT, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_ONE_CONNECT, used, 2));
+    }
+
+    // profile server-ssl
+    {
+      String undefined = "/Common/profile_server_ssl_undefined";
+      String unused = "/Common/profile_server_ssl_unused";
+      String used = "/Common/profile_server_ssl_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_SERVER_SSL, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_SERVER_SSL, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_SERVER_SSL, used, 3));
+    }
+
+    // profile tcp
+    {
+      String undefined = "/Common/profile_tcp_undefined";
+      String unused = "/Common/profile_tcp_unused";
+      String used = "/Common/profile_tcp_used";
+      // detect undefined references
+      assertThat(ans, hasUndefinedReference(file, PROFILE, undefined));
+      assertThat(ans, hasUndefinedReference(file, PROFILE_TCP, undefined));
+
+      // detected unused structure
+      assertThat(ans, hasNumReferrers(file, PROFILE_TCP, unused, 0));
+
+      // detect all structure references
+      assertThat(ans, hasNumReferrers(file, PROFILE_TCP, used, 2));
+    }
+
+    assertNoUndefinedReferencesToBuiltins(
+        ans,
+        Stream.of(
+            PROFILE,
+            PROFILE_CLIENT_SSL,
+            PROFILE_HTTP,
+            PROFILE_OCSP_STAPLING_PARAMS,
+            PROFILE_ONE_CONNECT,
+            PROFILE_SERVER_SSL,
+            PROFILE_TCP),
+        BuiltinProfile::getBuiltinProfile);
   }
 
   @Test
@@ -328,6 +905,27 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testRuleReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    String undefined = "/Common/rule_undefined";
+    String unused = "/Common/rule_unused";
+    String used = "/Common/rule_used";
+
+    // detect undefined references
+    assertThat(ans, hasUndefinedReference(file, RULE, undefined));
+
+    // detected unused structure
+    assertThat(ans, hasNumReferrers(file, RULE, unused, 0));
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, RULE, used, 1));
+  }
+
+  @Test
   public void testSelfReferences() throws IOException {
     String hostname = "f5_bigip_structured_self_references";
     String file = "configs/" + hostname;
@@ -338,6 +936,95 @@ public final class F5BigipStructuredGrammarTest {
 
     // detect all structure references
     assertThat(ans, hasNumReferrers(file, SELF, used, 1));
+  }
+
+  @Test
+  public void testSnatpoolReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    String undefined = "/Common/snatpool_undefined";
+    String unused = "/Common/snatpool_unused";
+    String used = "/Common/snatpool_used";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // detect undefined reference
+    assertThat(ans, hasUndefinedReference(file, SNATPOOL, undefined));
+
+    // detected unused structure
+    assertThat(ans, hasNumReferrers(file, SNATPOOL, unused, 0));
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, SNATPOOL, used, 2));
+  }
+
+  @Test
+  public void testSnatReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    String used = "/Common/snat_used";
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, SNAT, used, 1));
+  }
+
+  @Test
+  public void testSnatTranslationReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    String undefined = "/Common/192.0.2.6";
+    String unused = "/Common/192.0.2.5";
+    String used = "/Common/192.0.2.4";
+
+    // detect undefined references
+    assertThat(ans, hasUndefinedReference(file, SNAT_TRANSLATION, undefined));
+
+    // detected unused structure
+    assertThat(ans, hasNumReferrers(file, SNAT_TRANSLATION, unused, 0));
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, SNAT_TRANSLATION, used, 1));
+  }
+
+  @Test
+  public void testVirtualAddressReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    String undefined = "/Common/192.0.2.9";
+    String unused = "/Common/192.0.2.8";
+    String used = "/Common/192.0.2.7";
+
+    // detect undefined references
+    assertThat(ans, hasUndefinedReference(file, VIRTUAL_ADDRESS, undefined));
+
+    // detected unused structure
+    assertThat(ans, hasNumReferrers(file, VIRTUAL_ADDRESS, unused, 0));
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, VIRTUAL_ADDRESS, used, 1));
+  }
+
+  @Test
+  public void testVirtualReferences() throws IOException {
+    String hostname = "f5_bigip_structured_ltm_references";
+    String file = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    String used = "/Common/virtual_used";
+
+    // detect all structure references
+    assertThat(ans, hasNumReferrers(file, VIRTUAL, used, 1));
   }
 
   @Test
@@ -379,6 +1066,6 @@ public final class F5BigipStructuredGrammarTest {
     assertThat(ans, hasNumReferrers(file, VLAN, unused, 0));
 
     // detect all structure references
-    assertThat(ans, hasNumReferrers(file, VLAN, used, 1));
+    assertThat(ans, hasNumReferrers(file, VLAN, used, 2));
   }
 }

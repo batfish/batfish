@@ -13,4 +13,9 @@ public final class FwThenRoutingInstance implements FwThen {
   public String getInstanceName() {
     return _instanceName;
   }
+
+  @Override
+  public <T> T accept(FwThenVisitor<T> visitor) {
+    return visitor.visitThenRoutingInstance(this);
+  }
 }

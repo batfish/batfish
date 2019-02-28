@@ -1,5 +1,6 @@
 package org.batfish.dataplane.rib;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.RipRoute;
 import org.batfish.datamodel.RoutingProtocol;
@@ -9,6 +10,7 @@ import org.batfish.datamodel.RoutingProtocol;
  *
  * <p>Note: external RIP routes not supported at this time
  */
+@ParametersAreNonnullByDefault
 public class RipRib extends AbstractRib<RipRoute> {
 
   private static final long serialVersionUID = 1L;

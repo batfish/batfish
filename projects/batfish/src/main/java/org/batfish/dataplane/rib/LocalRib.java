@@ -1,8 +1,11 @@
 package org.batfish.dataplane.rib;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.LocalRoute;
 
-public class LocalRib extends AbstractRib<LocalRoute> {
+@ParametersAreNonnullByDefault
+public class LocalRib extends AnnotatedRib<LocalRoute> {
 
   private static final long serialVersionUID = 1L;
 
@@ -11,7 +14,7 @@ public class LocalRib extends AbstractRib<LocalRoute> {
   }
 
   @Override
-  public int comparePreference(LocalRoute lhs, LocalRoute rhs) {
+  public int comparePreference(AnnotatedRoute<LocalRoute> lhs, AnnotatedRoute<LocalRoute> rhs) {
     return 0;
   }
 }

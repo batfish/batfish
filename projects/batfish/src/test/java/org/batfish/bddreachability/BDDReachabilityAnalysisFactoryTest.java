@@ -12,12 +12,15 @@ import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
 import static org.batfish.datamodel.transformation.Noop.NOOP_SOURCE_NAT;
 import static org.batfish.datamodel.transformation.Transformation.always;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
+import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.z3.expr.NodeInterfaceNeighborUnreachableMatchers.hasHostname;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -57,6 +60,8 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -81,6 +86,7 @@ import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationSpecifiers;
 import org.batfish.specifier.SpecifierContext;
+import org.batfish.z3.IngressLocation;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.DropAclIn;
@@ -1164,5 +1170,114 @@ public final class BDDReachabilityAnalysisFactoryTest {
                 .or(dstIp1.and(srcNatPoolIpBdd))
                 .or(dstNatPoolIpBdd.and(srcIp1))
                 .or(dstNatPoolIpBdd.and(srcNatPoolIpBdd))));
+  }
+
+  @Test
+  public void testFinalHeaderSpaceBddForPorts() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration config = cb.build();
+    Vrf vrf = nf.vrfBuilder().setOwner(config).build();
+    nf.interfaceBuilder()
+        .setOwner(config)
+        .setVrf(vrf)
+        .setActive(true)
+        .setAddress(new InterfaceAddress("1.0.0.0/31"))
+        .setOutgoingTransformation(always().apply(assignSourcePort(10000, 10000)).build())
+        .setIncomingTransformation(always().apply(assignDestinationPort(30000, 30000)).build())
+        .build();
+
+    String hostname = config.getHostname();
+
+    SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(hostname, config);
+    Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
+    batfish.computeDataPlane();
+
+    BDDReachabilityAnalysisFactory factory =
+        new BDDReachabilityAnalysisFactory(
+            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis());
+
+    BDD one = PKT.getFactory().one();
+    assertThat(factory.computeFinalHeaderSpaceBdd(one), equalTo(one));
+    BDD dstPort1 = PKT.getDstPort().value(3000);
+    BDD dstNatPoolBdd = PKT.getDstPort().value(30000);
+    BDD srcPort1 = PKT.getSrcPort().value(1000);
+    BDD srcNatPoolBdd = PKT.getSrcPort().value(10000);
+    assertThat(factory.computeFinalHeaderSpaceBdd(dstPort1), equalTo(dstPort1.or(dstNatPoolBdd)));
+    assertThat(factory.computeFinalHeaderSpaceBdd(srcPort1), equalTo(srcPort1.or(srcNatPoolBdd)));
+    assertThat(
+        factory.computeFinalHeaderSpaceBdd(dstPort1.and(srcPort1)),
+        equalTo(
+            dstPort1
+                .and(srcPort1)
+                .or(dstPort1.and(srcNatPoolBdd))
+                .or(dstNatPoolBdd.and(srcPort1))
+                .or(dstNatPoolBdd.and(srcNatPoolBdd))));
+  }
+
+  @Test
+  public void testTransformationGuardWithIpSpaceReference() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration config = cb.build();
+
+    // add a named IpSpace
+    String ipSpaceName = "ip space";
+    config.getIpSpaces().put(ipSpaceName, UniverseIpSpace.INSTANCE);
+
+    Vrf vrf = nf.vrfBuilder().setOwner(config).build();
+    Ip srcNatPoolIp = Ip.parse("5.5.5.5");
+    Interface iface =
+        nf.interfaceBuilder()
+            .setOwner(config)
+            .setVrf(vrf)
+            .setActive(true)
+            .setAddress(new InterfaceAddress("1.0.0.0/31"))
+            .setOutgoingTransformation(
+                when(matchDst(new IpSpaceReference(ipSpaceName)))
+                    .apply(assignSourceIp(srcNatPoolIp, srcNatPoolIp))
+                    .build())
+            // only allow NATed flows
+            .setOutgoingFilter(
+                nf.aclBuilder()
+                    .setOwner(config)
+                    .setLines(
+                        ImmutableList.of(
+                            IpAccessListLine.accepting()
+                                .setMatchCondition(matchSrc(srcNatPoolIp))
+                                .build()))
+                    .build())
+            .build();
+
+    String hostname = config.getHostname();
+
+    SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(hostname, config);
+    Batfish batfish = BatfishTestUtils.getBatfish(configurations, temp);
+    batfish.computeDataPlane();
+
+    BDDReachabilityAnalysisFactory factory =
+        new BDDReachabilityAnalysisFactory(
+            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis());
+
+    Ip dstIp = iface.getAddress().getPrefix().getLastHostIp();
+    BDDReachabilityAnalysis analysis =
+        factory.bddReachabilityAnalysis(
+            IpSpaceAssignment.builder()
+                .assign(new InterfaceLocation(hostname, iface.getName()), UniverseIpSpace.INSTANCE)
+                .build(),
+            matchDst(dstIp),
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableSet.of(hostname),
+            ImmutableSet.of(DELIVERED_TO_SUBNET));
+
+    Map<IngressLocation, BDD> bdds = analysis.getIngressLocationReachableBDDs();
+
+    assertEquals(
+        bdds,
+        ImmutableMap.of(
+            IngressLocation.vrf(hostname, vrf.getName()), PKT.getDstIp().value(dstIp.asLong())));
   }
 }

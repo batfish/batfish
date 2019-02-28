@@ -1,6 +1,6 @@
 package org.batfish.grammar.cisco;
 
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathIbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
@@ -16,10 +16,10 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
@@ -91,7 +91,7 @@ public class CiscoNxosTest {
     assertThat(c, hasVrf("vrf4", hasBgpProcess(hasRouterId(Ip.parse("1.2.3.4")))));
   }
 
-  private GenericRib<AbstractRoute> parseDpAndGetRib(
+  private Set<AbstractRoute> parseDpAndGetRib(
       String testrigName, String hubName, String listenerName) throws IOException {
 
     Batfish batfish = getBatfishForTestrig(testrigName, hubName, listenerName);
@@ -99,60 +99,60 @@ public class CiscoNxosTest {
     batfish.computeDataPlane(); // compute and cache the dataPlane
     DataPlane dp = batfish.loadDataPlane();
 
-    return dp.getRibs().get(listenerName).get(Configuration.DEFAULT_VRF_NAME);
+    return dp.getRibs().get(listenerName).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
   }
 
   // Neighbor default-originate overrides outbound route map.
   @Test
   public void testDefaultOriginate() throws Exception {
-    GenericRib<AbstractRoute> listenerRib =
+    Set<AbstractRoute> listenerRoutes =
         parseDpAndGetRib(
             "nxos-bgp-default-route", "nxos-bgp-default-originate", "ios-bgp-listener");
-    assertThat(listenerRib.getRoutes(), hasItem(hasPrefix(Prefix.ZERO)));
+    assertThat(listenerRoutes, hasItem(hasPrefix(Prefix.ZERO)));
   }
 
   // static route and default-information originate, but no redistribute is not advertised.
   @Test
   public void testDefaultInformationOriginateNoRedistribute() throws Exception {
-    GenericRib<AbstractRoute> listenerRib =
+    Set<AbstractRoute> listenerRoutes =
         parseDpAndGetRib("nxos-bgp-default-route", "nxos-bgp-default-inf-only", "ios-bgp-listener");
-    assertThat(listenerRib.getRoutes(), not(hasItem(hasPrefix(Prefix.ZERO))));
+    assertThat(listenerRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
   }
 
   // static route and redistribution, but no default-information originate is not advertised.
   @Test
   public void testStaticRedistributionNoDefaultInformationOriginate() throws Exception {
-    GenericRib<AbstractRoute> listenerRib =
+    Set<AbstractRoute> listenerRoutes =
         parseDpAndGetRib(
             "nxos-bgp-default-route", "nxos-bgp-static-redist-only", "ios-bgp-listener");
-    assertThat(listenerRib.getRoutes(), not(hasItem(hasPrefix(Prefix.ZERO))));
+    assertThat(listenerRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
   }
 
   // default-information originate, static route, redistribute. Outbound route maps are honored.
   @Test
   public void testDefaultInformationOriginateRedistribute() throws Exception {
-    GenericRib<AbstractRoute> outboundAllowRib =
+    Set<AbstractRoute> outboundAllowRoutes =
         parseDpAndGetRib(
             "nxos-bgp-default-route", "nxos-bgp-default-inf-working", "ios-bgp-listener");
-    assertThat(outboundAllowRib.getRoutes(), hasItem(hasPrefix(Prefix.ZERO)));
+    assertThat(outboundAllowRoutes, hasItem(hasPrefix(Prefix.ZERO)));
 
-    GenericRib<AbstractRoute> outboundBlockRib =
+    Set<AbstractRoute> outboundBlockRoutes =
         parseDpAndGetRib(
             "nxos-bgp-default-route", "nxos-bgp-default-inf-working", "ios-bgp-listener-2");
-    assertThat(outboundBlockRib.getRoutes(), not(hasItem(hasPrefix(Prefix.ZERO))));
+    assertThat(outboundBlockRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
   }
 
   // network, static route. Outbound route maps are honored.
   @Test
   public void testDefaultNetwork() throws Exception {
-    GenericRib<AbstractRoute> outboundAllowRib =
+    Set<AbstractRoute> outboundAllowRoutes =
         parseDpAndGetRib(
             "nxos-bgp-default-route", "nxos-bgp-network-statement", "ios-bgp-listener");
-    assertThat(outboundAllowRib.getRoutes(), hasItem(hasPrefix(Prefix.ZERO)));
+    assertThat(outboundAllowRoutes, hasItem(hasPrefix(Prefix.ZERO)));
 
-    GenericRib<AbstractRoute> outboundBlockRib =
+    Set<AbstractRoute> outboundBlockRoutes =
         parseDpAndGetRib(
             "nxos-bgp-default-route", "nxos-bgp-network-statement", "ios-bgp-listener-2");
-    assertThat(outboundBlockRib.getRoutes(), not(hasItem(hasPrefix(Prefix.ZERO))));
+    assertThat(outboundBlockRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
   }
 }

@@ -1,7 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
@@ -214,8 +214,8 @@ public class IncrementalDataPlanePluginTest {
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(dp._dataPlane);
 
-    SortedSet<AbstractRoute> r1Routes = routes.get("r1").get(DEFAULT_VRF_NAME);
-    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(DEFAULT_VRF_NAME);
+    Set<AbstractRoute> r1Routes = routes.get("r1").get(DEFAULT_VRF_NAME);
+    Set<AbstractRoute> r3Routes = routes.get("r3").get(DEFAULT_VRF_NAME);
     Set<Prefix> r1Prefixes =
         r1Routes.stream().map(AbstractRoute::getNetwork).collect(Collectors.toSet());
     Set<Prefix> r3Prefixes =
@@ -245,8 +245,8 @@ public class IncrementalDataPlanePluginTest {
     ComputeDataPlaneResult dp = dataPlanePlugin.computeDataPlane();
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(dp._dataPlane);
-    SortedSet<AbstractRoute> r2aRoutes = routes.get("r2a").get(DEFAULT_VRF_NAME);
-    SortedSet<AbstractRoute> r2bRoutes = routes.get("r2b").get(DEFAULT_VRF_NAME);
+    Set<AbstractRoute> r2aRoutes = routes.get("r2a").get(DEFAULT_VRF_NAME);
+    Set<AbstractRoute> r2bRoutes = routes.get("r2b").get(DEFAULT_VRF_NAME);
     Set<Prefix> r2aPrefixes =
         r2aRoutes.stream().map(AbstractRoute::getNetwork).collect(Collectors.toSet());
     Set<Prefix> r2bPrefixes =
@@ -284,8 +284,8 @@ public class IncrementalDataPlanePluginTest {
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(dp._dataPlane);
 
-    SortedSet<AbstractRoute> r2Routes = routes.get("r2").get(DEFAULT_VRF_NAME);
-    SortedSet<AbstractRoute> r3Routes = routes.get("r3").get(DEFAULT_VRF_NAME);
+    Set<AbstractRoute> r2Routes = routes.get("r2").get(DEFAULT_VRF_NAME);
+    Set<AbstractRoute> r3Routes = routes.get("r3").get(DEFAULT_VRF_NAME);
     Set<Prefix> r2Prefixes =
         r2Routes.stream().map(AbstractRoute::getNetwork).collect(Collectors.toSet());
     Set<Prefix> r3Prefixes =
@@ -319,7 +319,7 @@ public class IncrementalDataPlanePluginTest {
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(dp._dataPlane);
     Prefix staticRoutePrefix = Prefix.parse("10.0.0.0/8");
-    SortedSet<AbstractRoute> r1BdpRoutes = routes.get("r1").get(DEFAULT_VRF_NAME);
+    Set<AbstractRoute> r1BdpRoutes = routes.get("r1").get(DEFAULT_VRF_NAME);
     AbstractRoute r1BdpRoute =
         r1BdpRoutes.stream()
             .filter(r -> r.getNetwork().equals(staticRoutePrefix))

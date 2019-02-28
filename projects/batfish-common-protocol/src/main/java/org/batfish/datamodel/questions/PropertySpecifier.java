@@ -61,7 +61,6 @@ public abstract class PropertySpecifier {
       }
     } else if ((targetSchema.equals(Schema.list(Schema.STRING))
             || targetSchema.equals(Schema.set(Schema.STRING)))
-        && outputPropertyValue != null
         && outputPropertyValue instanceof Collection<?>) {
       Collection<?> outputCollection = (Collection<?>) outputPropertyValue;
       if (!outputCollection.isEmpty() && !(outputCollection.iterator().next() instanceof String)) {

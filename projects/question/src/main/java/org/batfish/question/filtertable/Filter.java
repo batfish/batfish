@@ -19,9 +19,8 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.table.ColumnMetadata;
+import org.batfish.datamodel.Names;
 import org.batfish.datamodel.table.Row;
-import org.batfish.question.filtertable.Filter.Operand.Type;
 
 /**
  * A class that captures the filtering condition. Limitations: 1) We support only the base condition
@@ -89,13 +88,11 @@ public class Filter {
     public Operand(Type type, @Nullable Object value) {
       _type = type;
       _value = value;
-      if (type == Type.COLUMN) {
+      if (type == Operand.Type.COLUMN) {
         @SuppressWarnings("unchecked")
         List<String> columns = (List<String>) _value;
         for (String column : columns) {
-          if (!ColumnMetadata.isLegalColumnName(column)) {
-            throw new IllegalArgumentException("Illegal operand: Bad column name: " + column);
-          }
+          Names.checkName(column, "table column", Names.Type.TABLE_COLUMN);
         }
       }
     }
@@ -179,11 +176,11 @@ public class Filter {
 
   static Operand getOperand(String value) {
     if (value.equals("null")) {
-      return new Operand(Type.NULL, null);
+      return new Operand(Operand.Type.NULL, null);
     } else if (value.equals("true") || value.equals("false")) {
-      return new Operand(Type.BOOLEAN, Boolean.parseBoolean(value));
+      return new Operand(Operand.Type.BOOLEAN, Boolean.parseBoolean(value));
     } else if (value.startsWith("\"")) { // String value; use after removing double quotes
-      return new Operand(Type.STRING, value.replaceAll("^\"|\"$", ""));
+      return new Operand(Operand.Type.STRING, value.replaceAll("^\"|\"$", ""));
     } else if (COLUMN_NAME_PATTERN.matcher(value).matches()) {
       String[] parts = value.split("\\[");
       if (parts.length > 1) {
@@ -198,9 +195,9 @@ public class Filter {
         }
         parts[parts.length - 1] = lastPart.substring(0, lastPart.length() - expectedEnd.length());
       }
-      return new Operand(Type.COLUMN, Arrays.asList(parts));
+      return new Operand(Operand.Type.COLUMN, Arrays.asList(parts));
     }
-    return new Operand(Type.INTEGER, Integer.parseInt(value));
+    return new Operand(Operand.Type.INTEGER, Integer.parseInt(value));
   }
 
   private static int compareValues(Object columnValue, Object filterValue) {
@@ -272,7 +269,7 @@ public class Filter {
   /** Extract the actual object value from the operand and row */
   @VisibleForTesting
   static Object extractValue(Operand operand, Row row) {
-    if (operand.getType() == Type.COLUMN) {
+    if (operand.getType() == Operand.Type.COLUMN) {
       @SuppressWarnings("unchecked")
       List<String> columns = (List<String>) operand.getValue();
       JsonNode object = BatfishObjectMapper.mapper().valueToTree(row.get(columns.get(0)));

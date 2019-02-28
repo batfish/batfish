@@ -20,17 +20,17 @@ public class ParboiledNodeSpecifierFactory implements NodeSpecifierFactory {
     checkArgument(input instanceof String, "%s requires String input", NAME);
 
     ParsingResult<AstNode> result =
-        new ReportingParseRunner<AstNode>(Parser.INSTANCE.input(Parser.INSTANCE.NodeExpression()))
+        new ReportingParseRunner<AstNode>(
+                Parser.INSTANCE.input(Grammar.NODE_SPECIFIER.getExpression()))
             .run((String) input);
 
     if (!result.parseErrors.isEmpty()) {
-      String error =
+      throw new IllegalArgumentException(
           ParserUtils.getErrorString(
               (String) input,
-              "NodeSpecifier",
+              Grammar.NODE_SPECIFIER,
               (InvalidInputError) result.parseErrors.get(0),
-              Parser.ANCHORS);
-      throw new IllegalArgumentException(error);
+              Parser.ANCHORS));
     }
 
     AstNode ast = ParserUtils.getAst(result);

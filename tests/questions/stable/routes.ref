@@ -40,7 +40,6 @@
       "rib" : {
         "allowedValues" : [
           "bgp",
-          "bgpmp",
           "main"
         ],
         "description" : "Only return routes from a given protocol RIB",
@@ -54,9 +53,6 @@
           },
           {
             "name" : "bgp"
-          },
-          {
-            "name" : "bgpmp"
           }
         ]
       },

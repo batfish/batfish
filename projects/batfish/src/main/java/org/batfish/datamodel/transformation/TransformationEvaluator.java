@@ -95,6 +95,11 @@ public class TransformationEvaluator {
       return _flowDiffs.computeIfAbsent(type, k -> ImmutableSortedSet.naturalOrder());
     }
 
+    // when no values change, simply apply noop
+    private void noop(TransformationType type) {
+      _flowDiffs.computeIfAbsent(type, k -> ImmutableSortedSet.naturalOrder());
+    }
+
     private List<Step<?>> getTraceSteps() {
       return _flowDiffs.entrySet().stream()
           .map(
@@ -111,7 +116,7 @@ public class TransformationEvaluator {
 
     private boolean set(TransformationType type, IpField ipField, Ip oldValue, Ip newValue) {
       if (oldValue.equals(newValue)) {
-        getFlowDiffs(type);
+        noop(type);
         return false;
       } else {
         set(ipField, newValue);
@@ -122,7 +127,7 @@ public class TransformationEvaluator {
 
     private boolean set(TransformationType type, PortField portField, int oldValue, int newValue) {
       if (oldValue == newValue) {
-        getFlowDiffs(type);
+        noop(type);
         return false;
       } else {
         set(portField, newValue);
@@ -133,7 +138,8 @@ public class TransformationEvaluator {
 
     @Override
     public Boolean visitAssignIpAddressFromPool(AssignIpAddressFromPool step) {
-      return set(step.getType(), step.getIpField(), get(step.getIpField()), step.getPoolStart());
+      Ip ip = step.getIpRanges().asRanges().iterator().next().lowerEndpoint();
+      return set(step.getType(), step.getIpField(), get(step.getIpField()), ip);
     }
 
     @Override
@@ -141,7 +147,7 @@ public class TransformationEvaluator {
       /* getFlowDiffs makes sure the type is in the key set, which signals that we went through
        * the transformation
        */
-      getFlowDiffs(noop.getType());
+      this.noop(noop.getType());
       return false;
     }
 
@@ -160,6 +166,21 @@ public class TransformationEvaluator {
     public Boolean visitAssignPortFromPool(AssignPortFromPool step) {
       return set(
           step.getType(), step.getPortField(), get(step.getPortField()), step.getPoolStart());
+    }
+
+    @Override
+    public Boolean visitApplyAll(ApplyAll applyAll) {
+      // NOTE that reduce is used instead of anyMatch to ensure all steps accept the visitor.
+      return applyAll.getSteps().stream()
+          .map(step -> step.accept(this))
+          .reduce(false, (a, b) -> a || b);
+    }
+
+    @Override
+    public Boolean visitApplyAny(ApplyAny applyAny) {
+      // NOTE that short-circuiting with anyMatch is intended so no more than one non-identity
+      // transformation is performed.
+      return applyAny.getSteps().stream().anyMatch(step -> step.accept(this));
     }
   }
 

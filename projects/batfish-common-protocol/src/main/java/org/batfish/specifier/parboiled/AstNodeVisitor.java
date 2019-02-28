@@ -3,7 +3,7 @@ package org.batfish.specifier.parboiled;
 interface AstNodeVisitor<T> {
   T visitAddressGroupIpSpaceAstNode(AddressGroupIpSpaceAstNode addressGroupIpSpaceAstNode);
 
-  T visitCommaIpSpaceAstNode(CommaIpSpaceAstNode commaIpSpaceAstNode);
+  T visitUnionIpSpaceAstNode(UnionIpSpaceAstNode unionIpSpaceAstNode);
 
   T visitIpAstNode(IpAstNode ipAstNode);
 
@@ -49,4 +49,30 @@ interface AstNodeVisitor<T> {
   T visitNameRegexNodeAstNode(NameRegexNodeAstNode nameRegexNodeAstNode);
 
   T visitTypeNodeAstNode(TypeNodeAstNode typeNodeAstNode);
+
+  T visitUnionFilterAstNode(UnionFilterAstNode unionFilterAstNode);
+
+  T visitDifferenceFilterAstNode(DifferenceFilterAstNode differenceFilterAstNode);
+
+  T visitIntersectionFilterAstNode(IntersectionFilterAstNode intersectionFilterAstNode);
+
+  T visitNameFilterAstNode(NameFilterAstNode nameFilterAstNode);
+
+  T visitNameRegexFilterAstNode(NameRegexFilterAstNode nameRegexFilterAstNode);
+
+  T visitInFilterAstNode(InFilterAstNode inFilterAstNode);
+
+  T visitOutFilterAstNode(OutFilterAstNode outFilterAstNode);
+
+  T visitUnionLocationAstNode(UnionLocationAstNode unionLocationAstNode);
+
+  T visitDifferenceLocationAstNode(DifferenceLocationAstNode differenceLocationAstNode);
+
+  T visitIntersectionLocationAstNode(IntersectionLocationAstNode intersectionLocationAstNode);
+
+  T visitInterfaceLocationAstNode(InterfaceLocationAstNode interfaceLocationAstNode);
+
+  T visitEnterLocationAstNode(EnterLocationAstNode enterLocationAstNode);
+
+  T visitLocationIpSpaceAstNode(LocationIpSpaceAstNode locationIpSpaceAstNode);
 }

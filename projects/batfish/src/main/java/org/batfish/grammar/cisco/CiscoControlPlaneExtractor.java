@@ -1419,11 +1419,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private static Ip6 toIp6(TerminalNode t) {
-    return new Ip6(t.getText());
+    return Ip6.parse(t.getText());
   }
 
   private static Ip6 toIp6(Token t) {
-    return new Ip6(t.getText());
+    return Ip6.parse(t.getText());
   }
 
   private static long toLong(TerminalNode t) {
@@ -10130,7 +10130,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void processParseTree(ParserRuleContext tree) {
-    ParseTreeWalker walker = new BatfishParseTreeWalker();
+    ParseTreeWalker walker = new BatfishParseTreeWalker(_parser);
     walker.walk(this, tree);
   }
 
