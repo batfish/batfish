@@ -7,7 +7,7 @@ import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_HE
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_PASSIVE;
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_POINT_TO_POINT;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COLUMNS_FROM_PROP_SPEC;
-import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_INTERFACE_NAME;
+import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_INTERFACE;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_NODE;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_PROCESS_ID;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_VRF;
@@ -79,7 +79,7 @@ public class OspfInterfaceConfigAnswererTest {
             hasColumn(COL_NODE, equalTo(new Node("test_conf")), Schema.NODE),
             hasColumn(COL_VRF, equalTo("test_vrf"), Schema.STRING),
             hasColumn(COL_PROCESS_ID, equalTo("ospf_1"), Schema.STRING),
-            hasColumn(COL_INTERFACE_NAME, equalTo("int1"), Schema.STRING),
+            hasColumn(COL_INTERFACE, equalTo("int1"), Schema.STRING),
             hasColumn(OSPF_AREA_NAME, equalTo(1), Schema.INTEGER)));
     assertThat(
         rows.iterator().next(),
@@ -102,7 +102,7 @@ public class OspfInterfaceConfigAnswererTest {
                 .add(COL_NODE)
                 .add(COL_VRF)
                 .add(COL_PROCESS_ID)
-                .add(COL_INTERFACE_NAME)
+                .add(COL_INTERFACE)
                 .add(OSPF_AREA_NAME)
                 .add(OSPF_PASSIVE)
                 .add(OSPF_COST)

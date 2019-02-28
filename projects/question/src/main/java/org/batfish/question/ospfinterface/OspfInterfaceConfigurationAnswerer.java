@@ -44,7 +44,7 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
   static final String COL_NODE = "Node";
   static final String COL_VRF = "VRF";
   static final String COL_PROCESS_ID = "Process_ID";
-  static final String COL_INTERFACE_NAME = "Interface_Name";
+  static final String COL_INTERFACE = "Interface";
 
   // this list also ensures order of columns excluding keys
   static final List<String> COLUMNS_FROM_PROP_SPEC =
@@ -89,7 +89,7 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
     columnMetadatas.add(
         new ColumnMetadata(COL_PROCESS_ID, Schema.STRING, "Process ID", true, false));
     columnMetadatas.add(
-        new ColumnMetadata(COL_INTERFACE_NAME, Schema.STRING, "Interface Name", true, false));
+        new ColumnMetadata(COL_INTERFACE, Schema.STRING, "Interface Name", true, false));
     for (String property : properties) {
       columnMetadatas.add(
           new ColumnMetadata(
@@ -111,7 +111,7 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
         textDescription == null
             ? String.format(
                 "Configuration of OSPF Interface {%s}:${%s}:${%s}:${%s}",
-                COL_NODE, COL_VRF, COL_PROCESS_ID, COL_INTERFACE_NAME)
+                COL_NODE, COL_VRF, COL_PROCESS_ID, COL_INTERFACE)
             : textDescription);
   }
 
@@ -169,7 +169,7 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
             .put(COL_NODE, new Node(nodeName))
             .put(COL_VRF, iface.getVrfName())
             .put(COL_PROCESS_ID, ospfProcessId)
-            .put(COL_INTERFACE_NAME, iface.getName());
+            .put(COL_INTERFACE, iface.getName());
 
     for (String property : properties) {
       PropertyDescriptor<Interface> propertyDescriptor =
