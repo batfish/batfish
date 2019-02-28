@@ -64,12 +64,14 @@ public class ParserIpSpaceTest {
         ImmutableSet.copyOf(pac.run()),
         equalTo(
             ImmutableSet.of(
-                new AutocompleteSuggestion("", true, null, AutocompleteSuggestion.DEFAULT_RANK, 7),
-                new AutocompleteSuggestion("0", true, null, AutocompleteSuggestion.DEFAULT_RANK, 7),
+                new AutocompleteSuggestion(
+                    "1.1.1.1", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
+                new AutocompleteSuggestion(
+                    "1.1.1.10", true, null, AutocompleteSuggestion.DEFAULT_RANK, 0),
                 new AutocompleteSuggestion("-", true, null, RANK_STRING_LITERAL, 7),
                 new AutocompleteSuggestion(":", true, null, RANK_STRING_LITERAL, 7),
                 new AutocompleteSuggestion("/", true, null, RANK_STRING_LITERAL, 7),
-                new AutocompleteSuggestion("/22", true, null, RANK_STRING_LITERAL, 7),
+                new AutocompleteSuggestion("1.1.1.1/22", true, null, RANK_STRING_LITERAL, 0),
                 new AutocompleteSuggestion(",", true, null, RANK_STRING_LITERAL, 7))));
   }
 
