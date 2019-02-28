@@ -1,5 +1,6 @@
 package org.batfish.question;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
@@ -146,7 +147,8 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
 
     @Nullable private final String _nodes;
 
-    private UndefinedReferencesQuestion create(@JsonProperty(PROP_NODES) String nodes) {
+    @JsonCreator
+    private static UndefinedReferencesQuestion create(@JsonProperty(PROP_NODES) String nodes) {
       return new UndefinedReferencesQuestion(nodes);
     }
 
