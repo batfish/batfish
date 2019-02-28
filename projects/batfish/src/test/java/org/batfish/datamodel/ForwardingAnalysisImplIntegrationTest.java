@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
+import java.util.Map;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
@@ -115,5 +116,62 @@ public class ForwardingAnalysisImplIntegrationTest {
      * forwarding route).
      */
     assertThat(exitsNetwork, containsIp(nonForwardingRoutePrefix.getStartIp()));
+  }
+
+  @Test
+  public void testDispositionWithStaticArpIp() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c1 =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf vrf1 = nf.vrfBuilder().setOwner(c1).build();
+
+    Interface i1 =
+        nf.interfaceBuilder()
+            .setOwner(c1)
+            .setVrf(vrf1)
+            .setAddress(new InterfaceAddress("1.0.0.1/24"))
+            .build();
+
+    Prefix prefix = Prefix.parse("10.0.0.0/16");
+    StaticRoute route =
+        StaticRoute.builder()
+            .setNextHopInterface(i1.getName())
+            .setNetwork(prefix)
+            .setAdministrativeCost(100)
+            .build();
+    vrf1.setStaticRoutes(ImmutableSortedSet.of(route));
+
+    Configuration c2 =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf vrf2 = nf.vrfBuilder().setOwner(c2).build();
+    Interface i2 =
+        nf.interfaceBuilder()
+            .setOwner(c2)
+            .setVrf(vrf2)
+            .setAddress(new InterfaceAddress("1.0.0.2/24"))
+            .setProxyArp(true)
+            .build();
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfish(
+            ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2), temp);
+    batfish.computeDataPlane();
+
+    ForwardingAnalysis forwardingAnalysis = batfish.loadDataPlane().getForwardingAnalysis();
+    Map<String, Map<String, Map<String, IpSpace>>> exitsNetwork =
+        forwardingAnalysis.getExitsNetwork();
+
+    assertThat(
+        exitsNetwork.get(c1.getHostname()).get(vrf1.getName()).get(i1.getName()),
+        containsIp(prefix.getStartIp()));
+
+    // after setting the static arp on i2, should not be exits network anymore
+    i2.setAdditionalArpIps(prefix.getStartIp().toIpSpace());
+    batfish.computeDataPlane();
+    forwardingAnalysis = batfish.loadDataPlane().getForwardingAnalysis();
+    exitsNetwork = forwardingAnalysis.getExitsNetwork();
+    assertThat(
+        exitsNetwork.get(c1.getHostname()).get(vrf1.getName()).get(i1.getName()),
+        not(containsIp(prefix.getStartIp())));
   }
 }
