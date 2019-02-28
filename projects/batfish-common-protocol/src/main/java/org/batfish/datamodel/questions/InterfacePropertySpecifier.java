@@ -28,7 +28,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
 
   public static final String ACCESS_VLAN = "Access_VLAN";
   public static final String ACTIVE = "Active";
-  public static final String ADDITIONAL_ARP_IPS = "Additional_ARP_IPs";
   public static final String ALLOWED_VLANS = "Allowed_VLANs";
   public static final String ALL_PREFIXES = "All_Prefixes";
   public static final String AUTO_STATE_VLAN = "Auto_State_VLAN";

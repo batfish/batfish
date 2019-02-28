@@ -130,8 +130,6 @@ public class ForwardingAnalysisImplIntegrationTest {
             .setOwner(c1)
             .setVrf(vrf1)
             .setAddress(new InterfaceAddress("1.0.0.1/24"))
-            // .setAdditionalArpIps(ImmutableSortedSet.of(Ip.parse("1.0.0.3")))
-            // .setProxyArp(true)
             .build();
 
     Prefix prefix = Prefix.parse("10.0.0.0/16");
