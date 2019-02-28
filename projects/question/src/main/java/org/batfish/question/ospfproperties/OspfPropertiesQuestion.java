@@ -30,9 +30,9 @@ public class OspfPropertiesQuestion extends Question {
   @Nonnull private final OspfPropertySpecifier _properties;
 
   @JsonCreator
-  static OspfPropertiesQuestion create(
-      @JsonProperty(PROP_NODES) String nodes,
-      @JsonProperty(PROP_PROPERTIES) OspfPropertySpecifier propertySpec) {
+  private static OspfPropertiesQuestion create(
+      @Nullable @JsonProperty(PROP_NODES) String nodes,
+      @Nullable @JsonProperty(PROP_PROPERTIES) OspfPropertySpecifier propertySpec) {
     return new OspfPropertiesQuestion(
         nodes,
         SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),

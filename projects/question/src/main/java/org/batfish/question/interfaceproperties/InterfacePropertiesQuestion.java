@@ -40,10 +40,10 @@ public class InterfacePropertiesQuestion extends Question {
 
   @JsonCreator
   static InterfacePropertiesQuestion create(
-      @JsonProperty(PROP_EXCLUDE_SHUT_INTERFACES) Boolean excludeShutInterfaces,
-      @JsonProperty(PROP_INTERFACES) String interfaces,
-      @JsonProperty(PROP_NODES) String nodes,
-      @JsonProperty(PROP_PROPERTIES) InterfacePropertySpecifier propertySpec) {
+      @Nullable @JsonProperty(PROP_EXCLUDE_SHUT_INTERFACES) Boolean excludeShutInterfaces,
+      @Nullable @JsonProperty(PROP_INTERFACES) String interfaces,
+      @Nullable @JsonProperty(PROP_NODES) String nodes,
+      @Nullable @JsonProperty(PROP_PROPERTIES) InterfacePropertySpecifier propertySpec) {
     return new InterfacePropertiesQuestion(
         nodes,
         SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),

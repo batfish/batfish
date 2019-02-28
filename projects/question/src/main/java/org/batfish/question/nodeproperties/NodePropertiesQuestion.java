@@ -32,9 +32,9 @@ public class NodePropertiesQuestion extends Question {
   @Nonnull private NodePropertySpecifier _properties;
 
   @JsonCreator
-  static NodePropertiesQuestion create(
-      @JsonProperty(PROP_NODES) String nodes,
-      @JsonProperty(PROP_PROPERTIES) NodePropertySpecifier propertySpec) {
+  private static NodePropertiesQuestion create(
+      @Nullable @JsonProperty(PROP_NODES) String nodes,
+      @Nullable @JsonProperty(PROP_PROPERTIES) NodePropertySpecifier propertySpec) {
     return new NodePropertiesQuestion(
         nodes,
         SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),

@@ -31,8 +31,8 @@ public class BgpProcessConfigurationQuestion extends Question {
 
   @JsonCreator
   static BgpProcessConfigurationQuestion create(
-      @JsonProperty(PROP_NODES) String nodes,
-      @JsonProperty(PROP_PROPERTIES) BgpProcessPropertySpecifier propertySpec) {
+      @Nullable @JsonProperty(PROP_NODES) String nodes,
+      @Nullable @JsonProperty(PROP_PROPERTIES) BgpProcessPropertySpecifier propertySpec) {
     return new BgpProcessConfigurationQuestion(
         nodes,
         SpecifierFactories.getNodeSpecifierOrDefault(nodes, AllNodesNodeSpecifier.INSTANCE),
