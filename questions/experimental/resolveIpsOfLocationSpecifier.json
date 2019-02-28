@@ -2,6 +2,7 @@
     "class": "org.batfish.question.specifiers.SpecifiersQuestion",
     "locationSpecifierInput": "${locations}",
     "queryType": "ip_space_of_location",
+    "specifierFactoryVersion": "${grammarVersion}", 
     "instance": {
         "description": "Show IPs that are auto-assigned to locations",
         "instanceName": "resolveIpsOfLocationSpecifier",
@@ -9,6 +10,12 @@
             "specifiers"
         ],
         "variables": {
+            "grammarVersion": {
+                "description": "Version of grammar to use for resolution",
+                "optional": true,
+                "type": "string",
+                "displayName": "Grammar version"               
+            },
             "locations": {
                 "description": "Input to the LocationSpecifier",
                 "optional": true,
