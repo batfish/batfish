@@ -46,6 +46,7 @@ import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
 import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.CommonUtil;
@@ -1150,7 +1151,7 @@ public final class BDDReachabilityAnalysisFactory {
       Set<String> finalNodes,
       Set<FlowDisposition> actions) {
     IpAccessListToBdd ipAccessListToBdd =
-        new IpAccessListToBddImpl(
+        new MemoizedIpAccessListToBdd(
             _bddPacket,
             BDDSourceManager.forInterfaces(_bddPacket, ImmutableSet.of()),
             ImmutableMap.of(),
