@@ -17,6 +17,6 @@ public class BgpProcessConfigurationPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new BgpProcessConfigurationQuestion(null, null);
+    return BgpProcessConfigurationQuestion.create(null, null);
   }
 }
