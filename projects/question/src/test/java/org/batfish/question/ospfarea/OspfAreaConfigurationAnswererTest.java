@@ -5,11 +5,13 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
+import java.util.List;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
@@ -19,6 +21,7 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableMetadata;
 import org.junit.Test;
@@ -96,5 +99,24 @@ public class OspfAreaConfigurationAnswererTest {
                 OspfAreaConfigurationAnswerer.COL_PASSIVE_INTERFACES,
                 equalTo(ImmutableSet.of("int2")),
                 Schema.set(Schema.STRING))));
+  }
+
+  @Test
+  public void testMetaData() {
+    List<ColumnMetadata> metas =
+        OspfAreaConfigurationAnswerer.createTableMetadata().getColumnMetadata();
+
+    assertThat(
+        metas.stream().map(ColumnMetadata::getName).collect(ImmutableList.toImmutableList()),
+        equalTo(
+            ImmutableList.builder()
+                .add(OspfAreaConfigurationAnswerer.COL_NODE)
+                .add(OspfAreaConfigurationAnswerer.COL_VRF)
+                .add(OspfAreaConfigurationAnswerer.COL_PROCESS_ID)
+                .add(OspfAreaConfigurationAnswerer.COL_AREA)
+                .add(OspfAreaConfigurationAnswerer.COL_AREA_TYPE)
+                .add(OspfAreaConfigurationAnswerer.COL_ACTIVE_INTERFACES)
+                .add(OspfAreaConfigurationAnswerer.COL_PASSIVE_INTERFACES)
+                .build()));
   }
 }

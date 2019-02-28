@@ -3,7 +3,7 @@
     "differential": false,
     "nodes": "${nodes}",
     "instance": {
-        "description": "Return configuration parameters for OSPF area for every router or node",
+        "description": "Return configuration parameters of OSPF areas",
         "instanceName": "ospfAreaConfiguration",
          "orderedVariableNames": [
             "nodes"
