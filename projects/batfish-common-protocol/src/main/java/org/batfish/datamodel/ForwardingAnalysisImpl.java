@@ -638,8 +638,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
         AclIpSpace.union(
             routes.stream()
                 .map(AbstractRoute::getNetwork)
-                .collect(ImmutableSet.toImmutableSet())
-                .stream()
+                .distinct()
                 .map(matchingIps::get)
                 .toArray(IpSpace[]::new)),
         EmptyIpSpace.INSTANCE);
