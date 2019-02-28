@@ -250,8 +250,9 @@ public final class BDDReachabilityAnalysisFactory {
     _dstPortVars = Arrays.stream(_bddPacket.getDstPort().getBitvec()).reduce(_one, BDD::and);
     _sourcePortVars = Arrays.stream(_bddPacket.getSrcPort().getBitvec()).reduce(_one, BDD::and);
 
-    _transformationIpRanges = computeTransformationIpRanges();
-    _transformationPortRanges = computeTransformationPortRanges();
+    RangeComputer rangeComputer = computeTransformationRanges();
+    _transformationPortRanges = ImmutableMap.copyOf(rangeComputer.getPortRanges());
+    _transformationIpRanges = ImmutableMap.copyOf(rangeComputer.getIpRanges());
   }
 
   /**
@@ -1215,9 +1216,8 @@ public final class BDDReachabilityAnalysisFactory {
 
     BDD noDstPort = finalHeaderSpace.exist(_dstPortVars);
     if (!noDstPort.equals(finalHeaderSpace)) {
-      BDD dstTransformationRange =
-          _transformationPortRanges.getOrDefault(PortField.DESTINATION, _zero);
-      if (!dstTransformationRange.isZero()) {
+      BDD dstTransformationRange = _transformationPortRanges.get(PortField.DESTINATION);
+      if (dstTransformationRange != null && !dstTransformationRange.isZero()) {
         finalHeaderSpace = finalHeaderSpace.or(noDstPort.and(dstTransformationRange));
       }
     }
@@ -1233,142 +1233,98 @@ public final class BDDReachabilityAnalysisFactory {
     return finalHeaderSpace;
   }
 
-  private Map<IpField, BDD> computeTransformationIpRanges() {
-    HashMap<IpField, BDD> ranges = new HashMap<>();
+  class RangeComputer implements TransformationStepVisitor<Void> {
+    private Map<IpField, BDD> _ipRanges;
+    private Map<PortField, BDD> _portRanges;
 
-    TransformationStepVisitor<Void> stepVisitor =
-        new TransformationStepVisitor<Void>() {
-          private IpSpaceToBDD getIpSpaceToBDD(IpField ipField) {
-            switch (ipField) {
-              case DESTINATION:
-                return _dstIpSpaceToBDD;
-              case SOURCE:
-                return _srcIpSpaceToBDD;
-              default:
-                throw new IllegalArgumentException("Unknown IpField " + ipField);
-            }
-          }
+    public RangeComputer() {
+      _ipRanges = new HashMap<>();
+      _portRanges = new HashMap<>();
+    }
 
-          @Override
-          public Void visitAssignIpAddressFromPool(
-              AssignIpAddressFromPool assignIpAddressFromPool) {
-            IpField ipField = assignIpAddressFromPool.getIpField();
-            BDDInteger var = getIpSpaceToBDD(ipField).getBDDInteger();
-            BDD bdd =
-                assignIpAddressFromPool.getIpRanges().asRanges().stream()
-                    .map(
-                        range ->
-                            var.geq(range.lowerEndpoint().asLong())
-                                .and(var.leq(range.upperEndpoint().asLong())))
-                    .reduce(var.getFactory().zero(), BDD::or);
-            ranges.merge(ipField, bdd, BDD::or);
-            return null;
-          }
+    public Map<IpField, BDD> getIpRanges() {
+      return _ipRanges;
+    }
 
-          @Override
-          public Void visitNoop(Noop noop) {
-            return null;
-          }
+    public Map<PortField, BDD> getPortRanges() {
+      return _portRanges;
+    }
 
-          @Override
-          public Void visitShiftIpAddressIntoSubnet(
-              ShiftIpAddressIntoSubnet shiftIpAddressIntoSubnet) {
-            IpField ipField = shiftIpAddressIntoSubnet.getIpField();
-            BDD bdd = getIpSpaceToBDD(ipField).toBDD(shiftIpAddressIntoSubnet.getSubnet());
-            ranges.merge(ipField, bdd, BDD::or);
-            return null;
-          }
+    private IpSpaceToBDD getIpSpaceToBDD(IpField ipField) {
+      switch (ipField) {
+        case DESTINATION:
+          return _dstIpSpaceToBDD;
+        case SOURCE:
+          return _srcIpSpaceToBDD;
+        default:
+          throw new IllegalArgumentException("Unknown IpField " + ipField);
+      }
+    }
 
-          @Override
-          public Void visitAssignPortFromPool(AssignPortFromPool assignPortFromPool) {
-            return null;
-          }
+    private BDDInteger getPortVar(PortField portField) {
+      switch (portField) {
+        case DESTINATION:
+          return _bddPacket.getDstPort();
+        case SOURCE:
+          return _bddPacket.getSrcPort();
+        default:
+          throw new IllegalArgumentException("Unknown PortField " + portField);
+      }
+    }
 
-          @Override
-          public Void visitApplyAll(ApplyAll applyAll) {
-            applyAll.getSteps().forEach(step -> step.accept(this));
-            return null;
-          }
+    @Override
+    public Void visitAssignIpAddressFromPool(AssignIpAddressFromPool assignIpAddressFromPool) {
+      IpField ipField = assignIpAddressFromPool.getIpField();
+      BDDInteger var = getIpSpaceToBDD(ipField).getBDDInteger();
+      BDD bdd =
+          assignIpAddressFromPool.getIpRanges().asRanges().stream()
+              .map(
+                  range ->
+                      var.geq(range.lowerEndpoint().asLong())
+                          .and(var.leq(range.upperEndpoint().asLong())))
+              .reduce(var.getFactory().zero(), BDD::or);
+      _ipRanges.merge(ipField, bdd, BDD::or);
+      return null;
+    }
 
-          @Override
-          public Void visitApplyAny(ApplyAny applyAny) {
-            applyAny.getSteps().forEach(step -> step.accept(this));
-            return null;
-          }
-        };
+    @Override
+    public Void visitNoop(Noop noop) {
+      return null;
+    }
 
-    _configs
-        .values()
-        .forEach(
-            configuration ->
-                configuration
-                    .getAllInterfaces()
-                    .values()
-                    .forEach(
-                        iface -> {
-                          visitTransformationSteps(iface.getIncomingTransformation(), stepVisitor);
-                          visitTransformationSteps(iface.getOutgoingTransformation(), stepVisitor);
-                        }));
-    return ImmutableMap.copyOf(ranges);
+    @Override
+    public Void visitShiftIpAddressIntoSubnet(ShiftIpAddressIntoSubnet shiftIpAddressIntoSubnet) {
+      IpField ipField = shiftIpAddressIntoSubnet.getIpField();
+      BDD bdd = getIpSpaceToBDD(ipField).toBDD(shiftIpAddressIntoSubnet.getSubnet());
+      _ipRanges.merge(ipField, bdd, BDD::or);
+      return null;
+    }
+
+    @Override
+    public Void visitAssignPortFromPool(AssignPortFromPool assignPortFromPool) {
+      PortField portField = assignPortFromPool.getPortField();
+      BDDInteger var = getPortVar(portField);
+      BDD bdd =
+          var.geq(assignPortFromPool.getPoolStart()).and(var.leq(assignPortFromPool.getPoolEnd()));
+      _portRanges.merge(portField, bdd, BDD::or);
+      return null;
+    }
+
+    @Override
+    public Void visitApplyAll(ApplyAll applyAll) {
+      applyAll.getSteps().forEach(step -> step.accept(this));
+      return null;
+    }
+
+    @Override
+    public Void visitApplyAny(ApplyAny applyAny) {
+      applyAny.getSteps().forEach(step -> step.accept(this));
+      return null;
+    }
   }
 
-  private Map<PortField, BDD> computeTransformationPortRanges() {
-    HashMap<PortField, BDD> ranges = new HashMap<>();
-
-    TransformationStepVisitor<Void> stepVisitor =
-        new TransformationStepVisitor<Void>() {
-          private BDDInteger getPortVar(PortField portField) {
-            switch (portField) {
-              case DESTINATION:
-                return _bddPacket.getDstPort();
-              case SOURCE:
-                return _bddPacket.getSrcPort();
-              default:
-                throw new IllegalArgumentException("Unknown PortField " + portField);
-            }
-          }
-
-          @Override
-          public Void visitAssignIpAddressFromPool(
-              AssignIpAddressFromPool assignIpAddressFromPool) {
-            return null;
-          }
-
-          @Override
-          public Void visitNoop(Noop noop) {
-            return null;
-          }
-
-          @Override
-          public Void visitShiftIpAddressIntoSubnet(
-              ShiftIpAddressIntoSubnet shiftIpAddressIntoSubnet) {
-            return null;
-          }
-
-          @Override
-          public Void visitAssignPortFromPool(AssignPortFromPool assignPortFromPool) {
-            PortField portField = assignPortFromPool.getPortField();
-            BDDInteger var = getPortVar(portField);
-            BDD bdd =
-                var.geq(assignPortFromPool.getPoolStart())
-                    .and(var.leq(assignPortFromPool.getPoolEnd()));
-            ranges.merge(portField, bdd, BDD::or);
-            return null;
-          }
-
-          @Override
-          public Void visitApplyAll(ApplyAll applyAll) {
-            applyAll.getSteps().forEach(step -> step.accept(this));
-            return null;
-          }
-
-          @Override
-          public Void visitApplyAny(ApplyAny applyAny) {
-            applyAny.getSteps().forEach(step -> step.accept(this));
-            return null;
-          }
-        };
-
+  private RangeComputer computeTransformationRanges() {
+    RangeComputer rangeComputer = new RangeComputer();
     _configs
         .values()
         .forEach(
@@ -1378,10 +1334,12 @@ public final class BDDReachabilityAnalysisFactory {
                     .values()
                     .forEach(
                         iface -> {
-                          visitTransformationSteps(iface.getIncomingTransformation(), stepVisitor);
-                          visitTransformationSteps(iface.getOutgoingTransformation(), stepVisitor);
+                          visitTransformationSteps(
+                              iface.getIncomingTransformation(), rangeComputer);
+                          visitTransformationSteps(
+                              iface.getOutgoingTransformation(), rangeComputer);
                         }));
-    return ImmutableMap.copyOf(ranges);
+    return rangeComputer;
   }
 
   private Map<StateExpr, BDD> rootConstraints(
