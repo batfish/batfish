@@ -9,6 +9,7 @@ import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalIp;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpRouteThat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
@@ -426,6 +427,22 @@ public final class F5BigipStructuredGrammarTest {
 
     // bgp neighbor update-source
     assertThat(ans, hasNumReferrers(file, VLAN, "/Common/vlan_used", 1));
+  }
+
+  @Test
+  public void testBgpRouteIdAuto() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_bgp_router_id_auto");
+
+    // BGP Router-ID automatically chosen from highest IP address
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasRouterId(Ip.parse("192.0.2.1")))));
+  }
+
+  @Test
+  public void testBgpRouterIdManual() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_bgp_router_id_manual");
+
+    // BGP Router-ID manually set
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasRouterId(Ip.parse("192.0.2.1")))));
   }
 
   @Test
