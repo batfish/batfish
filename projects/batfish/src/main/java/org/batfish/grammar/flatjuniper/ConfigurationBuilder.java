@@ -310,6 +310,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_pool_default_port_r
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_rule_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Natp_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_areaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_reference_bandwidthContext;
@@ -4409,6 +4410,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else {
       _w.redFlag(ctx.getText() + " cannot be recognized");
     }
+  }
+
+  @Override
+  public void exitNatp_routing_instance(Natp_routing_instanceContext ctx) {
+    String ri = ctx.name.getText();
+    _currentNatPool.setOwner(ri);
   }
 
   @Override

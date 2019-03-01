@@ -138,6 +138,7 @@ nat_pool
       natp_address
       | natp_description
       | natp_port
+      | natp_routing_instance
    )
 ;
 
@@ -207,6 +208,11 @@ natp_port
 natp_description
 :
    DESCRIPTION null_filler
+;
+
+natp_routing_instance
+:
+   ROUTING_INSTANCE name = variable
 ;
 
 proposal_set_type
