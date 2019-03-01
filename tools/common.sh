@@ -16,10 +16,6 @@ export BATFISH_CLIENT="$BATFISH_CLIENT_PATH/batfish-client"
 
 export BATFISH_DOCS_ROOT="$BATFISH_ROOT/docs"
 
-export BATFISH_WIKI_ROOT="$BATFISH_ROOT/../batfish.wiki"
-export BATFISH_WIKI_DATAMODEL="$BATFISH_WIKI_ROOT/Datamodel.md"
-export BATFISH_WIKI_QUESTIONS="$BATFISH_WIKI_ROOT/Questions.md"
-
 export COORDINATOR_PATH="$PROJECTS_PATH/coordinator"
 export COORDINATOR="$COORDINATOR_PATH/coordinator"
 
@@ -216,12 +212,6 @@ batfish_unit_tests_parser() {
    echo ": END UNIT TEST: Vendor configuration parser"
 }
 export -f batfish_unit_tests_parser
-
-batfish_wiki_questions() {
-   echo "Generating questions to " ${BATFISH_WIKI_QUESTIONS}
-   python "$BATFISH_QUESTIONS_PAGE_SCRIPT" "$QUESTION_PATH/src" > "$BATFISH_WIKI_QUESTIONS"
-}
-export -f batfish_wiki_questions
 
 int_to_ip() {
    batfish_expect_args 1 $# || return 1
