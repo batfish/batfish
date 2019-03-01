@@ -39,7 +39,7 @@ public class InterfacePropertiesQuestion extends Question {
   @Nonnull private final InterfacePropertySpecifier _properties;
 
   @JsonCreator
-  static InterfacePropertiesQuestion create(
+  private static InterfacePropertiesQuestion create(
       @Nullable @JsonProperty(PROP_EXCLUDE_SHUT_INTERFACES) Boolean excludeShutInterfaces,
       @Nullable @JsonProperty(PROP_INTERFACES) String interfaces,
       @Nullable @JsonProperty(PROP_NODES) String nodes,

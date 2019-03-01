@@ -1,7 +1,6 @@
 package org.batfish.specifier;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.Collection;
 import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -17,9 +16,6 @@ public final class AllInterfacesInterfaceSpecifier implements InterfaceSpecifier
 
   @Override
   public boolean equals(@Nullable Object o) {
-    if (this == o) {
-      return true;
-    }
     return o instanceof AllInterfacesInterfaceSpecifier;
   }
 
@@ -32,8 +28,7 @@ public final class AllInterfacesInterfaceSpecifier implements InterfaceSpecifier
   public Set<Interface> resolve(Set<String> nodes, SpecifierContext ctxt) {
     return ctxt.getConfigs().values().stream()
         .filter(c -> nodes.contains(c.getHostname()))
-        .map(c -> c.getAllInterfaces().values())
-        .flatMap(Collection::stream)
+        .flatMap(c -> c.getAllInterfaces().values().stream())
         .collect(ImmutableSet.toImmutableSet());
   }
 }

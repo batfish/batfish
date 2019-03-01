@@ -30,7 +30,7 @@ public class BgpProcessConfigurationQuestion extends Question {
   @Nonnull private BgpProcessPropertySpecifier _properties;
 
   @JsonCreator
-  static BgpProcessConfigurationQuestion create(
+  private static BgpProcessConfigurationQuestion create(
       @Nullable @JsonProperty(PROP_NODES) String nodes,
       @Nullable @JsonProperty(PROP_PROPERTIES) BgpProcessPropertySpecifier propertySpec) {
     return new BgpProcessConfigurationQuestion(
