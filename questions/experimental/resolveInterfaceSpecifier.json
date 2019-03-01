@@ -20,7 +20,7 @@
             "interfaces": {
                 "description": "Input to the interfaceSpecifier",
                 "optional": true,
-                "type": "string",
+                "type": "interfacesSpec",
                 "displayName": "Interfaces"
             },
             "nodes": {

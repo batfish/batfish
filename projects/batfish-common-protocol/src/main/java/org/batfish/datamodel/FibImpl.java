@@ -280,6 +280,7 @@ public final class FibImpl implements Fib {
   }
 
   @Override
+  @Deprecated
   public @Nonnull Set<String> getNextHopInterfaces(Ip ip) {
     return get(ip).stream().map(FibEntry::getInterfaceName).collect(ImmutableSet.toImmutableSet());
   }
@@ -291,6 +292,7 @@ public final class FibImpl implements Fib {
   }
 
   @Override
+  @Deprecated
   public @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>
       getNextHopInterfacesByRoute(Ip dstIp) {
     return get(dstIp).stream()

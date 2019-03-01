@@ -276,6 +276,7 @@
         ],
         "question" : {
           "class" : "org.batfish.question.UnusedStructuresQuestionPlugin$UnusedStructuresQuestion",
+          "nodes" : ".*",
           "differential" : false,
           "includeOneTableKeys" : true,
           "instance" : {
@@ -293,8 +294,7 @@
                 "value" : ".*"
               }
             }
-          },
-          "nodes" : ".*"
+          }
         },
         "status" : "SUCCESS",
         "summary" : {

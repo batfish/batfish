@@ -22,7 +22,7 @@
         "description" : "Input to the LocationSpecifier",
         "displayName" : "Locations",
         "optional" : true,
-        "type" : "string",
+        "type" : "locationSpec",
         "value" : "input"
       }
     }

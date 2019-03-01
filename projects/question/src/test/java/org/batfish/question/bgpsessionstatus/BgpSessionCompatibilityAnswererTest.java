@@ -42,7 +42,6 @@ import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.ConfiguredSessionStatus;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.junit.Test;
@@ -220,7 +219,7 @@ public class BgpSessionCompatibilityAnswererTest {
   @Test
   public void testLimitNodes() {
     BgpSessionCompatibilityQuestion q =
-        new BgpSessionCompatibilityQuestion(new NodesSpecifier("node1"), null, null, null);
+        new BgpSessionCompatibilityQuestion("node1", null, null, null);
     Multiset<Row> rows = getQuestionResults(q);
     assertThat(rows, equalTo(ImmutableMultiset.of(ROW_1)));
   }
@@ -228,7 +227,7 @@ public class BgpSessionCompatibilityAnswererTest {
   @Test
   public void testLimitRemoteNodes() {
     BgpSessionCompatibilityQuestion q =
-        new BgpSessionCompatibilityQuestion(null, new NodesSpecifier("node1"), null, null);
+        new BgpSessionCompatibilityQuestion(null, "node1", null, null);
     Multiset<Row> rows = getQuestionResults(q);
     assertThat(rows, equalTo(ImmutableMultiset.of(ROW_2)));
   }

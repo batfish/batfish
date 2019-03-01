@@ -64,6 +64,7 @@ import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Noop;
+import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.TransformationStepVisitor;
 import org.batfish.specifier.InterfaceLinkLocation;
@@ -184,13 +185,18 @@ public final class BDDReachabilityAnalysisFactory {
   // node --> vrf --> set of packets routable by the vrf
   private final Map<String, Map<String, BDD>> _routableBDDs;
 
-  // conjunction of the BDD vars encoding source and dest IPs. Used for existential quantification
-  // in source and destination NAT.
+  // conjunction of the BDD vars encoding source and dest IPs/Ports. Used for existential
+  // quantification in source and destination NAT.
   private final BDD _dstIpVars;
   private final BDD _sourceIpVars;
+  private final BDD _dstPortVars;
+  private final BDD _sourcePortVars;
 
-  // ranges of all transformations in the network, per IP address field.
-  private final Map<IpField, BDD> _transformationRanges;
+  // ranges of IPs in all transformations in the network, per IP address field.
+  private final Map<IpField, BDD> _transformationIpRanges;
+
+  // ranges of ports in all transformations in the network, per port field.
+  private final Map<PortField, BDD> _transformationPortRanges;
 
   // node --> vrf --> set of packets accepted by the vrf
   private final Map<String, Map<String, BDD>> _vrfAcceptBDDs;
@@ -242,8 +248,12 @@ public final class BDDReachabilityAnalysisFactory {
 
     _dstIpVars = Arrays.stream(_bddPacket.getDstIp().getBitvec()).reduce(_one, BDD::and);
     _sourceIpVars = Arrays.stream(_bddPacket.getSrcIp().getBitvec()).reduce(_one, BDD::and);
+    _dstPortVars = Arrays.stream(_bddPacket.getDstPort().getBitvec()).reduce(_one, BDD::and);
+    _sourcePortVars = Arrays.stream(_bddPacket.getSrcPort().getBitvec()).reduce(_one, BDD::and);
 
-    _transformationRanges = computeTransformationRanges();
+    RangeComputer rangeComputer = computeTransformationRanges();
+    _transformationPortRanges = rangeComputer.getPortRanges();
+    _transformationIpRanges = rangeComputer.getIpRanges();
   }
 
   /**
@@ -1184,8 +1194,8 @@ public final class BDDReachabilityAnalysisFactory {
     BDD noDstIp = finalHeaderSpace.exist(_dstIpVars);
     if (!noDstIp.equals(finalHeaderSpace)) {
       // there's a constraint on dst Ip, so include nat pool Ips
-      BDD dstTransformationRange = _transformationRanges.getOrDefault(IpField.DESTINATION, _zero);
-      if (!dstTransformationRange.isZero()) {
+      BDD dstTransformationRange = _transformationIpRanges.get(IpField.DESTINATION);
+      if (dstTransformationRange != null) {
         // dst IP is either the initial one, or one of that NAT pool IPs.
         finalHeaderSpace = finalHeaderSpace.or(noDstIp.and(dstTransformationRange));
       }
@@ -1194,7 +1204,7 @@ public final class BDDReachabilityAnalysisFactory {
     BDD noSrcIp = finalHeaderSpace.exist(_sourceIpVars);
     if (!noSrcIp.equals(finalHeaderSpace)) {
       // there's a constraint on source Ip, so include nat pool Ips
-      BDD srcNatPoolIps = _transformationRanges.getOrDefault(IpField.SOURCE, _zero);
+      BDD srcNatPoolIps = _transformationIpRanges.getOrDefault(IpField.SOURCE, _zero);
       if (!srcNatPoolIps.isZero()) {
         /*
          * In this case, since source IPs usually don't play a huge role in routing, we could just
@@ -1205,74 +1215,117 @@ public final class BDDReachabilityAnalysisFactory {
       }
     }
 
+    BDD noDstPort = finalHeaderSpace.exist(_dstPortVars);
+    if (!noDstPort.equals(finalHeaderSpace)) {
+      BDD dstTransformationRange = _transformationPortRanges.get(PortField.DESTINATION);
+      if (dstTransformationRange != null) {
+        finalHeaderSpace = finalHeaderSpace.or(noDstPort.and(dstTransformationRange));
+      }
+    }
+
+    BDD noSrcPort = finalHeaderSpace.exist(_sourcePortVars);
+    if (!noSrcPort.equals(finalHeaderSpace)) {
+      BDD srcNatPool = _transformationPortRanges.getOrDefault(PortField.SOURCE, _zero);
+      if (!srcNatPool.isZero()) {
+        finalHeaderSpace = finalHeaderSpace.or(noSrcPort.and(srcNatPool));
+      }
+    }
+
     return finalHeaderSpace;
   }
 
-  private Map<IpField, BDD> computeTransformationRanges() {
-    HashMap<IpField, BDD> ranges = new HashMap<>();
+  class RangeComputer implements TransformationStepVisitor<Void> {
+    private Map<IpField, BDD> _ipRanges;
+    private Map<PortField, BDD> _portRanges;
 
-    TransformationStepVisitor<Void> stepVisitor =
-        new TransformationStepVisitor<Void>() {
-          private IpSpaceToBDD getIpSpaceToBDD(IpField ipField) {
-            switch (ipField) {
-              case DESTINATION:
-                return _dstIpSpaceToBDD;
-              case SOURCE:
-                return _srcIpSpaceToBDD;
-              default:
-                throw new IllegalArgumentException("Unknown IpField " + ipField);
-            }
-          }
+    public RangeComputer() {
+      _ipRanges = new HashMap<>();
+      _portRanges = new HashMap<>();
+    }
 
-          @Override
-          public Void visitAssignIpAddressFromPool(
-              AssignIpAddressFromPool assignIpAddressFromPool) {
-            IpField ipField = assignIpAddressFromPool.getIpField();
-            BDDInteger var = getIpSpaceToBDD(ipField).getBDDInteger();
-            BDD bdd =
-                assignIpAddressFromPool.getIpRanges().asRanges().stream()
-                    .map(
-                        range ->
-                            var.geq(range.lowerEndpoint().asLong())
-                                .and(var.leq(range.upperEndpoint().asLong())))
-                    .reduce(var.getFactory().zero(), BDD::or);
-            ranges.merge(ipField, bdd, BDD::or);
-            return null;
-          }
+    public Map<IpField, BDD> getIpRanges() {
+      return ImmutableMap.copyOf(_ipRanges);
+    }
 
-          @Override
-          public Void visitNoop(Noop noop) {
-            return null;
-          }
+    public Map<PortField, BDD> getPortRanges() {
+      return ImmutableMap.copyOf(_portRanges);
+    }
 
-          @Override
-          public Void visitShiftIpAddressIntoSubnet(
-              ShiftIpAddressIntoSubnet shiftIpAddressIntoSubnet) {
-            IpField ipField = shiftIpAddressIntoSubnet.getIpField();
-            BDD bdd = getIpSpaceToBDD(ipField).toBDD(shiftIpAddressIntoSubnet.getSubnet());
-            ranges.merge(ipField, bdd, BDD::or);
-            return null;
-          }
+    private IpSpaceToBDD getIpSpaceToBDD(IpField ipField) {
+      switch (ipField) {
+        case DESTINATION:
+          return _dstIpSpaceToBDD;
+        case SOURCE:
+          return _srcIpSpaceToBDD;
+        default:
+          throw new IllegalArgumentException("Unknown IpField " + ipField);
+      }
+    }
 
-          @Override
-          public Void visitAssignPortFromPool(AssignPortFromPool assignPortFromPool) {
-            // TODO
-            return null;
-          }
+    private BDDInteger getPortVar(PortField portField) {
+      switch (portField) {
+        case DESTINATION:
+          return _bddPacket.getDstPort();
+        case SOURCE:
+          return _bddPacket.getSrcPort();
+        default:
+          throw new IllegalArgumentException("Unknown PortField " + portField);
+      }
+    }
 
-          @Override
-          public Void visitApplyAll(ApplyAll applyAll) {
-            applyAll.getSteps().forEach(step -> step.accept(this));
-            return null;
-          }
+    @Override
+    public Void visitAssignIpAddressFromPool(AssignIpAddressFromPool assignIpAddressFromPool) {
+      IpField ipField = assignIpAddressFromPool.getIpField();
+      BDDInteger var = getIpSpaceToBDD(ipField).getBDDInteger();
+      BDD bdd =
+          assignIpAddressFromPool.getIpRanges().asRanges().stream()
+              .map(
+                  range ->
+                      var.geq(range.lowerEndpoint().asLong())
+                          .and(var.leq(range.upperEndpoint().asLong())))
+              .reduce(var.getFactory().zero(), BDD::or);
+      _ipRanges.merge(ipField, bdd, BDD::or);
+      return null;
+    }
 
-          @Override
-          public Void visitApplyAny(ApplyAny applyAny) {
-            applyAny.getSteps().forEach(step -> step.accept(this));
-            return null;
-          }
-        };
+    @Override
+    public Void visitNoop(Noop noop) {
+      return null;
+    }
 
+    @Override
+    public Void visitShiftIpAddressIntoSubnet(ShiftIpAddressIntoSubnet shiftIpAddressIntoSubnet) {
+      IpField ipField = shiftIpAddressIntoSubnet.getIpField();
+      BDD bdd = getIpSpaceToBDD(ipField).toBDD(shiftIpAddressIntoSubnet.getSubnet());
+      _ipRanges.merge(ipField, bdd, BDD::or);
+      return null;
+    }
+
+    @Override
+    public Void visitAssignPortFromPool(AssignPortFromPool assignPortFromPool) {
+      PortField portField = assignPortFromPool.getPortField();
+      BDDInteger var = getPortVar(portField);
+      BDD bdd =
+          var.geq(assignPortFromPool.getPoolStart()).and(var.leq(assignPortFromPool.getPoolEnd()));
+      _portRanges.merge(portField, bdd, BDD::or);
+      return null;
+    }
+
+    @Override
+    public Void visitApplyAll(ApplyAll applyAll) {
+      applyAll.getSteps().forEach(step -> step.accept(this));
+      return null;
+    }
+
+    @Override
+    public Void visitApplyAny(ApplyAny applyAny) {
+      applyAny.getSteps().forEach(step -> step.accept(this));
+      return null;
+    }
+  }
+
+  private RangeComputer computeTransformationRanges() {
+    RangeComputer rangeComputer = new RangeComputer();
     _configs
         .values()
         .forEach(
@@ -1282,10 +1335,12 @@ public final class BDDReachabilityAnalysisFactory {
                     .values()
                     .forEach(
                         iface -> {
-                          visitTransformationSteps(iface.getIncomingTransformation(), stepVisitor);
-                          visitTransformationSteps(iface.getOutgoingTransformation(), stepVisitor);
+                          visitTransformationSteps(
+                              iface.getIncomingTransformation(), rangeComputer);
+                          visitTransformationSteps(
+                              iface.getOutgoingTransformation(), rangeComputer);
                         }));
-    return ImmutableMap.copyOf(ranges);
+    return rangeComputer;
   }
 
   private Map<StateExpr, BDD> rootConstraints(
