@@ -2,6 +2,7 @@ package org.batfish.grammar.f5_bigip_structured;
 
 import static org.batfish.common.util.CommonUtil.communityStringToLong;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasNetwork;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalIp;
@@ -9,6 +10,7 @@ import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpRouteThat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
@@ -59,6 +61,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -74,15 +77,18 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
@@ -101,6 +107,7 @@ import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
+import org.batfish.datamodel.matchers.BgpProcessMatchers;
 import org.batfish.datamodel.matchers.Route6FilterListMatchers;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -108,6 +115,7 @@ import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.TestrigText;
 import org.batfish.representation.f5_bigip.Builtin;
 import org.batfish.representation.f5_bigip.BuiltinMonitor;
 import org.batfish.representation.f5_bigip.BuiltinPersistence;
@@ -120,6 +128,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 public final class F5BigipStructuredGrammarTest {
+  private static final String SNAPSHOTS_PREFIX =
+      "org/batfish/grammar/f5_bigip_structured/snapshots/";
   private static final String TESTCONFIGS_PREFIX =
       "org/batfish/grammar/f5_bigip_structured/testconfigs/";
 
@@ -186,6 +196,43 @@ public final class F5BigipStructuredGrammarTest {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.parseTextConfigs(_folder, names);
+  }
+
+  @Test
+  public void testBgpRouterIdManual() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_bgp_router_id_manual");
+
+    // BGP Router-ID manually set
+    assertThat(
+        c, hasDefaultVrf(hasBgpProcess(BgpProcessMatchers.hasRouterId(Ip.parse("192.0.2.1")))));
+  }
+
+  @Test
+  public void testBgpRouteIdAuto() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_bgp_router_id_auto");
+
+    // BGP Router-ID automatically chosen from highest IP address
+    assertThat(
+        c, hasDefaultVrf(hasBgpProcess(BgpProcessMatchers.hasRouterId(Ip.parse("192.0.2.1")))));
+  }
+
+  @Test
+  public void testBgpKernelRouteRedistribution() throws IOException {
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(SNAPSHOTS_PREFIX + "bgp_e2e", "r1", "r2")
+                .build(),
+            _folder);
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> routes1 =
+        dp.getRibs().get("r1").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> routes2 =
+        dp.getRibs().get("r2").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+
+    assertThat(routes1, hasItem(isBgpRouteThat(hasNetwork(Prefix.strict("10.0.0.2/32")))));
+    assertThat(routes2, hasItem(isBgpRouteThat(hasNetwork(Prefix.strict("10.0.0.1/32")))));
   }
 
   @Test

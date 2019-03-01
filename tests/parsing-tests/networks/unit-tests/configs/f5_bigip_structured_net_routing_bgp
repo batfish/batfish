@@ -64,5 +64,6 @@ net routing bgp /Common/my_bgp {
     }
     profile /Common/bgp
     route-domain /Common/0
+    router-id 192.0.2.1
 }
 
