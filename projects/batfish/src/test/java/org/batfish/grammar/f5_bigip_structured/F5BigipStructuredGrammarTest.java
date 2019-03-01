@@ -23,6 +23,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
+import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
@@ -89,6 +90,7 @@ import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -996,6 +998,29 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testSnatCases() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_ltm_snat_cases");
+
+    IpSpace vlan1AdditionalArpIps = c.getAllInterfaces().get("/Common/vlan1").getAdditionalArpIps();
+
+    // no_vlans
+    assertThat(vlan1AdditionalArpIps, containsIp(Ip.parse("192.0.2.1")));
+    // vlans_missing_names
+    assertThat(vlan1AdditionalArpIps, containsIp(Ip.parse("192.0.2.2")));
+    // vlans
+    assertThat(vlan1AdditionalArpIps, containsIp(Ip.parse("192.0.2.3")));
+
+    IpSpace vlan2AdditionalArpIps = c.getAllInterfaces().get("/Common/vlan2").getAdditionalArpIps();
+
+    // no_vlans
+    assertThat(vlan2AdditionalArpIps, containsIp(Ip.parse("192.0.2.1")));
+    // vlans_missing_names
+    assertThat(vlan2AdditionalArpIps, containsIp(Ip.parse("192.0.2.2")));
+    // vlans
+    assertThat(vlan2AdditionalArpIps, not(containsIp(Ip.parse("192.0.2.3"))));
+  }
+
+  @Test
   public void testSnatpoolReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
@@ -1072,6 +1097,29 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testVirtualCases() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_ltm_virtual_cases");
+
+    IpSpace vlan1AdditionalArpIps = c.getAllInterfaces().get("/Common/vlan1").getAdditionalArpIps();
+
+    // implicit_mask
+    assertThat(vlan1AdditionalArpIps, containsIp(Ip.parse("192.0.2.1")));
+    // vlans_missing_names
+    assertThat(vlan1AdditionalArpIps, containsIp(Ip.parse("192.0.2.3")));
+    // vlans
+    assertThat(vlan1AdditionalArpIps, containsIp(Ip.parse("192.0.2.4")));
+
+    IpSpace vlan2AdditionalArpIps = c.getAllInterfaces().get("/Common/vlan2").getAdditionalArpIps();
+
+    // implicit_mask
+    assertThat(vlan2AdditionalArpIps, containsIp(Ip.parse("192.0.2.1")));
+    // vlans_missing_names
+    assertThat(vlan2AdditionalArpIps, containsIp(Ip.parse("192.0.2.3")));
+    // vlans
+    assertThat(vlan2AdditionalArpIps, not(containsIp(Ip.parse("192.0.2.4"))));
+  }
+
+  @Test
   public void testVirtualReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
@@ -1123,6 +1171,6 @@ public final class F5BigipStructuredGrammarTest {
     assertThat(ans, hasNumReferrers(file, VLAN, unused, 0));
 
     // detect all structure references
-    assertThat(ans, hasNumReferrers(file, VLAN, used, 2));
+    assertThat(ans, hasNumReferrers(file, VLAN, used, 3));
   }
 }
