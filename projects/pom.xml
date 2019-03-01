@@ -51,7 +51,6 @@
     <antlr4-runtime.version>4.7.2</antlr4-runtime.version>
     <asm.version>7.0</asm.version>
     <autoservice.version>1.0-rc4</autoservice.version>
-    <azure.version>2.0.0</azure.version>
     <beanutils.version>1.9.3</beanutils.version>
     <build-helper-maven-plugin.version>3.0.0</build-helper-maven-plugin.version>
     <commons-cli.version>1.4</commons-cli.version>
@@ -714,12 +713,6 @@
         <groupId>com.kjetland</groupId>
         <artifactId>mbknor-jackson-jsonschema_2.12</artifactId>
         <version>${jackson-jsonschema.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.microsoft.azure</groupId>
-        <artifactId>azure-storage</artifactId>
-        <version>${azure.version}</version>
       </dependency>
 
       <dependency>

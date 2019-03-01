@@ -63,29 +63,6 @@ load("@auto_service//:rules.bzl", "auto_service_compile")
 
 auto_service_compile()
 
-# azure-storage
-maven_repository(
-    name = "azure_storage",
-    force = [
-        "com.fasterxml.jackson.core:jackson-core:2.9.8",
-        "org.apache.commons:commons-lang3:3.8.1",
-        "org.slf4j:slf4j-api:1.7.25",
-    ],
-    transitive_deps = [
-        "0f5a654e4675769c716e5b387830d19b501ca191:com.fasterxml.jackson.core:jackson-core:2.9.8",
-        "b970c65a38da0569013e0c76de7c404f842496c2:com.microsoft.azure:azure-storage:2.0.0",
-        "6505a72a097d9270f7a9e7bf42c4238283247755:org.apache.commons:commons-lang3:3.8.1",
-        "da76ca59f6a57ee3102f8f9bd9cee742973efa8a:org.slf4j:slf4j-api:1.7.25",
-    ],
-    deps = [
-        "com.microsoft.azure:azure-storage:2.0.0",
-    ],
-)
-
-load("@azure_storage//:rules.bzl", "azure_storage_compile")
-
-azure_storage_compile()
-
 # Commons
 maven_repository(
     name = "commons_beanutils",
