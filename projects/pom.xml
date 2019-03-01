@@ -82,7 +82,6 @@
     <jsonpath.version>2.4.0-batfish-internal</jsonpath.version>
     <jsr305.version>3.0.2</jsr305.version>
     <junit.version>4.12</junit.version>
-    <jackson-jsonschema.version>1.0.11-batfish-internal</jackson-jsonschema.version>
     <lz4.version>1.5.0</lz4.version>
     <opentracing-jaxrs2.version>0.0.9</opentracing-jaxrs2.version>
     <opentracing.version>0.30.0</opentracing.version>
@@ -469,26 +468,6 @@
               <sources>${basedir}/lib/jsonpath/json-path-${jsonpath.version}-sources.jar</sources>
             </configuration>
           </execution>
-          <!-- Batfish includes a custom version of jackson-jsonschema with some unaccepted bugfixes. -->
-          <execution>
-            <phase>initialize</phase>
-            <goals>
-              <goal>install-file</goal>
-            </goals>
-            <id>install-jackson-jsonschema</id>
-            <configuration>
-              <groupId>com.kjetland</groupId>
-              <artifactId>mbknor-jackson-jsonschema_2.12</artifactId>
-              <version>${jackson-jsonschema.version}</version>
-              <packaging>jar</packaging>
-              <pomFile>
-                ${basedir}/lib/jackson-jsonschema/mbknor-jackson-jsonschema_2.12-${jackson-jsonschema.version}.pom
-              </pomFile>
-              <file>
-                ${basedir}/lib/jackson-jsonschema/mbknor-jackson-jsonschema_2.12-${jackson-jsonschema.version}.jar
-              </file>
-            </configuration>
-          </execution>
         </executions>
         <!-- run this phase only once at the top level, not in any of the child modules. -->
         <inherited>false</inherited>
@@ -707,12 +686,6 @@
         <groupId>com.jayway.jsonpath</groupId>
         <artifactId>json-path</artifactId>
         <version>${jsonpath.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>com.kjetland</groupId>
-        <artifactId>mbknor-jackson-jsonschema_2.12</artifactId>
-        <version>${jackson-jsonschema.version}</version>
       </dependency>
 
       <dependency>
