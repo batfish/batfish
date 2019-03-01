@@ -1,5 +1,6 @@
 package org.batfish.question.ospfinterface;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_AREA_NAME;
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_COST;
 import static org.batfish.datamodel.questions.InterfacePropertySpecifier.OSPF_HELLO_MULTIPLIER;
@@ -11,10 +12,8 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -82,7 +81,7 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
 
   @VisibleForTesting
   static List<ColumnMetadata> createColumnMetadata(List<String> properties) {
-    List<ColumnMetadata> columnMetadatas = new ArrayList<>();
+    ImmutableList.Builder<ColumnMetadata> columnMetadatas = ImmutableList.builder();
     columnMetadatas.add(
         new ColumnMetadata(COL_INTERFACE, Schema.INTERFACE, "Interface", true, false));
     columnMetadatas.add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false));
@@ -97,7 +96,7 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
               false,
               true));
     }
-    return columnMetadatas;
+    return columnMetadatas.build();
   }
 
   /** Creates a {@link TableMetadata} object from the question. */
@@ -106,9 +105,8 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
       @Nullable String textDescription, List<String> propertiesList) {
     return new TableMetadata(
         createColumnMetadata(propertiesList),
-        textDescription == null
-            ? String.format("Configuration of OSPF Interface {%s}", COL_INTERFACE)
-            : textDescription);
+        firstNonNull(
+            textDescription, String.format("Configuration of OSPF Interface {%s}", COL_INTERFACE)));
   }
 
   @VisibleForTesting
@@ -138,7 +136,7 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
                     for (String iface : ifaces) {
                       Interface ifaceObject =
                           configurations.get(nodeName).getAllInterfaces().get(iface);
-                      if (Objects.isNull(ifaceObject)) {
+                      if (ifaceObject == null) {
                         continue;
                       }
                       rows.add(
