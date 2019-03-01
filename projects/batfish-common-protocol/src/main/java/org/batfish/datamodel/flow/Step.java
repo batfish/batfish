@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import javax.annotation.Nonnull;
 
 /**
- * Represents a step in a {@link Hop}, steps are operations through which a packet ({@link Flow})
- * goes through while traversing {@link Hop}s to reach the destination
+ * Represents a step in a {@link Hop}, steps are operations through which a packet ({@link
+ * org.batfish.datamodel.Flow}) goes through while traversing {@link Hop}s to reach the destination.
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
