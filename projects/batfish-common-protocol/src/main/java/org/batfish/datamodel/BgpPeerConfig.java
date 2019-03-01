@@ -17,7 +17,6 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 
 /** Represents a configured BGP peering, at the control plane level */
-/** A configured e/iBGP peering relationship */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class BgpPeerConfig implements Serializable {
 

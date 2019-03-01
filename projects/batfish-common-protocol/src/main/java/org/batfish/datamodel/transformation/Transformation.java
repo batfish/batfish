@@ -21,7 +21,6 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
  * {@link Transformation}. When the guard does not match the flow, apply the {@code orElse} {@link
  * Transformation}. Stop upon reaching a {@code null} transformation.
  */
-/** A packet transformation */
 @ParametersAreNonnullByDefault
 public final class Transformation implements Serializable {
   /** */
