@@ -12311,6 +12311,9 @@
             "virtuals" : {
               "/Common/SOME_VIRTUAL" : {
                 "name" : "/Common/SOME_VIRTUAL",
+                "vlans" : [
+                  "/Common/MY_VLAN"
+                ],
                 "destination" : "/Common/192.0.2.7",
                 "destinationPort" : 80,
                 "ipProtocol" : "TCP",
