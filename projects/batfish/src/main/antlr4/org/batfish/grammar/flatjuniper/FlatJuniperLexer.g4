@@ -4588,6 +4588,11 @@ PREFIX
    'prefix'
 ;
 
+PREFIX_NAME
+:
+   'prefix-name'
+;
+
 PREFIX_EXPORT_LIMIT
 :
    'prefix-export-limit'

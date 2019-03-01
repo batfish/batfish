@@ -4669,4 +4669,9 @@ public final class FlatJuniperGrammarTest {
     assertNotNull(pool5);
     assertNull(pool5.getPortAddressTranslation());
   }
+
+  @Test
+  public void testStaticNat() {
+    JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-staticnat-enhancements");
+  }
 }

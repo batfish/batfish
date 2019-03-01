@@ -360,6 +360,7 @@ rsrt_static_nat
    STATIC_NAT
    (
       rsrtst_prefix
+      | rsrtst_prefix_name
    )
 ;
 
@@ -400,8 +401,20 @@ rsrtst_prefix
    (
       rsrtstp_mapped_port
       | rsrtstp_prefix
+      | ROUTING_INSTANCE name = variable
    )
 ;
+
+rsrtst_prefix_name
+:
+   PREFIX_NAME
+   (
+      name = variable
+      | rsrtstp_mapped_port
+      | ROUTING_INSTANCE name = variable
+   )
+;
+
 
 rsrtstp_mapped_port
 :
