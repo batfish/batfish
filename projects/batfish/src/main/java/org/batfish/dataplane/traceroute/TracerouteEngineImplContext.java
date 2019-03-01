@@ -3,7 +3,6 @@ package org.batfish.dataplane.traceroute;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.buildSessionsByIngressInterface;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.validateInputs;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
@@ -11,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -18,7 +18,6 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Fib;
@@ -29,7 +28,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
-import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 
@@ -143,21 +141,12 @@ public class TracerouteEngineImplContext {
     return _configurations;
   }
 
-  Fib getFib(String node, String vrf) {
-    return _fibs.get(node).get(vrf);
+  Optional<Fib> getFib(String node, String vrf) {
+    return Optional.ofNullable(_fibs.getOrDefault(node, ImmutableMap.of()).get(vrf));
   }
 
   boolean getIgnoreFilters() {
     return _ignoreFilters;
-  }
-
-  List<RouteInfo> longestPrefixMatch(String node, String vrf, Ip ip) {
-    return _dataPlane.getRibs().get(node).get(vrf).longestPrefixMatch(ip).stream()
-        .map(AnnotatedRoute::getRoute)
-        .sorted()
-        .map(rc -> new RouteInfo(rc.getProtocol(), rc.getNetwork(), rc.getNextHopIp()))
-        .distinct()
-        .collect(ImmutableList.toImmutableList());
   }
 
   Collection<FirewallSessionTraceInfo> getSessions(String node, String inputIface) {

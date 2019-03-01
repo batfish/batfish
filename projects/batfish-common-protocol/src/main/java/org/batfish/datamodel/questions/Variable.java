@@ -35,6 +35,7 @@ public class Variable {
     DISPOSITION_SPEC("dispositionSpec", true),
     FILTER("filter", true),
     FILTER_NAME("filterName", true),
+    FILTER_SPEC("filterSpec", true),
     FLOAT("float", false),
     FLOW_STATE("flowState", true),
     HEADER_CONSTRAINT("headerConstraint", false),
