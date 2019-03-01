@@ -20,11 +20,6 @@ export BATFISH_WIKI_ROOT="$BATFISH_ROOT/../batfish.wiki"
 export BATFISH_WIKI_DATAMODEL="$BATFISH_WIKI_ROOT/Datamodel.md"
 export BATFISH_WIKI_QUESTIONS="$BATFISH_WIKI_ROOT/Questions.md"
 
-if [ -d "$BATFISH_ROOT/../pybatfish" ]; then
-   export PYBATFISH_ROOT="$BATFISH_ROOT/../pybatfish"
-   export BATFISH_QUESTIONS_PAGE_SCRIPT="${PYBATFISH_ROOT}/questions_page.py"
-fi
-
 export COORDINATOR_PATH="$PROJECTS_PATH/coordinator"
 export COORDINATOR="$COORDINATOR_PATH/coordinator"
 
