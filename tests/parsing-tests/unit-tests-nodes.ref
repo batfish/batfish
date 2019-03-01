@@ -12569,6 +12569,7 @@
                   "sendCommunity" : false
                 }
               },
+              "routerId" : "192.0.2.1",
               "tieBreaker" : "ARRIVAL_ORDER"
             }
           }
