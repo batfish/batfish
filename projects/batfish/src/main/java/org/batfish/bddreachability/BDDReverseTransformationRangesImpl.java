@@ -1,6 +1,8 @@
 package org.batfish.bddreachability;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.bddreachability.BDDReverseTransformationRangesImpl.TransformationType.INCOMING;
+import static org.batfish.bddreachability.BDDReverseTransformationRangesImpl.TransformationType.OUTGOING;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMultimap;
@@ -33,21 +35,39 @@ final class BDDReverseTransformationRangesImpl implements BDDReverseTransformati
   private final BDDPacket _bddPacket;
   private final Map<String, Configuration> _configs;
 
+  enum TransformationType {
+    INCOMING,
+    OUTGOING
+  }
+
+  /**
+   * Identifies a reverse transformation for a session.
+   *
+   * <p>The node, iface and transformationType uniquely determine a particular transformation in the
+   * network.
+   *
+   * <p>The inIface and lastHop determine a set of equivalent sessions (i.e. they are forwarded to
+   * the same nextHop out the same interface).
+   */
   public static final class Key {
     final @Nonnull String _node;
     final @Nonnull String _iface;
+    final @Nonnull TransformationType _transformationType;
+
     final @Nullable String _inIface;
     final @Nullable NodeInterfacePair _lastHop;
 
     Key(
         @Nonnull String node,
         @Nonnull String iface,
+        @Nonnull TransformationType transformationType,
         @Nullable String inIface,
         @Nullable NodeInterfacePair lastHop) {
       checkArgument(
           (inIface != null) || (lastHop == null), "If inIface is null, lastHop must be null");
       _node = node;
       _iface = iface;
+      _transformationType = transformationType;
       _inIface = inIface;
       _lastHop = lastHop;
     }
@@ -63,13 +83,14 @@ final class BDDReverseTransformationRangesImpl implements BDDReverseTransformati
       Key key = (Key) o;
       return Objects.equals(_node, key._node)
           && Objects.equals(_iface, key._iface)
+          && Objects.equals(_transformationType, key._transformationType)
           && Objects.equals(_inIface, key._inIface)
           && Objects.equals(_lastHop, key._lastHop);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(_node, _iface, _inIface, _lastHop);
+      return Objects.hash(_node, _iface, _transformationType, _inIface, _lastHop);
     }
   }
 
@@ -82,10 +103,8 @@ final class BDDReverseTransformationRangesImpl implements BDDReverseTransformati
 
   private final Map<StateExpr, BDD> _forwardReachableSets;
 
-  /** Caches for ranges of reversed incoming and outgoing transformations. */
-  private final Map<Key, BDD> _incomingCache;
-
-  private final Map<Key, BDD> _outgoingCache;
+  /** Cache for ranges of reversed incoming and outgoing transformations. */
+  private final Map<Key, BDD> _cache;
 
   /**
    * The StateExprs that collectively whose reachable sets (unioned together) define the range of a
@@ -109,8 +128,7 @@ final class BDDReverseTransformationRangesImpl implements BDDReverseTransformati
     _configs = configs;
     _forwardReachableSets = forwardReachableSets;
     _forwardFlowFilterBdds = forwardFlowFilterBdds;
-    _incomingCache = new HashMap<>();
-    _outgoingCache = new HashMap<>();
+    _cache = new HashMap<>();
     _outgoingTransformationRangeStates =
         computeOutgoingTransformationRangeStates(forwardReachableSets.keySet());
     _srcManagers = srcManagers;
@@ -123,24 +141,38 @@ final class BDDReverseTransformationRangesImpl implements BDDReverseTransformati
   @Override
   public BDD reverseIncomingTransformationRange(
       String node, String iface, @Nullable String inIface, @Nullable NodeInterfacePair lastHop) {
-    return _incomingCache.computeIfAbsent(
-        new Key(node, iface, inIface, lastHop), this::computeReverseIncomingTransformationRange);
+    return _cache.computeIfAbsent(
+        new Key(node, iface, INCOMING, inIface, lastHop), this::computeReverseTransformationRange);
   }
 
   /** Computes the valid outputs of a reversed outgoing transformation on an interface. */
   @Override
   public BDD reverseOutgoingTransformationRange(
       String node, String iface, @Nullable String inIface, @Nullable NodeInterfacePair lastHop) {
-    return _outgoingCache.computeIfAbsent(
-        new Key(node, iface, inIface, lastHop), this::computeReverseOutgoingTransformationRange);
+    return _cache.computeIfAbsent(
+        new Key(node, iface, OUTGOING, inIface, lastHop), this::computeReverseTransformationRange);
   }
 
-  private BDD computeReverseIncomingTransformationRange(Key key) {
-    BDD srcAndLastHop = sourceAndLastHopConstraint(key._node, key._iface, key._lastHop);
-    BDD reach =
-        _forwardReachableSets.getOrDefault(new PreInInterface(key._node, key._iface), _zero);
+  private BDD computeReverseTransformationRange(Key key) {
+    switch (key._transformationType) {
+      case INCOMING:
+        assert key._inIface == null || key._inIface.equals(key._iface);
+        return computeReverseIncomingTransformationRange(key._node, key._iface, key._lastHop);
+      case OUTGOING:
+        return computeReverseOutgoingTransformationRange(
+            key._node, key._iface, key._inIface, key._lastHop);
+      default:
+        throw new IllegalArgumentException(
+            "Unexpected TransformationType: " + key._transformationType);
+    }
+  }
+
+  private BDD computeReverseIncomingTransformationRange(
+      String node, String iface, @Nullable NodeInterfacePair lastHop) {
+    BDD srcAndLastHop = sourceAndLastHopConstraint(node, iface, lastHop);
+    BDD reach = _forwardReachableSets.getOrDefault(new PreInInterface(node, iface), _zero);
     BDD srcAndReach = srcAndLastHop.and(reach);
-    BDD inAcl = forwardIncomingFilterFlowBdd(key._node, key._iface);
+    BDD inAcl = forwardIncomingFilterFlowBdd(node, iface);
     BDD reachAndInAcl = srcAndReach.and(inAcl);
     BDD erased = eraseNonHeaderFields(reachAndInAcl);
     return _bddPacket.swapSourceAndDestinationFields(erased);
@@ -158,12 +190,13 @@ final class BDDReverseTransformationRangesImpl implements BDDReverseTransformati
         : _forwardFlowFilterBdds.get(hostname).get(incomingFilter.getName()).get();
   }
 
-  private BDD computeReverseOutgoingTransformationRange(Key key) {
-    BDD outAcl = forwardPreTransformationOutgoingFilterFlowBdd(key._node, key._iface);
-    BDD srcAndLastHop = sourceAndLastHopConstraint(key._node, key._inIface, key._lastHop);
+  private BDD computeReverseOutgoingTransformationRange(
+      String node, String outIface, @Nullable String inIface, @Nullable NodeInterfacePair lastHop) {
+    BDD outAcl = forwardPreTransformationOutgoingFilterFlowBdd(node, outIface);
+    BDD srcAndLastHop = sourceAndLastHopConstraint(node, inIface, lastHop);
     BDD reach =
         _outgoingTransformationRangeStates.asMap()
-            .getOrDefault(new NodeInterfacePair(key._node, key._iface), ImmutableSet.of()).stream()
+            .getOrDefault(new NodeInterfacePair(node, outIface), ImmutableSet.of()).stream()
             .map(_forwardReachableSets::get)
             .reduce(BDD::or)
             .orElse(_zero);

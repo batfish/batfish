@@ -7,6 +7,8 @@ import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.ha
 import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasSessionFlows;
 import static org.batfish.bddreachability.BDDFirewallSessionTraceInfoMatchers.hasTransformation;
 import static org.batfish.bddreachability.BDDReachabilityAnalysisSessionFactory.computeInitializedSesssions;
+import static org.batfish.bddreachability.BDDReverseTransformationRangesImpl.TransformationType.INCOMING;
+import static org.batfish.bddreachability.BDDReverseTransformationRangesImpl.TransformationType.OUTGOING;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -358,16 +360,17 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
     BDDReverseTransformationRanges transformationRanges =
         new MockBDDReverseTransformationRanges(
             PKT.getFactory().zero(),
-            // incoming transformation ranges
             ImmutableMap.of(
-                new Key(FW, FWI1, FWI1, NEXT_HOP_R1I1), r1I1IncomingTransformationRange,
-                new Key(FW, FWI1, FWI1, NEXT_HOP_R2I1), r2I1IncomingTransformationRange),
+                // incoming transformation ranges
+                new Key(FW, FWI1, INCOMING, FWI1, NEXT_HOP_R1I1),
+                r1I1IncomingTransformationRange,
+                new Key(FW, FWI1, INCOMING, FWI1, NEXT_HOP_R2I1),
+                r2I1IncomingTransformationRange,
 
-            // outgoing transformation ranges
-            ImmutableMap.of(
-                new Key(FW, FWI3, FWI1, NEXT_HOP_R1I1),
+                // outgoing transformation ranges
+                new Key(FW, FWI3, OUTGOING, FWI1, NEXT_HOP_R1I1),
                 r1I1OutgoingingTransformationRange,
-                new Key(FW, FWI3, FWI1, NEXT_HOP_R2I1),
+                new Key(FW, FWI3, OUTGOING, FWI1, NEXT_HOP_R2I1),
                 r2I1OutgoingingTransformationRange));
 
     Map<String, List<BDDFirewallSessionTraceInfo>> sessions =
