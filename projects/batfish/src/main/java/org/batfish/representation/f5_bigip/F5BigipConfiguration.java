@@ -40,7 +40,6 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
@@ -296,7 +295,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
       // Cannot match without destination IP mask
       return Stream.of();
     }
-    return Stream.of(PrefixIpSpace.of(Prefix.create(destinationIp, mask)));
+    return Stream.of(Prefix.create(destinationIp, mask).toIpSpace());
   }
 
   private TransformationStep computeVirtualIncomingPoolMemberTransformation(PoolMember member) {
@@ -384,7 +383,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     AclLineMatchExpr matchCondition =
         new MatchHeaderSpace(
             HeaderSpace.builder()
-                .setDstIps(PrefixIpSpace.of(Prefix.create(destinationIp, destinationMask)))
+                .setDstIps(Prefix.create(destinationIp, destinationMask).toIpSpace())
                 .setDstPorts(ImmutableList.of(new SubRange(destinationPort, destinationPort)))
                 .setSrcIps(source.toIpSpace())
                 .build(),
