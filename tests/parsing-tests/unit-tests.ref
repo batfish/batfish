@@ -42099,6 +42099,11 @@
             "              (word",
             "                WORD:'/Common/0'))",
             "            NEWLINE:'\\n')",
+            "          (nrb_router_id",
+            "            ROUTER_ID:'router-id'",
+            "            id = (word",
+            "              WORD:'192.0.2.1')",
+            "            NEWLINE:'\\n')",
             "          BRACE_RIGHT:'}'",
             "          NEWLINE:'\\n\\n\\n'))))",
             "  EOF:<EOF>)"
@@ -73105,7 +73110,8 @@
                 64,
                 65,
                 66,
-                67
+                67,
+                68
               ],
               "numReferrers" : 1
             }

@@ -412,6 +412,20 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _bgpProcesses;
   }
 
+  private Ip getBgpRouterId(BgpProcess proc) {
+    Ip processRouterId = proc.getRouterId();
+    return processRouterId != null
+        ? processRouterId
+        : Ip.create(
+            _c.getAllInterfaces().values().stream()
+                .map(org.batfish.datamodel.Interface::getAllAddresses)
+                .flatMap(Collection::stream)
+                .map(InterfaceAddress::getIp)
+                .mapToLong(Ip::asLong)
+                .max()
+                .orElse(0L));
+  }
+
   @Override
   public String getHostname() {
     return _hostname;
@@ -671,6 +685,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private @Nonnull org.batfish.datamodel.BgpProcess toBgpProcess(BgpProcess proc) {
     org.batfish.datamodel.BgpProcess newProc = new org.batfish.datamodel.BgpProcess();
+    newProc.setRouterId(getBgpRouterId(proc));
 
     // TODO: verify correct method of determining whether two AS-paths are equivalent
     newProc.setMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
