@@ -70,13 +70,19 @@ public class BDDReverseTransformationRangesImplTest {
         new BDDReverseTransformationRangesImpl(
             _configs, ImmutableMap.of(), _bddPacket, null, _srcManagers, _lastHopManager);
 
-    assertTrue(ranges.reverseIncomingTransformationRange(HOSTNAME, iface.getName()).isZero());
-    assertTrue(ranges.reverseOutgoingTransformationRange(HOSTNAME, iface.getName()).isZero());
+    assertTrue(
+        ranges.reverseIncomingTransformationRange(HOSTNAME, iface.getName(), null, null).isZero());
+    assertTrue(
+        ranges.reverseOutgoingTransformationRange(HOSTNAME, iface.getName(), null, null).isZero());
   }
 
   @Test
   public void testIncomingTransformationRange() {
     Interface iface = _ib.build();
+    String iName = iface.getName();
+
+    // reinitialize source managers with new interface
+    _srcManagers = BDDSourceManager.forNetwork(_bddPacket, _configs, true);
 
     BDD fwdPreInBdd = _headerSpaceToBDD.getDstIpSpaceToBdd().toBDD(Ip.parse("1.1.1.1"));
     BDD bwdPreInBdd = _headerSpaceToBDD.getSrcIpSpaceToBdd().toBDD(Ip.parse("1.1.1.1"));
@@ -90,7 +96,7 @@ public class BDDReverseTransformationRangesImplTest {
           new BDDReverseTransformationRangesImpl(
               _configs, forwardReach, _bddPacket, null, _srcManagers, _lastHopManager);
       assertThat(
-          ranges.reverseIncomingTransformationRange(HOSTNAME, iface.getName()),
+          ranges.reverseIncomingTransformationRange(HOSTNAME, iface.getName(), iName, null),
           equalTo(bwdPreInBdd));
     }
 
@@ -114,7 +120,7 @@ public class BDDReverseTransformationRangesImplTest {
               _srcManagers,
               _lastHopManager);
       assertThat(
-          ranges.reverseIncomingTransformationRange(HOSTNAME, iface.getName()),
+          ranges.reverseIncomingTransformationRange(HOSTNAME, iName, iName, null),
           equalTo(bwdPreInBdd.and(bwdAclBdd)));
     }
   }
@@ -122,6 +128,7 @@ public class BDDReverseTransformationRangesImplTest {
   @Test
   public void testOutgoingTransformationRange() {
     Interface iface = _ib.build();
+    String iName = iface.getName();
 
     BDD fwdPreOutEdge1Bdd = _headerSpaceToBDD.getDstIpSpaceToBdd().toBDD(Ip.parse("1.1.1.1"));
     BDD fwdPreOutEdge2Bdd = _headerSpaceToBDD.getDstIpSpaceToBdd().toBDD(Ip.parse("1.1.1.2"));
@@ -132,7 +139,7 @@ public class BDDReverseTransformationRangesImplTest {
             .toBDD(Ip.parse("1.1.1.1"))
             .or(_headerSpaceToBDD.getSrcIpSpaceToBdd().toBDD(Ip.parse("1.1.1.2")));
 
-    // two out-edges with iface at the head
+    // two edges from iface
     Map<StateExpr, BDD> forwardReach =
         ImmutableMap.of(
             new PreOutEdge(HOSTNAME, iface.getName(), "1", "1"),
@@ -146,7 +153,7 @@ public class BDDReverseTransformationRangesImplTest {
           new BDDReverseTransformationRangesImpl(
               _configs, forwardReach, _bddPacket, null, _srcManagers, _lastHopManager);
       assertThat(
-          ranges.reverseOutgoingTransformationRange(HOSTNAME, iface.getName()), equalTo(reach));
+          ranges.reverseOutgoingTransformationRange(HOSTNAME, iName, null, null), equalTo(reach));
     }
 
     // with pre-transformation outgoing filter
@@ -169,7 +176,7 @@ public class BDDReverseTransformationRangesImplTest {
               _srcManagers,
               _lastHopManager);
       assertThat(
-          ranges.reverseOutgoingTransformationRange(HOSTNAME, iface.getName()),
+          ranges.reverseOutgoingTransformationRange(HOSTNAME, iName, null, null),
           equalTo(reach.and(bwdAclBdd)));
     }
   }
@@ -178,36 +185,38 @@ public class BDDReverseTransformationRangesImplTest {
   @Test
   public void testEraseNonPacketVars() {
     Interface iface = _ib.build();
+    String iName = iface.getName();
+
+    // reinitialize source managers with new interface
+    _srcManagers = BDDSourceManager.forNetwork(_bddPacket, _configs, true);
 
     // make the node a session node.
     iface.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(ImmutableList.of(iface.getName()), null, null));
+        new FirewallSessionInterfaceInfo(ImmutableList.of(iName), null, null));
 
-    _srcManagers = BDDSourceManager.forNetwork(_bddPacket, _configs, true);
     _lastHopManager =
         new LastHopOutgoingInterfaceManager(
             _bddPacket,
             _configs,
             ImmutableSet.of(
                 new org.batfish.datamodel.Edge(
-                    new NodeInterfacePair("A", "A"),
-                    new NodeInterfacePair(HOSTNAME, iface.getName()))));
+                    new NodeInterfacePair("A", "A"), new NodeInterfacePair(HOSTNAME, iName))));
 
-    BDD srcBdd = _srcManagers.get(HOSTNAME).getOriginatingFromDeviceBDD();
-    BDD lastHopBdd = _lastHopManager.getNoLastHopOutgoingInterfaceBdd(HOSTNAME, iface.getName());
+    BDD srcBdd = _srcManagers.get(HOSTNAME).getSourceInterfaceBDD(iName);
+    BDD lastHopBdd = _lastHopManager.getNoLastHopOutgoingInterfaceBdd(HOSTNAME, iName);
     BDD reach = srcBdd.and(lastHopBdd);
 
     Map<StateExpr, BDD> forwardReach =
         ImmutableMap.of(
-            new PreInInterface(HOSTNAME, iface.getName()),
+            new PreInInterface(HOSTNAME, iName),
             reach,
-            new PreOutEdge(HOSTNAME, iface.getName(), "1", "1"),
+            new PreOutEdge(HOSTNAME, iName, "1", "1"),
             reach);
 
     BDDReverseTransformationRangesImpl ranges =
         new BDDReverseTransformationRangesImpl(
             _configs, forwardReach, _bddPacket, null, _srcManagers, _lastHopManager);
-    assertTrue(ranges.reverseOutgoingTransformationRange(HOSTNAME, iface.getName()).isOne());
-    assertTrue(ranges.reverseIncomingTransformationRange(HOSTNAME, iface.getName()).isOne());
+    assertTrue(ranges.reverseOutgoingTransformationRange(HOSTNAME, iName, iName, null).isOne());
+    assertTrue(ranges.reverseIncomingTransformationRange(HOSTNAME, iName, iName, null).isOne());
   }
 }
