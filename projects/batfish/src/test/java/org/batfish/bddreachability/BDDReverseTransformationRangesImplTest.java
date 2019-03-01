@@ -7,8 +7,10 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.testing.EqualsTester;
 import java.util.Map;
 import net.sf.javabdd.BDD;
+import org.batfish.bddreachability.BDDReverseTransformationRangesImpl.Key;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
@@ -218,5 +220,76 @@ public class BDDReverseTransformationRangesImplTest {
             _configs, forwardReach, _bddPacket, null, _srcManagers, _lastHopManager);
     assertTrue(ranges.reverseOutgoingTransformationRange(HOSTNAME, iName, iName, null).isOne());
     assertTrue(ranges.reverseIncomingTransformationRange(HOSTNAME, iName, iName, null).isOne());
+  }
+
+  @Test
+  public void testSourceAndLastHopConstraint() {
+    Interface iface = _ib.build();
+    String iName = iface.getName();
+
+    // reinitialize source managers with new interface
+    _srcManagers = BDDSourceManager.forNetwork(_bddPacket, _configs, true);
+    BDDSourceManager srcManager = _srcManagers.get(HOSTNAME);
+
+    String neighbor1 = "neighbor1";
+    String neighbor2 = "neighbor2";
+    String neighborIface = "neighborIface";
+    NodeInterfacePair lastHop1 = new NodeInterfacePair(neighbor1, neighborIface);
+    NodeInterfacePair lastHop2 = new NodeInterfacePair(neighbor2, neighborIface);
+    _lastHopManager =
+        new LastHopOutgoingInterfaceManager(
+            _bddPacket,
+            _configs,
+            ImmutableSet.of(
+                new org.batfish.datamodel.Edge(lastHop1, new NodeInterfacePair(HOSTNAME, iName)),
+                new org.batfish.datamodel.Edge(lastHop2, new NodeInterfacePair(HOSTNAME, iName))));
+
+    BDDReverseTransformationRangesImpl ranges =
+        new BDDReverseTransformationRangesImpl(
+            _configs, ImmutableMap.of(), _bddPacket, null, _srcManagers, _lastHopManager);
+
+    assertThat(
+        ranges.sourceAndLastHopConstraint(HOSTNAME, null, null),
+        equalTo(srcManager.getOriginatingFromDeviceBDD()));
+
+    assertThat(
+        ranges.sourceAndLastHopConstraint(HOSTNAME, iName, null),
+        equalTo(
+            srcManager
+                .getSourceInterfaceBDD(iName)
+                .and(_lastHopManager.getNoLastHopOutgoingInterfaceBdd(HOSTNAME, iName))));
+
+    assertThat(
+        ranges.sourceAndLastHopConstraint(HOSTNAME, iName, lastHop1),
+        equalTo(
+            srcManager
+                .getSourceInterfaceBDD(iName)
+                .and(
+                    _lastHopManager.getLastHopOutgoingInterfaceBdd(
+                        HOSTNAME, iName, neighbor1, neighborIface))));
+
+    assertThat(
+        ranges.sourceAndLastHopConstraint(HOSTNAME, iName, lastHop2),
+        equalTo(
+            srcManager
+                .getSourceInterfaceBDD(iName)
+                .and(
+                    _lastHopManager.getLastHopOutgoingInterfaceBdd(
+                        HOSTNAME, iName, neighbor2, neighborIface))));
+  }
+
+  @Test
+  public void testKeyEquals() {
+    String node = "node";
+    String iface = "iface";
+    String inIface = "inIface";
+    NodeInterfacePair lastHop = new NodeInterfacePair("lastHopNode", "lastHopIface");
+    new EqualsTester()
+        .addEqualityGroup(new Key(node, iface, inIface, null), new Key(node, iface, inIface, null))
+        .addEqualityGroup(new Key("", iface, inIface, null))
+        .addEqualityGroup(new Key(node, "", inIface, null))
+        .addEqualityGroup(new Key(node, iface, null, null))
+        .addEqualityGroup(new Key(node, iface, inIface, lastHop))
+        .testEquals();
   }
 }

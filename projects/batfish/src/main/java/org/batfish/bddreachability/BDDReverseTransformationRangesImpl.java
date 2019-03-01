@@ -2,6 +2,7 @@ package org.batfish.bddreachability;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
@@ -171,7 +172,8 @@ final class BDDReverseTransformationRangesImpl implements BDDReverseTransformati
     return _bddPacket.swapSourceAndDestinationFields(erased);
   }
 
-  private BDD sourceAndLastHopConstraint(
+  @VisibleForTesting
+  BDD sourceAndLastHopConstraint(
       String node, @Nullable String inIface, @Nullable NodeInterfacePair lastHop) {
     checkArgument(inIface != null || lastHop == null, "Can't have a lastHop without an inIface");
     BDDSourceManager srcMgr = _srcManagers.get(node);
