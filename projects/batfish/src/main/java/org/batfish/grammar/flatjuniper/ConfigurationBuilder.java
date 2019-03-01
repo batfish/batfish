@@ -508,6 +508,12 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpm_source_address
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpm_source_identityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpt_denyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpt_permitContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesot_fin_no_ackContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesot_landContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesot_syn_finContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesot_syn_fragContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesot_tcp_no_flagContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesot_winnukeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sez_security_zoneContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezs_address_bookContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezs_host_inbound_trafficContext;
@@ -2986,16 +2992,36 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void exitSeso_tcp(FlatJuniperParser.Seso_tcpContext ctx) {
-    if (!ctx.TCP_NO_FLAG().isEmpty()) {
-      _currentScreen.getScreenOptions().add(TcpNoFlag.INSTANCE);
-    } else if (!ctx.SYN_FIN().isEmpty()) {
-      _currentScreen.getScreenOptions().add(TcpSynFin.INSTANCE);
-    } else if (!ctx.FIN_NO_ACK().isEmpty()) {
-      _currentScreen.getScreenOptions().add(TcpFinNoAck.INSTANCE);
-    } else {
-      todo(ctx);
-    }
+  public void exitSesot_fin_no_ack(Sesot_fin_no_ackContext ctx) {
+    _currentScreen.getScreenOptions().add(TcpFinNoAck.INSTANCE);
+  }
+
+  @Override
+  public void exitSesot_land(Sesot_landContext ctx) {
+    // Batfish has no way to express SourceIp == DestIp.
+    todo(ctx, "Unsupported netscreen option");
+  }
+
+  @Override
+  public void exitSesot_syn_fin(Sesot_syn_finContext ctx) {
+    _currentScreen.getScreenOptions().add(TcpSynFin.INSTANCE);
+  }
+
+  @Override
+  public void exitSesot_syn_frag(Sesot_syn_fragContext ctx) {
+    // Batfish does not currently model the IP fragmentation bits.
+    todo(ctx, "Unsupported netscreen option");
+  }
+
+  @Override
+  public void exitSesot_tcp_no_flag(Sesot_tcp_no_flagContext ctx) {
+    _currentScreen.getScreenOptions().add(TcpNoFlag.INSTANCE);
+  }
+
+  @Override
+  public void exitSesot_winnuke(Sesot_winnukeContext ctx) {
+    // Batfish does not currently support transformation in filters.
+    todo(ctx, "Unsupported netscreen option");
   }
 
   @Override
@@ -6112,6 +6138,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private void todo(ParserRuleContext ctx) {
     _w.todo(ctx, getFullText(ctx), _parser);
+  }
+
+  private void todo(ParserRuleContext ctx, String message) {
+    _w.addWarning(ctx, getFullText(ctx), _parser, message);
   }
 
   private Family toFamily(F_familyContext ctx) {
