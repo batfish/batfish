@@ -110,7 +110,6 @@ import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
-import org.batfish.datamodel.matchers.BgpProcessMatchers;
 import org.batfish.datamodel.matchers.Route6FilterListMatchers;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -200,24 +199,6 @@ public final class F5BigipStructuredGrammarTest {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.parseTextConfigs(_folder, names);
-  }
-
-  @Test
-  public void testBgpRouterIdManual() throws IOException {
-    Configuration c = parseConfig("f5_bigip_structured_bgp_router_id_manual");
-
-    // BGP Router-ID manually set
-    assertThat(
-        c, hasDefaultVrf(hasBgpProcess(BgpProcessMatchers.hasRouterId(Ip.parse("192.0.2.1")))));
-  }
-
-  @Test
-  public void testBgpRouteIdAuto() throws IOException {
-    Configuration c = parseConfig("f5_bigip_structured_bgp_router_id_auto");
-
-    // BGP Router-ID automatically chosen from highest IP address
-    assertThat(
-        c, hasDefaultVrf(hasBgpProcess(BgpProcessMatchers.hasRouterId(Ip.parse("192.0.2.1")))));
   }
 
   @Test
