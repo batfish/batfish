@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.Flow;
 
 /**
  * Represents a step in a {@link Hop}, steps are operations through which a packet ({@link Flow})
