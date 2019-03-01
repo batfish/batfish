@@ -15,7 +15,6 @@ export BATFISH_CLIENT_PATH="$PROJECTS_PATH/batfish-client"
 export BATFISH_CLIENT="$BATFISH_CLIENT_PATH/batfish-client"
 
 export BATFISH_DOCS_ROOT="$BATFISH_ROOT/docs"
-export BATFISH_DOCS_DATAMODEL="$BATFISH_DOCS_ROOT/datamodel.json"
 
 export BATFISH_WIKI_ROOT="$BATFISH_ROOT/../batfish.wiki"
 export BATFISH_WIKI_DATAMODEL="$BATFISH_WIKI_ROOT/Datamodel.md"
@@ -23,7 +22,6 @@ export BATFISH_WIKI_QUESTIONS="$BATFISH_WIKI_ROOT/Questions.md"
 
 if [ -d "$BATFISH_ROOT/../pybatfish" ]; then
    export PYBATFISH_ROOT="$BATFISH_ROOT/../pybatfish"
-   export BATFISH_DATAMODEL_PAGE_SCRIPT="${PYBATFISH_ROOT}/datamodel_page.py"
    export BATFISH_QUESTIONS_PAGE_SCRIPT="${PYBATFISH_ROOT}/questions_page.py"
 fi
 
@@ -223,15 +221,6 @@ batfish_unit_tests_parser() {
    echo ": END UNIT TEST: Vendor configuration parser"
 }
 export -f batfish_unit_tests_parser
-
-batfish_datamodel() {
-   echo "Generating datamodel to " ${BATFISH_DOCS_DATAMODEL}
-   batfish_client -runmode gendatamodel > "$BATFISH_DOCS_DATAMODEL"
-
-   echo "Generating wiki page to " ${BATFISH_WIKI_DATAMODEL}
-   python "$BATFISH_DATAMODEL_PAGE_SCRIPT" "$BATFISH_DOCS_DATAMODEL" > "$BATFISH_WIKI_DATAMODEL"
-}
-export -f batfish_datamodel
 
 batfish_wiki_questions() {
    echo "Generating questions to " ${BATFISH_WIKI_QUESTIONS}
