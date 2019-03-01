@@ -66,7 +66,7 @@
     <guava.version>26.0-jre</guava.version>
     <guava-eea.version>0.0.1</guava-eea.version>
     <icu4j.version>63.1</icu4j.version>
-    <jackson.version>2.9.7</jackson.version>
+    <jackson.version>2.9.8</jackson.version>
     <javabdd.version>2018-07-26-36d0ed6-batfish-internal</javabdd.version>
     <java-hamcrest.version>2.0.0.0</java-hamcrest.version>
     <javax-activation.version>1.1</javax-activation.version>
