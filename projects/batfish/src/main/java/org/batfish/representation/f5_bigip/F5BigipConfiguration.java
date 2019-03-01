@@ -412,7 +412,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _bgpProcesses;
   }
 
-  private Ip getBgpRouterId(BgpProcess proc) {
+  private @Nonnull Ip getBgpRouterId(BgpProcess proc) {
     Ip processRouterId = proc.getRouterId();
     return processRouterId != null
         ? processRouterId
