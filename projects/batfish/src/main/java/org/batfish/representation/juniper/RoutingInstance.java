@@ -56,7 +56,6 @@ public class RoutingInstance implements Serializable {
   private Ip _routerId;
   private SnmpServer _snmpServer;
   private final JuniperSystem _system;
-  private Map<String, NatPool> _natPools;
 
   public RoutingInstance(String name) {
     _aggregateRouteDefaults = initAggregateRouteDefaults();
@@ -76,7 +75,6 @@ public class RoutingInstance implements Serializable {
     _globalMasterInterface.setRoutingInstance(name);
     _name = name;
     _namedBgpGroups = new TreeMap<>();
-    _natPools = new TreeMap<>();
     _nodeDevices = new TreeMap<>();
     _ospfAreas = new TreeMap<>();
     _ospfExportPolicies = new LinkedList<>();
@@ -181,10 +179,6 @@ public class RoutingInstance implements Serializable {
 
   public Map<String, NamedBgpGroup> getNamedBgpGroups() {
     return _namedBgpGroups;
-  }
-
-  public Map<String, NatPool> getNatPools() {
-    return _natPools;
   }
 
   public Map<String, NodeDevice> getNodeDevices() {

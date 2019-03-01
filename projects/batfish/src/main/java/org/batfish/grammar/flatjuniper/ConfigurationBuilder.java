@@ -1929,8 +1929,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private NatPool _currentNatPool;
 
-  private String _currentNatPoolName;
-
   private NatRule _currentNatRule;
 
   private NatRuleSet _currentNatRuleSet;
@@ -2400,22 +2398,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterNat_pool(Nat_poolContext ctx) {
     String poolName = ctx.name.getText();
     _currentNatPool = _currentNat.getPools().computeIfAbsent(poolName, p -> new NatPool());
-    _currentNatPoolName = poolName;
     defineStructure(NAT_POOL, poolName, ctx);
   }
 
   @Override
   public void exitNat_pool(Nat_poolContext ctx) {
-    // if not routing instance is configured for this nat, assign it to the default routing instance
-    if (_currentNatPool.getOwner() == null) {
-      RoutingInstance defaultRoutingInstance =
-          _configuration.getMasterLogicalSystem().getDefaultRoutingInstance();
-      _currentNatPool.setOwner(defaultRoutingInstance);
-      defaultRoutingInstance.getNatPools().put(_currentNatPoolName, _currentNatPool);
-    }
-
     _currentNatPool = null;
-    _currentNatPoolName = null;
   }
 
   @Override
@@ -4426,20 +4414,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitNatp_routing_instance(Natp_routing_instanceContext ctx) {
-    RoutingInstance ri = _currentLogicalSystem.getRoutingInstances().get(ctx.name.getText());
-    if (ri == null) {
-      _w.redFlag("The routing instance " + ctx.name + " is not defined.");
-      return;
-    }
-
-    RoutingInstance defaultRoutingInstance =
-        _configuration.getMasterLogicalSystem().getDefaultRoutingInstance();
-    if (defaultRoutingInstance.getNatPools().containsKey(_currentNatPoolName)) {
-      defaultRoutingInstance.getNatPools().remove(_currentNatPoolName);
-    }
-
-    _currentNatPool.setOwner(ri);
-    ri.getNatPools().put(_currentNatPoolName, _currentNatPool);
+    String ri = ctx.name.getText();
     _currentNatPool.setOwner(ri);
   }
 

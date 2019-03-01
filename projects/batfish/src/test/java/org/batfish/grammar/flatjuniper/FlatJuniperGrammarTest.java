@@ -4676,11 +4676,7 @@ public final class FlatJuniperGrammarTest {
     Nat sourceNat = juniperConfiguration.getMasterLogicalSystem().getNatSource();
     NatPool pool0 = sourceNat.getPools().get("POOL0");
     NatPool pool1 = sourceNat.getPools().get("POOL1");
-    assertThat(
-        pool0.getOwner(),
-        equalTo(juniperConfiguration.getMasterLogicalSystem().getRoutingInstances().get("R1")));
-    assertThat(
-        pool1.getOwner(),
-        equalTo(juniperConfiguration.getMasterLogicalSystem().getDefaultRoutingInstance()));
+    assertThat(pool0.getOwner(), equalTo("R1"));
+    assertNull(pool1.getOwner());
   }
 }

@@ -17,7 +17,7 @@ public final class NatPool implements Serializable {
 
   private Ip _toAddress;
 
-  private RoutingInstance _owner;
+  @Nullable private String _owner;
 
   // null value means no pat is configured; source nat will apply pat and dest nat will not apply
   // pat by default
@@ -41,7 +41,7 @@ public final class NatPool implements Serializable {
   }
 
   @Nullable
-  public RoutingInstance getOwner() {
+  public String getOwner() {
     return _owner;
   }
 
@@ -62,7 +62,7 @@ public final class NatPool implements Serializable {
     _pat = pat;
   }
 
-  public void setOwner(RoutingInstance routingInstance) {
+  public void setOwner(String routingInstance) {
     _owner = routingInstance;
   }
 }
