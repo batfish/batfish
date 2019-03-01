@@ -246,24 +246,24 @@ public class F5BigipConfiguration extends VendorConfiguration {
                     .build());
   }
 
-  private @Nonnull Set<IpSpace> computeSnatAdditionalArpIps(Snat snat) {
-    String snatPoolName = snat.getSnatpool();
-    if (snatPoolName == null) {
-      // no SNAT pool, so no SNAT IPs
-      return ImmutableSet.of();
-    }
+  private @Nonnull Stream<IpSpace> computeSnatAdditionalArpIps(Snat snat) {
+    return Optional.ofNullable(snat.getSnatpool())
+        .map(this::computeSnatPoolIps)
+        .orElse(Stream.of());
+  }
+
+  private @Nonnull Stream<IpSpace> computeSnatPoolIps(String snatPoolName) {
     SnatPool snatPool = _snatPools.get(snatPoolName);
     if (snatPool == null) {
       // no SNAT pool, so no SNAT IPs
-      return ImmutableSet.of();
+      return Stream.of();
     }
     return snatPool.getMembers().stream()
         .map(_snatTranslations::get)
         .filter(Objects::nonNull)
         .map(SnatTranslation::getAddress)
         .filter(Objects::nonNull)
-        .map(Ip::toIpSpace)
-        .collect(ImmutableSet.toImmutableSet());
+        .map(Ip::toIpSpace);
   }
 
   private @Nonnull Set<IpSpace> computeVirtualAdditionalArpIps(Virtual virtual) {
@@ -404,22 +404,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   private @Nonnull Stream<IpSpace> computeVirtualSnatIps(Virtual virtual) {
-    String snatPoolName = virtual.getSourceAddressTranslationPool();
-    if (snatPoolName == null) {
-      // no SNAT, so no SNAT IPs
-      return Stream.of();
-    }
-    SnatPool snatPool = _snatPools.get(snatPoolName);
-    if (snatPool == null) {
-      // no SNAT, so no SNAT IPs
-      return Stream.of();
-    }
-    return snatPool.getMembers().stream()
-        .map(_snatTranslations::get)
-        .filter(Objects::nonNull)
-        .map(SnatTranslation::getAddress)
-        .filter(Objects::nonNull)
-        .map(Ip::toIpSpace);
+    return Optional.ofNullable(virtual.getSourceAddressTranslationPool())
+        .map(this::computeSnatPoolIps)
+        .orElse(Stream.of());
   }
 
   public @Nonnull Map<String, BgpProcess> getBgpProcesses() {
@@ -509,7 +496,12 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
     // additional ARP IPs
     _snatAdditionalArpIps =
-        toImmutableMap(_snats, Entry::getKey, e -> computeSnatAdditionalArpIps(e.getValue()));
+        toImmutableMap(
+            _snats,
+            Entry::getKey,
+            snatAdditionalArpIpsEntry ->
+                computeSnatAdditionalArpIps(snatAdditionalArpIpsEntry.getValue())
+                    .collect(ImmutableSet.toImmutableSet()));
   }
 
   private void initVirtualTransformations() {
