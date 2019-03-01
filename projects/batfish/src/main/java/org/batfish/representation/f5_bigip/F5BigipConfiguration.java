@@ -416,14 +416,12 @@ public class F5BigipConfiguration extends VendorConfiguration {
     Ip processRouterId = proc.getRouterId();
     return processRouterId != null
         ? processRouterId
-        : Ip.create(
-            _c.getAllInterfaces().values().stream()
-                .map(org.batfish.datamodel.Interface::getAllAddresses)
-                .flatMap(Collection::stream)
-                .map(InterfaceAddress::getIp)
-                .mapToLong(Ip::asLong)
-                .max()
-                .orElse(0L));
+        : _c.getAllInterfaces().values().stream()
+            .map(org.batfish.datamodel.Interface::getAllAddresses)
+            .flatMap(Collection::stream)
+            .map(InterfaceAddress::getIp)
+            .max(Ip::compareTo)
+            .orElse(Ip.ZERO);
   }
 
   @Override
