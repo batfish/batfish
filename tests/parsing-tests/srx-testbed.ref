@@ -669,7 +669,8 @@
             "                  text = UNTRUST_SCREEN:'untrust-screen')",
             "                (seso_icmp",
             "                  ICMP:'icmp'",
-            "                  PING_DEATH:'ping-death')))))))",
+            "                  (sesoi_ping_death",
+            "                    PING_DEATH:'ping-death'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -3080,7 +3081,8 @@
             "                  text = UNTRUST_SCREEN:'untrust-screen')",
             "                (seso_icmp",
             "                  ICMP:'icmp'",
-            "                  PING_DEATH:'ping-death')))))))",
+            "                  (sesoi_ping_death",
+            "                    PING_DEATH:'ping-death'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -5000,7 +5002,8 @@
             "                  text = UNTRUST_SCREEN:'untrust-screen')",
             "                (seso_icmp",
             "                  ICMP:'icmp'",
-            "                  PING_DEATH:'ping-death')))))))",
+            "                  (sesoi_ping_death",
+            "                    PING_DEATH:'ping-death'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -6035,10 +6038,10 @@
         "configs/junos-srx-1.cfg" : {
           "Parse warnings" : [
             {
-              "Comment" : "This feature is not currently supported",
+              "Comment" : "Unsupported netscreen ICMP option",
               "Line" : 39,
-              "Parser_Context" : "[seso_icmp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "icmp ping-death"
+              "Parser_Context" : "[sesoi_ping_death seso_icmp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "ping-death"
             },
             {
               "Comment" : "This feature is not currently supported",
@@ -6053,7 +6056,7 @@
               "Text" : "ip tear-drop"
             },
             {
-              "Comment" : "Unsupported netscreen option",
+              "Comment" : "Unsupported netscreen TCP option",
               "Line" : 47,
               "Parser_Context" : "[sesot_land seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "land"
@@ -6063,10 +6066,10 @@
         "configs/junos-srx-2.cfg" : {
           "Parse warnings" : [
             {
-              "Comment" : "This feature is not currently supported",
+              "Comment" : "Unsupported netscreen ICMP option",
               "Line" : 39,
-              "Parser_Context" : "[seso_icmp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "icmp ping-death"
+              "Parser_Context" : "[sesoi_ping_death seso_icmp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "ping-death"
             },
             {
               "Comment" : "This feature is not currently supported",
@@ -6081,7 +6084,7 @@
               "Text" : "ip tear-drop"
             },
             {
-              "Comment" : "Unsupported netscreen option",
+              "Comment" : "Unsupported netscreen TCP option",
               "Line" : 47,
               "Parser_Context" : "[sesot_land seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "land"
@@ -6091,10 +6094,10 @@
         "configs/junos-srx-3.cfg" : {
           "Parse warnings" : [
             {
-              "Comment" : "This feature is not currently supported",
+              "Comment" : "Unsupported netscreen ICMP option",
               "Line" : 40,
-              "Parser_Context" : "[seso_icmp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "icmp ping-death"
+              "Parser_Context" : "[sesoi_ping_death seso_icmp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "ping-death"
             },
             {
               "Comment" : "This feature is not currently supported",
@@ -6109,7 +6112,7 @@
               "Text" : "ip tear-drop"
             },
             {
-              "Comment" : "Unsupported netscreen option",
+              "Comment" : "Unsupported netscreen TCP option",
               "Line" : 48,
               "Parser_Context" : "[sesot_land seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "land"
