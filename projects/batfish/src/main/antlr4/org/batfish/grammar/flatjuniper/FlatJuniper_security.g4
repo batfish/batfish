@@ -1255,23 +1255,23 @@ seso_ip
 :
    IP
    (
-      BAD_OPTION
-      | BLOCK_FRAG
+      sesop_bad_option
+      | sesop_block_frag
       | sesop_ipv6_extension_header
       | sesop_ipv6_extension_header_limit
-      | IPV6_MALFORMED_HEADER
-      | LOOSE_SOURCE_ROUTE_OPTION
-      | RECORD_ROUTE_OPTION
-      | SECURITY_OPTION
-      | SOURCE_ROUTE_OPTION
-      | SPOOFING
-      | STREAM_OPTION
-      | STRICT_SOURCE_ROUTE_OPTION
-      | TEAR_DROP
-      | TIMESTAMP_OPTION
-      | UNKNOWN_PROTOCOL
+      | sesop_ipv6_malformed_header
+      | sesop_loose_source_route_option
+      | sesop_record_route_option
+      | sesop_security_option
+      | sesop_source_route_option
+      | sesop_spoofing
+      | sesop_stream_option
+      | sesop_strict_source_route_option
+      | sesop_tear_drop
+      | sesop_timestamp_option
+      | sesop_unknown_protocol
       | sesop_tunnel
-   )+
+   )
 ;
 
 seso_limit_session
@@ -1280,7 +1280,7 @@ seso_limit_session
    (
       DESTINATION_IP_BASED DEC
       | SOURCE_IP_BASED DEC
-   )+
+   )
 ;
 
 seso_tcp
@@ -1340,6 +1340,16 @@ sesoi_ping_death
    PING_DEATH
 ;
 
+sesop_bad_option
+:
+   BAD_OPTION
+;
+
+sesop_block_frag
+:
+   BLOCK_FRAG
+;
+
 sesop_ipv6_extension_header
 :
    IPV6_EXTENSION_HEADER
@@ -1355,12 +1365,62 @@ sesop_ipv6_extension_header
        | ROUTING_HEADER
        | SHIM6_HEADER
        | sesop6_user_option
-   )+
+   )
 ;
 
 sesop_ipv6_extension_header_limit
 :
    IPV6_EXTENSION_HEADER_LIMIT limit=DEC
+;
+
+sesop_ipv6_malformed_header
+:
+   IPV6_MALFORMED_HEADER
+;
+
+sesop_loose_source_route_option
+:
+   LOOSE_SOURCE_ROUTE_OPTION
+;
+
+sesop_record_route_option
+:
+   RECORD_ROUTE_OPTION
+;
+
+sesop_security_option
+:
+   SECURITY_OPTION
+;
+
+sesop_source_route_option
+:
+   SOURCE_ROUTE_OPTION
+;
+
+sesop_spoofing
+:
+   SPOOFING
+;
+
+sesop_stream_option
+:
+   STREAM_OPTION
+;
+
+sesop_strict_source_route_option
+:
+   STRICT_SOURCE_ROUTE_OPTION
+;
+
+sesop_tear_drop
+:
+   TEAR_DROP
+;
+
+sesop_timestamp_option
+:
+   TIMESTAMP_OPTION
 ;
 
 sesop_tunnel
@@ -1371,7 +1431,12 @@ sesop_tunnel
       | sesopt_ip_in_udp
       | sesopt_ipip
       | BAD_INNER_HEADER
-   )+
+   )
+;
+
+sesop_unknown_protocol
+:
+   UNKNOWN_PROTOCOL
 ;
 
 sesop6_dst_header
@@ -1383,7 +1448,7 @@ sesop6_dst_header
       | LINE_IDENTIFICATION_OPTION
       | TUNNEL_ENCAPSULATION_LIMIT_OPTION
       | sesop6_user_option
-   )+
+   )
 ;
 
 sesop6_hop_header
@@ -1397,7 +1462,7 @@ sesop6_hop_header
       | QUICK_START_OPTION
       | ROUTER_ALERT_OPTION
       | sesop6_user_option
-   )+
+   )
 ;
 
 sesop6_user_option
@@ -1531,7 +1596,7 @@ sesopt_gre
       | GRE_4IN6
       | GRE_6IN4
       | GRE_6IN6
-   )+
+   )
 ;
 
 sesopt_ip_in_udp
@@ -1551,7 +1616,7 @@ sesopt_ipip
       | IPIP_6TO4RELAY
       | ISATAP
       | DSLITE
-   )+
+   )
 ;
 
 sez_security_zone

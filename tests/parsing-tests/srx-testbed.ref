@@ -687,7 +687,8 @@
             "                  text = UNTRUST_SCREEN:'untrust-screen')",
             "                (seso_ip",
             "                  IP:'ip'",
-            "                  SOURCE_ROUTE_OPTION:'source-route-option')))))))",
+            "                  (sesop_source_route_option",
+            "                    SOURCE_ROUTE_OPTION:'source-route-option'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -704,7 +705,8 @@
             "                  text = UNTRUST_SCREEN:'untrust-screen')",
             "                (seso_ip",
             "                  IP:'ip'",
-            "                  TEAR_DROP:'tear-drop')))))))",
+            "                  (sesop_tear_drop",
+            "                    TEAR_DROP:'tear-drop'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -3099,7 +3101,8 @@
             "                  text = UNTRUST_SCREEN:'untrust-screen')",
             "                (seso_ip",
             "                  IP:'ip'",
-            "                  SOURCE_ROUTE_OPTION:'source-route-option')))))))",
+            "                  (sesop_source_route_option",
+            "                    SOURCE_ROUTE_OPTION:'source-route-option'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -3116,7 +3119,8 @@
             "                  text = UNTRUST_SCREEN:'untrust-screen')",
             "                (seso_ip",
             "                  IP:'ip'",
-            "                  TEAR_DROP:'tear-drop')))))))",
+            "                  (sesop_tear_drop",
+            "                    TEAR_DROP:'tear-drop'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -5020,7 +5024,8 @@
             "                  text = UNTRUST_SCREEN:'untrust-screen')",
             "                (seso_ip",
             "                  IP:'ip'",
-            "                  SOURCE_ROUTE_OPTION:'source-route-option')))))))",
+            "                  (sesop_source_route_option",
+            "                    SOURCE_ROUTE_OPTION:'source-route-option'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -5037,7 +5042,8 @@
             "                  text = UNTRUST_SCREEN:'untrust-screen')",
             "                (seso_ip",
             "                  IP:'ip'",
-            "                  TEAR_DROP:'tear-drop')))))))",
+            "                  (sesop_tear_drop",
+            "                    TEAR_DROP:'tear-drop'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -6044,18 +6050,6 @@
               "Text" : "ping-death"
             },
             {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 40,
-              "Parser_Context" : "[seso_ip ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "ip source-route-option"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 41,
-              "Parser_Context" : "[seso_ip ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "ip tear-drop"
-            },
-            {
               "Comment" : "Unsupported netscreen TCP option",
               "Line" : 47,
               "Parser_Context" : "[sesot_land seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
@@ -6072,18 +6066,6 @@
               "Text" : "ping-death"
             },
             {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 40,
-              "Parser_Context" : "[seso_ip ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "ip source-route-option"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 41,
-              "Parser_Context" : "[seso_ip ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "ip tear-drop"
-            },
-            {
               "Comment" : "Unsupported netscreen TCP option",
               "Line" : 47,
               "Parser_Context" : "[sesot_land seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
@@ -6098,18 +6080,6 @@
               "Line" : 40,
               "Parser_Context" : "[sesoi_ping_death seso_icmp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ping-death"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 41,
-              "Parser_Context" : "[seso_ip ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "ip source-route-option"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 42,
-              "Parser_Context" : "[seso_ip ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "ip tear-drop"
             },
             {
               "Comment" : "Unsupported netscreen TCP option",
