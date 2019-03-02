@@ -26,6 +26,10 @@ public interface Fib extends Serializable {
   @Nonnull
   Set<FibEntry> get(Ip ip);
 
+  /** Return the set of all entries */
+  @Nonnull
+  Set<FibEntry> allEntries();
+
   /**
    * Mapping: matching route -&gt; nexthopinterface -&gt; resolved nextHopIP -&gt; interfaceRoutes
    *
@@ -36,6 +40,8 @@ public interface Fib extends Serializable {
   Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> getNextHopInterfacesByRoute(
       Ip dstIp);
 
+  /** @deprecated in favor of more general {@link Fib#get(Ip)} */
   @Nonnull
+  @Deprecated
   Map<String, Set<AbstractRoute>> getRoutesByNextHopInterface();
 }

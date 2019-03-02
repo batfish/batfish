@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.ForwardingAnalysisImpl.computeFibInterfaces;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeInterfaceHostSubnetIps;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeMatchingIps;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.hasLines;
@@ -14,6 +15,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -56,6 +58,8 @@ public class ForwardingAnalysisImplTest {
   private Configuration.Builder _cb;
 
   private Interface.Builder _ib;
+
+  private Map<String, Map<String, Set<Interface>>> _fibInterfaces;
 
   private Map<String, Map<String, Set<Ip>>> _interfaceOwnedIps = ImmutableMap.of();
 
@@ -110,6 +114,7 @@ public class ForwardingAnalysisImplTest {
         _arpTrueEdge,
         _arpTrueEdgeDestIp,
         _arpTrueEdgeNextHopIp,
+        _fibInterfaces,
         _interfaceOwnedIps,
         _ipsRoutedOutInterfaces,
         _neighborUnreachableOrExitsNetwork,
@@ -834,8 +839,12 @@ public class ForwardingAnalysisImplTest {
                     ImmutableMap.of(
                         Interface.NULL_INTERFACE_NAME,
                         ImmutableMap.of(Ip.AUTO, ImmutableSet.of(nullRoute)))))
-            .setRoutesByNextHopInterface(
-                ImmutableMap.of(Interface.NULL_INTERFACE_NAME, ImmutableSet.of(nullRoute)))
+            .setFibEntries(
+                ImmutableMap.of(
+                    Ip.AUTO,
+                    ImmutableSet.of(
+                        new FibEntry(
+                            Ip.AUTO, Interface.NULL_INTERFACE_NAME, ImmutableList.of(nullRoute)))))
             .build();
 
     SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
@@ -961,7 +970,10 @@ public class ForwardingAnalysisImplTest {
             ImmutableMap.of(
                 v1,
                 MockFib.builder()
-                    .setRoutesByNextHopInterface(ImmutableMap.of(i1, ImmutableSet.of(r1)))
+                    .setFibEntries(
+                        ImmutableMap.of(
+                            Ip.AUTO,
+                            ImmutableSet.of(new FibEntry(Ip.AUTO, i1, ImmutableList.of(r1)))))
                     .build()));
 
     Configuration config = _cb.setHostname(c1).build();
@@ -1322,6 +1334,48 @@ public class ForwardingAnalysisImplTest {
     assertThat(
         result,
         hasEntry(equalTo(c1), hasEntry(equalTo(vrf1), hasEntry(equalTo(i1), containsIp(ip)))));
+  }
+
+  /**
+   * Test that interfaces reachable from FIB in VRF X are not limited to interfaces that belong to
+   * VRF X. This is due to route leaking across VRFs and ability to do lookup in a different VRF.
+   */
+  @Test
+  public void testComputeFibInterfaces() {
+    // Setup
+    final String hostname = "c1";
+    Configuration c1 =
+        _cb.setHostname(hostname).setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf v1 = _vb.setOwner(c1).setName("v1").build();
+    Vrf v2 = _vb.setOwner(c1).setName("v2").build();
+    Interface i1 =
+        _ib.setAddress(new InterfaceAddress("1.1.1.0/24")).setVrf(v1).setOwner(c1).build();
+
+    Ip ip = Ip.parse("1.1.1.222");
+    Map<Ip, Set<FibEntry>> fibEntryMap =
+        ImmutableMap.of(
+            ip,
+            ImmutableSet.of(
+                new FibEntry(
+                    ip,
+                    i1.getName(),
+                    ImmutableList.of(new ConnectedRoute(i1.getPrimaryNetwork(), i1.getName())))));
+
+    // Test:
+    Map<String, Map<String, Set<Interface>>> fibInterfaces =
+        computeFibInterfaces(
+            ImmutableMap.of(hostname, c1),
+            ImmutableMap.of(
+                hostname,
+                ImmutableMap.of(
+                    "v1",
+                    MockFib.builder().setFibEntries(fibEntryMap).build(),
+                    "v2",
+                    MockFib.builder().setFibEntries(fibEntryMap).build())));
+
+    // Both vrf1 and vrf2 can go out to i1
+    assertThat(fibInterfaces.get(hostname).get(v1.getName()), equalTo(ImmutableSet.of(i1)));
+    assertThat(fibInterfaces.get(hostname).get(v2.getName()), equalTo(ImmutableSet.of(i1)));
   }
 
   enum NextHopIpStatus {
@@ -1690,7 +1744,14 @@ public class ForwardingAnalysisImplTest {
                     ImmutableMap.of(
                         i1.getName(),
                         ImmutableMap.of(Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(route1)))))
-            .setRoutesByNextHopInterface(ImmutableMap.of(i1.getName(), ImmutableSet.of(route1)))
+            .setFibEntries(
+                ImmutableMap.of(
+                    Route.UNSET_ROUTE_NEXT_HOP_IP,
+                    ImmutableSet.of(
+                        new FibEntry(
+                            Route.UNSET_ROUTE_NEXT_HOP_IP,
+                            i1.getName(),
+                            ImmutableList.of(route1)))))
             .build();
 
     MockFib fib2 =
@@ -1701,7 +1762,14 @@ public class ForwardingAnalysisImplTest {
                     ImmutableMap.of(
                         i2.getName(),
                         ImmutableMap.of(Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(route2)))))
-            .setRoutesByNextHopInterface(ImmutableMap.of(i2.getName(), ImmutableSet.of(route2)))
+            .setFibEntries(
+                ImmutableMap.of(
+                    Route.UNSET_ROUTE_NEXT_HOP_IP,
+                    ImmutableSet.of(
+                        new FibEntry(
+                            Route.UNSET_ROUTE_NEXT_HOP_IP,
+                            i2.getName(),
+                            ImmutableList.of(route2)))))
             .build();
 
     Map<String, Map<String, Fib>> fibs =

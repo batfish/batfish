@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.BiFunction;
@@ -41,6 +42,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
   // mapping: edge -> dst ip for which end up forwarding to this edge arp for some other ip and get
   // response
   private final Map<Edge, IpSpace> _arpTrueEdgeNextHopIp;
+
+  // mapping: hostname -> vrfName -> set of interfaces that can end up forwarding a packet based on
+  // the FIB's lookup
+  private final Map<String, Map<String, Set<Interface>>> _fibInterfaces;
 
   private final Map<String, Map<String, Set<Ip>>> _interfaceOwnedIps;
 
@@ -144,6 +149,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       _ipSpaceToBDD = initIpSpaceToBDD();
       _interfaceHostSubnetIps = computeInterfaceHostSubnetIps(configurations);
       _interfaceOwnedIps = TopologyUtil.computeInterfaceOwnedIps(configurations, false);
+      _fibInterfaces = computeFibInterfaces(configurations, fibs);
       _ownedIps = computeOwnedIps();
       _unownedIpsBDD = computeUnownedIpsBDD();
       _internalIps = computeInternalIps();
@@ -185,6 +191,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<Edge, IpSpace> arpTrueEdge,
       Map<Edge, IpSpace> arpTrueEdgeDestIp,
       Map<Edge, IpSpace> arpTrueEdgeNextHopIp,
+      Map<String, Map<String, Set<Interface>>> fibInterfaces,
       Map<String, Map<String, Set<Ip>>> interfaceOwnedIps,
       Map<String, Map<String, IpSpace>> ipsRoutedOutInterfaces,
       Map<String, Map<String, Map<String, IpSpace>>> arpFalse,
@@ -208,6 +215,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
     _nullRoutedIps = nullRoutedIps;
     _routableIps = routableIps;
     _routesWithNextHop = routesWithNextHop;
+    _fibInterfaces = fibInterfaces;
     _interfaceOwnedIps = interfaceOwnedIps;
     _ipsRoutedOutInterfaces = ipsRoutedOutInterfaces;
     _arpReplies = arpReplies;
@@ -762,16 +770,19 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                   nodeEntry.getValue().getVrfs(),
                   Entry::getKey,
                   vrfEntry -> {
-                    Map<String, Set<AbstractRoute>> routesByNextHopInterface =
-                        fibs.get(nodeEntry.getKey())
-                            .get(vrfEntry.getKey())
-                            .getRoutesByNextHopInterface();
+                    Map<String, ImmutableSet<AbstractRoute>> fibEntries =
+                        fibs.get(nodeEntry.getKey()).get(vrfEntry.getKey()).allEntries().stream()
+                            .collect(
+                                Collectors.groupingBy(
+                                    FibEntry::getInterfaceName,
+                                    Collectors.mapping(
+                                        FibEntry::getTopLevelRoute,
+                                        ImmutableSet.toImmutableSet())));
                     return toImmutableMap(
-                        vrfEntry.getValue().getInterfaces(),
+                        fibEntries,
                         Entry::getKey,
                         ifaceEntry ->
-                            routesByNextHopInterface.getOrDefault(
-                                ifaceEntry.getKey(), ImmutableSet.of()));
+                            fibEntries.getOrDefault(ifaceEntry.getKey(), ImmutableSet.of()));
                   }));
     }
   }
@@ -1156,15 +1167,40 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                   Entry::getKey,
                   vrfEntry ->
                       toImmutableMap(
-                          vrfEntry.getValue().getInterfaces(),
-                          Entry::getKey,
-                          ifaceEntry -> {
-                            String hostname = nodeEntry.getKey();
-                            String vrfName = vrfEntry.getKey();
-                            String ifaceName = ifaceEntry.getKey();
-                            return computeExitsNetworkPerInterface(hostname, vrfName, ifaceName);
-                          })));
+                          _fibInterfaces
+                              .getOrDefault(nodeEntry.getKey(), ImmutableMap.of())
+                              .getOrDefault(vrfEntry.getKey(), ImmutableSet.of()),
+                          Interface::getName,
+                          iface ->
+                              computeExitsNetworkPerInterface(
+                                  nodeEntry.getKey(), iface.getVrfName(), iface.getName()))));
     }
+  }
+
+  @VisibleForTesting
+  static Map<String, Map<String, Set<Interface>>> computeFibInterfaces(
+      Map<String, Configuration> configurations, Map<String, Map<String, Fib>> fibs) {
+    return fibs.entrySet().stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey,
+                byHostname ->
+                    byHostname.getValue().entrySet().stream()
+                        .collect(
+                            ImmutableMap.toImmutableMap(
+                                Entry::getKey,
+                                byVrf ->
+                                    // Get the FIB, look at all of its entries
+                                    byVrf.getValue().allEntries().stream()
+                                        .map(FibEntry::getInterfaceName)
+                                        .map(
+                                            ifaceName ->
+                                                configurations
+                                                    .get(byHostname.getKey())
+                                                    .getAllInterfaces()
+                                                    .get(ifaceName))
+                                        .filter(Objects::nonNull)
+                                        .collect(ImmutableSet.toImmutableSet())))));
   }
 
   /*
@@ -1221,15 +1257,13 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                   Entry::getKey,
                   vrfEntry ->
                       toImmutableMap(
-                          vrfEntry.getValue().getInterfaces(),
-                          Entry::getKey,
-                          ifaceEntry -> {
-                            String hostname = nodeEntry.getKey();
-                            String vrfName = vrfEntry.getKey();
-                            String ifaceName = ifaceEntry.getKey();
-                            return computeInsufficientInfoPerInterface(
-                                hostname, vrfName, ifaceName);
-                          })));
+                          _fibInterfaces
+                              .getOrDefault(nodeEntry.getKey(), ImmutableMap.of())
+                              .getOrDefault(vrfEntry.getKey(), ImmutableSet.of()),
+                          Interface::getName,
+                          iface ->
+                              computeInsufficientInfoPerInterface(
+                                  nodeEntry.getKey(), iface.getVrfName(), iface.getName()))));
     }
   }
 
