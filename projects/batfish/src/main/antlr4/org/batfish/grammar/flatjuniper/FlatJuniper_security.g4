@@ -1243,12 +1243,12 @@ seso_icmp
    ICMP
    (
       sesoi_flood
-      | FRAGMENT
-      | ICMPV6_MALFORMED
+      | sesoi_fragment
+      | sesoi_icmpv6_malformed
       | sesoi_ip_sweep
-      | LARGE
-      | PING_DEATH
-   )+
+      | sesoi_large
+      | sesoi_ping_death
+   )
 ;
 
 seso_ip
@@ -1315,9 +1315,29 @@ sesoi_flood
    FLOOD threshold
 ;
 
+sesoi_fragment
+:
+   FRAGMENT
+;
+
+sesoi_icmpv6_malformed
+:
+   ICMPV6_MALFORMED
+;
+
 sesoi_ip_sweep
 :
    IP_SWEEP threshold
+;
+
+sesoi_large
+:
+   LARGE
+;
+
+sesoi_ping_death
+:
+   PING_DEATH
 ;
 
 sesop_ipv6_extension_header
