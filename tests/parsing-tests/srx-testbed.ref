@@ -5024,6 +5024,24 @@
             "                  text = UNTRUST_SCREEN:'untrust-screen')",
             "                (seso_ip",
             "                  IP:'ip'",
+            "                  (sesop_block_frag",
+            "                    BLOCK_FRAG:'block-frag'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_security",
+            "            SECURITY:'security'",
+            "            (se_screen",
+            "              SCREEN:'screen'",
+            "              (ses_ids_option",
+            "                IDS_OPTION:'ids-option'",
+            "                name = (variable",
+            "                  text = UNTRUST_SCREEN:'untrust-screen')",
+            "                (seso_ip",
+            "                  IP:'ip'",
             "                  (sesop_source_route_option",
             "                    SOURCE_ROUTE_OPTION:'source-route-option'))))))))",
             "    NEWLINE:'\\n')",
@@ -5042,8 +5060,44 @@
             "                  text = UNTRUST_SCREEN:'untrust-screen')",
             "                (seso_ip",
             "                  IP:'ip'",
+            "                  (sesop_spoofing",
+            "                    SPOOFING:'spoofing'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_security",
+            "            SECURITY:'security'",
+            "            (se_screen",
+            "              SCREEN:'screen'",
+            "              (ses_ids_option",
+            "                IDS_OPTION:'ids-option'",
+            "                name = (variable",
+            "                  text = UNTRUST_SCREEN:'untrust-screen')",
+            "                (seso_ip",
+            "                  IP:'ip'",
             "                  (sesop_tear_drop",
             "                    TEAR_DROP:'tear-drop'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_security",
+            "            SECURITY:'security'",
+            "            (se_screen",
+            "              SCREEN:'screen'",
+            "              (ses_ids_option",
+            "                IDS_OPTION:'ids-option'",
+            "                name = (variable",
+            "                  text = UNTRUST_SCREEN:'untrust-screen')",
+            "                (seso_ip",
+            "                  IP:'ip'",
+            "                  (sesop_unknown_protocol",
+            "                    UNKNOWN_PROTOCOL:'unknown-protocol'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -6082,8 +6136,20 @@
               "Text" : "ping-death"
             },
             {
+              "Comment" : "Unsupported netscreen IP option",
+              "Line" : 41,
+              "Parser_Context" : "[sesop_block_frag seso_ip ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "block-frag"
+            },
+            {
+              "Comment" : "Unsupported netscreen IP option",
+              "Line" : 43,
+              "Parser_Context" : "[sesop_spoofing seso_ip ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "spoofing"
+            },
+            {
               "Comment" : "Unsupported netscreen TCP option",
-              "Line" : 48,
+              "Line" : 51,
               "Parser_Context" : "[sesot_land seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "land"
             }
@@ -6387,9 +6453,9 @@
           "bgp group" : {
             "physical" : {
               "definitionLines" : [
-                82,
-                83,
-                84
+                85,
+                86,
+                87
               ],
               "numReferrers" : 2
             }
@@ -6424,80 +6490,80 @@
           "interface" : {
             "fxp0" : {
               "definitionLines" : [
-                76
+                79
               ],
               "numReferrers" : 1
             },
             "fxp0.0" : {
               "definitionLines" : [
-                76
+                79
               ],
               "numReferrers" : 1
             },
             "ge-0/0/0" : {
               "definitionLines" : [
-                73
+                76
               ],
               "numReferrers" : 1
             },
             "ge-0/0/0.0" : {
               "definitionLines" : [
-                73
+                76
               ],
               "numReferrers" : 3
             },
             "ge-0/0/1" : {
               "definitionLines" : [
-                74
+                77
               ],
               "numReferrers" : 1
             },
             "ge-0/0/1.0" : {
               "definitionLines" : [
-                74
+                77
               ],
               "numReferrers" : 3
             },
             "ge-0/0/2" : {
               "definitionLines" : [
-                75
+                78
               ],
               "numReferrers" : 1
             },
             "ge-0/0/2.0" : {
               "definitionLines" : [
-                75
+                78
               ],
               "numReferrers" : 2
             },
             "lo0" : {
               "definitionLines" : [
-                77
+                80
               ],
               "numReferrers" : 1
             },
             "lo0.0" : {
               "definitionLines" : [
-                77
+                80
               ],
               "numReferrers" : 2
             },
             "st0" : {
               "definitionLines" : [
-                78,
-                79
+                81,
+                82
               ],
               "numReferrers" : 2
             },
             "st0.1" : {
               "definitionLines" : [
-                78
+                81
               ],
               "numReferrers" : 2
             },
             "st0.2" : {
               "definitionLines" : [
-                79
+                82
               ],
               "numReferrers" : 3
             }
@@ -6514,8 +6580,8 @@
           "policy-statement" : {
             "bgp_export" : {
               "definitionLines" : [
-                89,
-                90
+                92,
+                93
               ],
               "numReferrers" : 1
             }
@@ -6818,8 +6884,8 @@
           "bgp group" : {
             "physical" : {
               "bgp group neighbor" : [
-                83,
-                84
+                86,
+                87
               ]
             }
           },
@@ -6841,17 +6907,17 @@
           "interface" : {
             "fxp0" : {
               "interface" : [
-                76
+                79
               ]
             },
             "fxp0.0" : {
               "interface" : [
-                76
+                79
               ]
             },
             "ge-0/0/0" : {
               "interface" : [
-                73
+                76
               ]
             },
             "ge-0/0/0.0" : {
@@ -6859,15 +6925,15 @@
                 30
               ],
               "interface" : [
-                73
+                76
               ],
               "security zones security-zone interfaces" : [
-                66
+                69
               ]
             },
             "ge-0/0/1" : {
               "interface" : [
-                74
+                77
               ]
             },
             "ge-0/0/1.0" : {
@@ -6875,61 +6941,61 @@
                 27
               ],
               "interface" : [
-                74
+                77
               ],
               "security zones security-zone interfaces" : [
-                67
+                70
               ]
             },
             "ge-0/0/2" : {
               "interface" : [
-                75
+                78
               ]
             },
             "ge-0/0/2.0" : {
               "interface" : [
+                78
+              ],
+              "security zones security-zone interfaces" : [
                 75
+              ]
+            },
+            "lo0" : {
+              "interface" : [
+                80
+              ]
+            },
+            "lo0.0" : {
+              "interface" : [
+                80
               ],
               "security zones security-zone interfaces" : [
                 72
               ]
             },
-            "lo0" : {
-              "interface" : [
-                77
-              ]
-            },
-            "lo0.0" : {
-              "interface" : [
-                77
-              ],
-              "security zones security-zone interfaces" : [
-                69
-              ]
-            },
             "st0" : {
               "interface" : [
-                78,
-                79
+                81,
+                82
               ]
             },
             "st0.1" : {
               "interface" : [
-                78
+                81
               ],
               "security zones security-zone interfaces" : [
-                59
+                62
               ]
             },
             "st0.2" : {
               "interface" : [
-                79
+                82
               ],
               "ipsec vpn bind-interface" : [
                 33
               ],
               "security zones security-zone interfaces" : [
-                60
+                63
               ]
             }
           },
@@ -6943,7 +7009,7 @@
           "policy-statement" : {
             "bgp_export" : {
               "bgp export policy-statement" : [
-                80
+                83
               ]
             }
           }
