@@ -599,7 +599,7 @@ public final class BidirectionalReachabilityAnalysisTest {
 
     Configuration fw = cb.build();
     ib.setOwner(fw).setVrf(nf.vrfBuilder().setOwner(fw).build());
-    Interface fwI1 = ib.setAddress(new InterfaceAddress("2.0.0.3/29")).build();
+    ib.setAddress(new InterfaceAddress("2.0.0.3/29")).build();
     Interface fwI2 = ib.setAddress(new InterfaceAddress("3.0.0.1/29")).build();
     Interface fwI3 = ib.setAddress(new InterfaceAddress("255.255.255.0/24")).build();
 
