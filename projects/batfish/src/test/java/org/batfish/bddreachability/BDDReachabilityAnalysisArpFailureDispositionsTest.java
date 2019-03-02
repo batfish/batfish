@@ -87,7 +87,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   private BDDReachabilityAnalysisFactory initFactory() throws IOException {
     Batfish batfish = initBatfish(_configs);
     return new BDDReachabilityAnalysisFactory(
-        PKT, _configs, batfish.loadDataPlane().getForwardingAnalysis());
+        PKT, _configs, batfish.loadDataPlane().getForwardingAnalysis(), false, false);
   }
 
   private BDDReachabilityAnalysis initAnalysis(FlowDisposition disposition) throws IOException {
