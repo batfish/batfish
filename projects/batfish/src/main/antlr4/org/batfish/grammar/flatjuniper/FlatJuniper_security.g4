@@ -138,6 +138,7 @@ nat_pool
       natp_address
       | natp_description
       | natp_port
+      | natp_routing_instance
    )
 ;
 
@@ -207,6 +208,11 @@ natp_port
 natp_description
 :
    DESCRIPTION null_filler
+;
+
+natp_routing_instance
+:
+   ROUTING_INSTANCE name = variable
 ;
 
 proposal_set_type
@@ -1281,17 +1287,17 @@ seso_tcp
 :
    TCP
    (
-      FIN_NO_ACK
-      | LAND
+      sesot_fin_no_ack
+      | sesot_land
       | sesot_port_scan
       | sesot_syn_ack_ack_proxy
-      | SYN_FIN
+      | sesot_syn_fin
       | sesot_syn_flood
-      | SYN_FRAG
-      | TCP_NO_FLAG
+      | sesot_syn_frag
+      | sesot_tcp_no_flag
       | sesot_tcp_sweep
-      | WINNUKE
-   )+
+      | sesot_winnuke
+   )
 ;
 
 seso_udp
@@ -1379,6 +1385,16 @@ sesop6_user_option
    USER_DEFINED_OPTION_TYPE type_low=DEC (TO type_high=DEC)?
 ;
 
+sesot_fin_no_ack
+:
+   FIN_NO_ACK
+;
+
+sesot_land
+:
+   LAND
+;
+
 sesot_port_scan
 :
    PORT_SCAN threshold
@@ -1387,6 +1403,11 @@ sesot_port_scan
 sesot_syn_ack_ack_proxy
 :
    SYN_ACK_ACK_PROXY threshold
+;
+
+sesot_syn_fin
+:
+   SYN_FIN
 ;
 
 sesot_syn_flood
@@ -1402,9 +1423,24 @@ sesot_syn_flood
   )
 ;
 
+sesot_syn_frag
+:
+   SYN_FRAG
+;
+
+sesot_tcp_no_flag
+:
+   TCP_NO_FLAG
+;
+
 sesot_tcp_sweep
 :
    TCP_SWEEP threshold
+;
+
+sesot_winnuke
+:
+   WINNUKE
 ;
 
 sesots_alarm_thred

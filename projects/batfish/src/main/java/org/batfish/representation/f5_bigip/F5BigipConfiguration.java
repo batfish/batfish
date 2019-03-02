@@ -2,10 +2,12 @@ package org.batfish.representation.f5_bigip;
 
 import static com.google.common.base.Predicates.notNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeSet;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
@@ -14,12 +16,16 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -28,6 +34,7 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
@@ -112,9 +119,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, PrefixList> _prefixLists;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
   private final @Nonnull Map<String, Self> _selves;
+  private transient Map<String, Set<IpSpace>> _snatAdditionalArpIps;
   private final @Nonnull Map<String, SnatPool> _snatPools;
   private final @Nonnull Map<String, Snat> _snats;
   private final @Nonnull Map<String, SnatTranslation> _snatTranslations;
+  private transient Map<String, Set<IpSpace>> _virtualAdditionalArpIps;
   private final @Nonnull Map<String, VirtualAddress> _virtualAddresses;
   private transient Map<String, Transformation> _virtualIncomingTransformations;
 
@@ -190,6 +199,31 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private void addNatRules(org.batfish.datamodel.Interface iface) {
     String ifaceName = iface.getName();
     iface.setIncomingTransformation(computeInterfaceIncomingTransformation(ifaceName));
+    iface.setAdditionalArpIps(computeAdditionalArpIps(ifaceName));
+  }
+
+  private IpSpace computeAdditionalArpIps(String ifaceName) {
+    Stream<IpSpace> virtualIps =
+        _virtuals.values().stream()
+            .filter(
+                virtual ->
+                    !virtual.getVlansEnabled()
+                        || virtual.getVlans() == null
+                        || !virtual.getVlans().contains(ifaceName))
+            .map(Virtual::getName)
+            .map(_virtualAdditionalArpIps::get)
+            .flatMap(Collection::stream);
+    Stream<IpSpace> snatIps =
+        _snats.values().stream()
+            .filter(
+                snat ->
+                    !snat.getVlansEnabled()
+                        || snat.getVlans() == null
+                        || !snat.getVlans().contains(ifaceName))
+            .map(Snat::getName)
+            .map(_snatAdditionalArpIps::get)
+            .flatMap(Collection::stream);
+    return AclIpSpace.union(Stream.concat(virtualIps, snatIps).toArray(IpSpace[]::new));
   }
 
   private Transformation computeInterfaceIncomingTransformation(String ifaceName) {
@@ -209,6 +243,59 @@ public class F5BigipConfiguration extends VendorConfiguration {
                     .apply(otherTransformation.getTransformationSteps())
                     .setOrElse(transformation)
                     .build());
+  }
+
+  private @Nonnull Stream<IpSpace> computeSnatAdditionalArpIps(Snat snat) {
+    return Optional.ofNullable(snat.getSnatpool())
+        .map(this::computeSnatPoolIps)
+        .orElse(Stream.of());
+  }
+
+  private @Nonnull Stream<IpSpace> computeSnatPoolIps(String snatPoolName) {
+    SnatPool snatPool = _snatPools.get(snatPoolName);
+    if (snatPool == null) {
+      // no SNAT pool, so no SNAT IPs
+      return Stream.of();
+    }
+    return snatPool.getMembers().stream()
+        .map(_snatTranslations::get)
+        .filter(Objects::nonNull)
+        .map(SnatTranslation::getAddress)
+        .filter(Objects::nonNull)
+        .map(Ip::toIpSpace);
+  }
+
+  private @Nonnull Set<IpSpace> computeVirtualAdditionalArpIps(Virtual virtual) {
+    return Stream.concat(computeVirtualDnatIps(virtual), computeVirtualSnatIps(virtual))
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  private @Nonnull Stream<IpSpace> computeVirtualDnatIps(Virtual virtual) {
+    if (!_virtualIncomingTransformations.containsKey(virtual.getName())) {
+      // Early exit if no incoming transformation for this virtual
+      return Stream.of();
+    }
+
+    String destination = virtual.getDestination();
+    if (destination == null) {
+      // Cannot match without destination node
+      return Stream.of();
+    }
+    VirtualAddress virtualAddress = _virtualAddresses.get(destination);
+    if (virtualAddress == null) {
+      return Stream.of();
+    }
+    Ip destinationIp = virtualAddress.getAddress();
+    if (destinationIp == null) {
+      // Cannot match without destination IP
+      return Stream.of();
+    }
+    Ip mask = virtualAddress.getMask();
+    if (mask == null) {
+      // Cannot match without destination IP mask
+      return Stream.of();
+    }
+    return Stream.of(Prefix.create(destinationIp, mask).toIpSpace());
   }
 
   private TransformationStep computeVirtualIncomingPoolMemberTransformation(PoolMember member) {
@@ -272,6 +359,15 @@ public class F5BigipConfiguration extends VendorConfiguration {
       // Cannot match without destination IP (might be IPv6, so don't warn here)
       return Optional.empty();
     }
+    Ip destinationMask = virtualAddress.getMask();
+    if (destinationMask == null) {
+      // Cannot match without destination mask
+      _w.redFlag(
+          String.format(
+              "Virtual '%s' with IPv4 destination '%s' is missing mask",
+              virtual.getName(), destination));
+      return Optional.empty();
+    }
     Integer destinationPort = virtual.getDestinationPort();
     if (destinationPort == null) {
       // Cannot match without destination port
@@ -287,7 +383,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     AclLineMatchExpr matchCondition =
         new MatchHeaderSpace(
             HeaderSpace.builder()
-                .setDstIps(destinationIp.toIpSpace())
+                .setDstIps(Prefix.create(destinationIp, destinationMask).toIpSpace())
                 .setDstPorts(ImmutableList.of(new SubRange(destinationPort, destinationPort)))
                 .setSrcIps(source.toIpSpace())
                 .build(),
@@ -306,8 +402,26 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return Optional.empty();
   }
 
+  private @Nonnull Stream<IpSpace> computeVirtualSnatIps(Virtual virtual) {
+    return Optional.ofNullable(virtual.getSourceAddressTranslationPool())
+        .map(this::computeSnatPoolIps)
+        .orElse(Stream.of());
+  }
+
   public @Nonnull Map<String, BgpProcess> getBgpProcesses() {
     return _bgpProcesses;
+  }
+
+  private @Nonnull Ip getBgpRouterId(BgpProcess proc) {
+    Ip processRouterId = proc.getRouterId();
+    return processRouterId != null
+        ? processRouterId
+        : _c.getAllInterfaces().values().stream()
+            .map(org.batfish.datamodel.Interface::getAllAddresses)
+            .flatMap(Collection::stream)
+            .map(InterfaceAddress::getIp)
+            .max(Ip::compareTo)
+            .orElse(Ip.ZERO);
   }
 
   @Override
@@ -388,7 +502,21 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return _vlans;
   }
 
+  private void initSnatTransformations() {
+    // TODO: outgoing transformations
+
+    // additional ARP IPs
+    _snatAdditionalArpIps =
+        toImmutableMap(
+            _snats,
+            Entry::getKey,
+            snatAdditionalArpIpsEntry ->
+                computeSnatAdditionalArpIps(snatAdditionalArpIpsEntry.getValue())
+                    .collect(ImmutableSet.toImmutableSet()));
+  }
+
   private void initVirtualTransformations() {
+    // incoming transformations
     ImmutableSortedMap.Builder<String, Transformation> virtualIncomingTransformations =
         ImmutableSortedMap.naturalOrder();
     _virtuals.forEach(
@@ -398,6 +526,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
                     transformation ->
                         virtualIncomingTransformations.put(virtualName, transformation)));
     _virtualIncomingTransformations = virtualIncomingTransformations.build();
+
+    // outgoing transformations
     ImmutableSortedMap.Builder<String, Transformation> virtualOutgoingTransformations =
         ImmutableSortedMap.naturalOrder();
     _virtuals.forEach(
@@ -407,6 +537,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
                     transformation ->
                         virtualOutgoingTransformations.put(virtualName, transformation)));
     _virtualOutgoingTransformations = virtualOutgoingTransformations.build();
+
+    // additional ARP IPs
+    _virtualAdditionalArpIps =
+        toImmutableMap(_virtuals, Entry::getKey, e -> computeVirtualAdditionalArpIps(e.getValue()));
   }
 
   private void markStructures() {
@@ -549,6 +683,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private @Nonnull org.batfish.datamodel.BgpProcess toBgpProcess(BgpProcess proc) {
     org.batfish.datamodel.BgpProcess newProc = new org.batfish.datamodel.BgpProcess();
+    newProc.setRouterId(getBgpRouterId(proc));
 
     // TODO: verify correct method of determining whether two AS-paths are equivalent
     newProc.setMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
@@ -793,9 +928,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
                 .map(Optional::get)
                 .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
 
-    initVirtualTransformations();
-
     // Create NAT transformation rules
+    initSnatTransformations();
+    initVirtualTransformations();
     _vlans.keySet().stream().map(_c.getAllInterfaces()::get).forEach(this::addNatRules);
 
     markStructures();

@@ -42099,6 +42099,21 @@
             "              (word",
             "                WORD:'/Common/0'))",
             "            NEWLINE:'\\n')",
+            "          (nrb_router_id",
+            "            ROUTER_ID:'router-id'",
+            "            id = (word",
+            "              WORD:'192.0.2.1')",
+            "            NEWLINE:'\\n')",
+            "          (nrb_router_id",
+            "            ROUTER_ID:'router-id'",
+            "            id = (word",
+            "              WORD:'dead:beef::1234')",
+            "            NEWLINE:'\\n')",
+            "          (nrb_router_id",
+            "            ROUTER_ID:'router-id'",
+            "            id = (word",
+            "              WORD:'invalidText')",
+            "            NEWLINE:'\\n')",
             "          BRACE_RIGHT:'}'",
             "          NEWLINE:'\\n\\n\\n'))))",
             "  EOF:<EOF>)"
@@ -69342,6 +69357,18 @@
               "Line" : 66,
               "Parser_Context" : "[unrecognized nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
               "Text" : "route-domain"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 68,
+              "Parser_Context" : "[nrb_router_id nr_bgp net_routing s_net statement f5_bigip_structured_configuration]",
+              "Text" : "router-id dead:beef::1234"
+            }
+          ],
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "'invalidText' is neither IPv4 nor IPv6 address in: router-id invalidText\n"
             }
           ]
         },
@@ -73105,7 +73132,10 @@
                 64,
                 65,
                 66,
-                67
+                67,
+                68,
+                69,
+                70
               ],
               "numReferrers" : 1
             }

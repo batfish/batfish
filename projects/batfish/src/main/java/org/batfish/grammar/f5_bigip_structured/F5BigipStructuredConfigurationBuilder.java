@@ -159,6 +159,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_bgpCon
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_prefix_listContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nr_route_mapContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrb_local_asContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrb_router_idContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbaf_ipv4Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbaf_ipv6Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrbafcr_kernelContext;
@@ -271,9 +272,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   private @Nullable VirtualAddress _currentVirtualAddress;
   private @Nullable Vlan _currentVlan;
   private final @Nonnull F5BigipStructuredCombinedParser _parser;
-
   private final @Nonnull String _text;
-
   private final @Nonnull Warnings _w;
 
   public F5BigipStructuredConfigurationBuilder(
@@ -1000,6 +999,23 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitNrb_local_as(Nrb_local_asContext ctx) {
     _currentBgpProcess.setLocalAs(toLong(ctx.as));
+  }
+
+  @Override
+  public void exitNrb_router_id(Nrb_router_idContext ctx) {
+    String text = ctx.id.getText();
+    Optional<Ip> ip = Ip.tryParse(text);
+    if (ip.isPresent()) {
+      _currentBgpProcess.setRouterId(ip.get());
+      return;
+    }
+    Optional<Ip6> ip6 = Ip6.tryParse(text);
+    if (ip6.isPresent()) {
+      todo(ctx);
+      return;
+    }
+    _w.redFlag(
+        String.format("'%s' is neither IPv4 nor IPv6 address in: %s", text, getFullText(ctx)));
   }
 
   @Override

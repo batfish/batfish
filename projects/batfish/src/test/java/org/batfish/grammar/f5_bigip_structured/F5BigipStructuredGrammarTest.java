@@ -2,13 +2,16 @@ package org.batfish.grammar.f5_bigip_structured;
 
 import static org.batfish.common.util.CommonUtil.communityStringToLong;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalIp;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpRouteThat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
@@ -23,6 +26,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
+import static org.batfish.datamodel.matchers.KernelRouteMatchers.isKernelRouteThat;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
@@ -59,6 +63,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -74,16 +79,20 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -106,8 +115,10 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.transformation.IpField;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.TestrigText;
 import org.batfish.representation.f5_bigip.Builtin;
 import org.batfish.representation.f5_bigip.BuiltinMonitor;
 import org.batfish.representation.f5_bigip.BuiltinPersistence;
@@ -120,6 +131,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 public final class F5BigipStructuredGrammarTest {
+  private static final String SNAPSHOTS_PREFIX =
+      "org/batfish/grammar/f5_bigip_structured/snapshots/";
   private static final String TESTCONFIGS_PREFIX =
       "org/batfish/grammar/f5_bigip_structured/testconfigs/";
 
@@ -186,6 +199,30 @@ public final class F5BigipStructuredGrammarTest {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.parseTextConfigs(_folder, names);
+  }
+
+  @Test
+  public void testBgpKernelRouteRedistribution() throws IOException {
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(SNAPSHOTS_PREFIX + "bgp_e2e", "r1", "r2")
+                .build(),
+            _folder);
+    batfish.computeDataPlane();
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> routes1 =
+        dp.getRibs().get("r1").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> routes2 =
+        dp.getRibs().get("r2").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+
+    // kernel routes should be installed
+    assertThat(routes1, hasItem(isKernelRouteThat(hasPrefix(Prefix.strict("10.0.0.1/32")))));
+    assertThat(routes2, hasItem(isKernelRouteThat(hasPrefix(Prefix.strict("10.0.0.2/32")))));
+
+    // kernel routes should be redistributed
+    assertThat(routes1, hasItem(isBgpRouteThat(hasPrefix(Prefix.strict("10.0.0.2/32")))));
+    assertThat(routes2, hasItem(isBgpRouteThat(hasPrefix(Prefix.strict("10.0.0.1/32")))));
   }
 
   @Test
@@ -374,49 +411,116 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
-  public void testDnat() throws IOException {
-    String hostname = "f5_bigip_structured_dnat";
-    String tag = "tag";
-    Flow flow =
-        Flow.builder()
-            .setTag(tag)
-            .setDstIp(Ip.parse("192.0.2.1"))
-            .setDstPort(80)
-            .setIngressInterface("/Common/SOME_VLAN")
-            .setIngressNode(hostname)
-            .setIpProtocol(IpProtocol.TCP)
-            .setSrcIp(Ip.parse("8.8.8.8"))
-            .setSrcPort(50000)
-            .build();
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    batfish.computeDataPlane();
-    SortedMap<Flow, List<Trace>> flowTraces =
-        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
-    List<Trace> traces = flowTraces.get(flow);
-    Optional<TransformationStepDetail> stepDetailOptional =
-        traces.stream()
-            .map(Trace::getHops)
-            .flatMap(Collection::stream)
-            .map(Hop::getSteps)
-            .flatMap(Collection::stream)
-            .map(Step::getDetail)
-            .filter(Predicates.instanceOf(TransformationStepDetail.class))
-            .map(TransformationStepDetail.class::cast)
-            .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
-            .findFirst();
+  public void testBgpRouteIdAuto() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_bgp_router_id_auto");
 
-    // TODO: uncomment after resolution of https://github.com/batfish/batfish/pull/3248
-    assert stepDetailOptional != null;
-    //    assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
-    //
-    //    TransformationStepDetail detail = stepDetailOptional.get();
-    //
-    //    assertThat(
-    //        detail.getFlowDiffs(),
-    //        hasItem(
-    //            equalTo(
-    //                FlowDiff.flowDiff(
-    //                    IpField.DESTINATION, Ip.parse("192.0.2.1"), Ip.parse("192.0.2.10")))));
+    // BGP Router-ID automatically chosen from highest IP address
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasRouterId(Ip.parse("192.0.2.1")))));
+  }
+
+  @Test
+  public void testBgpRouterIdManual() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_bgp_router_id_manual");
+
+    // BGP Router-ID manually set
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasRouterId(Ip.parse("192.0.2.1")))));
+  }
+
+  @Test
+  public void testDnat() throws IOException {
+    String snapshotName = "dnat";
+    String natHostname = "f5_bigip_structured_dnat";
+    String hostname = "host1";
+    String hostFilename = hostname + ".json";
+    String tag = "tag";
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(SNAPSHOTS_PREFIX + snapshotName, natHostname)
+                .setHostsText(SNAPSHOTS_PREFIX + snapshotName, hostFilename)
+                .build(),
+            _folder);
+    batfish.computeDataPlane();
+
+    {
+      // DNAT modulo ARP
+      Flow flow =
+          Flow.builder()
+              .setTag(tag)
+              .setDstIp(Ip.parse("192.0.2.1"))
+              .setDstPort(80)
+              .setIngressInterface("/Common/SOME_VLAN")
+              .setIngressNode(natHostname)
+              .setIpProtocol(IpProtocol.TCP)
+              .setSrcIp(Ip.parse("8.8.8.8"))
+              .setSrcPort(50000)
+              .build();
+      SortedMap<Flow, List<Trace>> flowTraces =
+          batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
+      List<Trace> traces = flowTraces.get(flow);
+      Optional<TransformationStepDetail> stepDetailOptional =
+          traces.stream()
+              .map(Trace::getHops)
+              .flatMap(Collection::stream)
+              .map(Hop::getSteps)
+              .flatMap(Collection::stream)
+              .map(Step::getDetail)
+              .filter(Predicates.instanceOf(TransformationStepDetail.class))
+              .map(TransformationStepDetail.class::cast)
+              .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
+              .findFirst();
+
+      assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
+
+      TransformationStepDetail detail = stepDetailOptional.get();
+
+      assertThat(
+          detail.getFlowDiffs(),
+          hasItem(
+              equalTo(
+                  FlowDiff.flowDiff(
+                      IpField.DESTINATION, Ip.parse("192.0.2.1"), Ip.parse("192.0.2.10")))));
+    }
+
+    {
+      // DNAT with ARP
+      Flow flow =
+          Flow.builder()
+              .setTag(tag)
+              .setDstIp(Ip.parse("192.0.2.1"))
+              .setDstPort(80)
+              .setIngressNode(hostname)
+              .setIpProtocol(IpProtocol.TCP)
+              .setSrcIp(Ip.parse("192.0.2.2"))
+              .setSrcPort(50000)
+              .build();
+      SortedMap<Flow, List<Trace>> flowTraces =
+          batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
+      List<Trace> traces = flowTraces.get(flow);
+      Optional<TransformationStepDetail> stepDetailOptional =
+          traces.stream()
+              .map(Trace::getHops)
+              .flatMap(Collection::stream)
+              .map(Hop::getSteps)
+              .flatMap(Collection::stream)
+              .map(Step::getDetail)
+              .filter(Predicates.instanceOf(TransformationStepDetail.class))
+              .map(TransformationStepDetail.class::cast)
+              .filter(d -> d.getTransformationType() == TransformationType.DEST_NAT)
+              .findFirst();
+
+      assertTrue("There is a DNAT transformation step.", stepDetailOptional.isPresent());
+
+      TransformationStepDetail detail = stepDetailOptional.get();
+
+      assertThat(
+          detail.getFlowDiffs(),
+          hasItem(
+              equalTo(
+                  FlowDiff.flowDiff(
+                      IpField.DESTINATION, Ip.parse("192.0.2.1"), Ip.parse("192.0.2.10")))));
+    }
   }
 
   @Test
