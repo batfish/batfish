@@ -3026,11 +3026,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void exitSeso_udp(FlatJuniperParser.Seso_udpContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
   public void enterSead_address_set(Sead_address_setContext ctx) {
     String name = ctx.name.getText();
     AddressBookEntry entry =
