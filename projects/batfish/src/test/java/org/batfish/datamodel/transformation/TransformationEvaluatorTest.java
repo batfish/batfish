@@ -16,12 +16,12 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignDest
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
@@ -135,10 +135,11 @@ public class TransformationEvaluatorTest {
 
     assertThat(
         result.getTraceSteps(),
-        contains(
-            new org.batfish.datamodel.flow.TransformationStep(
-                new TransformationStepDetail(SOURCE_NAT, ImmutableSortedSet.of()),
-                StepAction.PERMITTED)));
+        equalTo(
+            ImmutableList.of(
+                new org.batfish.datamodel.flow.TransformationStep(
+                    new TransformationStepDetail(SOURCE_NAT, ImmutableSortedSet.of()),
+                    StepAction.PERMITTED))));
   }
 
   @Test
@@ -286,7 +287,7 @@ public class TransformationEvaluatorTest {
                 DEST_NAT,
                 ImmutableSortedSet.of(flowDiff(PortField.DESTINATION, dstPort, poolPort))),
             TRANSFORMED);
-    assertThat(traceSteps, contains(step));
+    assertThat(traceSteps, equalTo(ImmutableList.of(step)));
 
     // the flow is not transformed
     origFlow = _flowBuilder.setDstPort(poolPort).build();
@@ -297,7 +298,7 @@ public class TransformationEvaluatorTest {
     step =
         new TransformationStep(
             new TransformationStepDetail(DEST_NAT, ImmutableSortedSet.of()), PERMITTED);
-    assertThat(traceSteps, contains(step));
+    assertThat(traceSteps, equalTo(ImmutableList.of(step)));
   }
 
   @Test
@@ -321,7 +322,7 @@ public class TransformationEvaluatorTest {
             new TransformationStepDetail(
                 SOURCE_NAT, ImmutableSortedSet.of(flowDiff(PortField.SOURCE, srcPort, poolPort))),
             TRANSFORMED);
-    assertThat(traceSteps, contains(step));
+    assertThat(traceSteps, equalTo(ImmutableList.of(step)));
 
     // the flow is not transformed
     origFlow = _flowBuilder.setSrcPort(poolPort).build();
@@ -332,6 +333,6 @@ public class TransformationEvaluatorTest {
     step =
         new TransformationStep(
             new TransformationStepDetail(SOURCE_NAT, ImmutableSortedSet.of()), PERMITTED);
-    assertThat(traceSteps, contains(step));
+    assertThat(traceSteps, equalTo(ImmutableList.of(step)));
   }
 }

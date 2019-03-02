@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
@@ -214,10 +215,11 @@ public class NatRuleSetTest {
             ImmutableMap.of());
     assertThat(
         result.getTraceSteps(),
-        contains(
-            new TransformationStep(
-                new TransformationStepDetail(SOURCE_NAT, ImmutableSortedSet.of()),
-                StepAction.PERMITTED)));
+        equalTo(
+            ImmutableList.of(
+                new TransformationStep(
+                    new TransformationStepDetail(SOURCE_NAT, ImmutableSortedSet.of()),
+                    StepAction.PERMITTED))));
 
     // matches rule set, matches rule2
     result =
@@ -229,13 +231,14 @@ public class NatRuleSetTest {
             ImmutableMap.of());
     assertThat(
         result.getTraceSteps(),
-        contains(
-            new TransformationStep(
-                new TransformationStepDetail(
-                    SOURCE_NAT,
-                    ImmutableSortedSet.of(
-                        FlowDiff.flowDiff(SOURCE, Ip.ZERO, poolStart),
-                        FlowDiff.flowDiff(PortField.SOURCE, 0, 1024))),
-                StepAction.TRANSFORMED)));
+        equalTo(
+            ImmutableList.of(
+                new TransformationStep(
+                    new TransformationStepDetail(
+                        SOURCE_NAT,
+                        ImmutableSortedSet.of(
+                            FlowDiff.flowDiff(SOURCE, Ip.ZERO, poolStart),
+                            FlowDiff.flowDiff(PortField.SOURCE, 0, 1024))),
+                    StepAction.TRANSFORMED))));
   }
 }
