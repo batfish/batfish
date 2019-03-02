@@ -42,17 +42,19 @@ maven_repository(
     name = "auto_service",
     force = [
         "com.google.errorprone:error_prone_annotations:2.3.1",
-        "com.google.guava:guava:26.0-jre",
+        "com.google.guava:guava:27.0.1-jre",
     ],
     transitive_deps = [
         "c6f7af0e57b9d69d81b05434ef9f3c5610d498c4:com.google.auto:auto-common:0.8",
         "44954d465f3b9065388bbd2fc08a3eb8fd07917c:com.google.auto.service:auto-service:1.0-rc4",
         "25ea2e8b0c338a877313bd4672d3fe056ea78f0d:com.google.code.findbugs:jsr305:3.0.2",
         "a6a2b2df72fd13ec466216049b303f206bd66c5d:com.google.errorprone:error_prone_annotations:2.3.1",
-        "6a806eff209f36f635f943e16d97491f00f6bfab:com.google.guava:guava:26.0-jre",
+        "1dcf1de382a0bf95a3d8b0849546c88bac1292c9:com.google.guava:failureaccess:1.0.1",
+        "bd41a290787b5301e63929676d792c507bbc00ae:com.google.guava:guava:27.0.1-jre",
+        "b421526c5f297295adef1c886e5246c39d4ac629:com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
         "ed28ded51a8b1c6b112568def5f4b455e6809019:com.google.j2objc:j2objc-annotations:1.1",
         "cea74543d5904a30861a61b4643a5f2bb372efc4:org.checkerframework:checker-qual:2.5.2",
-        "775b7e22fb10026eed3f86e8dc556dfafe35f2d5:org.codehaus.mojo:animal-sniffer-annotations:1.14",
+        "f97ce6decaea32b36101e37979f8b647f00681fb:org.codehaus.mojo:animal-sniffer-annotations:1.17",
     ],
     deps = [
         "com.google.auto.service:auto-service:1.0-rc4",
@@ -232,13 +234,15 @@ maven_repository(
     transitive_deps = [
         "25ea2e8b0c338a877313bd4672d3fe056ea78f0d:com.google.code.findbugs:jsr305:3.0.2",
         "a6a2b2df72fd13ec466216049b303f206bd66c5d:com.google.errorprone:error_prone_annotations:2.3.1",
-        "6a806eff209f36f635f943e16d97491f00f6bfab:com.google.guava:guava:26.0-jre",
+        "1dcf1de382a0bf95a3d8b0849546c88bac1292c9:com.google.guava:failureaccess:1.0.1",
+        "bd41a290787b5301e63929676d792c507bbc00ae:com.google.guava:guava:27.0.1-jre",
+        "b421526c5f297295adef1c886e5246c39d4ac629:com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
         "ed28ded51a8b1c6b112568def5f4b455e6809019:com.google.j2objc:j2objc-annotations:1.1",
         "cea74543d5904a30861a61b4643a5f2bb372efc4:org.checkerframework:checker-qual:2.5.2",
-        "775b7e22fb10026eed3f86e8dc556dfafe35f2d5:org.codehaus.mojo:animal-sniffer-annotations:1.14",
+        "f97ce6decaea32b36101e37979f8b647f00681fb:org.codehaus.mojo:animal-sniffer-annotations:1.17",
     ],
     deps = [
-        "com.google.guava:guava:26.0-jre",
+        "com.google.guava:guava:27.0.1-jre",
     ],
 )
 
@@ -261,17 +265,17 @@ maven_repository(
     transitive_deps = [
         "25ea2e8b0c338a877313bd4672d3fe056ea78f0d:com.google.code.findbugs:jsr305:3.0.2",
         "a6a2b2df72fd13ec466216049b303f206bd66c5d:com.google.errorprone:error_prone_annotations:2.3.1",
-        "6a806eff209f36f635f943e16d97491f00f6bfab:com.google.guava:guava:26.0-jre",
-        "3d6b3f4877cf8b203860333811af4764de93c8c1:com.google.guava:guava-testlib:26.0-jre",
+        "1dcf1de382a0bf95a3d8b0849546c88bac1292c9:com.google.guava:failureaccess:1.0.1",
+        "bd41a290787b5301e63929676d792c507bbc00ae:com.google.guava:guava:27.0.1-jre",
+        "97247f5b2229f6e23bea40f4c9668546cc8b38dd:com.google.guava:guava-testlib:27.0.1-jre",
+        "b421526c5f297295adef1c886e5246c39d4ac629:com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
         "ed28ded51a8b1c6b112568def5f4b455e6809019:com.google.j2objc:j2objc-annotations:1.1",
         "2973d150c0dc1fefe998f834810d68f278ea58ec:junit:junit:4.12",
         "cea74543d5904a30861a61b4643a5f2bb372efc4:org.checkerframework:checker-qual:2.5.2",
-        "775b7e22fb10026eed3f86e8dc556dfafe35f2d5:org.codehaus.mojo:animal-sniffer-annotations:1.14",
-        "0f1c8853ade0ecf707f5a261c830e98893983813:org.hamcrest:java-hamcrest:2.0.0.0",
+        "f97ce6decaea32b36101e37979f8b647f00681fb:org.codehaus.mojo:animal-sniffer-annotations:1.17",
     ],
     deps = [
-        "com.google.guava:guava-testlib:26.0-jre",
-        "org.hamcrest:java-hamcrest:2.0.0.0",
+        "com.google.guava:guava-testlib:27.0.1-jre",
     ],
 )
 
@@ -283,10 +287,10 @@ guava_testlib_compile()
 maven_repository(
     name = "hamcrest",
     transitive_deps = [
-        "0f1c8853ade0ecf707f5a261c830e98893983813:org.hamcrest:java-hamcrest:2.0.0.0",
+        "9420ba32c29217b54eebd26ff7f9234d31c3fbb2:org.hamcrest:hamcrest:2.1",
     ],
     deps = [
-        "org.hamcrest:java-hamcrest:2.0.0.0",
+        "org.hamcrest:hamcrest:2.1",
     ],
 )
 
@@ -364,7 +368,7 @@ maven_repository(
     name = "jackson_guava",
     force = [
         "com.fasterxml.jackson.core:jackson-annotations:2.9.8",
-        "com.google.guava:guava:26.0-jre",
+        "com.google.guava:guava:27.0.1-jre",
         "com.google.errorprone:error_prone_annotations:2.3.1",
     ],
     transitive_deps = [
@@ -374,10 +378,12 @@ maven_repository(
         "b7f7819800f8ebe51a03dd951636f6dbc6245ce6:com.fasterxml.jackson.datatype:jackson-datatype-guava:2.9.8",
         "25ea2e8b0c338a877313bd4672d3fe056ea78f0d:com.google.code.findbugs:jsr305:3.0.2",
         "a6a2b2df72fd13ec466216049b303f206bd66c5d:com.google.errorprone:error_prone_annotations:2.3.1",
-        "6a806eff209f36f635f943e16d97491f00f6bfab:com.google.guava:guava:26.0-jre",
+        "1dcf1de382a0bf95a3d8b0849546c88bac1292c9:com.google.guava:failureaccess:1.0.1",
+        "bd41a290787b5301e63929676d792c507bbc00ae:com.google.guava:guava:27.0.1-jre",
+        "b421526c5f297295adef1c886e5246c39d4ac629:com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
         "ed28ded51a8b1c6b112568def5f4b455e6809019:com.google.j2objc:j2objc-annotations:1.1",
         "cea74543d5904a30861a61b4643a5f2bb372efc4:org.checkerframework:checker-qual:2.5.2",
-        "775b7e22fb10026eed3f86e8dc556dfafe35f2d5:org.codehaus.mojo:animal-sniffer-annotations:1.14",
+        "f97ce6decaea32b36101e37979f8b647f00681fb:org.codehaus.mojo:animal-sniffer-annotations:1.17",
     ],
     deps = [
         "com.fasterxml.jackson.datatype:jackson-datatype-guava:2.9.8",
