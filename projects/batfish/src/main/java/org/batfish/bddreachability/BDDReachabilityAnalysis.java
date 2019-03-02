@@ -86,6 +86,10 @@ public class BDDReachabilityAnalysis {
     fixpoint(reverseReachable, _reverseEdges, Edge::traverseBackward);
   }
 
+  private void forwardFixpoint(Map<StateExpr, BDD> reachable) {
+    fixpoint(reachable, _forwardEdgeMap, Edge::traverseForward);
+  }
+
   /** Apply edges to the reachableSets until a fixed point is reached. */
   @VisibleForTesting
   static void fixpoint(
