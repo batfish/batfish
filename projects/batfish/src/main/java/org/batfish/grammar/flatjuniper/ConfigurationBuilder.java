@@ -512,6 +512,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sepctxpt_permitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesoi_fragmentContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesoi_largeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesoi_ping_deathContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesop_block_fragContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesop_spoofingContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesop_unknown_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesot_fin_no_ackContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesot_landContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sesot_syn_finContext;
@@ -2978,15 +2981,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void exitSeso_ip(FlatJuniperParser.Seso_ipContext ctx) {
-    if (!ctx.UNKNOWN_PROTOCOL().isEmpty()) {
-      _currentScreen.getScreenOptions().add(IpUnknownProtocol.INSTANCE);
-    } else {
-      todo(ctx);
-    }
-  }
-
-  @Override
   public void exitSesoi_fragment(Sesoi_fragmentContext ctx) {
     // Batfish does not currently model the IP fragmentation bits.
     todo(ctx, "Unsupported netscreen ICMP option");
@@ -3001,6 +2995,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitSesoi_ping_death(Sesoi_ping_deathContext ctx) {
     // Batfish does not currently model the IP fragmentation bits needed for this.
     todo(ctx, "Unsupported netscreen ICMP option");
+  }
+
+  @Override
+  public void exitSesop_block_frag(Sesop_block_fragContext ctx) {
+    // Batfish does not currently model the IP fragmentation bits.
+    todo(ctx, "Unsupported netscreen IP option");
+  }
+
+  @Override
+  public void exitSesop_spoofing(Sesop_spoofingContext ctx) {
+    // Need to plumb into reachability and dataplane to support.
+    todo(ctx, "Unsupported netscreen IP option");
+  }
+
+  @Override
+  public void exitSesop_unknown_protocol(Sesop_unknown_protocolContext ctx) {
+    _currentScreen.getScreenOptions().add(IpUnknownProtocol.INSTANCE);
   }
 
   @Override
