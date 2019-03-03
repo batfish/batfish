@@ -26,6 +26,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
+import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.KernelRouteMatchers.isKernelRouteThat;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
@@ -96,6 +97,7 @@ import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.KernelRoute;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -125,6 +127,7 @@ import org.batfish.representation.f5_bigip.BuiltinPersistence;
 import org.batfish.representation.f5_bigip.BuiltinProfile;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.representation.f5_bigip.F5BigipStructureType;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -1043,6 +1046,125 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testSnatCases() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_ltm_snat_cases");
+
+    IpSpace vlan1AdditionalArpIps = c.getAllInterfaces().get("/Common/vlan1").getAdditionalArpIps();
+
+    // no_vlans
+    assertThat(vlan1AdditionalArpIps, containsIp(Ip.parse("192.0.2.1")));
+    // vlans_missing_names
+    assertThat(vlan1AdditionalArpIps, containsIp(Ip.parse("192.0.2.2")));
+    // vlans
+    assertThat(vlan1AdditionalArpIps, containsIp(Ip.parse("192.0.2.3")));
+
+    IpSpace vlan2AdditionalArpIps = c.getAllInterfaces().get("/Common/vlan2").getAdditionalArpIps();
+
+    // no_vlans
+    assertThat(vlan2AdditionalArpIps, containsIp(Ip.parse("192.0.2.1")));
+    // vlans_missing_names
+    assertThat(vlan2AdditionalArpIps, containsIp(Ip.parse("192.0.2.2")));
+    // vlans
+    assertThat(vlan2AdditionalArpIps, not(containsIp(Ip.parse("192.0.2.3"))));
+  }
+
+  @Test
+  public void testSnatMatchingSnatButNoVirtual() throws IOException {
+    String hostname = "f5_bigip_structured_snat";
+    String tag = "tag";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.computeDataPlane();
+
+    // SNAT via snat /Common/snat1
+    Flow flow =
+        Flow.builder()
+            .setTag(tag)
+            .setDstIp(Ip.parse("192.0.2.1"))
+            .setDstPort(80)
+            .setIngressInterface("/Common/vlan1")
+            .setIngressNode(hostname)
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("10.100.1.1"))
+            .setSrcPort(50000)
+            .build();
+    SortedMap<Flow, List<Trace>> flowTraces =
+        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
+    List<Trace> traces = flowTraces.get(flow);
+    Optional<TransformationStepDetail> stepDetailOptional =
+        traces.stream()
+            .map(Trace::getHops)
+            .flatMap(Collection::stream)
+            .map(Hop::getSteps)
+            .flatMap(Collection::stream)
+            .map(Step::getDetail)
+            .filter(Predicates.instanceOf(TransformationStepDetail.class))
+            .map(TransformationStepDetail.class::cast)
+            .filter(d -> d.getTransformationType() == TransformationType.SOURCE_NAT)
+            .findFirst();
+
+    assertTrue("There is an SNAT transformation step.", stepDetailOptional.isPresent());
+
+    TransformationStepDetail detail = stepDetailOptional.get();
+
+    assertThat(
+        detail.getFlowDiffs(),
+        hasItem(
+            equalTo(
+                FlowDiff.flowDiff(
+                    IpField.SOURCE, Ip.parse("10.100.1.1"), Ip.parse("10.200.1.2")))));
+  }
+
+  // TODO: re-enable after it becomes possible to remember state between incoming and outgoing
+  // transformations https://github.com/batfish/batfish/issues/3243
+  @Ignore
+  @Test
+  public void testSnatMatchingVirtual() throws IOException {
+    String hostname = "f5_bigip_structured_snat";
+    String tag = "tag";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.computeDataPlane();
+
+    // SNAT via virtual /Common/virtual1
+    Flow flow =
+        Flow.builder()
+            .setTag(tag)
+            .setDstIp(Ip.parse("192.0.2.1"))
+            .setDstPort(80)
+            .setIngressInterface("/Common/vlan1")
+            .setIngressNode(hostname)
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setSrcPort(50000)
+            .build();
+    SortedMap<Flow, List<Trace>> flowTraces =
+        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
+    List<Trace> traces = flowTraces.get(flow);
+    Optional<TransformationStepDetail> stepDetailOptional =
+        traces.stream()
+            .map(Trace::getHops)
+            .flatMap(Collection::stream)
+            .map(Hop::getSteps)
+            .flatMap(Collection::stream)
+            .map(Step::getDetail)
+            .filter(Predicates.instanceOf(TransformationStepDetail.class))
+            .map(TransformationStepDetail.class::cast)
+            .filter(d -> d.getTransformationType() == TransformationType.SOURCE_NAT)
+            .findFirst();
+
+    assertTrue("There is an SNAT transformation step.", stepDetailOptional.isPresent());
+
+    TransformationStepDetail detail = stepDetailOptional.get();
+
+    assertThat(
+        detail.getFlowDiffs(),
+        hasItem(
+            equalTo(
+                FlowDiff.flowDiff(IpField.SOURCE, Ip.parse("8.8.8.8"), Ip.parse("10.200.1.1")))));
+  }
+
+  @Test
   public void testSnatpoolReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
@@ -1119,6 +1241,29 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testVirtualCases() throws IOException {
+    Configuration c = parseConfig("f5_bigip_structured_ltm_virtual_cases");
+
+    IpSpace vlan1AdditionalArpIps = c.getAllInterfaces().get("/Common/vlan1").getAdditionalArpIps();
+
+    // implicit_mask
+    assertThat(vlan1AdditionalArpIps, containsIp(Ip.parse("192.0.2.1")));
+    // vlans_missing_names
+    assertThat(vlan1AdditionalArpIps, containsIp(Ip.parse("192.0.2.3")));
+    // vlans
+    assertThat(vlan1AdditionalArpIps, containsIp(Ip.parse("192.0.2.4")));
+
+    IpSpace vlan2AdditionalArpIps = c.getAllInterfaces().get("/Common/vlan2").getAdditionalArpIps();
+
+    // implicit_mask
+    assertThat(vlan2AdditionalArpIps, containsIp(Ip.parse("192.0.2.1")));
+    // vlans_missing_names
+    assertThat(vlan2AdditionalArpIps, containsIp(Ip.parse("192.0.2.3")));
+    // vlans
+    assertThat(vlan2AdditionalArpIps, not(containsIp(Ip.parse("192.0.2.4"))));
+  }
+
+  @Test
   public void testVirtualReferences() throws IOException {
     String hostname = "f5_bigip_structured_ltm_references";
     String file = "configs/" + hostname;
@@ -1170,6 +1315,6 @@ public final class F5BigipStructuredGrammarTest {
     assertThat(ans, hasNumReferrers(file, VLAN, unused, 0));
 
     // detect all structure references
-    assertThat(ans, hasNumReferrers(file, VLAN, used, 2));
+    assertThat(ans, hasNumReferrers(file, VLAN, used, 3));
   }
 }

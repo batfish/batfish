@@ -20,6 +20,8 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -85,6 +87,20 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private static final long serialVersionUID = 1L;
 
+  private static boolean appliesToInterface(@Nullable Snat snat, String ifaceName) {
+    return snat != null
+        && (!snat.getVlansEnabled()
+            || snat.getVlans().isEmpty()
+            || snat.getVlans().contains(ifaceName));
+  }
+
+  private static boolean appliesToInterface(@Nullable Virtual virtual, String ifaceName) {
+    return virtual != null
+        && (!virtual.getVlansEnabled()
+            || virtual.getVlans().isEmpty()
+            || virtual.getVlans().contains(ifaceName));
+  }
+
   private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
       BooleanExpr expr, OriginType originType) {
     WithEnvironmentExpr we = new WithEnvironmentExpr();
@@ -122,15 +138,13 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private transient Map<String, Set<IpSpace>> _snatAdditionalArpIps;
   private final @Nonnull Map<String, SnatPool> _snatPools;
   private final @Nonnull Map<String, Snat> _snats;
+  private transient SortedMap<String, Transformation> _snatTransformations;
   private final @Nonnull Map<String, SnatTranslation> _snatTranslations;
-  private transient Map<String, Set<IpSpace>> _virtualAdditionalArpIps;
+  private transient Map<String, Set<IpSpace>> _virtualAdditionalDnatArpIps;
+  private transient Map<String, Set<IpSpace>> _virtualAdditionalSnatArpIps;
   private final @Nonnull Map<String, VirtualAddress> _virtualAddresses;
-  private transient Map<String, Transformation> _virtualIncomingTransformations;
-
-  // TODO: implement outgoing transformations https://github.com/batfish/batfish/issues/3243
-  @SuppressWarnings("unused")
-  private transient Map<String, Transformation> _virtualOutgoingTransformations;
-
+  private transient SortedMap<String, Transformation> _virtualIncomingTransformations;
+  private transient SortedMap<String, Transformation> _virtualOutgoingTransformations;
   private final @Nonnull Map<String, Virtual> _virtuals;
   private final @Nonnull Map<String, Vlan> _vlans;
 
@@ -199,43 +213,49 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private void addNatRules(org.batfish.datamodel.Interface iface) {
     String ifaceName = iface.getName();
     iface.setIncomingTransformation(computeInterfaceIncomingTransformation(ifaceName));
+    iface.setOutgoingTransformation(computeInterfaceOutgoingTransformation(ifaceName));
     iface.setAdditionalArpIps(computeAdditionalArpIps(ifaceName));
   }
 
   private IpSpace computeAdditionalArpIps(String ifaceName) {
-    Stream<IpSpace> virtualIps =
+    Stream<IpSpace> virtualDnatIps =
         _virtuals.values().stream()
             .filter(
                 virtual ->
                     !virtual.getVlansEnabled()
-                        || virtual.getVlans() == null
-                        || !virtual.getVlans().contains(ifaceName))
+                        || virtual.getVlans().isEmpty()
+                        || virtual.getVlans().contains(ifaceName))
             .map(Virtual::getName)
-            .map(_virtualAdditionalArpIps::get)
+            .map(_virtualAdditionalDnatArpIps::get)
+            .flatMap(Collection::stream);
+    Stream<IpSpace> virtualSnatIps =
+        _virtuals.values().stream()
+            .map(Virtual::getName)
+            .map(_virtualAdditionalSnatArpIps::get)
             .flatMap(Collection::stream);
     Stream<IpSpace> snatIps =
         _snats.values().stream()
             .filter(
                 snat ->
                     !snat.getVlansEnabled()
-                        || snat.getVlans() == null
-                        || !snat.getVlans().contains(ifaceName))
+                        || snat.getVlans().isEmpty()
+                        || snat.getVlans().contains(ifaceName))
             .map(Snat::getName)
             .map(_snatAdditionalArpIps::get)
             .flatMap(Collection::stream);
-    return AclIpSpace.union(Stream.concat(virtualIps, snatIps).toArray(IpSpace[]::new));
+    return AclIpSpace.union(
+        Stream.of(virtualDnatIps, virtualSnatIps, snatIps)
+            .flatMap(Function.identity())
+            .toArray(IpSpace[]::new));
   }
 
   private Transformation computeInterfaceIncomingTransformation(String ifaceName) {
-    return ImmutableSortedMap.copyOf(_virtuals, Comparator.reverseOrder()).values().stream()
+    return _virtualIncomingTransformations.entrySet().stream()
         .filter(
-            virtual ->
-                !virtual.getVlansEnabled()
-                    || virtual.getVlans() == null
-                    || !virtual.getVlans().contains(ifaceName))
-        .map(Virtual::getName)
-        .map(_virtualIncomingTransformations::get)
-        .filter(Objects::nonNull)
+            virtualIncomingTransformationEntry ->
+                appliesToInterface(
+                    _virtuals.get(virtualIncomingTransformationEntry.getKey()), ifaceName))
+        .map(Entry::getValue)
         .reduce(
             Transformation.when(FalseExpr.INSTANCE).build(),
             (transformation, otherTransformation) ->
@@ -243,6 +263,50 @@ public class F5BigipConfiguration extends VendorConfiguration {
                     .apply(otherTransformation.getTransformationSteps())
                     .setOrElse(transformation)
                     .build());
+  }
+
+  private Stream<Transformation> computeInterfaceOutgoingSnatTransformations(String ifaceName) {
+    return _snatTransformations.entrySet().stream()
+        .filter(
+            snatTransformationEntry ->
+                appliesToInterface(_snats.get(snatTransformationEntry.getKey()), ifaceName))
+        .map(Entry::getValue);
+  }
+
+  private Transformation computeInterfaceOutgoingTransformation(String ifaceName) {
+    Stream<Transformation> virtualTransformations =
+        _virtualOutgoingTransformations.values().stream();
+    Stream<Transformation> snatTransformations =
+        computeInterfaceOutgoingSnatTransformations(ifaceName);
+    // Note that these streams come from maps whose keys are sorted in reverse order. The first
+    // transformation guard checked will be the condition for the virtual that is first
+    // lexicographically. The last transformation guard checked will be the condition for the snat
+    // that is last lexicographically. The reduction constructs the final transformation from back
+    // to front.
+    return Stream.concat(snatTransformations, virtualTransformations)
+        .reduce(
+            Transformation.when(FalseExpr.INSTANCE).build(),
+            (transformation, otherTransformation) ->
+                Transformation.when(otherTransformation.getGuard())
+                    .apply(otherTransformation.getTransformationSteps())
+                    .setOrElse(transformation)
+                    .build());
+  }
+
+  private @Nonnull TransformationStep computeOutgoingSnatPoolTransformation(SnatPool snatPool) {
+    return new ApplyAny(
+        snatPool.getMembers().stream()
+            .map(_snatTranslations::get)
+            .filter(Objects::nonNull)
+            .map(SnatTranslation::getAddress)
+            .filter(Objects::nonNull)
+            .map(
+                address ->
+                    new AssignIpAddressFromPool(
+                        TransformationType.SOURCE_NAT,
+                        IpField.SOURCE,
+                        ImmutableRangeSet.of(Range.singleton(address))))
+            .collect(ImmutableList.toImmutableList()));
   }
 
   private @Nonnull Stream<IpSpace> computeSnatAdditionalArpIps(Snat snat) {
@@ -265,37 +329,59 @@ public class F5BigipConfiguration extends VendorConfiguration {
         .map(Ip::toIpSpace);
   }
 
-  private @Nonnull Set<IpSpace> computeVirtualAdditionalArpIps(Virtual virtual) {
-    return Stream.concat(computeVirtualDnatIps(virtual), computeVirtualSnatIps(virtual))
-        .collect(ImmutableSet.toImmutableSet());
+  private Optional<Transformation> computeSnatTransformation(Snat snat) {
+    //// Perform SNAT if source IP is in range
+
+    // Retrieve pool of addresses to which sourceIP may be translated
+    String snatPoolName = snat.getSnatpool();
+    if (snatPoolName == null) {
+      // Cannot translate without pool
+      _w.redFlag(String.format("Cannot SNAT for snat '%s' without snatpool", snat.getName()));
+      return Optional.empty();
+    }
+    SnatPool snatPool = _snatPools.get(snatPoolName);
+    if (snatPool == null) {
+      // Cannot translate without pool
+      _w.redFlag(
+          String.format(
+              "Cannot SNAT for snat '%s' using missing snatpool: '%s'",
+              snat.getName(), snatPoolName));
+      return Optional.empty();
+    }
+    if (!snat.getIpv6Origins().isEmpty()) {
+      // IPv6, so nothing to do
+      return Optional.empty();
+    }
+    if (snat.getIpv4Origins().isEmpty()) {
+      _w.redFlag("Cannot SNAT for snat '%s' without origins", snat.getName());
+      return Optional.empty();
+    }
+
+    // Compute matching headers
+    IpSpace sourceIpSpace =
+        AclIpSpace.union(
+            snat.getIpv4Origins().keySet().stream().map(Prefix::toIpSpace).toArray(IpSpace[]::new));
+    AclLineMatchExpr matchCondition =
+        new MatchHeaderSpace(
+            HeaderSpace.builder().setSrcIps(sourceIpSpace).build(), snat.getName());
+    return Optional.of(
+        Transformation.when(matchCondition)
+            .apply(computeOutgoingSnatPoolTransformation(snatPool))
+            .build());
   }
 
-  private @Nonnull Stream<IpSpace> computeVirtualDnatIps(Virtual virtual) {
+  private @Nonnull Set<IpSpace> computeVirtualDnatIps(Virtual virtual) {
     if (!_virtualIncomingTransformations.containsKey(virtual.getName())) {
       // Early exit if no incoming transformation for this virtual
-      return Stream.of();
+      return ImmutableSet.of();
     }
-
-    String destination = virtual.getDestination();
-    if (destination == null) {
-      // Cannot match without destination node
-      return Stream.of();
-    }
-    VirtualAddress virtualAddress = _virtualAddresses.get(destination);
-    if (virtualAddress == null) {
-      return Stream.of();
-    }
+    VirtualAddress virtualAddress = _virtualAddresses.get(virtual.getDestination());
     Ip destinationIp = virtualAddress.getAddress();
-    if (destinationIp == null) {
-      // Cannot match without destination IP
-      return Stream.of();
-    }
     Ip mask = virtualAddress.getMask();
     if (mask == null) {
-      // Cannot match without destination IP mask
-      return Stream.of();
+      mask = Ip.MAX;
     }
-    return Stream.of(Prefix.create(destinationIp, mask).toIpSpace());
+    return ImmutableSet.of(Prefix.create(destinationIp, mask).toIpSpace());
   }
 
   private TransformationStep computeVirtualIncomingPoolMemberTransformation(PoolMember member) {
@@ -361,12 +447,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     }
     Ip destinationMask = virtualAddress.getMask();
     if (destinationMask == null) {
-      // Cannot match without destination mask
-      _w.redFlag(
-          String.format(
-              "Virtual '%s' with IPv4 destination '%s' is missing mask",
-              virtual.getName(), destination));
-      return Optional.empty();
+      destinationMask = Ip.MAX;
     }
     Integer destinationPort = virtual.getDestinationPort();
     if (destinationPort == null) {
@@ -376,9 +457,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     }
     Prefix source = virtual.getSource();
     if (source == null) {
-      // Cannot match without source range
-      _w.redFlag(String.format("Virtual '%s' is missing source range", virtual.getName()));
-      return Optional.empty();
+      source = Prefix.ZERO;
     }
     AclLineMatchExpr matchCondition =
         new MatchHeaderSpace(
@@ -397,15 +476,29 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   private @Nonnull Optional<Transformation> computeVirtualOutgoingTransformation(Virtual virtual) {
-    // TODO: https://github.com/batfish/batfish/issues/3243
-    assert virtual != null; // silence PMD
-    return Optional.empty();
+    String snatPoolName = virtual.getSourceAddressTranslationPool();
+    if (snatPoolName == null) {
+      // No transformation since no source-address-translation occurs
+      return Optional.empty();
+    }
+    SnatPool snatPool = _snatPools.get(snatPoolName);
+    if (snatPool == null) {
+      // Undefined reference
+      return Optional.empty();
+    }
+    // TODO: Replace FalseExpr.INSTANCE with condition that matches token set by incoming
+    // transformation https://github.com/batfish/batfish/issues/3243
+    return Optional.of(
+        Transformation.when(FalseExpr.INSTANCE)
+            .apply(computeOutgoingSnatPoolTransformation(snatPool))
+            .build());
   }
 
-  private @Nonnull Stream<IpSpace> computeVirtualSnatIps(Virtual virtual) {
+  private @Nonnull Set<IpSpace> computeVirtualSnatIps(Virtual virtual) {
     return Optional.ofNullable(virtual.getSourceAddressTranslationPool())
         .map(this::computeSnatPoolIps)
-        .orElse(Stream.of());
+        .orElse(Stream.of())
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   public @Nonnull Map<String, BgpProcess> getBgpProcesses() {
@@ -503,7 +596,17 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   private void initSnatTransformations() {
-    // TODO: outgoing transformations
+    // Note the use of reverseOrder() comparator. This iteration order allows for efficient
+    // construction of chained transformations later on.
+
+    // transformations
+    ImmutableSortedMap.Builder<String, Transformation> snatTransformations =
+        ImmutableSortedMap.reverseOrder();
+    _snats.forEach(
+        (snatName, snat) ->
+            computeSnatTransformation(snat)
+                .ifPresent(transformation -> snatTransformations.put(snatName, transformation)));
+    _snatTransformations = snatTransformations.build();
 
     // additional ARP IPs
     _snatAdditionalArpIps =
@@ -516,9 +619,12 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   private void initVirtualTransformations() {
+    // Note the use of reverseOrder() comparator. This iteration order allows for efficient
+    // construction of chained transformations later on.
+
     // incoming transformations
     ImmutableSortedMap.Builder<String, Transformation> virtualIncomingTransformations =
-        ImmutableSortedMap.naturalOrder();
+        ImmutableSortedMap.reverseOrder();
     _virtuals.forEach(
         (virtualName, virtual) ->
             computeVirtualIncomingTransformation(virtual)
@@ -526,10 +632,12 @@ public class F5BigipConfiguration extends VendorConfiguration {
                     transformation ->
                         virtualIncomingTransformations.put(virtualName, transformation)));
     _virtualIncomingTransformations = virtualIncomingTransformations.build();
+    _virtualAdditionalDnatArpIps =
+        toImmutableMap(_virtuals, Entry::getKey, e -> computeVirtualDnatIps(e.getValue()));
 
     // outgoing transformations
     ImmutableSortedMap.Builder<String, Transformation> virtualOutgoingTransformations =
-        ImmutableSortedMap.naturalOrder();
+        ImmutableSortedMap.reverseOrder();
     _virtuals.forEach(
         (virtualName, virtual) ->
             computeVirtualOutgoingTransformation(virtual)
@@ -537,10 +645,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
                     transformation ->
                         virtualOutgoingTransformations.put(virtualName, transformation)));
     _virtualOutgoingTransformations = virtualOutgoingTransformations.build();
-
-    // additional ARP IPs
-    _virtualAdditionalArpIps =
-        toImmutableMap(_virtuals, Entry::getKey, e -> computeVirtualAdditionalArpIps(e.getValue()));
+    _virtualAdditionalSnatArpIps =
+        toImmutableMap(_virtuals, Entry::getKey, e -> computeVirtualSnatIps(e.getValue()));
   }
 
   private void markStructures() {
@@ -624,7 +730,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
         F5BigipStructureType.VLAN,
         F5BigipStructureUsage.BGP_NEIGHBOR_UPDATE_SOURCE,
         F5BigipStructureUsage.SELF_VLAN,
-        F5BigipStructureUsage.SNAT_VLANS_VLAN);
+        F5BigipStructureUsage.SNAT_VLANS_VLAN,
+        F5BigipStructureUsage.VIRTUAL_VLANS_VLAN);
   }
 
   private void processSelf(Self self) {
