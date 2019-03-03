@@ -12311,6 +12311,9 @@
             "virtuals" : {
               "/Common/SOME_VIRTUAL" : {
                 "name" : "/Common/SOME_VIRTUAL",
+                "vlans" : [
+                  "/Common/MY_VLAN"
+                ],
                 "destination" : "/Common/192.0.2.7",
                 "destinationPort" : 80,
                 "ipProtocol" : "TCP",
@@ -12366,6 +12369,11 @@
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
+            "outgoingTransformation" : {
+              "guard" : {
+                "class" : "org.batfish.datamodel.acl.FalseExpr"
+              }
+            },
             "prefix" : "10.0.0.1/24",
             "proxyArp" : false,
             "ripEnabled" : false,

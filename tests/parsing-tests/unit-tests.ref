@@ -40188,20 +40188,15 @@
             "          TRANSLATE_PORT:'translate-port'",
             "          ENABLED:'enabled'",
             "          NEWLINE:'\\n')",
-            "        (unrecognized",
-            "          (u_word",
-            "            (word",
-            "              VLANS:'vlans'))",
-            "          (list",
-            "            (u_list",
-            "              BRACE_LEFT:'{'",
-            "              NEWLINE:'\\n'",
-            "              (unrecognized",
-            "                (u_word",
-            "                  (word",
-            "                    WORD:'/Common/MY_VLAN'))",
-            "                NEWLINE:'\\n')",
-            "              BRACE_RIGHT:'}'))",
+            "        (lv_vlans",
+            "          VLANS:'vlans'",
+            "          BRACE_LEFT:'{'",
+            "          NEWLINE:'\\n'",
+            "          (lvv_vlan",
+            "            name = (word",
+            "              WORD:'/Common/MY_VLAN')",
+            "            NEWLINE:'\\n')",
+            "          BRACE_RIGHT:'}'",
             "          NEWLINE:'\\n')",
             "        (lv_vlans_disabled",
             "          VLANS_DISABLED:'vlans-disabled'",
@@ -68452,12 +68447,6 @@
             },
             {
               "Comment" : "This syntax is unrecognized",
-              "Line" : 109,
-              "Parser_Context" : "[unrecognized l_virtual s_ltm statement f5_bigip_structured_configuration]",
-              "Text" : "vlans"
-            },
-            {
-              "Comment" : "This syntax is unrecognized",
               "Line" : 123,
               "Parser_Context" : "[unrecognized lm_http l_monitor s_ltm statement f5_bigip_structured_configuration]",
               "Text" : "adaptive"
@@ -77885,6 +77874,11 @@
             }
           },
           "vlan" : {
+            "/Common/MY_VLAN" : {
+              "virtual vlans vlan" : [
+                110
+              ]
+            },
             "/Common/SOME_VLAN" : {
               "snat vlans vlan" : [
                 69
@@ -80867,6 +80861,11 @@
             }
           },
           "vlan" : {
+            "/Common/MY_VLAN" : {
+              "virtual vlans vlan" : [
+                110
+              ]
+            },
             "/Common/SOME_VLAN" : {
               "snat vlans vlan" : [
                 69
