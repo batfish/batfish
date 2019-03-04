@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
@@ -187,20 +188,25 @@ public class BgpRib extends AbstractRib<BgpRoute> {
     Optional<BgpRoute> s = extractRoutes(prefix).stream().max(this::bestPathComparator);
     if (!s.isPresent()) {
       // Remove best path and return
-      _bestPaths =
-          _bestPaths.entrySet().stream()
-              .filter(e -> !e.getKey().equals(prefix))
-              .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+      if (_bestPaths.containsKey(prefix)) {
+        _bestPaths =
+            _bestPaths.entrySet().stream()
+                .filter(e -> !e.getKey().equals(prefix))
+                .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+      }
       return;
     }
-    _bestPaths =
-        ImmutableMap.<Prefix, BgpRoute>builder()
-            .putAll(
-                _bestPaths.entrySet().stream()
-                    .filter(e -> !e.getKey().equals(prefix))
-                    .collect(ImmutableSet.toImmutableSet()))
-            .put(prefix, s.get())
-            .build();
+    BgpRoute bestRoute = s.get();
+    if (!Objects.equals(_bestPaths.get(prefix), bestRoute)) {
+      _bestPaths =
+          ImmutableMap.<Prefix, BgpRoute>builder()
+              .putAll(
+                  _bestPaths.entrySet().stream()
+                      .filter(e -> !e.getKey().equals(prefix))
+                      .collect(ImmutableSet.toImmutableSet()))
+              .put(prefix, bestRoute)
+              .build();
+    }
   }
 
   /**
