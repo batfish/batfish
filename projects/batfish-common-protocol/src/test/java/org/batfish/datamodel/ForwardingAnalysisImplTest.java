@@ -59,7 +59,7 @@ public class ForwardingAnalysisImplTest {
 
   private Interface.Builder _ib;
 
-  private Map<String, Map<String, Set<Interface>>> _fibInterfaces;
+  private Map<String, Map<String, Set<String>>> _fibInterfaces;
 
   private Map<String, Map<String, Set<Ip>>> _interfaceOwnedIps = ImmutableMap.of();
 
@@ -1362,9 +1362,8 @@ public class ForwardingAnalysisImplTest {
                     ImmutableList.of(new ConnectedRoute(i1.getPrimaryNetwork(), i1.getName())))));
 
     // Test:
-    Map<String, Map<String, Set<Interface>>> fibInterfaces =
+    Map<String, Map<String, Set<String>>> fibInterfaces =
         computeFibInterfaces(
-            ImmutableMap.of(hostname, c1),
             ImmutableMap.of(
                 hostname,
                 ImmutableMap.of(
@@ -1374,8 +1373,10 @@ public class ForwardingAnalysisImplTest {
                     MockFib.builder().setFibEntries(fibEntryMap).build())));
 
     // Both vrf1 and vrf2 can go out to i1
-    assertThat(fibInterfaces.get(hostname).get(v1.getName()), equalTo(ImmutableSet.of(i1)));
-    assertThat(fibInterfaces.get(hostname).get(v2.getName()), equalTo(ImmutableSet.of(i1)));
+    assertThat(
+        fibInterfaces.get(hostname).get(v1.getName()), equalTo(ImmutableSet.of(i1.getName())));
+    assertThat(
+        fibInterfaces.get(hostname).get(v2.getName()), equalTo(ImmutableSet.of(i1.getName())));
   }
 
   enum NextHopIpStatus {

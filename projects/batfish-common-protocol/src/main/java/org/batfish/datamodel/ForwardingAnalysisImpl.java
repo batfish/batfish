@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.BiFunction;
@@ -45,7 +44,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   // mapping: hostname -> vrfName -> set of interfaces that can end up forwarding a packet based on
   // the FIB's lookup
-  private final Map<String, Map<String, Set<Interface>>> _fibInterfaces;
+  private final Map<String, Map<String, Set<String>>> _fibInterfaces;
 
   private final Map<String, Map<String, Set<Ip>>> _interfaceOwnedIps;
 
@@ -149,7 +148,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       _ipSpaceToBDD = initIpSpaceToBDD();
       _interfaceHostSubnetIps = computeInterfaceHostSubnetIps(configurations);
       _interfaceOwnedIps = TopologyUtil.computeInterfaceOwnedIps(configurations, false);
-      _fibInterfaces = computeFibInterfaces(configurations, fibs);
+      _fibInterfaces = computeFibInterfaces(fibs);
       _ownedIps = computeOwnedIps();
       _unownedIpsBDD = computeUnownedIpsBDD();
       _internalIps = computeInternalIps();
@@ -178,8 +177,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       _dstIpsWithUnownedNextHopIpArpFalse = computeDstIpsWithUnownedNextHopIpArpFalse(matchingIps);
       _dstIpsWithOwnedNextHopIpArpFalse = computeDstIpsWithOwnedNextHopIpArpFalse(matchingIps);
       _deliveredToSubnet = computeDeliveredToSubnet();
-      _exitsNetwork = computeExitsNetwork(configurations);
-      _insufficientInfo = computeInsufficientInfo(configurations);
+      _exitsNetwork = computeExitsNetwork();
+      _insufficientInfo = computeInsufficientInfo();
       _neighborUnreachable = computeNeighborUnreachable();
     }
   }
@@ -191,7 +190,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       Map<Edge, IpSpace> arpTrueEdge,
       Map<Edge, IpSpace> arpTrueEdgeDestIp,
       Map<Edge, IpSpace> arpTrueEdgeNextHopIp,
-      Map<String, Map<String, Set<Interface>>> fibInterfaces,
+      Map<String, Map<String, Set<String>>> fibInterfaces,
       Map<String, Map<String, Set<Ip>>> interfaceOwnedIps,
       Map<String, Map<String, IpSpace>> ipsRoutedOutInterfaces,
       Map<String, Map<String, Map<String, IpSpace>>> arpFalse,
@@ -763,27 +762,19 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
             .startActive()) {
       assert span != null; // avoid unused warning
       return toImmutableMap(
-          configurations,
+          fibs,
           Entry::getKey,
           nodeEntry ->
               toImmutableMap(
-                  nodeEntry.getValue().getVrfs(),
+                  nodeEntry.getValue(),
                   Entry::getKey,
-                  vrfEntry -> {
-                    Map<String, ImmutableSet<AbstractRoute>> fibEntries =
-                        fibs.get(nodeEntry.getKey()).get(vrfEntry.getKey()).allEntries().stream()
-                            .collect(
-                                Collectors.groupingBy(
-                                    FibEntry::getInterfaceName,
-                                    Collectors.mapping(
-                                        FibEntry::getTopLevelRoute,
-                                        ImmutableSet.toImmutableSet())));
-                    return toImmutableMap(
-                        fibEntries,
-                        Entry::getKey,
-                        ifaceEntry ->
-                            fibEntries.getOrDefault(ifaceEntry.getKey(), ImmutableSet.of()));
-                  }));
+                  vrfEntry ->
+                      vrfEntry.getValue().allEntries().stream()
+                          .collect(
+                              Collectors.groupingBy(
+                                  FibEntry::getInterfaceName,
+                                  Collectors.mapping(
+                                      FibEntry::getTopLevelRoute, Collectors.toSet())))));
     }
   }
 
@@ -1153,54 +1144,42 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
             dstIpsWithUnownedNextHopIpArpFalsePerInterface));
   }
 
-  private Map<String, Map<String, Map<String, IpSpace>>> computeExitsNetwork(
-      Map<String, Configuration> configurations) {
+  private Map<String, Map<String, Map<String, IpSpace>>> computeExitsNetwork() {
     try (ActiveSpan span =
         GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeExitsNetwork").startActive()) {
       assert span != null; // avoid unused warning
       return toImmutableMap(
-          configurations,
-          Entry::getKey,
+          _fibInterfaces,
+          Entry::getKey, // Node
           nodeEntry ->
               toImmutableMap(
-                  nodeEntry.getValue().getVrfs(),
-                  Entry::getKey,
+                  nodeEntry.getValue(),
+                  Entry::getKey, // Vrf
                   vrfEntry ->
                       toImmutableMap(
-                          _fibInterfaces
-                              .getOrDefault(nodeEntry.getKey(), ImmutableMap.of())
-                              .getOrDefault(vrfEntry.getKey(), ImmutableSet.of()),
-                          Interface::getName,
-                          iface ->
+                          vrfEntry.getValue(),
+                          Function.identity(), // Iface
+                          ifaceEntry ->
                               computeExitsNetworkPerInterface(
-                                  nodeEntry.getKey(), iface.getVrfName(), iface.getName()))));
+                                  nodeEntry.getKey(), vrfEntry.getKey(), ifaceEntry))));
     }
   }
 
   @VisibleForTesting
-  static Map<String, Map<String, Set<Interface>>> computeFibInterfaces(
-      Map<String, Configuration> configurations, Map<String, Map<String, Fib>> fibs) {
-    return fibs.entrySet().stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
+  static Map<String, Map<String, Set<String>>> computeFibInterfaces(
+      Map<String, Map<String, Fib>> fibs) {
+    return toImmutableMap(
+        fibs,
+        Entry::getKey,
+        byHostname ->
+            toImmutableMap(
+                byHostname.getValue(),
                 Entry::getKey,
-                byHostname ->
-                    byHostname.getValue().entrySet().stream()
-                        .collect(
-                            ImmutableMap.toImmutableMap(
-                                Entry::getKey,
-                                byVrf ->
-                                    // Get the FIB, look at all of its entries
-                                    byVrf.getValue().allEntries().stream()
-                                        .map(FibEntry::getInterfaceName)
-                                        .map(
-                                            ifaceName ->
-                                                configurations
-                                                    .get(byHostname.getKey())
-                                                    .getAllInterfaces()
-                                                    .get(ifaceName))
-                                        .filter(Objects::nonNull)
-                                        .collect(ImmutableSet.toImmutableSet())))));
+                byVrf ->
+                    // Get the FIB, look at all of its entries, collect interfaces
+                    byVrf.getValue().allEntries().stream()
+                        .map(FibEntry::getInterfaceName)
+                        .collect(ImmutableSet.toImmutableSet())));
   }
 
   /*
@@ -1240,8 +1219,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
         ipSpaceInternalDstIp, ipSpaceInternalDstIpUnownedNexthopIp, ipSpaceOwnedNextHopIp);
   }
 
-  private Map<String, Map<String, Map<String, IpSpace>>> computeInsufficientInfo(
-      Map<String, Configuration> configurations) {
+  private Map<String, Map<String, Map<String, IpSpace>>> computeInsufficientInfo() {
     try (ActiveSpan span =
         GlobalTracer.get()
             .buildSpan("ForwardingAnalysisImpl.computeInsufficientInfo")
@@ -1249,21 +1227,19 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
       assert span != null; // avoid unused warning
 
       return toImmutableMap(
-          configurations,
-          Entry::getKey,
+          _fibInterfaces,
+          Entry::getKey, // Node name
           nodeEntry ->
               toImmutableMap(
-                  nodeEntry.getValue().getVrfs(),
-                  Entry::getKey,
+                  nodeEntry.getValue(),
+                  Entry::getKey, // VRF name
                   vrfEntry ->
                       toImmutableMap(
-                          _fibInterfaces
-                              .getOrDefault(nodeEntry.getKey(), ImmutableMap.of())
-                              .getOrDefault(vrfEntry.getKey(), ImmutableSet.of()),
-                          Interface::getName,
-                          iface ->
+                          vrfEntry.getValue(),
+                          Function.identity(), // Iface Name
+                          ifaceName ->
                               computeInsufficientInfoPerInterface(
-                                  nodeEntry.getKey(), iface.getVrfName(), iface.getName()))));
+                                  nodeEntry.getKey(), vrfEntry.getKey(), ifaceName))));
     }
   }
 
