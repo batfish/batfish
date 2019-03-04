@@ -1859,7 +1859,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       pushPeer(_currentPeerGroup);
     }
-    if (af.IPV6() != null) {
+    if (af.IPV6() != null || af.VPNV6() != null) {
       _inIpv6BgpPeer = true;
     }
   }
@@ -2699,6 +2699,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         pushPeer(_currentIpPeerGroup);
       }
     } else if (ctx.ip6 != null) {
+      _inIpv6BgpPeer = true;
       Ip6 ip6 = toIp6(ctx.ip6);
       Ipv6BgpPeerGroup pg6 = proc.getIpv6PeerGroups().get(ip6);
       if (pg6 == null) {
