@@ -49,8 +49,8 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
   public AnswerElement answer() {
     OspfSessionCompatibilityQuestion question = (OspfSessionCompatibilityQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> nodes = question.getNodesSpecifier().resolve(_batfish.specifierContext());
 
+    Set<String> nodes = question.getNodesSpecifier().resolve(_batfish.specifierContext());
     Set<String> remoteNodes =
         question.getRemoteNodesSpecifier().resolve(_batfish.specifierContext());
 
@@ -70,6 +70,7 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
     return answer;
   }
 
+  @VisibleForTesting
   static Multiset<Row> getRows(
       Map<String, Configuration> configurations,
       Set<String> nodes,
@@ -114,7 +115,7 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
     return rows;
   }
 
-  static Multiset<Row> getRowsForAllNeighbors(
+  private static Multiset<Row> getRowsForAllNeighbors(
       Map<String, Configuration> configurations,
       OspfNeighborConfigId nodeU,
       Set<OspfNeighborConfigId> nodeVs,
@@ -145,7 +146,7 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
     return rows;
   }
 
-  static Row createRow(
+  private static Row createRow(
       OspfNeighborConfig nodeU,
       OspfNeighborConfig nodeV,
       OspfSessionProperties session,
@@ -164,18 +165,17 @@ public class OspfSessionCompatibilityAnswerer extends Answerer {
         .build();
   }
 
-  /** Creates a {@link TableMetadata} object from the question. */
   @VisibleForTesting
   static TableMetadata createTableMetadata() {
     ImmutableList.Builder<ColumnMetadata> columnBuilder = ImmutableList.builder();
     columnBuilder.add(
-        new ColumnMetadata(COL_INTERFACE, Schema.INTERFACE, "Node and Interface", true, false));
+        new ColumnMetadata(COL_INTERFACE, Schema.INTERFACE, "Interface", true, false));
     columnBuilder.add(new ColumnMetadata(COL_VRF, Schema.STRING, "VRF", true, false));
     columnBuilder.add(new ColumnMetadata(COL_IP, Schema.IP, "Ip", true, false));
     columnBuilder.add(new ColumnMetadata(COL_AREA, Schema.LONG, "Area", true, false));
     columnBuilder.add(
         new ColumnMetadata(
-            COL_REMOTE_INTERFACE, Schema.INTERFACE, "Remote Node and Interface", false, true));
+            COL_REMOTE_INTERFACE, Schema.INTERFACE, "Remote Interface", false, true));
     columnBuilder.add(new ColumnMetadata(COL_REMOTE_VRF, Schema.STRING, "Remote VRF", false, true));
     columnBuilder.add(new ColumnMetadata(COL_REMOTE_IP, Schema.IP, "Remote IP", false, true));
     columnBuilder.add(new ColumnMetadata(COL_REMOTE_AREA, Schema.LONG, "Remote Area", false, true));

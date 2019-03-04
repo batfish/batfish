@@ -9,7 +9,7 @@ import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 
-/** A question that returns a table with compatible OSPF sessions and corresponding parameters */
+/** A {@link Question} that returns compatible OSPF sessions */
 public class OspfSessionCompatibilityQuestion extends Question {
   private static final String PROP_NODES = "nodes";
 
@@ -21,7 +21,7 @@ public class OspfSessionCompatibilityQuestion extends Question {
 
   public OspfSessionCompatibilityQuestion(
       @JsonProperty(PROP_NODES) @Nullable String nodes,
-      @JsonProperty(PROP_NODES) @Nullable String remoteNodes) {
+      @JsonProperty(PROP_REMOTE_NODES) @Nullable String remoteNodes) {
     _nodes = nodes;
     _remoteNodes = remoteNodes;
   }
@@ -33,7 +33,7 @@ public class OspfSessionCompatibilityQuestion extends Question {
 
   @Override
   public String getName() {
-    return "ospfAreaConfiguration";
+    return "ospfSessionCompatibility";
   }
 
   @JsonProperty(PROP_NODES)
