@@ -84,7 +84,6 @@ import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PreInInterface;
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -114,7 +113,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     BDD src1 = PKT.getSrcIp().value(1L);
     BDD src2 = PKT.getSrcIp().value(2L);
 
-    MatcherAssert.assertThat(
+    assertThat(
         computeReturnPassQueryConstraints(
             PKT,
             ImmutableMap.of(
