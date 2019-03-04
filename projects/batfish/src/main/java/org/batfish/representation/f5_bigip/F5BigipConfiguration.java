@@ -212,14 +212,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
                     !virtual.getVlansEnabled()
                         || virtual.getVlans().isEmpty()
                         || virtual.getVlans().contains(ifaceName))
-            .map(Virtual::getName)
-            .map(_virtualAdditionalDnatArpIps::get)
-            .flatMap(Collection::stream);
+            .flatMap(virtual -> _virtualAdditionalDnatArpIps.get(virtual.getName()).stream());
     Stream<IpSpace> virtualSnatIps =
         _virtuals.values().stream()
-            .map(Virtual::getName)
-            .map(_virtualAdditionalSnatArpIps::get)
-            .flatMap(Collection::stream);
+            .flatMap(virtual -> _virtualAdditionalSnatArpIps.get(virtual.getName()).stream());
     Stream<IpSpace> snatIps =
         _snats.values().stream()
             .filter(
@@ -227,13 +223,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
                     !snat.getVlansEnabled()
                         || snat.getVlans().isEmpty()
                         || snat.getVlans().contains(ifaceName))
-            .map(Snat::getName)
-            .map(_snatAdditionalArpIps::get)
-            .flatMap(Collection::stream);
+            .flatMap(snat -> _snatAdditionalArpIps.get(snat.getName()).stream());
     return AclIpSpace.union(
         Stream.of(virtualDnatIps, virtualSnatIps, snatIps)
             .flatMap(Function.identity())
-            .toArray(IpSpace[]::new));
+            .collect(ImmutableList.toImmutableList()));
   }
 
   private Transformation computeInterfaceIncomingTransformation(String ifaceName) {
