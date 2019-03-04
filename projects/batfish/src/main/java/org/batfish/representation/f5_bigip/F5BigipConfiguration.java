@@ -369,6 +369,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
       // Early exit if no incoming transformation for this virtual
       return ImmutableSet.of();
     }
+    // No need to verify presence of destination, virtual-address, etc. since all this must have
+    // been present for incoming transformation to have been populated.
     VirtualAddress virtualAddress = _virtualAddresses.get(virtual.getDestination());
     Ip destinationIp = virtualAddress.getAddress();
     Ip mask = virtualAddress.getMask();
