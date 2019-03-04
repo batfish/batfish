@@ -199,7 +199,7 @@ public final class BidirectionalReachabilityAnalysisTest {
 
     BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
-            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), true, false);
+            PKT, configurations, batfish.loadDataPlane().getForwardingAnalysis(), false, true);
     BDDReachabilityAnalysis analysis =
         factory.bddReachabilityAnalysis(
             assignment,
