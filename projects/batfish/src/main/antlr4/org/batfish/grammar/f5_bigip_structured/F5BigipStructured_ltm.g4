@@ -317,7 +317,7 @@ ls_vlans
   VLANS BRACE_LEFT
   (
     NEWLINE lsv_vlan*
-  ) BRACE_RIGHT NEWLINE
+  )? BRACE_RIGHT NEWLINE
 ;
 
 lsv_vlan
@@ -516,7 +516,7 @@ lv_vlans
   VLANS BRACE_LEFT
   (
     NEWLINE lvv_vlan*
-  ) BRACE_RIGHT NEWLINE
+  )? BRACE_RIGHT NEWLINE
 ;
 
 lvv_vlan
