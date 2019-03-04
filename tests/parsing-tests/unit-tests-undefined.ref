@@ -474,7 +474,7 @@
         "File_Name" : "configs/cadant_bgp",
         "Struct_Type" : "route-map",
         "Ref_Name" : "blerp",
-        "Context" : "bgp outbound route-map",
+        "Context" : "bgp outbound ipv6 route-map",
         "Lines" : {
           "filename" : "configs/cadant_bgp",
           "lines" : [
