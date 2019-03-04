@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
+import com.google.common.collect.Streams;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -21,7 +22,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -238,8 +238,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
                         || snat.getVlans().contains(ifaceName))
             .flatMap(snat -> _snatAdditionalArpIps.get(snat.getName()).stream());
     return AclIpSpace.union(
-        Stream.of(virtualDnatIps, virtualSnatIps, snatIps)
-            .flatMap(Function.identity())
+        Streams.concat(virtualDnatIps, virtualSnatIps, snatIps)
             .collect(ImmutableList.toImmutableList()));
   }
 
