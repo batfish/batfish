@@ -76217,7 +76217,7 @@
               ]
             },
             "blerp" : {
-              "bgp outbound route-map" : [
+              "bgp outbound ipv6 route-map" : [
                 35
               ]
             }
@@ -79854,7 +79854,7 @@
               ]
             },
             "blerp" : {
-              "bgp outbound route-map" : [
+              "bgp outbound ipv6 route-map" : [
                 35
               ]
             }
