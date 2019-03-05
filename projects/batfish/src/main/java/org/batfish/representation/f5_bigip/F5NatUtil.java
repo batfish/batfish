@@ -1,5 +1,6 @@
 package org.batfish.representation.f5_bigip;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.util.Collection;
 import javax.annotation.Nullable;
@@ -12,8 +13,8 @@ public final class F5NatUtil {
    * Adds nested orElse {@link Transformation}s of {@code input} to {@code outputList}, and then add
    * {@code input}.
    */
-  private static void addOrElses(
-      ImmutableList.Builder<Transformation> outputList, Transformation input) {
+  @VisibleForTesting
+  static void addOrElses(ImmutableList.Builder<Transformation> outputList, Transformation input) {
     if (input == null) {
       return;
     }

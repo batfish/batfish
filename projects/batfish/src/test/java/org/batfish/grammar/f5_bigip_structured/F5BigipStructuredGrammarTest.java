@@ -34,6 +34,7 @@ import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.rejects;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasKernelRoutes;
+import static org.batfish.datamodel.transformation.TransformationEvaluator.eval;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.BGP_PROCESS;
 import static org.batfish.representation.f5_bigip.F5BigipStructureType.INTERFACE;
@@ -78,6 +79,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
@@ -124,6 +126,8 @@ import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.PortField;
+import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.TransformationEvaluator.TransformationResult;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -1079,8 +1083,11 @@ public final class F5BigipStructuredGrammarTest {
     String hostname = "f5_bigip_structured_snat";
     String tag = "tag";
 
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    batfish.computeDataPlane();
+    Configuration c = parseConfig(hostname);
+
+    // Assume a flow is going out of /Common/vlan1
+    Transformation outgoingTransformation =
+        c.getAllInterfaces().get("/Common/vlan1").getOutgoingTransformation();
 
     // SNAT via snat /Common/snat1
     Flow flow =
@@ -1094,15 +1101,10 @@ public final class F5BigipStructuredGrammarTest {
             .setSrcIp(Ip.parse("10.100.1.1"))
             .setSrcPort(50000)
             .build();
-    SortedMap<Flow, List<Trace>> flowTraces =
-        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
-    List<Trace> traces = flowTraces.get(flow);
+    TransformationResult result =
+        eval(outgoingTransformation, flow, "dummy", ImmutableMap.of(), ImmutableMap.of());
     Optional<TransformationStepDetail> stepDetailOptional =
-        traces.stream()
-            .map(Trace::getHops)
-            .flatMap(Collection::stream)
-            .map(Hop::getSteps)
-            .flatMap(Collection::stream)
+        result.getTraceSteps().stream()
             .map(Step::getDetail)
             .filter(Predicates.instanceOf(TransformationStepDetail.class))
             .map(TransformationStepDetail.class::cast)
@@ -1133,8 +1135,11 @@ public final class F5BigipStructuredGrammarTest {
     String hostname = "f5_bigip_structured_snat";
     String tag = "tag";
 
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    batfish.computeDataPlane();
+    Configuration c = parseConfig("hostname");
+
+    // Assume a flow is going out of /Common/vlan1
+    Transformation outgoingTransformation =
+        c.getAllInterfaces().get("/Common/vlan1").getOutgoingTransformation();
 
     // SNAT via virtual /Common/virtual1
     Flow flow =
@@ -1148,15 +1153,12 @@ public final class F5BigipStructuredGrammarTest {
             .setSrcIp(Ip.parse("8.8.8.8"))
             .setSrcPort(50000)
             .build();
-    SortedMap<Flow, List<Trace>> flowTraces =
-        batfish.getTracerouteEngine().computeTraces(ImmutableSet.of(flow), false);
-    List<Trace> traces = flowTraces.get(flow);
+    // TODO: transformation context must include fact that /Common/virtual1 was matched during
+    // incoming transformation phase
+    TransformationResult result =
+        eval(outgoingTransformation, flow, "dummy", ImmutableMap.of(), ImmutableMap.of());
     Optional<TransformationStepDetail> stepDetailOptional =
-        traces.stream()
-            .map(Trace::getHops)
-            .flatMap(Collection::stream)
-            .map(Hop::getSteps)
-            .flatMap(Collection::stream)
+        result.getTraceSteps().stream()
             .map(Step::getDetail)
             .filter(Predicates.instanceOf(TransformationStepDetail.class))
             .map(TransformationStepDetail.class::cast)
