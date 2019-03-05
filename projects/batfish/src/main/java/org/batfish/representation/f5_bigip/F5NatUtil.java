@@ -23,8 +23,28 @@ public final class F5NatUtil {
   }
 
   /**
-   * Produces a transformation that chains the provided transformations orElse-wise. The input
-   * transformations should appear in reverse order of precedence.
+   * Produces a {@link Transformation} that chains the provided {@code transformations} orElse-wise.
+   * Any existing orElses in the input {@code transformations} are discarded.
+   *
+   * <p>{@code transformations} must be non-empty.
+   */
+  @VisibleForTesting
+  static Transformation chain(Collection<Transformation> transformations) {
+    Transformation headOfTail = null;
+    for (Transformation earlier : transformations) {
+      headOfTail =
+          Transformation.when(earlier.getGuard())
+              .apply(earlier.getTransformationSteps())
+              .setAndThen(earlier.getAndThen())
+              .setOrElse(headOfTail)
+              .build();
+    }
+    return headOfTail;
+  }
+
+  /**
+   * Produces a {@link Transformation} that chains the provided transformations orElse-wise. The
+   * input transformations should appear in reverse order of precedence.
    */
   public static @Nullable Transformation orElseChain(Collection<Transformation> transformations) {
     if (transformations.isEmpty()) {
@@ -37,16 +57,7 @@ public final class F5NatUtil {
     for (Transformation transformation : transformations) {
       addOrElses(flatTransformations, transformation);
     }
-    Transformation headOfTail = null;
-    for (Transformation earlier : flatTransformations.build()) {
-      headOfTail =
-          Transformation.when(earlier.getGuard())
-              .apply(earlier.getTransformationSteps())
-              .setAndThen(earlier.getAndThen())
-              .setOrElse(headOfTail)
-              .build();
-    }
-    return headOfTail;
+    return chain(flatTransformations.build());
   }
 
   private F5NatUtil() {}
