@@ -11,6 +11,7 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PAT
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
 import static org.batfish.representation.cisco.CiscoConversions.generateAggregateRoutePolicy;
+import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
@@ -1863,11 +1864,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       String updateSourceInterface = lpg.getUpdateSource();
       boolean ipv4 = lpg.getNeighborPrefix() != null;
       Ip updateSource = getUpdateSource(c, vrfName, lpg, updateSourceInterface, ipv4);
-      RoutingPolicy importPolicy = null;
-      String inboundRouteMapName = lpg.getInboundRouteMap();
-      if (inboundRouteMapName != null) {
-        importPolicy = c.getRoutingPolicies().get(inboundRouteMapName);
-      }
+
+      RoutingPolicy peerImportPolicy = generateBgpImportPolicy(lpg, vrfName, c, _w);
+
       String peerExportPolicyName =
           "~BGP_PEER_EXPORT_POLICY:" + vrfName + ":" + lpg.getName() + "~";
       RoutingPolicy peerExportPolicy = new RoutingPolicy(peerExportPolicyName, c);
@@ -2018,8 +2017,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           newNeighborBuilder.setGeneratedRoutes(ImmutableSet.of(defaultRoute.build()));
         }
         newNeighborBuilder.setGroup(lpg.getGroupName());
-        if (importPolicy != null) {
-          newNeighborBuilder.setImportPolicy(inboundRouteMapName);
+        if (peerImportPolicy != null) {
+          newNeighborBuilder.setImportPolicy(peerImportPolicy.getName());
         }
         newNeighborBuilder.setLocalAs(localAs);
         newNeighborBuilder.setLocalIp(updateSource);
