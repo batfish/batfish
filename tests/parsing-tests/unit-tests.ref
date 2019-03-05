@@ -1403,6 +1403,25 @@
             "          prefix = IP_PREFIX:'224.0.0.0/4')",
             "        NEWLINE:'\\n')",
             "      (extended_access_list_tail",
+            "        num = DEC:'10'",
+            "        ala = (access_list_action",
+            "          DENY:'deny')",
+            "        prot = (protocol",
+            "          TCP:'tcp')",
+            "        srcipr = (access_list_ip_range",
+            "          ANY:'any')",
+            "        dstipr = (access_list_ip_range",
+            "          prefix = IP_PREFIX:'102.66.49.113/24')",
+            "        alps_dst = (port_specifier",
+            "          NEQ:'neq'",
+            "          (port",
+            "            WWW:'www')",
+            "          (port",
+            "            HTTPS:'https'))",
+            "        (extended_access_list_additional_feature",
+            "          SYN:'syn')",
+            "        NEWLINE:'\\n')",
+            "      (extended_access_list_tail",
             "        num = DEC:'20'",
             "        ala = (access_list_action",
             "          DENY:'deny')",
@@ -70147,7 +70166,8 @@
               "definitionLines" : [
                 4,
                 5,
-                6
+                6,
+                7
               ],
               "numReferrers" : 0
             }
