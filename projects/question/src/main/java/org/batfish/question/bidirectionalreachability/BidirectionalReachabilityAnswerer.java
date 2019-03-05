@@ -4,6 +4,7 @@ import static org.batfish.datamodel.FlowDisposition.SUCCESS_DISPOSITIONS;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.toHeaderSpaceBuilder;
 import static org.batfish.datamodel.SetFlowStartLocation.setStartLocation;
 import static org.batfish.question.specifiers.PathConstraintsUtil.createPathConstraints;
+import static org.batfish.specifier.SpecifierFactories.getIpSpaceSpecifierOrDefault;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -31,9 +32,7 @@ import org.batfish.question.specifiers.PathConstraintsInput;
 import org.batfish.question.traceroute.BidirectionalTracerouteAnswerer;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
-import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.Location;
-import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifierFactory;
 
 /** Answerer for {@link BidirectionalReachabilityQuestion}. */
 public final class BidirectionalReachabilityAnswerer extends Answerer {
@@ -59,14 +58,18 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
         ReachabilityParameters.builder()
             .setActions(ImmutableSortedSet.copyOf(SUCCESS_DISPOSITIONS))
             .setDestinationIpSpaceSpecifier(
-                getDestinationIpSpaceSpecifier(_headerConstraints.getDstIps()))
+                getIpSpaceSpecifierOrDefault(
+                    _headerConstraints.getDstIps(),
+                    new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE)))
             .setForbiddenTransitNodesSpecifier(pathConstraints.getForbiddenLocations())
             .setHeaderSpace(headerSpace)
             .setIgnoreFilters(false)
             .setInvertSearch(false)
             .setRequiredTransitNodesSpecifier(pathConstraints.getTransitLocations())
             .setSourceLocationSpecifier(pathConstraints.getStartLocation())
-            .setSourceIpSpaceSpecifier(getSourceIpSpaceSpecifier(_headerConstraints.getSrcIps()))
+            .setSourceIpSpaceSpecifier(
+                getIpSpaceSpecifierOrDefault(
+                    _headerConstraints.getSrcIps(), InferFromLocationIpSpaceSpecifier.INSTANCE))
             .setSpecialize(false)
             .build();
 
@@ -149,17 +152,5 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
       default:
         throw new IllegalStateException("Unexpected ReturnFlowType: " + returnFlowType);
     }
-  }
-
-  private static IpSpaceSpecifier getDestinationIpSpaceSpecifier(String dstIps) {
-    return dstIps == null
-        ? new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE)
-        : new ParboiledIpSpaceSpecifierFactory().buildIpSpaceSpecifier(dstIps);
-  }
-
-  private static IpSpaceSpecifier getSourceIpSpaceSpecifier(String srcIps) {
-    return srcIps == null
-        ? InferFromLocationIpSpaceSpecifier.INSTANCE
-        : new ParboiledIpSpaceSpecifierFactory().buildIpSpaceSpecifier(srcIps);
   }
 }
