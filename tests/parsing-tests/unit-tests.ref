@@ -31625,9 +31625,18 @@
             "      (ro6_distribute_list",
             "        DISTRIBUTE_LIST:'distribute-list'",
             "        PREFIX_LIST:'prefix-list'",
-            "        (variable",
+            "        name = (variable_distribute_list",
             "          VARIABLE:'SWITCHLAN'  <== mode:M_Name)",
             "        IN:'in'",
+            "        NEWLINE:'\\n')",
+            "      (ro6_distribute_list",
+            "        DISTRIBUTE_LIST:'distribute-list'",
+            "        PREFIX_LIST:'prefix-list'",
+            "        name = (variable_distribute_list",
+            "          VARIABLE:'SWITCHLAN-OUT'  <== mode:M_Name)",
+            "        OUT:'out'",
+            "        iname = (interface_name",
+            "          VARIABLE:'Ethernet0/0')",
             "        NEWLINE:'\\n')",
             "      (ro6_passive_interface",
             "        PASSIVE_INTERFACE:'passive-interface'",
@@ -68300,6 +68309,18 @@
               "Line" : 83,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0 filter-list prefix OUTFILTER out"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 120,
+              "Parser_Context" : "[ro6_distribute_list s_ipv6_router_ospf stanza cisco_configuration]",
+              "Text" : "distribute-list prefix-list SWITCHLAN in"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 121,
+              "Parser_Context" : "[ro6_distribute_list s_ipv6_router_ospf stanza cisco_configuration]",
+              "Text" : "distribute-list prefix-list SWITCHLAN-OUT out Ethernet0/0"
             }
           ]
         },
@@ -72075,7 +72096,7 @@
                 14,
                 15
               ],
-              "numReferrers" : 3
+              "numReferrers" : 4
             },
             "Ethernet1/0" : {
               "definitionLines" : [
@@ -77271,6 +77292,9 @@
                 7,
                 12
               ],
+              "ipv6 router ospf distribute-list prefix-list out" : [
+                121
+              ],
               "router ospf distribute-list in" : [
                 54
               ]
@@ -77324,6 +77348,18 @@
             "aclout" : {
               "router ospf distribute-list out" : [
                 55
+              ]
+            }
+          },
+          "ipv6 prefix-list" : {
+            "SWITCHLAN" : {
+              "ipv6 router ospf distribute-list prefix-list in" : [
+                120
+              ]
+            },
+            "SWITCHLAN-OUT" : {
+              "ipv6 router ospf distribute-list prefix-list out" : [
+                121
               ]
             }
           },
@@ -80449,6 +80485,18 @@
             "aclout" : {
               "router ospf distribute-list out" : [
                 55
+              ]
+            }
+          },
+          "ipv6 prefix-list" : {
+            "SWITCHLAN" : {
+              "ipv6 router ospf distribute-list prefix-list in" : [
+                120
+              ]
+            },
+            "SWITCHLAN-OUT" : {
+              "ipv6 router ospf distribute-list prefix-list out" : [
+                121
               ]
             }
           },
