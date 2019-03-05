@@ -2,14 +2,16 @@ package org.batfish.representation.f5_bigip;
 
 import com.google.common.collect.ImmutableList;
 import java.util.Collection;
-import java.util.List;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.transformation.Transformation;
 
 /** Utility class providing general-purpose NAT functionality used in F5 conversion */
 public final class F5NatUtil {
 
-  /** Adds nested orElse {@link Transformation}s of input to {@code outputList} in pre-order */
+  /**
+   * Adds nested orElse {@link Transformation}s of {@code input} to {@code outputList}, and then add
+   * {@code input}.
+   */
   private static void addOrElses(
       ImmutableList.Builder<Transformation> outputList, Transformation input) {
     if (input == null) {
@@ -30,13 +32,12 @@ public final class F5NatUtil {
     if (transformations.size() == 1) {
       return transformations.iterator().next();
     }
-    ImmutableList.Builder<Transformation> flatInputTransformations = ImmutableList.builder();
-    for (Transformation t : transformations) {
-      addOrElses(flatInputTransformations, t);
+    ImmutableList.Builder<Transformation> flatTransformations = ImmutableList.builder();
+    for (Transformation transformation : transformations) {
+      addOrElses(flatTransformations, transformation);
     }
     Transformation headOfTail = null;
-    List<Transformation> flatTransformations = flatInputTransformations.build();
-    for (Transformation earlier : flatTransformations) {
+    for (Transformation earlier : flatTransformations.build()) {
       headOfTail =
           Transformation.when(earlier.getGuard())
               .apply(earlier.getTransformationSteps())
