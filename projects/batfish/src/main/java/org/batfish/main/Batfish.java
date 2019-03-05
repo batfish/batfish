@@ -82,6 +82,7 @@ import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.bddreachability.BDDReachabilityAnalysis;
 import org.batfish.bddreachability.BDDReachabilityAnalysisFactory;
+import org.batfish.bddreachability.BidirectionalReachabilityAnalysis;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishException.BatfishStackTrace;
@@ -209,6 +210,7 @@ import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.question.SrcNattedConstraint;
+import org.batfish.question.bidirectionalreachability.BidirectionalReachabilityResult;
 import org.batfish.question.differentialreachability.DifferentialReachabilityParameters;
 import org.batfish.question.differentialreachability.DifferentialReachabilityResult;
 import org.batfish.question.multipath.MultipathConsistencyParameters;
@@ -3400,6 +3402,29 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public SpecifierContext specifierContext(NetworkSnapshot networkSnapshot) {
     return new SpecifierContextImpl(this, networkSnapshot);
+  }
+
+  @Override
+  public BidirectionalReachabilityResult bidirectionalReachability(
+      BDDPacket bddPacket, ReachabilityParameters parameters) {
+    ResolvedReachabilityParameters params;
+    try {
+      params = resolveReachabilityParameters(this, parameters, getNetworkSnapshot());
+    } catch (InvalidReachabilityParametersException e) {
+      throw new BatfishException("Error resolving reachability parameters", e);
+    }
+
+    return new BidirectionalReachabilityAnalysis(
+            bddPacket,
+            loadConfigurations(),
+            loadDataPlane().getForwardingAnalysis(),
+            params.getSourceIpAssignment(),
+            params.getHeaderSpace(),
+            params.getForbiddenTransitNodes(),
+            params.getRequiredTransitNodes(),
+            params.getFinalNodes(),
+            params.getActions())
+        .getResult();
   }
 
   @Override

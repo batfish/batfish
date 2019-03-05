@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyProvider;
@@ -46,6 +47,7 @@ import org.batfish.grammar.BgpTableFormat;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.question.ReachabilityParameters;
+import org.batfish.question.bidirectionalreachability.BidirectionalReachabilityResult;
 import org.batfish.question.differentialreachability.DifferentialReachabilityParameters;
 import org.batfish.question.differentialreachability.DifferentialReachabilityResult;
 import org.batfish.question.multipath.MultipathConsistencyParameters;
@@ -252,4 +254,9 @@ public interface IBatfish extends IPluginConsumer {
   /** Returns node blacklist for given snapshot or empty set if absent. */
   @Nonnull
   SortedSet<String> getNodeBlacklist(@Nonnull NetworkSnapshot networkSnapshot);
+
+  /** Performs bidirectional reachability analysis. */
+  @Nonnull
+  BidirectionalReachabilityResult bidirectionalReachability(
+      BDDPacket bddPacket, ReachabilityParameters parameters);
 }
