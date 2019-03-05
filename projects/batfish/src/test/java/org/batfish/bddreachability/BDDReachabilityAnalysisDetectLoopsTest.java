@@ -95,7 +95,7 @@ public class BDDReachabilityAnalysisDetectLoopsTest {
         IpSpaceAssignment.builder().assign(allLocations, UniverseIpSpace.INSTANCE).build();
     BDDReachabilityAnalysis analysis =
         new BDDReachabilityAnalysisFactory(
-                pkt, configs, batfish.loadDataPlane().getForwardingAnalysis())
+                pkt, configs, batfish.loadDataPlane().getForwardingAnalysis(), false, false)
             .bddReachabilityAnalysis(srcIpSpaceAssignment);
     analysis.detectLoops();
   }

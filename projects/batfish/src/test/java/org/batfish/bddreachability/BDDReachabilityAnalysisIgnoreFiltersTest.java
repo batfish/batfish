@@ -125,7 +125,7 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
       IpSpace initialSrcIp, FlowDisposition disposition, boolean ignoreFilters) {
     Map<String, Configuration> configs = batfish.loadConfigurations();
     return new BDDReachabilityAnalysisFactory(
-            PKT, configs, batfish.loadDataPlane().getForwardingAnalysis(), ignoreFilters)
+            PKT, configs, batfish.loadDataPlane().getForwardingAnalysis(), ignoreFilters, false)
         .bddReachabilityAnalysis(
             IpSpaceAssignment.builder().assign(IFACE1_LOCATION, initialSrcIp).build(),
             matchDst(NODE2_ADDR.getIp().toIpSpace()),
