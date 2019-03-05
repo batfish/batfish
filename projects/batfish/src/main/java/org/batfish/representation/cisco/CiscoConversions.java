@@ -268,7 +268,6 @@ class CiscoConversions {
     // Warnings for references to undefined route-maps and prefix-lists will be surfaced elsewhere.
     if (inboundRouteMapName != null && c.getRoutingPolicies().containsKey(inboundRouteMapName)) {
       // Inbound route-map is defined. Use that as the BGP import policy.
-      // TODO Ignore route-map if it has lines inapplicable to inbound BGP routes (e.g. match tag)
       return inboundRouteMapName;
     }
     if (inboundPrefixListName != null
