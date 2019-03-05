@@ -2,6 +2,7 @@ package org.batfish.question.bidirectionalreachability;
 
 import static org.batfish.datamodel.FlowDisposition.SUCCESS_DISPOSITIONS;
 import static org.batfish.datamodel.PacketHeaderConstraintsUtil.toHeaderSpaceBuilder;
+import static org.batfish.datamodel.SetFlowStartLocation.setStartLocation;
 import static org.batfish.question.specifiers.PathConstraintsUtil.createPathConstraints;
 
 import com.google.common.collect.ImmutableMap;
@@ -20,7 +21,6 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.TracePruner;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.PathConstraints;
@@ -31,11 +31,8 @@ import org.batfish.question.specifiers.PathConstraintsInput;
 import org.batfish.question.traceroute.BidirectionalTracerouteAnswerer;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
-import org.batfish.specifier.InterfaceLinkLocation;
-import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.Location;
-import org.batfish.specifier.LocationVisitor;
 import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifierFactory;
 
 /** Answerer for {@link BidirectionalReachabilityQuestion}. */
@@ -89,10 +86,12 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
                   BDD locationBdd = entry.getValue();
                   return bddPacket
                       .getFlow(locationBdd)
-                      .map(FlowIngressLocationVisitor::new)
-                      .map(startLocation::accept)
-                      .map(builder -> builder.setTag(flowTag))
-                      .map(Builder::build);
+                      .map(
+                          builder -> {
+                            setStartLocation(_configs, builder, startLocation);
+                            builder.setTag(flowTag);
+                            return builder.build();
+                          });
                 })
             .filter(Optional::isPresent)
             .map(Optional::get)
@@ -149,31 +148,6 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
       default:
         throw new IllegalStateException("Unexpected ReturnFlowType: " + returnFlowType);
-    }
-  }
-
-  private final class FlowIngressLocationVisitor implements LocationVisitor<Flow.Builder> {
-    final Flow.Builder _builder;
-
-    FlowIngressLocationVisitor(Builder builder) {
-      _builder = builder;
-    }
-
-    @Override
-    public Builder visitInterfaceLinkLocation(InterfaceLinkLocation loc) {
-      return _builder.setIngressNode(loc.getNodeName()).setIngressInterface(loc.getInterfaceName());
-    }
-
-    @Override
-    public Builder visitInterfaceLocation(InterfaceLocation loc) {
-      return _builder
-          .setIngressNode(loc.getNodeName())
-          .setIngressVrf(
-              _configs
-                  .get(loc.getNodeName())
-                  .getAllInterfaces()
-                  .get(loc.getInterfaceName())
-                  .getVrfName());
     }
   }
 
