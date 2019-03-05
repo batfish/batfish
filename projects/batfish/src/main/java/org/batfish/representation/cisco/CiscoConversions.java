@@ -245,6 +245,53 @@ class CiscoConversions {
   }
 
   /**
+   * Returns the name of a {@link RoutingPolicy} to be used as the BGP import policy for the given
+   * {@link LeafBgpPeerGroup}, or {@code null} if no constraints are imposed on the peer's inbound
+   * routes. When a nonnull policy name is returned, the corresponding policy is guaranteed to exist
+   * in the given configuration's routing policies.
+   */
+  @Nullable
+  static String generateBgpImportPolicy(
+      LeafBgpPeerGroup lpg, String vrfName, Configuration c, Warnings w) {
+    // TODO Support filter-list and distribute-list
+    // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5816-bgpfaq-5816.html
+
+    String inboundRouteMapName = lpg.getInboundRouteMap();
+    String inboundPrefixListName = lpg.getInboundPrefixList();
+
+    // TODO Support using both a route-map and a prefix-list in BGP import policies
+    if (inboundRouteMapName != null && inboundPrefixListName != null) {
+      w.redFlag(
+          "Batfish does not support configuring both a route-map and a prefix-list for incoming BGP routes. When this occurs, the prefix-list will be ignored.");
+    }
+
+    // Warnings for references to undefined route-maps and prefix-lists will be surfaced elsewhere.
+    if (inboundRouteMapName != null && c.getRoutingPolicies().containsKey(inboundRouteMapName)) {
+      // Inbound route-map is defined. Use that as the BGP import policy.
+      return inboundRouteMapName;
+    }
+    if (inboundPrefixListName != null
+        && c.getRouteFilterLists().containsKey(inboundPrefixListName)) {
+      // Inbound prefix-list is defined. Build an import policy around it.
+      String generatedImportPolicyName =
+          "~BGP_PEER_IMPORT_POLICY:" + vrfName + ":" + lpg.getName() + "~";
+      RoutingPolicy.builder()
+          .setOwner(c)
+          .setName(generatedImportPolicyName)
+          .addStatement(
+              new If(
+                  new MatchPrefixSet(
+                      DestinationNetwork.instance(), new NamedPrefixSet(inboundPrefixListName)),
+                  ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                  ImmutableList.of(Statements.ExitReject.toStaticStatement())))
+          .build();
+      return generatedImportPolicyName;
+    }
+    // Return null to indicate no constraints were imposed on inbound BGP routes.
+    return null;
+  }
+
+  /**
    * Generates and returns a {@link Statement} that suppresses routes that are summarized by the
    * given set of {@link Prefix prefixes} configured as {@code summary-only}.
    *

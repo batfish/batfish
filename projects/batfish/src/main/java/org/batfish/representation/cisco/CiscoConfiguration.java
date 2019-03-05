@@ -11,6 +11,7 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PAT
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
 import static org.batfish.representation.cisco.CiscoConversions.generateAggregateRoutePolicy;
+import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
@@ -1863,11 +1864,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       String updateSourceInterface = lpg.getUpdateSource();
       boolean ipv4 = lpg.getNeighborPrefix() != null;
       Ip updateSource = getUpdateSource(c, vrfName, lpg, updateSourceInterface, ipv4);
-      RoutingPolicy importPolicy = null;
-      String inboundRouteMapName = lpg.getInboundRouteMap();
-      if (inboundRouteMapName != null) {
-        importPolicy = c.getRoutingPolicies().get(inboundRouteMapName);
-      }
+
+      String peerImportPolicyName = generateBgpImportPolicy(lpg, vrfName, c, _w);
+
       String peerExportPolicyName =
           "~BGP_PEER_EXPORT_POLICY:" + vrfName + ":" + lpg.getName() + "~";
       RoutingPolicy peerExportPolicy = new RoutingPolicy(peerExportPolicyName, c);
@@ -2018,8 +2017,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           newNeighborBuilder.setGeneratedRoutes(ImmutableSet.of(defaultRoute.build()));
         }
         newNeighborBuilder.setGroup(lpg.getGroupName());
-        if (importPolicy != null) {
-          newNeighborBuilder.setImportPolicy(inboundRouteMapName);
+        if (peerImportPolicyName != null) {
+          newNeighborBuilder.setImportPolicy(peerImportPolicyName);
         }
         newNeighborBuilder.setLocalAs(localAs);
         newNeighborBuilder.setLocalIp(updateSource);
@@ -3634,6 +3633,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN,
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
+        CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
         CiscoStructureUsage.ROUTER_STATIC_ROUTE,
         CiscoStructureUsage.ROUTER_VRRP_INTERFACE,
         CiscoStructureUsage.SERVICE_POLICY_INTERFACE,
@@ -3719,6 +3720,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.PREFIX6_LIST,
         CiscoStructureUsage.BGP_INBOUND_PREFIX6_LIST,
         CiscoStructureUsage.BGP_OUTBOUND_PREFIX6_LIST,
+        CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
         CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST);
 
     markConcreteStructure(

@@ -35,7 +35,6 @@ import org.batfish.datamodel.VniSettings;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
-import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.identifiers.NetworkId;
@@ -103,7 +102,7 @@ public final class EdgesTest {
     TableAnswerElement answer =
         (TableAnswerElement)
             new EdgesAnswerer(
-                    new EdgesQuestion(NodesSpecifier.ALL, NodesSpecifier.ALL, EdgeType.LAYER1),
+                    new EdgesQuestion(null, null, EdgeType.LAYER1),
                     new IBatfishTestAdapter() {
                       @Override
                       public SortedMap<String, Configuration> loadConfigurations(
@@ -181,7 +180,7 @@ public final class EdgesTest {
     TableAnswerElement answer =
         (TableAnswerElement)
             new EdgesAnswerer(
-                    new EdgesQuestion(NodesSpecifier.ALL, NodesSpecifier.ALL, EdgeType.VXLAN),
+                    new EdgesQuestion(null, null, EdgeType.VXLAN),
                     new IBatfishTestAdapter() {
                       @Override
                       public SortedMap<String, Configuration> loadConfigurations(

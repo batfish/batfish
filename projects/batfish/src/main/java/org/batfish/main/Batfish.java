@@ -3568,7 +3568,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private BDDReachabilityAnalysisFactory getBddReachabilityAnalysisFactory(
       BDDPacket pkt, boolean ignoreFilters) {
     return new BDDReachabilityAnalysisFactory(
-        pkt, loadConfigurations(), loadDataPlane().getForwardingAnalysis(), ignoreFilters);
+        pkt, loadConfigurations(), loadDataPlane().getForwardingAnalysis(), ignoreFilters, false);
   }
 
   /**

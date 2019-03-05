@@ -4,14 +4,12 @@ import static org.batfish.bddreachability.EdgeMatchers.hasPostState;
 import static org.batfish.bddreachability.EdgeMatchers.hasPreState;
 import static org.batfish.bddreachability.EdgeMatchers.hasTransition;
 import static org.batfish.bddreachability.LastHopOutgoingInterfaceManager.NO_LAST_HOP;
-import static org.batfish.bddreachability.SessionInstrumentation.returnPassQueryConstraints;
 import static org.batfish.bddreachability.TransitionMatchers.mapsBackward;
 import static org.batfish.bddreachability.TransitionMatchers.mapsForward;
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -38,11 +36,6 @@ import org.batfish.z3.state.NodeAccept;
 import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeInterfaceDeliveredToSubnet;
-import org.batfish.z3.state.NodeInterfaceExitsNetwork;
-import org.batfish.z3.state.NodeInterfaceInsufficientInfo;
-import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
-import org.batfish.z3.state.OriginateInterfaceLink;
-import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PreInInterface;
 import org.junit.Before;
 import org.junit.Rule;
@@ -517,34 +510,5 @@ public final class SessionInstrumentationTest {
                         mapsBackward(
                             ONE, validSrc.and(sessionHeaders).and(_permitTcpBdd.not())))))));
     _fwI1.setFirewallSessionInterfaceInfo(null);
-  }
-
-  @Test
-  public void testReturnPassQueryConstraints() {
-    BDD dst1 = PKT.getDstIp().value(1L);
-    BDD dst2 = PKT.getDstIp().value(2L);
-    BDD src1 = PKT.getSrcIp().value(1L);
-    BDD src2 = PKT.getSrcIp().value(2L);
-
-    assertThat(
-        returnPassQueryConstraints(
-            PKT,
-            ImmutableMap.of(
-                new OriginateVrf("NODE", "VRF"),
-                dst1.and(src2),
-                new OriginateInterfaceLink("NODE", "IFACE"),
-                dst2.and(src1))),
-        equalTo(
-            ImmutableMap.of(
-                new NodeAccept("NODE"),
-                dst2.and(src1),
-                new NodeInterfaceDeliveredToSubnet("NODE", "IFACE"),
-                dst1.and(src2),
-                new NodeInterfaceExitsNetwork("NODE", "IFACE"),
-                dst1.and(src2),
-                new NodeInterfaceInsufficientInfo("NODE", "IFACE"),
-                dst1.and(src2),
-                new NodeInterfaceNeighborUnreachable("NODE", "IFACE"),
-                dst1.and(src2))));
   }
 }

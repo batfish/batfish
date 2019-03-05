@@ -1,7 +1,6 @@
 package org.batfish.bddreachability;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.bddreachability.OriginationStateToTerminationState.originationStateToTerminationState;
 import static org.batfish.bddreachability.transition.Transitions.addLastHopConstraint;
 import static org.batfish.bddreachability.transition.Transitions.addSourceInterfaceConstraint;
 import static org.batfish.bddreachability.transition.Transitions.compose;
@@ -10,7 +9,6 @@ import static org.batfish.bddreachability.transition.Transitions.removeLastHopCo
 import static org.batfish.bddreachability.transition.Transitions.removeSourceConstraint;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
 import java.util.Collection;
@@ -359,30 +357,5 @@ public class SessionInstrumentation {
     }
     String aclName = getter.apply(sessionInfo);
     return aclName == null ? _one : _filterBdds.get(hostname).get(aclName).get();
-  }
-
-  /**
-   * Convert forward-pass origination constraints to return-pass query constraints. For a
-   * bidirectional query, we want return flows that make it back to corresponding origination
-   * points. This method defines that correspondence: it connects both the forward and return flows
-   * (by swapping source and destination fields) and the origination states in the forward pass
-   * graph to termination states in the return pass graph.
-   */
-  public static Map<StateExpr, BDD> returnPassQueryConstraints(
-      BDDPacket packet, Map<StateExpr, BDD> forwardPassOriginationConstraints) {
-    return forwardPassOriginationConstraints.entrySet().stream()
-        .flatMap(
-            entry -> {
-              List<StateExpr> terminationStates =
-                  originationStateToTerminationState(entry.getKey());
-              if (terminationStates == null) {
-                return Stream.of();
-              }
-
-              BDD queryConstraint = packet.swapSourceAndDestinationFields(entry.getValue());
-              return terminationStates.stream()
-                  .map(state -> Maps.immutableEntry(state, queryConstraint));
-            })
-        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue, BDD::or));
   }
 }
