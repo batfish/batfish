@@ -1,10 +1,6 @@
 package org.batfish.representation.f5_bigip;
 
-import static org.batfish.representation.f5_bigip.F5NatUtil.addOrElses;
-import static org.batfish.representation.f5_bigip.F5NatUtil.chain;
 import static org.batfish.representation.f5_bigip.F5NatUtil.orElseChain;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -13,6 +9,8 @@ import com.google.common.collect.ImmutableList;
 import java.util.Collection;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.acl.FalseExpr;
+import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.Transformation;
 import org.junit.Test;
 
@@ -21,92 +19,39 @@ import org.junit.Test;
 public final class F5NatUtilTest {
 
   @Test
-  public void testAddOrElsesBaseCase() {
-    ImmutableList.Builder<Transformation> outputList = ImmutableList.builder();
-    Transformation input = null;
-    addOrElses(outputList, input);
-
-    assertThat(outputList.build(), empty());
-  }
-
-  @Test
-  public void testAddOrElsesNested() {
-    ImmutableList.Builder<Transformation> outputList = ImmutableList.builder();
-    Transformation nested = Transformation.always().build();
-    Transformation input = Transformation.always().setOrElse(nested).build();
-    addOrElses(outputList, input);
-
-    assertThat(outputList.build(), contains(nested, input));
-  }
-
-  @Test
-  public void testAddOrElsesNoOrElse() {
-    ImmutableList.Builder<Transformation> outputList = ImmutableList.builder();
-    Transformation input = Transformation.always().build();
-    addOrElses(outputList, input);
-
-    assertThat(outputList.build(), contains(input));
-  }
-
-  @Test
-  public void testChainDiscardsOrElse() {
-    Transformation transformation =
-        Transformation.always().setOrElse(Transformation.always().build()).build();
-    Collection<Transformation> transformations = ImmutableList.of(transformation);
-
-    assertThat(chain(transformations), equalTo(Transformation.always().build()));
-  }
-
-  @Test
-  public void testChainMultiple() {
-    Collection<Transformation> transformations =
-        ImmutableList.of(
-            Transformation.when(FalseExpr.INSTANCE).build(), Transformation.always().build());
-
-    assertThat(
-        chain(transformations),
-        equalTo(
-            Transformation.always()
-                .setOrElse(Transformation.when(FalseExpr.INSTANCE).build())
-                .build()));
-  }
-
-  @Test
-  public void testChainSingleton() {
-    Transformation transformation = Transformation.always().build();
-    Collection<Transformation> transformations = ImmutableList.of(transformation);
-
-    assertThat(chain(transformations), equalTo(transformation));
-  }
-
-  @Test
   public void testOrElseChainEmpty() {
     assertThat(orElseChain(ImmutableList.of()), nullValue());
   }
 
   @Test
   public void testOrElseChainMultiple() {
-    Collection<Transformation> transformations =
+    Collection<SimpleTransformation> transformations =
         ImmutableList.of(
-            Transformation.when(FalseExpr.INSTANCE)
-                .setOrElse(Transformation.always().build())
-                .build(),
-            Transformation.always().build());
+            new SimpleTransformation(FalseExpr.INSTANCE, Noop.NOOP_DEST_NAT),
+            new SimpleTransformation(FalseExpr.INSTANCE, Noop.NOOP_SOURCE_NAT),
+            new SimpleTransformation(TrueExpr.INSTANCE, Noop.NOOP_SOURCE_NAT));
 
     assertThat(
         orElseChain(transformations),
         equalTo(
-            Transformation.always()
+            Transformation.when(TrueExpr.INSTANCE)
+                .apply(Noop.NOOP_SOURCE_NAT)
                 .setOrElse(
                     Transformation.when(FalseExpr.INSTANCE)
-                        .setOrElse(Transformation.always().build())
+                        .apply(Noop.NOOP_SOURCE_NAT)
+                        .setOrElse(
+                            Transformation.when(FalseExpr.INSTANCE)
+                                .apply(Noop.NOOP_DEST_NAT)
+                                .build())
                         .build())
                 .build()));
   }
 
   @Test
   public void testOrElseChainSingleton() {
-    Transformation t1 = Transformation.always().build();
-    assertThat(orElseChain(ImmutableList.of(t1)), equalTo(t1));
+    SimpleTransformation t1 = new SimpleTransformation(TrueExpr.INSTANCE, Noop.NOOP_DEST_NAT);
+    assertThat(
+        orElseChain(ImmutableList.of(t1)),
+        equalTo(Transformation.when(TrueExpr.INSTANCE).apply(Noop.NOOP_DEST_NAT).build()));
   }
 }

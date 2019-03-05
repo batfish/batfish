@@ -142,13 +142,13 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private transient Map<String, Set<IpSpace>> _snatAdditionalArpIps;
   private final @Nonnull Map<String, SnatPool> _snatPools;
   private final @Nonnull Map<String, Snat> _snats;
-  private transient SortedMap<String, Transformation> _snatTransformations;
+  private transient SortedMap<String, SimpleTransformation> _snatTransformations;
   private final @Nonnull Map<String, SnatTranslation> _snatTranslations;
   private transient Map<String, Set<IpSpace>> _virtualAdditionalDnatArpIps;
   private transient Map<String, Set<IpSpace>> _virtualAdditionalSnatArpIps;
   private final @Nonnull Map<String, VirtualAddress> _virtualAddresses;
-  private transient SortedMap<String, Transformation> _virtualIncomingTransformations;
-  private transient SortedMap<String, Transformation> _virtualOutgoingTransformations;
+  private transient SortedMap<String, SimpleTransformation> _virtualIncomingTransformations;
+  private transient SortedMap<String, SimpleTransformation> _virtualOutgoingTransformations;
   private final @Nonnull Map<String, Virtual> _virtuals;
   private final @Nonnull Map<String, Vlan> _vlans;
 
@@ -247,7 +247,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   private Transformation computeInterfaceIncomingTransformation(String vlanName) {
-    ImmutableList.Builder<Transformation> applicableTransformations = ImmutableList.builder();
+    ImmutableList.Builder<SimpleTransformation> applicableTransformations = ImmutableList.builder();
     _virtualIncomingTransformations.forEach(
         (virtualName, transformation) -> {
           if (appliesToVlan(_virtuals.get(virtualName), vlanName)) {
@@ -257,7 +257,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return orElseChain(applicableTransformations.build());
   }
 
-  private Stream<Transformation> computeInterfaceOutgoingSnatTransformations(String vlanName) {
+  private Stream<SimpleTransformation> computeInterfaceOutgoingSnatTransformations(
+      String vlanName) {
     return _snatTransformations.entrySet().stream()
         .filter(
             snatTransformationEntry ->
@@ -266,9 +267,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   private Transformation computeInterfaceOutgoingTransformation(String vlanName) {
-    Stream<Transformation> virtualTransformations =
+    Stream<SimpleTransformation> virtualTransformations =
         _virtualOutgoingTransformations.values().stream();
-    Stream<Transformation> snatTransformations =
+    Stream<SimpleTransformation> snatTransformations =
         computeInterfaceOutgoingSnatTransformations(vlanName);
     // Note that these streams come from maps whose keys are sorted in reverse order. The first
     // transformation guard checked will be the condition for the virtual that is first
@@ -322,7 +323,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
         .map(Ip::toIpSpace);
   }
 
-  private Optional<Transformation> computeSnatTransformation(Snat snat) {
+  private Optional<SimpleTransformation> computeSnatTransformation(Snat snat) {
     //// Perform SNAT if source IP is in range
 
     // Retrieve pool of addresses to which sourceIP may be translated
@@ -358,7 +359,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
         new MatchHeaderSpace(
             HeaderSpace.builder().setSrcIps(sourceIpSpace).build(), snat.getName());
     return computeOutgoingSnatPoolTransformation(snatPool)
-        .map(step -> Transformation.when(matchCondition).apply(step).build());
+        .map(step -> new SimpleTransformation(matchCondition, step));
   }
 
   private @Nonnull Set<IpSpace> computeVirtualDnatIps(Virtual virtual) {
@@ -398,7 +399,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
             .collect(ImmutableList.toImmutableList()));
   }
 
-  private @Nonnull Optional<Transformation> computeVirtualIncomingTransformation(Virtual virtual) {
+  private @Nonnull Optional<SimpleTransformation> computeVirtualIncomingTransformation(
+      Virtual virtual) {
     //// Perform DNAT if source IP is in range and destination IP and port match
 
     // Retrieve pool of addresses to which destination IP may be translated
@@ -463,12 +465,11 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // TODO: track information needed for SNAT in outgoing transformation
     // https://github.com/batfish/batfish/issues/3243
     return Optional.of(
-        Transformation.when(matchCondition)
-            .apply(computeVirtualIncomingPoolTransformation(pool))
-            .build());
+        new SimpleTransformation(matchCondition, computeVirtualIncomingPoolTransformation(pool)));
   }
 
-  private @Nonnull Optional<Transformation> computeVirtualOutgoingTransformation(Virtual virtual) {
+  private @Nonnull Optional<SimpleTransformation> computeVirtualOutgoingTransformation(
+      Virtual virtual) {
     String snatPoolName = virtual.getSourceAddressTranslationPool();
     if (snatPoolName == null) {
       // No transformation since no source-address-translation occurs
@@ -482,7 +483,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // TODO: Replace FalseExpr.INSTANCE with condition that matches token set by incoming
     // transformation https://github.com/batfish/batfish/issues/3243
     return computeOutgoingSnatPoolTransformation(snatPool)
-        .map(step -> Transformation.when(FalseExpr.INSTANCE).apply(step).build());
+        .map(step -> new SimpleTransformation(FalseExpr.INSTANCE, step));
   }
 
   private @Nonnull Set<IpSpace> computeVirtualSnatIps(Virtual virtual) {
@@ -591,7 +592,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // construction of chained transformations later on.
 
     // transformations
-    ImmutableSortedMap.Builder<String, Transformation> snatTransformations =
+    ImmutableSortedMap.Builder<String, SimpleTransformation> snatTransformations =
         ImmutableSortedMap.reverseOrder();
     _snats.forEach(
         (snatName, snat) ->
@@ -614,7 +615,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // construction of chained transformations later on.
 
     // incoming transformations
-    ImmutableSortedMap.Builder<String, Transformation> virtualIncomingTransformations =
+    ImmutableSortedMap.Builder<String, SimpleTransformation> virtualIncomingTransformations =
         ImmutableSortedMap.reverseOrder();
     _virtuals.forEach(
         (virtualName, virtual) ->
@@ -627,7 +628,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
         toImmutableMap(_virtuals, Entry::getKey, e -> computeVirtualDnatIps(e.getValue()));
 
     // outgoing transformations
-    ImmutableSortedMap.Builder<String, Transformation> virtualOutgoingTransformations =
+    ImmutableSortedMap.Builder<String, SimpleTransformation> virtualOutgoingTransformations =
         ImmutableSortedMap.reverseOrder();
     _virtuals.forEach(
         (virtualName, virtual) ->
