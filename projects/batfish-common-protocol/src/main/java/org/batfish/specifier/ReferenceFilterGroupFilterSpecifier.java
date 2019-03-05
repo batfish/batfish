@@ -66,7 +66,13 @@ public final class ReferenceFilterGroupFilterSpecifier implements FilterSpecifie
         .filter(
             filter ->
                 filterGroup.getFilters().stream()
-                    .anyMatch(specifier -> specifier.matches(filter, config)))
+                    .anyMatch(
+                        specifierInput ->
+                            specifierInput != null
+                                && SpecifierFactories.getFilterSpecifierOrDefault(
+                                        specifierInput, AllFiltersFilterSpecifier.INSTANCE)
+                                    .resolve(node, ctxt)
+                                    .contains(filter)))
         .collect(ImmutableSet.toImmutableSet());
   }
 }

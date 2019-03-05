@@ -10,18 +10,17 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Names.Type;
-import org.batfish.datamodel.questions.FiltersSpecifier;
 
 public class FilterGroup implements Comparable<FilterGroup> {
 
   private static final String PROP_FILTERS = "filters";
   private static final String PROP_NAME = "name";
 
-  @Nonnull private List<FiltersSpecifier> _filters;
+  @Nonnull private List<String> _filters;
   @Nonnull private String _name;
 
   public FilterGroup(
-      @Nullable @JsonProperty(PROP_FILTERS) List<FiltersSpecifier> filters,
+      @Nullable @JsonProperty(PROP_FILTERS) List<String> filters,
       @Nullable @JsonProperty(PROP_NAME) String name) {
     checkArgument(name != null, "Filter group name cannot not be null");
     Names.checkName(name, "filter group", Type.REFERENCE_OBJECT);
@@ -37,7 +36,7 @@ public class FilterGroup implements Comparable<FilterGroup> {
 
   @JsonProperty(PROP_FILTERS)
   @Nonnull
-  public List<FiltersSpecifier> getFilters() {
+  public List<String> getFilters() {
     return _filters;
   }
 

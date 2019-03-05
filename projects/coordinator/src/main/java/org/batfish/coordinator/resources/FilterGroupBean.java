@@ -7,15 +7,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Objects;
-import org.batfish.datamodel.questions.FiltersSpecifier;
 import org.batfish.referencelibrary.FilterGroup;
 
 public class FilterGroupBean {
 
   /**
-   * The set of filters in this filter group. Each filter must be a valid {@link FiltersSpecifier}.
+   * The set of filters in this filter group. Each filter must be a valid input to currently active
+   * {@link org.batfish.specifier.FilterSpecifierFactory}.
    */
-  public List<FiltersSpecifier> filters;
+  public List<String> filters;
 
   /** The name of this address group */
   public String name;
