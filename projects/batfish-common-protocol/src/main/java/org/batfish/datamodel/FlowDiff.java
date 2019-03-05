@@ -9,6 +9,7 @@ import static org.batfish.datamodel.Flow.PROP_SRC_IP;
 import static org.batfish.datamodel.Flow.PROP_SRC_PORT;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.annotations.VisibleForTesting;
@@ -169,6 +170,32 @@ public final class FlowDiff implements Comparable<FlowDiff> {
           new FlowDiff(PROP_SRC_IP, flow1.getSrcIp().toString(), flow2.getSrcIp().toString()));
     }
     return diffs.build();
+  }
+
+  /** Returns {@link PortField} corresponding to field name if applicable, or else {@code null}. */
+  @JsonIgnore
+  public @Nullable PortField getPortField() {
+    switch (_fieldName) {
+      case Flow.PROP_DST_PORT:
+        return PortField.DESTINATION;
+      case Flow.PROP_SRC_PORT:
+        return PortField.SOURCE;
+      default:
+        return null;
+    }
+  }
+
+  /** Returns {@link IpField} corresponding to field name if applicable, or else {@code null}. */
+  @JsonIgnore
+  public @Nullable IpField getIpField() {
+    switch (_fieldName) {
+      case Flow.PROP_DST_IP:
+        return IpField.DESTINATION;
+      case Flow.PROP_SRC_IP:
+        return IpField.SOURCE;
+      default:
+        return null;
+    }
   }
 
   @Override
