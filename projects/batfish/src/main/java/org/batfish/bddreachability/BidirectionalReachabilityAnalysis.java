@@ -265,8 +265,8 @@ public final class BidirectionalReachabilityAnalysis {
   }
 
   private Map<Location, BDD> computeForwardPassStartLocationToReturnPassFailureBdds() {
-    Map<StateExpr, BDD> returnPassReachableBdds = _returnPassForwardReachableBdds.get();
-    BDD failReturnFlows = returnPassReachableBdds.getOrDefault(Query.INSTANCE, _zero);
+    // the return pass graph sends all failing flows to the query state
+    BDD failReturnFlows = _returnPassForwardReachableBdds.get().getOrDefault(Query.INSTANCE, _zero);
     if (failReturnFlows.isZero()) {
       return ImmutableMap.of();
     }

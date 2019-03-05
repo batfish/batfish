@@ -1234,6 +1234,12 @@ public final class BDDReachabilityAnalysisFactory {
   /**
    * Create a {@link BDDReachabilityAnalysis} with the given {@link BDDFirewallSessionTraceInfo
    * sessions}.
+   *
+   * @param returnPassOrigBdds Sets of packets at different locations to originate packets from in
+   *     the return pass graph.
+   * @param returnPassSuccessBdds Sets of packets at different locations in the return pass graph
+   *     that are to be considered successful (and not failure). See {@link
+   *     BidirectionalReachabilityReturnPassInstrumentation}.
    */
   BDDReachabilityAnalysis bddReachabilityAnalysis(
       Map<StateExpr, BDD> returnPassOrigBdds,

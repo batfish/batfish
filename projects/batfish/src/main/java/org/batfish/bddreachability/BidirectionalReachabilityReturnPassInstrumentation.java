@@ -27,6 +27,12 @@ import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
  * require the origination states to have disjoint headerspaces.
  */
 final class BidirectionalReachabilityReturnPassInstrumentation {
+  /**
+   * For a particular {@link NodeInterfaceInsufficientInfo} or {@link
+   * NodeInterfaceNeighborUnreachable} state, this map identifies packets which, should they reach
+   * that state, should not be considered failures in the return pass. The return pass graph will be
+   * instrumented to block those packets from the out-edges leaving that state.
+   */
   private final Map<StateExpr, BDD> _returnPassSuccessConstraints;
 
   BidirectionalReachabilityReturnPassInstrumentation(

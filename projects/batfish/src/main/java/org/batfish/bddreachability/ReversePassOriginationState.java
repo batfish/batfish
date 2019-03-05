@@ -58,7 +58,15 @@ import org.batfish.z3.state.visitors.GenericStateExprVisitor;
  * query to the corresponding origination state for the return pass (if any). If the state does not
  * have a corresponding origination state, returns null.
  *
- * <p>TODO currently only handles DELIVERED_TO_SUBNET and EXITS_NETWORK (not ACCEPT)
+ * <p>{@link NodeInterfaceDeliveredToSubnet} and {@link NodeInterfaceExitsNetwork} states are mapped
+ * to corresponding {@link OriginateInterfaceLink} states.
+ *
+ * <p>TODO: handle ACCEPT disposition
+ *
+ * <p>Flows accepted by a VRF in the forward pass should be originated by {@link OriginateVrf} in
+ * the return pass. This isn't implemented yet, because there is no corresponding AcceptVrf state.
+ * We can either add one, or else split the packets accepted at a {@link NodeAccept} state into
+ * multiple {@link OriginateVrf} states by dst IP.
  */
 public class ReversePassOriginationState implements GenericStateExprVisitor<StateExpr> {
   private static final ReversePassOriginationState INSTANCE = new ReversePassOriginationState();
