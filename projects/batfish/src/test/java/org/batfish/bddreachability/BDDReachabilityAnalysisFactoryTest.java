@@ -84,7 +84,7 @@ import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.Location;
-import org.batfish.specifier.LocationSpecifiers;
+import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.z3.IngressLocation;
 import org.batfish.z3.expr.StateExpr;
@@ -142,7 +142,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
   private static IpSpaceAssignment ipSpaceAssignment(Batfish batfish) {
     SpecifierContext ctxt = batfish.specifierContext();
-    Set<Location> locations = LocationSpecifiers.ALL_LOCATIONS.resolve(ctxt);
+    Set<Location> locations = LocationSpecifier.ALL_LOCATIONS.resolve(ctxt);
     return CONSTANT_UNIVERSE_IPSPACE_SPECIFIER.resolve(locations, ctxt);
   }
 

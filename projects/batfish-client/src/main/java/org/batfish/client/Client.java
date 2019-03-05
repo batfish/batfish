@@ -103,16 +103,15 @@ import org.batfish.datamodel.questions.BgpPeerPropertySpecifier;
 import org.batfish.datamodel.questions.BgpProcessPropertySpecifier;
 import org.batfish.datamodel.questions.InstanceData;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
-import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.NamedStructureSpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.OspfPropertySpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.datamodel.questions.VxlanVniPropertySpecifier;
+import org.batfish.specifier.AllInterfacesInterfaceSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.RoutingProtocolSpecifier;
-import org.batfish.specifier.ShorthandInterfaceSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifierFactory;
 import org.codehaus.jettison.json.JSONArray;
@@ -478,7 +477,7 @@ public class Client extends AbstractClient implements IClient {
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         SpecifierFactories.getInterfaceSpecifierOrDefault(
-            value.textValue(), new ShorthandInterfaceSpecifier(InterfacesSpecifier.ALL));
+            value.textValue(), AllInterfacesInterfaceSpecifier.INSTANCE);
         break;
       case IP:
         // TODO: Need to double check isInetAddress()

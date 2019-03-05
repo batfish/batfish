@@ -12,4 +12,9 @@ public interface LocationSpecifier {
    * @return The set of concrete {@link Location}s.
    */
   Set<Location> resolve(SpecifierContext ctxt);
+
+  /** Defines all locations in the network */
+  LocationSpecifier ALL_LOCATIONS =
+      new UnionLocationSpecifier(
+          AllInterfacesLocationSpecifier.INSTANCE, AllInterfaceLinksLocationSpecifier.INSTANCE);
 }
