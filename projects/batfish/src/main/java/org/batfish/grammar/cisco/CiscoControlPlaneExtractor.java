@@ -8827,8 +8827,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
       _configuration.referenceStructure(INTERFACE, ifaceName, usage, line);
     }
-
-    todo(ctx);
   }
 
   @Override
