@@ -69,6 +69,9 @@ test -raw tests/questions/experimental/ospfProcessConfiguration.ref validate-tem
 # validate ospfProperties
 test -raw tests/questions/experimental/ospfProperties.ref validate-template ospfProperties nodes=".*", properties="maximum-.*"
 
+# validate ospfSessionCompatibility
+test -raw tests/questions/experimental/ospfSessionCompatibility.ref validate-template ospfSessionCompatibility nodes=".*", remoteNodes=".*"
+
 # validate prefixTracer
 test -raw tests/questions/experimental/prefixTracer.ref validate-template prefixTracer nodes=".*", prefix="0.0.0.0/0"
 
