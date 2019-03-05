@@ -55,7 +55,7 @@ public final class ReferenceFilterGroupFilterSpecifier implements FilterSpecifie
                             + "'"));
 
     return filterGroup.getFilters().stream()
-        .filter(f -> f != null) // ignore null values
+        .filter(Objects::nonNull) // ignore null values
         .flatMap(
             f ->
                 SpecifierFactories.getFilterSpecifierOrDefault(
