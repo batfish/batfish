@@ -20,11 +20,11 @@ final class SimpleTransformation {
     _step = step;
   }
 
-  public AclLineMatchExpr getGuard() {
+  public @Nonnull AclLineMatchExpr getGuard() {
     return _guard;
   }
 
-  public TransformationStep getStep() {
+  public @Nonnull TransformationStep getStep() {
     return _step;
   }
 }
