@@ -8,14 +8,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.PacketHeaderConstraints;
-import org.batfish.datamodel.questions.FiltersSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.specifier.AllFiltersFilterSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.FilterSpecifier;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NodeSpecifier;
-import org.batfish.specifier.ShorthandFilterSpecifier;
 import org.batfish.specifier.SpecifierFactories;
 
 /**
@@ -61,7 +60,7 @@ public class TestFiltersQuestion extends Question {
   @JsonIgnore
   public FilterSpecifier getFilterSpecifier() {
     return SpecifierFactories.getFilterSpecifierOrDefault(
-        _filters, new ShorthandFilterSpecifier(FiltersSpecifier.ALL));
+        _filters, AllFiltersFilterSpecifier.INSTANCE);
   }
 
   @Nonnull

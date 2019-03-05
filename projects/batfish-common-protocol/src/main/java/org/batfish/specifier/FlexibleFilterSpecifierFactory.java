@@ -6,18 +6,17 @@ import com.google.auto.service.AutoService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.questions.FiltersSpecifier;
 
 /**
  * A {@link FilterSpecifierFactory} that accepts three types of inputs:
  *
  * <ul>
- *   <li>null, which returns {@link ShorthandFilterSpecifier} that matches everything
+ *   <li>null, which returns {@link AllFiltersFilterSpecifier} that matches everything
  *   <li>inFilterOf(foo), which returns {@link InterfaceSpecifierFilterSpecifier} with foo being fed
  *       to {@link FlexibleInterfaceSpecifierFactory}
  *   <li>outFilterOf(foo), as above but for output filters
  *   <li>ref.filtergroup(foo, bar), which returns {@link ReferenceFilterGroupFilterSpecifier};
- *   <li>inputs accepted by {@link ShorthandFilterSpecifier}
+ *   <li>assume that input is a name regex
  * </ul>
  */
 @AutoService(FilterSpecifierFactory.class)
@@ -41,7 +40,7 @@ public class FlexibleFilterSpecifierFactory implements FilterSpecifierFactory {
   @Override
   public FilterSpecifier buildFilterSpecifier(@Nullable Object input) {
     if (input == null) {
-      return new ShorthandFilterSpecifier(FiltersSpecifier.ALL);
+      return AllFiltersFilterSpecifier.INSTANCE;
     }
     checkArgument(input instanceof String, NAME + " requires String input");
     String str = ((String) input).trim();
@@ -69,7 +68,6 @@ public class FlexibleFilterSpecifierFactory implements FilterSpecifierFactory {
           words.length == 2, "Arguments to ref.filtergroup should be two words separated by ','");
       return new ReferenceFilterGroupFilterSpecifier(words[0].trim(), words[1].trim());
     }
-    FiltersSpecifier specifier = new FiltersSpecifier(str);
-    return new ShorthandFilterSpecifier(specifier);
+    return new NameRegexFilterSpecifier(Pattern.compile(str, Pattern.CASE_INSENSITIVE));
   }
 }
