@@ -7,7 +7,11 @@ import static org.batfish.bddreachability.TestNetworkSources.ORIGINATING_FROM_DE
 import static org.batfish.bddreachability.TestNetworkSources.PEER_IFACE_NAME;
 import static org.batfish.bddreachability.TestNetworkSources.PEER_NAME;
 import static org.batfish.bddreachability.TestNetworkSources.VRF_NAME;
+import static org.batfish.bddreachability.transition.Transitions.compose;
+import static org.batfish.bddreachability.transition.Transitions.constraint;
+import static org.batfish.bddreachability.transition.Transitions.removeSourceConstraint;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -70,7 +74,9 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
     batfish.computeDataPlane();
     DataPlane dataPlane = batfish.loadDataPlane();
-    factory = new BDDReachabilityAnalysisFactory(pkt, configs, dataPlane.getForwardingAnalysis());
+    factory =
+        new BDDReachabilityAnalysisFactory(
+            pkt, configs, dataPlane.getForwardingAnalysis(), false, false);
     peerSrcMgr = factory.getBDDSourceManagers().get(PEER_NAME);
     srcMgr = factory.getBDDSourceManagers().get(CONFIG_NAME);
 
@@ -115,10 +121,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
             .get(
                 new NodeInterfaceNeighborUnreachable(
                     CONFIG_NAME, ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME));
-    assertThat(edge.traverseForward(one), equalTo(one));
-    assertThat(edge.traverseForward(originatingFromDeviceBdd), equalTo(one));
-    assertThat(edge.traverseForward(matchSrcInterfaceBdd), equalTo(zero));
-    assertThat(edge.traverseBackward(one), equalTo(originatingFromDeviceBdd));
+    assertEquals(edge.getTransition(), constraint(originatingFromDeviceBdd));
   }
 
   /**
@@ -136,9 +139,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
                 new NodeInterfaceDeliveredToSubnet(
                     CONFIG_NAME, ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME));
 
-    assertThat(edge.traverseForward(originatingFromDeviceBdd), equalTo(one));
-    assertThat(edge.traverseForward(matchSrcInterfaceBdd), equalTo(zero));
-    assertThat(edge.traverseBackward(one), equalTo(originatingFromDeviceBdd));
+    assertEquals(edge.getTransition(), constraint(originatingFromDeviceBdd));
   }
 
   /*
@@ -154,10 +155,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
                     CONFIG_NAME, ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME))
             .get(
                 new NodeInterfaceExitsNetwork(CONFIG_NAME, ORIGINATING_FROM_DEVICE_ACL_IFACE_NAME));
-    assertThat(edge.traverseForward(one), equalTo(one));
-    assertThat(edge.traverseForward(originatingFromDeviceBdd), equalTo(one));
-    assertThat(edge.traverseForward(matchSrcInterfaceBdd), equalTo(zero));
-    assertThat(edge.traverseBackward(one), equalTo(originatingFromDeviceBdd));
+    assertEquals(edge.getTransition(), constraint(originatingFromDeviceBdd));
   }
 
   /*
@@ -174,10 +172,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
             .get(
                 new NodeInterfaceDeliveredToSubnet(
                     CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME));
-    assertThat(edge.traverseForward(one), equalTo(one));
-    assertThat(edge.traverseForward(originatingFromDeviceBdd), equalTo(zero));
-    assertThat(edge.traverseForward(matchSrcInterfaceBdd), equalTo(one));
-    assertThat(edge.traverseBackward(one), equalTo(matchSrcInterfaceBdd));
+    assertEquals(edge.getTransition(), constraint(matchSrcInterfaceBdd));
   }
 
   /**
@@ -190,10 +185,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
         edges
             .get(new PreOutInterfaceExitsNetwork(CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME))
             .get(new NodeInterfaceExitsNetwork(CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME));
-    assertThat(edge.traverseForward(one), equalTo(one));
-    assertThat(edge.traverseForward(originatingFromDeviceBdd), equalTo(zero));
-    assertThat(edge.traverseForward(matchSrcInterfaceBdd), equalTo(one));
-    assertThat(edge.traverseBackward(one), equalTo(matchSrcInterfaceBdd));
+    assertEquals(edge.getTransition(), constraint(matchSrcInterfaceBdd));
   }
 
   /**
@@ -209,10 +201,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
                     CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME))
             .get(
                 new NodeInterfaceInsufficientInfo(CONFIG_NAME, MATCH_SRC_INTERFACE_ACL_IFACE_NAME));
-    assertThat(edge.traverseForward(one), equalTo(one));
-    assertThat(edge.traverseForward(originatingFromDeviceBdd), equalTo(zero));
-    assertThat(edge.traverseForward(matchSrcInterfaceBdd), equalTo(one));
-    assertThat(edge.traverseBackward(one), equalTo(matchSrcInterfaceBdd));
+    assertEquals(edge.getTransition(), constraint(matchSrcInterfaceBdd));
   }
 
   /*
@@ -224,11 +213,8 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
     // PostInVrf -> NodeAccept edge.
     Edge edge = edges.get(new PostInVrf(CONFIG_NAME, VRF_NAME)).get(new NodeAccept(CONFIG_NAME));
     BDD headerSpaceBdd = factory.getVrfAcceptBDDs().get(CONFIG_NAME).get(VRF_NAME);
-    BDD validSrcBdd = srcMgr.isValidValue();
-    assertThat(edge.traverseForward(validSrcBdd), equalTo(headerSpaceBdd));
-    assertThat(edge.traverseForward(originatingFromDeviceBdd), equalTo(headerSpaceBdd));
-    assertThat(edge.traverseForward(matchSrcInterfaceBdd), equalTo(headerSpaceBdd));
-    assertThat(edge.traverseBackward(one), equalTo(headerSpaceBdd.and(validSrcBdd)));
+    assertEquals(
+        edge.getTransition(), compose(constraint(headerSpaceBdd), removeSourceConstraint(srcMgr)));
   }
 
   @Test
