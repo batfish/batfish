@@ -299,6 +299,7 @@ import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfInternalRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -2096,6 +2097,40 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasUndefinedReference(filename, PREFIX_LIST, "pre_list_undef1"));
     /* Route-map match context */
     assertThat(ccae, hasUndefinedReference(filename, PREFIX_LIST, "pre_list_undef2"));
+
+    // The defined inbound prefix-list should be converted to a BGP import policy
+    Ip peerAddress = Ip.parse("1.2.3.4");
+    Configuration c = batfish.loadConfigurations().get(hostname);
+    String generatedImportPolicyName =
+        String.format("~BGP_PEER_IMPORT_POLICY:%s:%s~", DEFAULT_VRF_NAME, peerAddress);
+    RoutingPolicy importPolicy = c.getRoutingPolicies().get(generatedImportPolicyName);
+    assertThat(importPolicy, notNullValue());
+
+    // Test that the generated import policy only permits 10.1.1.0/24, as expected
+    Prefix permittedPrefix = Prefix.parse("10.1.1.0/24");
+    BgpRoute.Builder r =
+        BgpRoute.builder()
+            .setOriginatorIp(peerAddress)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.IBGP);
+    BgpRoute permittedRoute = r.setNetwork(permittedPrefix).build();
+    BgpRoute unmatchedRoute = r.setNetwork(Prefix.parse("10.1.0.0/16")).build();
+    assertThat(
+        importPolicy.process(
+            permittedRoute,
+            permittedRoute.toBuilder(),
+            peerAddress,
+            DEFAULT_VRF_NAME,
+            Direction.IN),
+        equalTo(true));
+    assertThat(
+        importPolicy.process(
+            unmatchedRoute,
+            unmatchedRoute.toBuilder(),
+            peerAddress,
+            DEFAULT_VRF_NAME,
+            Direction.IN),
+        equalTo(false));
   }
 
   @Test

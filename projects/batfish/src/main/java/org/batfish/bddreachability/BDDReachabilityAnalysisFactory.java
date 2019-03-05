@@ -1,14 +1,20 @@
 package org.batfish.bddreachability;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.bddreachability.BidirectionalReachabilityReturnPassInstrumentation.instrumentReturnPassEdges;
+import static org.batfish.bddreachability.SessionInstrumentation.sessionInstrumentation;
+import static org.batfish.bddreachability.transition.Transitions.addLastHopConstraint;
+import static org.batfish.bddreachability.transition.Transitions.addNoLastHopConstraint;
 import static org.batfish.bddreachability.transition.Transitions.addOriginatingFromDeviceConstraint;
 import static org.batfish.bddreachability.transition.Transitions.addSourceInterfaceConstraint;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.eraseAndSet;
 import static org.batfish.bddreachability.transition.Transitions.or;
+import static org.batfish.bddreachability.transition.Transitions.removeLastHopConstraint;
 import static org.batfish.bddreachability.transition.Transitions.removeSourceConstraint;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
+import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.transformation.TransformationUtil.visitTransformationSteps;
 
@@ -32,7 +38,6 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
@@ -49,12 +54,10 @@ import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
 import org.batfish.common.bdd.MemoizedIpSpaceToBDD;
 import org.batfish.common.topology.TopologyUtil;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -67,8 +70,6 @@ import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.TransformationStepVisitor;
-import org.batfish.specifier.InterfaceLinkLocation;
-import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.LocationVisitor;
 import org.batfish.z3.IngressLocation;
@@ -151,6 +152,9 @@ public final class BDDReachabilityAnalysisFactory {
 
   private final Map<String, BDDSourceManager> _bddSourceManagers;
 
+  // Needed when initializing sessions.
+  private final @Nullable LastHopOutgoingInterfaceManager _lastHopMgr;
+
   // node --> iface --> bdd nats
   private Map<String, Map<String, Transition>> _bddIncomingTransformations;
   private final Map<String, Map<String, Transition>> _bddOutgoingTransformations;
@@ -207,21 +211,22 @@ public final class BDDReachabilityAnalysisFactory {
   private BDD _zero;
 
   public BDDReachabilityAnalysisFactory(
-      BDDPacket packet, Map<String, Configuration> configs, ForwardingAnalysis forwardingAnalysis) {
-    this(packet, configs, forwardingAnalysis, false);
-  }
-
-  public BDDReachabilityAnalysisFactory(
       BDDPacket packet,
       Map<String, Configuration> configs,
       ForwardingAnalysis forwardingAnalysis,
-      boolean ignoreFilters) {
+      boolean ignoreFilters,
+      boolean initializeSessions) {
     _bddPacket = packet;
     _one = packet.getFactory().one();
     _zero = packet.getFactory().zero();
     _ignoreFilters = ignoreFilters;
+    _lastHopMgr =
+        initializeSessions
+            ? new LastHopOutgoingInterfaceManager(
+                packet, configs, forwardingAnalysis.getArpTrueEdge().keySet())
+            : null;
     _requiredTransitNodeBDD = _bddPacket.allocateBDDBit("requiredTransitNodes");
-    _bddSourceManagers = BDDSourceManager.forNetwork(_bddPacket, configs);
+    _bddSourceManagers = BDDSourceManager.forNetwork(_bddPacket, configs, initializeSessions);
     _configs = configs;
     _forwardingAnalysis = forwardingAnalysis;
     _dstIpSpaceToBDD = new MemoizedIpSpaceToBDD(_bddPacket.getDstIp(), ImmutableMap.of());
@@ -271,16 +276,26 @@ public final class BDDReachabilityAnalysisFactory {
         nodeEntry -> {
           Configuration config = nodeEntry.getValue();
           IpAccessListToBdd aclToBdd =
-              new IpAccessListToBddImpl(
-                  bddPacket,
-                  bddSourceManagers.get(config.getHostname()),
-                  config.getIpAccessLists(),
-                  config.getIpSpaces());
+              ipAccessListToBdd(bddPacket, bddSourceManagers.get(config.getHostname()), config);
           return toImmutableMap(
               config.getIpAccessLists(),
               Entry::getKey,
               aclEntry -> Suppliers.memoize(() -> aclToBdd.toBdd(aclEntry.getValue())));
         });
+  }
+
+  Map<String, Map<String, Supplier<BDD>>> getAclPermitBdds() {
+    return _aclPermitBDDs;
+  }
+
+  IpAccessListToBdd ipAccessListToBdd(Configuration config) {
+    return ipAccessListToBdd(_bddPacket, _bddSourceManagers.get(config.getHostname()), config);
+  }
+
+  private static IpAccessListToBdd ipAccessListToBdd(
+      BDDPacket bddPacket, BDDSourceManager srcMgr, Configuration config) {
+    return new IpAccessListToBddImpl(
+        bddPacket, srcMgr, config.getIpAccessLists(), config.getIpSpaces());
   }
 
   private static Map<String, Map<String, Supplier<BDD>>> computeAclDenyBDDs(
@@ -455,8 +470,9 @@ public final class BDDReachabilityAnalysisFactory {
                   originateInterfaceLink,
                   preInInterface,
                   compose(
-                      addSourceInterfaceConstraint(_bddSourceManagers.get(hostname), iface),
-                      constraint(rootBdd)));
+                      constraint(rootBdd),
+                      addNoLastHopConstraint(_lastHopMgr, hostname, iface),
+                      addSourceInterfaceConstraint(_bddSourceManagers.get(hostname), iface)));
             });
   }
 
@@ -545,10 +561,14 @@ public final class BDDReachabilityAnalysisFactory {
         .flatMap(c -> c.getAllInterfaces().values().stream())
         .map(
             iface -> {
-              String nodeNode = iface.getOwner().getHostname();
+              String node = iface.getOwner().getHostname();
               String ifaceName = iface.getName();
               return new Edge(
-                  nodeInterfaceDispositionConstructor.apply(nodeNode, ifaceName), dispositionNode);
+                  nodeInterfaceDispositionConstructor.apply(node, ifaceName),
+                  dispositionNode,
+                  compose(
+                      removeSourceConstraint(_bddSourceManagers.get(node)),
+                      removeLastHopConstraint(_lastHopMgr, node)));
             });
   }
 
@@ -578,10 +598,9 @@ public final class BDDReachabilityAnalysisFactory {
 
   private Stream<Edge> generateRules_PostInInterface_NodeDropAclIn() {
     return _configs.values().stream()
-        .map(Configuration::getVrfs)
+        .map(Configuration::getAllInterfaces)
         .map(Map::values)
         .flatMap(Collection::stream)
-        .flatMap(vrf -> vrf.getInterfaces().values().stream())
         .filter(iface -> iface.getPostTransformationIncomingFilter() != null)
         .map(
             i -> {
@@ -595,7 +614,8 @@ public final class BDDReachabilityAnalysisFactory {
                   new NodeDropAclIn(node),
                   compose(
                       constraint(aclDenyBDD),
-                      removeSourceConstraint(_bddSourceManagers.get(node))));
+                      removeSourceConstraint(_bddSourceManagers.get(node)),
+                      removeLastHopConstraint(_lastHopMgr, node)));
             });
   }
 
@@ -655,7 +675,8 @@ public final class BDDReachabilityAnalysisFactory {
                               new NodeDropNoRoute(node),
                               compose(
                                   constraint(notAcceptBDD.and(notRoutableBDD)),
-                                  removeSourceConstraint(_bddSourceManagers.get(node))));
+                                  removeSourceConstraint(_bddSourceManagers.get(node)),
+                                  removeLastHopConstraint(_lastHopMgr, node)));
                         }));
   }
 
@@ -696,7 +717,8 @@ public final class BDDReachabilityAnalysisFactory {
                   new NodeDropAclIn(node),
                   compose(
                       constraint(aclDenyBDD),
-                      removeSourceConstraint(_bddSourceManagers.get(node))));
+                      removeSourceConstraint(_bddSourceManagers.get(node)),
+                      removeLastHopConstraint(_lastHopMgr, node)));
             });
   }
 
@@ -770,7 +792,8 @@ public final class BDDReachabilityAnalysisFactory {
                       new NodeDropAclOut(node1),
                       compose(
                           constraint(denyPreNat),
-                          removeSourceConstraint(_bddSourceManagers.get(node1)))));
+                          removeSourceConstraint(_bddSourceManagers.get(node1)),
+                          removeLastHopConstraint(_lastHopMgr, node1))));
             });
   }
 
@@ -796,10 +819,13 @@ public final class BDDReachabilityAnalysisFactory {
               }
               PreOutEdge preState = new PreOutEdge(node1, iface1, node2, iface2);
               PreOutEdgePostNat postState = new PreOutEdgePostNat(node1, iface1, node2, iface2);
-              Transition transition =
-                  compose(
-                      constraint(aclPermit), _bddOutgoingTransformations.get(node1).get(iface1));
-              return Stream.of(new Edge(preState, postState, transition));
+              return Stream.of(
+                  new Edge(
+                      preState,
+                      postState,
+                      compose(
+                          constraint(aclPermit),
+                          _bddOutgoingTransformations.get(node1).get(iface1))));
             });
   }
 
@@ -829,7 +855,8 @@ public final class BDDReachabilityAnalysisFactory {
                       new NodeDropAclOut(node1),
                       compose(
                           constraint(aclDenyBDD),
-                          removeSourceConstraint(_bddSourceManagers.get(node1)))));
+                          removeSourceConstraint(_bddSourceManagers.get(node1)),
+                          removeLastHopConstraint(_lastHopMgr, node1))));
             });
   }
 
@@ -853,8 +880,10 @@ public final class BDDReachabilityAnalysisFactory {
                   new PreInInterface(node2, iface2),
                   compose(
                       constraint(aclPermitBDD),
+                      removeLastHopConstraint(_lastHopMgr, node1),
                       removeSourceConstraint(_bddSourceManagers.get(node1)),
-                      addSourceInterfaceConstraint(_bddSourceManagers.get(node2), iface2)));
+                      addSourceInterfaceConstraint(_bddSourceManagers.get(node2), iface2),
+                      addLastHopConstraint(_lastHopMgr, node1, iface1, node2, iface2)));
             });
   }
 
@@ -895,7 +924,8 @@ public final class BDDReachabilityAnalysisFactory {
                                                   constraint(permitPreAclBDD),
                                                   transformation,
                                                   constraint(denyPostAclBDD))),
-                                          removeSourceConstraint(_bddSourceManagers.get(node)));
+                                          removeSourceConstraint(_bddSourceManagers.get(node)),
+                                          removeLastHopConstraint(_lastHopMgr, node));
 
                                   return Stream.of(
                                           new PreOutInterfaceDeliveredToSubnet(node, ifaceName),
@@ -923,7 +953,8 @@ public final class BDDReachabilityAnalysisFactory {
                               new NodeDropNullRoute(node),
                               compose(
                                   constraint(nullRoutedBDD),
-                                  removeSourceConstraint(_bddSourceManagers.get(node))));
+                                  removeSourceConstraint(_bddSourceManagers.get(node)),
+                                  removeLastHopConstraint(_lastHopMgr, node)));
                         }));
   }
 
@@ -1001,14 +1032,12 @@ public final class BDDReachabilityAnalysisFactory {
               /* 1. pre-transformation filter
                * 2. outgoing transformation
                * 3. post-transformation filter
-               * 4. erase source constraint
                */
               Transition transition =
                   compose(
                       constraint(permitBeforeNatBDD),
                       outgoingTransformation,
-                      constraint(permitAfterNatBDD),
-                      removeSourceConstraint(_bddSourceManagers.get(node)));
+                      constraint(permitAfterNatBDD));
 
               return Stream.of(
                   new Edge(
@@ -1050,38 +1079,6 @@ public final class BDDReachabilityAnalysisFactory {
             });
   }
 
-  @Nonnull
-  /*
-   * Optional.none is used when the location is not in the snapshot. This can happen in differential reachability,
-   * for example.
-   */
-  private LocationVisitor<Optional<StateExpr>> getLocationToStateExpr() {
-    return new LocationVisitor<Optional<StateExpr>>() {
-      @Override
-      public Optional<StateExpr> visitInterfaceLinkLocation(
-          @Nonnull InterfaceLinkLocation interfaceLinkLocation) {
-        return Optional.of(
-            new OriginateInterfaceLink(
-                interfaceLinkLocation.getNodeName(), interfaceLinkLocation.getInterfaceName()));
-      }
-
-      @Override
-      public Optional<StateExpr> visitInterfaceLocation(
-          @Nonnull InterfaceLocation interfaceLocation) {
-        Configuration config = _configs.get(interfaceLocation.getNodeName());
-        if (config == null) {
-          return Optional.empty();
-        }
-        Interface iface = config.getAllInterfaces().get(interfaceLocation.getInterfaceName());
-        if (iface == null) {
-          return Optional.empty();
-        }
-        String vrf = iface.getVrfName();
-        return Optional.of(new OriginateVrf(interfaceLocation.getNodeName(), vrf));
-      }
-    };
-  }
-
   public BDDReachabilityAnalysis bddReachabilityAnalysis(IpSpaceAssignment srcIpSpaceAssignment) {
     return bddReachabilityAnalysis(
         srcIpSpaceAssignment,
@@ -1114,7 +1111,7 @@ public final class BDDReachabilityAnalysisFactory {
       Set<FlowDisposition> actions) {
     Set<FlowDisposition> actionsCopy = new HashSet<>(actions);
 
-    boolean loopIncluded = actionsCopy.remove(FlowDisposition.LOOP);
+    boolean loopIncluded = actionsCopy.remove(LOOP);
 
     // detecting Loops can work with any disposition, using ACCEPTED arbitrarily here
     BDDReachabilityAnalysis analysis =
@@ -1234,6 +1231,58 @@ public final class BDDReachabilityAnalysisFactory {
     return finalHeaderSpace;
   }
 
+  /**
+   * Create a {@link BDDReachabilityAnalysis} with the given {@link BDDFirewallSessionTraceInfo
+   * sessions}.
+   *
+   * @param returnPassOrigBdds Sets of packets at different locations to originate packets from in
+   *     the return pass graph.
+   * @param returnPassSuccessBdds Sets of packets at different locations in the return pass graph
+   *     that are to be considered successful (and not failure). See {@link
+   *     BidirectionalReachabilityReturnPassInstrumentation}.
+   */
+  BDDReachabilityAnalysis bddReachabilityAnalysis(
+      Map<StateExpr, BDD> returnPassOrigBdds,
+      Map<StateExpr, BDD> returnPassSuccessBdds,
+      Map<String, List<BDDFirewallSessionTraceInfo>> initializedSessions,
+      Set<String> forbiddenTransitNodes,
+      Set<String> requiredTransitNodes,
+      Set<FlowDisposition> dispositions) {
+    /* We will use the return pass reachability graph a bit differently than usual: to find flows
+     * that successfully return to the origination point of the forward flow, we'll look at states
+     * like NodeInterfaceDeliveredToSubnet, rather than adding edges all the way to Query. Also,
+     * to find return flows that fail, we add the usual query edges for failure dispositions, and
+     * then search backward from Query to the origination points, which are the termination points
+     * of the forward pass, and then in the forward reachability graph we'll propagate failing flows
+     * from the termination points back to the forward pass origination points.
+     *
+     * This backward search would work for successful flows as well, but requires an additional
+     * graph traversal (two backward searches instead of one forward search). The advantage is that
+     * it would work in cases where the forward and return flow don't match (if that's possible).
+     */
+    Stream<Edge> returnPassEdges =
+        Streams.concat(
+            instrumentReturnPassEdges(
+                returnPassSuccessBdds,
+                sessionInstrumentation(
+                    _bddPacket,
+                    _configs,
+                    _bddSourceManagers,
+                    _lastHopMgr,
+                    _aclPermitBDDs,
+                    generateEdges(_configs.keySet()),
+                    initializedSessions)),
+            generateRootEdges(returnPassOrigBdds),
+            generateQueryEdges(dispositions));
+
+    returnPassEdges = instrumentForbiddenTransitNodes(forbiddenTransitNodes, returnPassEdges);
+    returnPassEdges = instrumentRequiredTransitNodes(requiredTransitNodes, returnPassEdges);
+
+    List<Edge> edges = returnPassEdges.collect(ImmutableList.toImmutableList());
+
+    return new BDDReachabilityAnalysis(_bddPacket, returnPassOrigBdds.keySet(), edges, _one);
+  }
+
   class RangeComputer implements TransformationStepVisitor<Void> {
     private Map<IpField, BDD> _ipRanges;
     private Map<PortField, BDD> _portRanges;
@@ -1343,9 +1392,10 @@ public final class BDDReachabilityAnalysisFactory {
     return rangeComputer;
   }
 
-  private Map<StateExpr, BDD> rootConstraints(
+  Map<StateExpr, BDD> rootConstraints(
       IpSpaceAssignment srcIpSpaceAssignment, BDD initialHeaderSpaceBdd) {
-    LocationVisitor<Optional<StateExpr>> locationToStateExpr = getLocationToStateExpr();
+    LocationVisitor<Optional<StateExpr>> locationToStateExpr =
+        new LocationToOriginationStateExpr(_configs);
     IpSpaceToBDD srcIpSpaceToBDD =
         new MemoizedIpSpaceToBDD(_bddPacket.getSrcIp(), ImmutableMap.of());
 
@@ -1394,11 +1444,11 @@ public final class BDDReachabilityAnalysisFactory {
         TopologyUtil.computeVrfOwnedIpSpaces(
             TopologyUtil.computeIpVrfOwners(true, TopologyUtil.computeNodeInterfaces(configs)));
 
-    return CommonUtil.toImmutableMap(
+    return toImmutableMap(
         configs,
         Entry::getKey,
         nodeEntry ->
-            CommonUtil.toImmutableMap(
+            toImmutableMap(
                 nodeEntry.getValue().getVrfs(),
                 Entry::getKey,
                 vrfEntry ->
@@ -1491,19 +1541,7 @@ public final class BDDReachabilityAnalysisFactory {
     return _bddSourceManagers;
   }
 
-  public Map<String, Map<String, Map<String, BDD>>> getNeighborUnreachableBDDs() {
-    return _neighborUnreachableBDDs;
-  }
-
-  public Map<String, Map<String, Map<String, BDD>>> getDeliveredToSubnetBDDs() {
-    return _deliveredToSubnetBDDs;
-  }
-
-  public Map<String, Map<String, Map<String, BDD>>> getExitsNetworkBDDs() {
-    return _exitsNetworkBDDs;
-  }
-
-  public Map<String, Map<String, Map<String, BDD>>> getInsufficientInfoBDDs() {
-    return _insufficientInfoBDDs;
+  public @Nullable LastHopOutgoingInterfaceManager getLastHopManager() {
+    return _lastHopMgr;
   }
 }

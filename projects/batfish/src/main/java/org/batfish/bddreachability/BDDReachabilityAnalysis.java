@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -75,11 +76,25 @@ public class BDDReachabilityAnalysis {
     _queryHeaderSpaceBdd = queryHeaderSpaceBdd;
   }
 
-  private Map<StateExpr, BDD> computeReverseReachableStates() {
+  Map<StateExpr, BDD> computeReverseReachableStates() {
     Map<StateExpr, BDD> reverseReachableStates = new HashMap<>();
     reverseReachableStates.put(Query.INSTANCE, _queryHeaderSpaceBdd);
     backwardFixpoint(reverseReachableStates);
     return ImmutableMap.copyOf(reverseReachableStates);
+  }
+
+  Map<StateExpr, BDD> computeReverseReachableStates(Map<StateExpr, BDD> roots) {
+    Map<StateExpr, BDD> reverseReachableStates = new HashMap<>(roots);
+    backwardFixpoint(reverseReachableStates);
+    return ImmutableMap.copyOf(reverseReachableStates);
+  }
+
+  Map<StateExpr, BDD> computeForwardReachableStates() {
+    Map<StateExpr, BDD> forwardReachableStates = new LinkedHashMap<>();
+    BDD one = _bddPacket.getFactory().one();
+    _ingressLocationStates.forEach(state -> forwardReachableStates.put(state, one));
+    forwardFixpoint(forwardReachableStates);
+    return ImmutableMap.copyOf(forwardReachableStates);
   }
 
   private void backwardFixpoint(Map<StateExpr, BDD> reverseReachable) {
