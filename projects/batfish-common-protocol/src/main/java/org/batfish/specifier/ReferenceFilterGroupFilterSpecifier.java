@@ -1,7 +1,5 @@
 package org.batfish.specifier;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.google.common.collect.ImmutableSet;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -42,7 +40,6 @@ public final class ReferenceFilterGroupFilterSpecifier implements FilterSpecifie
 
   @Override
   public Set<IpAccessList> resolve(String node, SpecifierContext ctxt) {
-    checkArgument(ctxt.getConfigs().containsKey(node), "Node '%s' not found", node);
     FilterGroup filterGroup =
         ctxt.getReferenceBook(_bookName)
             .orElseThrow(

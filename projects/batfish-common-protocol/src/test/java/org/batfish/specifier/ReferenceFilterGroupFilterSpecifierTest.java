@@ -83,11 +83,4 @@ public class ReferenceFilterGroupFilterSpecifierTest {
             .resolve(_nodeName, _ctxt),
         equalTo(ImmutableSet.of(_filter1, _filter3)));
   }
-
-  @Test
-  public void resolveMissingNode() {
-    exception.expect(IllegalArgumentException.class);
-    new ReferenceFilterGroupFilterSpecifier(_filterGroupName, _refBookName)
-        .resolve("NonExistentNode", _ctxt);
-  }
 }
