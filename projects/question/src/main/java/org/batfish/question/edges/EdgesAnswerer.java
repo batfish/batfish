@@ -102,8 +102,9 @@ public class EdgesAnswerer extends Answerer {
     EdgesQuestion question = (EdgesQuestion) _question;
 
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> includeNodes = question.getNodes().getMatchingNodes(_batfish);
-    Set<String> includeRemoteNodes = question.getRemoteNodes().getMatchingNodes(_batfish);
+    Set<String> includeNodes = question.getNodeSpecifier().resolve(_batfish.specifierContext());
+    Set<String> includeRemoteNodes =
+        question.getRemoteNodeSpecifier().resolve(_batfish.specifierContext());
 
     TableAnswerElement answer = new TableAnswerElement(getTableMetadata(question.getEdgeType()));
     Topology topology = _batfish.getEnvironmentTopology();

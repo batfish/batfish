@@ -15,10 +15,10 @@
     ],
     "variables" : {
       "filters" : {
-        "description" : "Name or regex identifying the filters to test",
+        "description" : "Specifier for filters to test",
         "displayName" : "Filters",
         "optional" : true,
-        "type" : "filter",
+        "type" : "filterSpec",
         "value" : ".*"
       },
       "ignoreComposites" : {
